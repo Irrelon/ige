@@ -39,6 +39,7 @@ var IgeEngine = IgeObject.extend({
 		this._fps = 0; // Number of frames per second
 		this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
 		this._frameAlternator = false; // Is set to the boolean not of itself each frame
+		this._viewportDepth = false;
 		this.dependencyTimeout(30000); // Wait 30 seconds to load all dependencies then timeout
 
 		// Add the textures loaded dependency
@@ -64,6 +65,23 @@ var IgeEngine = IgeObject.extend({
 		}
 
 		return true;
+	},
+
+	/**
+	 * Gets / sets the flag that determines if viewports should be sorted by depth
+	 * like regular entities, before they are processed for rendering each frame.
+	 * Depth-sorting viewports increases processing requirements so if you do not
+	 * need to stack viewports in a particular order, keep this flag false.
+	 * @param {Boolean} val
+	 * @return {Boolean}
+	 */
+	viewportDepth: function (val) {
+		if (val !== undefined) {
+			this._viewportDepth = val;
+			return this;
+		}
+
+		return this._viewportDepth;
 	},
 
 	/**
@@ -210,6 +228,7 @@ var IgeEngine = IgeObject.extend({
 	autoSize: function (val) {
 		if (typeof(val) !== 'undefined') {
 			this._autoSize = val;
+			return this;
 		}
 
 		return this._autoSize;
@@ -382,8 +401,10 @@ var IgeEngine = IgeObject.extend({
 			// Process any behaviours assigned to the engine
 			ige._processBehaviours();
 
-			// Depth sort the viewports
-			ige.depthSortChildren();
+			// Depth-sort the viewports
+			if (ige._viewportDepth) {
+				ige.depthSortChildren();
+			}
 
 			// Process the current engine tick for all child objects
 			var arr,
