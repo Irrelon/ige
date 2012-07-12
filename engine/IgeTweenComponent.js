@@ -1,4 +1,4 @@
-IgeTweenComponent = IgeClass.extend({
+var IgeTweenComponent = IgeClass.extend({
 	classId: 'IgeTweenComponent',
 	componentId: 'tween',
 
@@ -395,3 +395,5 @@ IgeTweenComponent = IgeClass.extend({
 		}
 	}
 });
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeTweenComponent; }

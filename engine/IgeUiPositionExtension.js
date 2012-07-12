@@ -1,12 +1,4 @@
-var IgeUiPositionComponent = IgeClass.extend({
-	classId: 'IgeUiPositionComponent',
-	componentId: 'uiPosition',
-
-	init: function (gameObject, options) {
-		this._entity = gameObject;
-		this._options = options;
-	},
-
+var IgeUiPositionExtension = {
 	/**
 	 * Gets / sets the viewport's x position relative to the left of
 	 * the canvas.
@@ -115,23 +107,22 @@ var IgeUiPositionComponent = IgeClass.extend({
 	 * @private
 	 */
 	_updateTranslation: function () {
-		var entity = this._entity;
 		if (this._vpXAlign === 'right') {
-			entity.transform._translate.x = ige._canvas.width - this._vpX - entity.geometry.x;
+			this.transform._translate.x = ige._canvas.width - this._vpX - this.geometry.x;
 		} else if (this._vpXAlign === 'center') {
-			entity.transform._translate.x = ige._canvasWidth2 + this._vpX;
+			this.transform._translate.x = ige._canvasWidth2 + this._vpX;
 		} else {
-			entity.transform._translate.x = this._vpX;
+			this.transform._translate.x = this._vpX;
 		}
 
 		if (this._vpYAlign === 'bottom') {
-			entity.transform._translate.y = ige._canvas.height - this._vpY - entity.geometry.y;
+			this.transform._translate.y = ige._canvas.height - this._vpY - this.geometry.y;
 		} else if (this._vpYAlign === 'middle') {
-			entity.transform._translate.y = ige._canvasHeight2 + this._vpY;
+			this.transform._translate.y = ige._canvasHeight2 + this._vpY;
 		} else {
-			entity.transform._translate.y = this._vpY;
+			this.transform._translate.y = this._vpY;
 		}
 	}
-});
+};
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeUiPositionComponent; }
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeUiPositionExtension; }

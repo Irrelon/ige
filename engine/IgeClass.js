@@ -60,6 +60,18 @@ var IgeClass = (function () {
 		addComponent = function (component, options) {
 			var newComponent = new component(this, options);
 			this[newComponent.componentId] = newComponent;
+		},
+
+		implement = function (classObj) {
+			var i, obj = classObj.prototype || classObj;
+
+			// Copy the class object's properties to (this)
+			for (i in obj) {
+				// Only copy the property if this doesn't already have it
+				if (obj.hasOwnProperty(i) && this[i] === undefined) {
+					this[i] = obj[i];
+				}
+			}
 		};
 
 	// Create a new IgeClass that inherits from this class
@@ -134,6 +146,9 @@ var IgeClass = (function () {
 
 		// Add the addComponent method
 		IgeClass.prototype.addComponent = addComponent;
+
+		// Add the implement method
+		IgeClass.prototype.implement = implement;
 
 		return IgeClass;
 	};

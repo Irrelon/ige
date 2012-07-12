@@ -44,7 +44,7 @@ var IgeObject = IgeEventingClass.extend({
 	 * Adds a behaviour to the object's active behaviour list.
 	 * @param {String} id
 	 * @param {Function} behaviour
-	 * @return {Boolean} Returns true if the behaviour was added successfully, false on failure.
+	 * @return {*} Returns this on success or false on failure.
 	 */
 	addBehavior: function (id, behaviour) {
 		if (behaviour !== undefined) {
@@ -53,7 +53,7 @@ var IgeObject = IgeEventingClass.extend({
 				method: behaviour
 			});
 
-			return true;
+			return this;
 		}
 
 		return false;
@@ -62,7 +62,7 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Removes a behaviour to the object's active behaviour list by it's id.
 	 * @param {String} id
-	 * @return {Boolean} Returns true if the behaviour was removed successfully, false on failure.
+	 * @return {*} Returns this on success or false on failure.
 	 */
 	removeBehavior: function (id) {
 		if (id !== undefined) {
@@ -74,7 +74,7 @@ var IgeObject = IgeEventingClass.extend({
 				if (arr[arrCount].id === id) {
 					// Remove the item from the array
 					arr.splice(arrCount, 1);
-					return true;
+					return this;
 				}
 			}
 		}
@@ -84,31 +84,34 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Mounts this object to the passed object in the scenegraph.
-	 * @param obj
-	 * @return {Boolean}
+	 * @param {IgeObject} obj
+	 * @return {*} Returns this on success or false on failure.
 	 */
 	mount: function (obj) {
-		if (this._parent) {
-			if (this._parent === obj) {
-				return false;
-			} else {
-				this.unMount();
-			}
-		}
-
 		if (obj._children) {
+			if (this._parent) {
+				if (this._parent === obj) {
+					// We are already mounted to the parent!
+					return this;
+				} else {
+					// We are already mounted to a different parent
+					this.unMount();
+				}
+			}
+
 			this._parent = obj;
 			obj._children.push(this);
 
-			return true;
+			return this;
 		} else {
+			// The object has no _children array!
 			return false;
 		}
 	},
 
 	/**
 	 * Unmounts this object from it's parent object in the scenegraph.
-	 * @return {Boolean}
+	 * @return {*} Returns this on success or false on failure.
 	 */
 	unMount: function () {
 		if (this._parent) {
@@ -116,11 +119,13 @@ var IgeObject = IgeEventingClass.extend({
 				index = childArr.indexOf(this);
 
 			if (index > -1) {
+				// Found this in the parent._children array so remove it
 				childArr.splice(index, 1);
 				this._parent = null;
 
-				return true;
+				return this;
 			} else {
+				// Cannot find this in the parent._children array
 				return false;
 			}
 		} else {
@@ -138,20 +143,28 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Gets / sets the indestructible flag. If set to true, the object will
 	 * not be destroyed even if a call to the destroy() method is made.
-	 * @param val
-	 * @return {Boolean}
+	 * @param {Number=} val
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	indestructible: function (val) {
 		if (typeof(val) !== 'undefined') {
 			this._indestructible = val;
+			return this;
 		}
 
 		return this._indestructible;
 	},
 
+	/**
+	 * Gets / sets the current render depth of the object (higher depths
+	 * are drawn over lower depths).
+	 * @param {Number=} val
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 */
 	depth: function (val) {
 		if (val !== undefined) {
 			this._depth = val;
+			return this;
 		}
 
 		return this._depth;

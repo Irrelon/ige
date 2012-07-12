@@ -75,27 +75,6 @@ var IgeScene2d = IgeObject.extend({
 	},
 
 	/**
-	 * Sorts the _viewports array by the layer and then depth of each viewport.
-	 */
-	_depthSortViewports: function () {
-		// Now sort the entities by depth
-		this._viewports.sort(function (a, b) {
-			var layerIndex = b._layer - a._layer;
-
-			if (layerIndex === 0) {
-				// On same layer so sort by depth
-				// this is opposite to normal depth sorting (a-b instead of b-a)
-				// because in the tick method, viewports are looped from 0 upward
-				// instead of a while(index--) loop.
-				return a._depth - b._depth;
-			} else {
-				// Not on same layer so sort by layer
-				return layerIndex;
-			}
-		});
-	},
-
-	/**
 	 * Processes the actions required each render frame.
 	 */
 	tick: function () {

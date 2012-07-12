@@ -382,11 +382,14 @@ var IgeEngine = IgeObject.extend({
 			// Process any behaviours assigned to the engine
 			ige._processBehaviours();
 
+			// Depth sort the viewports
+			ige.depthSortChildren();
+
 			// Process the current engine tick for all child objects
 			var arr,
 				arrCount;
 
-			// Loop our children and call their tick methods
+			// Loop our viewports and call their tick methods
 			arr = ige._children;
 			arrCount = arr.length;
 

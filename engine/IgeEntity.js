@@ -17,11 +17,12 @@ var IgeEntity = IgeObject.extend({
 	 * id is passed to the method, it will automatically generate and assign a
 	 * new id as a 16 character hexadecimal value typed as a string.
 	 * @param {String=} id
-	 * @return {String}
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	id: function (id) {
 		if (id !== undefined) {
 			this._id = id;
+			return this;
 		}
 
 		if (!this._id) {
@@ -37,11 +38,12 @@ var IgeEntity = IgeObject.extend({
 	 * span is how long the object will exist for before being automatically
 	 * destroyed.
 	 * @param {Number=} val
-	 * @return {Number}
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	lifeSpan: function (val) {
 		if (val !== undefined) {
 			this.deathTime(new Date().getTime() + val);
+			return this;
 		}
 
 		return this.deathTime() - new Date().getTime();
@@ -53,11 +55,12 @@ var IgeEntity = IgeObject.extend({
 	 * time during each tick and if the current time is greater than the
 	 * death time, the object will be destroyed.
 	 * @param {Number=} val
-	 * @return {Number}
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	deathTime: function (val) {
 		if (val !== undefined) {
 			this._deathTime = val;
+			return this;
 		}
 
 		return this._deathTime;
@@ -65,12 +68,13 @@ var IgeEntity = IgeObject.extend({
 
 	/**
 	 * Gets / sets the current entity layer.
-	 * @param {Number} val
-	 * @return {Number}
+	 * @param {Number=} val
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	layer: function (val) {
 		if (val !== undefined) {
 			this._layer = val;
+			return this;
 		}
 
 		return this._layer;
@@ -78,12 +82,13 @@ var IgeEntity = IgeObject.extend({
 
 	/**
 	 * Gets / sets the entity opacity from 0.0 to 1.0.
-	 * @param {Number} val
-	 * @return {Number}
+	 * @param {Number=} val
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	opacity: function (val) {
 		if (val !== undefined) {
 			this._opacity = val;
+			return this;
 		}
 
 		return this._opacity;
@@ -91,12 +96,13 @@ var IgeEntity = IgeObject.extend({
 
 	/**
 	 * Gets / sets the texture to use when rendering the entity.
-	 * @param {IgeTexture} texture
-	 * @return {IgeTexture}
+	 * @param {IgeTexture=} texture
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	texture: function (texture) {
 		if (texture !== undefined) {
 			this._texture = texture;
+			return this;
 		}
 
 		return this._texture;
@@ -106,12 +112,13 @@ var IgeEntity = IgeObject.extend({
 	 * Gets / sets the current texture cell used when rendering the game
 	 * object's texture. If the texture is not cell-based, this value is
 	 * ignored.
-	 * @param {Number} val
-	 * @return {Number}
+	 * @param {Number=} val
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	cell: function (val) {
 		if (val > 0) {
 			this._cell = val;
+			return this;
 		}
 
 		return this._cell;
