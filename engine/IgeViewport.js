@@ -1,4 +1,4 @@
-var IgeViewport = IgeEntity.extend({
+var IgeViewport = IgeUiEntity.extend({
 	classId: 'IgeViewport',
 
 	init: function (options) {
@@ -9,31 +9,31 @@ var IgeViewport = IgeEntity.extend({
 		this.geometry = new IgePoint(options.width || 250, options.height || 150, 0);
 		this.camera = new IgeTransform();
 
-		this.addComponent(IgeUiPositionComponent);
+		//this.addComponent(IgeUiPositionComponent);
 
 		// Move the viewport into position
 		if (options.left !== undefined) {
-			this.uiPosition.left(options.left);
+			this.left(options.left);
 		}
 
 		if (options.center !== undefined) {
-			this.uiPosition.center(options.center);
+			this.center(options.center);
 		}
 
 		if (options.right !== undefined) {
-			this.uiPosition.right(options.right);
+			this.right(options.right);
 		}
 
 		if (options.top !== undefined) {
-			this.uiPosition.top(options.top);
+			this.top(options.top);
 		}
 
 		if (options.middle !== undefined) {
-			this.uiPosition.middle(options.middle);
+			this.middle(options.middle);
 		}
 
 		if (options.bottom !== undefined) {
-			this.uiPosition.bottom(options.bottom);
+			this.bottom(options.bottom);
 		}
 
 		// Set autoSize flag
@@ -153,6 +153,8 @@ var IgeViewport = IgeEntity.extend({
 			this.geometry.y = ige._canvas.height;
 		}
 
-		this.uiPosition._updateTranslation();
+		this._updateTranslation();
 	}
 });
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeViewport; }
