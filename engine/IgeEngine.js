@@ -1,0 +1,407 @@
+var IgeEngine = IgeObject.extend({
+	classId: 'IgeEngine',
+
+	init: function () {
+		this._super();
+
+		// Determine the environment we are executing in
+		if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') {
+			this.isServer = true;
+		} else {
+			this.isServer = false;
+		}
+
+		// Assign ourselves to the global variable
+		ige = this;
+
+		// Output our header
+		console.log('------------------------------------------------------------------------------');
+		console.log('* Powered by the Isogenic Game Engine 1.1.0                                  *');
+		console.log('* (C)opyright 2012 Irrelon Software Limited                                  *');
+		console.log('* http://www.isogenicengine.com                                              *');
+		console.log('------------------------------------------------------------------------------');
+
+		// Call super-class method
+		this._super();
+
+		// Set the initial id as the current time in milliseconds. This ensures that under successive
+		// restarts of the engine, new ids will still always be created compared to earlier runs -
+		// which is important when storing persistent data with ids etc
+		this._idCounter = new Date().getTime();
+
+		// Set some defaults
+		this._state = 0; // Currently stopped
+		this._texturesLoading = 0; // Holds a count of currently loading textures
+		this._dependencyQueue = []; // Holds an array of functions that must all return true for the engine to start
+		this._drawCount = 0; // Holds the number of draws since the last frame (calls to drawImage)
+		this._drawsLastTick = 0; // Number of draws that occurred last tick
+		this._frames = 0; // Number of frames looped through since last second tick
+		this._fps = 0; // Number of frames per second
+		this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
+		this._frameAlternator = false; // Is set to the boolean not of itself each frame
+		this.dependencyTimeout(30000); // Wait 30 seconds to load all dependencies then timeout
+
+		// Add the textures loaded dependency
+		this._dependencyQueue.push(this.texturesLoaded);
+		this._dependencyQueue.push(this.canvasReady);
+
+		// Start a timer to record every second of execution
+		setInterval(this._secondTick, 1000);
+	},
+
+	/**
+	 * Checks if all engine start dependencies have been satisfied.
+	 * @return {Boolean}
+	 */
+	dependencyCheck: function () {
+		var arr = this._dependencyQueue,
+			arrCount = arr.length;
+
+		while (arrCount--) {
+			if (!this._dependencyQueue[arrCount]()) {
+				return false;
+			}
+		}
+
+		return true;
+	},
+
+	/**
+	 * Sets the number of milliseconds before the engine gives up waiting for dependencies
+	 * to be satisfied and cancels the startup procedure.
+	 * @param val
+	 */
+	dependencyTimeout: function (val) {
+		this._dependencyCheckTimeout = val;
+	},
+
+	/**
+	 * Adds one to the number of textures currently loading.
+	 */
+	textureLoadStart: function () {
+		this._texturesLoading++;
+	},
+
+	/**
+	 * Subtracts one from the number of textures currently loading and if no more need
+	 * to load, it will also call the _allTexturesLoaded() method.
+	 */
+	textureLoadEnd: function () {
+		this._texturesLoading--;
+
+		if (this._texturesLoading === 0) {
+			// All textures have finished loading
+			this._allTexturesLoaded();
+		}
+	},
+
+	/**
+	 * Checks if all textures have finished loading and returns true if so.
+	 * @return {Boolean}
+	 */
+	texturesLoaded: function () {
+		return ige._texturesLoading === 0;
+	},
+
+	/**
+	 * Emits the "texturesLoaded" event.
+	 * @private
+	 */
+	_allTexturesLoaded: function () {
+		this.log('All textures have loaded');
+
+		// Fire off an event about this
+		this.emit('texturesLoaded');
+	},
+
+	/**
+	 * Checks to ensure that a canvas has been assigned to the engine or that the
+	 * engine is in server mode.
+	 * @return {Boolean}
+	 */
+	canvasReady: function () {
+		return (ige._canvas !== undefined || ige.isServer);
+	},
+
+	/**
+	 * Generates a new unique ID
+	 * @return {String}
+	 */
+	newId: function () {
+		this._idCounter++;
+		return String(this._idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17)));
+	},
+
+	/**
+	 * Generates a new 16-character hexadecimal unique ID
+	 * @return {String}
+	 */
+	newIdHex: function () {
+		this._idCounter++;
+		return (this._idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
+	},
+
+	/**
+	 * Starts the engine.
+	 * @param callback
+	 */
+	start: function (callback) {
+		if (!ige._state) {
+			// Check if we are able to start based upon any registered dependencies
+			if (ige.dependencyCheck()) {
+				// Start the engine
+				ige.log('Starting engine...');
+				ige._state = 1;
+
+				requestAnimFrame(ige.tick);
+
+				ige.log('Engine started');
+
+				// Fire the callback method if there was one
+				if (typeof(callback) === 'function') {
+					callback(true);
+				}
+			} else {
+				// Get the current timestamp
+				var curTime = new Date().getTime();
+
+				// Record when we first started checking for dependencies
+				if (!ige._dependencyCheckStart) {
+					ige._dependencyCheckStart = curTime;
+				}
+
+				// Check if we have timed out
+				if (curTime - ige._dependencyCheckStart > this._dependencyCheckTimeout) {
+					this.log('Engine start failed because the dependency check timed out after ' + (this._dependencyCheckTimeout / 1000) + ' seconds', 'error');
+					if (typeof(callback) === 'function') {
+						callback(false);
+					}
+				} else {
+					// Start a timer to keep checking dependencies
+					setTimeout(function () { ige.start(callback); }, 200);
+				}
+			}
+		}
+	},
+
+	/**
+	 * Stops the engine.
+	 * @return {Boolean}
+	 */
+	stop: function () {
+		// If we are running, stop the engine
+		if (this._state) {
+			this.log('Stopping engine...');
+			this._state = 0;
+
+			return true;
+		} else {
+			return false;
+		}
+	},
+
+	/**
+	 * Gets / sets the _autoSize property. If set to true, the engine will listen
+	 * for any change in screen size and resize the front-buffer (canvas) element
+	 * to match the new screen size.
+	 * @param val
+	 * @return {Boolean}
+	 */
+	autoSize: function (val) {
+		if (typeof(val) !== 'undefined') {
+			this._autoSize = val;
+		}
+
+		return this._autoSize;
+	},
+
+	/**
+	 * Automatically creates a canvas element, appends it to the document.body
+	 * and sets it's 2d context as the current front-buffer for the engine.
+	 * @param autoSize
+	 */
+	createFrontBuffer: function (autoSize) {
+		if (!this.isServer) {
+			// Create a new canvas element to use as the
+			// rendering front-buffer
+			var tempCanvas = document.createElement('canvas');
+			document.body.appendChild(tempCanvas);
+			this.canvas(tempCanvas, autoSize);
+		}
+	},
+
+	/**
+	 * Sets the canvas element that will be used as the front-buffer.
+	 * @param elem
+	 * @param autoSize
+	 */
+	canvas: function (elem, autoSize) {
+		if (!this._canvas) {
+			// Setup front-buffer canvas element
+			this._canvas = elem;
+			if (autoSize) {
+				this._autoSize = autoSize;
+
+				// Add some event listeners
+				window.addEventListener('resize', this._resizeEvent);
+				this._canvas.addEventListener('mousemove', this._mouseMove);
+
+				// Fire the resize event
+				this._resizeEvent();
+			}
+
+			this._ctx = this._canvas.getContext('2d');
+		}
+	},
+
+	/**
+	 * Clears the entire canvas.
+	 */
+	clearCanvas: function () {
+		// Clear the whole canvas
+		this._ctx.clearRect(
+			0,
+			0,
+			this._canvas.width,
+			this._canvas.height
+		);
+	},
+
+	/**
+	 * Emits the "mouseDown" event.
+	 * @param event
+	 * @private
+	 */
+	_mouseDown: function (event) {
+		// Emit the event
+		this.emit('mouseDown', event);
+	},
+
+	/**
+	 * Emits the "mouseUp" event.
+	 * @param event
+	 * @private
+	 */
+	_mouseUp: function (event) {
+		// Emit the event
+		this.emit('mouseUp', event);
+	},
+
+	/**
+	 * Emits the "mouseMove" event.
+	 * @param event
+	 * @private
+	 */
+	_mouseMove: function (event) {
+		// Emit the event
+		ige._mousePos = ige._mousePos || {};
+		ige._mousePos.x = event.clientX;
+		ige._mousePos.y = event.clientY;
+		ige.emit('mouseMove', event);
+	},
+
+	/**
+	 * Emits the "mouseWheel" event.
+	 * @param event
+	 * @private
+	 */
+	_mouseWheel: function (event) {
+		// Emit the event
+		this.emit('mouseWheel', event);
+	},
+
+	/**
+	 * Handles the screen resize event.
+	 * @param event
+	 * @private
+	 */
+	_resizeEvent: function (event) {
+		if (ige._autoSize) {
+			ige._canvas.width = window.innerWidth;
+			ige._canvas.height = window.innerHeight;
+			ige._canvasWidth2 = (window.innerWidth / 2) | 0; // Bitwise floor
+			ige._canvasHeight2 = (window.innerHeight / 2) | 0; // Bitwise floor
+
+			// Loop any mounted children and check if
+			// they should also get resized
+			var arr = ige._children,
+				arrCount = arr.length;
+
+			while (arrCount--) {
+				arr[arrCount]._resizeEvent(event);
+			}
+		}
+	},
+
+	/**
+	 * Is called every second and does things like calculate the current FPS.
+	 * @private
+	 */
+	_secondTick: function () {
+		// Store frames per second
+		ige._fps = ige._frames;
+
+		// Store draws per second
+		ige._dps = ige._drawCount;
+
+		// Zero out counters
+		ige._frames = 0;
+		ige._drawCount = 0;
+	},
+
+	/**
+	 * Called each frame to traverse and render the scenegraph.
+	 */
+	tick: function () {
+		if (ige._state) {
+			// Schedule a new frame
+			requestAnimFrame(ige.tick);
+
+			// Alternate the boolean frame alternator flag
+			ige._frameAlternator = !ige._frameAlternator;
+
+			// Get the current time in milliseconds
+			ige.tickStart = new Date().getTime();
+
+			// Adjust the tickStart value by the difference between
+			// the server and the client clocks (this is only applied
+			// when running as the client - the server always has a
+			// clientNetDiff of zero)
+			ige.tickStart -= ige._clientNetDiff;
+
+			if (!ige.lastTick) {
+				// This is the first time we've run so set some
+				// default values and set the delta to zero
+				ige.lastTick = 0;
+				ige.tickDelta = 0;
+			} else {
+				// Calculate the frame delta
+				ige.tickDelta = ige.tickStart - ige.lastTick;
+			}
+
+			// Process any behaviours assigned to the engine
+			ige._processBehaviours();
+
+			// Process the current engine tick for all child objects
+			var arr,
+				arrCount;
+
+			// Loop our children and call their tick methods
+			arr = ige._children;
+			arrCount = arr.length;
+
+			while (arrCount--) {
+				ige._ctx.save();
+					arr[arrCount].tick();
+				ige._ctx.restore();
+			}
+
+			// Record the lastTick value so we can
+			// calculate delta on the next tick
+			ige.lastTick = ige.tickStart;
+			ige._frames++;
+		}
+	}
+});
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeEngine; }
