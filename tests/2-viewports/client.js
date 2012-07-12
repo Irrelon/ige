@@ -60,19 +60,26 @@ var Client = IgeClass.extend({
 						}
 					};
 
+					ige.viewportDepth(true);
+
+					// Create the main viewport
+					self.vp1 = new IgeViewport();
+					self.vp1.mount(ige);
+
 					self.scene1 = new IgeScene2d();
-					self.scene1.mount(ige);
-					self.scene1.viewportDepth(true);
+					self.vp1.scene(self.scene1);
+
 					var tt = 0;
 					for (var i = 0; i < 18; i++) {
 						vp[i] = new IgeViewport({center:-300, middle:0, width:150, height:75, autoSize:false, borderStyle: '#ffffff'});
 						vp[i].transform.originTo(0, 0, 0);
 						vp[i].camera.scaleTo(0.5, 0.5, 0.5);
 						vp[i].depth((18 - i));
+						vp[i].scene(self.scene1);
 
 						setTimeout(function () { var vr = vp[i]; return function () { vr.addBehavior('rotator', RotatorBehaviour); }}(), tt);
 						tt += 200;
-						self.scene1.addViewport(vp[i]);
+						vp[i].mount(ige);
 					}
 					tt = 0;
 					for (var i = 0; i < 18; i++) {
@@ -80,17 +87,19 @@ var Client = IgeClass.extend({
 						vp[i].transform.originTo(0, 0, 0);
 						vp[i].camera.scaleTo(0.5, 0.5, 0.5);
 						vp[i].depth((18 - i));
+						vp[i].scene(self.scene1);
 
 						setTimeout(function () { var vr = vp[i]; return function () { vr.addBehavior('rotator', RotatorBehaviour); }}(), tt);
 						tt += 200;
-						self.scene1.addViewport(vp[i]);
+						vp[i].mount(ige);
 					}
 
 					vp[0] = new IgeViewport({left:50, top:50, width:250, height:150, autoSize:false, borderStyle: '#ffffff'});
 					vp[0].transform.originTo(0, 0, 0);
 					vp[0].camera.scaleTo(2, 2, 2);
-					vp[0].depth(0);
-					self.scene1.addViewport(vp[0]);
+					vp[0].depth(1);
+					vp[0].scene(self.scene1);
+					vp[0].mount(ige);
 
 					self.obj[0] = tempObj = new IgeEntity();
 					tempObj.addBehavior('rotator', RotatorBehaviour);

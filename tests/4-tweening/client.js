@@ -20,8 +20,13 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
+					// Create the main viewport
+					self.vp1 = new IgeViewport();
+					self.vp1.mount(ige);
+
+					// Create the scene
 					self.scene1 = new IgeScene2d();
-					self.scene1.mount(ige);
+					self.vp1.scene(self.scene1);
 
 					self.obj[0] = tempObj = new IgeEntity();
 					tempObj.depth(1);
