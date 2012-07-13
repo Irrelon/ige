@@ -18,8 +18,8 @@ IgeVelocityComponent = IgeClass.extend({
 	 * @param entity
 	 * @private
 	 */
-	_behaviour: function (entity) {
-		entity.velocity.tick();
+	_behaviour: function (ctx, entity) {
+		entity.velocity.tick(ctx);
 	},
 
 	byAngleAndPower: function (radians, power, relative) {
@@ -163,7 +163,7 @@ IgeVelocityComponent = IgeClass.extend({
 		vel.z *= fric.z;
 	},
 
-	tick: function () {
+	tick: function (ctx) {
 		var delta = ige.tickDelta,
 			vel = this._velocity;
 

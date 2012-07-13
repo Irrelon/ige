@@ -100,7 +100,7 @@ var IgeViewport = IgeEntity.extend({
 	/**
 	 * Processes the actions required each render frame.
 	 */
-	tick: function () {
+	tick: function (ctx, scene) {
 		if (this._scene) {
 			var thisTransform = this.transform,
 				thisTranslate = thisTransform._translate,
@@ -110,8 +110,7 @@ var IgeViewport = IgeEntity.extend({
 				thisGeometry = this.geometry,
 				camTransform = this.camera,
 				camX = camTransform._translate.x,
-				camY = camTransform._translate.y,
-				ctx = ige._ctx;
+				camY = camTransform._translate.y;
 
 			// Transform the context to the center of the viewport
 			ctx.translate(
@@ -160,10 +159,10 @@ var IgeViewport = IgeEntity.extend({
 			ctx.scale(camTransform._scale.x, camTransform._scale.y);
 
 			// Render our scene data
-			this._scene.tick();
+			this._scene.tick(ctx, scene);
 
 			// Process the tick method up the class chain
-			this._super(true);
+			this._super(ctx, true);
 		}
 	},
 

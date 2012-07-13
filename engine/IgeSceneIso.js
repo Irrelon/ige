@@ -1,8 +1,8 @@
 var IgeSceneIso = IgeScene2d.extend({
 	classId: 'IgeSceneIso',
 
-	tick: function () {
-		this._super();
+	tick: function (ctx) {
+		this._super(ctx);
 	}
 });
 

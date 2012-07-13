@@ -371,8 +371,13 @@ var IgeEngine = IgeObject.extend({
 	/**
 	 * Called each frame to traverse and render the scenegraph.
 	 */
-	tick: function () {
+	tick: function (timeStamp, ctx) {
 		if (ige._state) {
+			// Check if we were passed a context to work with
+			if (ctx === undefined) {
+				ctx = ige._ctx;
+			}
+
 			// Schedule a new frame
 			requestAnimFrame(ige.tick);
 
@@ -380,7 +385,7 @@ var IgeEngine = IgeObject.extend({
 			ige._frameAlternator = !ige._frameAlternator;
 
 			// Get the current time in milliseconds
-			ige.tickStart = new Date().getTime();
+			ige.tickStart = timeStamp;
 
 			// Adjust the tickStart value by the difference between
 			// the server and the client clocks (this is only applied
@@ -399,31 +404,33 @@ var IgeEngine = IgeObject.extend({
 			}
 
 			// Process any behaviours assigned to the engine
-			ige._processBehaviours();
+			ige._processBehaviours(ctx);
 
-			// Depth-sort the viewports
-			if (ige._viewportDepth) {
-				ige.depthSortChildren();
-			}
-
-			// Process the current engine tick for all child objects
-			var arr,
-				arrCount;
-
-			// Loop our viewports and call their tick methods
-			arr = ige._children;
-			arrCount = arr.length;
-
-			while (arrCount--) {
-				ige._ctx.save();
-					arr[arrCount].tick();
-				ige._ctx.restore();
-			}
+			// Render the scenegraph
+			ige.render(ctx);
 
 			// Record the lastTick value so we can
 			// calculate delta on the next tick
 			ige.lastTick = ige.tickStart;
 			ige._frames++;
+		}
+	},
+
+	render: function (ctx, scene) {
+		// Depth-sort the viewports
+		if (this._viewportDepth) {
+			this.depthSortChildren();
+		}
+
+		// Process the current engine tick for all child objects
+		var arr = this._children,
+			arrCount = arr.length;
+
+		// Loop our viewports and call their tick methods
+		while (arrCount--) {
+			ctx.save();
+				arr[arrCount].tick(ctx, scene);
+			ctx.restore();
 		}
 	}
 });

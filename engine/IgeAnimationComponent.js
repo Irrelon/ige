@@ -49,7 +49,7 @@ var IgeAnimationComponent = IgeClass.extend({
 		delete this._animId;
 	},
 
-	tick: function () {
+	tick: function (ctx) {
 		var tickDelta = ige.tickDelta,
 			anim = this._anim,
 			multiple,

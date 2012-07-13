@@ -171,9 +171,8 @@ var IgeEntity = IgeObject.extend({
 	/**
 	 * Processes the actions required each render frame.
 	 */
-	tick: function (dontTransform) {
-		var ctx = ige._ctx,
-			texture = this._texture;
+	tick: function (ctx, dontTransform) {
+		var texture = this._texture;
 
 		// Transform the context by the current transform settings
 		if (!dontTransform) {
@@ -181,7 +180,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		// Process any behaviours assigned to the entity
-		this._processBehaviours();
+		this._processBehaviours(ctx);
 
 		// Check if the entity is visible based upon its opacity
 		if (this._opacity > 0 && texture) {
@@ -194,7 +193,7 @@ var IgeEntity = IgeObject.extend({
 			}
 		}
 
-		this._super();
+		this._super(ctx);
 	}
 });
 

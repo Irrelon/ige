@@ -6,6 +6,7 @@ var IgeObject = IgeEventingClass.extend({
 		this._children = [];
 		this._behaviours = [];
 		this._depth = 0;
+		this._dirty = true;
 		this.data = {};
 	},
 
@@ -27,13 +28,13 @@ var IgeObject = IgeEventingClass.extend({
 	 * Calls each behaviour method for the object.
 	 * @private
 	 */
-	_processBehaviours: function () {
+	_processBehaviours: function (ctx) {
 		if (ige._frameAlternator !== this._behaviourFA) {
 			var arr = this._behaviours,
 				arrCount = arr.length;
 
 			while (arrCount--) {
-				arr[arrCount].method(this);
+				arr[arrCount].method(ctx, this);
 			}
 
 			this._behaviourFA = ige._frameAlternator;
@@ -170,6 +171,15 @@ var IgeObject = IgeEventingClass.extend({
 		return this._depth;
 	},
 
+	dirty: function (val) {
+		this._dirty = val;
+
+		// Bubble the dirty up the parent chain
+		if (this._parent) {
+			this._parent.dirty(val);
+		}
+	},
+
 	/**
 	 * Sorts the _children array by the layer and then depth of each object.
 	 */
@@ -194,20 +204,27 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Processes the actions required each render frame.
 	 */
-	tick: function () {
+	tick: function (ctx, scene) {
 		// Depth sort all child objects
 		this.depthSortChildren();
 
-		// Process the current engine tick for all child objects
-		var arr = this._children,
-			arrCount = arr.length,
-			ctx = ige._ctx;
+		if (!scene) {
+			// Process the current engine tick for all child objects
+			var arr = this._children,
+				arrCount = arr.length;
 
-		// Loop our children and call their tick methods
-		while (arrCount--) {
-			ctx.save();
-				arr[arrCount].tick();
-			ctx.restore();
+			// Loop our children and call their tick methods
+			while (arrCount--) {
+				ctx.save();
+					arr[arrCount].tick(ctx);
+				ctx.restore();
+			}
+		} else {
+			// Get the index of the object to tick
+			var arrIndex = this._children.indexOf(scene);
+			if (arrIndex > -1) {
+				this._children[arrIndex].tick(ctx);
+			}
 		}
 	},
 
