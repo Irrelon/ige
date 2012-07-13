@@ -40,7 +40,6 @@ var IgeEngine = IgeEntity.extend({
 		this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
 		this._frameAlternator = false; // Is set to the boolean not of itself each frame
 		this._viewportDepth = false;
-		this.geometry = {x: 0, y: 0, x2: 0, y2: 0};
 
 		this.dependencyTimeout(30000); // Wait 30 seconds to load all dependencies then timeout
 
