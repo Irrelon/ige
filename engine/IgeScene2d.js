@@ -8,7 +8,7 @@ var IgeScene2d = IgeObject.extend({
 
 		// Set the geometry of the scene to the main canvas
 		// width / height - used when positioning UI elements
-		this.geometry = {x: ige._canvas.width, y: ige._canvas.height};
+		this.geometry = {x: ige.geometry.x, y: ige.geometry.y};
 	},
 
 	/**
@@ -42,8 +42,8 @@ var IgeScene2d = IgeObject.extend({
 	 */
 	_resizeEvent: function (event) {
 		// Set width / height of scene to match main canvas
-		this.geometry.x = ige._canvas.width;
-		this.geometry.y = ige._canvas.height;
+		this.geometry.x = ige.geometry.x;
+		this.geometry.y = ige.geometry.y;
 
 		// Resize any children
 		var arr = this._children,
