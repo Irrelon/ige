@@ -220,7 +220,7 @@ var IgeUiEntity = IgeEntity.extend([
 				}
 			}
 
-			if (this._borderBottomWidth) {
+			if (this._borderLeftWidth) {
 				// Bottom-left corner top-half
 				ctx.strokeStyle = this._borderLeftColor;
 				ctx.lineWidth = this._borderLeftWidth;
@@ -247,7 +247,17 @@ var IgeUiEntity = IgeEntity.extend([
 		}
 	},
 
-	tick: function (ctx) {
+	mount: function (obj) {
+		var ret = this._super(obj);
+
+		if (this._parent) {
+			this._updateUiPosition();
+		}
+
+		return ret;
+	},
+
+	tick: function (ctx, dontTransform) {
 		var thisTransform = this.transform,
 			thisTranslate = thisTransform._translate,
 			thisRotate = thisTransform._rotate,
@@ -255,23 +265,24 @@ var IgeUiEntity = IgeEntity.extend([
 			thisOrigin = thisTransform._origin,
 			thisGeometry = this.geometry;
 
-		// Translate the whole context back to the top-left of the viewport
-		ctx.translate(-(ige._canvasWidth2), -(ige._canvasHeight2));
-
 		// Transform the context by the current transform settings
-		ctx.translate(
-			thisTranslate.x + (
-				thisGeometry.x * thisOrigin.x
-			),
-			thisTranslate.y + (
-				thisGeometry.y * thisOrigin.y
-			)
-		);
-		ctx.rotate(thisRotate.z);
-		ctx.scale(thisScale.x, thisScale.y);
+		if (!dontTransform) {
+			ctx.translate(
+				thisTranslate.x + (
+					thisGeometry.x * thisOrigin.x
+				),
+				thisTranslate.y + (
+					thisGeometry.y * thisOrigin.y
+				)
+			);
+			ctx.rotate(thisRotate.z);
+			ctx.scale(thisScale.x, thisScale.y);
+		}
 
 		this._renderBackground(ctx);
 		this._renderBorder(ctx);
+
+		this._super(ctx, true);
 	},
 
 	/**
@@ -280,7 +291,8 @@ var IgeUiEntity = IgeEntity.extend([
 	 * @private
 	 */
 	_resizeEvent: function (event) {
-		this._updateTranslation();
+		this._updateUiPosition();
+		this._super(event);
 	}
 });
 
