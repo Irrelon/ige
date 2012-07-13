@@ -8,7 +8,7 @@ var IgeEntity = IgeObject.extend({
 		this._opacity = 1;
 		this._cell = 1;
 
-		this.transform = new IgeTransform();
+		this.transform = new IgeTransform(this);
 		this.geometry = new IgePoint(20, 20, 20);
 	},
 
@@ -31,6 +31,36 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._id;
+	},
+
+	/**
+	 * Gets / sets the geometry.x in pixels.
+	 * @param {Number=} px
+	 * @return {*}
+	 */
+	width: function (px) {
+		if (px !== undefined) {
+			this._width = px;
+			this.geometry.x = px;
+			return this;
+		}
+
+		return this._width;
+	},
+
+	/**
+	 * Gets / sets the geometry.y in pixels.
+	 * @param {Number=} px
+	 * @return {*}
+	 */
+	height: function (px) {
+		if (px !== undefined) {
+			this._height = px;
+			this.geometry.y = px;
+			return this;
+		}
+
+		return this._height;
 	},
 
 	/**
