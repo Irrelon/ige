@@ -29,8 +29,34 @@ var IgeUiStyleExtension = {
 				this._patternHeight = texture.image.height;
 			}
 
-			// Create the pattern from the texture
-			this._patternFill = ige._ctx.createPattern(texture.image, repeatType);
+			if (this._cell > 1) {
+				// We are using a cell sheet, render the cell to a
+				// temporary canvas and set that as the pattern image
+				var canvas = document.createElement('canvas'),
+					ctx = canvas.getContext('2d'),
+					cellData = texture._cells[this._cell];
+
+				canvas.width = cellData[2];
+				canvas.height = cellData[3];
+
+				ctx.drawImage(
+					texture.image,
+					cellData[0],
+					cellData[1],
+					cellData[2],
+					cellData[3],
+					0,
+					0,
+					cellData[2],
+					cellData[3]
+				);
+
+				// Create the pattern from the texture cell
+				this._patternFill = ige._ctx.createPattern(canvas, repeatType);
+			} else {
+				// Create the pattern from the texture
+				this._patternFill = ige._ctx.createPattern(texture.image, repeatType);
+			}
 
 			texture.restoreOriginal();
 			this.dirty(true);
@@ -112,6 +138,46 @@ var IgeUiStyleExtension = {
 		return this._borderColor;
 	},
 
+	borderLeftColor: function (color) {
+		if (color !== undefined) {
+			this._borderLeftColor = color;
+			this.dirty(true);
+			return this;
+		}
+
+		return this._borderLeftColor;
+	},
+
+	borderTopColor: function (color) {
+		if (color !== undefined) {
+			this._borderTopColor = color;
+			this.dirty(true);
+			return this;
+		}
+
+		return this._borderTopColor;
+	},
+
+	borderRightColor: function (color) {
+		if (color !== undefined) {
+			this._borderRightColor = color;
+			this.dirty(true);
+			return this;
+		}
+
+		return this._borderRightColor;
+	},
+
+	borderBottomColor: function (color) {
+		if (color !== undefined) {
+			this._borderBottomColor = color;
+			this.dirty(true);
+			return this;
+		}
+
+		return this._borderBottomColor;
+	},
+
 	borderWidth: function (px) {
 		if (px !== undefined) {
 			this._borderWidth = px;
@@ -124,6 +190,46 @@ var IgeUiStyleExtension = {
 		}
 
 		return this._borderWidth;
+	},
+
+	borderLeftWidth: function (px) {
+		if (px !== undefined) {
+			this._borderLeftWidth = px;
+			this.dirty(true);
+			return this;
+		}
+
+		return this._borderLeftWidth;
+	},
+
+	borderTopWidth: function (px) {
+		if (px !== undefined) {
+			this._borderTopWidth = px;
+			this.dirty(true);
+			return this;
+		}
+
+		return this._borderTopWidth;
+	},
+
+	borderRightWidth: function (px) {
+		if (px !== undefined) {
+			this._borderRightWidth = px;
+			this.dirty(true);
+			return this;
+		}
+
+		return this._borderRightWidth;
+	},
+
+	borderBottomWidth: function (px) {
+		if (px !== undefined) {
+			this._borderBottomWidth = px;
+			this.dirty(true);
+			return this;
+		}
+
+		return this._borderBottomWidth;
 	},
 
 	borderRadius: function (px) {
