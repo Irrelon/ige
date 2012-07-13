@@ -19,7 +19,7 @@ var IgeViewport = IgeUiEntity.extend([
 
 		// Setup default objects
 		this.geometry = new IgePoint(options.width || 250, options.height || 150, 0);
-		this.camera = new IgeTransform(this);
+		this.camera = new IgeCamera(this);
 
 		// Move the viewport into position
 		if (options.left !== undefined) {
@@ -102,11 +102,15 @@ var IgeViewport = IgeUiEntity.extend([
 	 */
 	tick: function (ctx, scene) {
 		if (this._scene) {
-			var thisTransform = this.transform,
-				thisTranslate = thisTransform._translate,
-				thisRotate = thisTransform._rotate,
-				thisScale = thisTransform._scale,
-				thisOrigin = thisTransform._origin,
+			// Store the viewport camera in the main ige so that
+			// down the scenegraph we can choose to negate the camera
+			// transform effects
+			ige._currentCamera = this.camera;
+
+			var thisTranslate = this._translate,
+				thisRotate = this._rotate,
+				thisScale = this._scale,
+				thisOrigin = this._origin,
 				thisGeometry = this.geometry,
 				camTransform = this.camera,
 				camX = camTransform._translate.x,
@@ -114,18 +118,14 @@ var IgeViewport = IgeUiEntity.extend([
 
 			// Transform the context to the center of the viewport
 			ctx.translate(
-				thisTranslate.x + (
-					thisGeometry.x * thisOrigin.x
-				),
-				thisTranslate.y + (
-					thisGeometry.y * thisOrigin.y
-				)
+				thisTranslate.x + ((thisGeometry.x * thisOrigin.x) | 0),
+				thisTranslate.y + ((thisGeometry.y * thisOrigin.y) | 0)
 			);
 			ctx.rotate(thisRotate.z);
 			ctx.scale(thisScale.x, thisScale.y);
 
 			// Translate back to the top-left of the viewport
-			//ctx.translate(-(thisGeometry.x * thisOrigin.x), -(thisGeometry.y * thisOrigin.y));
+			ctx.translate(-(thisGeometry.x * thisOrigin.x) | 0, -(thisGeometry.y * thisOrigin.y) | 0);
 
 			ctx.clearRect(
 				0,
@@ -152,17 +152,50 @@ var IgeViewport = IgeUiEntity.extend([
 
 			// Transform the context to the center of the viewport
 			ctx.translate(
-				((thisGeometry.x * camTransform._origin.x) - camX | 0),
-				((thisGeometry.y * camTransform._origin.y) - camY | 0)
+				(((thisGeometry.x * camTransform._origin.x) | 0) - camX | 0),
+				(((thisGeometry.y * camTransform._origin.y) | 0) - camY | 0)
 			); // Bitwise floor
 			ctx.rotate(camTransform._rotate.z);
-			ctx.scale(camTransform._scale.x, camTransform._scale.y);/**/
+			ctx.scale(camTransform._scale.x, camTransform._scale.y);
 
 			// Render our scene data
 			this._scene.tick(ctx, scene);
 
+			if (1 || this._drawAllBounds) {
+				// Traverse the scenegraph and draw axis-aligned
+				// bounding boxes for every object
+				this.drawAABBs(ctx, this._scene);
+			}
+
 			// Process the tick method up the class chain
-			this._super(ctx, true);
+			this._super(ctx);
+		}
+	},
+
+	drawAABBs: function (ctx, rootObject) {
+		var arr = rootObject._children,
+			arrCount,
+			obj,
+			aabb;
+
+		if (arr) {
+			arrCount = arr.length;
+
+			while (arrCount--) {
+				obj = arr[arrCount];
+
+				if (typeof(obj.aabb) === 'function') {
+					// Grab the AABB and then draw it
+					aabb = obj.aabb();
+
+					if (aabb) {
+						ctx.strokeStyle = '#ffffff';
+						ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
+
+						this.drawAABBs(ctx, obj);
+					}
+				}
+			}
 		}
 	},
 
@@ -174,7 +207,9 @@ var IgeViewport = IgeUiEntity.extend([
 	_resizeEvent: function (event) {
 		if (this._autoSize) {
 			this.geometry.x = ige.geometry.x;
+			this.geometry.x2 = (this.geometry.x / 2);
 			this.geometry.y = ige.geometry.y;
+			this.geometry.y2 = (this.geometry.y / 2);
 		}
 
 		this._updateUiPosition();
