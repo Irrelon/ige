@@ -1,0 +1,22 @@
+var IgeCamera = IgeClass.extend([
+	{extension: IgeTransformExtension, overwrite: false}
+], {
+	init: function (entity) {
+		this._entity = entity;
+
+		this._translate = new IgePoint(0, 0, 0);
+		this._rotate = new IgePoint(0, 0, 0);
+		this._scale = new IgePoint(1, 1, 1);
+		this._origin = new IgePoint(0.5, 0.5, 0.5);
+	},
+
+	panTo: function (point) {
+
+	},
+
+	panBy: function (point) {
+
+	}
+});
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeCamera; }
