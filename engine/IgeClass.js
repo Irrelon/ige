@@ -62,13 +62,13 @@ var IgeClass = (function () {
 			this[newComponent.componentId] = newComponent;
 		},
 
-		implement = function (classObj) {
+		implement = function (classObj, overwrite) {
 			var i, obj = classObj.prototype || classObj;
 
 			// Copy the class object's properties to (this)
 			for (i in obj) {
 				// Only copy the property if this doesn't already have it
-				if (obj.hasOwnProperty(i) && this[i] === undefined) {
+				if (obj.hasOwnProperty(i) && (overwrite || this[i] === undefined)) {
 					this[i] = obj[i];
 				}
 			}
