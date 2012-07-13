@@ -58,24 +58,6 @@ var IgeUiStyleExtension = {
 		return this._backgroundPosition;
 	},
 
-	width: function (px) {
-		if (px !== undefined) {
-			this._width = px;
-			return this;
-		}
-
-		return this._width;
-	},
-
-	height: function (px) {
-		if (px !== undefined) {
-			this._height = px;
-			return this;
-		}
-
-		return this._height;
-	},
-
 	borderColor: function (color) {
 		if (color !== undefined) {
 			this._borderColor = color;
@@ -88,6 +70,10 @@ var IgeUiStyleExtension = {
 	borderWidth: function (px) {
 		if (px !== undefined) {
 			this._borderWidth = px;
+			this._borderLeftWidth = px;
+			this._borderTopWidth = px;
+			this._borderRightWidth = px;
+			this._borderBottomWidth = px;
 			return this;
 		}
 
@@ -97,6 +83,10 @@ var IgeUiStyleExtension = {
 	borderRadius: function (px) {
 		if (px !== undefined) {
 			this._borderRadius = px;
+			this._borderTopLeftRadius = px;
+			this._borderTopRightRadius = px;
+			this._borderBottomRightRadius = px;
+			this._borderBottomLeftRadius = px;
 			return this;
 		}
 
