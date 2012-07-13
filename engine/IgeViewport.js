@@ -1,4 +1,4 @@
-var IgeViewport = IgeUiEntity.extend({
+var IgeViewport = IgeEntity.extend({
 	classId: 'IgeViewport',
 
 	init: function (options) {
@@ -16,9 +16,10 @@ var IgeViewport = IgeUiEntity.extend({
 		}
 
 		// Setup default objects
-		//this.transform = new IgeTransform();
 		this.geometry = new IgePoint(options.width || 250, options.height || 150, 0);
-		this.camera = new IgeTransform();
+		this.camera = new IgeTransform(this);
+
+		this.implement(IgeUiPositionExtension);
 
 		// Move the viewport into position
 		if (options.left !== undefined) {
@@ -123,6 +124,8 @@ var IgeViewport = IgeUiEntity.extend({
 			);
 			ctx.rotate(thisRotate.z);
 			ctx.scale(thisScale.x, thisScale.y);
+
+			// Translate back to the top-left of the viewport
 			ctx.translate(-(thisGeometry.x * thisOrigin.x), -(thisGeometry.y * thisOrigin.y));
 
 			ctx.clearRect(
@@ -176,6 +179,11 @@ var IgeViewport = IgeUiEntity.extend({
 		}
 
 		this._updateTranslation();
+
+		// Resize the scene
+		if (this._scene) {
+			this._scene._resizeEvent(event);
+		}
 	}
 });
 
