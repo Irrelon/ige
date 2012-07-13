@@ -31,6 +31,8 @@ var IgeTexture = IgeEventingClass.extend({
 		}],
 	} **/
 	url: function (url) {
+		this._url = url;
+
 		if (url.substr(url.length - 2, 2) === 'js') {
 			// This is a script-based texture, load the script
 			this._loadScript(url);
@@ -56,7 +58,7 @@ var IgeTexture = IgeEventingClass.extend({
 		ige.textureLoadStart();
 
 		if (!ige.isServer) {
-			image = this.image = new Image();
+			image = this.image = this._originalImage = new Image();
 			image._igeTexture = this;
 			image.onload = function () {
 				self.log('Texture image "' + imageUrl + '" loaded successfully');
@@ -190,6 +192,39 @@ var IgeTexture = IgeEventingClass.extend({
 
 	sizeY: function (val) {
 		this._sizeY = val;
+	},
+
+	resize: function (x, y) {
+		if (this._originalImage) {
+			// Create a new canvas
+			var newCanvas = document.createElement('canvas'),
+				ctx;
+
+			newCanvas.width = x;
+			newCanvas.height = y;
+			ctx = newCanvas.getContext('2d');
+
+			// Draw the original image to the new canvas
+			// scaled as required
+			ctx.drawImage(
+				this._originalImage,
+				0,
+				0,
+				this._originalImage.width,
+				this._originalImage.height,
+				0,
+				0,
+				x,
+				y
+			);
+
+			// Swap the current image for this new canvas
+			this.image = newCanvas;
+		}
+	},
+
+	restoreOriginal: function () {
+		this.image = this._originalImage;
 	},
 
 	render: function (ctx, entity, tickDelta) {
