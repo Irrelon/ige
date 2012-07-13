@@ -1,4 +1,4 @@
-var IgeViewport = IgeEntity.extend([
+var IgeViewport = IgeUiEntity.extend([
 	{extension: IgeUiPositionExtension}
 ], {
 	classId: 'IgeViewport',
@@ -11,8 +11,8 @@ var IgeViewport = IgeEntity.extend([
 			options = {
 				left: 0,
 				top: 0,
-				width: ige._canvas.width,
-				height: ige._canvas.height,
+				width: ige.geometry.x,
+				height: ige.geometry.y,
 				autoSize: true
 			};
 		}
@@ -125,7 +125,7 @@ var IgeViewport = IgeEntity.extend([
 			ctx.scale(thisScale.x, thisScale.y);
 
 			// Translate back to the top-left of the viewport
-			ctx.translate(-(thisGeometry.x * thisOrigin.x), -(thisGeometry.y * thisOrigin.y));
+			//ctx.translate(-(thisGeometry.x * thisOrigin.x), -(thisGeometry.y * thisOrigin.y));
 
 			ctx.clearRect(
 				0,
@@ -156,7 +156,7 @@ var IgeViewport = IgeEntity.extend([
 				((thisGeometry.y * camTransform._origin.y) - camY | 0)
 			); // Bitwise floor
 			ctx.rotate(camTransform._rotate.z);
-			ctx.scale(camTransform._scale.x, camTransform._scale.y);
+			ctx.scale(camTransform._scale.x, camTransform._scale.y);/**/
 
 			// Render our scene data
 			this._scene.tick(ctx, scene);
@@ -173,11 +173,11 @@ var IgeViewport = IgeEntity.extend([
 	 */
 	_resizeEvent: function (event) {
 		if (this._autoSize) {
-			this.geometry.x = ige._canvas.width;
-			this.geometry.y = ige._canvas.height;
+			this.geometry.x = ige.geometry.x;
+			this.geometry.y = ige.geometry.y;
 		}
 
-		this._updateTranslation();
+		this._updateUiPosition();
 
 		// Resize the scene
 		if (this._scene) {
