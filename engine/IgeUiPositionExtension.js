@@ -10,7 +10,7 @@ var IgeUiPositionExtension = {
 			this._uiX = val;
 			this._uiXAlign = 'left';
 
-			this._updateTranslation();
+			this._updateUiPosition();
 			return this;
 		}
 
@@ -28,7 +28,7 @@ var IgeUiPositionExtension = {
 			this._uiX = val;
 			this._uiXAlign = 'center';
 
-			this._updateTranslation();
+			this._updateUiPosition();
 			return this;
 		}
 
@@ -46,7 +46,7 @@ var IgeUiPositionExtension = {
 			this._uiX = val;
 			this._uiXAlign = 'right';
 
-			this._updateTranslation();
+			this._updateUiPosition();
 			return this;
 		}
 
@@ -64,7 +64,7 @@ var IgeUiPositionExtension = {
 			this._uiY = val;
 			this._uiYAlign = 'top';
 
-			this._updateTranslation();
+			this._updateUiPosition();
 			return this;
 		}
 
@@ -82,7 +82,7 @@ var IgeUiPositionExtension = {
 			this._uiY = val;
 			this._uiYAlign = 'middle';
 
-			this._updateTranslation();
+			this._updateUiPosition();
 			return this;
 		}
 
@@ -100,7 +100,7 @@ var IgeUiPositionExtension = {
 			this._uiY = val;
 			this._uiYAlign = 'bottom';
 
-			this._updateTranslation();
+			this._updateUiPosition();
 			return this;
 		}
 
@@ -110,11 +110,15 @@ var IgeUiPositionExtension = {
 	/**
 	 * Gets / sets the geometry.x in pixels.
 	 * @param {Number, String=} px Either the width in pixels or a percentage
+	 * @param {Number=} modifier A value to add to the final width. Useful when
+	 * you want to alter a percentage value by a certain number of pixels after
+	 * it has been calculated.
 	 * @return {*}
 	 */
-	width: function (px) {
+	width: function (px, modifier, noUpdate) {
 		if (px !== undefined) {
 			this._width = px;
+			this._widthModifier = modifier !== undefined ? modifier : 0;
 
 			if (typeof(px) === 'string') {
 				if (this._parent) {
@@ -123,21 +127,23 @@ var IgeUiPositionExtension = {
 						val = parseInt(px, 10);
 
 					// Calculate real width from percentage
-					this.geometry.x = (parentWidth / 100 * val) | 0;
+					this.geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
 				} else {
 					// We don't have a parent so use the main canvas
 					// as a reference
-					var parentWidth = ige._canvas.width,
+					var parentWidth = ige.geometry.x,
 						val = parseInt(px, 10);
 
 					// Calculate real height from percentage
-					this.geometry.x = (parentWidth / 100 * val) | 0;
+					this.geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
 				}
 			} else {
 				this.geometry.x = px;
 			}
 
-			this._updateTranslation();
+			if (!noUpdate) {
+				this._updateUiPosition();
+			}
 			return this;
 		}
 
@@ -147,11 +153,15 @@ var IgeUiPositionExtension = {
 	/**
 	 * Gets / sets the geometry.y in pixels.
 	 * @param {Number=} px
+	 * @param {Number=} modifier A value to add to the final height. Useful when
+	 * you want to alter a percentage value by a certain number of pixels after
+	 * it has been calculated.
 	 * @return {*}
 	 */
-	height: function (px) {
+	height: function (px, modifier, noUpdate) {
 		if (px !== undefined) {
 			this._height = px;
+			this._heightModifier = modifier !== undefined ? modifier : 0;
 
 			if (typeof(px) === 'string') {
 				if (this._parent) {
@@ -160,21 +170,23 @@ var IgeUiPositionExtension = {
 						val = parseInt(px, 10);
 
 					// Calculate real height from percentage
-					this.geometry.y = (parentHeight / 100 * val) | 0;
+					this.geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
 				} else {
 					// We don't have a parent so use the main canvas
 					// as a reference
-					var parentHeight = ige._canvas.height,
+					var parentHeight = ige.geometry.y,
 						val = parseInt(px, 10);
 
 					// Calculate real height from percentage
-					this.geometry.y = (parentHeight / 100 * val) | 0;
+					this.geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
 				}
 			} else {
 				this.geometry.y = px;
 			}
 
-			this._updateTranslation();
+			if (!noUpdate) {
+				this._updateUiPosition();
+			}
 			return this;
 		}
 
@@ -187,24 +199,29 @@ var IgeUiPositionExtension = {
 	 * @private
 	 */
 		// TODO: Update so that it takes into account the parent element's position etc
-	_updateTranslation: function () {
-		if (this._uiXAlign === 'right') {
-			this.transform._translate.x = ige._canvas.width - this._uiX - this.geometry.x;
-		} else if (this._uiXAlign === 'center') {
-			this.transform._translate.x = ige._canvasWidth2 + this._uiX - (this.geometry.x / 2);
-		} else {
-			this.transform._translate.x = this._uiX;
-		}
+	_updateUiPosition: function () {
+		if (this._parent) {
+			if (this._uiXAlign === 'right') {
+				this.transform._translate.x = ((this._parent.geometry.x / 2) - this._uiX - this.geometry.x) | 0;
+			} else if (this._uiXAlign === 'center') {
+				this.transform._translate.x = (this._uiX - (this.geometry.x / 2)) | 0;
+			} else {
+				this.transform._translate.x = (-(this._parent.geometry.x / 2) + this._uiX) | 0;
+			}
 
-		if (this._uiYAlign === 'bottom') {
-			this.transform._translate.y = ige._canvas.height - this._uiY - this.geometry.y;
-		} else if (this._uiYAlign === 'middle') {
-			this.transform._translate.y = ige._canvasHeight2 + this._uiY - (this.geometry.y / 2);
-		} else {
-			this.transform._translate.y = this._uiY;
-		}
+			if (this._uiYAlign === 'bottom') {
+				this.transform._translate.y = ((this._parent.geometry.y / 2) - this._uiY - this.geometry.y) | 0;
+			} else if (this._uiYAlign === 'middle') {
+				this.transform._translate.y = (this._uiY - (this.geometry.y / 2)) | 0;
+			} else {
+				this.transform._translate.y = (-(this._parent.geometry.y / 2) + this._uiY) | 0;
+			}
 
-		this.dirty(true);
+			if (this._width) { this.width(this._width, this._widthModifier, true); }
+			if (this._height) { this.height(this._height, this._heightModifier, true); }
+
+			this.dirty(true);
+		}
 	}
 };
 
