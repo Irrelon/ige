@@ -26,8 +26,8 @@ var IgeUiEntity = IgeEntity.extend([
 			left, top, width, height;
 
 		if (this._backgroundColor || this._patternFill) {
-			left = -(geom.x / 2);
-			top = -(geom.y / 2);
+			left = -(geom.x / 2) | 0;
+			top = -(geom.y / 2) | 0;
 			width = geom.x;
 			height = geom.y;
 
@@ -114,8 +114,8 @@ var IgeUiEntity = IgeEntity.extend([
 				// If there is a background image, paint it here
 				if (this._patternFill) {
 					ctx.translate(
-						-(width / 2) + this._backgroundPosition.x | 0,
-						-(height / 2) + this._backgroundPosition.y | 0
+						-(width / 2 | 0) + this._backgroundPosition.x,
+						-(height / 2 | 0) + this._backgroundPosition.y
 					);
 
 					ctx.fillStyle = this._patternFill;
@@ -128,8 +128,8 @@ var IgeUiEntity = IgeEntity.extend([
 	_renderBorder: function (ctx) {
 		var rad,
 			geom = this.geometry,
-			left = -(geom.x / 2),
-			top = -(geom.y / 2),
+			left = -(geom.x / 2) | 0,
+			top = -(geom.y / 2) | 0,
 			width = geom.x,
 			height = geom.y;
 
@@ -258,11 +258,10 @@ var IgeUiEntity = IgeEntity.extend([
 	},
 
 	tick: function (ctx, dontTransform) {
-		var thisTransform = this.transform,
-			thisTranslate = thisTransform._translate,
-			thisRotate = thisTransform._rotate,
-			thisScale = thisTransform._scale,
-			thisOrigin = thisTransform._origin,
+		var thisTranslate = this._translate,
+			thisRotate = this._rotate,
+			thisScale = this._scale,
+			thisOrigin = this._origin,
 			thisGeometry = this.geometry;
 
 		// Transform the context by the current transform settings
