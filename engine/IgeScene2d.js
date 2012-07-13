@@ -43,7 +43,9 @@ var IgeScene2d = IgeObject.extend({
 	_resizeEvent: function (event) {
 		// Set width / height of scene to match main canvas
 		this.geometry.x = ige.geometry.x;
+		this.geometry.x2 = (this.geometry.x / 2);
 		this.geometry.y = ige.geometry.y;
+		this.geometry.y2 = (this.geometry.y / 2);
 
 		// Resize any children
 		var arr = this._children,
