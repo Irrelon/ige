@@ -4,7 +4,6 @@ IgeVelocityComponent = IgeClass.extend({
 
 	init: function (entity, options) {
 		this._entity = entity;
-		this._transform = entity.transform;
 
 		this._velocity = new IgePoint(0, 0, 0);
 		this._friction = new IgePoint(1, 1, 1);
@@ -171,7 +170,7 @@ IgeVelocityComponent = IgeClass.extend({
 			this._applyLinearForce(delta);
 			//this._applyFriction();
 
-			this._transform.translateBy(
+			this._entity.translateBy(
 				vel.x * delta,
 				vel.y * delta,
 				vel.z * delta
