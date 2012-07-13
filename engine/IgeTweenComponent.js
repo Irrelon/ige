@@ -20,21 +20,21 @@ var IgeTweenComponent = IgeClass.extend({
 	 * @param entity
 	 * @private
 	 */
-	_behaviour: function (entity) {
-		entity.tween.tick();
+	_behaviour: function (ctx, entity) {
+		entity.tween.tick(ctx);
 	},
 
 	/**
 	 * Start tweening particular properties for the object.
-	 * @param {String} objectName
-	 * @param {Object} propertyNameAndValue
-	 * @param {Number} durationMs
-	 * @param {Object=} options
+	 * @param entity
+	 * @param obj
+	 * @param propertyNameAndValue
+	 * @param durationMs
+	 * @param options
 	 * @return {Number} The index of the added tween or -1 on error.
 	 */
-	start: function (obj, propertyNameAndValue, durationMs, options) {
-		var entity = this._entity,
-			tweenObj = obj,
+	start: function (entity, obj, propertyNameAndValue, durationMs, options) {
+		var tweenObj = obj,
 			endTime,
 			propertyIndex,
 			targetData = [];
@@ -62,6 +62,7 @@ var IgeTweenComponent = IgeClass.extend({
 
 			// Push the new tween into the tweens array
 			this._tweens.push({
+				entity: entity, // The game object that this tween is performing on
 				targets: targetData, // The tween target properties and values
 				duration: durationMs, // The duration that the tween should run for
 				easing: options.easing, // Easing method to use
@@ -134,7 +135,7 @@ var IgeTweenComponent = IgeClass.extend({
 	/**
 	 * Process tweening for the object.
 	 */
-	tick: function () {
+	tick: function (ctx) {
 		if (this._tweens && this._tweens.length) {
 			var currentTime = ige.tickStart,
 				tweens = this._tweens,
@@ -190,7 +191,7 @@ var IgeTweenComponent = IgeClass.extend({
 						// If there is a callback, call it
 						if (typeof(tween.afterTween) === 'function') {
 							// Fire the beforeTween callback
-							tween.afterTween(this, tween);
+							tween.afterTween(tween.entity, tween);
 
 							// Delete the callback so we don't store it any longer
 							delete tween.afterTween;
