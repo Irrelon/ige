@@ -1,3 +1,4 @@
+// TODO: Add "overflow" with automatic scroll-bars
 var IgeUiStyleExtension = {
 	/**
 	 * Sets the current background texture and the repeatType
@@ -44,13 +45,13 @@ var IgeUiStyleExtension = {
 			if (typeof(x) === 'string') {
 				// Work out the actual size in pixels
 				// from the percentage
-				x = this._width / 100 * parseInt(x, 10);
+				x = this.geometry.x / 100 * parseInt(x, 10);
 			}
 
 			if (typeof(y) === 'string') {
 				// Work out the actual size in pixels
 				// from the percentage
-				y = this._height / 100 * parseInt(y, 10);
+				y = this.geometry.y / 100 * parseInt(y, 10);
 			}
 			this._backgroundSize = {x: x, y: y};
 
