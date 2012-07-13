@@ -75,10 +75,18 @@ var IgeClass = (function () {
 		};
 
 	// Create a new IgeClass that inherits from this class
-	IgeClass.extend = function (prop) {
+	IgeClass.extend = function () {
 		var _super = this.prototype,
 			name,
-			prototype;
+			prototype,
+			// Set prop to the last argument passed
+			prop = arguments[arguments.length - 1],
+			extensionArray = arguments[0],
+			extensionItem,
+			extensionOverwrite,
+			extensionIndex,
+			propertyIndex,
+			propertyObject;
 
 		// Instantiate a base class (but only create the instance,
 		// don't run the init constructor)
@@ -118,6 +126,26 @@ var IgeClass = (function () {
 			} else {
 				// The prop is not a method
 				prototype[name] = prop[name];
+			}
+		}
+
+		// Now implement any other extensions
+		if (arguments.length > 1) {
+			if (extensionArray && extensionArray.length) {
+				for (extensionIndex = 0; extensionIndex < extensionArray.length; extensionIndex++) {
+					extensionItem = extensionArray[extensionIndex];
+					propertyObject = extensionItem.extension.prototype || extensionItem.extension;
+					extensionOverwrite = extensionItem.overwrite;
+
+					// Copy the class object's properties to (this)
+					for (propertyIndex in propertyObject) {
+						// Only copy the property if this doesn't already have it or
+						// the extension is set to overwrite any existing properties
+						if (propertyObject.hasOwnProperty(propertyIndex) && (extensionOverwrite || prototype[propertyIndex] === undefined)) {
+							prototype[propertyIndex] = propertyObject[propertyIndex];
+						}
+					}
+				}
 			}
 		}
 
