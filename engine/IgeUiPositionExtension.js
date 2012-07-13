@@ -162,6 +162,8 @@ var IgeUiPositionExtension = {
 		} else {
 			this.transform._translate.y = this._uiY;
 		}
+
+		this.dirty(true);
 	}
 };
 
