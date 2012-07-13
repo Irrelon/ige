@@ -128,6 +128,7 @@ var IgeUiPositionExtension = {
 
 					// Calculate real width from percentage
 					this.geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
+					this.geometry.x2 = (this.geometry.x / 2);
 				} else {
 					// We don't have a parent so use the main canvas
 					// as a reference
@@ -136,9 +137,11 @@ var IgeUiPositionExtension = {
 
 					// Calculate real height from percentage
 					this.geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
+					this.geometry.x2 = (this.geometry.x / 2);
 				}
 			} else {
 				this.geometry.x = px;
+				this.geometry.x2 = (this.geometry.x / 2);
 			}
 
 			if (!noUpdate) {
@@ -171,6 +174,7 @@ var IgeUiPositionExtension = {
 
 					// Calculate real height from percentage
 					this.geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
+					this.geometry.y2 = (this.geometry.y / 2);
 				} else {
 					// We don't have a parent so use the main canvas
 					// as a reference
@@ -179,9 +183,11 @@ var IgeUiPositionExtension = {
 
 					// Calculate real height from percentage
 					this.geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
+					this.geometry.y2 = (this.geometry.y / 2);
 				}
 			} else {
 				this.geometry.y = px;
+				this.geometry.y2 = (this.geometry.y / 2);
 			}
 
 			if (!noUpdate) {
@@ -202,23 +208,23 @@ var IgeUiPositionExtension = {
 	_updateUiPosition: function () {
 		if (this._parent) {
 			if (this._uiXAlign === 'right') {
-				this.transform._translate.x = ((this._parent.geometry.x / 2) - this._uiX - this.geometry.x) | 0;
+				this._translate.x = ((this._parent.geometry.x / 2 | 0) - this._uiX - this.geometry.x);
 			} else if (this._uiXAlign === 'center') {
-				this.transform._translate.x = (this._uiX - (this.geometry.x / 2)) | 0;
+				this._translate.x = (this._uiX - (this.geometry.x / 2 | 0));
 			} else {
-				this.transform._translate.x = (-(this._parent.geometry.x / 2) + this._uiX) | 0;
+				this._translate.x = (-(this._parent.geometry.x / 2 | 0) + this._uiX);
 			}
 
 			if (this._uiYAlign === 'bottom') {
-				this.transform._translate.y = ((this._parent.geometry.y / 2) - this._uiY - this.geometry.y) | 0;
+				this._translate.y = ((this._parent.geometry.y / 2 | 0) - this._uiY - this.geometry.y);
 			} else if (this._uiYAlign === 'middle') {
-				this.transform._translate.y = (this._uiY - (this.geometry.y / 2)) | 0;
+				this._translate.y = (this._uiY - (this.geometry.y / 2 | 0));
 			} else {
-				this.transform._translate.y = (-(this._parent.geometry.y / 2) + this._uiY) | 0;
+				this._translate.y = (-(this._parent.geometry.y / 2 | 0) + this._uiY);
 			}
 
 			if (this._width) { this.width(this._width, this._widthModifier, true); }
-			if (this._height) { this.height(this._height, this._heightModifier, true); }
+			if (this._width) { this.height(this._height, this._heightModifier, true); }
 
 			this.dirty(true);
 		}
