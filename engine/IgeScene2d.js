@@ -29,6 +29,21 @@ var IgeScene2d = IgeObject.extend({
 		if (this._shouldRender) {
 			this._super();
 		}
+	},
+
+	/**
+	 * Handles screen resize events.
+	 * @param event
+	 * @private
+	 */
+	_resizeEvent: function (event) {
+		// Resize any children
+		var arr = this._children,
+			arrCount = arr.length;
+
+		while (arrCount--) {
+			arr[arrCount]._resizeEvent(event);
+		}
 	}
 });
 
