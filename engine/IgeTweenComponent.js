@@ -26,14 +26,13 @@ var IgeTweenComponent = IgeClass.extend({
 
 	/**
 	 * Start tweening particular properties for the object.
-	 * @param entity
 	 * @param obj
 	 * @param propertyNameAndValue
 	 * @param durationMs
 	 * @param options
 	 * @return {Number} The index of the added tween or -1 on error.
 	 */
-	start: function (entity, obj, propertyNameAndValue, durationMs, options) {
+	start: function (obj, propertyNameAndValue, durationMs, options) {
 		var tweenObj = obj,
 			endTime,
 			propertyIndex,
@@ -62,7 +61,6 @@ var IgeTweenComponent = IgeClass.extend({
 
 			// Push the new tween into the tweens array
 			this._tweens.push({
-				entity: entity, // The game object that this tween is performing on
 				targets: targetData, // The tween target properties and values
 				duration: durationMs, // The duration that the tween should run for
 				easing: options.easing, // Easing method to use
@@ -191,7 +189,7 @@ var IgeTweenComponent = IgeClass.extend({
 						// If there is a callback, call it
 						if (typeof(tween.afterTween) === 'function') {
 							// Fire the beforeTween callback
-							tween.afterTween(tween.entity, tween);
+							tween.afterTween(tween);
 
 							// Delete the callback so we don't store it any longer
 							delete tween.afterTween;
