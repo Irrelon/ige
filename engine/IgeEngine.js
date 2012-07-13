@@ -40,6 +40,8 @@ var IgeEngine = IgeObject.extend({
 		this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
 		this._frameAlternator = false; // Is set to the boolean not of itself each frame
 		this._viewportDepth = false;
+		this.geometry = {x: 0, y: 0, x2: 0, y2: 0};
+
 		this.dependencyTimeout(30000); // Wait 30 seconds to load all dependencies then timeout
 
 		// Add the textures loaded dependency
@@ -244,6 +246,7 @@ var IgeEngine = IgeObject.extend({
 			// Create a new canvas element to use as the
 			// rendering front-buffer
 			var tempCanvas = document.createElement('canvas');
+			tempCanvas.id = 'igeFrontBuffer';
 			document.body.appendChild(tempCanvas);
 			this.canvas(tempCanvas, autoSize);
 		}
@@ -336,10 +339,12 @@ var IgeEngine = IgeObject.extend({
 	 */
 	_resizeEvent: function (event) {
 		if (ige._autoSize) {
-			ige._canvas.width = window.innerWidth;
-			ige._canvas.height = window.innerHeight;
-			ige._canvasWidth2 = (window.innerWidth / 2) | 0; // Bitwise floor
-			ige._canvasHeight2 = (window.innerHeight / 2) | 0; // Bitwise floor
+			ige.geometry.x = ige._canvas.width = window.innerWidth;
+			ige.geometry.y = ige._canvas.height = window.innerHeight;
+			ige.geometry.x2 = (window.innerWidth / 2) | 0; // Bitwise floor
+			ige.geometry.y2 = (window.innerHeight / 2) | 0; // Bitwise floor
+
+
 
 			// Loop any mounted children and check if
 			// they should also get resized
