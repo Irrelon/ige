@@ -20,6 +20,32 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
+					// Define a random-moving entity
+					var RandomTweener = IgeEntity.extend({
+						init: function () {
+							this._super();
+							this.newTween();
+						},
+
+						newTween: function () {
+							var self = this;
+							ige.tween.start(
+								this.transform._translate,
+								{
+									x: (Math.random() * 1000) - 500,
+									y: (Math.random() * 600) - 300
+								},
+								1000,
+								{
+									easing:'outElastic',
+									afterTween: function (gameObject) {
+										self.newTween();
+									}
+								}
+							);
+						}
+					});
+
 					// Create the main viewport
 					self.vp1 = new IgeViewport();
 					self.vp1.mount(ige);
@@ -28,21 +54,14 @@ var Client = IgeClass.extend({
 					self.scene1 = new IgeScene2d();
 					self.vp1.scene(self.scene1);
 
-					self.obj[0] = tempObj = new IgeEntity();
-					tempObj.depth(1);
-					tempObj.geometry.x = 100;
-					tempObj.geometry.y = 100;
-					tempObj.texture(gameTexture[0]);
-					tempObj.mount(self.scene1);
-					ige.tween.start(tempObj.transform._translate, {x:100}, 1000, {easing:'outElastic'});
-
-					self.obj[1] = tempObj = new IgeEntity();
-					tempObj.depth(1);
-					tempObj.geometry.x = 100;
-					tempObj.geometry.y = 100;
-					tempObj.texture(gameTexture[0]);
-					tempObj.mount(self.scene1);
-					ige.tween.start(tempObj.transform._translate, {x: -100, y: -100}, 1000, {easing:'outElastic'});
+					for (var i = 0; i < 100; i++) {
+						self.obj[0] = new RandomTweener()
+							.depth(i)
+							.width(100)
+							.height(100)
+							.texture(gameTexture[0])
+							.mount(self.scene1);
+					}
 				}
 			});
 		});

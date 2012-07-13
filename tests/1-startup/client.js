@@ -3,8 +3,7 @@ var Client = IgeClass.extend({
 	init: function () {
 		// Load our textures
 		var self = this,
-			gameTexture = [],
-			tempObj;
+			gameTexture = [];
 
 		this.obj = [];
 
@@ -26,12 +25,12 @@ var Client = IgeClass.extend({
 					self.vp1.scene(self.scene1);
 
 					// Create an entity
-					self.obj[0] = tempObj = new IgeEntity();
-					tempObj.depth(1);
-					tempObj.geometry.x = 100;
-					tempObj.geometry.y = 100;
-					tempObj.texture(gameTexture[0]);
-					tempObj.mount(self.scene1);
+					self.obj[0] = new IgeEntity()
+						.depth(1)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[0])
+						.mount(self.scene1);
 				}
 			});
 		});

@@ -3,8 +3,7 @@ var Client = IgeClass.extend({
 	init: function () {
 		// Load our textures
 		var self = this,
-			gameTexture = [],
-			tempObj;
+			gameTexture = [];
 
 		this.obj = [];
 
@@ -20,6 +19,32 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
+					// Define a random-moving entity
+					var RandomTweener = IgeEntity.extend({
+						init: function () {
+							this._super();
+							this.newTween();
+						},
+
+						newTween: function () {
+							var self = this;
+							ige.tween.start(
+								this.transform._translate,
+								{
+									x: (Math.random() * 1000) - 500,
+									y: (Math.random() * 600) - 300
+								},
+								1000,
+								{
+									easing:'outElastic',
+									afterTween: function (gameObject) {
+										self.newTween();
+									}
+								}
+							);
+						}
+					});
+
 					// Create the main viewport
 					self.vp1 = new IgeViewport();
 					self.vp1.mount(ige);
@@ -28,23 +53,37 @@ var Client = IgeClass.extend({
 					self.scene1 = new IgeScene2d();
 					self.vp1.scene(self.scene1);
 
-					self.obj[0] = tempObj = new IgeEntity();
-					tempObj.depth(1);
-					tempObj.geometry.x = 100;
-					tempObj.geometry.y = 100;
-					tempObj.texture(gameTexture[0]);
-					tempObj.mount(self.scene1);
-					ige.tween.start(tempObj.transform._translate, {x:100}, 1000, {easing:'outElastic'});
+					// Create an entity
+					self.obj[0] = new RandomTweener()
+						.depth(1)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[0])
+						.mount(self.scene1);
 
-					self.obj[1] = tempObj = new IgeEntity();
-					tempObj.depth(1);
-					tempObj.geometry.x = 100;
-					tempObj.geometry.y = 100;
-					tempObj.texture(gameTexture[0]);
-					tempObj.mount(self.scene1);
-					ige.tween.start(tempObj.transform._translate, {x: -100, y: -100}, 1000, {easing:'outElastic'});
+					// Create the scene
+					self.scene2 = new IgeSceneUi();
 
-					self.obj[2] = new IgeUiEntity();
+					// Set the main viewport's scene
+					self.scene2.mount(self.scene1);
+					self.vp1.scene(self.scene1);
+
+					// Create a new UI entity
+					for (var i = 0; i < 400; i++) {
+						self.obj[i] = new IgeUiEntity()
+							//.backgroundColor('#ffffff')
+							.center(0)
+							.middle(0)
+							.width(200)
+							.height(100)
+							.borderColor('#ff0000')
+							.borderRadius(0)
+							.borderWidth(2)
+							.backgroundPosition(0, 0)
+							.backgroundImage(gameTexture[0], 'repeat')
+							.backgroundSize('100%', '100%')
+							.mount(self.scene2);
+					}
 				}
 			});
 		});

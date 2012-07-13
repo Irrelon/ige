@@ -22,15 +22,15 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					RotatorBehaviour = function (gameObject) {
+					RotatorBehaviour = function (ctx, gameObject) {
 						gameObject.transform.rotateBy(0, 0, (0.1 * ige.tickDelta) * Math.PI / 180);
 					};
 
-					RotatorBehaviourAC = function (gameObject) {
+					RotatorBehaviourAC = function (ctx, gameObject) {
 						gameObject.transform.rotateBy(0, 0, (-0.1 * ige.tickDelta) * Math.PI / 180);
 					};
 
-					ScalerBehaviour = function (gameObject) {
+					ScalerBehaviour = function (ctx, gameObject) {
 						gameObject.data.scalerMode = gameObject.data.scalerMode || 1;
 
 						if (gameObject.data.scalerMode === 1) {
@@ -71,7 +71,7 @@ var Client = IgeClass.extend({
 
 					var tt = 0;
 					for (var i = 0; i < 18; i++) {
-						vp[i] = new IgeViewport({center:-300, middle:0, width:150, height:75, autoSize:false, borderStyle: '#ffffff'});
+						vp[i] = new IgeViewport({center:-300 + 75, middle:0, width:150, height:75, autoSize:false, borderStyle: '#ffffff'});
 						vp[i].transform.originTo(0, 0, 0);
 						vp[i].camera.scaleTo(0.5, 0.5, 0.5);
 						vp[i].depth((18 - i));
@@ -81,20 +81,28 @@ var Client = IgeClass.extend({
 						tt += 200;
 						vp[i].mount(ige);
 					}
+
 					tt = 0;
 					for (var i = 0; i < 18; i++) {
-						vp[i] = new IgeViewport({center:300, middle:0, width:150, height:75, autoSize:false, borderStyle: '#ffffff'});
-						vp[i].transform.originTo(0, 0, 0);
-						vp[i].camera.scaleTo(0.5, 0.5, 0.5);
-						vp[i].depth((18 - i));
-						vp[i].scene(self.scene1);
+						vp[i] = new IgeViewport({
+							center:300 + 75,
+							middle:0,
+							width:150,
+							height:75,
+							autoSize:false,
+							borderStyle: '#ffffff'}
+						)
+						.transform.originTo(0, 0, 0)
+						.camera.scaleTo(0.5, 0.5, 0.5)
+						.depth((18 - i))
+						.scene(self.scene1);
 
 						setTimeout(function () { var vr = vp[i]; return function () { vr.addBehavior('rotator', RotatorBehaviour); }}(), tt);
 						tt += 200;
 						vp[i].mount(ige);
 					}
 
-					vp[0] = new IgeViewport({left:50, top:50, width:250, height:150, autoSize:false, borderStyle: '#ffffff'});
+					vp[0] = new IgeViewport({center:0, top:0, width:250, height:150, autoSize:false, borderStyle: '#ffffff'});
 					vp[0].transform.originTo(0, 0, 0);
 					vp[0].camera.scaleTo(2, 2, 2);
 					vp[0].depth(1);
