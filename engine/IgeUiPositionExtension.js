@@ -109,13 +109,33 @@ var IgeUiPositionExtension = {
 
 	/**
 	 * Gets / sets the geometry.x in pixels.
-	 * @param {Number=} px
+	 * @param {Number, String=} px Either the width in pixels or a percentage
 	 * @return {*}
 	 */
 	width: function (px) {
 		if (px !== undefined) {
 			this._width = px;
-			this.geometry.x = px;
+
+			if (typeof(px) === 'string') {
+				if (this._parent) {
+					// Percentage
+					var parentWidth = this._parent.geometry.x,
+						val = parseInt(px, 10);
+
+					// Calculate real width from percentage
+					this.geometry.x = (parentWidth / 100 * val) | 0;
+				} else {
+					// We don't have a parent so use the main canvas
+					// as a reference
+					var parentWidth = ige._canvas.width,
+						val = parseInt(px, 10);
+
+					// Calculate real height from percentage
+					this.geometry.x = (parentWidth / 100 * val) | 0;
+				}
+			} else {
+				this.geometry.x = px;
+			}
 
 			this._updateTranslation();
 			return this;
@@ -132,7 +152,27 @@ var IgeUiPositionExtension = {
 	height: function (px) {
 		if (px !== undefined) {
 			this._height = px;
-			this.geometry.y = px;
+
+			if (typeof(px) === 'string') {
+				if (this._parent) {
+					// Percentage
+					var parentHeight = this._parent.geometry.y,
+						val = parseInt(px, 10);
+
+					// Calculate real height from percentage
+					this.geometry.y = (parentHeight / 100 * val) | 0;
+				} else {
+					// We don't have a parent so use the main canvas
+					// as a reference
+					var parentHeight = ige._canvas.height,
+						val = parseInt(px, 10);
+
+					// Calculate real height from percentage
+					this.geometry.y = (parentHeight / 100 * val) | 0;
+				}
+			} else {
+				this.geometry.y = px;
+			}
 
 			this._updateTranslation();
 			return this;
@@ -146,6 +186,7 @@ var IgeUiPositionExtension = {
 	 * top and bottom co-ordinates.
 	 * @private
 	 */
+		// TODO: Update so that it takes into account the parent element's position etc
 	_updateTranslation: function () {
 		if (this._uiXAlign === 'right') {
 			this.transform._translate.x = ige._canvas.width - this._uiX - this.geometry.x;
