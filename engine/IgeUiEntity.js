@@ -1,4 +1,7 @@
-var IgeUiEntity = IgeEntity.extend({
+var IgeUiEntity = IgeEntity.extend([
+	{extension: IgeUiStyleExtension, overwrite: true},
+	{extension: IgeUiPositionExtension, overwrite: true}
+], {
 	init: function () {
 		this._super();
 
@@ -16,10 +19,6 @@ var IgeUiEntity = IgeEntity.extend({
 		this._borderBottomRightRadius = 0;
 		this._borderBottomLeftRadius = 0;
 		this._backgroundPosition = {x: 0, y: 0};
-
-		// Implement the UI extensions
-		this.implement(IgeUiStyleExtension, true);
-		this.implement(IgeUiPositionExtension, true);
 	},
 
 	_renderBackground: function (ctx) {
