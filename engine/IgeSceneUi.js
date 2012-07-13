@@ -1,3 +1,4 @@
+// TODO: Should we create a more generic "IgeScene2dCached" or something? Other scenes might want to auto-cache...
 var IgeSceneUi = IgeScene2d.extend({
 	classId: 'IgeSceneUi',
 
