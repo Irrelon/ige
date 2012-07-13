@@ -1,4 +1,6 @@
-var IgeViewport = IgeEntity.extend({
+var IgeViewport = IgeEntity.extend([
+	{extension: IgeUiPositionExtension}
+], {
 	classId: 'IgeViewport',
 
 	init: function (options) {
@@ -18,8 +20,6 @@ var IgeViewport = IgeEntity.extend({
 		// Setup default objects
 		this.geometry = new IgePoint(options.width || 250, options.height || 150, 0);
 		this.camera = new IgeTransform(this);
-
-		this.implement(IgeUiPositionExtension);
 
 		// Move the viewport into position
 		if (options.left !== undefined) {
