@@ -5,6 +5,7 @@ var IgeObject = IgeEventingClass.extend({
 		this._parent = null;
 		this._children = [];
 		this._behaviours = [];
+		this._layer = 0;
 		this._depth = 0;
 		this._dirty = true;
 		this.data = {};
@@ -154,6 +155,20 @@ var IgeObject = IgeEventingClass.extend({
 		}
 
 		return this._indestructible;
+	},
+
+	/**
+	 * Gets / sets the current entity layer.
+	 * @param {Number=} val
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 */
+	layer: function (val) {
+		if (val !== undefined) {
+			this._layer = val;
+			return this;
+		}
+
+		return this._layer;
 	},
 
 	/**

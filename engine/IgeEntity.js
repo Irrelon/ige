@@ -4,7 +4,6 @@ var IgeEntity = IgeObject.extend({
 	init: function () {
 		this._super();
 
-		this._layer = 1;
 		this._opacity = 1;
 		this._cell = 1;
 
@@ -94,20 +93,6 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._deathTime;
-	},
-
-	/**
-	 * Gets / sets the current entity layer.
-	 * @param {Number=} val
-	 * @return {*} Returns this when setting the value or the current value if none is specified.
-	 */
-	layer: function (val) {
-		if (val !== undefined) {
-			this._layer = val;
-			return this;
-		}
-
-		return this._layer;
 	},
 
 	/**
