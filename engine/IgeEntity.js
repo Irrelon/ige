@@ -1,4 +1,6 @@
-var IgeEntity = IgeObject.extend({
+var IgeEntity = IgeObject.extend([
+	{extension: IgeTransformExtension, overwrite: false}
+], {
 	classId: 'IgeEntity',
 
 	init: function () {
@@ -7,7 +9,11 @@ var IgeEntity = IgeObject.extend({
 		this._opacity = 1;
 		this._cell = 1;
 
-		this.transform = new IgeTransform(this);
+		this._translate = new IgePoint(0, 0, 0);
+		this._rotate = new IgePoint(0, 0, 0);
+		this._scale = new IgePoint(1, 1, 1);
+		this._origin = new IgePoint(0.5, 0.5, 0.5);
+
 		this.geometry = new IgePoint(20, 20, 20);
 	},
 
@@ -32,6 +38,40 @@ var IgeEntity = IgeObject.extend({
 		return this._id;
 	},
 
+	aabb: function () {
+		if (this._worldTranslate) {
+			var width2 = (this.geometry.x * this._worldScale.x) / 2,
+				height2 = (this.geometry.y * this._worldScale.y) / 2,
+				r = (this._rotate.z),
+				cornerX1 = width2,
+				cornerX2 = width2,
+				cornerY1 = -height2,
+				cornerY2 = height2,
+
+				sinO = Math.sin(r),
+				cosO = Math.cos(r),
+
+				rotatedCorner1X = cornerX1 * cosO - cornerY1 * sinO,
+				rotatedCorner1Y = cornerX1 * sinO - cornerY1 * cosO,
+				rotatedCorner2X = cornerX2 * cosO - cornerY2 * sinO,
+				rotatedCorner2Y = cornerX2 * sinO - cornerY2 * cosO,
+
+				extentX = Math.max(Math.abs(rotatedCorner1X), Math.abs(rotatedCorner2X)),
+				extentY = Math.max(Math.abs(rotatedCorner1Y), Math.abs(rotatedCorner2Y)),
+
+				// Rotate the worldTranslate point by the parent rotation
+				pr = (this._parent && this._parent._rotate) ? -(this._parent._rotate.z) : 0,
+				wtPoint = this._rotatePoint(this._translate, pr, {x: 0, y: 0});
+
+			return {
+				x: wtPoint.x + (this._parent._translate ? this._parent._translate.x : 0) - extentX,
+				y: wtPoint.y + (this._parent._translate ? this._parent._translate.y : 0) - extentY,
+				width: extentX * 2,
+				height: extentY * 2
+			};
+		}
+	},
+
 	/**
 	 * Gets / sets the geometry.x in pixels.
 	 * @param {Number=} px
@@ -41,6 +81,7 @@ var IgeEntity = IgeObject.extend({
 		if (px !== undefined) {
 			this._width = px;
 			this.geometry.x = px;
+			this.geometry.x2 = (px / 2);
 			return this;
 		}
 
@@ -56,6 +97,7 @@ var IgeEntity = IgeObject.extend({
 		if (px !== undefined) {
 			this._height = px;
 			this.geometry.y = px;
+			this.geometry.y2 = (px / 2);
 			return this;
 		}
 
@@ -139,6 +181,12 @@ var IgeEntity = IgeObject.extend({
 		return this._cell;
 	},
 
+	mount: function (obj) {
+		var ret = this._super(obj);
+		this._updateWorldTransform();
+		return ret;
+	},
+
 	/**
 	 * Sets the canvas context transform properties to match the the game
 	 * object's current transform values.
@@ -146,11 +194,9 @@ var IgeEntity = IgeObject.extend({
 	 * @private
 	 */
 	_transformContext: function (ctx) {
-		var tf = this.transform;
-
-		ctx.translate(tf._translate.x, tf._translate.y);
-		ctx.rotate(tf._rotate.z);
-		ctx.scale(tf._scale.x, tf._scale.y);
+		ctx.translate(this._translate.x, this._translate.y);
+		ctx.rotate(this._rotate.z);
+		ctx.scale(this._scale.x, this._scale.y);
 	},
 
 	/**
