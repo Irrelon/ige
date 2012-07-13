@@ -22,37 +22,37 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					RotatorBehaviour = function (ctx, gameObject) {
-						gameObject.transform.rotateBy(0, 0, (0.1 * ige.tickDelta) * Math.PI / 180);
+						gameObject.rotateBy(0, 0, (0.1 * ige.tickDelta) * Math.PI / 180);
 					};
 
 					RotatorBehaviourAC = function (ctx, gameObject) {
-						gameObject.transform.rotateBy(0, 0, (-0.1 * ige.tickDelta) * Math.PI / 180);
+						gameObject.rotateBy(0, 0, (-0.1 * ige.tickDelta) * Math.PI / 180);
 					};
 
 					ScalerBehaviour = function (ctx, gameObject) {
 						gameObject.data.scalerMode = gameObject.data.scalerMode || 1;
 
 						if (gameObject.data.scalerMode === 1) {
-							gameObject.transform.scaleBy((0.001 * ige.tickDelta), (0.001 * ige.tickDelta), (0.001 * ige.tickDelta));
+							gameObject.scaleBy((0.001 * ige.tickDelta), (0.001 * ige.tickDelta), (0.001 * ige.tickDelta));
 
-							if (gameObject.transform._scale.x >= 4) {
+							if (gameObject._scale.x >= 4) {
 								gameObject.data.scalerMode = 2;
-								gameObject.transform._scale.x = 4;
-								gameObject.transform._scale.y = 4;
-								gameObject.transform._scale.z = 4;
+								gameObject._scale.x = 4;
+								gameObject._scale.y = 4;
+								gameObject._scale.z = 4;
 							}
 
 							return;
 						}
 
 						if (gameObject.data.scalerMode === 2) {
-							gameObject.transform.scaleBy(-(0.001 * ige.tickDelta), -(0.001 * ige.tickDelta), -(0.001 * ige.tickDelta));
+							gameObject.scaleBy(-(0.001 * ige.tickDelta), -(0.001 * ige.tickDelta), -(0.001 * ige.tickDelta));
 
-							if (gameObject.transform._scale.x <= 1) {
+							if (gameObject._scale.x <= 1) {
 								gameObject.data.scalerMode = 1;
-								gameObject.transform._scale.x = 1;
-								gameObject.transform._scale.y = 1;
-								gameObject.transform._scale.z = 1;
+								gameObject._scale.x = 1;
+								gameObject._scale.y = 1;
+								gameObject._scale.z = 1;
 							}
 
 							return;
@@ -71,7 +71,7 @@ var Client = IgeClass.extend({
 					var tt = 0;
 					for (var i = 0; i < 18; i++) {
 						vp[i] = new IgeViewport({center:-300 + 75, middle:0, width:150, height:75, autoSize:false, borderStyle: '#ffffff'});
-						vp[i].transform.originTo(0, 0, 0);
+						vp[i].originTo(0, 0, 0);
 						vp[i].camera.scaleTo(0.5, 0.5, 0.5);
 						vp[i].depth((18 - i));
 						vp[i].scene(self.scene1);
@@ -91,8 +91,8 @@ var Client = IgeClass.extend({
 							autoSize:false,
 							borderStyle: '#ffffff'}
 						)
-						.transform.originTo(0, 0, 0)
-						.camera.scaleTo(0.5, 0.5, 0.5)
+						.originTo(0, 0, 0)
+						.camera.scaleTo(0.5, 0.5, 0.5)._entity
 						.depth((18 - i))
 						.scene(self.scene1);
 
@@ -102,7 +102,7 @@ var Client = IgeClass.extend({
 					}
 
 					vp[0] = new IgeViewport({center:0, top:0, width:250, height:150, autoSize:false, borderStyle: '#ffffff'});
-					vp[0].transform.originTo(0, 0, 0);
+					vp[0].originTo(0, 0, 0);
 					vp[0].camera.scaleTo(2, 2, 2);
 					vp[0].depth(1);
 					vp[0].scene(self.scene1);

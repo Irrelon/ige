@@ -30,7 +30,7 @@ var Client = IgeClass.extend({
 						newTween: function () {
 							var self = this;
 							ige.tween.start(
-								this.transform._translate,
+								this._translate,
 								{
 									x: (Math.random() * 1200) - 600,
 									y: (Math.random() * 600) - 300
