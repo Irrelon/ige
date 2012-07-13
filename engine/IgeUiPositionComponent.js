@@ -15,13 +15,13 @@ var IgeUiPositionComponent = IgeClass.extend({
 	 */
 	left: function (val) {
 		if (val !== undefined) {
-			this._vpX = val;
-			this._vpXAlign = 'left';
+			this._uiX = val;
+			this._uiXAlign = 'left';
 
 			this._updateTranslation();
 		}
 
-		return this._vpX;
+		return this._uiX;
 	},
 
 	/**
@@ -32,13 +32,13 @@ var IgeUiPositionComponent = IgeClass.extend({
 	 */
 	center: function (val) {
 		if (val !== undefined) {
-			this._vpX = val;
-			this._vpXAlign = 'center';
+			this._uiX = val;
+			this._uiXAlign = 'center';
 
 			this._updateTranslation();
 		}
 
-		return this._vpX;
+		return this._uiX;
 	},
 
 	/**
@@ -49,13 +49,13 @@ var IgeUiPositionComponent = IgeClass.extend({
 	 */
 	right: function (val) {
 		if (val !== undefined) {
-			this._vpX = val;
-			this._vpXAlign = 'right';
+			this._uiX = val;
+			this._uiXAlign = 'right';
 
 			this._updateTranslation();
 		}
 
-		return this._vpX;
+		return this._uiX;
 	},
 
 	/**
@@ -66,13 +66,13 @@ var IgeUiPositionComponent = IgeClass.extend({
 	 */
 	top: function (val) {
 		if (val !== undefined) {
-			this._vpY = val;
-			this._vpYAlign = 'top';
+			this._uiY = val;
+			this._uiYAlign = 'top';
 
 			this._updateTranslation();
 		}
 
-		return this._vpY;
+		return this._uiY;
 	},
 
 	/**
@@ -83,13 +83,13 @@ var IgeUiPositionComponent = IgeClass.extend({
 	 */
 	middle: function (val) {
 		if (val !== undefined) {
-			this._vpY = val;
-			this._vpYAlign = 'middle';
+			this._uiY = val;
+			this._uiYAlign = 'middle';
 
 			this._updateTranslation();
 		}
 
-		return this._vpY;
+		return this._uiY;
 	},
 
 	/**
@@ -100,13 +100,13 @@ var IgeUiPositionComponent = IgeClass.extend({
 	 */
 	bottom: function (val) {
 		if (val !== undefined) {
-			this._vpY = val;
-			this._vpYAlign = 'bottom';
+			this._uiY = val;
+			this._uiYAlign = 'bottom';
 
 			this._updateTranslation();
 		}
 
-		return this._vpY;
+		return this._uiY;
 	},
 
 	/**
@@ -116,20 +116,20 @@ var IgeUiPositionComponent = IgeClass.extend({
 	 */
 	_updateTranslation: function () {
 		var entity = this._entity;
-		if (this._vpXAlign === 'right') {
-			entity.transform._translate.x = ige._canvas.width - this._vpX - entity.geometry.x;
-		} else if (this._vpXAlign === 'center') {
-			entity.transform._translate.x = ige._canvasWidth2 + this._vpX;
+		if (this._uiXAlign === 'right') {
+			entity.transform._translate.x = ige._canvas.width - this._uiX - entity.geometry.x;
+		} else if (this._uiXAlign === 'center') {
+			entity.transform._translate.x = ige._canvasWidth2 + this._uiX;
 		} else {
-			entity.transform._translate.x = this._vpX;
+			entity.transform._translate.x = this._uiX;
 		}
 
-		if (this._vpYAlign === 'bottom') {
-			entity.transform._translate.y = ige._canvas.height - this._vpY - entity.geometry.y;
-		} else if (this._vpYAlign === 'middle') {
-			entity.transform._translate.y = ige._canvasHeight2 + this._vpY;
+		if (this._uiYAlign === 'bottom') {
+			entity.transform._translate.y = ige._canvas.height - this._uiY - entity.geometry.y;
+		} else if (this._uiYAlign === 'middle') {
+			entity.transform._translate.y = ige._canvasHeight2 + this._uiY;
 		} else {
-			entity.transform._translate.y = this._vpY;
+			entity.transform._translate.y = this._uiY;
 		}
 	}
 });
