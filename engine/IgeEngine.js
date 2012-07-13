@@ -1,4 +1,4 @@
-var IgeEngine = IgeObject.extend({
+var IgeEngine = IgeEntity.extend({
 	classId: 'IgeEngine',
 
 	init: function () {
@@ -341,10 +341,8 @@ var IgeEngine = IgeObject.extend({
 		if (ige._autoSize) {
 			ige.geometry.x = ige._canvas.width = window.innerWidth;
 			ige.geometry.y = ige._canvas.height = window.innerHeight;
-			ige.geometry.x2 = (window.innerWidth / 2) | 0; // Bitwise floor
-			ige.geometry.y2 = (window.innerHeight / 2) | 0; // Bitwise floor
-
-
+			ige.geometry.x2 = window.innerWidth / 2;
+			ige.geometry.y2 = window.innerHeight / 2;
 
 			// Loop any mounted children and check if
 			// they should also get resized
@@ -427,6 +425,9 @@ var IgeEngine = IgeObject.extend({
 			this.depthSortChildren();
 		}
 
+		ctx.save();
+		ctx.translate(this.geometry.x2, this.geometry.y2)
+
 		// Process the current engine tick for all child objects
 		var arr = this._children,
 			arrCount = arr.length;
@@ -437,6 +438,8 @@ var IgeEngine = IgeObject.extend({
 				arr[arrCount].tick(ctx, scene);
 			ctx.restore();
 		}
+
+		ctx.restore();
 	}
 });
 
