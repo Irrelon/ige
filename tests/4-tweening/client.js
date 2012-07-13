@@ -32,7 +32,7 @@ var Client = IgeClass.extend({
 							ige.tween.start(
 								this.transform._translate,
 								{
-									x: (Math.random() * 1000) - 500,
+									x: (Math.random() * 1200) - 600,
 									y: (Math.random() * 600) - 300
 								},
 								1000,

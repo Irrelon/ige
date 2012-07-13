@@ -11,3 +11,7 @@ body {
     padding: 0;
     overflow: hidden;
 }
+
+#igeFrontBuffer {
+    /*display: none;*/
+}

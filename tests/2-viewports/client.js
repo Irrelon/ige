@@ -13,7 +13,6 @@ var Client = IgeClass.extend({
 		this.obj = [];
 
 		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
-		gameTexture[1] = new IgeTexture('../assets/textures/sprites/fairy.png');
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -109,22 +108,22 @@ var Client = IgeClass.extend({
 					vp[0].scene(self.scene1);
 					vp[0].mount(ige);
 
-					self.obj[0] = tempObj = new IgeEntity();
-					tempObj.addBehavior('rotator', RotatorBehaviour);
-					tempObj.depth(1);
-					tempObj.geometry.x = 100;
-					tempObj.geometry.y = 100;
-					tempObj.texture(gameTexture[0]);
-					tempObj.mount(self.scene1);
+					self.obj[0] = new IgeEntity()
+						.addBehavior('rotator', RotatorBehaviour)
+						.depth(1)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[0])
+						.mount(self.scene1);
 
-					self.obj[1] = tempObj = new IgeEntity();
-					tempObj.depth(0);
-					tempObj.addBehavior('scaler', ScalerBehaviour);
-					tempObj.addBehavior('rotator', RotatorBehaviourAC);
-					tempObj.geometry.x = 100;
-					tempObj.geometry.y = 200;
-					tempObj.texture(gameTexture[1]);
-					tempObj.mount(self.scene1);
+					self.obj[1] = tempObj = new IgeEntity()
+						.addBehavior('scaler', ScalerBehaviour)
+						.addBehavior('rotator', RotatorBehaviourAC)
+						.depth(0)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[0])
+						.mount(self.scene1);
 				}
 			});
 		});
