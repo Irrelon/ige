@@ -8,8 +8,8 @@ var IgeSceneUi = IgeScene2d.extend({
 		// Create our own canvas and context so that when
 		// we render stuff, we can keep an image of it cached
 		this._canvas = document.createElement('canvas');
-		this._canvas.width = ige._canvas.width;
-		this._canvas.height = ige._canvas.height;
+		this._canvas.width = ige.geometry.x;
+		this._canvas.height = ige.geometry.y;
 		this._ctx = this._canvas.getContext('2d');
 
 		document.body.appendChild(this._canvas);
@@ -27,6 +27,7 @@ var IgeSceneUi = IgeScene2d.extend({
 					// The canvas context we are being asked to
 					// paint to is our own cached one so do it
 					this._dirty = false;
+					// Translate the whole context back to the top-left of the viewport
 					this._super(ctx);
 				} else {
 					// The canvas context we are being asked to
@@ -38,7 +39,7 @@ var IgeSceneUi = IgeScene2d.extend({
 				}
 			} else {
 				// Now render our cached canvas
-				ctx.drawImage(this._canvas, -ige._canvasWidth2, -ige._canvasHeight2);
+				ctx.drawImage(this._canvas, -(ige.geometry.x2), -(ige.geometry.y2));
 			}
 		}
 	},
@@ -50,8 +51,8 @@ var IgeSceneUi = IgeScene2d.extend({
 	 */
 	_resizeEvent: function (event) {
 		// Resize our cache canvas
-		this._canvas.width = ige._canvas.width;
-		this._canvas.height = ige._canvas.height;
+		this._canvas.width = ige.geometry.x;
+		this._canvas.height = ige.geometry.y;
 		this._ctx = this._canvas.getContext('2d');
 
 		this.dirty(true);
