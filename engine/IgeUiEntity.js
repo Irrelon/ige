@@ -23,29 +23,31 @@ var IgeUiEntity = IgeEntity.extend([
 
 	_renderBackground: function (ctx) {
 		var geom = this.geometry,
-			left, top;
+			left, top, width, height;
 
 		if (this._backgroundColor || this._patternFill) {
 			left = -(geom.x / 2);
 			top = -(geom.y / 2);
+			width = geom.x;
+			height = geom.y;
 
 			ctx.save();
 				ctx.beginPath();
 
 				// Check for early exit if we are rendering a rectangle
 				if (!this._borderTopRightRadius && this._borderBottomRightRadius && !this._borderBottomLeftRadius && !this._borderTopLeftRadius) {
-					ctx.rect(left, top, this._width, this._height);
+					ctx.rect(left, top, width, height);
 				} else {
 					// Top border
 					ctx.moveTo(left + this._borderTopLeftRadius, top);
-					ctx.lineTo(left + this._width - this._borderTopRightRadius, top);
+					ctx.lineTo(left + width - this._borderTopRightRadius, top);
 
 					if (this._borderTopRightRadius > 0) {
 						// Top-right corner
 						ctx.arcTo(
-							left + this._width,
+							left + width,
 							top,
-							left + this._width,
+							left + width,
 							top + this._borderTopRightRadius,
 							this._borderTopRightRadius
 						);
@@ -53,33 +55,33 @@ var IgeUiEntity = IgeEntity.extend([
 
 					// Right border
 					ctx.lineTo(
-						left + this._width,
-						top + this._height - this._borderBottomRightRadius
+						left + width,
+						top + height - this._borderBottomRightRadius
 					);
 
 					if (this._borderBottomRightRadius > 0) {
 						// Bottom-right corner
 						ctx.arcTo(
-							left + this._width,
-							top + this._height,
-							left + this._width - this._borderBottomRightRadius,
-							top + this._height, this._borderBottomRightRadius
+							left + width,
+							top + height,
+							left + width - this._borderBottomRightRadius,
+							top + height, this._borderBottomRightRadius
 						);
 					}
 
 					// Bottom border
 					ctx.lineTo(
 						left + this._borderBottomLeftRadius,
-						top + this._height
+						top + height
 					);
 
 					if (this._borderBottomLeftRadius > 0) {
 						// Bottom-left corner
 						ctx.arcTo(
 							left,
-							top + this._height,
+							top + height,
 							left,
-							top + this._height - this._borderBottomLeftRadius,
+							top + height - this._borderBottomLeftRadius,
 							this._borderBottomLeftRadius
 						);
 					}
@@ -112,8 +114,8 @@ var IgeUiEntity = IgeEntity.extend([
 				// If there is a background image, paint it here
 				if (this._patternFill) {
 					ctx.translate(
-						-(this._width / 2) + this._backgroundPosition.x | 0,
-						-(this._height / 2) + this._backgroundPosition.y | 0
+						-(width / 2) + this._backgroundPosition.x | 0,
+						-(height / 2) + this._backgroundPosition.y | 0
 					);
 
 					ctx.fillStyle = this._patternFill;
@@ -127,7 +129,9 @@ var IgeUiEntity = IgeEntity.extend([
 		var rad,
 			geom = this.geometry,
 			left = -(geom.x / 2),
-			top = -(geom.y / 2);
+			top = -(geom.y / 2),
+			width = geom.x,
+			height = geom.y;
 
 		// Check for early exit if we are rendering a rectangle
 		if (!this._borderTopRightRadius && !this._borderBottomRightRadius && !this._borderBottomLeftRadius && !this._borderTopLeftRadius
@@ -137,7 +141,7 @@ var IgeUiEntity = IgeEntity.extend([
 			&& this._borderBottomWidth === this._borderWidth) {
 			ctx.strokeStyle = this._borderColor;
 			ctx.lineWidth = this._borderWidth;
-			ctx.strokeRect(left, top, this._width, this._height);
+			ctx.strokeRect(left, top, width, height);
 		} else {
 			rad = Math.PI / 180;
 			if (this._borderTopWidth) {
@@ -155,13 +159,13 @@ var IgeUiEntity = IgeEntity.extend([
 				// Top border
 				ctx.beginPath();
 				ctx.moveTo(left + this._borderTopLeftRadius, top);
-				ctx.lineTo(left + this._width - this._borderTopRightRadius, top);
+				ctx.lineTo(left + width - this._borderTopRightRadius, top);
 				ctx.stroke();
 
 				if (this._borderTopRightRadius > 0) {
 					// Top-right corner top-half
 					ctx.beginPath();
-						ctx.arc(left + this._width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -90 * rad, -45 * rad);
+						ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -90 * rad, -45 * rad);
 					ctx.stroke();
 				}
 			}
@@ -173,20 +177,20 @@ var IgeUiEntity = IgeEntity.extend([
 
 				if (this._borderTopRightRadius > 0) {
 					ctx.beginPath();
-						ctx.arc(left + this._width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -45 * rad, 0 * rad);
+						ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -45 * rad, 0 * rad);
 					ctx.stroke();
 				}
 
 				// Right border
 				ctx.beginPath();
-				ctx.moveTo(left + this._width, top + this._borderTopRightRadius);
-				ctx.lineTo(left + this._width, top + this._height - this._borderBottomRightRadius);
+				ctx.moveTo(left + width, top + this._borderTopRightRadius);
+				ctx.lineTo(left + width, top + height - this._borderBottomRightRadius);
 				ctx.stroke();
 
 				if (this._borderBottomRightRadius > 0) {
 					// Bottom-right corner top-half
 					ctx.beginPath();
-						ctx.arc(left + this._width - this._borderBottomRightRadius, top + this._height - this._borderBottomRightRadius, this._borderTopRightRadius, 0 * rad, 45 * rad);
+						ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderTopRightRadius, 0 * rad, 45 * rad);
 					ctx.stroke();
 				}
 			}
@@ -198,20 +202,20 @@ var IgeUiEntity = IgeEntity.extend([
 
 				if (this._borderBottomRightRadius > 0) {
 					ctx.beginPath();
-						ctx.arc(left + this._width - this._borderBottomRightRadius, top + this._height - this._borderBottomRightRadius, this._borderBottomRightRadius, 45 * rad, 90 * rad);
+						ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderBottomRightRadius, 45 * rad, 90 * rad);
 					ctx.stroke();
 				}
 
 				// Bottom border
 				ctx.beginPath();
-				ctx.moveTo(left + this._width - this._borderBottomRightRadius, top + this._height);
-				ctx.lineTo(left + this._borderBottomLeftRadius, top + this._height);
+				ctx.moveTo(left + width - this._borderBottomRightRadius, top + height);
+				ctx.lineTo(left + this._borderBottomLeftRadius, top + height);
 				ctx.stroke();
 
 				if (this._borderBottomLeftRadius > 0) {
 					// Bottom-left corner bottom-half
 					ctx.beginPath();
-						ctx.arc(left + this._borderBottomLeftRadius, top + this._height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 90 * rad, 135 * rad);
+						ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 90 * rad, 135 * rad);
 					ctx.stroke();
 				}
 			}
@@ -223,13 +227,13 @@ var IgeUiEntity = IgeEntity.extend([
 
 				if (this._borderBottomLeftRadius > 0) {
 					ctx.beginPath();
-						ctx.arc(left + this._borderBottomLeftRadius, top + this._height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 135 * rad, 180 * rad);
+						ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 135 * rad, 180 * rad);
 					ctx.stroke();
 				}
 
 				// Left border
 				ctx.beginPath();
-				ctx.moveTo(left, top + this._height - this._borderBottomLeftRadius);
+				ctx.moveTo(left, top + height - this._borderBottomLeftRadius);
 				ctx.lineTo(left, top + this._borderTopLeftRadius);
 				ctx.stroke();
 
