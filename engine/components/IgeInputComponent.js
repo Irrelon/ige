@@ -195,6 +195,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 	},
 
 	_mouseMove: function (event) {
+		this._state[this.mouse.x] = event.clientX;
+		this._state[this.mouse.y] = event.clientY;
 		this.emit('mouseUp', event);
 	},
 

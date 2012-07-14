@@ -29,7 +29,8 @@ var Client = IgeClass.extend({
 
 					self.obj[0] = tempObj = new IgeEntity();
 					tempObj.addComponent(IgeVelocityComponent);
-					tempObj.velocity.x(0.01);
+					tempObj.velocity.x(-0.01);
+					tempObj.velocity.y(0.01);
 					tempObj.depth(1);
 					tempObj.geometry.x = 100;
 					tempObj.geometry.y = 100;

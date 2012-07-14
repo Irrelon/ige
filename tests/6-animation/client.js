@@ -133,19 +133,19 @@ var Client = IgeClass.extend({
 								// Moving horizontal
 								if (distX < 0) {
 									// Moving left
-									this.animation.start('walkLeft');
+									this.animation.select('walkLeft');
 								} else {
 									// Moving right
-									this.animation.start('walkRight');
+									this.animation.select('walkRight');
 								}
 							} else {
 								// Moving vertical
 								if (distY < 0) {
 									// Moving up
-									this.animation.start('walkUp');
+									this.animation.select('walkUp');
 								} else {
 									// Moving down
-									this.animation.start('walkDown');
+									this.animation.select('walkDown');
 								}
 							}
 
