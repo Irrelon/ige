@@ -4,7 +4,8 @@ var Client = IgeClass.extend({
 		// Load our textures
 		var self = this,
 			gameTexture = [],
-			tt, i;
+			tt, i,
+			overFunc, outFunc;
 
 		this.obj = [];
 
@@ -18,7 +19,7 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Define our player character classes
-					self.Character = IgeEntity.extend({
+					self.Character = IgeInteractiveEntity.extend({
 						init: function () {
 							this._super();
 
@@ -159,15 +160,30 @@ var Client = IgeClass.extend({
 					self.vp1 = new IgeViewport()
 						.autoSize(true)
 						.scene(self.scene1)
-						//.drawBounds(true)
+						.drawBounds(true)
 						.mount(ige);
 
+					overFunc = function () {
+						this.highlight(true);
+						this.drawBounds(true);
+						this.drawBoundsData(true);
+					};
+
+					outFunc = function () {
+						this.highlight(false);
+						this.drawBounds(false);
+						this.drawBoundsData(false);
+					};
+
 					tt = 0;
-					for (i = 0; i < 100; i++) {
+					for (i = 0; i < 200; i++) {
 						// Create a new character
 						self.obj[i] = new self.Character()
 							.depth(i)
-							.setType(Math.random() * 8 | 0);
+							.setType(Math.random() * 8 | 0)
+							.drawBounds(false)
+							.mouseOver(overFunc)
+							.mouseOut(outFunc);
 
 						// Set a timeout to make the character start walking
 						// because we don't want them to all start walking at
@@ -185,7 +201,7 @@ var Client = IgeClass.extend({
 							tt
 						);
 
-						tt += 200;
+						tt += 100;
 					}
 				}
 			});
