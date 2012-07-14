@@ -6,7 +6,7 @@ var IgeTransformExtension = {
 
 		this._updateWorldTranslate();
 	
-		return this;
+		return this._entity || this;
 	},
 
 	translateTo: function (x, y, z) {
@@ -16,7 +16,7 @@ var IgeTransformExtension = {
 
 		this._updateWorldTranslate();
 	
-		return this;
+		return this._entity || this;
 	},
 
 	translate: function () {
@@ -25,7 +25,7 @@ var IgeTransformExtension = {
 		this.y = this._translateAccessorY;
 		this.z = this._translateAccessorZ;
 
-		return this;
+		return this._entity || this;
 	},
 
 	_translateAccessorTween: function (propertyObj, durationMs, options) {
@@ -35,7 +35,7 @@ var IgeTransformExtension = {
 	_translateAccessorX: function (val) {
 		if (val !== undefined) {
 			this._translate.x = val;
-			return this;
+			return this._entity || this;
 		}
 
 		return this._translate.x;
@@ -44,7 +44,7 @@ var IgeTransformExtension = {
 	_translateAccessorY: function (val) {
 		if (val !== undefined) {
 			this._translate.y = val;
-			return this;
+			return this._entity || this;
 		}
 
 		return this._translate.y;
@@ -53,7 +53,7 @@ var IgeTransformExtension = {
 	_translateAccessorZ: function (val) {
 		if (val !== undefined) {
 			this._translate.z = val;
-			return this;
+			return this._entity || this;
 		}
 
 		return this._translate.z;
@@ -66,7 +66,7 @@ var IgeTransformExtension = {
 
 		this._updateWorldRotate();
 	
-		return this;
+		return this._entity || this;
 	},
 
 	rotateTo: function (x, y, z) {
@@ -76,7 +76,7 @@ var IgeTransformExtension = {
 
 		this._updateWorldRotate();
 	
-		return this;
+		return this._entity || this;
 	},
 
 	rotate: function () {
@@ -85,7 +85,7 @@ var IgeTransformExtension = {
 		this.y = this._rotateAccessorY;
 		this.z = this._rotateAccessorZ;
 
-		return this;
+		return this._entity || this;
 	},
 
 	_rotateAccessorTween: function (propertyObj, durationMs, options) {
@@ -95,7 +95,7 @@ var IgeTransformExtension = {
 	_rotateAccessorX: function (val) {
 		if (val !== undefined) {
 			this._rotate.x = val;
-			return this;
+			return this._entity || this;
 		}
 
 		return this._rotate.x;
@@ -104,7 +104,7 @@ var IgeTransformExtension = {
 	_rotateAccessorY: function (val) {
 		if (val !== undefined) {
 			this._rotate.y = val;
-			return this;
+			return this._entity || this;
 		}
 
 		return this._rotate.y;
@@ -113,7 +113,7 @@ var IgeTransformExtension = {
 	_rotateAccessorZ: function (val) {
 		if (val !== undefined) {
 			this._rotate.z = val;
-			return this;
+			return this._entity || this;
 		}
 
 		return this._rotate.z;
@@ -126,7 +126,7 @@ var IgeTransformExtension = {
 
 		this._updateWorldScale();
 	
-		return this;
+		return this._entity || this;
 	},
 
 	scaleTo: function (x, y, z) {
@@ -136,7 +136,7 @@ var IgeTransformExtension = {
 
 		this._updateWorldScale();
 	
-		return this;
+		return this._entity || this;
 	},
 
 	scale: function () {
@@ -145,7 +145,7 @@ var IgeTransformExtension = {
 		this.y = this._scaleAccessorY;
 		this.z = this._scaleAccessorZ;
 
-		return this;
+		return this._entity || this;
 	},
 
 	_scaleAccessorTween: function (propertyObj, durationMs, options) {
@@ -155,7 +155,7 @@ var IgeTransformExtension = {
 	_scaleAccessorX: function (val) {
 		if (val !== undefined) {
 			this._scale.x = val;
-			return this;
+			return this._entity || this;
 		}
 
 		return this._scale.x;
@@ -164,7 +164,7 @@ var IgeTransformExtension = {
 	_scaleAccessorY: function (val) {
 		if (val !== undefined) {
 			this._scale.y = val;
-			return this;
+			return this._entity || this;
 		}
 
 		return this._scale.y;
@@ -173,7 +173,7 @@ var IgeTransformExtension = {
 	_scaleAccessorZ: function (val) {
 		if (val !== undefined) {
 			this._scale.z = val;
-			return this;
+			return this._entity || this;
 		}
 
 		return this._scale.z;
@@ -184,7 +184,7 @@ var IgeTransformExtension = {
 		this._origin.y += y;
 		this._origin.z += z;
 	
-		return this;
+		return this._entity || this;
 	},
 
 	originTo: function (x, y, z) {
@@ -192,7 +192,7 @@ var IgeTransformExtension = {
 		this._origin.y = y;
 		this._origin.z = z;
 	
-		return this;
+		return this._entity || this;
 	},
 
 	origin: function () {
@@ -201,7 +201,7 @@ var IgeTransformExtension = {
 		this.y = this._originAccessorY;
 		this.z = this._originAccessorZ;
 
-		return this;
+		return this._entity || this;
 	},
 
 	_originAccessorTween: function (propertyObj, durationMs, options) {
@@ -211,7 +211,7 @@ var IgeTransformExtension = {
 	_originAccessorX: function (val) {
 		if (val !== undefined) {
 			this._origin.x = val;
-			return this;
+			return this._entity || this;
 		}
 
 		return this._origin.x;
@@ -220,7 +220,7 @@ var IgeTransformExtension = {
 	_originAccessorY: function (val) {
 		if (val !== undefined) {
 			this._origin.y = val;
-			return this;
+			return this._entity || this;
 		}
 
 		return this._origin.y;
@@ -229,7 +229,7 @@ var IgeTransformExtension = {
 	_originAccessorZ: function (val) {
 		if (val !== undefined) {
 			this._origin.z = val;
-			return this;
+			return this._entity || this;
 		}
 
 		return this._origin.z;
