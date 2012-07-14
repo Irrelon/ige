@@ -61,12 +61,13 @@ var Client = IgeClass.extend({
 
 					ige.viewportDepth(true);
 
-					// Create the main viewport
-					self.vp1 = new IgeViewport();
-					self.vp1.mount(ige);
-
 					self.scene1 = new IgeScene2d();
-					self.vp1.scene(self.scene1);
+
+					// Create the main viewport
+					self.vp1 = new IgeViewport()
+						.autoSize(true)
+						.scene(self.scene1)
+						.mount(ige);
 
 					var tt = 0,
 						vpCount = 3,
