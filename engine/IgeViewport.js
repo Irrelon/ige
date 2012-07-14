@@ -99,7 +99,6 @@ var IgeViewport = IgeUiEntity.extend([
 			if (this._drawBounds && ctx === ige._ctx) {
 				// Traverse the scenegraph and draw axis-aligned
 				// bounding boxes for every object
-				ctx.strokeStyle = '#00d8e5';
 				this.drawAABBs(ctx, this._scene, 0);
 			}
 		}
@@ -126,15 +125,16 @@ var IgeViewport = IgeUiEntity.extend([
 
 					if (aabb) {
 						if (obj._drawBounds || obj._drawBounds === undefined) {
+							ctx.strokeStyle = '#00deff';
 							ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
 						}
 
 						if (this._drawBoundsData || obj._drawBoundsData) {
 							ctx.globalAlpha = 0.5;
-							ctx.fillStyle = '#58f6ff';
+							ctx.fillStyle = '#8a00ff';
 							ctx.fillRect(aabb.x, aabb.y, aabb.width, 14);
 							ctx.globalAlpha = 1;
-							ctx.fillStyle = '#000000';
+							ctx.fillStyle = '#f6ff00';
 							ctx.fillText('[' + obj.id() + '] ' + index, aabb.x + 3, aabb.y + 10);
 						}
 					}
