@@ -40,6 +40,7 @@ var IgeEngine = IgeEntity.extend({
 		this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
 		this._frameAlternator = false; // Is set to the boolean not of itself each frame
 		this._viewportDepth = false;
+		this._mousePos = new IgePoint(0, 0, 0);
 
 		this.dependencyTimeout(30000); // Wait 30 seconds to load all dependencies then timeout
 
@@ -315,7 +316,6 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	_mouseMove: function (event) {
 		// Emit the event
-		ige._mousePos = ige._mousePos || {};
 		ige._mousePos.x = event.clientX;
 		ige._mousePos.y = event.clientY;
 		ige.emit('mouseMove', event);
@@ -425,7 +425,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		ctx.save();
-		ctx.translate(this.geometry.x2, this.geometry.y2)
+		ctx.translate(this.geometry.x2, this.geometry.y2);
 
 		// Process the current engine tick for all child objects
 		var arr = this._children,
