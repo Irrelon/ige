@@ -9,6 +9,11 @@ var IgeObject = IgeEventingClass.extend({
 		this._depth = 0;
 		this._dirty = true;
 		this.data = {};
+
+		// Reference the main input system
+		if (!this.input && ige && ige.input) {
+			this.input = ige.input;
+		}
 	},
 
 	/**
