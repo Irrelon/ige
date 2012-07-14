@@ -20,43 +20,6 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					// Define a random-moving entity
-					var RandomTweener = IgeInteractiveEntity.extend({
-						init: function () {
-							this._super();
-							this.newTween();
-						},
-
-						newTween: function () {
-							var self = this;
-							ige.tween.start(
-								this._translate,
-								{
-									x: (Math.random() * 1200) - 600,
-									y: (Math.random() * 600) - 300
-								},
-								3000,
-								{
-									easing:'outElastic',
-									afterTween: function () {
-										self.newTween();
-									}
-								}
-							);
-
-							ige.tween.start(
-								this._rotate,
-								{
-									z: (Math.random() * 360) * Math.PI / 180
-								},
-								3000,
-								{
-									easing:'outElastic'
-								}
-							);
-						}
-					});
-
 					// Create the main parent scene
 					self.scene1 = new IgeScene2d();
 
@@ -73,7 +36,7 @@ var Client = IgeClass.extend({
 					self.scene2.mount(self.scene1);
 
 					// Create an entity
-					self.obj[0] = new RandomTweener()
+					self.obj[0] = new IgeInteractiveEntity()
 						.id('randomFairy1')
 						.depth(1)
 						.width(100)
@@ -84,10 +47,9 @@ var Client = IgeClass.extend({
 						.mount(self.scene2);
 
 					// Create the UI scene
-					self.scene3 = new IgeScene2d().depth(1);
-
-					// Set the main viewport's scene
-					self.scene3.mount(self.scene1);
+					self.scene3 = new IgeScene2d()
+						.depth(1)
+						.mount(self.scene1);
 
 					// Create a new UI entity
 					// TODO: Make the entities change background color when mouseover
@@ -138,7 +100,7 @@ var Client = IgeClass.extend({
 						.cell(1)
 						.backgroundImage(gameTexture[1], 'no-repeat')
 						.mouseOver(function () { this.cell(2); this.dirty(true); })
-						.mouseOut(function () { this.cell(1); this.dirty(true); })
+						.mouseOut(function () { this.cell(1); this.dirty(true); ige.client.scene3.shouldRender(false); })
 						.mount(self.obj[2]);
 
 					self.obj[5] = new IgeUiEntity()
@@ -153,7 +115,6 @@ var Client = IgeClass.extend({
 						.borderTopWidth(1)
 						.backgroundPosition(0, 0)
 						.mount(self.scene3);
-
 				}
 			});
 		});
