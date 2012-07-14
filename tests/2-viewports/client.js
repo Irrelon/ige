@@ -68,45 +68,143 @@ var Client = IgeClass.extend({
 					self.scene1 = new IgeScene2d();
 					self.vp1.scene(self.scene1);
 
-					var tt = 0;
-					for (var i = 0; i < 18; i++) {
-						vp[i] = new IgeViewport({center:-300 + 75, middle:0, width:150, height:75, autoSize:false, borderStyle: '#ffffff'});
-						vp[i].originTo(0, 0, 0);
-						vp[i].camera.scaleTo(0.5, 0.5, 0.5);
-						vp[i].depth((18 - i));
-						vp[i].scene(self.scene1);
+					var tt = 0,
+						vpCount = 3,
+						timeInc = 1200;
+
+					for (var i = 0; i < vpCount; i++) {
+						vp[i] = new IgeViewport()
+							.center(-300)
+							.middle(0)
+							.width(150)
+							.height(75)
+							.autoSize(false)
+							.borderColor('#ffffff')
+							.originTo(0, 0, 0)
+							.camera.scaleTo(0.5, 0.5, 0.5)._entity
+							.depth((18 - i))
+							.scene(self.scene1);
 
 						setTimeout(function () { var vr = vp[i]; return function () { vr.addBehavior('rotator', RotatorBehaviour); }}(), tt);
-						tt += 200;
+						tt += timeInc;
 						vp[i].mount(ige);
 					}
 
 					tt = 0;
-					for (var i = 0; i < 18; i++) {
-						vp[i] = new IgeViewport({
-							center:300 + 75,
-							middle:0,
-							width:150,
-							height:75,
-							autoSize:false,
-							borderStyle: '#ffffff'}
-						)
-						.originTo(0, 0, 0)
-						.camera.scaleTo(0.5, 0.5, 0.5)._entity
-						.depth((18 - i))
-						.scene(self.scene1);
+					for (var i = 0; i < vpCount; i++) {
+						vp[i] = new IgeViewport()
+							.center(300)
+							.middle(0)
+							.width(150)
+							.height(75)
+							.autoSize(false)
+							.borderColor('#ffffff')
+							.originTo(1, 1, 0)
+							.camera.scaleTo(0.5, 0.5, 0.5)._entity
+							.depth((18 - i))
+							.scene(self.scene1);
 
-						setTimeout(function () { var vr = vp[i]; return function () { vr.addBehavior('rotator', RotatorBehaviour); }}(), tt);
-						tt += 200;
+						setTimeout(function () { var vr = vp[i]; return function () { vr.addBehavior('rotator', RotatorBehaviourAC); }}(), tt);
+						tt += timeInc;
 						vp[i].mount(ige);
 					}
 
-					vp[0] = new IgeViewport({center:0, top:0, width:250, height:150, autoSize:false, borderStyle: '#ffffff'});
-					vp[0].originTo(0, 0, 0);
-					vp[0].camera.scaleTo(2, 2, 2);
-					vp[0].depth(1);
-					vp[0].scene(self.scene1);
-					vp[0].mount(ige);
+					// Corner viewports
+					new IgeViewport()
+						.left(0)
+						.top(0)
+						.width(150)
+						.height(75)
+						.autoSize(false)
+						.borderColor('#ffffff')
+						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.depth(1)
+						.scene(self.scene1)
+						.mount(ige);
+
+					new IgeViewport()
+						.right(0)
+						.top(0)
+						.width(150)
+						.height(75)
+						.autoSize(false)
+						.borderColor('#ffffff')
+						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.depth(1)
+						.scene(self.scene1)
+						.mount(ige);
+
+					new IgeViewport()
+						.right(0)
+						.bottom(0)
+						.width(150)
+						.height(75)
+						.autoSize(false)
+						.borderColor('#ffffff')
+						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.depth(1)
+						.scene(self.scene1)
+						.mount(ige);
+
+					new IgeViewport()
+						.left(0)
+						.bottom(0)
+						.width(150)
+						.height(75)
+						.autoSize(false)
+						.borderColor('#ffffff')
+						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.depth(1)
+						.scene(self.scene1)
+						.mount(ige);
+
+					new IgeViewport()
+						.center(0)
+						.top(0)
+						.width(150)
+						.height(75)
+						.autoSize(false)
+						.borderColor('#ffffff')
+						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.depth(1)
+						.scene(self.scene1)
+						.mount(ige);
+
+					new IgeViewport()
+						.center(0)
+						.bottom(0)
+						.width(150)
+						.height(75)
+						.autoSize(false)
+						.borderColor('#ffffff')
+						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.depth(1)
+						.scene(self.scene1)
+						.mount(ige);
+
+					new IgeViewport()
+						.left(0)
+						.middle(0)
+						.width(150)
+						.height(75)
+						.autoSize(false)
+						.borderColor('#ffffff')
+						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.depth(1)
+						.scene(self.scene1)
+						.mount(ige);
+
+					new IgeViewport()
+						.right(0)
+						.middle(0)
+						.width(150)
+						.height(75)
+						.autoSize(false)
+						.borderColor('#ffffff')
+						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.depth(1)
+						.scene(self.scene1)
+						.mount(ige);
 
 					self.obj[0] = new IgeEntity()
 						.addBehavior('rotator', RotatorBehaviour)
