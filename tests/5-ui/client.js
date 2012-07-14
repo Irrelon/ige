@@ -100,7 +100,7 @@ var Client = IgeClass.extend({
 						.cell(1)
 						.backgroundImage(gameTexture[1], 'no-repeat')
 						.mouseOver(function () { this.cell(2); this.dirty(true); })
-						.mouseOut(function () { this.cell(1); this.dirty(true); ige.client.scene3.shouldRender(false); })
+						.mouseOut(function () { this.cell(1); this.dirty(true); })
 						.mount(self.obj[2]);
 
 					self.obj[5] = new IgeUiEntity()
