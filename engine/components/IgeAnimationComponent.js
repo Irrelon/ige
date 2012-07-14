@@ -23,6 +23,8 @@ var IgeAnimationComponent = IgeClass.extend({
 		};
 
 		this._anims.length++;
+
+		return this._entity;
 	},
 
 	start: function (animId) {
@@ -42,11 +44,15 @@ var IgeAnimationComponent = IgeClass.extend({
 		} else {
 			this.log('Cannot set animation to "' + animId + '" because no animations have been defined with defineAnim(...);', 'warning');
 		}
+
+		return this._entity;
 	},
 
 	stop: function () {
 		delete this._anim;
 		delete this._animId;
+
+		return this._entity;
 	},
 
 	tick: function (ctx) {
