@@ -11,19 +11,11 @@ igeDebug = {
 	}
 };
 
-/** Array.prototype.pull - Removes the passed item from
-an array. {
-	category:"method",
-	arguments:[{
-		name:"item",
-		type:"multi",
-		desc:"The item to be removed from the array."
-	}],
-	returns: {
-		type:"integer",
-		desc:"Returns the index of the removed item or -1 if the item could not be found in the array.",
-	},
-} **/
+/**
+ * Removes the passed item from an array, the opposite of push().
+ * @param item
+ * @return {*}
+ */
 Array.prototype.pull = function (item) {
 	var index = this.indexOf(item);
 	if (index > -1) {
@@ -34,15 +26,22 @@ Array.prototype.pull = function (item) {
 	}
 };
 
-/** disableContextMenu - Turn off the right-click default behaviour in the
-browser for the passed element. {
-	category:"method",
-	arguments:[{
-		name:"obj",
-		type:"object",
-		desc:"The element name to disable right-click context menus for.",
-	}],
-} **/
+/**
+ * Calculates the distance from the first point to the second point.
+ * @param x1
+ * @param y1
+ * @param x2
+ * @param y2
+ * @return {Number}
+ */
+Math.distance = function (x1, y1, x2, y2) {
+	return Math.sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)));
+};
+
+/**
+ * Turn off the right-click default behaviour in the browser for the passed element.
+ * @param obj
+ */
 var disableContextMenu = function (obj) {
 	if (obj !== null) {
 		//this.log('Disabling context menus for ' + obj, 'info');
@@ -50,11 +49,10 @@ var disableContextMenu = function (obj) {
 	}
 };
 
-/** Array.prototype.indexOf - Adds the indexOf method to all
-array objects if it does not already exist which would you
-believe can still happen. {
-	category:"method",
-} **/
+/**
+ * Adds the indexOf method to all array objects if it does not already exist which
+ * would you believe can still happen.
+ */
 if(!Array.prototype.indexOf){
 	Array.prototype.indexOf = function(obj) {
 		var i, l = this.length;
@@ -67,9 +65,9 @@ if(!Array.prototype.indexOf){
 	};
 }
 
-/** window.requestAnimFrame - A cross-browser requestAnimFrame method. {
-	category:"method",
-} **/
+/**
+ * A cross-browser requestAnimFrame method.
+ */
 if (typeof(window) !== 'undefined') {
 	/*window.requestAnimFrame = (function(){
 		return function(callback, element){
