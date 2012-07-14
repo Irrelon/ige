@@ -117,30 +117,32 @@ var IgeViewport = IgeUiEntity.extend([
 				obj = arr[arrCount];
 				index++;
 
-				if (typeof(obj.aabb) === 'function') {
-					// Grab the AABB and then draw it
-					aabb = obj.aabb();
-					aabb.x -= ige.geometry.x2;
-					aabb.y -= ige.geometry.y2;
+				if (obj._shouldRender !== false) {
+					if (typeof(obj.aabb) === 'function') {
+						// Grab the AABB and then draw it
+						aabb = obj.aabb();
+						aabb.x -= ige.geometry.x2;
+						aabb.y -= ige.geometry.y2;
 
-					if (aabb) {
-						if (obj._drawBounds || obj._drawBounds === undefined) {
-							ctx.strokeStyle = '#00deff';
-							ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
-						}
+						if (aabb) {
+							if (obj._drawBounds || obj._drawBounds === undefined) {
+								ctx.strokeStyle = '#00deff';
+								ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
+							}
 
-						if (this._drawBoundsData || obj._drawBoundsData) {
-							ctx.globalAlpha = 0.5;
-							ctx.fillStyle = '#8a00ff';
-							ctx.fillRect(aabb.x, aabb.y, aabb.width, 14);
-							ctx.globalAlpha = 1;
-							ctx.fillStyle = '#f6ff00';
-							ctx.fillText('[' + obj.id() + '] ' + index, aabb.x + 3, aabb.y + 10);
+							if (this._drawBoundsData || obj._drawBoundsData) {
+								ctx.globalAlpha = 0.5;
+								ctx.fillStyle = '#8a00ff';
+								ctx.fillRect(aabb.x, aabb.y, aabb.width, 14);
+								ctx.globalAlpha = 1;
+								ctx.fillStyle = '#f6ff00';
+								ctx.fillText('[' + obj.id() + '] ' + index, aabb.x + 3, aabb.y + 10);
+							}
 						}
 					}
-				}
 
-				this.drawAABBs(ctx, obj, index);
+					this.drawAABBs(ctx, obj, index);
+				}
 			}
 		}
 	},
