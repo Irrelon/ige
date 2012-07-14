@@ -1,4 +1,4 @@
-var IgeScene2d = IgeObject.extend({
+var IgeScene2d = IgeEntity.extend({
 	classId: 'IgeScene2d',
 
 	init: function () {
@@ -29,9 +29,9 @@ var IgeScene2d = IgeObject.extend({
 	/**
 	 * Processes the actions required each render frame.
 	 */
-	tick: function (ctx, scene) {
+	tick: function (ctx) {
 		if (this._shouldRender) {
-			this._super(ctx, scene);
+			this._super(ctx);
 		}
 	},
 
