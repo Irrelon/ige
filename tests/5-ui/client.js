@@ -26,7 +26,7 @@ var Client = IgeClass.extend({
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
 						.autoSize(true)
-						.drawBounds(true)
+						//.drawBounds(true)
 						//.drawBoundsData(true)
 						.scene(self.scene1)
 						.mount(ige);
