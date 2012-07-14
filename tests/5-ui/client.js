@@ -64,6 +64,8 @@ var Client = IgeClass.extend({
 						.borderBottomColor('#666666')
 						.borderBottomWidth(1)
 						.backgroundPosition(0, 0)
+						.mouseOver(function () {this.backgroundColor('#49ceff'); })
+						.mouseOut(function () {this.backgroundColor('#474747'); })
 						.mount(self.scene3);
 
 					self.obj[2] = new IgeUiEntity()
@@ -76,6 +78,8 @@ var Client = IgeClass.extend({
 						.height('100%', -60)
 						.borderRightColor('#666666')
 						.borderRightWidth(1)
+						.mouseOver(function () {this.backgroundColor('#49ceff'); })
+						.mouseOut(function () {this.backgroundColor('#282828'); })
 						.mount(self.scene3);
 
 					self.obj[3] = new IgeUiEntity()
@@ -88,6 +92,8 @@ var Client = IgeClass.extend({
 						.height('100%', -60)
 						.borderLeftColor('#666666')
 						.borderLeftWidth(1)
+						.mouseOver(function () {this.backgroundColor('#49ceff'); })
+						.mouseOut(function () {this.backgroundColor('#282828'); })
 						.mount(self.scene3);
 
 					self.obj[4] = new IgeUiEntity()
@@ -114,6 +120,8 @@ var Client = IgeClass.extend({
 						.borderTopColor('#666666')
 						.borderTopWidth(1)
 						.backgroundPosition(0, 0)
+						.mouseOver(function () {this.backgroundColor('#49ceff'); })
+						.mouseOut(function () {this.backgroundColor('#474747'); })
 						.mount(self.scene3);
 				}
 			});
