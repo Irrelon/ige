@@ -30,43 +30,24 @@ var Client = IgeClass.extend({
 						newTween: function () {
 							var self = this,
 								tempScale = (Math.random() * 2);
-							ige.tween.start(
-								this._translate,
-								{
+
+							this.translate().tween()
+								.duration(7000)
+								.properties({
 									x: (Math.random() * ige.geometry.x) - ige.geometry.x2,
 									y: (Math.random() * ige.geometry.y) - ige.geometry.y2
-								},
-								7000,
-								{
-									easing:'outElastic',
-									afterTween: function () {
-										self.newTween();
-									}
-								}
-							);
+								})
+								.easing('outElastic')
+								.afterTween(function () {
+									self.newTween();
+								})
+								.start();
 
-							ige.tween.start(
-								this._rotate,
-								{
-									z: (Math.random() * 360) * Math.PI / 180
-								},
-								7000,
-								{
-									easing:'outElastic'
-								}
-							);
-
-							/*ige.tween.start(
-								this._scale,
-								{
-									x: tempScale,
-									y: tempScale
-								},
-								7000,
-								{
-									easing:'outElastic'
-								}
-							);*/
+							this.rotate().tween()
+								.duration(7000)
+								.properties({z: (Math.random() * 360) * Math.PI / 180})
+								.easing('outElastic')
+								.start();
 						}
 					});
 
