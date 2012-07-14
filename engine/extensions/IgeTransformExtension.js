@@ -19,6 +19,46 @@ var IgeTransformExtension = {
 		return this;
 	},
 
+	translate: function () {
+		this.tween = this._translateAccessorTween;
+		this.x = this._translateAccessorX;
+		this.y = this._translateAccessorY;
+		this.z = this._translateAccessorZ;
+
+		return this;
+	},
+
+	_translateAccessorTween: function (propertyObj, durationMs, options) {
+		return new IgeTween(this._translate, propertyObj, durationMs, options);
+	},
+
+	_translateAccessorX: function (val) {
+		if (val !== undefined) {
+			this._translate.x = val;
+			return this;
+		}
+
+		return this._translate.x;
+	},
+
+	_translateAccessorY: function (val) {
+		if (val !== undefined) {
+			this._translate.y = val;
+			return this;
+		}
+
+		return this._translate.y;
+	},
+
+	_translateAccessorZ: function (val) {
+		if (val !== undefined) {
+			this._translate.z = val;
+			return this;
+		}
+
+		return this._translate.z;
+	},
+
 	rotateBy: function (x, y, z) {
 		this._rotate.x += x;
 		this._rotate.y += y;
@@ -37,6 +77,46 @@ var IgeTransformExtension = {
 		this._updateWorldRotate();
 	
 		return this;
+	},
+
+	rotate: function () {
+		this.tween = this._rotateAccessorTween;
+		this.x = this._rotateAccessorX;
+		this.y = this._rotateAccessorY;
+		this.z = this._rotateAccessorZ;
+
+		return this;
+	},
+
+	_rotateAccessorTween: function (propertyObj, durationMs, options) {
+		return new IgeTween(this._rotate, propertyObj, durationMs, options);
+	},
+
+	_rotateAccessorX: function (val) {
+		if (val !== undefined) {
+			this._rotate.x = val;
+			return this;
+		}
+
+		return this._rotate.x;
+	},
+
+	_rotateAccessorY: function (val) {
+		if (val !== undefined) {
+			this._rotate.y = val;
+			return this;
+		}
+
+		return this._rotate.y;
+	},
+
+	_rotateAccessorZ: function (val) {
+		if (val !== undefined) {
+			this._rotate.z = val;
+			return this;
+		}
+
+		return this._rotate.z;
 	},
 
 	scaleBy: function (x, y, z) {
@@ -59,6 +139,46 @@ var IgeTransformExtension = {
 		return this;
 	},
 
+	scale: function () {
+		this.tween = this._scaleAccessorTween;
+		this.x = this._scaleAccessorX;
+		this.y = this._scaleAccessorY;
+		this.z = this._scaleAccessorZ;
+
+		return this;
+	},
+
+	_scaleAccessorTween: function (propertyObj, durationMs, options) {
+		return new IgeTween(this._scale, propertyObj, durationMs, options);
+	},
+
+	_scaleAccessorX: function (val) {
+		if (val !== undefined) {
+			this._scale.x = val;
+			return this;
+		}
+
+		return this._scale.x;
+	},
+
+	_scaleAccessorY: function (val) {
+		if (val !== undefined) {
+			this._scale.y = val;
+			return this;
+		}
+
+		return this._scale.y;
+	},
+
+	_scaleAccessorZ: function (val) {
+		if (val !== undefined) {
+			this._scale.z = val;
+			return this;
+		}
+
+		return this._scale.z;
+	},
+
 	originBy: function (x, y, z) {
 		this._origin.x += x;
 		this._origin.y += y;
@@ -73,6 +193,46 @@ var IgeTransformExtension = {
 		this._origin.z = z;
 	
 		return this;
+	},
+
+	origin: function () {
+		this.tween = this._originAccessorTween;
+		this.x = this._originAccessorX;
+		this.y = this._originAccessorY;
+		this.z = this._originAccessorZ;
+
+		return this;
+	},
+
+	_originAccessorTween: function (propertyObj, durationMs, options) {
+		return new IgeTween(this._origin, propertyObj, durationMs, options);
+	},
+
+	_originAccessorX: function (val) {
+		if (val !== undefined) {
+			this._origin.x = val;
+			return this;
+		}
+
+		return this._origin.x;
+	},
+
+	_originAccessorY: function (val) {
+		if (val !== undefined) {
+			this._origin.y = val;
+			return this;
+		}
+
+		return this._origin.y;
+	},
+
+	_originAccessorZ: function (val) {
+		if (val !== undefined) {
+			this._origin.z = val;
+			return this;
+		}
+
+		return this._origin.z;
 	},
 
 	_updateWorldTranslate: function () {
