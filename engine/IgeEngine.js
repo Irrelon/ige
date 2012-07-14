@@ -29,6 +29,10 @@ var IgeEngine = IgeEntity.extend({
 		// which is important when storing persistent data with ids etc
 		this._idCounter = new Date().getTime();
 
+		// Setup components
+		this.addComponent(IgeInputComponent);
+		this.addComponent(IgeTweenComponent);
+
 		// Set some defaults
 		this._state = 0; // Currently stopped
 		this._texturesLoading = 0; // Holds a count of currently loading textures
@@ -278,6 +282,7 @@ var IgeEngine = IgeEntity.extend({
 				this._resizeEvent();
 			}
 
+			this.input._setupListeners();
 			this._ctx = this._canvas.getContext('2d');
 		}
 	},
