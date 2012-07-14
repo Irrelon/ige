@@ -23,13 +23,13 @@ var Client = IgeClass.extend({
 						}
 					});
 
-					// Create the main viewport
-					self.vp1 = new IgeViewport();
-					self.vp1.mount(ige);
-
 					// Create the scene
 					self.scene1 = new IgeScene2d();
-					self.vp1.scene(self.scene1);
+
+					// Create the main viewport
+					self.vp1 = new IgeViewport()
+						.scene(self.scene1)
+						.mount(ige);
 
 					// Create an entity
 					self.obj[0] = new Rotator()
