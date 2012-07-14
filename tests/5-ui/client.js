@@ -21,7 +21,7 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Define a random-moving entity
-					var RandomTweener = IgeEntity.extend({
+					var RandomTweener = IgeInteractiveEntity.extend({
 						init: function () {
 							this._super();
 							this.newTween();

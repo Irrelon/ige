@@ -29,6 +29,7 @@ var Client = IgeClass.extend({
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
 						.scene(self.scene1)
+						.drawBounds(true)
 						.mount(ige);
 
 					// Create an entity
