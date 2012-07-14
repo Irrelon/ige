@@ -159,7 +159,7 @@ var Client = IgeClass.extend({
 					self.vp1 = new IgeViewport()
 						.autoSize(true)
 						.scene(self.scene1)
-						.drawBounds(true)
+						//.drawBounds(true)
 						.mount(ige);
 
 					tt = 0;
