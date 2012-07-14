@@ -52,7 +52,6 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					// Create a new UI entity
-					// TODO: Make the entities change background color when mouseover
 					self.obj[1] = new IgeUiEntity()
 						.id('topBar')
 						.depth(1)
