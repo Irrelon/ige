@@ -1,6 +1,6 @@
-var IgeSocketIo = IgeClass.extend({
-	classId: 'IgeSocketIo',
-	IgeSocketIo: true,
+var IgeSocketIoComponent = IgeClass.extend({
+	classId: 'IgeSocketIoComponent',
+	componentId: 'network',
 
 	init: function () {
 		// Set some defaults
