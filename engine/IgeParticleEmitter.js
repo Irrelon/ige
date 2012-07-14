@@ -19,143 +19,178 @@ var IgeParticleEmitter = IgeEntity.extend({
 	} */
 	particle: function (obj) {
 		this._particle = obj;
+		return this;
 	},
 
 	quantityTimespan: function (val) {
 		this._quantityTimespan = val;
+		return this;
 	},
 
 	quantityBase: function (val) {
 		this._quantityBase = val;
+		return this;
 	},
 
 	quantityVariance: function (a, b) {
 		this._quantityVariance = [a, b];
+		return this;
 	},
 
 	quantityMax: function (val) {
 		this._quantityMax = val;
 		this._quantityProduced = 0;
+		return this;
 	},
 
 	translateBaseX: function (val) {
 		this._translateBaseX = val;
+		return this;
 	},
 
 	translateBaseY: function (val) {
 		this._translateBaseY = val;
+		return this;
 	},
 
 	translateBaseZ: function (val) {
 		this._translateBaseZ = val;
+		return this;
 	},
 
 	translateVarianceX: function (a, b) {
 		this._translateVarianceX = [a, b];
+		return this;
 	},
 
 	translateVarianceY: function (a, b) {
 		this._translateVarianceY = [a, b];
+		return this;
 	},
 
 	translateVarianceZ: function (a, b) {
 		this._translateVarianceZ = [a, b];
+		return this;
 	},
 
 	rotateBase: function (val) {
 		this._rotateBase = val;
+		return this;
 	},
 
 	rotateVariance: function (a, b) {
 		this._rotateVariance = [a, b];
+		return this;
 	},
 
 	deathRotateBase: function (val) {
 		this._deathRotateBase = val;
+		return this;
 	},
 
 	deathRotateVariance: function (a, b) {
 		this._deathRotateVariance = [a, b];
+		return this;
 	},
 
 	scaleBaseX: function (val) {
 		this._scaleBaseX = val;
+		return this;
 	},
 
 	scaleBaseY: function (val) {
 		this._scaleBaseY = val;
+		return this;
 	},
 
 	scaleBaseZ: function (val) {
 		this._scaleBaseZ = val;
+		return this;
 	},
 
 	scaleVarianceX: function (a, b) {
 		this._scaleVarianceX = [a, b];
+		return this;
 	},
 
 	scaleVarianceY: function (a, b) {
 		this._scaleVarianceY = [a, b];
+		return this;
 	},
 
 	scaleVarianceZ: function (a, b) {
 		this._scaleVarianceZ = [a, b];
+		return this;
 	},
 
 	scaleLockAspect: function (val) {
 		this._scaleLockAspect = val;
+		return this;
 	},
 
 	deathScaleBaseX: function (val) {
 		this._deathScaleBaseX = val;
+		return this;
 	},
 
 	deathScaleBaseY: function (val) {
 		this._deathScaleBaseY = val;
+		return this;
 	},
 
 	deathScaleBaseZ: function (val) {
 		this._deathScaleBaseZ = val;
+		return this;
 	},
 
 	deathScaleVarianceX: function (a, b) {
 		this._deathScaleVarianceX = [a, b];
+		return this;
 	},
 
 	deathScaleVarianceY: function (a, b) {
 		this._deathScaleVarianceY = [a, b];
+		return this;
 	},
 
 	deathScaleVarianceZ: function (a, b) {
 		this._deathScaleVarianceZ = [a, b];
+		return this;
 	},
 
 	deathScaleLockAspect: function (val) {
 		this._deathScaleLockAspect = val;
+		return this;
 	},
 
 	opacityBase: function (val) {
 		this._opacityBase = val;
+		return this;
 	},
 
 	opacityVariance: function (a, b) {
 		this._opacityVariance = [a, b];
+		return this;
 	},
 
 	deathOpacityBase: function (val) {
 		this._deathOpacityBase = val;
+		return this;
 	},
 
 	deathOpacityVariance: function (a, b) {
 		this._deathOpacityVariance = [a, b];
+		return this;
 	},
 
 	lifeBase: function (val) {
 		this._lifeBase = val;
+		return this;
 	},
 
 	lifeVariance: function (a, b) {
 		this._lifeVariance = [a, b];
+		return this;
 	},
 
 	/*vectorAngleBase: function (val) {
@@ -188,23 +223,9 @@ var IgeParticleEmitter = IgeEntity.extend({
 			min: minVector,
 			max: maxVector
 		};
-	},
 
-	/*linearForceAngleBase: function (val) {
-		this._linearForceAngleBase = val;
+		return this;
 	},
-
-	linearForceAngleVariance: function (a, b) {
-		this._linearForceAngleVariance = [a, b];
-	},
-
-	linearForcePowerBase: function (val) {
-		this._linearForcePowerBase = val;
-	},
-
-	linearForcePowerVariance: function (a, b) {
-		this._linearForcePowerVariance = [a, b];
-	},*/
 
 	linearForceVector: function (baseVector, minVector, maxVector) {
 		this._linearForceVector = {
@@ -212,6 +233,8 @@ var IgeParticleEmitter = IgeEntity.extend({
 			min: minVector,
 			max: maxVector
 		};
+
+		return this;
 	},
 
 	/** start - Starts the particle emitter which will begin spawning
@@ -235,6 +258,8 @@ var IgeParticleEmitter = IgeEntity.extend({
 		} else {
 			this.log('Cannot start particle emitter because no particle class was specified with a call to particle()', 'error');
 		}
+
+		return this;
 	},
 
 	/** stop - Stops the particle emitter. The current
@@ -244,6 +269,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 	} **/
 	stop: function () {
 		this._started = false;
+		return this;
 	},
 
 	/** stopAndKill - Stops the particle emitter. The current
@@ -264,6 +290,8 @@ var IgeParticleEmitter = IgeEntity.extend({
 		// Remove all references to the particles by
 		// re-initialising the particles array
 		this._particles = [];
+
+		return this;
 	},
 
 	/** baseAndVarianceValue - Takes a base value and a variance range
