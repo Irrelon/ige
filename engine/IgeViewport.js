@@ -19,7 +19,8 @@ var IgeViewport = IgeUiEntity.extend([
 
 		// Setup default objects
 		this.geometry = new IgePoint(options.width || 250, options.height || 150, 0);
-		this.camera = new IgeCamera(this);
+		this.camera = new IgeCamera(this)
+		this.camera._entity = this;
 	},
 
 	/**
