@@ -20,52 +20,6 @@ var IgeViewport = IgeUiEntity.extend([
 		// Setup default objects
 		this.geometry = new IgePoint(options.width || 250, options.height || 150, 0);
 		this.camera = new IgeCamera(this);
-
-		// Move the viewport into position
-		if (options.left !== undefined) {
-			this.left(options.left);
-		}
-
-		if (options.center !== undefined) {
-			this.center(options.center);
-		}
-
-		if (options.right !== undefined) {
-			this.right(options.right);
-		}
-
-		if (options.top !== undefined) {
-			this.top(options.top);
-		}
-
-		if (options.middle !== undefined) {
-			this.middle(options.middle);
-		}
-
-		if (options.bottom !== undefined) {
-			this.bottom(options.bottom);
-		}
-
-		// Set autoSize flag
-		this.autoSize(options.autoSize);
-
-		// Set the border style
-		this.borderStyle(options.borderStyle);
-	},
-
-	/**
-	 * Gets / sets the border style for the viewport.
-	 * @param {String} val
-	 * @return {*}
-	 */
-	borderStyle: function (val) {
-		if (val !== undefined) {
-			this._border = val;
-			ige.clearCanvas();
-			return this;
-		}
-
-		return this._border;
 	},
 
 	/**
@@ -107,72 +61,51 @@ var IgeViewport = IgeUiEntity.extend([
 			// transform effects
 			ige._currentCamera = this.camera;
 
-			var thisTranslate = this._translate,
-				thisRotate = this._rotate,
-				thisScale = this._scale,
-				thisOrigin = this._origin,
-				thisGeometry = this.geometry,
-				camTransform = this.camera,
-				camX = camTransform._translate.x,
-				camY = camTransform._translate.y;
+			// Render our scene data
+			this._super(ctx);
 
-			// Transform the context to the center of the viewport
+			// Translate to the top-left of the viewport
 			ctx.translate(
-				thisTranslate.x + ((thisGeometry.x * thisOrigin.x) | 0),
-				thisTranslate.y + ((thisGeometry.y * thisOrigin.y) | 0)
+				-(this.geometry.x * this._origin.x) | 0,
+				-(this.geometry.y * this._origin.y) | 0
 			);
-			ctx.rotate(thisRotate.z);
-			ctx.scale(thisScale.x, thisScale.y);
 
-			// Translate back to the top-left of the viewport
-			ctx.translate(-(thisGeometry.x * thisOrigin.x) | 0, -(thisGeometry.y * thisOrigin.y) | 0);
-
-			ctx.clearRect(
-				0,
-				0,
-				thisGeometry.x,
-				thisGeometry.y
-			);
+			// Clear the rectangle area of the viewport
+			ctx.clearRect(0, 0, this.geometry.x, this.geometry.y);
 
 			// Clip the context so we only draw "inside" the viewport area
 			ctx.beginPath();
-				ctx.rect(
-					0,
-					0,
-					thisGeometry.x,
-					thisGeometry.y
-				);
+				ctx.rect(0, 0, this.geometry.x, this.geometry.y);
 
 				// Paint a border if required
-				if (this._border) {
-					ctx.strokeStyle = this._border;
+				if (this._borderColor) {
+					ctx.strokeStyle = this._borderColor;
 					ctx.stroke();
 				}
 			ctx.clip();
 
+			ctx.translate((this.geometry.x / 2) | 0, (this.geometry.y / 2) | 0);
+
 			// Transform the context to the center of the viewport
 			ctx.translate(
-				(((thisGeometry.x * camTransform._origin.x) | 0) - camX | 0),
-				(((thisGeometry.y * camTransform._origin.y) | 0) - camY | 0)
+				-this.camera._translate.x,
+				-this.camera._translate.y
 			); // Bitwise floor
-			ctx.rotate(camTransform._rotate.z);
-			ctx.scale(camTransform._scale.x, camTransform._scale.y);
+			ctx.rotate(this.camera._rotate.z);
+			ctx.scale(this.camera._scale.x, this.camera._scale.y);
 
-			// Render our scene data
 			this._scene.tick(ctx, scene);
 
-			if (1 || this._drawAllBounds) {
+			if (this._drawBounds && ctx === ige._ctx) {
 				// Traverse the scenegraph and draw axis-aligned
 				// bounding boxes for every object
-				this.drawAABBs(ctx, this._scene);
+				ctx.strokeStyle = '#00d8e5';
+				this.drawAABBs(ctx, this._scene, 0);
 			}
-
-			// Process the tick method up the class chain
-			this._super(ctx);
 		}
 	},
 
-	drawAABBs: function (ctx, rootObject) {
+	drawAABBs: function (ctx, rootObject, index) {
 		var arr = rootObject._children,
 			arrCount,
 			obj,
@@ -183,18 +116,29 @@ var IgeViewport = IgeUiEntity.extend([
 
 			while (arrCount--) {
 				obj = arr[arrCount];
+				index++;
 
 				if (typeof(obj.aabb) === 'function') {
 					// Grab the AABB and then draw it
 					aabb = obj.aabb();
+					aabb.x -= ige.geometry.x2;
+					aabb.y -= ige.geometry.y2;
 
 					if (aabb) {
-						ctx.strokeStyle = '#ffffff';
 						ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
 
-						this.drawAABBs(ctx, obj);
+						if (this._drawBoundsData || obj._drawBoundsData) {
+							ctx.globalAlpha = 0.5;
+							ctx.fillStyle = '#58f6ff';
+							ctx.fillRect(aabb.x, aabb.y, aabb.width, 14);
+							ctx.globalAlpha = 1;
+							ctx.fillStyle = '#000000';
+							ctx.fillText('[' + obj.id() + '] ' + index, aabb.x + 3, aabb.y + 10);
+						}
 					}
 				}
+
+				this.drawAABBs(ctx, obj, index);
 			}
 		}
 	},
