@@ -1,4 +1,4 @@
-var IgeUiEntity = IgeEntity.extend([
+var IgeUiEntity = IgeInteractiveEntity.extend([
 	{extension: IgeUiStyleExtension, overwrite: true},
 	{extension: IgeUiPositionExtension, overwrite: true}
 ], {
