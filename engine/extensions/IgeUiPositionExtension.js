@@ -207,24 +207,27 @@ var IgeUiPositionExtension = {
 		// TODO: Update so that it takes into account the parent element's position etc
 	_updateUiPosition: function () {
 		if (this._parent) {
-			if (this._uiXAlign === 'right') {
-				this._translate.x = ((this._parent.geometry.x / 2 | 0) - this._uiX - this.geometry.x);
-			} else if (this._uiXAlign === 'center') {
-				this._translate.x = (this._uiX - (this.geometry.x / 2 | 0));
-			} else {
-				this._translate.x = (-(this._parent.geometry.x / 2 | 0) + this._uiX);
-			}
-
-			if (this._uiYAlign === 'bottom') {
-				this._translate.y = ((this._parent.geometry.y / 2 | 0) - this._uiY - this.geometry.y);
-			} else if (this._uiYAlign === 'middle') {
-				this._translate.y = (this._uiY - (this.geometry.y / 2 | 0));
-			} else {
-				this._translate.y = (-(this._parent.geometry.y / 2 | 0) + this._uiY);
-			}
+			var parentGeom = this._parent.geometry,
+				geom = this.geometry;
 
 			if (this._width) { this.width(this._width, this._widthModifier, true); }
 			if (this._width) { this.height(this._height, this._heightModifier, true); }
+
+			if (this._uiXAlign === 'right') {
+				this._translate.x = this._uiX + parentGeom.x2 - geom.x2;
+			} else if (this._uiXAlign === 'center') {
+				this._translate.x = this._uiX;
+			} else {
+				this._translate.x = this._uiX + geom.x2 - (parentGeom.x2);
+			}
+
+			if (this._uiYAlign === 'bottom') {
+				this._translate.y = this._uiY + parentGeom.y2 - geom.y2;
+			} else if (this._uiYAlign === 'middle') {
+				this._translate.y = this._uiY;
+			} else {
+				this._translate.y = this._uiY + geom.y2 - (parentGeom.y2);
+			}
 
 			this.dirty(true);
 		}

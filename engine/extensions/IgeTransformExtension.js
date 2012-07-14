@@ -91,10 +91,14 @@ var IgeTransformExtension = {
 
 		// Update all child objects
 		var arr = this._children,
+			arrCount;
+
+		if (arr) {
 			arrCount = arr.length;
 
-		while (arrCount--) {
-			arr[arrCount]._updateWorldTranslate();
+			while (arrCount--) {
+				arr[arrCount]._updateWorldTranslate();
+			}
 		}
 	},
 
@@ -114,10 +118,14 @@ var IgeTransformExtension = {
 
 		// Update all child objects
 		var arr = this._children,
+			arrCount;
+
+		if (arr) {
 			arrCount = arr.length;
 
-		while (arrCount--) {
-			arr[arrCount]._updateWorldRotate();
+			while (arrCount--) {
+				arr[arrCount]._updateWorldRotate();
+			}
 		}
 	},
 
@@ -137,10 +145,14 @@ var IgeTransformExtension = {
 
 		// Update all child objects
 		var arr = this._children,
+			arrCount;
+
+		if (arr) {
 			arrCount = arr.length;
 
-		while (arrCount--) {
-			arr[arrCount]._updateWorldScale();
+			while (arrCount--) {
+				arr[arrCount]._updateWorldScale();
+			}
 		}
 	},
 
