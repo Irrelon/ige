@@ -42,6 +42,10 @@ var IgeObject = IgeEventingClass.extend({
 		}
 	},
 
+	_childMounted: function (obj) {
+		this._resizeEvent(null);
+	},
+
 	/**
 	 * Adds a behaviour to the object's active behaviour list.
 	 * @param {String} id
@@ -84,6 +88,24 @@ var IgeObject = IgeEventingClass.extend({
 		return false;
 	},
 
+	drawBounds: function (val) {
+		if (val !== undefined) {
+			this._drawBounds = val;
+			return this;
+		}
+
+		return this._drawBounds;
+	},
+
+	drawBoundsData: function (val) {
+		if (val !== undefined) {
+			this._drawBoundsData = val;
+			return this;
+		}
+
+		return this._drawBoundsData;
+	},
+
 	/**
 	 * Mounts this object to the passed object in the scenegraph.
 	 * @param {IgeObject} obj
@@ -103,6 +125,8 @@ var IgeObject = IgeEventingClass.extend({
 
 			this._parent = obj;
 			obj._children.push(this);
+
+			this._parent._childMounted(this);
 
 			return this;
 		} else {
