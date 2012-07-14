@@ -96,7 +96,7 @@ IgeVelocityComponent = IgeClass.extend({
 		if (typeof(vector.scale) !== 'number') {
 			vector.scale = 1; // Default to 1
 		}
-		// TODO: Performance - can we use radians in the call instead of converting here?
+
 		var vel = this._velocity,
 			x = vector.x,
 			y = vector.y,
