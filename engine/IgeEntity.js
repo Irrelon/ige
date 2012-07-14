@@ -38,6 +38,10 @@ var IgeEntity = IgeObject.extend([
 		return this._id;
 	},
 
+	/**
+	 * Calculates and returns the current axis-aligned bounding box.
+	 * @return {Object} An object with the properties: x, y, width, height
+	 */
 	aabb: function () {
 		if (this._worldTranslate) {
 			var width2 = (this.geometry.x * this._worldScale.x) / 2,
@@ -181,12 +185,47 @@ var IgeEntity = IgeObject.extend([
 		return this._cell;
 	},
 
+	/**
+	 * Sets the geometry of the entity to match the width and height
+	 * of the assigned texture.
+	 */
+	dimensionsFromTexture: function () {
+		if (this._texture) {
+			this.width(this._texture._sizeX);
+			this.height(this._texture._sizeY);
+		}
+
+		return this;
+	},
+
+	/**
+	 * Sets the geometry of the entity to match the width and height
+	 * of the assigned texture cell. If the texture is not cell-based
+	 * the entire texture width / height will be used.
+	 */
+	dimensionsFromCell: function () {
+		if (this._texture) {
+			this.width(this._texture._cells[this._cell][2]);
+			this.height(this._texture._cells[this._cell][3]);
+		}
+
+		return this;
+	},
+
+	/**
+	 * @see IgeObject.mount
+	 */
 	mount: function (obj) {
 		var ret = this._super(obj);
 		this._updateWorldTransform();
 		return ret;
 	},
 
+	/**
+	 * Gets / sets the highlight mode. True is on false is off.
+	 * @param {Boolean} val
+	 * @return {*}
+	 */
 	highlight: function (val) {
 		if (val !== undefined) {
 			this._highlight = val;
