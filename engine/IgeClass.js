@@ -60,6 +60,7 @@ var IgeClass = (function () {
 		addComponent = function (component, options) {
 			var newComponent = new component(this, options);
 			this[newComponent.componentId] = newComponent;
+			return this;
 		},
 
 		implement = function (classObj, overwrite) {
@@ -72,6 +73,7 @@ var IgeClass = (function () {
 					this[i] = obj[i];
 				}
 			}
+			return this;
 		};
 
 	// Create a new IgeClass that inherits from this class
