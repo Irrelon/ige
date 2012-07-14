@@ -177,7 +177,7 @@ var IgeUiEntity = IgeEntity.extend([
 
 				if (this._borderTopRightRadius > 0) {
 					ctx.beginPath();
-						ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -45 * rad, 0 * rad);
+						ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -45 * rad, 0);
 					ctx.stroke();
 				}
 
@@ -190,7 +190,7 @@ var IgeUiEntity = IgeEntity.extend([
 				if (this._borderBottomRightRadius > 0) {
 					// Bottom-right corner top-half
 					ctx.beginPath();
-						ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderTopRightRadius, 0 * rad, 45 * rad);
+						ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderTopRightRadius, 0, 45 * rad);
 					ctx.stroke();
 				}
 			}
@@ -247,6 +247,19 @@ var IgeUiEntity = IgeEntity.extend([
 		}
 	},
 
+	cell: function (val) {
+		var ret = this._super(val);
+
+		if (ret === this && this._patternTexture) {
+			this.backgroundImage(
+				this._patternTexture,
+				this._patternRepeat
+			);
+		}
+
+		return ret;
+	},
+
 	mount: function (obj) {
 		var ret = this._super(obj);
 
@@ -258,24 +271,8 @@ var IgeUiEntity = IgeEntity.extend([
 	},
 
 	tick: function (ctx, dontTransform) {
-		var thisTranslate = this._translate,
-			thisRotate = this._rotate,
-			thisScale = this._scale,
-			thisOrigin = this._origin,
-			thisGeometry = this.geometry;
-
-		// Transform the context by the current transform settings
 		if (!dontTransform) {
-			ctx.translate(
-				thisTranslate.x + (
-					thisGeometry.x * thisOrigin.x
-				),
-				thisTranslate.y + (
-					thisGeometry.y * thisOrigin.y
-				)
-			);
-			ctx.rotate(thisRotate.z);
-			ctx.scale(thisScale.x, thisScale.y);
+			this._transformContext(ctx);
 		}
 
 		this._renderBackground(ctx);
