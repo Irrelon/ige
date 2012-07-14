@@ -4,7 +4,7 @@ var Server = IgeClass.extend({
 
 	init: function () {
 		// Start the network server
-		ige.network = new IgeSocketIo();
+		ige.addComponent(IgeSocketIoComponent);
 		ige.network.start();
 
 		// Start the game engine

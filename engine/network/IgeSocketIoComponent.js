@@ -7,7 +7,7 @@ var IgeSocketIoComponent = IgeClass.extend({
 		this._port = 8000;
 		/* CEXCLUDE */
 		if (ige.isServer) {
-			this._socketio = require(modulePath + 'socket.io');
+			this._socketio = require('../' + modulePath + 'socket.io');
 			this._acceptConnections = false;
 		}
 		/* CEXCLUDE */

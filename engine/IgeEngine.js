@@ -42,6 +42,12 @@ var IgeEngine = IgeEntity.extend({
 		this._viewportDepth = false;
 		this._mousePos = new IgePoint(0, 0, 0);
 
+		if (this.isServer) {
+			// Setup a dummy canvas context
+			this.log('Using dummy canvas context');
+			this._ctx = IgeDummyContext;
+		}
+
 		this.dependencyTimeout(30000); // Wait 30 seconds to load all dependencies then timeout
 
 		// Add the textures loaded dependency
