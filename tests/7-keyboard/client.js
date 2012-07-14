@@ -64,8 +64,6 @@ var Client = IgeClass.extend({
 									.animation.stop();
 							}
 
-
-
 							this._super(ctx);
 						}
 					});
@@ -77,7 +75,7 @@ var Client = IgeClass.extend({
 					self.vp1 = new IgeViewport()
 						.autoSize(true)
 						.scene(self.scene1)
-						.drawBounds(true)
+						//.drawBounds(true)
 						.mount(ige);
 
 					self.obj[0] = new self.CharacterMonk();
