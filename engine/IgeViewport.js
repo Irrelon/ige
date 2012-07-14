@@ -125,7 +125,9 @@ var IgeViewport = IgeUiEntity.extend([
 					aabb.y -= ige.geometry.y2;
 
 					if (aabb) {
-						ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
+						if (obj._drawBounds || obj._drawBounds === undefined) {
+							ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
+						}
 
 						if (this._drawBoundsData || obj._drawBoundsData) {
 							ctx.globalAlpha = 0.5;
