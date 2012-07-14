@@ -8,9 +8,6 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
-		// Setup the tweening component on the engine
-		ige.addComponent(IgeTweenComponent);
-
 		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
 
 		// Wait for our textures to load before continuing

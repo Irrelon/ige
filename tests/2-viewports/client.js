@@ -82,7 +82,7 @@ var Client = IgeClass.extend({
 							.autoSize(false)
 							.borderColor('#ffffff')
 							.originTo(0, 0, 0)
-							.camera.scaleTo(0.5, 0.5, 0.5)._entity
+							.camera.scaleTo(0.5, 0.5, 0.5)
 							.depth((18 - i))
 							.scene(self.scene1);
 
@@ -101,7 +101,7 @@ var Client = IgeClass.extend({
 							.autoSize(false)
 							.borderColor('#ffffff')
 							.originTo(1, 1, 0)
-							.camera.scaleTo(0.5, 0.5, 0.5)._entity
+							.camera.scaleTo(0.5, 0.5, 0.5)
 							.depth((18 - i))
 							.scene(self.scene1);
 
@@ -118,7 +118,7 @@ var Client = IgeClass.extend({
 						.height(75)
 						.autoSize(false)
 						.borderColor('#ffffff')
-						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
 						.scene(self.scene1)
 						.mount(ige);
@@ -130,7 +130,7 @@ var Client = IgeClass.extend({
 						.height(75)
 						.autoSize(false)
 						.borderColor('#ffffff')
-						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
 						.scene(self.scene1)
 						.mount(ige);
@@ -142,7 +142,7 @@ var Client = IgeClass.extend({
 						.height(75)
 						.autoSize(false)
 						.borderColor('#ffffff')
-						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
 						.scene(self.scene1)
 						.mount(ige);
@@ -154,7 +154,7 @@ var Client = IgeClass.extend({
 						.height(75)
 						.autoSize(false)
 						.borderColor('#ffffff')
-						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
 						.scene(self.scene1)
 						.mount(ige);
@@ -166,7 +166,7 @@ var Client = IgeClass.extend({
 						.height(75)
 						.autoSize(false)
 						.borderColor('#ffffff')
-						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
 						.scene(self.scene1)
 						.mount(ige);
@@ -178,7 +178,7 @@ var Client = IgeClass.extend({
 						.height(75)
 						.autoSize(false)
 						.borderColor('#ffffff')
-						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
 						.scene(self.scene1)
 						.mount(ige);
@@ -190,7 +190,7 @@ var Client = IgeClass.extend({
 						.height(75)
 						.autoSize(false)
 						.borderColor('#ffffff')
-						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
 						.scene(self.scene1)
 						.mount(ige);
@@ -202,7 +202,7 @@ var Client = IgeClass.extend({
 						.height(75)
 						.autoSize(false)
 						.borderColor('#ffffff')
-						.camera.scaleTo(0.5, 0.5, 0.5)._entity
+						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
 						.scene(self.scene1)
 						.mount(ige);
