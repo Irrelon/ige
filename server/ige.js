@@ -11,6 +11,7 @@ IgePoint = require('../engine/IgePoint');
 IgeAnimationComponent = require('../engine/components/IgeAnimationComponent');
 IgeVelocityComponent = require('../engine/components/IgeVelocityComponent');
 IgeTweenComponent = require('../engine/components/IgeTweenComponent');
+IgeInputComponent = require('../engine/components/IgeInputComponent');
 // Extensions
 IgeTransformExtension = require('../engine/extensions/IgeTransformExtension');
 IgeUiPositionExtension = require('../engine/extensions/IgeUiPositionExtension');
@@ -22,6 +23,7 @@ IgeCellSheet = require('../engine/IgeCellSheet');
 IgeSpriteSheet = require('../engine/IgeSpriteSheet');
 IgeObject = require('../engine/IgeObject');
 IgeEntity = require('../engine/IgeEntity');
+IgeInteractiveEntity = require('../engine/IgeInteractiveEntity');
 IgeUiEntity = require('../engine/IgeUiEntity');
 IgeCamera = require('../engine/IgeCamera');
 IgeViewport = require('../engine/IgeViewport');
