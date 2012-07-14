@@ -28,7 +28,7 @@ var IgeSceneUi = IgeScene2d.extend({
 					// paint to is our own cached one so do it
 					this._dirty = false;
 					// Translate the whole context back to the top-left of the viewport
-					this._super(ctx);
+					this._super(ctx, true);
 				} else {
 					// The canvas context we are being asked to
 					// paint to is not our cached one so by-pass
