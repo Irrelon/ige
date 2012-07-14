@@ -6,8 +6,6 @@ var IgeTweenComponent = IgeClass.extend({
 		this._entity = entity;
 		this._transform = entity.transform;
 
-		// Setup the extension to
-
 		// Setup the array that will hold our active tweens
 		this._tweens = [];
 
