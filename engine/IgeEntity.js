@@ -1,5 +1,6 @@
 var IgeEntity = IgeObject.extend([
-	{extension: IgeTransformExtension, overwrite: false}
+	{extension: IgeTransformExtension, overwrite: false},
+	{extension: IgeUiInteractionExtension, overwrite: true}
 ], {
 	classId: 'IgeEntity',
 
@@ -64,8 +65,8 @@ var IgeEntity = IgeObject.extend([
 				wtPoint = this._rotatePoint(this._translate, pr, {x: 0, y: 0});
 
 			return {
-				x: wtPoint.x + (this._parent._translate ? this._parent._translate.x : 0) - extentX,
-				y: wtPoint.y + (this._parent._translate ? this._parent._translate.y : 0) - extentY,
+				x: wtPoint.x + (this._parent._translate ? this._parent._translate.x : 0) - extentX + ige.geometry.x2,
+				y: wtPoint.y + (this._parent._translate ? this._parent._translate.y : 0) - extentY + ige.geometry.y2,
 				width: extentX * 2,
 				height: extentY * 2
 			};
@@ -187,6 +188,15 @@ var IgeEntity = IgeObject.extend([
 		return ret;
 	},
 
+	highlight: function (val) {
+		if (val !== undefined) {
+			this._highlight = val;
+			return this;
+		}
+
+		return this._highlight;
+	},
+
 	/**
 	 * Sets the canvas context transform properties to match the the game
 	 * object's current transform values.
@@ -203,7 +213,18 @@ var IgeEntity = IgeObject.extend([
 	 * Processes the actions required each render frame.
 	 */
 	tick: function (ctx, dontTransform) {
-		var texture = this._texture;
+		var texture = this._texture,
+			aabb = this.aabb(),
+			mouseX = ige._mousePos.x,
+			mouseY = ige._mousePos.y;
+
+		// Check if the current mouse position is inside this aabb
+		if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
+			// Point is inside the aabb
+			this._handleMouseIn();
+		} else {
+			this._handleMouseOut();
+		}
 
 		// Transform the context by the current transform settings
 		if (!dontTransform) {
