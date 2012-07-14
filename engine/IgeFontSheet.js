@@ -1,6 +1,9 @@
+/* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
+ * so that bottom-right aligns to the lower-right point of the bounding box of the entity
+ * whilst maintaining the current text-alignment as well
+* */
 var IgeFontSheet = IgeTexture.extend({
 	classId: 'IgeFontSheet',
-	IgeFontSheet: true,
 
 	init: function (url, cacheCount) {
 		this._super(url);
@@ -52,12 +55,6 @@ var IgeFontSheet = IgeTexture.extend({
 		});
 	},
 
-	lineHeightModifier: function (val) {
-		if (typeof(val) !== 'undefined') {
-			this._lineHeightModifier = val;
-		}
-	},
-
 	decodeHeader: function () {
 		// Create a temporary canvas
 		var canvas = document.createElement('canvas'),
@@ -103,6 +100,12 @@ var IgeFontSheet = IgeTexture.extend({
 		}
 	},
 
+	lineHeightModifier: function (val) {
+		if (typeof(val) !== 'undefined') {
+			this._lineHeightModifier = val;
+		}
+	},
+
 	render: function (ctx, entity, tickDelta) {
 		if (entity._text) {
 			var _ctx = ctx,
@@ -143,15 +146,15 @@ var IgeFontSheet = IgeTexture.extend({
 			// Handle text alignment y
 			switch (entity._textAlignY) {
 				case 0: // Align top
-					renderStartY = -((lineHeight * (lineArr.length)) / 2) - (entity._textLineHeightModifier * ((lineArr.length - 1) / 2));//0;
+					renderStartY = -((lineHeight * (lineArr.length)) / 2) - (entity._textLineSpacing * ((lineArr.length - 1) / 2));//0;
 				break;
 
 				case 1: // Align middle
-					renderStartY = -((lineHeight * (lineArr.length)) / 2) - (entity._textLineHeightModifier * ((lineArr.length - 1) / 2));
+					renderStartY = -((lineHeight * (lineArr.length)) / 2) - (entity._textLineSpacing * ((lineArr.length - 1) / 2));
 				break;
 
 				case 2: // Align bottom
-					renderStartY = -((lineHeight * (lineArr.length)) / 2) - (entity._textLineHeightModifier * ((lineArr.length - 1) / 2));//-((lineHeight) * (lineArr.length)) - (entity._textLineHeightModifier * (lineArr.length - 1));
+					renderStartY = -((lineHeight * (lineArr.length)) / 2) - (entity._textLineSpacing * ((lineArr.length - 1) / 2));//-((lineHeight) * (lineArr.length)) - (entity._textLineSpacing * (lineArr.length - 1));
 				break;
 			}
 
@@ -257,15 +260,15 @@ var IgeFontSheet = IgeTexture.extend({
 					// Handle text alignment y
 					switch (entity._textAlignY) {
 						case 0: // Align top
-							masterY = (entity._textLineHeightModifier * ((lineArr.length - 1) / 2));//-totalHeight / 2;
+							masterY = (entity._textLineSpacing * ((lineArr.length - 1) / 2));//-totalHeight / 2;
 						break;
 
 						case 1: // Align middle
-							masterY = (entity._textLineHeightModifier * ((lineArr.length - 1) / 2));
+							masterY = (entity._textLineSpacing * ((lineArr.length - 1) / 2));
 						break;
 
 						case 2: // Align bottom
-							masterY = (entity._textLineHeightModifier * ((lineArr.length - 1) / 2));//totalHeight / 2 + (entity._textLineHeightModifier * (lineArr.length - 1));
+							masterY = (entity._textLineSpacing * ((lineArr.length - 1) / 2));//totalHeight / 2 + (entity._textLineSpacing * (lineArr.length - 1));
 						break;
 					}
 				}
@@ -276,7 +279,7 @@ var IgeFontSheet = IgeTexture.extend({
 
 			for (lineIndex = 0; lineIndex < lineArr.length; lineIndex++) {
 				lineText = lineArr[lineIndex];
-				renderY = (lineHeight * lineIndex) + (entity._textLineHeightModifier * (lineIndex));
+				renderY = (lineHeight * lineIndex) + (entity._textLineSpacing * (lineIndex));
 
 				// Handle text alignment x
 				switch (entity._textAlignX) {
@@ -362,4 +365,4 @@ var IgeFontSheet = IgeTexture.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeTexture; }
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeFontSheet; }
