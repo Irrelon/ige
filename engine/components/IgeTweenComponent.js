@@ -154,7 +154,7 @@ var IgeTweenComponent = IgeClass.extend({
 						// Check if we have a beforeTween callback to fire
 						if (typeof(tween.beforeTween) === 'function') {
 							// Fire the beforeTween callback
-							tween.beforeTween(this, tween);
+							tween.beforeTween(tween);
 
 							// Delete the callback so we don't store it any longer
 							delete tween.beforeTween;
