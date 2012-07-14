@@ -36,6 +36,8 @@ IgeVelocityComponent = IgeClass.extend({
 			vel.y += y;
 			vel.z += z;
 		}
+
+		return this._entity;
 	},
 
 	xyz: function (x, y, z, relative) {
@@ -50,6 +52,8 @@ IgeVelocityComponent = IgeClass.extend({
 			vel.y += y;
 			vel.z += z;
 		}
+
+		return this._entity;
 	},
 
 	x: function (x, relative) {
@@ -60,6 +64,8 @@ IgeVelocityComponent = IgeClass.extend({
 		} else {
 			vel.x += x;
 		}
+
+		return this._entity;
 	},
 
 	y: function (y, relative) {
@@ -70,6 +76,8 @@ IgeVelocityComponent = IgeClass.extend({
 		} else {
 			vel.y += y;
 		}
+
+		return this._entity;
 	},
 
 	z: function (z, relative) {
@@ -80,6 +88,8 @@ IgeVelocityComponent = IgeClass.extend({
 		} else {
 			vel.z += z;
 		}
+
+		return this._entity;
 	},
 
 	vector3: function (vector, relative) {
@@ -101,6 +111,8 @@ IgeVelocityComponent = IgeClass.extend({
 			vel.y += y;
 			vel.z += z;
 		}
+
+		return this._entity;
 	},
 
 	friction: function (val) {
@@ -111,6 +123,8 @@ IgeVelocityComponent = IgeClass.extend({
 		}
 
 		this._friction = new IgePoint(finalFriction, finalFriction, finalFriction);
+
+		return this._entity;
 	},
 
 	linearForce: function (degrees, power) {
@@ -120,10 +134,13 @@ IgeVelocityComponent = IgeClass.extend({
 			y = Math.sin(radians) * power,
 			z = x * y;
 		this._linearForce = new IgePoint(x, y, z);
+
+		return this._entity;
 	},
 
 	linearForceXYZ: function (x, y, z) {
 		this._linearForce = new IgePoint(x, y, z);
+		return this._entity;
 	},
 
 	linearForceVector3: function (vector, power, relative) {
@@ -141,6 +158,8 @@ IgeVelocityComponent = IgeClass.extend({
 			force.y += y || 0;
 			force.z += z || 0;
 		}
+
+		return this._entity;
 	},
 
 	_applyLinearForce: function (delta) {
