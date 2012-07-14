@@ -4,7 +4,7 @@ var Client = IgeClass.extend({
 		// Load our textures
 		var self = this,
 			gameTexture = [],
-			tempObj;
+			overFunc, outFunc, i;
 
 		this.obj = [];
 
@@ -28,12 +28,13 @@ var Client = IgeClass.extend({
 						},
 
 						newTween: function () {
-							var self = this;
+							var self = this,
+								tempScale = (Math.random() * 2);
 							ige.tween.start(
 								this._translate,
 								{
-									x: (Math.random() * 1200) - 600,
-									y: (Math.random() * 600) - 300
+									x: (Math.random() * ige.geometry.x) - ige.geometry.x2,
+									y: (Math.random() * ige.geometry.y) - ige.geometry.y2
 								},
 								7000,
 								{
@@ -54,6 +55,18 @@ var Client = IgeClass.extend({
 									easing:'outElastic'
 								}
 							);
+
+							/*ige.tween.start(
+								this._scale,
+								{
+									x: tempScale,
+									y: tempScale
+								},
+								7000,
+								{
+									easing:'outElastic'
+								}
+							);*/
 						}
 					});
 
@@ -67,7 +80,19 @@ var Client = IgeClass.extend({
 						.drawBounds(true)
 						.mount(ige);
 
-					for (var i = 0; i < 100; i++) {
+					overFunc = function () {
+						this.highlight(true);
+						this.drawBounds(true);
+						this.drawBoundsData(true);
+					};
+
+					outFunc = function () {
+						this.highlight(false);
+						this.drawBounds(false);
+						this.drawBoundsData(false);
+					};
+
+					for (i = 0; i < 200; i++) {
 						self.obj[0] = new RandomTweener()
 							.id('fairy' + i)
 							.depth(i)
@@ -75,16 +100,8 @@ var Client = IgeClass.extend({
 							.height(100)
 							.texture(gameTexture[0])
 							.drawBounds(false)
-							.mouseOver(function () {
-								this.highlight(true);
-								this.drawBounds(true);
-								this.drawBoundsData(true);
-							})
-							.mouseOut(function () {
-								this.highlight(false);
-								this.drawBounds(false);
-								this.drawBoundsData(false);
-							})
+							.mouseOver(overFunc)
+							.mouseOut(outFunc)
 							.mount(self.scene1);
 					}
 				}

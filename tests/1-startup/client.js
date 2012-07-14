@@ -40,7 +40,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[0])
-						.translateTo(20, 50, 0)
+						.translateTo(0, 0, 0)
 						.mount(self.scene1);
 
 					self.obj[1] = new Rotator()
