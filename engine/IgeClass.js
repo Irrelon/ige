@@ -3,6 +3,7 @@
  * MIT Licensed.
  */
 // Inspired by base2 and Prototype
+// Modified for the Isogenic Game Engine
 var IgeClass = (function () {
 	var initializing = false,
 		fnTest = /xyz/.test(function () {xyz;}) ? /\b_super\b/ : /.*/,
