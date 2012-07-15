@@ -78,7 +78,7 @@ var IgeMap2d = IgeClass.extend({
 	 * Inserts map data into the map at the given co-ordinates. Please note this
 	 * is not used for setting a tile's value. This is used to add large sections
 	 * of map data at the specified co-ordinates. To set an individual tile value,
-	 * please use setTile().
+	 * please use tile(x, y, val).
 	 * @param {Number} x
 	 * @param {Number} y
 	 * @param {Array} val The map data array.
