@@ -11,6 +11,38 @@ var IgeParticleEmitter = IgeEntity.extend({
 		this._currentDelta = 0;
 		this._started = false;
 		this._particles = [];
+
+		this.quantityVariance(0, 0);
+		this.translateBaseX(0);
+		this.translateBaseY(0);
+		this.translateBaseZ(0);
+		this.translateVarianceX(0, 0);
+		this.translateVarianceY(0, 0);
+		this.translateVarianceZ(0, 0);
+		this.rotateBase(0);
+		this.rotateVariance(0, 0);
+		this.deathRotateBase(0);
+		this.deathRotateVariance(0, 0);
+		this.scaleBaseX(0);
+		this.scaleBaseY(0);
+		this.scaleBaseZ(0);
+		this.scaleVarianceX(0, 0);
+		this.scaleVarianceY(0, 0);
+		this.scaleVarianceZ(0, 0);
+		this.scaleLockAspect(false);
+		this.deathScaleBaseX(0);
+		this.deathScaleBaseY(0);
+		this.deathScaleBaseZ(0);
+		this.deathScaleVarianceX(0, 0);
+		this.deathScaleVarianceY(0, 0);
+		this.deathScaleVarianceZ(0, 0);
+		this.deathScaleLockAspect(false);
+		this.opacityBase(1);
+		this.opacityVariance(0, 0);
+		this.deathOpacityBase(1);
+		this.deathOpacityVariance(0, 0);
+		this.lifeBase(1000);
+		this.lifeVariance(0, 0);
 	},
 
 	/* particle - Sets the class that all particles emitted from this
@@ -352,8 +384,8 @@ var IgeParticleEmitter = IgeEntity.extend({
 	emitter is responsible for spawning and controlling. {
 		category:"method",
 	} **/
-	tick: function (tickDelta, render, ctx) {
-		this._currentDelta += tickDelta;
+	tick: function (ctx) {
+		this._currentDelta += ige.tickDelta;
 
 		// Check if the emitter is mounted to anything, if not
 		// then don't bother creating particles!
@@ -381,7 +413,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 					deathRotate,
 					deathOpacity,
 					tempParticle,
-					tweenProps;
+					tweens;
 
 				if (this._currentDelta > this._quantityTimespan) {
 					this._currentDelta = this._quantityTimespan;
@@ -492,70 +524,75 @@ var IgeParticleEmitter = IgeEntity.extend({
 
 							// Add the current transform of the emitter to the final
 							// particle transforms
-							translateX += this._transform[0];
-							translateY += this._transform[1];
-							translateZ += this._transform[2];
+							translateX += this._translate.x;
+							translateY += this._translate.y;
+							translateZ += this._translate.z;
 
-							scaleX *= this._transform[6];
-							scaleY *= this._transform[7];
-							scaleZ *= this._transform[8];
+							scaleX *= this._scale.x;
+							scaleY *= this._scale.y;
+							scaleZ *= this._scale.z;
 
-							deathScaleX *= this._transform[6];
-							deathScaleY *= this._transform[7];
-							deathScaleZ *= this._transform[8];
+							deathScaleX *= this._scale.x;
+							deathScaleY *= this._scale.y;
+							deathScaleZ *= this._scale.z;
 
-							rotate += this._transform[3];
-							//vectorAngle += this._transform[3];
-							//linearForceAngle += this._transform[3];
+							// TODO: Is this adding degrees to radians? Check and fix.
+							rotate += this._rotate.z;
 
 							// Apply all the transforms (don't do this in the initial
 							// entity definition because some components may already
 							// have initialised due to the particle template
-							tempParticle.translate(translateX, translateY, translateZ);
-							tempParticle.rotate(rotate);
-							tempParticle.scale(scaleX, scaleY, scaleZ);
+							tempParticle.translateTo(translateX, translateY, translateZ);
+							tempParticle.rotateTo(0, 0, rotate * Math.PI / 180);
+							tempParticle.scaleTo(scaleX, scaleY, scaleZ);
 							tempParticle.opacity(opacity);
 
-							/*if (typeof(vectorAngle) === 'number' && typeof(vectorPower) === 'number') {
-								tempParticle.velocity(vectorAngle, vectorPower);
-							}*/
 							if (typeof(velocityVector) === 'object') {
-								tempParticle.velocityVector3d(velocityVector, false);
+								tempParticle.velocity.vector3(velocityVector, false);
 							}
-							/*if (typeof(linearForceAngle) === 'number' && typeof(linearForcePower) === 'number') {
-								tempParticle.linearForce(linearForceAngle, linearForcePower);
-							}*/
+
 							if (typeof(linearForceVector) === 'object') {
-								tempParticle.linearForceVector3d(linearForceVector, false);
+								tempParticle.velocity.linearForceVector3(linearForceVector, false);
+							}
+
+							tweens = [];
+							if (typeof(deathRotate) !== 'undefined') {
+								tweens.push(new IgeTween()
+									.targetObj(tempParticle._rotate)
+									.properties({z: (deathRotate * Math.PI / 180)})
+									.duration(life));
+							}
+							if (typeof(deathOpacity) !== 'undefined') {
+								tweens.push(new IgeTween()
+									.targetObj(tempParticle)
+									.properties({_opacity: deathOpacity})
+									.duration(life));
+							}
+							var scaleProps = {};
+							if (typeof(deathScaleX) !== 'undefined') {
+								scaleProps.x = deathScaleX;
+							}
+							if (typeof(deathScaleY) !== 'undefined') {
+								scaleProps.y = deathScaleY;
+							}
+							if (typeof(deathScaleZ) !== 'undefined') {
+								scaleProps.z = deathScaleZ;
+							}
+
+							if (scaleProps.x || scaleProps.y || scaleProps.z) {
+								tweens.push(new IgeTween()
+									.targetObj(tempParticle._scale)
+									.properties(scaleProps)
+									.duration(life));
+							}
+							// Start the relevant tweens
+							for (var i = 0; i < tweens.length; i++) {
+								tweens[i].start();
 							}
 
 							if (typeof(life) === 'number') {
 								tempParticle.lifeSpan(life);
 							}
-
-							tweenProps = {};
-							if (typeof(deathRotate) !== 'undefined') {
-								tweenProps.rotateX = deathRotate + this._transform[3];
-							}
-							if (typeof(deathOpacity) !== 'undefined') {
-								tweenProps.opacityX = deathOpacity;
-							}
-							if (typeof(deathScaleX) !== 'undefined') {
-								tweenProps.scaleX = deathScaleX;
-							}
-							if (typeof(deathScaleY) !== 'undefined') {
-								tweenProps.scaleY = deathScaleY;
-							}
-							if (typeof(deathScaleZ) !== 'undefined') {
-								tweenProps.scaleZ = deathScaleZ;
-							}
-							// Start the relevant tweens
-							tempParticle.tweenStart(tweenProps, life, {direct:true});
-
-							// Register our remove handler with the particle entity
-							tempParticle._destroy.push(function () {
-								this._emitter._particles.pull(this);
-							});
 
 							// Add the particle to this emitter's particle array
 							this._particles.push(tempParticle);
@@ -568,7 +605,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 			}
 		}
 
-		this._super(tickDelta, render, ctx);
+		this._super(ctx);
 	},
 
 	/** particles - Returns an array of the current
