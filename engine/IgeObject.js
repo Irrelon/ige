@@ -8,7 +8,7 @@ var IgeObject = IgeEventingClass.extend({
 		this._layer = 0;
 		this._depth = 0;
 		this._dirty = true;
-		this.data = {};
+		this._data = {};
 
 		// Reference the main input system
 		if (!this.input && ige && ige.input) {
@@ -17,7 +17,8 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Handles screen resize events.
+	 * Handles screen resize events. Calls the _resizeEvent method of
+	 * every child object mounted to this object.
 	 * @param event
 	 * @private
 	 */
@@ -47,8 +48,32 @@ var IgeObject = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Called when a child object is mounted to this object.
+	 * @param obj
+	 * @private
+	 */
 	_childMounted: function (obj) {
 		this._resizeEvent(null);
+	},
+
+	/**
+	 * Gets / sets a key / value pair in the object's data object. Useful for
+	 * storing arbitrary game data in the object.
+	 * @param {String} key The key under which the data resides.
+	 * @param {*=} value The data to set under the specified key.
+	 * @return {*}
+	 */
+	data: function (key, value) {
+		if (key !== undefined) {
+			if (value !== undefined) {
+				this._data[key] = value;
+
+				return this;
+			}
+
+			return this._data[key];
+		}
 	},
 
 	/**
@@ -93,6 +118,12 @@ var IgeObject = IgeEventingClass.extend({
 		return false;
 	},
 
+	/**
+	 * Gets / sets the boolean flag determining if this object should have
+	 * it's bounds drawn when the bounds for all objects are being drawn.
+	 * @param {Boolean} val
+	 * @return {*}
+	 */
 	drawBounds: function (val) {
 		if (val !== undefined) {
 			this._drawBounds = val;
@@ -102,6 +133,13 @@ var IgeObject = IgeEventingClass.extend({
 		return this._drawBounds;
 	},
 
+	/**
+	 * Gets / sets the boolean flag determining if this object should have
+	 * it's bounds data drawn when the bounds for all objects are being drawn.
+	 * Bounds data includes the object ID and it's current depth etc.
+	 * @param {Boolean} val
+	 * @return {*}
+	 */
 	drawBoundsData: function (val) {
 		if (val !== undefined) {
 			this._drawBoundsData = val;
@@ -167,6 +205,7 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Clones the object and all it's children and returns a new object.
 	 */
+		// TODO: Write this function!
 	clone: function () {
 		// Loop all children and clone them, then return cloned version of ourselves
 	},
@@ -215,13 +254,26 @@ var IgeObject = IgeEventingClass.extend({
 		return this._depth;
 	},
 
+	/**
+	 * Gets / sets the dirty flag for this object. If you specify a val parameter
+	 * the parent of this object will also have it's dirty method called with the
+	 * same parameter. This means that dirty flags bubble down the child / parent
+	 * chain.
+	 * @param {Boolean} val
+	 */
 	dirty: function (val) {
-		this._dirty = val;
+		if (val !== undefined) {
+			this._dirty = val;
 
-		// Bubble the dirty up the parent chain
-		if (this._parent) {
-			this._parent.dirty(val);
+			// Bubble the dirty up the parent chain
+			if (this._parent) {
+				this._parent.dirty(val);
+			}
+
+			return this;
 		}
+
+		return this._dirty;
 	},
 
 	/**
