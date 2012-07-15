@@ -4,7 +4,8 @@ var Client = IgeClass.extend({
 		// Load our textures
 		var self = this,
 			gameTexture = [],
-			NewParticle;
+			NewParticle,
+			overFunc, outFunc;
 
 		this.obj = [];
 
@@ -20,7 +21,19 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					NewParticle = IgeEntity.extend({
+					overFunc = function () {
+						this.highlight(true);
+						this.drawBounds(true);
+						this.drawBoundsData(true);
+					};
+
+					outFunc = function () {
+						this.highlight(false);
+						this.drawBounds(false);
+						this.drawBoundsData(false);
+					};
+
+					NewParticle = IgeInteractiveEntity.extend({
 						init: function (emitter) {
 							this._emitter = emitter;
 							this._super();
@@ -29,8 +42,15 @@ var Client = IgeClass.extend({
 							this.addComponent(IgeVelocityComponent)
 								.texture(gameTexture[3])
 								.width(50)
-								.height(50);
-								//.drawBounds(true);
+								.height(50)
+								.drawBounds(false)
+								.mouseOver(overFunc)
+								.mouseOut(outFunc);
+						},
+
+						tick: function (ctx) {
+							this._updateWorldTransform();
+							this._super(ctx);
 						},
 
 						destroy: function () {
@@ -49,7 +69,7 @@ var Client = IgeClass.extend({
 					self.vp1 = new IgeViewport()
 						.autoSize(true)
 						.scene(self.scene1)
-						.drawBounds(false)
+						.drawBounds(true)
 						.mount(ige);
 
 					// Create an entity
@@ -77,7 +97,6 @@ var Client = IgeClass.extend({
 						.width(10)
 						.height(10)
 						.translateTo(0, ige.geometry.y2, 0)
-						.scaleTo(1, 1, 1)
 						.mount(self.scene1)
 						.start();
 
