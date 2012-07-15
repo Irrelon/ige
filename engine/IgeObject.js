@@ -348,6 +348,8 @@ var IgeObject = IgeEventingClass.extend({
 		// Remove the children array severing any references
 		// to any child objects so that the GC can pick them up
 		delete this._children;
+
+		return this;
 	}
 });
 
