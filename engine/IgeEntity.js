@@ -245,34 +245,47 @@ var IgeEntity = IgeObject.extend([
 		ctx.translate(this._translate.x, this._translate.y);
 		ctx.rotate(this._rotate.z);
 		ctx.scale(this._scale.x, this._scale.y);
+
+		// Set alpha
+		if (this._parent) {
+			// TODO: This only works one level deep, we need to alter a _worldOpacity property down the chain
+			ctx.globalAlpha = this._parent._opacity * this._opacity;
+		} else {
+			ctx.globalAlpha = this._opacity;
+		}
 	},
 
 	/**
 	 * Processes the actions required each render frame.
 	 */
 	tick: function (ctx, dontTransform) {
-		var texture = this._texture;
+		if (this._deathTime !== undefined && this._deathTime <= ige.tickStart) {
+			// The entity should be removed because it has died
+			this.destroy();
+		} else {
+			var texture = this._texture;
 
-		// Transform the context by the current transform settings
-		if (!dontTransform) {
-			this._transformContext(ctx);
-		}
-
-		// Process any behaviours assigned to the entity
-		this._processBehaviours(ctx);
-
-		// Check if the entity is visible based upon its opacity
-		if (this._opacity > 0 && texture) {
-			// Draw the entity image
-			texture.render(ctx, this, ige.tickDelta);
-
-			if (this._highlight) {
-				ctx.globalCompositeOperation = 'lighter';
-				texture.render(ctx, this);
+			// Transform the context by the current transform settings
+			if (!dontTransform) {
+				this._transformContext(ctx);
 			}
-		}
 
-		this._super(ctx);
+			// Process any behaviours assigned to the entity
+			this._processBehaviours(ctx);
+
+			// Check if the entity is visible based upon its opacity
+			if (this._opacity > 0 && texture) {
+				// Draw the entity image
+				texture.render(ctx, this, ige.tickDelta);
+
+				if (this._highlight) {
+					ctx.globalCompositeOperation = 'lighter';
+					texture.render(ctx, this);
+				}
+			}
+
+			this._super(ctx);
+		}
 	}
 });
 
