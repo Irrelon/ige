@@ -48,7 +48,7 @@ var Client = IgeClass.extend({
 									x,
 									y
 								),
-								speed = 0.01 * ige.tickDelta,
+								speed = 0.1,
 								time = (distance / speed);
 
 							if (Math.abs(distX) > 0.2 || Math.abs(distY) > 0.2) {

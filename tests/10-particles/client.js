@@ -20,8 +20,9 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					NewParticle = IgeParticle.extend({
-						init: function () {
+					NewParticle = IgeEntity.extend({
+						init: function (emitter) {
+							this._emitter = emitter;
 							this._super();
 
 							// Setup the particle default values
