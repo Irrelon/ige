@@ -69,13 +69,13 @@ if(!Array.prototype.indexOf){
  * A cross-browser requestAnimFrame method.
  */
 if (typeof(window) !== 'undefined') {
-	/*window.requestAnimFrame = (function(){
+	window.requestAnimFrame = (function(){
 		return function(callback, element){
-			setTimeout(callback, 1000 / 1);
+			setTimeout(function () { callback(new Date().getTime()); }, 1000 / 60);
 		};
 	}());
-	*/
-	requestAnimFrame = (function(){
+
+	/*requestAnimFrame = (function(){
 		return  window.requestAnimationFrame       ||
 				window.webkitRequestAnimationFrame ||
 				window.mozRequestAnimationFrame    ||
@@ -84,7 +84,7 @@ if (typeof(window) !== 'undefined') {
 		function(callback, element){
 			setTimeout(callback, 1000 / 60);
 		};
-	}());
+	}());*/
 } else {
 	requestAnimFrame = function(callback, element){
 		setTimeout(callback, 1000 / 60);

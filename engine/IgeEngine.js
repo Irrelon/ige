@@ -327,8 +327,8 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	_mouseMove: function (event) {
 		// Emit the event
-		ige._mousePos.x = event.clientX;
-		ige._mousePos.y = event.clientY;
+		ige._mousePos.x = event.clientX - ige.geometry.x2;
+		ige._mousePos.y = event.clientY - ige.geometry.y2;
 		ige.emit('mouseMove', event);
 	},
 

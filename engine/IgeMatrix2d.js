@@ -4,6 +4,9 @@ var IgeMatrix2d = function() {
 		0.0,1.0,0.0,
 		0.0,0.0,1.0
 	];
+
+	this._rotateOrigin = new IgePoint(0, 0, 0);
+	this._scaleOrigin = new IgePoint(0, 0, 0);
 };
 
 IgeMatrix2d.prototype = {
@@ -25,6 +28,17 @@ IgeMatrix2d.prototype = {
 		return point;
 	},
 
+	transform: function (points) {
+		var pointIndex,
+			pointCount = points.length;
+
+		for (pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+			this.transformCoord(points[pointIndex]);
+		}
+
+		return points;
+	},
+
 	/**
 	 * Create a new rotation matrix and set it up for the specified angle in radians.
 	 * @param angle {number}
@@ -32,16 +46,25 @@ IgeMatrix2d.prototype = {
 	 *
 	 * @static
 	 */
-	rotate: function(angle) {
+	_newRotate: function(angle) {
 		var m = new IgeMatrix2d();
-		m.setRotation(angle);
+		m.rotateTo(angle);
 		return m;
 	},
 
-	setRotation: function (angle) {
+	rotateBy: function(angle) {
+		var m = new IgeMatrix2d();
 
-		this.identity();
+		m.translateBy(this._rotateOrigin.x, this._rotateOrigin.y);
+		m.rotateTo(angle);
+		m.translateBy(-this._rotateOrigin.x, -this._rotateOrigin.y);
 
+		this.multiply(m);
+
+		return this;
+	},
+
+	rotateTo: function (angle) {
 		var tm = this.matrix,
 			c = Math.cos(angle),
 			s = Math.sin(angle);
@@ -51,34 +74,42 @@ IgeMatrix2d.prototype = {
 		tm[3] = s;
 		tm[4] = c;
 
-		ctx.transform (m[0], m[3], m[1], m[4], m[2], m[5]);
-
 		return this;
 	},
 
 	/**
 	 * Create a scale matrix.
-	 * @param scalex {number} x scale magnitude.
-	 * @param scaley {number} y scale magnitude.
+	 * @param x {number} x scale magnitude.
+	 * @param y {number} y scale magnitude.
 	 *
 	 * @return {IgeMatrix2d} a matrix object.
 	 *
 	 * @static
 	 */
-	scale: function(scalex, scaley) {
+	_newScale: function(x, y) {
 		var m = new IgeMatrix2d();
 
-		m.matrix[0] = scalex;
-		m.matrix[4] = scaley;
+		m.matrix[0] = x;
+		m.matrix[4] = y;
 
 		return m;
 	},
 
-	setScale: function(scalex, scaley) {
-		this.identity();
+	scaleBy: function(x, y) {
+		var m = new IgeMatrix2d();
 
-		this.matrix[0] = scalex;
-		this.matrix[4] = scaley;
+		m.matrix[0] = x;
+		m.matrix[4] = y;
+
+		this.multiply(m);
+
+		return this;
+	},
+
+	scaleTo: function(x, y) {
+		//this.identity();
+		this.matrix[0] = x;
+		this.matrix[4] = y;
 
 		return this;
 	},
@@ -92,7 +123,7 @@ IgeMatrix2d.prototype = {
 	 * @static
 	 *
 	 */
-	translate: function (x, y) {
+	_newTranslate: function (x, y) {
 		var m = new IgeMatrix2d();
 
 		m.matrix[2] = x;
@@ -101,14 +132,23 @@ IgeMatrix2d.prototype = {
 		return m;
 	},
 
+	translateBy: function (x, y) {
+		var m = new IgeMatrix2d();
+
+		m.matrix[2] = x;
+		m.matrix[5] = y;
+
+		this.multiply(m);
+
+		return this;
+	},
+
 	/**
 	 * Sets this matrix as a translation matrix.
 	 * @param x
 	 * @param y
 	 */
-	setTranslate: function (x, y) {
-		this.identity();
-
+	translateTo: function (x, y) {
 		this.matrix[2] = x;
 		this.matrix[5] = y;
 
@@ -165,29 +205,28 @@ IgeMatrix2d.prototype = {
 	 * @return this
 	 */
 	multiply: function (m) {
+		var tm = this.matrix,
+			mm = m.matrix,
 
-		var tm = this.matrix;
-		var mm = m.matrix;
-
-		var tm0 = tm[0],
+			tm0 = tm[0],
 			tm1 = tm[1],
 			tm2 = tm[2],
 			tm3 = tm[3],
 			tm4 = tm[4],
-			tm5 = tm[5];
-		var tm6 = tm[6];
-		var tm7 = tm[7];
-		var tm8 = tm[8];
+			tm5 = tm[5],
+			tm6 = tm[6],
+			tm7 = tm[7],
+			tm8 = tm[8],
 
-		var mm0 = mm[0];
-		var mm1 = mm[1];
-		var mm2 = mm[2];
-		var mm3 = mm[3];
-		var mm4 = mm[4];
-		var mm5 = mm[5];
-		var mm6 = mm[6];
-		var mm7 = mm[7];
-		var mm8 = mm[8];
+			mm0 = mm[0],
+			mm1 = mm[1],
+			mm2 = mm[2],
+			mm3 = mm[3],
+			mm4 = mm[4],
+			mm5 = mm[5],
+			mm6 = mm[6],
+			mm7 = mm[7],
+			mm8 = mm[8];
 
 		tm[0] = tm0*mm0 + tm1*mm3 + tm2*mm6;
 		tm[1] = tm0*mm1 + tm1*mm4 + tm2*mm7;

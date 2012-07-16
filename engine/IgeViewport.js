@@ -122,10 +122,9 @@ var IgeViewport = IgeUiEntity.extend([
 					if (typeof(obj.aabb) === 'function') {
 						// Grab the AABB and then draw it
 						aabb = obj.aabb();
-						aabb.x -= ige.geometry.x2;
-						aabb.y -= ige.geometry.y2;
 
 						if (aabb) {
+							ctx.strokeStyle = '#00deff';
 							if (obj._drawBounds || obj._drawBounds === undefined) {
 								ctx.strokeStyle = '#00deff';
 								ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);

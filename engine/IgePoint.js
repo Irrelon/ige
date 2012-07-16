@@ -6,4 +6,8 @@ var IgePoint = function (x, y, z) {
 	this.z = z !== undefined ? z : 0;
 };
 
+IgePoint.prototype.compare = function (point) {
+	return this.x === point.x && this.y === point.y && this.z === point.z;
+};
+
 if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgePoint; }

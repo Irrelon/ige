@@ -30,29 +30,27 @@ var Client = IgeClass.extend({
 					};
 
 					ScalerBehaviour = function (ctx, gameObject) {
-						gameObject.data.scalerMode = gameObject.data.scalerMode || 1;
+						if (gameObject.data('scalerMode') === undefined) {
+							gameObject.data('scalerMode', 1);
+						}
 
-						if (gameObject.data.scalerMode === 1) {
+						if (gameObject.data('scalerMode') === 1) {
 							gameObject.scaleBy((0.001 * ige.tickDelta), (0.001 * ige.tickDelta), (0.001 * ige.tickDelta));
 
 							if (gameObject._scale.x >= 4) {
-								gameObject.data.scalerMode = 2;
-								gameObject._scale.x = 4;
-								gameObject._scale.y = 4;
-								gameObject._scale.z = 4;
+								gameObject.data('scalerMode', 2);
+								gameObject.scaleTo(4, 4, 4);
 							}
 
 							return;
 						}
 
-						if (gameObject.data.scalerMode === 2) {
+						if (gameObject.data('scalerMode') === 2) {
 							gameObject.scaleBy(-(0.001 * ige.tickDelta), -(0.001 * ige.tickDelta), -(0.001 * ige.tickDelta));
 
 							if (gameObject._scale.x <= 1) {
-								gameObject.data.scalerMode = 1;
-								gameObject._scale.x = 1;
-								gameObject._scale.y = 1;
-								gameObject._scale.z = 1;
+								gameObject.data('scalerMode', 1);
+								gameObject.scaleTo(1, 1, 1);
 							}
 
 							return;

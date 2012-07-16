@@ -85,8 +85,8 @@ var Client = IgeClass.extend({
 
 						tick: function (ctx) {
 							this.walkTo(
-								this.input.val('mouseX') - ige.geometry.x2,
-								this.input.val('mouseY') - ige.geometry.y2
+								this.input.val('mouseX'),
+								this.input.val('mouseY')
 							);
 
 							this._super(ctx);

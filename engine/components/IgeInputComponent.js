@@ -195,8 +195,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 	},
 
 	_mouseMove: function (event) {
-		this._state[this.mouse.x] = event.clientX;
-		this._state[this.mouse.y] = event.clientY;
+		this._state[this.mouse.x] = event.clientX - ige.geometry.x2;
+		this._state[this.mouse.y] = event.clientY - ige.geometry.y2;
 		this.emit('mouseUp', event);
 	},
 

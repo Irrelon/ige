@@ -8,8 +8,17 @@ var IgeCamera = IgeClass.extend([
 		this._rotate = new IgePoint(0, 0, 0);
 		this._scale = new IgePoint(1, 1, 1);
 		this._origin = new IgePoint(0.5, 0.5, 0.5);
+
+		this._translateOld = new IgePoint(0, 0, 0);
+		this._rotateOld = new IgePoint(0, 0, 0);
+		this._scaleOld = new IgePoint(1, 1, 1);
+		this._originOld = new IgePoint(0.5, 0.5, 0.5);
+
+        this._localMatrix = new IgeMatrix2d(this); //modelViewMatrix
+        this._worldMatrix = new IgeMatrix2d(this); //worldModelViewMatrix
 	},
 
+	// TODO: Write these methods!
 	panTo: function (point) {
 
 	},

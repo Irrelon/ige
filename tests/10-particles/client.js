@@ -49,7 +49,6 @@ var Client = IgeClass.extend({
 						},
 
 						tick: function (ctx) {
-							this._updateWorldTransform();
 							this._super(ctx);
 						},
 

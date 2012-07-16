@@ -8,7 +8,8 @@ var IgeScene2d = IgeEntity.extend({
 
 		// Set the geometry of the scene to the main canvas
 		// width / height - used when positioning UI elements
-		this.geometry = {x: ige.geometry.x, y: ige.geometry.y};
+		this.geometry.x = ige.geometry.x;
+		this.geometry.y = ige.geometry.y;
 	},
 
 	/**
