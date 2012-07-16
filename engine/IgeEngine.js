@@ -374,7 +374,7 @@ var IgeEngine = IgeEntity.extend({
 		ige._fps = ige._frames;
 
 		// Store draws per second
-		ige._dps = ige._drawCount;
+		ige._dps = ige._dpt * ige._fps;
 
 		// Zero out counters
 		ige._frames = 0;
@@ -426,6 +426,8 @@ var IgeEngine = IgeEntity.extend({
 			// calculate delta on the next tick
 			ige.lastTick = ige.tickStart;
 			ige._frames++;
+			ige._dpt = ige._drawCount;
+			ige._drawCount = 0;
 		}
 	},
 
