@@ -14,11 +14,6 @@ var IgeEntity = IgeObject.extend([
 		this._scale = new IgePoint(1, 1, 1);
 		this._origin = new IgePoint(0.5, 0.5, 0.5);
 
-		this._translateOld = new IgePoint(0, 0, 0);
-		this._rotateOld = new IgePoint(0, 0, 0);
-		this._scaleOld = new IgePoint(1, 1, 1);
-		this._originOld = new IgePoint(0.5, 0.5, 0.5);
-
 		this.geometry = new IgePoint(20, 20, 20);
 
         this._localMatrix = new IgeMatrix2d(this); //modelViewMatrix
