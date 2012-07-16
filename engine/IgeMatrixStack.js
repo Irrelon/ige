@@ -60,3 +60,5 @@ IgeMatrixStack.prototype= {
 		return matrix;
 	}
 };
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeMatrixStack; }
