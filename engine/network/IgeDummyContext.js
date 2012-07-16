@@ -1,5 +1,6 @@
 var nullMethod = function () {},
 	IgeDummyContext = {
+		dummy: true,
 		save: nullMethod,
 		restore: nullMethod,
 		translate: nullMethod,
@@ -16,7 +17,9 @@ var nullMethod = function () {},
 		arc: nullMethod,
 		clearRect: nullMethod,
 		beginPath: nullMethod,
-		clip: nullMethod
+		clip: nullMethod,
+		transform: nullMethod,
+		setTransform: nullMethod
 	};
 
 if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeDummyContext; }

@@ -355,3 +355,5 @@ IgeMatrix2d.prototype = {
 		return this;
 	}
 };
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeMatrix2d; }
