@@ -9,8 +9,8 @@ var IgeCamera = IgeClass.extend([
 		this._scale = new IgePoint(1, 1, 1);
 		this._origin = new IgePoint(0.5, 0.5, 0.5);
 
-        this._localMatrix = new IgeMatrix2d(this); //modelViewMatrix
-        this._worldMatrix = new IgeMatrix2d(this); //worldModelViewMatrix
+        this._localMatrix = new IgeMatrix2d(this);
+        this._worldMatrix = new IgeMatrix2d(this);
 	},
 
 	// TODO: Write these methods!

@@ -16,11 +16,8 @@ var IgeEntity = IgeObject.extend([
 
 		this.geometry = new IgePoint(20, 20, 20);
 
-        this._localMatrix = new IgeMatrix2d(this); //modelViewMatrix
-        this._worldMatrix = new IgeMatrix2d(this); //worldModelViewMatrix
-        //this.modelViewMatrixI = new IgeMatrix2d();
-        //this.worldModelViewMatrixI = new IgeMatrix2d();
-        //this.tmpMatrix = new IgeMatrix2d();
+        this._localMatrix = new IgeMatrix2d(this);
+        this._worldMatrix = new IgeMatrix2d(this);
 	},
 
 	/**
