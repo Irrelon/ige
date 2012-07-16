@@ -150,6 +150,14 @@ var Client = IgeClass.extend({
 							}
 
 							return this;
+						},
+
+						tick: function (ctx) {
+							// Set the depth to the y co-ordinate which basically
+							// makes the entity appear further in the foreground
+							// the closer they become to the bottom of the screen
+							this.depth(this._translate.y);
+							this._super(ctx);
 						}
 					});
 
@@ -175,33 +183,18 @@ var Client = IgeClass.extend({
 						this.drawBoundsData(false);
 					};
 
-					tt = 0;
-					for (i = 0; i < 200; i++) {
+					for (i = 0; i < 400; i++) {
 						// Create a new character
 						self.obj[i] = new self.Character()
 							.depth(i)
 							.setType(Math.random() * 8 | 0)
 							.drawBounds(false)
 							.mouseOver(overFunc)
-							.mouseOut(outFunc);
-
-						// Set a timeout to make the character start walking
-						// because we don't want them to all start walking at
-						// the same time!
-						setTimeout(
-							(function () {
-								var item = self.obj[i];
-								return function () {
-									item.walkTo(
-										(Math.random() * ige.geometry.x) - ige.geometry.x2,
-										(Math.random() * ige.geometry.y) - ige.geometry.y2
-									);
-								};
-							}()),
-							tt
-						);
-
-						tt += 100;
+							.mouseOut(outFunc)
+							.walkTo(
+								(Math.random() * ige.geometry.x) - ige.geometry.x2,
+								(Math.random() * ige.geometry.y) - ige.geometry.y2
+							);
 					}
 				}
 			});
