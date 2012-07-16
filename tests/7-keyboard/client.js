@@ -3,7 +3,8 @@ var Client = IgeClass.extend({
 	init: function () {
 		// Load our textures
 		var self = this,
-			gameTexture = [];
+			gameTexture = [],
+			overFunc, outFunc;
 
 		this.obj = [];
 
@@ -17,7 +18,7 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Define our player character classes
-					self.CharacterMonk = IgeEntity.extend({
+					self.CharacterMonk = IgeInteractiveEntity.extend({
 						init: function () {
 							this._super();
 
@@ -32,6 +33,9 @@ var Client = IgeClass.extend({
 								.depth(1)
 								.texture(gameTexture[0])
 								.dimensionsFromCell()
+								.drawBounds(false)
+								.mouseOver(overFunc)
+								.mouseOut(outFunc)
 								.mount(self.scene1);
 
 							// Setup the control system
@@ -68,6 +72,18 @@ var Client = IgeClass.extend({
 						}
 					});
 
+					overFunc = function () {
+						this.highlight(true);
+						this.drawBounds(true);
+						this.drawBoundsData(true);
+					};
+
+					outFunc = function () {
+						this.highlight(false);
+						this.drawBounds(false);
+						this.drawBoundsData(false);
+					};
+
 					// Create the scene
 					self.scene1 = new IgeScene2d();
 
@@ -75,7 +91,7 @@ var Client = IgeClass.extend({
 					self.vp1 = new IgeViewport()
 						.autoSize(true)
 						.scene(self.scene1)
-						//.drawBounds(true)
+						.drawBounds(true)
 						.mount(ige);
 
 					self.obj[0] = new self.CharacterMonk();
