@@ -13,8 +13,10 @@ var Client = IgeClass.extend({
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
+			// Create our canvas element with auto-resizing (true)
 			ige.createFrontBuffer(true);
 
+			// Ask the engine to start and wait for a callback with a success flag
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
