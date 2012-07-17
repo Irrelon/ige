@@ -139,6 +139,106 @@ var IgeViewport = IgeUiEntity.extend([
 								ctx.fillText('[' + obj.id() + '] ' + index, aabb.x + 3, aabb.y + 10);
 							}
 						}
+
+						var r3d = obj.geometry3d,
+							// Bottom face
+							bf1 = new IgePoint(obj._translate.x - (r3d.x / 2), obj._translate.y - (r3d.y / 2), obj._translate.z + (r3d.z / 2))
+								.toIso(),
+							bf2 = new IgePoint(obj._translate.x + (r3d.x / 2), obj._translate.y - (r3d.y / 2), obj._translate.z + (r3d.z / 2))
+									.toIso(),
+							bf3 = new IgePoint(obj._translate.x + (r3d.x / 2), obj._translate.y + (r3d.y / 2), obj._translate.z + (r3d.z / 2))
+									.toIso(),
+							bf4 = new IgePoint(obj._translate.x - (r3d.x / 2), obj._translate.y + (r3d.y / 2), obj._translate.z + (r3d.z / 2))
+									.toIso(),
+							// Top face
+							tf1 = new IgePoint(obj._translate.x - (r3d.x / 2), obj._translate.y - (r3d.y / 2), obj._translate.z - (r3d.z / 2))
+								.toIso(),
+							tf2 = new IgePoint(obj._translate.x + (r3d.x / 2), obj._translate.y - (r3d.y / 2), obj._translate.z - (r3d.z / 2))
+									.toIso(),
+							tf3 = new IgePoint(obj._translate.x + (r3d.x / 2), obj._translate.y + (r3d.y / 2), obj._translate.z - (r3d.z / 2))
+									.toIso(),
+							tf4 = new IgePoint(obj._translate.x - (r3d.x / 2), obj._translate.y + (r3d.y / 2), obj._translate.z - (r3d.z / 2))
+									.toIso();
+
+						ctx.strokeStyle = '#00d8e5';
+						// Bottom face
+						ctx.beginPath();
+						ctx.moveTo(bf1.x - 5, bf1.y - 5);
+						ctx.lineTo(bf2.x - 5, bf2.y - 5);
+						ctx.lineTo(bf3.x - 5, bf3.y - 5);
+						ctx.lineTo(bf4.x - 5, bf4.y - 5);
+						ctx.lineTo(bf1.x - 5, bf1.y - 5);
+						ctx.stroke();
+
+						// Top face
+						ctx.beginPath();
+						ctx.moveTo(tf1.x - 5, tf1.y - 5);
+						ctx.lineTo(tf2.x - 5, tf2.y - 5);
+						ctx.lineTo(tf3.x - 5, tf3.y - 5);
+						ctx.lineTo(tf4.x - 5, tf4.y - 5);
+						ctx.lineTo(tf1.x - 5, tf1.y - 5);
+						ctx.stroke();
+						ctx.fill();
+
+						// Sides
+						ctx.beginPath();
+						//ctx.moveTo(bf1.x - 5, bf1.y - 5);
+						//ctx.lineTo(tf1.x - 5, tf1.y - 5);
+						ctx.moveTo(bf2.x - 5, bf2.y - 5);
+						ctx.lineTo(tf2.x - 5, tf2.y - 5);
+						ctx.moveTo(bf3.x - 5, bf3.y - 5);
+						ctx.lineTo(tf3.x - 5, tf3.y - 5);
+						ctx.moveTo(bf4.x - 5, bf4.y - 5);
+						ctx.lineTo(tf4.x - 5, tf4.y - 5);
+						ctx.stroke();
+
+						/*
+						// Draw the 3d bounding box
+						// Bottom face
+						ctx.beginPath();
+						ctx.moveTo(aabb.origin.x + r3d.iso1.x, aabb.origin.y + r3d.iso1.y);
+						ctx.lineTo(aabb.origin.x + r3d.iso2.x, aabb.origin.y + r3d.iso2.y);
+						ctx.lineTo(aabb.origin.x + r3d.iso3.x, aabb.origin.y + r3d.iso3.y);
+						ctx.lineTo(aabb.origin.x + r3d.iso4.x, aabb.origin.y + r3d.iso4.y);
+						ctx.lineTo(aabb.origin.x + r3d.iso1.x, aabb.origin.y + r3d.iso1.y);
+						ctx.stroke();
+						ige._drawCount++;
+
+						// Top face
+						ctx.beginPath();
+						ctx.moveTo(aabb.origin.x + r3d.iso1.x, aabb.origin.y + r3d.iso1.y - r3d.sizeZ);
+						ctx.lineTo(aabb.origin.x + r3d.iso2.x, aabb.origin.y + r3d.iso2.y - r3d.sizeZ);
+						ctx.lineTo(aabb.origin.x + r3d.iso3.x, aabb.origin.y + r3d.iso3.y - r3d.sizeZ);
+						ctx.lineTo(aabb.origin.x + r3d.iso4.x, aabb.origin.y + r3d.iso4.y - r3d.sizeZ);
+						ctx.lineTo(aabb.origin.x + r3d.iso1.x, aabb.origin.y + r3d.iso1.y - r3d.sizeZ);
+						ctx.stroke();
+						ige._drawCount++;
+
+						// Sides
+						ctx.beginPath();
+						ctx.moveTo(aabb.origin.x + r3d.iso1.x, aabb.origin.y + r3d.iso1.y);
+						ctx.lineTo(aabb.origin.x + r3d.iso1.x, aabb.origin.y + r3d.iso1.y - r3d.sizeZ);
+						ctx.stroke();
+						ige._drawCount++;
+
+						ctx.beginPath();
+						ctx.moveTo(aabb.origin.x + r3d.iso2.x, aabb.origin.y + r3d.iso2.y);
+						ctx.lineTo(aabb.origin.x + r3d.iso2.x, aabb.origin.y + r3d.iso2.y - r3d.sizeZ);
+						ctx.stroke();
+						ige._drawCount++;
+
+						ctx.beginPath();
+						ctx.moveTo(aabb.origin.x + r3d.iso3.x, aabb.origin.y + r3d.iso3.y);
+						ctx.lineTo(aabb.origin.x + r3d.iso3.x, aabb.origin.y + r3d.iso3.y - r3d.sizeZ);
+						ctx.stroke();
+						ige._drawCount++;
+
+						ctx.beginPath();
+						ctx.moveTo(aabb.origin.x + r3d.iso4.x, aabb.origin.y + r3d.iso4.y);
+						ctx.lineTo(aabb.origin.x + r3d.iso4.x, aabb.origin.y + r3d.iso4.y - r3d.sizeZ);
+						ctx.stroke();
+						ige._drawCount++;
+						*/
 					}
 
 					this.drawAABBs(ctx, obj, index);
