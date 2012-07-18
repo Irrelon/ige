@@ -44,6 +44,8 @@ var IgeClass = (function () {
 			} else {
 				console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
 			}
+
+			return this;
 		},
 
 		classId = function (name) {
@@ -53,6 +55,7 @@ var IgeClass = (function () {
 				} else {
 					this.prototype._classId = name;
 				}
+				return this;
 			}
 
 			return (this._classId || this.prototype._classId);
