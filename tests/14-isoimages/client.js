@@ -139,10 +139,24 @@ var Client = IgeClass.extend({
 						.origin(0, 0, 0)
 						.mount(self.tileMap1)
 						.texture(gameTexture[0])
-						.widthByIsoTile(2)
-						.heightByIsoTile(2)
+						.widthByIsoTile(1)
+						.heightByIsoTile(1)
 						.size3d(40, 40, 120)
 						.translateToIsoTile(0, 0, 0)
+						.opacity(0.9)
+						.mode(1);
+
+					self.obj[0] = new Cuboid()
+						.depth(0)
+						.width(40)
+						.height(40)
+						.origin(0, 0, 0)
+						.mount(self.tileMap1)
+						.texture(gameTexture[0])
+						.widthByIsoTile(1)
+						.heightByIsoTile(1)
+						.size3d(40, 40, 120)
+						.translateToIsoTile(1, 0, 0)
 						.opacity(0.9)
 						.mode(1);
 				}

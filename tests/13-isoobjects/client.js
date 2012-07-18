@@ -102,18 +102,6 @@ var Client = IgeClass.extend({
 							ctx.fillText(this._id, 0, 0);
 
 							this._super(ctx, true);
-						},
-
-						cords: function () {
-							console.log(
-								this._id,
-								this._translate.x,
-								this._translate.y,
-								this._translate.z,
-								this.geometry3d.x,
-								this.geometry3d.y,
-								this.geometry3d.z
-							);
 						}
 					});
 
@@ -154,13 +142,14 @@ var Client = IgeClass.extend({
 						.scene(self.scene1)
 						.drawBounds(true)
 						.drawBoundsData(true)
-						.mount(ige);
+						.mount(ige)
+						.camera.translateTo(-100, -50, 0);
 
 					// Create the tile map
 					self.tileMap1 = new IgeTileMap2d()
 						.tileWidth(40)
 						.tileHeight(40)
-						.drawGrid(10)
+						.drawGrid(0)
 						.mode(1)
 						.mount(self.scene1);
 
@@ -298,19 +287,13 @@ var Client = IgeClass.extend({
 						.id(15)
 						.depth(15)
 						.mount(self.tileMap1)
-						.translateToIso(400, 400, 0)
+						.translateToIso(300, 300, 0)
 						.size3d(20, 20, 80)
 						.opacity(0.95)
 						.mode(1);
 				}
 			});
 		});
-	},
-
-	cords: function () {
-		for (var i = 0; i < this.obj.length; i++) {
-			this.obj[i].cords();
-		}
 	}
 });
 
