@@ -1,9 +1,12 @@
 var IgePoint = function (x, y, z) {
 	// Set values to the passed parameters or
 	// zero if they are undefined
-	this.x = x !== undefined ? x : 0;
-	this.y = y !== undefined ? y : 0;
-	this.z = z !== undefined ? z : 0;
+	this.x = x = x !== undefined ? x : 0;
+	this.y = y = y !== undefined ? y : 0;
+	this.z = z = z !== undefined ? z : 0;
+	this.x2 = x / 2;
+	this.y2 = y / 2;
+	this.z2 = z / 2;
 
 	return this;
 };
