@@ -1,4 +1,4 @@
-var IgeSocketIoComponent = IgeClass.extend({
+var IgeSocketIoComponent = IgeEventingClass.extend({
 	classId: 'IgeSocketIoComponent',
 	componentId: 'network',
 
@@ -7,17 +7,26 @@ var IgeSocketIoComponent = IgeClass.extend({
 		this._port = 8000;
 		/* CEXCLUDE */
 		if (ige.isServer) {
+			this.implement(IgeSocketIoServer);
 			this._socketio = require('../' + modulePath + 'socket.io');
 			this._acceptConnections = false;
 		}
 		/* CEXCLUDE */
+
+		if (!ige.isServer) {
+			this.implement(IgeSocketIoClient);
+		}
 	},
 
-	start: function (port) {
+	/**
+	 * Starts the network for either client or server.
+	 * @param {*} data If on server, specifies the port to start on, if on client, specifies the game server URL.
+	 */
+	start: function (data) {
 		var self = this;
 
-		if (typeof(port) !== 'undefined') {
-			this._port = port;
+		if (typeof(data) !== 'undefined') {
+			this._port = data;
 		}
 
 		/* CEXCLUDE */
@@ -39,9 +48,10 @@ var IgeSocketIoComponent = IgeClass.extend({
 		if (!ige.isServer) {
 			this.log('Connecting to socket.io server at "' + this._port + '"...');
 
-			this._io = io.connect(port);
+			this._io = io.connect(data);
 			this._io.on('connect', function (data) {
 				self.log('Connected to server!');
+				self.emit('connected');
 			});
 
 			this._io.on('disconnect', function (data) {
@@ -50,6 +60,7 @@ var IgeSocketIoComponent = IgeClass.extend({
 				} else {
 					self.log('Disconnected from server!');
 				}
+				self.emit('disconnected');
 			});
 		}
 	},
