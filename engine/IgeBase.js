@@ -1,4 +1,6 @@
 ige = null;
+version = '1.1.0';
+
 igeDebug = {
 	node: typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined',
 	level: ['log', 'warning', 'error'],

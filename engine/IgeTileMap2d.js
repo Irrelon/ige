@@ -83,7 +83,8 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * @private
 	 */
 	_objectTileWidth: function (val) {
-		this.width(val * this._parent._tileWidth);
+		var tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
+		this.width(val * tileSize);
 		return this;
 	},
 
@@ -93,38 +94,8 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * @private
 	 */
 	_objectTileHeight: function (val) {
-		this.height(val * this._parent._tileHeight);
-		return this;
-	},
-
-	/**
-	 * Translate's the object to the isometric tile co-ordinates passed.
-	 * @param x
-	 * @param y
-	 * @private
-	 */
-	_objectTranslateToIsoTile: function (x, y) {
-		this.translateToIso(x * this._parent._tileWidth, y * this._parent._tileHeight, this._translate.z);
-		return this;
-	},
-
-	/**
-	 * Set the object's width to the number of isometric tile width's specified.
-	 * @param val
-	 * @private
-	 */
-	_objectIsoTileWidth: function (val) {
-		this.width(val * (this._parent._tileWidth * 2));
-		return this;
-	},
-
-	/**
-	 * Set the object's height to the number of isometric tile height's specified.
-	 * @param val
-	 * @private
-	 */
-	_objectIsoTileHeight: function (val) {
-		this.height(val * (this._parent._tileHeight * 2));
+		var tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
+		this.height(val * tileSize);
 		return this;
 	},
 

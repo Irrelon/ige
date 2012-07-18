@@ -32,8 +32,9 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					// Create the sprite scene
-					self.scene2 = new IgeScene2d().depth(0);
-					self.scene2.mount(self.scene1);
+					self.scene2 = new IgeScene2d()
+						.depth(0)
+						.mount(self.scene1);
 
 					// Create an entity
 					self.obj[0] = new IgeInteractiveEntity()

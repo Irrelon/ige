@@ -3,9 +3,13 @@ var Server = IgeClass.extend({
 	Server: true,
 
 	init: function () {
+		// Add the server-side game methods
+		this.implement(ServerNetworkEvents);
+
 		// Start the network server
-		ige.addComponent(IgeSocketIoComponent);
-		ige.network.start(2000);
+		ige.addComponent(IgeSocketIoComponent)
+			.network.define('placeItem', this._placeItem)
+			.network.start(2000);
 
 		var texture1 = new IgeTexture('../assets/textures/sprites/fairy.png');
 

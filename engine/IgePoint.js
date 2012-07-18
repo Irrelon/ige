@@ -16,12 +16,12 @@ IgePoint.prototype.compare = function (point) {
 };
 
 /**
- * Converts the point's x, y, z to an isometric x, y 2d screen co-ordinate.
+ * Converts the point's x, y, z to an isometric x, y 2d co-ordinate.
  * @return {Object}
  */
 IgePoint.prototype.toIso = function () {
 	var sx = this.x - this.y,
-		sy = this.z * 1.2247 + (this.x + this.y) * 0.5;
+		sy = (-this.z) * 1.2247 + (this.x + this.y) * 0.5;
 
 	return {x: sx, y: sy};
 };

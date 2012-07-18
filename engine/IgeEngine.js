@@ -16,7 +16,7 @@ var IgeEngine = IgeEntity.extend({
 
 		// Output our header
 		console.log('------------------------------------------------------------------------------');
-		console.log('* Powered by the Isogenic Game Engine 1.1.0                                  *');
+		console.log('* Powered by the Isogenic Game Engine ' + version + '                                  *');
 		console.log('* (C)opyright 2012 Irrelon Software Limited                                  *');
 		console.log('* http://www.isogenicengine.com                                              *');
 		console.log('------------------------------------------------------------------------------');

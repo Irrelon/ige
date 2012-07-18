@@ -2,7 +2,15 @@ var IgeSocketIoComponent = IgeEventingClass.extend({
 	classId: 'IgeSocketIoComponent',
 	componentId: 'network',
 
-	init: function () {
+	init: function (entity, options) {
+		this._entity = entity;
+		this._options = options;
+
+		// Setup the network commands storage
+		this._networkCommands = {};
+		this._networkCommandsIndex = [];
+		this._networkCommandsLookup = {};
+
 		// Set some defaults
 		this._port = 8000;
 		/* CEXCLUDE */

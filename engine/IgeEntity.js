@@ -15,9 +15,6 @@ var IgeEntity = IgeObject.extend([
 		this._scale = new IgePoint(1, 1, 1);
 		this._origin = new IgePoint(0.5, 0.5, 0.5);
 
-		// Special case for iso translate
-		this._translateIso = {x: 0, y: 0};
-
 		this.geometry = new IgePoint(20, 20, 20);
 		this.geometry3d = new IgePoint(40, 40, 40);
 
@@ -365,23 +362,23 @@ var IgeEntity = IgeObject.extend([
 			thisMin = new IgePoint(
 				this._translate.x - thisG3d.x / 2,
 				this._translate.y - thisG3d.y / 2,
-				this._translate.z - thisG3d.z / 2
+				this._translate.z
 			),
 			thisMax = new IgePoint(
 				this._translate.x + thisG3d.x / 2,
 				this._translate.y + thisG3d.y / 2,
-				this._translate.z + thisG3d.z / 2
+				this._translate.z + thisG3d.z
 			),
 			otherG3d = otherObject.geometry3d,
 			otherMin = new IgePoint(
 				otherObject._translate.x - otherG3d.x / 2,
 				otherObject._translate.y - otherG3d.y / 2,
-				otherObject._translate.z - otherG3d.z / 2
+				otherObject._translate.z
 			),
 			otherMax = new IgePoint(
 				otherObject._translate.x + otherG3d.x / 2,
 				otherObject._translate.y + otherG3d.y / 2,
-				otherObject._translate.z + otherG3d.z / 2
+				otherObject._translate.z + otherG3d.z
 			);
 
 		if (thisMax.x <= otherMin.x) {

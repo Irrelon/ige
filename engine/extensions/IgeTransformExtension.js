@@ -15,7 +15,7 @@ var IgeTransformExtension = {
 		return this._entity || this;
 	},
 
-	translateByIso: function (x, y, z) {
+	/*translateByIso: function (x, y, z) {
 		this.translateBy(x, y, z);
 
 		var x = this._translate.x,
@@ -53,7 +53,7 @@ var IgeTransformExtension = {
 		this._translateIso.y = sy;
 
 		return this._entity || this;
-	},
+	},*/
 
 	translate: function () {
 		this.tween = this._translateAccessorTween;
@@ -289,7 +289,19 @@ var IgeTransformExtension = {
 
 		if (this._mode === 1) {
 			// iso translation
-			this._localMatrix.multiply(this._localMatrix._newTranslate(this._translateIso.x, this._translateIso.y));
+			this._translateIso = new IgePoint(
+				this._translate.x,
+				this._translate.y,
+				this._translate.z + this.geometry3d.z / 2
+			).toIso();
+
+			this._translateIso.x2 = 0;
+			this._translateIso.y2 = 0;
+			this._translateIso.z2 = 0;
+			var isoPoint = this._translateIso;
+
+			//this._translateIso = this._translate.toIso();
+			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
 		}
 		this._localMatrix.multiply(this._localMatrix._newRotate(this._rotate.z));
 		this._localMatrix.multiply(this._localMatrix._newScale(this._scale.x, this._scale.y));

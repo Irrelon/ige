@@ -27,15 +27,15 @@ var Client = IgeClass.extend({
 						.drawBounds(true)
 						.mount(ige);
 
-					self.obj[0] = tempObj = new IgeEntity();
-					tempObj.addComponent(IgeVelocityComponent);
-					tempObj.velocity.x(-0.01);
-					tempObj.velocity.y(0.01);
-					tempObj.depth(1);
-					tempObj.geometry.x = 100;
-					tempObj.geometry.y = 100;
-					tempObj.texture(gameTexture[0]);
-					tempObj.mount(self.scene1);
+					self.obj[0] = tempObj = new IgeEntity()
+						.addComponent(IgeVelocityComponent)
+						.velocity.x(-0.01)
+						.velocity.y(0.01)
+						.depth(1)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[0])
+						.mount(self.scene1);
 				}
 			});
 		});

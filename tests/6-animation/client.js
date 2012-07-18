@@ -185,7 +185,7 @@ var Client = IgeClass.extend({
 						this.drawBoundsData(false);
 					};
 
-					for (i = 0; i < 400; i++) {
+					for (i = 0; i < 200; i++) {
 						// Create a new character
 						self.obj[i] = new self.Character()
 							.depth(i)

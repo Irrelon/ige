@@ -25,8 +25,7 @@ var Client = IgeClass.extend({
 						},
 
 						newTween: function () {
-							var self = this,
-								tempScale = (Math.random() * 2);
+							var self = this;
 
 							this.translate().tween()
 								.duration(7000)
