@@ -214,7 +214,7 @@ var IgeUiPositionExtension = {
 			if (this._width) { this.height(this._height, this._heightModifier, true); }
 
 			if (this._uiXAlign === 'right') {
-				this._translate.x = this._uiX + parentGeom.x2 - geom.x2;
+				this._translate.x = parentGeom.x2 - geom.x2 - this._uiX;
 			} else if (this._uiXAlign === 'center') {
 				this._translate.x = this._uiX;
 			} else {
@@ -222,7 +222,7 @@ var IgeUiPositionExtension = {
 			}
 
 			if (this._uiYAlign === 'bottom') {
-				this._translate.y = this._uiY + parentGeom.y2 - geom.y2;
+				this._translate.y = parentGeom.y2 - geom.y2 - this._uiY;
 			} else if (this._uiYAlign === 'middle') {
 				this._translate.y = this._uiY;
 			} else {
