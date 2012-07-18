@@ -41,11 +41,11 @@ var Client = IgeClass.extend({
 							.tileWidth(40)
 							.tileHeight(40)
 							.drawGrid(10)
-							.mode(1)
+							.isometric(true)
 							.mount(self.scene1);
 
 						self.obj[0] = new IgeCuboid()
-							.mode(1)
+							.isometric(true)
 							.depth(1)
 							.width(100)
 							.height(100)

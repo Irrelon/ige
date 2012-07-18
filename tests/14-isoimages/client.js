@@ -29,7 +29,7 @@ var Client = IgeClass.extend({
 
 					// Create the tile map
 					self.tileMap1 = new IgeTileMap2d()
-						.mode(1)
+						.isometric(true)
 						.tileWidth(40)
 						.tileHeight(40)
 						.drawGrid(10)
@@ -37,31 +37,25 @@ var Client = IgeClass.extend({
 
 					// Create an entity
 					self.obj[0] = new IgeCuboid()
-						.mode(1)
-						.depth(0)
-						.width(40)
-						.height(40)
+						.isometric(true)
 						.origin(0, 0, 0)
 						.mount(self.tileMap1)
-						.texture(gameTexture[0])
-						.widthByTile(1)
-						.heightByTile(1)
-						.size3d(40, 40, 120)
+						.widthByTile(0.8)
+						.heightByTile(0.8)
+						.size3d(40, 40, 40)
 						.translateToTile(0, 0, 0)
+						.texture(gameTexture[0])
 						.opacity(0.9);
 
 					self.obj[0] = new IgeCuboid()
-						.mode(1)
-						.depth(0)
-						.width(40)
-						.height(40)
+						.isometric(true)
 						.origin(0, 0, 0)
 						.mount(self.tileMap1)
-						.texture(gameTexture[0])
-						.widthByTile(1)
-						.heightByTile(1)
-						.size3d(40, 40, 120)
+						.widthByTile(0.8)
+						.heightByTile(0.8)
+						.size3d(40, 40, 40)
 						.translateToTile(1, 0, 0)
+						.texture(gameTexture[0])
 						.opacity(0.9);
 				}
 			});

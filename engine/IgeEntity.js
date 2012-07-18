@@ -37,6 +37,25 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
+	 * Gets / sets the positioning mode of the entity as isometric.
+	 * @param {Boolean} val
+	 * @return {*}
+	 */
+	isometric: function (val) {
+		if (val === true) {
+			this._mode = 1;
+			return this;
+		}
+
+		if (val === false) {
+			this._mode = 0;
+			return this;
+		}
+
+		return this._mode === 1;
+	},
+
+	/**
 	 * Gets / sets the current object id. If no id is currently assigned and no
 	 * id is passed to the method, it will automatically generate and assign a
 	 * new id as a 16 character hexadecimal value typed as a string.

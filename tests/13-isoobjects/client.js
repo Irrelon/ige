@@ -62,7 +62,7 @@ var Client = IgeClass.extend({
 						.tileWidth(40)
 						.tileHeight(40)
 						.drawGrid(0)
-						.mode(1)
+						.isometric(true)
 						.mount(self.scene1);
 
 					// Create an entity
@@ -70,97 +70,97 @@ var Client = IgeClass.extend({
 					x = -140;
 					self.obj[0] = new IgeCuboid()
 						.id(1)
-						.mode(1)
+						.isometric(true)
 						.depth(0)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 0, 0)
 						.size3d(160, 240, 40)
 						.opacity(0.95)
-						.mode(1);
+						.isometric(true);
 
 					self.obj[1] = new IgeCuboid()
 						.id(2)
-						.mode(1)
+						.isometric(true)
 						.depth(1)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, -60, 40)
 						.opacity(0.95)
-						.mode(1);
+						.isometric(true);
 
 					self.obj[2] = new IgeCuboid()
 						.id(3)
-						.mode(1)
+						.isometric(true)
 						.depth(2)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 60, 40)
 						.opacity(0.95)
-						.mode(1);
+						.isometric(true);
 
 					self.obj[3] = new IgeCuboid()
 						.id(4)
-						.mode(1)
+						.isometric(true)
 						.depth(4)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 0, 80)
 						.size3d(40, 160, 40)
 						.opacity(0.95)
-						.mode(1);
+						.isometric(true);
 
 					// Center column
 					self.obj[4] = new IgeCuboid()
 						.id(5)
-						.mode(1)
+						.isometric(true)
 						.depth(5)
 						.mount(self.tileMap1)
 						.translateTo(0, 0, 0)
 						.size3d(40, 380, 120)
 						.opacity(0.95)
-						.mode(1);
+						.isometric(true);
 
 					// Plinth 2
 					x = 140;
 					self.obj[5] = new IgeCuboid()
 						.id(6)
-						.mode(1)
+						.isometric(true)
 						.depth(6)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 0, 0)
 						.size3d(160, 240, 40)
 						.opacity(0.95)
-						.mode(1);
+						.isometric(true);
 
 					self.obj[6] = new IgeCuboid()
 						.id(7)
-						.mode(1)
+						.isometric(true)
 						.depth(7)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, -60, 40)
 						.opacity(0.95)
-						.mode(1);
+						.isometric(true);
 
 					self.obj[7] = new IgeCuboid()
 						.id(8)
-						.mode(1)
+						.isometric(true)
 						.depth(8)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 60, 40)
 						.opacity(0.95)
-						.mode(1);
+						.isometric(true);
 
 					self.obj[8] = new IgeCuboid()
 						.id(9)
-						.mode(1)
+						.isometric(true)
 						.depth(9)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 0, 80)
 						.size3d(40, 160, 40)
 						.opacity(0.95)
-						.mode(1);
+						.isometric(true);
 
 					// Big slab on top
 					self.obj[9] = new IgeCuboid()
 						.id(10)
-						.mode(1)
+						.isometric(true)
 						.depth(10)
 						.mount(self.tileMap1)
 						.size3d(360, 10, 20)
@@ -170,7 +170,7 @@ var Client = IgeClass.extend({
 					// Building
 					self.obj[10] = new IgeCuboid()
 						.id(11)
-						.mode(1)
+						.isometric(true)
 						.depth(11)
 						.mount(self.tileMap1)
 						.translateTo(0, 300, 0)
@@ -179,7 +179,7 @@ var Client = IgeClass.extend({
 
 					self.obj[11] = new IgeCuboid()
 						.id(12)
-						.mode(1)
+						.isometric(true)
 						.depth(12)
 						.mount(self.tileMap1)
 						.translateTo(0, 300, 40)
@@ -188,33 +188,33 @@ var Client = IgeClass.extend({
 
 					self.obj[12] = new IgeCuboid()
 						.id(13)
-						.mode(1)
+						.isometric(true)
 						.depth(13)
 						.mount(self.tileMap1)
 						.translateTo(0, 300, 80)
 						.size3d(10, 10, 120)
 						.opacity(0.95)
-						.mode(1);
+						.isometric(true);
 
 					self.obj[13] = new IgeCuboid()
 						.id(14)
-						.mode(1)
+						.isometric(true)
 						.depth(14)
 						.mount(self.tileMap1)
 						.translateTo(0, 300, 200)
 						.size3d(200, 200, 10)
 						.opacity(0.95)
-						.mode(1);
+						.isometric(true);
 
 					self.obj[14] = new Player()
 						.id(15)
-						.mode(1)
+						.isometric(true)
 						.depth(15)
 						.mount(self.tileMap1)
 						.translateTo(300, 300, 0)
 						.size3d(20, 20, 80)
 						.opacity(0.95)
-						.mode(1);
+						.isometric(true);
 				}
 			});
 		});
