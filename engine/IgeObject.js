@@ -58,6 +58,13 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Called when a child object is un-mounted to this object.
+	 * @param obj
+	 * @private
+	 */
+	_childUnMounted: function (obj) {},
+
+	/**
 	 * Gets / sets a key / value pair in the object's data object. Useful for
 	 * storing arbitrary game data in the object.
 	 * @param {String} key The key under which the data resides.
@@ -190,6 +197,8 @@ var IgeObject = IgeEventingClass.extend({
 			if (index > -1) {
 				// Found this in the parent._children array so remove it
 				childArr.splice(index, 1);
+
+				this._parent._childUnMounted(this);
 				this._parent = null;
 
 				return this;
@@ -282,9 +291,6 @@ var IgeObject = IgeEventingClass.extend({
 	depthSortChildren: function () {
 		// Now sort the entities by depth
 		this._children.sort(function (a, b) {
-			//if (!a._ignoreAABB && a._aabbDirty) { a.aabb(true); }
-			//if (!b._ignoreAABB && b._aabbDirty) { b.aabb(true); }
-
 			var layerIndex = b._layer - a._layer;
 
 			if (layerIndex === 0) {

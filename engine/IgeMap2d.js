@@ -1,46 +1,16 @@
 var IgeMap2d = IgeClass.extend({
-	init: function (tileWidth, tileHeight, data) {
-		this._tileWidth = tileWidth;
-		this._tileHeight = tileHeight;
+	init: function (data) {
 		this._mapData = data || [];
-	},
-
-	/**
-	 * Gets / sets the map's tile width.
-	 * @param {Number} val Tile width.
-	 * @return {*}
-	 */
-	tileWidth: function (val) {
-		if (val !== undefined) {
-			this._tileWidth = val;
-			return this;
-		}
-
-		return this._tileWidth;
-	},
-
-	/**
-	 * Gets / sets the map's tile height.
-	 * @param {Number} val Tile height.
-	 * @return {*}
-	 */
-	tileHeight: function (val) {
-		if (val !== undefined) {
-			this._tileHeight = val;
-			return this;
-		}
-
-		return this._tileHeight;
 	},
 
 	/**
 	 * Gets / sets a value on the specified map tile co-ordinates.
 	 * @param {Number} x
 	 * @param {Number} y
-	 * @param {*=} val The value to set.
+	 * @param {*=} val The data to set on the map tile co-ordinate.
 	 * @return {*}
 	 */
-	tile: function (x, y, val) {
+	tileData: function (x, y, val) {
 		if (x !== undefined && y !== undefined) {
 			if (val !== undefined) {
 				// Assign a value
@@ -85,7 +55,7 @@ var IgeMap2d = IgeClass.extend({
 	 */
 		//TODO: Write this function's internals!
 	insertMapData: function (x, y, val) {
-
+		// Loop the data and fill the map data with it
 	},
 
 	/**

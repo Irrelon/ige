@@ -6,6 +6,7 @@ var IgeEntity = IgeObject.extend([
 	init: function () {
 		this._super();
 
+		this._mode = 0;
 		this._opacity = 1;
 		this._cell = 1;
 
@@ -14,10 +15,28 @@ var IgeEntity = IgeObject.extend([
 		this._scale = new IgePoint(1, 1, 1);
 		this._origin = new IgePoint(0.5, 0.5, 0.5);
 
+		// Special case for iso translate
+		this._translateIso = {x: 0, y: 0};
+
 		this.geometry = new IgePoint(20, 20, 20);
+		this.geometry3d = new IgePoint(40, 40, 40);
 
         this._localMatrix = new IgeMatrix2d(this);
         this._worldMatrix = new IgeMatrix2d(this);
+	},
+
+	/**
+	 * Gets / sets the positioning mode of the entity.
+	 * @param val 0 = 2d, 1 = isometric
+	 * @return {*}
+	 */
+	mode: function (val) {
+		if (val !== undefined) {
+			this._mode = val;
+			return this;
+		}
+
+		return this._mode;
 	},
 
 	/**
@@ -71,6 +90,15 @@ var IgeEntity = IgeObject.extend([
 		}
 
 		return this._height;
+	},
+
+	size3d: function (x, y, z) {
+		if (x !== undefined && y !== undefined && z !== undefined) {
+			this.geometry3d = new IgePoint(x, y, z);
+			return this;
+		}
+
+		return this.geometry3d;
 	},
 
 	/**
@@ -256,41 +284,130 @@ var IgeEntity = IgeObject.extend([
 		box.height = maxY - minY;
 
 		return box;
-		/*
-		if (this._worldTranslate) {
-			var originTranslate = this.centerPoint(),
-				width2 = ((this.geometry.x * this._worldScale.x) / 2),
-				height2 = ((this.geometry.y * this._worldScale.y) / 2),
-				r = (this._rotate.z),
-				cornerX1 = width2,
-				cornerX2 = width2,
-				cornerY1 = -height2,
-				cornerY2 = height2,
+	},
 
-				sinO = Math.sin(r),
-				cosO = Math.cos(r),
+	_swapVars: function (x, y) {
+		return [y, x];
+	},
 
-				rotatedCorner1X = (cornerX1 * cosO - cornerY1 * sinO),
-				rotatedCorner1Y = (cornerX1 * sinO - cornerY1 * cosO),
-				rotatedCorner2X = (cornerX2 * cosO - cornerY2 * sinO),
-				rotatedCorner2Y = (cornerX2 * sinO - cornerY2 * cosO),
+	_internalsOverlap: function (x0, x1, y0, y1) {
+		var tempSwap;
 
-				extentX = (Math.max(Math.abs(rotatedCorner1X), Math.abs(rotatedCorner2X))),
-				extentY = Math.max(Math.abs(rotatedCorner1Y), Math.abs(rotatedCorner2Y)),
-
-				// Rotate the worldTranslate point by the parent rotation
-				pr = (this._parent && this._parent._rotate) ? -(this._parent._rotate.z) : 0,
-				wtPoint = this._rotatePoint(this._translate, pr, {x: 0, y: 0}),
-				origin = this._rotatePoint(originTranslate, -r, {x: 0, y: 0});
-
-			return {
-				x: wtPoint.x + (this._parent._translate ? this._parent._translate.x : 0) - extentX + ige.geometry.x2 - origin.x,
-				y: wtPoint.y + (this._parent._translate ? this._parent._translate.y : 0) - extentY + ige.geometry.y2 - origin.y,
-				width: extentX * 2,
-				height: extentY * 2
-			};
+		if (x0 > x1) {
+			tempSwap = this._swapVars(x0, x1);
+			x0 = tempSwap[0];
+			x1 = tempSwap[1];
 		}
-		*/
+
+		if (y0 > y1) {
+			tempSwap = this._swapVars(y0, y1);
+			y0 = tempSwap[0];
+			y1 = tempSwap[1];
+		}
+
+		if (x0 > y0) {
+			tempSwap = this._swapVars(x0, y0);
+			x0 = tempSwap[0];
+			y0 = tempSwap[1];
+
+			tempSwap = this._swapVars(x1, y1);
+			x1 = tempSwap[0];
+			y1 = tempSwap[1];
+		}
+
+		return y0 < x1;
+	},
+
+	_projectionOverlap: function (otherObject) {
+		var thisG3d = this.geometry3d,
+			thisMin = new IgePoint(
+				this._translate.x - thisG3d.x / 2,
+				this._translate.y - thisG3d.y / 2,
+				this._translate.z - thisG3d.z
+			),
+			thisMax = new IgePoint(
+				this._translate.x + thisG3d.x / 2,
+				this._translate.y + thisG3d.y / 2,
+				this._translate.z + thisG3d.z
+			),
+			otherG3d = otherObject.geometry3d,
+			otherMin = new IgePoint(
+				otherObject._translate.x - otherG3d.x / 2,
+				otherObject._translate.y - otherG3d.y / 2,
+				otherObject._translate.z - otherG3d.z
+			),
+			otherMax = new IgePoint(
+				otherObject._translate.x + otherG3d.x / 2,
+				otherObject._translate.y + otherG3d.y / 2,
+				otherObject._translate.z + otherG3d.z
+			);
+
+		return this._internalsOverlap(
+			thisMin.x - thisMax.y,
+			thisMax.x - thisMin.y,
+			otherMin.x - otherMax.y,
+			otherMax.x - otherMin.y
+		) && this._internalsOverlap(
+			thisMin.x - thisMax.z,
+			thisMax.x - thisMin.z,
+			otherMin.x - otherMax.z,
+			otherMax.x - otherMin.z
+		) && this._internalsOverlap(
+			thisMin.z - thisMax.y,
+			thisMax.z - thisMin.y,
+			otherMin.z - otherMax.y,
+			otherMax.z - otherMin.y
+		);
+	},
+
+	_isBehind: function (otherObject) {
+		var thisG3d = this.geometry3d,
+			thisMin = new IgePoint(
+				this._translate.x - thisG3d.x / 2,
+				this._translate.y - thisG3d.y / 2,
+				this._translate.z - thisG3d.z / 2
+			),
+			thisMax = new IgePoint(
+				this._translate.x + thisG3d.x / 2,
+				this._translate.y + thisG3d.y / 2,
+				this._translate.z + thisG3d.z / 2
+			),
+			otherG3d = otherObject.geometry3d,
+			otherMin = new IgePoint(
+				otherObject._translate.x - otherG3d.x / 2,
+				otherObject._translate.y - otherG3d.y / 2,
+				otherObject._translate.z - otherG3d.z / 2
+			),
+			otherMax = new IgePoint(
+				otherObject._translate.x + otherG3d.x / 2,
+				otherObject._translate.y + otherG3d.y / 2,
+				otherObject._translate.z + otherG3d.z / 2
+			);
+
+		if (thisMax.x <= otherMin.x) {
+			return false;
+		}
+
+		if (otherMax.x <= thisMin.x) {
+			return true;
+		}
+
+		if (thisMax.y <= otherMin.y) {
+			return false;
+		}
+
+		if (otherMax.y <= thisMin.y) {
+			return true;
+		}
+
+		if (thisMax.z <= otherMin.z) {
+			return false;
+		}
+
+		if (otherMax.z <= thisMin.z) {
+			return true;
+		}
+		console.log('ERROR WITH IS BEHIND!');
 	},
 
 	/**
@@ -300,6 +417,10 @@ var IgeEntity = IgeObject.extend([
 	 * @private
 	 */
 	_transformContext: function (ctx) {
+		// Check for changes to the transform values
+		// directly without calling the transform methods
+		this.updateTransform();
+
 		if (this._parent) {
 			// TODO: Does this only work one level deep? we need to alter a _worldOpacity property down the chain
 			ctx.globalAlpha = this._parent._opacity * this._opacity;
@@ -323,10 +444,6 @@ var IgeEntity = IgeObject.extend([
 		} else {
 			// Process any behaviours assigned to the entity
 			this._processBehaviours(ctx);
-
-			// Check for changes to the transform values
-			// directly without calling the transform methods
-			this.updateTransform();
 
 			// Get the current texture
 			var texture = this._texture;

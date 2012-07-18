@@ -15,6 +15,46 @@ var IgeTransformExtension = {
 		return this._entity || this;
 	},
 
+	translateByIso: function (x, y, z) {
+		this.translateBy(x, y, z);
+
+		var x = this._translate.x,
+			y = this._translate.y,
+			z = this._translate.z;
+
+		// Set the z so that z = 0 always rests against the floor plane
+		z += this.geometry3d.z / 2;
+		z = -z; // Invert the z axis so that it points "up" the screen
+
+		var sx = x - y,
+			sy = z * 1.2247 + (x + y) * 0.5;
+
+		this._translateIso.x = sx;
+		this._translateIso.y = sy;
+
+		return this._entity || this;
+	},
+
+	translateToIso: function (x, y, z) {
+		this.translateTo(x, y, z);
+
+		var x = this._translate.x,
+			y = this._translate.y,
+			z = this._translate.z;
+
+		// Set the z so that z = 0 always rests against the floor plane
+		z += this.geometry3d.z / 2;
+		z = -z; // Invert the z axis so that it points "up" the screen
+
+		var sx = x - y,
+			sy = z * 1.2247 + (x + y) * 0.5;
+
+		this._translateIso.x = sx;
+		this._translateIso.y = sy;
+
+		return this._entity || this;
+	},
+
 	translate: function () {
 		this.tween = this._translateAccessorTween;
 		this.x = this._translateAccessorX;
@@ -242,7 +282,15 @@ var IgeTransformExtension = {
 	updateTransform: function () {
 		// TODO: Is this the fastest way of doing this? Take a look at CAAT to see how they do it
 		this._localMatrix.identity();
-		this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
+		if (this._mode === 0) {
+			// 2d translation
+			this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
+		}
+
+		if (this._mode === 1) {
+			// iso translation
+			this._localMatrix.multiply(this._localMatrix._newTranslate(this._translateIso.x, this._translateIso.y));
+		}
 		this._localMatrix.multiply(this._localMatrix._newRotate(this._rotate.z));
 		this._localMatrix.multiply(this._localMatrix._newScale(this._scale.x, this._scale.y));
 	}

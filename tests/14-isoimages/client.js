@@ -4,7 +4,7 @@ var Client = IgeClass.extend({
 		// Load our textures
 		var self = this,
 			gameTexture = [],
-			Cuboid, Player, x;
+			Cuboid, x, TickEntity;
 
 		this.obj = [];
 
@@ -17,7 +17,7 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					Cuboid = IgeInteractiveEntity.extend({
+					Cuboid = IgeEntity.extend({
 						tick: function (ctx) {
 							this._transformContext(ctx);
 
@@ -98,15 +98,11 @@ var Client = IgeClass.extend({
 							ctx.fill();
 							ctx.stroke();
 
-							ctx.fillStyle = '#ffffff';
-							ctx.fillText(this._id, 0, 0);
-
 							this._super(ctx, true);
 						},
 
 						cords: function () {
 							console.log(
-								this._id,
 								this._translate.x,
 								this._translate.y,
 								this._translate.z,
@@ -114,34 +110,6 @@ var Client = IgeClass.extend({
 								this.geometry3d.y,
 								this.geometry3d.z
 							);
-						}
-					});
-
-					Player = Cuboid.extend({
-						init: function () {
-							this._super();
-
-							// Setup the control system
-							this.input.map('walkLeft', this.input.key.left);
-							this.input.map('walkRight', this.input.key.right);
-							this.input.map('walkUp', this.input.key.up);
-							this.input.map('walkDown', this.input.key.down);
-						},
-
-						tick: function (ctx) {
-							if (this.input.action('walkLeft')) {
-								this.translateByIso(-2, 0, 0);
-							} else if (this.input.action('walkRight')) {
-								this.translateByIso(2, 0, 0);
-							} else if (this.input.action('walkUp')) {
-								this.translateByIso(0, -2, 0);
-							} else if (this.input.action('walkDown')) {
-								this.translateByIso(0, 2, 0);
-							} else {
-
-							}
-
-							this._super(ctx);
 						}
 					});
 
@@ -153,7 +121,6 @@ var Client = IgeClass.extend({
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
-						.drawBoundsData(true)
 						.mount(ige);
 
 					// Create the tile map
@@ -165,142 +132,18 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					// Create an entity
-					// Plinth 1
-					x = -140;
 					self.obj[0] = new Cuboid()
-						.id(1)
 						.depth(0)
+						.width(40)
+						.height(40)
+						.origin(0, 0, 0)
 						.mount(self.tileMap1)
-						.translateToIso(x + 0, 0, 0)
-						.size3d(160, 240, 40)
-						.opacity(0.95)
-						.mode(1);
-
-					self.obj[1] = new Cuboid()
-						.id(2)
-						.depth(1)
-						.mount(self.tileMap1)
-						.translateToIso(x + 0, -60, 40)
-						.opacity(0.95)
-						.mode(1);
-
-					self.obj[2] = new Cuboid()
-						.id(3)
-						.depth(2)
-						.mount(self.tileMap1)
-						.translateToIso(x + 0, 60, 40)
-						.opacity(0.95)
-						.mode(1);
-
-					self.obj[3] = new Cuboid()
-						.id(4)
-						.depth(4)
-						.mount(self.tileMap1)
-						.translateToIso(x + 0, 0, 80)
-						.size3d(40, 160, 40)
-						.opacity(0.95)
-						.mode(1);
-
-					// Center column
-					self.obj[4] = new Cuboid()
-						.id(5)
-						.depth(5)
-						.mount(self.tileMap1)
-						.translateToIso(0, 0, 40)
-						.size3d(40, 380, 120)
-						.opacity(0.95)
-						.mode(1);
-
-					// Plinth 2
-					x = 140;
-					self.obj[5] = new Cuboid()
-						.id(6)
-						.depth(6)
-						.mount(self.tileMap1)
-						.translateToIso(x + 0, 0, 0)
-						.size3d(160, 240, 40)
-						.opacity(0.95)
-						.mode(1);
-
-					self.obj[6] = new Cuboid()
-						.id(7)
-						.depth(7)
-						.mount(self.tileMap1)
-						.translateToIso(x + 0, -60, 40)
-						.opacity(0.95)
-						.mode(1);
-
-					self.obj[7] = new Cuboid()
-						.id(8)
-						.depth(8)
-						.mount(self.tileMap1)
-						.translateToIso(x + 0, 60, 40)
-						.opacity(0.95)
-						.mode(1);
-
-					self.obj[8] = new Cuboid()
-						.id(9)
-						.depth(9)
-						.mount(self.tileMap1)
-						.translateToIso(x + 0, 0, 80)
-						.size3d(40, 160, 40)
-						.opacity(0.95)
-						.mode(1);
-
-					// Big slab on top
-					self.obj[9] = new Cuboid()
-						.id(10)
-						.depth(10)
-						.mount(self.tileMap1)
-						.translateToIso(0, 0, 120)
-						.size3d(360, 160, 40)
-						.opacity(0.95)
-						.mode(1);
-
-					// Building
-					self.obj[10] = new Cuboid()
-						.id(11)
-						.depth(11)
-						.mount(self.tileMap1)
-						.translateToIso(0, 300, 0)
-						.size3d(80, 80, 40)
-						.opacity(0.95)
-						.mode(1);
-
-					self.obj[11] = new Cuboid()
-						.id(12)
-						.depth(12)
-						.mount(self.tileMap1)
-						.translateToIso(0, 300, 40)
-						.size3d(70, 70, 40)
-						.opacity(0.95)
-						.mode(1);
-
-					self.obj[12] = new Cuboid()
-						.id(13)
-						.depth(13)
-						.mount(self.tileMap1)
-						.translateToIso(0, 300, 120)
-						.size3d(20, 20, 120)
-						.opacity(0.95)
-						.mode(1);
-
-					self.obj[13] = new Cuboid()
-						.id(14)
-						.depth(14)
-						.mount(self.tileMap1)
-						.translateToIso(0, 300, 185)
-						.size3d(400, 200, 10)
-						.opacity(0.95)
-						.mode(1);
-
-					self.obj[14] = new Player()
-						.id(15)
-						.depth(15)
-						.mount(self.tileMap1)
-						.translateToIso(400, 400, 0)
-						.size3d(20, 20, 80)
-						.opacity(0.95)
+						.texture(gameTexture[0])
+						.widthByIsoTile(2)
+						.heightByIsoTile(2)
+						.size3d(40, 40, 120)
+						.translateToIsoTile(0, 0, 0)
+						.opacity(0.9)
 						.mode(1);
 				}
 			});
