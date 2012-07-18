@@ -27,7 +27,7 @@ var IgeNode = IgeClass.extend({
 
 	gamePath: function (gamePath) {
 		if (typeof(gamePath) !== 'undefined') {
-			this.log('Game path set to: ' + gamePath);
+			console.log('Starting game server in path: ' + gamePath);
 			this._gamePath = gamePath;
 		}
 	},

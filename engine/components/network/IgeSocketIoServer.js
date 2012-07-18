@@ -1,4 +1,4 @@
-IgeSocketIoServer = function () {};
+var IgeSocketIoServer = function () {};
 
 /**
  * Starts the network for either client or server.
@@ -73,6 +73,9 @@ IgeSocketIoServer.prototype._onClientConnect = function (socket) {
 		socket.on('disconnect', function (data) {
 			self._onClientDisconnect(data, socket);
 		});
+
+		// Send an init message to the client
+		socket.json.send({init: true});
 	} else {
 		this.log('Rejecting connection with id ' + socket.id + ' - we are not accepting connections at the moment!');
 		socket.disconnect();
@@ -86,3 +89,5 @@ IgeSocketIoServer.prototype._onClientMessage = function (data, socket) {
 IgeSocketIoServer.prototype._onClientDisconnect = function (data, socket) {
 	this.log('Client disconnected with id ' + socket.id);
 };
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeSocketIoServer; }

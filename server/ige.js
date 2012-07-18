@@ -41,8 +41,9 @@ IgeSceneUi = require('../engine/IgeSceneUi');
 IgeSceneIso = require('../engine/IgeSceneIso');
 IgeEngine = require('../engine/IgeEngine');
 // Network
-IgeDummyContext = require('../engine/network/IgeDummyContext');
-IgeSocketIoComponent = require('../engine/network/IgeSocketIoComponent');
+IgeDummyContext = require('../engine/components/network/IgeDummyContext');
+IgeSocketIoServer = require('../engine/components/network/IgeSocketIoServer');
+IgeSocketIoComponent = require('../engine/components/network/IgeSocketIoComponent');
 
 // Include the control class
 IgeNode = require('./IgeNode');
