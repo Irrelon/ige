@@ -7,6 +7,10 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
+		// Enable networking
+		ige.addComponent(IgeSocketIoComponent);
+		ige.network.start('http://localhost:2000');
+
 		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
 
 		// Wait for our textures to load before continuing

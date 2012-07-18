@@ -5,7 +5,7 @@ var Server = IgeClass.extend({
 	init: function () {
 		// Start the network server
 		ige.addComponent(IgeSocketIoComponent);
-		ige.network.start();
+		ige.network.start(2000);
 
 		var texture1 = new IgeTexture('../assets/textures/sprites/fairy.png');
 
