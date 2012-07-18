@@ -184,6 +184,7 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * Sorts the _children array by the layer and then depth of each object.
 	 */
 	depthSortChildren: function () {
+		// TODO: Optimise this method, it is not especially efficient at the moment!
 		if (this._mode === 1) {
 			// Now sort the entities by depth
 			var arr = this._children,
@@ -197,32 +198,34 @@ var IgeTileMap2d = IgeEntity.extend({
 				},
 				i, j;
 
-			for (i = 0; i < arrCount; ++i) {
-				sortObj.c[i] = 0;
-				sortObj.p[i] = -1;
+			if (arrCount > 1) {
+				for (i = 0; i < arrCount; ++i) {
+					sortObj.c[i] = 0;
+					sortObj.p[i] = -1;
 
-				for (j = i + 1; j < arrCount; ++j) {
-					sortObj.adj[i] = sortObj.adj[i] || [];
-					sortObj.adj[j] = sortObj.adj[j] || [];
+					for (j = i + 1; j < arrCount; ++j) {
+						sortObj.adj[i] = sortObj.adj[i] || [];
+						sortObj.adj[j] = sortObj.adj[j] || [];
 
-					if (arr[i]._projectionOverlap(arr[j])) {
-						if (arr[i]._isBehind(arr[j])) {
-							sortObj.adj[j].push(i);
-						} else {
-							sortObj.adj[i].push(j);
+						if (arr[i]._projectionOverlap(arr[j])) {
+							if (arr[i]._isBehind(arr[j])) {
+								sortObj.adj[j].push(i);
+							} else {
+								sortObj.adj[i].push(j);
+							}
 						}
 					}
 				}
-			}
 
-			for (i = 0; i < arrCount; ++i) {
-				if (sortObj.c[i] === 0) {
-					this._visit(i, sortObj);
+				for (i = 0; i < arrCount; ++i) {
+					if (sortObj.c[i] === 0) {
+						this._visit(i, sortObj);
+					}
 				}
-			}
 
-			for (i = 0; i < sortObj.order.length; i++) {
-				arr[sortObj.order[i]].depth(i);
+				for (i = 0; i < sortObj.order.length; i++) {
+					arr[sortObj.order[i]].depth(i);
+				}
 			}
 
 			this._children.sort(function (a, b) {
