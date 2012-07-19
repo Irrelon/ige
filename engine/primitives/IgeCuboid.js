@@ -34,7 +34,7 @@ var IgeCuboid = IgeInteractiveEntity.extend({
 			tf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2))
 				.toIso();
 
-		ctx.strokeStyle = '#ffffff';
+		ctx.strokeStyle = '#a200ff';
 
 		// Axis lines
 		ctx.beginPath();
@@ -79,10 +79,49 @@ var IgeCuboid = IgeInteractiveEntity.extend({
 		ctx.fill();
 		ctx.stroke();
 
-		ctx.fillStyle = '#ffffff';
-		ctx.fillText(this._id, 0, 0);
+		//ctx.fillStyle = '#ffffff';
+		//ctx.fillText(this.id(), 0, 0);
 
 		this._super(ctx, true);
+
+		if (this._drawBounds) {
+			var ga = ctx.globalAlpha;
+			ctx.globalAlpha = 0.3;
+
+			// Left face
+			ctx.fillStyle = '#545454';
+			ctx.beginPath();
+			ctx.moveTo(bf3.x, bf3.y);
+			ctx.lineTo(bf4.x, bf4.y);
+			ctx.lineTo(tf4.x, tf4.y);
+			ctx.lineTo(tf3.x, tf3.y);
+			ctx.lineTo(bf3.x, bf3.y);
+			ctx.fill();
+			ctx.stroke();
+
+			// Right face
+			ctx.fillStyle = '#282828';
+			ctx.beginPath();
+			ctx.moveTo(bf3.x, bf3.y);
+			ctx.lineTo(bf2.x, bf2.y);
+			ctx.lineTo(tf2.x, tf2.y);
+			ctx.lineTo(tf3.x, tf3.y);
+			ctx.lineTo(bf3.x, bf3.y);
+			ctx.fill();
+			ctx.stroke();
+
+			// Top face
+			ctx.fillStyle = '#676767';
+			ctx.beginPath();
+			ctx.moveTo(tf1.x, tf1.y);
+			ctx.lineTo(tf2.x, tf2.y);
+			ctx.lineTo(tf3.x, tf3.y);
+			ctx.lineTo(tf4.x, tf4.y);
+			ctx.lineTo(tf1.x, tf1.y);
+			ctx.fill();
+			ctx.stroke();
+			ctx.globalAlpha = ga;
+		}
 	}
 });
 

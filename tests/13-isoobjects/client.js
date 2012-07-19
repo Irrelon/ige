@@ -50,6 +50,7 @@ var Client = IgeClass.extend({
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
+						.id('vp1')
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
@@ -84,6 +85,7 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, -60, 40)
+						.size3d(40, 40, 40)
 						.opacity(0.95)
 						.isometric(true);
 
@@ -93,6 +95,7 @@ var Client = IgeClass.extend({
 						.depth(2)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 60, 40)
+						.size3d(40, 40, 40)
 						.opacity(0.95)
 						.isometric(true);
 
@@ -135,6 +138,7 @@ var Client = IgeClass.extend({
 						.depth(7)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, -60, 40)
+						.size3d(40, 40, 40)
 						.opacity(0.95)
 						.isometric(true);
 
@@ -144,6 +148,7 @@ var Client = IgeClass.extend({
 						.depth(8)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 60, 40)
+						.size3d(40, 40, 40)
 						.opacity(0.95)
 						.isometric(true);
 

@@ -84,6 +84,20 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Gets / sets the arbitrary group name that the object belogs to.
+	 * @param {String=} val
+	 * @return {*}
+	 */
+	group: function (val) {
+		if (val !== undefined) {
+			this._group = val;
+			return this;
+		}
+
+		return this._group;
+	},
+
+	/**
 	 * Adds a behaviour to the object's active behaviour list.
 	 * @param {String} id
 	 * @param {Function} behaviour
@@ -285,22 +299,107 @@ var IgeObject = IgeEventingClass.extend({
 		return this._dirty;
 	},
 
+	_visit: function (u, sortObj) {
+		var arr = sortObj.adj[u],
+			arrCount = arr.length,
+			i, v;
+
+		sortObj.c[u] = 1;
+
+		for (i = 0; i < arrCount; ++i) {
+			v = arr[i];
+
+			if (sortObj.c[v] === 0) {
+				sortObj.p[v] = u;
+				this._visit(v, sortObj);
+			}
+		}
+
+		sortObj.c[u] = 2;
+		sortObj.order[sortObj.order_ind] = u;
+		--sortObj.order_ind;
+	},
+
 	/**
 	 * Sorts the _children array by the layer and then depth of each object.
 	 */
 	depthSortChildren: function () {
-		// Now sort the entities by depth
-		this._children.sort(function (a, b) {
-			var layerIndex = b._layer - a._layer;
+		// TODO: Optimise this method, it is not especially efficient at the moment!
+		if (this._mode === 1) {
+			// Now sort the entities by depth
+			var arr = this._children,
+				arrCount = arr.length,
+				sortObj = {
+					adj: [],
+					c: [],
+					p: [],
+					order: [],
+					order_ind: arrCount - 1
+				},
+				i, j;
 
-			if (layerIndex === 0) {
-				// On same layer so sort by depth
-				return b._depth - a._depth;
-			} else {
-				// Not on same layer so sort by layer
-				return layerIndex;
+			if (arrCount > 1) {
+				for (i = 0; i < arrCount; ++i) {
+					sortObj.c[i] = 0;
+					sortObj.p[i] = -1;
+
+					for (j = i + 1; j < arrCount; ++j) {
+						sortObj.adj[i] = sortObj.adj[i] || [];
+						sortObj.adj[j] = sortObj.adj[j] || [];
+
+						if (arr[i]._projectionOverlap(arr[j])) {
+							if (arr[i]._isBehind(arr[j])) {
+								sortObj.adj[j].push(i);
+							} else {
+								sortObj.adj[i].push(j);
+							}
+						}
+					}
+				}
+
+				for (i = 0; i < arrCount; ++i) {
+					if (sortObj.c[i] === 0) {
+						this._visit(i, sortObj);
+					}
+				}
+
+				for (i = 0; i < sortObj.order.length; i++) {
+					arr[sortObj.order[i]].depth(i);
+				}
 			}
-		});
+
+			this._children.sort(function (a, b) {
+				var layerIndex = b._layer - a._layer;
+
+				if (layerIndex === 0) {
+					// On same layer so sort by depth
+					/*if (a._projectionOverlap(b)) {
+						if (a._isBehind(b)) {
+							return -1;
+						} else {
+							return 1;
+						}
+					}*/
+					return b._depth - a._depth;
+				} else {
+					// Not on same layer so sort by layer
+					return layerIndex;
+				}
+			});
+		} else {
+			// Now sort the entities by depth
+			this._children.sort(function (a, b) {
+				var layerIndex = b._layer - a._layer;
+
+				if (layerIndex === 0) {
+					// On same layer so sort by depth
+					return b._depth - a._depth;
+				} else {
+					// Not on same layer so sort by layer
+					return layerIndex;
+				}
+			});
+		}
 	},
 
 	/**

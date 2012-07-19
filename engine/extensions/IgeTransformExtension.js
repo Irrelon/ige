@@ -256,7 +256,12 @@ var IgeTransformExtension = {
 				this._translate.z + this.geometry3d.z / 2
 			).toIso();
 
-			//this._translateIso = this._translate.toIso();
+			if (this._parent && this._parent.geometry3d.z) {
+				// This adjusts the child entity so that 0, 0, 0 inside the
+				// parent is the center of the base of the parent
+				isoPoint.y += this._parent.geometry3d.z / 1.6;
+			}
+
 			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
 		}
 		this._localMatrix.multiply(this._localMatrix._newRotate(this._rotate.z));

@@ -326,10 +326,33 @@ var IgeEngine = IgeEntity.extend({
 	 * @private
 	 */
 	_mouseMove: function (event) {
-		// Emit the event
-		ige._mousePos.x = event.clientX - ige.geometry.x2;
-		ige._mousePos.y = event.clientY - ige.geometry.y2;
-		ige.emit('mouseMove', event);
+		// Loop the viewports and check if the mouse is inside
+		var arr = ige._children,
+			arrCount = arr.length,
+			vp, gotVpMousePos,
+			mx = event.clientX - ige.geometry.x / 2,
+			my = event.clientY - ige.geometry.y / 2;
+
+		while (arrCount--) {
+			vp = arr[arr.length - (arrCount + 1)];
+
+			// Check if the mouse is inside this viewport's bounds
+			if (mx > vp._translate.x - vp.geometry.x / 2 && mx < vp._translate.x + vp.geometry.x / 2) {
+				if (my > vp._translate.y - vp.geometry.y / 2 && my < vp._translate.y + vp.geometry.y / 2) {
+					// Mouse is inside this viewport
+					ige._mousePos.x = (mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x;
+					ige._mousePos.y = (my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y;
+
+					gotVpMousePos = true;
+					break;
+				}
+			}
+		}
+
+		if (gotVpMousePos) {
+			// Emit the event
+			ige.emit('mouseMove', event);
+		}
 	},
 
 	/**

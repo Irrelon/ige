@@ -29,6 +29,17 @@ Array.prototype.pull = function (item) {
 };
 
 /**
+ * Iterates through an array's items and calls the callback method
+ * passing each item one by one.
+ * @param {Function} callback
+ */
+Array.prototype.each = function (callback) {
+	for (var i = 0; i < this.length; i++) {
+		callback(this[i]);
+	}
+};
+
+/**
  * Calculates the distance from the first point to the second point.
  * @param x1
  * @param y1

@@ -61,8 +61,10 @@ var IgeViewport = IgeUiEntity.extend([
 			// down the scenegraph we can choose to negate the camera
 			// transform effects
 			ige._currentCamera = this.camera;
+			ige._currentViewport = this;
 
 			// Render our scene data
+			//ctx.globalAlpha = ctx.globalAlpha * this._parent._opacity * this._opacity;
 			this._super(ctx);
 
 			// Translate to the top-left of the viewport
@@ -98,6 +100,9 @@ var IgeViewport = IgeUiEntity.extend([
 			this._scene.tick(ctx, scene);
 
 			if (this._drawBounds && ctx === ige._ctx) {
+				ctx.fillStyle = '#fc00ff';
+				ctx.fillRect(ige._mousePos.x - 5, ige._mousePos.y - 5, 10, 10);
+
 				// Traverse the scenegraph and draw axis-aligned
 				// bounding boxes for every object
 				this.drawAABBs(ctx, this._scene, 0);
@@ -130,7 +135,7 @@ var IgeViewport = IgeUiEntity.extend([
 								ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
 							}
 
-							if (this._drawBoundsData || obj._drawBoundsData) {
+							if (this._drawBoundsData  && (obj._drawBounds || obj._drawBoundsData === undefined)) {
 								ctx.globalAlpha = 0.5;
 								ctx.fillStyle = '#8a00ff';
 								ctx.fillRect(aabb.x, aabb.y, aabb.width, 14);

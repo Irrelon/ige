@@ -239,8 +239,8 @@ var IgeTexture = IgeEventingClass.extend({
 				cell[1], // texture y
 				cell[2], // texture width
 				cell[3], // texture height
-				-(geom.x / 2), // render x TODO: Performance - Cache these?
-				-(geom.y / 2), // render y
+				-(geom.x / 2) + entity._anchor.x, // render x TODO: Performance - Cache these?
+				-(geom.y / 2) + entity._anchor.y, // render y
 				geom.x, // render width
 				geom.y // render height
 			);

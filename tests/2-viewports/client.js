@@ -63,6 +63,7 @@ var Client = IgeClass.extend({
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
+						.id('vp1')
 						.autoSize(true)
 						.scene(self.scene1)
 						.mount(ige);
@@ -110,6 +111,7 @@ var Client = IgeClass.extend({
 
 					// Corner viewports
 					new IgeViewport()
+						.id('top-left')
 						.left(0)
 						.top(0)
 						.width(150)
@@ -122,6 +124,7 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					new IgeViewport()
+						.id('top-right')
 						.right(0)
 						.top(0)
 						.width(150)
@@ -134,6 +137,7 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					new IgeViewport()
+						.id('bottom-right')
 						.right(0)
 						.bottom(0)
 						.width(150)
@@ -146,6 +150,7 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					new IgeViewport()
+						.id('bottom-left')
 						.left(0)
 						.bottom(0)
 						.width(150)
@@ -158,6 +163,7 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					new IgeViewport()
+						.id('center-top')
 						.center(0)
 						.top(0)
 						.width(150)
@@ -170,6 +176,7 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					new IgeViewport()
+						.id('center-bottom')
 						.center(0)
 						.bottom(0)
 						.width(150)
@@ -182,6 +189,7 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					new IgeViewport()
+						.id('left-middle')
 						.left(0)
 						.middle(0)
 						.width(150)
@@ -194,6 +202,7 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					new IgeViewport()
+						.id('right-middle')
 						.right(0)
 						.middle(0)
 						.width(150)

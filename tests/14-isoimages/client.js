@@ -1,5 +1,6 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
+
 	init: function () {
 		// Load our textures
 		var self = this;
@@ -25,40 +26,47 @@ var Client = IgeClass.extend({
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
+						.id('vp1')
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
-						.mount(ige);
+						.mount(ige)
+						.camera.translateTo(0, 350);
 
-					self.vp2 = new IgeViewport()
-						.bottom(10)
-						.left(10)
-						.width(350)
-						.height(200)
-						.autoSize(false)
-						.borderColor('#ffffff')
-						//.camera.scaleTo(0.5, 0.5, 0.5)
-						.depth(1)
-						.scene(self.scene1)
-						.mount(ige);
+					// Create the background image
+					self.backdrop = new IgeEntity()
+						.layer(0)
+						.texture(self.gameTexture.background1)
+						.dimensionsFromTexture()
+						.translateTo(0, 250, 0)
+						.mount(self.scene1);
 
-					var tileWidth = 60,
-						tileHeight = 60;
+					// Create a collision map
+					self.collisionMap1 = new IgeTileMap2d()
+						.layer(1)
+						.isometric(true)
+						.tileWidth(20)
+						.tileHeight(20)
+						.drawGrid(38)
+						.highlightOccupied(true)
+						.mount(self.scene1);
 
 					// Create the tile map
 					self.tileMap1 = new IgeTileMap2d()
+						.layer(2)
 						.isometric(true)
-						.tileWidth(tileWidth)
-						.tileHeight(tileHeight)
-						.drawGrid(10)
+						.tileWidth(20)
+						.tileHeight(20)
+						.drawGrid(0)
+						.highlightOccupied(true)
 						.mount(self.scene1);
 
 					// Create an entity
-					self.obj[0] = new self.Bank(
-						self.tileMap1, // Mount to this object
-						0, 0, // tile x and y
-						1, 1 // tile width and height
-					);
+					self.obj[0] = new self.Bank(self.tileMap1, 0, 6);
+					self.obj[1] = new self.Electricals(self.tileMap1, 2, 6);
+					self.obj[2] = new self.Burgers(self.tileMap1, 4, 6);
+					self.obj[3] = new self.SkyScraper(self.tileMap1, 1, 10).addFloors(7);
+					self.obj[4] = new self.SkyScraper(self.tileMap1, 1, 4).addFloors(3);
 				}
 			});
 		});
@@ -67,7 +75,30 @@ var Client = IgeClass.extend({
 	},
 
 	loadTextures: function () {
+		this.gameTexture.background1 = new IgeTexture('../assets/textures/backgrounds/resortico.png');
 		this.gameTexture.bank = new IgeTexture('../assets/textures/buildings/bank1.png');
+		this.gameTexture.electricals = new IgeTexture('../assets/textures/buildings/electricalsShop1.png');
+		this.gameTexture.burgers = new IgeTexture('../assets/textures/buildings/burgerShop1.png');
+		this.gameTexture.base_se = new IgeTexture('../assets/textures/buildings/base_se.png');
+		this.gameTexture.base_se_left = new IgeTexture('../assets/textures/buildings/base_se_left.png');
+		this.gameTexture.base_se_middle = new IgeTexture('../assets/textures/buildings/base_se_middle.png');
+		this.gameTexture.base_se_right = new IgeTexture('../assets/textures/buildings/base_se_right.png');
+		this.gameTexture.base_sw = new IgeTexture('../assets/textures/buildings/base_sw.png');
+		this.gameTexture.base_sw_left = new IgeTexture('../assets/textures/buildings/base_sw_left.png');
+		this.gameTexture.base_sw_middle = new IgeTexture('../assets/textures/buildings/base_sw_middle.png');
+		this.gameTexture.base_sw_right = new IgeTexture('../assets/textures/buildings/base_sw_right.png');
+		this.gameTexture.stacker_se = new IgeTexture('../assets/textures/buildings/stacker_se.png');
+		this.gameTexture.stacker_se_left = new IgeTexture('../assets/textures/buildings/stacker_se_left.png');
+		this.gameTexture.stacker_se_middle = new IgeTexture('../assets/textures/buildings/stacker_se_middle.png');
+		this.gameTexture.stacker_se_right = new IgeTexture('../assets/textures/buildings/stacker_se_right.png');
+		this.gameTexture.stacker_sw = new IgeTexture('../assets/textures/buildings/stacker_sw.png');
+		this.gameTexture.stacker_sw_left = new IgeTexture('../assets/textures/buildings/stacker_sw_left.png');
+		this.gameTexture.stacker_sw_middle = new IgeTexture('../assets/textures/buildings/stacker_sw_middle.png');
+		this.gameTexture.stacker_sw_right = new IgeTexture('../assets/textures/buildings/stacker_sw_right.png');
+		this.gameTexture.crane_se = new IgeTexture('../assets/textures/buildings/crane_se.png');
+		this.gameTexture.crane_sw = new IgeTexture('../assets/textures/buildings/crane_sw.png');
+		this.gameTexture.crane_ne = new IgeTexture('../assets/textures/buildings/crane_ne.png');
+		this.gameTexture.crane_nw = new IgeTexture('../assets/textures/buildings/crane_nw.png');
 	}
 });
 

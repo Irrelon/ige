@@ -16,7 +16,9 @@ var IgeEntity = IgeObject.extend([
 		this._origin = new IgePoint(0.5, 0.5, 0.5);
 
 		this.geometry = new IgePoint(20, 20, 20);
-		this.geometry3d = new IgePoint(40, 40, 40);
+		this.geometry3d = new IgePoint(0, 0, 0);
+
+		this._anchor = {x: 0, y: 0};
 
         this._localMatrix = new IgeMatrix2d(this);
         this._worldMatrix = new IgeMatrix2d(this);
@@ -77,7 +79,57 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Gets / sets the geometry.x in pixels.
+	 * Dummy method to help debug when programmer expects to be
+	 * able to access tile-based methods but cannot. This method
+	 * is overwritten when the entity is mounted to a tile sheet.
+	 */
+	translateToTile: function () {
+		this.log('Cannot translate to tile because the entity is not currentlymounted to a tile sheet.', 'warning');
+	},
+
+	/**
+	 * Dummy method to help debug when programmer expects to be
+	 * able to access tile-based methods but cannot. This method
+	 * is overwritten when the entity is mounted to a tile sheet.
+	 */
+	widthByTile: function () {
+		this.log('Cannot set width by tile because the entity is not currentlymounted to a tile sheet.', 'warning');
+	},
+
+	/**
+	 * Dummy method to help debug when programmer expects to be
+	 * able to access tile-based methods but cannot. This method
+	 * is overwritten when the entity is mounted to a tile sheet.
+	 */
+	heightByTile: function () {
+		this.log('Cannot set height by tile because the entity is not currently mounted to a tile sheet.', 'warning');
+	},
+
+	/**
+	 * Dummy method to help debug when programmer expects to be
+	 * able to access tile-based methods but cannot. This method
+	 * is overwritten when the entity is mounted to a tile sheet.
+	 */
+	occupyTile: function () {
+		this.log('Cannot occupy a tile because the entity is not currently mounted to a tile sheet.', 'warning');
+	},
+
+	/**
+	 * Dummy method to help debug when programmer expects to be
+	 * able to access tile-based methods but cannot. This method
+	 * is overwritten when the entity is mounted to a tile sheet.
+	 */
+	overTiles: function () {
+		this.log('Cannot determine which tiles this entity lies over because the entity is not currently mounted to a tile sheet.', 'warning');
+	},
+
+	anchor: function (x, y) {
+		this._anchor = {x: x, y: y};
+		return this;
+	},
+
+	/**
+	 * Gets / sets the geometry.x.
 	 * @param {Number=} px
 	 * @return {*}
 	 */
@@ -93,7 +145,7 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Gets / sets the geometry.y in pixels.
+	 * Gets / sets the geometry.y.
 	 * @param {Number=} px
 	 * @return {*}
 	 */
@@ -108,6 +160,15 @@ var IgeEntity = IgeObject.extend([
 		return this._height;
 	},
 
+	/**
+	 * Gets / sets the 3d geometry of the entity. The x and y values are
+	 * relative to the center of the entity and the z value is wholly
+	 * positive.
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return {*}
+	 */
 	size3d: function (x, y, z) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this.geometry3d = new IgePoint(x, y, z);
@@ -222,14 +283,6 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * @see IgeObject.mount
-	 */
-	mount: function (obj) {
-		var ret = this._super(obj);
-		return ret;
-	},
-
-	/**
 	 * Gets / sets the highlight mode. True is on false is off.
 	 * @param {Boolean} val
 	 * @return {*}
@@ -243,6 +296,11 @@ var IgeEntity = IgeObject.extend([
 		return this._highlight;
 	},
 
+	/**
+	 * Converts an array of points from local space to this entity's
+	 * world space using it's world transform matrix.
+	 * @param points
+	 */
 	localToWorld: function (points) {
 		this._worldMatrix.transform(points);
 	},
@@ -255,12 +313,13 @@ var IgeEntity = IgeObject.extend([
 		var poly = new IgePoly2d(),
 			minX, minY,
 			maxX, maxY,
-			box = {};
+			box = {},
+			anc = this._anchor;
 
-		poly.addPoint(-this.geometry.x2, -this.geometry.y2);
-		poly.addPoint(this.geometry.x2, -this.geometry.y2);
-		poly.addPoint(this.geometry.x2, this.geometry.y2);
-		poly.addPoint(-this.geometry.x2, this.geometry.y2);
+		poly.addPoint(-this.geometry.x2 + anc.x, -this.geometry.y2 + anc.y);
+		poly.addPoint(this.geometry.x2 + anc.x, -this.geometry.y2 + anc.y);
+		poly.addPoint(this.geometry.x2 + anc.x, this.geometry.y2 + anc.y);
+		poly.addPoint(-this.geometry.x2 + anc.x, this.geometry.y2 + anc.y);
 
 		// Convert the poly's points from local space to world space
 		this.localToWorld(poly._poly);
@@ -429,7 +488,7 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Sets the canvas context transform properties to match the the game
 	 * object's current transform values.
-	 * @param ctx
+	 * @param {HTMLCanvasContext} ctx
 	 * @private
 	 */
 	_transformContext: function (ctx) {
@@ -452,6 +511,12 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Processes the actions required each render frame.
+	 * @param {HTMLCanvasContext} ctx
+	 * @param {Boolean} dontTransform If set to true, the tick method will
+	 * not transform the context based on the entity's matrices. This is useful
+	 * if you have extended the class and want to process down the inheritance
+	 * chain but have already transformed the entity in a previous overloaded
+	 * method.
 	 */
 	tick: function (ctx, dontTransform) {
 		if (this._deathTime !== undefined && this._deathTime <= ige.tickStart) {

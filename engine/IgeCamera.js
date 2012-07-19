@@ -20,6 +20,10 @@ var IgeCamera = IgeClass.extend([
 
 	panBy: function (point) {
 
+	},
+
+	updateMatrix: function () {
+		this.updateTransform();
 	}
 });
 

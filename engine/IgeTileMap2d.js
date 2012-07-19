@@ -1,6 +1,8 @@
-var IgeTileMap2d = IgeEntity.extend({
+var IgeTileMap2d = IgeInteractiveEntity.extend({
 	init: function (tileWidth, tileHeight) {
 		this._super();
+		var self = this;
+
 		this.map = new IgeMapStack2d();
 
 		this._tileWidth = tileWidth !== undefined ? tileWidth : 40;
@@ -22,6 +24,21 @@ var IgeTileMap2d = IgeEntity.extend({
 		}
 
 		return this._drawGrid;
+	},
+
+	/**
+	 * Gets / sets the flag that determines if the tile map will paint the
+	 * occupied tiles with an overlay colour so that it is easy to spot them.
+	 * @param val
+	 * @return {*}
+	 */
+	highlightOccupied: function (val) {
+		if (val !== undefined) {
+			this._highlightOccupied = val;
+			return this;
+		}
+
+		return this._highlightOccupied;
 	},
 
 	/**
@@ -55,11 +72,8 @@ var IgeTileMap2d = IgeEntity.extend({
 	_childMounted: function (obj) {
 		// Augment the child with tile powers!
 		obj.translateToTile = this._objectTranslateToTile;
-		obj.translateToIsoTile = this._objectTranslateToIsoTile;
 		obj.widthByTile = this._objectTileWidth;
 		obj.heightByTile = this._objectTileHeight;
-		obj.widthByIsoTile = this._objectIsoTileWidth;
-		obj.heightByIsoTile = this._objectIsoTileHeight;
 		obj.occupyTile = this._objectOccupyTile;
 		obj.overTiles = this._objectOverTiles;
 
@@ -79,23 +93,49 @@ var IgeTileMap2d = IgeEntity.extend({
 
 	/**
 	 * Set the object's width to the number of tile width's specified.
-	 * @param val
+	 * @param {Number} val
+	 * @param {Boolean=} lockAspect If true, sets the height according
+	 * to the texture aspect ratio and the new width.
 	 * @private
 	 */
-	_objectTileWidth: function (val) {
+	_objectTileWidth: function (val, lockAspect) {
 		var tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
 		this.width(val * tileSize);
+
+		if (lockAspect) {
+			if (this._texture) {
+				// Calculate the height based on the new width
+				var ratio = this._texture._sizeX / this.geometry.x;
+				this.height(this._texture._sizeY / ratio);
+			} else {
+				this.log('Cannot set height based on texture aspect ratio and new width because no texture is currently assigned to the entity!', 'error');
+			}
+		}
+
 		return this;
 	},
 
 	/**
 	 * Set the object's height to the number of tile height's specified.
 	 * @param val
+	 * @param {Boolean=} lockAspect If true, sets the height according
+	 * to the texture aspect ratio and the new height.
 	 * @private
 	 */
-	_objectTileHeight: function (val) {
+	_objectTileHeight: function (val, lockAspect) {
 		var tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
 		this.height(val * tileSize);
+
+		if (lockAspect) {
+			if (this._texture) {
+				// Calculate the width based on the new height
+				var ratio = this._texture._sizeY / this.geometry.y;
+				this.width(this._texture._sizeX / ratio);
+			} else {
+				this.log('Cannot set width based on texture aspect ratio and new height because no texture is currently assigned to the entity!', 'error');
+			}
+		}
+
 		return this;
 	},
 
@@ -108,9 +148,18 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * @param {Number=} y
 	 * @private
 	 */
-	_objectOccupyTile: function (x, y) {
+	_objectOccupyTile: function (x, y, width, height) {
+		var xi, yi;
+
+		if (width === undefined) { width = 1; }
+		if (height === undefined) { height = 1; }
+
 		if (x !== undefined && y !== undefined) {
-			this._parent.map.data(x, y, this);
+			for (xi = 0; xi < width; xi++) {
+				for (yi = 0; yi < height; yi++) {
+					this._parent.map.tileData(x + xi, y + yi, this);
+				}
+			}
 		} else {
 			// Occupy tiles based upon the response from overTiles();
 			var tileArr = this.overTiles();
@@ -130,110 +179,38 @@ var IgeTileMap2d = IgeEntity.extend({
 
 	},
 
-	_visit: function (u, sortObj) {
-		var arr = sortObj.adj[u],
-			arrCount = arr.length,
-			i, v;
-
-		sortObj.c[u] = 1;
-
-		for (i = 0; i < arrCount; ++i) {
-			v = arr[i];
-
-			if (sortObj.c[v] === 0) {
-				sortObj.p[v] = u;
-				this._visit(v, sortObj);
-			}
-		}
-
-		sortObj.c[u] = 2;
-		sortObj.order[sortObj.order_ind] = u;
-		--sortObj.order_ind;
-	},
-
-	/**
-	 * Sorts the _children array by the layer and then depth of each object.
-	 */
-	depthSortChildren: function () {
-		// TODO: Optimise this method, it is not especially efficient at the moment!
-		if (this._mode === 1) {
-			// Now sort the entities by depth
-			var arr = this._children,
-				arrCount = arr.length,
-				sortObj = {
-					adj: [],
-					c: [],
-					p: [],
-					order: [],
-					order_ind: arrCount - 1
-				},
-				i, j;
-
-			if (arrCount > 1) {
-				for (i = 0; i < arrCount; ++i) {
-					sortObj.c[i] = 0;
-					sortObj.p[i] = -1;
-
-					for (j = i + 1; j < arrCount; ++j) {
-						sortObj.adj[i] = sortObj.adj[i] || [];
-						sortObj.adj[j] = sortObj.adj[j] || [];
-
-						if (arr[i]._projectionOverlap(arr[j])) {
-							if (arr[i]._isBehind(arr[j])) {
-								sortObj.adj[j].push(i);
-							} else {
-								sortObj.adj[i].push(j);
-							}
-						}
-					}
-				}
-
-				for (i = 0; i < arrCount; ++i) {
-					if (sortObj.c[i] === 0) {
-						this._visit(i, sortObj);
-					}
-				}
-
-				for (i = 0; i < sortObj.order.length; i++) {
-					arr[sortObj.order[i]].depth(i);
-				}
-			}
-
-			this._children.sort(function (a, b) {
-				var layerIndex = b._layer - a._layer;
-
-				if (layerIndex === 0) {
-					// On same layer so sort by depth
-					/*if (a._projectionOverlap(b)) {
-						if (a._isBehind(b)) {
-							return -1;
-						} else {
-							return 1;
-						}
-					}*/
-					return b._depth - a._depth;
-				} else {
-					// Not on same layer so sort by layer
-					return layerIndex;
-				}
-			});
-		} else {
-			// Now sort the entities by depth
-			this._children.sort(function (a, b) {
-				var layerIndex = b._layer - a._layer;
-
-				if (layerIndex === 0) {
-					// On same layer so sort by depth
-					return b._depth - a._depth;
-				} else {
-					// Not on same layer so sort by layer
-					return layerIndex;
-				}
-			});
-		}
-	},
-
 	tick: function (ctx) {
+		// Calculate the current tile the mouse is over
+		var mx = ige._mousePos.x,
+			my = ige._mousePos.y,
+			dx, dy;
+
+		if (this._mode === 0) {
+			// 2d
+			// Calc delta
+			dx = mx - this._translate.x + this._tileWidth / 2;
+			dy = my - this._translate.y + this._tileHeight / 2;
+
+			this._mouseTilePos = new IgePoint(
+				Math.floor(dx / this._tileWidth),
+				Math.floor(dy / this._tileWidth)
+			);
+		}
+
+		if (this._mode === 1) {
+			// iso
+			// Calc delta
+			dx = mx - this._translate.x + this._tileWidth / 2;
+			dy = my - this._translate.y + this._tileHeight / 2;
+
+			this._mouseTilePos = new IgePoint(
+				Math.floor(dx / this._tileWidth),
+				Math.floor(dy / this._tileWidth)
+			);
+
+			console.log(this._mouseTilePos.x, this._mouseTilePos.y);
+		}
+
 		this._transformContext(ctx);
 
 		if (this._drawGrid > 0) {
@@ -247,7 +224,8 @@ var IgeTileMap2d = IgeEntity.extend({
 				gridMaxX = x + tileWidth * gridCount,
 				gridMaxY = y + tileHeight * gridCount,
 				gStart,
-				gEnd;
+				gEnd,
+				tilePoint;
 
 			for (index = 0; index <= gridCount; index++) {
 				gStart = new IgePoint(x, y + (tileHeight * index), 0);
@@ -279,6 +257,65 @@ var IgeTileMap2d = IgeEntity.extend({
 				ctx.moveTo(gStart.x, gStart.y);
 				ctx.lineTo(gEnd.x, gEnd.y);
 				ctx.stroke();
+			}
+
+			ctx.fillStyle = '#ff0000';
+			for (x = 0; x < this.map._mapData.length; x++) {
+				if (this.map._mapData[x]) {
+					for (y = 0; y < this.map._mapData[x].length; y++) {
+						if (this.map._mapData[x][y] && this.map._mapData[x][y].length) {
+							// Tile is occupied
+							tilePoint = new IgePoint(tileWidth * x, tileHeight * y, 0);
+							// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
+							if (this._mode === 0) {
+								// 2d
+								ctx.fillRect(
+									tilePoint.x - tileWidth / 2,
+									tilePoint.y - tileHeight / 2,
+									tileWidth,
+									tileHeight
+								);
+							}
+
+							if (this._mode === 1) {
+								// iso
+								tilePoint = tilePoint.toIso();
+
+								ctx.beginPath();
+									ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+									ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
+									ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
+									ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
+									ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+								ctx.fill();
+							}
+						}
+					}
+				}
+			}
+
+			// Paint the tile the mouse is currently intersecting
+			if (this._mode === 0) {
+				// 2d
+				ctx.fillRect(
+					(this._mouseTilePos.x * tileWidth) - tileWidth / 2,
+					(this._mouseTilePos.y * tileHeight) - tileHeight / 2,
+					tileWidth,
+					tileHeight
+				);
+			}
+
+			if (this._mode === 1) {
+				// iso
+				tilePoint = this._mouseTilePos.toIso();
+
+				ctx.beginPath();
+					ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+					ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
+					ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
+					ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
+					ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+				ctx.fill();
 			}
 		}
 

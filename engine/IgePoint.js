@@ -1,3 +1,4 @@
+// TODO: Document
 var IgePoint = function (x, y, z) {
 	// Set values to the passed parameters or
 	// zero if they are undefined
