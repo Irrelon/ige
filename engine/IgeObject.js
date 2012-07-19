@@ -326,7 +326,7 @@ var IgeObject = IgeEventingClass.extend({
 	depthSortChildren: function () {
 		// TODO: Optimise this method, it is not especially efficient at the moment!
 		if (this._mode === 1) {
-			// Now sort the entities by depth
+			// Calculate depths from 3d bounds
 			var arr = this._children,
 				arrCount = arr.length,
 				sortObj = {
@@ -368,6 +368,7 @@ var IgeObject = IgeEventingClass.extend({
 				}
 			}
 
+			// Now sort the entities by depth
 			this._children.sort(function (a, b) {
 				var layerIndex = b._layer - a._layer;
 
