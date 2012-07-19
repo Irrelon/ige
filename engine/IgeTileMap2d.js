@@ -283,7 +283,7 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 
 							if (this._mode === 1) {
 								// iso
-								tilePoint = tilePoint.toIso();
+								tilePoint.thisToIso();
 
 								ctx.beginPath();
 									ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
