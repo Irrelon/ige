@@ -27,4 +27,46 @@ IgePoint.prototype.toIso = function () {
 	return {x: sx, y: sy};
 };
 
+IgePoint.prototype.thisToIso = function () {
+	var val = this.toIso();
+	this.x = val.x;
+	this.y = val.y;
+	this.z = 0;
+
+	return this;
+};
+
+IgePoint.prototype.to2d = function () {
+	var sx = this.y + this.x / 2,
+		sy = this.y - this.x / 2;
+
+	return {x: sx, y: sy};
+};
+
+IgePoint.prototype.thisTo2d = function () {
+	var val = this.to2d();
+	this.x = val.x;
+	this.y = val.y;
+	this.z = 0;
+
+	return this;
+};
+
+IgePoint.prototype.multiply = function (x, y, z) {
+	return {x: this.x * x, y: this.y * y, z: this.z * z};
+};
+
+IgePoint.prototype.thisMultiply = function (x, y, z) {
+	var val = this.multiply(x, y, z);
+	this.x = val.x;
+	this.y = val.y;
+	this.z = val.z;
+
+	return this;
+};
+
+IgePoint.prototype.clone = function () {
+	return new IgePoint(this.x, this.y, this.z);
+};
+
 if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgePoint; }
