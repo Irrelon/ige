@@ -200,15 +200,19 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 		if (this._mode === 1) {
 			// iso
 			// Calc delta
-			dx = mx - this._translate.x + this._tileWidth / 2;
-			dy = my - this._translate.y + this._tileHeight / 2;
+			dx = mx - this._translate.x;
+			dy = my - this._translate.y - this._tileHeight / 2;
 
 			this._mouseTilePos = new IgePoint(
-				Math.floor(dx / this._tileWidth),
-				Math.floor(dy / this._tileWidth)
-			);
+				dx,
+				dy,
+				0
+			).to2d();
 
-			console.log(this._mouseTilePos.x, this._mouseTilePos.y);
+			this._mouseTilePos = new IgePoint(
+				Math.floor(this._mouseTilePos.x / this._tileWidth) + 1,
+				Math.floor(this._mouseTilePos.y / this._tileHeight) + 1
+			);
 		}
 
 		this._transformContext(ctx);
@@ -307,7 +311,10 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 
 			if (this._mode === 1) {
 				// iso
-				tilePoint = this._mouseTilePos.toIso();
+				tilePoint = this._mouseTilePos
+					.clone()
+					.thisMultiply(tileWidth, tileHeight, 0)
+					.thisToIso();
 
 				ctx.beginPath();
 					ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
