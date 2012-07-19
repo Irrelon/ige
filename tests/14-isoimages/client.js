@@ -65,8 +65,8 @@ var Client = IgeClass.extend({
 					self.obj[0] = new self.Bank(self.tileMap1, 0, 6);
 					self.obj[1] = new self.Electricals(self.tileMap1, 2, 6);
 					self.obj[2] = new self.Burgers(self.tileMap1, 4, 6);
-					self.obj[3] = new self.SkyScraper(self.tileMap1, 15, 10).addFloors(3);
-					self.obj[4] = new self.SkyScraper(self.tileMap1, 1, 4).addFloors(3);
+					self.obj[3] = new self.SkyScraper(self.tileMap1, 15, 10).addFloors(5).addCrane('nw');
+					self.obj[4] = new self.SkyScraper(self.tileMap1, 1, 4).addFloors(2).addCrane('se');
 				}
 			});
 		});

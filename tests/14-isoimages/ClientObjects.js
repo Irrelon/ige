@@ -51,11 +51,12 @@ var ClientObjects = {
 		}
 	}),
 
-	SkyScraper: IgeInteractiveEntity.extend({
+	SkyScraper: IgeCuboid.extend({
 		init: function (parent, tileX, tileY) {
 			this._super();
 			var self = this;
 
+			// Setup some initial internal data
 			this.data('base', 'se')
 				.data('floors', 0)
 				.data('crane', 'se')
@@ -64,7 +65,7 @@ var ClientObjects = {
 				.data('craneRef', null);
 
 			// Create the base
-			this.data('baseRef', new IgeInteractiveEntity()
+			this.data('baseRef', new IgeEntity()
 				.isometric(true)
 				.texture(ige.client.gameTexture.base_se)
 				.width(ige.client.gameTexture.base_se.image.width * 0.265 * (parent._tileWidth / 40))
@@ -77,6 +78,7 @@ var ClientObjects = {
 				.drawBounds(false)
 			);
 
+			// Set the skyscraper entity details
 			this.isometric(true)
 				.mount(parent)
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
@@ -88,14 +90,29 @@ var ClientObjects = {
 				.opacity(1);
 		},
 
+		/**
+		 * Highlights the building children
+		 * @param bool
+		 */
 		highlight: function (bool) {
-			this._children.each(function (entity) { entity.highlight(bool); });
+			this._children.each(function (entity) {
+				entity.highlight(bool);
+			});
 		},
 
+		/**
+		 * Gets / sets the building base type (se, sw, ne, nw)
+		 * @param val
+		 */
 		base: function (val) {
 			this.data('base', val);
 		},
 
+		/**
+		 * Directly assign the number of floors the building shoudl have.
+		 * @param val
+		 * @return {*}
+		 */
 		floors: function (val) {
 			var floorDiff;
 
@@ -121,14 +138,20 @@ var ClientObjects = {
 			return this;
 		},
 
+		/**
+		 * Add a number of floors to the building.
+		 * @param numFloors
+		 * @return {*}
+		 */
 		addFloors: function (numFloors) {
 			// Create the skyscraper
 			var floor, floorCount = this.data('floors');
 
 			for (floor = floorCount; floor < floorCount + (numFloors); floor++) {
-				this.data('floorRef')[floor] = new IgeInteractiveEntity()
+				this.data('floorRef')[floor] = new IgeEntity()
 					.mount(this)
 					.isometric(true)
+					.layer(floor)
 					.texture(ige.client.gameTexture.stacker_se)
 					.width(ige.client.gameTexture.base_se.image.width * 0.265 * (this._parent._tileWidth / 40))
 					.height(ige.client.gameTexture.base_se.image.height * 0.265 * (this._parent._tileHeight / 40))
@@ -143,16 +166,31 @@ var ClientObjects = {
 
 			if (this.data('craneRef')) {
 				// Move the crane into position
-				this.data('craneRef').translate(0, 0, -4.1 * (this.data('floors') + 1), false, true);
+				this.data('craneRef')
+					.translateTo(
+						0,
+						0,
+						12.5 * (this.data('floors') + 1)
+					)
+					.layer(this.data('floors') + 1);
 			}
 
 			// Adjust the skyscraper geometry to match the number of floors
 			// so that it will depth-sort against other buildings correctly
-			this.size3d(this.geometry3d.x, this.geometry3d.y, 25 + (this.data('floors') * 25 * (this._parent._tileWidth / 40)));
+			this.size3d(
+				this.geometry3d.x,
+				this.geometry3d.y,
+				12.5 + (this.data('floors') * 25 * (this._parent._tileWidth / 40))
+			);
 
 			return this;
 		},
 
+		/**
+		 * Remove a number of floors from the building.
+		 * @param numFloors
+		 * @return {*}
+		 */
 		removeFloors: function (numFloors) {
 			var floor;
 
@@ -163,23 +201,41 @@ var ClientObjects = {
 				}
 
 				for (floor = 1; floor <= numFloors; floor++) {
-					this.data.floorRef[this.data('floors') - floor].destroy();
-					delete this.data.floorRef[this.data('floors') - floor];
+					this.data('floorRef')[this.data('floors') - floor].destroy();
+					delete this.data('floorRef')[this.data('floors') - floor];
 				}
 
 				this._data.floors -= numFloors;
+
+				// Adjust the skyscraper geometry to match the number of floors
+				// so that it will depth-sort against other buildings correctly
+				this.size3d(
+					this.geometry3d.x,
+					this.geometry3d.y,
+					12.5 + (this.data('floors') * 25 * (this._parent._tileWidth / 40))
+				);
 			}
 
-			if (this.data.craneRef) {
+			if (this.data('craneRef')) {
 				// Move the crane into position
-				this.data.craneRef.translate(0, 0, -4.1 * (this.data('floors') + 1), false, true);
+				this.data('craneRef')
+					.translateTo(
+						0,
+						0,
+						12.5 * (this.data('floors') + 1)
+					);
 			}
 
 			return this;
 		},
 
+		/**
+		 * Set the type of crane the building should have (se, sw, ne, nw)
+		 * @param val
+		 * @return {*}
+		 */
 		crane: function (val) {
-			if (val === this.data.crane) {
+			if (val === this.data('crane')) {
 				// No change to the crane
 				return;
 			}
@@ -195,57 +251,56 @@ var ClientObjects = {
 			return this;
 		},
 
+		/**
+		 * Add a crane of a certain type to the building.
+		 * @param val
+		 * @return {*}
+		 */
 		addCrane: function (val) {
-			var levelTextureId,
-				originX,
-				originY;
+			if (!this.data('craneRef')) {
+				var levelTextureId,
+					anchorX,
+					anchorY;
 
-			this.data.crane = val;
+				this.data('crane', val);
 
-			if (this.data.crane === 'se') { levelTextureId = 20; originX = 0.18; originY = 0.82; }
-			if (this.data.crane === 'sw') { levelTextureId = 21; originX = 0.82; originY = 0.82; }
-			if (this.data.crane === 'ne') { levelTextureId = 22; originX = 0.18; originY = 0.86; }
-			if (this.data.crane === 'nw') { levelTextureId = 23; originX = 0.84; originY = 0.86; }
+				if (val === 'se') { levelTextureId = 'crane_se'; anchorX = 25; anchorY = 0; }
+				if (val === 'sw') { levelTextureId = 'crane_sw'; anchorX = -25; anchorY = 0; }
+				if (val === 'ne') { levelTextureId = 'crane_ne'; anchorX = 25; anchorY = -10; }
+				if (val === 'nw') { levelTextureId = 'crane_nw'; anchorX = -25; anchorY = -10; }
 
-			// Create the base
-			this.data.craneRef = new IgeEntity();
-			this.data.craneRef.texture(gameTexture[levelTextureId]);
-			this.data.craneRef.mode(1);
-			this.data.craneRef.layer(3);
-			this.data.craneRef.autoDepth(true);
-			this.data.craneRef.scale(0.15, 0.15);
-			this.data.craneRef.origin(originX, originY);
-			this.data.craneRef.group('skyscraper');
-
-			// Mount the skyscaper
-			this.data.craneRef.mount(this._scene);
-
-			// Move the crane into position
-			this.data.craneRef.translate(this._transform[0], this._transform[1], this._transform[2] - 41 * (this.data('floors') + 1), false, false);
-
-			return this;
-		},
-
-		removeCrane: function () {
-			if (this.data.craneRef) {
-				this.data.craneRef.destroy();
-				delete this.data.craneRef;
-				delete this.data.crane;
+				// Create the crane
+				this.data('craneRef', new IgeCuboid()
+					.isometric(true)
+					.mount(this)
+					.texture(ige.client.gameTexture[levelTextureId])
+					.width(ige.client.gameTexture[levelTextureId].image.width * 0.265 * (this._parent._tileWidth / 40))
+					.height(ige.client.gameTexture[levelTextureId].image.height * 0.265 * (this._parent._tileHeight / 40))
+					.size3d(20, 20, 55)
+					.layer(this.data('floors') + 1)
+					.group('skyscraper')
+					.anchor(anchorX, anchorY)
+					.translateTo(
+						0,
+						0,
+						12.5 * (this.data('floors') + 1)
+					)
+					.drawBounds(true)
+				);
 			}
 
 			return this;
 		},
 
-		update: function () {
-			// Remove any existing entities
-			var arr = this._children,
-				arrCount = arr.length,
-				floor,
-				levelEntity,
-				levelTextureId;
-
-			while (arrCount--) {
-				arr[arrCount].destroy();
+		/**
+		 * Remove the current crane from the building.
+		 * @return {*}
+		 */
+		removeCrane: function () {
+			if (this.data('craneRef')) {
+				this.data('craneRef').destroy();
+				delete this._data.craneRef;
+				delete this._data.crane;
 			}
 
 			return this;
