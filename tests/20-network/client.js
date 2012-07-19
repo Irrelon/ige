@@ -49,17 +49,9 @@ var Client = IgeClass.extend({
 							.depth(1)
 							.width(100)
 							.height(100)
-							.translateToIso(0, 0, 0)
+							.translateTo(0, 0, 0)
 							.texture(gameTexture[0])
 							.mount(self.scene1);
-
-						/*self.obj[1] = new IgeEntity()
-							.depth(0)
-							.width(100)
-							.height(100)
-							.translateTo(80, 0, 0)
-							.texture(gameTexture[0])
-							.mount(self.scene1);*/
 					});
 				}
 			});

@@ -31,7 +31,7 @@ var Client = IgeClass.extend({
 						.scene(self.scene1)
 						.drawBounds(true)
 						.mount(ige)
-						.camera.translateTo(0, 350);
+						.camera.translateTo(0, 380);
 
 					// Create the background image
 					self.backdrop = new IgeEntity()
@@ -47,7 +47,7 @@ var Client = IgeClass.extend({
 						.isometric(true)
 						.tileWidth(20)
 						.tileHeight(20)
-						.drawGrid(38)
+						.drawGrid(40)
 						.highlightOccupied(true)
 						.mount(self.scene1);
 
@@ -57,7 +57,7 @@ var Client = IgeClass.extend({
 						.isometric(true)
 						.tileWidth(20)
 						.tileHeight(20)
-						.drawGrid(0)
+						.drawGrid(40)
 						.highlightOccupied(true)
 						.mount(self.scene1);
 
