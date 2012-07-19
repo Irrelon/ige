@@ -263,35 +263,38 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 				ctx.stroke();
 			}
 
-			ctx.fillStyle = '#ff0000';
-			for (x = 0; x < this.map._mapData.length; x++) {
-				if (this.map._mapData[x]) {
-					for (y = 0; y < this.map._mapData[x].length; y++) {
-						if (this.map._mapData[x][y] && this.map._mapData[x][y].length) {
-							// Tile is occupied
-							tilePoint = new IgePoint(tileWidth * x, tileHeight * y, 0);
-							// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
-							if (this._mode === 0) {
-								// 2d
-								ctx.fillRect(
-									tilePoint.x - tileWidth / 2,
-									tilePoint.y - tileHeight / 2,
-									tileWidth,
-									tileHeight
-								);
-							}
+			if (this._highlightOccupied) {
+				ctx.fillStyle = '#ff0000';
+				for (x = 0; x < this.map._mapData.length; x++) {
+					if (this.map._mapData[x]) {
+						for (y = 0; y < this.map._mapData[x].length; y++) {
+							if (this.map._mapData[x][y] && this.map._mapData[x][y].length) {
+								// Tile is occupied
+								tilePoint = new IgePoint(tileWidth * x, tileHeight * y, 0);
 
-							if (this._mode === 1) {
-								// iso
-								tilePoint.thisToIso();
+								// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
+								if (this._mode === 0) {
+									// 2d
+									ctx.fillRect(
+										tilePoint.x - tileWidth / 2,
+										tilePoint.y - tileHeight / 2,
+										tileWidth,
+										tileHeight
+									);
+								}
 
-								ctx.beginPath();
-									ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-									ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
-									ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
-									ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
-									ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-								ctx.fill();
+								if (this._mode === 1) {
+									// iso
+									tilePoint.thisToIso();
+
+									ctx.beginPath();
+										ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+										ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
+										ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
+										ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
+										ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+									ctx.fill();
+								}
 							}
 						}
 					}
@@ -299,6 +302,7 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 			}
 
 			// Paint the tile the mouse is currently intersecting
+			ctx.fillStyle = '#6000ff';
 			if (this._mode === 0) {
 				// 2d
 				ctx.fillRect(
