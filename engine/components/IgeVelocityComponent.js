@@ -1,4 +1,4 @@
-IgeVelocityComponent = IgeClass.extend({
+var IgeVelocityComponent = IgeClass.extend({
 	classId: 'IgeVelocityComponent',
 	componentId: 'velocity',
 
