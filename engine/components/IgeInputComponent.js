@@ -5,6 +5,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 	init: function () {
 		// Setup the input objects to hold the current input state
 		this.dblClick = false; // TODO: Add double-click event handling
+		this.mouseMove = false;
 		this.mouseDown = false;
 		this.mouseUp = false;
 
@@ -205,6 +206,9 @@ var IgeInputComponent = IgeEventingClass.extend({
 	_mouseMove: function (event) {
 		this._state[this.mouse.x] = event.clientX - ige.geometry.x2;
 		this._state[this.mouse.y] = event.clientY - ige.geometry.y2;
+
+		this.mouseMove = true;
+
 		this.emit('mouseUp', event);
 	},
 
@@ -243,7 +247,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 */
 	action: function (actionName) {
 		var val = this._state[this._controlMap[actionName]];
-		return !val ? false : true;
+		return !!val; // "Not not" to convert to boolean true/false
 	},
 
 	/**
@@ -268,6 +272,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * Allows us to reset any flags etc.
 	 */
 	tick: function () {
+		this.mouseMove = false;
 		this.mouseDown = false;
 		this.mouseUp = false;
 	}
