@@ -3,6 +3,8 @@ var ClientObjects = {
 	 * Define the bank building class.
 	 */
 	Bank: ClientItem.extend({
+		classId: 'Bank',
+
 		init: function (parent, tileX, tileY) {
 			// Set the tile position and size data for this item
 			// by passing them to the init method of ClientItem
@@ -24,6 +26,8 @@ var ClientObjects = {
 	 * Define the electricals shop building class.
 	 */
 	Electricals: ClientItem.extend({
+		classId: 'Electricals',
+
 		init: function (parent, tileX, tileY) {
 			// Set the tile position and size data for this item
 			// by passing them to the init method of ClientItem
@@ -45,6 +49,8 @@ var ClientObjects = {
 	 * Define the burger shop building class.
 	 */
 	Burgers: ClientItem.extend({
+		classId: 'Burgers',
+
 		init: function (parent, tileX, tileY) {
 			// Set the tile position and size data for this item
 			// by passing them to the init method of ClientItem
@@ -67,6 +73,8 @@ var ClientObjects = {
 	 * Define the skyscraper building class.
 	 */
 	SkyScraper: ClientItem.extend({
+		classId: 'SkyScraper',
+
 		init: function (parent, tileX, tileY) {
 			// Set the tile position and size data for this item
 			// by passing them to the init method of ClientItem
@@ -93,7 +101,7 @@ var ClientObjects = {
 				.translateTo(0, 0, 0)
 				.anchor(0, -1.6 * (parent._tileWidth / 40))
 				.group('skyscraper')
-				.drawBounds(false)
+				.drawBounds(true)
 			);
 
 			// Set the main skyscraper entity details
@@ -101,7 +109,7 @@ var ClientObjects = {
 				.mount(parent)
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
 				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
-				.drawBounds(false)
+				.drawBounds(true)
 				.opacity(1);
 		},
 
@@ -176,7 +184,7 @@ var ClientObjects = {
 					.translateTo(0, 0, 25 * (floor + 1) * (this._parent._tileWidth / 40))
 					.anchor(0, -1.6 * (this._parent._tileWidth / 40))
 					.group('skyscraper')
-					.drawBounds(false);
+					.drawBounds(true);
 			}
 
 			this.data('floors', floorCount + numFloors);
@@ -302,7 +310,7 @@ var ClientObjects = {
 						0,
 						12.5 * (this.data('floors') + 1)
 					)
-					.drawBounds(false)
+					.drawBounds(true)
 				);
 			}
 

@@ -51,7 +51,7 @@ var ClientObjects = {
 		}
 	}),
 
-	SkyScraper: IgeCuboid.extend({
+	SkyScraper: IgeInteractiveEntity.extend({
 		init: function (parent, tileX, tileY) {
 			this._super();
 			var self = this;
@@ -67,6 +67,7 @@ var ClientObjects = {
 			// Create the base
 			this.data('baseRef', new IgeEntity()
 				.isometric(true)
+				.mount(this)
 				.texture(ige.client.gameTexture.base_se)
 				.width(ige.client.gameTexture.base_se.image.width * 0.265 * (parent._tileWidth / 40))
 				.height(ige.client.gameTexture.base_se.image.height * 0.265 * (parent._tileWidth / 40))
@@ -74,7 +75,7 @@ var ClientObjects = {
 				.translateTo(0, 0, 0)
 				.anchor(0, -1.6 * (parent._tileWidth / 40))
 				.group('skyscraper')
-				.mount(this)
+
 				.drawBounds(false)
 			);
 
@@ -270,7 +271,7 @@ var ClientObjects = {
 				if (val === 'nw') { levelTextureId = 'crane_nw'; anchorX = -25; anchorY = -10; }
 
 				// Create the crane
-				this.data('craneRef', new IgeCuboid()
+				this.data('craneRef', new IgeEntity()
 					.isometric(true)
 					.mount(this)
 					.texture(ige.client.gameTexture[levelTextureId])
@@ -285,7 +286,7 @@ var ClientObjects = {
 						0,
 						12.5 * (this.data('floors') + 1)
 					)
-					.drawBounds(true)
+					.drawBounds(false)
 				);
 			}
 

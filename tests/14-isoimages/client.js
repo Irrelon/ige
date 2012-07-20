@@ -20,53 +20,11 @@ var Client = IgeClass.extend({
 				if (success) {
 					ige.viewportDepth(true);
 
-					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.isometric(false);
+					// Create the basic scene, viewport etc
+					self.setupScene();
 
-					// Create the main viewport
-					self.vp1 = new IgeViewport()
-						.id('vp1')
-						.autoSize(true)
-						.scene(self.scene1)
-						.drawBounds(true)
-						.mount(ige)
-						.camera.translateTo(0, 380);
-
-					// Create the background image
-					self.backdrop = new IgeEntity()
-						.layer(0)
-						.texture(self.gameTexture.background1)
-						.dimensionsFromTexture()
-						.translateTo(0, 250, 0)
-						.mount(self.scene1);
-
-					// Create a collision map
-					self.collisionMap1 = new IgeTileMap2d()
-						.layer(1)
-						.isometric(true)
-						.tileWidth(20)
-						.tileHeight(20)
-						.drawGrid(40)
-						.highlightOccupied(true)
-						.mount(self.scene1);
-
-					// Create the tile map
-					self.tileMap1 = new IgeTileMap2d()
-						.layer(2)
-						.isometric(true)
-						.tileWidth(20)
-						.tileHeight(20)
-						.drawGrid(40)
-						.highlightOccupied(true)
-						.mount(self.scene1);
-
-					// Create an entity
-					self.obj[0] = new self.Bank(self.tileMap1, 0, 6);
-					self.obj[1] = new self.Electricals(self.tileMap1, 2, 6);
-					self.obj[2] = new self.Burgers(self.tileMap1, 4, 6);
-					self.obj[3] = new self.SkyScraper(self.tileMap1, 15, 10).addFloors(5).addCrane('nw');
-					self.obj[4] = new self.SkyScraper(self.tileMap1, 1, 4).addFloors(2).addCrane('se');
+					// Setup the initial entities
+					self.setupEntities();
 				}
 			});
 		});
@@ -99,6 +57,58 @@ var Client = IgeClass.extend({
 		this.gameTexture.crane_sw = new IgeTexture('../assets/textures/buildings/crane_sw.png');
 		this.gameTexture.crane_ne = new IgeTexture('../assets/textures/buildings/crane_ne.png');
 		this.gameTexture.crane_nw = new IgeTexture('../assets/textures/buildings/crane_nw.png');
+	},
+
+	setupScene: function () {
+		// Create the scene
+		this.scene1 = new IgeScene2d()
+			.isometric(false);
+
+		// Create the main viewport
+		this.vp1 = new IgeViewport()
+			.id('vp1')
+			.autoSize(true)
+			.scene(this.scene1)
+			.drawBounds(true)
+			.mount(ige)
+			.camera.translateTo(0, 380);
+
+		// Create the background image
+		this.backdrop = new IgeEntity()
+			.layer(0)
+			.texture(this.gameTexture.background1)
+			.dimensionsFromTexture()
+			.translateTo(0, 250, 0)
+			.mount(this.scene1);
+
+		// Create a collision map
+		this.collisionMap1 = new IgeTileMap2d()
+			.layer(1)
+			.isometric(true)
+			.tileWidth(20)
+			.tileHeight(20)
+			.drawGrid(40)
+			.highlightOccupied(false)
+			.mount(this.scene1);
+
+		// Create the tile map
+		this.tileMap1 = new IgeTileMap2d()
+			.layer(2)
+			.isometric(true)
+			.tileWidth(20)
+			.tileHeight(20)
+			.drawGrid(40)
+			.highlightOccupied(false)
+			.mount(this.scene1);
+	},
+
+	setupEntities: function () {
+		// Create an entity
+		this.obj[0] = new this.Bank(this.tileMap1, 0, 6);
+		this.obj[1] = new this.Electricals(this.tileMap1, 2, 6);
+		this.obj[2] = new this.Burgers(this.tileMap1, 4, 6);
+		this.obj[3] = new this.SkyScraper(this.tileMap1, 15, 10).addFloors(5).addCrane('nw');
+		this.obj[4] = new this.SkyScraper(this.tileMap1, 1, 4).addFloors(2).addCrane('se');
 	}
 });
 
