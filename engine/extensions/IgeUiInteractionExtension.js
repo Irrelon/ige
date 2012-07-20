@@ -20,6 +20,10 @@ var IgeUiInteractionExtension = {
 	},
 
 	_handleMouseOut: function () {
+		// The mouse went away from this entity so
+		// set mouse-down to false, regardless of the situation
+		this._mouseStateDown = false;
+
 		// Check if the mouse move is a mouse out
 		if (this._mouseStateOver) {
 			this._mouseStateOver = false;
@@ -55,7 +59,11 @@ var IgeUiInteractionExtension = {
 	},
 
 	_handleMouseUp: function () {
-
+		// Check if the mouse up was preceded by a mouse-down
+		if (this._mouseStateDown) {
+			this._mouseStateDown = false;
+			if (this._mouseUp) { this._mouseUp.call(this); }
+		}
 	},
 
 	mouseDown: function (callback) {
@@ -68,7 +76,10 @@ var IgeUiInteractionExtension = {
 	},
 
 	_handleMouseDown: function () {
-
+		if (!this._mouseStateDown) {
+			this._mouseStateDown = true;
+			if (this._mouseDown) { this._mouseDown.call(this); }
+		}
 	}
 };
 
