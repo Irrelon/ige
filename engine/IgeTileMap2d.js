@@ -1,4 +1,4 @@
-var IgeTileMap2d = IgeInteractiveEntity.extend({
+var IgeTileMap2d = IgeEntity.extend({
 	init: function (tileWidth, tileHeight) {
 		this._super();
 		var self = this;
@@ -71,73 +71,11 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 
 	_childMounted: function (obj) {
 		// Augment the child with tile powers!
-		obj.translateToTile = this._objectTranslateToTile;
-		obj.widthByTile = this._objectTileWidth;
-		obj.heightByTile = this._objectTileHeight;
 		obj.occupyTile = this._objectOccupyTile;
 		obj.unOccupyTile = this._objectUnOccupyTile;
 		obj.overTiles = this._objectOverTiles;
 
 		this._super(obj);
-	},
-
-	/**
-	 * Translate's the object to the tile co-ordinates passed.
-	 * @param x
-	 * @param y
-	 * @private
-	 */
-	_objectTranslateToTile: function (x, y) {
-		this.translateTo(x * this._parent._tileWidth, y * this._parent._tileHeight, this._translate.z);
-		return this;
-	},
-
-	/**
-	 * Set the object's width to the number of tile width's specified.
-	 * @param {Number} val
-	 * @param {Boolean=} lockAspect If true, sets the height according
-	 * to the texture aspect ratio and the new width.
-	 * @private
-	 */
-	_objectTileWidth: function (val, lockAspect) {
-		var tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
-		this.width(val * tileSize);
-
-		if (lockAspect) {
-			if (this._texture) {
-				// Calculate the height based on the new width
-				var ratio = this._texture._sizeX / this.geometry.x;
-				this.height(this._texture._sizeY / ratio);
-			} else {
-				this.log('Cannot set height based on texture aspect ratio and new width because no texture is currently assigned to the entity!', 'error');
-			}
-		}
-
-		return this;
-	},
-
-	/**
-	 * Set the object's height to the number of tile height's specified.
-	 * @param val
-	 * @param {Boolean=} lockAspect If true, sets the height according
-	 * to the texture aspect ratio and the new height.
-	 * @private
-	 */
-	_objectTileHeight: function (val, lockAspect) {
-		var tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
-		this.height(val * tileSize);
-
-		if (lockAspect) {
-			if (this._texture) {
-				// Calculate the width based on the new height
-				var ratio = this._texture._sizeY / this.geometry.y;
-				this.width(this._texture._sizeX / ratio);
-			} else {
-				this.log('Cannot set width based on texture aspect ratio and new height because no texture is currently assigned to the entity!', 'error');
-			}
-		}
-
-		return this;
 	},
 
 	/**
@@ -212,6 +150,33 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 
 	},
 
+	mouseDown: function (val) {
+		if (val !== undefined) {
+			this._mouseDown = val;
+			return this;
+		}
+
+		return this._mouseDown;
+	},
+
+	mouseUp: function (val) {
+		if (val !== undefined) {
+			this._mouseUp = val;
+			return this;
+		}
+
+		return this._mouseUp;
+	},
+
+	mouseOver: function (val) {
+		if (val !== undefined) {
+			this._mouseOver = val;
+			return this;
+		}
+
+		return this._mouseOver;
+	},
+
 	tick: function (ctx) {
 		// Calculate the current tile the mouse is over based on
 		// the parent world matrix and this tile map local matrix
@@ -223,7 +188,6 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 
 		if (this._mode === 0) {
 			// 2d
-			// Calc delta
 			dx = mx - this._translate.x + this._tileWidth / 2;
 			dy = my - this._translate.y + this._tileHeight / 2;
 
@@ -235,7 +199,6 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 
 		if (this._mode === 1) {
 			// iso
-			// Calc delta
 			dx = mx - this._translate.x;
 			dy = my - this._translate.y - this._tileHeight / 2;
 
@@ -251,8 +214,23 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 			);
 		}
 
+		// Now check if we have any mouse events to call
+		if (this.input.mouseMove && this._mouseOver) {
+			this._mouseOver(this._mouseTilePos.x, this._mouseTilePos.y);
+		}
+
+		if (this.input.mouseDown && this._mouseDown) {
+			this._mouseDown(this._mouseTilePos.x, this._mouseTilePos.y);
+		}
+
+		if (this.input.mouseUp && this._mouseUp) {
+			this._mouseUp(this._mouseTilePos.x, this._mouseTilePos.y);
+		}
+
+		// Transform the context ready for drawing
 		this._transformContext(ctx);
 
+		// Check if we need to draw the tile grid (usually for debug)
 		if (this._drawGrid > 0) {
 			ctx.strokeStyle = '#ffffff';
 			var gridCount = this._drawGrid,

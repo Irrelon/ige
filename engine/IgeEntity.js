@@ -79,36 +79,81 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Dummy method to help debug when programmer expects to be
-	 * able to access tile-based methods but cannot. This method
-	 * is overwritten when the entity is mounted to a tile sheet.
+	 * Translate's the object to the tile co-ordinates passed.
+	 * @param x
+	 * @param y
+	 * @private
 	 */
-	translateToTile: function () {
-		this.log('Cannot translate to tile because the entity is not currentlymounted to a tile sheet.', 'warning');
+	translateToTile: function (x, y) {
+		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
+			this.translateTo(x * this._parent._tileWidth, y * this._parent._tileHeight, this._translate.z);
+		} else {
+			this.log('Cannot translate to tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.', 'warning');
+		}
+
+		return this;
+	},
+
+	/**
+	 * Set the object's width to the number of tile width's specified.
+	 * @param {Number} val
+	 * @param {Boolean=} lockAspect If true, sets the height according
+	 * to the texture aspect ratio and the new width.
+	 * @private
+	 */
+	widthByTile: function (val, lockAspect) {
+		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
+			var tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
+			this.width(val * tileSize);
+
+			if (lockAspect) {
+				if (this._texture) {
+					// Calculate the height based on the new width
+					var ratio = this._texture._sizeX / this.geometry.x;
+					this.height(this._texture._sizeY / ratio);
+				} else {
+					this.log('Cannot set height based on texture aspect ratio and new width because no texture is currently assigned to the entity!', 'error');
+				}
+			}
+		} else {
+			this.log('Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.', 'warning');
+		}
+
+		return this;
+	},
+
+	/**
+	 * Set the object's height to the number of tile height's specified.
+	 * @param val
+	 * @param {Boolean=} lockAspect If true, sets the height according
+	 * to the texture aspect ratio and the new height.
+	 * @private
+	 */
+	heightByTile: function (val, lockAspect) {
+		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
+			var tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
+			this.height(val * tileSize);
+
+			if (lockAspect) {
+				if (this._texture) {
+					// Calculate the width based on the new height
+					var ratio = this._texture._sizeY / this.geometry.y;
+					this.width(this._texture._sizeX / ratio);
+				} else {
+					this.log('Cannot set width based on texture aspect ratio and new height because no texture is currently assigned to the entity!', 'error');
+				}
+			}
+		} else {
+			this.log('Cannot set height by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.', 'warning');
+		}
+
+		return this;
 	},
 
 	/**
 	 * Dummy method to help debug when programmer expects to be
 	 * able to access tile-based methods but cannot. This method
-	 * is overwritten when the entity is mounted to a tile sheet.
-	 */
-	widthByTile: function () {
-		this.log('Cannot set width by tile because the entity is not currentlymounted to a tile sheet.', 'warning');
-	},
-
-	/**
-	 * Dummy method to help debug when programmer expects to be
-	 * able to access tile-based methods but cannot. This method
-	 * is overwritten when the entity is mounted to a tile sheet.
-	 */
-	heightByTile: function () {
-		this.log('Cannot set height by tile because the entity is not currently mounted to a tile sheet.', 'warning');
-	},
-
-	/**
-	 * Dummy method to help debug when programmer expects to be
-	 * able to access tile-based methods but cannot. This method
-	 * is overwritten when the entity is mounted to a tile sheet.
+	 * is overwritten when the entity is mounted to a tile map.
 	 */
 	occupyTile: function () {
 		this.log('Cannot occupy a tile because the entity is not currently mounted to a tile sheet.', 'warning');
@@ -117,7 +162,7 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Dummy method to help debug when programmer expects to be
 	 * able to access tile-based methods but cannot. This method
-	 * is overwritten when the entity is mounted to a tile sheet.
+	 * is overwritten when the entity is mounted to a tile map.
 	 */
 	overTiles: function () {
 		this.log('Cannot determine which tiles this entity lies over because the entity is not currently mounted to a tile sheet.', 'warning');
