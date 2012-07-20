@@ -8,7 +8,12 @@ var IgeUiRadioButton = IgeUiButton.extend({
 		return this._uiRadioGroup;
 	},
 
-	select: function () {
+	select: function (val) {
+		if (val !== undefined) {
+			this._uiOnSelect = val;
+			return this;
+		}
+
 		if (this._parent) {
 			// Loop the parent object's children, find any
 			// radio buttons that belong to this radio group
@@ -34,27 +39,30 @@ var IgeUiRadioButton = IgeUiButton.extend({
 					}
 				}
 			}
+		}
 
-			// Now set this item as selected
-			this._uiSelected = true;
+		// Now set this item as selected
+		this._uiSelected = true;
 
-			// Fire this item's onSelect method
-			if (this._uiOnSelect) {
-				this._uiOnSelect();
-			}
+		// Fire this item's onSelect method
+		if (this._uiOnSelect) {
+			this._uiOnSelect();
 		}
 
 		return this;
 	},
 
-	onSelect: function (method) {
-		this._uiOnSelect = method;
+	deSelect: function (val) {
+		if (val !== undefined) {
+			this._uiOnDeSelect = val;
+			return this;
+		}
 
-		return this;
-	},
+		this._uiSelected = false;
 
-	onDeSelect: function (method) {
-		this._uiOnDeSelect = method;
+		if (this._uiOnDeSelect) {
+			this._uiOnDeSelect();
+		}
 
 		return this;
 	}
