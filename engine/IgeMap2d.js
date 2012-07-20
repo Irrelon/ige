@@ -47,7 +47,7 @@ var IgeMap2d = IgeClass.extend({
 		if (x !== undefined && y !== undefined) {
 			for (xi = 0; xi < width; xi++) {
 				for (yi = 0; yi < height; yi++) {
-					if (this.tileData(xi, yi)) {
+					if (this.tileData(x + xi, y + yi)) {
 						return true;
 					}
 				}

@@ -82,6 +82,33 @@ var IgeMapStack2d = IgeClass.extend({
 	},
 
 	/**
+	 * Checks if the tile area passed has any data stored in it. If
+	 * so, returns true, otherwise false.
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 */
+	collision: function (x, y, width, height) {
+		var xi, yi;
+
+		if (width === undefined) { width = 1; }
+		if (height === undefined) { height = 1; }
+
+		if (x !== undefined && y !== undefined) {
+			for (xi = 0; xi < width; xi++) {
+				for (yi = 0; yi < height; yi++) {
+					if (this._mapData[x + xi] && this._mapData[x + xi][y + yi] && this._mapData[x + xi][y + yi].length) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	},
+
+	/**
 	 * Gets / sets the map's tile data.
 	 * @param {Array} val The map data array.
 	 * @return {*}
