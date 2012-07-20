@@ -18,7 +18,11 @@ var ClientObjects = {
 				.texture(ige.client.gameTexture.bank)
 				.widthByTile(1.50, true) // Called with lockAspect true so height is also set
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
-				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0);
+				.translateToTile(tileX, tileY, 0);
+		},
+
+		translateToTile: function (x, y, z) {
+			this._super(x + 0.5, y + 0.5, z);
 		}
 	}),
 
@@ -41,7 +45,12 @@ var ClientObjects = {
 				.texture(ige.client.gameTexture.electricals)
 				.widthByTile(2 * 0.9, true) // Called with lockAspect true so height is also set
 				.size3d(2 * parent._tileWidth, 3 * parent._tileHeight, parent._tileHeight * 0.8)
-				.translateToTile((tileX) + 0.5, (tileY) + 1, 0);
+				.translateToTile(tileX, tileY, 0);
+		},
+
+		translateToTile: function (x, y, z) {
+			this._super(x + 0.5, y + 1, z);
+			return this;
 		}
 	}),
 
@@ -65,7 +74,12 @@ var ClientObjects = {
 				.anchor(5, 0)
 				.widthByTile(1.50, true) // Called with lockAspect true so height is also set
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 0.75)
-				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0);
+				.translateToTile(tileX, tileY, 0);
+		},
+
+		translateToTile: function (x, y, z) {
+			this._super(x + 0.5, y + 0.5, z);
+			return this;
 		}
 	}),
 
@@ -108,9 +122,14 @@ var ClientObjects = {
 			this.isometric(true)
 				.mount(parent)
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
-				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
+				.translateToTile(tileX, tileY, 0)
 				.drawBounds(true)
 				.opacity(1);
+		},
+
+		translateToTile: function (x, y, z) {
+			this._super(x + 0.5, y + 0.5, z);
+			return this;
 		},
 
 		/**
@@ -329,6 +348,60 @@ var ClientObjects = {
 			}
 
 			return this;
+		},
+
+		/**
+		 * Sets the build process in motion that will add the number of
+		 * floors specified, one at a time until the building is complete.
+		 * The crane will also be changed until complete and then removed.
+		 * @param floors
+		 */
+		build: function (floors) {
+			var self = this;
+			this.data('buildFloors', floors);
+			setTimeout(function () {
+				self._buildTick();
+			}, 1000);
+		},
+
+		_buildTick: function () {
+			var currentFloors = this.data('floors'),
+				buildFloors = this.data('buildFloors'),
+				currentCrane,
+				self = this;
+
+			if (currentFloors < buildFloors - 1) {
+				this.addFloors(1);
+
+				switch (this.data('crane')) {
+					case 'se':
+						this.crane('sw');
+					break;
+
+					case 'sw':
+						this.crane('nw');
+					break;
+
+					case 'nw':
+						this.crane('ne');
+					break;
+
+					case 'ne':
+						this.crane('se');
+					break;
+				}
+
+				// Set another timeout to re-call this method
+				setTimeout(function () {
+					self._buildTick();
+				}, 1000);
+			} else {
+				// Add the last floor
+				this.addFloors(1);
+
+				// Building is complete, remove the crane
+				this.removeCrane();
+			}
 		}
 	})
 };
