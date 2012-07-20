@@ -3,13 +3,10 @@ var IgeEngine = IgeEntity.extend({
 
 	init: function () {
 		this._super();
+		this.id('IGE');
 
 		// Determine the environment we are executing in
-		if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') {
-			this.isServer = true;
-		} else {
-			this.isServer = false;
-		}
+		this.isServer = (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined');
 
 		// Assign ourselves to the global variable
 		ige = this;
@@ -451,6 +448,9 @@ var IgeEngine = IgeEntity.extend({
 			ige._frames++;
 			ige._dpt = ige._drawCount;
 			ige._drawCount = 0;
+
+			// Call the input system tick to reset any flags etc
+			ige.input.tick();
 		}
 	},
 
@@ -475,6 +475,56 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		ctx.restore();
+	},
+
+	/**
+	 * Walks the scenegraph and outputs a console map of the graph.
+	 */
+	scenegraph: function (obj, currentDepth, lastDepth) {
+		if (currentDepth === undefined) { currentDepth = 0; }
+
+		if (!obj) {
+			// Set the obj to the main ige instance
+			obj = ige;
+		}
+
+		var depthSpace = '', di;
+		for (di = 0; di < currentDepth; di++) {
+			depthSpace += '    ';
+		}
+
+		console.log(depthSpace + obj.id() + ' (' + obj._classId + ')');
+
+		currentDepth++;
+
+		if (obj === ige) {
+			// Loop the viewports
+			var arr = obj._children,
+				arrCount;
+
+			if (arr) {
+				arrCount = arr.length;
+
+				// Loop our children
+				while (arrCount--) {
+					if (arr[arrCount]._scene._shouldRender) {
+						this.scenegraph(arr[arrCount]._scene, currentDepth);
+					}
+				}
+			}
+		} else {
+			var arr = obj._children,
+				arrCount;
+
+			if (arr) {
+				arrCount = arr.length;
+
+				// Loop our children
+				while (arrCount--) {
+					this.scenegraph(arr[arrCount], currentDepth);
+				}
+			}
+		}
 	}
 });
 
