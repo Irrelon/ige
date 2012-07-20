@@ -2,6 +2,8 @@ var IgeUiEntity = IgeInteractiveEntity.extend([
 	{extension: IgeUiStyleExtension, overwrite: true},
 	{extension: IgeUiPositionExtension, overwrite: true}
 ], {
+	classId: 'IgeUiEntity',
+
 	init: function () {
 		this._super();
 
@@ -271,6 +273,10 @@ var IgeUiEntity = IgeInteractiveEntity.extend([
 	},
 
 	tick: function (ctx, dontTransform) {
+		if (this._breakOnTick) {
+			debugger;
+		}
+
 		if (!dontTransform) {
 			this._transformContext(ctx);
 		}
