@@ -10,7 +10,10 @@ var IgeClass = (function () {
 
 		// The base Class implementation (does nothing)
 		IgeClass = function () {},
-
+		// TODO: Add parameters to all the doc comments below.
+		/**
+		 * Provides logging capabilities to all IgeClass instances.
+		 */
 		log = function (text, type, obj) {
 			var indent = '',
 				i,
@@ -48,6 +51,12 @@ var IgeClass = (function () {
 			return this;
 		},
 
+		/**
+		 * Gets / sets the class id. Primarily used to help identify
+		 * what class an instance was instantiated with and is also
+		 * output during the ige.scenegraph() method's console logging
+		 * to show what class an object belogs to.
+		 */
 		classId = function (name) {
 			if (typeof(name) !== 'undefined') {
 				if (this._classId) {
@@ -61,12 +70,26 @@ var IgeClass = (function () {
 			return (this._classId || this.prototype._classId);
 		},
 
+		/**
+		 * Creates a new instance of the component argument passing
+		 * the options argument to the component as it is initialised.
+		 * The new component instance is then added to "this" via
+		 * a property name that is defined in the component class as
+		 * "componentId".
+		 */
 		addComponent = function (component, options) {
 			var newComponent = new component(this, options);
 			this[newComponent.componentId] = newComponent;
 			return this;
 		},
 
+		/**
+		 * Copies all properties and methods from the classObj object
+		 * to "this". If the overwrite flag is not set or set to false,
+		 * only properties and methods that don't already exists in
+		 * "this" will be copied. If overwrite is true, they will be
+		 * copied regardless.
+		 */
 		implement = function (classObj, overwrite) {
 			var i, obj = classObj.prototype || classObj;
 
@@ -78,6 +101,25 @@ var IgeClass = (function () {
 				}
 			}
 			return this;
+		},
+
+		/**
+		 * Gets / sets a key / value pair in the object's data object. Useful for
+		 * storing arbitrary game data in the object.
+		 * @param {String} key The key under which the data resides.
+		 * @param {*=} value The data to set under the specified key.
+		 * @return {*}
+		 */
+		data = function (key, value) {
+			if (key !== undefined) {
+				if (value !== undefined) {
+					this._data[key] = value;
+
+					return this;
+				}
+
+				return this._data[key];
+			}
 		};
 
 	// Create a new IgeClass that inherits from this class
@@ -157,6 +199,7 @@ var IgeClass = (function () {
 
 		// The dummy class constructor
 		function IgeClass() {
+			this._data = {};
 			if (!initializing && this.init) {
 				this.init.apply(this, arguments);
 			}
@@ -173,6 +216,9 @@ var IgeClass = (function () {
 
 		// Add log capability
 		IgeClass.prototype.log = log;
+
+		// Add data capability
+		IgeClass.prototype.data = data;
 
 		// Add class name capability
 		IgeClass.prototype.classId = classId;
