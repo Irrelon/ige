@@ -60,8 +60,8 @@ var IgeNode = IgeClass.extend({
 			this.log('Module "' + item.name + '" loaded');
 		}
 
-		// Create a new Game instance
-		this.game = new this.Game(this.Server);
+		// Create a new Game instance and pass the config details to it
+		this.game = new this.Game(this.Server, this.config);
 	}
 });
 
