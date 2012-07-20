@@ -455,7 +455,7 @@ var Client = IgeClass.extend({
 				this.backgroundColor('#00baff');
 
 				// Because this is just a demo we are going to assume the user
-				// wants to build a skyscraper but actually we sould probably
+				// wants to build a skyscraper but actually we should probably
 				// fire up a menu here and let them pick from available buildings
 				// TODO: Make this show a menu of buildings and let the user pick
 				var tempItem = ige.client.createTemporaryItem('SkyScraper')
