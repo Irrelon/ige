@@ -1,59 +1,77 @@
 var ClientObjects = {
-	Bank: IgeInteractiveEntity.extend({
+	/**
+	 * Define the bank building class.
+	 */
+	Bank: ClientItem.extend({
 		init: function (parent, tileX, tileY) {
-			this._super();
+			// Set the tile position and size data for this item
+			// by passing them to the init method of ClientItem
+			// as defined in ClientItem.js
+			this._super(tileX, tileY, 2, 2);
 			var self = this;
 
+			// Setup the item details
 			this.isometric(true)
 				.mount(parent)
 				.texture(ige.client.gameTexture.bank)
 				.widthByTile(1.50, true) // Called with lockAspect true so height is also set
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
-				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
-				.mouseOver(function () {self.highlight(true);})
-				.mouseOut(function () {self.highlight(false);})
-				.occupyTile(tileX, tileY, 2, 2);
+				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0);
 		}
 	}),
 
-	Electricals: IgeInteractiveEntity.extend({
+	/**
+	 * Define the electricals shop building class.
+	 */
+	Electricals: ClientItem.extend({
 		init: function (parent, tileX, tileY) {
-			this._super();
+			// Set the tile position and size data for this item
+			// by passing them to the init method of ClientItem
+			// as defined in ClientItem.js
+			this._super(tileX, tileY, 2, 3);
 			var self = this;
 
+			// Setup the item details
 			this.isometric(true)
 				.mount(parent)
 				.texture(ige.client.gameTexture.electricals)
 				.widthByTile(2 * 0.9, true) // Called with lockAspect true so height is also set
 				.size3d(2 * parent._tileWidth, 3 * parent._tileHeight, parent._tileHeight * 0.8)
-				.translateToTile((tileX) + 0.5, (tileY) + 1, 0)
-				.mouseOver(function () {self.highlight(true);})
-				.mouseOut(function () {self.highlight(false);})
-				.occupyTile(tileX, tileY, 2, 3);
+				.translateToTile((tileX) + 0.5, (tileY) + 1, 0);
 		}
 	}),
 
-	Burgers: IgeInteractiveEntity.extend({
+	/**
+	 * Define the burger shop building class.
+	 */
+	Burgers: ClientItem.extend({
 		init: function (parent, tileX, tileY) {
-			this._super();
+			// Set the tile position and size data for this item
+			// by passing them to the init method of ClientItem
+			// as defined in ClientItem.js
+			this._super(tileX, tileY, 2, 2);
 			var self = this;
 
+			// Setup the item details
 			this.isometric(true)
 				.mount(parent)
 				.texture(ige.client.gameTexture.burgers)
 				.anchor(5, 0)
 				.widthByTile(1.50, true) // Called with lockAspect true so height is also set
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 0.75)
-				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
-				.mouseOver(function () {self.highlight(true);})
-				.mouseOut(function () {self.highlight(false);})
-				.occupyTile(tileX, tileY, 2, 2);
+				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0);
 		}
 	}),
 
-	SkyScraper: IgeInteractiveEntity.extend({
+	/**
+	 * Define the skyscraper building class.
+	 */
+	SkyScraper: ClientItem.extend({
 		init: function (parent, tileX, tileY) {
-			this._super();
+			// Set the tile position and size data for this item
+			// by passing them to the init method of ClientItem
+			// as defined in ClientItem.js
+			this._super(tileX, tileY, 2, 2);
 			var self = this;
 
 			// Setup some initial internal data
@@ -75,24 +93,22 @@ var ClientObjects = {
 				.translateTo(0, 0, 0)
 				.anchor(0, -1.6 * (parent._tileWidth / 40))
 				.group('skyscraper')
-
 				.drawBounds(false)
 			);
 
-			// Set the skyscraper entity details
+			// Set the main skyscraper entity details
 			this.isometric(true)
 				.mount(parent)
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
 				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
-				.mouseOver(function () { self.highlight(true); })
-				.mouseOut(function () { self.highlight(false); })
-				.drawBounds(true)
-				.occupyTile(tileX, tileY, 2, 2)
+				.drawBounds(false)
 				.opacity(1);
 		},
 
 		/**
-		 * Highlights the building children
+		 * Highlights the building children since the skyscraper
+		 * entity itself does not actually have a texture to highlight
+		 * but it's child entities do (such as the floors and crane).
 		 * @param bool
 		 */
 		highlight: function (bool) {
@@ -102,7 +118,7 @@ var ClientObjects = {
 		},
 
 		/**
-		 * Gets / sets the building base type (se, sw, ne, nw)
+		 * Gets / sets the building base type (se, sw, ne, nw).
 		 * @param val
 		 */
 		base: function (val) {
@@ -110,7 +126,7 @@ var ClientObjects = {
 		},
 
 		/**
-		 * Directly assign the number of floors the building shoudl have.
+		 * Directly assign the number of floors the building should have.
 		 * @param val
 		 * @return {*}
 		 */
@@ -231,7 +247,7 @@ var ClientObjects = {
 		},
 
 		/**
-		 * Set the type of crane the building should have (se, sw, ne, nw)
+		 * Set the type of crane the building should have (se, sw, ne, nw).
 		 * @param val
 		 * @return {*}
 		 */
