@@ -75,6 +75,7 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 		obj.widthByTile = this._objectTileWidth;
 		obj.heightByTile = this._objectTileHeight;
 		obj.occupyTile = this._objectOccupyTile;
+		obj.unOccupyTile = this._objectUnOccupyTile;
 		obj.overTiles = this._objectOverTiles;
 
 		this._super(obj);
@@ -146,6 +147,8 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 	 * overTiles() and will add the object to each tile the object is "over".
 	 * @param {Number=} x
 	 * @param {Number=} y
+	 * @param {Number=} width
+	 * @param {Number=} height
 	 * @private
 	 */
 	_objectOccupyTile: function (x, y, width, height) {
@@ -158,6 +161,36 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 			for (xi = 0; xi < width; xi++) {
 				for (yi = 0; yi < height; yi++) {
 					this._parent.map.tileData(x + xi, y + yi, this);
+				}
+			}
+		} else {
+			// Occupy tiles based upon the response from overTiles();
+			var tileArr = this.overTiles();
+		}
+		return this;
+	},
+
+	/**
+	 * Attached to objects that are mounted to the tile sheet. Removes the
+	 * object from the tile map at the passed tile co-ordinates. If no tile
+	 * co-ordinates are passed, will use the array returned from calling
+	 * overTiles() and will remove the object from each tile the object is "over".
+	 * @param {Number=} x
+	 * @param {Number=} y
+	 * @param {Number=} width
+	 * @param {Number=} height
+	 * @private
+	 */
+	_objectUnOccupyTile: function (x, y, width, height) {
+		var xi, yi;
+
+		if (width === undefined) { width = 1; }
+		if (height === undefined) { height = 1; }
+
+		if (x !== undefined && y !== undefined) {
+			for (xi = 0; xi < width; xi++) {
+				for (yi = 0; yi < height; yi++) {
+					this._parent.map.pull(x + xi, y + yi, this);
 				}
 			}
 		} else {
