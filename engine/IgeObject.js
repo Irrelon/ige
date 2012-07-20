@@ -8,7 +8,6 @@ var IgeObject = IgeEventingClass.extend({
 		this._layer = 0;
 		this._depth = 0;
 		this._dirty = true;
-		this._data = {};
 
 		// Reference the main input system
 		if (!this.input && ige && ige.input) {
@@ -63,25 +62,6 @@ var IgeObject = IgeEventingClass.extend({
 	 * @private
 	 */
 	_childUnMounted: function (obj) {},
-
-	/**
-	 * Gets / sets a key / value pair in the object's data object. Useful for
-	 * storing arbitrary game data in the object.
-	 * @param {String} key The key under which the data resides.
-	 * @param {*=} value The data to set under the specified key.
-	 * @return {*}
-	 */
-	data: function (key, value) {
-		if (key !== undefined) {
-			if (value !== undefined) {
-				this._data[key] = value;
-
-				return this;
-			}
-
-			return this._data[key];
-		}
-	},
 
 	/**
 	 * Gets / sets the arbitrary group name that the object belogs to.
@@ -231,6 +211,15 @@ var IgeObject = IgeEventingClass.extend({
 		// TODO: Write this function!
 	clone: function () {
 		// Loop all children and clone them, then return cloned version of ourselves
+	},
+
+	breakOnTick: function (val) {
+		if (typeof(val) !== 'undefined') {
+			this._breakOnTick = val;
+			return this;
+		}
+
+		return this._breakOnTick;
 	},
 
 	/**
@@ -407,6 +396,11 @@ var IgeObject = IgeEventingClass.extend({
 	 * Processes the actions required each render frame.
 	 */
 	tick: function (ctx, scene) {
+		if (this._breakOnTick) {
+			debugger;
+			this._breakOnTick = false;
+		}
+
 		// Depth sort all child objects
 		this.depthSortChildren();
 
