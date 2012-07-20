@@ -78,6 +78,20 @@ var IgeSocketIoServer = {
 		return this._acceptConnections;
 	},
 
+	send: function (commandName, data, client) {
+		var commandIndex = this._networkCommandsLookup[commandName];
+
+		if (commandIndex !== undefined) {
+			if (client) {
+				client.json.send([commandIndex, data]);
+			} else {
+				this._io.sockets.json.send([commandIndex, data]);
+			}
+		} else {
+			this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
+		}
+	},
+
 	/**
 	 * Called when the server receives a client connection request. Sets
 	 * up event listeners on the socket and sends the client the initial
@@ -118,7 +132,11 @@ var IgeSocketIoServer = {
 	 * @private
 	 */
 	_onClientMessage: function (data, socket) {
-
+		var commandName = this._networkCommandsIndex[data[0]];
+		if (this._networkCommands[commandName]) {
+			this._networkCommands[commandName](data[1], socket);
+		}
+		this.emit(commandName, data[1], socket);
 	},
 
 	/**

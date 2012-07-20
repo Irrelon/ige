@@ -90,6 +90,16 @@ var IgeSocketIoClient = {
 		}
 	},
 
+	send: function (commandName, data) {
+		var commandIndex = this._networkCommandsLookup[commandName];
+
+		if (commandIndex !== undefined) {
+			this._io.json.send([commandIndex, data]);
+		} else {
+			this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
+		}
+	},
+
 	/**
 	 * Called when the network connects to the server.
 	 * @private
@@ -105,7 +115,11 @@ var IgeSocketIoClient = {
 	 * @private
 	 */
 	_onMessageFromServer: function (data) {
-
+		var commandName = this._networkCommandsIndex[data[0]];
+		if (this._networkCommands[commandName]) {
+			this._networkCommands[commandName](data[1]);
+		}
+		this.emit(commandName, data[1]);
 	},
 
 	/**
