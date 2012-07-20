@@ -59,11 +59,9 @@ var IgeUiInteractionExtension = {
 	},
 
 	_handleMouseUp: function () {
-		// Check if the mouse up was preceded by a mouse-down
-		if (this._mouseStateDown) {
-			this._mouseStateDown = false;
-			if (this._mouseUp) { this._mouseUp.call(this); }
-		}
+		// Reset the mouse-down flag
+		this._mouseStateDown = false;
+		if (this._mouseUp) { this._mouseUp.call(this); }
 	},
 
 	mouseDown: function (callback) {
