@@ -4,6 +4,10 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 	init: function () {
 		// Setup the input objects to hold the current input state
+		this.dblClick = false; // TODO: Add double-click event handling
+		this.mouseDown = false;
+		this.mouseUp = false;
+
 		this.mouse = {
 			// Virtual codes
 			x: -258,
@@ -175,6 +179,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 			this._state[this.mouse.button3] = true;
 		}
 
+		this.mouseDown = true;
+
 		this.emit('mouseDown', event);
 	},
 
@@ -190,6 +196,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		if (event.button === 3) {
 			this._state[this.mouse.button3] = false;
 		}
+
+		this.mouseUp = true;
 
 		this.emit('mouseUp', event);
 	},
@@ -244,6 +252,24 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 */
 	val: function (actionName) {
 		return this._state[this._controlMap[actionName]];
+	},
+
+	/**
+	 * Returns the current state of the passed state id.
+	 * @param stateId
+	 * @return {*}
+	 */
+	state: function (stateId) {
+		return this._state[stateId];
+	},
+
+	/**
+	 * Called by the engine after ALL other tick methods have processed.
+	 * Allows us to reset any flags etc.
+	 */
+	tick: function () {
+		this.mouseDown = false;
+		this.mouseUp = false;
 	}
 });
 
