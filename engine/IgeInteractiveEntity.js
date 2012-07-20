@@ -20,6 +20,16 @@ var IgeInteractiveEntity = IgeEntity.extend([
 		if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
 			// Point is inside the aabb
 			this._handleMouseIn();
+
+			if (this.input.mouseDown) {
+				// The mouse is down
+				this._handleMouseDown();
+			}
+
+			if (this.input.mouseUp) {
+				// The mouse went up
+				this._handleMouseUp();
+			}
 		} else {
 			this._handleMouseOut();
 		}
