@@ -510,6 +510,29 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
+	 * Transforms a point by the entity's parent world matrix and
+	 * it's own local matrix transforming the point to this entity's
+	 * world space.
+	 * @param igePoint
+	 * @private
+	 */
+	_transformPoint: function (igePoint) {
+		if (this._parent) {
+			var tempMat = new IgeMatrix2d();
+			// Copy the parent world matrix
+			tempMat.copy(this._parent._worldMatrix);
+			// Apply any local transforms
+			tempMat.multiply(this._localMatrix);
+			// Now transform the point
+			tempMat.transformCoord(igePoint);
+		} else {
+			this._localMatrix.transformCoord(igePoint);
+		}
+
+		return igePoint;
+	},
+
+	/**
 	 * Processes the actions required each render frame.
 	 * @param {HTMLCanvasContext} ctx
 	 * @param {Boolean} dontTransform If set to true, the tick method will
