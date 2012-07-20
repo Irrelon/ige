@@ -22,8 +22,8 @@ IgeMatrix2d.prototype = {
 			y = point.y,
 			tm = this.matrix;
 
-		point.x = x*tm[0] + y*tm[1] + tm[2];
-		point.y = x*tm[3] + y*tm[4] + tm[5];
+		point.x = x * tm[0] + y * tm[1] + tm[2];
+		point.y = x * tm[3] + y * tm[4] + tm[5];
 
 		return point;
 	},
