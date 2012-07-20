@@ -213,9 +213,12 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 	},
 
 	tick: function (ctx) {
-		// Calculate the current tile the mouse is over
-		var mx = ige._mousePos.x,
-			my = ige._mousePos.y,
+		// Calculate the current tile the mouse is over based on
+		// the parent world matrix and this tile map local matrix
+		// this doesn't take into account rotation or scale yet
+		// TODO: Make sure we take into account rotation and scale by doing a proper transform!
+		var mx = ige._mousePos.x - this._parent._worldMatrix.matrix[2] - this._localMatrix.matrix[2],
+			my = ige._mousePos.y - this._parent._worldMatrix.matrix[5] - this._localMatrix.matrix[5],
 			dx, dy;
 
 		if (this._mode === 0) {
