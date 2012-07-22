@@ -262,6 +262,19 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Loops through all child objects of this object and destroys them
+	 * by calling each child's destroy() method.
+	 */
+	destroyChildren: function () {
+		var arr = this._children,
+			arrCount = arr.length;
+
+		while (arrCount--) {
+			arr[arrCount].destroy();
+		}
+	},
+
+	/**
 	 * Gets / sets the dirty flag for this object. If you specify a val parameter
 	 * the parent of this object will also have it's dirty method called with the
 	 * same parameter. This means that dirty flags bubble down the child / parent
