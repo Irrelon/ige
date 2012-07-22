@@ -5,6 +5,7 @@ var IgeScene2d = IgeEntity.extend({
 		this._super();
 
 		this._shouldRender = true;
+		this._autoSize = true;
 
 		// Set the geometry of the scene to the main canvas
 		// width / height - used when positioning UI elements
@@ -42,11 +43,13 @@ var IgeScene2d = IgeEntity.extend({
 	 * @private
 	 */
 	_resizeEvent: function (event) {
-		// Set width / height of scene to match main canvas
-		this.geometry.x = ige.geometry.x;
-		this.geometry.x2 = (this.geometry.x / 2);
-		this.geometry.y = ige.geometry.y;
-		this.geometry.y2 = (this.geometry.y / 2);
+		// Set width / height of scene to match main ige (SCENES ARE ALWAYS THE FULL IGE SIZE!!)
+		if (this._autoSize) {
+			this.geometry.x = ige.geometry.x;
+			this.geometry.x2 = this.geometry.x / 2;
+			this.geometry.y = ige.geometry.y;
+			this.geometry.y2 = this.geometry.y / 2;
+		}
 
 		// Resize any children
 		var arr = this._children,
