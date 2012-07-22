@@ -12,21 +12,21 @@ var IgeInteractiveEntity = IgeEntity.extend([
 		// Check if the current mouse position is inside this aabb
 		if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
 			// Point is inside the aabb
-			if (this.input.mouseMove) {
+			if (ige.input.mouseMove) {
 				this._handleMouseIn();
 			}
 
-			if (this.input.mouseDown) {
+			if (ige.input.mouseDown) {
 				// The mouse is down
 				this._handleMouseDown();
 			}
 
-			if (this.input.mouseUp) {
+			if (ige.input.mouseUp) {
 				// The mouse went up
 				this._handleMouseUp();
 			}
 		} else {
-			if (this.input.mouseMove) {
+			if (ige.input.mouseMove) {
 				this._handleMouseOut();
 			}
 		}
