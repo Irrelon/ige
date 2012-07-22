@@ -4,10 +4,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 	init: function () {
 		// Setup the input objects to hold the current input state
-		this.dblClick = false; // TODO: Add double-click event handling
-		this.mouseMove = false;
-		this.mouseDown = false;
-		this.mouseUp = false;
+		this._eventQueue = [];
+		this.tick();
 
 		this.mouse = {
 			// Virtual codes
@@ -272,6 +270,22 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * Allows us to reset any flags etc.
 	 */
 	tick: function () {
+		// If we have an event queue, process it
+		var arr = this._eventQueue,
+			arrCount = arr.length,
+			returnVal;
+
+		while (arrCount--) {
+			returnVal = arr[arrCount][1].apply(arr[arrCount][0]);
+			if (returnVal === 1) {
+				// The last event queue method returned true so cancel all further
+				// event processing (the last event took control of the input)
+				break;
+			}
+		}
+
+		this._eventQueue = [];
+		this.dblClick = false; // TODO: Add double-click event handling
 		this.mouseMove = false;
 		this.mouseDown = false;
 		this.mouseUp = false;
