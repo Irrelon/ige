@@ -284,7 +284,7 @@ var IgeFontSheet = IgeTexture.extend({
 				// Handle text alignment x
 				switch (entity._textAlignX) {
 					case 0: // Align left
-						renderX = -totalWidth / 2;//0;
+						renderX = -entity.geometry.x2;//0;
 					break;
 
 					case 1: // Align center
@@ -292,7 +292,7 @@ var IgeFontSheet = IgeTexture.extend({
 					break;
 
 					case 2: // Align right
-						renderX = totalWidth / 2-lineWidth[lineIndex];
+						renderX = entity.geometry.x2 -lineWidth[lineIndex]; //totalWidth / 2
 					break;
 				}
 
