@@ -21,6 +21,9 @@ var IgeEngine = IgeEntity.extend({
 		// Call super-class method
 		this._super();
 
+		// Create storage
+		this.Class = {};
+
 		// Set the initial id as the current time in milliseconds. This ensures that under successive
 		// restarts of the engine, new ids will still always be created compared to earlier runs -
 		// which is important when storing persistent data with ids etc
@@ -57,6 +60,14 @@ var IgeEngine = IgeEntity.extend({
 
 		// Start a timer to record every second of execution
 		setInterval(this._secondTick, 1000);
+	},
+
+	createClass: function (id, obj) {
+		this.Class[id] = obj;
+	},
+
+	GetClass: function (id) {
+		return this.Class[id];
 	},
 
 	/**
@@ -508,7 +519,8 @@ var IgeEngine = IgeEntity.extend({
 				// Loop our children
 				while (arrCount--) {
 					if (arr[arrCount]._scene._shouldRender) {
-						this.scenegraph(arr[arrCount]._scene, currentDepth);
+						console.log(depthSpace + '    ' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ')');
+						this.scenegraph(arr[arrCount]._scene, currentDepth + 1);
 					}
 				}
 			}
