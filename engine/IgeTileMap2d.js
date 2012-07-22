@@ -177,7 +177,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		return this._mouseOver;
 	},
 
-	tick: function (ctx) {
+	calculateMousePosition: function () {
 		// Calculate the current tile the mouse is over based on
 		// the parent world matrix and this tile map local matrix
 		// this doesn't take into account rotation or scale yet
@@ -213,17 +213,21 @@ var IgeTileMap2d = IgeEntity.extend({
 				Math.floor(this._mouseTilePos.y / this._tileHeight) + 1
 			);
 		}
+	},
+
+	tick: function (ctx) {
+		this.calculateMousePosition();
 
 		// Now check if we have any mouse events to call
-		if (this.input.mouseMove && this._mouseOver) {
+		if (ige.input.mouseMove && this._mouseOver) {
 			this._mouseOver(this._mouseTilePos.x, this._mouseTilePos.y);
 		}
 
-		if (this.input.mouseDown && this._mouseDown) {
+		if (ige.input.mouseDown && this._mouseDown) {
 			this._mouseDown(this._mouseTilePos.x, this._mouseTilePos.y);
 		}
 
-		if (this.input.mouseUp && this._mouseUp) {
+		if (ige.input.mouseUp && this._mouseUp) {
 			this._mouseUp(this._mouseTilePos.x, this._mouseTilePos.y);
 		}
 
