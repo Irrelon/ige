@@ -158,11 +158,11 @@ var IgeViewport = IgeUiEntity.extend([
 	 * @private
 	 */
 	_resizeEvent: function (event) {
-		if (this._autoSize) {
-			this.geometry.x = ige.geometry.x;
-			this.geometry.x2 = (this.geometry.x / 2);
-			this.geometry.y = ige.geometry.y;
-			this.geometry.y2 = (this.geometry.y / 2);
+		if (this._autoSize && this._parent) {
+			this.geometry.x = this._parent.geometry.x;
+			this.geometry.x2 = this.geometry.x / 2;
+			this.geometry.y = this._parent.geometry.y;
+			this.geometry.y2 = this.geometry.y / 2;
 		}
 
 		this._updateUiPosition();
