@@ -107,7 +107,7 @@ var IgeFontSheet = IgeTexture.extend({
 	},
 
 	render: function (ctx, entity, tickDelta) {
-		if (entity._text) {
+		if (entity._text && this._loaded) {
 			var _ctx = ctx,
 				cacheIndex,
 				text = entity._text,
