@@ -35,7 +35,7 @@ var IgeObject = IgeEventingClass.extend({
 				arrCount = arr.length;
 
 			while (arrCount--) {
-				arr[arrCount].method(ctx, this);
+				arr[arrCount].method.apply(this, ctx);
 			}
 
 			this._behaviourFA = ige._frameAlternator;
@@ -78,7 +78,7 @@ var IgeObject = IgeEventingClass.extend({
 	 * @param {Function} behaviour
 	 * @return {*} Returns this on success or false on failure.
 	 */
-	addBehavior: function (id, behaviour) {
+	addBehaviour: function (id, behaviour) {
 		if (behaviour !== undefined) {
 			this._behaviours.push({
 				id:id,
@@ -96,7 +96,7 @@ var IgeObject = IgeEventingClass.extend({
 	 * @param {String} id
 	 * @return {*} Returns this on success or false on failure.
 	 */
-	removeBehavior: function (id) {
+	removeBehaviour: function (id) {
 		if (id !== undefined) {
 			// Find the behaviour
 			var arr = this._behaviours,
@@ -143,6 +143,22 @@ var IgeObject = IgeEventingClass.extend({
 		}
 
 		return this._drawBoundsData;
+	},
+
+	/**
+	 * Gets / sets the boolean flag determining if this object should have
+	 * it's mouse position data drawn when the bounds for all objects are
+	 * being drawn.
+	 * @param val
+	 * @return {*}
+	 */
+	drawMouse: function (val) {
+		if (val !== undefined) {
+			this._drawMouse = val;
+			return this;
+		}
+
+		return this._drawMouse;
 	},
 
 	/**
