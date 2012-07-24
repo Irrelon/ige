@@ -32,9 +32,6 @@ var Client = IgeClass.extend({
 					// the client has not yet started the network and received
 					// the list of accepted network commands from the server.
 					ige.addComponent(IgeChatComponent);
-
-					// Send the server a test message
-					//ige.chat.sendToRoom('test', {moo: 'Some test data!'});
 				});
 			}
 		});
