@@ -31,7 +31,7 @@ var IgeSocketIoClient = {
 		// Define message listener
 		this._io.on('message', function (data) {
 			if (!self._initDone) {
-				var i;
+				var i, commandCount = 0;
 
 				// Check if the data is an init packet
 				if (data.cmd === 'init') {
@@ -45,8 +45,11 @@ var IgeSocketIoClient = {
 					for (i in self._networkCommandsLookup) {
 						if (self._networkCommandsLookup.hasOwnProperty(i)) {
 							self._networkCommandsIndex[self._networkCommandsLookup[i]] = i;
+							commandCount++;
 						}
 					}
+
+					self.log('Received network command list with count: ' + commandCount);
 
 					// Now fire the start() callback
 					if (typeof(self._startCallback) === 'function') {
