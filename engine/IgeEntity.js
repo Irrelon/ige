@@ -24,6 +24,28 @@ var IgeEntity = IgeObject.extend([
         this._worldMatrix = new IgeMatrix2d(this);
 	},
 
+	mousePos: function () {
+		// Get the parent mouse position
+		var parentMousePos;
+
+		if (this._parent) {
+			if (this._parent.mousePos) {
+				parentMousePos = this._parent.mousePos();
+
+				// Transform the parent mouse position to the current local position
+				//return this._localMatrix.transformCoord({x: parentMousePos.x, y: parentMousePos.y});
+				//return new IgePoint(parentMousePos.x - this._localMatrix.matrix[2], parentMousePos.y - this._localMatrix.matrix[5], 0);
+				return new IgePoint(parentMousePos.x, parentMousePos.y, 0);
+			} else {
+				// This path should not ever be reached! Every parent object
+				// should have a mousePos() method or inherit one!
+				debugger;
+			}
+		} else {
+			return {x: 0, y: 0};
+		}
+	},
+
 	/**
 	 * Gets / sets the positioning mode of the entity.
 	 * @param val 0 = 2d, 1 = isometric
