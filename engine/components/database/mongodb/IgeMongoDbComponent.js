@@ -18,6 +18,8 @@ var IgeMongoDbComponent = IgeEventingClass.extend({
 
 		// Pass the options to the settings method
 		this.settings(options);
+
+		this.log('Database component initiated!');
 	}
 });
 
