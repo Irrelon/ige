@@ -161,29 +161,29 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 
 	mouseDown: function (val) {
 		if (val !== undefined) {
-			this._mouseDown = val;
+			this._tileMapMouseDown = val;
 			return this;
 		}
 
-		return this._mouseDown;
+		return this._tileMapMouseDown;
 	},
 
 	mouseUp: function (val) {
 		if (val !== undefined) {
-			this._mouseUp = val;
+			this._tileMapMouseUp = val;
 			return this;
 		}
 
-		return this._mouseUp;
+		return this._tileMapMouseUp;
 	},
 
 	mouseOver: function (val) {
 		if (val !== undefined) {
-			this._mouseOver = val;
+			this._tileMapMouseOver = val;
 			return this;
 		}
 
-		return this._mouseOver;
+		return this._tileMapMouseOver;
 	},
 
 	calculateMousePosition: function () {
@@ -191,9 +191,9 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 		// the parent world matrix and this tile map local matrix
 		// this doesn't take into account rotation or scale yet
 		// TODO: Make sure we take into account rotation and scale by doing a proper transform!
-		var mousePos = this.mousePos();
-		var mx = mousePos.x,// - this._parent._worldMatrix.matrix[2] - this._localMatrix.matrix[2],
-			my = mousePos.y,// - this._parent._worldMatrix.matrix[5] - this._localMatrix.matrix[5],
+		var mousePos = this.mousePos(),
+			mx = mousePos.x,
+			my = mousePos.y,
 			dx, dy;
 
 		if (this._mode === 0) {
@@ -229,16 +229,16 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 		this.calculateMousePosition();
 
 		// Now check if we have any mouse events to call
-		if (ige.input.mouseMove && this._mouseOver) {
-			this._mouseOver(this._mouseTilePos.x, this._mouseTilePos.y);
+		if (ige.input.mouseMove && this._tileMapMouseOver) {
+			this._tileMapMouseOver(this._mouseTilePos.x, this._mouseTilePos.y);
 		}
 
-		if (ige.input.mouseDown && this._mouseDown) {
-			this._mouseDown(this._mouseTilePos.x, this._mouseTilePos.y);
+		if (ige.input.mouseDown && this._tileMapMouseDown) {
+			this._tileMapMouseDown(this._mouseTilePos.x, this._mouseTilePos.y);
 		}
 
-		if (ige.input.mouseUp && this._mouseUp) {
-			this._mouseUp(this._mouseTilePos.x, this._mouseTilePos.y);
+		if (ige.input.mouseUp && this._tileMapMouseUp) {
+			this._tileMapMouseUp(this._mouseTilePos.x, this._mouseTilePos.y);
 		}
 
 		// Transform the context ready for drawing
