@@ -129,9 +129,9 @@ var IgeEventingClass = IgeClass.extend({
 						// Call the callback
 						var retVal = tempEvt.call.apply(tempEvt.context || this, finalArgs);
 
-						// If the retVal == 1 then store the cancel flag and return to the emitting method
+						// If the retVal === true then store the cancel flag and return to the emitting method
 						// TO-DO - Make this a constant that can be named
-						if (retVal == 1) {
+						if (retVal === true) {
 							// The receiver method asked us to send a cancel request back to the emitter
 							cancelFlag = true;
 						}
