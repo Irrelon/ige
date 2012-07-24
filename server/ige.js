@@ -44,6 +44,9 @@ IgeEngine = require('../engine/IgeEngine');
 IgeDummyContext = require('../engine/components/network/IgeDummyContext');
 IgeSocketIoServer = require('../engine/components/network/IgeSocketIoServer');
 IgeSocketIoComponent = require('../engine/components/network/IgeSocketIoComponent');
+// Chat
+IgeChatServer = require('../engine/components/chat/IgeChatServer');
+IgeChatComponent = require('../engine/components/chat/IgeChatComponent');
 // Database
 IgeMongoDb = require('../engine/components/database/mongodb/IgeMongoDb');
 IgeMongoDbComponent = require('../engine/components/database/mongodb/IgeMongoDbComponent');
