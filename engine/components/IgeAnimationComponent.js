@@ -7,16 +7,16 @@ var IgeAnimationComponent = IgeClass.extend({
 		this._anims = {};
 
 		// Add the animation behaviour to the entity
-		entity.addBehavior('tween', this._behaviour);
+		entity.addBehaviour('tween', this._behaviour);
 	},
 
 	/**
 	 * The behaviour method executed each tick.
-	 * @param entity
+	 * @param ctx
 	 * @private
 	 */
-	_behaviour: function (ctx, entity) {
-		entity.animation.tick(ctx);
+	_behaviour: function (ctx) {
+		this.animation.tick(ctx);
 	},
 
 	define: function (id, frames, fps, loop) {
