@@ -1,4 +1,4 @@
-var IgeTileMap2d = IgeEntity.extend({
+var IgeTileMap2d = IgeInteractiveEntity.extend({
 	init: function (tileWidth, tileHeight) {
 		this._super();
 		var self = this;
@@ -150,6 +150,15 @@ var IgeTileMap2d = IgeEntity.extend({
 
 	},
 
+	_resizeEvent: function (event) {
+		this.geometry.x = this._parent.geometry.x;
+		this.geometry.x2 = this.geometry.x / 2;
+		this.geometry.y = this._parent.geometry.y;
+		this.geometry.y2 = this.geometry.y / 2;
+
+		this._super(event);
+	},
+
 	mouseDown: function (val) {
 		if (val !== undefined) {
 			this._mouseDown = val;
@@ -182,8 +191,9 @@ var IgeTileMap2d = IgeEntity.extend({
 		// the parent world matrix and this tile map local matrix
 		// this doesn't take into account rotation or scale yet
 		// TODO: Make sure we take into account rotation and scale by doing a proper transform!
-		var mx = ige._mousePos.x - this._parent._worldMatrix.matrix[2] - this._localMatrix.matrix[2],
-			my = ige._mousePos.y - this._parent._worldMatrix.matrix[5] - this._localMatrix.matrix[5],
+		var mousePos = this.mousePos();
+		var mx = mousePos.x,// - this._parent._worldMatrix.matrix[2] - this._localMatrix.matrix[2],
+			my = mousePos.y,// - this._parent._worldMatrix.matrix[5] - this._localMatrix.matrix[5],
 			dx, dy;
 
 		if (this._mode === 0) {
