@@ -6,6 +6,8 @@ var IgeViewport = IgeUiEntity.extend([
 	init: function (options) {
 		this._super();
 
+		this._mousePos = {x: 0, y: 0};
+
 		// Set default options if not specified
 		if (options === undefined) {
 			options = {
@@ -52,6 +54,10 @@ var IgeViewport = IgeUiEntity.extend([
 		return this._scene;
 	},
 
+	mousePos: function () {
+		return this._mousePos;// || {x: 0, y: 0};
+	},
+
 	/**
 	 * Processes the actions required each render frame.
 	 */
@@ -62,6 +68,8 @@ var IgeViewport = IgeUiEntity.extend([
 			// transform effects
 			ige._currentCamera = this.camera;
 			ige._currentViewport = this;
+
+			this._scene._parent = this;
 
 			// Render our scene data
 			//ctx.globalAlpha = ctx.globalAlpha * this._parent._opacity * this._opacity;
@@ -100,12 +108,16 @@ var IgeViewport = IgeUiEntity.extend([
 			this._scene.tick(ctx, scene);
 
 			if (this._drawBounds && ctx === ige._ctx) {
-				ctx.fillStyle = '#fc00ff';
-				ctx.fillRect(ige._mousePos.x - 5, ige._mousePos.y - 5, 10, 10);
-
 				// Traverse the scenegraph and draw axis-aligned
 				// bounding boxes for every object
 				this.drawAABBs(ctx, this._scene, 0);
+			}
+
+			if (this._drawMouse && ctx === ige._ctx && this._mousePos) {
+				ctx.fillStyle = '#fc00ff';
+				ctx.fillRect(this._mousePos.x - 5, this._mousePos.y - 5, 10, 10);
+				var textMeasurement = ctx.measureText('Viewport ' + this.id() + ' :: ' +this._mousePos.x + ', ' + this._mousePos.y);
+				ctx.fillText('Viewport ' + this.id() + ' :: ' + this._mousePos.x + ', ' + this._mousePos.y, this._mousePos.x - textMeasurement.width / 2, this._mousePos.y - 15);
 			}
 		}
 	},
