@@ -1,5 +1,6 @@
-var IgeViewport = IgeUiEntity.extend([
-	{extension: IgeUiPositionExtension}
+var IgeViewport = IgeEntity.extend([
+	{extension: IgeUiStyleExtension, overwrite: true},
+	{extension: IgeUiPositionExtension, overwrite: true}
 ], {
 	classId: 'IgeViewport',
 
@@ -8,6 +9,8 @@ var IgeViewport = IgeUiEntity.extend([
 
 		this._mousePos = {x: 0, y: 0};
 		this._overflow = '';
+		this._uiX = 0;
+		this._uiY = 0;
 
 		// Set default options if not specified
 		if (options === undefined) {
@@ -24,6 +27,7 @@ var IgeViewport = IgeUiEntity.extend([
 		this.geometry = new IgePoint(options.width || 250, options.height || 150, 0);
 		this.camera = new IgeCamera(this);
 		this.camera._entity = this;
+		//this._drawMouse = true;
 	},
 
 	/**
