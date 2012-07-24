@@ -14,6 +14,7 @@ var Client = IgeClass.extend({
 		// Implement our game methods
 		this.implement(ClientNetworkEvents);
 
+		// Create the HTML canvas
 		ige.createFrontBuffer(true);
 
 		// Ask the engine to start

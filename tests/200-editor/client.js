@@ -19,6 +19,7 @@ var Client = IgeClass.extend({
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
 			this.log('Creating front buffer...');
+			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 
 			// Ask the engine to start
