@@ -79,7 +79,7 @@ if(!Array.prototype.indexOf){
 }
 
 /**
- * A cross-browser requestAnimFrame method.
+ * A cross-browser requestAnimationFrame method.
  */
 if (typeof(window) !== 'undefined') {
 	window.requestAnimFrame = (function(){
