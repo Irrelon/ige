@@ -7,6 +7,7 @@ var IgeViewport = IgeUiEntity.extend([
 		this._super();
 
 		this._mousePos = {x: 0, y: 0};
+		this._overflow = '';
 
 		// Set default options if not specified
 		if (options === undefined) {
