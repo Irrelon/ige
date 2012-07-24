@@ -9,16 +9,16 @@ var IgeVelocityComponent = IgeClass.extend({
 		this._friction = new IgePoint(1, 1, 1);
 
 		// Add the velocity behaviour to the entity
-		entity.addBehavior('velocity', this._behaviour);
+		entity.addBehaviour('velocity', this._behaviour);
 	},
 
 	/**
 	 * The behaviour method executed each tick.
-	 * @param entity
+	 * @param ctx
 	 * @private
 	 */
-	_behaviour: function (ctx, entity) {
-		entity.velocity.tick(ctx);
+	_behaviour: function (ctx) {
+		this.velocity.tick(ctx);
 	},
 
 	byAngleAndPower: function (radians, power, relative) {
