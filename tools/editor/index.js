@@ -66,7 +66,7 @@ var IGEEditor = IgeClass.extend({
 			refresh: function () {
 				this.destroyChildren();
 
-				var arr = ige.Texture,
+				var arr = ige.TextureStore,
 					arrCount = arr.length,
 					i, mover, mout, mup, sel, desel;
 
@@ -120,8 +120,8 @@ var IGEEditor = IgeClass.extend({
 		});
 
 		// Register classes with the main engine
-		ige.createClass('ToolBarButton', this._classes.ToolBarButton);
-		ige.createClass('TexturePanel', this._classes.TexturePanel);
+		ige.defineClass('ToolBarButton', this._classes.ToolBarButton);
+		ige.defineClass('TexturePanel', this._classes.TexturePanel);
 	},
 
 	_loadTextures: function () {
@@ -223,7 +223,7 @@ var IGEEditor = IgeClass.extend({
 
 		// CHILD OBJECTS ------------------------------------
 		// TOOLBAR
-		new ige.Class.ToolBarButton()
+		ige.newClassInstance('ToolBarButton')
 			.id('create')
 			.top(0)
 			.left(0)
@@ -232,7 +232,7 @@ var IGEEditor = IgeClass.extend({
 			.texture(this._textures.uiButtonCreate)
 			.mount(this.toolBar);
 
-		new ige.Class.ToolBarButton()
+		ige.newClassInstance('ToolBarButton')
 			.id('select')
 			.top(0)
 			.left(32)
@@ -241,7 +241,7 @@ var IGEEditor = IgeClass.extend({
 			.texture(this._textures.uiButtonSelect)
 			.mount(this.toolBar);
 
-		new ige.Class.ToolBarButton()
+		ige.newClassInstance('ToolBarButton')
 			.id('zoomOut')
 			.top(32)
 			.left(0)
@@ -250,7 +250,7 @@ var IGEEditor = IgeClass.extend({
 			.texture(this._textures.uiButtonZoomOut)
 			.mount(this.toolBar);
 
-		new ige.Class.ToolBarButton()
+		ige.newClassInstance('ToolBarButton')
 			.id('zoomIn')
 			.top(32)
 			.left(32)
@@ -259,7 +259,7 @@ var IGEEditor = IgeClass.extend({
 			.texture(this._textures.uiButtonZoomIn)
 			.mount(this.toolBar);
 
-		new ige.Class.ToolBarButton()
+		ige.newClassInstance('ToolBarButton')
 			.id('paint')
 			.top(64)
 			.left(0)
@@ -268,7 +268,7 @@ var IGEEditor = IgeClass.extend({
 			.texture(this._textures.uiButtonPaint)
 			.mount(this.toolBar);
 
-		new ige.Class.ToolBarButton()
+		ige.newClassInstance('ToolBarButton')
 			.id('paintRemove')
 			.top(64)
 			.left(32)

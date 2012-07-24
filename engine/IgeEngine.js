@@ -22,8 +22,8 @@ var IgeEngine = IgeEntity.extend({
 		this._super();
 
 		// Create storage
-		this.Class = {};
-		this.Texture = [];
+		this.ClassStore = {};
+		this.TextureStore = [];
 
 		// Set the initial id as the current time in milliseconds. This ensures that under successive
 		// restarts of the engine, new ids will still always be created compared to earlier runs -
@@ -35,6 +35,7 @@ var IgeEngine = IgeEntity.extend({
 		this.addComponent(IgeTweenComponent);
 
 		// Set some defaults
+		this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 		this._state = 0; // Currently stopped
 		this._texturesLoading = 0; // Holds a count of currently loading textures
 		this._dependencyQueue = []; // Holds an array of functions that must all return true for the engine to start
@@ -63,12 +64,61 @@ var IgeEngine = IgeEntity.extend({
 		setInterval(this._secondTick, 1000);
 	},
 
-	createClass: function (id, obj) {
-		this.Class[id] = obj;
+	/**
+	 * Sets the frame rate at which new engine ticks are fired.
+	 * Setting this rate will override the default requestAnimFrame()
+	 * method as defined in IgeBase.js and on the client-side, will
+	 * stop usage of any available requestAnimationFrame() method
+	 * and will use a setTimeout()-based version instead.
+	 * @param {Number} fpsRate
+	 */
+	setFps: function (fpsRate) {
+		if (fpsRate !== undefined) {
+			// Override the default requestAnimFrame handler and set
+			// our own method up so that we can control the frame rate
+			if (this.isServer) {
+				// Server-side implementation
+				requestAnimFrame = function(callback, element){
+					setTimeout(callback, 1000 / fpsRate);
+				};
+			} else {
+				// Client-side implementation
+				window.requestAnimFrame = function(callback, element){
+					setTimeout(callback, 1000 / fpsRate);
+				};
+			}
+		}
 	},
 
-	GetClass: function (id) {
-		return this.Class[id];
+	/**
+	 * Defines a class in the engine's class repository.
+	 * @param {String} id The unique class ID or name.
+	 * @param {Object} obj The class definition.
+	 */
+	defineClass: function (id, obj) {
+		ige.ClassStore[id] = obj;
+	},
+
+	/**
+	 * Retrieves a class by it's ID that was defined with
+	 * a call to defineClass().
+	 * @param {String} id The ID of the class to retrieve.
+	 * @return {Object} The class definition.
+	 */
+	getClass: function (id) {
+		return ige.ClassStore[id];
+	},
+
+	/**
+	 * Generates a new instance of a class defined with a call
+	 * to the defineClass() method. Passes the options
+	 * parameter to the new class during it's constructor call.
+	 * @param id
+	 * @param options
+	 * @return {*}
+	 */
+	newClassInstance: function (id, options) {
+		return new ige.ClassStore[id](options);
 	},
 
 	/**
@@ -126,8 +176,8 @@ var IgeEngine = IgeEntity.extend({
 	 * to load, it will also call the _allTexturesLoaded() method.
 	 */
 	textureLoadEnd: function (url, textureObj) {
-		// Add the texture to the Texture array
-		this.Texture.push(textureObj);
+		// Add the texture to the TextureStore array
+		this.TextureStore.push(textureObj);
 
 		// Decrement the overall loading number
 		this._texturesLoading--;
