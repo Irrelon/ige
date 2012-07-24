@@ -71,7 +71,7 @@ var IgeTexture = IgeEventingClass.extend({
 				self._loaded = true;
 				self.emit('loaded-init');
 				self.emit('loaded');
-				ige.textureLoadEnd(imageUrl);
+				ige.textureLoadEnd(imageUrl, self);
 			};
 
 			image.src = imageUrl;
@@ -91,7 +91,7 @@ var IgeTexture = IgeEventingClass.extend({
 					self._loaded = true;
 					self.emit('loaded-init');
 					self.emit('loaded');
-					ige.textureLoadEnd(imageUrl);
+					ige.textureLoadEnd(imageUrl, self);
 				} else {
 					console.log('Cannot execute imagemagick "identify". Is the image file valid and is imagemagick installed?', 'error', [__dirname + '/' + imageUrl, err]);
 				}
@@ -141,7 +141,7 @@ var IgeTexture = IgeEventingClass.extend({
 					this._loaded = true;
 					self.emit('loaded-init');
 					self.emit('loaded');
-					ige.textureLoadEnd(scriptUrl);
+					ige.textureLoadEnd(scriptUrl, self);
 				}),
 				dataType: 'script'
 			});
@@ -173,7 +173,7 @@ var IgeTexture = IgeEventingClass.extend({
 						this._loaded = true;
 						self.emit('loaded-init');
 						self.emit('loaded');
-						ige.textureLoadEnd(scriptUrl);
+						ige.textureLoadEnd(scriptUrl, self);
 					} else {
 						// The script did not define an image object!
 						this.log('Error reading asset render script data. The script does not contain an image variable!', 'error', [this.url, rs_sandboxContext]);
