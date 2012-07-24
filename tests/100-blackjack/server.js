@@ -18,16 +18,16 @@ var Server = IgeClass.extend({
 					.network.define('getMap', self._getMap)
 					.network.define('placeItem', self._placeItem)
 					.network.define('removeItem', self._removeItem)
-					.network.start(2000);
-
-				// Start the game engine
-				ige.start(function (success) {
-					// Check if the engine started successfully
-					if (success) {
-						// Accept incoming network connections
-						ige.network.acceptConnections(true);
-					}
-				});
+					.network.start(2000, function () {
+						// Start the game engine
+						ige.start(function (success) {
+							// Check if the engine started successfully
+							if (success) {
+								// Accept incoming network connections
+								ige.network.acceptConnections(true);
+							}
+						});
+					});
 			} else {
 				self.log('Cannot start server because we could not connect to the database server!', 'error');
 			}

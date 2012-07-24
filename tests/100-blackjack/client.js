@@ -13,8 +13,6 @@ var Client = IgeClass.extend({
 
 		// Implement our game methods
 		this.implement(ClientNetworkEvents);
-		this.implement(ClientItem);
-		this.implement(ClientObjects);
 
 		this.loadTextures();
 

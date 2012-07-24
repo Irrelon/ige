@@ -18,7 +18,8 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Create the scene
-					self.scene1 = new IgeScene2d();
+					self.scene1 = new IgeScene2d()
+						.translateTo(0, -360);
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
@@ -31,7 +32,8 @@ var Client = IgeClass.extend({
 					self.tileMap1 = new IgeTileMap2d()
 						.tileWidth(40)
 						.tileHeight(40)
-						.drawGrid(true)
+						.drawGrid(10)
+						.isometric(true)
 						.mount(self.scene1);
 
 					// Create an entity
