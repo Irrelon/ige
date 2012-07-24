@@ -21,6 +21,11 @@ var IgeUiEntity = IgeInteractiveEntity.extend([
 		this._borderBottomRightRadius = 0;
 		this._borderBottomLeftRadius = 0;
 		this._backgroundPosition = {x: 0, y: 0};
+		this._paddingLeft = 0;
+		this._paddingTop = 0;
+		this._paddingRight = 0;
+		this._paddingBottom = 0;
+		this._overflow = 'hidden';
 	},
 
 	_renderBackground: function (ctx) {
@@ -283,6 +288,24 @@ var IgeUiEntity = IgeInteractiveEntity.extend([
 
 		this._renderBackground(ctx);
 		this._renderBorder(ctx);
+
+
+
+		if (this._overflow === 'hidden') {
+			// Limit drawing of child entities to within the bounds
+			// of this one
+			var geom = this.geometry,
+				left = -(geom.x / 2) + this._paddingLeft | 0,
+				top = -(geom.y / 2) + (this._paddingTop) | 0,
+				width = geom.x + this._paddingRight,
+				height = geom.y + this._paddingBottom;
+
+			ctx.rect(left, top, width, height);
+			//ctx.stroke();
+			ctx.clip();
+		}
+
+		ctx.translate(this._paddingLeft, this._paddingTop);
 
 		this._super(ctx, true);
 	},
