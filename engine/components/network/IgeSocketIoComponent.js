@@ -24,6 +24,8 @@ var IgeSocketIoComponent = IgeEventingClass.extend({
 		if (!ige.isServer) {
 			this.implement(IgeSocketIoClient);
 		}
+
+		this.log('Network component initiated!');
 	}
 });
 
