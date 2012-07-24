@@ -81,7 +81,7 @@ var IgeSocketIoClient = {
 			if (this._networkCommandsLookup[commandName] !== undefined) {
 				this._networkCommands[commandName] = callback;
 			} else {
-				this.log('Cannot define network command because it does not exist on the server. Please edit your server code and define the network command there before trying to define it on the client!', 'error');
+				this.log('Cannot define network command "' + commandName + '" because it does not exist on the server. Please edit your server code and define the network command there before trying to define it on the client!', 'error');
 			}
 
 			return this._entity;
