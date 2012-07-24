@@ -37,12 +37,12 @@ var ServerNetworkEvents = {
 			username: socket.store.ige.username
 		};
 
-		ige.database.findAll('buildings', searchData, function (err, results) {
+		/*ige.database.findAll('buildings', searchData, function (err, results) {
 			console.log(results);
 			if (results && results.length) {
 				ige.network.send('getMap', results);
 			}
-		});
+		});*/
 	},
 
 	/**
@@ -58,7 +58,7 @@ var ServerNetworkEvents = {
 		data.username = socket.store.ige.username;
 
 		ige.server.log('Placing item ' + data.classId + ' at ' + data.tileX + ', ' + data.tileY);
-		ige.database.insert('buildings', [data]);
+		//ige.database.insert('buildings', [data]);
 	},
 
 	/**
@@ -77,7 +77,7 @@ var ServerNetworkEvents = {
 			username: socket.store.ige.username // Limit the search remove to only this user's map!
 		};
 
-		ige.database.remove('buildings', removeSearch);
+		//ige.database.remove('buildings', removeSearch);
 	}
 };
 
