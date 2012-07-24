@@ -215,6 +215,7 @@ var IgeUiStyleExtension = {
 	borderRightWidth: function (px) {
 		if (px !== undefined) {
 			this._borderRightWidth = px;
+
 			this.dirty(true);
 			return this;
 		}
@@ -225,6 +226,7 @@ var IgeUiStyleExtension = {
 	borderBottomWidth: function (px) {
 		if (px !== undefined) {
 			this._borderBottomWidth = px;
+
 			this.dirty(true);
 			return this;
 		}
@@ -239,11 +241,66 @@ var IgeUiStyleExtension = {
 			this._borderTopRightRadius = px;
 			this._borderBottomRightRadius = px;
 			this._borderBottomLeftRadius = px;
+
 			this.dirty(true);
 			return this;
 		}
 
 		return this._borderRadius;
+	},
+
+	padding: function (left, top, right, bottom) {
+		this._paddingLeft = left;
+		this._paddingTop = top;
+		this._paddingRight = right;
+		this._paddingBottom = bottom;
+
+		this.dirty(true);
+		return this;
+	},
+
+	paddingLeft: function (px) {
+		if (px !== undefined) {
+			this._paddingLeft = px;
+
+			this.dirty(true);
+			return this;
+		}
+
+		return this._paddingLeft;
+	},
+
+	paddingTop: function (px) {
+		if (px !== undefined) {
+			this._paddingTop = px;
+
+			this.dirty(true);
+			return this;
+		}
+
+		return this._paddingTop;
+	},
+
+	paddingRight: function (px) {
+		if (px !== undefined) {
+			this._paddingRight = px;
+
+			this.dirty(true);
+			return this;
+		}
+
+		return this._paddingRight;
+	},
+
+	paddingBottom: function (px) {
+		if (px !== undefined) {
+			this._paddingBottom = px;
+
+			this.dirty(true);
+			return this;
+		}
+
+		return this._paddingBottom;
 	}
 };
 
