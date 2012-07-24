@@ -21,36 +21,36 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					RotatorBehaviour = function (ctx, gameObject) {
-						gameObject.rotateBy(0, 0, (0.1 * ige.tickDelta) * Math.PI / 180);
+					RotatorBehaviour = function (ctx) {
+						this.rotateBy(0, 0, (0.1 * ige.tickDelta) * Math.PI / 180);
 					};
 
-					RotatorBehaviourAC = function (ctx, gameObject) {
-						gameObject.rotateBy(0, 0, (-0.1 * ige.tickDelta) * Math.PI / 180);
+					RotatorBehaviourAC = function (ctx) {
+						this.rotateBy(0, 0, (-0.1 * ige.tickDelta) * Math.PI / 180);
 					};
 
-					ScalerBehaviour = function (ctx, gameObject) {
-						if (gameObject.data('scalerMode') === undefined) {
-							gameObject.data('scalerMode', 1);
+					ScalerBehaviour = function (ctx) {
+						if (this.data('scalerMode') === undefined) {
+							this.data('scalerMode', 1);
 						}
 
-						if (gameObject.data('scalerMode') === 1) {
-							gameObject.scaleBy((0.001 * ige.tickDelta), (0.001 * ige.tickDelta), (0.001 * ige.tickDelta));
+						if (this.data('scalerMode') === 1) {
+							this.scaleBy((0.001 * ige.tickDelta), (0.001 * ige.tickDelta), (0.001 * ige.tickDelta));
 
-							if (gameObject._scale.x >= 4) {
-								gameObject.data('scalerMode', 2);
-								gameObject.scaleTo(4, 4, 4);
+							if (this._scale.x >= 4) {
+								this.data('scalerMode', 2);
+								this.scaleTo(4, 4, 4);
 							}
 
 							return;
 						}
 
-						if (gameObject.data('scalerMode') === 2) {
-							gameObject.scaleBy(-(0.001 * ige.tickDelta), -(0.001 * ige.tickDelta), -(0.001 * ige.tickDelta));
+						if (this.data('scalerMode') === 2) {
+							this.scaleBy(-(0.001 * ige.tickDelta), -(0.001 * ige.tickDelta), -(0.001 * ige.tickDelta));
 
-							if (gameObject._scale.x <= 1) {
-								gameObject.data('scalerMode', 1);
-								gameObject.scaleTo(1, 1, 1);
+							if (this._scale.x <= 1) {
+								this.data('scalerMode', 1);
+								this.scaleTo(1, 1, 1);
 							}
 
 							return;
@@ -86,7 +86,7 @@ var Client = IgeClass.extend({
 							.depth((18 - i))
 							.scene(self.scene1);
 
-						setTimeout(function () { var vr = vp[i]; return function () { vr.addBehavior('rotator', RotatorBehaviour); }}(), tt);
+						setTimeout(function () { var vr = vp[i]; return function () { vr.addBehaviour('rotator', RotatorBehaviour); }}(), tt);
 						tt += timeInc;
 						vp[i].mount(ige);
 					}
@@ -105,7 +105,7 @@ var Client = IgeClass.extend({
 							.depth((18 - i))
 							.scene(self.scene1);
 
-						setTimeout(function () { var vr = vp[i]; return function () { vr.addBehavior('rotator', RotatorBehaviourAC); }}(), tt);
+						setTimeout(function () { var vr = vp[i]; return function () { vr.addBehaviour('rotator', RotatorBehaviourAC); }}(), tt);
 						tt += timeInc;
 						vp[i].mount(ige);
 					}
@@ -216,7 +216,7 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					self.obj[0] = new IgeEntity()
-						.addBehavior('rotator', RotatorBehaviour)
+						.addBehaviour('rotator', RotatorBehaviour)
 						.depth(1)
 						.width(100)
 						.height(100)
@@ -224,8 +224,8 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					self.obj[1] = tempObj = new IgeEntity()
-						.addBehavior('scaler', ScalerBehaviour)
-						.addBehavior('rotator', RotatorBehaviourAC)
+						.addBehaviour('scaler', ScalerBehaviour)
+						.addBehaviour('rotator', RotatorBehaviourAC)
 						.depth(0)
 						.width(100)
 						.height(100)

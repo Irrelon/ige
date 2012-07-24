@@ -39,26 +39,26 @@ var Client = IgeClass.extend({
 								.mount(self.scene1);
 
 							// Setup the control system
-							this.input.map('walkLeft', this.input.key.left);
-							this.input.map('walkRight', this.input.key.right);
-							this.input.map('walkUp', this.input.key.up);
-							this.input.map('walkDown', this.input.key.down);
+							ige.input.map('walkLeft', ige.input.key.left);
+							ige.input.map('walkRight', ige.input.key.right);
+							ige.input.map('walkUp', ige.input.key.up);
+							ige.input.map('walkDown', ige.input.key.down);
 						},
 
 						tick: function (ctx) {
-							if (this.input.action('walkLeft')) {
+							if (ige.input.action('walkLeft')) {
 								this.velocity.x(-0.1)
 									.velocity.y(0)
 									.animation.select('walkLeft');
-							} else if (this.input.action('walkRight')) {
+							} else if (ige.input.action('walkRight')) {
 								this.velocity.x(0.1)
 									.velocity.y(0)
 									.animation.select('walkRight');
-							} else if (this.input.action('walkUp')) {
+							} else if (ige.input.action('walkUp')) {
 								this.velocity.x(0)
 									.velocity.y(-0.1)
 									.animation.select('walkUp');
-							} else if (this.input.action('walkDown')) {
+							} else if (ige.input.action('walkDown')) {
 								this.velocity.x(0)
 									.velocity.y(0.1)
 									.animation.select('walkDown');
