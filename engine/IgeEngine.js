@@ -23,6 +23,7 @@ var IgeEngine = IgeEntity.extend({
 
 		// Create storage
 		this.Class = {};
+		this.Texture = [];
 
 		// Set the initial id as the current time in milliseconds. This ensures that under successive
 		// restarts of the engine, new ids will still always be created compared to earlier runs -
@@ -124,9 +125,14 @@ var IgeEngine = IgeEntity.extend({
 	 * Subtracts one from the number of textures currently loading and if no more need
 	 * to load, it will also call the _allTexturesLoaded() method.
 	 */
-	textureLoadEnd: function () {
+	textureLoadEnd: function (url, textureObj) {
+		// Add the texture to the Texture array
+		this.Texture.push(textureObj);
+
+		// Decrement the overall loading number
 		this._texturesLoading--;
 
+		// If we've finished...
 		if (this._texturesLoading === 0) {
 			// All textures have finished loading
 			this._allTexturesLoaded();
@@ -315,7 +321,7 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	_mouseDown: function (event) {
 		// Emit the event
-		this.emit('mouseDown', event);
+		ige.emit('mouseDown', event);
 	},
 
 	/**
@@ -325,7 +331,7 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	_mouseUp: function (event) {
 		// Emit the event
-		this.emit('mouseUp', event);
+		ige.emit('mouseUp', event);
 	},
 
 	/**
@@ -337,30 +343,42 @@ var IgeEngine = IgeEntity.extend({
 		// Loop the viewports and check if the mouse is inside
 		var arr = ige._children,
 			arrCount = arr.length,
-			vp, gotVpMousePos,
+			vp, vpUpdated,
 			mx = event.clientX - ige.geometry.x / 2,
 			my = event.clientY - ige.geometry.y / 2;
 
+		ige._mousePos.x = mx;
+		ige._mousePos.y = my;
+
 		while (arrCount--) {
 			vp = arr[arr.length - (arrCount + 1)];
-
 			// Check if the mouse is inside this viewport's bounds
 			if (mx > vp._translate.x - vp.geometry.x / 2 && mx < vp._translate.x + vp.geometry.x / 2) {
 				if (my > vp._translate.y - vp.geometry.y / 2 && my < vp._translate.y + vp.geometry.y / 2) {
 					// Mouse is inside this viewport
-					ige._mousePos.x = (mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x;
-					ige._mousePos.y = (my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y;
+					vp._mousePos = {
+						x: (mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x,
+						y: (my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y
+					};
+					//vp._mousePos = vp._worldMatrix.transformCoordInverse({x: mx, y: my});
 
-					gotVpMousePos = true;
+					ige._mouseOverVp = vp;
+					vpUpdated = true;
 					break;
 				}
 			}
 		}
 
-		if (gotVpMousePos) {
-			// Emit the event
-			ige.emit('mouseMove', event);
+		if (!vpUpdated) {
+			ige._mouseOverVp = undefined;
 		}
+
+		// Emit the event
+		ige.emit('mouseMove', event);
+	},
+
+	mousePos: function () {
+		return this._mousePos;
 	},
 
 	/**
@@ -370,7 +388,7 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	_mouseWheel: function (event) {
 		// Emit the event
-		this.emit('mouseWheel', event);
+		ige.emit('mouseWheel', event);
 	},
 
 	/**
