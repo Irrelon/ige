@@ -10,16 +10,16 @@ var IgeTweenComponent = IgeClass.extend({
 		this._tweens = [];
 
 		// Add the velocity behaviour to the entity
-		entity.addBehavior('tween', this._behaviour);
+		entity.addBehaviour('tween', this._behaviour);
 	},
 
 	/**
 	 * The behaviour method executed each tick.
-	 * @param entity
+	 * @param ctx
 	 * @private
 	 */
-	_behaviour: function (ctx, entity) {
-		entity.tween.tick(ctx);
+	_behaviour: function (ctx) {
+		this.tween.tick(ctx);
 	},
 
 	/**
