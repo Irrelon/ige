@@ -28,6 +28,22 @@ IgeMatrix2d.prototype = {
 		return point;
 	},
 
+	/**
+	 * Transform a point by this matrix in inverse. The parameter point will be modified with the transformation values.
+	 * @param point {IgePoint}.
+	 * @return {IgePoint} the parameter point.
+	 */
+	transformCoordInverse: function(point) {
+		var x = point.x,
+			y = point.y,
+			tm = this.matrix;
+
+		point.x = x * tm[0] + y * tm[1] - tm[2];
+		point.y = x * tm[3] + y * tm[4] - tm[5];
+
+		return point;
+	},
+
 	transform: function (points) {
 		var pointIndex,
 			pointCount = points.length;
