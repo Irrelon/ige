@@ -410,7 +410,6 @@ var IgeEngine = IgeEntity.extend({
 						x: (mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x,
 						y: (my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y
 					};
-					//vp._mousePos = vp._worldMatrix.transformCoordInverse({x: mx, y: my});
 
 					ige._mouseOverVp = vp;
 					vpUpdated = true;
