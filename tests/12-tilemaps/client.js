@@ -25,7 +25,7 @@ var Client = IgeClass.extend({
 					self.vp1 = new IgeViewport()
 						.autoSize(true)
 						.scene(self.scene1)
-						.drawBounds(true)
+						.drawBounds(false)
 						.mount(ige);
 
 					// Create the tile map
@@ -33,6 +33,8 @@ var Client = IgeClass.extend({
 						.depth(0)
 						.tileWidth(40)
 						.tileHeight(40)
+						.drawGrid(3)
+						//.drawMouse(true)
 						.translateTo(-300, -100)
 						.mount(self.scene1);
 
@@ -72,19 +74,36 @@ var Client = IgeClass.extend({
 						.translateTo(300, 100, 0)
 						.tileWidth(40)
 						.tileHeight(40)
-						.drawGrid(4)
+						.drawGrid(3)
+						//.drawMouse(true)
 						.isometricMounts(true)
 						.mount(self.scene1);
 
-					self.obj[1] = new IgeInteractiveEntity()
+					self.obj[2] = new IgeInteractiveEntity()
 						.id('fairy3')
 						.depth(1)
 						.isometric(true)
 						.texture(gameTexture[0])
 						.mount(self.tileMap2)
 						.translateToTile(0, 0)
-						.widthByTile(1)
-						.heightByTile(1)
+						.widthByTile(0.5)
+						.heightByTile(0.5)
+						.mouseOver(function () {
+							this.highlight(true);
+						})
+						.mouseOut(function () {
+							this.highlight(false);
+						});
+
+					self.obj[3] = new IgeInteractiveEntity()
+						.id('fairy4')
+						.depth(1)
+						.isometric(true)
+						.texture(gameTexture[0])
+						.mount(self.tileMap2)
+						.translateToTile(1, 0)
+						.widthByTile(0.5)
+						.heightByTile(0.5)
 						.mouseOver(function () {
 							this.highlight(true);
 						})
