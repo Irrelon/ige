@@ -449,16 +449,23 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	_resizeEvent: function (event) {
 		if (ige._autoSize) {
-			ige.geometry.x = ige._canvas.width = window.innerWidth;
-			ige.geometry.y = ige._canvas.height = window.innerHeight;
-			ige.geometry.x2 = window.innerWidth / 2;
-			ige.geometry.y2 = window.innerHeight / 2;
+			var newWidth = window.innerWidth,
+				newHeight = window.innerHeight,
+				arr = ige._children,
+				arrCount = arr.length;
+
+			// Make sure we can divide the new width and height by 2...
+			// otherwise minus 1 so we get an even number so that we
+			// negate the blur effect of sub-pixel rendering
+			if (newWidth % 2) { newWidth--; }
+			if (newHeight % 2) { newHeight--; }
+
+			ige._canvas.width = newWidth;
+			ige._canvas.height = newHeight;
+			ige.geometry = new IgePoint(newWidth, newHeight, 0);
 
 			// Loop any mounted children and check if
 			// they should also get resized
-			var arr = ige._children,
-				arrCount = arr.length;
-
 			while (arrCount--) {
 				arr[arrCount]._resizeEvent(event);
 			}
