@@ -2,6 +2,8 @@ var IgeObject = IgeEventingClass.extend({
 	classId: 'IgeObject',
 
 	init: function () {
+		this._mode = 0;
+		this._mountMode = 0;
 		this._parent = null;
 		this._children = [];
 		this._behaviours = [];
@@ -234,6 +236,64 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Gets / sets the positioning mode of the entity.
+	 * @param val 0 = 2d, 1 = isometric
+	 * @return {*}
+	 */
+	mode: function (val) {
+		if (val !== undefined) {
+			this._mode = val;
+			return this;
+		}
+
+		return this._mode;
+	},
+
+	/**
+	 * Gets / sets if this object should be positioned isometrically
+	 * or in 2d.
+	 * @param {Boolean} val Set to true to position this object in
+	 * isometric space or false to position it in 2d space.
+	 * @return {*}
+	 */
+	isometric: function (val) {
+		if (val === true) {
+			this._mode = 1;
+			return this;
+		}
+
+		if (val === false) {
+			this._mode = 0;
+			return this;
+		}
+
+		return this._mode === 1;
+	},
+
+	/**
+	 * Gets / sets if objects mounted to this object should be positioned
+	 * and depth-sorted in an isometric fashion or a 2d fashion.
+	 * @param {Boolean=} val Set to true to enabled isometric positioning
+	 * and depth sorting of objects mounted to this object, or false to
+	 * enable 2d positioning and depth-sorting of objects mounted to this
+	 * object.
+	 * @return {*}
+	 */
+	isometricMounts: function (val) {
+		if (val === true) {
+			this._mountMode = 1;
+			return this;
+		}
+
+		if (val === false) {
+			this._mountMode = 0;
+			return this;
+		}
+
+		return this._mountMode === 1;
+	},
+
+	/**
 	 * Gets / sets the indestructible flag. If set to true, the object will
 	 * not be destroyed even if a call to the destroy() method is made.
 	 * @param {Number=} val
@@ -338,7 +398,7 @@ var IgeObject = IgeEventingClass.extend({
 	 */
 	depthSortChildren: function () {
 		// TODO: Optimise this method, it is not especially efficient at the moment!
-		if (this._mode === 1) {
+		if (this._mountMode === 1) {
 			// Calculate depths from 3d bounds
 			var arr = this._children,
 				arrCount = arr.length,
