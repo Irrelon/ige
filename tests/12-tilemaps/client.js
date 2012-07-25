@@ -19,7 +19,7 @@ var Client = IgeClass.extend({
 				if (success) {
 					// Create the scene
 					self.scene1 = new IgeScene2d()
-						.translateTo(0, -360);
+						.translateTo(20, 0, 0);
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
@@ -30,30 +30,67 @@ var Client = IgeClass.extend({
 
 					// Create the tile map
 					self.tileMap1 = new IgeTileMap2d()
+						.depth(0)
 						.tileWidth(40)
 						.tileHeight(40)
-						.drawGrid(10)
-						.isometric(true)
+						.translateTo(-300, -100)
 						.mount(self.scene1);
 
 					// Create an entity
-					self.obj[0] = new IgeEntity()
+					self.obj[0] = new IgeInteractiveEntity()
 						.id('fairy1')
 						.depth(1)
 						.texture(gameTexture[0])
 						.mount(self.tileMap1)
 						.translateToTile(0, 0)
 						.widthByTile(1)
-						.heightByTile(1);
+						.heightByTile(1)
+						.mouseOver(function () {
+							this.highlight(true);
+						})
+						.mouseOut(function () {
+							this.highlight(false);
+						});
 
-					self.obj[1] = new IgeEntity()
+					self.obj[1] = new IgeInteractiveEntity()
 						.id('fairy2')
 						.depth(1)
 						.texture(gameTexture[0])
 						.mount(self.tileMap1)
 						.translateToTile(1, 0)
 						.widthByTile(1)
-						.heightByTile(1);
+						.heightByTile(1)
+						.mouseOver(function () {
+							this.highlight(true);
+						})
+						.mouseOut(function () {
+							this.highlight(false);
+						});
+
+					self.tileMap2 = new IgeTileMap2d()
+						.depth(1)
+						.translateTo(300, 100, 0)
+						.tileWidth(40)
+						.tileHeight(40)
+						.drawGrid(4)
+						.isometricMounts(true)
+						.mount(self.scene1);
+
+					self.obj[1] = new IgeInteractiveEntity()
+						.id('fairy3')
+						.depth(1)
+						.isometric(true)
+						.texture(gameTexture[0])
+						.mount(self.tileMap2)
+						.translateToTile(0, 0)
+						.widthByTile(1)
+						.heightByTile(1)
+						.mouseOver(function () {
+							this.highlight(true);
+						})
+						.mouseOut(function () {
+							this.highlight(false);
+						});
 				}
 			});
 		});
