@@ -110,7 +110,9 @@ var IgeViewport = IgeEntity.extend([
 			ctx.rotate(this.camera._rotate.z);
 			ctx.scale(this.camera._scale.x, this.camera._scale.y);
 
-			this._scene.tick(ctx, scene);
+			ctx.save();
+				this._scene.tick(ctx, scene);
+			ctx.restore();
 
 			if (this._drawBounds && ctx === ige._ctx) {
 				// Traverse the scenegraph and draw axis-aligned
