@@ -6,7 +6,6 @@ var IgeEntity = IgeObject.extend([
 	init: function () {
 		this._super();
 
-		this._mode = 0;
 		this._opacity = 1;
 		this._cell = 1;
 
@@ -44,39 +43,6 @@ var IgeEntity = IgeObject.extend([
 		} else {
 			return {x: 0, y: 0};
 		}
-	},
-
-	/**
-	 * Gets / sets the positioning mode of the entity.
-	 * @param val 0 = 2d, 1 = isometric
-	 * @return {*}
-	 */
-	mode: function (val) {
-		if (val !== undefined) {
-			this._mode = val;
-			return this;
-		}
-
-		return this._mode;
-	},
-
-	/**
-	 * Gets / sets the positioning mode of the entity as isometric.
-	 * @param {Boolean} val
-	 * @return {*}
-	 */
-	isometric: function (val) {
-		if (val === true) {
-			this._mode = 1;
-			return this;
-		}
-
-		if (val === false) {
-			this._mode = 0;
-			return this;
-		}
-
-		return this._mode === 1;
 	},
 
 	/**
