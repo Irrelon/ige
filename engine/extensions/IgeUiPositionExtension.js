@@ -128,7 +128,7 @@ var IgeUiPositionExtension = {
 
 					// Calculate real width from percentage
 					this.geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
-					this.geometry.x2 = (this.geometry.x / 2);
+					this.geometry.x2 = Math.floor(this.geometry.x / 2);
 				} else {
 					// We don't have a parent so use the main canvas
 					// as a reference
@@ -137,11 +137,11 @@ var IgeUiPositionExtension = {
 
 					// Calculate real height from percentage
 					this.geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
-					this.geometry.x2 = (this.geometry.x / 2);
+					this.geometry.x2 = Math.floor(this.geometry.x / 2);
 				}
 			} else {
 				this.geometry.x = px;
-				this.geometry.x2 = (this.geometry.x / 2);
+				this.geometry.x2 = Math.floor(this.geometry.x / 2);
 			}
 
 			if (!noUpdate) {
@@ -174,7 +174,7 @@ var IgeUiPositionExtension = {
 
 					// Calculate real height from percentage
 					this.geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
-					this.geometry.y2 = (this.geometry.y / 2);
+					this.geometry.y2 = Math.floor(this.geometry.y / 2);
 				} else {
 					// We don't have a parent so use the main canvas
 					// as a reference
@@ -183,11 +183,11 @@ var IgeUiPositionExtension = {
 
 					// Calculate real height from percentage
 					this.geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
-					this.geometry.y2 = (this.geometry.y / 2);
+					this.geometry.y2 = Math.floor(this.geometry.y / 2);
 				}
 			} else {
 				this.geometry.y = px;
-				this.geometry.y2 = (this.geometry.y / 2);
+				this.geometry.y2 = Math.floor(this.geometry.y / 2);
 			}
 
 			if (!noUpdate) {

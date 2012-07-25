@@ -88,6 +88,7 @@ var IgeTween = IgeClass.extend({
 			this._durationMs,
 			this._options
 		);
+
 		return this;
 	},
 

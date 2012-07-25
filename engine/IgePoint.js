@@ -1,15 +1,37 @@
 // TODO: Document
-var IgePoint = function (x, y, z) {
+var IgePoint = function (x, y, z, floor) {
+	if (floor === undefined) {
+		this._floor = true;
+	} else {
+		this.floor(floor);
+	}
+
 	// Set values to the passed parameters or
 	// zero if they are undefined
 	this.x = x = x !== undefined ? x : 0;
 	this.y = y = y !== undefined ? y : 0;
 	this.z = z = z !== undefined ? z : 0;
-	this.x2 = x / 2;
-	this.y2 = y / 2;
-	this.z2 = z / 2;
+
+	if (this._floor) {
+		this.x2 = Math.floor(x / 2);
+		this.y2 = Math.floor(y / 2);
+		this.z2 = Math.floor(z / 2);
+	} else {
+		this.x2 = x / 2;
+		this.y2 = y / 2;
+		this.z2 = z / 2;
+	}
 
 	return this;
+};
+
+IgePoint.prototype.floor = function (val) {
+	if (val !== undefined) {
+		this._floor = val;
+		return this;
+	}
+
+	return this._floor;
 };
 
 IgePoint.prototype.compare = function (point) {

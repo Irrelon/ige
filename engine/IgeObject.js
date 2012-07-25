@@ -521,12 +521,7 @@ var IgeObject = IgeEventingClass.extend({
 
 		// Remove any children
 		if (this._children) {
-			arr = this._children;
-			arrCount = arr.length;
-
-			while (arrCount--) {
-				arr[arrCount].destroy();
-			}
+			this.destroyChildren();
 		}
 
 		// Remove the children array severing any references

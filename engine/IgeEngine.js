@@ -5,8 +5,15 @@ var IgeEngine = IgeEntity.extend({
 		this._super();
 		this.id('IGE');
 
+		this.basePath = '';
+
 		// Determine the environment we are executing in
 		this.isServer = (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined');
+
+		if (!this.isServer) {
+			// Enable cocoonJS support in case we are running native
+			this.addComponent(IgeCocoonJsComponent);
+		}
 
 		// Assign ourselves to the global variable
 		ige = this;
@@ -38,6 +45,7 @@ var IgeEngine = IgeEntity.extend({
 		this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 		this._state = 0; // Currently stopped
 		this._texturesLoading = 0; // Holds a count of currently loading textures
+		this._texturesTotal = 0; // Holds total number of textures loading / loaded
 		this._dependencyQueue = []; // Holds an array of functions that must all return true for the engine to start
 		this._drawCount = 0; // Holds the number of draws since the last frame (calls to drawImage)
 		this._drawsLastTick = 0; // Number of draws that occurred last tick
@@ -169,6 +177,8 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	textureLoadStart: function () {
 		this._texturesLoading++;
+		this._texturesTotal++;
+		this.emit('textureLoadStart');
 	},
 
 	/**
@@ -181,6 +191,7 @@ var IgeEngine = IgeEntity.extend({
 
 		// Decrement the overall loading number
 		this._texturesLoading--;
+		this.emit('textureLoadEnd');
 
 		// If we've finished...
 		if (this._texturesLoading === 0) {
@@ -364,6 +375,79 @@ var IgeEngine = IgeEntity.extend({
 			this._canvas.width,
 			this._canvas.height
 		);
+	},
+
+	/**
+	 * Opens a new window to the specified url. When running in a
+	 * native wrapper, will load the url in place of any existing
+	 * page being displayed in the native web view.
+	 * @param url
+	 */
+	openUrl: function (url) {
+		if (url !== undefined) {
+
+			if (ige.cocoonJs && ige.cocoonJs.detected) {
+				// Open URL via CocoonJS webview
+				ige.cocoonJs.openUrl(url);
+			} else {
+				// Open via standard JS open window
+				window.open(url);
+			}
+		}
+	},
+
+	/**
+	 * Loads the specified URL as an HTML overlay on top of the
+	 * front buffer in an iFrame. If running in a native wrapper,
+	 * will load the url in place of any existing page being
+	 * displayed in the native web view.
+	 *
+	 * When the overlay is in use, no mouse or touch events will
+	 * be fired on the front buffer. Once you are finished with the
+	 * overlay, call hideOverlay() to re-enable interaction with
+	 * the front buffer.
+	 * @param url
+	 */
+	showWebView: function (url) {
+		if (url !== undefined) {
+			if (ige.cocoonJs && ige.cocoonJs.detected) {
+				// Open URL via CocoonJS webview
+				ige.cocoonJs.showWebView(url);
+			} else {
+				// Load the iFrame url
+				var overlay = document.getElementById('igeOverlay');
+				overlay.src = url;
+				overlay.style.display = 'block';
+			}
+		}
+
+		return this;
+	},
+
+	/**
+	 * Hides the web view overlay.
+	 * @return {*}
+	 */
+	hideWebView: function () {
+		if (ige.cocoonJs && ige.cocoonJs.detected) {
+			// Hide the cocoonJS webview
+			ige.cocoonJs.hideWebView();
+		} else {
+			var overlay = document.getElementById('igeOverlay');
+			overlay.style.display = 'none';
+		}
+
+		return this;
+	},
+
+	/**
+	 * Evaluates javascript sent from another frame.
+	 * @param js
+	 */
+	layerCall: function (js) {
+		if (js !== undefined) {
+			eval(js);
+		}
 	},
 
 	/**

@@ -23,6 +23,20 @@ var IgeEntity = IgeObject.extend([
         this._worldMatrix = new IgeMatrix2d(this);
 	},
 
+	tween: function (props, durationMs, options) {
+		var newTween = new IgeTween()
+			.targetObj(this)
+			.properties(props)
+			.duration(durationMs);
+
+		if (options.beforeTween) { newTween.beforeTween(options.beforeTween); }
+		if (options.afterTween) { newTween.afterTween(options.afterTween); }
+		if (options.easing) { newTween.easing(options.easing); }
+		if (options.startTime) { newTween.startTime(options.startTime); }
+
+		return newTween;
+	},
+
 	mousePos: function () {
 		var parentMousePos;
 
