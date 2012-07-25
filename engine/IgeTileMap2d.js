@@ -196,10 +196,10 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 			my = mousePos.y,
 			dx, dy;
 
-		if (this._mode === 0) {
+		if (this._mountMode === 0) {
 			// 2d
-			dx = mx - this._translate.x + this._tileWidth / 2;
-			dy = my - this._translate.y + this._tileHeight / 2;
+			dx = mx + this._tileWidth / 2;
+			dy = my + this._tileHeight / 2;
 
 			this._mouseTilePos = new IgePoint(
 				Math.floor(dx / this._tileWidth),
@@ -207,10 +207,10 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 			);
 		}
 
-		if (this._mode === 1) {
+		if (this._mountMode === 1) {
 			// iso
-			dx = mx - this._translate.x;
-			dy = my - this._translate.y - this._tileHeight / 2;
+			dx = mx;
+			dy = my - this._tileHeight / 2;
 
 			this._mouseTilePos = new IgePoint(
 				dx,
@@ -263,7 +263,7 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 				gStart = new IgePoint(x, y + (tileHeight * index), 0);
 				gEnd = new IgePoint(gridMaxX, y + (tileHeight * index), 0);
 
-				if (this._mode === 1) {
+				if (this._mountMode === 1) {
 					// Iso grid
 					gStart = gStart.toIso();
 					gEnd = gEnd.toIso();
@@ -279,7 +279,7 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 				gStart = new IgePoint(x + (tileWidth * index), y, 0);
 				gEnd = new IgePoint(x + (tileWidth * index), gridMaxY, 0);
 
-				if (this._mode === 1) {
+				if (this._mountMode === 1) {
 					// Iso grid
 					gStart = gStart.toIso();
 					gEnd = gEnd.toIso();
@@ -301,7 +301,7 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 								tilePoint = new IgePoint(tileWidth * x, tileHeight * y, 0);
 
 								// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
-								if (this._mode === 0) {
+								if (this._mountMode === 0) {
 									// 2d
 									ctx.fillRect(
 										tilePoint.x - tileWidth / 2,
@@ -311,7 +311,7 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 									);
 								}
 
-								if (this._mode === 1) {
+								if (this._mountMode === 1) {
 									// iso
 									tilePoint.thisToIso();
 
@@ -331,7 +331,7 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 
 			// Paint the tile the mouse is currently intersecting
 			ctx.fillStyle = '#6000ff';
-			if (this._mode === 0) {
+			if (this._mountMode === 0) {
 				// 2d
 				ctx.fillRect(
 					(this._mouseTilePos.x * tileWidth) - tileWidth / 2,
@@ -341,7 +341,7 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 				);
 			}
 
-			if (this._mode === 1) {
+			if (this._mountMode === 1) {
 				// iso
 				tilePoint = this._mouseTilePos
 					.clone()
