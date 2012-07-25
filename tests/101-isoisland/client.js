@@ -173,7 +173,7 @@ var Client = IgeClass.extend({
 		this.tileMap1 = new IgeTileMap2d()
 			.id('tileMap1')
 			.layer(2)
-			.isometric(true)
+			.isometricMounts(true)
 			.tileWidth(20)
 			.tileHeight(20)
 			.drawGrid(40)
