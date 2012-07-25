@@ -14,6 +14,7 @@ var ClientObjects = {
 
 			// Setup the item details
 			this.isometric(true)
+				.isometricMounts(true)
 				.mount(parent)
 				.texture(ige.client.gameTexture.bank)
 				.widthByTile(1.50, true) // Called with lockAspect true so height is also set
@@ -41,6 +42,7 @@ var ClientObjects = {
 
 			// Setup the item details
 			this.isometric(true)
+				.isometricMounts(true)
 				.mount(parent)
 				.texture(ige.client.gameTexture.electricals)
 				.widthByTile(2 * 0.9, true) // Called with lockAspect true so height is also set
@@ -69,6 +71,7 @@ var ClientObjects = {
 
 			// Setup the item details
 			this.isometric(true)
+				.isometricMounts(true)
 				.mount(parent)
 				.texture(ige.client.gameTexture.burgers)
 				.anchor(5, 0)
@@ -107,6 +110,7 @@ var ClientObjects = {
 			// Create the base
 			this.data('baseRef', new IgeEntity()
 				.isometric(true)
+				.isometricMounts(true)
 				.mount(this)
 				.texture(ige.client.gameTexture.base_se)
 				.width(ige.client.gameTexture.base_se.image.width * 0.265 * (parent._tileWidth / 40))
@@ -120,6 +124,7 @@ var ClientObjects = {
 
 			// Set the main skyscraper entity details
 			this.isometric(true)
+				.isometricMounts(true)
 				.mount(parent)
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
 				.translateToTile(tileX, tileY, 0)
