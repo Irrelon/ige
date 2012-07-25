@@ -8,14 +8,6 @@ var Client = IgeClass.extend({
 		this.obj = [];
 		this.gameTexture = {};
 
-		// Enable networking
-		ige.addComponent(IgeSocketIoComponent);
-
-		// Implement our game methods
-		this.implement(ClientNetworkEvents);
-
-		this.loadTextures();
-
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
 			// Create the HTML canvas
@@ -25,29 +17,46 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					// Start the networking (you can do this elsewhere if it
-					// makes sense to connect to the server later on rather
-					// than before the scene etc are created... maybe you want
-					// a splash screen or a menu first? Then connect after you've
-					// got a username or something?
-					ige.network.start('http://localhost:2000', function () {
-						// Define network command listeners
-						ige.network.define('login', self._login);
-						ige.network.define('getMap', self._getMap);
-						ige.network.define('placeItem', self._placeItem);
-
-						// Send the server our login details
-						// TODO: This is the part where you're gonna have to build a user login system, at the moment it always assumes you're "bob123"
-						ige.network.send('login', {
-							username:'bob123',
-							password: 'moo123'
-						});
-					});
+					self.showSplash();
 				}
 			});
 		});
 
 		this.loadTextures();
+	},
+
+	showSplash: function () {
+		// Create the scene that the main game items
+		// will reside on
+		this.mainScene = new IgeScene2d()
+			.id('mainScene');
+
+		// Create the main viewport and tell it to "look"
+		// at gameScene with auto-sizing enabled to fill the
+		// browser window, then move the camera
+		this.vp1 = new IgeViewport()
+			.id('vp1')
+			.autoSize(true)
+			.scene(this.mainScene)
+			.drawBounds(false) // Switch this to true to draw all bounding boxes
+			.drawBoundsData(true) // Switch to true (and flag above) to see bounds data
+			.mount(ige);
+
+		// Create background gradient
+		new IgeUiEntity()
+			.depth(0)
+			.backgroundImage(this.gameTexture.background1, 'repeat')
+			.left(0)
+			.top(0)
+			.width('100%')
+			.height('100%')
+			.mount(this.mainScene);
+
+		this.loading = new IgeEntity()
+			.depth(1)
+			.texture(this.gameTexture.loading)
+			.dimensionsFromTexture()
+			.mount(this.mainScene);
 	},
 
 	/**
@@ -76,35 +85,35 @@ var Client = IgeClass.extend({
 	 * loaded into memory successfully.
 	 */
 	loadTextures: function () {
-		this.gameTexture.background1 = new IgeTexture('../assets/textures/backgrounds/resortico.png');
-		this.gameTexture.bank = new IgeTexture('../assets/textures/buildings/bank1.png');
-		this.gameTexture.electricals = new IgeTexture('../assets/textures/buildings/electricalsShop1.png');
-		this.gameTexture.burgers = new IgeTexture('../assets/textures/buildings/burgerShop1.png');
-		this.gameTexture.base_se = new IgeTexture('../assets/textures/buildings/base_se.png');
-		this.gameTexture.base_se_left = new IgeTexture('../assets/textures/buildings/base_se_left.png');
-		this.gameTexture.base_se_middle = new IgeTexture('../assets/textures/buildings/base_se_middle.png');
-		this.gameTexture.base_se_right = new IgeTexture('../assets/textures/buildings/base_se_right.png');
-		this.gameTexture.base_sw = new IgeTexture('../assets/textures/buildings/base_sw.png');
-		this.gameTexture.base_sw_left = new IgeTexture('../assets/textures/buildings/base_sw_left.png');
-		this.gameTexture.base_sw_middle = new IgeTexture('../assets/textures/buildings/base_sw_middle.png');
-		this.gameTexture.base_sw_right = new IgeTexture('../assets/textures/buildings/base_sw_right.png');
-		this.gameTexture.stacker_se = new IgeTexture('../assets/textures/buildings/stacker_se.png');
-		this.gameTexture.stacker_se_left = new IgeTexture('../assets/textures/buildings/stacker_se_left.png');
-		this.gameTexture.stacker_se_middle = new IgeTexture('../assets/textures/buildings/stacker_se_middle.png');
-		this.gameTexture.stacker_se_right = new IgeTexture('../assets/textures/buildings/stacker_se_right.png');
-		this.gameTexture.stacker_sw = new IgeTexture('../assets/textures/buildings/stacker_sw.png');
-		this.gameTexture.stacker_sw_left = new IgeTexture('../assets/textures/buildings/stacker_sw_left.png');
-		this.gameTexture.stacker_sw_middle = new IgeTexture('../assets/textures/buildings/stacker_sw_middle.png');
-		this.gameTexture.stacker_sw_right = new IgeTexture('../assets/textures/buildings/stacker_sw_right.png');
-		this.gameTexture.crane_se = new IgeTexture('../assets/textures/buildings/crane_se.png');
-		this.gameTexture.crane_sw = new IgeTexture('../assets/textures/buildings/crane_sw.png');
-		this.gameTexture.crane_ne = new IgeTexture('../assets/textures/buildings/crane_ne.png');
-		this.gameTexture.crane_nw = new IgeTexture('../assets/textures/buildings/crane_nw.png');
+		this.gameTexture.background1 = new IgeTexture('../assets/textures/backgrounds/greyGradient.png');
+		this.gameTexture.loading = new IgeTexture('../assets/textures/backgrounds/loading.png');
+	},
 
-		this.gameTexture.uiButtonSelect = new IgeTexture('../assets/textures/ui/uiButton_select.png');
-		this.gameTexture.uiButtonMove = new IgeTexture('../assets/textures/ui/uiButton_move.png');
-		this.gameTexture.uiButtonDelete = new IgeTexture('../assets/textures/ui/uiButton_delete.png');
-		this.gameTexture.uiButtonHouse = new IgeTexture('../assets/textures/ui/uiButton_house.png');
+	startNetwork: function () {
+		// Enable networking
+		ige.addComponent(IgeSocketIoComponent);
+
+		// Implement our game methods
+		this.implement(ClientNetworkEvents);
+
+		// Start the networking (you can do this elsewhere if it
+		// makes sense to connect to the server later on rather
+		// than before the scene etc are created... maybe you want
+		// a splash screen or a menu first? Then connect after you've
+		// got a username or something?
+		ige.network.start('http://localhost:2000', function () {
+			// Define network command listeners
+			ige.network.define('login', self._login);
+			ige.network.define('getMap', self._getMap);
+			ige.network.define('placeItem', self._placeItem);
+
+			// Send the server our login details
+			// TODO: This is the part where you're gonna have to build a user login system, at the moment it always assumes you're "bob123"
+			ige.network.send('login', {
+				username:'bob123',
+				password: 'moo123'
+			});
+		});
 	},
 
 	/**
