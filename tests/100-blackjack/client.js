@@ -8,6 +8,10 @@ var Client = IgeClass.extend({
 		this.obj = [];
 		this.gameTexture = {};
 
+		// Implement the client stuff
+		this.implement(ClientSplash);
+		this.implement(ClientLobby);
+
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
 			// Create the HTML canvas
@@ -17,46 +21,38 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					self.showSplash();
+					// Create the scene that the main game items
+					// will reside on
+					self.mainScene = new IgeScene2d()
+						.id('mainScene');
+
+					// Create the main viewport and tell it to "look"
+					// at gameScene with auto-sizing enabled to fill the
+					// browser window
+					self.vp1 = new IgeViewport()
+						.id('vp1')
+						.autoSize(true)
+						.scene(self.mainScene)
+						.drawBounds(false) // Switch this to true to draw all bounding boxes
+						.drawBoundsData(true) // Switch to true (and flag above) to see bounds data
+						.mount(ige);
+
+					// Show the splash screen
+					self.createSplash();
+
+					// Setup a new listener for lobby loaded
+					ige.on('texturesLoaded', function () {
+						self.destroySplash();
+						self.createLobby();
+					});
+
+					// Load our main game textures etc
+					self.loadLobby();
 				}
 			});
-		});
+		}, false, true);
 
-		this.loadTextures();
-	},
-
-	showSplash: function () {
-		// Create the scene that the main game items
-		// will reside on
-		this.mainScene = new IgeScene2d()
-			.id('mainScene');
-
-		// Create the main viewport and tell it to "look"
-		// at gameScene with auto-sizing enabled to fill the
-		// browser window, then move the camera
-		this.vp1 = new IgeViewport()
-			.id('vp1')
-			.autoSize(true)
-			.scene(this.mainScene)
-			.drawBounds(false) // Switch this to true to draw all bounding boxes
-			.drawBoundsData(true) // Switch to true (and flag above) to see bounds data
-			.mount(ige);
-
-		// Create background gradient
-		new IgeUiEntity()
-			.depth(0)
-			.backgroundImage(this.gameTexture.background1, 'repeat')
-			.left(0)
-			.top(0)
-			.width('100%')
-			.height('100%')
-			.mount(this.mainScene);
-
-		this.loading = new IgeEntity()
-			.depth(1)
-			.texture(this.gameTexture.loading)
-			.dimensionsFromTexture()
-			.mount(this.mainScene);
+		this.loadSplash();
 	},
 
 	/**

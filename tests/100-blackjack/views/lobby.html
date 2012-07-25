@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="lobby.css">
+	<script type="text/javascript" src="igeBridge.js"></script>
+	<script>
+		function login() {
+			var username = document.getElementById('username').value,
+				password = document.getElementById('password').value;
+
+			if (username && password) {
+				ige.forward('ige.client.lobbyLogin("' + username + '", "' + password + '");');
+			}
+		}
+	</script>
+</head>
+<body>
+	<div id="login">
+		<table align="center">
+			<tr>
+				<td colspan="2">Username:</td>
+			</tr>
+			<tr>
+				<td colspan="2"><input type="text" id="username" /></td>
+			</tr>
+			<tr>
+				<td colspan="2">Password:</td>
+			</tr>
+			<tr>
+				<td colspan="2"><input type="password" id="password" /></td>
+			</tr>
+			<tr>
+				<td>Save Login Details:</td>
+				<td><input type="checkbox" id="saveLogin" /></td>
+			</tr>
+			<tr>
+				<td colspan="2"><input type="button" value="Login..." onclick="login();"></td>
+			</tr>
+		</table>
+	</div>
+</body>
+</html>
