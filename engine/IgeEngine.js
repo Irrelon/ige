@@ -317,12 +317,14 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	createFrontBuffer: function (autoSize) {
 		if (!this.isServer) {
-			// Create a new canvas element to use as the
-			// rendering front-buffer
-			var tempCanvas = document.createElement('canvas');
-			tempCanvas.id = 'igeFrontBuffer';
-			document.body.appendChild(tempCanvas);
-			this.canvas(tempCanvas, autoSize);
+			if (!this._canvas) {
+				// Create a new canvas element to use as the
+				// rendering front-buffer
+				var tempCanvas = document.createElement('canvas');
+				tempCanvas.id = 'igeFrontBuffer';
+				document.body.appendChild(tempCanvas);
+				this.canvas(tempCanvas, autoSize);
+			}
 		}
 	},
 
