@@ -45,10 +45,7 @@ var IgeScene2d = IgeEntity.extend({
 	_resizeEvent: function (event) {
 		// Set width / height of scene to match main ige (SCENES ARE ALWAYS THE FULL IGE SIZE!!)
 		if (this._autoSize) {
-			this.geometry.x = ige.geometry.x;
-			this.geometry.x2 = this.geometry.x / 2;
-			this.geometry.y = ige.geometry.y;
-			this.geometry.y2 = this.geometry.y / 2;
+			this.geometry = ige.geometry.clone();
 		}
 
 		// Resize any children

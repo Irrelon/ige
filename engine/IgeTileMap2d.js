@@ -151,11 +151,7 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 	},
 
 	_resizeEvent: function (event) {
-		this.geometry.x = this._parent.geometry.x;
-		this.geometry.x2 = this.geometry.x / 2;
-		this.geometry.y = this._parent.geometry.y;
-		this.geometry.y2 = this.geometry.y / 2;
-
+		this.geometry = this._parent.geometry.clone();
 		this._super(event);
 	},
 
