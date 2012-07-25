@@ -329,32 +329,34 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 				}
 			}
 
-			// Paint the tile the mouse is currently intersecting
-			ctx.fillStyle = '#6000ff';
-			if (this._mountMode === 0) {
-				// 2d
-				ctx.fillRect(
-					(this._mouseTilePos.x * tileWidth) - tileWidth / 2,
-					(this._mouseTilePos.y * tileHeight) - tileHeight / 2,
-					tileWidth,
-					tileHeight
-				);
-			}
+			if (this._drawMouse) {
+				// Paint the tile the mouse is currently intersecting
+				ctx.fillStyle = '#6000ff';
+				if (this._mountMode === 0) {
+					// 2d
+					ctx.fillRect(
+						(this._mouseTilePos.x * tileWidth) - tileWidth / 2,
+						(this._mouseTilePos.y * tileHeight) - tileHeight / 2,
+						tileWidth,
+						tileHeight
+					);
+				}
 
-			if (this._mountMode === 1) {
-				// iso
-				tilePoint = this._mouseTilePos
-					.clone()
-					.thisMultiply(tileWidth, tileHeight, 0)
-					.thisToIso();
+				if (this._mountMode === 1) {
+					// iso
+					tilePoint = this._mouseTilePos
+						.clone()
+						.thisMultiply(tileWidth, tileHeight, 0)
+						.thisToIso();
 
-				ctx.beginPath();
-					ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-					ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
-					ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
-					ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
-					ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-				ctx.fill();
+					ctx.beginPath();
+						ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+						ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
+						ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
+						ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
+						ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+					ctx.fill();
+				}
 			}
 		}
 
