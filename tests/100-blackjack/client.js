@@ -8,6 +8,9 @@ var Client = IgeClass.extend({
 		this.obj = [];
 		this.gameTexture = {};
 
+		// Use the networking component
+		ige.addComponent(IgeSocketIoComponent);
+
 		// Implement the client stuff
 		this.implement(ClientSplash);
 		this.implement(ClientLobby);

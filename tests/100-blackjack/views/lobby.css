@@ -5,6 +5,8 @@ body {
     color: #ffffff;
     font-family: verdana, sans-serif;
     font-size: 12px;
+    width:100%;
+    height:100%;
 }
 
 #login {

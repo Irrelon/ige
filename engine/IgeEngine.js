@@ -333,8 +333,14 @@ var IgeEngine = IgeEntity.extend({
 				// rendering front-buffer
 				var tempCanvas = document.createElement('canvas');
 				tempCanvas.id = 'igeFrontBuffer';
-				document.body.appendChild(tempCanvas);
+				tempCanvas.width = window.innerWidth;
+				tempCanvas.height = window.innerHeight;
+				//tempCanvas.style.cssText = "idtkscale:ScaleAspectFit;";
+
+				ige.geometry = new IgePoint(window.innerWidth, window.innerHeight, 0);
+
 				this.canvas(tempCanvas, autoSize);
+				document.body.appendChild(tempCanvas);
 			}
 		}
 	},
@@ -348,19 +354,20 @@ var IgeEngine = IgeEntity.extend({
 		if (!this._canvas) {
 			// Setup front-buffer canvas element
 			this._canvas = elem;
+			this._ctx = this._canvas.getContext('2d');
+
 			if (autoSize) {
 				this._autoSize = autoSize;
 
 				// Add some event listeners
 				window.addEventListener('resize', this._resizeEvent);
-				this._canvas.addEventListener('mousemove', this._mouseMove);
 
 				// Fire the resize event
 				this._resizeEvent();
 			}
 
+			this._canvas.addEventListener('mousemove', this._mouseMove);
 			this.input._setupListeners();
-			this._ctx = this._canvas.getContext('2d');
 		}
 	},
 
@@ -533,6 +540,7 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	_resizeEvent: function (event) {
 		if (ige._autoSize) {
+
 			var newWidth = window.innerWidth,
 				newHeight = window.innerHeight,
 				arr = ige._children,

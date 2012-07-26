@@ -16,6 +16,10 @@ var ClientLobby = {
 	},
 
 	lobbyLogin: function (username, password) {
-		console.log('U&P SENT:', username, password);
+		// Connect to the server and ask for authentication
+		//ws://localhost:8000/socket.io/websocket
+		ige.network.start('ws://localhost:2000/socket.io/1/websocket/handshake', function () {
+			console.log('Connected!');
+		});
 	}
 };

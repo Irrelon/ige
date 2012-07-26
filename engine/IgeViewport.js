@@ -90,15 +90,19 @@ var IgeViewport = IgeEntity.extend([
 			ctx.clearRect(0, 0, this.geometry.x, this.geometry.y);
 
 			// Clip the context so we only draw "inside" the viewport area
-			ctx.beginPath();
-				ctx.rect(0, 0, this.geometry.x, this.geometry.y);
+			// TODO: CocoonJS doesn't like the ctx.clip() method, find out why
+			// and report a bug if required.
+			if (!ige.cocoonJs.detected) {
+				ctx.beginPath();
+					ctx.rect(0, 0, this.geometry.x, this.geometry.y);
 
-				// Paint a border if required
-				if (this._borderColor) {
-					ctx.strokeStyle = this._borderColor;
-					ctx.stroke();
-				}
-			ctx.clip();
+					// Paint a border if required
+					if (this._borderColor) {
+						ctx.strokeStyle = this._borderColor;
+						ctx.stroke();
+					}
+				ctx.clip();
+			}
 
 			ctx.translate((this.geometry.x / 2) | 0, (this.geometry.y / 2) | 0);
 

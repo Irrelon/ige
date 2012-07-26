@@ -290,19 +290,22 @@ var IgeUiEntity = IgeInteractiveEntity.extend([
 		this._renderBorder(ctx);
 
 
+		// TODO: CocoonJS doesn't like the ctx.clip() method, find out why
+		// and report a bug if required.
+		if (!ige.cocoonJs.detected) {
+			if (this._overflow === 'hidden') {
+				// Limit drawing of child entities to within the bounds
+				// of this one
+				var geom = this.geometry,
+					left = -(geom.x / 2) + this._paddingLeft | 0,
+					top = -(geom.y / 2) + (this._paddingTop) | 0,
+					width = geom.x + this._paddingRight,
+					height = geom.y + this._paddingBottom;
 
-		if (this._overflow === 'hidden') {
-			// Limit drawing of child entities to within the bounds
-			// of this one
-			var geom = this.geometry,
-				left = -(geom.x / 2) + this._paddingLeft | 0,
-				top = -(geom.y / 2) + (this._paddingTop) | 0,
-				width = geom.x + this._paddingRight,
-				height = geom.y + this._paddingBottom;
-
-			ctx.rect(left, top, width, height);
-			//ctx.stroke();
-			ctx.clip();
+				ctx.rect(left, top, width, height);
+				//ctx.stroke();
+				ctx.clip();
+			}
 		}
 
 		ctx.translate(this._paddingLeft, this._paddingTop);

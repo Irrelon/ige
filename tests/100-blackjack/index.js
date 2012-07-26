@@ -4,6 +4,7 @@ var Game = IgeClass.extend({
 	init: function (App, options) {
 		// Create the engine
 		ige = new IgeEngine();
+		ige.basePath = '../';
 
 		if (!ige.isServer) {
 			ige.client = new App();

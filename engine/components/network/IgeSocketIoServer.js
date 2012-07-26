@@ -17,7 +17,7 @@ var IgeSocketIoServer = {
 		this._io = this._socketio.listen(this._port);
 
 		// Set the logging level to errors only
-		this._io.set('log level', 0);
+		this._io.set('log level', 10);
 
 		// Setup listeners
 		this._io.sockets.on('connection', function (socket) {

@@ -13,6 +13,12 @@ var IgeSocketIoClient = {
 	 */
 	start: function (data, callback) {
 		var self = this;
+
+		// Check if the io library exists and use ioNoDom otherwise
+		if (typeof(io) === 'undefined') {
+			io = ioNoDom;
+		}
+
 		self._startCallback = callback;
 
 		if (typeof(data) !== 'undefined') {
