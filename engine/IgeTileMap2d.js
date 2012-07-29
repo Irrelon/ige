@@ -1,3 +1,4 @@
+// TODO: Make the mouse events inactive on tilemaps, instead allow behaviours to be added that call the mouseToTile method and can do things based on that. This solves the problem of tilemaps having arbitrary infinite bounds and allows the programmer to decide which tile maps are being interacted with.
 var IgeTileMap2d = IgeInteractiveEntity.extend({
 	init: function (tileWidth, tileHeight) {
 		this._super();
@@ -180,6 +181,44 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 		}
 
 		return this._tileMapMouseOver;
+	},
+
+	mouseToTile: function () {
+		// TODO: Could this do with some caching to check if the input values have changed and if not, supply the same pre-calculated data if it already exists?
+		var mousePos = this.mousePos(),
+			mx = mousePos.x,
+			my = mousePos.y,
+			dx, dy, tilePos;
+
+		if (this._mountMode === 0) {
+			// 2d
+			dx = mx + this._tileWidth / 2;
+			dy = my + this._tileHeight / 2;
+
+			tilePos = new IgePoint(
+				Math.floor(dx / this._tileWidth),
+				Math.floor(dy / this._tileWidth)
+			);
+		}
+
+		if (this._mountMode === 1) {
+			// iso
+			dx = mx;
+			dy = my - this._tileHeight / 2;
+
+			tilePos = new IgePoint(
+				dx,
+				dy,
+				0
+			).to2d();
+
+			tilePos = new IgePoint(
+				Math.floor(tilePos.x / this._tileWidth) + 1,
+				Math.floor(tilePos.y / this._tileHeight) + 1
+			);
+		}
+
+		return tilePos;
 	},
 
 	calculateMousePosition: function () {
