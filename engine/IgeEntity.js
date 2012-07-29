@@ -48,7 +48,6 @@ var IgeEntity = IgeObject.extend([
 				// Transform the parent mouse position to the current local position
 				//return this._localMatrix.transformCoord({x: parentMousePos.x, y: parentMousePos.y});
 				return new IgePoint(parentMousePos.x - this._translate.x, parentMousePos.y - this._translate.y, 0);
-				//return new IgePoint(parentMousePos.x, parentMousePos.y, 0);
 			} else {
 				// This path should not ever be reached! Every parent object
 				// should have a mousePos() method or inherit one!
