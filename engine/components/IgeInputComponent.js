@@ -166,15 +166,15 @@ var IgeInputComponent = IgeEventingClass.extend({
 	},
 
 	_mouseDown: function (event) {
-		if (event.button === 1) {
+		if (event.button === 0) {
 			this._state[this.mouse.button1] = true;
 		}
 
-		if (event.button === 2) {
+		if (event.button === 1) {
 			this._state[this.mouse.button2] = true;
 		}
 
-		if (event.button === 3) {
+		if (event.button === 2) {
 			this._state[this.mouse.button3] = true;
 		}
 
@@ -184,15 +184,15 @@ var IgeInputComponent = IgeEventingClass.extend({
 	},
 
 	_mouseUp: function (event) {
-		if (event.button === 1) {
+		if (event.button === 0) {
 			this._state[this.mouse.button1] = false;
 		}
 
-		if (event.button === 2) {
+		if (event.button === 1) {
 			this._state[this.mouse.button2] = false;
 		}
 
-		if (event.button === 3) {
+		if (event.button === 2) {
 			this._state[this.mouse.button3] = false;
 		}
 
@@ -207,7 +207,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		this.mouseMove = true;
 
-		this.emit('mouseUp', event);
+		this.emit('mouseMove', event);
 	},
 
 	_mouseWheel: function (event) {
@@ -218,14 +218,20 @@ var IgeInputComponent = IgeEventingClass.extend({
 		} else {
 			this._state[this.mouse.wheelDown] = true;
 		}
+
+		this.emit('mouseWheel', event);
 	},
 
 	_keyDown: function (event) {
 		this._state[event.keyCode] = true;
+
+		this.emit('keyDown', event);
 	},
 
 	_keyUp: function (event) {
 		this._state[event.keyCode] = false;
+
+		this.emit('keyUp', event);
 	},
 
 	/**
@@ -234,8 +240,16 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * @param actionName
 	 * @param eventCode
 	 */
-	map: function (actionName, eventCode) {
+	mapAction: function (actionName, eventCode) {
 		this._controlMap[actionName] = eventCode;
+	},
+
+	/**
+	 * Returns the passed action's input state value.
+	 * @param actionName
+	 */
+	actionVal: function (actionName) {
+		return this._state[this._controlMap[actionName]];
 	},
 
 	/**
@@ -243,26 +257,27 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * is not zero.
 	 * @param actionName
 	 */
-	action: function (actionName) {
+	actionState: function (actionName) {
 		var val = this._state[this._controlMap[actionName]];
 		return !!val; // "Not not" to convert to boolean true/false
 	},
 
 	/**
-	 * Returns the passed action's input state value.
+	 * Returns an input's current value.
 	 * @param actionName
+	 * @return {*}
 	 */
-	val: function (actionName) {
-		return this._state[this._controlMap[actionName]];
+	val: function (inputId) {
+		return this._state[inputId];
 	},
 
 	/**
-	 * Returns the current state of the passed state id.
+	 * Returns an input's current state as a boolean.
 	 * @param stateId
-	 * @return {*}
+	 * @return {Boolean}
 	 */
-	state: function (stateId) {
-		return this._state[stateId];
+	state: function (inputId) {
+		return !!this._state[inputId];
 	},
 
 	/**
