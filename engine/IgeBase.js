@@ -14,6 +14,32 @@ igeDebug = {
 };
 
 /**
+ * Augments all objects with the tween() method. Creates a new IgeTween
+ * with the passed parameters that will act upon the object's properties.
+ * The returned tween will not start tweening until a call to start() is
+ * made.
+ * @param {Object} props
+ * @param {Number} durationMs
+ * @param {Object=} options
+ * @return {IgeTween}
+ */
+Object.prototype.tween = function (props, durationMs, options) {
+	var newTween = new IgeTween()
+		.targetObj(this)
+		.properties(props)
+		.duration(durationMs);
+
+	if (options) {
+		if (options.beforeTween) { newTween.beforeTween(options.beforeTween); }
+		if (options.afterTween) { newTween.afterTween(options.afterTween); }
+		if (options.easing) { newTween.easing(options.easing); }
+		if (options.startTime) { newTween.startTime(options.startTime); }
+	}
+
+	return newTween;
+};
+
+/**
  * Removes the passed item from an array, the opposite of push().
  * @param item
  * @return {*}
