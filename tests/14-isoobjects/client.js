@@ -23,23 +23,21 @@ var Client = IgeClass.extend({
 							this._super();
 
 							// Setup the control system
-							ige.input.map('walkLeft', ige.input.key.left);
-							ige.input.map('walkRight', ige.input.key.right);
-							ige.input.map('walkUp', ige.input.key.up);
-							ige.input.map('walkDown', ige.input.key.down);
+							ige.input.mapAction('walkLeft', ige.input.key.left);
+							ige.input.mapAction('walkRight', ige.input.key.right);
+							ige.input.mapAction('walkUp', ige.input.key.up);
+							ige.input.mapAction('walkDown', ige.input.key.down);
 						},
 
 						tick: function (ctx) {
-							if (ige.input.action('walkLeft')) {
+							if (ige.input.actionState('walkLeft')) {
 								this.translateBy(-2, 0, 0);
-							} else if (ige.input.action('walkRight')) {
+							} else if (ige.input.actionState('walkRight')) {
 								this.translateBy(2, 0, 0);
-							} else if (ige.input.action('walkUp')) {
+							} else if (ige.input.actionState('walkUp')) {
 								this.translateBy(0, -2, 0);
-							} else if (ige.input.action('walkDown')) {
+							} else if (ige.input.actionState('walkDown')) {
 								this.translateBy(0, 2, 0);
-							} else {
-
 							}
 
 							this._super(ctx);
@@ -57,14 +55,16 @@ var Client = IgeClass.extend({
 						.drawBounds(true)
 						.drawBoundsData(true)
 						.mount(ige)
-						.camera.translateTo(-100, -50, 0);
+						.camera.translateTo(-50, 30, 0);
 
 					// Create the tile map
 					self.tileMap1 = new IgeTileMap2d()
 						.tileWidth(40)
 						.tileHeight(40)
 						.drawGrid(0)
-						.isometric(true)
+						.drawBounds(false)
+						.drawBoundsData(false)
+						.isometricMounts(true)
 						.mount(self.scene1);
 
 					// Create an entity
@@ -77,8 +77,7 @@ var Client = IgeClass.extend({
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 0, 0)
 						.size3d(160, 240, 40)
-						.opacity(0.95)
-						.isometric(true);
+						.opacity(0.95);
 
 					self.obj[1] = new IgeCuboid()
 						.id(2)
@@ -87,8 +86,7 @@ var Client = IgeClass.extend({
 						.mount(self.tileMap1)
 						.translateTo(x + 0, -60, 40)
 						.size3d(40, 40, 40)
-						.opacity(0.95)
-						.isometric(true);
+						.opacity(0.95);
 
 					self.obj[2] = new IgeCuboid()
 						.id(3)
@@ -97,8 +95,7 @@ var Client = IgeClass.extend({
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 60, 40)
 						.size3d(40, 40, 40)
-						.opacity(0.95)
-						.isometric(true);
+						.opacity(0.95);
 
 					self.obj[3] = new IgeCuboid()
 						.id(4)
@@ -107,8 +104,7 @@ var Client = IgeClass.extend({
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 0, 80)
 						.size3d(40, 160, 40)
-						.opacity(0.95)
-						.isometric(true);
+						.opacity(0.95);
 
 					// Center column
 					self.obj[4] = new IgeCuboid()
@@ -118,8 +114,7 @@ var Client = IgeClass.extend({
 						.mount(self.tileMap1)
 						.translateTo(0, 0, 0)
 						.size3d(40, 380, 120)
-						.opacity(0.95)
-						.isometric(true);
+						.opacity(0.95);
 
 					// Plinth 2
 					x = 140;
@@ -130,8 +125,7 @@ var Client = IgeClass.extend({
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 0, 0)
 						.size3d(160, 240, 40)
-						.opacity(0.95)
-						.isometric(true);
+						.opacity(0.95);
 
 					self.obj[6] = new IgeCuboid()
 						.id(7)
@@ -140,8 +134,7 @@ var Client = IgeClass.extend({
 						.mount(self.tileMap1)
 						.translateTo(x + 0, -60, 40)
 						.size3d(40, 40, 40)
-						.opacity(0.95)
-						.isometric(true);
+						.opacity(0.95);
 
 					self.obj[7] = new IgeCuboid()
 						.id(8)
@@ -150,8 +143,7 @@ var Client = IgeClass.extend({
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 60, 40)
 						.size3d(40, 40, 40)
-						.opacity(0.95)
-						.isometric(true);
+						.opacity(0.95);
 
 					self.obj[8] = new IgeCuboid()
 						.id(9)
@@ -160,8 +152,7 @@ var Client = IgeClass.extend({
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 0, 80)
 						.size3d(40, 160, 40)
-						.opacity(0.95)
-						.isometric(true);
+						.opacity(0.95);
 
 					// Big slab on top
 					self.obj[9] = new IgeCuboid()
@@ -199,8 +190,7 @@ var Client = IgeClass.extend({
 						.mount(self.tileMap1)
 						.translateTo(0, 300, 80)
 						.size3d(10, 10, 120)
-						.opacity(0.95)
-						.isometric(true);
+						.opacity(0.95);
 
 					self.obj[13] = new IgeCuboid()
 						.id(14)
@@ -209,8 +199,7 @@ var Client = IgeClass.extend({
 						.mount(self.tileMap1)
 						.translateTo(0, 300, 200)
 						.size3d(200, 200, 10)
-						.opacity(0.95)
-						.isometric(true);
+						.opacity(0.95);
 
 					self.obj[14] = new Player()
 						.id(15)
@@ -219,8 +208,7 @@ var Client = IgeClass.extend({
 						.mount(self.tileMap1)
 						.translateTo(300, 300, 0)
 						.size3d(20, 20, 80)
-						.opacity(0.95)
-						.isometric(true);
+						.opacity(0.95);
 				}
 			});
 		});
