@@ -5,15 +5,13 @@ var IgeTween = IgeClass.extend({
 		this._targetObj = targetObj;
 		this._propertyObj = propertyObj !== undefined ? propertyObj : {};
 		this._durationMs = durationMs !== undefined ? durationMs : 0;
-		this._options = options || {};
+		this._started = false;
 
 		// Sort out the options
-		if (options) {
-			if (options.easing) { this.easing(options.easing); } else { this._easing = 'none'; }
-			if (options.startTime !== undefined) { this.startTime(options.startTime); }
-			if (options.beforeTween !== undefined) { this.beforeTween(options.beforeTween); }
-			if (options.afterTween !== undefined) { this.afterTween(options.afterTween); }
-		}
+		if (options && options.easing) { this.easing(options.easing); } else { this.easing('none'); }
+		if (options && options.startTime !== undefined) { this.startTime(options.startTime); }
+		if (options && options.beforeTween !== undefined) { this.beforeTween(options.beforeTween); }
+		if (options && options.afterTween !== undefined) { this.afterTween(options.afterTween); }
 	},
 
 	/**
@@ -48,7 +46,7 @@ var IgeTween = IgeClass.extend({
 	 * @param callback
 	 */
 	beforeTween: function (callback) {
-		this._options.beforeTween = callback;
+		this._beforeTween = callback;
 		return this;
 	},
 
@@ -57,7 +55,7 @@ var IgeTween = IgeClass.extend({
 	 * @param callback
 	 */
 	afterTween: function (callback) {
-		this._options.afterTween = callback;
+		this._afterTween = callback;
 		return this;
 	},
 
@@ -66,7 +64,7 @@ var IgeTween = IgeClass.extend({
 	 * @param methodName
 	 */
 	easing: function (methodName) {
-		this._options.easing = methodName;
+		this._easing = methodName;
 		return this;
 	},
 
@@ -75,19 +73,25 @@ var IgeTween = IgeClass.extend({
 	 * @param timeMs
 	 */
 	startTime: function (timeMs) {
-		this._options.startTime = timeMs;
+		this._startTime = timeMs;
 	},
 
 	/**
 	 * Starts the tweening operation.
 	 */
 	start: function () {
-		this._tweenIndex = ige.tween.start(
+		/*ige.tween.start(
 			this._targetObj,
 			this._propertyObj,
 			this._durationMs,
 			this._options
-		);
+		);*/
+
+		ige.tween.start(this);
+
+		// Add the tween to the target object's tween array
+		this._targetObj._tweenArr = this._targetObj._tweenArr || [];
+		this._targetObj._tweenArr.push(this);
 
 		return this;
 	},
@@ -96,9 +100,12 @@ var IgeTween = IgeClass.extend({
 	 * Stops the tweening operation.
 	 */
 	stop: function () {
-		if (this._tweenIndex !== undefined) {
-			ige.tween.stop(this._tweenIndex);
-		}
+		ige.tween.stop(this);
+		this._targetObj._tweenArr.pull(this);
+
 		return this;
-	}
+	},
+
+	startAll: Object.prototype._tweenStartAll,
+	stopAll: Object.prototype._tweenStopAll
 });

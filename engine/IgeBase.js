@@ -23,6 +23,13 @@ igeDebug = {
  * @param {Object=} options
  * @return {IgeTween}
  */
+/*Object.defineProperty(Object.prototype, 'tween', {
+	set: function (val) { debugger; this.myVal = val; },
+	get: function () {
+		return this.myVal;
+	}
+});*/
+
 Object.prototype.tween = function (props, durationMs, options) {
 	var newTween = new IgeTween()
 		.targetObj(this)
@@ -37,6 +44,34 @@ Object.prototype.tween = function (props, durationMs, options) {
 	}
 
 	return newTween;
+};
+
+/**
+ * Starts all tweens registerd to an object.
+ * @private
+ */
+Object.prototype._tweenStartAll = function () {
+	if (this._targetObj._tweenArr) {
+		this._targetObj._tweenArr.eachReverse(function (tweenItem) {
+			tweenItem.start();
+		});
+	}
+
+	return this._targetObj;
+};
+
+/**
+ * Stops all tweens registerd to an object.
+ * @private
+ */
+Object.prototype._tweenStopAll = function () {
+	if (this._targetObj._tweenArr) {
+		this._targetObj._tweenArr.eachReverse(function (tweenItem) {
+			tweenItem.stop();
+		});
+	}
+
+	return this._targetObj;
 };
 
 /**
@@ -60,8 +95,51 @@ Array.prototype.pull = function (item) {
  * @param {Function} callback
  */
 Array.prototype.each = function (callback) {
-	for (var i = 0; i < this.length; i++) {
+	var len = this.length,
+		i;
+
+	for (i = 0; i < len; i++) {
 		callback(this[i]);
+	}
+};
+
+/**
+ * Iterates through an array's items and calls the callback method
+ * passing each item one by one in reverse order.
+ * @param {Function} callback
+ */
+Array.prototype.eachReverse = function (callback) {
+	var arrCount = this.length,
+		i;
+
+	for (i = arrCount - 1; i >= 0; i--) {
+		callback(this[i]);
+	}
+};
+
+/**
+ * Iterates through an array's items and calls the callback method
+ * passing each item one by one. Altering the array's structure
+ * during the callback method will not affect the iteration of the
+ * items.
+ *
+ * @param {Function} callback
+ */
+Array.prototype.eachIsolated = function (callback) {
+	var arr = [],
+		arrCount = arr.length,
+		i;
+
+	// Create a copy of the array
+	for (i = 0; i < arrCount; i++) {
+		arr[i] = this[i];
+	}
+
+	// Now iterate the array, passing the copied
+	// array value at the index(i). Any changes to
+	// "this" will not affect the index(i) values.
+	for (i = 0; i < arrCount; i++) {
+		callback(arr[i]);
 	}
 };
 

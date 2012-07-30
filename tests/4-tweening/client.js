@@ -28,7 +28,7 @@ var Client = IgeClass.extend({
 						newTween: function () {
 							var self = this;
 
-							this.translate().tween()
+							this._translate.tween()
 								.duration(7000)
 								.properties({
 									x: (Math.random() * ige.geometry.x) - ige.geometry.x2,
@@ -40,7 +40,7 @@ var Client = IgeClass.extend({
 								})
 								.start();
 
-							this.rotate().tween()
+							this._rotate.tween()
 								.duration(7000)
 								.properties({z: (Math.random() * 360) * Math.PI / 180})
 								.easing('outElastic')

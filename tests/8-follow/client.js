@@ -35,8 +35,8 @@ var Client = IgeClass.extend({
 								.dimensionsFromCell()
 								.mount(self.scene1);
 
-							ige.input.map('mouseX', ige.input.mouse.x);
-							ige.input.map('mouseY', ige.input.mouse.y);
+							ige.input.mapAction('mouseX', ige.input.mouse.x);
+							ige.input.mapAction('mouseY', ige.input.mouse.y);
 						},
 
 						walkTo: function (x, y) {
@@ -86,8 +86,8 @@ var Client = IgeClass.extend({
 
 						tick: function (ctx) {
 							this.walkTo(
-								ige.input.val('mouseX'),
-								ige.input.val('mouseY')
+								ige.input.actionVal('mouseX'),
+								ige.input.actionVal('mouseY')
 							);
 
 							this._super(ctx);

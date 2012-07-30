@@ -116,7 +116,7 @@ var Client = IgeClass.extend({
 								speed = 0.1,
 								time = distance / speed;
 
-							this.translate().tween()
+							this._translate.tween()
 								.properties({
 									x: x,
 									y: y

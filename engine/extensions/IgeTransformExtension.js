@@ -17,7 +17,7 @@ var IgeTransformExtension = {
 	},
 
 	translate: function () {
-		this.tween = this._translateAccessorTween;
+		//this.tween = this._translateAccessorTween;
 		this.x = this._translateAccessorX;
 		this.y = this._translateAccessorY;
 		this.z = this._translateAccessorZ;
@@ -75,7 +75,7 @@ var IgeTransformExtension = {
 	},
 
 	rotate: function () {
-		this.tween = this._rotateAccessorTween;
+		//this.tween = this._rotateAccessorTween;
 		this.x = this._rotateAccessorX;
 		this.y = this._rotateAccessorY;
 		this.z = this._rotateAccessorZ;
@@ -130,7 +130,7 @@ var IgeTransformExtension = {
 	},
 
 	scale: function () {
-		this.tween = this._scaleAccessorTween;
+		//this.tween = this._scaleAccessorTween;
 		this.x = this._scaleAccessorX;
 		this.y = this._scaleAccessorY;
 		this.z = this._scaleAccessorZ;
@@ -186,7 +186,7 @@ var IgeTransformExtension = {
 	},
 
 	origin: function () {
-		this.tween = this._originAccessorTween;
+		//this.tween = this._originAccessorTween;
 		this.x = this._originAccessorX;
 		this.y = this._originAccessorY;
 		this.z = this._originAccessorZ;

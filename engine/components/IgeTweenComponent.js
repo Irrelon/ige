@@ -9,7 +9,7 @@ var IgeTweenComponent = IgeClass.extend({
 		// Setup the array that will hold our active tweens
 		this._tweens = [];
 
-		// Add the velocity behaviour to the entity
+		// Add the tween behaviour to the entity
 		entity.addBehaviour('tween', this._behaviour);
 	},
 
@@ -30,35 +30,38 @@ var IgeTweenComponent = IgeClass.extend({
 	 * @param options
 	 * @return {Number} The index of the added tween or -1 on error.
 	 */
-	start: function (obj, propertyNameAndValue, durationMs, options) {
-		var tweenObj = obj,
+	start: function (tween) {
+		var targetObj = tween._targetObj,
+			propertyNameAndValue = tween._propertyObj,
 			endTime,
 			propertyIndex,
 			targetData = [];
 
-		if (tweenObj) {
+		if (targetObj) {
 			// Check / fill some option defaults
-			options = options || [];
-
-			if (options.easing === undefined) { options.easing = 'none'; }
-			if (options.startTime === undefined) { options.startTime = new Date().getTime(); }
-			if (durationMs === undefined) { durationMs = 0; }
+			if (tween._startTime === undefined) { tween._startTime = new Date().getTime(); }
+			if (tween._durationMs === undefined) { tween._durationMs = 0; }
 
 			// Calculate the end time
-			endTime = options.startTime + durationMs;
+			tween._endTime = tween._startTime + tween._durationMs;
 
 			for (propertyIndex in propertyNameAndValue) {
-				targetData.push({
-					targetObj: tweenObj,
-					propName: propertyIndex,
-					startVal: tweenObj[propertyIndex], // The starting value of the tween
-					endVal: propertyNameAndValue[propertyIndex], // The target value of the tween
-					deltaVal: propertyNameAndValue[propertyIndex] - tweenObj[propertyIndex] // The diff between start and end values
-				});
+				if (propertyNameAndValue.hasOwnProperty(propertyIndex)) {
+					targetData.push({
+						targetObj: targetObj,
+						propName: propertyIndex,
+						startVal: targetObj[propertyIndex], // The starting value of the tween
+						endVal: propertyNameAndValue[propertyIndex], // The target value of the tween
+						deltaVal: propertyNameAndValue[propertyIndex] - targetObj[propertyIndex] // The diff between start and end values
+					});
+				}
 			}
 
+			tween._targetData = targetData;
+			tween._destTime = tween._endTime - tween._startTime;
+
 			// Push the new tween into the tweens array
-			this._tweens.push({
+			/*this._tweens.push({
 				targets: targetData, // The tween target properties and values
 				duration: durationMs, // The duration that the tween should run for
 				easing: options.easing, // Easing method to use
@@ -68,12 +71,14 @@ var IgeTweenComponent = IgeClass.extend({
 				beforeTween: options.beforeTween, // Callback before tween starts
 				afterTween: options.afterTween, // Callback when tween ends
 				_started: false // Internal flag for if tween has started yet
-			});
+			});*/
+
+			this._tweens.push(tween);
 
 			// Enable tweening on this entity
 			this.enable();
 
-			return this._tweens.length - 1; // Return the index of the tween
+			return tween; // Return the tween
 		} else {
 			this.log('Cannot start tweening properties of the specified object "' + obj + '" because it does not exist!', 'error');
 			return -1;
@@ -81,17 +86,19 @@ var IgeTweenComponent = IgeClass.extend({
 	},
 
 	/**
-	 * Stop tweening a transform property for the object.
-	 * @param {Number} tweenIndex
+	 * Removes the specified tween from the active tween list.
+	 * @param {IgeTween} The tween to stop.
 	 */
-	stop: function (tweenIndex) {
+	stop: function (tween) {
 		// Store the new tween details in the item
-		this._tweens.splice(tweenIndex, 1);
+		this._tweens.pull(tween);
 
 		if (!this._tweens.length) {
 			// Disable tweening on this item
 			this.disable();
 		}
+
+		return this;
 	},
 
 	/**
@@ -104,6 +111,8 @@ var IgeTweenComponent = IgeClass.extend({
 		// Remove all tween details
 		delete this._tweens;
 		this._tweens = [];
+
+		return this;
 	},
 
 	/**
@@ -115,6 +124,8 @@ var IgeTweenComponent = IgeClass.extend({
 			// Set the item to tweening
 			this._tweening = true;
 		}
+
+		return this;
 	},
 
 	/**
@@ -126,6 +137,8 @@ var IgeTweenComponent = IgeClass.extend({
 			// Set the item to not tweening
 			this._tweening = false;
 		}
+
+		return this;
 	},
 
 	/**
@@ -149,30 +162,30 @@ var IgeTweenComponent = IgeClass.extend({
 				tween = tweens[tweenCount];
 
 				// Check if we should be starting this tween yet
-				if (tween._started || currentTime >= tween.startTime) {
+				if (tween._started || currentTime >= tween._startTime) {
 					if (!tween._started) {
 						// Check if we have a beforeTween callback to fire
-						if (typeof(tween.beforeTween) === 'function') {
+						if (typeof(tween._beforeTween) === 'function') {
 							// Fire the beforeTween callback
-							tween.beforeTween(tween);
+							tween._beforeTween(tween);
 
 							// Delete the callback so we don't store it any longer
-							delete tween.beforeTween;
+							delete tween._beforeTween;
 						}
 
 						tween._started = true;
 					}
 
-					deltaTime = currentTime - tween.startTime; // Delta from start time to current time
-					destTime = tween.destTime;
-					easing = tween.easing;
+					deltaTime = currentTime - tween._startTime; // Delta from start time to current time
+					destTime = tween._destTime;
+					easing = tween._easing;
 
 					// Check if the tween has reached it's destination based upon
 					// the current time
 					if (deltaTime >= destTime) {
 						// The tween time indicates the tween has ended so set to
 						// the ending value and stop the tween
-						targets = tween.targets;
+						targets = tween._targetData;
 
 						for (targetIndex in targets) {
 							if (targets.hasOwnProperty(targetIndex)) {
@@ -182,20 +195,20 @@ var IgeTweenComponent = IgeClass.extend({
 						}
 
 						// Now stop tweening this tween
-						this.stop(tweenCount);
+						tween.stop();
 
 						// If there is a callback, call it
-						if (typeof(tween.afterTween) === 'function') {
+						if (typeof(tween._afterTween) === 'function') {
 							// Fire the beforeTween callback
-							tween.afterTween(tween);
+							tween._afterTween(tween);
 
 							// Delete the callback so we don't store it any longer
-							delete tween.afterTween;
+							delete tween._afterTween;
 						}
 					} else {
 						// The tween is still active, process the tween by passing it's details
 						// to the selected easing method
-						targets = tween.targets;
+						targets = tween._targetData;
 
 						for (targetIndex in targets) {
 							if (targets.hasOwnProperty(targetIndex)) {

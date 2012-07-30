@@ -413,7 +413,9 @@ var IgeParticleEmitter = IgeEntity.extend({
 					deathRotate,
 					deathOpacity,
 					tempParticle,
-					tweens;
+					tweens,
+					scaleProps,
+					i;
 
 				if (this._currentDelta > this._quantityTimespan) {
 					this._currentDelta = this._quantityTimespan;
@@ -568,7 +570,8 @@ var IgeParticleEmitter = IgeEntity.extend({
 									.properties({_opacity: deathOpacity})
 									.duration(life));
 							}
-							var scaleProps = {};
+
+							scaleProps = {};
 							if (typeof(deathScaleX) !== 'undefined') {
 								scaleProps.x = deathScaleX;
 							}
@@ -585,8 +588,9 @@ var IgeParticleEmitter = IgeEntity.extend({
 									.properties(scaleProps)
 									.duration(life));
 							}
+
 							// Start the relevant tweens
-							for (var i = 0; i < tweens.length; i++) {
+							for (i = 0; i < tweens.length; i++) {
 								tweens[i].start();
 							}
 

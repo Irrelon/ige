@@ -21,6 +21,7 @@ var Client = IgeClass.extend({
 					self.CharacterMonk = IgeEntity.extend({
 						init: function () {
 							this._super();
+							var self = this;
 
 							// Setup the entity
 							this.addComponent(IgeAnimationComponent)
@@ -33,10 +34,13 @@ var Client = IgeClass.extend({
 								.depth(1)
 								.texture(gameTexture[0])
 								.dimensionsFromCell()
-								.mount(self.scene1);
+								.mount(ige.client.scene1);
 
 							ige.input.mapAction('mouseX', ige.input.mouse.x);
 							ige.input.mapAction('mouseY', ige.input.mouse.y);
+
+							// Listen for the mouse up event
+							ige.input.on('mouseUp', function (event) { self._mouseUp(event); });
 						},
 
 						walkTo: function (x, y) {
@@ -51,46 +55,18 @@ var Client = IgeClass.extend({
 								),
 								speed = 0.1,
 								time = (distance / speed);
-
-							if (Math.abs(distX) > 0.2 || Math.abs(distY) > 0.2) {
-								this.velocity.x(distX / time);
-								this.velocity.y(distY / time);
-
-								if (Math.abs(distX) > Math.abs(distY)) {
-									// Moving horizontal
-									if (distX < 0) {
-										// Moving left
-										this.animation.select('walkLeft');
-									} else {
-										// Moving right
-										this.animation.select('walkRight');
-									}
-								} else {
-									// Moving vertical
-									if (distY < 0) {
-										// Moving up
-										this.animation.select('walkUp');
-									} else {
-										// Moving down
-										this.animation.select('walkDown');
-									}
-								}
-							} else {
-								this.velocity.x(0)
-									.velocity.y(0)
-									.translateTo(x, y, 0);
-							}
+							console.log(this.tween);
+							this._translate.tween().stopAll();
+							this._translate.tween({x: x, y: y}, time).start();
 
 							return this;
 						},
 
-						tick: function (ctx) {
+						_mouseUp: function (event) {
 							this.walkTo(
 								ige.input.actionVal('mouseX'),
 								ige.input.actionVal('mouseY')
 							);
-
-							this._super(ctx);
 						}
 					});
 

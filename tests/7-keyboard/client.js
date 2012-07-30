@@ -40,26 +40,26 @@ var Client = IgeClass.extend({
 								.mount(self.scene1);
 
 							// Setup the control system
-							ige.input.map('walkLeft', ige.input.key.left);
-							ige.input.map('walkRight', ige.input.key.right);
-							ige.input.map('walkUp', ige.input.key.up);
-							ige.input.map('walkDown', ige.input.key.down);
+							ige.input.mapAction('walkLeft', ige.input.key.left);
+							ige.input.mapAction('walkRight', ige.input.key.right);
+							ige.input.mapAction('walkUp', ige.input.key.up);
+							ige.input.mapAction('walkDown', ige.input.key.down);
 						},
 
 						tick: function (ctx) {
-							if (ige.input.action('walkLeft')) {
+							if (ige.input.actionState('walkLeft')) {
 								this.velocity.x(-0.1)
 									.velocity.y(0)
 									.animation.select('walkLeft');
-							} else if (ige.input.action('walkRight')) {
+							} else if (ige.input.actionState('walkRight')) {
 								this.velocity.x(0.1)
 									.velocity.y(0)
 									.animation.select('walkRight');
-							} else if (ige.input.action('walkUp')) {
+							} else if (ige.input.actionState('walkUp')) {
 								this.velocity.x(0)
 									.velocity.y(-0.1)
 									.animation.select('walkUp');
-							} else if (ige.input.action('walkDown')) {
+							} else if (ige.input.actionState('walkDown')) {
 								this.velocity.x(0)
 									.velocity.y(0.1)
 									.animation.select('walkDown');
