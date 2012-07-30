@@ -81,13 +81,19 @@ var IgeObject = IgeEventingClass.extend({
 	 * @return {*} Returns this on success or false on failure.
 	 */
 	addBehaviour: function (id, behaviour) {
-		if (behaviour !== undefined) {
-			this._behaviours.push({
-				id:id,
-				method: behaviour
-			});
+		if (typeof(id) === 'string') {
+			if (typeof(behaviour) === 'function') {
+				this._behaviours.push({
+					id:id,
+					method: behaviour
+				});
 
-			return this;
+				return this;
+			} else {
+				this.log('The behaviour you passed is not a function! The second parameter of the call must be a function!', 'error');
+			}
+		} else {
+			this.log('Cannot add behaviour to object because the specified behaviour id is not a string. You must provide two parameters with the addBehaviour() call, an id:String and a behaviour:Function. Adding a behaviour with an id allows you to remove it by it\'s id at a later stage!', 'error');
 		}
 
 		return false;
