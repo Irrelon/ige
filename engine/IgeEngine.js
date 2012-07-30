@@ -48,7 +48,7 @@ var IgeEngine = IgeEntity.extend({
 		this._texturesTotal = 0; // Holds total number of textures loading / loaded
 		this._dependencyQueue = []; // Holds an array of functions that must all return true for the engine to start
 		this._drawCount = 0; // Holds the number of draws since the last frame (calls to drawImage)
-		this._drawsLastTick = 0; // Number of draws that occurred last tick
+		this._dps = 0; // Number of draws that occurred last tick
 		this._frames = 0; // Number of frames looped through since last second tick
 		this._fps = 0; // Number of frames per second
 		this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
@@ -423,6 +423,20 @@ var IgeEngine = IgeEntity.extend({
 			} else {
 				// Load the iFrame url
 				var overlay = document.getElementById('igeOverlay');
+
+				if (!overlay) {
+					// No overlay was found, create one
+					var overlay = document.createElement('iframe');
+					overlay.id = 'igeOverlay';
+					overlay.style.position = 'absolute';
+					overlay.style.border = 'none';
+					overlay.style.left = '0px';
+					overlay.style.top = '0px';
+					overlay.style.width = '100%';
+					overlay.style.height = '100%';
+					document.body.appendChild(overlay);
+				}
+
 				overlay.src = url;
 				overlay.style.display = 'block';
 			}
@@ -441,7 +455,9 @@ var IgeEngine = IgeEntity.extend({
 			ige.cocoonJs.hideWebView();
 		} else {
 			var overlay = document.getElementById('igeOverlay');
-			overlay.style.display = 'none';
+			if (overlay) {
+				overlay.style.display = 'none';
+			}
 		}
 
 		return this;
