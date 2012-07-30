@@ -13,6 +13,9 @@ igeDebug = {
 	}
 };
 
+/**
+ * Make property non-enumerable.
+ */
 Object.defineProperty(Object.prototype, 'tween', {
 	enumerable:false,
 	writable:true,
@@ -46,6 +49,15 @@ Object.prototype.tween = function (props, durationMs, options) {
 };
 
 /**
+ * Make property non-enumerable.
+ */
+Object.defineProperty(Array.prototype, 'pull', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
+
+/**
  * Removes the passed item from an array, the opposite of push().
  * @param item
  * @return {*}
@@ -59,6 +71,15 @@ Array.prototype.pull = function (item) {
 		return -1;
 	}
 };
+
+/**
+ * Make property non-enumerable.
+ */
+Object.defineProperty(Array.prototype, 'each', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
 
 /**
  * Iterates through an array's items and calls the callback method
@@ -75,6 +96,15 @@ Array.prototype.each = function (callback) {
 };
 
 /**
+ * Make property non-enumerable.
+ */
+Object.defineProperty(Array.prototype, 'eachReverse', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
+
+/**
  * Iterates through an array's items and calls the callback method
  * passing each item one by one in reverse order.
  * @param {Function} callback
@@ -87,6 +117,15 @@ Array.prototype.eachReverse = function (callback) {
 		callback(this[i]);
 	}
 };
+
+/**
+ * Make property non-enumerable.
+ */
+Object.defineProperty(Array.prototype, 'eachIsolated', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
 
 /**
  * Iterates through an array's items and calls the callback method
@@ -115,6 +154,15 @@ Array.prototype.eachIsolated = function (callback) {
 };
 
 /**
+ * Make property non-enumerable.
+ */
+Object.defineProperty(Math, 'distance', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
+
+/**
  * Calculates the distance from the first point to the second point.
  * @param x1
  * @param y1
@@ -139,9 +187,23 @@ var disableContextMenu = function (obj) {
 
 /**
  * Adds the indexOf method to all array objects if it does not already exist which
- * would you believe can still happen.
+ * would you believe can still happen even in 2012!
  */
 if(!Array.prototype.indexOf){
+	/**
+	 * Make property non-enumerable.
+	 */
+	Object.defineProperty(Array.prototype, 'indexOf', {
+		enumerable:false,
+		writable:true,
+		configurable:true
+	});
+
+	/**
+	 * Get the index of the passed item.
+	 * @param {*} obj The item to find the index for.
+	 * @return {Number} The index of the passed item or -1 if not found.
+	 */
 	Array.prototype.indexOf = function(obj) {
 		var i, l = this.length;
 		for (i = 0; i < l; i++) {
