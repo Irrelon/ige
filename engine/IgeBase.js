@@ -57,7 +57,7 @@ Object.prototype._tweenStartAll = function () {
 		});
 	}
 
-	return this._targetObj;
+	return this;
 };
 
 /**
@@ -71,7 +71,7 @@ Object.prototype._tweenStopAll = function () {
 		});
 	}
 
-	return this._targetObj;
+	return this;
 };
 
 /**
