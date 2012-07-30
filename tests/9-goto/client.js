@@ -55,9 +55,12 @@ var Client = IgeClass.extend({
 								),
 								speed = 0.1,
 								time = (distance / speed);
-							console.log(this.tween);
-							this._translate.tween().stopAll();
-							this._translate.tween({x: x, y: y}, time).start();
+
+							this._translate.tween()
+								.stopAll()
+								.properties({x: x, y: y})
+								.duration(time)
+								.start();
 
 							return this;
 						},
