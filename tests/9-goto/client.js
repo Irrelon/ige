@@ -56,10 +56,38 @@ var Client = IgeClass.extend({
 								speed = 0.1,
 								time = (distance / speed);
 
+							// Set the animation based on direction
+							if (Math.abs(distX) > Math.abs(distY)) {
+								// Moving horizontal
+								if (distX < 0) {
+									// Moving left
+									this.animation.select('walkLeft');
+								} else {
+									// Moving right
+									this.animation.select('walkRight');
+								}
+							} else {
+								// Moving vertical
+								if (distY < 0) {
+									// Moving up
+									this.animation.select('walkUp');
+								} else {
+									// Moving down
+									this.animation.select('walkDown');
+								}
+							}
+
+							// Start tweening the little person to their destination
 							this._translate.tween()
 								.stopAll()
 								.properties({x: x, y: y})
 								.duration(time)
+								.afterTween(function () {
+									self.animation.stop();
+									// And you could make him reset back
+									// to his original animation frame with:
+									//self.cell(10);
+								})
 								.start();
 
 							return this;
