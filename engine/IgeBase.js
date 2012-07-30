@@ -13,6 +13,12 @@ igeDebug = {
 	}
 };
 
+Object.defineProperty(Object.prototype, 'tween', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
+
 /**
  * Augments all objects with the tween() method. Creates a new IgeTween
  * with the passed parameters that will act upon the object's properties.
@@ -23,13 +29,6 @@ igeDebug = {
  * @param {Object=} options
  * @return {IgeTween}
  */
-/*Object.defineProperty(Object.prototype, 'tween', {
-	set: function (val) { debugger; this.myVal = val; },
-	get: function () {
-		return this.myVal;
-	}
-});*/
-
 Object.prototype.tween = function (props, durationMs, options) {
 	var newTween = new IgeTween()
 		.targetObj(this)
@@ -44,34 +43,6 @@ Object.prototype.tween = function (props, durationMs, options) {
 	}
 
 	return newTween;
-};
-
-/**
- * Starts all tweens registerd to an object.
- * @private
- */
-Object.prototype._tweenStartAll = function () {
-	if (this._targetObj._tweenArr) {
-		this._targetObj._tweenArr.eachReverse(function (tweenItem) {
-			tweenItem.start();
-		});
-	}
-
-	return this;
-};
-
-/**
- * Stops all tweens registerd to an object.
- * @private
- */
-Object.prototype._tweenStopAll = function () {
-	if (this._targetObj._tweenArr) {
-		this._targetObj._tweenArr.eachReverse(function (tweenItem) {
-			tweenItem.stop();
-		});
-	}
-
-	return this;
 };
 
 /**
