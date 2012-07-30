@@ -106,6 +106,31 @@ var IgeTween = IgeClass.extend({
 		return this;
 	},
 
-	startAll: Object.prototype._tweenStartAll,
-	stopAll: Object.prototype._tweenStopAll
+	/**
+	 * Starts all tweens registerd to an object.
+	 * @private
+	 */
+	startAll: function () {
+		if (this._targetObj._tweenArr) {
+			this._targetObj._tweenArr.eachReverse(function (tweenItem) {
+				tweenItem.start();
+			});
+		}
+
+		return this;
+	},
+
+	/**
+	 * Stops all tweens registerd to an object.
+	 * @private
+	 */
+	stopAll: function () {
+		if (this._targetObj._tweenArr) {
+			this._targetObj._tweenArr.eachReverse(function (tweenItem) {
+				tweenItem.stop();
+			});
+		}
+
+		return this;
+	}
 });
