@@ -88,14 +88,14 @@ var Client = IgeClass.extend({
 			.isometric(true)
 			.tileWidth(20)
 			.tileHeight(20)
-			.drawGrid(40)
+			.drawGrid(0)
 			.highlightOccupied(false)
 			.mount(this.scene1);
 
 		// Create the tile map
 		this.tileMap1 = new IgeTileMap2d()
 			.layer(2)
-			.isometric(true)
+			.isometricMounts(true)
 			.tileWidth(20)
 			.tileHeight(20)
 			.drawGrid(40)

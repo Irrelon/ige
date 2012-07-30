@@ -81,6 +81,7 @@ var ClientObjects = {
 
 			// Set the skyscraper entity details
 			this.isometric(true)
+				.isometricMounts(true)
 				.mount(parent)
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
 				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
