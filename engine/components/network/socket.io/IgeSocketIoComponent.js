@@ -16,7 +16,7 @@ var IgeSocketIoComponent = IgeEventingClass.extend({
 		/* CEXCLUDE */
 		if (ige.isServer) {
 			this.implement(IgeSocketIoServer);
-			this._socketio = require('../../' + modulePath + 'socket.io');
+			this._socketio = require('../../../' + modulePath + 'socket.io');
 			this._acceptConnections = false;
 		}
 		/* CEXCLUDE */

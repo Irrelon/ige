@@ -42,8 +42,12 @@ IgeSceneIso = require('../engine/IgeSceneIso');
 IgeEngine = require('../engine/IgeEngine');
 // Network
 IgeDummyContext = require('../engine/components/network/IgeDummyContext');
-IgeSocketIoServer = require('../engine/components/network/IgeSocketIoServer');
-IgeSocketIoComponent = require('../engine/components/network/IgeSocketIoComponent');
+	// Socket.io
+	IgeSocketIoServer = require('../engine/components/network/socket.io/IgeSocketIoServer');
+	IgeSocketIoComponent = require('../engine/components/network/socket.io/IgeSocketIoComponent');
+	// Net.io
+	IgeNetIoServer = require('../engine/components/network/net.io/IgeNetIoServer');
+	IgeNetIoComponent = require('../engine/components/network/net.io/IgeNetIoComponent');
 // Chat
 IgeChatServer = require('../engine/components/chat/IgeChatServer');
 IgeChatComponent = require('../engine/components/chat/IgeChatComponent');
