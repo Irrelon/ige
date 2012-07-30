@@ -7,6 +7,7 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
+		// Load the fairy texture and store it in the gameTexture array
 		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
 
 		// Wait for our textures to load before continuing
@@ -14,27 +15,23 @@ var Client = IgeClass.extend({
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 
+			// Start the engine
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					var Rotator = IgeEntity.extend({
-						tick: function (ctx) {
-							this.rotateBy(0, 0, (0.1 * ige.tickDelta) * Math.PI / 180);
-							this._super(ctx);
-						}
-					});
-
 					// Create the scene
 					self.scene1 = new IgeScene2d();
 
-					// Create the main viewport
+					// Create the main viewport and set the scene
+					// it will "look" at as the new scene1 we just
+					// created above
 					self.vp1 = new IgeViewport()
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
 						.mount(ige);
 
-					// Create an entity
+					// Create an entity and mount it to the scene
 					self.obj[0] = new Rotator()
 						.id('fairy1')
 						.depth(1)
@@ -44,6 +41,9 @@ var Client = IgeClass.extend({
 						.translateTo(0, 0, 0)
 						.mount(self.scene1);
 
+					// Create a second rotator entity and mount
+					// it to the first one at 0, 50 relative to the
+					// parent
 					self.obj[1] = new Rotator()
 						.id('fairy2')
 						.depth(1)

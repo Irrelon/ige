@@ -18,36 +18,6 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					// Define a random-moving entity
-					var RandomTweener = IgeInteractiveEntity.extend({
-						init: function () {
-							this._super();
-							this.newTween();
-						},
-
-						newTween: function () {
-							var self = this;
-
-							this._translate.tween()
-								.duration(7000)
-								.properties({
-									x: (Math.random() * ige.geometry.x) - ige.geometry.x2,
-									y: (Math.random() * ige.geometry.y) - ige.geometry.y2
-								})
-								.easing('outElastic')
-								.afterTween(function () {
-									self.newTween();
-								})
-								.start();
-
-							this._rotate.tween()
-								.duration(7000)
-								.properties({z: (Math.random() * 360) * Math.PI / 180})
-								.easing('outElastic')
-								.start();
-						}
-					});
-
 					// Create the scene
 					self.scene1 = new IgeScene2d();
 
@@ -56,20 +26,29 @@ var Client = IgeClass.extend({
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
+						.drawBoundsData(true)
 						.mount(ige);
 
+					// Define a function that will be called when the
+					// mouse cursor moves over one of our entities
 					overFunc = function () {
 						this.highlight(true);
 						this.drawBounds(true);
 						this.drawBoundsData(true);
 					};
 
+					// Define a function that will be called when the
+					// mouse cursor moves away from one of our entities
 					outFunc = function () {
 						this.highlight(false);
 						this.drawBounds(false);
 						this.drawBoundsData(false);
 					};
 
+					// Create 200 random tweening entities and add
+					// mouse over and mouse out event listeners to
+					// them based on the functions we defined above,
+					// then add them to the scene!
 					for (i = 0; i < 200; i++) {
 						self.obj[0] = new RandomTweener()
 							.id('fairy' + i)
@@ -78,6 +57,7 @@ var Client = IgeClass.extend({
 							.height(100)
 							.texture(gameTexture[0])
 							.drawBounds(false)
+							.drawBoundsData(false)
 							.mouseOver(overFunc)
 							.mouseOut(outFunc)
 							.mount(self.scene1);

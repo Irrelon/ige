@@ -5,10 +5,11 @@ var Client = IgeClass.extend({
 		var self = this,
 			gameTexture = [],
 			tempObj,
-			RotatorBehaviour,
-			RotatorBehaviourAC,
-			ScalerBehaviour,
-			vp = [];
+			vp = [],
+			tt = 0,
+			vpCount = 3,
+			timeInc = 1200,
+			i;
 
 		this.obj = [];
 
@@ -22,44 +23,10 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					RotatorBehaviour = function (ctx) {
-						this.rotateBy(0, 0, (0.1 * ige.tickDelta) * Math.PI / 180);
-					};
-
-					RotatorBehaviourAC = function (ctx) {
-						this.rotateBy(0, 0, (-0.1 * ige.tickDelta) * Math.PI / 180);
-					};
-
-					ScalerBehaviour = function (ctx) {
-						if (this.data('scalerMode') === undefined) {
-							this.data('scalerMode', 1);
-						}
-
-						if (this.data('scalerMode') === 1) {
-							this.scaleBy((0.001 * ige.tickDelta), (0.001 * ige.tickDelta), (0.001 * ige.tickDelta));
-
-							if (this._scale.x >= 4) {
-								this.data('scalerMode', 2);
-								this.scaleTo(4, 4, 4);
-							}
-
-							return;
-						}
-
-						if (this.data('scalerMode') === 2) {
-							this.scaleBy(-(0.001 * ige.tickDelta), -(0.001 * ige.tickDelta), -(0.001 * ige.tickDelta));
-
-							if (this._scale.x <= 1) {
-								this.data('scalerMode', 1);
-								this.scaleTo(1, 1, 1);
-							}
-
-							return;
-						}
-					};
-
+					// Enable depth sorting for viewports
 					ige.viewportDepth(true);
 
+					// Create our main scene
 					self.scene1 = new IgeScene2d();
 
 					// Create the main viewport
@@ -70,11 +37,8 @@ var Client = IgeClass.extend({
 						.scene(self.scene1)
 						.mount(ige);
 
-					var tt = 0,
-						vpCount = 3,
-						timeInc = 1200;
-
-					for (var i = 0; i < vpCount; i++) {
+					// Make a load of viewports
+					for (i = 0; i < vpCount; i++) {
 						vp[i] = new IgeViewport()
 							.center(-300)
 							.middle(0)
@@ -87,7 +51,7 @@ var Client = IgeClass.extend({
 							.depth((18 - i))
 							.scene(self.scene1);
 
-						setTimeout(function () { var vr = vp[i]; return function () { vr.addBehaviour('rotator', RotatorBehaviour); }}(), tt);
+						setTimeout((function () { var vr = vp[i]; return function () { vr.addBehaviour('rotator', RotatorBehaviour); }; }()), tt);
 						tt += timeInc;
 						vp[i].mount(ige);
 					}
@@ -216,6 +180,8 @@ var Client = IgeClass.extend({
 						.scene(self.scene1)
 						.mount(ige);
 
+					// Make a couple of rotating entities to add to
+					// our scene
 					self.obj[0] = new IgeEntity()
 						.addBehaviour('rotator', RotatorBehaviour)
 						.depth(1)

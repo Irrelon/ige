@@ -28,6 +28,8 @@ var Client = IgeClass.extend({
 						.drawBounds(true)
 						.mount(ige);
 
+					// Create an entity and add the velocity component
+					// to it, then set a velocity and add it to the scene
 					self.obj[0] = tempObj = new IgeEntity()
 						.addComponent(IgeVelocityComponent)
 						.velocity.x(-0.01)
