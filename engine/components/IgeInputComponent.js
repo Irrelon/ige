@@ -166,6 +166,9 @@ var IgeInputComponent = IgeEventingClass.extend({
 	},
 
 	_mouseDown: function (event) {
+		var mx = event.clientX - ige.geometry.x2,
+			my = event.clientY - ige.geometry.y2;
+
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = true;
 		}
@@ -180,10 +183,13 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		this.mouseDown = true;
 
-		this.emit('mouseDown', event);
+		this.emit('mouseDown', [event, mx, my, event.button + 1]);
 	},
 
 	_mouseUp: function (event) {
+		var mx = event.clientX - ige.geometry.x2,
+			my = event.clientY - ige.geometry.y2;
+
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = false;
 		}
@@ -198,19 +204,25 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		this.mouseUp = true;
 
-		this.emit('mouseUp', event);
+		this.emit('mouseUp', [event, mx, my, event.button + 1]);
 	},
 
 	_mouseMove: function (event) {
-		this._state[this.mouse.x] = event.clientX - ige.geometry.x2;
-		this._state[this.mouse.y] = event.clientY - ige.geometry.y2;
+		var mx = event.clientX - ige.geometry.x2,
+			my = event.clientY - ige.geometry.y2;
+
+		this._state[this.mouse.x] = mx;
+		this._state[this.mouse.y] = my;
 
 		this.mouseMove = true;
 
-		this.emit('mouseMove', event);
+		this.emit('mouseMove', [event, mx, my, event.button + 1]);
 	},
 
 	_mouseWheel: function (event) {
+		var mx = event.clientX - ige.geometry.x2,
+			my = event.clientY - ige.geometry.y2;
+
 		this._state[this.mouse.wheel] = event.wheelDelta;
 
 		if (event.wheelDelta > 0) {
@@ -219,19 +231,17 @@ var IgeInputComponent = IgeEventingClass.extend({
 			this._state[this.mouse.wheelDown] = true;
 		}
 
-		this.emit('mouseWheel', event);
+		this.emit('mouseWheel', [event, mx, my, event.button + 1]);
 	},
 
 	_keyDown: function (event) {
 		this._state[event.keyCode] = true;
-
-		this.emit('keyDown', event);
+		this.emit('keyDown', [event, event.keyCode]);
 	},
 
 	_keyUp: function (event) {
 		this._state[event.keyCode] = false;
-
-		this.emit('keyUp', event);
+		this.emit('keyUp', [event, event.keyCode]);
 	},
 
 	/**
