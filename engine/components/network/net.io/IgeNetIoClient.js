@@ -53,6 +53,10 @@ var IgeNetIoClient = {
 							}
 						}
 
+						// Setup default commands
+						this.define('_igeRequest', this._onRequest);
+						this.define('_igeResponse', this._onResponse);
+
 						self.log('Received network command list with count: ' + commandCount);
 
 						// Now fire the start() callback
@@ -217,10 +221,6 @@ var IgeNetIoClient = {
 	 * @private
 	 */
 	_onConnectToServer: function () {
-		// Setup default commands
-		this.define('_igeRequest', this._onRequest);
-		this.define('_igeResponse', this._onResponse);
-
 		this.log('Connected to server!');
 		this.emit('connected');
 	},
