@@ -184,11 +184,43 @@ var IgeNetIoClient = {
 		return (this._idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
 	},
 
+	_onRequest: function (data) {
+		// The message is a network request so fire
+		// the command event with the request id and
+		// the request data
+		data.socket = socket;
+		this._requests[data.id] = data;
+
+		this.emit(data.cmd, [data.id, data.data]);
+	},
+
+	_onResponse: function (data) {
+		// The message is a network response
+		// to a request we sent earlier
+		id = data.id;
+
+		// Get the original request object from
+		// the request id
+		req = this._requests[id];
+
+		if (req) {
+			// Fire the request callback!
+			req.callback(commandName, data.data);
+
+			// Delete the request from memory
+			delete this._requests[id];
+		}
+	},
+
 	/**
 	 * Called when the network connects to the server.
 	 * @private
 	 */
 	_onConnectToServer: function () {
+		// Setup default commands
+		this.define('_igeRequest', this._onRequest);
+		this.define('_igeResponse', this._onResponse);
+
 		this.log('Connected to server!');
 		this.emit('connected');
 	},
@@ -199,47 +231,13 @@ var IgeNetIoClient = {
 	 * @private
 	 */
 	_onMessageFromServer: function (data) {
-		var commandName = this._networkCommandsIndex[data[0]],
-			id, req;
+		var commandName = this._networkCommandsIndex[data[0]];
 
-		switch (commandName) {
-			case '_igeRequest':
-				// The message is a network request so fire
-				// the command event with the request id and
-				// the request data
-				this._requests[data.id] = data;
-				this.emit(data.cmd, [data.id, data.data]);
-				break;
-
-			case '_igeResponse':
-				// The message is a network response
-				// to a request we sent earlier
-				id = data.id;
-
-				// Get the original request object from
-				// the request id
-				req = this._requests[id];
-
-				if (req) {
-					// Fire the request callback!
-					req.callback(commandName, data.data);
-
-					// Delete the request from memory
-					delete this._requests[id];
-				}
-
-				break;
-
-			default:
-				// The message is a normal command message
-				if (this._networkCommands[commandName]) {
-					this._networkCommands[commandName](data[1]);
-				}
-
-				this.emit(commandName, data[1]);
-
-				break;
+		if (this._networkCommands[commandName]) {
+			this._networkCommands[commandName](data[1]);
 		}
+
+		this.emit(commandName, data[1]);
 	},
 
 	/**

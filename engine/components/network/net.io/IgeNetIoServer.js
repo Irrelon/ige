@@ -22,6 +22,10 @@ var IgeNetIoServer = {
 		// Setup listeners
 		this._io.on('connection', function () { self._onClientConnect.apply(self, arguments); });
 
+		// Setup default commands
+		this.define('_igeRequest', this._onRequest);
+		this.define('_igeResponse', this._onResponse);
+
 		return this._entity;
 	},
 
@@ -199,6 +203,34 @@ var IgeNetIoServer = {
 		}
 	},
 
+	_onRequest: function (data, socket) {
+		// The message is a network request so fire
+		// the command event with the request id and
+		// the request data
+		data.socket = socket;
+		this._requests[data.id] = data;
+
+		this.emit(data.cmd, [data.id, data.data, socket]);
+	},
+
+	_onResponse: function (data, socket) {
+		// The message is a network response
+		// to a request we sent earlier
+		id = data.id;
+
+		// Get the original request object from
+		// the request id
+		req = this._requests[id];
+
+		if (req) {
+			// Fire the request callback!
+			req.callback(commandName, [data.data, socket]);
+
+			// Delete the request from memory
+			delete this._requests[id];
+		}
+	},
+
 	/**
 	 * Called when the server receives a network message from a client.
 	 * @param {Object} data The data sent by the client.
@@ -208,44 +240,11 @@ var IgeNetIoServer = {
 	_onClientMessage: function (data, socket) {
 		var commandName = this._networkCommandsIndex[data[0]];
 
-		switch (commandName) {
-			case '_igeRequest':
-				// The message is a network request so fire
-				// the command event with the request id and
-				// the request data
-				data.socket = socket;
-				this._requests[data.id] = data;
-				this.emit(data.cmd, [data.id, data.data, socket]);
-				break;
-
-			case '_igeResponse':
-				// The message is a network response
-				// to a request we sent earlier
-				id = data.id;
-
-				// Get the original request object from
-				// the request id
-				req = this._requests[id];
-
-				if (req) {
-					// Fire the request callback!
-					req.callback(commandName, [data.data, socket]);
-
-					// Delete the request from memory
-					delete this._requests[id];
-				}
-
-				break;
-
-			default:
-				if (this._networkCommands[commandName]) {
-					this._networkCommands[commandName](data[1], socket);
-				}
-
-				this.emit(commandName, [data[1], socket]);
-
-				break;
+		if (this._networkCommands[commandName]) {
+			this._networkCommands[commandName](data[1], socket);
 		}
+
+		this.emit(commandName, [data[1], socket]);
 	},
 
 	/**
