@@ -125,10 +125,12 @@ var IgeNetIoClient = {
 
 	/**
 	 * Sends a network request. This is different from a standard
-	 * call to send() because the server-side code will be able to
-	 * respond and fire the callback method passed to this method.
-	 * @param data
-	 * @param callback
+	 * call to send() because the recipient code will be able to
+	 * respond by calling ige.network.response(). When the response
+	 * is received, the callback method that was passed in the
+	 * callback parameter will be fired with the response data.
+	 * @param {Object} data
+	 * @param {Function} callback
 	 */
 	request: function (commandName, data, callback) {
 		// Build the request object
@@ -156,8 +158,8 @@ var IgeNetIoClient = {
 
 	/**
 	 * Sends a response to a network request.
-	 * @param requestId
-	 * @param data
+	 * @param {String} requestId
+	 * @param {Object} data
 	 */
 	response: function (requestId, data) {
 		// Grab the original request object
