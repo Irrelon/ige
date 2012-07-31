@@ -69,10 +69,17 @@ var IgeNetIoServer = {
 		return this._acceptConnections;
 	},
 
+	/**
+	 * Sends a message over the network.
+	 * @param {String} commandName
+	 * @param {Object} data
+	 * @param {*=} client If specified, sets the recipient socket or a array of sockets to send to.
+	 */
 	send: function (commandName, data, client) {
 		var commandIndex = this._networkCommandsLookup[commandName];
 
 		if (commandIndex !== undefined) {
+			if (client !== undefined) { client = client.id; }
 			this._io.send([commandIndex, data], client);
 		} else {
 			this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');

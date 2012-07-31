@@ -9,7 +9,7 @@ var Server = IgeClass.extend({
 		this.implement(ServerNetworkEvents);
 
 		// Add the networking component
-		ige.addComponent(IgeSocketIoComponent);
+		ige.addComponent(IgeNetIoComponent);
 		ige.addComponent(IgeChatComponent);
 			// Define a network command
 		ige.network.define('test', self._onTest)
