@@ -213,7 +213,7 @@ var IgeNetIoServer = {
 				// the command event with the request id and
 				// the request data
 				this._requests[data.id] = data;
-				this.emit(data.cmd, [data.id, data.data]);
+				this.emit(data.cmd, [data.id, data.data, socket]);
 				break;
 
 			case '_igeResponse':
@@ -227,7 +227,7 @@ var IgeNetIoServer = {
 
 				if (req) {
 					// Fire the request callback!
-					req.callback(commandName, data.data);
+					req.callback(commandName, [data.data, socket]);
 
 					// Delete the request from memory
 					delete this._requests[id];
@@ -240,7 +240,7 @@ var IgeNetIoServer = {
 					this._networkCommands[commandName](data[1], socket);
 				}
 
-				this.emit(commandName, data[1], socket);
+				this.emit(commandName, [data[1], socket]);
 
 				break;
 		}
