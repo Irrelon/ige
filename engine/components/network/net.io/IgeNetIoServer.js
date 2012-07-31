@@ -212,6 +212,7 @@ var IgeNetIoServer = {
 
 		if (this._debug) {
 			console.log('onRequest', data);
+			console.log('emitting', data.cmd, [data.id, data.data])
 		}
 
 		this.emit(data.cmd, [data.id, data.data, socket]);
