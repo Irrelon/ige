@@ -54,8 +54,8 @@ var IgeNetIoClient = {
 						}
 
 						// Setup default commands
-						this.define('_igeRequest', this._onRequest);
-						this.define('_igeResponse', this._onResponse);
+						self.define('_igeRequest', self._onRequest);
+						self.define('_igeResponse', self._onResponse);
 
 						self.log('Received network command list with count: ' + commandCount);
 
