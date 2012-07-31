@@ -1,7 +1,7 @@
 var Game = IgeClass.extend({
 	classId: 'Game',
 
-	init: function (App) {
+	init: function (App, options) {
 		// Create the engine
 		ige = new IgeEngine();
 
@@ -10,7 +10,7 @@ var Game = IgeClass.extend({
 		}
 
 		if (ige.isServer) {
-			ige.server = new App();
+			ige.server = new App(options);
 		}
 	}
 });
