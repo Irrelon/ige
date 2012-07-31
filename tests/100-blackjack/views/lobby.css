@@ -11,11 +11,12 @@ body {
 
 #login {
     width: 300px;
-    height: 200px;
+    height: 150px;
     position: absolute;
     left: 50%;
     top: 50%;
     margin-left: -150px;
-    margin-top: -20px;
+    margin-top: -10px;
     text-align: center;
+    overflow: hidden;
 }

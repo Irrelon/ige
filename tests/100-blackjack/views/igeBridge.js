@@ -6,7 +6,10 @@ ige = (function () {
 
 		forward: function (js) {
 			if (this.cocoonJs.detected) {
-				ext.IDTK_APP.makeCall("forward", js);
+				console.log('Making cocoonjs "makeCall" with: ' + js);
+				var ret = ext.IDTK_APP.makeCall("forward", js);
+				console.log('Call returned: ' + ret);
+
 				return false;
 			} else {
 				window.parent.ige.layerCall(js);

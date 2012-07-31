@@ -28,7 +28,7 @@ var ClientSplash = {
 			.depth(1)
 			.texture(self.gameTexture.chipBackground)
 			.dimensionsFromTexture()
-			.translateTo(0, -100)
+			.translateTo(0, -130)
 			.mount(self.mainScene);
 
 		new IgeUiEntity()

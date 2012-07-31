@@ -17,8 +17,7 @@ var ClientLobby = {
 
 	lobbyLogin: function (username, password) {
 		// Connect to the server and ask for authentication
-		//ws://localhost:8000/socket.io/websocket
-		ige.network.start('ws://localhost:2000/socket.io/1/websocket/handshake', function () {
+		ige.network.start('http://192.168.0.199:2000', function () {
 			console.log('Connected!');
 		});
 	}

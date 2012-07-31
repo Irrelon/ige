@@ -13,7 +13,7 @@ var Server = IgeClass.extend({
 			// Check if we connected to mongodb correctly
 			if (!err) {
 				// Start the network server
-				ige.addComponent(IgeSocketIoComponent)
+				ige.addComponent(IgeNetIoComponent)
 					.network.define('login', self._login)
 					.network.define('getMap', self._getMap)
 					.network.define('placeItem', self._placeItem)
