@@ -39,7 +39,7 @@ var IgeNetIoComponent = IgeEventingClass.extend({
 	debug: function (val) {
 		if (val !== undefined) {
 			this._debug = val;
-			return this;
+			return this._entity;
 		}
 
 		return this._debug;
