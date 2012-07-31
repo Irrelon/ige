@@ -452,6 +452,7 @@ NetIo.Client = NetIo.EventingClass.extend({
 		this._options = options || {};
 		this._socket = null;
 		this._state = 0;
+		this._debug = false;
 		this._connectionAttempts = 0;
 
 		// Set some default options
@@ -463,6 +464,22 @@ NetIo.Client = NetIo.EventingClass.extend({
 		if (url !== undefined) {
 			this.connect(url);
 		}
+	},
+
+	/**
+	 * Gets / sets the debug flag. If set to true, net.io
+	 * will output debug data about every network event as
+	 * it occurs to the console.
+	 * @param {Boolean=} val
+	 * @return {*}
+	 */
+	debug: function (val) {
+		if (val !== undefined) {
+			this._debug = val;
+			return this;
+		}
+
+		return this._debug;
 	},
 
 	connect: function (url) {
@@ -498,10 +515,13 @@ NetIo.Client = NetIo.EventingClass.extend({
 	},
 
 	_onData: function (data) {
-
 		// Decode packet and emit message event
 		var packet = this._decode(data.data);
-		console.log('Incomming:', data, packet);
+
+		// Output debug if required
+		if (this._debug) {
+			console.log('Incoming data (event, decoded data):', data, packet);
+		}
 
 		if (packet._netioCmd) {
 			// The packet is a netio command
