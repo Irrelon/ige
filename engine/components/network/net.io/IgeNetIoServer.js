@@ -1,4 +1,7 @@
 var IgeNetIoServer = {
+	_idCounter: 0,
+	_requests: {},
+
 	/**
 	 * Starts the network for the server.
 	 * @param {*} data The port to listen on.
@@ -87,6 +90,71 @@ var IgeNetIoServer = {
 	},
 
 	/**
+	 * Sends a network request. This is different from a standard
+	 * call to send() because the server-side code will be able to
+	 * respond and fire the callback method passed to this method.
+	 * @param data
+	 * @param callback
+	 */
+	request: function (commandName, data, callback) {
+		// Build the request object
+		var req = {
+			id: this.newIdHex(),
+			cmd: commandName,
+			data: data,
+			callback: callback,
+			timestamp: new Date().getTime()
+		};
+
+		// Store the request object
+		this._requests[req.id] = req;
+
+		// Send the network request packet
+		this.send(
+			'_igeRequest',
+			{
+				id: req.id,
+				cmd: commandName,
+				data: req.data
+			}
+		);
+	},
+
+	/**
+	 * Sends a response to a network request.
+	 * @param requestId
+	 * @param data
+	 */
+	response: function (requestId, data) {
+		// Grab the original request object
+		var req = this._requests[requestId];
+
+		if (req) {
+			// Send the network response packet
+			this.send(
+				'_igeResponse',
+				{
+					id: requestId,
+					cmd: req.commandName,
+					data: data
+				}
+			);
+
+			// Remove the request as we've now responded!
+			delete this._requests[requestId];
+		}
+	},
+
+	/**
+	 * Generates a new 16-character hexadecimal unique ID
+	 * @return {String}
+	 */
+	newIdHex: function () {
+		this._idCounter++;
+		return (this._idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
+	},
+
+	/**
 	 * Determines if the origin of a request should be allowed or denied.
 	 * @param origin
 	 * @return {Boolean}
@@ -139,10 +207,43 @@ var IgeNetIoServer = {
 	_onClientMessage: function (data, socket) {
 		var commandName = this._networkCommandsIndex[data[0]];
 
-		if (this._networkCommands[commandName]) {
-			this._networkCommands[commandName](data[1], socket);
+		switch (commandName) {
+			case '_igeRequest':
+				// The message is a network request so fire
+				// the command event with the request id and
+				// the request data
+				this._requests[data.id] = data;
+				this.emit(data.cmd, [data.id, data.data]);
+				break;
+
+			case '_igeResponse':
+				// The message is a network response
+				// to a request we sent earlier
+				id = data.id;
+
+				// Get the original request object from
+				// the request id
+				req = this._requests[id];
+
+				if (req) {
+					// Fire the request callback!
+					req.callback(commandName, data.data);
+
+					// Delete the request from memory
+					delete this._requests[id];
+				}
+
+				break;
+
+			default:
+				if (this._networkCommands[commandName]) {
+					this._networkCommands[commandName](data[1], socket);
+				}
+
+				this.emit(commandName, data[1], socket);
+
+				break;
 		}
-		this.emit(commandName, data[1], socket);
 	},
 
 	/**
