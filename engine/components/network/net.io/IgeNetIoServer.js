@@ -237,7 +237,7 @@ var IgeNetIoServer = {
 
 		if (req) {
 			// Fire the request callback!
-			req.callback(commandName, [data.data, socket]);
+			req.callback(req.cmd, [data.data, socket]);
 
 			// Delete the request from memory
 			delete this._requests[id];
