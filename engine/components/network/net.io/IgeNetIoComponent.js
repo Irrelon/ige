@@ -13,6 +13,7 @@ var IgeNetIoComponent = IgeEventingClass.extend({
 
 		// Set some defaults
 		this._port = 8000;
+		this._debug = false;
 
 		/* CEXCLUDE */
 		if (ige.isServer) {
@@ -27,6 +28,21 @@ var IgeNetIoComponent = IgeEventingClass.extend({
 		}
 
 		this.log('Network component initiated!');
+	},
+
+	/**
+	 * Gets / sets debug flag that determines if debug output
+	 * is logged to the console.
+	 * @param {Boolean=} val
+	 * @return {*}
+	 */
+	debug: function (val) {
+		if (val !== undefined) {
+			this._debug = val;
+			return this._entity;
+		}
+
+		return this._debug;
 	}
 });
 

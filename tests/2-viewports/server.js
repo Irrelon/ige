@@ -2,7 +2,7 @@ var Server = IgeClass.extend({
 	classId: 'Server',
 	Server: true,
 
-	init: function () {
+	init: function (options) {
 		// Start the network server
 		ige.addComponent(IgeSocketIoComponent);
 		ige.network.start();

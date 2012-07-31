@@ -52,8 +52,12 @@ IgeDummyContext = require('../engine/components/network/IgeDummyContext');
 IgeChatServer = require('../engine/components/chat/IgeChatServer');
 IgeChatComponent = require('../engine/components/chat/IgeChatComponent');
 // Database
-IgeMongoDb = require('../engine/components/database/mongodb/IgeMongoDb');
-IgeMongoDbComponent = require('../engine/components/database/mongodb/IgeMongoDbComponent');
+	// Mongo
+	IgeMongoDb = require('../engine/components/database/mongodb/IgeMongoDb');
+	IgeMongoDbComponent = require('../engine/components/database/mongodb/IgeMongoDbComponent');
+	// MySQL
+	IgeMySql = require('../engine/components/database/mysql/IgeMySql');
+	IgeMySqlComponent = require('../engine/components/database/mysql/IgeMySqlComponent');
 
 // Include the control class
 IgeNode = require('./IgeNode');

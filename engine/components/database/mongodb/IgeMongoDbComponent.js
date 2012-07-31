@@ -1,6 +1,6 @@
 var IgeMongoDbComponent = IgeEventingClass.extend({
 	classId: 'IgeMongoDbComponent',
-	componentId: 'database',
+	componentId: 'mongo',
 
 	init: function (entity, options) {
 		this._entity = entity;

@@ -9,7 +9,7 @@ var Server = IgeClass.extend({
 		this.implement(ServerNetworkEvents);
 
 		// Connect to the mongo database
-		ige.addComponent(IgeMongoDbComponent, options.db).database.connect(function (err, db) {
+		ige.addComponent(IgeMongoDbComponent, options.db).mongo.connect(function (err, db) {
 			// Check if we connected to mongodb correctly
 			if (!err) {
 				// Start the network server

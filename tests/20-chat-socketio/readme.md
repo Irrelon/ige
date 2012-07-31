@@ -1,4 +1,4 @@
-# Chat Demo
+# Chat Demo Using Socket.io
 This demo shows how to use the basic chat functionality provided by the IGE Chat Component. The demo is a console-only
 demo so no graphics output should be expected. The demo REQUIRES that you run the server first and that the index.html
 file is loaded from an HTTP server either on your local machine or a web server online.
@@ -7,7 +7,7 @@ file is loaded from an HTTP server either on your local machine or a web server 
 The demo creates a new room called "The Lobby" with the room id "lobby" automatically. You can see this in server.js:23.
 You can change this if you prefer but it makes sense to have at least one chat room created by default. To run the
 server for this demo, use the command (replacing the paths depending on where your IGE installation is located):
-	node /ige/server/ige -g /ige/tests/19-chat/
+	node /ige/server/ige -g /ige/tests/20-chat-socketio/
 
 # Client-Side
 ## Open Your JS Console
