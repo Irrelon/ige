@@ -210,6 +210,10 @@ var IgeNetIoServer = {
 		data.socket = socket;
 		this._requests[data.id] = data;
 
+		if (this._debug) {
+			console.log('onRequest', data);
+		}
+
 		this.emit(data.cmd, [data.id, data.data, socket]);
 	},
 
@@ -221,6 +225,10 @@ var IgeNetIoServer = {
 		// Get the original request object from
 		// the request id
 		req = this._requests[id];
+
+		if (this._debug) {
+			console.log('onResponse', data);
+		}
 
 		if (req) {
 			// Fire the request callback!

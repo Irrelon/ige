@@ -54,8 +54,8 @@ var IgeNetIoClient = {
 						}
 
 						// Setup default commands
-						self.define('_igeRequest', self._onRequest);
-						self.define('_igeResponse', self._onResponse);
+						self.define('_igeRequest', function () { self._onRequest.apply(self, arguments); });
+						self.define('_igeResponse', function () { self._onResponse.apply(self, arguments); });
 
 						self.log('Received network command list with count: ' + commandCount);
 
@@ -195,6 +195,10 @@ var IgeNetIoClient = {
 		data.socket = socket;
 		this._requests[data.id] = data;
 
+		if (this._debug) {
+			console.log('onRequest', data);
+		}
+
 		this.emit(data.cmd, [data.id, data.data]);
 	},
 
@@ -206,6 +210,10 @@ var IgeNetIoClient = {
 		// Get the original request object from
 		// the request id
 		req = this._requests[id];
+
+		if (this._debug) {
+			console.log('onResponse', data);
+		}
 
 		if (req) {
 			// Fire the request callback!
