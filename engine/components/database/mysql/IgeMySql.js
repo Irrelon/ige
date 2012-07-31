@@ -1,4 +1,4 @@
-var IgeMySqlDb = {
+var IgeMySql = {
 	/**
 	 * Set the current settings for the database connection. This should
 	 * be called before any call to connect().
@@ -10,10 +10,8 @@ var IgeMySqlDb = {
 		this._database = params.dbName;
 		this._username = params.user;
 		this._password = params.pass;
-		this._strict = params.strict;
-		this._nativeParser = params.nativeParser;
 
-		if (!this._port) { this._port = 27017; }
+		if (!this._port) { this._port = 3306; }
 		this.log('Settings initialised');
 	},
 
@@ -22,65 +20,57 @@ var IgeMySqlDb = {
 	 * @param callback
 	 */
 	connect: function (callback) {
-		this.log('Connecting to mongo database "'  + this._database + '" @' + this._host + ':' + this._port);
+		var self = this;
 
-		var mongoServer = new this._mongo.Server(
-			this._host,
-			parseInt(this._port),
-			{}
-		), self = this;
+		this.log('Connecting to mysql database "'  + this._database + '" @' + this._host + ':' + this._port);
+		self.client = this._mysql.createConnection({
+				host: self._host,
+				port: parseInt(self._port, 10),
+				user: self._username,
+				password: self._password,
+				database: self._database
+			});
 
-		this.client = new this._mongo.Db(
-			this._database,
-			mongoServer,
-			{native_parser: this._nativeParser}
-		);
-
-		this.client.strict = this._strict;
-
-		// Open the database connection
-		this.client.open(function(err, db) {
-			// If we have a username then authenticate!
-			if (self._username) {
-				self.client.authenticate(self._username, self._password, function (err) {
-					if (err) {
-						self.log('Error when authenticating with the database!');
-						//console.log(err);
-
-						if (typeof(callback) === 'function') {
-							callback.apply(self, [err]);
-						}
-					} else {
-						self.log('Connected to mongo DB ok, processing callbacks...');
-						self._connected.apply(self, [err, db, callback]);
-					}
-				});
-			} else {
-				if (err) {
-					self.log('Error when connecting to the database!');
-					//console.log(err);
-
-					if (typeof(callback) === 'function') {
-						callback.apply(self, [err]);
-					}
-				} else {
-					self.log('Connected to mongo DB ok, processing callbacks...');
-					self._connected.apply(self, [err, db, callback]);
-				}
+		// Handle disconnects with auto-reconnect
+		self.client.on('error', function(err) {
+			if (!err.fatal) {
+				return;
 			}
+
+			if (err.code !== 'PROTOCOL_CONNECTION_LOST') {
+				throw err;
+			}
+
+			self.log('Re-connecting lost connection: ' + err.stack);
+
+			self.client = self._mysql.createConnection({
+				host: self._host,
+				port: parseInt(self._port, 10),
+				user: self._username,
+				password: self._password,
+				database: self._database
+			});
+
+			self.client.connect(function (err) {
+				self.emit('reconnected', [err, self.client]);
+			});
 		});
 
+		// Connect to the db
+		self.client.connect(function (err) {
+			self._connected.apply(self, [err, self.client, callback]);
+		});
 	},
 
 	/**
-	 * Disconnect from the current mongo connection.
+	 * Disconnect from the current mysql connection.
 	 * @param callback
 	 */
 	disconnect: function (callback) {
 		this.log("Closing DB connection...");
-		this.client.close();
-
-		callback();
+		this.connection.end(function () {
+			callback();
+		});
 	},
 
 	/**
@@ -93,10 +83,19 @@ var IgeMySqlDb = {
 	 */
 	_connected: function (err, db, callback) {
 		if (!err) {
-			this.log('MongoDB connected successfully.');
+			this.log('MySQL connected successfully.');
 			this.emit('connected');
 		} else {
-			this.log('MongoDB connection error', 'error', err);
+			switch (err.code) {
+				case 'ER_DBACCESS_DENIED_ERROR':
+					this.log('MySQL connection error, access denied. Are you using the correct login details?', 'warning', err);
+					break;
+
+				default:
+					this.log('MySQL connection error', 'warning', err);
+					break;
+			}
+
 			this.emit('connectionError');
 		}
 
@@ -171,36 +170,8 @@ var IgeMySqlDb = {
 	},
 
 	/* findAll - Finds many rows of data and returns them as an array */
-	findAll: function (coll, json, callback) {
-		var self = this;
-
-		this.client.collection(coll, function (err, tempCollection) {
-			if (!err) {
-				// Got the collection (or err)
-				tempCollection.find(json, function (err, tempCursor) {
-					// Got the result cursor (or err)
-					tempCursor.toArray(function (err, results) {
-						var i;
-
-						if (results) {
-							for (i in results) {
-								if (results.hasOwnProperty(i)) {
-									self.idToCollectionId(coll, results[i]);
-								}
-							}
-						}
-
-						// Callback the results
-						if (typeof(callback) === 'function') {
-							callback.apply(self, [err, results]);
-						}
-					});
-				});
-			} else {
-				self.log('Mongo cannot run a findAll on collection ' + coll + ' with error: ' + err, 'error', tempCollection);
-			}
-		});
-
+	findAll: function (query, callback) {
+		this.client.query(query, callback);
 	},
 
 	/* idToCollectionId - MongoDB specific - Finds the _id field returned by the database and
@@ -222,4 +193,4 @@ var IgeMySqlDb = {
 	}
 };
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeMySqlDb; }
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeMySql; }

@@ -1,5 +1,5 @@
-var IgeMySqlDbComponent = IgeEventingClass.extend({
-	classId: 'IgeMySqlDbComponent',
+var IgeMySqlComponent = IgeEventingClass.extend({
+	classId: 'IgeMySqlComponent',
 	componentId: 'mysql',
 
 	init: function (entity, options) {
@@ -10,7 +10,7 @@ var IgeMySqlDbComponent = IgeEventingClass.extend({
 		this._mysql = require('../../../' + modulePath + 'mysql');
 
 		// Implement the mongo methods
-		this.implement(IgeMySqlDb);
+		this.implement(IgeMySql);
 
 		// Pass the options to the settings method
 		this.settings(options);
@@ -19,4 +19,4 @@ var IgeMySqlDbComponent = IgeEventingClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeMySqlDbComponent; }
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeMySqlComponent; }
