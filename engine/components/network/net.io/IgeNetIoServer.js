@@ -215,6 +215,10 @@ var IgeNetIoServer = {
 			console.log('emitting', data.cmd, [data.id, data.data])
 		}
 
+		if (this._networkCommands[data.cmd]) {
+			this._networkCommands[data.cmd](data.id, data.data, socket);
+		}
+
 		this.emit(data.cmd, [data.id, data.data, socket]);
 	},
 

@@ -192,11 +192,14 @@ var IgeNetIoClient = {
 		// The message is a network request so fire
 		// the command event with the request id and
 		// the request data
-		data.socket = socket;
 		this._requests[data.id] = data;
 
 		if (this._debug) {
 			console.log('onRequest', data);
+		}
+
+		if (this._networkCommands[data.cmd]) {
+			this._networkCommands[data.cmd](data.id, data.data);
 		}
 
 		this.emit(data.cmd, [data.id, data.data]);
