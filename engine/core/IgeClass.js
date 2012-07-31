@@ -26,6 +26,10 @@ var IgeClass = (function () {
 
 			type = type || 'log';
 
+			if (obj !== undefined) {
+				console.warn(obj);
+			}
+
 			if (type === 'error') {
 				if (igeDebug.stacks) {
 					if (igeDebug.node) {
