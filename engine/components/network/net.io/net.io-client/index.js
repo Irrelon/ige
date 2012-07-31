@@ -498,8 +498,11 @@ NetIo.Client = NetIo.EventingClass.extend({
 	},
 
 	_onData: function (data) {
+
 		// Decode packet and emit message event
 		var packet = this._decode(data.data);
+		console.log('Incomming:', data, packet);
+
 		if (packet._netioCmd) {
 			// The packet is a netio command
 			switch (packet._netioCmd) {
