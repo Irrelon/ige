@@ -12,6 +12,7 @@ var IgeEngine = IgeEntity.extend({
 
 		if (!this.isServer) {
 			// Enable cocoonJS support in case we are running native
+			this.log('CocoonJS support enabled!');
 			this.addComponent(IgeCocoonJsComponent);
 		}
 
