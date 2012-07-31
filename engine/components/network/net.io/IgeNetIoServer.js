@@ -137,7 +137,8 @@ var IgeNetIoServer = {
 					id: requestId,
 					cmd: req.commandName,
 					data: data
-				}
+				},
+				req.socket
 			);
 
 			// Remove the request as we've now responded!
@@ -212,6 +213,7 @@ var IgeNetIoServer = {
 				// The message is a network request so fire
 				// the command event with the request id and
 				// the request data
+				data.socket = socket;
 				this._requests[data.id] = data;
 				this.emit(data.cmd, [data.id, data.data, socket]);
 				break;
