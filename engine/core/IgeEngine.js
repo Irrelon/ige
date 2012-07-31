@@ -414,33 +414,40 @@ var IgeEngine = IgeEntity.extend({
 	 * be fired on the front buffer. Once you are finished with the
 	 * overlay, call hideOverlay() to re-enable interaction with
 	 * the front buffer.
-	 * @param url
+	 * @param {String=} url
 	 */
 	showWebView: function (url) {
-		if (url !== undefined) {
-			if (ige.cocoonJs && ige.cocoonJs.detected) {
-				// Open URL via CocoonJS webview
-				ige.cocoonJs.showWebView(url);
-			} else {
-				// Load the iFrame url
-				var overlay = document.getElementById('igeOverlay');
+		if (ige.cocoonJs && ige.cocoonJs.detected) {
+			// Open URL via CocoonJS webview
+			ige.cocoonJs.showWebView(url);
+		} else {
+			// Load the iFrame url
+			var overlay = document.getElementById('igeOverlay');
 
-				if (!overlay) {
-					// No overlay was found, create one
-					var overlay = document.createElement('iframe');
-					overlay.id = 'igeOverlay';
-					overlay.style.position = 'absolute';
-					overlay.style.border = 'none';
-					overlay.style.left = '0px';
-					overlay.style.top = '0px';
-					overlay.style.width = '100%';
-					overlay.style.height = '100%';
-					document.body.appendChild(overlay);
-				}
+			if (!overlay) {
+				// No overlay was found, create one
+				overlay = document.createElement('iframe');
 
-				overlay.src = url;
-				overlay.style.display = 'block';
+				// Setup overlay styles
+				overlay.id = 'igeOverlay';
+				overlay.style.position = 'absolute';
+				overlay.style.border = 'none';
+				overlay.style.left = '0px';
+				overlay.style.top = '0px';
+				overlay.style.width = '100%';
+				overlay.style.height = '100%';
+
+				// Append overlay to body
+				document.body.appendChild(overlay);
 			}
+
+			// If we have a url, set it now
+			if (url !== undefined) {
+				overlay.src = url;
+			}
+
+			// Show the overlay
+			overlay.style.display = 'block';
 		}
 
 		return this;
