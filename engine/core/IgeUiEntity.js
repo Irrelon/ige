@@ -278,10 +278,6 @@ var IgeUiEntity = IgeInteractiveEntity.extend([
 	},
 
 	tick: function (ctx, dontTransform) {
-		if (this._breakOnTick) {
-			debugger;
-		}
-
 		if (!dontTransform) {
 			this._transformContext(ctx);
 		}

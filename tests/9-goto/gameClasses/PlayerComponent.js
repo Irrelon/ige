@@ -12,10 +12,6 @@ var PlayerComponent = IgeClass.extend({
 		// Store any options that were passed to us
 		this._options = options;
 
-		// Setup some actions and map them to inputs
-		ige.input.mapAction('mouseX', ige.input.mouse.x);
-		ige.input.mapAction('mouseY', ige.input.mouse.y);
-
 		// Listen for the mouse up event
 		ige.input.on('mouseUp', function (event) { self._mouseUp(event); });
 	},
@@ -27,8 +23,8 @@ var PlayerComponent = IgeClass.extend({
 	 */
 	_mouseUp: function (event) {
 		this._entity.walkTo(
-			ige.input.actionVal('mouseX'),
-			ige.input.actionVal('mouseY')
+			ige.client.vp1._mousePos.x,
+			ige.client.vp1._mousePos.y
 		);
 	}
 });

@@ -6,6 +6,7 @@ var IgeNetIoClient = {
 	_initDone: false,
 	_idCounter: 0,
 	_requests: {},
+	_state: 0,
 
 	/**
 	 * Starts the network for the client.
@@ -14,71 +15,82 @@ var IgeNetIoClient = {
 	 * network has started.
 	 */
 	start: function (url, callback) {
-		var self = this;
+		if (this._state === 3) {
+			// We're already connected
+			if (typeof(callback) === 'function') {
+				callback();
+			}
+		} else {
+			var self = this;
 
-		self._startCallback = callback;
+			self._startCallback = callback;
 
-		if (typeof(url) !== 'undefined') {
-			this._url = url;
-		}
+			if (typeof(url) !== 'undefined') {
+				this._url = url;
+			}
 
-		this.log('Connecting to net.io server at "' + this._url + '"...');
+			this.log('Connecting to net.io server at "' + this._url + '"...');
 
-		if (typeof(WebSocket) !== 'undefined') {
-			this._io = new NetIo.Client(url);
+			if (typeof(WebSocket) !== 'undefined') {
+				this._io = new NetIo.Client(url);
+				self._state = 1; // Connecting
 
-			// Define connect listener
-			this._io.on('connect', function () {
-				self._onConnectToServer.apply(self, arguments);
-			});
+				// Define connect listener
+				this._io.on('connect', function () {
+					self._state = 2; // Connected
+					self._onConnectToServer.apply(self, arguments);
+				});
 
-			// Define message listener
-			this._io.on('message', function (data) {
-				if (!self._initDone) {
-					var i, commandCount = 0;
+				// Define message listener
+				this._io.on('message', function (data) {
+					if (!self._initDone) {
+						var i, commandCount = 0;
 
-					// Check if the data is an init packet
-					if (data.cmd === 'init') {
-						// Set flag to show we've now received an init command
-						self._initDone = true;
+						// Check if the data is an init packet
+						if (data.cmd === 'init') {
+							// Set flag to show we've now received an init command
+							self._initDone = true;
+							self._state = 3; // Connected and init done
 
-						// Setup the network commands storage
-						self._networkCommandsLookup = data.ncmds;
+							// Setup the network commands storage
+							self._networkCommandsLookup = data.ncmds;
 
-						// Fill the reverse lookup on the commands
-						for (i in self._networkCommandsLookup) {
-							if (self._networkCommandsLookup.hasOwnProperty(i)) {
-								self._networkCommandsIndex[self._networkCommandsLookup[i]] = i;
-								commandCount++;
+							// Fill the reverse lookup on the commands
+							for (i in self._networkCommandsLookup) {
+								if (self._networkCommandsLookup.hasOwnProperty(i)) {
+									self._networkCommandsIndex[self._networkCommandsLookup[i]] = i;
+									commandCount++;
+								}
+							}
+
+							// Setup default commands
+							self.define('_igeRequest', function () { self._onRequest.apply(self, arguments); });
+							self.define('_igeResponse', function () { self._onResponse.apply(self, arguments); });
+
+							self.log('Received network command list with count: ' + commandCount);
+
+							// Now fire the start() callback
+							if (typeof(self._startCallback) === 'function') {
+								self._startCallback();
+								delete self._startCallback;
 							}
 						}
-
-						// Setup default commands
-						self.define('_igeRequest', function () { self._onRequest.apply(self, arguments); });
-						self.define('_igeResponse', function () { self._onResponse.apply(self, arguments); });
-
-						self.log('Received network command list with count: ' + commandCount);
-
-						// Now fire the start() callback
-						if (typeof(self._startCallback) === 'function') {
-							self._startCallback();
-							delete self._startCallback;
-						}
 					}
-				}
 
-				self._onMessageFromServer.apply(self, arguments);
-			});
+					self._onMessageFromServer.apply(self, arguments);
+				});
 
-			// Define disconnect listener
-			this._io.on('disconnect', function () {
-				self._onDisconnectFromServer.apply(self, arguments);
-			});
+				// Define disconnect listener
+				this._io.on('disconnect', function () {
+					self._state = 0; // Disconnected
+					self._onDisconnectFromServer.apply(self, arguments);
+				});
 
-			// Define error listener
-			this._io.on('error', function () {
-				self._onError.apply(self, arguments);
-			});
+				// Define error listener
+				this._io.on('error', function () {
+					self._onError.apply(self, arguments);
+				});
+			}
 		}
 	},
 

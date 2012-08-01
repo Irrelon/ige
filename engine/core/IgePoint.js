@@ -74,15 +74,26 @@ IgePoint.prototype.thisTo2d = function () {
 	return this;
 };
 
+IgePoint.prototype.addPoint = function (point) {
+	return new IgePoint(this.x + point.x, this.y + point.y, this.z + point.z);
+};
+
+IgePoint.prototype.thisAddPoint = function (point) {
+	this.x += point.x;
+	this.y += point.y;
+	this.z += point.z;
+
+	return this;
+};
+
 IgePoint.prototype.multiply = function (x, y, z) {
-	return {x: this.x * x, y: this.y * y, z: this.z * z};
+	return new IgePoint(this.x * x, this.y * y, this.z * z);
 };
 
 IgePoint.prototype.thisMultiply = function (x, y, z) {
-	var val = this.multiply(x, y, z);
-	this.x = val.x;
-	this.y = val.y;
-	this.z = val.z;
+	this.x *= x;
+	this.y *= y;
+	this.z *= z;
 
 	return this;
 };

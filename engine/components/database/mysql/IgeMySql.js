@@ -52,12 +52,14 @@ var IgeMySql = {
 			});
 
 			self.client.connect(function (err) {
+				self.escape = self.client.escape;
 				self.emit('reconnected', [err, self.client]);
 			});
 		});
 
 		// Connect to the db
 		self.client.connect(function (err) {
+			self.escape = self.client.escape;
 			self._connected.apply(self, [err, self.client, callback]);
 		});
 	},

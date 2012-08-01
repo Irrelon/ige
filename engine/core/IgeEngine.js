@@ -43,6 +43,7 @@ var IgeEngine = IgeEntity.extend({
 		this.addComponent(IgeTweenComponent);
 
 		// Set some defaults
+		this.tickDelta = 0; // The time between the last tick and the current one
 		this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 		this._state = 0; // Currently stopped
 		this._texturesLoading = 0; // Holds a count of currently loading textures
@@ -414,33 +415,40 @@ var IgeEngine = IgeEntity.extend({
 	 * be fired on the front buffer. Once you are finished with the
 	 * overlay, call hideOverlay() to re-enable interaction with
 	 * the front buffer.
-	 * @param url
+	 * @param {String=} url
 	 */
 	showWebView: function (url) {
-		if (url !== undefined) {
-			if (ige.cocoonJs && ige.cocoonJs.detected) {
-				// Open URL via CocoonJS webview
-				ige.cocoonJs.showWebView(url);
-			} else {
-				// Load the iFrame url
-				var overlay = document.getElementById('igeOverlay');
+		if (ige.cocoonJs && ige.cocoonJs.detected) {
+			// Open URL via CocoonJS webview
+			ige.cocoonJs.showWebView(url);
+		} else {
+			// Load the iFrame url
+			var overlay = document.getElementById('igeOverlay');
 
-				if (!overlay) {
-					// No overlay was found, create one
-					var overlay = document.createElement('iframe');
-					overlay.id = 'igeOverlay';
-					overlay.style.position = 'absolute';
-					overlay.style.border = 'none';
-					overlay.style.left = '0px';
-					overlay.style.top = '0px';
-					overlay.style.width = '100%';
-					overlay.style.height = '100%';
-					document.body.appendChild(overlay);
-				}
+			if (!overlay) {
+				// No overlay was found, create one
+				overlay = document.createElement('iframe');
 
-				overlay.src = url;
-				overlay.style.display = 'block';
+				// Setup overlay styles
+				overlay.id = 'igeOverlay';
+				overlay.style.position = 'absolute';
+				overlay.style.border = 'none';
+				overlay.style.left = '0px';
+				overlay.style.top = '0px';
+				overlay.style.width = '100%';
+				overlay.style.height = '100%';
+
+				// Append overlay to body
+				document.body.appendChild(overlay);
 			}
+
+			// If we have a url, set it now
+			if (url !== undefined) {
+				overlay.src = url;
+			}
+
+			// Show the overlay
+			overlay.style.display = 'block';
 		}
 
 		return this;
@@ -513,12 +521,13 @@ var IgeEngine = IgeEntity.extend({
 		while (arrCount--) {
 			vp = arr[arr.length - (arrCount + 1)];
 			// Check if the mouse is inside this viewport's bounds
+			// TODO: Update this code to take into account viewport rotation and camera rotation
 			if (mx > vp._translate.x - vp.geometry.x / 2 && mx < vp._translate.x + vp.geometry.x / 2) {
 				if (my > vp._translate.y - vp.geometry.y / 2 && my < vp._translate.y + vp.geometry.y / 2) {
 					// Mouse is inside this viewport
 					vp._mousePos = {
-						x: (mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x,
-						y: (my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y
+						x: Math.floor((mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x),
+						y: Math.floor((my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y)
 					};
 
 					ige._mouseOverVp = vp;

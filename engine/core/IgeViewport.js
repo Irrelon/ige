@@ -67,6 +67,7 @@ var IgeViewport = IgeEntity.extend([
 	 * Processes the actions required each render frame.
 	 */
 	tick: function (ctx, scene) {
+		// Check if we have a scene attached to this viewport
 		if (this._scene) {
 			// Store the viewport camera in the main ige so that
 			// down the scenegraph we can choose to negate the camera
@@ -104,26 +105,28 @@ var IgeViewport = IgeEntity.extend([
 				ctx.clip();
 			}
 
+			// Translate back to the center of the viewport
 			ctx.translate((this.geometry.x / 2) | 0, (this.geometry.y / 2) | 0);
 
 			// Transform the context to the center of the viewport
-			ctx.translate(
-				-this.camera._translate.x,
-				-this.camera._translate.y
-			); // Bitwise floor
-			ctx.rotate(this.camera._rotate.z);
-			ctx.scale(this.camera._scale.x, this.camera._scale.y);
+			// by processing the viewport's camera tick method
+			this.camera.tick(ctx);
 
+			// Draw the scene
 			ctx.save();
 				this._scene.tick(ctx, scene);
 			ctx.restore();
 
+			// Check if we should draw bounds on this viewport
+			// (usually for debug purposes)
 			if (this._drawBounds && ctx === ige._ctx) {
 				// Traverse the scenegraph and draw axis-aligned
 				// bounding boxes for every object
 				this.drawAABBs(ctx, this._scene, 0);
 			}
 
+			// Check if we should draw the mouse position on this
+			// viewport (usually for debug purposes)
 			if (this._drawMouse && ctx === ige._ctx && this._mousePos) {
 				ctx.fillStyle = '#fc00ff';
 				ctx.fillRect(this._mousePos.x - 5, this._mousePos.y - 5, 10, 10);
