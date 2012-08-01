@@ -17,76 +17,98 @@ var IgeTween = IgeClass.extend({
 	/**
 	 * Sets the object in which the properties to tween exist.
 	 * @param targetObj
+	 * @return {*}
 	 */
 	targetObj: function (targetObj) {
-		this._targetObj = targetObj;
+		if (targetObj !== undefined) {
+			this._targetObj = targetObj;
+		}
+
 		return this;
 	},
 
 	/**
 	 * Sets the tween's target properties to tween to.
 	 * @param propertyObj
+	 * @return {*}
 	 */
 	properties: function (propertyObj) {
-		this._propertyObj = propertyObj;
+		if (propertyObj !== undefined) {
+			this._propertyObj = propertyObj;
+		}
+
 		return this;
 	},
 
 	/**
 	 * Sets the duration of the tween in milliseconds.
 	 * @param durationMs
+	 * @return {*}
 	 */
 	duration: function (durationMs) {
-		this._durationMs = durationMs;
+		if (durationMs !== undefined) {
+			this._durationMs = durationMs;
+		}
+
 		return this;
 	},
 
 	/**
 	 * Sets the method to be called just before the tween has started.
 	 * @param callback
+	 * @return {*}
 	 */
 	beforeTween: function (callback) {
-		this._beforeTween = callback;
+		if (callback !== undefined) {
+			this._beforeTween = callback;
+		}
+
 		return this;
 	},
 
 	/**
 	 * Sets the method to be called just after the tween has ended.
 	 * @param callback
+	 * @return {*}
 	 */
 	afterTween: function (callback) {
-		this._afterTween = callback;
+		if (callback !== undefined) {
+			this._afterTween = callback;
+		}
+
 		return this;
 	},
 
 	/**
 	 * Sets the name of the easing method to use with the tween.
 	 * @param methodName
+	 * @return {*}
 	 */
 	easing: function (methodName) {
-		this._easing = methodName;
+		if (methodName !== undefined) {
+			this._easing = methodName;
+		}
+
 		return this;
 	},
 
 	/**
 	 * Sets the timestamp at which the tween should start.
 	 * @param timeMs
+	 * @return {*}
 	 */
 	startTime: function (timeMs) {
-		this._startTime = timeMs;
+		if (timeMs !== undefined) {
+			this._startTime = timeMs;
+		}
+
+		return this;
 	},
 
 	/**
 	 * Starts the tweening operation.
 	 */
 	start: function () {
-		/*ige.tween.start(
-			this._targetObj,
-			this._propertyObj,
-			this._durationMs,
-			this._options
-		);*/
-
 		ige.tween.start(this);
 
 		// Add the tween to the target object's tween array
