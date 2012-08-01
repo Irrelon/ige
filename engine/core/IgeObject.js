@@ -13,54 +13,6 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Handles screen resize events. Calls the _resizeEvent method of
-	 * every child object mounted to this object.
-	 * @param event
-	 * @private
-	 */
-	_resizeEvent: function (event) {
-		var arr = this._children,
-			arrCount = arr.length;
-
-		while (arrCount--) {
-			arr[arrCount]._resizeEvent(event);
-		}
-	},
-
-	/**
-	 * Calls each behaviour method for the object.
-	 * @private
-	 */
-	_processBehaviours: function (ctx) {
-		if (ige._frameAlternator !== this._behaviourFA) {
-			var arr = this._behaviours,
-				arrCount = arr.length;
-
-			while (arrCount--) {
-				arr[arrCount].method.apply(this, ctx);
-			}
-
-			this._behaviourFA = ige._frameAlternator;
-		}
-	},
-
-	/**
-	 * Called when a child object is mounted to this object.
-	 * @param obj
-	 * @private
-	 */
-	_childMounted: function (obj) {
-		this._resizeEvent(null);
-	},
-
-	/**
-	 * Called when a child object is un-mounted to this object.
-	 * @param obj
-	 * @private
-	 */
-	_childUnMounted: function (obj) {},
-
-	/**
 	 * Gets / sets the arbitrary group name that the object belogs to.
 	 * @param {String=} val
 	 * @return {*}
@@ -232,15 +184,6 @@ var IgeObject = IgeEventingClass.extend({
 		// Loop all children and clone them, then return cloned version of ourselves
 	},
 
-	breakOnTick: function (val) {
-		if (typeof(val) !== 'undefined') {
-			this._breakOnTick = val;
-			return this;
-		}
-
-		return this._breakOnTick;
-	},
-
 	/**
 	 * Gets / sets the positioning mode of the entity.
 	 * @param val 0 = 2d, 1 = isometric
@@ -378,27 +321,6 @@ var IgeObject = IgeEventingClass.extend({
 		return this._dirty;
 	},
 
-	_visit: function (u, sortObj) {
-		var arr = sortObj.adj[u],
-			arrCount = arr.length,
-			i, v;
-
-		sortObj.c[u] = 1;
-
-		for (i = 0; i < arrCount; ++i) {
-			v = arr[i];
-
-			if (sortObj.c[v] === 0) {
-				sortObj.p[v] = u;
-				this._visit(v, sortObj);
-			}
-		}
-
-		sortObj.c[u] = 2;
-		sortObj.order[sortObj.order_ind] = u;
-		--sortObj.order_ind;
-	},
-
 	/**
 	 * Sorts the _children array by the layer and then depth of each object.
 	 */
@@ -438,7 +360,7 @@ var IgeObject = IgeEventingClass.extend({
 
 				for (i = 0; i < arrCount; ++i) {
 					if (sortObj.c[i] === 0) {
-						this._visit(i, sortObj);
+						this._depthSortVisit(i, sortObj);
 					}
 				}
 
@@ -486,11 +408,6 @@ var IgeObject = IgeEventingClass.extend({
 	 * Processes the actions required each render frame.
 	 */
 	tick: function (ctx, scene) {
-		if (this._breakOnTick) {
-			debugger;
-			this._breakOnTick = false;
-		}
-
 		// Depth sort all child objects
 		this.depthSortChildren();
 
@@ -513,6 +430,75 @@ var IgeObject = IgeEventingClass.extend({
 			}
 		}
 	},
+
+	_depthSortVisit: function (u, sortObj) {
+		var arr = sortObj.adj[u],
+			arrCount = arr.length,
+			i, v;
+
+		sortObj.c[u] = 1;
+
+		for (i = 0; i < arrCount; ++i) {
+			v = arr[i];
+
+			if (sortObj.c[v] === 0) {
+				sortObj.p[v] = u;
+				this._depthSortVisit(v, sortObj);
+			}
+		}
+
+		sortObj.c[u] = 2;
+		sortObj.order[sortObj.order_ind] = u;
+		--sortObj.order_ind;
+	},
+
+	/**
+	 * Handles screen resize events. Calls the _resizeEvent method of
+	 * every child object mounted to this object.
+	 * @param event
+	 * @private
+	 */
+	_resizeEvent: function (event) {
+		var arr = this._children,
+			arrCount = arr.length;
+
+		while (arrCount--) {
+			arr[arrCount]._resizeEvent(event);
+		}
+	},
+
+	/**
+	 * Calls each behaviour method for the object.
+	 * @private
+	 */
+	_processBehaviours: function (ctx) {
+		if (ige._frameAlternator !== this._behaviourFA) {
+			var arr = this._behaviours,
+				arrCount = arr.length;
+
+			while (arrCount--) {
+				arr[arrCount].method.apply(this, ctx);
+			}
+
+			this._behaviourFA = ige._frameAlternator;
+		}
+	},
+
+	/**
+	 * Called when a child object is mounted to this object.
+	 * @param obj
+	 * @private
+	 */
+	_childMounted: function (obj) {
+		this._resizeEvent(null);
+	},
+
+	/**
+	 * Called when a child object is un-mounted to this object.
+	 * @param obj
+	 * @private
+	 */
+	_childUnMounted: function (obj) {},
 
 	/**
 	 * Destroys the object and all it's child objects, removing them from the
