@@ -43,6 +43,7 @@ var IgeEngine = IgeEntity.extend({
 		this.addComponent(IgeTweenComponent);
 
 		// Set some defaults
+		this.tickDelta = 0; // The time between the last tick and the current one
 		this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 		this._state = 0; // Currently stopped
 		this._texturesLoading = 0; // Holds a count of currently loading textures
@@ -520,12 +521,13 @@ var IgeEngine = IgeEntity.extend({
 		while (arrCount--) {
 			vp = arr[arr.length - (arrCount + 1)];
 			// Check if the mouse is inside this viewport's bounds
+			// TODO: Update this code to take into account viewport rotation and camera rotation
 			if (mx > vp._translate.x - vp.geometry.x / 2 && mx < vp._translate.x + vp.geometry.x / 2) {
 				if (my > vp._translate.y - vp.geometry.y / 2 && my < vp._translate.y + vp.geometry.y / 2) {
 					// Mouse is inside this viewport
 					vp._mousePos = {
-						x: (mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x,
-						y: (my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y
+						x: Math.floor((mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x),
+						y: Math.floor((my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y)
 					};
 
 					ige._mouseOverVp = vp;
