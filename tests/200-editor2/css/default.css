@@ -1,0 +1,42 @@
+body {
+    font-family: 'Lucida Sans Unicode','Lucida Grande',arial,helvetica,sans-serif;
+    font-size: 12px;
+}
+
+.noOverflow {
+    overflow: hidden;
+}
+
+.uiBar {
+    background: #333;
+}
+
+#vertical {
+    height: 100%;
+    border: 0;
+}
+
+#horizontal {
+    width: 100%;
+    border: 0;
+}
+
+#igeFrame {
+    border: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.k-splitbar-static-horizontal {
+    width: 0px;
+    border-right-width: 0px;
+}
+
+.k-splitbar-static-vertical {
+    height: 0px;
+    border-bottom-width: 0px;
+}
+
+.k-splitter .k-scrollable {
+    overflow: hidden;
+}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="viewport" content="user-scalable=no, width=device-width" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta http-equiv="X-UA-Compatible" content="IE=9" >
+	<title>Example Suite - Isogenic Engine</title>
+
+	<!-- STYLES -->
+	<link href="../css/default.css" rel="stylesheet" type="text/css" />
+	<link href="kendo/styles/kendo.common.min.css" rel="stylesheet" type="text/css" />
+	<link href="kendo/styles/kendo.black.min.css" rel="stylesheet" type="text/css" />
+	<link href="css/default.css" rel="stylesheet" type="text/css" />
+
+	<!-- jQuery & Kendo -->
+	<script type="text/javascript" src="kendo/js/jquery.min.js"></script>
+	<script type="text/javascript" src="kendo/js/kendo.web.min.js"></script>
+
+	<!-- Core -->
+	<script type="text/javascript" src="../../engine/core/IgeBase.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeClass.js"></script>
+
+	<!-- IGE Editor -->
+	<script type="text/javascript" src="../../tools/editor/index.js"></script>
+	<script type="text/javascript" src="index.js"></script>
+</head>
+<body>
+	<div class="k-content">
+		<div id="vertical">
+			<div id="menuBar" class="uiBar"></div>
+			<div id="horizontal">
+				<div id="leftBar" class="uiBar"></div>
+				<div id="main">
+					<iframe id="igeFrame" src="ige/engine.html"></iframe>
+				</div>
+				<div id="rightBar" class="uiBar" style="overflow: auto;">
+					<ul id="panelbar">
+						<li class="k-state-active">
+							<span class="k-link k-state-selected">Scenegraph</span>
+							<div style="padding: 0px; overflow: auto;">
+								<div id="scenegraph-treeview"></div>
+							</div>
+						</li>
+						<li>
+							<span>Moo</span>
+							<div style="padding: 10px;">Helelo1</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div id="statusBar" class="uiBar"></div>
+		</div>
+	</div>
+</body>
+</html>
