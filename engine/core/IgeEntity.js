@@ -45,27 +45,6 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Gets / sets the current object id. If no id is currently assigned and no
-	 * id is passed to the method, it will automatically generate and assign a
-	 * new id as a 16 character hexadecimal value typed as a string.
-	 * @param {String=} id
-	 * @return {*} Returns this when setting the value or the current value if none is specified.
-	 */
-	id: function (id) {
-		if (id !== undefined) {
-			this._id = id;
-			return this;
-		}
-
-		if (!this._id) {
-			// The item has no id so generate one automatically
-			this._id = ige.newIdHex();
-		}
-
-		return this._id;
-	},
-
-	/**
 	 * Translate's the object to the tile co-ordinates passed.
 	 * @param x
 	 * @param y
