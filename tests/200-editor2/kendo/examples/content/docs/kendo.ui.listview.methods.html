@@ -1,0 +1,196 @@
+
+
+    <ul class="methodDetail" id="MethodDetail">
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="add"><code>add</code></a> ()
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Inserts empty item as first item on the current view and prepare it for editing.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the list view widget
+var listView = $("#listView").data("kendoListView");
+// add item
+listView.add();</code></pre></div>
+
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="cancel"><code>cancel</code></a> ()
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Cancels changes in currently edited item.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the list view widget
+var listView = $("#listView").data("kendoListView");
+// cancel changes in currently edited item
+listView.cancel();</code></pre></div>
+
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="clearSelection"><code>clearSelection</code></a> ()
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Clears ListView selected items and triggers change event.</div>
+
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="edit"><code>edit</code></a> (item)
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Edit specified ListView item. Triggers edit event.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the list view widget
+var listView = $("#listView").data("kendoListView");
+// edit first list view item
+listView.edit(listView.element.children().first());</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>item</code><span class="light fixedFont">: Object</span> 
+                                
+                            </dt>
+                            <dd>jQuery object containing the item to be edited.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="refresh"><code>refresh</code></a> ()
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Reloads the data and repaints the list view.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>var listView = $("#listView").data("kendoListView");
+
+// refreshes the list view
+listView.refresh();</code></pre></div>
+
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="remove"><code>remove</code></a> (item)
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Removes specified ListView item. Triggers remove event and if not prevented calls DataSource sync method.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the list view widget
+var listView = $("#listView").data("kendoListView");
+// remove first list view item
+listView.remove(listView.element.children().first());</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>item</code><span class="light fixedFont">: Object</span> 
+                                
+                            </dt>
+                            <dd>jQuery object containing the item to be removed.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="save"><code>save</code></a> ()
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Saves edited ListView item. If validation succeeds will call DataSource sync method.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the list view widget
+var listView = $("#listView").data("kendoListView");
+// edit first list view item
+listView.edit(listView.element.children().first());
+// save edited item
+listView.save();</code></pre></div>
+
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="select"><code>select</code></a> (items)
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Selects the specified ListView item. If called without arguments - returns the selected items.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the list view widget
+var listView = $("#listView").data("kendoListView");
+// selects first list view item
+listView.select(listView.element.children().first());</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>items</code><span class="light fixedFont">: Selector | Array</span> 
+                                
+                            </dt>
+                            <dd>Items to select.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+    </ul>
+

@@ -1,0 +1,88 @@
+<p>
+ A <strong>Window</strong> displays content in a modal or non-modal HTML window. By default, a
+ <strong>Window</strong> can be moved, resized, and closed. Its content can also be defined with either as
+ static HTML or loaded dynamically via AJAX.
+</p>
+<p>
+ A <strong>Window</strong> can be initialized from virtually any DOM element. During initialization, the
+ targeted content will automatically be wrapped in the div element of the <strong>Window</strong>.
+</p>
+<h3>Getting Started</h3><div class="code-sample"><h4 class="code-title">Create a simple HTML element with the Window content</h4><pre class="code prettyprint"><code>&lt;div id="window"&gt;
+    Content of the Window
+&lt;/div&gt;</code></pre></div><div class="code-sample"><h4 class="code-title">Initialize the Window using a selector</h4><pre class="code prettyprint"><code>$(document).ready(function() {
+    $("#window").kendoWindow();
+});</code></pre></div><p>
+ When a <strong>Window</strong> is initialized, it will automatically be displayed open near the location of the
+ DOM element that was used to initialize the content.
+</p>
+<h3>Configuring Window Behaviors</h3>
+<p>
+ A <strong>Window</strong> provides many configuration options that can be easily set during initialization.
+ Among the properties that can be controlled:
+</p>
+<ul>
+ <li>Minimum height/width</li>
+ <li>Available user actions (close/refresh/maximize/minimize) and ability to define custom ones</li>
+ <li>Title</li>
+ <li>Draggable and resizable behaviors</li>
+</ul><div class="code-sample"><h4 class="code-title">Create a modal Window with all user actions enabled</h4><pre class="code prettyprint"><code>$("#window").kendoWindow({
+    actions: ["Custom", "Refresh", "Maximize", "Minimize", "Close"],
+    draggable: false,
+    height: "300px",
+    modal: true,
+    resizable: false,
+    title: "Modal Window",
+    width: "500px"
+});</code></pre></div><p>
+ The order of the values in the actions array determines the order in which the action buttons will be rendered
+ in the title of a <strong>Window</strong>. The maximize action serves both as a button for expanding a
+ <strong>Window</strong> to fill the screen and as a button to restore a <strong>Window</strong> to its previous
+ size. The minimize action collapses a <strong>Window</strong> to its title.
+</p>
+<p>If a non-recognized action name is supplied, it is treated as a custom action - <strong>k-icon</strong> and <strong>k-actionname</strong>
+CSS classes are rendered for it and no click event handler is attached automatically. The Kendo stylesheets have a supplied icon for
+actions with the name "Custom", but any name can be used. Click events can be captured and handled in a standard way:</p><div class="code-sample"><h4 class="code-title">Custom actions</h4><pre class="code prettyprint"><code>  $("#window").kendoWindow({
+      actions: ["Custom", "Minimize", "Maximize", "Close"],
+      title: "Window Title"
+  }).data("kendoWindow").wrapper.find(".k-i-custom").click(function(e) {
+      alert("Custom action button clicked");
+      e.preventDefault();
+  });
+
+&lt;h3&gt;Positioning and Opening a Window&lt;/h3&gt;
+&lt;p&gt;
+ In some scenarios, it is preferable to center a &lt;strong&gt;Window&lt;/strong&gt; rather than open it near the HTML
+ element used to define the content. It is also common to open a &lt;strong&gt;Window&lt;/strong&gt; as the result of the
+ action of a user rather than on the load event of a page. The &lt;strong&gt;Window&lt;/strong&gt; API provides methods for
+ handling these scenarios.
+&lt;/p&gt;</code></pre></div><div class="code-sample"><h4 class="code-title">Centering a Window and opening on button click</h4><pre class="code prettyprint"><code>&lt;div id="window"&gt;
+    Content of the Window
+&lt;/div&gt;
+&lt;button id="openButton"&gt;Open Window&lt;/button&gt;</code></pre></div><div class="code-sample"><h4 class="code-title">Initialize Window, center, and configure button click action</h4><pre class="code prettyprint"><code>$(document).ready(function(){
+    var win = $("#window").kendoWindow({
+        height: "200px",
+        title: "Centered Window",
+        visible: false,
+        width: "200px"
+    }).data("kendoWindow");
+});
+
+$("#openButton").click(function(){
+    var win = $("#window").data("kendoWindow");
+    win.center();
+    win.open();
+});</code></pre></div><h3>Loading Window content via AJAX</h3>
+<p>
+ A <strong>Window</strong> provides built-in support for asynchronously loading content from a URL. This URL
+ should return a HTML fragment that can be loaded in a Window content area.
+</p><div class="code-sample"><h4 class="code-title">Load Window content asynchronously</h4><pre class="code prettyprint"><code>&lt;div id="window"&gt;&lt;/div&gt;</code></pre></div><div class="code-sample"><h4 class="code-title">Initialize window and configure content loading</h4><pre class="code prettyprint"><code>$(document).ready(function(){
+    $("#window").kendoWindow({
+        content: "html-content-snippet.html",
+        title: "Async Window Content"
+    });
+});</code></pre></div><h3>Accessing an Existing Window</h3>
+<p>
+ You can reference an existing <b>Window</b> instance via
+ <a href="http://api.jquery.com/jQuery.data/">jQuery.data()</a>. Once a reference has been established, you can
+ use the API to control its behavior.
+</p><div class="code-sample"><h4 class="code-title">Accessing an existing Window instance</h4><pre class="code prettyprint"><code>var win = $("#window").data("kendoWindow");</code></pre></div>

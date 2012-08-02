@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Source and template binding</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+
+<div id="example" class="k-content">
+    <div class="demo-section">
+        <div class="configuration k-widget k-header">
+            <span class="configHead">Add a product</span>
+            <ul class="options">
+                <li>
+                    <label>Name:<input type="text" placeholder="Enter name" data-bind="value: productName" class="name k-textbox"/></label>
+                </li>
+                <li>
+                    <label>Price:<input type="text" placeholder="Enter number" data-bind="value: productPrice" class="k-textbox" /></label>
+                </li>
+                <li>
+                    <label>Units in stock:<input type="text" placeholder="Enter number" data-bind="value: productUnitsInStock" class="k-textbox" /></label>
+                </li>
+                <li>
+                    <button class="k-button" data-bind="click: addProduct">Add a new product</button>
+                </li>
+            </ul>
+        </div>   
+
+        <table id="products" class="metrotable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Units</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody data-template="row-template" data-bind="source: products">
+            </tbody>
+            <tfoot data-template="footer-template" data-bind="source: this">
+            </tfoot>
+        </table>
+    </div>
+
+    <script id="row-template" type="text/x-kendo-template">
+        <tr>
+            <td data-bind="text: name">
+            </td>
+            <td>
+                #: kendo.toString(get("price"), "C") #
+            </td>
+            <td data-bind="text: unitsInStock"></td>
+            <td><button class="k-button" data-bind="click: deleteProduct">Delete</button></td>
+        </tr>
+    </script>
+    <script id="footer-template" type="text/x-kendo-template">
+        <tr>
+            <td>
+                Products count: #: total() #
+            </td>
+            <td>
+                Total price: #: totalPrice() #
+            </td>
+            <td colspan="2">
+                Units in stock: #: totalUnitsInStock() #
+            </td>
+        </tr>
+    </script>
+    <script>
+    $(document).ready(function() {
+        var viewModel = kendo.observable({
+            productName: "Product name",
+            productPrice: 10,
+            productUnitsInStock: 10,
+            addProduct: function() {
+                this.get("products").push({
+                    name: this.get("productName"),
+                    price: parseFloat(this.get("productPrice")),
+                    unitsInStock: parseFloat(this.get("productUnitsInStock"))
+                });
+            },
+            deleteProduct: function(e) {
+                // the current data item (product) is passed as the "data" field of the event argument
+                var product = e.data;
+
+                var products = this.get("products");
+
+                var index = products.indexOf(product);
+
+                // remove the product by using the splice method
+                products.splice(index, 1);
+            },
+            total: function() {
+                return this.get("products").length;
+            },
+            totalPrice: function() {
+                var sum = 0;
+
+                $.each(this.get("products"), function(index, product) {
+                    sum += product.price;
+                });
+
+                return sum;
+            },
+            totalUnitsInStock: function() {
+                var sum = 0;
+
+                $.each(this.get("products"), function(index, product) {
+                    sum += product.unitsInStock;
+                });
+
+                return sum;
+            },
+            products: [
+                { name: "Hampton Sofa", price: 989.99, unitsInStock: 39 },
+                { name: "Perry Sofa", price: 559.99, unitsInStock: 17 },
+                { name: "Donovan Sofa", price: 719.99, unitsInStock: 29 },
+                { name: "Markus Sofa", price: 839.99, unitsInStock: 3 }
+            ]
+        });
+
+        kendo.bind($("#example"), viewModel);
+    });
+    </script>
+    <div class="code-sample">
+        <h4 class="code-title">View source code:</h4>
+        <pre class="prettyprint">
+&lt;div id=&quot;example&quot;&gt;
+    &lt;table&gt;
+        &lt;thead&gt;
+            &lt;tr&gt;
+                &lt;th&gt;Name&lt;/th&gt;
+                &lt;th&gt;Price&lt;/th&gt;
+                &lt;th&gt;Units&lt;/th&gt;
+                &lt;th&gt;Delete&lt;/th&gt;
+            &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody data-template=&quot;row-template&quot; data-bind=&quot;source: products&quot;&gt;&lt;/tbody&gt;
+        &lt;tfoot data-template=&quot;footer-template&quot; data-bind=&quot;source: this&quot;&gt;&lt;/tfoot&gt;
+    &lt;/table&gt;
+
+    &lt;div&gt;
+        &lt;span&gt;Add a product&lt;/span&gt;
+        &lt;ul&gt;
+            &lt;li&gt;
+                &lt;label&gt;Name:&lt;input type=&quot;text&quot; placeholder=&quot;Enter name&quot; data-bind=&quot;value: productName&quot; /&gt;&lt;/label&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+                &lt;label&gt;Price:&lt;input type=&quot;number&quot; placeholder=&quot;Enter number&quot; data-bind=&quot;value: productPrice&quot; /&gt;&lt;/label&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+                &lt;label&gt;Units in stock:&lt;input type=&quot;number&quot; placeholder=&quot;Enter number&quot; data-bind=&quot;value: productUnitsInStock&quot; /&gt;&lt;/label&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+                &lt;button data-bind=&quot;click: addProduct&quot;&gt;Add a new product&lt;/button&gt;
+            &lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;script id=&quot;row-template&quot; type=&quot;text/x-kendo-template&quot;&gt;
+    &lt;tr&gt;
+        &lt;td data-bind=&quot;text: name&quot;&gt;
+        &lt;/td&gt;
+        &lt;td&gt;
+            #: kendo.toString(get(&quot;price&quot;), &quot;C&quot;) #
+        &lt;/td&gt;
+        &lt;td data-bind=&quot;text: unitsInStock&quot;&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;button data-bind=&quot;click: deleteProduct&quot;&gt;Delete&lt;/button&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/script&gt;
+&lt;script id=&quot;footer-template&quot; type=&quot;text/x-kendo-template&quot;&gt;
+    &lt;tr&gt;
+        &lt;td&gt;
+            Products count: #: total() #
+        &lt;/td&gt;
+        &lt;td&gt;
+            Total price: #: totalPrice() #
+        &lt;/td&gt;
+        &lt;td colspan=&quot;2&quot;&gt;
+            Units in stock: #: totalUnitsInStock() #
+        &lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/script&gt;
+        </pre>
+    </div>
+    <div class="code-sample">
+        <h4 class="code-title">View model source code:</h4>
+        <pre class="prettyprint">
+var viewModel = kendo.observable({
+    productName: &quot;Product name&quot;,
+    productPrice: 10,
+    productUnitsInStock: 10,
+    addProduct: function() {
+        this.get(&quot;products&quot;).push({
+            name: this.get(&quot;productName&quot;),
+            price: parseFloat(this.get(&quot;productPrice&quot;)),
+            unitsInStock: parseFloat(this.get(&quot;productUnitsInStock&quot;))
+        });
+    },
+    deleteProduct: function(e) {
+        // the current data item (product) is passed as the &quot;data&quot; field of the event argument
+        var product = e.data;
+
+        var products = this.get(&quot;products&quot;);
+
+        var index = products.indexOf(product);
+
+        // remove the product by using the splice method
+        products.splice(index, 1);
+    },
+    total: function() {
+        return this.get(&quot;products&quot;).length;
+    },
+    totalPrice: function() {
+        var sum = 0;
+
+        $.each(this.get(&quot;products&quot;), function(index, product) {
+            sum += product.price;
+        });
+
+        return sum;
+    },
+    totalUnitsInStock: function() {
+        var sum = 0;
+
+        $.each(this.get(&quot;products&quot;), function(index, product) {
+            sum += product.unitsInStock;
+        });
+
+        return sum;
+    },
+    products: [
+        { name: &quot;Hampton Sofa&quot;, price: 989.99, unitsInStock: 39 },
+        { name: &quot;Perry Sofa&quot;, price: 559.99, unitsInStock: 17 },
+        { name: &quot;Donovan Sofa&quot;, price: 719.99, unitsInStock: 29 },
+        { name: &quot;Markus Sofa&quot;, price: 839.99, unitsInStock: 3 }
+    ]
+});
+
+kendo.bind($(&quot;#example&quot;), viewModel);
+</pre>
+    </div>
+    <style scoped>
+        .demo-section {
+        	width: 600px;
+        	min-height: 200px;
+        }
+        .metrotable > tbody > tr > td  {
+        	font-size: 12px;
+        }
+        .metrotable > thead > tr > th {
+        	font-size: 14px;
+        	padding-top: 0;
+        }
+        
+        .metrotable > tfoot > tr > td {
+        	padding-right: 10px;
+        }
+        
+        #example .configuration {
+            margin-bottom: 10px;
+            width: 190px;
+        }
+
+        .configuration label {
+            display: block;
+            float: none;
+        }
+
+        .configuration .name {
+            margin-top: -3px;
+            width: 130px;
+        }
+        .code-sample {
+            clear: right;
+        }
+    </style>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direction</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+        <div id="example" class="k-content">
+
+            <div class="configuration k-widget k-header">
+                <span class="configHead">Direction Settings</span>
+                <ul class="options">
+                    <li>
+                        <input id="default" name="direction" type="radio" checked="checked" /> <label for="default">default / bottom</label>
+                    </li>
+                    <li>
+                        <input id="left" name="direction" type="radio" /> <label for="left">left</label>
+                    </li>
+                    <li>
+                        <input id="right" name="direction" type="radio" /> <label for="right">right</label>
+                    </li>
+                    <li>
+                        <input id="top" name="direction" type="radio" /> <label for="top">top</label>
+                    </li>
+                    <li>
+                        <input id="custom" name="direction" type="radio" /> <label for="custom">custom:</label>
+                        <input id="customValue" type="text" value="top left" class="k-textbox customValue" />
+                    </li>
+                </ul>
+                <br />
+                <a class="k-button" id="apply" href="#" style="float: right">Apply</a>
+            </div>
+
+            <ul id="menu">
+                <li>
+                    Mens
+                    <ul>
+                        <li>Footwear
+                            <ul>
+                                <li>Leisure Trainers</li>
+                                <li>Running Shoes</li>
+                                <li>Outdoor Footwear</li>
+                                <li>Sandals/Flip Flops</li>
+                                <li>Footwear Accessories</li>
+
+                            </ul>
+                        </li>
+                        <li>Leisure Clothing
+                            <ul>
+                                <li>T-Shirts</li>
+                                <li>Hoodies & Sweatshirts</li>
+                                <li>Jackets</li>
+                                <li>Pants</li>
+                                <li>Shorts</li>
+                            </ul>
+                        </li>
+                        <li>Sports Clothing
+                            <ul>
+                                <li>Football</li>
+                                <li>Basketball</li>
+                                <li>Golf</li>
+                                <li>Tennis</li>
+                                <li>Swimwear</li>
+                            </ul>
+                        </li>
+                        <li>Accessories
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    Womens
+                    <ul>
+                        <li>Footwear
+                            <ul>
+                                <li>Leisure Trainers</li>
+                                <li>Running Shoes</li>
+                                <li>Outdoor Footwear</li>
+                                <li>Sandals/Flip Flops</li>
+                                <li>Footwear Accessories</li>
+
+                            </ul>
+                        </li>
+                        <li>Leisure Clothing
+                            <ul>
+                                <li>T-Shirts</li>
+                                <li>Jackets</li>
+                            </ul>
+                        </li>
+                        <li>Sports Clothing
+                            <ul>
+                                <li>Basketball</li>
+                                <li>Golf</li>
+                                <li>Tennis</li>
+                                <li>Swimwear</li>
+                            </ul>
+                        </li>
+                        <li>Accessories
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    Boys
+                    <ul>
+                        <li>Footwear
+                            <ul>
+                                <li>Leisure Trainers</li>
+                                <li>Running Shoes</li>
+                                <li>Outdoor Footwear</li>
+                                <li>Sandals/Flip Flops</li>
+                                <li>Footwear Accessories</li>
+                            </ul>
+                        </li>
+                        <li>Leisure Clothing
+                            <ul>
+                                <li>T-Shirts</li>
+                                <li>Hoodies & Sweatshirts</li>
+                                <li>Jackets</li>
+                                <li>Pants</li>
+                                <li>Shorts</li>
+                            </ul>
+                        </li>
+                        <li>Sports Clothing
+                            <ul>
+                                <li>Football</li>
+                                <li>Basketball</li>
+                                <li>Rugby</li>
+                                <li>Tennis</li>
+                                <li>Swimwear</li>
+                            </ul>
+                        </li>
+                        <li>Accessories
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    Girls
+                    <ul>
+                        <li>Footwear
+                            <ul>
+                                <li>Leisure Trainers</li>
+                                <li>Running Shoes</li>
+                                <li>Fitness Trainers</li>
+                                <li>Sandals/Flip Flops</li>
+                                <li>Footwear Accessories</li>
+                            </ul>
+                        </li>
+                        <li>Leisure Clothing
+                            <ul>
+                                <li>T-Shirts</li>
+                                <li>Hoodies & Sweatshirts</li>
+                                <li>Jackets</li>
+                                <li>Pants</li>
+                                <li>Shorts</li>
+                            </ul>
+                        </li>
+                        <li>Sports Clothing
+                            <ul>
+                                <li>Basketball</li>
+                                <li>Tennis</li>
+                                <li>Swimwear</li>
+                            </ul>
+                        </li>
+                        <li>Accessories
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    Footwear
+                    <ul>
+                        <li>Mens</li>
+                        <li>Womens</li>
+                        <li>Juniors</li>
+                        <li>Childrens</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <script>
+                $(document).ready(function() {
+                    var original = $("#menu").clone(true);
+
+                    original.find(".k-state-active").removeClass("k-state-active");
+
+                    $("#apply").click( function(e) {
+                        e.preventDefault();
+                        var menu = $("#menu"),
+                            clone = original.clone(true);
+
+                        menu.data("kendoMenu").close($("#menu .k-link"));
+
+                        menu.replaceWith(clone);
+
+                        initMenu();
+                    });
+                    var getDirection = function () {
+                        var checked = $("input:[type=radio]:checked")[0].id;
+                        return /custom|customValue/.test(checked) ? $("#customValue").val() : checked;
+                    };
+
+                    var initMenu = function () {
+                        $("#menu").kendoMenu({
+                            direction: getDirection()
+                        })
+                        .css({
+                            marginRight: "220px"
+                        });
+                    };
+
+                    initMenu();
+                });
+            </script>
+            <style scoped>
+                #customValue {
+                    line-height: 16px;
+                    width: 60px;
+                    float: none;
+                    margin: -3px 0 0 5px;
+                }
+            </style>
+        </div>
+
+</body>
+</html>

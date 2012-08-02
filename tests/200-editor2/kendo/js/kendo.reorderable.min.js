@@ -1,0 +1,10 @@
+/*
+* Kendo UI Web v2012.2.710 (http://kendoui.com)
+* Copyright 2012 Telerik AD. All rights reserved.
+*
+* Kendo UI Web commercial licenses may be obtained at http://kendoui.com/web-license
+* If you do not own a commercial license, this file shall be governed by the
+* GNU General Public License (GPL) version 3.
+* For GPL requirements, please review: http://www.gnu.org/copyleft/gpl.html
+*/
+;(function(a,b){function g(b,c){b=a(b),c?b.find(".k-drag-status").removeClass("k-add").addClass("k-denied"):b.find(".k-drag-status").removeClass("k-denied").addClass("k-add")}var c=window.kendo,d=c.ui.Widget,e="change",f="k-reorderable",h=d.extend({init:function(b,h){var i=this,j,k=c.guid()+"-reorderable";d.fn.init.call(i,b,h),b=i.element.addClass(f),h=i.options,j=h.draggable||new c.ui.Draggable(b,{group:k,filter:h.filter,hint:h.hint}),i.reorderDropCue=a('<div class="k-reorder-cue"><div class="k-icon k-i-arrow-s"></div><div class="k-icon k-i-arrow-n"></div></div>'),b.find(j.options.filter).kendoDropTarget({group:j.options.group,dragenter:function(a){if(!!i._draggable){var c=this.element,d=c[0]===i._draggable[0];g(a.draggable.hint,d),d||i.reorderDropCue.css({height:c.outerHeight(),top:b.offset().top,left:c.offset().left+(c.index()>i._draggable.index()?c.outerWidth():0)}).appendTo(document.body)}},dragleave:function(a){g(a.draggable.hint,!0),i.reorderDropCue.remove()},drop:function(){if(!!i._draggable){var a=i._draggable[0],c=this.element[0],d;a!==c&&(d=b.find(j.options.filter),i.trigger(e,{element:i._draggable,oldIndex:d.index(a),newIndex:d.index(c)}))}}}),j.bind(["dragcancel","dragend","dragstart"],{dragcancel:function(){i.reorderDropCue.remove(),i._draggable=null},dragend:function(){i.reorderDropCue.remove(),i._draggable=null},dragstart:function(a){i._draggable=a.currentTarget}})},options:{name:"Reorderable",filter:"*"},events:[e]});c.ui.plugin(h)})(jQuery);

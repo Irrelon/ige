@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sorting</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+            <script src="../../content/shared/js/people.js"></script>
+
+        <div id="example" class="k-content">
+
+            <h3>Grid with single column sorting enabled</h3>
+            <div id="singleSort" style="width:600px;"></div>
+
+            <h3>Grid with multiple column sorting enabled</h3>
+            <div id="multipleSort" style="width:600px;"></div>
+
+            <script>
+                $(document).ready(function() {
+                    $("#singleSort").kendoGrid({
+                        dataSource: {
+                            data: createRandomData(20),
+                            pageSize: 5
+                        },
+                        sortable: {
+                            mode: "single",
+                            allowUnsort: false
+                        },
+                        pageable: true,
+                        scrollable: false,
+                        columns: [
+                            {
+                                field: "FirstName",
+                                title: "First Name"
+                            },
+                            {
+                                field: "LastName",
+                                title: "Last Name"
+                            },
+                            {
+                                field: "Age",
+                                title: "Age"
+                            }
+                        ]
+                    });
+
+                    $("#multipleSort").kendoGrid({
+                        dataSource: {
+                            data: createRandomData(20),
+                            pageSize: 5
+                        },
+                        sortable: {
+                            mode: "multiple",
+                            allowUnsort: true
+                        },
+                        pageable: true,
+                        scrollable: false,
+                        columns: [
+                            {
+                                field: "FirstName",
+                                title: "First Name"
+                            },
+                            {
+                                field: "LastName",
+                                title: "Last Name"
+                            },
+                            {
+                                field: "Age"
+                            }
+                        ]
+                    });
+                });
+            </script>
+        </div>
+</body>
+</html>

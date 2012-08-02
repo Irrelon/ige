@@ -1,0 +1,24 @@
+<p>The Kendo Mobile Scroller widget enables touch friendly kinetic scrolling for the contents of a given DOM element.  </p>
+
+<h3>Getting Started</h3>
+<p>Each mobile View initializes a scroller for its content element. In addition to that, a scroller will be initialized for every element with a
+<code>role</code> data attribute set to <code>scroller</code>.
+Alternatively, it can be initialized using jQuery plugin syntax in the containing mobile View <strong>init event handler</strong>.
+</p>
+<p>For the scroller to work, its element should have fixed dimensions (width and/or height) set.</p><div class="code-sample"><h4 class="code-title">Initialize mobile Scroller using a role data attribute.</h4><pre class="code prettyprint"><code>&lt;div data-role="scroller"&gt;
+  Foo
+&lt;/div&gt;</code></pre></div><div class="code-sample"><h4 class="code-title">Initialize mobile Scroller using jQuery plugin syntax</h4><pre class="code prettyprint"><code>&lt;div id="scroller"&gt;&lt;/div&gt;
+&lt;script&gt;
+var scroller = $("#scroller").kendoMobileScroller();
+&lt;/script&gt;</code></pre></div><div class="code-sample"><h4 class="code-title">Obtain the current mobile view scroller</h4><pre class="code prettyprint"><code>&lt;div data-role="view" data-init="getScroller"&gt;
+  Foo
+&lt;/div&gt;
+&lt;script&gt;
+ function getScroller(e) {
+    var scroller = e.view.scroller;
+ }
+&lt;/script&gt;</code></pre></div><p>The mobile Scroller widget exposes the following fields:</p>
+<ul>
+<li><strong>scrollTop</strong> - the number of pixels that are hidden from view above the scrollable area.</li>
+<li><strong>scrollLeft</strong> - the number of pixels that are hidden from view to the left of the scrollable area.</li>
+</ul>

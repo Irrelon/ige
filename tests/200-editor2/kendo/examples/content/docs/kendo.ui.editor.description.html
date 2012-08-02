@@ -1,0 +1,30 @@
+<p>
+      The Editor allows users to create rich text content by means of a WYSIWYG interfance. The generated widget value is an XHTML markup.
+ </p>
+ <h3>Getting Started</h3><div class="code-sample"><h4 class="code-title">Creating an <b>Editor</b> from existing HTML element</h4><pre class="code prettyprint"><code>  &lt;textarea id="editor" rows="10" cols="30"&gt;&lt;/textarea&gt;</code></pre></div><div class="code-sample"><h4 class="code-title">Initialize the Kendo Editor</h4><pre class="code prettyprint"><code>  $(document).ready(function(){
+      $("#editor").kendoEditor();
+  });</code></pre></div><h3>Configuring the Editor</h3>
+ If no specific tools are defined, the Editor will create its default set of tools for text formatting.<div class="code-sample"><h4 class="code-title">Specifying a set of Editor tools</h4><pre class="code prettyprint"><code>   $(document).ready(function(){
+      $("#editor").kendoEditor({
+         tools: [
+             "bold",
+             "italic",
+             "underline",
+             "foreColor"
+         ]
+      });
+  });</code></pre></div><h3>Specifying custom tools</h3>
+
+ The Editor functionality can be extended through custom tools, defined in the <code>tools</code> array.<div class="code-sample"><h4 class="code-title">Adding a custom tool button</h4><pre class="code prettyprint"><code>   $("#editor").kendoEditor({
+       tools: [
+           {
+               name: "toolName",
+               tooltip: "Custom editor tool",
+               exec: function(e) {
+                   var editor = $(this).data("kendoEditor");
+
+                   // execute command
+               }
+           }
+       ]
+   });</code></pre></div>The custom buttons get a <strong>k-toolName</strong> CSS class to allow styling. (where <code>toolName</code> is the name specified in the custom tool configuration)

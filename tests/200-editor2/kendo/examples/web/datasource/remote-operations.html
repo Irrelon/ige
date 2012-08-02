@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Remote data operations</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+        <div id="example" class="k-content">
+
+
+            <div class="configuration k-widget k-header">
+                <span class="configHead">Configure</span>
+                <ul class="options">
+                    <li>
+                        <label for="page">Page:</label>
+                        <input type="text" value="1" id="page" class="k-textbox" style="margin: -3px 0 3px;" />
+                    </li>
+                    <li>
+                        <label for="order">Order by:</label>
+                        <select id="order" style="width:115px;float:right;margin-top: -3px;">
+                            <option value="Id">Id</option>
+                            <option value="Name">Name</option>
+                            <option value="AverageRating">Rating</option>
+                            <option value="ReleaseYear">Release Year</option>
+                        </select>
+                    </li>
+                    <li>
+                        <label for="dir">Direction:</label>
+                        <select id="dir" style="width:115px;float:right;margin-top: -3px;">
+                            <option value="asc">Ascending</option>
+                            <option value="desc">Descending</option>
+                        </select>
+                    </li>
+                    <li>
+                        <button class="k-button" id="apply">Apply</button>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="movies-container">
+                <ul id="movies"></ul>
+            </div>
+
+            <script id="template" type="text/x-kendo-template">
+                <li class="title">
+                    # if (BoxArt.LargeUrl) { #
+                        <img src="#= BoxArt.LargeUrl #" />
+                    # } #
+                    <h4>#= Name #</h4>
+                    <p>Rating: #= AverageRating #</p>
+                </li>
+            </script>
+
+            <script>
+                $(document).ready(function() {
+                    // create a template using the above definition
+                    var template = kendo.template($("#template").html());
+
+                    var dataSource = new kendo.data.DataSource({
+                        type: "odata",
+                        serverPaging: true,
+                        serverSorting: true,
+                        pageSize: 10,
+                        transport: {
+                            read: "http://odata.netflix.com/Catalog/Titles"
+                        },
+                        change: function() { // subscribe to the CHANGE event of the data source
+                            // update the max attribute of the "page" input
+                            $("#page").attr("max", this.totalPages());
+
+                            $("#movies").html(kendo.render(template, this.view()));
+                        }
+                    });
+
+                    // read data from the remote service
+                    dataSource.read();
+
+                    $("#apply").live("click", function() {
+                        var page = parseInt($("#page").val(), 10);
+
+                        // validate the page - it must be a number within the allowed range
+                        if (isNaN(page) || page < 1 || page > dataSource.totalPages()) {
+                            alert(kendo.format("Page must be a number between 1 and {0}", dataSource.totalPages()));
+                            return;
+                        }
+
+                        // query the remote service
+                        dataSource.query({
+                            page: page,
+                            pageSize: 10,
+                            sort: {
+                                field: $("#order").val(),
+                                dir:$("#dir").val()
+                            }
+                        });
+                    });
+
+                    //initialize dropdownlist components
+                    $("#order").kendoDropDownList();
+                    $("#dir").kendoDropDownList();
+                });
+            </script>
+
+            <style scoped>
+                #movies-container {
+                    margin: 0 5px;
+                    overflow: auto;
+                    padding: 10px;
+                    width: 492px;
+                    height: 500px;
+                    border: 1px solid #bbb;
+                    -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.45), inset 0 0 30px rgba(0,0,0,0.07);
+                    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.45), inset 0 0 30px rgba(0,0,0,0.07);
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.45), inset 0 0 30px rgba(0,0,0,0.07);
+                    -webkit-border-radius: 8px;
+                    -moz-border-radius: 8px;
+                    border-radius: 8px;
+                }
+
+                #movies {
+                    padding: 0 1%;
+                }
+
+                .title {
+                    float: left;
+                    padding: 1%;
+                    width: 47%;
+                    list-style-type: none;
+                    margin: 0 0 20px;
+                    height: 170px;
+                    overflow: hidden;
+                }
+
+                .title img {
+                    float: left;
+                    height: 150px;
+                    -webkit-border-radius: 13px;
+                    -moz-border-radius: 13px;
+                    border-radius: 13px;
+                    box-shadow: 0 0 4px #CCCCFF;
+                    border: 5px solid transparent;
+                }
+                
+                .title h4, .title p {
+                    margin-left: 133px;
+                }
+                
+                .title h4 {
+                   font-size: 1.1em;
+                   color: #e26b1d;
+                }
+            </style>
+        </div>
+
+</body>
+</html>

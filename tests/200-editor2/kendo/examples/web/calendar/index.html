@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Basic usage</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+        <div id="example" class="k-content">
+            <div id="background">
+				<div id="calendar"></div>
+			</div>
+            <script>
+                $(document).ready(function() {
+                    // create Calendar from div HTML element
+                    $("#calendar").kendoCalendar();
+                });
+            </script>
+            <style scoped>
+                #background {
+                    width: 254px;
+					height: 250px;
+					margin: 30px auto;
+					padding: 69px 0 0 11px;
+					background: url('../../content/web/calendar/calendar.png') transparent no-repeat 0 0;
+                }
+				#calendar {
+					width: 241px;
+				}
+            </style>
+        </div>
+</body>
+</html>

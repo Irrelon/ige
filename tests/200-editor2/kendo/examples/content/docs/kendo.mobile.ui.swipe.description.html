@@ -1,0 +1,40 @@
+<p>The mobile swipe component handles user horizontal swiping events.</p>
+<h3>Getting Started</h3>
+
+<p>To register a swipe event for a given jQuery selector, use the <code>kendoMobileSwipe</code> jQuery plugin method.</p><div class="code-sample"><h4 class="code-title">swipe event handling</h4><pre class="code prettyprint"><code>&lt;div&gt;
+&lt;p&gt;Foo&lt;/p&gt;
+&lt;/p&gt;Bar&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+ $("p").kendoMobileSwipe(function(e) {
+     console.log("You swiped" + e.target.text() );
+ });
+&lt;/script&gt;</code></pre></div><p>The event handler accepts a parameter with the following fields:</p>
+<table>
+ <tr>
+ <th align="left" valign="top">target</th>
+ <td>The DOM element which was swiped</td>
+ </tr>
+ <tr>
+ <th align="left" valign="top">direction</th>
+ <td>The swipe direction. Can be either <code>left</code> or <code>right</code>.</td>
+ </tr>
+ <tr>
+ <th align="left" valign="top">drag</th>
+ <td>An instance of the kendo.Drag component, containing additional information about the drag event sequence, that generated the swipe.</td>
+ </tr>
+</table>
+
+<h3>Configuration</h3>
+
+<p>The swipe event criteria (minimum horizontal distance, maximum vertical deviation, timing, and swipe surface) can be configured by passing an additional parameter to the <code>kendoMobileSwipe</code> method. For more details, see the configuration section.</p><div class="code-sample"><h4 class="code-title">Listen only for longer and faster swipe events</h4><pre class="code prettyprint"><code>&lt;div&gt;
+&lt;p&gt;Foo&lt;/p&gt;
+&lt;/p&gt;Bar&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+ $("p").kendoMobileSwipe(function(e) {
+     console.log("You swiped" + e.target.text() );
+ }, { minXDelta: 200, maxDuration: 100 });
+&lt;/script&gt;</code></pre></div>

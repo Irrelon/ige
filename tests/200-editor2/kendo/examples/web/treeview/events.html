@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Events</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+        <div id="example" class="k-content">
+            <div id="treeview" class="demo-section" style="width: 200px"></div>
+
+            <script>
+                $(document).ready(function() {
+                    function onSelect(e) {
+                        kendoConsole.log("Selected: " + this.text(e.node));
+                    }
+
+                    function onCollapse(e) {
+                        kendoConsole.log("Collapsing " + this.text(e.node));
+                    }
+
+                    function onExpand(e) {
+                        kendoConsole.log("Expanding " + this.text(e.node));
+                    }
+
+                    function onDragStart(e) {
+                        kendoConsole.log("Started dragging " + this.text(e.sourceNode));
+                    }
+
+                    function onDrag(e) {
+                        kendoConsole.log("Started dragging " + this.text(e.sourceNode));
+                    }
+
+                    function onDrop(e) {
+                        kendoConsole.log(
+                        "Dropped " + this.text(e.sourceNode) +
+                        " (" + (e.valid ? "valid" : "invalid") + ")"
+                        );
+                    }
+
+                    function onDragEnd(e) {
+                        kendoConsole.log("Finished dragging " + this.text(e.sourceNode));
+                    }
+
+                    $("#treeview").kendoTreeView({
+                        dataSource: [
+                            { text: "Furniture", expanded: true, items: [
+                                { text: "Tables & Chairs" },
+                                { text: "Sofas" },
+                                { text: "Occasional Furniture" }
+                            ] },
+                            { text: "Decor", items: [
+                                { text: "Bed Linen" },
+                                { text: "Curtains & Blinds" },
+                                { text: "Carpets" }
+                            ] },
+                            { text: "Storage" }
+                        ],
+                        select: onSelect,
+                        collapse: onCollapse,
+                        expand: onExpand,
+                        dragAndDrop: true,
+                        /* drag & drop events */
+                        dragstart: onDragStart,
+                        drag: onDrag,
+                        drop: onDrop,
+                        dragend: onDragEnd
+                    });
+                });
+            </script>
+        </div>
+        <div class="console"></div>
+
+</body>
+</html>

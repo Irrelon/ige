@@ -1,0 +1,126 @@
+
+
+    <ul class="methodDetail" id="MethodDetail">
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="pullHandled"><code>pullHandled</code></a> ()
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Indicate that the pull event is handled (i.e. data from the server has been retrieved).</div><div class="code-sample"><h4 class="code-title">Custom pull to refresh view scroll handling</h4><pre class="code prettyprint"><code> &lt;div data-role="view" data-init="initPullToRefreshScroller"&gt;
+     &lt;h2 id="pull-to-refresh-clock"&gt;&lt;/h2&gt;
+ &lt;/div&gt;
+&lt;script&gt;
+
+ function updateClock() {
+     pullTime = kendo.toString(new Date(), "hh:mm:ss tt" );
+     $("#pull-to-refresh-clock").html("Last update at " + pullTime + ". &lt;br /&gt; Pull to refresh.");
+ }
+
+ function initPullToRefreshScroller(e) {
+     var scroller = e.view.scroller;
+
+     scroller.setOptions({
+         pullToRefresh: true,
+         pull: function() {
+             updateClock();
+             setTimeout(function() { scroller.pullHandled(); }, 400);
+         }
+     })
+ }
+&lt;/script&gt;</code></pre></div>
+
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="reset"><code>reset</code></a> ()
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Scrolls the container to the top.</div>
+
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="scrollHeight"><code>scrollHeight</code></a> ()
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Returns the height in pixels of the scroller content.</div>
+
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="scrollTo"><code>scrollTo</code></a> (x, y)
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Scrolls the container to the specified location</div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>x</code><span class="light fixedFont">: Number</span> 
+                                
+                            </dt>
+                            <dd>The horizontal offset in pixels to scroll to.</dd>
+                        
+                            <dt>
+                                <code>y</code><span class="light fixedFont">: Number</span> 
+                                
+                            </dt>
+                            <dd>The vertical offset in pixels to scroll to.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="scrollWidth"><code>scrollWidth</code></a> ()
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Returns the width in pixels of the scroller content.</div>
+
+                    
+
+                    
+                </div>
+            </li>
+        
+    </ul>
+

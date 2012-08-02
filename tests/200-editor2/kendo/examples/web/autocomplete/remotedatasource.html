@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Binding to remote data</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+        <div id="example" class="k-content">
+            <div id="movies">
+                <input id="titles"/>
+            </div>
+            <script>
+                $(document).ready(function() {
+                    $("#titles").kendoAutoComplete({
+                        minLength: 3,
+                        dataTextField: "Name",
+                        dataSource: {
+                            type: "odata",
+                            serverFiltering: true,
+                            serverPaging: true,
+                            pageSize: 20,
+                            transport: {
+                                read: "http://odata.netflix.com/Catalog/Titles"
+                            }
+                        }
+                    });
+                });
+            </script>
+
+            <style scoped>
+                #movies {
+					width: 369px;
+					height: 71px;
+					padding: 211px 0 0 141px;
+					background: url('../../content/web/autocomplete/movies.png') transparent no-repeat 0 0;
+					margin: 30px auto;
+ 				}
+                .k-autocomplete {
+                	width: 240px;
+                    vertical-align: middle;
+                }
+            </style>
+        </div>
+
+</body>
+</html>

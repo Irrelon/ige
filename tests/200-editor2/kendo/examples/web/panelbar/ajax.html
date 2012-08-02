@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Loading content with AJAX</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+        <div id="example" class="k-content">
+            <div class="wrapper">
+                <ul id="panelbar">
+                    <li>
+                        BODY
+                        <div></div>
+                    </li>
+                    <li>
+                        ENGINE
+                        <div></div>
+                    </li>
+                    <li>
+                        TRANSMISSION
+                        <div></div>
+                    </li>
+                    <li>
+                        PERFORMANCE
+                        <div></div>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="configuration configuration-horizontal-bottom">
+                <span class="infoHead">Information</span>
+                <p>Image courtesy of Aston Martin</p>
+                <p>
+                    <strong>Note:</strong>
+                    Security restrictions in Chrome prevent this
+                    example from working when the page is
+                    loaded from the file system (via file:// protocol).
+                </p>
+            </div>
+
+        </div>
+
+        <script>
+            $(document).ready(function() {
+                $("#panelbar").kendoPanelBar({
+                    expandMode: "single",
+                    contentUrls: [
+                        '../../content/web/panelbar/ajax/ajaxContent1.html',
+                        '../../content/web/panelbar/ajax/ajaxContent2.html',
+                        '../../content/web/panelbar/ajax/ajaxContent3.html',
+                        '../../content/web/panelbar/ajax/ajaxContent4.html'
+                    ]
+                });
+            });
+        </script>
+
+        <style scoped>
+            .wrapper {
+                width: 310px;
+                height: 400px;
+                margin: 20px auto;
+                padding: 75px 0 0 390px;
+                background: url('../../content/web/panelbar/astonmartin.png') no-repeat 0 50px transparent;
+            }
+            #panelbar {
+                width: 300px;
+            }
+            #panelbar p {
+                margin-left: 1em;
+                margin-right: 1em;
+            }
+        </style>
+
+</body>
+</html>

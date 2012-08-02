@@ -1,0 +1,97 @@
+<p>
+ A <strong>DropDownList</strong> displays a list of values and allows the selection of a single value from the
+ list.Custom values may not be entered via keyboard input.If you wish permit keyboard input - that is, custom
+ values are allowed - use the <strong>ComboBox</strong>.
+</p>
+<h3>Getting Started</h3>
+<p>There are two ways to create a <strong>DropDownList</strong>:</p>
+<ol>
+ <li>From a &lt;select&gt; element with HTML to define the list items</li>
+ <li>From an &lt;input&gt; element with databinding to define the listitems</li>
+</ol>
+<p>
+ A <strong>DropDownList</strong> will look and operate consistently regardless of the way in which it was
+ created.
+</p><div class="code-sample"><h4 class="code-title">Creating a DropDownList from existing &lt;input&gt; element</h4><pre class="code prettyprint"><code>&lt;input id="dropDownList" /&gt;</code></pre></div><p></p>
+<p>
+ Initialization of a <strong>DropDownList</strong> should occur after the DOM is fully loaded. It is recommended
+ that initialization the <strong>DropDownList</strong> occur within a handler is provided to
+ $(document).ready().
+</p><div class="code-sample"><h4 class="code-title">Initialize a DropDownList using a selector within $(document).ready()</h4><pre class="code prettyprint"><code>$(document).ready(function() {
+    $("#dropDownList").kendoDropDownList({
+        dataTextField: "text",
+        dataValueField: "value",
+        dataSource: [
+            { text: "Item1", value: "1" },
+            { text: "Item2", value: "2" }
+        ]
+    });
+});</code></pre></div><div class="code-sample"><h4 class="code-title">Create a DropDownList from existing &lt;select&gt; element with a pre-defined structure</h4><pre class="code prettyprint"><code>&lt;select id="dropDownList"&gt;
+    &lt;option&gt;Item 1&lt;/option&gt;
+    &lt;option&gt;Item 2&lt;/option&gt;
+    &lt;option&gt;Item 3&lt;/option&gt;
+&lt;/select&gt;
+
+&lt;script&gt;
+    $(document).ready(function(){
+        $("#dropDownList").kendoDropDownList();
+    });
+&lt;/script&gt;</code></pre></div><h3>Binding to Local or Remote Data</h3>
+<p>
+ The <strong>DropDownList</strong> can be bound to both local arrays and remote data via the
+ <strong>DataSource</strong> component; an abstraction for local and
+ remote data. Local arrays are appropriate for limited value options, while remote data binding is better for
+ larger data sets. With remote data-binding, items will be loaded on-demand; when they are displayed.
+</p><div class="code-sample"><h4 class="code-title">Binding to a remote OData service</h4><pre class="code prettyprint"><code>$(document).ready(function() {
+    $("#titles").kendoDropDownList({
+        index: 0,
+        dataTextField: "Name",
+        dataValueField: "Id",
+        dataSource: {
+            type: "odata",
+            transport: {
+                read: "http://odata.netflix.com/Catalog/Titles"
+            }
+        }
+    });
+});</code></pre></div><div class="desc"></div><h3>Customizing Item Templates</h3>
+<p>
+ The <strong>DropDownList</strong> uses Kendo UI templates to enable you to control how items are rendered. For
+ a detailed description of the capabilities and syntax of the Kendo UI templates, please refer to the
+ <a href="http://www.kendoui.com/documentation/framework/templates/overview.aspx" title="Kendo UI Template">documentation</a>.
+</p><div class="code-sample"><h4 class="code-title">Basic item template customization</h4><pre class="code prettyprint"><code>&lt;!-- HTML --&gt;
+&lt;input id="titles" /&gt;
+
+&lt;!-- Template --&gt;
+&lt;script id="scriptTemplate" type="text/x-kendo-template"&gt;
+    # if (data.BoxArt.SmallUrl) { #
+        &lt;img src="${ data.BoxArt.SmallUrl }" alt="${ data.Name }" /&gt;
+        Title:${ data.Name }, Year: ${ data.Name }
+    # } else { #
+        &lt;img alt="${ data.Name }" /&gt;
+        Title:${ data.Name }, Year: ${ data.Name }
+    # } #
+&lt;/script&gt;
+
+&lt;!-- DropDownList initialization --&gt;
+&lt;script type="text/javascript"&gt;
+    $(document).ready(function() {
+        $("#titles").kendoDropDownList({
+            autoBind: false,
+            dataTextField: "Name",
+            dataValueField: "Id",
+            template: $("#scriptTemplate").html(),
+            dataSource: {
+                type: "odata",
+                transport: {
+                    read: "http://odata.netflix.com/Catalog/Titles"
+                }
+            }
+        });
+    });
+&lt;/script&gt;</code></pre></div><h3>Accessing an Existing DropDownList</h3>
+<p>
+ You can reference an existing <b>DropDownList</b> instance via
+ <a href="http://api.jquery.com/jQuery.data/">jQuery.data()</a>. Once a reference has been established, you can
+ use the API to control its behavior.
+</p><div class="code-sample"><h4 class="code-title">Accessing an existing DropDownList instance</h4><pre class="code prettyprint"><code>var dropDownList = $("#dropDownList").data("kendoDropDownList");</code></pre></div>

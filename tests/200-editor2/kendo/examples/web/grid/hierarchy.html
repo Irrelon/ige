@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hierarchy</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+        <div id="example" class="k-content">
+            <div id="grid"></div>
+
+            <script>
+                $(document).ready(function() {
+                    var element = $("#grid").kendoGrid({
+                        dataSource: {
+                            type: "odata",
+                            transport: {
+                                read: "http://demos.kendoui.com/service/Northwind.svc/Employees"
+                            },
+                            pageSize: 6,
+                            serverPaging: true,
+                            serverSorting: true
+                        },
+                        height: 450,
+                        sortable: true,
+                        pageable: true,
+                        detailInit: detailInit,
+                        dataBound: function() {
+                            this.expandRow(this.tbody.find("tr.k-master-row").first());
+                        },
+                        columns: [
+                            {
+                                field: "FirstName",
+                                title: "First Name"
+                            },
+                            {
+                                field: "LastName",
+                                title: "Last Name"
+                            },
+                            {
+                                field: "Country"
+                            },
+                            {
+                                field: "City"
+                            },
+                            {
+                                field: "Title"
+                            }
+                        ]
+                    });
+                });
+
+                function detailInit(e) {
+                    $("<div/>").appendTo(e.detailCell).kendoGrid({
+                        dataSource: {
+                            type: "odata",
+                            transport: {
+                                read: "http://demos.kendoui.com/service/Northwind.svc/Orders"
+                            },
+                            serverPaging: true,
+                            serverSorting: true,
+                            serverFiltering: true,
+                            pageSize:6,
+                            filter: { field: "EmployeeID", operator: "eq", value: e.data.EmployeeID }
+                        },
+                        scrollable: false,
+                        sortable: true,
+                        pageable: true,
+                        columns: [
+                            { field: "OrderID", width: 70 },
+                            { field: "ShipCountry", title:"Ship Country", width: 100 },
+                            { field: "ShipAddress", title:"Ship Address" },
+                            { field: "ShipName", title: "Ship Name", width: 200 }
+                        ]
+                    });
+                }
+            </script>
+        </div>
+
+</body>
+</html>

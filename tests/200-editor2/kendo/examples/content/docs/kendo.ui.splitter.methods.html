@@ -1,0 +1,281 @@
+
+
+    <ul class="methodDetail" id="MethodDetail">
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="ajaxRequest"><code>ajaxRequest</code></a> (pane, url, data)
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Loads the content of a pane from a local or remote URL.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the splitter
+var splitter = $("#splitter").data("kendoSplitter");
+// load content into the pane with ID, pane1
+splitter.ajaxRequest("#pane1", "/customer/profile", { id: 42 });</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>pane</code><span class="light fixedFont">: Selector | DOM Element</span> 
+                                
+                            </dt>
+                            <dd>The targetted pane whose content is to be loaded via a URL.</dd>
+                        
+                            <dt>
+                                <code>url</code><span class="light fixedFont">: String</span> 
+                                
+                            </dt>
+                            <dd>A local or remote URL from which the content of the pane is to be loaded.</dd>
+                        
+                            <dt>
+                                <code>data</code><span class="light fixedFont">: Object | String</span> 
+                                
+                            </dt>
+                            <dd>Any data that is necessary to be sent to the server.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="collapse"><code>collapse</code></a> (pane)
+
+                    
+                </div>
+                <div class="detailBody">
+                    Collapses a specified pane. Invoking this method will force the <strong>Splitter</strong> to redraw and it
+will trigger layoutChange and resize events. Note: Invoking the method will not trigger a collapse event.<div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the splitter
+var splitter = $("#splitter").data("kendoSplitter");
+// collapse the pane with ID, pane1
+splitter.collapse("#pane1");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>pane</code><span class="light fixedFont">: Selector | DOM Element</span> 
+                                
+                            </dt>
+                            <dd>The pane to be collapsed.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="expand"><code>expand</code></a> (pane)
+
+                    
+                </div>
+                <div class="detailBody">
+                    Expands a specified pane. Invoking this method will force the <strong>Splitter</strong> to redraw and it
+will trigger layoutChange and resize events. Note: Invoking the method will not trigger an expand event.<div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the splitter
+var splitter = $("#splitter").data("kendoSplitter");
+// expand the pane with ID, pane1
+splitter.expand("#pane1");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>pane</code><span class="light fixedFont">: Selector | DOM Element</span> 
+                                
+                            </dt>
+                            <dd>The pane to be expanded.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="max"><code>max</code></a> (pane, value)
+
+                    
+                </div>
+                <div class="detailBody">
+                    Sets the maximum size of a pane. Setting this value will not cause the <strong>Splitter</strong> to
+redraw, nor will it trigger any events.<div class="desc"></div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the splitter
+var splitter = $("#splitter").data("kendoSplitter");
+// set the maximum size of the pane with ID, pane1
+splitter.max("#pane1", "300px");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>pane</code><span class="light fixedFont">: Selector | DOM Element</span> 
+                                
+                            </dt>
+                            <dd>The pane being targetted for a new minimum size configuration value.</dd>
+                        
+                            <dt>
+                                <code>value</code><span class="light fixedFont">: String</span> 
+                                
+                            </dt>
+                            <dd>The maximum size value of the pane defined as pixels (i.e. "200px") or as a percentage (i.e. "50%").</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="min"><code>min</code></a> (pane, value)
+
+                    
+                </div>
+                <div class="detailBody">
+                    Sets the minimum size of a pane. Setting this value will not cause the <strong>Splitter</strong> to
+redraw, nor will it trigger any events.<div class="desc"></div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the splitter
+var splitter = $("#splitter").data("kendoSplitter");
+// set the minimum size of the pane with ID, pane1
+splitter.min("#pane1", "100px");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>pane</code><span class="light fixedFont">: Selector | DOM Element</span> 
+                                
+                            </dt>
+                            <dd>The pane being targetted for a new minimum size configuration value.</dd>
+                        
+                            <dt>
+                                <code>value</code><span class="light fixedFont">: String</span> 
+                                
+                            </dt>
+                            <dd>The minimum size value of the pane defined as pixels (i.e. "200px") or as a percentage (i.e. "50%").</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="size"><code>size</code></a> (pane, value)
+
+                    
+                </div>
+                <div class="detailBody">
+                    Set the size of the pane. Setting this value will cause the <strong>Splitter</strong> to redraw and it will
+trigger layoutChange and resize events.<div class="desc"></div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the splitter
+var splitter = $("#splitter").data("kendoSplitter");
+// set the size of the pane with ID, pane1
+splitter.size("#pane1", "200px");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>pane</code><span class="light fixedFont">: Selector | DOM Element</span> 
+                                
+                            </dt>
+                            <dd>The pane to be resized.</dd>
+                        
+                            <dt>
+                                <code>value</code><span class="light fixedFont">: String</span> 
+                                
+                            </dt>
+                            <dd>The new size of the pane defined as pixels (i.e. "200px") or as a percentage (i.e. "50%"). Note: This value
+must not exceed <strong>panes.max</strong> or be less then <strong>panes.min</strong>.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="toggle"><code>toggle</code></a> (pane, expand)
+
+                    
+                </div>
+                <div class="detailBody">
+                    Toggles the state of a specified pane (i.e. collapsed or expanded). Invoking this method will force the
+<strong>Splitter</strong> to redraw and it will trigger layoutChange and resize events. Note: Invoking the
+method will not trigger collapse or expand events.<div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the splitter
+var splitter = $("#splitter").data("kendoSplitter");
+// toggle the state of the pane with ID, pane1
+splitter.toggle("#pane1");
+// toggle the state of the pane with ID, pane1 to be expanded
+splitter.toggle("#pane1", true);
+// toggle the state of the pane with ID, pane1 to be collapsed
+splitter.toggle("#pane1", false);</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>pane</code><span class="light fixedFont">: Selector | DOM Element</span> 
+                                
+                            </dt>
+                            <dd>The pane to be collapsed.</dd>
+                        
+                            <dt>
+                                <code>expand</code><span class="light fixedFont">: Boolean</span> 
+                                
+                            </dt>
+                            <dd>(Optional)
+Represents the desired state of the specified pane; to be expanded (<strong>true</strong>) or collapsed
+(<strong>false</strong>). If undefined, toggle() will collapse the pane if it is expanded or will expand the
+pane if it is collapsed.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+    </ul>
+

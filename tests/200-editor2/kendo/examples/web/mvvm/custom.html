@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Custom binding</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+
+<div id="example" class="k-content">
+    <div class="demo-section">
+        <div class="configuration k-widget k-header" style="min-width: 110px; height: 110px; margin-bottom: 15px;">
+            <span class="configHead">Slide Binding</span>
+            <label>
+                Toggle: <input type="checkbox" data-bind="checked: slideValue" />
+            </label>
+        </div>
+        <div id="target" data-bind="slide: slideValue">
+            One Big Orange Square.
+        </div>
+    </div>
+    <script>
+        kendo.data.binders.slide = kendo.data.Binder.extend( {
+            refresh: function() {
+                var value = this.bindings["slide"].get();
+
+                if (value) {
+                    $(this.element).slideDown();
+                } else {
+                    $(this.element).slideUp();
+                }
+            }
+        });
+
+        $(document).ready(function() {
+            var viewModel = kendo.observable({
+                slideValue: true
+            });
+
+            kendo.bind($("#example"), viewModel);
+        });
+    </script>
+    <div class="code-sample">
+        <h4 class="code-title">View source code:</h4>
+        <pre class="prettyprint">
+&lt;label&gt;
+    Toggle: &lt;input type=&quot;checkbox&quot; data-bind=&quot;checked: slideValue&quot; /&gt;
+&lt;/label&gt;
+&lt;div id=&quot;target&quot; data-bind=&quot;slide: slideValue&quot;&gt;
+    One Big Orange Square.
+&lt;/div&gt;
+        </pre>
+    </div>
+    <div class="code-sample">
+        <h4 class="code-title">Custom binder source code:</h4>
+        <pre class="prettyprint">
+kendo.data.binders.slide = kendo.data.Binder.extend( {
+    refresh: function() {
+        var value = this.bindings[&quot;slide&quot;].get();
+
+        if (value) {
+            $(this.element).slideDown();
+        } else {
+            $(this.element).slideUp();
+        }
+    }
+});
+        </pre>
+    </div>
+    <div class="code-sample">
+        <h4 class="code-title">View model source code:</h4>
+        <pre class="prettyprint">
+var viewModel = kendo.observable({
+    slideValue: true
+});
+
+kendo.bind($(&quot;#example&quot;), viewModel);
+        </pre>
+    </div>
+    <style scoped>
+        .demo-section {
+        	width: 300px;
+        	min-height: 140px;
+        	margin-bottom: 30px;
+        }
+        .configuration label {
+            display: block;
+            float: none;
+        }
+        .code-sample {
+            clear: right;
+        }
+        #target {
+            width: 60px;
+            height: 60px;
+            border-width: 4px;
+            padding: 2em;
+            float: left;
+            background-color: gold;
+            color: darkRed;
+            border-style: solid;
+            border-color: darkOrange;
+            border-radius: 10px;
+            -webkit-border-radius: 10px;
+            -ms-border-radius: 10px;
+            -moz-border-radius: 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+    </style>
+</div>
+
+</body>
+</html>

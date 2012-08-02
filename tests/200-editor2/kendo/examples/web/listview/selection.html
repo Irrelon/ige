@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Selection</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    <div id="example" class="k-content">
+
+    <div id="listView"></div>
+
+    <div id="pager" class="k-pager-wrap">
+    </div>
+
+    <div class="console"></div>
+    <script type="text/x-kendo-tmpl" id="template">
+        <div class="product">
+            <img src="../../content/web/foods/${ProductID}.jpg" alt="${ProductName} image" />
+            <h3>${ProductName}</h3>
+        </div>
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            var dataSource = new kendo.data.DataSource({
+                    transport: {
+                        read: {
+                            url: "http://demos.kendoui.com/service/Products",
+                            dataType: "jsonp"
+                        }
+                    },
+                    pageSize: 12
+                });
+
+            $("#pager").kendoPager({
+                dataSource: dataSource
+            });
+
+            $("#listView").kendoListView({
+                dataSource: dataSource,
+                selectable: "multiple",
+                dataBound: onDataBound,
+                change: onChange,
+                template: kendo.template($("#template").html())
+            });
+
+            function onDataBound() {
+                kendoConsole.log("ListView data bound");
+            }
+
+            function onChange() {
+                var data = dataSource.view(),
+                    selected = $.map(this.select(), function(item) {
+                        return data[$(item).index()].ProductName;
+                    });
+
+                kendoConsole.log("Selected: " + selected.length + " item(s), [" + selected.join(", ") + "]");
+            }
+        });
+    </script>
+
+    <style scoped>
+        .product
+        {
+        	float: left;
+        	width: 270px;
+        	height: 110px;
+        	margin: 5px;
+        	padding: 5px;
+        	-moz-box-shadow: inset 0 0 30px rgba(0,0,0,0.15);
+            -webkit-box-shadow: inset 0 0 30px rgba(0,0,0,0.15);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.15);
+            -webkit-border-radius: 15px;
+            -moz-border-radius: 15px;
+            border-radius: 15px;
+            background-image: none;
+            cursor: pointer;
+        }
+        .product img
+        {
+        	float: left;
+        	width: 110px;
+        	height: 110px;
+        	-webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+        }
+        .product h3
+        {
+        	margin: 10px 0 0 0;
+        	padding: 10px 10px 10px 20px;
+        	font-size: 1em;
+        	float: left;
+        	max-width: 120px;
+        	text-transform: uppercase;
+        }
+        .k-state-selected h3
+        {
+        	color: #fff;
+        	background-color: rgba(0,0,0,0.4);
+        	-moz-box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+            -webkit-box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+            -moz-border-radius-topright: 5px;
+            -moz-border-radius-bottomright: 5px;
+            -webkit-border-top-right-radius: 5px;
+            -webkit-border-bottom-right-radius: 5px;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+        .k-listview:after
+        {
+        	content: ".";
+            display: block;
+            height: 0;
+            clear: both;
+            visibility: hidden;
+        }
+        .k-listview
+        {
+        	border: 0;
+        	padding: 0 0 20px 0;
+        	min-width: 0;
+        }
+    </style>
+</div>
+
+</body>
+</html>

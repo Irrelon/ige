@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Binding to remote data</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    <div id="example" class="k-content">
+
+    <div class="twit-reader">
+        <div id="listView"></div>
+    </div>
+
+    <script type="text/x-kendo-tmpl" id="template">
+        <div class="twit">
+            <a class="t-link" href="http://www.twitter.com/${from_user}" title="${from_user}"><img width="48" height="48" src="${profile_image_url}" alt="${from_user}" /></a>
+            <p>${text}</p>
+        </div>
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            var dataSource = new kendo.data.DataSource({
+                    transport: {
+                        read: {
+                            url: "http://search.twitter.com/search.json",
+                            contentType: "application/json; charset=utf-8",
+                            type: "GET",
+                            dataType: "jsonp",
+                            data: {
+                                q: "#kendoui"
+                            }
+                        }
+                    },
+                    schema: {
+                        data: "results",
+                        total: "results_per_page"
+                    }
+                });
+
+            $("#pager").kendoPager({
+                dataSource: dataSource
+            });
+
+            $("#listView").kendoListView({
+                dataSource: dataSource,
+                template: kendo.template($("#template").html())
+            });
+        });
+    </script>
+
+    <style scoped>
+        .twit-reader 
+        {
+        	width: 340px;
+        	margin: 0 auto;
+        	padding: 0;
+        	border: 0;
+        	border: 1px solid rgba(0,0,0,0.1);
+        	height: 400px;
+        	overflow: auto;
+            -webkit-transform: translatez(0);
+        }
+        .k-listview 
+        {
+        	padding: 0;
+        	border: 0;
+        }
+        .twit 
+        {
+        	width: 300px;
+        	height: 80px;
+        	margin: 0;
+        	padding: 10px;
+        	border-top: 1px solid rgba(255,255,255,0.1);
+        	border-right: 1px solid rgba(0,0,0,0.1);
+        	border-bottom: 1px solid rgba(0,0,0,0.1);
+        	border-left: 1px solid rgba(255,255,255,0.1);
+
+        }
+        .twit img 
+        {
+        	border: 3px solid rgba(0,0,0,0.1);
+        	-webkit-border-radius: 27px;
+            -moz-border-radius: 27px;
+            border-radius: 27px;
+            float: left;
+        }
+        .twit a:hover img 
+        {
+        	border: 3px solid rgba(150,150,150,0.7);
+        }
+        .twit p
+        {
+        	float: left;
+        	margin: 0;
+        	padding: 0 0 0 10px;
+        	width: 230px;
+        }
+        .twit:after
+        {
+        	content: ".";
+            display: block;
+            height: 0;
+            clear: both;
+            visibility: hidden;
+        }
+    </style>
+
+</div>
+
+</body>
+</html>

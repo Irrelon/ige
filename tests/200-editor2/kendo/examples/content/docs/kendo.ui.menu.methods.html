@@ -1,0 +1,456 @@
+
+
+    <ul class="methodDetail" id="MethodDetail">
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="append"><code>append</code></a> (item, referenceItem)
+
+                    : <span class="type">Menu</span>
+                </div>
+                <div class="detailBody">
+                    Appends an item to a <strong>Menu</strong> in the specified referenceItem's sub menu.<div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the menu widget
+var menu = $("#menu").data("kendoMenu");
+//
+menu.append(
+    [{
+        text: "Item 1",
+        url: "http://www.kendoui.com"                // Link URL if navigation is needed, optional.
+    },
+    {
+        text: "&lt;b&gt;Item 2&lt;/b&gt;",
+        encoded: false,                                 // Allows use of HTML for item text
+        content: "text"                                 // content within an item
+    },
+    {
+        text: "Item 3",
+        imageUrl: "http://www.kendoui.com/test.jpg", // Item image URL, optional.
+        items: [{                                    // Sub item collection
+             text: "Sub Item 1"
+        },
+        {
+             text: "Sub Item 2"
+        }]
+    },
+    {
+        text: "Item 4",
+        spriteCssClass: "imageClass3"                // Item image sprite CSS class, optional.
+    }],
+    referenceItem
+);</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>item</code><span class="light fixedFont">: Selector</span> 
+                                
+                            </dt>
+                            <dd>Target item, specified as a JSON object. Can also handle an array of such objects.</dd>
+                        
+                            <dt>
+                                <code>referenceItem</code><span class="light fixedFont">: Item</span> 
+                                
+                            </dt>
+                            <dd>A reference item to append the new item in.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Menu</span> Returns the Menu object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="close"><code>close</code></a> (element)
+
+                    : <span class="type">Menu</span>
+                </div>
+                <div class="detailBody">
+                    Closes a sub-menu of a specified item(s) in a <strong>Menu</strong>.<div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the menu widget
+var menu = $("#menu").data("kendoMenu");
+// close the sub menu of "Item1"
+menu.close("#Item1");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>element</code><span class="light fixedFont">: Selector</span> 
+                                
+                            </dt>
+                            <dd>Target item selector.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Menu</span> Returns the Menu object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="enable"><code>enable</code></a> (element, enable)
+
+                    : <span class="type">Menu</span>
+                </div>
+                <div class="detailBody">
+                    Enables or disables an item of a <strong>Menu</strong>. This can optionally be accomplished on
+initialization by setting the <b>disabled="disabled"</b> on the desired menu item html element.<div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the menu widget
+var menu = $("#menu").data("kendoMenu");
+// disable the li menu item with the id "secondItem"
+menu.enable("#secondItem", false);</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>element</code><span class="light fixedFont">: Selector</span> 
+                                
+                            </dt>
+                            <dd>Target element</dd>
+                        
+                            <dt>
+                                <code>enable</code><span class="light fixedFont">: Boolean</span> 
+                                
+                            </dt>
+                            <dd>Desired state</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Menu</span> Returns the Menu object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="insertAfter"><code>insertAfter</code></a> (item, referenceItem)
+
+                    : <span class="type">Menu</span>
+                </div>
+                <div class="detailBody">
+                    Inserts an item into a <strong>Menu</strong> after the specified referenceItem.<div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the menu widget
+var menu = $("#menu").data("kendoMenu");
+//
+menu.insertAfter(
+    [{
+        text: "Item 1",
+        url: "http://www.kendoui.com"                // Link URL if navigation is needed, optional.
+    },
+    {
+        text: "&lt;b&gt;Item 2&lt;/b&gt;",
+        encoded: false,                                 // Allows use of HTML for item text
+        content: "text"                                 // content within an item
+    },
+    {
+        text: "Item 3",
+        imageUrl: "http://www.kendoui.com/test.jpg", // Item image URL, optional.
+        items: [{                                    // Sub item collection
+             text: "Sub Item 1"
+        },
+        {
+             text: "Sub Item 2"
+        }]
+    },
+    {
+        text: "Item 4",
+        spriteCssClass: "imageClass3"                // Item image sprite CSS class, optional.
+    }],
+    referenceItem
+);</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>item</code><span class="light fixedFont">: Selector</span> 
+                                
+                            </dt>
+                            <dd>Target item, specified as a JSON object. Can also handle an array of such objects.</dd>
+                        
+                            <dt>
+                                <code>referenceItem</code><span class="light fixedFont">: Selector</span> 
+                                
+                            </dt>
+                            <dd>A reference item to insert the new item after.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Menu</span> Returns the Menu object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="insertBefore"><code>insertBefore</code></a> (item, referenceItem)
+
+                    : <span class="type">Menu</span>
+                </div>
+                <div class="detailBody">
+                    Inserts an item into a <strong>Menu</strong> before the specified referenceItem.<div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the menu widget
+var menu = $("#menu").data("kendoMenu");
+//
+menu.insertBefore(
+    [{
+        text: "Item 1",
+        url: "http://www.kendoui.com"                // Link URL if navigation is needed, optional.
+    },
+    {
+        text: "&lt;b&gt;Item 2&lt;/b&gt;",
+        encoded: false,                                 // Allows use of HTML for item text
+        content: "text"                                 // content within an item
+    },
+    {
+        text: "Item 3",
+        imageUrl: "http://www.kendoui.com/test.jpg", // Item image URL, optional.
+        items: [{                                    // Sub item collection
+             text: "Sub Item 1"
+        },
+        {
+             text: "Sub Item 2"
+        }]
+    },
+    {
+        text: "Item 4",
+        spriteCssClass: "imageClass3"                // Item image sprite CSS class, optional.
+    }],
+    referenceItem
+);</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>item</code><span class="light fixedFont">: Selector</span> 
+                                
+                            </dt>
+                            <dd>Target item, specified as a JSON object. Can also handle an array of such objects.</dd>
+                        
+                            <dt>
+                                <code>referenceItem</code><span class="light fixedFont">: Selector</span> 
+                                
+                            </dt>
+                            <dd>A reference item to insert the new item before</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Menu</span> Returns the Menu object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="open"><code>open</code></a> (element)
+
+                    : <span class="type">Menu</span>
+                </div>
+                <div class="detailBody">
+                    Opens a sub-menu of a specified item(s) in a <strong>Menu</strong>.<div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the menu widget
+var menu = $("#menu").data("kendoMenu");
+// open the sub menu of "Item1"
+menu.open("#Item1");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>element</code><span class="light fixedFont">: Selector</span> 
+                                
+                            </dt>
+                            <dd>Target item selector.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Menu</span> Returns the Menu object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="remove"><code>remove</code></a> (element)
+
+                    : <span class="type">Menu</span>
+                </div>
+                <div class="detailBody">
+                    Removes a specified item(s) from a <strong>Menu</strong>.<div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>// get a reference to the menu widget
+var menu = $("#menu").data("kendoMenu");
+// remove the item with the id "Item1"
+menu.remove("#Item1");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>element</code><span class="light fixedFont">: Selector</span> 
+                                
+                            </dt>
+                            <dd>Target item selector.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Menu</span> Returns the Menu object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+    </ul>
+

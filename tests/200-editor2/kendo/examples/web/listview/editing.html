@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Editing</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    <div id="example" class="k-content">
+    <div class="k-toolbar k-grid-toolbar">
+        <a class="k-button k-button-icontext k-add-button" href="#"><span class="k-icon k-add"></span>Add new record</a>
+    </div>
+    <div id="listView"></div>
+
+    <div id="pager" class="k-pager-wrap">
+    </div>
+
+    <script type="text/x-kendo-tmpl" id="template">
+        <div class="product-view">
+            <dl>
+                <dt>Product Name</dt>
+                <dd>${ProductName}</dd>
+                <dt>Unit Price</dt>
+                <dd>${kendo.toString(UnitPrice, "c")}</dd>
+                <dt>Units In Stock</dt>
+                <dd>${UnitsInStock}</dd>
+                <dt>Discontinued</dt>
+                <dd>${Discontinued}</dd>
+            </dl>
+            <div class="edit-buttons">
+                <a class="k-button k-button-icontext k-edit-button" href="\\#"><span class="k-icon k-edit"></span>Edit</a>
+                <a class="k-button k-button-icontext k-delete-button" href="\\#"><span class="k-icon k-delete"></span>Delete</a>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/x-kendo-tmpl" id="editTemplate">
+        <div class="product-view">
+            <dl>
+                <dt>Product Name</dt>
+                <dd>
+                    <input type="text" data-bind="value:ProductName" name="ProductName" required="required" validationMessage="required" />
+                    <span data-for="ProductName" class="k-invalid-msg"></span>
+                </dd>
+                <dt>Unit Price</dt>
+                <dd>
+                    <input type="text" data-bind="value:UnitPrice" data-role="numerictextbox" data-type="number" name="UnitPrice" required="required" min="1" validationMessage="required" />
+                    <span data-for="UnitPrice" class="k-invalid-msg"></span>
+                </dd>
+                <dt>Units In Stock</dt>
+                <dd>
+                    <input type="text" data-bind="value:UnitsInStock" data-role="numerictextbox" name="UnitsInStock" required="required" data-type="number" min="0" validationMessage="required" />
+                    <span data-for="UnitsInStock" class="k-invalid-msg"></span>
+                </dd>
+                <dt>Discontinued</dt>
+                <dd><input type="checkbox" name="Discontinued" data-bind="checked:Discontinued"></dd>
+            </dl>
+            <div class="edit-buttons">
+                <a class="k-button k-button-icontext k-update-button" href="\\#"><span class="k-icon k-update"></span>Save</a>
+                <a class="k-button k-button-icontext k-cancel-button" href="\\#"><span class="k-icon k-cancel"></span>Cancel</a>
+            </div>
+        </div>
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            var crudServiceBaseUrl = "http://demos.kendoui.com/service",
+                dataSource = new kendo.data.DataSource({
+                    transport: {
+                        read:  {
+                            url: crudServiceBaseUrl + "/Products",
+                            dataType: "jsonp"
+                        },
+                        update: {
+                            url: crudServiceBaseUrl + "/Products/Update",
+                            dataType: "jsonp"
+                        },
+                        destroy: {
+                            url: crudServiceBaseUrl + "/Products/Destroy",
+                            dataType: "jsonp"
+                        },
+                        create: {
+                            url: crudServiceBaseUrl + "/Products/Create",
+                            dataType: "jsonp"
+                        },
+                        parameterMap: function(options, operation) {
+                            if (operation !== "read" && options.models) {
+                                return {models: kendo.stringify(options.models)};
+                            }
+                        }
+                    },
+                    batch: true,
+                    pageSize: 4,
+                    schema: {
+                        model: {
+                            id: "ProductID",
+                            fields: {
+                                ProductID: { editable: false, nullable: true },
+                                ProductName: "ProductName",
+                                UnitPrice: { type: "number" },
+                                Discontinued: { type: "boolean" },
+                                UnitsInStock: { type: "number" }
+                            }
+                        }
+                    }
+                });
+
+
+            $("#pager").kendoPager({
+                dataSource: dataSource
+            });
+
+            var listView = $("#listView").kendoListView({
+                dataSource: dataSource,
+                template: kendo.template($("#template").html()),
+                editTemplate: kendo.template($("#editTemplate").html())
+            }).data("kendoListView");
+
+            $(".k-add-button").click(function(e) {
+                listView.add();
+                e.preventDefault();
+            });
+        });
+    </script>
+    <style scoped>
+        .product-view
+        {
+            float: left;
+            width: 320px;
+            margin: 5px;
+            padding: 3px;
+            -moz-box-shadow: inset 0 0 50px rgba(0,0,0,0.1);
+            -webkit-box-shadow: inset 0 0 50px rgba(0,0,0,0.1);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.1);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            -webkit-border-radius: 8px;
+            -moz-border-radius: 8px;
+            border-radius: 8px;
+        }
+
+        .product-view dl
+        {
+            margin: 10px 0;
+            padding: 0;
+            min-width: 0;
+        }
+        .product-view dt, dd
+        {
+            float: left;
+            margin: 0;
+            padding: 0;
+            height: 30px;
+            line-height: 30px;
+        }
+        .product-view dt
+        {
+            clear: left;
+            padding: 0 5px 0 15px;
+            text-align: right;
+            opacity: 0.6;
+            width: 100px;
+        }
+        .k-listview
+        {
+            border: 0;
+            padding: 0;
+            min-width: 0;
+        }
+        .k-listview:after, .product-view dl:after
+        {
+            content: ".";
+            display: block;
+            height: 0;
+            clear: both;
+            visibility: hidden;
+        }
+        .edit-buttons
+        {
+            text-align: right;
+            padding: 5px;
+            min-width: 100px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            -webkit-border-radius: 8px;
+            -moz-border-radius: 8px;
+            border-radius: 8px;
+        }
+
+        .k-toolbar, #listView, .k-pager-wrap
+        {
+            width: 660px;
+            margin: 0 auto;
+            -webkit-border-radius: 11px;
+            -moz-border-radius: 11px;
+            border-radius: 11px;s
+        }
+        #listView
+        {
+            width: 674px;
+        }
+        span.k-invalid-msg
+        {
+            position: absolute;
+            margin-left: 160px;
+            margin-top: -26px;
+        }
+    </style>
+</div>
+</body>
+</html>

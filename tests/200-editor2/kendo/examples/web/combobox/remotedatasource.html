@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Binding to remote data</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+        <div id="example" class="k-content">
+            Select a title from Netflix:
+            <input id="titles"/>
+
+            <script>
+                $(document).ready(function() {
+                    $("#titles").kendoComboBox({
+                        index: 0,
+                        placeholder: "Select movie",
+                        dataTextField: "Name",
+                        dataValueField: "Id",
+                        filter: "contains",
+                        dataSource: {
+                            type: "odata",
+                            serverFiltering: true,
+                            serverPaging: true,
+                            pageSize: 20,
+                            transport: {
+                                read: "http://odata.netflix.com/Catalog/Titles"
+                            }
+                        }
+                    });
+                });
+            </script>
+        </div>
+
+</body>
+</html>

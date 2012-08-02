@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Virtualization of remote data</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+        <div id="example" class="k-content">
+            <div id="grid"> </div>
+            <script>
+                $(document).ready(function() {
+                    $("#grid").kendoGrid({
+                        dataSource: {
+                            type: "odata",
+                            serverPaging: true,
+                            serverSorting: true,
+                            pageSize: 100,
+                            transport: {
+                                read: "http://demos.kendoui.com/service/Northwind.svc/Orders"
+                            }
+                        },
+                        height: 280,
+                        scrollable: {
+                            virtual: true
+                        },
+                        sortable: true,
+                        columns: [
+                            "OrderID",
+                            "CustomerID",
+                            { field:"ShipName", title:"Ship Name" },
+                            { field: "ShipCity", title:"Ship City" }
+                        ]
+                    });
+                });
+            </script>
+        </div>
+
+</body>
+</html>
