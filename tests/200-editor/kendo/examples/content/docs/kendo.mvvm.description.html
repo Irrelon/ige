@@ -1,0 +1,35 @@
+<p>
+      Model View ViewModel (<a href="http://en.wikipedia.org/wiki/Model_View_ViewModel">MVVM</a>) is a design pattern which helps developers separate the Model from the View. The View-Model part of MVVM is responsible for
+      exposing the data objects from the Model in such a way that those objects are easily consumed in the View.
+ </p>
+ <p>
+      Kendo MVVM is an implementation of the MVVM pattern which is seamlessly integrated with the rest of the Kendo framework (widgets and DataSource).
+ </p>
+ <h3>Getting Started</h3><div class="code-sample"><h4 class="code-title">Binding HTML View to a View-Model</h4><pre class="code prettyprint"><code> &lt;!-- View --&gt;
+ &lt;div id="view"&gt;
+   &lt;!-- The value of the INPUT element is bound to the "firstName" field of the View-Model.
+   When the value changes so will the "firstName" field and vice versa.  --&gt;
+   &lt;label&gt;First Name:&lt;input data-bind="value: firstName" /&gt;&lt;/label&gt;
+   &lt;!-- The value of the INPUT element is bound to the "lastName" field of the View-Model.
+   When the value changes so will the "lastName" field and vice versa.   --&gt;
+   &lt;label&gt;Last Name:&lt;input data-bind="value: lastName" /&gt;&lt;/label&gt;
+   &lt;!-- The click event of the BUTTON element is bound to the "displayGreeting" method of the View-Model.
+   When the user clicks the button the "displayGreeting" method will be invoked.  --&gt;
+   &lt;button data-bind="click: displayGreeting"&gt;Display Greeting&lt;/button&gt;
+ &lt;/div&gt;
+ &lt;script&gt;
+   // View-Model
+   var viewModel = {
+      firstName: "John",
+      lastName: "Doe",
+      displayGreeting: function() {
+          // Get the current values of "firstName" and "lastName"
+          var firstName = this.get("firstName");
+          var lastName = this.get("lastName");
+
+          alert("Hello, " + firstName + " " + lastName + "!!!");
+      }
+   };
+   // Bind the View to the View-Model
+   kendo.bind($("#view"), viewModel);
+ &lt;/script&gt;</code></pre></div>

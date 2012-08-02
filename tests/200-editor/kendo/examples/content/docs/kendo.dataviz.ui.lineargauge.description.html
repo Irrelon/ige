@@ -1,0 +1,19 @@
+<p>
+The Linear Gauge widget is used to let users quickly understand where a value lies in a certain range.
+All graphics are rendered on the client using SVG with a fallback to VML for legacy browsers.
+</p>
+
+<h3>
+Getting Started
+</h3><div class="code-sample"><h4 class="code-title">1. Create a simple HTML div (optionally set a height and width with CSS)</h4><pre class="code prettyprint"><code>&lt;div id="linear-gauge"&gt;&lt;/div&gt;</code></pre></div><div class="code-sample"><h4 class="code-title">2. Initialize the Kendo UI Linear Gauge with default configuration</h4><pre class="code prettyprint"><code>   $(document).ready(function() {
+       $("#linear-gauge").kendoLinearGauge();
+   });
+&lt;/p&gt;</code></pre></div><div class="code-sample"><h4 class="code-title">Create a horizontal linear gauge with value 20 and mininum value 10</h4><pre class="code prettyprint"><code>    $("#linear-gauge").kendoLinearGauge({
+        pointer: {
+            value: 20
+        },
+        scale: {
+            min: 10,
+            vertical: false
+        }
+    });</code></pre></div><div class="desc"></div>

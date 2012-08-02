@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Virtualization of local data</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+            <script src="../../content/shared/js/people.js"></script>
+
+        <div id="example" class="k-content">
+            <div id="loading" class="demo-section" style="text-align:center">
+                Generating test data...
+            </div>
+
+            <div id="grid"></div>
+
+            <script>
+                $(document).ready(function() {
+                    generatePeople(100000, function(data) {
+                        $("#loading").hide();
+
+                        $("#grid").kendoGrid({
+                            dataSource: {
+                                data: data,
+                                pageSize: 50
+                            },
+                            height: 280,
+                            scrollable: {
+                                virtual: true
+                            },
+                            columns: [ "Id",
+                                { field:"FirstName", title: "First Name" },
+                                { field:"LastName", title: "Last Name" },
+                                "City", "Title"
+                            ]
+                        });
+                    });
+                });
+            </script>
+        </div>
+
+</body>
+</html>

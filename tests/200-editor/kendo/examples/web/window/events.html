@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Events</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+        <div id="example" class="k-content">
+
+            <!-- Window HTML -->
+            <div id="window"></div>
+
+            <!-- open button -->
+            <span id="undo" style="display:none" class="k-group">Click here to open the window.</span>
+
+            <script>
+                $(document).ready(function() {
+                    var window = $("#window"),
+                        undo = $("#undo")
+                                .bind("click", function() {
+                                    window.data("kendoWindow").open();
+                                    undo.hide();
+                                });
+
+                    function onOpen(e) {
+                        kendoConsole.log("event :: open");
+                    }
+
+                    function onClose(e) {
+                        undo.show();
+                        kendoConsole.log("event :: close");
+                    }
+
+                    function onActivate(e) {
+                        kendoConsole.log("event :: activate");
+                    }
+
+                    function onDeactivate(e) {
+                        kendoConsole.log("event :: deactivate");
+                    }
+
+                    function onRefresh(e) {
+                        kendoConsole.log("event :: refresh");
+                    }
+
+                    function onResize(e) {
+                        kendoConsole.log("event :: resize");
+                    }
+
+                    function onDragStart(e) {
+                        kendoConsole.log("event :: dragstart");
+                    }
+
+                    function onDragEnd(e) {
+                        kendoConsole.log("event :: dragend");
+                    }
+
+                    if (!window.data("kendoWindow")) {
+                        window.kendoWindow({
+                            width: "630px",
+                            height: "315px",
+                            title: "Rams's Ten Principles of Good Design",
+                            actions: ["Refresh", "Close"],
+                            content: "../../content/web/window/ajax/ajaxContent1.html",
+                            open: onOpen,
+                            activate: onActivate,
+                            close: onClose,
+                            deactivate: onDeactivate,
+
+                            refresh: onRefresh,
+
+                            resize: onResize,
+                            dragstart: onDragStart,
+                            dragend: onDragEnd
+                        });
+                    }
+                });
+            </script>
+
+            <style scoped="scoped">
+                #example 
+                {
+                    min-height:400px;
+                }
+                #undo {
+                    text-align: center;
+                    position: absolute;
+                    white-space: nowrap;
+                    border-width: 1px;
+                    border-style: solid;
+                    padding: 2em;
+                    cursor: pointer;
+                }
+            </style>
+        </div>
+        <br/>
+        <div class="console"></div>
+
+</body>
+</html>

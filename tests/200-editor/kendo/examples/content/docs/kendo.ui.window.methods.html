@@ -1,0 +1,479 @@
+
+
+    <ul class="methodDetail" id="MethodDetail">
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="center"><code>center</code></a> ()
+
+                    : <span class="type">Window</span>
+                </div>
+                <div class="detailBody">
+                    Centers a <strong>Window</strong> within the viewport.<div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>var kendoWindow = $("#window").data("kendoWindow");
+kendoWindow.center();</code></pre></div>
+
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Window</span> Returns the (Kendo UI) Window object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="close"><code>close</code></a> ()
+
+                    : <span class="type">Window</span>
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Closes a Window.</div><div class="code-sample"><h4 class="code-title">Close a Window; utilize chaining (if necessary)</h4><pre class="code prettyprint"><code>var kendoWindow = $("#window").data("kendoWindow").close();</code></pre></div>
+
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Window</span> Returns the (Kendo UI) Window object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="content"><code>content</code></a> (content)
+
+                    : <span class="type">Window</span>
+                </div>
+                <div class="detailBody">
+                    Gets or set the content of a <strong>Window</strong>.<div class="code-sample"><h4 class="code-title">Get the existing content of the Window</h4><pre class="code prettyprint"><code>var kendoWindow = $("#window").data("kendoWindow");
+var windowContent = kendoWindow.content();</code></pre></div><div class="code-sample"><h4 class="code-title">Set the title of a Window; utilize chaining (if necessary)</h4><pre class="code prettyprint"><code>var kendoWindow = $("#window").data("kendoWindow").content("Kendo UI for all the things!");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>content</code><span class="light fixedFont">: String</span> 
+                                (<i>optional</i>)
+                            </dt>
+                            <dd>The content of the Window.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Window</span> If content is provided, this method will return the (Kendo UI) Window object to support chaining. Otherwise,
+it will return the current content of the (Kendo UI) Window.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="destroy"><code>destroy</code></a> ()
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Destroys the window and its modal overlay, if necessary. Removes the Window HTML elements from the DOM.</div>
+
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="maximize"><code>maximize</code></a> ()
+
+                    : <span class="type">Window</span>
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Maximizes a Window to the entire viewing area of the user agent. Triggers the resize event.</div><div class="desc"></div><div class="code-sample"><h4 class="code-title">Maximize a Window</h4><pre class="code prettyprint"><code>$("#window").data("kendoWindow").maximize();</code></pre></div>
+
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Window</span> Returns the (Kendo UI) Window object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="minimize"><code>minimize</code></a> ()
+
+                    : <span class="type">Window</span>
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Maximizes a Window to its title bar.</div><div class="desc"></div><div class="code-sample"><h4 class="code-title">Minimize a Window</h4><pre class="code prettyprint"><code>$("#window").data("kendoWindow").minimize();</code></pre></div>
+
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Window</span> Returns the (Kendo UI) Window object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="open"><code>open</code></a> ()
+
+                    : <span class="type">Window</span>
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Opens a Window.</div><div class="code-sample"><h4 class="code-title">Open a Window; utilize chaining (if necessary)</h4><pre class="code prettyprint"><code>var kendoWindow = $("#window").data("kendoWindow").open();</code></pre></div>
+
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Window</span> Returns the (Kendo UI) Window object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="refresh"><code>refresh</code></a> (options)
+
+                    : <span class="type">Window</span>
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Refreshes the content of a Window from a remote URL.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>var windowObject = $("#window").data("kendoWindow");
+windowObject.refresh("/feedbackForm");
+
+windowObject.refresh({
+    url: "/feedbackForm",
+    data: { userId: 42 }
+});
+
+windowObject.refresh({
+    url: "/userInfo",
+    data: { userId: 42 },
+    template: "Hello, #= firstName # #= lastName #"
+});</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>options</code><span class="light fixedFont">: Object|String</span> 
+                                
+                            </dt>
+                            <dd>Options for requesting data from the server.
+If omitted, the window uses the <code>content</code> property
+that was supplied when the window was created.
+Any options specified here are passed to jQuery.ajax().</dd>
+                        
+                            <dt>
+                                <code>options.url</code><span class="light fixedFont">: String</span> 
+                                
+                            </dt>
+                            <dd>The server URL that will be requested.</dd>
+                        
+                            <dt>
+                                <code>options.data</code><span class="light fixedFont">: Object</span> 
+                                
+                            </dt>
+                            <dd>A JSON object containing the data that will be passed to the server.</dd>
+                        
+                            <dt>
+                                <code>options.type</code><span class="light fixedFont">: String</span> 
+                                
+                            </dt>
+                            <dd>The HTTP request method ("GET", "POST").</dd>
+                        
+                            <dt>
+                                <code>options.template</code><span class="light fixedFont">: String</span> 
+                                
+                            </dt>
+                            <dd>A template to be used for displaying the requested data.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Window</span> Returns the (Kendo UI) Window object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="restore"><code>restore</code></a> ()
+
+                    : <span class="type">Window</span>
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Restores a maximized or minimized Window to its previous state. Triggers the resize event.</div><div class="code-sample"><h4 class="code-title">Restore the state of a Window; utilize chaining (if necessary)</h4><pre class="code prettyprint"><code>var kendoWindow = $("#window").data("kendoWindow").restore();</code></pre></div>
+
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Window</span> Returns the (Kendo UI) Window object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="title"><code>title</code></a> (text)
+
+                    : <span class="type">Window</span>
+                </div>
+                <div class="detailBody">
+                    Gets or set the title of a <strong>Window</strong>.<div class="code-sample"><h4 class="code-title">Get the existing title of the Window</h4><pre class="code prettyprint"><code>var kendoWindow = $("#window").data("kendoWindow");
+var windowTitle = kendoWindow.title();</code></pre></div><div class="code-sample"><h4 class="code-title">Set the title of a Window; utilize chaining (if necessary)</h4><pre class="code prettyprint"><code>var kendoWindow = $("#window").data("kendoWindow").title("Do a barrel roll!");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>text</code><span class="light fixedFont">: String</span> 
+                                (<i>optional</i>)
+                            </dt>
+                            <dd>The title of the Window.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Window</span> If a title is provided, this method will return the (Kendo UI) Window object to support chaining. Otherwise,
+it will return the current title of the (Kendo UI) Window.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="toFront"><code>toFront</code></a> ()
+
+                    : <span class="type">Window</span>
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Brings forward a Window to the top of the z-index.</div><div class="code-sample"><h4 class="code-title">Bring forward a Window; utilize chaining (if necessary)</h4><pre class="code prettyprint"><code>var kendoWindow = $("#window").data("kendoWindow").toFront();</code></pre></div>
+
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Window</span> Returns the (Kendo UI) Window object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="toggleMaximization"><code>toggleMaximization</code></a> ()
+
+                    : <span class="type">Window</span>
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Toggles a Window between a maximized and restored state. Triggers the resize event.</div><div class="code-sample"><h4 class="code-title">Toggle the state of a Window; utilize chaining (if necessary)</h4><pre class="code prettyprint"><code>var kendoWindow = $("#window").data("kendoWindow").toggleMaximization();</code></pre></div>
+
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Window</span> Returns the (Kendo UI) Window object to support chaining.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+    </ul>
+

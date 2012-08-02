@@ -1,0 +1,132 @@
+
+
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="change"><code>change</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Fires when Editor is blurred and its content has changed.</div><div class="desc"></div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>function onChange(e) {
+    // handle event
+}</code></pre></div>
+
+            
+
+            
+
+            
+        </div>
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="execute"><code>execute</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Fires when an Editor command is executed.</div><div class="desc"></div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code> $("#editor").kendoEditor({
+     execute: function(e) {
+         // handle event
+ });</code></pre></div><div class="code-sample"><h4 class="code-title">To set after initialization</h4><pre class="code prettyprint"><code> // get a reference to the Editor
+ var editor = $("#editor").data("kendoEditor");
+ // bind to the select event
+ editor.bind("execute", function(e) {
+     // handle event
+ }</code></pre></div>
+
+            
+                <div class="details-list">
+                    <h4 class="details-title">Event data</h4>
+                    <dl>
+                    
+                        
+                    
+                        
+                        <dt>
+                            <code>name</code>
+                            <span class="type">: String</span> 
+                            
+                        </dt>
+                        <dd>The name of the command</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>command</code>
+                            <span class="type">: Object</span> 
+                            
+                        </dt>
+                        <dd>The command instance</dd>
+                        
+                    
+                    </dl>
+                </div>
+            
+
+            
+
+            
+        </div>
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="paste"><code>paste</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Fires before when content is pasted in the Editor.</div><div class="desc"></div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code> $("#editor").kendoEditor({
+     paste: function(e) {
+         // handle event
+ });</code></pre></div><div class="code-sample"><h4 class="code-title">To set after initialization</h4><pre class="code prettyprint"><code> // get a reference to the Editor
+ var editor = $("#editor").data("kendoEditor");
+ // bind to the select event
+ editor.bind("paste", function(e) {
+     // handle event
+ }</code></pre></div>
+
+            
+                <div class="details-list">
+                    <h4 class="details-title">Event data</h4>
+                    <dl>
+                    
+                        
+                    
+                        
+                        <dt>
+                            <code>html</code>
+                            <span class="type">: Object</span> 
+                            
+                        </dt>
+                        <dd>The pasted content</dd>
+                        
+                    
+                    </dl>
+                </div>
+            
+
+            
+
+            
+        </div>
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="select"><code>select</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Fires when the Editor selection has changed.</div><div class="desc"></div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code> $("#editor").kendoEditor({
+     select: function(e) {
+         // handle event
+     }
+ });</code></pre></div><div class="code-sample"><h4 class="code-title">To set after initialization</h4><pre class="code prettyprint"><code> // get a reference to the Editor
+ var editor = $("#editor").data("kendoEditor");
+ // bind to the select event
+ editor.bind("select", function(e) {
+     // handle event
+ }</code></pre></div>
+
+            
+
+            
+
+            
+        </div>
+    
+

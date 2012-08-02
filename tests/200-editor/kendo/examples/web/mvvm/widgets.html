@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Widget binding</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+
+<div id="example" class="k-content">
+    <table class="metrotable">
+        <tbody>
+        <tr>
+            <th>Widget</th>
+            <th>Current view model state</th>
+        </tr>
+        <tr>
+            <td>
+                <input data-role="autocomplete" data-text-field="name" data-bind="source: colors, value: autoCompleteValue"/>
+                <h4>AutoComplete</h4>
+            </td>
+            <td rowspan="9" style="background-color: #efefef; padding: 10px;">
+<pre>
+{
+    autoCompleteValue: <span data-bind="text: displayAutoCompleteValue"></span>,
+    comboBoxValue: <span data-bind="text: displayComboBoxValue"></span>,
+    datePickerValue: <span data-bind="text: displayDatePickerValue"></span>,
+    dropDownListValue: <span data-bind="text: displayDropDownListValue"></span>,
+    gridSource: [
+<span data-bind="text: displayGridSource"></span>
+    ],
+    numericTextBoxValue: <span data-bind="text: displayNumericTextBoxValue"></span>,
+    timePickerValue: <span data-bind="text: displayTimePickerValue"></span>,
+    sliderValue: <span data-bind="text: sliderValue"></span>
+}
+</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <select data-role="combobox" data-text-field="name" data-value-field="value" data-bind="source: colors, value: comboBoxValue"></select>
+                <h4>ComboBox</h4>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input data-role="datepicker" data-bind="value: datePickerValue" />
+                <h4>DatePicker</h4>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <select data-role="dropdownlist" data-text-field="name" data-value-field="value" data-bind="source: colors, value: dropDownListValue"></select>
+                <h4>DropDownList </h4>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h4>Grid</h4>
+                <div data-role="grid" data-sortable="true" data-editable="true" data-columns='["Name", "Price", "UnitsInStock", {"command": "destroy"}]' data-bind="source: gridSource"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input data-role="numerictextbox" data-format="c" data-bind="value: numericTextBoxValue" />
+                <h4>NumericTextBox</h4>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input data-role="slider" data-bind="value: sliderValue" />
+                <h4>Slider</h4>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input data-role="timepicker" data-bind="value: timePickerValue" />
+                <h4>TimePicker</h4>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h4>TabStrip</h4>
+                <div data-role="tabstrip" data-animation="false">
+                    <ul>
+                        <li class="k-state-active">First</li>
+                        <li>Second</li>
+                    </ul>
+                    <div>
+                        <h4>First page:</h4>
+                        Pick a time: <input data-role="timepicker" data-bind="value: timePickerValue"/>
+                    </div>
+                    <div>
+                        <h4>Second page:</h4>
+                        Time is: <span data-bind="text: displayTimePickerValue"></span>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <script>
+        $(document).ready(function() {
+            var viewModel = kendo.observable({
+                autoCompleteValue: null,
+                colors: [ {
+                    name: "Red", value: "#f00",
+                }, {
+                    name: "Green", value: "#0f0"
+                }, {
+                    name: "Blue", value: "#00f"
+                } ],
+                displayAutoCompleteValue: function() {
+                    var autoCompleteValue = this.get("autoCompleteValue");
+                    return kendo.stringify(autoCompleteValue);
+                },
+                comboBoxValue: null,
+                displayComboBoxValue: function() {
+                    var comboBoxValue = this.get("comboBoxValue");
+                    return kendo.stringify(comboBoxValue);
+                },
+                datePickerValue: new Date(),
+                displayDatePickerValue: function() {
+                    var datePickerValue = this.get("datePickerValue");
+                    return kendo.toString(datePickerValue, "yyyy-MM-dd");
+                },
+                dropDownListValue: null,
+                displayDropDownListValue: function() {
+                    var dropDownListValue = this.get("dropDownListValue");
+                    return kendo.stringify(dropDownListValue);
+                },
+                gridSource: [
+                    { Name: "Socks", Price: 18.00, UnitsInStock: 39 },
+                    { Name: "Gloves", Price: 19.00, UnitsInStock: 17 },
+                    { Name: "Shoes", Price: 97.00, UnitsInStock: 29 }
+                ],
+                displayGridSource: function() {
+                    var gridSource = this.get("gridSource");
+
+                    return $.map(gridSource, function(product) {
+                        return "\t" + kendo.stringify(product);
+                    }).join(",\r\n");
+                },
+                numericTextBoxValue: 10,
+                displayNumericTextBoxValue: function() {
+                    var numericTextBoxValue = this.get("numericTextBoxValue");
+
+                    return kendo.toString(numericTextBoxValue, "c");
+                },
+                timePickerValue: new Date(),
+                displayTimePickerValue: function() {
+                    var timePickerValue = this.get("timePickerValue");
+
+                    return kendo.toString(timePickerValue, "hh:mm:ss");
+                },
+                sliderValue: 5
+            });
+
+            viewModel.autoCompleteValue = viewModel.colors[1];
+            viewModel.dropDownListValue = viewModel.colors[0];
+            viewModel.comboBoxValue = viewModel.colors[0];
+
+            kendo.bind($("table"), viewModel);
+        });
+    </script>
+    <div class="code-sample">
+        <h4 class="code-title">View source code:</h4>
+    <pre class="prettyprint">
+&lt;table&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Widget&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;
+            &lt;h4&gt;AutoComplete&lt;/h4&gt;
+            &lt;input data-role=&quot;autocomplete&quot; data-text-field=&quot;name&quot; data-bind=&quot;source: colors, value: autoCompleteValue&quot;/&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;
+            &lt;h4&gt;ComboBox&lt;/h4&gt;
+            &lt;select data-role=&quot;combobox&quot;
+                data-text-field=&quot;name&quot; data-value-field=&quot;value&quot; data-bind=&quot;source: colors, value: comboBoxValue&quot;&gt;&lt;/select&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;
+            &lt;h4&gt;DatePicker&lt;/h4&gt;
+            &lt;input data-role=&quot;datepicker&quot; data-bind=&quot;value: datePickerValue&quot; /&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;
+            &lt;h4&gt;DropDownList &lt;/h4&gt;
+            &lt;select data-role=&quot;dropdownlist&quot;
+                data-text-field=&quot;name&quot; data-value-field=&quot;value&quot; data-bind=&quot;source: colors, value: dropDownListValue&quot;&gt;&lt;/select&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;
+            &lt;h4&gt;Grid&lt;/h4&gt;
+            &lt;div data-role=&quot;grid&quot;
+                data-sortable=&quot;true&quot; data-editable=&quot;true&quot;
+                data-columns='[&quot;Name&quot;, &quot;Price&quot;, &quot;UnitsInStock&quot;, {&quot;command&quot;: &quot;destroy&quot;}]'
+                data-bind=&quot;source: gridSource&quot;&gt;&lt;/div&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;
+            &lt;h4&gt;NumericTextBox&lt;/h4&gt;
+            &lt;input data-role=&quot;numerictextbox&quot; data-format=&quot;c&quot; data-bind=&quot;value: numericTextBoxValue&quot; /&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;
+            &lt;h4&gt;Slider&lt;/h4&gt;
+            &lt;input data-role=&quot;slider&quot; data-bind=&quot;value: sliderValue&quot; /&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;
+            &lt;h4&gt;TimePicker&lt;/h4&gt;
+            &lt;input data-role=&quot;timepicker&quot; data-bind=&quot;value: timePickerValue&quot; /&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;
+            &lt;h4&gt;TabStrip&lt;/h4&gt;
+            &lt;div data-role=&quot;tabstrip&quot; data-animation=&quot;false&quot;&gt;
+                &lt;ul&gt;
+                    &lt;li class=&quot;k-state-active&quot;&gt;First&lt;/li&gt;
+                    &lt;li&gt;Second&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;div&gt;
+                    &lt;h4&gt;First page:&lt;/h4&gt;
+                    Pick a time: &lt;input data-role=&quot;timepicker&quot; data-bind=&quot;value: timePickerValue&quot;/&gt;
+                &lt;/div&gt;
+                &lt;div&gt;
+                    &lt;h4&gt;Second page:&lt;/h4&gt;
+                    Time is: &lt;span data-bind=&quot;text: displayTimePickerValue&quot;&gt;&lt;/span&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;
+    </pre>
+    </div>
+    <div class="code-sample">
+        <h4 class="code-title">View model source code:</h4>
+        <pre class="prettyprint">
+var viewModel = kendo.observable({
+    autoCompleteValue: null,
+    colors: [ {
+        name: "Red", value: "#f00",
+    }, {
+        name: "Green", value: "#0f0"
+    }, {
+        name: "Blue", value: "#00f"
+    } ],
+    displayAutoCompleteValue: function() {
+        var autoCompleteValue = this.get("autoCompleteValue");
+        return kendo.stringify(autoCompleteValue);
+    },
+    comboBoxValue: null,
+    displayComboBoxValue: function() {
+        var comboBoxValue = this.get("comboBoxValue");
+        return kendo.stringify(comboBoxValue);
+    },
+    datePickerValue: new Date(),
+    displayDatePickerValue: function() {
+        var datePickerValue = this.get("datePickerValue");
+        return kendo.toString(datePickerValue, "yyyy-MM-dd");
+    },
+    dropDownListValue: null,
+    displayDropDownListValue: function() {
+        var dropDownListValue = this.get("dropDownListValue");
+        return kendo.stringify(dropDownListValue);
+    },
+    gridSource: [
+        { Name: "Chai", Price: 18.00, UnitsInStock: 39 },
+        { Name: "Chang", Price: 19.00, UnitsInStock: 17 },
+        { Name: "Mishi Kobe Niku", Price: 97.00, UnitsInStock: 29 }
+    ],
+    displayGridSource: function() {
+        var gridSource = this.get("gridSource");
+
+        return $.map(gridSource, function(product) {
+            return "\t" + kendo.stringify(product);
+        }).join(",\r");
+    },
+    numericTextBoxValue: 10,
+    displayNumericTextBoxValue: function() {
+        var numericTextBoxValue = this.get("numericTextBoxValue");
+
+        return kendo.toString(numericTextBoxValue, "c");
+    },
+    timePickerValue: new Date(),
+    displayTimePickerValue: function() {
+        var timePickerValue = this.get("timePickerValue");
+
+        return kendo.toString(timePickerValue, "hh:mm:ss");
+    }
+});
+
+viewModel.autoCompleteValue = viewModel.colors[1];
+viewModel.dropDownListValue = viewModel.colors[0];
+viewModel.comboBoxValue = viewModel.colors[0];
+
+kendo.bind($("table"), viewModel);
+        </pre>
+    </div>
+    <style scoped>
+        .metrotable {
+
+            width: 100%;
+        }
+
+        .metrotable > tbody > tr > td
+        {
+            display: table-cell;
+            padding: 5px 5px 5px 0;
+            font-size: 1em;
+            text-transform: none;
+        }
+
+        .metrotable td > .k-autocomplete,
+        .metrotable td > .k-dropdown,
+        .metrotable td > .k-combobox,
+        .metrotable td > .k-datepicker,
+        .metrotable td > .k-numerictextbox,
+        .metrotable td > .k-timepicker,
+        .metrotable td > .k-slider
+        {
+            float: right;
+        }
+
+        .metrotable td > .k-slider
+        {
+            margin-bottom: 10px;
+        }
+
+        .metrotable > tbody > tr > th {
+            border-bottom: 1px solid #CCCCCC;
+            color: #787878;
+            font-size: 1.4em;
+            font-weight: lighter;
+            padding: 0 1em 0 0;
+            text-align: left;
+        }
+
+        td h4 {
+            margin:0;
+            padding: 7px 0;
+            font-weight: normal;
+        }
+
+        td label {
+            float: left;
+            clear: left;
+        }
+
+        td pre {
+            font-size: 11px;
+        }
+    </style>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,326 @@
+[
+    {
+        "date": "12/31/2008",
+        "close": 85.35,
+        "volume": 21697530,
+        "open": 85.97,
+        "high": 87.74,
+        "low": 85.34,
+        "symbol": "2. AAPL"
+    },
+    {
+        "date": "11/28/2008",
+        "close": 92.67,
+        "volume": 10757340,
+        "open": 94.7,
+        "high": 94.76,
+        "low": 91.86,
+        "symbol": "2. AAPL"
+    },
+    {
+        "date": "10/31/2008",
+        "close": 107.59,
+        "volume": 59236380,
+        "open": 107.4,
+        "high": 110.78,
+        "low": 105.14,
+        "symbol": "2. AAPL"
+    },
+    {
+        "date": "9/30/2008",
+        "close": 113.66,
+        "volume": 58110180,
+        "open": 108.25,
+        "high": 115,
+        "low": 106.3,
+        "symbol": "2. AAPL"
+    },
+    {
+        "date": "8/29/2008",
+        "close": 169.53,
+        "volume": 21398360,
+        "open": 172.96,
+        "high": 173.5,
+        "low": 169.0401,
+        "symbol": "2. AAPL"
+    },
+    {
+        "date": "7/31/2008",
+        "close": 158.95,
+        "volume": 22737590,
+        "open": 157.54,
+        "high": 162.2,
+        "low": 156.98,
+        "symbol": "2. AAPL"
+    },
+    {
+        "date": "6/30/2008",
+        "close": 167.44,
+        "volume": 24424300,
+        "open": 170.19,
+        "high": 172,
+        "low": 166.62,
+        "symbol": "2. AAPL"
+    },
+    {
+        "date": "5/30/2008",
+        "close": 188.75,
+        "volume": 21700590,
+        "open": 187.45,
+        "high": 189.54,
+        "low": 187.38,
+        "symbol": "2. AAPL"
+    },
+    {
+        "date": "4/30/2008",
+        "close": 173.95,
+        "volume": 40636600,
+        "open": 176.19,
+        "high": 180,
+        "low": 172.92,
+        "symbol": "2. AAPL"
+    },
+    {
+        "date": "3/31/2008",
+        "close": 143.5,
+        "volume": 27392800,
+        "open": 143.27,
+        "high": 145.71,
+        "low": 142.52,
+        "symbol": "2. AAPL"
+    },
+    {
+        "date": "2/29/2008",
+        "close": 125.02,
+        "volume": 44513740,
+        "open": 129.29,
+        "high": 130.21,
+        "low": 124.8,
+        "symbol": "2. AAPL"
+    },
+    {
+        "date": "1/31/2008",
+        "close": 135.36,
+        "volume": 47993010,
+        "open": 129.45,
+        "high": 136.65,
+        "low": 129.4,
+        "symbol": "2. AAPL"
+    },
+    {
+        "date": "12/31/2008",
+        "close": 51.28,
+        "volume": 7792134,
+        "open": 50.74,
+        "high": 51.69,
+        "low": 49.91,
+        "symbol": "3. AMZN"
+    },
+    {
+        "date": "11/28/2008",
+        "close": 42.7,
+        "volume": 3687472,
+        "open": 44.03,
+        "high": 44.1,
+        "low": 42.22,
+        "symbol": "3. AMZN"
+    },
+    {
+        "date": "10/31/2008",
+        "close": 57.24,
+        "volume": 8521599,
+        "open": 56.01,
+        "high": 57.25,
+        "low": 55.01,
+        "symbol": "3. AMZN"
+    },
+    {
+        "date": "9/30/2008",
+        "close": 72.76,
+        "volume": 13048620,
+        "open": 65.84,
+        "high": 73.12,
+        "low": 65.32,
+        "symbol": "3. AMZN"
+    },
+    {
+        "date": "8/29/2008",
+        "close": 80.81,
+        "volume": 4728231,
+        "open": 82.9,
+        "high": 82.9,
+        "low": 80.5,
+        "symbol": "3. AMZN"
+    },
+    {
+        "date": "7/31/2008",
+        "close": 76.34,
+        "volume": 5299265,
+        "open": 76.75,
+        "high": 78.17,
+        "low": 76.1,
+        "symbol": "3. AMZN"
+    },
+    {
+        "date": "6/30/2008",
+        "close": 73.33,
+        "volume": 7093748,
+        "open": 75.03,
+        "high": 76.12,
+        "low": 73.21,
+        "symbol": "3. AMZN"
+    },
+    {
+        "date": "5/30/2008",
+        "close": 81.62,
+        "volume": 5255158,
+        "open": 80.58,
+        "high": 81.77,
+        "low": 80.3,
+        "symbol": "3. AMZN"
+    },
+    {
+        "date": "4/30/2008",
+        "close": 78.63,
+        "volume": 7875193,
+        "open": 80.9,
+        "high": 81.34,
+        "low": 77.92,
+        "symbol": "3. AMZN"
+    },
+    {
+        "date": "3/31/2008",
+        "close": 71.3,
+        "volume": 5469682,
+        "open": 70.25,
+        "high": 71.64,
+        "low": 69.63,
+        "symbol": "3. AMZN"
+    },
+    {
+        "date": "2/29/2008",
+        "close": 64.47,
+        "volume": 11662760,
+        "open": 67.01,
+        "high": 67.5,
+        "low": 63.97,
+        "symbol": "3. AMZN"
+    },
+    {
+        "date": "1/31/2008",
+        "close": 77.7,
+        "volume": 42859310,
+        "open": 68.91,
+        "high": 78.87,
+        "low": 68.84,
+        "symbol": "3. AMZN"
+    },
+    {
+        "date": "12/31/2008",
+        "close": 307.65,
+        "volume": 2886360,
+        "open": 304.2,
+        "high": 311,
+        "low": 302.6101,
+        "symbol": "1. GOOG"
+    },
+    {
+        "date": "11/28/2008",
+        "close": 292.96,
+        "volume": 2566368,
+        "open": 290.58,
+        "high": 296.45,
+        "low": 288.2801,
+        "symbol": "1. GOOG"
+    },
+    {
+        "date": "10/31/2008",
+        "close": 359.36,
+        "volume": 7413362,
+        "open": 356.16,
+        "high": 371.9599,
+        "low": 354.27,
+        "symbol": "1. GOOG"
+    },
+    {
+        "date": "9/30/2008",
+        "close": 400.52,
+        "volume": 9403743,
+        "open": 396,
+        "high": 483.63,
+        "low": 396,
+        "symbol": "1. GOOG"
+    },
+    {
+        "date": "8/29/2008",
+        "close": 463.29,
+        "volume": 3847874,
+        "open": 469.75,
+        "high": 471.01,
+        "low": 462.33,
+        "symbol": "1. GOOG"
+    },
+    {
+        "date": "7/31/2008",
+        "close": 473.75,
+        "volume": 2864634,
+        "open": 474.56,
+        "high": 480.89,
+        "low": 471.44,
+        "symbol": "1. GOOG"
+    },
+    {
+        "date": "6/30/2008",
+        "close": 526.42,
+        "volume": 3762029,
+        "open": 532.47,
+        "high": 538,
+        "low": 523.06,
+        "symbol": "1. GOOG"
+    },
+    {
+        "date": "5/30/2008",
+        "close": 585.8,
+        "volume": 3214070,
+        "open": 583.47,
+        "high": 589.92,
+        "low": 581.3,
+        "symbol": "1. GOOG"
+    },
+    {
+        "date": "4/30/2008",
+        "close": 574.29,
+        "volume": 7901842,
+        "open": 562.21,
+        "high": 584.86,
+        "low": 558.47,
+        "symbol": "1. GOOG"
+    },
+    {
+        "date": "3/31/2008",
+        "close": 440.47,
+        "volume": 4439069,
+        "open": 435.64,
+        "high": 442.69,
+        "low": 432.01,
+        "symbol": "1. GOOG"
+    },
+    {
+        "date": "2/29/2008",
+        "close": 471.18,
+        "volume": 9395017,
+        "open": 471.87,
+        "high": 479.74,
+        "low": 464.65,
+        "symbol": "1. GOOG"
+    },
+    {
+        "date": "1/31/2008",
+        "close": 564.3,
+        "volume": 14571660,
+        "open": 539.01,
+        "high": 573,
+        "low": 534.2901,
+        "symbol": "1. GOOG"
+    }
+]

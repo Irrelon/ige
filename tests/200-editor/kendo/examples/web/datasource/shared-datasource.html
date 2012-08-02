@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shared DataSource</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+            <div id="example" class="k-content">
+            <div id="datasource-views">
+                <div class="selector">
+                    <h3>Estimated Internet Users (Source: ITU)</h3>
+                    <div class="section-box">
+                        <label for="country">Select country:</label>
+                        <input id="country" />
+                    </div>
+                </div>
+                <div id="chart"></div>
+                <div id="grid"></div>
+            </div>
+
+            <style scoped>
+                .k-chart {
+                    height: 200px;
+                    margin: 30px auto;
+                }
+                #datasource-views {
+                	padding: 20px;
+                	margin: 30px;
+                }
+                .section-box {
+                	margin-top: 20px;
+                	padding: 10px;
+                	text-align: center;
+                }
+                .section-box span {
+                	text-align: left;
+                }
+                #datasource-views, .section-box {
+                	-moz-box-shadow: 0 1px 2px rgba(0,0,0,0.45), inset 0 0 30px rgba(0,0,0,0.07);
+                    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.45), inset 0 0 30px rgba(0,0,0,0.07);
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.45), inset 0 0 30px rgba(0,0,0,0.07);
+                    -webkit-border-radius: 8px;
+                    -moz-border-radius: 8px;
+                    border-radius: 8px;
+                }
+            </style>
+
+            <script>
+                var transport = {
+                    read: {
+                        url: "../../content/web/datasource/internet-users.json",
+                        dataType: "json"
+                    }
+                };
+
+                var countriesDataSource = new kendo.data.DataSource({
+                    transport: transport,
+                    group: {
+                        field: "country",
+                        dir: "asc"
+                    }
+                });
+
+                var sharedDataSource = new kendo.data.DataSource({
+                    transport: transport,
+                    sort: {
+                        field: "year",
+                        dir: "asc"
+                    }
+                });
+
+                function filterCountries() {
+                    sharedDataSource.filter([{
+                        field: "country",
+                        operator: "equals",
+                        value: $("#country").val()
+                    }, {
+                        field: "year",
+                        operator: "greaterThanEqual",
+                        value: 2000
+                    }]);
+                }
+
+                for (var group in countriesDataSource.view()) {
+                    group = countriesDataSource.view()[group];
+                    for (var i = 1; i < group.items.length; i++) group.items[i].growth = (group.items[i].value - group.items[i-1].value) / 100.0
+                }
+
+                function createGrid() {
+                    $("#grid").kendoGrid({
+                        dataSource: sharedDataSource,
+                        autoBind: false,
+                        sortable: {
+                            allowUnsort: false
+                        },
+                        columns: [
+                            {
+                                field: "year",
+                                title: "Year",
+                                width: "100px"
+                            },
+                            {
+                                field: "value",
+                                title: "Estimated Users",
+                                template: '#= kendo.toString(value, "N0") #'
+                            },
+                            {
+                                field: "growth",
+                                title: "Growth",
+                                template: '#= kendo.toString(growth, "p") #',
+                                width: "100px"
+                            }
+                        ]
+                    });
+                }
+
+                function createChart() {
+                    $("#chart").kendoChart({
+                        theme: $(document).data("kendoSkin") || "default",
+                        dataSource: sharedDataSource,
+                        autoBind: false,
+                        legend: {
+                            visible: false
+                        },
+                        series: [{
+                            type: "column",
+                            field: "value"
+                        }],
+                        axisDefaults: {
+                            labels: {
+                                font: "11px Tahoma, sans-serif"
+                            }
+                        },
+                        valueAxis: {
+                            labels: {
+                                format: "{0:N0}"
+                            }
+                        },
+                        categoryAxis: {
+                            field: "year"
+                        },
+                        tooltip: {
+                            visible: true,
+                            format: "{0:N0}"
+                        }
+                    });
+                }
+
+                $(document).ready(function() {
+                    $("#country")
+                        .val("United States")
+                        .width(220)
+                        .kendoDropDownList({
+                            dataSource: countriesDataSource,
+                            dataTextField: "value",
+                            dataValueField: "value",
+                            change: filterCountries
+                        });
+
+                    createGrid();
+                    createChart();
+
+                    filterCountries();
+
+                    $("#example").bind("kendo:skinChange", function(e) {
+                        createChart();
+                        sharedDataSource.read();
+                    });
+                });
+            </script>
+        </div>
+
+</body>
+</html>

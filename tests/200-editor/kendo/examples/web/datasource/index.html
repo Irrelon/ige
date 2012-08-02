@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Basic usage</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+        <div id="example" class="k-content">
+            <div class="demo-section">
+
+                <table id="movies" class="metrotable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Rating</th>
+                            <th>Title</th>
+                            <th>Year</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="4"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <script id="template" type="text/x-kendo-template">
+                <tr>
+                    <td>#= rank #</td>
+                    <td>#= rating #</td>
+                    <td>#= title #</td>
+                    <td>#= year #</td>
+                </tr>
+            </script>
+
+            <script>
+                $(document).ready(function() {
+                    // create a template using the above definition
+                    var template = kendo.template($("#template").html());
+
+                    var movies = [
+                        { "rank": 1,  "rating": 9.2, "year": 1994, "title": "The Shawshank Redemption" },
+                        { "rank": 2,  "rating": 9.2, "year": 1972, "title": "The Godfather" },
+                        { "rank": 3,  "rating": 9,   "year": 1974, "title": "The Godfather: Part II" },
+                        { "rank": 4,  "rating": 8.9, "year": 1966, "title": "Il buono, il brutto, il cattivo." },
+                        { "rank": 5,  "rating": 8.9, "year": 1994, "title": "Pulp Fiction" },
+                        { "rank": 6,  "rating": 8.9, "year": 1957, "title": "12 Angry Men" },
+                        { "rank": 7,  "rating": 8.9, "year": 1993, "title": "Schindler's List" },
+                        { "rank": 8,  "rating": 8.8, "year": 1975, "title": "One Flew Over the Cuckoo's Nest" },
+                        { "rank": 9,  "rating": 8.8, "year": 2010, "title": "Inception" },
+                        { "rank": 10, "rating": 8.8, "year": 2008, "title": "The Dark Knight" }
+                    ];
+
+                    var dataSource = new kendo.data.DataSource({
+                        data: movies,
+                        change: function() { // subscribe to the CHANGE event of the data source
+                            $("#movies tbody").html(kendo.render(template, this.view())); // populate the table
+                        }
+                    });
+
+                    // read data from the "movies" array
+                    dataSource.read();
+                });
+            </script>
+            <style scoped>
+                .demo-section {
+                    width: 600px;	
+                }
+                
+                .metrotable {
+                	width: 100%;
+                	border-collapse: collapse;
+                }
+                
+                .metrotable > thead > tr > th 
+                {
+                	font-size: 1.3em;
+                	padding-top: 0;
+                	padding-bottom: 5px;
+                }
+            </style>
+        </div>
+
+</body>
+</html>

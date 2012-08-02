@@ -13,7 +13,44 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Gets / sets the arbitrary group name that the object belogs to.
+	 * Gets / sets the current object id. If no id is currently assigned and no
+	 * id is passed to the method, it will automatically generate and assign a
+	 * new id as a 16 character hexadecimal value typed as a string.
+	 * @param {String=} id
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 */
+	id: function (id) {
+		if (id !== undefined) {
+			// Check if this ID already exists in the object register
+			if (ige._register[id]) {
+				// Already an object with this ID!
+				this.log('Cannot set ID of object to "' + id + '" because that ID is already in use by another object!', 'error');
+			} else {
+				// Check if we already have an id assigned
+				if (this._id && ige._register[this._id]) {
+					// Unregister the old ID before setting this new one
+					ige.unRegister(this);
+				}
+
+				this._id = id;
+
+				// Now register this object with the object register
+				ige.register(this);
+
+				return this;
+			}
+		}
+
+		if (!this._id) {
+			// The item has no id so generate one automatically
+			this._id = ige.newIdHex();
+		}
+
+		return this._id;
+	},
+
+	/**
+	 * Gets / sets the arbitrary group name that the object belongs to.
 	 * @param {String=} val
 	 * @return {*}
 	 */
@@ -128,6 +165,9 @@ var IgeObject = IgeEventingClass.extend({
 	 */
 	mount: function (obj) {
 		if (obj._children) {
+			// Check that the engine will allow us to register this object
+			this.id(); // Generates a new id if none is currently set, and registers it on the object register!
+
 			if (this._parent) {
 				if (this._parent === obj) {
 					// We are already mounted to the parent!
@@ -515,6 +555,9 @@ var IgeObject = IgeEventingClass.extend({
 		if (this._children) {
 			this.destroyChildren();
 		}
+
+		// Remove the object from the lookup system
+		ige.unRegister(this);
 
 		// Remove the children array severing any references
 		// to any child objects so that the GC can pick them up

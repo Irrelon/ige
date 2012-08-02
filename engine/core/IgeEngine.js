@@ -3,7 +3,7 @@ var IgeEngine = IgeEntity.extend({
 
 	init: function () {
 		this._super();
-		this.id('IGE');
+		this._id = 'IGE';
 
 		this.basePath = '';
 
@@ -57,6 +57,9 @@ var IgeEngine = IgeEntity.extend({
 		this._frameAlternator = false; // Is set to the boolean not of itself each frame
 		this._viewportDepth = false;
 		this._mousePos = new IgePoint(0, 0, 0);
+		this._register = {
+			'ige': this
+		}; // Holds a reference to every item in the scenegraph by it's ID
 
 		if (this.isServer) {
 			// Setup a dummy canvas context
@@ -72,6 +75,59 @@ var IgeEngine = IgeEntity.extend({
 
 		// Start a timer to record every second of execution
 		setInterval(this._secondTick, 1000);
+	},
+
+	/**
+	 * Returns an object from the engine's object register by
+	 * the object's id. If the item passed is not a string id
+	 * then the item is returned as is. If no item is passed
+	 * the engine itself is returned.
+	 * @param item
+	 */
+	$: function (item) {
+		if (typeof(item) === 'string') {
+			return this._register[item];
+		} else if (typeof(item) === 'object') {
+			return item;
+		}
+
+		return this;
+	},
+
+	/**
+	 * Register an object with the engine object register. The
+	 * register allows you to access an object by it's id with
+	 * a call to ige.$(objectId).
+	 * @param obj
+	 * @return {*}
+	 */
+	register: function (obj) {
+		if (obj !== undefined) {
+			if (!this._register[obj.id()]) {
+				this._register[obj.id()] = obj;
+				obj._registered = true;
+
+				return this;
+			} else {
+				obj._registered = false;
+
+				this.log('Cannot add object id "' + obj.id() + '" to scenegraph because there is already another object in the graph with the same ID!', 'error');
+				return false;
+			}
+		}
+
+		return this._register;
+	},
+
+	unRegister: function (obj) {
+		if (obj !== undefined) {
+			if (this._register[obj.id()]) {
+				delete this._register[obj.id()];
+				obj._registered = false;
+			}
+		}
+
+		return this;
 	},
 
 	/**
@@ -683,9 +739,9 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
-	 * Walks the scenegraph and outputs a console map of the graph.
+	 * Walks the scene graph and outputs a console map of the graph.
 	 */
-	scenegraph: function (obj, currentDepth, lastDepth) {
+	sceneGraph: function (obj, currentDepth, lastDepth) {
 		if (currentDepth === undefined) { currentDepth = 0; }
 
 		if (!obj) {
@@ -714,7 +770,7 @@ var IgeEngine = IgeEntity.extend({
 				while (arrCount--) {
 					if (arr[arrCount]._scene._shouldRender) {
 						console.log(depthSpace + '    ' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ')');
-						this.scenegraph(arr[arrCount]._scene, currentDepth + 1);
+						this.sceneGraph(arr[arrCount]._scene, currentDepth + 1);
 					}
 				}
 			}
@@ -727,10 +783,72 @@ var IgeEngine = IgeEntity.extend({
 
 				// Loop our children
 				while (arrCount--) {
-					this.scenegraph(arr[arrCount], currentDepth);
+					this.sceneGraph(arr[arrCount], currentDepth);
 				}
 			}
 		}
+	},
+
+	/**
+	 * Walks the scenegraph and returns a data object of the graph.
+	 */
+	getSceneGraphData: function (obj) {
+		var item, items = [], tempItem, tempItem2, tempItems,
+			arr, arrCount;
+
+		if (!obj) {
+			// Set the obj to the main ige instance
+			obj = ige;
+		}
+
+		item = {
+			text: obj.id() + ' (' + obj._classId + ')',
+			parent: obj._parent,
+			id: obj.id()
+		};
+
+		if (obj === ige) {
+			// Loop the viewports
+			arr = obj._children;
+
+			if (arr) {
+				arrCount = arr.length;
+
+				// Loop our children
+				while (arrCount--) {
+					tempItem = {
+						text: arr[arrCount].id() + ' (' + arr[arrCount]._classId + ')',
+						parent: arr[arrCount]._parent,
+						id: arr[arrCount].id()
+					};
+
+					if (arr[arrCount]._scene) {
+						tempItem2 = this.getSceneGraphData(arr[arrCount]._scene);
+						tempItem.items = [tempItem2];
+					}
+
+					items.push(tempItem);
+				}
+			}
+		} else {
+			arr = obj._children;
+
+			if (arr) {
+				arrCount = arr.length;
+
+				// Loop our children
+				while (arrCount--) {
+					tempItem = this.getSceneGraphData(arr[arrCount]);
+					items.push(tempItem);
+				}
+			}
+		}
+
+		if (items.length > 0) {
+			item.items = items;
+		}
+
+		return item;
 	}
 });
 

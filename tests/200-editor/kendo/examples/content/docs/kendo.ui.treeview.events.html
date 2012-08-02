@@ -1,0 +1,364 @@
+
+
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="collapse"><code>collapse</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Triggered before a subgroup gets collapsed.</div><div class="desc"></div>
+
+            
+                <div class="details-list">
+                    <h4 class="details-title">Event data</h4>
+                    <dl>
+                    
+                        
+                    
+                        
+                        <dt>
+                            <code>node</code>
+                            <span class="type">: Node</span> 
+                            
+                        </dt>
+                        <dd>The collapsed node</dd>
+                        
+                    
+                    </dl>
+                </div>
+            
+
+            
+
+            
+        </div>
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="drag"><code>drag</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Triggered while a node is being dragged.</div><div class="desc"></div><div class="code-sample"><h4 class="code-title">Show the user that is not permitted to drop nodes outside of the #drop-area element</h4><pre class="code prettyprint"><code>treeview.data("kendoTreeView").bind("drag", function(e) {
+    if ($(e.dropTarget).parents("#drop-area").length ) {
+        e.setStatusClass("k-denied");
+    }
+});</code></pre></div>
+
+            
+                <div class="details-list">
+                    <h4 class="details-title">Event data</h4>
+                    <dl>
+                    
+                        
+                    
+                        
+                        <dt>
+                            <code>sourceNode</code>
+                            <span class="type">: Node</span> 
+                            
+                        </dt>
+                        <dd>The node that is being dragged.</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>dropTarget</code>
+                            <span class="type">: Element</span> 
+                            
+                        </dt>
+                        <dd>The element that the node is placed over.</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>pageX</code>
+                            <span class="type">: Number</span> 
+                            
+                        </dt>
+                        <dd>The x coordinate of the mouse.</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>pageY</code>
+                            <span class="type">: Number</span> 
+                            
+                        </dt>
+                        <dd>The y coordinate of the mouse.</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>statusClass</code>
+                            <span class="type">: String</span> 
+                            
+                        </dt>
+                        <dd>The status that the drag clue shows.</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>setStatusClass</code>
+                            <span class="type">: Function</span> 
+                            
+                        </dt>
+                        <dd>Allows a custom drag clue status to be set.
+<p>Pre-defined status classes are:</p>
+<ul>
+    <li><strong>k-insert-top</strong>
+        - Indicates that the item will be inserted on top.
+    </li>
+    <li><strong>k-insert-middle</strong>
+        - Indicates that the item will be inserted in the middle.
+    </li>
+    <li><strong>k-insert-bottom</strong>
+        - Indicates that the item will be inserted at the bottom.
+    </li>
+    <li><strong>k-add</strong>
+        - Indicates that the item will be added/appended.
+    </li>
+    <li><strong>k-denied</strong>
+        - Indicates an invalid operation. Using this class will automatically
+          make the drop operation invalid, so there will be no need to call
+          <code>setValid(false)</code> in the <code>drop</code> event.
+    </li>
+</ul></dd>
+                        
+                    
+                    </dl>
+                </div>
+            
+
+            
+
+            
+        </div>
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="dragend"><code>dragend</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Triggered after a node has been dropped.</div><div class="desc"></div>
+
+            
+                <div class="details-list">
+                    <h4 class="details-title">Event data</h4>
+                    <dl>
+                    
+                        
+                    
+                        
+                        <dt>
+                            <code>sourceNode</code>
+                            <span class="type">: Node</span> 
+                            
+                        </dt>
+                        <dd>The node that is being dropped.</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>destinationNode</code>
+                            <span class="type">: Node</span> 
+                            
+                        </dt>
+                        <dd>The node that the sourceNode is being dropped upon.</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>dropPosition</code>
+                            <span class="type">: String</span> 
+                            
+                        </dt>
+                        <dd>Shows where the source has been dropped. One of the values <strong>over</strong>, <strong>before</strong>, or <strong>after</strong>.</dd>
+                        
+                    
+                    </dl>
+                </div>
+            
+
+            
+
+            
+        </div>
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="dragstart"><code>dragstart</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Triggered before the dragging of a node starts.</div><div class="desc"></div><div class="code-sample"><h4 class="code-title">Disable dragging of root nodes</h4><pre class="code prettyprint"><code>treeview.data("kendoTreeView").bind("dragstart", function(e) {
+    if ($(e.sourceNode).parentsUntil(".k-treeview", ".k-item").length == 0) {
+        e.preventDefault();
+    }
+});</code></pre></div>
+
+            
+                <div class="details-list">
+                    <h4 class="details-title">Event data</h4>
+                    <dl>
+                    
+                        
+                    
+                        
+                        <dt>
+                            <code>sourceNode</code>
+                            <span class="type">: Node</span> 
+                            
+                        </dt>
+                        <dd>The node that will be dragged.</dd>
+                        
+                    
+                    </dl>
+                </div>
+            
+
+            
+
+            
+        </div>
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="drop"><code>drop</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Triggered when a node is being dropped.</div><div class="desc"></div>
+
+            
+                <div class="details-list">
+                    <h4 class="details-title">Event data</h4>
+                    <dl>
+                    
+                        
+                    
+                        
+                        <dt>
+                            <code>sourceNode</code>
+                            <span class="type">: Node</span> 
+                            
+                        </dt>
+                        <dd>The node that is being dropped.</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>destinationNode</code>
+                            <span class="type">: Node</span> 
+                            
+                        </dt>
+                        <dd>The node that the sourceNode is being dropped upon.</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>valid</code>
+                            <span class="type">: Boolean</span> 
+                            
+                        </dt>
+                        <dd>Whether this drop operation is permitted.</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>setValid</code>
+                            <span class="type">: Function</span> 
+                            
+                        </dt>
+                        <dd>Allows the drop to be prevented.</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>dropTarget</code>
+                            <span class="type">: Element</span> 
+                            
+                        </dt>
+                        <dd>The element that the node is placed over.</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>dropPosition</code>
+                            <span class="type">: String</span> 
+                            
+                        </dt>
+                        <dd>Shows where the source will be dropped. One of the values <strong>over</strong>, <strong>before</strong>, or <strong>after</strong>.</dd>
+                        
+                    
+                    </dl>
+                </div>
+            
+
+            
+
+            
+        </div>
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="expand"><code>expand</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Triggered before a subgroup gets expanded.</div><div class="desc"></div>
+
+            
+                <div class="details-list">
+                    <h4 class="details-title">Event data</h4>
+                    <dl>
+                    
+                        
+                    
+                        
+                        <dt>
+                            <code>node</code>
+                            <span class="type">: Node</span> 
+                            
+                        </dt>
+                        <dd>The expanded node</dd>
+                        
+                    
+                    </dl>
+                </div>
+            
+
+            
+
+            
+        </div>
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="select"><code>select</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Triggered when a node gets selected.</div><div class="desc"></div>
+
+            
+                <div class="details-list">
+                    <h4 class="details-title">Event data</h4>
+                    <dl>
+                    
+                        
+                    
+                        
+                        <dt>
+                            <code>node</code>
+                            <span class="type">: Node</span> 
+                            
+                        </dt>
+                        <dd>The selected node</dd>
+                        
+                    
+                    </dl>
+                </div>
+            
+
+            
+
+            
+        </div>
+    
+

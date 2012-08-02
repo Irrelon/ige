@@ -1,0 +1,40 @@
+<div class="detailHandle detailHandleExpanded"> <div class="detailExpanded"></div>draggable</div><div style="display: block;" class="detailBody">
+
+        <!-- help-data -->
+
+
+    
+    <div class="detailHandle"><div class="detailCollapsed"></div><a name='axis'><code class="symbol">axis</code></a>: <span class="type">String</span><span class="defaultValue">(default: null)</span></div><div class="detailBody"><div class="desc"> Constrains the hint movement to either the horizontal (x) or vertical (y) axis. Can be set to either "x" or "y".</div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='container'><code class="symbol">container</code></a>: <span class="type">jQuery</span></div><div class="detailBody"><div class="desc">If set, the hint movement is constrained to the container boundaries.</div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='cursorOffset'><code class="symbol">cursorOffset</code></a>: <span class="type">Object</span><span class="defaultValue">(default: null)</span></div><div class="detailBody"><div class="desc"> If set, specifies the offset of the hint relative to the mouse cursor/finger.
+By default, the hint is initially positioned on top of the draggable source offset. The option accepts an object with two keys: <code>top</code> and <code>left</code>.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>$("#draggable").kendoDraggable({cursorOffset: {top: 10, left: 10}});</code></pre></div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='distance'><code class="symbol">distance</code></a>: <span class="type">Number</span><span class="defaultValue">(default: 5)</span></div><div class="detailBody"><div class="desc"> The required distance that the mouse should travel in order to initiate a drag.</div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='filter'><code class="symbol">filter</code></a>: <span class="type">Selector</span></div><div class="detailBody"><div class="desc">Selects child elements that are draggable if a widget is attached to a container.</div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='group'><code class="symbol">group</code></a>: <span class="type">String</span><span class="defaultValue">(default: "default")</span></div><div class="detailBody"><div class="desc"> Used to group sets of draggable and drop targets. A draggable with the same group value as a drop target will be accepted by the drop target.</div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='hint'><code class="symbol">hint</code></a>: <span class="type">Function | jQuery</span></div><div class="detailBody"><div class="desc">Provides a way for customization of the drag indicator. If a function is supplied, it receives one argument - the draggable element's jQuery object.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>//hint as a function
+ $("#draggable").kendoDraggable({
+     hint: function(element) {
+         return $("#draggable").clone();
+         // same as
+         //  return element.clone();
+     }
+ });
+
+//hint as jQuery object
+ $("#draggable").kendoDraggable({
+     hint: $("#draggableHint");
+ });</code></pre></div></div>
+
+</div><div class="detailHandle detailHandleExpanded"> <div class="detailExpanded"></div>droptarget</div><div style="display: block;" class="detailBody">
+
+        <!-- help-data -->
+
+
+    
+    <div class="detailHandle"><div class="detailCollapsed"></div><a name='group'><code class="symbol">group</code></a>: <span class="type">String</span><span class="defaultValue">(default: "default")</span></div><div class="detailBody"><div class="desc"> Used to group sets of draggable and drop targets. A draggable with the same group value as a drop target will be accepted by the drop target.</div></div>
+
+</div><div class="detailHandle detailHandleExpanded"> <div class="detailExpanded"></div>drag</div><div style="display: block;" class="detailBody">
+
+        <!-- help-data -->
+
+
+    
+    <div class="detailHandle"><div class="detailCollapsed"></div><a name='allowSelection'><code class="symbol">allowSelection</code></a>: <span class="type">Boolean</span><span class="defaultValue">(default: false)</span></div><div class="detailBody"><div class="desc"> If set to true, the mousedown and selectstart events will not be prevented.</div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='filter'><code class="symbol">filter</code></a>: <span class="type">Selector</span></div><div class="detailBody"><div class="desc">If passed, the filter limits the child elements that will trigger the event sequence.</div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='global'><code class="symbol">global</code></a>: <span class="type">Boolean</span><span class="defaultValue">(default: false)</span></div><div class="detailBody"><div class="desc"> If set to true, the drag event will be tracked beyond the element boundaries.</div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='stopPropagation'><code class="symbol">stopPropagation</code></a>: <span class="type">Boolean</span><span class="defaultValue">(default: false)</span></div><div class="detailBody"><div class="desc"> If set to true, the mousedown event propagation will be stopped, disabling
+drag capturing at parent elements.
+If set to false, dragging outside of the element boundaries will trigger the <code>end</code> event.</div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='surface'><code class="symbol">surface</code></a>: <span class="type">Element</span></div><div class="detailBody"><div class="desc">If set, the drag event will be tracked for the surface boundaries. By default, leaving the element boundaries will end the drag.</div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='threshold'><code class="symbol">threshold</code></a>: <span class="type">Number</span><span class="defaultValue">(default: 0)</span></div><div class="detailBody"><div class="desc"> The minimum distance the mouse/touch should move before the event is triggered.</div></div>
+
+</div>

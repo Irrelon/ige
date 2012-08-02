@@ -1,0 +1,33 @@
+<p>
+      The ListView is designed to give your the freedom to specify custom type of layout
+      for the items displayed in the control. It can be bound to local JSON data or to
+      remote data using the Kendo DataSource component.
+ </p>
+ <h3>Getting Started</h3><div class="code-sample"><h4 class="code-title">Creating a <b>ListView</b> from existing HTML element</h4><pre class="code prettyprint"><code>  &lt;ul id="listView"&gt;&lt;/ul&gt;</code></pre></div><div class="code-sample"><h4 class="code-title">Initialize the Kendo Grid</h4><pre class="code prettyprint"><code>  $(document).ready(function(){
+      $("#listView").kendoListView({
+          template: "&lt;li&gt;${FirstName} ${LastName}&lt;/li&gt;",
+          dataSource: {
+              data: [
+                  {
+                      FirstName: "Joe",
+                      LastName: "Smith"
+                  },
+                  {
+                      FirstName: "Jane",
+                      LastName: "Smith"
+              }]
+          }
+      });
+  });</code></pre></div><h3>Configuring ListView Behavior</h3>
+ Kendo ListView supports paging, selection, navigation, editing. Configuring any of
+ these ListView behaviors is done using simple boolean configuration options. For
+ example, the follow snippet shows how to enable all of these behaviors.<div class="code-sample"><h4 class="code-title">Enabling ListView paging, selection, navigation and editing</h4><pre class="code prettyprint"><code>   $(document).ready(function(){
+      $("#listView").kendoListView({
+         pageable: true,
+         selectable: true,
+         navigatable: true,
+         editable: true,
+         template: "&lt;li&gt;${FirstName}&lt;/li&gt;",
+         editTemplate: '&lt;li&gt;&lt;input type="text" data-bind="value:FirstName" name="FirstName" required="required"/&gt;&lt;/li&gt;'
+      });
+  });</code></pre></div>By default, paging, selection, navigation and editing are <strong>disabled</strong>.

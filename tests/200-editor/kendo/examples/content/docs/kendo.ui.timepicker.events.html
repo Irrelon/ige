@@ -1,0 +1,84 @@
+
+
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="change"><code>change</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Triggered when the underlying value of a TimePicker is changed.</div><div class="desc"></div><div class="code-sample"><h4 class="code-title">Attach change event handler during initialization; detach via unbind()</h4><pre class="code prettyprint"><code>// event change for expand
+var onChange = function(e) {
+    // ...
+};
+
+// attach change event handler during initialization
+var timePicker = $("#timePicker").kendoTimePicker({
+    change: onChange
+});
+
+// detach change event handler via unbind()
+timePicker.data("kendoTimePicker").unbind("change", onChange);</code></pre></div><div class="code-sample"><h4 class="code-title">Attach change event handler via bind(); detach via unbind()</h4><pre class="code prettyprint"><code>// event change for expand
+var onChange = function(e) {
+    // ...
+};
+
+// attach change event handler via bind()
+$("#timePicker").data("kendoTimePicker").bind("change", onChange);
+
+// detach change event handler via unbind()
+$("#timePicker").data("kendoTimePicker").unbind("change", onChange);</code></pre></div>
+
+            
+
+            
+
+            
+        </div>
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="close"><code>close</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Fires when the time drop-down list is closed</div><div class="desc"></div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>$("#timePicker").kendoTimePicker({
+    close: function(e) {
+        // handle event
+    }
+});</code></pre></div><div class="code-sample"><h4 class="code-title">To set after initialization</h4><pre class="code prettyprint"><code>// get a reference to the timePicker widget
+var timePicker = $("#timePicker").data("kendoTimePicker");
+// bind to the close event
+timePicker.bind("close", function(e) {
+    // handle event
+});</code></pre></div>
+
+            
+
+            
+
+            
+        </div>
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="open"><code>open</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Fires when the time drop-down list is opened</div><div class="desc"></div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>$("#timePicker").kendoTimePicker({
+    open: function(e) {
+        // handle event
+    }
+});</code></pre></div><div class="code-sample"><h4 class="code-title">To set after initialization</h4><pre class="code prettyprint"><code>// get a reference to the timePicker widget
+var timePicker = $("#timePicker").data("kendoTimePicker");
+// bind to the open event
+timePicker.bind("open", function(e) {
+    // handle event
+});</code></pre></div>
+
+            
+
+            
+
+            
+        </div>
+    
+

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Binding to local data</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+            <div id="example" class="k-content">
+
+            <div class="demo-section">
+                <strong>Inline data (deafault settings)</strong>
+                <div id="treeview-left"></div>
+            </div>
+
+            <div class="demo-section">
+                <strong>Inline data</strong>
+                <div id="treeview-right"></div>
+
+            </div>
+
+            <script>
+                var inlineDefault = new kendo.data.HierarchicalDataSource({
+                    data: [
+                        { text: "Furniture", items: [
+                            { text: "Tables & Chairs" },
+                            { text: "Sofas" },
+                            { text: "Occasional Furniture" }
+                        ] },
+                        { text: "Decor", items: [
+                            { text: "Bed Linen" },
+                            { text: "Curtains & Blinds" },
+                            { text: "Carpets" }
+                        ] }
+                    ]
+                });
+
+                $("#treeview-left").kendoTreeView({
+                    dataSource: inlineDefault
+                });
+
+                var inline = new kendo.data.HierarchicalDataSource({
+                    data: [
+                        { categoryName: "Storage", subCategories: [
+                            { subCategoryName: "Wall Shelving" },
+                            { subCategoryName: "Floor Shelving" },
+                            { subCategoryName: "Kids Storage" }
+                        ] },
+                        { categoryName: "Lights", subCategories: [
+                            { subCategoryName: "Ceiling" },
+                            { subCategoryName: "Table" },
+                            { subCategoryName: "Floor" }
+                        ] }
+                    ],
+                    schema: {
+                        model: {
+                            children: "subCategories"
+                        }
+                    }
+                });
+
+                $("#treeview-right").kendoTreeView({
+                    dataSource: inline,
+                    dataTextField: [ "categoryName", "subCategoryName" ]
+                });
+            </script>
+
+            <style scoped>
+                #example {
+                    text-align: center;
+                }
+
+                .demo-section {
+                    display: inline-block;
+                    vertical-align: top;
+                    width: 220px;
+                    text-align: left;
+                    margin: 0 2em;
+                }
+            </style>
+        </div>
+
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Templates</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    <div id="example" class="k-content">
+        <div id="treeview" class="demo-section"></div>
+
+        <div class="code-sample">
+            <h4 class="code-title">Serialized data</h4>
+            <pre id="checked-nodes" class="prettyprint"></pre>
+        </div>
+
+        <script id="treeview-template" type="text/kendo-ui-template">
+            #= item.text #
+            # if (!item.items) { #
+                <a class='delete-link' href='\#'></a>
+            # } #
+        </script>
+
+        <script id="treeview-checkbox-template" type="text/kendo-ui-template">
+            # var name = "checkedFiles[" + item.id + "]"; #
+            <!-- uncomment the next line to get default checkbox values (RoR, ASP.NET MVC) -->
+            <!-- <input type="hidden" name="#= name #" value="false" /> -->
+            <input type="checkbox" name="#= name #" value="true" />
+        </script>
+
+        <script>
+            $("#treeview").kendoTreeView({
+                template: kendo.template($("#treeview-template").html()),
+
+                checkboxTemplate: kendo.template($("#treeview-checkbox-template").html()),
+
+                dataSource: [{
+                    id: 1, text: "My Documents", expanded: true, spriteCssClass: "rootfolder", items: [
+                        {
+                            id: 2, text: "Kendo UI Project", expanded: true, spriteCssClass: "folder", items: [
+                                { id: 3, text: "about.html", spriteCssClass: "html" },
+                                { id: 4, text: "index.html", spriteCssClass: "html" },
+                                { id: 5, text: "logo.png", spriteCssClass: "image" }
+                            ]
+                        },
+                        {
+                            id: 6, text: "New Web Site", expanded: true, spriteCssClass: "folder", items: [
+                                { id: 7, text: "mockup.jpg", spriteCssClass: "image" },
+                                { id: 8, text: "Research.pdf", spriteCssClass: "pdf" },
+                            ]
+                        },
+                        {
+                            id: 9, text: "Reports", expanded: true, spriteCssClass: "folder", items: [
+                                { id: 10, text: "February.pdf", spriteCssClass: "pdf" },
+                                { id: 11, text: "March.pdf", spriteCssClass: "pdf" },
+                                { id: 12, text: "April.pdf", spriteCssClass: "pdf" }
+                            ]
+                        }
+                    ]
+                }]
+            });
+
+            function showSerializedData() {
+                var serializedData = $("#treeview input").serialize()
+                        .replace(/%5B/g, "[")
+                        .replace(/%5D/g, "]")
+                        .replace(/&/g, "&amp;");
+
+                $("#checked-nodes").html(serializedData);
+            }
+
+            $("#treeview [type=checkbox]").change(showSerializedData);
+
+            // Delete button behavior
+            $(document).on("click", ".delete-link", function() {
+                var treeview = $("#treeview").data("kendoTreeView");
+                treeview.remove($(this).closest(".k-item"));
+                showSerializedData();
+            });
+        </script>
+
+        <style scoped>
+            #treeview {
+                float: left;
+                width: 300px;
+            }
+
+            #example .code-sample {
+                margin-left: 350px;
+            }
+
+            #checked-nodes {
+                word-break: break-word;
+            }
+
+            #treeview .k-sprite {
+                background-image: url("../../content/web/treeview/coloricons-sprite.png");
+            }
+
+            .rootfolder { background-position: 0 0; }
+            .folder     { background-position: 0 -16px; }
+            .pdf        { background-position: 0 -32px; }
+            .html       { background-position: 0 -48px; }
+            .image      { background-position: 0 -64px; }
+
+            .delete-link {
+                width: 12px;
+                height: 12px;
+                background: transparent url("../../content/web/treeview/close.png") no-repeat 50% 50%;
+                overflow: hidden;
+                display: inline-block;
+                font-size: 0;
+                line-height: 0;
+                vertical-align: top;
+                margin: 2px 0 0 3px;
+                -webkit-border-radius: 5px;
+                -mox-border-radius: 5px;
+                border-radius: 5px;
+            }
+        </style>
+    </div>
+
+</body>
+</html>

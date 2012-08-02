@@ -1,0 +1,272 @@
+
+
+    <ul class="methodDetail" id="MethodDetail">
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="close"><code>close</code></a> (view)
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Closes the calendar or the time drop-down list.</div><div class="code-sample"><h4 class="code-title">Close the calendar of the DateTimePicker</h4><pre class="code prettyprint"><code>$("dateTimePicker").data("kendoDateTimePicker").close();</code></pre></div><div class="code-sample"><h4 class="code-title">Close the calendar of the DateTimePicker</h4><pre class="code prettyprint"><code>$("dateTimePicker").data("kendoDateTimePicker").close("date");</code></pre></div><div class="code-sample"><h4 class="code-title">Close the time drop-down list of a DateTimePicker.</h4><pre class="code prettyprint"><code>$("dateTimePicker").data("kendoDateTimePicker").close("time");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>view</code><span class="light fixedFont">: String</span> 
+                                
+                            </dt>
+                            <dd>The view of the DateTimePicker, expressed as a string.
+Available views are "time" and "date".</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="enable"><code>enable</code></a> (enable)
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Enables or disables a DateTimePicker.</div><div class="code-sample"><h4 class="code-title">Enable a DateTimePicker</h4><pre class="code prettyprint"><code>$("dateTimePicker").data("kendoDateTimePicker").enable();</code></pre></div><div class="code-sample"><h4 class="code-title">Enable a dateTimePicker</h4><pre class="code prettyprint"><code>$("dateTimePicker").data("kendoDateTimePicker").enable(true);</code></pre></div><div class="code-sample"><h4 class="code-title">Disable a dateTimePicker</h4><pre class="code prettyprint"><code>$("dateTimePicker").data("kendoDateTimePicker").enable(false);</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>enable</code><span class="light fixedFont">: Boolean</span> 
+                                
+                            </dt>
+                            <dd>Enables (<strong>true</strong> or undefined) or disables (<strong>false</strong>) a DateTimePicker.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="max"><code>max</code></a> (value)
+
+                    : <span class="type">Date</span>
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Gets or sets the maximum value of the DateTimePicker.</div><div class="code-sample"><h4 class="code-title">Get the maximum value of a DateTimePicker</h4><pre class="code prettyprint"><code>var dateTimePicker = $("#dateTimePicker").data("kendoDateTimePicker");
+var maximum = dateTimePicker.max();</code></pre></div><div class="code-sample"><h4 class="code-title">Set the maximum value of a DateTimePicker</h4><pre class="code prettyprint"><code>var dateTimePicker = $("#dateTimePicker").data("kendoDateTimePicker");
+dateTimePicker.max(new Date(1900, 0, 1, 10, 0, 0));</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>value</code><span class="light fixedFont">: Date|String</span> 
+                                
+                            </dt>
+                            <dd>The maximum time value to set for a DateTimePicker, expressed as a Date object or as a string.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Date</span> The maximum time value of a DateTimePicker.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="min"><code>min</code></a> (value)
+
+                    : <span class="type">Date</span>
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Gets or sets the minimum value of the DateTimePicker.</div><div class="code-sample"><h4 class="code-title">Get the minimum value of a DateTimePicker</h4><pre class="code prettyprint"><code>var dateTimePicker = $("#dateTimePicker").data("kendoDateTimePicker");
+var minimum = dateTimePicker.min();</code></pre></div><div class="code-sample"><h4 class="code-title">Set the minimum value of a DateTimePicker</h4><pre class="code prettyprint"><code>var dateTimePicker = $("#dateTimePicker").data("kendoDateTimePicker");
+dateTimePicker.min(new Date(1900, 0, 1, 10, 0, 0));</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>value</code><span class="light fixedFont">: Date|String</span> 
+                                
+                            </dt>
+                            <dd>The minimum time value to set for a DateTimePicker, expressed as a Date object or as a string.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Date</span> The minimum time value of a DateTimePicker.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="open"><code>open</code></a> (view)
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Opens the calendar or the time drop-down list.</div><div class="code-sample"><h4 class="code-title">Open the calendar of the DateTimePicker</h4><pre class="code prettyprint"><code>$("dateTimePicker").data("kendoDateTimePicker").open();</code></pre></div><div class="code-sample"><h4 class="code-title">Open the calendar of the DateTimePicker</h4><pre class="code prettyprint"><code>$("dateTimePicker").data("kendoDateTimePicker").open("date");</code></pre></div><div class="code-sample"><h4 class="code-title">Open the time drop-down list of a DateTimePicker.</h4><pre class="code prettyprint"><code>$("dateTimePicker").data("kendoDateTimePicker").open("time");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>view</code><span class="light fixedFont">: String</span> 
+                                
+                            </dt>
+                            <dd>The view of the DateTimePicker, expressed as a string.
+Available views are "time" and "date".</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="toggle"><code>toggle</code></a> (view)
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Toggles the calendar or the time drop-down list.</div><div class="code-sample"><h4 class="code-title">Toggle the calendar of the DateTimePicker</h4><pre class="code prettyprint"><code>$("dateTimePicker").data("kendoDateTimePicker").toggle();</code></pre></div><div class="code-sample"><h4 class="code-title">Toggle the calendar of the DateTimePicker</h4><pre class="code prettyprint"><code>$("dateTimePicker").data("kendoDateTimePicker").toggle("date");</code></pre></div><div class="code-sample"><h4 class="code-title">Toggle the time drop-down list of a DateTimePicker.</h4><pre class="code prettyprint"><code>$("dateTimePicker").data("kendoDateTimePicker").toggle("time");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>view</code><span class="light fixedFont">: String</span> 
+                                
+                            </dt>
+                            <dd>The view of the DateTimePicker, expressed as a string.
+Available views are "time" and "date".</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="value"><code>value</code></a> (value)
+
+                    : <span class="type">Date</span>
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Gets or sets the value of the DateTimePicker.</div><div class="code-sample"><h4 class="code-title">Get the value of a DateTimePicker</h4><pre class="code prettyprint"><code>var dateTimePicker = $("#dateTimePicker").data("kendoDateTimePicker");
+var timePickerValue = dateTimePicker.value();</code></pre></div><div class="code-sample"><h4 class="code-title">Set the value of a DateTimePicker</h4><pre class="code prettyprint"><code>var dateTimePicker = $("#dateTimePicker").data("kendoDateTimePicker");
+dateTimePicker.value("2/23/2000 10:00 AM");</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>value</code><span class="light fixedFont">: Date|String</span> 
+                                
+                            </dt>
+                            <dd>The time value to set for a DateTimePicker, expressed as a Date object or as a string.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                        <dl class="detailList">
+                            
+
+                            
+
+                            
+                                <dt class="heading">Returns</dt>
+                                
+                                    <dd><span class="light fixedFont">Date</span> The time value of a DateTimePicker.</dd>
+                                
+                            
+
+                            
+
+                            
+
+                        </dl>
+                    
+                </div>
+            </li>
+        
+    </ul>
+

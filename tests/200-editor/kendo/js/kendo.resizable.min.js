@@ -1,0 +1,10 @@
+/*
+* Kendo UI Web v2012.2.710 (http://kendoui.com)
+* Copyright 2012 Telerik AD. All rights reserved.
+*
+* Kendo UI Web commercial licenses may be obtained at http://kendoui.com/web-license
+* If you do not own a commercial license, this file shall be governed by the
+* GNU General Public License (GPL) version 3.
+* For GPL requirements, please review: http://www.gnu.org/copyleft/gpl.html
+*/
+;(function(a,b){var c=window.kendo,d=c.ui,e=d.Widget,f=a.proxy,g=a.isFunction,h=a.extend,i="horizontal",j="vertical",k="start",l="resize",m="resizeend",n=e.extend({init:function(a,b){var c=this;e.fn.init.call(c,a,b),c.orientation=c.options.orientation.toLowerCase()!=j?i:j,c._positionMouse=c.orientation==i?"x":"y",c._position=c.orientation==i?"left":"top",c._sizingDom=c.orientation==i?"outerWidth":"outerHeight",new d.Draggable(a,{distance:0,filter:b.handle,drag:f(c._resize,c),dragstart:f(c._start,c),dragend:f(c._stop,c)})},events:[l,m,k],options:{name:"Resizable",orientation:i},_max:function(a){var c=this,d=c.hint?c.hint[c._sizingDom]():0,e=c.options.max;return g(e)?e(a):e!==b?c._initialElementPosition+e-d:e},_min:function(a){var c=this,d=c.options.min;return g(d)?d(a):d!==b?c._initialElementPosition+d:d},_start:function(b){var c=this,d=c.options.hint,e=a(b.currentTarget);c._initialMousePosition=b[c._positionMouse].location,c._initialElementPosition=e.position()[c._position],d&&(c.hint=g(d)?a(d(e)):d,c.hint.css({position:"absolute"}).css(c._position,c._initialElementPosition).appendTo(c.element)),c.trigger(k,b),c._maxPosition=c._max(b),c._minPosition=c._min(b),a(document.body).css("cursor",e.css("cursor"))},_resize:function(c){var d=this,e=a(c.currentTarget),f=d._maxPosition,g=d._minPosition,i=d._initialElementPosition+(c[d._positionMouse].location-d._initialMousePosition),j;j=g!==b?Math.max(g,i):i,d.position=j=f!==b?Math.min(f,j):j,d.hint&&d.hint.toggleClass(d.options.invalidClass||"",j==f||j==g).css(d._position,j),d.trigger(l,h(c,{position:j}))},_stop:function(b){var c=this;c.hint&&c.hint.remove(),c.trigger(m,h(b,{position:c.position})),a(document.body).css("cursor","")}});c.ui.plugin(n)})(jQuery);

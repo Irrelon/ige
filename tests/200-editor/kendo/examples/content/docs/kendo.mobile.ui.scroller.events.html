@@ -1,0 +1,82 @@
+
+
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="pull"><code>pull</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Fires when the pull option is set to true, and the user pulls the scrolling container beyond the specified pullThreshold.</div><div class="desc"></div>
+
+            
+
+            
+
+            
+        </div>
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="resize"><code>resize</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Fires when the scroller dimensions change (e.g. orientation change or resize)</div><div class="desc"></div>
+
+            
+
+            
+
+            
+        </div>
+    
+        <div class="detailHandle">
+            <div class="detailCollapsed"></div>
+            <a name="scroll"><code>scroll</code></a>
+        </div>
+        <div class="detailBody">
+            <div class="desc">Fires when the user scrolls through the content.</div><div class="desc"></div><div class="code-sample"><h4 class="code-title">Bind to scroller scroll event in view init</h4><pre class="code prettyprint"><code>&lt;div data-role="view" data-init="attachToScroller"&gt; ... &lt;/div&gt;
+ &lt;script&gt;
+    function attachToScroller(e) {
+      var scroller = e.view.scroller;
+      scroller.bind("scroll", function(e) {
+         console.log(e.scrollTop);
+         console.log(e.scrollLeft);
+      });
+    }
+ &lt;/script&gt;</code></pre></div>
+
+            
+                <div class="details-list">
+                    <h4 class="details-title">Event data</h4>
+                    <dl>
+                    
+                        
+                    
+                        
+                        <dt>
+                            <code>scrollTop</code>
+                            <span class="type">: Number</span> 
+                            
+                        </dt>
+                        <dd>The number of pixels that are hidden from view above the scrollable area.</dd>
+                        
+                    
+                        
+                        <dt>
+                            <code>scrollLeft</code>
+                            <span class="type">: Number</span> 
+                            
+                        </dt>
+                        <dd>The number of pixels that are hidden from view to the left of the scrollable area.</dd>
+                        
+                    
+                    </dl>
+                </div>
+            
+
+            
+
+            
+        </div>
+    
+

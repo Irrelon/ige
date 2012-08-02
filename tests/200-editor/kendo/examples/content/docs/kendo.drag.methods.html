@@ -1,0 +1,44 @@
+
+
+    <ul class="methodDetail" id="MethodDetail">
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="cancel"><code>cancel</code></a> ()
+
+                    
+                </div>
+                <div class="detailBody">
+                    Discard the current drag. Calling the <code>cancel</code> method will trigger the <code>cancel</code> event.
+The correct moment to call this method would be in the <code>start</code> event handler.<div class="code-sample"><h4 class="code-title">Cancel the drag event sequence</h4><pre class="code prettyprint"><code>new kendo.Drag($("#foo"), {
+ start: function(e) {
+     e.cancel();
+ }
+});</code></pre></div>
+
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="capture"><code>capture</code></a> ()
+
+                    
+                </div>
+                <div class="detailBody">
+                    Capture the current drag, so that Drag listeners bound to parent elements will not trigger.
+This method will not have any effect if the current drag instance is instantiated with the <code>global</code> option set to true.
+
+                    
+
+                    
+                </div>
+            </li>
+        
+    </ul>
+

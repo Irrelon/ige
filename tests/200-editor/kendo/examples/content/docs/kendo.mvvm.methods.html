@@ -1,0 +1,83 @@
+
+
+    <ul class="methodDetail" id="MethodDetail">
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="bind"><code>bind</code></a> (element, viewModel, namespace)
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Binds a tree of HTML elements to a View-Model</div><div class="code-sample"><h4 class="code-title">Binding all children of the BODY to a View-Model</h4><pre class="code prettyprint"><code>var viewModel = {
+     firstName: "John",
+     lastName: "Bar"
+};
+
+kendo.bind($("body"), viewModel);</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>element</code><span class="light fixedFont">: String|Selector|Node</span> 
+                                
+                            </dt>
+                            <dd>The root element(s) from which the binding starts. Can be a valid jQuery string selector, a DOM element or a jQuery object.
+All child elements are traversed.</dd>
+                        
+                            <dt>
+                                <code>viewModel</code><span class="light fixedFont">: Object</span> 
+                                
+                            </dt>
+                            <dd>The View-Model which the elements are bound to.</dd>
+                        
+                            <dt>
+                                <code>namespace</code><span class="light fixedFont">: Object</span> 
+                                
+                            </dt>
+                            <dd>Optional namespace too look in when instantiating Kendo widgets. The possible values are kendo.ui and kendo.mobile.ui. The default value is kendo.ui</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+            <li>
+                <div class="detailHandle">
+                    <div class="detailCollapsed"></div>
+                    <a name="unbind"><code>unbind</code></a> (element)
+
+                    
+                </div>
+                <div class="detailBody">
+                    <div class="desc">Unbinds a tree of HTML elements from a View-Model.</div><div class="code-sample"><h4 class="code-title">Unbinding all children of the BODY to a View-Model</h4><pre class="code prettyprint"><code>kendo.unbind($("body"));</code></pre></div>
+
+                    
+                    <div class="details-list">
+                        <h4 class="details-title">Parameters</h4>
+                        <dl>
+                        
+                            <dt>
+                                <code>element</code><span class="light fixedFont">: String|Selector|Node</span> 
+                                
+                            </dt>
+                            <dd>The root element(s) from which the unbinding starts. Can be a valid jQuery string selector, a DOM element or a jQuery object.
+All child elements are traversed.</dd>
+                        
+                        </dl>
+                    </div>
+                    
+
+                    
+                </div>
+            </li>
+        
+    </ul>
+

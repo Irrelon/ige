@@ -1,0 +1,91 @@
+
+
+        <!-- help-data -->
+
+
+    
+    <div class="detailHandle"><div class="detailCollapsed"></div><a name='autoBind'><code class="symbol">autoBind</code></a>: <span class="type">Boolean</span><span class="defaultValue">(default: true)</span></div><div class="detailBody"><div class="desc"> Indicates whether the list view will call read on the DataSource initially.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>$("#listView").kendoListView({
+     dataSource: {
+         data: createRandomData(50)
+     },
+     template: "&lt;li&gt;${Name} ${BirthDate}&lt;/li&gt;",
+     autoBind: false // the list view will not be populated with data until read() is called on the sharedDataSource
+ });</code></pre></div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='dataSource'><code class="symbol">dataSource</code></a>: <span class="type">kendo.data.DataSource | Object</span></div><div class="detailBody"><div class="desc">Instance of DataSource or Object with DataSource configuration.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>var sharedDataSource = new kendo.data.DataSource({
+     data: [{title: "Star Wars: A New Hope", year: 1977}, {title: "Star Wars: The Empire Strikes Back", year: 1980}],
+     pageSize: 1
+});
+
+$("#listView").kendoListView({
+     dataSource: sharedDataSource,
+     template: "&lt;li&gt;${title} ${year}&lt;/li&gt;"
+ });</code></pre></div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>$("#listView").kendoListView({
+     dataSource: {
+         data: [{title: "Star Wars: A New Hope", year: 1977}, {title: "Star Wars: The Empire Strikes Back", year: 1980}],
+         template: "&lt;li&gt;${title} ${year}&lt;/li&gt;"
+     }
+ });</code></pre></div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='editTemplate'><code class="symbol">editTemplate</code></a>: <span class="type">Function</span></div><div class="detailBody"><div class="desc">Specifies ListView item template in edit mode.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>&lt;script type="text/x-kendo-tmpl" id="template"&gt;
+     &lt;div&gt;
+       &lt;dl&gt;
+         &lt;dt&gt;Name&lt;/dt&gt; &lt;dd&gt;${Name}&lt;/dd&gt;
+         &lt;dt&gt;Age&lt;/dt&gt; &lt;dd&gt;${Age}&lt;/dd&gt;
+       &lt;/dl&gt;
+     &lt;/div&gt;
+ &lt;/script&gt;
+
+ &lt;script type="text/x-kendo-tmpl" id="editTemplate"&gt;
+     &lt;div&gt;
+       &lt;dl&gt;
+         &lt;dt&gt;Name&lt;/dt&gt;
+         &lt;dd&gt;&lt;input type="text" data-bind="value:Name" name="Name" required="required" /&gt;&lt;/dd&gt;
+         &lt;dt&gt;Age&lt;/dt&gt;
+         &lt;dd&gt;&lt;input type="text" data-bind="value:Age" data-role="numerictextbox" data-type="number" name="Age" required="required /&gt;&lt;/dd&gt;
+       &lt;/dl&gt;
+     &lt;/div&gt;
+ &lt;/script&gt;</code></pre></div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>$("#listView").kendoListView({
+     dataSource: {
+         data: createRandomData(50)
+     },
+     template: kendo.template($("#template").html()),
+     editTemplate: kendo.template($("#editTemplate").html())
+ });</code></pre></div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='navigatable'><code class="symbol">navigatable</code></a>: <span class="type">Boolean</span><span class="defaultValue">(default: false)</span></div><div class="detailBody"><div class="desc"> Indicates whether keyboard navigation is enabled/disabled.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>$("#listView").kendoListView({
+     dataSource: {
+         data: createRandomData(50),
+     },
+     template: "&lt;li&gt;${Name} ${BirthDate}&lt;/li&gt;",
+     navigatable: true
+ });</code></pre></div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='selectable'><code class="symbol">selectable</code></a>: <span class="type">String</span><span class="defaultValue">(default: false)</span></div><div class="detailBody"><div class="desc"> Indicates whether selection is enabled/disabled. Possible values:
+<div class="details-list">
+   <dl>
+        <dt>
+             <b>true</b>
+        </dt>
+        <dd>
+             Single item selection.
+        </dd>
+        <dt>
+             <b>"single"</b>
+        </dt>
+        <dd>
+             Single item selection.
+        </dd>
+        <dt>
+             <b>"multiple"</b>
+        </dt>
+        <dd>
+             Multiple item selection.
+        </dd>
+   </dl>
+</div></div></div><div class="detailHandle"><div class="detailCollapsed"></div><a name='template'><code class="symbol">template</code></a>: <span class="type">Function</span></div><div class="detailBody"><div class="desc">Specifies ListView item template.</div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>&lt;script type="text/x-kendo-tmpl" id="template"&gt;
+     &lt;div&gt;
+       &lt;dl&gt;
+         &lt;dt&gt;Name&lt;/dt&gt; &lt;dd&gt;${Name}&lt;/dd&gt;
+         &lt;dt&gt;Birth Date&lt;/dt&gt; &lt;dd&gt;${BirdthDate}&lt;/dd&gt;
+       &lt;/dl&gt;
+     &lt;/div&gt;
+ &lt;/script&gt;</code></pre></div><div class="code-sample"><h4 class="code-title">Example</h4><pre class="code prettyprint"><code>$("#listView").kendoListView({
+     dataSource: {
+         data: createRandomData(50)
+     },
+     template: kendo.template($("#template").html())
+ });</code></pre></div></div>
+

@@ -1,0 +1,16 @@
+<h4>DragAxis</h4>
+The DragAxis is used internally by the kendo.Drag component to store and calculate event data.
+The Drag component contains two DragAxis instances: <code>x</code> for the horizontal coordinates, and <code>y</code> for the vertical.
+The two DragAxis instances are available in each Drag event parameter.<div class="code-sample"><h4 class="code-title">Access DragAxis information in Drag start event</h4><pre class="code prettyprint"><code>new kendo.Drag($("#foo"), {
+ start: function(e) {
+     console.log(x); // Horizontal axis
+     console.log(y); // Vertical axis
+ }
+});</code></pre></div>Each axis instance contains the following fields:
+<ul>
+  <li><b>location</b> - the offset of the mouse/touch relative to the entire document (pageX/Y);</li>
+  <li><b>startLocation</b> - the offset of the mouse/touch relative to the document when the drag started;</li>
+  <li><b>client</b> - the offset of the mouse/touch relative to the viewport (clientX/Y);</li>
+  <li><b>delta</b> - the change from the previous event location</li>
+  <li><b>velocity</b> - the pixels per millisecond speed of the current move.</li>
+</ul>

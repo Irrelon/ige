@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Style binding</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+
+<div id="example" class="k-content">
+    <div class="demo-section">
+        <div class="configuration k-widget k-header">
+            <span class="configHead">Style</span>
+            <ul class="options">
+                <li>
+                    <label>Color: <select data-text-field="name" data-value-field="hex" data-bind="source: colors, value: selectedColor"></select></label>
+                </li>
+                <li>
+                    <label>Background color: <select data-text-field="name" data-value-field="hex" data-bind="source: colors, value: selectedBackground"></select></label>
+                </li>
+                <li>
+                    <label>Border color: <select data-text-field="name" data-value-field="hex" data-bind="source: colors, value: selectedBorderColor"></select></label>
+                </li>
+                <li>
+                    <label>Border style: <select data-text-field="name" data-value-field="value" data-bind="source: borders, value: selectedBorderStyle"></select></label>
+                </li>
+                <li>
+                    <label>Border radius: <select data-bind="source: radii, value: selectedBorderRadius"></select></label>
+                </li>
+            </ul>
+        </div>
+        <div id="target" data-bind="style: {
+                backgroundColor: selectedBackground,
+                color: selectedColor,
+                borderStyle: selectedBorderStyle,
+                borderColor: selectedBorderColor,
+                webkitBorderRadius: selectedBorderRadius,
+                mozBorderRadius: selectedBorderRadius,
+                borderRadius: selectedBorderRadius
+            }">
+            One Big Orange Square.
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            var viewModel = kendo.observable({
+                selectedColor: "#8b0000",
+                selectedBorderRadius: "20px",
+                selectedBackground: "#ffd700",
+                selectedBorderStyle: "solid",
+                selectedBorderColor: "#ff8c00",
+                radii: [
+                    "0px",
+                    "5px",
+                    "10px",
+                    "20px"
+                ],
+                colors: [
+                    { name: "Dark Red", hex: "#8b0000" },
+                    { name: "Orange Red", hex: "#ff4500" },
+                    { name: "Dark Orange", hex: "#ff8c00" },
+                    { name: "Gold", hex: "#ffd700" }
+                ],
+                borders: [
+                    { name: "Solid", value: "solid" },
+                    { name: "Dashed", value: "dashed" },
+                    { name: "Double", value: "double" },
+                    { name: "Dotted", value: "dotted" },
+                    { name: "Ridge", value: "ridge" },
+                    { name: "None", value: "none" }
+                ]
+            });
+
+            kendo.bind($("#example"), viewModel);
+        });
+    </script>
+    <div class="code-sample">
+        <h4 class="code-title">View source code:</h4>
+        <pre class="prettyprint">
+&lt;div id=&quot;target&quot; data-bind=&quot;style: {
+        backgroundColor: selectedBackground,
+        color: selectedColor,
+        borderStyle: selectedBorderStyle,
+        borderColor: selectedBorderColor,
+        webkitBorderRadius: selectedBorderRadius,
+        mozBorderRadius: selectedBorderRadius,
+        borderRadius: selectedBorderRadius
+    }&quot;&gt;
+    One Big Orange Square.
+&lt;/div&gt;
+&lt;ul&gt;
+    &lt;li&gt;
+        Color: &lt;select data-text-field=&quot;name&quot; data-value-field=&quot;hex&quot; data-bind=&quot;source: colors, value: selectedColor&quot;&gt;&lt;/select&gt;
+    &lt;/li&gt;
+    &lt;li&gt;
+        &lt;label&gt;Background color: &lt;select data-text-field=&quot;name&quot;
+            data-value-field=&quot;hex&quot; data-bind=&quot;source: colors, value: selectedBackground&quot;&gt;&lt;/select&gt;&lt;/label&gt;
+    &lt;/li&gt;
+    &lt;li&gt;
+        &lt;label&gt;Border color: &lt;select data-text-field=&quot;name&quot;
+            data-value-field=&quot;hex&quot; data-bind=&quot;source: colors, value: selectedBorderColor&quot;&gt;&lt;/select&gt;&lt;/label&gt;
+    &lt;/li&gt;
+    &lt;li&gt;
+        &lt;label&gt;Border style: &lt;select data-text-field=&quot;name&quot;
+            data-value-field=&quot;value&quot; data-bind=&quot;source: borders, value: selectedBorderStyle&quot;&gt;&lt;/select&gt;&lt;/label&gt;
+    &lt;/li&gt;
+    &lt;li&gt;
+        &lt;label&gt;Border radius: &lt;select data-bind=&quot;source: radii, value: selectedBorderRadius&quot;&gt;&lt;/select&gt;&lt;/label&gt;
+    &lt;/li&gt;
+&lt;/ul&gt;
+        </pre>
+    </div>
+    <div class="code-sample">
+        <h4 class="code-title">View model source code:</h4>
+        <pre class="prettyprint">
+var viewModel = kendo.observable({
+    selectedColor: "#8b0000",
+    selectedBorderRadius: "20px",
+    selectedBackground: "#ffd700",
+    selectedBorderStyle: "solid",
+    selectedBorderColor: "#ff8c00",
+    radii: [ "0px", "5px", "10px", "20px" ],
+    colors: [
+        { name: "Dark Red", hex: "#8b0000" },
+        { name: "Orange Red", hex: "#ff4500" },
+        { name: "Dark Orange", hex: "#ff8c00" },
+        { name: "Gold", hex: "#ffd700" }
+    ],
+    borders: [
+        { name: "Solid", value: "solid" },
+        { name: "Dashed", value: "dashed" },
+        { name: "Double", value: "double" },
+        { name: "Dotted", value: "dotted" },
+        { name: "Ridge", value: "ridge" },
+        { name: "None", value: "none" }
+    ]
+});
+
+kendo.bind($("#example"), viewModel);
+        </pre>
+    </div>
+    <style scoped>
+        .demo-section {
+        	width: 500px;
+        	min-height: 185px;
+        	margin-bottom: 30px;
+        }
+        .code-sample {
+            clear: both;
+        }
+
+        #example .configuration {
+            margin-bottom: 10px;
+            width: 300px;
+        }
+
+        .configuration label {
+            display: block;
+            float: none;
+        }
+
+        .configuration select {
+            float: right;
+            width: 120px;
+            clear: right;
+        }
+
+        #target {
+            width: 60px;
+            height: 60px;
+            border-width: 4px;
+            padding: 2em;
+            float: left;
+            margin: 30px 0 0 20px;
+            -webkit-transition: all 500ms;
+            -moz-transition: all 500ms;
+            transition: all 500ms;
+            text-align: center;
+            vertical-align: middle;
+        }
+    </style>
+</div>
+
+</body>
+</html>

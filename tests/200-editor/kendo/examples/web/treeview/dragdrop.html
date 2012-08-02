@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Drag & drop</title>
+
+    <link href="../../content/shared/styles/examples-offline.css" rel="stylesheet">
+    <link href="../../../styles/kendo.common.min.css" rel="stylesheet">
+    <link href="../../../styles/kendo.default.min.css" rel="stylesheet">
+
+    <script src="../../../js/jquery.min.js"></script>
+    <script src="../../../js/kendo.web.min.js"></script>
+    <script src="../../content/shared/js/console.js"></script>
+</head>
+<body>
+    <a class="offline-button" href="../index.html">Back</a>
+    
+        <div id="example" class="k-content">
+            <div class="demo-section">
+
+                <div id="treeview-left"></div>
+
+                <div id="treeview-right"></div>
+
+            </div>
+
+            <script>
+                $("#treeview-left").kendoTreeView({
+                    dragAndDrop: true,
+                    dataSource: [
+                        { text: "Furniture", expanded: true, items: [
+                            { text: "Tables & Chairs" },
+                            { text: "Sofas" },
+                            { text: "Occasional Furniture" }
+                        ] },
+                        { text: "Decor", items: [
+                            { text: "Bed Linen" },
+                            { text: "Curtains & Blinds" },
+                            { text: "Carpets" }
+                        ] }
+                    ]
+                }).data("kendoTreeView");
+
+                $("#treeview-right").kendoTreeView({
+                    dragAndDrop: true,
+                    dataSource: [
+                        { text: "Storage", expanded: true, items: [
+                            { text: "Wall Shelving" },
+                            { text: "Floor Shelving" },
+                            { text: "Kids Storage" }
+                        ]
+                        },
+                        { text: "Lights", items: [
+                            { text: "Ceiling" },
+                            { text: "Table" },
+                            { text: "Floor" }
+                        ]
+                        }
+                    ]
+                }).data("kendoTreeView");
+            </script>
+
+            <style scoped>
+                #treeview-left,
+                #treeview-right
+                {
+                    float: left;
+                    width: 220px;
+                }
+                .demo-section {
+                	width: 500px;
+                }
+                .demo-section:after {
+                	content: ".";
+                    display: block;
+                    height: 0;
+                    clear: both;
+                    visibility: hidden;
+                }
+            </style>
+        </div>
+</body>
+</html>
