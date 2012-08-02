@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="viewport" content="user-scalable=no, width=device-width" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta http-equiv="X-UA-Compatible" content="IE=9" >
+	<title>Example Suite - Isogenic Engine</title>
+
+	<!-- STYLES -->
+	<link href="../css/default.css" rel="stylesheet" type="text/css" />
+
+	<!-- Core -->
+	<script type="text/javascript" src="../../engine/core/IgeBase.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeClass.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeEventingClass.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgePoint.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgePoly2d.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeMatrix2d.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeMatrixStack.js"></script>
+	<!-- Components -->
+	<script type="text/javascript" src="../../engine/components/IgeAnimationComponent.js"></script>
+	<script type="text/javascript" src="../../engine/components/IgeVelocityComponent.js"></script>
+	<script type="text/javascript" src="../../engine/components/IgeTweenComponent.js"></script>
+	<script type="text/javascript" src="../../engine/components/IgeInputComponent.js"></script>
+		<!-- Socket.io -->
+		<script type="text/javascript" src="../../engine/components/network/socket.io/socket.io-client/dist/socket.io.min.js"></script>
+		<script type="text/javascript" src="../../engine/components/network/socket.io/IgeSocketIoClient.js"></script>
+		<script type="text/javascript" src="../../engine/components/network/socket.io/IgeSocketIoComponent.js"></script>
+		<!-- Net.io -->
+		<script type="text/javascript" src="../../engine/components/network/net.io/net.io-client/index.js"></script>
+		<script type="text/javascript" src="../../engine/components/network/net.io/IgeNetIoClient.js"></script>
+		<script type="text/javascript" src="../../engine/components/network/net.io/IgeNetIoComponent.js"></script>
+	<script type="text/javascript" src="../../engine/components/chat/IgeChatClient.js"></script>
+	<script type="text/javascript" src="../../engine/components/chat/IgeChatComponent.js"></script>
+	<script type="text/javascript" src="../../engine/components/cocoonjs/IgeCocoonJsComponent.js"></script>
+	<!-- Extensions -->
+	<script type="text/javascript" src="../../engine/extensions/IgeTransformExtension.js"></script>
+	<script type="text/javascript" src="../../engine/extensions/IgeUiPositionExtension.js"></script>
+	<script type="text/javascript" src="../../engine/extensions/IgeUiStyleExtension.js"></script>
+	<script type="text/javascript" src="../../engine/extensions/IgeUiInteractionExtension.js"></script>
+	<!-- Classes -->
+	<script type="text/javascript" src="../../engine/core/IgeTween.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeTexture.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeCellSheet.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeSpriteSheet.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeFontSheet.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeObject.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeEntity.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeInteractiveEntity.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeUiEntity.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeFontEntity.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeParticleEmitter.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeMap2d.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeMapStack2d.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeTileMap2d.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeCamera.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeViewport.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeScene2d.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeSceneUi.js"></script>
+	<script type="text/javascript" src="../../engine/core/IgeSceneIso.js"></script>
+	<!-- UI -->
+	<script type="text/javascript" src="../../engine/ui/IgeUiButton.js"></script>
+	<script type="text/javascript" src="../../engine/ui/IgeUiRadioButton.js"></script>
+	<script type="text/javascript" src="../../engine/ui/IgeUiProgressBar.js"></script>
+	<script type="text/javascript" src="../../engine/ui/IgeUiGridPanel.js"></script>
+	<script type="text/javascript" src="../../engine/ui/IgeUiAutoFlow.js"></script>
+	<script type="text/javascript" src="../../engine/ui/IgeUiTogglePanel.js"></script>
+	<!-- Primitives -->
+	<script type="text/javascript" src="../../engine/primitives/IgeCuboid.js"></script>
+	<!-- IGE Editor -->
+	<script type="text/javascript" src="../../tools/editor/index.js"></script>
+	<!-- Engine Actual -->
+	<script type="text/javascript" src="../../engine/core/IgeEngine.js"></script>
+</head>
+<body>
+	<script type="text/javascript" src="gameClasses/ClientNetworkEvents.js"></script>
+	<script type="text/javascript" src="gameClasses/ClientItem.js"></script>
+	<script type="text/javascript" src="gameClasses/ClientObjects.js"></script>
+	<script type="text/javascript" src="client.js"></script>
+	<script type="text/javascript" src="index.js"></script>
+</body>
+</html>

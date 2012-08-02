@@ -10,75 +10,48 @@
 
 	<!-- STYLES -->
 	<link href="../css/default.css" rel="stylesheet" type="text/css" />
+	<link href="kendo/styles/kendo.common.min.css" rel="stylesheet" type="text/css" />
+	<link href="kendo/styles/kendo.black.min.css" rel="stylesheet" type="text/css" />
+	<link href="css/default.css" rel="stylesheet" type="text/css" />
+
+	<!-- jQuery & Kendo -->
+	<script type="text/javascript" src="kendo/js/jquery.min.js"></script>
+	<script type="text/javascript" src="kendo/js/kendo.web.min.js"></script>
 
 	<!-- Core -->
 	<script type="text/javascript" src="../../engine/core/IgeBase.js"></script>
 	<script type="text/javascript" src="../../engine/core/IgeClass.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeEventingClass.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgePoint.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgePoly2d.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeMatrix2d.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeMatrixStack.js"></script>
-	<!-- Components -->
-	<script type="text/javascript" src="../../engine/components/IgeAnimationComponent.js"></script>
-	<script type="text/javascript" src="../../engine/components/IgeVelocityComponent.js"></script>
-	<script type="text/javascript" src="../../engine/components/IgeTweenComponent.js"></script>
-	<script type="text/javascript" src="../../engine/components/IgeInputComponent.js"></script>
-		<!-- Socket.io -->
-		<script type="text/javascript" src="../../engine/components/network/socket.io/socket.io-client/dist/socket.io.min.js"></script>
-		<script type="text/javascript" src="../../engine/components/network/socket.io/IgeSocketIoClient.js"></script>
-		<script type="text/javascript" src="../../engine/components/network/socket.io/IgeSocketIoComponent.js"></script>
-		<!-- Net.io -->
-		<script type="text/javascript" src="../../engine/components/network/net.io/net.io-client/index.js"></script>
-		<script type="text/javascript" src="../../engine/components/network/net.io/IgeNetIoClient.js"></script>
-		<script type="text/javascript" src="../../engine/components/network/net.io/IgeNetIoComponent.js"></script>
-	<script type="text/javascript" src="../../engine/components/chat/IgeChatClient.js"></script>
-	<script type="text/javascript" src="../../engine/components/chat/IgeChatComponent.js"></script>
-	<script type="text/javascript" src="../../engine/components/cocoonjs/IgeCocoonJsComponent.js"></script>
-	<!-- Extensions -->
-	<script type="text/javascript" src="../../engine/extensions/IgeTransformExtension.js"></script>
-	<script type="text/javascript" src="../../engine/extensions/IgeUiPositionExtension.js"></script>
-	<script type="text/javascript" src="../../engine/extensions/IgeUiStyleExtension.js"></script>
-	<script type="text/javascript" src="../../engine/extensions/IgeUiInteractionExtension.js"></script>
-	<!-- Classes -->
-	<script type="text/javascript" src="../../engine/core/IgeTween.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeTexture.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeCellSheet.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeSpriteSheet.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeFontSheet.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeObject.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeEntity.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeInteractiveEntity.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeUiEntity.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeFontEntity.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeParticleEmitter.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeMap2d.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeMapStack2d.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeTileMap2d.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeCamera.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeViewport.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeScene2d.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeSceneUi.js"></script>
-	<script type="text/javascript" src="../../engine/core/IgeSceneIso.js"></script>
-	<!-- UI -->
-	<script type="text/javascript" src="../../engine/ui/IgeUiButton.js"></script>
-	<script type="text/javascript" src="../../engine/ui/IgeUiRadioButton.js"></script>
-	<script type="text/javascript" src="../../engine/ui/IgeUiProgressBar.js"></script>
-	<script type="text/javascript" src="../../engine/ui/IgeUiGridPanel.js"></script>
-	<script type="text/javascript" src="../../engine/ui/IgeUiAutoFlow.js"></script>
-	<script type="text/javascript" src="../../engine/ui/IgeUiTogglePanel.js"></script>
-	<!-- Primitives -->
-	<script type="text/javascript" src="../../engine/primitives/IgeCuboid.js"></script>
+
 	<!-- IGE Editor -->
 	<script type="text/javascript" src="../../tools/editor/index.js"></script>
-	<!-- Engine Actual -->
-	<script type="text/javascript" src="../../engine/core/IgeEngine.js"></script>
+	<script type="text/javascript" src="index.js"></script>
 </head>
 <body>
-	<script type="text/javascript" src="gameClasses/ClientNetworkEvents.js"></script>
-	<script type="text/javascript" src="gameClasses/ClientItem.js"></script>
-	<script type="text/javascript" src="gameClasses/ClientObjects.js"></script>
-	<script type="text/javascript" src="client.js"></script>
-	<script type="text/javascript" src="index.js"></script>
+	<div class="k-content">
+		<div id="vertical">
+			<div id="menuBar" class="uiBar"></div>
+			<div id="horizontal">
+				<div id="leftBar" class="uiBar"></div>
+				<div id="main">
+					<iframe id="igeFrame" src="ige/engine.html"></iframe>
+				</div>
+				<div id="rightBar" class="uiBar" style="overflow: auto;">
+					<ul id="panelbar">
+						<li class="k-state-active">
+							<span class="k-link k-state-selected">Scenegraph</span>
+							<div style="padding: 0px; overflow: auto;">
+								<div id="scenegraph-treeview"></div>
+							</div>
+						</li>
+						<li>
+							<span>Moo</span>
+							<div style="padding: 10px;">Helelo1</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div id="statusBar" class="uiBar"></div>
+		</div>
+	</div>
 </body>
 </html>
