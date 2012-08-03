@@ -7,8 +7,12 @@ body {
     overflow: hidden;
 }
 
-.uiBar {
+.uiBar, .uiBarTop {
     background: #333;
+}
+
+.uiBarBottom {
+    background: #222;
 }
 
 #vertical {
@@ -25,6 +29,14 @@ body {
     border: 0;
     width: 100%;
     height: 100%;
+}
+
+#menuBar {
+    overflow: visible;
+}
+
+#menu {
+    z-index: 100;
 }
 
 .k-splitbar-static-horizontal {

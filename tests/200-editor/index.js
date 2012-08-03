@@ -1,10 +1,27 @@
 (function () {
-	IgeEditor = IgeClass.extend({
+	IgeEditor = IgeEventingClass.extend({
 		init: function () {
-			this._panels = [];
+			var self = this;
+			this._prePanels = {};
+			this._panels = {};
 
-			this.setupPage();
-			this.setupContainers();
+			// Listen for when the engine iframe has loaded
+			$(document).ready(function () {
+				$('#igeFrame').load(function () {
+					// Get a reference to the engine in the iframe
+					ige = $('#igeFrame')[0].contentWindow.ige;
+
+					self.setupPage();
+
+					self._ready = true;
+
+					// Add any pre-added panels now that we're ready!
+					self._processPrePanels();
+
+					// Emit engine ready
+					self.emit('engineReady');
+				});
+			});
 		},
 
 		setupPage: function () {
@@ -13,9 +30,9 @@
 				orientation: "vertical",
 				autoHeight: true,
 				panes: [
-					{ collapsible: false, resizable: false, size: '25px' },
+					{ collapsible: true, resizable: false, size: '28px' },
 					{ collapsible: false, autoHeight: true },
-					{ collapsible: false, resizable: false, size: "25px" }
+					{ collapsible: true, resizable: false, size: "25px" }
 				]
 			});
 
@@ -41,7 +58,7 @@
 					paneIndex, i;
 
 				if (options.autoHeight) {
-					// Get height of parent.parent element
+					// Get height of parent.parent element // should detect k-content and skip only if that
 					parentHeight = thisElement.parent().parent().height();
 
 					// Loop the panes and add up the absolute specified heights
@@ -50,12 +67,14 @@
 						// Check that the element is not a split bar!
 						if (!$(item).hasClass('k-splitbar')) {
 							if (panes[paneIndex].size && !panes[paneIndex].autoHeight) {
-								panesHeight += parseInt(panes[paneIndex].size);
+								panesHeight += parseInt($(item).height(), 10);
 							} else {
-								splitHeightPanes.push(elementIndex)
+								splitHeightPanes.push(elementIndex);
 							}
 
 							paneIndex++;
+						} else {
+							panesHeight += parseInt($(item).height() + 2, 10);
 						}
 					});
 
@@ -71,54 +90,62 @@
 					this.trigger("resize");
 				}
 			};
-		},
 
-		setupContainers: function () {
-			// Panel bars
-			$("#panelbar").kendoPanelBar({
-				expandMode: "multiple"
+			$("#vertical").data("kendoSplitter").bind("collapse", function () {
+				setTimeout(function () {
+					$("#vertical").data("kendoSplitter").autoResize();
+				}, 10);
 			});
 
-			this._panelBar = $("#panelbar").data('kendoPanelBar');
-		},
-
-		addPanel: function (panelClass) {
-			this._panels.push(new panelClass(this._panelBar));
-			return this;
-		}
-	});
-
-	SceneGraphPanel = IgeClass.extend({
-		init: function (panelBar) {
-			// Add the panel
-			var panelContent = panelBar.append({text: 'SceneGraph', content:'moo', id: 'sceneGraphPanelItem'});
-			console.log(panelContent);
-
-			// Tree view
-			setTimeout(function () {
-				var sceneGraphData = new kendo.data.HierarchicalDataSource({
-					data: [$('#igeFrame')[0].contentWindow.ige.getSceneGraphData()]
-				});
-
-				$("#scenegraph-treeview").kendoTreeView({
-					dataSource: sceneGraphData,
-					select: function (e) {
-						console.log(e);
-					}
-				});
-			}, 1000);
+			$("#vertical").data("kendoSplitter").bind("expand", function () {
+				setTimeout(function () {
+					$("#vertical").data("kendoSplitter").autoResize();
+				}, 10);
+			});
 
 			$(window).resize(function () {
 				$("#vertical").data("kendoSplitter").autoResize();
 			});
 
 			$("#vertical").data("kendoSplitter").autoResize();
+		},
+
+		addPanel: function (id, panelClass) {
+			if (!this._ready) {
+				this._prePanels[id] = panelClass;
+			} else {
+				this.log('Creating panel "' + id + '"');
+				this._panels[id](new panelClass(this._panelBar));
+			}
+
+			return this;
+		},
+
+		selectObject: function (id) {
+			if (this._selectedItem && !this._selectedItem._scene) {
+				this._selectedItem.drawBounds(false);
+			}
+
+			var item = ige.$(id);
+			item.drawBounds(true);
+			item.drawBoundsData(true);
+
+			this._selectedItem = item;
+		},
+
+		_processPrePanels: function () {
+			var i;
+
+			for (i in this._prePanels) {
+				if (this._prePanels.hasOwnProperty(i)) {
+					this.log('Creating panel "' + i + '"');
+					this._panels[i] = new this._prePanels[i](this._panelBar);
+					delete this._prePanels[i];
+				}
+			}
 		}
 	});
 }());
 
-// Fire up the main interface when the page has loaded
-$(document).ready(function() {
-	editor = new IgeEditor()
-		.addPanel(SceneGraphPanel);
-});
+// Create the editor instance
+editor = new IgeEditor();

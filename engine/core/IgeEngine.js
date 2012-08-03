@@ -3,7 +3,7 @@ var IgeEngine = IgeEntity.extend({
 
 	init: function () {
 		this._super();
-		this._id = 'IGE';
+		this._id = 'ige';
 
 		this.basePath = '';
 
@@ -92,6 +92,15 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		return this;
+	},
+
+	/**
+	 * Returns an array of all obejects that have been assigned
+	 * the passed group name.
+	 * @param groupName
+	 */
+	$$: function (groupName) {
+		//TODO
 	},
 
 	/**
