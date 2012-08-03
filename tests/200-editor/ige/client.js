@@ -35,7 +35,9 @@ var Client = IgeClass.extend({
 		// Create the scene that the main game items
 		// will reside on
 		this.mainScene = new IgeScene2d()
-			.id('mainScene');
+			.id('mainScene')
+			.drawBounds(false)
+			.drawBoundsData(false);
 
 		// Create the main viewport and tell it to "look"
 		// at gameScene with auto-sizing enabled to fill the
@@ -44,8 +46,9 @@ var Client = IgeClass.extend({
 			.id('vp1')
 			.autoSize(true)
 			.scene(this.mainScene)
-			.drawBounds(false) // Switch this to true to draw all bounding boxes
+			.drawBounds(true) // Switch this to true to draw all bounding boxes
 			.drawBoundsData(true) // Switch to true (and flag above) to see bounds data
+			.drawMouse(true)
 			.mount(ige);
 
 		// Create the tile map
@@ -57,6 +60,8 @@ var Client = IgeClass.extend({
 			.drawGrid(40)
 			.highlightOccupied(false)
 			.translateTo(0, 0, 0)
+			.drawBounds(false)
+			.drawBoundsData(false)
 			.mount(this.mainScene);
 
 		this.log('Scene setup complete!');

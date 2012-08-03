@@ -1,0 +1,57 @@
+<style>
+	.tool {
+		width:32px;
+		height: 32px;
+	}
+	
+	.tool:hover {
+		background-color: #555;
+		cursor: pointer;
+	}
+
+	.tool.selected {
+		background-color: #00caef;
+	}
+
+	.toolCreate {
+		background-image: url('assets/textures/ui/note.png');
+	}
+
+	.toolSelect {
+		background-image: url('assets/textures/ui/hand.png');
+	}
+
+	.toolPaint {
+		background-image: url('assets/textures/ui/brush.png');
+	}
+
+	.toolUnPaint {
+		background-image: url('assets/textures/ui/brush-off.png');
+	}
+
+	.toolLayers {
+		background-image: url('assets/textures/ui/layers.png');
+	}
+
+	.toolFullScreen {
+		background-image: url('assets/textures/ui/full-screen.png');
+	}
+</style>
+<table cellpadding="0" cellspacing="0">
+	<tr>
+		<td><div class="tool toolSelect selected"></div></td>
+		<td><div class="tool toolCreate"></div></td>
+	</tr>
+	<tr>
+		<td><div class="tool toolPaint"></div></td>
+		<td><div class="tool toolUnPaint"></div></td>
+	</tr>
+	<tr>
+		<td><div class="tool toolLayers"></div></td>
+		<td><div id="toolFullScreen" class="tool toolFullScreen" title="Hide Editor Panels"></div></td>
+	</tr>
+	<tr>
+		<td><div class="tool toolZoomIn"></div></td>
+		<td><div class="tool toolZoomOut"></div></td>
+	</tr>
+</table>
