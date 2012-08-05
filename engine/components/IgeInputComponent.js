@@ -204,7 +204,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 			this._state[this.mouse.button3] = true;
 		}
 
-		this.mouseDown = true;
+		this.mouseDown = event;
 
 		this.emit('mouseDown', [event, mx, my, event.button + 1]);
 	},
@@ -233,7 +233,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 			this._state[this.mouse.button3] = false;
 		}
 
-		this.mouseUp = true;
+		this.mouseUp = event;
 
 		this.emit('mouseUp', [event, mx, my, event.button + 1]);
 	},
@@ -253,7 +253,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 		this._state[this.mouse.x] = mx;
 		this._state[this.mouse.y] = my;
 
-		this.mouseMove = true;
+		this.mouseMove = event;
 
 		this.emit('mouseMove', [event, mx, my, event.button + 1]);
 	},
@@ -278,7 +278,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 			this._state[this.mouse.wheelDown] = true;
 		}
 
-		this.mouseWheel = true;
+		this.mouseWheel = event;
 
 		this.emit('mouseWheel', [event, mx, my, event.button + 1]);
 	},
