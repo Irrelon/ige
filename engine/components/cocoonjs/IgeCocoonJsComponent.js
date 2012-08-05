@@ -4,6 +4,10 @@ var IgeCocoonJsComponent = IgeEventingClass.extend({
 
 	init: function () {
 		this.detected = typeof(ext) !== 'undefined' && typeof(ext.IDTK_APP) !== 'undefined';
+
+		if (this.detected) {
+			this.log('CocoonJS support enabled!');
+		}
 	},
 
 	// TODO: Finish keyboard implementation
