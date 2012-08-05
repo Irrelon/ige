@@ -10,12 +10,6 @@ var IgeEngine = IgeEntity.extend({
 		// Determine the environment we are executing in
 		this.isServer = (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined');
 
-		if (!this.isServer) {
-			// Enable cocoonJS support in case we are running native
-			this.log('CocoonJS support enabled!');
-			this.addComponent(IgeCocoonJsComponent);
-		}
-
 		// Assign ourselves to the global variable
 		ige = this;
 
@@ -28,6 +22,12 @@ var IgeEngine = IgeEntity.extend({
 
 		// Call super-class method
 		this._super();
+
+		// Check if we should add the CocoonJS support component
+		if (!this.isServer) {
+			// Enable cocoonJS support because we are running native
+			this.addComponent(IgeCocoonJsComponent);
+		}
 
 		// Create storage
 		this.ClassStore = {};
@@ -433,7 +433,7 @@ var IgeEngine = IgeEntity.extend({
 				this._resizeEvent();
 			}
 
-			this._canvas.addEventListener('mousemove', this._mouseMove);
+			// Ask the input component to setup any listeners it has
 			this.input._setupListeners();
 		}
 	},
@@ -548,80 +548,11 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
-	 * Emits the "mouseDown" event.
-	 * @param event
-	 * @private
+	 * Returns the mouse position relative to the main front buffer.
+	 * @return {IgePoint}
 	 */
-	_mouseDown: function (event) {
-		// Emit the event
-		ige.emit('mouseDown', event);
-	},
-
-	/**
-	 * Emits the "mouseUp" event.
-	 * @param event
-	 * @private
-	 */
-	_mouseUp: function (event) {
-		// Emit the event
-		ige.emit('mouseUp', event);
-	},
-
-	/**
-	 * Emits the "mouseMove" event.
-	 * @param event
-	 * @private
-	 */
-	_mouseMove: function (event) {
-		// Loop the viewports and check if the mouse is inside
-		var arr = ige._children,
-			arrCount = arr.length,
-			vp, vpUpdated,
-			mx = event.clientX - ige.geometry.x / 2,
-			my = event.clientY - ige.geometry.y / 2;
-
-		ige._mousePos.x = mx;
-		ige._mousePos.y = my;
-
-		while (arrCount--) {
-			vp = arr[arr.length - (arrCount + 1)];
-			// Check if the mouse is inside this viewport's bounds
-			// TODO: Update this code to take into account viewport rotation and camera rotation
-			if (mx > vp._translate.x - vp.geometry.x / 2 && mx < vp._translate.x + vp.geometry.x / 2) {
-				if (my > vp._translate.y - vp.geometry.y / 2 && my < vp._translate.y + vp.geometry.y / 2) {
-					// Mouse is inside this viewport
-					vp._mousePos = {
-						x: Math.floor((mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x),
-						y: Math.floor((my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y)
-					};
-
-					ige._mouseOverVp = vp;
-					vpUpdated = true;
-					break;
-				}
-			}
-		}
-
-		if (!vpUpdated) {
-			ige._mouseOverVp = undefined;
-		}
-
-		// Emit the event
-		ige.emit('mouseMove', event);
-	},
-
 	mousePos: function () {
 		return this._mousePos;
-	},
-
-	/**
-	 * Emits the "mouseWheel" event.
-	 * @param event
-	 * @private
-	 */
-	_mouseWheel: function (event) {
-		// Emit the event
-		ige.emit('mouseWheel', event);
 	},
 
 	/**
