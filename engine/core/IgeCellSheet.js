@@ -3,7 +3,6 @@ var IgeCellSheet = IgeTexture.extend({
 	IgeSpriteSheet: true,
 
 	init: function (url, horizontalCells, verticalCells) {
-		this._super(url);
 		this.on('loaded', function () {
 			if (this.image) {
 				// Store the cell sheet image
@@ -19,9 +18,11 @@ var IgeCellSheet = IgeTexture.extend({
 			} else {
 				// Unable to create cells from non-image texture
 				// TODO: Medium-priority - Support cell sheets from smart-textures
-				this.log('Cannot create cell-sheet because texture has not loaded an image!', 'warning');
+				this.log('Cannot create cell-sheet because texture has not loaded an image!', 'error');
 			}
 		});
+
+		this._super(url);
 	},
 
 	/** horizontalCells - Sets the number of horizontal cells in the cell sheet. {
