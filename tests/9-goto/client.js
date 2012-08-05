@@ -17,19 +17,20 @@ var Client = IgeClass.extend({
 
 				// Create the main viewport
 				self.vp1 = new IgeViewport()
+					.id('vp1')
 					.autoSize(true)
 					.scene(self.scene1)
 					.drawMouse(true)
 					.mount(ige);
 
-				self.obj[0] = new Character()
+				self.player = new Character()
 					.addComponent(PlayerComponent)
 					.setType(3)
 					.mount(self.scene1);
 
 				// Set the camera to track the character with some
 				// tracking smoothing turned on (100)
-				self.vp1.camera.trackTranslate(self.obj[0], 100);
+				self.vp1.camera.trackTranslate(self.player, 100);
 			}
 		});
 	}
