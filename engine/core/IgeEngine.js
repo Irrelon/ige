@@ -46,6 +46,7 @@ var IgeEngine = IgeEntity.extend({
 		this.tickDelta = 0; // The time between the last tick and the current one
 		this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 		this._state = 0; // Currently stopped
+		this._textureImageStore = {};
 		this._texturesLoading = 0; // Holds a count of currently loading textures
 		this._texturesTotal = 0; // Holds total number of textures loading / loaded
 		this._dependencyQueue = []; // Holds an array of functions that must all return true for the engine to start
