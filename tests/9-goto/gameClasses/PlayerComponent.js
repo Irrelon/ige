@@ -13,7 +13,7 @@ var PlayerComponent = IgeClass.extend({
 		this._options = options;
 
 		// Listen for the mouse up event
-		ige.input.on('mouseUp', function (event) { self._mouseUp(event); });
+		ige.input.on('mouseUp', function (event, x, y, button) { self._mouseUp(event, x, y, button); });
 	},
 
 	/**
@@ -21,10 +21,10 @@ var PlayerComponent = IgeClass.extend({
 	 * @param event
 	 * @private
 	 */
-	_mouseUp: function (event) {
+	_mouseUp: function (event, x, y, button) {
 		this._entity.walkTo(
-			ige.client.vp1._mousePos.x,
-			ige.client.vp1._mousePos.y
+			ige.$('vp1')._mousePos.x,
+			ige.$('vp1')._mousePos.y
 		);
 	}
 });
