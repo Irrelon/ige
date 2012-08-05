@@ -44,6 +44,7 @@ var IgeObject = IgeEventingClass.extend({
 		if (!this._id) {
 			// The item has no id so generate one automatically
 			this._id = ige.newIdHex();
+			ige.register(this);
 		}
 
 		return this._id;

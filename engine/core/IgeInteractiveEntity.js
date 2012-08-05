@@ -6,36 +6,35 @@ var IgeInteractiveEntity = IgeEntity.extend([
 	 */
 	tick: function (ctx, dontTransform) {
 		//this._mousePos = this.mousePos();
-		var mp = ige._mousePos;
+		var mp = ige._mousePos,
+			aabb, mouseX, mouseY;
 
 		if (mp) {
-			var	aabb = this.aabb(),
-				mouseX = mp.x,
-				mouseY = mp.y;
+			aabb = this.aabb();
+			mouseX = mp.x;
+			mouseY = mp.y;
 
 			// Check if the current mouse position is inside this aabb
 			if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
 				// Point is inside the aabb
 				if (ige.input.mouseMove) {
-					this._handleMouseIn();
+					// There is a mouse move event
+					this._handleMouseIn(ige.input.mouseMove);
 				}
 
 				if (ige.input.mouseDown) {
-					// The mouse is down
-					this._handleMouseDown();
+					// There is a mouse down event
+					this._handleMouseDown(ige.input.mouseDown);
 				}
 
 				if (ige.input.mouseUp) {
-					// The mouse went up
-					this._handleMouseUp();
+					// There is a mouse up event
+					this._handleMouseUp(ige.input.mouseUp);
 				}
-
-				/*ctx.fillStyle = '#ffffff';
-				ctx.fillText('Entity M (' + mp.x + ', ' + mp.y + ')', 0, 0);
-				ctx.fillText('Entity P (' + aabb.x + ', ' + aabb.y + ')', 0, 15);*/
 			} else {
 				if (ige.input.mouseMove) {
-					this._handleMouseOut();
+					// There is a mouse move event
+					this._handleMouseOut(ige.input.mouseMove);
 				}
 			}
 		}

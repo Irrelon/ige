@@ -50,7 +50,7 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					new IgeFontEntity()
-						.id('font1')
+						.id('font2')
 						.depth(1)
 						.width(480)
 						.height(110)
@@ -64,7 +64,7 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					new IgeFontEntity()
-						.id('font1')
+						.id('font3')
 						.depth(1)
 						.width(480)
 						.height(110)
