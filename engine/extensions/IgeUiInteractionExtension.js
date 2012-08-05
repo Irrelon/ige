@@ -79,15 +79,15 @@ var IgeUiInteractionExtension = {
 	 * to fire, a mouse-over or a mouse-move.
 	 * @private
 	 */
-	_handleMouseIn: function () {
+	_handleMouseIn: function (event) {
 		// TODO: Set local mouse point based on 0, 0 at top-left of entity rather than screen
 		// Check if the mouse move is a mouse over
 		if (!this._mouseStateOver) {
 			this._mouseStateOver = true;
-			if (this._mouseOver) { this._mouseOver.call(this); }
+			if (this._mouseOver) { this._mouseOver(event); }
 		}
 
-		if (this._mouseMove) { this._mouseMove.call(this); }
+		if (this._mouseMove) { this._mouseMove(event); }
 	},
 
 	/**
@@ -95,7 +95,7 @@ var IgeUiInteractionExtension = {
 	 * should be fired.
 	 * @private
 	 */
-	_handleMouseOut: function () {
+	_handleMouseOut: function (event) {
 		// The mouse went away from this entity so
 		// set mouse-down to false, regardless of the situation
 		this._mouseStateDown = false;
@@ -103,7 +103,7 @@ var IgeUiInteractionExtension = {
 		// Check if the mouse move is a mouse out
 		if (this._mouseStateOver) {
 			this._mouseStateOver = false;
-			if (this._mouseOut) { this._mouseOut.call(this); }
+			if (this._mouseOut) { this._mouseOut(event); }
 		}
 	},
 
@@ -112,10 +112,10 @@ var IgeUiInteractionExtension = {
 	 * should be fired.
 	 * @private
 	 */
-	_handleMouseUp: function () {
+	_handleMouseUp: function (event) {
 		// Reset the mouse-down flag
 		this._mouseStateDown = false;
-		if (this._mouseUp) { this._mouseUp.call(this); }
+		if (this._mouseUp) { this._mouseUp(event); }
 	},
 
 	/**
@@ -123,10 +123,10 @@ var IgeUiInteractionExtension = {
 	 * should be fired.
 	 * @private
 	 */
-	_handleMouseDown: function () {
+	_handleMouseDown: function (event) {
 		if (!this._mouseStateDown) {
 			this._mouseStateDown = true;
-			if (this._mouseDown) { this._mouseDown.call(this); }
+			if (this._mouseDown) { this._mouseDown(event); }
 		}
 	}
 };
