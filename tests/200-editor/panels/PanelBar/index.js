@@ -11,4 +11,4 @@ PanelBar = IgeClass.extend({
 	}
 });
 
-editor.addPanel('panelBar', PanelBar);
+editor.panel('panelBar', PanelBar);

@@ -12,4 +12,4 @@ MenuBarPanel = IgeClass.extend({
 	}
 });
 
-editor.addPanel('menuBar', MenuBarPanel);
+editor.panel('menuBar', MenuBarPanel);

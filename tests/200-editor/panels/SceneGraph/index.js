@@ -23,4 +23,4 @@ SceneGraphPanel = IgeClass.extend({
 	}
 });
 
-editor.addPanel('sceneGraph', SceneGraphPanel);
+editor.panel('sceneGraph', SceneGraphPanel);
