@@ -4,4 +4,4 @@ StatusBarPanel = IgeClass.extend({
 	}
 });
 
-editor.addPanel('statusBar', StatusBarPanel);
+editor.panel('statusBar', StatusBarPanel);

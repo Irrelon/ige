@@ -49,4 +49,4 @@ ToolBarPanel = IgeClass.extend({
 	}
 });
 
-editor.addPanel('toolBar', ToolBarPanel);
+editor.panel('toolBar', ToolBarPanel);

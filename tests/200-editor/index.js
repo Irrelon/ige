@@ -4,12 +4,14 @@
 			var self = this;
 			this._prePanels = {};
 			this._panels = {};
+			this._windows = {};
 
 			// Listen for when the engine iframe has loaded
 			$(document).ready(function () {
 				$('#igeFrame').load(function () {
 					// Get a reference to the engine in the iframe
-					ige = $('#igeFrame')[0].contentWindow.ige;
+					igeFrame = $('#igeFrame')[0].contentWindow;
+					ige = igeFrame.ige;
 
 					self.setupPage();
 
@@ -110,12 +112,30 @@
 			$("#vertical").data("kendoSplitter").autoResize();
 		},
 
-		addPanel: function (id, panelClass) {
-			if (!this._ready) {
-				this._prePanels[id] = panelClass;
-			} else {
-				this.log('Creating panel "' + id + '"');
-				this._panels[id](new panelClass(this._panelBar));
+		panel: function (id, classDefinition) {
+			if (id !== undefined) {
+				if (classDefinition !== undefined) {
+					if (!this._ready) {
+						this._prePanels[id] = classDefinition;
+					} else {
+						this.log('Creating panel "' + id + '"');
+						this._panels[id](new classDefinition(this._panelBar));
+					}
+				} else {
+					return this._panels[id];
+				}
+			}
+
+			return this;
+		},
+
+		window: function (id, classDefinition) {
+			if (id !== undefined) {
+				if (classDefinition !== undefined) {
+					this._windows[id] = new classDefinition();
+				} else {
+					return this._windows[id];
+				}
 			}
 
 			return this;

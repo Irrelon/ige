@@ -3,6 +3,12 @@ body {
     font-size: 12px;
 }
 
+h3 {
+    font-size: 1em;
+    font-weight: bold;
+    margin: 0 0 5px 0;
+}
+
 .noOverflow {
     overflow: hidden;
 }

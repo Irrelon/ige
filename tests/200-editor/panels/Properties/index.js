@@ -16,4 +16,4 @@ PropertiesPanel = IgeClass.extend({
 	}
 });
 
-editor.addPanel('properties', PropertiesPanel);
+editor.panel('properties', PropertiesPanel);
