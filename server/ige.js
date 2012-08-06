@@ -37,8 +37,6 @@ IgeTileMap2d = require('../engine/core/IgeTileMap2d');
 IgeCamera = require('../engine/core/IgeCamera');
 IgeViewport = require('../engine/core/IgeViewport');
 IgeScene2d = require('../engine/core/IgeScene2d');
-IgeSceneUi = require('../engine/core/IgeSceneUi');
-IgeSceneIso = require('../engine/core/IgeSceneIso');
 IgeEngine = require('../engine/core/IgeEngine');
 // Network
 IgeDummyContext = require('../engine/components/network/IgeDummyContext');
