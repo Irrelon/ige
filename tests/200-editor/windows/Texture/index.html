@@ -1,11 +1,22 @@
 <style type="text/css">
-	#textureUrl {
-		width: 480px;
+	.dragTarget {
+		border: 2px dashed #ccc;
+		border-radius: 10px;
+		width: 130px;
+		height: 80px;
+		padding: 10px;
+		text-align: center;
+		margin: 3px;
+		margin-bottom: 10px;
+	}
+
+	.dragTarget span {
+		display: block;
+		margin-top: 25px;
 	}
 </style>
 <div id="textureWindow">
-	<h3>Texture Image URL</h3>
-	<input id="textureUrl" class="k-input" type="text" placeholder="./assets/textures/sprites/superMoo.png" />
-	<input id="ok" class="k-button" type="button" value="Create Texture" onclick="editor.window('textureWindow').createTexture();" />
+	<div class="dragTarget"><span>Drag and Drop an Image File Here</span></div>
 	<input id="cancel" class="k-button" type="button" value="Cancel" onclick="editor.window('textureWindow').close();" />
+	<input id="ok" class="k-button" type="button" value="Create Texture" onclick="editor.window('textureWindow').createTexture();" />
 </div>

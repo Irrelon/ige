@@ -8,14 +8,17 @@ TextureWindow = IgeClass.extend({
 			success: function (data) {
 				$('#editorContent').append(data);
 				$("#textureWindow").kendoWindow({
-					width: "500px",
+					width: "175px",
 					actions: ["Close"],
 					title: "New Texture",
 					modal: true,
+					resizable: false,
 					close: function () {
 						self.close();
 					}
 				});
+
+				// Add the drag-drop
 
 				$("#textureWindow").data('kendoWindow').center();
 			},

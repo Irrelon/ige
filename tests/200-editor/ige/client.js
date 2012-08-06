@@ -9,7 +9,7 @@ var Client = IgeClass.extend({
 		this.gameTexture = {};
 
 		// Enable networking
-		ige.addComponent(IgeSocketIoComponent);
+		ige.addComponent(IgeNetIoComponent);
 
 		// Implement our game methods
 		this.implement(ClientNetworkEvents);
