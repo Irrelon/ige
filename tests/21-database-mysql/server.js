@@ -8,7 +8,7 @@ var Server = IgeClass.extend({
 			// Check if we connected to mysql correctly
 			if (!err) {
 				// Query the database
-				ige.mysql.findAll('SELECT * FROM user', function (err, rows, fields) {
+				ige.mysql.query('SELECT * FROM user', function (err, rows, fields) {
 					if (!err) {
 						console.log(rows[0]);
 					} else {
