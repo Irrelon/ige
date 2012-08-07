@@ -2,6 +2,13 @@
  * so that bottom-right aligns to the lower-right point of the bounding box of the entity
  * whilst maintaining the current text-alignment as well
 * */
+
+/**
+ * Creates a new font sheet. A font sheet is an image that contains
+ * letters and numbers rendered to specifications. It allows you to
+ * use and render text fonts without the font actually existing on
+ * the target system that the engine is running in.
+ */
 var IgeFontSheet = IgeTexture.extend({
 	classId: 'IgeFontSheet',
 

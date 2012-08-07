@@ -1,7 +1,16 @@
+/**
+ * The animation component class. Handles defining and controlling
+ * frame-based animations based on cells from an image.
+ */
 var IgeAnimationComponent = IgeClass.extend({
 	classId: 'IgeAnimationComponent',
 	componentId: 'animation',
 
+	/**
+	 * @constructor
+	 * @param {Object} entity The parent object that this component is being added to.
+	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
+	 */
 	init: function (entity, options) {
 		this._entity = entity;
 		this._anims = {};
@@ -19,6 +28,16 @@ var IgeAnimationComponent = IgeClass.extend({
 		this.animation.tick(ctx);
 	},
 
+	/**
+	 * Defines an animation specifying the frames to use, the
+	 * frames per second to animate at and if the animation
+	 * should loop and if so, how many times.
+	 * @param {String} id The unique animation id.
+	 * @param {Array} frames An array of cell numbers to animate through.
+	 * @param {Number} fps The speed of the animation (frames per second).
+	 * @param {Number} loop The number of times to loop the animation, or -1 to loop forever. Defaults to -1.
+	 * @return {*}
+	 */
 	define: function (id, frames, fps, loop) {
 		if (frames && frames.length) {
 			this._anims.length = this._anims.length || 0;
@@ -42,6 +61,11 @@ var IgeAnimationComponent = IgeClass.extend({
 		return this._entity;
 	},
 
+	/**
+	 * Starts an animation.
+	 * @param {String} animId The id of the animation to start.
+	 * @return {*}
+	 */
 	start: function (animId) {
 		if (this._anims) {
 			var anim = this._anims[animId];
@@ -63,6 +87,11 @@ var IgeAnimationComponent = IgeClass.extend({
 		return this._entity;
 	},
 
+	/**
+	 * Starts an animation only if an animation is not already started.
+	 * @param {String} animId The id of the animation to start.
+	 * @return {*}
+	 */
 	select: function (animId) {
 		if (this._animId !== animId) {
 			this.start(animId);
@@ -71,6 +100,10 @@ var IgeAnimationComponent = IgeClass.extend({
 		return this._entity;
 	},
 
+	/**
+	 * Stops the current animation.
+	 * @return {*}
+	 */
 	stop: function () {
 		delete this._anim;
 		delete this._animId;
@@ -78,6 +111,10 @@ var IgeAnimationComponent = IgeClass.extend({
 		return this._entity;
 	},
 
+	/**
+	 * Handles the animation processing each render tick.
+	 * @param {CanvasContext2d} ctx The rendering context to use when doing draw operations.
+	 */
 	tick: function (ctx) {
 		if (this._anim) {
 			var tickDelta = ige.tickDelta,

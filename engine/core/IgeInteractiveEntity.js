@@ -1,3 +1,8 @@
+/**
+ * Creates a new interactive entity. Interactive entities are the same
+ * as normal entities except that they receive interaction events such
+ * as mouse and touch events.
+ */
 var IgeInteractiveEntity = IgeEntity.extend([
 	{extension: IgeUiInteractionExtension, overwrite: true}
 ], {

@@ -1,3 +1,6 @@
+/**
+ * Creates a new entity.
+ */
 var IgeEntity = IgeObject.extend([
 	{extension: IgeTransformExtension, overwrite: false}
 ], {

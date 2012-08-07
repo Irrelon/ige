@@ -1,9 +1,6 @@
-/* Simple JavaScript Inheritance
- * By John Resig http://ejohn.org/
- * MIT Licensed.
+/**
+ * The base class system.
  */
-// Inspired by base2 and Prototype
-// Modified for the Isogenic Game Engine
 var IgeClass = (function () {
 	var initializing = false,
 		fnTest = /xyz/.test(function () {xyz;}) ? /\b_super\b/ : /.*/,

@@ -1,3 +1,6 @@
+/**
+ * The base engine class definition.
+ */
 var IgeEngine = IgeEntity.extend({
 	classId: 'IgeEngine',
 

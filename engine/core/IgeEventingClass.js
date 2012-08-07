@@ -1,3 +1,6 @@
+/**
+ * Creates a new class with the capability to emit events.
+ */
 var IgeEventingClass = IgeClass.extend({
 	/**
 	 * Add an event listener method for an event.

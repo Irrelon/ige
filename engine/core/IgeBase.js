@@ -218,10 +218,10 @@ if(!Array.prototype.indexOf){
 	};
 }
 
-/**
- * A cross-browser requestAnimationFrame method.
- */
 if (typeof(window) !== 'undefined') {
+	/**
+	 * A cross-browser/platform requestAnimationFrame method.
+	 */
 	window.requestAnimFrame = (function(){
 		return function(callback, element){
 			setTimeout(function () { callback(new Date().getTime()); }, 1000 / 60);
@@ -239,6 +239,9 @@ if (typeof(window) !== 'undefined') {
 		};
 	}());*/
 } else {
+	/**
+	 * A cross-browser/platform requestAnimationFrame method.
+	 */
 	requestAnimFrame = function(callback, element){
 		setTimeout(callback, 1000 / 60);
 	};
