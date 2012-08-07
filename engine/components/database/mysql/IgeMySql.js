@@ -171,9 +171,41 @@ var IgeMySql = {
 		});
 	},
 
-	/* findAll - Finds many rows of data and returns them as an array */
-	findAll: function (query, callback) {
+	/**
+	 * Query the database with SQL and return the result
+	 * via the callback method.
+	 * @param query
+	 * @param callback
+	 */
+	query: function (query, callback) {
 		this.client.query(query, callback);
+	},
+
+	/**
+	 * Executes a select query with the JSON object properties
+	 * as column names and their values as the where clause.
+	 * @param coll
+	 * @param json
+	 * @param callback
+	 */
+	findAll: function (coll, json, callback) {
+		var i, whereClause, select = 'SELECT * FROM ' + coll;
+
+		// Convert a json object's data into a select query
+		for (i in json) {
+			if (json.hasOwnProperty(i)) {
+				if (whereClause) {
+					whereClause += ' AND ';
+				}
+				whereClause += i + ' = "' + json[i] + '"';
+			}
+		}
+
+		if (whereClause) {
+			whereClause = ' WHERE ' + whereClause;
+		}
+
+		this.query(select + whereClause, callback);
 	},
 
 	/* idToCollectionId - MongoDB specific - Finds the _id field returned by the database and
