@@ -2,6 +2,8 @@
 	IgeEditor = IgeEventingClass.extend({
 		init: function () {
 			var self = this;
+
+			this._projectPath = 'projects/default';
 			this._prePanels = {};
 			this._panels = {};
 			this._windows = {};
@@ -16,6 +18,10 @@
 					self.setupPage();
 
 					self._ready = true;
+
+					// Register event listeners on main ige canvas
+					ige._canvas.addEventListener('drop', function (event) { self._handleCanvasDrop(event); }, false);
+					ige._canvas.addEventListener('dragover', function (event) { self._handleCanvasDragOver(event); }, false);
 
 					// Add any pre-added panels now that we're ready!
 					self._processPrePanels();
@@ -163,6 +169,17 @@
 					delete this._prePanels[i];
 				}
 			}
+		},
+
+		_handleCanvasDragOver: function (event) {
+			event.stopPropagation();
+			event.preventDefault();
+			event.dataTransfer.dropEffect = 'copy';
+			console.log('drag over');
+		},
+
+		_handleCanvasDrop: function (event) {
+			console.log('Canvas drop', event);
 		}
 	});
 }());
