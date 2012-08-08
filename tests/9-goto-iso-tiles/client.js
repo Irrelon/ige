@@ -23,11 +23,21 @@ var Client = IgeClass.extend({
 					.drawMouse(true)
 					.mount(ige);
 
+				// Create an isometric tile map
+				self.tileMap1 = new IgeTileMap2d()
+					.id('tileMap1')
+					.isometricMounts(true)
+					.tileWidth(40)
+					.tileHeight(40)
+					.drawGrid(3)
+					.drawMouse(true)
+					.mount(self.scene1);
+
 				self.player = new Character()
 					.id('player')
 					.addComponent(PlayerComponent)
 					.setType(3)
-					.mount(self.scene1);
+					.mount(self.tileMap1);
 
 				// Set the camera to track the character with some
 				// tracking smoothing turned on (100)
