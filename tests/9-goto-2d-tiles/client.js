@@ -13,7 +13,8 @@ var Client = IgeClass.extend({
 			// Check if the engine started successfully
 			if (success) {
 				// Create the scene
-				self.scene1 = new IgeScene2d();
+				self.scene1 = new IgeScene2d()
+					.drawBounds(false);
 
 				// Create the main viewport
 				self.vp1 = new IgeViewport()
@@ -21,6 +22,7 @@ var Client = IgeClass.extend({
 					.autoSize(true)
 					.scene(self.scene1)
 					.drawMouse(true)
+					.drawBounds(true)
 					.mount(ige);
 
 				// Create an isometric tile map
@@ -30,12 +32,33 @@ var Client = IgeClass.extend({
 					.tileHeight(40)
 					.drawGrid(3)
 					.drawMouse(true)
+					.drawBounds(false)
 					.mount(self.scene1);
+
+				// Define a function that will be called when the
+				// mouse cursor moves over one of our entities
+				overFunc = function () {
+					this.highlight(true);
+					this.drawBounds(true);
+					this.drawBoundsData(true);
+				};
+
+				// Define a function that will be called when the
+				// mouse cursor moves away from one of our entities
+				outFunc = function () {
+					this.highlight(false);
+					this.drawBounds(false);
+					this.drawBoundsData(false);
+				};
 
 				self.player = new Character()
 					.id('player')
 					.addComponent(PlayerComponent)
+					.drawBounds(false)
+					.drawBoundsData(false)
 					.setType(3)
+					.mouseOver(overFunc)
+					.mouseOut(outFunc)
 					.mount(self.tileMap1);
 
 				// Set the camera to track the character with some
