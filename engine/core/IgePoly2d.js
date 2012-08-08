@@ -16,8 +16,7 @@ var IgePoly2d = IgeClass.extend({
 	},
 
 	/**
-	 * Adds a point to the polygon relative to the polygon center at 0, 0. Point
-	 * co-ordinates must be in the range of -1 to 1.
+	 * Adds a point to the polygon relative to the polygon center at 0, 0.
 	 * @param x
 	 * @param y
 	 */
