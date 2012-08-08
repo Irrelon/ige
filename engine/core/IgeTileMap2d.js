@@ -183,6 +183,29 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 		return this._tileMapMouseOver;
 	},
 
+	/**
+	 * Returns the world co-ordinates of the tile the mouse is currently over.
+	 * @return {IgePoint}
+	 */
+	mouseTileWorldXY: function () {
+		if (this._mountMode === 0) {
+			return this._mouseTilePos
+				.clone()
+				.thisMultiply(this._tileWidth, this._tileHeight, 0);
+		}
+
+		if (this._mountMode === 1) {
+			return this._mouseTilePos
+				.clone()
+				.thisMultiply(this._tileWidth, this._tileHeight, 0)
+				.thisToIso();
+		}
+	},
+
+	/**
+	 * Returns the tile co-ordinates of the tile the mouse is currently over.
+	 * @return {IgePoint}
+	 */
 	mouseToTile: function () {
 		// TODO: Could this do with some caching to check if the input values have changed and if not, supply the same pre-calculated data if it already exists?
 		var mousePos = this.mousePos(),
@@ -221,7 +244,12 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 		return tilePos;
 	},
 
-	calculateMousePosition: function () {
+	/**
+	 * Sets the internal mouse position data based on the current mouse position
+	 * relative to the tile map.
+	 * @private
+	 */
+	_calculateMousePosition: function () {
 		// Calculate the current tile the mouse is over based on
 		// the parent world matrix and this tile map local matrix
 		// this doesn't take into account rotation or scale yet
@@ -261,7 +289,7 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 	},
 
 	tick: function (ctx) {
-		this.calculateMousePosition();
+		this._calculateMousePosition();
 
 		// Now check if we have any mouse events to call
 		if (ige.input.mouseMove && this._tileMapMouseOver) {
