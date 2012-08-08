@@ -21,6 +21,7 @@ var IgeEntity = IgeObject.extend([
 		this.geometry3d = new IgePoint(0, 0, 0);
 
 		this._anchor = {x: 0, y: 0};
+		this._renderPos = {x: 0, y: 0};
 
         this._localMatrix = new IgeMatrix2d(this);
         this._worldMatrix = new IgeMatrix2d(this);
@@ -40,7 +41,7 @@ var IgeEntity = IgeObject.extend([
 			} else {
 				// This path should not ever be reached! Every parent object
 				// should have a mousePos() method or inherit one!
-				debugger;
+				throw('What happened? This code path should never be reached!');
 			}
 		} else {
 			return {x: 0, y: 0};
@@ -72,13 +73,15 @@ var IgeEntity = IgeObject.extend([
 	 */
 	widthByTile: function (val, lockAspect) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
-			var tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
+			var tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2,
+				ratio;
+
 			this.width(val * tileSize);
 
 			if (lockAspect) {
 				if (this._texture) {
 					// Calculate the height based on the new width
-					var ratio = this._texture._sizeX / this.geometry.x;
+					ratio = this._texture._sizeX / this.geometry.x;
 					this.height(this._texture._sizeY / ratio);
 				} else {
 					this.log('Cannot set height based on texture aspect ratio and new width because no texture is currently assigned to the entity!', 'error');
@@ -100,13 +103,15 @@ var IgeEntity = IgeObject.extend([
 	 */
 	heightByTile: function (val, lockAspect) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
-			var tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
+			var tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2,
+				ratio;
+
 			this.height(val * tileSize);
 
 			if (lockAspect) {
 				if (this._texture) {
 					// Calculate the width based on the new height
-					var ratio = this._texture._sizeY / this.geometry.y;
+					ratio = this._texture._sizeY / this.geometry.y;
 					this.width(this._texture._sizeX / ratio);
 				} else {
 					this.log('Cannot set width based on texture aspect ratio and new height because no texture is currently assigned to the entity!', 'error');
@@ -138,8 +143,12 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	anchor: function (x, y) {
-		this._anchor = {x: x, y: y};
-		return this;
+		if (x !== undefined && y !== undefined) {
+			this._anchor = {x: x, y: y};
+			return this;
+		}
+
+		return this._anchor;
 	},
 
 	/**
@@ -328,12 +337,22 @@ var IgeEntity = IgeObject.extend([
 			minX, minY,
 			maxX, maxY,
 			box = {},
-			anc = this._anchor;
+			anc = this._anchor,
+			geom = this.geometry,
+			origin = this._origin,
+			originX = origin.x - 0.5,
+			originY = origin.y - 0.5,
+			ox = geom.x * originX,
+			oy = geom.y * originY,
+			x = geom.x2 + anc.x,
+			y = geom.y2 + anc.y;
 
-		poly.addPoint(-this.geometry.x2 + anc.x, -this.geometry.y2 + anc.y);
-		poly.addPoint(this.geometry.x2 + anc.x, -this.geometry.y2 + anc.y);
-		poly.addPoint(this.geometry.x2 + anc.x, this.geometry.y2 + anc.y);
-		poly.addPoint(-this.geometry.x2 + anc.x, this.geometry.y2 + anc.y);
+		poly.addPoint(-x + ox, -y + oy);
+		poly.addPoint(x + ox, -y + oy);
+		poly.addPoint(x + ox, y + oy);
+		poly.addPoint(-x + ox, y + oy);
+
+		this._renderPos = {x: -x + ox, y: -y + oy};
 
 		// Convert the poly's points from local space to world space
 		this.localToWorld(poly._poly);
