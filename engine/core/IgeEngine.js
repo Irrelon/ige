@@ -272,6 +272,24 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
+	 * Returns a texture from the texture store by it's url.
+	 * @param {String} url
+	 * @return {IgeTexture}
+	 */
+	textureFromUrl: function (url) {
+		var arr = this.TextureStore,
+			arrCount = arr.length,
+			item;
+
+		while (arrCount--) {
+			item = arr[arrCount];
+			if (item._url === url) {
+				return item;
+			}
+		}
+	},
+
+	/**
 	 * Checks if all textures have finished loading and returns true if so.
 	 * @return {Boolean}
 	 */
