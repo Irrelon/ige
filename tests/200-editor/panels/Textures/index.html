@@ -57,30 +57,25 @@
 		margin: 0;
 	}
 
-	#texturePanel #textureList a {
+	#texturePanel #textureList div {
 		display: block;
-		background-color: #333;
-		background-size: 100%;
-		background-repeat: no-repeat;
-		border: 1px dashed #ccc;
 		margin-left: 4px;
 		margin-top: 5px;
 		float: left;
 		cursor: pointer;
 	}
 
-	#texturePanel #textureList.largeThumb a {
-		width: 30%;
-		height: 75px;
-	}
-
-	#texturePanel #textureList.smallThumb a {
-		width: 15%;
-		height: 36px;
+	.smallThumb {
+		background-color: #333;
+		background-size: 100%;
+		background-repeat: no-repeat;
+		border: 1px dashed #ccc;
+		width: 40px;
+		height: 40px;
 	}
 </style>
 <div id="texturePanel">
 	<div id="dragTarget"><span>Create New Texture<BR>Drag and Drop an Image File Here</span></div>
 	<ul id="loadingList"></ul>
-	<div id="textureList" class="smallThumb" ondragstart="event.dataTransfer.setData('text/plain', 'moo'); console.log('dragging');" ondragend="console.log('dragend');"></div>
+	<div id="textureList" class="smallThumbs" ondragstart="event.dataTransfer.setData('text/plain', 'moo'); console.log('dragging');" ondragend="console.log('dragend');"></div>
 </div>

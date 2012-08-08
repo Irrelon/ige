@@ -88,12 +88,8 @@ TexturesPanel = IgeClass.extend({
 
 	textureTile: function (url) {
 		var self = this,
-			elem = $('<a style="background-image: url(' + url + ');" ondragend="console.log(\'dragend\');"></a>'),
+			elem = $('<div class="smallThumb" style="background-image: url(' + url + ');"></div>'),
 			tex;
-
-		// Make element draggable
-		elem.attr('draggable', true);
-		elem.attr('id', 'moo111');
 
 		// Append the list item
 		$('#texturePanel #textureList').append(elem);
@@ -111,33 +107,16 @@ TexturesPanel = IgeClass.extend({
 				return elem.clone();
 			},
 			dragstart: function (e) {
-				console.log('drag start');
+				$('#dropText').text('Drop Here');
+				$('#mainDropTarget').show();
 			},
 			dragend: function (e) {
-				console.log('drag end');
+				$('#mainDropTarget').hide();
+
+				// Create an entity from the texture and mount it to the main scene
+
 			}
 		});
-
-	},
-
-	_handleDragTextureStart: function (event) {
-		console.log('drag start');
-		event.preventDefault();
-		event.stopPropagation();
-
-		var elem = $(event.target),
-			url = elem.data('textureUrl');
-
-		event.dataTransfer.setData('text/plain', url);
-		event.dataTransfer.dropEffect = "copy";
-		return true;
-	},
-
-	_handleDragTextureEnd: function (event) {
-		console.log('drag end');
-		event.stopPropagation();
-		event.preventDefault();
-
 	}
 });
 
