@@ -11,7 +11,7 @@ var IgeInteractiveEntity = IgeEntity.extend([
 	 */
 	tick: function (ctx, dontTransform) {
 		//this._mousePos = this.mousePos();
-		var mp = ige._mousePos,
+		var mp = ige._currentViewport._mousePos,
 			aabb, mouseX, mouseY;
 
 		if (mp) {
