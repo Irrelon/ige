@@ -61,6 +61,8 @@ var IgeEngine = IgeEntity.extend({
 		this._frameAlternator = false; // Is set to the boolean not of itself each frame
 		this._viewportDepth = false;
 		this._mousePos = new IgePoint(0, 0, 0);
+		this._currentViewport = null; // Set in IgeViewport.js tick(), holds the current rendering viewport
+		this._currentCamera = null; // Set in IgeViewport.js tick(), holds the current rendering viewport's camera
 		this._register = {
 			'ige': this
 		}; // Holds a reference to every item in the scenegraph by it's ID
