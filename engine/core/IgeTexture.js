@@ -281,7 +281,8 @@ var IgeTexture = IgeEventingClass.extend({
 		if (this._mode === 0) {
 			// This texture is image-based
 			var cell = this._cells[entity._cell],
-				geom = entity.geometry;
+				geom = entity.geometry,
+				poly = entity._renderPos; // Render pos is calculated in the IgeEntity.aabb() method
 
 			ctx.drawImage(
 				this.image,
@@ -289,8 +290,8 @@ var IgeTexture = IgeEventingClass.extend({
 				cell[1], // texture y
 				cell[2], // texture width
 				cell[3], // texture height
-				-(geom.x / 2) + entity._anchor.x, // render x TODO: Performance - Cache these?
-				-(geom.y / 2) + entity._anchor.y, // render y
+				poly.x, // render x
+				poly.y, // render y
 				geom.x, // render width
 				geom.y // render height
 			);
