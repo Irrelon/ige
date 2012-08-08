@@ -12,6 +12,7 @@ var Client = IgeClass.extend({
 
 		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
 		gameTexture[1] = new IgeCellSheet('../assets/textures/ui/icon_entity.png', 2, 1);
+		gameTexture[2] = new IgeFontSheet('../assets/textures/fonts/verdana_12pt.png', 0);
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -124,6 +125,21 @@ var Client = IgeClass.extend({
 						.mouseOver(function () {this.backgroundColor('#49ceff'); })
 						.mouseOut(function () {this.backgroundColor('#474747'); })
 						.mount(self.scene3);
+
+					self.obj[6] = new IgeUiTextBox()
+						.id('textBox1')
+						.fontSheet(gameTexture[2])
+						.backgroundColor('#000000')
+						.borderColor('#ffffff')
+						.borderWidth(1)
+						.borderRadius(5)
+						.center(0)
+						.middle(70)
+						.width(300)
+						.height(24)
+						.mount(self.scene3)
+						.value('Type text to see text input!')
+						.focus(true);
 				}
 			});
 		});
