@@ -1,0 +1,76 @@
+<style type="text/css">
+	.dragTarget {
+		border: 2px dashed #ccc;
+		border-radius: 10px;
+		width: 130px;
+		height: 80px;
+		padding: 10px;
+		text-align: center;
+		margin: 3px;
+		margin-bottom: 10px;
+	}
+
+	.dragTarget span {
+		display: block;
+		margin-top: 25px;
+	}
+
+	#cellSheetWindow #topPanel {
+		width: 786px;
+		height: 355px;
+	}
+
+	#cellSheetWindow #bottomPanel {
+		width: 786px;
+		height: 26px;
+	}
+
+	#cellSheetWindow #textureImage {
+		float: left;
+		width: 570px;
+		height: 350px;
+		border: 1px solid #ccc;
+		left:0px;
+		top:0px;
+	}
+
+	#cellSheetWindow #textureGrid {
+
+	}
+
+	#cellSheetWindow #cellSettings {
+		float: right;
+		/*border: 1px solid #fff;*/
+		width: 205px;
+		height: 350px;
+	}
+</style>
+<div id="cellSheetWindow">
+	<div id="topPanel">
+		<div id="textureImage">
+			<canvas id="textureGrid" width="570" height="350"></canvas>
+		</div>
+
+		<div id="cellSettings">
+			<table>
+				<tr>
+					<td colspan="2">
+						<strong>Cell Sheet Settings</strong>
+					</td>
+				</tr>
+				<tr>
+					<td>Columns</td>
+					<td><input id="columnCount" class="numberBox" type="number" min="1" step="1" /></td>
+				</tr>
+				<tr>
+					<td>Rows</td>
+					<td><input id="rowCount" class="numberBox" type="number" min="1" step="1" /></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<div id="bottomPanel">
+		<input id="cancel" class="k-button" type="button" value="Cancel" onclick="editor.window('cellSheetWindow').close();" />
+		<input id="ok" class="k-button" type="button" value="Create Cell Sheet" onclick="editor.window('cellSheetWindow').createTexture();" />
+	</div>
+</div>
