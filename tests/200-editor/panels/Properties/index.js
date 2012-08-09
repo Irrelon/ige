@@ -17,7 +17,7 @@ PropertiesPanel = IgeClass.extend({
 	selectObject: function (obj) {
 		$('#propertiesContent').html('Loading...');
 		$.ajax({
-			url: "panels/Properties/" + obj.classId() + ".html",
+			url: "panels/Properties/properties.html",
 			success: function (data) {
 				var treeView = $("#scenegraph-treeview").data('kendoTreeView');
 
