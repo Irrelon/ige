@@ -1,17 +1,20 @@
 TexturesPanel = IgeClass.extend({
 	init: function (panelBar) {
-		var self = this;
+		var self = this,
+			container = $($("#tabStrip").data('kendoTabStrip').contentElement(2));
 
 		// Load our content
 		$.ajax({
 			url: "panels/Textures/index.html",
 			success: function (data) {
 				// Add the panel
-				var panelContent = panelBar.append({
+				var /*panelContent = assetsPanelBar.append({
 					text: 'Textures',
 					expanded: true,
 					content: data
-				}), dropTarget;
+				}), */dropTarget;
+
+				container.html($(data));
 
 				// Add the drag-drop event listener
 				dropTarget = $('#texturePanel #dragTarget')[0];

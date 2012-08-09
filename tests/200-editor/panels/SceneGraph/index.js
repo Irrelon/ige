@@ -1,12 +1,10 @@
 SceneGraphPanel = IgeEventingClass.extend({
 	init: function (panelBar) {
 		// Add the panel
-		var panelContent = panelBar.append({
-			text: 'SceneGraph',
-			expanded: true,
-			content: '<div id="scenegraph-treeview"></div>',
-			id: 'sceneGraphPanelItem'
-		}), self = this;
+		var self = this,
+			container = $($("#tabStrip").data('kendoTabStrip').contentElement(0));
+
+		container.html($('<div id="scenegraph-treeview"></div>'));
 
 		editor.on('engineReady', function () {
 			self.sceneGraphData = new kendo.data.HierarchicalDataSource({
@@ -42,6 +40,7 @@ SceneGraphPanel = IgeEventingClass.extend({
 
 					case 'IgeTileMap2d':
 					case 'IgeTextureMap':
+						this._selectedObject.drawMouse(false);
 						this._selectedObject.drawGrid(0);
 						break;
 

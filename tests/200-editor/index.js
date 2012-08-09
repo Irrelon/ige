@@ -15,6 +15,16 @@
 		},
 
 		setupPage: function () {
+			window.addEventListener("dragover",function(e){
+				e = e || event;
+				e.preventDefault();
+			},false);
+
+			window.addEventListener("drop",function(e){
+				e = e || event;
+				e.preventDefault();
+			},false);
+
 			// Splitters
 			$("#vertical").kendoSplitter({
 				orientation: "vertical",
@@ -99,6 +109,25 @@
 
 			$("#vertical").data("kendoSplitter").autoResize();
 
+			// Setup right-hand tabs
+			$("#tabStrip").kendoTabStrip({
+				animation:	{
+					open: {
+						effects: "fadeIn",
+						duration: 100
+					}
+				}
+			});
+
+			// Setup panels
+			container = $($("#tabStrip").data('kendoTabStrip').contentElement(1));
+			$('<ul id="assetsPanelBar"></ul>').appendTo(container);
+
+			// Panel bars
+			$("#assetsPanelBar").kendoPanelBar({
+				expandMode: "multiple"
+			});
+
 			// Setup the main drop target
 			$('#mainDropTarget').kendoDropTarget({
 				dragenter: function (e) {
@@ -108,7 +137,7 @@
 					$('#dropText').text('Drop Here');
 				},
 				drop: function (e) {
-					console.log('drop');
+					//console.log('drop');
 				}
 			});
 		},
@@ -142,6 +171,37 @@
 			return this;
 		},
 
+		create: {
+			IgeEntity: function() {
+				var sgPanel = editor.panel('sceneGraph'),
+					treeView = $("#scenegraph-treeview").data('kendoTreeView'),
+					ent, treeItem;
+
+				if (sgPanel.selectedObject()) {
+					// Create object
+					ent = new igeFrame.IgeEntity()
+						.drawBounds(false)
+						.drawBoundsData(false)
+						.width(100)
+						.height(100)
+						.mount(sgPanel.selectedObject());
+
+					// Update the scenegraph panel
+					treeItem = treeView.append({
+						text: ent.id() + ' (' + ent._classId + ')',
+						parent: ent._parent,
+						id: ent.id()
+					}, treeView.select());
+
+					// Select the new item
+					treeView.select(treeItem);
+					sgPanel.selectedObject(ent.id());
+
+					return ent;
+				}
+			}
+		},
+
 		_processPrePanels: function () {
 			var i;
 
@@ -155,6 +215,8 @@
 		},
 
 		_engineLoaded: function () {
+			var self = this;
+
 			// Get a reference to the engine in the iframe
 			igeFrame = $('#igeFrame')[0].contentWindow;
 			ige = igeFrame.ige;
@@ -166,12 +228,25 @@
 			// Add any pre-added panels now that we're ready!
 			this._processPrePanels();
 
-			// Add the camera mouse panning component so the
-			// user can pan the camera with the mouse
-			ige.$('vp1').addComponent(igeFrame.IgeMousePanComponent);
+			// Listen for engine mouse events
+			ige.input.on('mouseUp', function (event) { self._engineMouseUp(event); });
+			ige.input.on('mouseDown', function (event) { self._engineMouseDown(event); });
+			ige.input.on('mouseMove', function (event) { self._engineMouseMove(event); });
 
 			// Emit engine ready
 			this.emit('engineReady');
+		},
+
+		_engineMouseUp: function (event) {
+			this.emit('igeMouseUp', event);
+		},
+
+		_engineMouseDown: function (event) {
+			this.emit('igeMouseDown', event);
+		},
+
+		_engineMouseMove: function (event) {
+			this.emit('igeMouseMove', event);
 		}
 	});
 }());

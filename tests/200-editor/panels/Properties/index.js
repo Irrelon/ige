@@ -1,12 +1,10 @@
 PropertiesPanel = IgeClass.extend({
 	init: function (panelBar) {
 		// Add the panel
-		var panelContent = panelBar.append({
-				text: 'Properties',
-				expanded: true,
-				content: '<div id="propertiesContent" style="padding: 5px;">No object selected, use the SceneGraph panel to select an object.</div>'
-			}),
-			self = this;
+		var self = this,
+			container = $($("#tabStrip").data('kendoTabStrip').contentElement(1));
+
+		container.html($('<div id="propertiesContent" style="padding: 5px;">No object selected, use the SceneGraph panel to select an object.</div>'));
 
 		// Listen to the scenegraph panel for selection events
 		editor.panel('sceneGraph').on('selectedObject', function (obj) {
@@ -69,18 +67,18 @@ PropertiesPanel = IgeClass.extend({
 
 
 				$('#propertiesContent').append(data);
-				$('.numberBox').kendoNumericTextBox({
+				$('#propertiesContent .numberBox').kendoNumericTextBox({
 					spin: onValueChange,
 					change: onValueChange
 				});
 
 				// Panel bars
-				$(".objectControlPanel").kendoPanelBar({
+				$("#propertiesContent .objectControlPanel").kendoPanelBar({
 					expandMode: "multiple"
 				});
 
 				// Object ID apply button
-				$('#objectIdApply').click(function () {
+				$('#propertiesContent #objectIdApply').click(function () {
 					obj.id($('#objectId').val());
 					$('.k-in', treeView.select()).html(obj.id() + ' (' + obj._classId + ')');
 					treeView.dataItem(treeView.select()).set('id', obj.id());

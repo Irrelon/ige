@@ -85,3 +85,31 @@ h3 {
 .objectControlProperties label {
     float: left;
 }
+
+/* Stop panel bar turning blue ! stupid! */
+.k-panelbar .k-header.k-state-selected {
+    background-color: #1D1D1D;
+}
+
+/*
+#tabStrip { */
+/* tabstrip element *//*
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    */
+/*width: auto;*//*
+
+    height: auto;
+}
+
+.k-tabstrip .k-content {
+    position: absolute;
+    width: 98%;
+    height: auto;
+    overflow: auto;
+    box-sizing: border-box;
+}*/

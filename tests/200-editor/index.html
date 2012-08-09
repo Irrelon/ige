@@ -34,9 +34,10 @@
 	<script type="text/javascript" src="panels/SceneGraph/index.js"></script>
 	<script type="text/javascript" src="panels/Properties/index.js"></script>
 	<script type="text/javascript" src="panels/Textures/index.js"></script>
+	<script type="text/javascript" src="panels/CellSheets/index.js"></script>
 
 	<!-- Editor Windows -->
-	<script type="text/javascript" src="windows/Texture/index.js"></script>
+	<script type="text/javascript" src="windows/CellSheet/index.js"></script>
 </head>
 <body>
 	<div id="editorContent" class="k-content">
@@ -48,7 +49,28 @@
 					<iframe id="igeFrame" src="ige/index.html"></iframe>
 					<div id="mainDropTarget"><span id="dropText">Drop Here</span></div>
 				</div>
-				<div id="rightBar" class="uiBar" style="overflow: auto;"></div>
+				<div id="rightBar" class="uiBar" style="overflow: auto;">
+					<div id="tabStrip">
+						<ul>
+							<li class="k-state-active">
+								SceneGraph
+							</li>
+							<li>
+								Properties
+							</li>
+							<li>
+								Textures
+							</li>
+							<li>
+								Cell Sheets
+							</li>
+						</ul>
+						<div>Loading...</div>
+						<div></div>
+						<div></div>
+						<div></div>
+					</div>
+				</div>
 			</div>
 			<div id="statusBar" class="uiBarBottom"></div>
 		</div>
