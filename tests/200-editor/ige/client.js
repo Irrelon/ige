@@ -59,6 +59,7 @@ var Client = IgeClass.extend({
 			.tileHeight(40)
 			.highlightOccupied(false)
 			.translateTo(0, 0, 0)
+			.drawMouse(false)
 			.drawBounds(false)
 			.drawBoundsData(false)
 			.mount(this.mainScene);
