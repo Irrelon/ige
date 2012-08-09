@@ -1,0 +1,82 @@
+<style type="text/css">
+	#cellSheetPanel {
+		width: 100%;
+		height: 100%;
+		user-select: none;
+		-webkit-user-select: none;
+	}
+
+	#cellSheetPanel #dragTarget {
+		border: 2px dashed #ccc;
+		border-radius: 10px;
+		width: 100%;
+		height: 80px;
+		padding: 10px;
+		text-align: center;
+		margin-top:10px;
+		margin-bottom: 10px;
+		box-sizing: border-box;
+	}
+
+	#cellSheetPanel #dragTarget span {
+		display: block;
+		margin-top: 10px;
+	}
+
+	#cellSheetPanel #loadingList {
+		list-style-type: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	#cellSheetPanel #loadingList li {
+		list-style-type: none;
+		display: block;
+		width: 64px;
+		height: 64px;
+		background-color: #333;
+		background-size: 100% 100%;
+		border: 1px dashed #ccc;
+		margin-left: 5px;
+		margin-top: 5px;
+		float: left;
+	}
+
+	#cellSheetPanel #loadingList li .loadingCircle {
+		background-image: url(assets/textures/ui/loadingCircle.gif);
+		width: 31px;
+		height: 31px;
+		position: relative;
+		top: 50%;
+		left: 50%;
+		margin-left: -16px;
+		margin-top: -16px;
+	}
+
+	#cellSheetPanel #textureList {
+		padding: 0;
+		margin: 0;
+	}
+
+	#cellSheetPanel #textureList div {
+		display: block;
+		margin-left: 4px;
+		margin-top: 5px;
+		float: left;
+		cursor: pointer;
+	}
+
+	.smallThumb {
+		background-color: #333;
+		background-size: 100%;
+		background-repeat: no-repeat;
+		border: 1px dashed #ccc;
+		width: 40px;
+		height: 40px;
+	}
+</style>
+<div id="cellSheetPanel">
+	<div id="dragTarget"><span>Create New Cell Sheet<BR>Drag and Drop an Image File Here</span></div>
+	<ul id="loadingList"></ul>
+	<div id="textureList" class="smallThumbs" ondragstart="event.dataTransfer.setData('text/plain', 'moo'); console.log('dragging');" ondragend="console.log('dragend');"></div>
+</div>
