@@ -52,12 +52,11 @@ var Client = IgeClass.extend({
 			.mount(ige);
 
 		// Create the tile map
-		this.tileMap1 = new IgeTileMap2d()
-			.id('tileMap1')
+		this.textureMap1 = new IgeTextureMap()
+			.id('textureMap1')
 			.layer(2)
 			.tileWidth(40)
 			.tileHeight(40)
-			.drawGrid(40)
 			.highlightOccupied(false)
 			.translateTo(0, 0, 0)
 			.drawBounds(false)
