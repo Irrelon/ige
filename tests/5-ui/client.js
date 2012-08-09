@@ -13,6 +13,7 @@ var Client = IgeClass.extend({
 		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
 		gameTexture[1] = new IgeCellSheet('../assets/textures/ui/icon_entity.png', 2, 1);
 		gameTexture[2] = new IgeFontSheet('../assets/textures/fonts/verdana_12pt.png', 0);
+		gameTexture[3] = new IgeFontSheet('../assets/textures/fonts/verdana_10pt.png', 0);
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -28,7 +29,7 @@ var Client = IgeClass.extend({
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
 						.autoSize(true)
-						//.drawBounds(true)
+						.drawBounds(true)
 						//.drawBoundsData(true)
 						.scene(self.scene1)
 						.mount(ige);
@@ -57,7 +58,7 @@ var Client = IgeClass.extend({
 					// Create a new UI entity
 					self.obj[1] = new IgeUiEntity()
 						.id('topBar')
-						.depth(1)
+						.depth(10)
 						.backgroundColor('#474747')
 						.left(0)
 						.top(0)
@@ -66,8 +67,6 @@ var Client = IgeClass.extend({
 						.borderBottomColor('#666666')
 						.borderBottomWidth(1)
 						.backgroundPosition(0, 0)
-						.mouseOver(function () {this.backgroundColor('#49ceff'); })
-						.mouseOut(function () {this.backgroundColor('#474747'); })
 						.mount(self.scene3);
 
 					self.obj[2] = new IgeUiEntity()
@@ -128,7 +127,7 @@ var Client = IgeClass.extend({
 
 					self.obj[6] = new IgeUiTextBox()
 						.id('textBox1')
-						.fontSheet(gameTexture[2])
+						.fontSheet(gameTexture[3])
 						.backgroundColor('#000000')
 						.borderColor('#ffffff')
 						.borderWidth(1)
@@ -140,6 +139,76 @@ var Client = IgeClass.extend({
 						.mount(self.scene3)
 						.value('Type text to see text input!')
 						.focus(true);
+
+					// Define some menu item methods
+					var overFunc = function () {
+							this.backgroundColor('#666666');
+							this.open();
+						},
+						outFunc = function () {
+							this.backgroundColor('');
+							this.close();
+						},
+						upFunc = function () {
+							console.log('Clicked', this.menuData().text);
+						};
+
+					// Create a menu
+					self.obj[7] = new IgeUiMenu()
+						.id('menu1')
+						.depth(100)
+						.fontSheet(gameTexture[3])
+						.left(0)
+						.top(0)
+						.width(100)
+						.height(30)
+						.borderColor('#ffffff')
+						//.borderWidth(1)
+						.menuData([{
+							text:'File',
+							width: 34,
+							mouseOver: overFunc,
+							mouseOut: outFunc,
+							mouseUp: upFunc,
+							items: [{
+								text: 'New...',
+								width: 40,
+								mouseUp: upFunc
+							}, {
+								text: 'Open...',
+								width: 40,
+								mouseUp: upFunc
+							}, {
+								text: 'Save',
+								width: 40,
+								mouseUp: upFunc
+							}, {
+								text: 'Save as...',
+								width: 40,
+								mouseUp: upFunc
+							}]
+						}, {
+							text:'Multi',
+							width: 40,
+							mouseOver: overFunc,
+							mouseOut: outFunc,
+							mouseUp: upFunc,
+							items: [{
+								text: 'Child1',
+								width: 40,
+								mouseUp: upFunc,
+								items: [{
+									text: 'Child1_1',
+									width: 40,
+									mouseUp: upFunc
+								}, {
+									text: 'Child1_2',
+									width: 40,
+									mouseUp: upFunc
+								}]
+							}]
+						}])
+						.mount(self.scene3);
 				}
 			});
 		});
