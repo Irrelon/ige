@@ -32,16 +32,48 @@ SceneGraphPanel = IgeEventingClass.extend({
 
 	selectedObject: function (id) {
 		if (id !== undefined) {
-			if (this._selectedObject && !this._selectedObject._scene) {
-				this._selectedObject.drawBounds(false);
+			// Handle existing selected object
+			if (this._selectedObject) {
+				switch (this._selectedObject.classId()) {
+					case 'IgeViewport':
+					case 'IgeScene2d':
+						// Do nothing
+						break;
+
+					case 'IgeTileMap2d':
+					case 'IgeTextureMap':
+						this._selectedObject.drawGrid(0);
+						break;
+
+					default:
+						this._selectedObject.drawBounds(false);
+						break;
+				}
+
 			}
 
-			var item = ige.$(id);
-			item.drawBounds(true);
-			item.drawBoundsData(true);
+			// Assign the new selected object
+			this._selectedObject = ige.$(id);
 
-			this._selectedObject = item;
-			this.emit('selectedObject', item);
+			// Handle new selected object
+			switch (this._selectedObject.classId()) {
+				case 'IgeViewport':
+				case 'IgeScene2d':
+					// Do nothing
+					break;
+
+				case 'IgeTileMap2d':
+				case 'IgeTextureMap':
+					this._selectedObject.drawGrid(40);
+					break;
+
+				default:
+					this._selectedObject.drawBounds(true);
+					this._selectedObject.drawBoundsData(true);
+					break;
+			}
+
+			this.emit('selectedObject', this._selectedObject);
 			return this;
 		}
 
