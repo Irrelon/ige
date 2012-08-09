@@ -31,6 +31,23 @@ var IgeMap2d = IgeClass.extend({
 	},
 
 	/**
+	 * Clears any data set at the specified map tile co-ordinates.
+	 * @param x
+	 * @param y
+	 * @return {Boolean} True if data was cleared or false if no data existed.
+	 */
+	clearData: function (x, y) {
+		if (x !== undefined && y !== undefined) {
+			if (this._mapData[x] !== undefined) {
+				delete this._mapData[x][y];
+				return true;
+			}
+		}
+
+		return false;
+	},
+
+	/**
 	 * Checks if the tile area passed has any data stored in it. If
 	 * so, returns true, otherwise false.
 	 * @param x
@@ -69,6 +86,14 @@ var IgeMap2d = IgeClass.extend({
 		}
 
 		return this._mapData;
+	},
+
+	/**
+	 * Returns a string of the map's data in JSON format.
+	 * @return {String}
+	 */
+	mapDataString: function () {
+		return JSON.stringify(this.mapData());
 	},
 
 	/**

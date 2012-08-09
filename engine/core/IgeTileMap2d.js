@@ -1,4 +1,9 @@
 // TODO: Make the mouse events inactive on tilemaps, instead allow behaviours to be added that call the mouseToTile method and can do things based on that. This solves the problem of tilemaps having arbitrary infinite bounds and allows the programmer to decide which tile maps are being interacted with.
+/**
+ * Tile maps provide a way to align mounted child objects to a tile-based grid.
+ * NOTE: These are not to be confused with IgeTextureMap's which allow you to
+ * paint a bunch of tiles to a grid.
+ */
 var IgeTileMap2d = IgeInteractiveEntity.extend({
 	classId: 'IgeTileMap2d',
 
@@ -150,7 +155,7 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 	 * @return {Array} The array of tile co-ordinates as IgePoint instances.
 	 */
 	_objectOverTiles: function () {
-
+		// TODO: Write this!
 	},
 
 	_resizeEvent: function (event) {
