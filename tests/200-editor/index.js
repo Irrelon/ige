@@ -10,7 +10,7 @@
 
 			// Listen for when the engine iframe has loaded
 			$(document).ready(function () {
-				$('#igeFrame').load(self._engineLoaded);
+				$('#igeFrame').load(function () { self._engineLoaded(); });
 			});
 		},
 
@@ -171,19 +171,19 @@
 			igeFrame = $('#igeFrame')[0].contentWindow;
 			ige = igeFrame.ige;
 
-			self.setupPage();
+			this.setupPage();
 
-			self._ready = true;
+			this._ready = true;
 
 			// Add any pre-added panels now that we're ready!
-			self._processPrePanels();
+			this._processPrePanels();
 
 			// Add the camera mouse panning component so the
 			// user can pan the camera with the mouse
-			ige.$('vp1').addComponent(igeFrame.IgeMouseCameraPanComponent);
+			ige.$('vp1').addComponent(igeFrame.IgeMousePanComponent);
 
 			// Emit engine ready
-			self.emit('engineReady');
+			this.emit('engineReady');
 		}
 	});
 }());
