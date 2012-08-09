@@ -11,6 +11,19 @@
 	<!-- STYLES -->
 	<link href="../../css/default.css" rel="stylesheet" type="text/css" />
 
+	<!-- Disable Drag/Drop -->
+	<script type="text/javascript">
+		window.addEventListener("dragover",function(e){
+			e = e || event;
+			e.preventDefault();
+		},false);
+
+		window.addEventListener("drop",function(e){
+			e = e || event;
+			e.preventDefault();
+		},false);
+	</script>
+
 	<!-- Core -->
 	<script type="text/javascript" src="../../../engine/core/IgeBase.js"></script>
 	<script type="text/javascript" src="../../../engine/core/IgeClass.js"></script>
