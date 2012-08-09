@@ -518,7 +518,7 @@ var IgeObject = IgeEventingClass.extend({
 				arrCount = arr.length;
 
 			while (arrCount--) {
-				arr[arrCount].method.apply(this, ctx);
+				arr[arrCount].method.apply(this, arguments);
 			}
 
 			this._behaviourFA = ige._frameAlternator;
