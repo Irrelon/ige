@@ -88,7 +88,7 @@ TexturesPanel = IgeClass.extend({
 
 	textureTile: function (url) {
 		var self = this,
-			elem = $('<div class="smallThumb" style="background-image: url(' + url + ');"></div>'),
+			elem = $('<div class="smallThumb textureTile" style="background-image: url(' + url + ');"></div>'),
 			tex;
 
 		// Append the list item
@@ -100,6 +100,9 @@ TexturesPanel = IgeClass.extend({
 		// Set the texture data
 		elem.data('textureUrl', url);
 		elem.data('textureObject', tex);
+
+		// Listen for click events
+		elem.click(this._textureTileClicked);
 
 		// Listen for drag events
 		elem.kendoDraggable({
@@ -117,6 +120,14 @@ TexturesPanel = IgeClass.extend({
 
 			}
 		});
+	},
+
+	_textureTileClicked: function (event) {
+		// Set all other texture tiles back to a dashed border
+		$('#texturePanel #textureList .textureTile').css('borderStyle', 'dashed');
+
+		editor._currentTexture = $(this).data('textureObject');
+		$(this).css('borderStyle', 'solid');
 	}
 });
 

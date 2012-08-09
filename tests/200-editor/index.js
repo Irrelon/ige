@@ -31,7 +31,7 @@
 				panes: [
 					{ collapsible: true, resizable: false, size: "64px" },
 					{ collapsible: false },
-					{ collapsible: true, resizable: false, size: "250px" }
+					{ collapsible: true, resizable: false, size: "350px" }
 				]
 			});
 
@@ -140,18 +140,6 @@
 			}
 
 			return this;
-		},
-
-		selectObject: function (id) {
-			if (this._selectedItem && !this._selectedItem._scene) {
-				this._selectedItem.drawBounds(false);
-			}
-
-			var item = ige.$(id);
-			item.drawBounds(true);
-			item.drawBoundsData(true);
-
-			this._selectedItem = item;
 		},
 
 		_processPrePanels: function () {

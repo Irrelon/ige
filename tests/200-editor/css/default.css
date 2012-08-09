@@ -81,3 +81,7 @@ h3 {
     margin-top: -23px;
     text-align: center;
 }
+
+.objectControlProperties label {
+    float: left;
+}
