@@ -1,10 +1,10 @@
 /**
- * When added to a viewport, automatically enables mouse panning
- * on the viewport's camera.
+ * When added to a viewport, automatically adds mouse panning
+ * capabilities to the viewport's camera.
  */
 var IgeMousePanComponent = IgeEventingClass.extend({
 	classId: 'IgeMousePanComponent',
-	componentId: 'cameraPan',
+	componentId: 'mousePan',
 
 	/**
 	 * @constructor
@@ -18,10 +18,36 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 
 		var self = this;
 
+		// Set the pan component to inactive to start with
+		this._enabled = false;
+
 		// Listen for the mouse events we need to operate a mouse pan
 		ige.input.on('mouseDown', function (event) { self._mouseDown(event); });
 		ige.input.on('mouseMove', function (event) { self._mouseMove(event); });
 		ige.input.on('mouseUp', function (event) { self._mouseUp(event); });
+	},
+
+	/**
+	 * Sets / gets the enabled flag. If set to true, pan
+	 * operations will be processed. If false, no panning will
+	 * occur.
+	 * @param {Boolean=} val
+	 * @return {*}
+	 */
+	enabled: function (val) {
+		if (val !== undefined) {
+			this._enabled = val;
+
+			if (!this._enabled) {
+				// Remove the pan start data
+				delete this._panStartMouse;
+				delete this._panStartCamera;
+			}
+
+			return this._entity;
+		}
+
+		return this._enabled;
 	},
 
 	/**
@@ -31,17 +57,19 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_mouseDown: function (event) {
-		// Record the mouse down position - pan starting
-		var curMousePos = ige._mousePos;
-		this._panStartMouse = {
-			x: curMousePos.x,
-			y: curMousePos.y
-		};
+		if (this._enabled) {
+			// Record the mouse down position - pan starting
+			var curMousePos = ige._mousePos;
+			this._panStartMouse = {
+				x: curMousePos.x,
+				y: curMousePos.y
+			};
 
-		this._panStartCamera = {
-			x: this._entity.camera._translate.x,
-			y: this._entity.camera._translate.y
-		};
+			this._panStartCamera = {
+				x: this._entity.camera._translate.x,
+				y: this._entity.camera._translate.y
+			};
+		}
 	},
 
 	/**
@@ -51,19 +79,21 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_mouseMove: function (event) {
-		// Pan the camera if the mouse is down
-		if (this._panStartMouse) {
-			var curMousePos = ige._mousePos,
-				panCords = {
-					x: this._panStartMouse.x - curMousePos.x,
-					y: this._panStartMouse.y - curMousePos.y
-				};
+		if (this._enabled) {
+			// Pan the camera if the mouse is down
+			if (this._panStartMouse) {
+				var curMousePos = ige._mousePos,
+					panCords = {
+						x: this._panStartMouse.x - curMousePos.x,
+						y: this._panStartMouse.y - curMousePos.y
+					};
 
-			this._entity.camera.translateTo(
-				panCords.x + this._panStartCamera.x,
-				panCords.y + this._panStartCamera.y,
-				0
-			);
+				this._entity.camera.translateTo(
+					panCords.x + this._panStartCamera.x,
+					panCords.y + this._panStartCamera.y,
+					0
+				);
+			}
 		}
 	},
 
@@ -74,23 +104,25 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_mouseUp: function (event) {
-		// End the pan
-		if (this._panStartMouse) {
-			var curMousePos = ige._mousePos,
-				panCords = {
-					x: this._panStartMouse.x - curMousePos.x,
-					y: this._panStartMouse.y - curMousePos.y
-				};
+		if (this._enabled) {
+			// End the pan
+			if (this._panStartMouse) {
+				var curMousePos = ige._mousePos,
+					panCords = {
+						x: this._panStartMouse.x - curMousePos.x,
+						y: this._panStartMouse.y - curMousePos.y
+					};
 
-			this._entity.camera.translateTo(
-				panCords.x + this._panStartCamera.x,
-				panCords.y + this._panStartCamera.y,
-				0
-			);
+				this._entity.camera.translateTo(
+					panCords.x + this._panStartCamera.x,
+					panCords.y + this._panStartCamera.y,
+					0
+				);
 
-			// Remove the pan start data to end the pan operation
-			delete this._panStartMouse;
-			delete this._panStartCamera;
+				// Remove the pan start data to end the pan operation
+				delete this._panStartMouse;
+				delete this._panStartCamera;
+			}
 		}
 	}
 });
