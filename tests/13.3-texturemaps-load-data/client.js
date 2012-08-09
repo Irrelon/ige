@@ -68,9 +68,8 @@ var Client = IgeClass.extend({
 					self.textureMap1.loadMap(map1);
 
 					// The addTexture method also returns the index of the added
-					// texture so if you do not want to hard-code the texture
-					// indexes, you can get the return value and use it as below
-					texIndex = self.textureMap2.addTexture(gameTexture[1]);
+					// texture
+					var texIndex = self.textureMap2.addTexture(gameTexture[1]);
 
 					// Paint isometric texture map
 					// Set the map data to the map2 we loaded in our index.html
