@@ -45,8 +45,6 @@ var Client = IgeClass.extend({
 						.texture(gameTexture[0])
 						.translateTo(0, 0, 0)
 						.mount(self.scene1);
-
-
 				}
 			});
 		});
