@@ -160,6 +160,15 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Returns the object's parent object (the object that
+	 * it is mounted to).
+	 * @return {*}
+	 */
+	parent: function () {
+		return this._parent;
+	},
+
+	/**
 	 * Mounts this object to the passed object in the scenegraph.
 	 * @param {IgeObject} obj
 	 * @return {*} Returns this on success or false on failure.
