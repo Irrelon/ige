@@ -55,7 +55,17 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * @param map
 	 */
 	loadMap: function (map) {
+		// TODO: Load the textures this map requires via the url array in map.textures
 		this.map.mapData(map.data);
+	},
+
+	/**
+	 * Returns a map JSON string that can be saved to a data file and loaded
+	 * with the loadMap() method.
+	 */
+	saveMap: function () {
+		// TODO: Return the string data and also an array with each map texture in map.textures
+		// in URL format
 	},
 
 	/**
