@@ -169,6 +169,14 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Returns the object's children as an array of objects.
+	 * @return {Array}
+	 */
+	children: function () {
+		return this._children;
+	},
+
+	/**
 	 * Mounts this object to the passed object in the scenegraph.
 	 * @param {IgeObject} obj
 	 * @return {*} Returns this on success or false on failure.
