@@ -10,17 +10,15 @@
 		border: 2px dashed #ccc;
 		border-radius: 10px;
 		width: 100%;
-		height: 80px;
 		padding: 10px;
 		text-align: center;
-		margin-top:10px;
-		margin-bottom: 10px;
 		box-sizing: border-box;
 	}
 
 	#cellSheetPanel #dragTarget span {
 		display: block;
-		margin-top: 10px;
+		height: 60px;
+		padding-top: 30px;
 	}
 
 	#cellSheetPanel #loadingList {
@@ -53,20 +51,23 @@
 		margin-top: -16px;
 	}
 
-	#cellSheetPanel #textureList {
+	#cellSheetPanel #textureList, #cellSheetPanel #textureCells {
 		padding: 0;
 		margin: 0;
 	}
 
-	#cellSheetPanel #textureList div {
-		display: block;
-		margin-left: 4px;
-		margin-top: 5px;
-		float: left;
-		cursor: pointer;
+	#cellSheetPanel .textureBlocks {
+		display: table;
+		border-spacing: 5px;
 	}
 
-	.smallThumb {
+	#cellSheetPanel .textureBlocks div {
+		display: table-cell;
+		cursor: pointer;
+		float: left;
+	}
+
+	#cellSheetPanel #textureList .textureBlocks .smallThumb {
 		background-color: #333;
 		background-size: 100%;
 		background-repeat: no-repeat;
@@ -74,9 +75,25 @@
 		width: 40px;
 		height: 40px;
 	}
+
+	#cellSheetPanel #textureCells .textureBlocks .smallThumb {
+		background-color: #333;
+		background-repeat: no-repeat;
+		border: 1px dashed #ccc;
+		width: 40px;
+		height: 40px;
+	}
 </style>
 <div id="cellSheetPanel">
-	<div id="dragTarget"><span>Create New Cell Sheet<BR>Drag and Drop an Image File Here</span></div>
-	<ul id="loadingList"></ul>
-	<div id="textureList" class="smallThumbs" ondragstart="event.dataTransfer.setData('text/plain', 'moo'); console.log('dragging');" ondragend="console.log('dragend');"></div>
+	<ul id="cellSheetPanelBar">
+		<li>Create
+			<div id="dragTarget"><span>Create New Cell Sheet<BR>Drag and Drop an Image File Here</span></div>
+		</li>
+		<li>Existing
+			<div id="textureList"><div class="textureBlocks"></div></div>
+		</li>
+		<li>Cells
+			<div id="textureCells"><div class="textureBlocks"></div></div>
+		</li>
+	</ul>
 </div>

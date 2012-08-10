@@ -60,7 +60,7 @@ CellSheetWindow = IgeClass.extend({
 
 	createTexture: function () {
 		// Ask the cell sheet panel to create the texture
-		editor.panel('cellSheets').textureTile(this._cellImageUrl, this._columnCount, this._rowCount);
+		editor.panel('cellSheets').textureTile(this._cellImageUrl, this._columnCount, this._rowCount, this._cellImage.width, this._cellImage.height);
 
 		// Remove the window
 		this.close();

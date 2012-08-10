@@ -51,19 +51,6 @@ var Client = IgeClass.extend({
 			.drawMouse(true)
 			.mount(ige);
 
-		// Create the tile map
-		this.textureMap1 = new IgeTextureMap()
-			.id('textureMap1')
-			.layer(2)
-			.tileWidth(40)
-			.tileHeight(40)
-			.highlightOccupied(false)
-			.translateTo(0, 0, 0)
-			.drawMouse(false)
-			.drawBounds(false)
-			.drawBoundsData(false)
-			.mount(this.mainScene);
-
 		this.log('Scene setup complete!');
 	}
 });

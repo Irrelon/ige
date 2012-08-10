@@ -23,6 +23,12 @@ PropertiesPanel = IgeClass.extend({
 
 				var onValueChange = function () {
 					switch (this.element[0].id) {
+						case 'layer':
+							obj.layer(parseFloat(this.element.val()));
+							break;
+						case 'depth':
+							obj.depth(parseFloat(this.element.val()));
+							break;
 						case 'translateX':
 							obj._translate.x = parseFloat(this.element.val());
 							break;
@@ -65,7 +71,6 @@ PropertiesPanel = IgeClass.extend({
 					}
 				};
 
-
 				$('#propertiesContent').append(data);
 				$('#propertiesContent .numberBox').kendoNumericTextBox({
 					spin: onValueChange,
@@ -86,6 +91,8 @@ PropertiesPanel = IgeClass.extend({
 
 				// Set the correct initial data
 				$('#propertiesContent #objectId').val(obj.id());
+				$('#propertiesContent #layer').data("kendoNumericTextBox").value(obj.layer());
+				$('#propertiesContent #depth').data("kendoNumericTextBox").value(obj.depth());
 
 				$('#propertiesContent #translateX').data("kendoNumericTextBox").value(obj._translate.x);
 				$('#propertiesContent #translateY').data("kendoNumericTextBox").value(obj._translate.y);

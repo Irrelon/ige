@@ -16,6 +16,11 @@ CellSheetsPanel = IgeClass.extend({
 
 				container.html($(data));
 
+				// Create the panel bar
+				$("#cellSheetPanelBar").kendoPanelBar({
+					expandMode: "multiple"
+				});
+
 				// Add the drag-drop event listener
 				dropTarget = $('#cellSheetPanel #dragTarget')[0];
 
@@ -46,15 +51,12 @@ CellSheetsPanel = IgeClass.extend({
 			// Read the File object in this FileList.
 			file = files[i];
 
-			elem = $('<li><div class="loadingCircle"></div></li>');
-			$('#cellSheetPanel #loadingList').append(elem);
-
 			// Only process image files.
 			if (file.type.match('image.*')) {
 				reader = new FileReader();
 
 				// Closure to capture the file information.
-				reader.onload = (function(theFile, theElem, self) {
+				reader.onload = (function(theFile, self) {
 					return function(e) {
 						// Render image so we can grab dimensions from it
 						var img = $('<img src="' + e.target.result +'" />').appendTo($(document.body));
@@ -73,9 +75,6 @@ CellSheetsPanel = IgeClass.extend({
 								imageHeight: height,
 								projectPath: editor._projectPath
 							}, function (data) {
-								// Remove loading element
-								theElem.remove();
-
 								// Show the cell sheet editor window
 								editor.window('cellSheetWindow', CellSheetWindow);
 
@@ -90,7 +89,7 @@ CellSheetsPanel = IgeClass.extend({
 							});
 						});
 					};
-				}(file, elem, self));
+				}(file, self));
 
 				// Read in the image file as a data URL.
 				reader.readAsDataURL(file);
@@ -99,13 +98,16 @@ CellSheetsPanel = IgeClass.extend({
 		}
 	},
 
-	textureTile: function (url, columns, rows) {
+	textureTile: function (url, columns, rows, width, height) {
 		var self = this,
-			elem = $('<div class="smallThumb textureTile" style="background-image: url(' + url + ');"></div>'),
+			elem = $('<div class="smallThumb textureTile"></div>'),
 			tex;
 
+		// Add the background image
+		elem.css('backgroundImage', 'url(' + url + ')');
+
 		// Append the list item
-		$('#cellSheetPanel #textureList').append(elem);
+		$('#cellSheetPanel #textureList .textureBlocks').append(elem);
 
 		// Create the texture in the engine
 		tex = new igeFrame.IgeCellSheet('../' + url, columns, rows);
@@ -113,6 +115,10 @@ CellSheetsPanel = IgeClass.extend({
 		// Set the texture data
 		elem.data('textureUrl', url);
 		elem.data('textureObject', tex);
+		elem.data('textureColumns', columns);
+		elem.data('textureRows', rows);
+		elem.data('textureWidth', width);
+		elem.data('textureHeight', height);
 
 		// Listen for click events
 		elem.click(this._textureTileClicked);
@@ -145,6 +151,50 @@ CellSheetsPanel = IgeClass.extend({
 
 		editor._currentTexture = $(this).data('textureObject');
 		$(this).css('borderStyle', 'solid');
+
+		// Generate the blocks that represent each cell of the cell sheet
+		var container = $('#cellSheetPanel #textureCells .textureBlocks'),
+			selectedTexture = $(this),
+			url = selectedTexture.data('textureUrl'),
+			columns = selectedTexture.data('textureColumns'),
+			rows = selectedTexture.data('textureRows'),
+			width = selectedTexture.data('textureWidth'),
+			height = selectedTexture.data('textureHeight'),
+			xi = width / columns,
+			yi = height / rows,
+			xScale = columns * 40,
+			yScale = rows * 40,
+			x, y, elem,
+			clickHandler = function () {
+				// Set all other texture cell tiles back to a dashed border
+				$('#cellSheetPanel #textureCells .textureTile').css('borderStyle', 'dashed');
+
+				editor._currentTextureCell = $(this).data('textureCellIndex');
+				$(this).css('borderStyle', 'solid');
+			};
+
+		// Clear the existing items
+		container.html('');
+
+		for (y = 0; y < rows; y++) {
+			for (x = 0; x < columns; x++) {
+				elem = $('<div class="smallThumb textureTile"></div>');
+
+				// Store the cell's index
+				elem.data('textureCellIndex', x + (y * columns) + 1);
+
+				// Add the background image
+				elem.css('backgroundImage', 'url(' + url + ')');
+				elem.css('backgroundPosition', (-x * 40) + 'px ' + (-y * 40) + 'px');
+				elem.css('backgroundSize', (xScale) + 'px ' + (yScale) + 'px');
+
+				// Listen for click events
+				elem.click(clickHandler);
+
+				// Append the list item
+				$('#cellSheetPanel #textureCells .textureBlocks').append(elem);
+			}
+		}
 	}
 });
 

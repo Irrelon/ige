@@ -91,25 +91,7 @@ h3 {
     background-color: #1D1D1D;
 }
 
-/*
-#tabStrip { */
-/* tabstrip element *//*
-
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    */
-/*width: auto;*//*
-
-    height: auto;
+/* Reduce the padding of tab strip content */
+.k-tabstrip .k-content, .k-panelbar .k-tabstrip .k-content {
+    padding: 3px;
 }
-
-.k-tabstrip .k-content {
-    position: absolute;
-    width: 98%;
-    height: auto;
-    overflow: auto;
-    box-sizing: border-box;
-}*/

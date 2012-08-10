@@ -22,6 +22,11 @@ ToolBarPanel = IgeClass.extend({
 
 				// Enable mouse panning on the main viewport by default
 				ige.$('vp1').mousePan.enabled(true);
+
+				// Listen for mouse events
+				editor.on('igeMouseDown', function (event) { self._igeMouseDown(event); });
+				editor.on('igeMouseMove', function (event) { self._igeMouseMove(event); });
+				editor.on('igeMouseUp', function (event) { self._igeMouseUp(event); });
 			},
 			dataType: 'html'
 		});
@@ -97,6 +102,82 @@ ToolBarPanel = IgeClass.extend({
 			$("#vertical").data("kendoSplitter").expand('#rightBar');
 			$("#vertical").data("kendoSplitter").expand('#statusBar');
 			this._fullScreen = false;
+		}
+	},
+
+	_igeMouseDown: function (event) {
+		switch (this._currentTool) {
+			case 'toolPaint':
+				this._mouseIsDown = true;
+				this._paintTile();
+				break;
+
+			case 'toolUnPaint':
+				this._mouseIsDown = true;
+				this._unPaintTile();
+				break;
+		}
+	},
+
+	_igeMouseMove: function (event) {
+		switch (this._currentTool) {
+			case 'toolPaint':
+				if (this._mouseIsDown) {
+					this._paintTile();
+				}
+				break;
+
+			case 'toolUnPaint':
+				if (this._mouseIsDown) {
+					this._unPaintTile();
+				}
+				break;
+		}
+	},
+
+	_igeMouseUp: function (event) {
+		this._mouseIsDown = false;
+	},
+
+	_paintTile: function () {
+		// Is the selected object a texture map?
+		var selectedObject = editor.panel('sceneGraph')._selectedObject,
+			textureIndex, textureCell = editor._currentTextureCell > 0 ? editor._currentTextureCell : 1, tilePos;
+
+		switch (selectedObject.classId()) {
+			case 'IgeTextureMap':
+				// Is there a selected texture?
+				if (editor._currentTexture) {
+					// Is this texture present in the texture map's texture list?
+					textureIndex = selectedObject._textureList.indexOf(editor._currentTexture);
+					if (textureIndex === -1) {
+						// The texture does not currently exist so add it
+						textureIndex = selectedObject.addTexture(editor._currentTexture);
+					}
+
+					// Get the current tile co-ordinates
+					tilePos = selectedObject._mouseTilePos;
+
+					// Paint the tile
+					selectedObject.paintTile(tilePos.x, tilePos.y, textureIndex, textureCell);
+				}
+				break;
+		}
+	},
+
+	_unPaintTile: function () {
+		// Is the selected object a texture map?
+		var selectedObject = editor.panel('sceneGraph')._selectedObject,
+			textureIndex, textureCell = editor._currentTextureCell > 0 ? editor._currentTextureCell : 1, tilePos;
+
+		switch (selectedObject.classId()) {
+			case 'IgeTextureMap':
+				// Get the current tile co-ordinates
+				tilePos = selectedObject._mouseTilePos;
+
+				// Clear the tile
+				selectedObject.clearTile(tilePos.x, tilePos.y);
+				break;
 		}
 	}
 });
