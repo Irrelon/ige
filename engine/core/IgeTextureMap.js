@@ -109,6 +109,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * @param ctx
 	 */
 	tick: function (ctx) {
+		// TODO: This is being called at the wrong time, drawing children before this parent! FIX THIS
 		// Run the IgeTileMap2d tick method
 		this._super(ctx);
 
