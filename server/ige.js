@@ -33,6 +33,7 @@ IgeUiEntity = require('../engine/core/IgeUiEntity');
 IgeFontEntity = require('../engine/core/IgeFontEntity');
 IgeParticleEmitter = require('../engine/core/IgeParticleEmitter');
 IgeMap2d = require('../engine/core/IgeMap2d');
+IgeMapStack2d = require('../engine/core/IgeMapStack2d');
 IgeTileMap2d = require('../engine/core/IgeTileMap2d');
 IgeCamera = require('../engine/core/IgeCamera');
 IgeViewport = require('../engine/core/IgeViewport');
