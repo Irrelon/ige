@@ -13,6 +13,8 @@ SceneGraphPanel = IgeEventingClass.extend({
 
 			$("#scenegraph-treeview").kendoTreeView({
 				loadOnDemand:false,
+				dragAndDrop: true,
+				drop: self._treeDrop,
 				dataSource: self.sceneGraphData,
 				select: function (e) {
 					self.selectedObject(this.dataItem(e.node).id);
@@ -54,11 +56,28 @@ SceneGraphPanel = IgeEventingClass.extend({
 			// Assign the new selected object
 			this._selectedObject = ige.$(id);
 
+			// Enable create menu by default - almost all objects should
+			// have it enabled, only viewports and engine don't
+			var menu = $("#menu").data("kendoMenu");
+			menu.enable(menu.getItem(2), true);
+			$(menu.getItem(2)).attr('title', '');
+
 			// Handle new selected object
 			switch (this._selectedObject.classId()) {
+				case 'IgeEngine':
+					// Disable create menu
+					menu.enable(menu.getItem(2), false);
+					// TODO: Language
+					$(menu.getItem(2)).attr('title', 'Please select a parent object from the SceneGraph before attempting to create something!');
+					break;
+
 				case 'IgeViewport':
+					// Disable create menu
+					menu.enable(menu.getItem(2), false);
+					$(menu.getItem(2)).attr('title', 'Please select a parent object from the SceneGraph before attempting to create something!');
+					break;
+
 				case 'IgeScene2d':
-					// Do nothing
 					break;
 
 				case 'IgeTileMap2d':
@@ -77,6 +96,18 @@ SceneGraphPanel = IgeEventingClass.extend({
 		}
 
 		return this._selectedObject;
+	},
+
+	/**
+	 * Handle drop events from a tree item to another tree item
+	 * which will basically un-mount the dropped item from it's current
+	 * parent and mount it to the target item, assuming the target
+	 * item is actually a valid mount parent.
+	 * @param event
+	 * @private
+	 */
+	_treeDrop: function (event) {
+
 	}
 });
 
