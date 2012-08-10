@@ -31,6 +31,7 @@
 				autoHeight: true,
 				panes: [
 					{ collapsible: true, resizable: false, size: '28px' },
+					{ collapsible: true, resizable: false, size: '28px' },
 					{ collapsible: false, autoHeight: true },
 					{ collapsible: true, resizable: false, size: "25px" }
 				]
@@ -187,11 +188,7 @@
 						.mount(sgPanel.selectedObject());
 
 					// Update the scenegraph panel
-					treeItem = treeView.append({
-						text: ent.id() + ' (' + ent._classId + ')',
-						parent: ent._parent,
-						id: ent.id()
-					}, treeView.select());
+					treeItem = sgPanel.addItem(ent);
 
 					// Select the new item
 					treeView.select(treeItem);
@@ -219,11 +216,7 @@
 						.mount(sgPanel.selectedObject());
 
 					// Update the scenegraph panel
-					treeItem = treeView.append({
-						text: ent.id() + ' (' + ent._classId + ')',
-						parent: ent._parent,
-						id: ent.id()
-					}, treeView.select());
+					treeItem = sgPanel.addItem(ent);
 
 					// Select the new item
 					treeView.select(treeItem);
@@ -246,11 +239,7 @@
 						.mount(sgPanel.selectedObject());
 
 					// Update the scenegraph panel
-					treeItem = treeView.append({
-						text: ent.id() + ' (' + ent._classId + ')',
-						parent: ent._parent,
-						id: ent.id()
-					}, treeView.select());
+					treeItem = sgPanel.addItem(ent);
 
 					// Select the new item
 					treeView.select(treeItem);

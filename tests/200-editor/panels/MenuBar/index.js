@@ -5,8 +5,8 @@ MenuBarPanel = IgeClass.extend({
 			url: "panels/MenuBar/index.html",
 			success: function (data) {
 				$('#menuBar').append(data);
-				$("#menu").kendoMenu();
-				var menu = $("#menu").data("kendoMenu");
+				$("#menuBar #menu").kendoMenu();
+				var menu = $("#menuBar #menu").data("kendoMenu");
 				menu.getItem = function (itemIndex) {
 					return menu.element.children("li").eq(itemIndex);
 				};

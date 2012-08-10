@@ -15,13 +15,15 @@ ToolBarPanel = IgeClass.extend({
 
 				// Add the camera mouse panning component so the
 				// user can pan the camera with the mouse
-				ige.$('vp1').addComponent(igeFrame.IgeMousePanComponent);
+				ige.children().each(function (viewport) {
+					viewport.addComponent(igeFrame.IgeMousePanComponent);
+
+					// Enable mouse panning by default
+					viewport.mousePan.enabled(true);
+				});
 
 				// Select the selectTool tool initially
 				$('#leftBar #selectTool').click();
-
-				// Enable mouse panning on the main viewport by default
-				ige.$('vp1').mousePan.enabled(true);
 
 				// Listen for mouse events
 				editor.on('igeMouseDown', function (event) { self._igeMouseDown(event); });
@@ -52,7 +54,10 @@ ToolBarPanel = IgeClass.extend({
 			$('#leftBar #' + tool.id).addClass('selected');
 
 			// Stop mouse-panning on the viewport by default
-			ige.$('vp1').mousePan.enabled(false);
+			ige.children().each(function (viewport) {
+				// Enable mouse panning by default
+				viewport.mousePan.enabled(false);
+			});
 
 			// Turn off draw mouse by default
 			if (selectedObject) {
@@ -66,15 +71,19 @@ ToolBarPanel = IgeClass.extend({
 
 			switch (tool.id) {
 				case 'toolSelect':
-					ige.$('vp1').mousePan.enabled(true);
+					// Enable panning on viewports
+					ige.children().each(function (viewport) {
+						// Enable mouse panning
+						viewport.mousePan.enabled(true);
+					});
 					break;
 
 				case 'toolPaint':
-					// Set the texture map to show mouse tile position
 					if (selectedObject) {
 						switch (selectedObject.classId()) {
 							case 'IgeTileMap2d':
 							case 'IgeTextureMap':
+								// Set the map to show mouse tile position
 								selectedObject.drawMouse(true);
 								break;
 						}
@@ -82,8 +91,15 @@ ToolBarPanel = IgeClass.extend({
 					break;
 
 				case 'toolUnPaint':
-					// Set the texture map to show mouse tile position
-					ige.$('textureMap1').drawMouse(true);
+					if (selectedObject) {
+						switch (selectedObject.classId()) {
+							case 'IgeTileMap2d':
+							case 'IgeTextureMap':
+								// Set the map to show mouse tile position
+								selectedObject.drawMouse(true);
+							break;
+						}
+					}
 					break;
 			}
 		}

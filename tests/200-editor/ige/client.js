@@ -42,8 +42,8 @@ var Client = IgeClass.extend({
 		// Create the main viewport and tell it to "look"
 		// at gameScene with auto-sizing enabled to fill the
 		// browser window
-		this.vp1 = new IgeViewport()
-			.id('vp1')
+		this.mainViewport = new IgeViewport()
+			.id('mainViewport')
 			.autoSize(true)
 			.scene(this.mainScene)
 			.drawBounds(true) // Switch this to true to draw all bounding boxes

@@ -95,3 +95,19 @@ h3 {
 .k-tabstrip .k-content, .k-panelbar .k-tabstrip .k-content {
     padding: 3px;
 }
+
+/* Change top padding on menu items to move text up a tiny bit */
+.k-menu .k-item > .k-link {
+    padding-top: 0.3em;
+    padding-bottom: 0.6em;
+}
+
+/* Set the crumbs on the bar to darkened colour except the last one */
+#crumbBar #menu .k-item {
+    color: #666;
+}
+
+#crumbBar #menu .k-last {
+    color: #fff;
+}
+
