@@ -17,11 +17,12 @@ PropertiesPanel = IgeClass.extend({
 		$.ajax({
 			url: "panels/Properties/properties.html",
 			success: function (data) {
-				var treeView = $("#scenegraph-treeview").data('kendoTreeView');
+				var treeView = $("#scenegraph-treeview").data('kendoTreeView'),
+					onValueChange;
 
 				$('#propertiesContent').html('');
 
-				var onValueChange = function () {
+				onValueChange = function () {
 					switch (this.element[0].id) {
 						case 'layer':
 							obj.layer(parseFloat(this.element.val()));
