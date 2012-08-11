@@ -9,8 +9,16 @@ var IgeEntity = IgeObject.extend([
 	init: function () {
 		this._super();
 
+		this._width = undefined;
+		this._height = undefined;
+
+		this._anchor = {x: 0, y: 0};
+		this._renderPos = {x: 0, y: 0};
+
 		this._opacity = 1;
 		this._cell = 1;
+
+		this._deathTime = undefined;
 
 		this._translate = new IgePoint(0, 0, 0);
 		this._rotate = new IgePoint(0, 0, 0);
@@ -20,8 +28,7 @@ var IgeEntity = IgeObject.extend([
 		this.geometry = new IgePoint(20, 20, 20);
 		this.geometry3d = new IgePoint(0, 0, 0);
 
-		this._anchor = {x: 0, y: 0};
-		this._renderPos = {x: 0, y: 0};
+		this._highlight = false;
 
         this._localMatrix = new IgeMatrix2d(this);
         this._worldMatrix = new IgeMatrix2d(this);
@@ -603,6 +610,76 @@ var IgeEntity = IgeObject.extend([
 
 			this._super(ctx);
 		}
+	},
+
+	/**
+	 * Returns a string containing a code fragment that when
+	 * evaluated will reproduce this object's properties via
+	 * chained commands. This method will only check for
+	 * properties that are directly related to this class.
+	 * Other properties are handled by their own class method.
+	 * @return {String}
+	 */
+	_stringify: function () {
+		// Get the properties for all the super-classes
+		var str = this._super(), i;
+
+		// Loop properties and add property assignment code to string
+		for (i in this) {
+			if (this.hasOwnProperty(i) && this[i] !== undefined) {
+				switch (i) {
+					case '_opacity':
+						str += ".opacity(" + this.opacity() + ")";
+						break;
+					case '_texture':
+						str += ".texture(ige.$('" + this.texture().id() + "'))";
+						break;
+					case '_cell':
+						str += ".cell(" + this.cell() + ")";
+						break;
+					case '_translate':
+						str += ".translateTo(" + this._translate.x + ", " + this._translate.y + ", " + this._translate.z + ")";
+						break;
+					case '_rotate':
+						str += ".rotateTo(" + this._rotate.x + ", " + this._rotate.y + ", " + this._rotate.z + ")";
+						break;
+					case '_scale':
+						str += ".scaleTo(" + this._scale.x + ", " + this._scale.y + ", " + this._scale.z + ")";
+						break;
+					case '_origin':
+						str += ".originTo(" + this._origin.x + ", " + this._origin.y + ", " + this._origin.z + ")";
+						break;
+					case '_anchor':
+						str += ".anchor(" + this._anchor.x + ", " + this._anchor.y + ")";
+						break;
+					case '_width':
+						if (typeof(this.width()) === 'string') {
+							str += ".width('" + this.width() + "')";
+						} else {
+							str += ".width(" + this.width() + ")";
+						}
+						break;
+					case '_height':
+						if (typeof(this.height()) === 'string') {
+							str += ".height('" + this.height() + "')";
+						} else {
+							str += ".height(" + this.height() + ")";
+						}
+						break;
+					case 'geometry3d':
+						str += ".size3d(" + this.geometry3d.x + ", " + this.geometry3d.y + ", " + this.geometry3d.z + ")";
+						break;
+					case '_deathTime':
+						str += ".deathTime('" + this.deathTime() + "')";
+						break;
+					case '_highlight':
+						str += ".highlight('" + this.highlight() + "')";
+						break;
+				}
+			}
+		}
+
+		return str;
 	}
 });
 

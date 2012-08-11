@@ -1,3 +1,4 @@
+// TODO: Write this class
 var IgeSpriteSheet = IgeTexture.extend({
 	classId: 'IgeSpriteSheet',
 	IgeSpriteSheet: true,
@@ -58,41 +59,6 @@ var IgeSpriteSheet = IgeTexture.extend({
 		if (this._cell) {
 			// Do we have an image to use?
 			if (this.image) {
-				// Check what type of cell we are performing
-				if (this._cell.cells) {
-					// Perform a uniform cell (all spliced parts are
-					// cells of the same dimension - standard tiled sprite sheet)
-					cell = this._cell.cells;
-
-					// Check we have the correct data for a uniform cell
-					if (cell.rows && cell.columns) {
-						imgWidth = this._sizeX;
-						imgHeight = this._sizeY;
-						rows = cell.rows;
-						columns = cell.columns;
-
-						// Store the width and height of a single cell
-						cellWidth = this._cell.cellWidth = imgWidth / columns;
-						cellHeight = this._cell.cellHeight = imgHeight / rows;
-
-						// Check if we need to calculate individual cell data
-						if (rows > 1 || columns > 1) {
-							for (cellIndex = 1; cellIndex <= (rows * columns); cellIndex++) {
-								yPos = (Math.ceil(cellIndex / columns) - 1);
-								xPos = ((cellIndex - (columns * yPos)) - 1);
-
-								// Store the xy in the sheet frames variable
-								this._cells[cellIndex] = [(xPos * cellWidth), (yPos * cellHeight), cellWidth, cellHeight];
-							}
-						} else {
-							// The cell data shows only one cell so just store the whole image data
-							this._cells[1] = [0, 0, this._sizeX, this._sizeY];
-						}
-					} else {
-						this.log('Cannot apply cell to texture because the cells object data is missing either rows or columns properties!', 'warning', cell);
-					}
-				}
-
 				if (this._cell.sections) {
 					// Perform a cell by sectioning off bits of the
 					// texture with arbitrary section dimensions

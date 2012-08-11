@@ -5,6 +5,11 @@ var IgeCamera = IgeEntity.extend({
 	init: function (entity) {
 		this._super();
 
+		this._trackRotateTarget = undefined;
+		this._trackTranslateTarget = undefined;
+		this._trackRotateSmoothing = undefined;
+		this._trackTranslateSmoothing = undefined;
+
 		// Store the viewport this camera is attached to
 		this._entity = entity;
 	},
@@ -76,6 +81,20 @@ var IgeCamera = IgeEntity.extend({
 	},
 
 	/**
+	 * Gets / sets the translate tracking smoothing value.
+	 * @param val
+	 * @return {*}
+	 */
+	trackTranslateSmoothing: function (val) {
+		if (val !== undefined) {
+			this._trackTranslateSmoothing = val;
+			return this;
+		}
+
+		return this._trackTranslateSmoothing;
+	},
+
+	/**
 	 * Stops tracking the current tracking target's translation.
 	 */
 	unTrackTranslate: function () {
@@ -100,6 +119,20 @@ var IgeCamera = IgeEntity.extend({
 		}
 
 		return this._trackRotateTarget;
+	},
+
+	/**
+	 * Gets / sets the rotate tracking smoothing value.
+	 * @param val
+	 * @return {*}
+	 */
+	trackRotateSmoothing: function (val) {
+		if (val !== undefined) {
+			this._trackRotateSmoothing = val;
+			return this;
+		}
+
+		return this._trackRotateSmoothing;
 	},
 
 	/**
@@ -194,6 +227,35 @@ var IgeCamera = IgeEntity.extend({
 
 			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
 		}
+	},
+
+	/**
+	 * Returns a string containing a code fragment that when
+	 * evaluated will reproduce this object's properties via
+	 * chained commands. This method will only check for
+	 * properties that are directly related to this class.
+	 * Other properties are handled by their own class method.
+	 * @return {String}
+	 */
+	_stringify: function () {
+		// Get the properties for all the super-classes
+		var str = this._super(), i;
+
+		// Loop properties and add property assignment code to string
+		for (i in this) {
+			if (this.hasOwnProperty(i) && this[i] !== undefined) {
+				switch (i) {
+					case '_trackTranslateTarget':
+						str += ".trackTranslate(ige.$('" + this._trackTranslateTarget.id() + "'), " + this.trackTranslateSmoothing() + ")";
+						break;
+					case '_trackRotateTarget':
+						str += ".trackRotate(ige.$('" + this._trackRotateTarget.id() + "'), " + this.trackRotateSmoothing() + ")";
+						break;
+				}
+			}
+		}
+
+		return str;
 	}
 });
 

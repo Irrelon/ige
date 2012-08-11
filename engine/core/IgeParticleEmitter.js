@@ -622,6 +622,34 @@ var IgeParticleEmitter = IgeEntity.extend({
 	} **/
 	particles: function () {
 		return this._particles;
+	},
+
+	/**
+	 * Returns a string containing a code fragment that when
+	 * evaluated will reproduce this object's properties via
+	 * chained commands. This method will only check for
+	 * properties that are directly related to this class.
+	 * Other properties are handled by their own class method.
+	 * @return {String}
+	 */
+	_stringify: function () {
+		// Get the properties for all the super-classes
+		var str = this._super(), i;
+		return str;
+
+		// TODO: WRITE THIS FOR THIS CLASS - EPIC AMOUNT OF WORK HERE
+		// Loop properties and add property assignment code to string
+		for (i in this) {
+			if (this.hasOwnProperty(i) && this[i] !== undefined) {
+				switch (i) {
+					case '':
+						str += ".text(" + this.text() + ")";
+						break;
+				}
+			}
+		}
+
+		return str;
 	}
 });
 

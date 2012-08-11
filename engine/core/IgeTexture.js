@@ -1,3 +1,4 @@
+// TODO: Convert doc comments to the JSDoc format
 var IgeTexture = IgeEventingClass.extend({
 	classId: 'IgeTexture',
 	IgeTexture: true,
@@ -59,25 +60,27 @@ var IgeTexture = IgeEventingClass.extend({
 		return this._id;
 	},
 
-	/** url - Loads a file for this texture. Can be a render script
-	or an actual image file. {
-		category:"method",
-		arguments: [{
-			type:"string",
-			name:"url",
-			desc:"The url used to load the file for this texture.",
-		}],
-	} **/
+	/**
+	 * Gets / sets the source file for this texture.
+	 * @param {String=} url "The url used to load the file for this texture.
+	 * @return {*}
+	 */
 	url: function (url) {
-		this._url = url;
+		if (url !== undefined) {
+			this._url = url;
 
-		if (url.substr(url.length - 2, 2) === 'js') {
-			// This is a script-based texture, load the script
-			this._loadScript(url);
-		} else {
-			// This is an image-based texture, load the image
-			this._loadImage(url);
+			if (url.substr(url.length - 2, 2) === 'js') {
+				// This is a script-based texture, load the script
+				this._loadScript(url);
+			} else {
+				// This is an image-based texture, load the image
+				this._loadImage(url);
+			}
+
+			return this;
 		}
+
+		return this._url;
 	},
 
 	/** _loadImage - Loads an image into an img tag and sets an onload event to capture

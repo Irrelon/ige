@@ -13,13 +13,7 @@ var IgeClass = (function () {
 		 */
 		log = function (text, type, obj) {
 			var indent = '',
-				i,
 				stack;
-			if (!igeDebug.trace.indentLevel) { igeDebug.trace.indentLevel = 0; }
-
-			for (i = 0; i < igeDebug.trace.indentLevel; i++) {
-				indent += '  ';
-			}
 
 			type = type || 'log';
 

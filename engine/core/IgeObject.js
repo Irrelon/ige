@@ -582,6 +582,77 @@ var IgeObject = IgeEventingClass.extend({
 		delete this._children;
 
 		return this;
+	},
+
+	/**
+	 * Returns a string containing a code fragment that when
+	 * evaluated will reproduce this object.
+	 * @return {String}
+	 */
+	stringify: function () {
+		var str = "new " + this.classId() + "()";
+
+		// Every object has an ID, assign that first
+		str += ".id('" + this.id() + "')";
+
+		// Now check if there is a parent and mount that
+		if (this.parent()) {
+			str += ".mount(ige.$('" + this.parent().id() + "'))";
+		}
+
+		// Now get all other properties
+		str += this._stringify();
+
+		return str;
+	},
+
+	/**
+	 * Returns a string containing a code fragment that when
+	 * evaluated will reproduce this object's properties via
+	 * chained commands. This method will only check for
+	 * properties that are directly related to this class.
+	 * Other properties are handled by their own class method.
+	 * @return {String}
+	 */
+	_stringify: function () {
+		var str = '', i;
+
+		// Loop properties and add property assignment code to string
+		for (i in this) {
+			if (this.hasOwnProperty(i) && this[i] !== undefined) {
+				switch (i) {
+					case '_group':
+						str += ".group('" + this.group() + "')";
+						break;
+					case '_drawBounds':
+						str += ".drawBounds('" + this.drawBounds() + "')";
+						break;
+					case '_drawBoundsData':
+						str += ".drawBoundsData('" + this.drawBoundsData() + "')";
+						break;
+					case '_drawMouse':
+						str += ".drawMouse('" + this.drawMouse() + "')";
+						break;
+					case '_mode':
+						str += ".mode('" + this.mode() + "')";
+						break;
+					case '_isometricMounts':
+						str += ".isometricMounts('" + this.isometricMounts() + "')";
+						break;
+					case '_indestructible':
+						str += ".indestructible('" + this.indestructible() + "')";
+						break;
+					case '_layer':
+						str += ".layer('" + this.layer() + "')";
+						break;
+					case '_depth':
+						str += ".depth('" + this.depth() + "')";
+						break;
+				}
+			}
+		}
+
+		return str;
 	}
 });
 

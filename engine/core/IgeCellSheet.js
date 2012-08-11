@@ -16,8 +16,8 @@ var IgeCellSheet = IgeTexture.extend({
 				this._cellColumns = 0;
 				this._cellRows = 0;
 
-				this.horizontalCells(horizontalCells);
-				this.verticalCells(verticalCells);
+				this.horizontalCells(horizontalCells || 1);
+				this.verticalCells(verticalCells || 1);
 
 				this._applyCells();
 			} else {
@@ -30,28 +30,30 @@ var IgeCellSheet = IgeTexture.extend({
 		this._super(url);
 	},
 
-	/** horizontalCells - Sets the number of horizontal cells in the cell sheet. {
-		category:"method",
-		arguments: [{
-			name:"val",
-			type:"integer",
-			desc:"The integer count of the number of horizontal cells in the cell sheet.",
-		}],
-	} **/
+	/**
+	 * Gets / sets the number of horizontal cells in the cell sheet.
+	 * @param {Number=} val The integer count of the number of horizontal cells in the cell sheet.
+	 */
 	horizontalCells: function (val) {
-		this._cellColumns = val;
+		if (val !== undefined) {
+			this._cellColumns = val;
+			return this;
+		}
+
+		return this._cellColumns;
 	},
 
-	/** verticalCells - Sets the number of vertical cells in the cell sheet. {
-		category:"method",
-		arguments: [{
-			name:"val",
-			type:"integer",
-			desc:"The integer count of the number of vertical cells in the cell sheet.",
-		}],
-	} **/
+	/**
+	 * Gets / sets the number of vertical cells in the cell sheet.
+	 * @param {Number=} val The integer count of the number of vertical cells in the cell sheet.
+	 */
 	verticalCells: function (val) {
-		this._cellRows = val;
+		if (val !== undefined) {
+			this._cellRows = val;
+			return this;
+		}
+
+		return this._cellRows;
 	},
 
 	/** _applyCells - Sets the x, y, width and height of each sheet cell and stores
@@ -107,6 +109,28 @@ var IgeCellSheet = IgeTexture.extend({
 	destroy: function () {
 		this.image = null;
 		this.script = null;
+	},
+
+	/**
+	 * Returns a string containing a code fragment that when
+	 * evaluated will reproduce this object.
+	 * @return {String}
+	 */
+	stringify: function () {
+		var str = "new " + this.classId() + "('" + this.url() + "', " + this.horizontalCells() + ", " + this.verticalCells() + ")";
+
+		// Every object has an ID, assign that first
+		str += ".id('" + this.id() + "')";
+
+		// Now check if there is a parent and mount that
+		if (this.parent()) {
+			str += ".mount(ige.$('" + this.parent().id() + "'))";
+		}
+
+		// Now get all other properties
+		str += this._stringify();
+
+		return str;
 	}
 });
 
