@@ -84,9 +84,37 @@ PropertiesPanel = IgeClass.extend({
 
 				// Object ID apply button
 				$('#propertiesContent #objectIdApply').click(function () {
-					obj.id($('#objectId').val());
+					obj.id($('#propertiesContent #objectId').val());
 					$('.k-in', treeView.select()).html(obj.id() + ' (' + obj._classId + ')');
 					treeView.dataItem(treeView.select()).set('id', obj.id());
+				});
+
+				// Positioning mode drop-down
+				$("#positioning").kendoDropDownList({
+					dataSource: [
+						{value: 0, text:'2d'},
+						{value: 1, text:'Isometric'}
+					],
+					dataTextField: 'text',
+					dataValueField: 'value',
+					index: obj.isometric() === true ? 1 : 0,
+					change: function () {
+						obj.isometric(this.value() === 1 ? true : false);
+					}
+				});
+
+				// Child depth-sort drop-down
+				$("#childDepthSort").kendoDropDownList({
+					dataSource: [
+						{value: 0, text:'2d'},
+						{value: 1, text:'Isometric'}
+					],
+					dataTextField: 'text',
+					dataValueField: 'value',
+					index: obj.isometricMounts() === true ? 1 : 0,
+					change: function () {
+						obj.isometricMounts(this.value() === 1 ? true : false);
+					}
 				});
 
 				// Set the correct initial data

@@ -37,7 +37,7 @@ h3 {
     height: 100%;
 }
 
-#menuBar {
+#menuBar, #crumbBar {
     overflow: visible;
 }
 
@@ -104,7 +104,12 @@ h3 {
 
 /* Set the crumbs on the bar to darkened colour except the last one */
 #crumbBar #menu .k-item {
-    color: #666;
+    color: #aaa;
+}
+
+/* Sub-menu items should also be fff */
+#crumbBar #menu .k-item ul .k-item {
+    color: #fff;
 }
 
 #crumbBar #menu .k-last {

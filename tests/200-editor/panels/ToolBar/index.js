@@ -18,8 +18,8 @@ ToolBarPanel = IgeClass.extend({
 				ige.children().each(function (viewport) {
 					viewport.addComponent(igeFrame.IgeMousePanComponent);
 
-					// Enable mouse panning by default
-					viewport.mousePan.enabled(true);
+					// Disable mouse panning by default
+					viewport.mousePan.enabled(false);
 				});
 
 				// Select the selectTool tool initially
@@ -55,7 +55,7 @@ ToolBarPanel = IgeClass.extend({
 
 			// Stop mouse-panning on the viewport by default
 			ige.children().each(function (viewport) {
-				// Enable mouse panning by default
+				// Disable mouse panning
 				viewport.mousePan.enabled(false);
 			});
 
@@ -70,14 +70,6 @@ ToolBarPanel = IgeClass.extend({
 			}
 
 			switch (tool.id) {
-				case 'toolSelect':
-					// Enable panning on viewports
-					ige.children().each(function (viewport) {
-						// Enable mouse panning
-						viewport.mousePan.enabled(true);
-					});
-					break;
-
 				case 'toolPaint':
 					if (selectedObject) {
 						switch (selectedObject.classId()) {
@@ -97,9 +89,17 @@ ToolBarPanel = IgeClass.extend({
 							case 'IgeTextureMap':
 								// Set the map to show mouse tile position
 								selectedObject.drawMouse(true);
-							break;
+								break;
 						}
 					}
+					break;
+
+				case 'toolPan':
+					// Enable panning on viewports
+					ige.children().each(function (viewport) {
+						// Enable mouse panning
+						viewport.mousePan.enabled(true);
+					});
 					break;
 			}
 		}

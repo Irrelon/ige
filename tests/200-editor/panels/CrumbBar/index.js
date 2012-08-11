@@ -36,7 +36,8 @@ CrumbBarPanel = IgeClass.extend({
 	selectObject: function (obj) {
 		var menu = $('#crumbBar #menu').data('kendoMenu'),
 			currentItems = menu.element.children("li"),
-			walkObj = obj, walkArr = [], item;
+			walkObj = obj, walkArr = [], item, k, kChildren, kItem,
+			kItemArray;
 
 		// Create the crumb button for this selection by walking the parent chain up
 		// the scenegraph and then adding the reverse chain
@@ -54,7 +55,8 @@ CrumbBarPanel = IgeClass.extend({
 		while (walkCount--) {
 			walkObj = walkArr[walkCount];
 			menu.append([{
-				text: walkObj.id() + ' (' + walkObj.classId() + ')'
+				text: walkObj.id() + ' (' + walkObj.classId() + ')',
+				id: walkObj.id()
 			}]);
 			item = menu.getItem((currentItems.length - 1) + walkArr.length - walkCount + 1);
 			item.data('id', walkObj.id());
@@ -62,7 +64,22 @@ CrumbBarPanel = IgeClass.extend({
 
 			if (walkCount < walkArr.length - 1) {
 				// Add child items to this parent item in the crumb menu
+				kChildren = walkObj.children();
 
+				for (k = 0; k < kChildren.length; k++) {
+					kItem = kChildren[k];
+
+					// Add the child item
+					menu.append([{
+						text: kItem.id() + ' (' + kItem.classId() + ')',
+						id: kItem.id()
+					}], item);
+
+					// Get the just-added item and add the id and parent data
+					kItemArray = $('.k-item', item);
+					$(kItemArray[kItemArray.length -  1]).data('id', kItem.id());
+					$(kItemArray[kItemArray.length -  1]).data('parent', kItem.parent());
+				}
 			}
 		}
 
