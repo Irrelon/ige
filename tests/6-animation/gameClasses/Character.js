@@ -1,5 +1,7 @@
 // Define our player character classes
 var Character = IgeInteractiveEntity.extend({
+	classId: 'Character',
+
 	init: function () {
 		var self = this;
 		this._super();

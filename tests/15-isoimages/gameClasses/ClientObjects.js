@@ -1,5 +1,7 @@
 var ClientObjects = {
 	Bank: IgeInteractiveEntity.extend({
+		classId: 'Bank',
+
 		init: function (parent, tileX, tileY) {
 			this._super();
 			var self = this;
@@ -17,6 +19,8 @@ var ClientObjects = {
 	}),
 
 	Electricals: IgeInteractiveEntity.extend({
+		classId: 'Electricals',
+
 		init: function (parent, tileX, tileY) {
 			this._super();
 			var self = this;
@@ -34,6 +38,8 @@ var ClientObjects = {
 	}),
 
 	Burgers: IgeInteractiveEntity.extend({
+		classId: 'Burgers',
+
 		init: function (parent, tileX, tileY) {
 			this._super();
 			var self = this;
@@ -52,6 +58,8 @@ var ClientObjects = {
 	}),
 
 	SkyScraper: IgeInteractiveEntity.extend({
+		classId: 'SkyScraper',
+
 		init: function (parent, tileX, tileY) {
 			this._super();
 			var self = this;

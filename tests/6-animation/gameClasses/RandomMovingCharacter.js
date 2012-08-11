@@ -1,4 +1,6 @@
 var RandomMovingCharacter = Character.extend({
+	classId: 'RandomMovingCharacter',
+
 	tick: function (ctx) {
 		if (this.data('moving') === false) {
 			this.walkTo(

@@ -1,4 +1,6 @@
 var RandomTweener = IgeInteractiveEntity.extend({
+	classId: 'RandomTweener',
+
 	init: function () {
 		this._super();
 		this.newTween();
