@@ -1,3 +1,4 @@
+// TODO: Clean up the variable declarations in this file so they all run on the same var call.
 var IgeMatrix2d = function() {
 	this.matrix = [
 		1.0,0.0,0.0,
@@ -299,19 +300,19 @@ IgeMatrix2d.prototype = {
 	getInverse: function() {
 		var tm = this.matrix;
 
-		var m00 = tm[0];
-		var m01 = tm[1];
-		var m02 = tm[2];
-		var m10 = tm[3];
-		var m11 = tm[4];
-		var m12 = tm[5];
-		var m20 = tm[6];
-		var m21 = tm[7];
-		var m22 = tm[8];
+		var m00 = tm[0],
+			m01 = tm[1],
+			m02 = tm[2],
+			m10 = tm[3],
+			m11 = tm[4],
+			m12 = tm[5],
+			m20 = tm[6],
+			m21 = tm[7],
+			m22 = tm[8],
 
-		var newMatrix = new IgeMatrix2d();
+			newMatrix = new IgeMatrix2d(),
+			determinant = m00* (m11*m22 - m21*m12) - m10*(m01*m22 - m21*m02) + m20 * (m01*m12 - m11*m02);
 
-		var determinant = m00* (m11*m22 - m21*m12) - m10*(m01*m22 - m21*m02) + m20 * (m01*m12 - m11*m02);
 		if  (determinant===0) {
 			return null;
 		}
