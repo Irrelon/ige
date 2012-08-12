@@ -4,7 +4,7 @@ var Client = IgeClass.extend({
 		// Load our textures
 		var self = this,
 			gameTexture = [],
-			NewParticle,
+			StarParticle,
 			overFunc, outFunc;
 
 		this.obj = [];
@@ -34,7 +34,9 @@ var Client = IgeClass.extend({
 						this.drawBoundsData(false);
 					};
 
-					NewParticle = IgeInteractiveEntity.extend({
+					StarParticle = IgeInteractiveEntity.extend({
+						classId: 'StarParticle',
+
 						init: function (emitter) {
 							this._emitter = emitter;
 							this._super();
@@ -45,6 +47,7 @@ var Client = IgeClass.extend({
 								.width(50)
 								.height(50)
 								.drawBounds(false)
+								.drawBoundsData(false)
 								.mouseOver(overFunc)
 								.mouseOut(outFunc);
 						},
@@ -70,12 +73,13 @@ var Client = IgeClass.extend({
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
+						.drawBoundsData(true)
 						.mount(ige);
 
 					// Create an entity
 					self.obj[0] = new IgeParticleEmitter()
 						.id('emitter1')
-						.particle(NewParticle)
+						.particle(StarParticle)
 						.lifeBase(4500)
 						.quantityTimespan(1000)
 						.quantityBase(50)
