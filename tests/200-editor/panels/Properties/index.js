@@ -2,7 +2,7 @@ PropertiesPanel = IgeClass.extend({
 	init: function (panelBar) {
 		// Add the panel
 		var self = this,
-			container = $($("#tabStrip").data('kendoTabStrip').contentElement(2));
+			container = $($("#tabStrip").data('kendoTabStrip').contentElement(1));
 
 		container.html($('<div id="propertiesContent" style="padding: 5px;">No object selected, use the SceneGraph panel to select an object.</div>'));
 

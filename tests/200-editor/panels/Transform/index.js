@@ -2,7 +2,7 @@ TransformPanel = IgeClass.extend({
 	init: function (panelBar) {
 		// Add the panel
 		var self = this,
-			container = $($("#tabStrip").data('kendoTabStrip').contentElement(1));
+			container = $($("#tabStrip").data('kendoTabStrip').contentElement(2));
 
 		container.html($('<div id="transformContent" style="padding: 5px;">No object selected, use the SceneGraph panel to select an object.</div>'));
 
@@ -109,6 +109,16 @@ TransformPanel = IgeClass.extend({
 							case 'originZ':
 								obj._origin.z = newVal;
 								break;
+
+							case 'size3dX':
+								obj.geometry3d.x = newVal;
+								break;
+							case 'size3dY':
+								obj.geometry3d.y = newVal;
+								break;
+							case 'size3dZ':
+								obj.geometry3d.z = newVal;
+								break;
 						}
 					};
 
@@ -146,6 +156,10 @@ TransformPanel = IgeClass.extend({
 					$('#transformContent #originX').data("kendoNumericTextBox").value(obj._origin.x);
 					$('#transformContent #originY').data("kendoNumericTextBox").value(obj._origin.y);
 					$('#transformContent #originZ').data("kendoNumericTextBox").value(obj._origin.z);
+
+					$('#transformContent #size3dX').data("kendoNumericTextBox").value(obj.geometry3d.x);
+					$('#transformContent #size3dY').data("kendoNumericTextBox").value(obj.geometry3d.y);
+					$('#transformContent #size3dZ').data("kendoNumericTextBox").value(obj.geometry3d.z);
 				},
 				dataType: 'html'
 			});
