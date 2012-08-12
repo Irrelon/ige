@@ -168,7 +168,7 @@ var IgeViewport = IgeEntity.extend([
 								ctx.fillRect(aabb.x, aabb.y, aabb.width, 14);
 								ctx.globalAlpha = 1;
 								ctx.fillStyle = '#f6ff00';
-								ctx.fillText('[' + obj.id() + '] ' + index, aabb.x + 3, aabb.y + 10);
+								ctx.fillText(obj.id() + ' ' + '(' + obj.classId() + ') ' + obj.layer() + ':' + obj.depth(), aabb.x + 3, aabb.y + 10);
 							}
 						}
 					}
