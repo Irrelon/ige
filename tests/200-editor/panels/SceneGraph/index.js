@@ -26,7 +26,7 @@ SceneGraphPanel = IgeEventingClass.extend({
 			$("#scenegraph-treeview").data('kendoTreeView').search = function (json, source) {
 				if (json !== undefined) {
 					var data = source || this.dataSource,
-						child, item, i, k, allMatched;
+						child, item, i, k, match, allMatched;
 
 					// If the data has the properties we need
 					if (data && data._data) {
@@ -58,7 +58,10 @@ SceneGraphPanel = IgeEventingClass.extend({
 								} else {
 									// We didn't find what we were looking for so search the children
 									if (item.children) {
-										return this.search(json, item.children);
+										match = this.search(json, item.children);
+										if (match) {
+											return match;
+										}
 									}
 								}
 							}
@@ -179,7 +182,8 @@ SceneGraphPanel = IgeEventingClass.extend({
 	_treeDrop: function (event) {
 		var sourceObject = ige.$(this.dataItem(event.sourceNode).id),
 			targetObject = ige.$(this.dataItem(event.destinationNode).id);
-		//console.log('Target class: ' + targetObject.classId(), targetObject);
+
+		if (sourceObject === targetObject) { return; }
 
 		switch (targetObject.classId()) {
 			case 'IgeEngine':
@@ -202,6 +206,10 @@ SceneGraphPanel = IgeEventingClass.extend({
 				}
 				break;
 		}
+
+		// Now re-select the source object
+		//$("#scenegraph-treeview").data('kendoTreeView').select(event.sourceNode.id);
+		editor.panel('sceneGraph').selectedObject(sourceObject.id());
 	}
 });
 
