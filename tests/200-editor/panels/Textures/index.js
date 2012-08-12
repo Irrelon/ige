@@ -1,7 +1,7 @@
 TexturesPanel = IgeClass.extend({
 	init: function (panelBar) {
 		var self = this,
-			container = $($("#tabStrip").data('kendoTabStrip').contentElement(2));
+			container = $($("#tabStrip").data('kendoTabStrip').contentElement(3));
 
 		// Load our content
 		$.ajax({

@@ -18,44 +18,29 @@
 		<ul>
 			<li>Base
 				<ul>
-					<li>IgeObject</li>
-					<li onclick="editor.create.IgeScene2d(false);">IgeScene2d (2D Mode)</li>
-					<li onclick="editor.create.IgeScene2d(true);">IgeScene2d (Isometric Mode)</li>
-					<li>IgeViewport</li>
-				</ul>
-			</li>
-			<li>Primitives
-				<ul>
-					<li>IgeCuboid</li>
+					<li onclick="editor.create.IgeObject();">IgeObject</li>
+					<li onclick="editor.create.IgeScene2d();">IgeScene2d</li>
+					<li onclick="editor.create.IgeViewport();">IgeViewport</li>
 				</ul>
 			</li>
 			<li>Entities
 				<ul>
 					<li onclick="editor.create.IgeEntity();">IgeEntity</li>
-					<li>IgeInteractiveEntity</li>
+					<li onclick="editor.create.IgeInteractiveEntity();">IgeInteractiveEntity</li>
 					<li>IgeUiEntity</li>
 					<li>IgeFontEntity</li>
-					<li>IgeParticleEmitter</li>
+					<li onclick="editor.create.IgeParticleEmitter();">IgeParticleEmitter</li>
+					<li onclick="editor.create.IgeCuboid();">IgeCuboid</li>
 				</ul>
 			</li>
 			<li>Tile Maps
 				<ul>
-					<li>IgeTileMap2d (2d Mode)</li>
-					<li>IgeTileMap2d (Isometric Mode)</li>
-					<li onclick="editor.create.IgeTextureMap(false);">IgeTextureMap (2D Mode)</li>
-					<li onclick="editor.create.IgeTextureMap(true);">IgeTextureMap (Isometric Mode)</li>
+					<li onclick="editor.create.IgeTileMap2d();">IgeTileMap2d</li>
+					<li onclick="editor.create.IgeTextureMap();">IgeTextureMap</li>
 				</ul>
 			</li>
 			<li>Assets
 				<ul>
-					<li>Textures
-						<ul>
-							<li>IgeTexture...</li>
-							<li>IgeCellSheet...</li>
-							<li>IgeSpriteSheet...</li>
-							<li>IgeFontSheet...</li>
-						</ul>
-					</li>
 					<li>Sound
 						<ul>
 							<li>IgeSound</li>

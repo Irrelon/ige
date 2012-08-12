@@ -33,6 +33,7 @@
 	<script type="text/javascript" src="panels/CrumbBar/index.js"></script>
 	<script type="text/javascript" src="panels/StatusBar/index.js"></script>
 	<script type="text/javascript" src="panels/SceneGraph/index.js"></script>
+	<script type="text/javascript" src="panels/Transform/index.js"></script>
 	<script type="text/javascript" src="panels/Properties/index.js"></script>
 	<script type="text/javascript" src="panels/Textures/index.js"></script>
 	<script type="text/javascript" src="panels/CellSheets/index.js"></script>
@@ -54,23 +55,27 @@
 				<div id="rightBar" class="uiBar" style="overflow: auto;">
 					<div id="tabStrip">
 						<ul>
-							<li class="k-state-active">
+							<li id="sceneGraphTab" class="k-state-active">
 								SceneGraph
 							</li>
-							<li>
+							<li id="transformTab">
+								Transform
+							</li>
+							<li id="propertiesTab">
 								Properties
 							</li>
-							<li>
+							<li id="texturesTab">
 								Textures
 							</li>
-							<li>
+							<li id="cellSheetsTab">
 								Cell Sheets
 							</li>
 						</ul>
-						<div>Loading...</div>
-						<div></div>
-						<div></div>
-						<div></div>
+						<div id="sceneGraphTabContent">Loading...</div>
+						<div id="transformTabContent"></div>
+						<div id="propertiesTabContent"></div>
+						<div id="texturesTabContent"></div>
+						<div id="cellSheetsTabContent"></div>
 					</div>
 				</div>
 			</div>

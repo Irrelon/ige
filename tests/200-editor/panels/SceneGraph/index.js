@@ -113,6 +113,15 @@ SceneGraphPanel = IgeEventingClass.extend({
 						break;
 				}
 
+				// Check the current selected object's parent
+				if (this._selectedObject.parent()) {
+					switch (this._selectedObject.parent().classId()) {
+						case 'IgeTileMap2d':
+						case 'IgeTextureMap':
+							this._selectedObject.parent().drawGrid(0);
+							break;
+					}
+				}
 			}
 
 			// Assign the new selected object
@@ -151,6 +160,16 @@ SceneGraphPanel = IgeEventingClass.extend({
 					this._selectedObject.drawBounds(true);
 					this._selectedObject.drawBoundsData(true);
 					break;
+			}
+
+			// Check the new selected object's parent
+			if (this._selectedObject.parent()) {
+				switch (this._selectedObject.parent().classId()) {
+					case 'IgeTileMap2d':
+					case 'IgeTextureMap':
+						this._selectedObject.parent().drawGrid(40);
+						break;
+				}
 			}
 
 			this.emit('selectedObject', this._selectedObject);

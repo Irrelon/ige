@@ -173,6 +173,52 @@
 		},
 
 		create: {
+			IgeObject: function() {
+				var sgPanel = editor.panel('sceneGraph'),
+					treeView = $("#scenegraph-treeview").data('kendoTreeView'),
+					ent, treeItem;
+
+				if (sgPanel.selectedObject()) {
+					// Create object
+					ent = new igeFrame.IgeObject()
+						.drawBounds(false)
+						.drawBoundsData(false)
+						.mount(sgPanel.selectedObject());
+
+					// Update the scenegraph panel
+					treeItem = sgPanel.addItem(ent);
+
+					// Select the new item
+					treeView.select(treeItem);
+					sgPanel.selectedObject(ent.id());
+
+					return ent;
+				}
+			},
+
+			IgeScene2d: function() {
+				var sgPanel = editor.panel('sceneGraph'),
+					treeView = $("#scenegraph-treeview").data('kendoTreeView'),
+					ent, treeItem;
+
+				if (sgPanel.selectedObject()) {
+					// Create object
+					ent = new igeFrame.IgeScene2d()
+						.drawBounds(false)
+						.drawBoundsData(false)
+						.mount(sgPanel.selectedObject());
+
+					// Update the scenegraph panel
+					treeItem = sgPanel.addItem(ent);
+
+					// Select the new item
+					treeView.select(treeItem);
+					sgPanel.selectedObject(ent.id());
+
+					return ent;
+				}
+			},
+
 			IgeEntity: function() {
 				var sgPanel = editor.panel('sceneGraph'),
 					treeView = $("#scenegraph-treeview").data('kendoTreeView'),
@@ -198,7 +244,34 @@
 				}
 			},
 
-			IgeTextureMap: function(isometricMounts) {
+			IgeTileMap2d: function() {
+				var sgPanel = editor.panel('sceneGraph'),
+					treeView = $("#scenegraph-treeview").data('kendoTreeView'),
+					ent, treeItem;
+
+				if (sgPanel.selectedObject()) {
+					// Create object
+					ent = new igeFrame.IgeTileMap2d()
+						.tileWidth(40)
+						.tileHeight(40)
+						.highlightOccupied(false)
+						.drawMouse(false)
+						.drawBounds(false)
+						.drawBoundsData(false)
+						.mount(sgPanel.selectedObject());
+
+					// Update the scenegraph panel
+					treeItem = sgPanel.addItem(ent);
+
+					// Select the new item
+					treeView.select(treeItem);
+					sgPanel.selectedObject(ent.id());
+
+					return ent;
+				}
+			},
+
+			IgeTextureMap: function() {
 				var sgPanel = editor.panel('sceneGraph'),
 					treeView = $("#scenegraph-treeview").data('kendoTreeView'),
 					ent, treeItem;
@@ -206,13 +279,39 @@
 				if (sgPanel.selectedObject()) {
 					// Create object
 					ent = new igeFrame.IgeTextureMap()
-						.isometricMounts(isometricMounts)
 						.tileWidth(40)
 						.tileHeight(40)
 						.highlightOccupied(false)
 						.drawMouse(false)
 						.drawBounds(false)
 						.drawBoundsData(false)
+						.mount(sgPanel.selectedObject());
+
+					// Update the scenegraph panel
+					treeItem = sgPanel.addItem(ent);
+
+					// Select the new item
+					treeView.select(treeItem);
+					sgPanel.selectedObject(ent.id());
+
+					return ent;
+				}
+			},
+
+			IgeCuboid: function() {
+				var sgPanel = editor.panel('sceneGraph'),
+					treeView = $("#scenegraph-treeview").data('kendoTreeView'),
+					ent, treeItem;
+
+				if (sgPanel.selectedObject()) {
+					// Create object
+					ent = new igeFrame.IgeCuboid()
+						.drawMouse(false)
+						.drawBounds(false)
+						.drawBoundsData(false)
+						.isometric(true)
+						.size3d(40, 40, 40)
+						.opacity(0.95)
 						.mount(sgPanel.selectedObject());
 
 					// Update the scenegraph panel

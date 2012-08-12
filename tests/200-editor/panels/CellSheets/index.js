@@ -1,7 +1,7 @@
 CellSheetsPanel = IgeClass.extend({
 	init: function (panelBar) {
 		var self = this,
-			container = $($("#tabStrip").data('kendoTabStrip').contentElement(3));
+			container = $($("#tabStrip").data('kendoTabStrip').contentElement(4));
 
 		// Load our content
 		$.ajax({
@@ -20,6 +20,9 @@ CellSheetsPanel = IgeClass.extend({
 				$("#cellSheetPanelBar").kendoPanelBar({
 					expandMode: "multiple"
 				});
+
+				// Expand all the panels
+				$("#cellSheetPanelBar").data("kendoPanelBar").expand($(".k-item"));
 
 				// Add the drag-drop event listener
 				dropTarget = $('#cellSheetPanel #dragTarget')[0];

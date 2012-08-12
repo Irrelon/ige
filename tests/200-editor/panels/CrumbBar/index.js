@@ -41,6 +41,10 @@ CrumbBarPanel = IgeClass.extend({
 		};
 	},
 
+	rebuild: function () {
+		this.selectObject(this._currentSelection);
+	},
+
 	selectObject: function (obj) {
 		this.resetBar();
 
@@ -72,10 +76,6 @@ CrumbBarPanel = IgeClass.extend({
 			if (walkCount < walkArr.length) {
 				// Add child items to this parent item in the crumb menu
 				switch (walkObj.classId()) {
-					case 'IgeEngine':
-						kChildren = walkObj.children();
-						break;
-
 					case 'IgeViewport':
 						kChildren = [walkObj.scene()];
 						break;
@@ -101,6 +101,8 @@ CrumbBarPanel = IgeClass.extend({
 				}
 			}
 		}
+
+		this._currentSelection = obj;
 	}
 });
 
