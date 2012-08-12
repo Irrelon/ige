@@ -164,8 +164,8 @@ var IgeViewport = IgeEntity.extend([
 								// Check if the object is mounted to an isometric mount
 								if (obj._parent && obj._parent._mountMode) {
 									ctx.save();
-										ctx.strokeStyle = '#a200ff';
 										obj._transformContext(ctx);
+
 										// Calculate the 3d bounds data
 										var r3d = obj.geometry3d,
 											xl1 = new IgePoint(-(r3d.x / 2), 0, 0)
@@ -199,6 +199,22 @@ var IgeViewport = IgeEntity.extend([
 											tf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2))
 												.toIso();
 
+										// Axis lines
+										ctx.strokeStyle = '#ffffff';
+										ctx.beginPath();
+										ctx.moveTo(xl1.x, xl1.y);
+										ctx.lineTo(xl2.x, xl2.y);
+										ctx.moveTo(xl3.x, xl3.y);
+										ctx.lineTo(xl4.x, xl4.y);
+										ctx.moveTo(xl5.x, xl5.y);
+										ctx.lineTo(xl6.x, xl6.y);
+										ctx.stroke();
+
+										ctx.strokeStyle = '#a200ff';
+
+										var ga = ctx.globalAlpha;
+										ctx.globalAlpha = 0.6;
+
 										// Left face
 										ctx.fillStyle = '#545454';
 										ctx.beginPath();
@@ -231,6 +247,8 @@ var IgeViewport = IgeEntity.extend([
 										ctx.lineTo(tf1.x, tf1.y);
 										ctx.fill();
 										ctx.stroke();
+
+										ctx.globalAlpha = ga;
 									ctx.restore();
 								}
 							}
