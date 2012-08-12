@@ -1,4 +1,6 @@
 var IgeCuboid = IgeInteractiveEntity.extend({
+	classId: 'IgeCuboid',
+
 	tick: function (ctx) {
 		this._transformContext(ctx);
 
