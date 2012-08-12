@@ -160,6 +160,79 @@ var IgeViewport = IgeEntity.extend([
 							if (obj._drawBounds || obj._drawBounds === undefined) {
 								ctx.strokeStyle = '#00deff';
 								ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
+
+								// Check if the object is mounted to an isometric mount
+								if (obj._parent && obj._parent._mountMode) {
+									ctx.save();
+										ctx.strokeStyle = '#a200ff';
+										obj._transformContext(ctx);
+										// Calculate the 3d bounds data
+										var r3d = obj.geometry3d,
+											xl1 = new IgePoint(-(r3d.x / 2), 0, 0)
+												.toIso(),
+											xl2 = new IgePoint(+(r3d.x / 2), 0, 0)
+												.toIso(),
+											xl3 = new IgePoint(0, -(r3d.y / 2), 0)
+												.toIso(),
+											xl4 = new IgePoint(0, +(r3d.y / 2), 0)
+												.toIso(),
+											xl5 = new IgePoint(0, 0, -(r3d.z / 2))
+												.toIso(),
+											xl6 = new IgePoint(0, 0, +(r3d.z / 2))
+												.toIso(),
+											// Bottom face
+											bf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2))
+												.toIso(),
+											bf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2))
+												.toIso(),
+											bf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2))
+												.toIso(),
+											bf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2))
+												.toIso(),
+											// Top face
+											tf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2))
+												.toIso(),
+											tf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2))
+												.toIso(),
+											tf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2))
+												.toIso(),
+											tf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2))
+												.toIso();
+
+										// Left face
+										ctx.fillStyle = '#545454';
+										ctx.beginPath();
+										ctx.moveTo(bf3.x, bf3.y);
+										ctx.lineTo(bf4.x, bf4.y);
+										ctx.lineTo(tf4.x, tf4.y);
+										ctx.lineTo(tf3.x, tf3.y);
+										ctx.lineTo(bf3.x, bf3.y);
+										ctx.fill();
+										ctx.stroke();
+
+										// Right face
+										ctx.fillStyle = '#282828';
+										ctx.beginPath();
+										ctx.moveTo(bf3.x, bf3.y);
+										ctx.lineTo(bf2.x, bf2.y);
+										ctx.lineTo(tf2.x, tf2.y);
+										ctx.lineTo(tf3.x, tf3.y);
+										ctx.lineTo(bf3.x, bf3.y);
+										ctx.fill();
+										ctx.stroke();
+
+										// Top face
+										ctx.fillStyle = '#676767';
+										ctx.beginPath();
+										ctx.moveTo(tf1.x, tf1.y);
+										ctx.lineTo(tf2.x, tf2.y);
+										ctx.lineTo(tf3.x, tf3.y);
+										ctx.lineTo(tf4.x, tf4.y);
+										ctx.lineTo(tf1.x, tf1.y);
+										ctx.fill();
+										ctx.stroke();
+									ctx.restore();
+								}
 							}
 
 							if (this._drawBoundsData  && (obj._drawBounds || obj._drawBoundsData === undefined)) {
