@@ -7,22 +7,7 @@ CrumbBarPanel = IgeClass.extend({
 			url: "panels/CrumbBar/index.html",
 			success: function (data) {
 				$('#crumbBar').append(data);
-				$("#crumbBar #menu").kendoMenu({
-					select: function (e) {
-						var objectId = $(e.item).data('id'),
-							li = $("#scenegraph-treeview").data('kendoTreeView').search({id:objectId});
-
-						if (li) {
-							$("#scenegraph-treeview").data('kendoTreeView').select(li);
-							editor.panel('sceneGraph').selectedObject(objectId);
-						}
-					}
-				});
-
-				var menu = $("#crumbBar #menu").data("kendoMenu");
-				menu.getItem = function (itemIndex) {
-					return menu.element.children("li").eq(itemIndex);
-				};
+				self.resetBar();
 
 				// Listen to the scenegraph panel for selection events
 				editor.panel('sceneGraph').on('selectedObject', function (obj) {
@@ -33,10 +18,35 @@ CrumbBarPanel = IgeClass.extend({
 		});
 	},
 
+	resetBar: function () {
+		$('#crumbBar #menu').remove();
+		$('<ul id="menu"><li>SceneGraph</li></ul>').appendTo($('#crumbBar'));
+
+		// Setup the kendo menu
+		$("#crumbBar #menu").kendoMenu({
+			select: function (e) {
+				var objectId = $(e.item).data('id'),
+					li = $("#scenegraph-treeview").data('kendoTreeView').search({id:objectId});
+
+				if (li) {
+					$("#scenegraph-treeview").data('kendoTreeView').select(li);
+					editor.panel('sceneGraph').selectedObject(objectId);
+				}
+			}
+		});
+
+		var menu = $("#crumbBar #menu").data("kendoMenu");
+		menu.getItem = function (itemIndex) {
+			return menu.element.children("li").eq(itemIndex);
+		};
+	},
+
 	selectObject: function (obj) {
+		this.resetBar();
+
 		var menu = $('#crumbBar #menu').data('kendoMenu'),
 			currentItems = menu.element.children("li"),
-			walkObj = obj, walkArr = [], item, k, kChildren, kItem,
+			walkObj = obj, walkArr = [], walkCount, item, k, kChildren, kItem,
 			kItemArray;
 
 		// Create the crumb button for this selection by walking the parent chain up
@@ -47,10 +57,6 @@ CrumbBarPanel = IgeClass.extend({
 			walkArr.push(walkObj);
 		}
 
-		menu.append([{
-			text: 'SceneGraph'
-		}]);
-
 		walkCount = walkArr.length;
 		while (walkCount--) {
 			walkObj = walkArr[walkCount];
@@ -58,13 +64,26 @@ CrumbBarPanel = IgeClass.extend({
 				text: walkObj.id() + ' (' + walkObj.classId() + ')',
 				id: walkObj.id()
 			}]);
-			item = menu.getItem((currentItems.length - 1) + walkArr.length - walkCount + 1);
+
+			item = menu.getItem((currentItems.length - 1) + walkArr.length - walkCount);
 			item.data('id', walkObj.id());
 			item.data('parent', walkObj.parent());
 
-			if (walkCount < walkArr.length - 1) {
+			if (walkCount < walkArr.length) {
 				// Add child items to this parent item in the crumb menu
-				kChildren = walkObj.children();
+				switch (walkObj.classId()) {
+					case 'IgeEngine':
+						kChildren = walkObj.children();
+						break;
+
+					case 'IgeViewport':
+						kChildren = [walkObj.scene()];
+						break;
+
+					default:
+						kChildren = walkObj.children();
+						break;
+				}
 
 				for (k = 0; k < kChildren.length; k++) {
 					kItem = kChildren[k];
@@ -82,11 +101,6 @@ CrumbBarPanel = IgeClass.extend({
 				}
 			}
 		}
-
-		// Remove all old crumb items
-		currentItems.each(function (index, item) {
-			menu.remove(item);
-		});
 	}
 });
 
