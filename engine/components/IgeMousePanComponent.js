@@ -89,8 +89,8 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 					};
 
 				this._entity.camera.translateTo(
-					panCords.x + this._panStartCamera.x,
-					panCords.y + this._panStartCamera.y,
+					(panCords.x + this._panStartCamera.x) / this._entity.camera._scale.x,
+					(panCords.y + this._panStartCamera.y) / this._entity.camera._scale.y,
 					0
 				);
 			}
@@ -114,8 +114,8 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 					};
 
 				this._entity.camera.translateTo(
-					panCords.x + this._panStartCamera.x,
-					panCords.y + this._panStartCamera.y,
+					(panCords.x + this._panStartCamera.x) / this._entity.camera._scale.x,
+					(panCords.y + this._panStartCamera.y) / this._entity.camera._scale.y,
 					0
 				);
 
