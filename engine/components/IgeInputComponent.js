@@ -167,17 +167,29 @@ var IgeInputComponent = IgeEventingClass.extend({
 			canvas = ige._canvas;
 
 		// Listen for mouse events
-		canvas.addEventListener('mousedown', function (event) { self._mouseDown(event); });
-		canvas.addEventListener('mouseup', function (event) { self._mouseUp(event); });
-		canvas.addEventListener('mousemove', function (event) { self._mouseMove(event); });
-		canvas.addEventListener('mousewheel', function (event) { self._mouseWheel(event); });
+		canvas.addEventListener('mousedown', function (event) { self._rationalise(event); self._mouseDown(event); });
+		canvas.addEventListener('mouseup', function (event) { self._rationalise(event); self._mouseUp(event); });
+		canvas.addEventListener('mousemove', function (event) { self._rationalise(event); self._mouseMove(event); });
+		canvas.addEventListener('mousewheel', function (event) { self._rationalise(event); self._mouseWheel(event); });
 
 		// Kill the context menu on right-click, urgh!
 		canvas.addEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
 
 		// Listen for keyboard events
-		window.addEventListener('keydown', function (event) { self._keyDown(event); }, false);
-		window.addEventListener('keyup', function (event) { self._keyUp(event); }, false);
+		window.addEventListener('keydown', function (event) { self._rationalise(event); self._keyDown(event); }, false);
+		window.addEventListener('keyup', function (event) { self._rationalise(event); self._keyUp(event); }, false);
+	},
+
+	/**
+	 * Sets igeX and igeY properties in the event object that
+	 * can be relied on to provide the x, y co-ordinates of the
+	 * mouse event including the canvas offset.
+	 * @param {Event} event The event object.
+	 * @private
+	 */
+	_rationalise: function (event) {
+		event.igeX = (event.pageX - ige._canvas.offsetLeft);
+		event.igeY = (event.pageY - ige._canvas.offsetTop);
 	},
 
 	/**
@@ -189,8 +201,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.clientX - ige.geometry.x2,
-			my = event.clientY - ige.geometry.y2;
+		var mx = event.igeX - ige.geometry.x2,
+			my = event.igeY - ige.geometry.y2;
 
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = true;
@@ -218,8 +230,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.clientX - ige.geometry.x2,
-			my = event.clientY - ige.geometry.y2;
+		var mx = event.igeX - ige.geometry.x2,
+			my = event.igeY - ige.geometry.y2;
 
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = false;
@@ -247,8 +259,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		ige._mouseOverVp = this._updateMouseData(event);
 
-		var mx = event.clientX - ige.geometry.x2,
-			my = event.clientY - ige.geometry.y2;
+		var mx = event.igeX - ige.geometry.x2,
+			my = event.igeY - ige.geometry.y2;
 
 		this._state[this.mouse.x] = mx;
 		this._state[this.mouse.y] = my;
@@ -267,8 +279,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		ige._updateMouseData(event);
 
-		var mx = event.clientX - ige.geometry.x2,
-			my = event.clientY - ige.geometry.y2;
+		var mx = event.igeX - ige.geometry.x2,
+			my = event.igeY - ige.geometry.y2;
 
 		this._state[this.mouse.wheel] = event.wheelDelta;
 
@@ -317,8 +329,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		var arr = ige._children,
 			arrCount = arr.length,
 			vp, vpUpdated,
-			mx = event.clientX - ige.geometry.x / 2,
-			my = event.clientY - ige.geometry.y / 2;
+			mx = event.igeX - ige.geometry.x / 2,
+			my = event.igeY - ige.geometry.y / 2;
 
 		ige._mousePos.x = mx;
 		ige._mousePos.y = my;
