@@ -20,16 +20,17 @@
 				<ul>
 					<li onclick="editor.create.IgeObject();">IgeObject</li>
 					<li onclick="editor.create.IgeScene2d();">IgeScene2d</li>
-					<li onclick="editor.create.IgeViewport();">IgeViewport</li>
+					<!--<li onclick="editor.create.IgeViewport();">IgeViewport</li>-->
 				</ul>
 			</li>
 			<li>Entities
 				<ul>
 					<li onclick="editor.create.IgeEntity();">IgeEntity</li>
+					<li onclick="editor.create.IgeEntity3d();">IgeEntity3d</li>
 					<li onclick="editor.create.IgeInteractiveEntity();">IgeInteractiveEntity</li>
-					<li>IgeUiEntity</li>
-					<li>IgeFontEntity</li>
-					<li onclick="editor.create.IgeParticleEmitter();">IgeParticleEmitter</li>
+					<!--<li>IgeUiEntity</li>-->
+					<!--<li>IgeFontEntity</li>-->
+					<!--<li onclick="editor.create.IgeParticleEmitter();">IgeParticleEmitter</li>-->
 					<li onclick="editor.create.IgeCuboid();">IgeCuboid</li>
 				</ul>
 			</li>
@@ -39,7 +40,7 @@
 					<li onclick="editor.create.IgeTextureMap();">IgeTextureMap</li>
 				</ul>
 			</li>
-			<li>Assets
+			<!--<li>Assets
 				<ul>
 					<li>Sound
 						<ul>
@@ -49,13 +50,13 @@
 						</ul>
 					</li>
 				</ul>
-			</li>
+			</li>-->
 			<li>Custom Classes
 				<ul>
-					<li onclick="editor.create.Character(3);">Character</li>
+					<li onclick="editor.create.Character().setType(3);">Character</li>
 				</ul>
 			</li>
-			<li>New Class...</li>
+			<!--<li>New Class...</li>-->
 		</ul>
 	</li>
 </ul>

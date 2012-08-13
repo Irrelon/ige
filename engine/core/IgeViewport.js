@@ -167,7 +167,7 @@ var IgeViewport = IgeEntity.extend([
 										obj._transformContext(ctx);
 
 										// Calculate the 3d bounds data
-										var r3d = obj.geometry3d,
+										var r3d = obj.geometry,
 											xl1 = new IgePoint(-(r3d.x / 2), 0, 0)
 												.toIso(),
 											xl2 = new IgePoint(+(r3d.x / 2), 0, 0)

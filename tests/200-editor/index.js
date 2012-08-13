@@ -229,8 +229,52 @@
 					ent = new igeFrame.IgeEntity()
 						.drawBounds(false)
 						.drawBoundsData(false)
-						.width(100)
-						.height(100)
+						.mount(sgPanel.selectedObject());
+
+					// Update the scenegraph panel
+					treeItem = sgPanel.addItem(ent);
+
+					// Select the new item
+					treeView.select(treeItem);
+					sgPanel.selectedObject(ent.id());
+
+					return ent;
+				}
+			},
+
+			IgeEntity3d: function() {
+				var sgPanel = editor.panel('sceneGraph'),
+					treeView = $("#scenegraph-treeview").data('kendoTreeView'),
+					ent, treeItem;
+
+				if (sgPanel.selectedObject()) {
+					// Create object
+					ent = new igeFrame.IgeEntity3d()
+						.drawBounds(false)
+						.drawBoundsData(false)
+						.mount(sgPanel.selectedObject());
+
+					// Update the scenegraph panel
+					treeItem = sgPanel.addItem(ent);
+
+					// Select the new item
+					treeView.select(treeItem);
+					sgPanel.selectedObject(ent.id());
+
+					return ent;
+				}
+			},
+
+			IgeInteractiveEntity: function() {
+				var sgPanel = editor.panel('sceneGraph'),
+					treeView = $("#scenegraph-treeview").data('kendoTreeView'),
+					ent, treeItem;
+
+				if (sgPanel.selectedObject()) {
+					// Create object
+					ent = new igeFrame.IgeInteractiveEntity()
+						.drawBounds(false)
+						.drawBoundsData(false)
 						.mount(sgPanel.selectedObject());
 
 					// Update the scenegraph panel
@@ -325,7 +369,7 @@
 				}
 			},
 
-			Character: function (type) {
+			Character: function () {
 				var sgPanel = editor.panel('sceneGraph'),
 					treeView = $("#scenegraph-treeview").data('kendoTreeView'),
 					ent, treeItem;
@@ -334,7 +378,6 @@
 					// Create object
 					ent = new igeFrame.Character()
 						.addComponent(igeFrame.PlayerComponent)
-						.setType(type)
 						.mount(sgPanel.selectedObject());
 
 					// Update the scenegraph panel

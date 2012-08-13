@@ -25,8 +25,8 @@ var IgeEntity = IgeObject.extend([
 		this._scale = new IgePoint(1, 1, 1);
 		this._origin = new IgePoint(0.5, 0.5, 0.5);
 
-		this.geometry = new IgePoint(20, 20, 20);
-		this.geometry3d = new IgePoint(0, 0, 0);
+		this.geometry = new IgePoint(40, 40, 40);
+		//this.geometry3d = new IgePoint(0, 0, 0);
 
 		this._highlight = false;
 
@@ -201,11 +201,11 @@ var IgeEntity = IgeObject.extend([
 	 */
 	size3d: function (x, y, z) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
-			this.geometry3d = new IgePoint(x, y, z);
+			this.geometry = new IgePoint(x, y, z);
 			return this;
 		}
 
-		return this.geometry3d;
+		return this.geometry;
 	},
 
 	/**
@@ -440,7 +440,7 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	_projectionOverlap: function (otherObject) {
-		var thisG3d = this.geometry3d,
+		var thisG3d = this.geometry,
 			thisMin = new IgePoint(
 				this._translate.x - thisG3d.x / 2,
 				this._translate.y - thisG3d.y / 2,
@@ -451,7 +451,7 @@ var IgeEntity = IgeObject.extend([
 				this._translate.y + thisG3d.y / 2,
 				this._translate.z + thisG3d.z
 			),
-			otherG3d = otherObject.geometry3d,
+			otherG3d = otherObject.geometry,
 			otherMin = new IgePoint(
 				otherObject._translate.x - otherG3d.x / 2,
 				otherObject._translate.y - otherG3d.y / 2,
@@ -482,7 +482,7 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	_isBehind: function (otherObject) {
-		var thisG3d = this.geometry3d,
+		var thisG3d = this.geometry,
 			thisMin = new IgePoint(
 				this._translate.x - thisG3d.x / 2,
 				this._translate.y - thisG3d.y / 2,
@@ -493,7 +493,7 @@ var IgeEntity = IgeObject.extend([
 				this._translate.y + thisG3d.y / 2,
 				this._translate.z + thisG3d.z
 			),
-			otherG3d = otherObject.geometry3d,
+			otherG3d = otherObject.geometry,
 			otherMin = new IgePoint(
 				otherObject._translate.x - otherG3d.x / 2,
 				otherObject._translate.y - otherG3d.y / 2,
@@ -675,8 +675,8 @@ var IgeEntity = IgeObject.extend([
 							str += ".height(" + this.height() + ")";
 						}
 						break;
-					case 'geometry3d':
-						str += ".size3d(" + this.geometry3d.x + ", " + this.geometry3d.y + ", " + this.geometry3d.z + ")";
+					case 'geometry':
+						str += ".size3d(" + this.geometry.x + ", " + this.geometry.y + ", " + this.geometry.z + ")";
 						break;
 					case '_deathTime':
 						str += ".deathTime('" + this.deathTime() + "')";

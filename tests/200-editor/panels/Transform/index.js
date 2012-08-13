@@ -111,13 +111,13 @@ TransformPanel = IgeClass.extend({
 								break;
 
 							case 'size3dX':
-								obj.geometry3d.x = newVal;
+								obj.geometry.x = newVal;
 								break;
 							case 'size3dY':
-								obj.geometry3d.y = newVal;
+								obj.geometry.y = newVal;
 								break;
 							case 'size3dZ':
-								obj.geometry3d.z = newVal;
+								obj.geometry.z = newVal;
 								break;
 						}
 					};
@@ -157,9 +157,9 @@ TransformPanel = IgeClass.extend({
 					$('#transformContent #originY').data("kendoNumericTextBox").value(obj._origin.y);
 					$('#transformContent #originZ').data("kendoNumericTextBox").value(obj._origin.z);
 
-					$('#transformContent #size3dX').data("kendoNumericTextBox").value(obj.geometry3d.x);
-					$('#transformContent #size3dY').data("kendoNumericTextBox").value(obj.geometry3d.y);
-					$('#transformContent #size3dZ').data("kendoNumericTextBox").value(obj.geometry3d.z);
+					$('#transformContent #size3dX').data("kendoNumericTextBox").value(obj.geometry.x);
+					$('#transformContent #size3dY').data("kendoNumericTextBox").value(obj.geometry.y);
+					$('#transformContent #size3dZ').data("kendoNumericTextBox").value(obj.geometry.z);
 				},
 				dataType: 'html'
 			});
