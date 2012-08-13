@@ -339,66 +339,72 @@ var IgeEntity = IgeObject.extend([
 	 * Calculates and returns the current axis-aligned bounding box.
 	 * @return {Object} An object with the properties: x, y, width, height
 	 */
-	aabb: function () {
-		var poly = new IgePoly2d(),
-			minX, minY,
-			maxX, maxY,
-			box = {},
-			anc = this._anchor,
-			geom = this.geometry,
-			origin = this._origin,
-			originX = origin.x - 0.5,
-			originY = origin.y - 0.5,
-			ox = geom.x * originX,
-			oy = geom.y * originY,
-			x = geom.x2 + anc.x,
-			y = geom.y2 + anc.y;
+	aabb: function (recalc) {
+		if (recalc || !this._aabb) {
+			var poly = new IgePoly2d(),
+				minX, minY,
+				maxX, maxY,
+				box = {},
+				anc = this._anchor,
+				geom = this.geometry,
+				origin = this._origin,
+				originX = origin.x - 0.5,
+				originY = origin.y - 0.5,
+				ox = geom.x * originX,
+				oy = geom.y * originY,
+				x = geom.x2 + anc.x,
+				y = geom.y2 + anc.y;
 
-		poly.addPoint(-x + ox, -y + oy);
-		poly.addPoint(x + ox, -y + oy);
-		poly.addPoint(x + ox, y + oy);
-		poly.addPoint(-x + ox, y + oy);
+			poly.addPoint(-x + ox, -y + oy);
+			poly.addPoint(x + ox, -y + oy);
+			poly.addPoint(x + ox, y + oy);
+			poly.addPoint(-x + ox, y + oy);
 
-		this._renderPos = {x: -x + ox, y: -y + oy};
+			this._renderPos = {x: -x + ox, y: -y + oy};
 
-		// Convert the poly's points from local space to world space
-		this.localToWorld(poly._poly);
+			// Convert the poly's points from local space to world space
+			this.localToWorld(poly._poly);
 
-		// Get the extents of the newly transformed poly
-		minX = Math.min(
-			poly._poly[0].x,
-			poly._poly[1].x,
-			poly._poly[2].x,
-			poly._poly[3].x
-		);
+			// Get the extents of the newly transformed poly
+			minX = Math.min(
+				poly._poly[0].x,
+				poly._poly[1].x,
+				poly._poly[2].x,
+				poly._poly[3].x
+			);
 
-		minY = Math.min(
-			poly._poly[0].y,
-			poly._poly[1].y,
-			poly._poly[2].y,
-			poly._poly[3].y
-		);
+			minY = Math.min(
+				poly._poly[0].y,
+				poly._poly[1].y,
+				poly._poly[2].y,
+				poly._poly[3].y
+			);
 
-		maxX = Math.max(
-			poly._poly[0].x,
-			poly._poly[1].x,
-			poly._poly[2].x,
-			poly._poly[3].x
-		);
+			maxX = Math.max(
+				poly._poly[0].x,
+				poly._poly[1].x,
+				poly._poly[2].x,
+				poly._poly[3].x
+			);
 
-		maxY = Math.max(
-			poly._poly[0].y,
-			poly._poly[1].y,
-			poly._poly[2].y,
-			poly._poly[3].y
-		);
+			maxY = Math.max(
+				poly._poly[0].y,
+				poly._poly[1].y,
+				poly._poly[2].y,
+				poly._poly[3].y
+			);
 
-		box.x = minX;
-		box.y = minY;
-		box.width = maxX - minX;
-		box.height = maxY - minY;
+			box.x = minX;
+			box.y = minY;
+			box.width = maxX - minX;
+			box.height = maxY - minY;
 
-		return box;
+			this._aabb = box;
+
+			return box;
+		} else {
+			return this._aabb;
+		}
 	},
 
 	_swapVars: function (x, y) {
@@ -535,6 +541,9 @@ var IgeEntity = IgeObject.extend([
 		// Check for changes to the transform values
 		// directly without calling the transform methods
 		this.updateTransform();
+
+		// Update the aabb
+		this.aabb(true); // TODO: This is wasteful, find a way to determine if a recalc is required rather than doing it every tick
 
 		if (this._parent) {
 			// TODO: Does this only work one level deep? we need to alter a _worldOpacity property down the chain
