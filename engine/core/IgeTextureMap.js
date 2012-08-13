@@ -67,6 +67,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	saveMap: function () {
 		// TODO: Return the string data and also an array with each map texture in map.textures
 		// in URL format
+		return this.map.mapDataString();
 	},
 
 	/**

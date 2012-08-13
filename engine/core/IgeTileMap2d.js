@@ -151,12 +151,21 @@ var IgeTileMap2d = IgeInteractiveEntity.extend({
 	 * Attached to objects that are mounted to the tile sheet. This method
 	 * returns an array of tile co-ordinates that the object is currently
 	 * over, calculated using the current world co-ordinates of the object
-	 * as well as it's geometry.
+	 * as well as it's 3d geometry.
 	 * @private
 	 * @return {Array} The array of tile co-ordinates as IgePoint instances.
 	 */
 	_objectOverTiles: function () {
-		// TODO: Write this!
+		if (this._tileWidth && this._tileHeight) {
+			var x, y;
+			for (x = 0; x < this._tileWidth; x++) {
+				for (y = 0; y < this._tileHeight; y++) {
+					// TODO: // Finish writing this!
+				}
+			}
+		} else {
+			this.log('Cannot calculate which tiles this entity is currently "over" because it has not been assigned either a tileWidth or a tileHeight.', 'error');
+		}
 	},
 
 	_resizeEvent: function (event) {
