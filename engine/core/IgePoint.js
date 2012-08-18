@@ -98,6 +98,18 @@ IgePoint.prototype.thisMultiply = function (x, y, z) {
 	return this;
 };
 
+IgePoint.prototype.divide = function (x, y, z) {
+	return new IgePoint(this.x / x, this.y / y, this.z / z);
+};
+
+IgePoint.prototype.thisDivide = function (x, y, z) {
+	this.x /= x;
+	this.y /= y;
+	this.z /= z;
+
+	return this;
+};
+
 IgePoint.prototype.clone = function () {
 	return new IgePoint(this.x, this.y, this.z);
 };
