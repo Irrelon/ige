@@ -60,15 +60,14 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 		if (this._enabled) {
 			// Record the mouse down position - pan starting
 			var curMousePos = ige._mousePos;
-			this._panStartMouse = {
-				x: curMousePos.x,
-				y: curMousePos.y
-			};
+			this._panStartMouse = curMousePos.clone();
 
 			this._panStartCamera = {
 				x: this._entity.camera._translate.x,
 				y: this._entity.camera._translate.y
 			};
+
+			this.emit('panStart');
 		}
 	},
 
@@ -89,10 +88,12 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 					};
 
 				this._entity.camera.translateTo(
-					(panCords.x + this._panStartCamera.x) / this._entity.camera._scale.x,
-					(panCords.y + this._panStartCamera.y) / this._entity.camera._scale.y,
+					(panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x,
+					(panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y,
 					0
 				);
+
+				this.emit('panMove');
 			}
 		}
 	},
@@ -114,14 +115,16 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 					};
 
 				this._entity.camera.translateTo(
-					(panCords.x + this._panStartCamera.x) / this._entity.camera._scale.x,
-					(panCords.y + this._panStartCamera.y) / this._entity.camera._scale.y,
+					(panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x,
+					(panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y,
 					0
 				);
 
 				// Remove the pan start data to end the pan operation
 				delete this._panStartMouse;
 				delete this._panStartCamera;
+
+				this.emit('panEnd');
 			}
 		}
 	}
