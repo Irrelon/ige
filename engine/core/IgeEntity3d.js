@@ -2,7 +2,7 @@
  * Creates a new isometric 3d entity.
  */
 var IgeEntity3d = IgeEntity.extend({
-	classId: 'IgeEntity',
+	classId: 'IgeEntity3d',
 
 	init: function () {
 		this._super();
@@ -33,17 +33,34 @@ var IgeEntity3d = IgeEntity.extend({
 	 * @param tex
 	 */
 	billboard: function (tex) {
-		// If we already have a child entity, change the texture directly
-		if (this._billboard) {
-			this._billboard.texture(tex);
-		} else {
-			// Create a new billboard entity and assign it the texture
-			this._billboard = new IgeEntity()
-				.id(this.id() + '_billboard')
-				.texture(tex)
-				.dimensionsFromCell()
-				.mount(this);
+		if (tex !== undefined) {
+			// If we already have a child entity, change the texture directly
+			if (this._billboard) {
+				this._billboard.texture(tex);
+			} else {
+				// Create a new billboard entity and assign it the texture
+				this._billboard = new IgeEntity()
+					.id(this.id() + '_billboard')
+					.texture(tex)
+					.dimensionsFromCell()
+					.mount(this);
+			}
 		}
+	},
+
+	/**
+	 * Modifies the context so that the child entities of this entity
+	 * are drawn with the parent origin at the base of the 3d bounds.
+	 * @param ctx
+	 */
+	tick: function (ctx) {
+		var i, item, basePoint = new IgePoint(0, 0, +(this.geometry.z / 2)).toIso();
+		for (i = 0; i < this._children.length; i++) {
+			item = this._children[i];
+			item.translateTo(item._translate.x, -basePoint.y, item._translate.z);
+		}
+		//ctx.translate(0, Math.floor(this.geometry.z / 2));
+		this._super(ctx);
 	}
 });
 
