@@ -217,29 +217,31 @@ if (typeof(window) !== 'undefined') {
 	/**
 	 * A cross-browser/platform requestAnimationFrame method.
 	 */
-	window.requestAnimFrame = (function(){
+	/*window.requestAnimFrame = (function(){
 		return function(callback, element){
 			setTimeout(function () { callback(new Date().getTime()); }, 1000 / 60);
 		};
-	}());
+	}());*/
 
-	/*requestAnimFrame = (function(){
+	requestAnimFrame = (function(){
 		return  window.requestAnimationFrame       ||
 				window.webkitRequestAnimationFrame ||
 				window.mozRequestAnimationFrame    ||
 				window.oRequestAnimationFrame      ||
 				window.msRequestAnimationFrame     ||
 		function(callback, element){
-			setTimeout(callback, 1000 / 60);
+			setTimeout(function () { callback(new Date().getTime()); }, 1000 / 60);
 		};
-	}());*/
+	}());
 } else {
 	/**
 	 * A cross-browser/platform requestAnimationFrame method.
 	 */
-	requestAnimFrame = function(callback, element){
-		setTimeout(callback, 1000 / 60);
-	};
+	requestAnimFrame = (function(){
+		return function(callback, element){
+			setTimeout(function () { callback(new Date().getTime()); }, 1000 / 60);
+		};
+	}());
 }
 
 // Check console method existence
