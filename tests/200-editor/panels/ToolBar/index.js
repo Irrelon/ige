@@ -13,13 +13,16 @@ ToolBarPanel = IgeClass.extend({
 					self.toolClicked(this);
 				});
 
-				// Add the camera mouse panning component so the
-				// user can pan the camera with the mouse
+				// Add required components
 				ige.children().each(function (viewport) {
 					viewport.addComponent(igeFrame.IgeMousePanComponent);
+					viewport.addComponent(igeFrame.IgeMouseZoomComponent);
 
 					// Disable mouse panning by default
 					viewport.mousePan.enabled(false);
+
+					// Disable mouse zooming by default
+					viewport.mouseZoom.enabled(false);
 				});
 
 				// Select the selectTool tool initially
@@ -53,10 +56,13 @@ ToolBarPanel = IgeClass.extend({
 			$('#leftBar .tool').removeClass('selected');
 			$('#leftBar #' + tool.id).addClass('selected');
 
-			// Stop mouse-panning on the viewport by default
+			// Stop mouse-panning/zooming on the viewport by default
 			ige.children().each(function (viewport) {
 				// Disable mouse panning
 				viewport.mousePan.enabled(false);
+
+				// Disable mouse zooming
+				viewport.mouseZoom.enabled(false);
 			});
 
 			// Turn off draw mouse by default
@@ -101,6 +107,14 @@ ToolBarPanel = IgeClass.extend({
 						viewport.mousePan.enabled(true);
 					});
 					break;
+
+				case 'toolZoom':
+					// Enable zooming on viewports
+					ige.children().each(function (viewport) {
+						// Enable mouse zooming
+						viewport.mouseZoom.enabled(true);
+					});
+					break;
 			}
 		}
 	},
@@ -119,6 +133,10 @@ ToolBarPanel = IgeClass.extend({
 			$("#vertical").data("kendoSplitter").expand('#statusBar');
 			this._fullScreen = false;
 		}
+	},
+
+	resetZoom: function () {
+
 	},
 
 	_igeMouseDown: function (event) {

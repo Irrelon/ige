@@ -1,4 +1,9 @@
 <style>
+	#leftBar {
+		user-select: none;
+		-webkit-user-select: none;
+	}
+
 	.tool {
 		width:32px;
 		height: 32px;
@@ -80,6 +85,6 @@
 	</tr>
 	<tr>
 		<td><div id="toolPan" class="tool toolPan" title="Pan"></div></td>
-		<td><div id="toolZoom" class="tool toolZoom" title="Zoom"></div></td>
+		<td><div id="toolZoom" class="tool toolZoom" title="Zoom" ondblclick="editor.panel('toolBar')."></div></td>
 	</tr>
 </table>
