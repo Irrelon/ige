@@ -129,10 +129,21 @@ var IgeViewport = IgeEntity.extend([
 			// Check if we should draw the mouse position on this
 			// viewport (usually for debug purposes)
 			if (this._drawMouse && ctx === ige._ctx && this._mousePos) {
-				ctx.fillStyle = '#fc00ff';
-				ctx.fillRect(this._mousePos.x - 5, this._mousePos.y - 5, 10, 10);
-				var textMeasurement = ctx.measureText('Viewport ' + this.id() + ' :: ' +this._mousePos.x + ', ' + this._mousePos.y);
-				ctx.fillText('Viewport ' + this.id() + ' :: ' + this._mousePos.x + ', ' + this._mousePos.y, this._mousePos.x - textMeasurement.width / 2, this._mousePos.y - 15);
+				ctx.save();
+					// Re-scale the context to ensure that output is always 1:1
+					ctx.scale(1 / this.camera._scale.x, 1 / this.camera._scale.y);
+
+					// Work out the re-scale mouse position
+					var mx = Math.floor(this._mousePos.x * this.camera._scale.x),
+						my = Math.floor(this._mousePos.y * this.camera._scale.y),
+						textMeasurement;
+
+					ctx.fillStyle = '#fc00ff';
+					ctx.fillRect(mx - 5, my - 5, 10, 10);
+
+					textMeasurement = ctx.measureText('Viewport ' + this.id() + ' :: ' + mx + ', ' + my);
+					ctx.fillText('Viewport ' + this.id() + ' :: ' + mx + ', ' + my, mx - textMeasurement.width / 2, my - 15);
+				ctx.restore();
 			}
 		}
 	},
@@ -162,7 +173,7 @@ var IgeViewport = IgeEntity.extend([
 								ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
 
 								// Check if the object is mounted to an isometric mount
-								if (obj._parent && obj._parent._mountMode) {
+								if (obj._parent && obj._parent._mountMode === 1) {
 									ctx.save();
 										obj._transformContext(ctx);
 
@@ -199,20 +210,28 @@ var IgeViewport = IgeEntity.extend([
 											tf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2))
 												.toIso();
 
+										var ga = ctx.globalAlpha;
+
 										// Axis lines
-										ctx.strokeStyle = '#ffffff';
+										ctx.globalAlpha = 1;
+										ctx.strokeStyle = '#ff0000';
 										ctx.beginPath();
 										ctx.moveTo(xl1.x, xl1.y);
 										ctx.lineTo(xl2.x, xl2.y);
+										ctx.stroke();
+										ctx.strokeStyle = '#00ff00';
+										ctx.beginPath();
 										ctx.moveTo(xl3.x, xl3.y);
 										ctx.lineTo(xl4.x, xl4.y);
+										ctx.stroke();
+										ctx.strokeStyle = '#fffc00';
+										ctx.beginPath();
 										ctx.moveTo(xl5.x, xl5.y);
 										ctx.lineTo(xl6.x, xl6.y);
 										ctx.stroke();
 
 										ctx.strokeStyle = '#a200ff';
 
-										var ga = ctx.globalAlpha;
 										ctx.globalAlpha = 0.6;
 
 										// Left face
@@ -254,13 +273,13 @@ var IgeViewport = IgeEntity.extend([
 							}
 
 							if (this._drawBoundsData  && (obj._drawBounds || obj._drawBoundsData === undefined)) {
-								ctx.globalAlpha = 0.5;
-								ctx.fillStyle = '#8a00ff';
-								ctx.fillRect(aabb.x, aabb.y, aabb.width, 14);
+								//ctx.globalAlpha = 0.5;
+								//ctx.fillStyle = '#8a00ff';
+								//ctx.fillRect(aabb.x, aabb.y, aabb.width, 14);
 								ctx.globalAlpha = 1;
 								ctx.fillStyle = '#f6ff00';
-								ctx.fillText('ID: ' + obj.id() + ' ' + '(' + obj.classId() + ') ' + obj.layer() + ':' + obj.depth(), aabb.x + 3, aabb.y + 10);
-								ctx.fillText('X: ' + obj._translate.x.toFixed(2) + ', ' + 'T: ' + obj._translate.y.toFixed(2) + ', ' + 'Z: ' + obj._translate.z.toFixed(2), aabb.x + 3, aabb.y + 20);
+								ctx.fillText('ID: ' + obj.id() + ' ' + '(' + obj.classId() + ') ' + obj.layer() + ':' + obj.depth(), aabb.x + obj.geometry.x + 3, aabb.y + 10);
+								ctx.fillText('X: ' + obj._translate.x.toFixed(2) + ', ' + 'T: ' + obj._translate.y.toFixed(2) + ', ' + 'Z: ' + obj._translate.z.toFixed(2), aabb.x + obj.geometry.x + 3, aabb.y + 20);
 							}
 						}
 					}
