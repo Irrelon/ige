@@ -92,28 +92,41 @@ var Client = IgeClass.extend({
 						.mouseOver(overFunc)
 						.mouseOut(outFunc);
 
-					self.obj[2] = new IgeInteractiveEntity()
-						.id('fairy3')
-						.depth(1)
+					// Create two isometric 3d entities
+					self.obj[2] = new IgeEntity3d()
+						.id('3d1')
 						.isometric(true)
-						.texture(gameTexture[0])
 						.mount(self.tileMap2)
-						.translateToTile(0, 0)
-						.widthByTile(0.5)
-						.heightByTile(0.5)
+						.translateToTile(0, 0, 0)
+						.drawBounds(false)
+						.size3d(40, 40, 0);
+
+					self.obj[3] = new IgeEntity3d()
+						.id('3d2')
+						.isometric(true)
+						.mount(self.tileMap2)
+						.translateToTile(1, 0, 0)
+						.drawBounds(false)
+						.size3d(40, 40, 0);
+
+					// Create two fairy entities, and mount each one
+					// to it's 3d entity as created above
+					self.obj[4] = new IgeInteractiveEntity()
+						.id('fairy3')
+						.texture(gameTexture[0])
+						.mount(self.obj[2])
+						.width(40)
+						.height(40)
 						.drawBounds(false)
 						.mouseOver(overFunc)
 						.mouseOut(outFunc);
 
-					self.obj[3] = new IgeInteractiveEntity()
+					self.obj[5] = new IgeInteractiveEntity()
 						.id('fairy4')
-						.depth(1)
-						.isometric(true)
 						.texture(gameTexture[0])
-						.mount(self.tileMap2)
-						.translateToTile(1, 0)
-						.widthByTile(0.5)
-						.heightByTile(0.5)
+						.mount(self.obj[3])
+						.width(40)
+						.height(40)
 						.drawBounds(false)
 						.mouseOver(overFunc)
 						.mouseOut(outFunc);
