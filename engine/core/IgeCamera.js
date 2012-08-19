@@ -143,6 +143,26 @@ var IgeCamera = IgeEntity.extend({
 	},
 
 	/**
+	 * Translates the camera to the center of the specified entity so
+	 * that the camera is "looking at" the entity.
+	 * @param entity
+	 * @return {*}
+	 */
+	lookAt: function (entity) {
+		if (entity !== undefined) {
+			entity.updateTransform();
+
+			// Copy the target's world matrix translate data
+			this._translate.x = entity._worldMatrix.matrix[2];
+			this._translate.y = entity._worldMatrix.matrix[5];
+
+			this.updateTransform();
+		}
+
+		return this;
+	},
+
+	/**
 	 * Process operations during the engine tick.
 	 * @param ctx
 	 */
@@ -226,6 +246,13 @@ var IgeCamera = IgeEntity.extend({
 			}
 
 			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
+		}
+
+		if (this._parent) {
+			this._worldMatrix.copy(this._parent._worldMatrix);
+			this._worldMatrix.multiply(this._localMatrix);
+		} else {
+			this._worldMatrix.copy(this._localMatrix);
 		}
 	},
 
