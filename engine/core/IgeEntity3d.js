@@ -45,22 +45,22 @@ var IgeEntity3d = IgeEntity.extend({
 					.dimensionsFromCell()
 					.mount(this);
 			}
+
+			// Translate the billboard to rest at the base of the 3d bounds
+			this.updateBillboard();
 		}
 	},
 
 	/**
-	 * Modifies the context so that the child entities of this entity
-	 * are drawn with the parent origin at the base of the 3d bounds.
-	 * @param ctx
+	 * Translates the billboard entity so that it is positioned at the base
+	 * of the 3d bounds of this Entity3d.
 	 */
-	tick: function (ctx) {
-		var i, item, basePoint = new IgePoint(0, 0, +(this.geometry.z / 2)).toIso();
-		for (i = 0; i < this._children.length; i++) {
-			item = this._children[i];
-			item.translateTo(item._translate.x, -basePoint.y, item._translate.z);
-		}
-		//ctx.translate(0, Math.floor(this.geometry.z / 2));
-		this._super(ctx);
+	updateBillboard: function () {
+		// Translate the billboard to rest at the base of the 3d bounds
+		var item = this._billboard,
+			basePoint = new IgePoint(0, 0, +(this.geometry.z / 2)).toIso();
+
+		item.translateTo(item._translate.x, -basePoint.y, item._translate.z);
 	}
 });
 
