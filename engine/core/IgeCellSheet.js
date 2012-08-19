@@ -120,15 +120,7 @@ var IgeCellSheet = IgeTexture.extend({
 		var str = "new " + this.classId() + "('" + this.url() + "', " + this.horizontalCells() + ", " + this.verticalCells() + ")";
 
 		// Every object has an ID, assign that first
-		str += ".id('" + this.id() + "')";
-
-		// Now check if there is a parent and mount that
-		if (this.parent()) {
-			str += ".mount(ige.$('" + this.parent().id() + "'))";
-		}
-
-		// Now get all other properties
-		str += this._stringify();
+		str += ".id('" + this.id() + "');";
 
 		return str;
 	}
