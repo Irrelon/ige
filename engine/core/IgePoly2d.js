@@ -26,6 +26,14 @@ var IgePoly2d = IgeClass.extend({
 	},
 
 	/**
+	 * Returns the length of the poly array.
+	 * @return {Number}
+	 */
+	length: function () {
+		return this._poly.length;
+	},
+
+	/**
 	 * Check if a point is inside this polygon.
 	 * @param {IgePoint} point
 	 * @return {Boolean}
