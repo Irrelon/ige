@@ -557,10 +557,7 @@ var IgeEntity = IgeObject.extend([
 		if (this._parent) {
 			// TODO: Does this only work one level deep? we need to alter a _worldOpacity property down the chain
 			ctx.globalAlpha = this._parent._opacity * this._opacity;
-			this._worldMatrix.copy(this._parent._worldMatrix);
-			this._worldMatrix.multiply(this._localMatrix);
 		} else {
-			this._worldMatrix.copy(this._localMatrix);
 			ctx.globalAlpha = this._opacity;
 		}
 
