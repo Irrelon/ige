@@ -265,14 +265,15 @@ var IgeTransformExtension = {
 			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
 		}
 
-		// Apply origin translate
-		//this._localMatrix.multiply(this._localMatrix._newTranslate(this._origin.x, this._origin.y));
-
 		this._localMatrix.multiply(this._localMatrix._newRotate(this._rotate.z));
 		this._localMatrix.multiply(this._localMatrix._newScale(this._scale.x, this._scale.y));
 
-		// Apply the origin back again
-		//this._localMatrix.multiply(this._localMatrix._newTranslate(-this._origin.x, -this._origin.y));
+		if (this._parent) {
+			this._worldMatrix.copy(this._parent._worldMatrix);
+			this._worldMatrix.multiply(this._localMatrix);
+		} else {
+			this._worldMatrix.copy(this._localMatrix);
+		}
 	}
 };
 
