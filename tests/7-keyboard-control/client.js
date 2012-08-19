@@ -29,6 +29,16 @@ var Client = IgeClass.extend({
 					.addComponent(PlayerComponent)
 					.setType(0)
 					.mount(self.scene1);
+
+				// Create a gold chest to use as a static reference point
+				self.obj[1] = new Character()
+					.addComponent(PlayerComponent)
+					.setType(0)
+					.mount(self.scene1);
+
+				// Tell the camera to track our player character with some
+				// tracking smoothing (set to 100)
+				self.vp1.camera.trackTranslate(self.obj[0], 100);
 			}
 		});
 	}
