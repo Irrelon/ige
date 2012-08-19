@@ -50,14 +50,58 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		this.map.clearData(x, y);
 	},
 
+	_loadMapTextureLoaded: function () {
+		this._loadMapTexturesLoading--;
+
+		if (this._loadMapTexturesLoading === 0) {
+			// Fire all textures loaded
+			this.emit('loadMapAllTexturesLoaded');
+		}
+	},
+
 	/**
 	 * Reads the map data from a standard map object and fills the map
 	 * with the data found.
 	 * @param map
 	 */
 	loadMap: function (map) {
-		// TODO: Load the textures this map requires via the url array in map.textures
-		this.map.mapData(map.data);
+		if (map.textures) {
+			// Empty the existing array
+			this._textureList = [];
+
+			// Set the number of textures we need to load
+			this._loadMapTexturesLoading = map.textures.length;
+
+			var tex = [], i,
+				self = this,
+				_texLoaded = function () {
+					self._loadMapTextureLoaded();
+				};
+
+			// Setup a listener so we can process when all textures have finished loading
+			this.on('loadMapAllTexturesLoaded', function () {
+				var k;
+				for (k = 0; k < map.textures.length; k++) {
+					self.addTexture(tex[k]);
+				}
+
+				// Fill in the map data
+				self.map.mapData(map.data);
+			});
+
+			// Loop the texture list and create each texture object
+			for (i = 0; i < map.textures.length; i++) {
+				// Load each texture
+				eval('tex[' + i + '] = ' + map.textures[0]);
+				// Listen for when the texture loads
+				tex[i].on('loaded', _texLoaded);
+			}
+		} else {
+			// Just fill in the map data
+			this.map.mapData(map.data);
+		}
+
+		return this;
 	},
 
 	/**
@@ -65,9 +109,16 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * with the loadMap() method.
 	 */
 	saveMap: function () {
-		// TODO: Return the string data and also an array with each map texture in map.textures
 		// in URL format
-		return this.map.mapDataString();
+		var textures = [], i;
+		for (i = 0; i < this._textureList.length; i++) {
+			textures.push(this._textureList[i].stringify());
+		}
+
+		return JSON.stringify({
+			textures: textures,
+			data: this.map.mapDataString()
+		});
 	},
 
 	/**
