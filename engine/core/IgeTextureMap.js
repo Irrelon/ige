@@ -110,14 +110,37 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 */
 	saveMap: function () {
 		// in URL format
-		var textures = [], i;
+		var textures = [], i,
+			x, y,
+			dataX = 0, dataY = 0,
+			mapData = this.map._mapData;
+
+		// Grab all the texture definitions
 		for (i = 0; i < this._textureList.length; i++) {
 			textures.push(this._textureList[i].stringify());
 		}
 
+		// Get the lowest x, y
+		for (x in mapData) {
+			if (mapData.hasOwnProperty(x)) {
+				for (y in mapData[x]) {
+					if (mapData[x].hasOwnProperty(y)) {
+						if (x < dataX) {
+							dataX = x;
+						}
+
+						if (y < dataY) {
+							dataY = y;
+						}
+					}
+				}
+			}
+		}
+
 		return JSON.stringify({
 			textures: textures,
-			data: this.map.mapDataString()
+			data: this.map.mapDataString(),
+			dataXY: [dataX, dataY]
 		});
 	},
 
