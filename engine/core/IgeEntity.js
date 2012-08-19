@@ -56,14 +56,23 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Translate's the object to the tile co-ordinates passed.
+	 * Translates the object to the tile co-ordinates passed.
 	 * @param x
 	 * @param y
 	 * @private
 	 */
-	translateToTile: function (x, y) {
+	translateToTile: function (x, y, z) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
-			this.translateTo(x * this._parent._tileWidth, y * this._parent._tileHeight, this._translate.z);
+			var finalZ;
+
+			// Handle being passed a z co-ordinate
+			if (z !== undefined) {
+				finalZ = z * this._parent._tileWidth;
+			} else {
+				finalZ = this._translate.z;
+			}
+
+			this.translateTo(x * this._parent._tileWidth, y * this._parent._tileHeight, finalZ);
 		} else {
 			this.log('Cannot translate to tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.', 'warning');
 		}
