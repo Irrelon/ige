@@ -277,7 +277,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 */
 	_mouseWheel: function (event) {
 		// Update the mouse position within the viewports
-		ige._updateMouseData(event);
+		this._updateMouseData(event);
 
 		var mx = event.igeX - ige.geometry.x2,
 			my = event.igeY - ige.geometry.y2;
