@@ -27,28 +27,27 @@ var IgeEntity3d = IgeEntity.extend({
 	},
 
 	/**
-	 * Creates a new image "on top" of the IgeEntity3d instance via a
-	 * child entity. This allows both to operate together but have
-	 * separate transforms.
-	 * @param tex
+	 * Gets / sets the entity that the Entity3d will use as it's billboard.
+	 * @param {IgeEntity=} entity The entity to become the billboard entity.
 	 */
-	billboard: function (tex) {
+	billboard: function (entity) {
 		if (tex !== undefined) {
-			// If we already have a child entity, change the texture directly
+			// If we already have a child entity, remove it
 			if (this._billboard) {
-				this._billboard.texture(tex);
-			} else {
-				// Create a new billboard entity and assign it the texture
-				this._billboard = new IgeEntity()
-					.id(this.id() + '_billboard')
-					.texture(tex)
-					.dimensionsFromCell()
-					.mount(this);
+				this._billboard.destroy();
 			}
+
+			// Assign the new billboard entity
+			this._billboard = entity;
+			entity.mount(this);
 
 			// Translate the billboard to rest at the base of the 3d bounds
 			this.updateBillboard();
+
+			return this;
 		}
+
+		return this._billboard;
 	},
 
 	/**
@@ -61,6 +60,8 @@ var IgeEntity3d = IgeEntity.extend({
 			basePoint = new IgePoint(0, 0, +(this.geometry.z / 2)).toIso();
 
 		item.translateTo(item._translate.x, -basePoint.y, item._translate.z);
+
+		return this;
 	}
 });
 
