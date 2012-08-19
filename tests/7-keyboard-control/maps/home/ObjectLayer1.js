@@ -1,0 +1,6 @@
+var ObjectLayer1 = {
+	data: [[null,null,null,[0,99],[0,115]],[null,[0,77],null,[0,237],[0,162],[0,178]],[null,[0,78],null,[0,238],[0,163],[0,179]],[null,null,null,[0,99],[0,115]],[null,null,null,null,[0,184],null,null,null,null,[0,233],null],[null,[0,73],[0,89],null,null,null,null,null,null,[0,234],null],null,[null,[0,15],[0,31],null,null,null,null,null,null,null,[0,223]],[null,null,null,null,null,null,null,null,null,null,[0,224]],[null,null,[0,253]],[null,[0,222],null,[0,9],[0,25],null,null,null,[0,255]],[null,[0,254],[0,207],[0,10],[0,26]],[null,[0,222],null,[0,11],[0,27]],[null,null,[0,253]],null,[null,[0,16],[0,32]],null,[null,null,null,null,null,null,null,null,null,null,null,null,[0,218]],[null,null,null,null,[0,154],null,null,null,null,null,null,[0,203],[0,219]],[null,[0,79],null,[0,135],[0,151],null,null,null,null,null,null,[0,204],[0,219]],[null,[0,80],null,[0,136],[0,152],null,null,null,null,null,null,null,[0,201]],[null,null,null,null,[0,138],null,null,null,null,null,null,null,[0,201]]],
+	textures: ["new IgeCellSheet('../assets/textures/tiles/tilef.png', 16, 16).id('2ad05afa37c1000');"]
+};
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = map1; }
