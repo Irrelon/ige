@@ -350,6 +350,23 @@ var IgeTexture = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Returns a string containing a code fragment that when
+	 * evaluated will reproduce this object.
+	 * @return {String}
+	 */
+	stringify: function () {
+		var str = "new " + this.classId() + "('" + this._url + "')";
+
+		// Every object has an ID, assign that first
+		str += ".id('" + this.id() + "')";
+
+		// Now get all other properties
+		str += this._stringify();
+
+		return str;
+	},
+
 	destroy: function () {
 		this.image = null;
 		this.script = null;
