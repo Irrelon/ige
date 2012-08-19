@@ -107,6 +107,44 @@ var IgeMySql = {
 	},
 
 	/**
+	 * Query the database with SQL and return the result
+	 * via the callback method.
+	 * @param query
+	 * @param callback
+	 */
+	query: function (query, callback) {
+		this.client.query(query, callback);
+	},
+
+	/**
+	 * Executes a select query with the JSON object properties
+	 * as column names and their values as the where clause.
+	 * @param coll
+	 * @param json
+	 * @param callback
+	 */
+	findAll: function (coll, json, callback) {
+		var i, whereClause, select = 'SELECT * FROM ' + coll;
+
+		// Convert a json object's data into a select query
+		for (i in json) {
+			if (json.hasOwnProperty(i)) {
+				if (whereClause) {
+					whereClause += ' AND ';
+				}
+				whereClause += i + ' = "' + json[i] + '"';
+			}
+		}
+
+		if (whereClause) {
+			whereClause = ' WHERE ' + whereClause;
+		}
+
+		this.query(select + whereClause, callback);
+	},
+
+	// TODO: Update this call to work with the MySQL driver, this is currently still tuned to MongoDB
+	/**
 	 * Inserts a new row into the database.
 	 * @param coll The collection name to insert the row into.
 	 * @param json The JSON data to insert. Must be wrapped in an array to
@@ -149,6 +187,7 @@ var IgeMySql = {
 		});
 	},
 
+	// TODO: Update this call to work with the MySQL driver, this is currently still tuned to MongoDB
 	/* remove - Removes all rows that match the passed criteria */
 	remove: function (coll, json, callback) {
 		var self = this;
@@ -169,43 +208,6 @@ var IgeMySql = {
 				self.log('Mongo cannot run a remove on collection ' + coll + ' with error: ' + err, 'error', tempCollection);
 			}
 		});
-	},
-
-	/**
-	 * Query the database with SQL and return the result
-	 * via the callback method.
-	 * @param query
-	 * @param callback
-	 */
-	query: function (query, callback) {
-		this.client.query(query, callback);
-	},
-
-	/**
-	 * Executes a select query with the JSON object properties
-	 * as column names and their values as the where clause.
-	 * @param coll
-	 * @param json
-	 * @param callback
-	 */
-	findAll: function (coll, json, callback) {
-		var i, whereClause, select = 'SELECT * FROM ' + coll;
-
-		// Convert a json object's data into a select query
-		for (i in json) {
-			if (json.hasOwnProperty(i)) {
-				if (whereClause) {
-					whereClause += ' AND ';
-				}
-				whereClause += i + ' = "' + json[i] + '"';
-			}
-		}
-
-		if (whereClause) {
-			whereClause = ' WHERE ' + whereClause;
-		}
-
-		this.query(select + whereClause, callback);
 	},
 
 	/* idToCollectionId - MongoDB specific - Finds the _id field returned by the database and
