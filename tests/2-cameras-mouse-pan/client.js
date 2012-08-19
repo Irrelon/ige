@@ -45,6 +45,18 @@ var Client = IgeClass.extend({
 						.texture(gameTexture[0])
 						.translateTo(0, 0, 0)
 						.mount(self.scene1);
+
+					// Create a second rotator entity and mount
+					// it to the first one at 0, 50 relative to the
+					// parent
+					self.obj[1] = new Rotator()
+						.id('fairy2')
+						.depth(1)
+						.width(50)
+						.height(50)
+						.texture(gameTexture[0])
+						.translateTo(0, 50, 0)
+						.mount(self.obj[0]);
 				}
 			});
 		});
