@@ -60,8 +60,12 @@ var IgeViewport = IgeEntity.extend([
 		return this._scene;
 	},
 
+	/**
+	 * Returns the viewport's mouse position.
+	 * @return {IgePoint}
+	 */
 	mousePos: function () {
-		return this._mousePos;// || {x: 0, y: 0};
+		return this._mousePos;
 	},
 
 	/**
@@ -148,6 +152,12 @@ var IgeViewport = IgeEntity.extend([
 		}
 	},
 
+	/**
+	 * Draws the bounding data for each entity in the scenegraph.
+	 * @param ctx
+	 * @param rootObject
+	 * @param index
+	 */
 	drawAABBs: function (ctx, rootObject, index) {
 		var arr = rootObject._children,
 			arrCount,
@@ -175,7 +185,8 @@ var IgeViewport = IgeEntity.extend([
 								// Check if the object is mounted to an isometric mount
 								if (obj._parent && obj._parent._mountMode === 1) {
 									ctx.save();
-										obj._transformContext(ctx);
+										ctx.translate(aabb.x + aabb.width / 2, aabb.y + aabb.height / 2);
+										//obj._transformContext(ctx);
 
 										// Calculate the 3d bounds data
 										var r3d = obj.geometry,
@@ -273,9 +284,6 @@ var IgeViewport = IgeEntity.extend([
 							}
 
 							if (this._drawBoundsData  && (obj._drawBounds || obj._drawBoundsData === undefined)) {
-								//ctx.globalAlpha = 0.5;
-								//ctx.fillStyle = '#8a00ff';
-								//ctx.fillRect(aabb.x, aabb.y, aabb.width, 14);
 								ctx.globalAlpha = 1;
 								ctx.fillStyle = '#f6ff00';
 								ctx.fillText('ID: ' + obj.id() + ' ' + '(' + obj.classId() + ') ' + obj.layer() + ':' + obj.depth(), aabb.x + obj.geometry.x + 3, aabb.y + 10);
