@@ -3,6 +3,9 @@
  * @type {IgeClass}
  */
 var PlayerComponent = IgeClass.extend({
+	classId: 'PlayerComponent',
+	componentId: 'player',
+
 	init: function (entity, options) {
 		var self = this;
 
