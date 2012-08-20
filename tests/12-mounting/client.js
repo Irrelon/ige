@@ -20,7 +20,7 @@ var Client = IgeClass.extend({
 				if (success) {
 					var Rotator = IgeEntity.extend({
 						tick: function (ctx) {
-							this.rotateBy(0, 0, 0.01 * ige.tickDelta * Math.PI / 180);
+							this.rotateBy(0, 0, 0.001 * ige.tickDelta * Math.PI / 180);
 							this._super(ctx);
 						}
 					});
@@ -33,7 +33,7 @@ var Client = IgeClass.extend({
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
-						//.drawBoundsData(true)
+						.drawBoundsData(true)
 						.mount(ige);
 
 					overFunc = function () {
@@ -58,6 +58,7 @@ var Client = IgeClass.extend({
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.drawBounds(false)
+						.drawBoundsData(false)
 						.mount(self.scene1);
 
 					for (i = 1; i < 20; i++) {
@@ -70,6 +71,7 @@ var Client = IgeClass.extend({
 							.mouseOver(overFunc)
 							.mouseOut(outFunc)
 							.drawBounds(false)
+							.drawBoundsData(false)
 							.mount(self.obj[i - 1]);
 					}
 				}
