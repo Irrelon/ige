@@ -102,6 +102,7 @@ var Client = IgeClass.extend({
 					.width(880)
 					.height(20)
 					.drawBounds(true)
+					//.mount(self.scene1)
 					.box2dBody({
 						type: 'static',
 						allowSleep: true,
@@ -110,14 +111,14 @@ var Client = IgeClass.extend({
 								type: 'rectangle'
 							}
 						}]
-					})
-					.mount(self.scene1);
+					});
 
 				new IgeEntityBox2d()
 					.translateTo(420, 510, 0)
 					.width(880)
 					.height(20)
 					.drawBounds(true)
+					//.mount(self.scene1)
 					.box2dBody({
 						type: 'static',
 						allowSleep: true,
@@ -126,14 +127,14 @@ var Client = IgeClass.extend({
 								type: 'rectangle'
 							}
 						}]
-					})
-					.mount(self.scene1);
+					});
 
 				new IgeEntityBox2d()
 					.translateTo(-30, 320, 0)
 					.width(20)
 					.height(400)
 					.drawBounds(true)
+					//.mount(self.scene1)
 					.box2dBody({
 						type: 'static',
 						allowSleep: true,
@@ -142,14 +143,14 @@ var Client = IgeClass.extend({
 								type: 'rectangle'
 							}
 						}]
-					})
-					.mount(self.scene1);
+					});
 
 				new IgeEntityBox2d()
 					.translateTo(870, 320, 0)
 					.width(20)
 					.height(400)
 					.drawBounds(true)
+					//.mount(self.scene1)
 					.box2dBody({
 						type: 'static',
 						allowSleep: true,
@@ -158,14 +159,14 @@ var Client = IgeClass.extend({
 								type: 'rectangle'
 							}
 						}]
-					})
-					.mount(self.scene1);
+					});
 
 				new IgeEntityBox2d()
 					.translateTo(440, 160, 0)
 					.width(80)
 					.height(40)
 					.drawBounds(true)
+					//.mount(self.scene1)
 					.box2dBody({
 						type: 'static',
 						allowSleep: true,
@@ -174,14 +175,14 @@ var Client = IgeClass.extend({
 								type: 'rectangle'
 							}
 						}]
-					})
-					.mount(self.scene1);
+					});
 
 				new IgeEntityBox2d()
 					.translateTo(780, 160, 0)
 					.width(160)
 					.height(40)
 					.drawBounds(true)
+					//.mount(self.scene1)
 					.box2dBody({
 						type: 'static',
 						allowSleep: true,
@@ -190,14 +191,14 @@ var Client = IgeClass.extend({
 								type: 'rectangle'
 							}
 						}]
-					})
-					.mount(self.scene1);
+					});
 
 				new IgeEntityBox2d()
 					.translateTo(80, 160, 0)
 					.width(200)
 					.height(40)
 					.drawBounds(true)
+					//.mount(self.scene1)
 					.box2dBody({
 						type: 'static',
 						allowSleep: true,
@@ -206,14 +207,14 @@ var Client = IgeClass.extend({
 								type: 'rectangle'
 							}
 						}]
-					})
-					.mount(self.scene1);
+					});
 
 				new IgeEntityBox2d()
 					.translateTo(60, 200, 0)
 					.width(80)
 					.height(40)
 					.drawBounds(true)
+					//.mount(self.scene1)
 					.box2dBody({
 						type: 'static',
 						allowSleep: true,
@@ -222,14 +223,14 @@ var Client = IgeClass.extend({
 								type: 'rectangle'
 							}
 						}]
-					})
-					.mount(self.scene1);
+					});
 
 				new IgeEntityBox2d()
 					.translateTo(180, 360, 0)
 					.width(80)
 					.height(40)
 					.drawBounds(true)
+					//.mount(self.scene1)
 					.box2dBody({
 						type: 'static',
 						allowSleep: true,
@@ -238,14 +239,14 @@ var Client = IgeClass.extend({
 								type: 'rectangle'
 							}
 						}]
-					})
-					.mount(self.scene1);
+					});
 
 				new IgeEntityBox2d()
 					.translateTo(300, 395, 0)
 					.width(80)
 					.height(30)
 					.drawBounds(true)
+					//.mount(self.scene1)
 					.box2dBody({
 						type: 'static',
 						allowSleep: true,
@@ -254,8 +255,7 @@ var Client = IgeClass.extend({
 								type: 'rectangle'
 							}
 						}]
-					})
-					.mount(self.scene1);
+					});
 
 				// Translate the camera to the initial player position
 				self.vp1.camera.lookAt(self.player1);
