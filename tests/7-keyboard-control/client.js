@@ -83,17 +83,10 @@ var Client = IgeClass.extend({
 							shape: {
 								type: 'polygon',
 								data: new IgePoly2d()
-									.addPoint(-0.2, 0.2)
-									.addPoint(0.2, 0.2)
-									.addPoint(0.2, 0.8)
-									.addPoint(-0.2, 0.8)
-								/*type: 'rectangle',
-								data: {
-									x: 0,
-									y: 0,
-									width: 10,
-									height: 10
-								}*/
+									.addPoint(-0.5, 0.2)
+									.addPoint(0.5, 0.2)
+									.addPoint(0.5, 0.8)
+									.addPoint(-0.5, 0.8)
 							}
 						}]
 					})
@@ -105,21 +98,164 @@ var Client = IgeClass.extend({
 
 				// Create the room boundaries in box2d
 				new IgeEntityBox2d()
+					.translateTo(420, 130, 0)
+					.width(880)
+					.height(20)
+					.drawBounds(true)
 					.box2dBody({
 						type: 'static',
 						allowSleep: true,
 						fixtures: [{
 							shape: {
-								type: 'rectangle',
-								data: {
-									x: 420,
-									y: 130,
-									width: 440,
-									height: 10
-								}
+								type: 'rectangle'
 							}
 						}]
-					});
+					})
+					.mount(self.scene1);
+
+				new IgeEntityBox2d()
+					.translateTo(420, 510, 0)
+					.width(880)
+					.height(20)
+					.drawBounds(true)
+					.box2dBody({
+						type: 'static',
+						allowSleep: true,
+						fixtures: [{
+							shape: {
+								type: 'rectangle'
+							}
+						}]
+					})
+					.mount(self.scene1);
+
+				new IgeEntityBox2d()
+					.translateTo(-30, 320, 0)
+					.width(20)
+					.height(400)
+					.drawBounds(true)
+					.box2dBody({
+						type: 'static',
+						allowSleep: true,
+						fixtures: [{
+							shape: {
+								type: 'rectangle'
+							}
+						}]
+					})
+					.mount(self.scene1);
+
+				new IgeEntityBox2d()
+					.translateTo(870, 320, 0)
+					.width(20)
+					.height(400)
+					.drawBounds(true)
+					.box2dBody({
+						type: 'static',
+						allowSleep: true,
+						fixtures: [{
+							shape: {
+								type: 'rectangle'
+							}
+						}]
+					})
+					.mount(self.scene1);
+
+				new IgeEntityBox2d()
+					.translateTo(440, 160, 0)
+					.width(80)
+					.height(40)
+					.drawBounds(true)
+					.box2dBody({
+						type: 'static',
+						allowSleep: true,
+						fixtures: [{
+							shape: {
+								type: 'rectangle'
+							}
+						}]
+					})
+					.mount(self.scene1);
+
+				new IgeEntityBox2d()
+					.translateTo(780, 160, 0)
+					.width(160)
+					.height(40)
+					.drawBounds(true)
+					.box2dBody({
+						type: 'static',
+						allowSleep: true,
+						fixtures: [{
+							shape: {
+								type: 'rectangle'
+							}
+						}]
+					})
+					.mount(self.scene1);
+
+				new IgeEntityBox2d()
+					.translateTo(80, 160, 0)
+					.width(200)
+					.height(40)
+					.drawBounds(true)
+					.box2dBody({
+						type: 'static',
+						allowSleep: true,
+						fixtures: [{
+							shape: {
+								type: 'rectangle'
+							}
+						}]
+					})
+					.mount(self.scene1);
+
+				new IgeEntityBox2d()
+					.translateTo(60, 200, 0)
+					.width(80)
+					.height(40)
+					.drawBounds(true)
+					.box2dBody({
+						type: 'static',
+						allowSleep: true,
+						fixtures: [{
+							shape: {
+								type: 'rectangle'
+							}
+						}]
+					})
+					.mount(self.scene1);
+
+				new IgeEntityBox2d()
+					.translateTo(180, 360, 0)
+					.width(80)
+					.height(40)
+					.drawBounds(true)
+					.box2dBody({
+						type: 'static',
+						allowSleep: true,
+						fixtures: [{
+							shape: {
+								type: 'rectangle'
+							}
+						}]
+					})
+					.mount(self.scene1);
+
+				new IgeEntityBox2d()
+					.translateTo(300, 395, 0)
+					.width(80)
+					.height(30)
+					.drawBounds(true)
+					.box2dBody({
+						type: 'static',
+						allowSleep: true,
+						fixtures: [{
+							shape: {
+								type: 'rectangle'
+							}
+						}]
+					})
+					.mount(self.scene1);
 
 				// Translate the camera to the initial player position
 				self.vp1.camera.lookAt(self.player1);
@@ -129,7 +265,7 @@ var Client = IgeClass.extend({
 				self.vp1.camera.trackTranslate(self.player1, 20);
 
 				// Enable box2d debug canvas output
-				ige.box2d.enableDebug(self.scene1);
+				//ige.box2d.enableDebug('box2dCanvas');
 			}
 		});
 	}
