@@ -73,18 +73,27 @@ var Client = IgeClass.extend({
 						linearDamping: 0.0,
 						angularDamping: 0.1,
 						allowSleep: true,
-						bullet: false,
+						bullet: true,
 						gravitic: true,
+						fixedRotation: true,
 						fixtures: [{
 							density: 1.0,
 							friction: 0.5,
 							restitution: 0.2,
 							shape: {
-								polygon: new IgePoly2d()
-									.addPoint(-0.2, 0.3)
-									.addPoint(0.2, 0.3)
-									.addPoint(0.2, 0.6)
-									.addPoint(-0.2, 0.6)
+								type: 'polygon',
+								data: new IgePoly2d()
+									.addPoint(-0.2, 0.2)
+									.addPoint(0.2, 0.2)
+									.addPoint(0.2, 0.8)
+									.addPoint(-0.2, 0.8)
+								/*type: 'rectangle',
+								data: {
+									x: 0,
+									y: 0,
+									width: 10,
+									height: 10
+								}*/
 							}
 						}]
 					})
@@ -94,12 +103,33 @@ var Client = IgeClass.extend({
 					.drawBounds(false)
 					.mount(self.scene1);
 
+				// Create the room boundaries in box2d
+				new IgeEntityBox2d()
+					.box2dBody({
+						type: 'static',
+						allowSleep: true,
+						fixtures: [{
+							shape: {
+								type: 'rectangle',
+								data: {
+									x: 420,
+									y: 130,
+									width: 440,
+									height: 10
+								}
+							}
+						}]
+					});
+
 				// Translate the camera to the initial player position
 				self.vp1.camera.lookAt(self.player1);
 
 				// Tell the camera to track our player character with some
 				// tracking smoothing (set to 20)
 				self.vp1.camera.trackTranslate(self.player1, 20);
+
+				// Enable box2d debug canvas output
+				ige.box2d.enableDebug(self.scene1);
 			}
 		});
 	}

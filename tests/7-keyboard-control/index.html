@@ -25,7 +25,7 @@
 		<script type="text/javascript" src="../../engine/components/IgeTweenComponent.js"></script>
 		<script type="text/javascript" src="../../engine/components/IgeInputComponent.js"></script>
 		<script type="text/javascript" src="../../engine/components/box2d/lib_box2d.js"></script>
-		<script type="text/javascript" src="../../engine/components/box2d/IgeBox2d.js"></script>
+		<script type="text/javascript" src="../../engine/components/box2d/IgeBox2dComponent.js"></script>
 		<script type="text/javascript" src="../../engine/components/network/socket.io/socket.io-client/dist/socket.io.min.js"></script>
 		<script type="text/javascript" src="../../engine/components/network/socket.io/IgeSocketIoClient.js"></script>
 		<script type="text/javascript" src="../../engine/components/network/socket.io/IgeSocketIoComponent.js"></script>
@@ -68,6 +68,8 @@
 		<script type="text/javascript" src="../../engine/core/IgeEngine.js"></script>
 	</head>
 	<body>
+		<canvas id="box2dCanvas" width="1200" height="500" style="position: absolute; left: 0px; top:0px; z-index: 1000;"></canvas>
+
 		<!-- Game Classes -->
 		<script type="text/javascript" src="gameClasses/ClientNetworkEvents.js"></script>
 		<script type="text/javascript" src="gameClasses/Character.js"></script>
@@ -78,5 +80,6 @@
 		<!-- Game Core -->
 		<script type="text/javascript" src="client.js"></script>
 		<script type="text/javascript" src="index.js"></script>
+
 	</body>
 </html>
