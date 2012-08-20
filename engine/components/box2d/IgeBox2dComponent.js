@@ -108,7 +108,9 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			fixtureDef,
 			tempFixture,
 			tempShape,
-			i;
+			i,
+			finalX, finalY,
+			finalWidth, finalHeight;
 
 		// Process body definition and create a box2d body for it
 		switch (body.type) {
@@ -185,11 +187,23 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 									case 'rectangle':
 										tempShape = new this.b2PolygonShape();
 
+										if (fixtureDef.shape.data) {
+											finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
+											finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
+											finalWidth = fixtureDef.shape.data.width !== undefined ? fixtureDef.shape.data.width : (entity._width / 2);
+											finalHeight = fixtureDef.shape.data.height !== undefined ? fixtureDef.shape.data.height : (entity._height / 2);
+										} else {
+											finalX = 0;
+											finalY = 0;
+											finalWidth = (entity._width / 2);
+											finalHeight = (entity._height / 2);
+										}
+
 										// Set the polygon as a box
 										tempShape.SetAsOrientedBox(
-											(fixtureDef.shape.data.width / this._scaleRatio),
-											(fixtureDef.shape.data.height / this._scaleRatio),
-											new this.b2Vec2(fixtureDef.shape.data.x / this._scaleRatio, fixtureDef.shape.data.y / this._scaleRatio),
+											(finalWidth / this._scaleRatio),
+											(finalHeight / this._scaleRatio),
+											new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio),
 											0
 										);
 
