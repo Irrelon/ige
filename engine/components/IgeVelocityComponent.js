@@ -1,3 +1,4 @@
+// TODO: Doc this class!
 var IgeVelocityComponent = IgeClass.extend({
 	classId: 'IgeVelocityComponent',
 	componentId: 'velocity',
@@ -183,17 +184,20 @@ var IgeVelocityComponent = IgeClass.extend({
 
 	tick: function (ctx) {
 		var delta = ige.tickDelta,
-			vel = this._velocity;
+			vel = this._velocity,
+			x, y, z;
 
 		if (delta) {
 			this._applyLinearForce(delta);
 			//this._applyFriction();
 
-			this._entity.translateBy(
-				vel.x * delta,
-				vel.y * delta,
-				vel.z * delta
-			);
+			x = vel.x * delta;
+			y = vel.y * delta;
+			z = vel.z * delta;
+
+			if (x || y || z) {
+				this._entity.translateBy(x, y, z);
+			}
 		}
 	}
 });

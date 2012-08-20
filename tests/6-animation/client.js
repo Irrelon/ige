@@ -23,6 +23,7 @@ var Client = IgeClass.extend({
 					.autoSize(true)
 					.scene(self.scene1)
 					.drawBounds(true)
+					.drawBoundsData(true)
 					.mount(ige);
 
 				overFunc = function () {
@@ -42,6 +43,7 @@ var Client = IgeClass.extend({
 					self.obj[i] = new RandomMovingCharacter()
 						.setType(Math.random() * 8 | 0)
 						.drawBounds(false)
+						.drawBoundsData(false)
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.walkTo(

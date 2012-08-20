@@ -1,4 +1,4 @@
-var RandomTweener = IgeInteractiveEntity.extend({
+var RandomTweener = IgeEntity.extend({
 	classId: 'RandomTweener',
 
 	init: function () {

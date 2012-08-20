@@ -2,7 +2,8 @@
  * Creates a new entity.
  */
 var IgeEntity = IgeObject.extend([
-	{extension: IgeTransformExtension, overwrite: false}
+	{extension: IgeTransformExtension, overwrite: false},
+	{extension: IgeUiInteractionExtension, overwrite: true}
 ], {
 	classId: 'IgeEntity',
 
@@ -20,15 +21,16 @@ var IgeEntity = IgeObject.extend([
 
 		this._deathTime = undefined;
 
+		this._oldTranslate = new IgePoint(0, 0, 0);
 		this._translate = new IgePoint(0, 0, 0);
 		this._rotate = new IgePoint(0, 0, 0);
 		this._scale = new IgePoint(1, 1, 1);
 		this._origin = new IgePoint(0.5, 0.5, 0.5);
 
 		this.geometry = new IgePoint(40, 40, 40);
-		//this.geometry3d = new IgePoint(0, 0, 0);
 
 		this._highlight = false;
+		this._mouseEventsActive = false;
 
         this._localMatrix = new IgeMatrix2d(this);
         this._worldMatrix = new IgeMatrix2d(this);
@@ -604,8 +606,43 @@ var IgeEntity = IgeObject.extend([
 			// Process any behaviours assigned to the entity
 			this._processBehaviours(ctx);
 
-			// Get the current texture
-			var texture = this._texture;
+			// Process any mouse events we need to do
+			var texture = this._texture,
+				mp, aabb, mouseX, mouseY;
+
+			if (this._mouseEventsActive) {
+				mp = ige._currentViewport._mousePos
+
+				if (mp) {
+					aabb = this.aabb();
+					mouseX = mp.x;
+					mouseY = mp.y;
+
+					// Check if the current mouse position is inside this aabb
+					if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
+						// Point is inside the aabb
+						if (ige.input.mouseMove) {
+							// There is a mouse move event
+							this._handleMouseIn(ige.input.mouseMove);
+						}
+
+						if (ige.input.mouseDown) {
+							// There is a mouse down event
+							this._handleMouseDown(ige.input.mouseDown);
+						}
+
+						if (ige.input.mouseUp) {
+							// There is a mouse up event
+							this._handleMouseUp(ige.input.mouseUp);
+						}
+					} else {
+						if (ige.input.mouseMove) {
+							// There is a mouse move event
+							this._handleMouseOut(ige.input.mouseMove);
+						}
+					}
+				}
+			}
 
 			// Transform the context by the current transform settings
 			if (!dontTransform) {
@@ -624,6 +661,9 @@ var IgeEntity = IgeObject.extend([
 			}
 
 			this._super(ctx);
+
+			// Update all the old values to current values
+			this._oldTranslate = this._translate.clone();
 		}
 	},
 

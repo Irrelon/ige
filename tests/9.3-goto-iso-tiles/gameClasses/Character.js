@@ -1,5 +1,5 @@
 // Define our player character classes
-var Character = IgeInteractiveEntity.extend({
+var Character = IgeEntity.extend({
 	classId: 'Character',
 
 	init: function () {
@@ -9,7 +9,8 @@ var Character = IgeInteractiveEntity.extend({
 		// Setup the entity
 		self.addComponent(IgeAnimationComponent)
 			.addComponent(IgeVelocityComponent)
-			.depth(1);
+			.depth(1)
+			.size3d(40, 40, 40);
 
 		// Load the character texture file
 		this._characterTexture = new IgeCellSheet('../assets/textures/sprites/vx_chara02_c.png', 12, 8);

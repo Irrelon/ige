@@ -8,6 +8,7 @@ var IgeUiInteractionExtension = {
 	mouseMove: function (callback) {
 		if (callback) {
 			this._mouseMove = callback;
+			this._mouseEventsActive = true;
 			return this;
 		}
 
@@ -23,6 +24,7 @@ var IgeUiInteractionExtension = {
 	mouseOver: function (callback) {
 		if (callback) {
 			this._mouseOver = callback;
+			this._mouseEventsActive = true;
 			return this;
 		}
 
@@ -38,6 +40,7 @@ var IgeUiInteractionExtension = {
 	mouseOut: function (callback) {
 		if (callback) {
 			this._mouseOut = callback;
+			this._mouseEventsActive = true;
 			return this;
 		}
 
@@ -53,6 +56,7 @@ var IgeUiInteractionExtension = {
 	mouseUp: function (callback) {
 		if (callback) {
 			this._mouseUp = callback;
+			this._mouseEventsActive = true;
 			return this;
 		}
 
@@ -68,6 +72,7 @@ var IgeUiInteractionExtension = {
 	mouseDown: function (callback) {
 		if (callback) {
 			this._mouseDown = callback;
+			this._mouseEventsActive = true;
 			return this;
 		}
 

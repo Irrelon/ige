@@ -26,11 +26,14 @@ var Client = IgeClass.extend({
 				// because we only use it's map data, rather than rendering
 				// anything from it!
 				self.collisionLayer1 = new IgeTextureMap()
-					.depth(0)
+					.depth(3)
 					.tileWidth(40)
 					.tileHeight(40)
 					.translateTo(0, 0)
+					//.drawMouse(true)
+					//.drawGrid(1)
 					.loadMap(CollisionLayer1);
+					//.mount(self.scene1);
 
 				self.backgroundLayer1 = new IgeTextureMap()
 					.depth(0)
@@ -42,7 +45,7 @@ var Client = IgeClass.extend({
 					.loadMap(BackgroundLayer1)
 					.mount(self.scene1);
 
-				self.objectLayer1 = new IgeTextureMap()
+				self.staticObjectLayer1 = new IgeTextureMap()
 					.depth(1)
 					.tileWidth(40)
 					.tileHeight(40)
@@ -50,7 +53,14 @@ var Client = IgeClass.extend({
 					//.drawGrid(10)
 					.drawBounds(false)
 					.mount(self.scene1)
-					.loadMap(ObjectLayer1);
+					.loadMap(StaticObjectLayer1);
+
+				// Define the character's collision polygon
+				self.characterCollisionPoly = new IgePoly2d()
+					.addPoint(-0.2, 0.3)
+					.addPoint(0.2, 0.3)
+					.addPoint(0.2, 0.6)
+					.addPoint(-0.2, 0.6);
 
 				// Create a new character, add the player component
 				// and then set the type (setType() is defined in
@@ -58,9 +68,30 @@ var Client = IgeClass.extend({
 				// defined animation sequences to use.
 				self.player1 = new Character()
 					.addComponent(PlayerComponent)
+					.box2dBody({
+						type: 'dynamic',
+						linearDamping: 0.0,
+						angularDamping: 0.1,
+						allowSleep: true,
+						bullet: false,
+						gravitic: true,
+						fixtures: [{
+							density: 1.0,
+							friction: 0.5,
+							restitution: 0.2,
+							shape: {
+								polygon: new IgePoly2d()
+									.addPoint(-0.2, 0.3)
+									.addPoint(0.2, 0.3)
+									.addPoint(0.2, 0.6)
+									.addPoint(-0.2, 0.6)
+							}
+						}]
+					})
 					.id('player1')
 					.setType(0)
 					.translateTo(480, 300, 0)
+					.drawBounds(false)
 					.mount(self.scene1);
 
 				// Translate the camera to the initial player position

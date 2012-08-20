@@ -34,7 +34,7 @@ var Client = IgeClass.extend({
 						this.drawBoundsData(false);
 					};
 
-					StarParticle = IgeInteractiveEntity.extend({
+					StarParticle = IgeEntity.extend({
 						classId: 'StarParticle',
 
 						init: function (emitter) {

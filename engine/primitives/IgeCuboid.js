@@ -1,4 +1,4 @@
-var IgeCuboid = IgeInteractiveEntity.extend({
+var IgeCuboid = IgeEntity.extend({
 	classId: 'IgeCuboid',
 
 	tick: function (ctx) {

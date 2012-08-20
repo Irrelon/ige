@@ -40,7 +40,7 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					// Create an entity
-					self.obj[0] = new IgeInteractiveEntity()
+					self.obj[0] = new IgeEntity()
 						.id('randomFairy1')
 						.depth(1)
 						.width(100)

@@ -1,5 +1,5 @@
 // Define our player character classes
-var Character = IgeInteractiveEntity.extend({
+var Character = IgeEntity.extend({
 	classId: 'Character',
 
 	init: function () {

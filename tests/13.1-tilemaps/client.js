@@ -68,7 +68,7 @@ var Client = IgeClass.extend({
 					};
 
 					// Create an entity
-					self.obj[0] = new IgeInteractiveEntity()
+					self.obj[0] = new IgeEntity()
 						.id('fairy1')
 						.depth(1)
 						.texture(gameTexture[0])
@@ -80,7 +80,7 @@ var Client = IgeClass.extend({
 						.mouseOver(overFunc)
 						.mouseOut(outFunc);
 
-					self.obj[1] = new IgeInteractiveEntity()
+					self.obj[1] = new IgeEntity()
 						.id('fairy2')
 						.depth(1)
 						.texture(gameTexture[0])
@@ -111,7 +111,7 @@ var Client = IgeClass.extend({
 
 					// Create two fairy entities, and mount each one
 					// to it's 3d entity as created above
-					self.obj[4] = new IgeInteractiveEntity()
+					self.obj[4] = new IgeEntity()
 						.id('fairy3')
 						.texture(gameTexture[0])
 						.mount(self.obj[2])
@@ -121,7 +121,7 @@ var Client = IgeClass.extend({
 						.mouseOver(overFunc)
 						.mouseOut(outFunc);
 
-					self.obj[5] = new IgeInteractiveEntity()
+					self.obj[5] = new IgeEntity()
 						.id('fairy4')
 						.texture(gameTexture[0])
 						.mount(self.obj[3])

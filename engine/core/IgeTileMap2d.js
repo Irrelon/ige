@@ -5,7 +5,7 @@
  * NOTE: These are not to be confused with IgeTextureMap's which allow you to
  * paint a bunch of tiles to a grid.
  */
-var IgeTileMap2d = IgeInteractiveEntity.extend({
+var IgeTileMap2d = IgeEntity.extend({
 	classId: 'IgeTileMap2d',
 
 	init: function (tileWidth, tileHeight) {

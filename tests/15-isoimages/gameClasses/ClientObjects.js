@@ -1,5 +1,5 @@
 var ClientObjects = {
-	Bank: IgeInteractiveEntity.extend({
+	Bank: IgeEntity.extend({
 		classId: 'Bank',
 
 		init: function (parent, tileX, tileY) {
@@ -18,7 +18,7 @@ var ClientObjects = {
 		}
 	}),
 
-	Electricals: IgeInteractiveEntity.extend({
+	Electricals: IgeEntity.extend({
 		classId: 'Electricals',
 
 		init: function (parent, tileX, tileY) {
@@ -37,7 +37,7 @@ var ClientObjects = {
 		}
 	}),
 
-	Burgers: IgeInteractiveEntity.extend({
+	Burgers: IgeEntity.extend({
 		classId: 'Burgers',
 
 		init: function (parent, tileX, tileY) {
@@ -57,7 +57,7 @@ var ClientObjects = {
 		}
 	}),
 
-	SkyScraper: IgeInteractiveEntity.extend({
+	SkyScraper: IgeEntity.extend({
 		classId: 'SkyScraper',
 
 		init: function (parent, tileX, tileY) {
@@ -188,8 +188,8 @@ var ClientObjects = {
 			// Adjust the skyscraper geometry to match the number of floors
 			// so that it will depth-sort against other buildings correctly
 			this.size3d(
-				this.geometry3d.x,
-				this.geometry3d.y,
+				this.geometry.x,
+				this.geometry.y,
 				12.5 + (this.data('floors') * 25 * (this._parent._tileWidth / 40))
 			);
 
@@ -220,8 +220,8 @@ var ClientObjects = {
 				// Adjust the skyscraper geometry to match the number of floors
 				// so that it will depth-sort against other buildings correctly
 				this.size3d(
-					this.geometry3d.x,
-					this.geometry3d.y,
+					this.geometry.x,
+					this.geometry.y,
 					12.5 + (this.data('floors') * 25 * (this._parent._tileWidth / 40))
 				);
 			}

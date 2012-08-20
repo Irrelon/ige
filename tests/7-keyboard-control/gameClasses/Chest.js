@@ -1,5 +1,5 @@
 // Define chest class
-var Chest = IgeInteractiveEntity.extend({
+var Chest = IgeEntity.extend({
 	classId: 'Chest',
 
 	init: function () {

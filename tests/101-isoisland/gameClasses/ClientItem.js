@@ -1,4 +1,4 @@
-var ClientItem = IgeInteractiveEntity.extend({
+var ClientItem = IgeEntity.extend({
 	classId: 'ClientItem',
 
 	init: function (tileX, tileY, tileWidth, tileHeight) {

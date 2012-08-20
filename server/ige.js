@@ -28,7 +28,6 @@ IgeSpriteSheet = require('../engine/core/IgeSpriteSheet');
 IgeFontSheet = require('../engine/core/IgeFontSheet');
 IgeObject = require('../engine/core/IgeObject');
 IgeEntity = require('../engine/core/IgeEntity');
-IgeInteractiveEntity = require('../engine/core/IgeInteractiveEntity');
 IgeUiEntity = require('../engine/core/IgeUiEntity');
 IgeFontEntity = require('../engine/core/IgeFontEntity');
 IgeParticleEmitter = require('../engine/core/IgeParticleEmitter');
