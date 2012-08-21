@@ -8,6 +8,7 @@ var Client = IgeClass.extend({
 		this.obj = [];
 
 		gameTexture[0] = new IgeFontSheet('../assets/textures/fonts/eater_26pt.png', 0);
+		gameTexture[1] = new IgeFontSheet('../assets/textures/fonts/verdana_10px.png', 0);
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -42,9 +43,9 @@ var Client = IgeClass.extend({
 						.height(110)
 						.texture(gameTexture[0])
 						.textAlignX(0)
-						.textAlignY(0)
+						//.textAlignY(0)
 						.textLineSpacing(-34)
-						.text('Align Left / Top\nAnother Line')
+						.text('Align Left\nAnother Line')
 						.center(0)
 						.middle(0)
 						.mount(self.scene1);
@@ -56,9 +57,9 @@ var Client = IgeClass.extend({
 						.height(110)
 						.texture(gameTexture[0])
 						.textAlignX(1)
-						.textAlignY(1)
+						//.textAlignY(1)
 						.textLineSpacing(-34)
-						.text('Align Center / Middle\nAnother Line')
+						.text('Align Center\nAnother Line')
 						.center(0)
 						.middle(110)
 						.mount(self.scene1);
@@ -70,11 +71,25 @@ var Client = IgeClass.extend({
 						.height(110)
 						.texture(gameTexture[0])
 						.textAlignX(2)
-						.textAlignY(2)
+						//.textAlignY(2)
 						.textLineSpacing(-34)
-						.text('Align Right / Bottom\nAnother Line')
+						.text('Align Right\nAnother Line')
 						.center(0)
 						.middle(220)
+						.mount(self.scene1);
+
+					new IgeFontEntity()
+						.id('font4')
+						.depth(1)
+						.width(200)
+						.height(30)
+						.texture(gameTexture[1])
+						.textAlignX(1)
+						//.textAlignY(1)
+						.textLineSpacing(0)
+						.text('Verdana 10px')
+						.center(0)
+						.top(0)
 						.mount(self.scene1);
 				}
 			});
