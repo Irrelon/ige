@@ -160,7 +160,7 @@ var IgeEngine = IgeEntity.extend({
 			if (this.isServer) {
 				// Server-side implementation
 				requestAnimFrame = function(callback, element){
-					setTimeout(callback, 1000 / fpsRate);
+					setTimeout(function () { callback(new Date().getTime()); }, 1000 / fpsRate);
 				};
 			} else {
 				// Client-side implementation
