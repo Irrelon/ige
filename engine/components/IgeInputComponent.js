@@ -5,6 +5,13 @@ var IgeInputComponent = IgeEventingClass.extend({
 	init: function () {
 		// Setup the input objects to hold the current input state
 		this._eventQueue = [];
+		this._eventControl = {
+			_cancelled: false,
+			stopPropagation: function () {
+				this._cancelled = true;
+			}
+		};
+
 		this.tick();
 
 		this.mouse = {
@@ -403,35 +410,50 @@ var IgeInputComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Stops further event propagation for this tick.
+	 * @return {*}
+	 */
+	stopPropagation: function () {
+		this._eventControl._cancelled = true;
+		return this;
+	},
+
+	/**
 	 * Adds an event method to the eventQueue array. The array is
 	 * processed during each tick after the scenegraph has been
 	 * rendered.
+	 * @param context
 	 * @param ev
 	 */
-	queueEvent: function (ev) {
+	queueEvent: function (context, ev) {
 		if (ev !== undefined) {
-			this._eventQueue.push(ev);
+			this._eventQueue.push([context, ev]);
 		}
+
+		return this;
 	},
 
 	/**
 	 * Called by the engine after ALL other tick methods have processed.
-	 * Allows us to reset any flags etc.
+	 * Call originates in IgeEngine.js. Allows us to reset any flags etc.
 	 */
 	tick: function () {
 		// If we have an event queue, process it
 		var arr = this._eventQueue,
-			arrCount = arr.length;
+			arrCount = arr.length,
+			evc = this._eventControl;
 
 		while (arrCount--) {
-			if (arr[arrCount][1].apply(arr[arrCount][0]) === 1) {
-				// The last event queue method returned true so cancel all further
+			arr[arrCount][1].apply(arr[arrCount][0], [evc]);
+			if (evc._cancelled) {
+				// The last event queue method stopped propagation so cancel all further
 				// event processing (the last event took control of the input)
 				break;
 			}
 		}
 
 		this._eventQueue = [];
+		this._eventControl._cancelled = false;
 		this.dblClick = false; // TODO: Add double-click event handling
 		this.mouseMove = false;
 		this.mouseDown = false;
