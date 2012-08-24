@@ -146,6 +146,7 @@ var Client = IgeClass.extend({
 		this.uiScene = new IgeScene2d()
 			.id('uiScene')
 			.depth(1)
+			.ignoreCamera(true)
 			.mount(this.mainScene);
 
 		// Create the background image

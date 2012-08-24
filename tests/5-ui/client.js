@@ -32,10 +32,12 @@ var Client = IgeClass.extend({
 						.drawBounds(true)
 						//.drawBoundsData(true)
 						.scene(self.scene1)
+						.camera.translateTo(200, 0, 0)
 						.mount(ige);
 
 					// Create the sprite scene
 					self.scene2 = new IgeScene2d()
+						.id('spriteScene')
 						.depth(0)
 						.mount(self.scene1);
 
@@ -52,7 +54,9 @@ var Client = IgeClass.extend({
 
 					// Create the UI scene
 					self.scene3 = new IgeScene2d()
+						.id('uiScene')
 						.depth(1)
+						.ignoreCamera(true)
 						.mount(self.scene1);
 
 					// Create a new UI entity
