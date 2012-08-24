@@ -608,10 +608,11 @@ var IgeEntity = IgeObject.extend([
 
 			// Process any mouse events we need to do
 			var texture = this._texture,
-				mp, aabb, mouseX, mouseY;
+				mp, aabb, mouseX, mouseY,
+				self = this;
 
 			if (this._mouseEventsActive) {
-				mp = ige._currentViewport._mousePos
+				mp = ige._currentViewport._mousePos;
 
 				if (mp) {
 					aabb = this.aabb();
@@ -621,24 +622,11 @@ var IgeEntity = IgeObject.extend([
 					// Check if the current mouse position is inside this aabb
 					if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
 						// Point is inside the aabb
-						if (ige.input.mouseMove) {
-							// There is a mouse move event
-							this._handleMouseIn(ige.input.mouseMove);
-						}
-
-						if (ige.input.mouseDown) {
-							// There is a mouse down event
-							this._handleMouseDown(ige.input.mouseDown);
-						}
-
-						if (ige.input.mouseUp) {
-							// There is a mouse up event
-							this._handleMouseUp(ige.input.mouseUp);
-						}
+						ige.input.queueEvent(this, this._mouseInAabb);
 					} else {
 						if (ige.input.mouseMove) {
 							// There is a mouse move event
-							this._handleMouseOut(ige.input.mouseMove);
+							self._handleMouseOut(ige.input.mouseMove);
 						}
 					}
 				}
@@ -664,6 +652,29 @@ var IgeEntity = IgeObject.extend([
 
 			// Update all the old values to current values
 			this._oldTranslate = this._translate.clone();
+		}
+	},
+
+	/**
+	 * Checks mouse input types and fires the correct mouse event
+	 * handler.
+	 * @param evc
+	 * @private
+	 */
+	_mouseInAabb: function (evc) {
+		if (ige.input.mouseMove) {
+			// There is a mouse move event
+			this._handleMouseIn(ige.input.mouseMove, evc);
+		}
+
+		if (ige.input.mouseDown) {
+			// There is a mouse down event
+			this._handleMouseDown(ige.input.mouseDown, evc);
+		}
+
+		if (ige.input.mouseUp) {
+			// There is a mouse up event
+			this._handleMouseUp(ige.input.mouseUp, evc);
 		}
 	},
 
