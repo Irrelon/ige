@@ -18,7 +18,7 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					Player = IgeCuboid.extend({
+					Player = IgeEntity.extend({
 						init: function () {
 							this._super();
 
@@ -70,7 +70,7 @@ var Client = IgeClass.extend({
 					// Create an entity
 					// Plinth 1
 					x = -140;
-					self.obj[0] = new IgeCuboid()
+					self.obj[0] = new IgeEntity()
 						.id(1)
 						.isometric(true)
 						.depth(0)
@@ -79,7 +79,7 @@ var Client = IgeClass.extend({
 						.size3d(160, 240, 40)
 						.opacity(0.95);
 
-					self.obj[1] = new IgeCuboid()
+					self.obj[1] = new IgeEntity()
 						.id(2)
 						.isometric(true)
 						.depth(1)
@@ -88,7 +88,7 @@ var Client = IgeClass.extend({
 						.size3d(40, 40, 40)
 						.opacity(0.95);
 
-					self.obj[2] = new IgeCuboid()
+					self.obj[2] = new IgeEntity()
 						.id(3)
 						.isometric(true)
 						.depth(2)
@@ -97,7 +97,7 @@ var Client = IgeClass.extend({
 						.size3d(40, 40, 40)
 						.opacity(0.95);
 
-					self.obj[3] = new IgeCuboid()
+					self.obj[3] = new IgeEntity()
 						.id(4)
 						.isometric(true)
 						.depth(4)
@@ -107,7 +107,7 @@ var Client = IgeClass.extend({
 						.opacity(0.95);
 
 					// Center column
-					self.obj[4] = new IgeCuboid()
+					self.obj[4] = new IgeEntity()
 						.id(5)
 						.isometric(true)
 						.depth(5)
@@ -118,7 +118,7 @@ var Client = IgeClass.extend({
 
 					// Plinth 2
 					x = 140;
-					self.obj[5] = new IgeCuboid()
+					self.obj[5] = new IgeEntity()
 						.id(6)
 						.isometric(true)
 						.depth(6)
@@ -127,7 +127,7 @@ var Client = IgeClass.extend({
 						.size3d(160, 240, 40)
 						.opacity(0.95);
 
-					self.obj[6] = new IgeCuboid()
+					self.obj[6] = new IgeEntity()
 						.id(7)
 						.isometric(true)
 						.depth(7)
@@ -136,7 +136,7 @@ var Client = IgeClass.extend({
 						.size3d(40, 40, 40)
 						.opacity(0.95);
 
-					self.obj[7] = new IgeCuboid()
+					self.obj[7] = new IgeEntity()
 						.id(8)
 						.isometric(true)
 						.depth(8)
@@ -145,7 +145,7 @@ var Client = IgeClass.extend({
 						.size3d(40, 40, 40)
 						.opacity(0.95);
 
-					self.obj[8] = new IgeCuboid()
+					self.obj[8] = new IgeEntity()
 						.id(9)
 						.isometric(true)
 						.depth(9)
@@ -155,7 +155,7 @@ var Client = IgeClass.extend({
 						.opacity(0.95);
 
 					// Big slab on top
-					self.obj[9] = new IgeCuboid()
+					self.obj[9] = new IgeEntity()
 						.id(10)
 						.isometric(true)
 						.depth(10)
@@ -165,7 +165,7 @@ var Client = IgeClass.extend({
 						.opacity(0.95);
 
 					// Building
-					self.obj[10] = new IgeCuboid()
+					self.obj[10] = new IgeEntity()
 						.id(11)
 						.isometric(true)
 						.depth(11)
@@ -174,7 +174,7 @@ var Client = IgeClass.extend({
 						.size3d(80, 80, 40)
 						.opacity(0.95);
 
-					self.obj[11] = new IgeCuboid()
+					self.obj[11] = new IgeEntity()
 						.id(12)
 						.isometric(true)
 						.depth(12)
@@ -183,7 +183,7 @@ var Client = IgeClass.extend({
 						.size3d(70, 70, 40)
 						.opacity(0.95);
 
-					self.obj[12] = new IgeCuboid()
+					self.obj[12] = new IgeEntity()
 						.id(13)
 						.isometric(true)
 						.depth(13)
@@ -192,7 +192,7 @@ var Client = IgeClass.extend({
 						.size3d(10, 10, 120)
 						.opacity(0.95);
 
-					self.obj[13] = new IgeCuboid()
+					self.obj[13] = new IgeEntity()
 						.id(14)
 						.isometric(true)
 						.depth(14)
