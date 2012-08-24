@@ -403,6 +403,18 @@ var IgeInputComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Adds an event method to the eventQueue array. The array is
+	 * processed during each tick after the scenegraph has been
+	 * rendered.
+	 * @param ev
+	 */
+	queueEvent: function (ev) {
+		if (ev !== undefined) {
+			this._eventQueue.push(ev);
+		}
+	},
+
+	/**
 	 * Called by the engine after ALL other tick methods have processed.
 	 * Allows us to reset any flags etc.
 	 */
