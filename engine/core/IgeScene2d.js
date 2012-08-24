@@ -28,11 +28,25 @@ var IgeScene2d = IgeEntity.extend({
 		return this._shouldRender;
 	},
 
+	ignoreCamera: function (val) {
+		if (val !== undefined) {
+			this._ignoreCamera = val;
+			return this;
+		}
+
+		return this._ignoreCamera;
+	},
+
 	/**
 	 * Processes the actions required each render frame.
 	 */
 	tick: function (ctx) {
 		if (this._shouldRender) {
+			if (this._ignoreCamera) {
+				// Translate the scene so it is always center of the camera
+				var cam = ige._currentCamera;
+				this.translateTo(cam._translate.x, cam._translate.y);
+			}
 			this._super(ctx);
 		}
 	},
