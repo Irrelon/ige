@@ -289,7 +289,7 @@ var IgeUiEntity = IgeEntity.extend([
 
 		// TODO: CocoonJS doesn't like the ctx.clip() method, find out why
 		// and report a bug if required.
-		if (!ige.cocoonJs.detected) {
+		if (!ige.cocoonJs || (ige.cocoonJs && !ige.cocoonJs.detected)) {
 			if (this._overflow === 'hidden') {
 				// Limit drawing of child entities to within the bounds
 				// of this one
