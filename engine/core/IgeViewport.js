@@ -303,8 +303,8 @@ var IgeViewport = IgeEntity.extend([
 							if (this._drawBoundsData  && (obj._drawBounds || obj._drawBoundsData === undefined)) {
 								ctx.globalAlpha = 1;
 								ctx.fillStyle = '#f6ff00';
-								ctx.fillText('ID: ' + obj.id() + ' ' + '(' + obj.classId() + ') ' + obj.layer() + ':' + obj.depth().toFixed(0), aabb.x + obj.geometry.x + 3, aabb.y + 10);
-								ctx.fillText('X: ' + obj._translate.x.toFixed(2) + ', ' + 'T: ' + obj._translate.y.toFixed(2) + ', ' + 'Z: ' + obj._translate.z.toFixed(2), aabb.x + obj.geometry.x + 3, aabb.y + 20);
+								ctx.fillText('ID: ' + obj.id() + ' ' + '(' + obj.classId() + ') ' + obj.layer() + ':' + obj.depth().toFixed(0), aabb.x + aabb.width + 3, aabb.y + 10);
+								ctx.fillText('X: ' + obj._translate.x.toFixed(2) + ', ' + 'T: ' + obj._translate.y.toFixed(2) + ', ' + 'Z: ' + obj._translate.z.toFixed(2), aabb.x + aabb.width + 3, aabb.y + 20);
 							}
 						}
 					}
