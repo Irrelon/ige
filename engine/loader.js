@@ -45,7 +45,7 @@ window.igeLoader = (function () {
 
 		this._fileList = [];
 		for (i = 0; i < this._coreList.length; i++) {
-			this._fileList.push(this._coreList[i]);
+			this._fileList.push(igeRoot + this._coreList[i]);
 		}
 
 		for (i = 0; i < this._clientList.length; i++) {
