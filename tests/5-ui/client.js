@@ -50,6 +50,7 @@ var Client = IgeClass.extend({
 						.texture(gameTexture[0])
 						.mouseOver(function () { this.highlight(true); this.drawBoundsData(true); })
 						.mouseOut(function () { this.highlight(false); this.drawBoundsData(false); })
+						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
 						.mount(self.scene2);
 
 					// Create the UI scene
@@ -71,6 +72,7 @@ var Client = IgeClass.extend({
 						.borderBottomColor('#666666')
 						.borderBottomWidth(1)
 						.backgroundPosition(0, 0)
+						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
 						.mount(self.scene3);
 
 					self.obj[2] = new IgeUiEntity()
@@ -83,8 +85,9 @@ var Client = IgeClass.extend({
 						.height('100%', -60)
 						.borderRightColor('#666666')
 						.borderRightWidth(1)
-						.mouseOver(function () {this.backgroundColor('#49ceff'); })
-						.mouseOut(function () {this.backgroundColor('#282828'); })
+						.mouseOver(function () { this.backgroundColor('#49ceff'); ige.input.stopPropagation(); })
+						.mouseOut(function () { this.backgroundColor('#282828'); ige.input.stopPropagation(); })
+						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
 						.mount(self.scene3);
 
 					self.obj[3] = new IgeUiEntity()
@@ -97,8 +100,9 @@ var Client = IgeClass.extend({
 						.height('100%', -60)
 						.borderLeftColor('#666666')
 						.borderLeftWidth(1)
-						.mouseOver(function () {this.backgroundColor('#49ceff'); })
-						.mouseOut(function () {this.backgroundColor('#282828'); })
+						.mouseOver(function () {this.backgroundColor('#49ceff'); ige.input.stopPropagation(); })
+						.mouseOut(function () {this.backgroundColor('#282828'); ige.input.stopPropagation(); })
+						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
 						.mount(self.scene3);
 
 					self.obj[4] = new IgeUiEntity()
@@ -110,8 +114,9 @@ var Client = IgeClass.extend({
 						.height(40)
 						.cell(1)
 						.backgroundImage(gameTexture[1], 'no-repeat')
-						.mouseOver(function () { this.cell(2); this.dirty(true); })
-						.mouseOut(function () { this.cell(1); this.dirty(true); })
+						.mouseOver(function () { this.cell(2); this.dirty(true); ige.input.stopPropagation(); })
+						.mouseOut(function () { this.cell(1); this.dirty(true); ige.input.stopPropagation(); })
+						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
 						.mount(self.obj[2]);
 
 					self.obj[5] = new IgeUiEntity()
@@ -125,8 +130,9 @@ var Client = IgeClass.extend({
 						.borderTopColor('#666666')
 						.borderTopWidth(1)
 						.backgroundPosition(0, 0)
-						.mouseOver(function () {this.backgroundColor('#49ceff'); })
-						.mouseOut(function () {this.backgroundColor('#474747'); })
+						.mouseOver(function () {this.backgroundColor('#49ceff'); ige.input.stopPropagation(); })
+						.mouseOut(function () {this.backgroundColor('#474747'); ige.input.stopPropagation(); })
+						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
 						.mount(self.scene3);
 
 					self.obj[6] = new IgeUiTextBox()
@@ -140,20 +146,24 @@ var Client = IgeClass.extend({
 						.middle(70)
 						.width(300)
 						.height(24)
+						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
 						.mount(self.scene3)
 						.value('Type text to see text input!')
 						.focus(true);
 
 					// Define some menu item methods
 					var overFunc = function () {
+							ige.input.stopPropagation();
 							this.backgroundColor('#666666');
 							this.open();
 						},
 						outFunc = function () {
+							ige.input.stopPropagation();
 							this.backgroundColor('');
 							this.close();
 						},
 						upFunc = function () {
+							ige.input.stopPropagation();
 							console.log('Clicked', this.menuData().text);
 						};
 
