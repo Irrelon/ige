@@ -358,57 +358,126 @@ var IgeEntity = IgeObject.extend([
 				box = {},
 				anc = this._anchor,
 				geom = this.geometry,
+				geomX = geom.x,
+				geomY = geom.y,
+				geomZ = geom.z,
+				geomX2 = geom.x2,
+				geomY2 = geom.y2,
+				geomZ2 = geom.z2,
 				origin = this._origin,
 				originX = origin.x - 0.5,
 				originY = origin.y - 0.5,
-				ox = geom.x * originX,
-				oy = geom.y * originY,
-				x = geom.x2 + anc.x,
-				y = geom.y2 + anc.y;
+				originZ = origin.z - 0.5,
+				x, y,
+				ox,	oy,
+				tf1;
 
-			poly.addPoint(-x + ox, -y + oy);
-			poly.addPoint(x + ox, -y + oy);
-			poly.addPoint(x + ox, y + oy);
-			poly.addPoint(-x + ox, y + oy);
+			// Handle 2d entities
+			if (this._mode === 0) {
+				x = geomX2 + anc.x;
+				y = geomY2 + anc.y;
+				ox = geomX * originX;
+				oy = geomY * originY;
 
-			this._renderPos = {x: -x + ox, y: -y + oy};
+				poly.addPoint(-x + ox, -y + oy);
+				poly.addPoint(x + ox, -y + oy);
+				poly.addPoint(x + ox, y + oy);
+				poly.addPoint(-x + ox, y + oy);
 
-			// Convert the poly's points from local space to world space
-			this.localToWorld(poly._poly);
+				this._renderPos = {x: -x + ox, y: -y + oy};
 
-			// Get the extents of the newly transformed poly
-			minX = Math.min(
-				poly._poly[0].x,
-				poly._poly[1].x,
-				poly._poly[2].x,
-				poly._poly[3].x
-			);
+				// Convert the poly's points from local space to world space
+				this.localToWorld(poly._poly);
 
-			minY = Math.min(
-				poly._poly[0].y,
-				poly._poly[1].y,
-				poly._poly[2].y,
-				poly._poly[3].y
-			);
+				// Get the extents of the newly transformed poly
+				minX = Math.min(
+					poly._poly[0].x,
+					poly._poly[1].x,
+					poly._poly[2].x,
+					poly._poly[3].x
+				);
 
-			maxX = Math.max(
-				poly._poly[0].x,
-				poly._poly[1].x,
-				poly._poly[2].x,
-				poly._poly[3].x
-			);
+				minY = Math.min(
+					poly._poly[0].y,
+					poly._poly[1].y,
+					poly._poly[2].y,
+					poly._poly[3].y
+				);
 
-			maxY = Math.max(
-				poly._poly[0].y,
-				poly._poly[1].y,
-				poly._poly[2].y,
-				poly._poly[3].y
-			);
+				maxX = Math.max(
+					poly._poly[0].x,
+					poly._poly[1].x,
+					poly._poly[2].x,
+					poly._poly[3].x
+				);
 
-			box.x = minX;
-			box.y = minY;
-			box.width = maxX - minX;
-			box.height = maxY - minY;
+				maxY = Math.max(
+					poly._poly[0].y,
+					poly._poly[1].y,
+					poly._poly[2].y,
+					poly._poly[3].y
+				);
+
+				box.x = minX;
+				box.y = minY;
+				box.width = maxX - minX;
+				box.height = maxY - minY;
+			}
+
+			// Handle isometric entities
+			if (this._mode === 1) {
+				// Top face
+				tf1 = new IgePoint(-(geom.x / 2), -(geom.y / 2),  (geom.z / 2)).toIso();
+
+				x = (tf1.x + geom.x) + anc.x;
+				y = tf1.y + anc.y;
+				ox = geomX * originX;
+				oy = geomZ * originZ;
+
+				poly.addPoint(-x + ox, -y + oy);
+				poly.addPoint(x + ox, -y + oy);
+				poly.addPoint(x + ox, y + oy);
+				poly.addPoint(-x + ox, y + oy);
+
+				this._renderPos = {x: -x + ox, y: -y + oy};
+
+				// Convert the poly's points from local space to world space
+				this.localToWorld(poly._poly);
+
+				// Get the extents of the newly transformed poly
+				minX = Math.min(
+					poly._poly[0].x,
+					poly._poly[1].x,
+					poly._poly[2].x,
+					poly._poly[3].x
+				);
+
+				minY = Math.min(
+					poly._poly[0].y,
+					poly._poly[1].y,
+					poly._poly[2].y,
+					poly._poly[3].y
+				);
+
+				maxX = Math.max(
+					poly._poly[0].x,
+					poly._poly[1].x,
+					poly._poly[2].x,
+					poly._poly[3].x
+				);
+
+				maxY = Math.max(
+					poly._poly[0].y,
+					poly._poly[1].y,
+					poly._poly[2].y,
+					poly._poly[3].y
+				);
+
+				box.x = minX;
+				box.y = minY;
+				box.width = maxX - minX;
+				box.height = maxY - minY;
+			}
 
 			this._aabb = box;
 
