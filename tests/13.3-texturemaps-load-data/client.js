@@ -38,7 +38,7 @@ var Client = IgeClass.extend({
 						.tileHeight(40)
 						//.drawGrid(3)
 						//.drawMouse(true)
-						.translateTo(-200, 0)
+						.translateTo(-200, 0, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
