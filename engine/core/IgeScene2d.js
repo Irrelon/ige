@@ -45,7 +45,7 @@ var IgeScene2d = IgeEntity.extend({
 			if (this._ignoreCamera) {
 				// Translate the scene so it is always center of the camera
 				var cam = ige._currentCamera;
-				this.translateTo(cam._translate.x, cam._translate.y);
+				this.translateTo(cam._translate.x, cam._translate.y, cam._translate.z);
 			}
 			this._super(ctx);
 		}
