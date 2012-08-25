@@ -6,10 +6,6 @@ var IgeBulletComponent = IgeEventingClass.extend({
 		this._entity = entity;
 		this._options = options;
 
-		if (!ige.isServer) {
-
-		}
-
 		this._active = true;
 		this._sleep = true;
 		this._scaleRatio = 30;
