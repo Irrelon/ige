@@ -134,7 +134,7 @@ var Client = IgeClass.extend({
 		this.gameScene = new IgeScene2d()
 			.id('gameScene')
 			.depth(0)
-			.translateTo(0, -360)
+			.translateTo(0, -360, 0)
 			.mount(this.mainScene);
 
 		// Create the UI scene that will have all the UI
@@ -218,7 +218,7 @@ var Client = IgeClass.extend({
 								// The tile is not occupied so move to it!
 								item.data('tileX', x)
 									.data('tileY', y)
-									.translateToTile(x, y);
+									.translateToTile(x, y, 0);
 							}
 						}
 					break;

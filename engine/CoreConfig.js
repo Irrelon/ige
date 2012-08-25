@@ -53,6 +53,8 @@ var igeCoreConfig = {
 		'../../engine/ui/IgeUiButton.js',
 		'../../engine/ui/IgeUiRadioButton.js',
 		'../../engine/ui/IgeUiProgressBar.js',
+		'../../engine/ui/IgeUiTextBox.js',
+		'../../engine/ui/IgeUiMenu.js',
 		'../../engine/core/IgeEngine.js'
 	]
 };
