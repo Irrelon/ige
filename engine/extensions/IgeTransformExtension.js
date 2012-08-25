@@ -1,17 +1,25 @@
 // TODO: Document this extension
 var IgeTransformExtension = {
 	translateBy: function (x, y, z) {
-		this._translate.x += x;
-		this._translate.y += y;
-		this._translate.z += z;
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._translate.x += x;
+			this._translate.y += y;
+			this._translate.z += z;
+		} else {
+			this.log('translateBy() called with a missing or undefined x, y or z parameter!', 'error');
+		}
 	
 		return this._entity || this;
 	},
 
 	translateTo: function (x, y, z) {
-		this._translate.x = x;
-		this._translate.y = y;
-		this._translate.z = z;
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._translate.x = x;
+			this._translate.y = y;
+			this._translate.z = z;
+		} else {
+			this.log('translateTo() called with a missing or undefined x, y or z parameter!', 'error');
+		}
 	
 		return this._entity || this;
 	},
@@ -59,18 +67,26 @@ var IgeTransformExtension = {
 	},
 
 	rotateBy: function (x, y, z) {
-		this._rotate.x += x;
-		this._rotate.y += y;
-		this._rotate.z += z;
-	
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._rotate.x += x;
+			this._rotate.y += y;
+			this._rotate.z += z;
+		} else {
+			this.log('rotateBy() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
 		return this._entity || this;
 	},
 
 	rotateTo: function (x, y, z) {
-		this._rotate.x = x;
-		this._rotate.y = y;
-		this._rotate.z = z;
-	
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._rotate.x = x;
+			this._rotate.y = y;
+			this._rotate.z = z;
+		} else {
+			this.log('rotateTo() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
 		return this._entity || this;
 	},
 
@@ -114,18 +130,26 @@ var IgeTransformExtension = {
 	},
 
 	scaleBy: function (x, y, z) {
-		this._scale.x += x;
-		this._scale.y += y;
-		this._scale.z += z;
-	
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._scale.x += x;
+			this._scale.y += y;
+			this._scale.z += z;
+		} else {
+			this.log('scaleBy() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
 		return this._entity || this;
 	},
 
 	scaleTo: function (x, y, z) {
-		this._scale.x = x;
-		this._scale.y = y;
-		this._scale.z = z;
-	
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._scale.x = x;
+			this._scale.y = y;
+			this._scale.z = z;
+		} else {
+			this.log('scaleTo() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
 		return this._entity || this;
 	},
 
@@ -170,17 +194,25 @@ var IgeTransformExtension = {
 	},
 
 	originBy: function (x, y, z) {
-		this._origin.x += x;
-		this._origin.y += y;
-		this._origin.z += z;
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._origin.x += x;
+			this._origin.y += y;
+			this._origin.z += z;
+		} else {
+			this.log('originBy() called with a missing or undefined x, y or z parameter!', 'error');
+		}
 
 		return this._entity || this;
 	},
 
 	originTo: function (x, y, z) {
-		this._origin.x = x;
-		this._origin.y = y;
-		this._origin.z = z;
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._origin.x = x;
+			this._origin.y = y;
+			this._origin.z = z;
+		} else {
+			this.log('originTo() called with a missing or undefined x, y or z parameter!', 'error');
+		}
 
 		return this._entity || this;
 	},
