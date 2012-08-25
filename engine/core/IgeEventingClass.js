@@ -12,36 +12,46 @@ var IgeEventingClass = IgeClass.extend({
 	 * @return {Object}
 	 */
 	on: function (eventName, call, context, oneShot, sendEventName) {
+		var newListener,
+			addListener,
+			existingIndex,
+			elArr,
+			multiEvent,
+			eventIndex,
+			eventData,
+			eventObj,
+			eventNameArray,
+			singleEventIndex,
+			singleEventName,
+			i;
+
 		// Check that we have an event listener object
 		this._eventListeners = this._eventListeners || {};
 
-		if (typeof call == 'function') {
-			if (typeof eventName == 'string') {
-				// Check if this event already has an array of listeners
-				this._eventListeners[eventName] = this._eventListeners[eventName] || [];
-
+		if (typeof call === 'function') {
+			if (typeof eventName === 'string') {
 				// Compose the new listener
-				var newListener = {
+				newListener = {
 					call:call,
 					context:context,
 					oneShot:oneShot,
 					sendEventName:sendEventName
 				};
 
+				elArr = this._eventListeners[eventName] = this._eventListeners[eventName] || [];
+
 				// Check if we already have this listener in the list
-				var addListener = true;
+				addListener = true;
 
 				// TO-DO - Could this do with using indexOf? Would that work? Would be faster?
-				for (var i in this._eventListeners[eventName]) {
-					if (this._eventListeners[eventName][i] == newListener) {
-						addListener = false;
-						break;
-					}
+				existingIndex = elArr.indexOf(newListener);
+				if (existingIndex > -1) {
+					addListener = false;
 				}
 
 				// Add this new listener
 				if (addListener) {
-					this._eventListeners[eventName].push(newListener);
+					elArr.push(newListener);
 				}
 
 				return newListener;
@@ -50,43 +60,47 @@ var IgeEventingClass = IgeClass.extend({
 				// that must be fired to fire this event callback
 				if (eventName.length) {
 					// Loop the event array
-					var multiEvent = [];
+					multiEvent = [];
 					multiEvent[0] = 0; // This will hold our event count total
 					multiEvent[1] = 0; // This will hold our number of events fired
 					multiEvent[2] = []; // This will hold the list of already-fired event names
 
 					// Define the multi event callback
 					multiEvent[3] = this.bind(function (firedEventName) {
-						if (multiEvent[2].indexOf(firedEventName) == -1) {
+						if (multiEvent[2].indexOf(firedEventName) === -1) {
 							multiEvent[2].push(firedEventName);
 							multiEvent[1]++;
 
-							if (multiEvent[0] == multiEvent[1]) {
+							if (multiEvent[0] === multiEvent[1]) {
 								call.apply(context || this);
 							}
 						}
 					});
 
-					for (var eventIndex in eventName) {
-						var eventData = eventName[eventIndex];
-						var eventObj = eventData[0];
-						var eventNameArray = eventData[1];
+					for (eventIndex in eventName) {
+						if (eventName.hasOwnProperty(eventIndex)) {
+							eventData = eventName[eventIndex];
+							eventObj = eventData[0];
+							eventNameArray = eventData[1];
 
-						multiEvent[0] += eventNameArray.length;
+							multiEvent[0] += eventNameArray.length;
 
-						for (var singleEventIndex in eventNameArray) {
-							// Get the event name
-							var singleEventName = eventNameArray[singleEventIndex];
+							for (singleEventIndex in eventNameArray) {
+								if (eventNameArray.hasOwnProperty(singleEventIndex)) {
+									// Get the event name
+									singleEventName = eventNameArray[singleEventIndex];
 
-							// Register each event against the event object with a callback
-							eventObj.on(singleEventName, multiEvent[3], null, true, true);
+									// Register each event against the event object with a callback
+									eventObj.on(singleEventName, multiEvent[3], null, true, true);
+								}
+							}
 						}
 					}
 				}
 			}
 		} else {
-			if (typeof(eventName) != 'string') {
-				eventName = '*Multi-Event*'
+			if (typeof(eventName) !== 'string') {
+				eventName = '*Multi-Event*';
 			}
 			this.log('Cannot register event listener for event "' + eventName + '" because the passed callback is not a function!', 'error');
 		}
@@ -105,35 +119,36 @@ var IgeEventingClass = IgeClass.extend({
 
 				// Fire the listeners for this event
 				var eventCount = this._eventListeners[eventName].length,
-					eventCount2 = this._eventListeners[eventName].length - 1;
+					eventCount2 = this._eventListeners[eventName].length - 1,
+					finalArgs, i, cancelFlag, eventIndex, tempEvt, retVal;
 
 				// If there are some events, ensure that the args is ready to be used
 				if (eventCount) {
-					var finalArgs = [];
-					if (typeof(args) == 'object' && args != null && args[0] != null) {
-						for (var i in args) {
-							finalArgs[i] = args[i];
+					finalArgs = [];
+					if (typeof(args) === 'object' && args !== null && args[0] !== null) {
+						for (i in args) {
+							if (args.hasOwnProperty(i)) {
+								finalArgs[i] = args[i];
+							}
 						}
 					} else {
 						finalArgs = [args];
 					}
 
 					// Loop and emit!
-					var cancelFlag = false,
-						eventIndex;
+					cancelFlag = false;
 
 					while (eventCount--) {
 						eventIndex = eventCount2 - eventCount;
-						var tempEvt = this._eventListeners[eventName][eventIndex];
+						tempEvt = this._eventListeners[eventName][eventIndex];
 
 						// If the sendEventName flag is set, overwrite the arguments with the event name
 						if (tempEvt.sendEventName) { finalArgs = [eventName]; }
 
 						// Call the callback
-						var retVal = tempEvt.call.apply(tempEvt.context || this, finalArgs);
+						retVal = tempEvt.call.apply(tempEvt.context || this, finalArgs);
 
 						// If the retVal === true then store the cancel flag and return to the emitting method
-						// TO-DO - Make this a constant that can be named
 						if (retVal === true) {
 							// The receiver method asked us to send a cancel request back to the emitter
 							cancelFlag = true;
@@ -169,7 +184,7 @@ var IgeEventingClass = IgeClass.extend({
 				// Find this listener in the list
 				var evtListIndex = this._eventListeners[eventName].indexOf(evtListener);
 				if (evtListIndex > -1) {
-					// Remove the listener from the event listender list
+					// Remove the listener from the event listener list
 					this._eventListeners[eventName].splice(evtListIndex, 1);
 					return true;
 				}
