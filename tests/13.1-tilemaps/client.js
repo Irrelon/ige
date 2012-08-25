@@ -93,21 +93,25 @@ var Client = IgeClass.extend({
 						.mouseOut(outFunc);
 
 					// Create two isometric 3d entities
-					self.obj[2] = new IgeEntity3d()
+					self.obj[2] = new IgeEntity()
 						.id('3d1')
 						.isometric(true)
 						.mount(self.tileMap2)
 						.translateToTile(0, 0, 0)
 						.drawBounds(false)
-						.size3d(40, 40, 0);
+						.size3d(40, 40, 0)
+						.mouseOver(overFunc)
+						.mouseOut(outFunc);
 
-					self.obj[3] = new IgeEntity3d()
+					self.obj[3] = new IgeEntity()
 						.id('3d2')
 						.isometric(true)
 						.mount(self.tileMap2)
 						.translateToTile(1, 0, 0)
 						.drawBounds(false)
-						.size3d(40, 40, 0);
+						.size3d(40, 40, 0)
+						.mouseOver(overFunc)
+						.mouseOut(outFunc);
 
 					// Create two fairy entities, and mount each one
 					// to it's 3d entity as created above
