@@ -209,7 +209,11 @@ var IgeInputComponent = IgeEventingClass.extend({
 		this._updateMouseData(event);
 
 		var mx = event.igeX - ige.geometry.x2,
-			my = event.igeY - ige.geometry.y2;
+			my = event.igeY - ige.geometry.y2,
+			self = this;
+
+		event.igeBaseX = mx;
+		event.igeBaseY = my;
 
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = true;
@@ -225,7 +229,9 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		this.mouseDown = event;
 
-		this.emit('mouseDown', [event, mx, my, event.button + 1]);
+		this.queueEvent(this, function () {
+			self.emit('mouseDown', [event, mx, my, event.button + 1]);
+		});
 	},
 
 	/**
@@ -238,7 +244,11 @@ var IgeInputComponent = IgeEventingClass.extend({
 		this._updateMouseData(event);
 
 		var mx = event.igeX - ige.geometry.x2,
-			my = event.igeY - ige.geometry.y2;
+			my = event.igeY - ige.geometry.y2,
+			self = this;
+
+		event.igeBaseX = mx;
+		event.igeBaseY = my;
 
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = false;
@@ -254,7 +264,9 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		this.mouseUp = event;
 
-		this.emit('mouseUp', [event, mx, my, event.button + 1]);
+		this.queueEvent(this, function () {
+			self.emit('mouseUp', [event, mx, my, event.button + 1]);
+		});
 	},
 
 	/**
@@ -267,14 +279,20 @@ var IgeInputComponent = IgeEventingClass.extend({
 		ige._mouseOverVp = this._updateMouseData(event);
 
 		var mx = event.igeX - ige.geometry.x2,
-			my = event.igeY - ige.geometry.y2;
+			my = event.igeY - ige.geometry.y2,
+			self = this;
+
+		event.igeBaseX = mx;
+		event.igeBaseY = my;
 
 		this._state[this.mouse.x] = mx;
 		this._state[this.mouse.y] = my;
 
 		this.mouseMove = event;
 
-		this.emit('mouseMove', [event, mx, my, event.button + 1]);
+		this.queueEvent(this, function () {
+			self.emit('mouseMove', [event, mx, my, event.button + 1]);
+		});
 	},
 
 	/**
@@ -287,7 +305,11 @@ var IgeInputComponent = IgeEventingClass.extend({
 		this._updateMouseData(event);
 
 		var mx = event.igeX - ige.geometry.x2,
-			my = event.igeY - ige.geometry.y2;
+			my = event.igeY - ige.geometry.y2,
+			self = this;
+
+		event.igeBaseX = mx;
+		event.igeBaseY = my;
 
 		this._state[this.mouse.wheel] = event.wheelDelta;
 
@@ -299,7 +321,9 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		this.mouseWheel = event;
 
-		this.emit('mouseWheel', [event, mx, my, event.button + 1]);
+		this.queueEvent(this, function () {
+			self.emit('mouseWheel', [event, mx, my, event.button + 1]);
+		});
 	},
 
 	/**
@@ -308,8 +332,12 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_keyDown: function (event) {
+		var self = this;
+
 		this._state[event.keyCode] = true;
-		this.emit('keyDown', [event, event.keyCode]);
+		this.queueEvent(this, function () {
+			self.emit('keyDown', [event, event.keyCode]);
+		});
 	},
 
 	/**
@@ -318,8 +346,12 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_keyUp: function (event) {
+		var self = this;
+
 		this._state[event.keyCode] = false;
-		this.emit('keyUp', [event, event.keyCode]);
+		this.queueEvent(this, function () {
+			self.emit('keyUp', [event, event.keyCode]);
+		});
 	},
 
 	/**
@@ -452,6 +484,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 			}
 		}
 
+		// Reset all the flags and variables for the next tick
 		this._eventQueue = [];
 		this._eventControl._cancelled = false;
 		this.dblClick = false; // TODO: Add double-click event handling
@@ -459,6 +492,73 @@ var IgeInputComponent = IgeEventingClass.extend({
 		this.mouseDown = false;
 		this.mouseUp = false;
 		this.mouseWheel = false;
+	},
+
+	/**
+	 * Emit an event by name. Overrides the IgeEventingClass emit method and
+	 * checks for propagation stopped by calling ige.input.stopPropagation().
+	 * @param {Object} eventName The name of the event to listen for.
+	 * @param {Object || Array} args The arguments to send to any listening methods. If you are sending multiple arguments, use an array containing each argument.
+	 * @return {Number}
+	 */
+	emit: function (eventName, args) {
+		if (this._eventListeners) {
+			// Check if the event has any listeners
+			if (this._eventListeners[eventName]) {
+
+				// Fire the listeners for this event
+				var eventCount = this._eventListeners[eventName].length,
+					eventCount2 = this._eventListeners[eventName].length - 1,
+					finalArgs, i, cancelFlag, eventIndex, tempEvt, retVal;
+
+				// If there are some events, ensure that the args is ready to be used
+				if (eventCount) {
+					finalArgs = [];
+					if (typeof(args) === 'object' && args !== null && args[0] !== null) {
+						for (i in args) {
+							if (args.hasOwnProperty(i)) {
+								finalArgs[i] = args[i];
+							}
+						}
+					} else {
+						finalArgs = [args];
+					}
+
+					// Loop and emit!
+					cancelFlag = false;
+
+					while (eventCount--) {
+						eventIndex = eventCount2 - eventCount;
+						tempEvt = this._eventListeners[eventName][eventIndex];
+
+						// If the sendEventName flag is set, overwrite the arguments with the event name
+						if (tempEvt.sendEventName) { finalArgs = [eventName]; }
+
+						// Call the callback
+						retVal = tempEvt.call.apply(tempEvt.context || this, finalArgs);
+
+						// If the retVal === true then store the cancel flag and return to the emitting method
+						if (retVal === true || this._eventControl._cancelled === true) {
+							// The receiver method asked us to send a cancel request back to the emitter
+							cancelFlag = true;
+						}
+
+						// Check if we should now cancel the event
+						if (tempEvt.oneShot) {
+							// The event has a oneShot flag so since we have fired the event,
+							// lets cancel the listener now
+							this.off(eventName, tempEvt);
+						}
+					}
+
+					if (cancelFlag) {
+						return 1;
+					}
+
+				}
+
+			}
+		}
 	}
 });
 
