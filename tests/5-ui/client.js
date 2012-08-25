@@ -164,7 +164,7 @@ var Client = IgeClass.extend({
 						},
 						upFunc = function () {
 							ige.input.stopPropagation();
-							console.log('Clicked', this.menuData().text);
+							console.log('Clicked' + this.menuData().text);
 						};
 
 					// Create a menu
