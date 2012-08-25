@@ -31,7 +31,7 @@ var IgeEntity3d = IgeEntity.extend({
 	 * @param {IgeEntity=} entity The entity to become the billboard entity.
 	 */
 	billboard: function (entity) {
-		if (tex !== undefined) {
+		if (entity !== undefined) {
 			// If we already have a child entity, remove it
 			if (this._billboard) {
 				this._billboard.destroy();
