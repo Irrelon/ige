@@ -63,53 +63,51 @@ var Client = IgeClass.extend({
 	setupScene: function () {
 		// Create the scene
 		this.scene1 = new IgeScene2d()
+			.id('scene1')
 			.isometric(false);
 
 		// Create the main viewport
 		this.vp1 = new IgeViewport()
+			.id('vp1')
 			.addComponent(IgeMousePanComponent)
 			.mousePan.enabled(true)
-			.id('vp1')
 			.autoSize(true)
 			.scene(this.scene1)
 			.drawBounds(true)
+			.drawBoundsData(true)
 			.mount(ige)
-			.camera.translateTo(0, 380, 0);
+			.camera.translateTo(0, 200, 0);
 
 		// Create the background image
 		this.backdrop = new IgeEntity()
+			.id('backdrop')
 			.layer(0)
 			.texture(this.gameTexture.background1)
 			.dimensionsFromTexture()
 			.translateTo(0, 250, 0)
-			.mount(this.scene1);
-
-		// Create a collision map
-		this.collisionMap1 = new IgeTileMap2d()
-			.layer(1)
-			.isometric(true)
-			.tileWidth(20)
-			.tileHeight(20)
-			.drawGrid(0)
-			.highlightOccupied(false)
+			.drawBounds(false)
+			.drawBoundsData(false)
 			.mount(this.scene1);
 
 		// Create the tile map
 		this.tileMap1 = new IgeTileMap2d()
+			.id('tileMap1')
 			.layer(2)
 			.isometricMounts(true)
 			.tileWidth(20)
 			.tileHeight(20)
 			.drawGrid(40)
-			.highlightOccupied(false)
+			//.highlightOccupied(true)
+			.drawBounds(false)
+			.drawBoundsData(false)
 			.mount(this.scene1);
 	},
 
 	setupEntities: function () {
 		// Create an entity
-		this.obj[0] = new this.Bank(this.tileMap1, 0, 6);
+		this.obj[0] = new this.Bank(this.tileMap1, 10, 10);
 		this.obj[1] = new this.Electricals(this.tileMap1, 2, 6);
-		this.obj[2] = new this.Burgers(this.tileMap1, 4, 6);
+		this.obj[2] = new this.Burgers(this.tileMap1, 5, 6);
 		this.obj[3] = new this.SkyScraper(this.tileMap1, 15, 10).addFloors(5).addCrane('nw');
 		this.obj[4] = new this.SkyScraper(this.tileMap1, 1, 4).addFloors(2).addCrane('se');
 	}
