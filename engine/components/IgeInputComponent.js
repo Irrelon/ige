@@ -161,6 +161,10 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		this._controlMap = [];
 		this._state = [];
+
+		// Set default values for the mouse position
+		this._state[this.mouse.x] = 0;
+		this._state[this.mouse.y] = 0;
 	},
 
 	/**
