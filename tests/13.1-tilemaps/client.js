@@ -36,7 +36,7 @@ var Client = IgeClass.extend({
 						.tileHeight(40)
 						.drawGrid(3)
 						//.drawMouse(true)
-						.translateTo(-200, 0)
+						.translateTo(-200, 0, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -73,7 +73,7 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.texture(gameTexture[0])
 						.mount(self.tileMap1)
-						.translateToTile(0, 0)
+						.translateToTile(0, 0, 0)
 						.widthByTile(1)
 						.heightByTile(1)
 						.drawBounds(false)
@@ -85,7 +85,7 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.texture(gameTexture[0])
 						.mount(self.tileMap1)
-						.translateToTile(1, 0)
+						.translateToTile(1, 0, 0)
 						.widthByTile(1)
 						.heightByTile(1)
 						.drawBounds(false)
