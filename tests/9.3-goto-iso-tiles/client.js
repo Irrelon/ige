@@ -13,15 +13,23 @@ var Client = IgeClass.extend({
 			// Check if the engine started successfully
 			if (success) {
 				// Create the scene
-				self.mainScene = new IgeScene2d();
+				self.mainScene = new IgeScene2d()
+					.id('mainScene')
+					.drawBounds(false)
+					.drawBoundsData(false);
+
 				self.objectScene = new IgeScene2d()
+					.id('objectScene')
 					.depth(0)
 					.drawBounds(false)
+					.drawBoundsData(false)
 					.mount(self.mainScene);
 
 				self.uiScene = new IgeScene2d()
+					.id('uiScene')
 					.depth(1)
 					.drawBounds(false)
+					.drawBoundsData(false)
 					.ignoreCamera(true) // We don't want the UI scene to be affected by the viewport's camera
 					.mount(self.mainScene);
 
@@ -32,6 +40,7 @@ var Client = IgeClass.extend({
 					.scene(self.mainScene)
 					.drawMouse(true)
 					.drawBounds(true)
+					.drawBoundsData(true)
 					.mount(ige);
 
 				// Create an isometric tile map
@@ -43,6 +52,7 @@ var Client = IgeClass.extend({
 					.drawGrid(3)
 					.drawMouse(true)
 					.drawBounds(false)
+					.drawBoundsData(false)
 					.mount(self.objectScene);
 
 				// Define a function that will be called when the
@@ -69,6 +79,8 @@ var Client = IgeClass.extend({
 					.isometric(true)
 					.mouseOver(overFunc)
 					.mouseOut(outFunc)
+					.drawBounds(false)
+					.drawBoundsData(false)
 					.mount(self.tileMap1);
 
 				// Create a UI entity so we can test if clicking the entity will stop
