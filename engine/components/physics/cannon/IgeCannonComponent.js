@@ -9,7 +9,8 @@ var IgeCannonComponent = IgeEventingClass.extend({
 		this._active = true;
 		this._sleep = true;
 		this._scaleRatio = 30;
-		this._gravity = new this.b2Vec2(0, 0);
+		this._gravity = new IgePoint(0, 0, -10);
+		this._broadphase = new CANNON.NaiveBroadphase();
 
 		this._removeWhenReady = [];
 
@@ -47,12 +48,14 @@ var IgeCannonComponent = IgeEventingClass.extend({
 
 	/**
 	 * Gets / sets the gravity vector.
-	 * @param val
 	 * @return {*}
 	 */
-	gravity: function (x, y) {
+	gravity: function (x, y, z) {
 		if (x !== undefined && y !== undefined) {
-			this._gravity = new this.b2Vec2(x, y);
+			this._gravity = new IgePoint(x, y, z);
+			if (this._world) {
+				this._world.gravity.set(this._gravity.x, this._gravity.y, this._gravity.z);
+			}
 			return this._entity;
 		}
 
@@ -60,27 +63,20 @@ var IgeCannonComponent = IgeEventingClass.extend({
 	},
 
 	createWorld: function () {
-		this._world = new this.b2World(
-			this._gravity,
-			this._sleep
-		);
+		this._world = new CANNON.World();
+		this._world.gravity.set(this._gravity.x, this._gravity.y, this._gravity.z);
+		this._world.broadphase = this._broadphase;
 
 		return this._entity;
 	},
 
-	createFixture: function (params) {
-		var tempDef = new this.b2FixtureDef(),
-			param;
+	createPlane: function (x, y, z, sizeX, sizeY, sizeZ) {
+		var normal = new CANNON.Vec3(0,0,1),
+			groundShape = new CANNON.Plane(normal),
+			groundBody = new CANNON.RigidBody(0, groundShape);
 
-		for (param in params) {
-			if (params.hasOwnProperty(param)) {
-				if (param !== 'shape') {
-					tempDef[param] = params[param];
-				}
-			}
-		}
-
-		return tempDef;
+		groundBody.position.set(x, y, z);
+		this._world.add(groundBody);
 	},
 
 	createBody: function (entity, body) {
@@ -244,7 +240,10 @@ var IgeCannonComponent = IgeEventingClass.extend({
 			destroyBody;
 
 		if (self._active) {
-			// Remove any bodies that were queued for removal
+			// Call the world step
+			self._world.step(1 / 60);
+
+			/*// Remove any bodies that were queued for removal
 			removeWhenReady = self._removeWhenReady;
 			count = removeWhenReady.length;
 
@@ -309,7 +308,7 @@ var IgeCannonComponent = IgeEventingClass.extend({
 			self._world.ClearForces();
 
 			tempBod = null;
-			entity = null;
+			entity = null;*/
 
 			if (typeof(self._updateCallback) === 'function') {
 				self._updateCallback();
