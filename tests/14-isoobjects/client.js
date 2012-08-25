@@ -18,32 +18,6 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					Player = IgeEntity.extend({
-						init: function () {
-							this._super();
-
-							// Setup the control system
-							ige.input.mapAction('walkLeft', ige.input.key.left);
-							ige.input.mapAction('walkRight', ige.input.key.right);
-							ige.input.mapAction('walkUp', ige.input.key.up);
-							ige.input.mapAction('walkDown', ige.input.key.down);
-						},
-
-						tick: function (ctx) {
-							if (ige.input.actionState('walkLeft')) {
-								this.translateBy(-2, 0, 0);
-							} else if (ige.input.actionState('walkRight')) {
-								this.translateBy(2, 0, 0);
-							} else if (ige.input.actionState('walkUp')) {
-								this.translateBy(0, -2, 0);
-							} else if (ige.input.actionState('walkDown')) {
-								this.translateBy(0, 2, 0);
-							}
-
-							this._super(ctx);
-						}
-					});
-
 					// Create the scene
 					self.scene1 = new IgeScene2d();
 
@@ -201,7 +175,9 @@ var Client = IgeClass.extend({
 						.size3d(200, 200, 10)
 						.opacity(0.95);
 
-					self.obj[14] = new Player()
+					self.obj[14] = new IgeEntity()
+						.addComponent(IgeVelocityComponent)
+						.addComponent(PlayerComponent)
 						.id(15)
 						.isometric(true)
 						.depth(15)
