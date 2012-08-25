@@ -167,7 +167,7 @@ var Client = IgeClass.extend({
 							console.log('Clicked' + this.menuData().text);
 						};
 
-					// Create a menu
+					// Create a menu - menus are still in alpha and don't work yet
 					self.obj[7] = new IgeUiMenu()
 						.id('menu1')
 						.depth(100)
