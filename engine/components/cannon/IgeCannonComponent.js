@@ -1,6 +1,6 @@
-var IgeBulletComponent = IgeEventingClass.extend({
-	classId: 'IgeBulletComponent',
-	componentId: 'bullet',
+var IgeCannonComponent = IgeEventingClass.extend({
+	classId: 'IgeCannonComponent',
+	componentId: 'cannon',
 
 	init: function (entity, options) {
 		this._entity = entity;
@@ -13,8 +13,8 @@ var IgeBulletComponent = IgeEventingClass.extend({
 
 		this._removeWhenReady = [];
 
-		// Add the bullet behaviour to the ige
-		ige.addBehaviour('bulletStep', this._behaviour);
+		// Add the cannon behaviour to the ige
+		ige.addBehaviour('cannonStep', this._behaviour);
 	},
 
 	/**
@@ -32,7 +32,7 @@ var IgeBulletComponent = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Gets / sets the current engine to bullet scaling ratio.
+	 * Gets / sets the current engine to cannon scaling ratio.
 	 * @param val
 	 * @return {*}
 	 */
@@ -94,7 +94,7 @@ var IgeBulletComponent = IgeEventingClass.extend({
 			finalX, finalY,
 			finalWidth, finalHeight;
 
-		// Process body definition and create a bullet body for it
+		// Process body definition and create a cannon body for it
 		switch (body.type) {
 			case 'static':
 				tempDef.type = this.b2Body.b2_staticBody;
@@ -210,7 +210,7 @@ var IgeBulletComponent = IgeEventingClass.extend({
 	enableDebug: function (canvasId) {
 		// Define the debug drawing instance
 		var debugDraw = new this.b2DebugDraw();
-		this._bulletDebug = true;
+		this._cannonDebug = true;
 		this._debugCanvas = document.getElementById(canvasId);
 		this._debugCtx = this._debugCanvas.getContext('2d');
 
@@ -235,10 +235,10 @@ var IgeBulletComponent = IgeEventingClass.extend({
 	 category:"method",
 	 } **/
 	_behaviour: function (ctx) {
-		var self = ige.bullet,
+		var self = ige.cannon,
 			tempBod,
 			entity,
-			entityBulletBody,
+			entityCannonBody,
 			removeWhenReady,
 			count,
 			destroyBody;
@@ -266,25 +266,25 @@ var IgeBulletComponent = IgeEventingClass.extend({
 				if (tempBod._entity) {
 					// Body has an entity assigned to it
 					entity = tempBod._entity; //self.ige.entities.read(tempBod.m_userData);
-					entityBulletBody = entity._bulletBody;
+					entityCannonBody = entity._cannonBody;
 
 					// Check if the body is awake and is dynamic (we don't transform static bodies)
 					if (tempBod.IsAwake()) {
 						// Update the entity data to match the body data
-						entityBulletBody.updating = true;
+						entityCannonBody.updating = true;
 						entity.translateTo(tempBod.m_xf.position.x * self._scaleRatio, tempBod.m_xf.position.y * self._scaleRatio, entity._translate.z);
 						entity.rotateTo(entity._rotate.x, entity._rotate.y, tempBod.GetAngle());
-						entityBulletBody.updating = false;
+						entityCannonBody.updating = false;
 
-						if (entityBulletBody.asleep) {
+						if (entityCannonBody.asleep) {
 							// The body was asleep last frame, fire an awake event
-							entityBulletBody.asleep = false;
+							entityCannonBody.asleep = false;
 							self.emit('afterAwake', entity);
 						}
 					} else {
-						if (!entityBulletBody.asleep) {
+						if (!entityCannonBody.asleep) {
 							// The body was awake last frame, fire an asleep event
-							entityBulletBody.asleep = true;
+							entityCannonBody.asleep = true;
 							self.emit('afterAsleep', entity);
 						}
 					}
@@ -293,7 +293,7 @@ var IgeBulletComponent = IgeEventingClass.extend({
 				tempBod = tempBod.GetNext();
 			}
 
-			if (self._bulletDebug && this._currentCamera) {
+			if (self._cannonDebug && this._currentCamera) {
 				// Draw the debug data
 				self._debugCanvas.width = ige.geometry.x;
 				self._debugCanvas.height = ige.geometry.y;
