@@ -67,12 +67,14 @@ var Client = IgeClass.extend({
 
 		// Create the main viewport
 		this.vp1 = new IgeViewport()
+			.addComponent(IgeMousePanComponent)
+			.mousePan.enabled(true)
 			.id('vp1')
 			.autoSize(true)
 			.scene(this.scene1)
 			.drawBounds(true)
 			.mount(ige)
-			.camera.translateTo(0, 380);
+			.camera.translateTo(0, 380, 0);
 
 		// Create the background image
 		this.backdrop = new IgeEntity()
