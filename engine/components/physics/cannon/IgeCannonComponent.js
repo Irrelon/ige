@@ -68,7 +68,7 @@ var IgeCannonComponent = IgeEventingClass.extend({
 	 */
 	gravity: function (x, y, z) {
 		if (x !== undefined && y !== undefined) {
-			this._gravity = new IgePoint(x, y, z);
+			this._gravity = new CANNON.Vec3(x, y, z);
 			if (this._world) {
 				this._world.gravity.set(this._gravity.x, this._gravity.y, this._gravity.z);
 			}
