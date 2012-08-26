@@ -30,18 +30,20 @@ var IgeEntityCannon = IgeEntity.extend({
 	},
 
 	_translateTo: function (x, y, z) {
-		var entCannon = this._cannonBody;
+		var entCannon = this._cannonBody,
+			scaleRatio = ige.cannon._scaleRatio;
 
 		// Check if the entity has a cannon body attached
 		// and if so, is it updating or not
-		if (entCannon && !entCannon.updating) {
+		if (entCannon && !entCannon._igeUpdating) {
 			// We have an entity with a cannon definition that is
 			// not currently updating so let's override the standard
 			// transform op and take over
 
 			// Translate the body
-			entCannon.SetPosition({x: x / ige.cannon._scaleRatio, y: y / ige.cannon._scaleRatio});
-			entCannon.SetAwake(true);
+			entCannon.position.x = x / scaleRatio;
+			entCannon.position.y = y / scaleRatio;
+			entCannon.position.z = (z + this.geometry.z2) / scaleRatio;
 		}
 
 		// Now call the original translate method

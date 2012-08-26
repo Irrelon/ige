@@ -8,11 +8,27 @@ var IgeCannonComponent = IgeEventingClass.extend({
 
 		this._active = true;
 		this._sleep = true;
-		this._scaleRatio = 30;
-		this._gravity = new IgePoint(0, 0, -10);
+		this._scaleRatio = 1;
+		this._solverIterations = 10;
+		this._gravity = new CANNON.Vec3(0, 0, -60);
 		this._broadphase = new CANNON.NaiveBroadphase();
 
 		this._removeWhenReady = [];
+
+		// Materials
+		this._normalMaterial = new CANNON.Material("normalMaterial");
+
+		// Create a slippery material (friction coefficient = 0.0)
+		this._slipperyMaterial = new CANNON.Material("slipperyMaterial");
+
+		// The ContactMaterial defines what happens when two materials meet.
+		// In this case we want friction coefficient = 0.0 when the slippery material touches ground.
+		this._slipperyNormalCm = new CANNON.ContactMaterial(
+			this._normalMaterial,
+			this._slipperyMaterial,
+			0.0, // friction coefficient
+			0.3  // restitution
+		);
 
 		// Add the cannon behaviour to the ige
 		ige.addBehaviour('cannonStep', this._behaviour);
@@ -62,131 +78,82 @@ var IgeCannonComponent = IgeEventingClass.extend({
 		return this._gravity;
 	},
 
+	solverIterations: function () {
+		if (val !== undefined) {
+			this._solverIterations = val;
+			return this._entity;
+		}
+
+		return this._solverIterations;
+	},
+
 	createWorld: function () {
 		this._world = new CANNON.World();
 		this._world.gravity.set(this._gravity.x, this._gravity.y, this._gravity.z);
 		this._world.broadphase = this._broadphase;
+		this._world.solver.iterations = this._solverIterations;
+		this._world.allowSleep = this._sleep;
+
+		// We must add the contact materials to the world
+		this._world.addContactMaterial(this._slipperyNormalCm);
 
 		return this._entity;
 	},
 
-	createPlane: function (x, y, z, sizeX, sizeY, sizeZ) {
-		var normal = new CANNON.Vec3(0,0,1),
-			groundShape = new CANNON.Plane(normal),
-			groundBody = new CANNON.RigidBody(0, groundShape);
+	createFloor: function (normalX, normalY, normalZ) {
+		var groundShape = new CANNON.Plane(new CANNON.Vec3(normalX, normalY, normalZ)),
+			groundBody = new CANNON.RigidBody(0, groundShape, this._slipperyMaterial);
 
-		groundBody.position.set(x, y, z);
 		this._world.add(groundBody);
 	},
 
 	createBody: function (entity, body) {
-		var tempDef = new this.b2BodyDef(),
-			param,
-			tempBod,
+		var param,
+			type,
 			fixtureDef,
-			tempFixture,
 			tempShape,
-			i,
-			finalX, finalY,
-			finalWidth, finalHeight;
+			tempBod,
+			i;
 
 		// Process body definition and create a cannon body for it
 		switch (body.type) {
 			case 'static':
-				tempDef.type = this.b2Body.b2_staticBody;
+				type = CANNON.Body.STATIC;
+				break;
+
+			case 'kinematic':
+				type = CANNON.Body.KINEMATIC;
 				break;
 
 			case 'dynamic':
-				tempDef.type = this.b2Body.b2_dynamicBody;
+				type = CANNON.Body.DYNAMIC;
 				break;
 		}
-
-		// Add the parameters of the body to the new body instance
-		for (param in body) {
-			if (body.hasOwnProperty(param)) {
-				switch (param) {
-					case 'type':
-					case 'gravitic':
-					case 'fixedRotation':
-					case 'fixtures':
-						// Ignore these for now, we process them
-						// below as post-creation attributes
-						break;
-
-					default:
-						tempDef[param] = body[param];
-						break;
-				}
-			}
-		}
-
-		// Set the position
-		tempDef.position = new this.b2Vec2(entity._translate.x / this._scaleRatio, entity._translate.y / this._scaleRatio);
-
-		// Create the new body
-		tempBod = this._world.CreateBody(tempDef);
 
 		// Now apply any post-creation attributes we need to
 		for (param in body) {
 			if (body.hasOwnProperty(param)) {
 				switch (param) {
-					case 'gravitic':
-						if (!body.gravitic) {
-							tempBod.m_nonGravitic = true;
-						}
-						break;
-
-					case 'fixedRotation':
-						if (body.fixedRotation) {
-							tempBod.SetFixedRotation(true);
-						}
-						break;
-
 					case 'fixtures':
 						for (i = 0; i < body.fixtures.length; i++) {
 							// Grab the fixture definition
 							fixtureDef = body.fixtures[i];
 
-							// Create the fixture
-							tempFixture = this.createFixture(fixtureDef);
-
 							// Check for a shape definition for the fixture
 							if (fixtureDef.shape) {
 								// Create based on the shape type
 								switch (fixtureDef.shape.type) {
-									case 'polygon':
-										tempShape = new this.b2PolygonShape();
-										tempShape.SetAsArray(fixtureDef.shape.data._poly, fixtureDef.shape.data.length());
-
-										tempFixture.shape = tempShape;
-										tempBod.CreateFixture(tempFixture);
-										break;
-
-									case 'rectangle':
-										tempShape = new this.b2PolygonShape();
-
+									case 'box':
 										if (fixtureDef.shape.data) {
-											finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
-											finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
-											finalWidth = fixtureDef.shape.data.width !== undefined ? fixtureDef.shape.data.width : (entity._width / 2);
-											finalHeight = fixtureDef.shape.data.height !== undefined ? fixtureDef.shape.data.height : (entity._height / 2);
+											// Use defined data to create the shape
+											if (fixtureDef.shape.data.sizeX !== undefined && fixtureDef.shape.data.sizeY !== undefined && fixtureDef.shape.data.sizeZ !== undefined) {
+												tempShape = new CANNON.Box(new CANNON.Vec3(fixtureDef.shape.data.sizeX / this._scaleRatio, fixtureDef.shape.data.sizeY / this._scaleRatio, fixtureDef.shape.data.sizeZ / this._scaleRatio));
+											} else {
+												tempShape = new CANNON.Box(new CANNON.Vec3(entity.geometry.x2 + 1 / this._scaleRatio, entity.geometry.y2 / this._scaleRatio, entity.geometry.z2 / this._scaleRatio));
+											}
 										} else {
-											finalX = 0;
-											finalY = 0;
-											finalWidth = (entity._width / 2);
-											finalHeight = (entity._height / 2);
+											tempShape = new CANNON.Box(new CANNON.Vec3(entity.geometry.x2 + 1 / this._scaleRatio, entity.geometry.y2 + 1 / this._scaleRatio, entity.geometry.z2 + 1 / this._scaleRatio));
 										}
-
-										// Set the polygon as a box
-										tempShape.SetAsOrientedBox(
-											(finalWidth / this._scaleRatio),
-											(finalHeight / this._scaleRatio),
-											new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio),
-											0
-										);
-
-										tempFixture.shape = tempShape;
-										tempBod.CreateFixture(tempFixture);
 										break;
 								}
 							}
@@ -196,10 +163,26 @@ var IgeCannonComponent = IgeEventingClass.extend({
 			}
 		}
 
-		// Store the entity that is linked to this body
-		tempBod._entity = entity;
+		tempBod = new CANNON.RigidBody(body.mass, tempShape, this._normalMaterial);
+		tempBod.sleepSpeedLimit = 0.1;
+		tempBod.sleepTimeLimit = 1000;
 
-		// Add the body to the world with the passed fixture
+		if (body.allowSleep !== undefined) { tempBod.allowSleep = body.allowSleep; }
+		if (body.sleepSpeedLimit !== undefined) { tempBod.sleepSpeedLimit = body.sleepSpeedLimit; }
+		if (body.sleepTimeLimit !== undefined) { tempBod.sleepTimeLimit = body.sleepTimeLimit; }
+
+		if (body.angularDamping !== undefined) { tempBod.angularDamping = body.angularDamping; }
+		if (body.linearDamping !== undefined) { tempBod.linearDamping = body.linearDamping; }
+
+		// Set the position
+		tempBod.position.set(entity._translate.x / this._scaleRatio, entity._translate.y / this._scaleRatio, (entity._translate.z + entity.geometry.z2)  / this._scaleRatio);
+
+		// Store the entity that is linked to this body
+		tempBod._igeEntity = entity;
+
+		// Add the body to the world
+		this._world.add(tempBod);
+
 		return tempBod;
 	},
 
@@ -232,16 +215,30 @@ var IgeCannonComponent = IgeEventingClass.extend({
 	 } **/
 	_behaviour: function (ctx) {
 		var self = ige.cannon,
-			tempBod,
-			entity,
-			entityCannonBody,
-			removeWhenReady,
-			count,
-			destroyBody;
+			bodiesArr = self._world.bodies,
+			bodyCount = bodiesArr.length,
+			tempBod, entity;
 
 		if (self._active) {
 			// Call the world step
 			self._world.step(1 / 60);
+
+			while (bodyCount--) {
+				tempBod = bodiesArr[bodyCount];
+
+				// Check if the body has an IGE entity attached to it
+				if (tempBod._igeEntity) {
+					if (tempBod.isAwake()) {
+						entity = tempBod._igeEntity;
+
+						// Update the entity data to match the body data
+						tempBod._igeUpdating = true;
+						entity.translateTo(Math.ceil(tempBod.position.x * self._scaleRatio), Math.ceil(tempBod.position.y * self._scaleRatio), Math.ceil((tempBod.position.z * self._scaleRatio) - entity.geometry.z2));
+						//entity.rotateTo(entity._rotate.x, entity._rotate.y, tempBod.GetAngle());
+						tempBod._igeUpdating = false;
+					}
+				}
+			}
 
 			/*// Remove any bodies that were queued for removal
 			removeWhenReady = self._removeWhenReady;
