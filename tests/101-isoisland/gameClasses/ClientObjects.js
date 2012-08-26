@@ -1,101 +1,97 @@
 var ClientObjects = {
-	/**
-	 * Define the bank building class.
-	 */
 	Bank: ClientItem.extend({
 		classId: 'Bank',
 
 		init: function (parent, tileX, tileY) {
-			// Set the tile position and size data for this item
-			// by passing them to the init method of ClientItem
-			// as defined in ClientItem.js
 			this._super(tileX, tileY, 2, 2);
 			var self = this;
 
-			// Setup the item details
+			// Setup the 3d bounds container (this)
 			this.isometric(true)
-				.isometricMounts(true)
 				.mount(parent)
-				.texture(ige.client.gameTexture.bank)
-				.widthByTile(1.50, true) // Called with lockAspect true so height is also set
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
-				.translateToTile(tileX, tileY, 0);
-		},
+				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
+				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
+				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
+				.drawBounds(false)
+				.drawBoundsData(false)
+				.occupyTile(tileX, tileY, 2, 2);
 
-		translateToTile: function (x, y, z) {
-			this._super(x + 0.5, y + 0.5, z);
+			// Create the "image" entity
+			this.imageEntity = new IgeEntity()
+				.texture(ige.client.gameTexture.bank)
+				.dimensionsFromCell()
+				.scaleTo(0.3, 0.3, 1)
+				.drawBounds(false)
+				.drawBoundsData(false)
+				.mount(this);
 		}
 	}),
 
-	/**
-	 * Define the electricals shop building class.
-	 */
 	Electricals: ClientItem.extend({
 		classId: 'Electricals',
 
 		init: function (parent, tileX, tileY) {
-			// Set the tile position and size data for this item
-			// by passing them to the init method of ClientItem
-			// as defined in ClientItem.js
-			this._super(tileX, tileY, 2, 3);
+			this._super(tileX, tileY, 3, 4);
 			var self = this;
 
-			// Setup the item details
+			// Setup the 3d bounds container (this)
 			this.isometric(true)
-				.isometricMounts(true)
 				.mount(parent)
-				.texture(ige.client.gameTexture.electricals)
-				.widthByTile(2 * 0.9, true) // Called with lockAspect true so height is also set
-				.size3d(2 * parent._tileWidth, 3 * parent._tileHeight, parent._tileHeight * 0.8)
-				.translateToTile(tileX, tileY, 0);
-		},
+				.size3d(3 * parent._tileWidth, 4 * parent._tileHeight, parent._tileHeight * 0.8)
+				.translateToTile((tileX) + 1, (tileY) + 1.5, 0)
+				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
+				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
+				.drawBounds(false)
+				.drawBoundsData(false)
+				.occupyTile(tileX, tileY, 3, 4);
 
-		translateToTile: function (x, y, z) {
-			this._super(x + 0.5, y + 1, z);
-			return this;
+			// Create the "image" entity
+			this.imageEntity = new IgeEntity()
+				.texture(ige.client.gameTexture.electricals)
+				.dimensionsFromCell()
+				.scaleTo(0.45, 0.45, 1)
+				.drawBounds(false)
+				.drawBoundsData(false)
+				.mount(this);
 		}
 	}),
 
-	/**
-	 * Define the burger shop building class.
-	 */
 	Burgers: ClientItem.extend({
 		classId: 'Burgers',
 
 		init: function (parent, tileX, tileY) {
-			// Set the tile position and size data for this item
-			// by passing them to the init method of ClientItem
-			// as defined in ClientItem.js
 			this._super(tileX, tileY, 2, 2);
 			var self = this;
 
-			// Setup the item details
+			// Setup the 3d bounds container (this)
 			this.isometric(true)
-				.isometricMounts(true)
 				.mount(parent)
-				.texture(ige.client.gameTexture.burgers)
-				.anchor(5, 0)
-				.widthByTile(1.50, true) // Called with lockAspect true so height is also set
-				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 0.75)
-				.translateToTile(tileX, tileY, 0);
-		},
+				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
+				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
+				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
+				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
+				.drawBounds(false)
+				.drawBoundsData(false)
+				.occupyTile(tileX, tileY, 2, 2);
 
-		translateToTile: function (x, y, z) {
-			this._super(x + 0.5, y + 0.5, z);
-			return this;
+			// Create the "image" entity
+			this.imageEntity = new IgeEntity()
+				.texture(ige.client.gameTexture.burgers)
+				.dimensionsFromCell()
+				.scaleTo(0.3, 0.3, 1)
+				//.anchor(-5, -20)
+				.translateTo(2, 6, 0)
+				.drawBounds(false)
+				.drawBoundsData(false)
+				.mount(this);
 		}
 	}),
 
-	/**
-	 * Define the skyscraper building class.
-	 */
 	SkyScraper: ClientItem.extend({
 		classId: 'SkyScraper',
 
 		init: function (parent, tileX, tileY) {
-			// Set the tile position and size data for this item
-			// by passing them to the init method of ClientItem
-			// as defined in ClientItem.js
 			this._super(tileX, tileY, 2, 2);
 			var self = this;
 
@@ -107,40 +103,44 @@ var ClientObjects = {
 				.data('floorRef', [])
 				.data('craneRef', null);
 
-			// Create the base
+			// Set the skyscraper entity details
+			this.isometric(true)
+				.isometricMounts(true)
+				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
+				.mouseOver(function () { this.highlight(true); this.drawBounds(true); this.drawBoundsData(true); })
+				.mouseOut(function () { this.highlight(false); this.drawBounds(false); this.drawBoundsData(false); })
+				.drawBounds(false)
+				.drawBoundsData(false)
+				.opacity(1)
+				.mount(parent)
+				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
+				.occupyTile(tileX, tileY, 2, 2);
+
+			// Create the base container
 			this.data('baseRef', new IgeEntity()
 				.isometric(true)
-				.isometricMounts(true)
 				.mount(this)
-				.texture(ige.client.gameTexture.base_se)
-				.width(ige.client.gameTexture.base_se.image.width * 0.265 * (parent._tileWidth / 40))
-				.height(ige.client.gameTexture.base_se.image.height * 0.265 * (parent._tileWidth / 40))
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
 				.translateTo(0, 0, 0)
 				.anchor(0, -1.6 * (parent._tileWidth / 40))
 				.group('skyscraper')
-				.drawBounds(true)
+				.mouseOver(function () { this.highlight(true); this.drawBounds(true); this.drawBoundsData(true); })
+				.mouseOut(function () { this.highlight(false); this.drawBounds(false); this.drawBoundsData(false); })
+				.drawBounds(false)
+				.drawBoundsData(false)
 			);
 
-			// Set the main skyscraper entity details
-			this.isometric(true)
-				.isometricMounts(true)
-				.mount(parent)
-				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
-				.translateToTile(tileX, tileY, 0)
-				.drawBounds(true)
-				.opacity(1);
-		},
-
-		translateToTile: function (x, y, z) {
-			this._super(x + 0.5, y + 0.5, z);
-			return this;
+			new IgeEntity()
+				.texture(ige.client.gameTexture.base_se)
+				.width(ige.client.gameTexture.base_se.image.width * 0.265 * (parent._tileWidth / 40))
+				.height(ige.client.gameTexture.base_se.image.height * 0.265 * (parent._tileWidth / 40))
+				.drawBounds(false)
+				.drawBoundsData(false)
+				.mount(this.data('baseRef'));
 		},
 
 		/**
-		 * Highlights the building children since the skyscraper
-		 * entity itself does not actually have a texture to highlight
-		 * but it's child entities do (such as the floors and crane).
+		 * Highlights the building children
 		 * @param bool
 		 */
 		highlight: function (bool) {
@@ -150,7 +150,7 @@ var ClientObjects = {
 		},
 
 		/**
-		 * Gets / sets the building base type (se, sw, ne, nw).
+		 * Gets / sets the building base type (se, sw, ne, nw)
 		 * @param val
 		 */
 		base: function (val) {
@@ -197,18 +197,27 @@ var ClientObjects = {
 			var floor, floorCount = this.data('floors');
 
 			for (floor = floorCount; floor < floorCount + (numFloors); floor++) {
+				// Create the floor container
 				this.data('floorRef')[floor] = new IgeEntity()
-					.mount(this)
 					.isometric(true)
 					.layer(floor)
-					.texture(ige.client.gameTexture.stacker_se)
-					.width(ige.client.gameTexture.base_se.image.width * 0.265 * (this._parent._tileWidth / 40))
-					.height(ige.client.gameTexture.base_se.image.height * 0.265 * (this._parent._tileHeight / 40))
+					.mount(this)
 					.size3d(2 * this._parent._tileWidth, 2 * this._parent._tileHeight, 25 * (this._parent._tileWidth / 40))
 					.translateTo(0, 0, 25 * (floor + 1) * (this._parent._tileWidth / 40))
 					.anchor(0, -1.6 * (this._parent._tileWidth / 40))
 					.group('skyscraper')
-					.drawBounds(true);
+					.mouseOver(function () { this.highlight(true); this.drawBounds(true); this.drawBoundsData(true); })
+					.mouseOut(function () { this.highlight(false); this.drawBounds(false); this.drawBoundsData(false); })
+					.drawBounds(false)
+					.drawBoundsData(false);
+
+				new IgeEntity()
+					.texture(ige.client.gameTexture.stacker_se)
+					.width(ige.client.gameTexture.base_se.image.width * 0.265 * (this._parent._tileWidth / 40))
+					.height(ige.client.gameTexture.base_se.image.height * 0.265 * (this._parent._tileHeight / 40))
+					.drawBounds(false)
+					.drawBoundsData(false)
+					.mount(this.data('floorRef')[floor]);
 			}
 
 			this.data('floors', floorCount + numFloors);
@@ -279,7 +288,7 @@ var ClientObjects = {
 		},
 
 		/**
-		 * Set the type of crane the building should have (se, sw, ne, nw).
+		 * Set the type of crane the building should have (se, sw, ne, nw)
 		 * @param val
 		 * @return {*}
 		 */
@@ -321,21 +330,29 @@ var ClientObjects = {
 				// Create the crane
 				this.data('craneRef', new IgeEntity()
 					.isometric(true)
-					.mount(this)
-					.texture(ige.client.gameTexture[levelTextureId])
-					.width(ige.client.gameTexture[levelTextureId].image.width * 0.265 * (this._parent._tileWidth / 40))
-					.height(ige.client.gameTexture[levelTextureId].image.height * 0.265 * (this._parent._tileHeight / 40))
-					.size3d(20, 20, 55)
 					.layer(this.data('floors') + 1)
-					.group('skyscraper')
-					.anchor(anchorX, anchorY)
+					.mount(this)
+					.size3d(20, 20, 55)
 					.translateTo(
 						0,
 						0,
 						12.5 * (this.data('floors') + 1)
 					)
-					.drawBounds(true)
+					.group('skyscraper')
+					.mouseOver(function () { this.highlight(true); this.drawBounds(true); this.drawBoundsData(true); })
+					.mouseOut(function () { this.highlight(false); this.drawBounds(false); this.drawBoundsData(false); })
+					.drawBounds(false)
+					.drawBoundsData(false)
 				);
+
+				new IgeEntity()
+					.texture(ige.client.gameTexture[levelTextureId])
+					.width(ige.client.gameTexture[levelTextureId].image.width * 0.265 * (this._parent._tileWidth / 40))
+					.height(ige.client.gameTexture[levelTextureId].image.height * 0.265 * (this._parent._tileHeight / 40))
+					.anchor(-anchorX, -anchorY)
+					.drawBounds(false)
+					.drawBoundsData(false)
+					.mount(this.data('craneRef'));
 			}
 
 			return this;
@@ -380,19 +397,19 @@ var ClientObjects = {
 				switch (this.data('crane')) {
 					case 'se':
 						this.crane('sw');
-					break;
+						break;
 
 					case 'sw':
 						this.crane('nw');
-					break;
+						break;
 
 					case 'nw':
 						this.crane('ne');
-					break;
+						break;
 
 					case 'ne':
 						this.crane('se');
-					break;
+						break;
 				}
 
 				// Set another timeout to re-call this method

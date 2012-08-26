@@ -34,7 +34,7 @@ var ClientNetworkEvents = {
 			entity = ige.client.createTemporaryItem(item.classId)
 				.data('tileX', item.tileX)
 				.data('tileY', item.tileY)
-				.translateToTile(item.tileX, item.tileY);
+				.translateToTile(item.tileX + 0.5, item.tileY + 0.5, 0);
 
 			if (item.classId === 'SkyScraper') {
 				entity.addFloors(item.buildFloors);

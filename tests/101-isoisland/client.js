@@ -121,12 +121,30 @@ var Client = IgeClass.extend({
 		// at gameScene with auto-sizing enabled to fill the
 		// browser window, then move the camera
 		this.vp1 = new IgeViewport()
+			.addComponent(IgeMousePanComponent)
+			.mousePan.enabled(true)
 			.id('vp1')
 			.autoSize(true)
 			.scene(this.mainScene)
 			.drawBounds(false) // Switch this to true to draw all bounding boxes
 			.drawBoundsData(true) // Switch to true (and flag above) to see bounds data
 			.mount(ige);
+
+		// Create some listners for when the viewport is being panned
+		// so that we don't create an entity accidentally after a mouseUp
+		// occurs if we were panning
+		this.vp1.mousePan.on('panStart', function () {
+			// Store the current cursor mode
+			ige.client.data('tempCursorMode', ige.client.data('cursorMode'));
+
+			// Switch the cursor mode
+			ige.client.data('cursorMode', 'panning');
+		});
+
+		this.vp1.mousePan.on('panEnd', function () {
+			// Switch the cursor mode back
+			ige.client.data('cursorMode', ige.client.data('tempCursorMode'));
+		});
 
 		// Create the scene that the game items will
 		// be mounted to (like the tile map). This scene
@@ -176,7 +194,8 @@ var Client = IgeClass.extend({
 			.tileWidth(20)
 			.tileHeight(20)
 			.drawGrid(40)
-			.highlightOccupied(false)
+			.drawMouse(true)
+			.highlightOccupied(true)
 			.mouseOver(function (x, y) {
 				switch (ige.client.data('cursorMode')) {
 					case 'select':
@@ -218,7 +237,7 @@ var Client = IgeClass.extend({
 								// The tile is not occupied so move to it!
 								item.data('tileX', x)
 									.data('tileY', y)
-									.translateToTile(x, y, 0);
+									.translateToTile(x + 0.5, y + 0.5, 0);
 							}
 						}
 					break;
@@ -321,6 +340,8 @@ var Client = IgeClass.extend({
 			.top(0)
 			.width('100%')
 			.height(40)
+			.mouseDown(function () { ige.input.stopPropagation(); })
+			.mouseUp(function () { ige.input.stopPropagation(); })
 			.mount(this.uiScene);
 
 		// Create the menu bar buttons
@@ -337,14 +358,19 @@ var Client = IgeClass.extend({
 				if (ige.client.data('cursorMode') !== 'select') {
 					this.backgroundColor('#6b6b6b');
 				}
+
+				ige.input.stopPropagation();
 			})
 			.mouseOut(function () {
 				if (ige.client.data('cursorMode') !== 'select') {
 					this.backgroundColor('');
 				}
+
+				ige.input.stopPropagation();
 			})
 			.mouseUp(function () {
 				this.select();
+				ige.input.stopPropagation();
 			})
 			// Define the callback when the radio button is selected
 			.select(function () {
@@ -372,14 +398,19 @@ var Client = IgeClass.extend({
 				if (ige.client.data('cursorMode') !== 'move') {
 					this.backgroundColor('#6b6b6b');
 				}
+
+				ige.input.stopPropagation();
 			})
 			.mouseOut(function () {
 				if (ige.client.data('cursorMode') !== 'move') {
 					this.backgroundColor('');
 				}
+
+				ige.input.stopPropagation();
 			})
 			.mouseUp(function () {
 				this.select();
+				ige.input.stopPropagation();
 			})
 			// Define the callback when the radio button is selected
 			.select(function () {
@@ -406,14 +437,19 @@ var Client = IgeClass.extend({
 				if (ige.client.data('cursorMode') !== 'delete') {
 					this.backgroundColor('#6b6b6b');
 				}
+
+				ige.input.stopPropagation();
 			})
 			.mouseOut(function () {
 				if (ige.client.data('cursorMode') !== 'delete') {
 					this.backgroundColor('');
 				}
+
+				ige.input.stopPropagation();
 			})
 			.mouseUp(function () {
 				this.select();
+				ige.input.stopPropagation();
 			})
 			// Define the callback when the radio button is selected
 			.select(function () {
@@ -440,14 +476,19 @@ var Client = IgeClass.extend({
 				if (ige.client.data('cursorMode') !== 'build') {
 					this.backgroundColor('#6b6b6b');
 				}
+
+				ige.input.stopPropagation();
 			})
 			.mouseOut(function () {
 				if (ige.client.data('cursorMode') !== 'build') {
 					this.backgroundColor('');
 				}
+
+				ige.input.stopPropagation();
 			})
 			.mouseUp(function () {
 				this.select();
+				ige.input.stopPropagation();
 			})
 			// Define the callback when the radio button is selected
 			.select(function () {
@@ -483,9 +524,9 @@ var Client = IgeClass.extend({
 	 * in code.
 	 */
 	setupEntities: function () {
-		/*this.placeItem('Bank', 0, 6);
+		this.placeItem('Bank', 0, 6);
 		this.placeItem('Electricals', 2, 6);
-		this.placeItem('Burgers', 4, 6);*/
+		this.placeItem('Burgers', 5, 6);
 
 		// Skyscrapers are special buildings because they can
 		// add new floors and have an optional crane on top that
@@ -494,11 +535,11 @@ var Client = IgeClass.extend({
 		// the entire skyscraper can be moved around or removed
 		// from the scene as one single entity. Take a look in the
 		// ClientObjects.js file to see how it is defined!
-		/*this.placeItem('SkyScraper', 15, 10)
+		this.placeItem('SkyScraper', 15, 10)
 			.build(5);
 
 		this.placeItem('SkyScraper', 1, 4)
-			.addFloors(2);*/
+			.addFloors(2);
 	},
 
 	/**
