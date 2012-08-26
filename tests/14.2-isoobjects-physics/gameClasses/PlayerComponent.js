@@ -29,23 +29,31 @@ var PlayerComponent = IgeClass.extend({
 	_behaviour: function (ctx) {
 		var vel = 200 / ige.cannon._scaleRatio;
 
+		// Keep the entity flat at all times
+		this._cannonBody.quaternion.x = 0;
+		this._cannonBody.quaternion.y = 0;
+		this._cannonBody.quaternion.z = 0;
+		this._cannonBody.quaternion.w = 1;
+
 		if (ige.input.actionState('walkLeft')) {
-			this._cannonBody.velocity.set(-vel, 0, 0);
+			this._cannonBody.velocity.set(-vel, this._cannonBody.velocity.y, this._cannonBody.velocity.z);
 			this._cannonBody.wakeUp();
 		} else if (ige.input.actionState('walkRight')) {
-			this._cannonBody.velocity.set(vel, 0, 0);
+			this._cannonBody.velocity.set(vel, this._cannonBody.velocity.y, this._cannonBody.velocity.z);
 			this._cannonBody.wakeUp();
-		} else if (ige.input.actionState('walkUp')) {
-			this._cannonBody.velocity.set(0, -vel, 0);
+		}
+
+		if (ige.input.actionState('walkUp')) {
+			this._cannonBody.velocity.set(this._cannonBody.velocity.x, -vel, this._cannonBody.velocity.z);
 			this._cannonBody.wakeUp();
 		} else if (ige.input.actionState('walkDown')) {
-			this._cannonBody.velocity.set(0, vel, 0);
+			this._cannonBody.velocity.set(this._cannonBody.velocity.x, vel, this._cannonBody.velocity.z);
 			this._cannonBody.wakeUp();
-		} else if (ige.input.actionState('jump')) {
-			this._cannonBody.velocity.set(0, 0, vel / 2);
+		}
+
+		if (ige.input.actionState('jump')) {
+			this._cannonBody.velocity.set(this._cannonBody.velocity.x, this._cannonBody.velocity.y, vel * 1.5);
 			this._cannonBody.wakeUp();
-		} else {
-			//this._cannonBody.velocity.set(0, 0, 0);
 		}
 	}
 });
