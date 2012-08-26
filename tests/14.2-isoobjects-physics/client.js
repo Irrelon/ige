@@ -78,7 +78,7 @@ var Client = IgeClass.extend({
 							type: 'dynamic',
 							mass: 1,
 							angularDamping: 1.0,
-							linearDamping: 0.0,
+							linearDamping: 0.05,
 							allowSleep: true,
 							sleepSpeedLimit: 0.1,
 							sleepTimeLimit: 1000,
