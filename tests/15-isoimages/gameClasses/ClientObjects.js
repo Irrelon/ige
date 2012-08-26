@@ -370,6 +370,59 @@ var ClientObjects = {
 			}
 
 			return this;
+		},
+
+		/**
+		 * Sets the build process in motion that will add the number of
+		 * floors specified, one at a time until the building is complete.
+		 * The crane will also be changed until complete and then removed.
+		 * @param floors
+		 */
+		build: function (floors) {
+			var self = this;
+			this.data('buildFloors', floors);
+			setTimeout(function () {
+				self._buildTick();
+			}, 1000);
+		},
+
+		_buildTick: function () {
+			var currentFloors = this.data('floors'),
+				buildFloors = this.data('buildFloors'),
+				self = this;
+
+			if (currentFloors < buildFloors - 1) {
+				this.addFloors(1);
+
+				switch (this.data('crane')) {
+					case 'se':
+						this.crane('sw');
+						break;
+
+					case 'sw':
+						this.crane('nw');
+						break;
+
+					case 'nw':
+						this.crane('ne');
+						break;
+
+					case 'ne':
+						this.crane('se');
+						break;
+				}
+
+				// Set another timeout to re-call this method
+				setTimeout(function () {
+					self._buildTick();
+				}, 1000);
+			} else {
+				// Add the last floor
+				this.addFloors(1);
+
+				// Building is complete, remove the crane
+				this.removeCrane();
+			}
 		}
 	})
 };
