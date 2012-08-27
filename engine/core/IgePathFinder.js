@@ -1,154 +1,206 @@
 var IgePathFinder = IgeClass.extend({
 	init: function() {},
 
-	aStar: function(start, destination, board, columns, rows) {
-		// Create start and destination as true nodes
-		start = new IgePathNode(start[0], start[1], -1);
-		destination = new IgePathNode(destination[0], destination[1], -1);
-
-		var nodes = {}, // Map of nodes hashed by node.hash
-			open = [], // List of open nodes (nodes to be inspected)
-			closed = [], // List of closed nodes (nodes we've already inspected)
-
-			g = 0, // Cost from start to current node
-			h = this.heuristic(start, destination, board, columns, rows), //Cost from current node to destination
-			f = g + h, // Cost from start to destination going through the current node
-			bestCost,
-			bestNode,
-			path,
+	/**
+	 * Uses the A* algorithm to generate path data between two points.
+	 * @param {IgeCollisionMap2d} tileMap The tile map to use when generating the path.
+	 * @param {IgePoint} startPoint The point on the map to start path-finding from.
+	 * @param {IgePoint} endPoint The point on the map to try to path-find to.
+	 * @param {Function} comparisonCallback The callback function that will decide if each tile that is being considered for use in the path is allowed or not based on the tile map's data stored for that tile which is passed to this method as the first parameter. Must return a boolean value.
+	 * @param {Boolean} allowSquare Whether to allow neighboring tiles along a square axis. Defaults to true if undefined.
+	 * @param {Boolean} allowDiagonal Whether to allow neighboring tiles along a diagonal axis. Defaults to false if undefined.
+	 * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
+	 */
+	aStar: function (tileMap, startPoint, endPoint, comparisonCallback, allowSquare, allowDiagonal) {
+		var openList = [],
+			closedList = [],
+			startNode,
+			lowInd,
+			openCount,
 			currentNode,
-			newNodes,
-			nodeIndex,
-			newNode,
-			isDestination,
-			foundInClosed,
-			foundInOpen,
-			existingNode,
-			i;
+			pathPoint,
+			finalPath,
+			neighbourList,
+			neighborCount,
+			neighbourNode,
+			gScore,
+			bestScore;
 
-		// Push the start node onto the list of open nodes
-		open.push(start);
-		nodes[start.hash] = start;
-		nodes[destination.hash] = destination;
+		// Set some defaults
+		if (allowSquare === undefined) { allowSquare = true; }
+		if (allowDiagonal === undefined) { allowDiagonal = false; }
 
-		// Keep going while there's nodes in our open list
-		while (open.length > 0) {
-			// Find the best open node (lowest f value)
+		// Starting point to open list
+		startNode = new IgePathNode(startPoint.x, startPoint.y, 0);
+		startPoint.link = 1;
+		openList.push(startPoint);
 
-			// Alternately, you could simply keep the open list sorted by f
-			// value lowest to highest, in which case you always use the first node
-			bestCost = open[0].f;
-			bestNode = 0;
+		// Loop as long as there are more points to process in our open list
+		while (openList.length) {
 
-			for (i = 1; i < open.length; i++) {
-				if (open[i].f < bestCost) {
-					bestCost = open[i].f;
-					bestNode = i;
-				}
+			// Grab the lowest f(x) to process next
+			lowInd = 0;
+			openCount = openList.length;
+
+			while (openCount--) {
+				if(openList[openCount].h < openList[lowInd].h) { lowInd = openCount; }
 			}
 
-			// Set it as our current node
-			currentNode = open[bestNode];
+			currentNode = openList[lowInd];
 
-			// Check if we've reached our destination
-			if (currentNode.x === destination.x && currentNode.y === destination.y) {
-				path = [destination]; // Initialize the path with the destination node
+			// Check if the current node is the end point
+			if (currentNode.x === endPoint.x && currentNode.y === endPoint.y) {
+				// We have reached the end point
+				pathPoint = currentNode;
+				finalPath = [];
 
-				// Go up the chain to recreate the path
-				while (currentNode.parentIndex !== -1) {
-					currentNode = closed[currentNode.parentIndex];
-					path.unshift(currentNode);
+				while(pathPoint.link) {
+					finalPath.push(pathPoint);
+					pathPoint = pathPoint.link;
 				}
 
-				return path;
-			}
+				return finalPath.reverse();
+			} else {
+				// Remove the current node from the open list
+				openList.splice(lowInd, 1);
 
-			// Remove the current node from our open list
-			open.splice(bestNode, 1);
+				// Add the current node to the closed list
+				closedList.push(currentNode);
 
-			// Push it onto the closed list
-			closed.push(currentNode);
-			currentNode.closed = true;
+				// Get the current node's neighbors
+				neighbourList = this._getNeighbours(currentNode, endPoint, tileMap, comparisonCallback, allowSquare, allowDiagonal);
+				neighborCount = neighbourList.length;
 
-			// Expand our current node (look in all 8 directions)
-			newNodes = this.neighbors(currentNode, board, columns, rows);
+				// Loop the neighbors
+				while (neighborCount--) {
+					neighbourNode = neighbourList[neighborCount];
+					if (closedList.indexOf(neighbourNode) === -1) {
+						// Neighbor node is not on closed list
+						gScore = currentNode.score;
+						bestScore = false;
 
-			for (nodeIndex = 0; nodeIndex < newNodes.length; nodeIndex++) {
-				newNode = newNodes[nodeIndex];
-				isDestination = (destination.x === newNode.x && destination.y === newNode.y);
-
-				// If the new node is open or the new node is our destination
-				if (board[newNode.y][newNode.x] === 0 || isDestination) {
-					// Do we already know about this node?
-					foundInClosed = false;
-					foundInOpen = false;
-					existingNode = nodes[newNode.hash];
-
-					if (existingNode) {
-						if (existingNode.closed) {
-							foundInClosed = true;
-						} else {
-							// normally we would say this: foundInOpen = true;
-							// but the destination is never in either list
-							foundInOpen = !isDestination;
+						if (openList.indexOf(neighbourNode) === -1) {
+							// The neighbour node is not in the open list yet
+							bestScore = true;
+							neighbourNode.g = this._heuristic(neighbourNode.x, neighbourNode.y, endPoint.x, endPoint.y);
+							openList.push(neighbourNode);
+						} else if (gScore < neighbourNode.score) {
+							// The neighbour node is in the open list already
+							bestScore = true;
 						}
-					}
 
-					// If the node is already in our closed list, skip it.
-					if (!foundInClosed) {
-						// If the node is in our open list, use it.  Also use it if it is the destination (which is never in either list)
-						if (!foundInOpen || isDestination) {
-							//var newNode = new IgePathNode(newNode.x, newNode.y, closed.length-1);
-							newNode.parentIndex = closed.length-1;
-
-							newNode.g = currentNode.g + this.heuristic(currentNode, newNode, board, columns, rows);
-							newNode.h = this.heuristic(newNode, destination, board, columns, rows);
-							newNode.f = newNode.g+newNode.h;
-
-							if (isNaN(newNode.g) || isNaN(newNode.h) || isNaN(newNode.f)) {
-								console.log(newNode);
-								throw("NaN heuristic?");
-							}
-
-							open.push(newNode);
-							nodes[newNode.hash] = newNode;
+						if (bestScore) {
+							neighbourNode.link = currentNode;
+							neighbourNode.h = neighbourNode.score + neighbourNode.g;
 						}
 					}
 				}
 			}
+
 		}
 
+		// Could not find a path, return an empty array!
 		return [];
+
 	},
 
-	neighbors: function(currentNode, board, columns, rows) {
-		var nodes = [],
-			newNode_x,
-			newNode_y;
+	/**
+	 * Get all the neighbors of a node for the A* algorithm.
+	 * @param {IgePathNode} currentNode The current node along the path to evaluate neighbors for.
+	 * @param {IgePathNode} endPoint The end point of the path.
+	 * @param {IgeCollisionMap2d} tileMap The tile map to use when evaluating neighbours.
+	 * @param {Function} comparisonCallback The callback function that will decide if the tile data at the neighbouring node is to be used or not. Must return a boolean value.
+	 * @param {Boolean} allowSquare Whether to allow neighboring tiles along a square axis.
+	 * @param {Boolean} allowDiagonal Whether to allow neighboring tiles along a diagonal axis.
+	 * @return {Array} An array containing nodes describing the neighbouring tiles of the current node.
+	 * @private
+	 */
+	_getNeighbours: function (currentNode, endPoint, tileMap, comparisonCallback, allowSquare, allowDiagonal) {
+		var list = [],
+			x = currentNode.x,
+			y = currentNode.y,
+			newX = 0,
+			newY = 0,
+			newNode,
+			mapData = tileMap.map._mapData,
+			tileData;
 
-		for (newNode_x = Math.max(0, currentNode.x-1); newNode_x <= Math.min(columns-1, currentNode.x+1); newNode_x++) {
-			for (newNode_y = Math.max(0, currentNode.y-1); newNode_y <= Math.min(rows-1, currentNode.y+1); newNode_y++) {
-				nodes.push(new IgePathNode(newNode_x, newNode_y, -1));
+		if (allowSquare) {
+			newX = x - 1; newY = y;
+			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
+			if (comparisonCallback(tileData)) {
+				newNode = new IgePathNode(newX, newY, 1);
+				list.push(newNode);
+			}
+
+			newX = x + 1; newY = y;
+			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
+			if (comparisonCallback(tileData)) {
+				newNode = new IgePathNode(newX, newY, 1);
+				list.push(newNode);
+			}
+
+			newX = x; newY = y - 1;
+			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
+			if (comparisonCallback(tileData)) {
+				newNode = new IgePathNode(newX, newY, 1);
+				list.push(newNode);
+			}
+
+			newX = x; newY = y + 1;
+			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
+			if (comparisonCallback(tileData)) {
+				newNode = new IgePathNode(newX, newY, 1);
+				list.push(newNode);
+			}
+
+		}
+
+		if (allowDiagonal) {
+			newX = x - 1; newY = y - 1;
+			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
+			if (comparisonCallback(tileData)) {
+				newNode = new IgePathNode(newX, newY, 1.4);
+				list.push(newNode);
+			}
+
+			newX = x + 1; newY = y - 1;
+			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
+			if (comparisonCallback(tileData)) {
+				newNode = new IgePathNode(newX, newY, 1.4);
+				list.push(newNode);
+			}
+
+			newX = x - 1; newY = y + 1;
+			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
+			if (comparisonCallback(tileData)) {
+				newNode = new IgePathNode(newX, newY, 1.4);
+				list.push(newNode);
+			}
+
+			newX = x + 1; newY = y + 1;
+			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
+			if (comparisonCallback(tileData)) {
+				newNode = new IgePathNode(newX, newY, 1.4);
+				list.push(newNode);
 			}
 		}
 
-		return nodes;
+		return list;
 	},
 
-	// An A* heuristic must never overestimate the distance to the goal
-	// so it should either underestimate or return exactly the distance
-	// to the goal.
-	heuristic: function(currentNode, destination, board, columns, rows) {
-		// Find the straight-line distance between the current node and the destination.
-		var x = currentNode.x-destination.x,
-			y = currentNode.y-destination.y;
-
-		return x * x + y * y;  // This is faster and doesn't seem to change the results
-
-		// return Math.sqrt(x*x + y*y);
-		// return Math.sqrt(Math.pow(currentNode.x-destination.x, 2)+Math.pow(currentNode.y-destination.y, 2));
+	/**
+	 * The heuristic to add to a movement cost for the A* algorithm.
+	 * @param {Number} x1 The first x co-ordinate.
+	 * @param {Number} y1 The first y co-ordinate.
+	 * @param {Number} x2 The second x co-ordinate.
+	 * @param {Number} y2 The second y co-ordinate.
+	 * @return {Number} Returns the heuristic cost between the co-ordinates specified.
+	 * @private
+	 */
+	_heuristic: function (x1, y1, x2, y2) {
+		return Math.abs(x1 - x2) + Math.abs(y1 - y2);
 	}
-
 });
 
 if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgePathFinder; }
