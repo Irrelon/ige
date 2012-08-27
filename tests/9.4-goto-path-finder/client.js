@@ -57,7 +57,7 @@ var Client = IgeClass.extend({
 
 				// Create a collision tile map
 				self.collisionMap1 = new IgeMap2d()
-					.
+					.mapData([[null, null, null], [null, 1, null]]);
 
 				// Define a function that will be called when the
 				// mouse cursor moves over one of our entities
