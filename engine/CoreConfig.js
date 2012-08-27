@@ -47,6 +47,7 @@ var igeCoreConfig = {
 		'core/IgeMapStack2d.js',
 		'core/IgeTileMap2d.js',
 		'core/IgeTextureMap.js',
+		'core/IgeCollisionMap2d.js',
 		'core/IgeCamera.js',
 		'core/IgeViewport.js',
 		'core/IgeScene2d.js',
