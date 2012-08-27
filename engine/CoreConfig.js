@@ -31,6 +31,8 @@ var igeCoreConfig = {
 		'extensions/IgeUiPositionExtension.js',
 		'extensions/IgeUiStyleExtension.js',
 		'extensions/IgeUiInteractionExtension.js',
+		'core/IgePathNode.js',
+		'core/IgePathFinder.js',
 		'core/IgeTween.js',
 		'core/IgeTexture.js',
 		'core/IgeCellSheet.js',

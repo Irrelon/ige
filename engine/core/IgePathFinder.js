@@ -31,7 +31,7 @@ var IgePathFinder = IgeClass.extend({
 		nodes[start.hash] = start;
 		nodes[destination.hash] = destination;
 
-		//Keep going while there's nodes in our open list
+		// Keep going while there's nodes in our open list
 		while (open.length > 0)
 		{
 			// Find the best open node (lowest f value)
