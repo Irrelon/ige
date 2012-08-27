@@ -22,19 +22,6 @@ var Client = IgeClass.extend({
 					.mount(ige);
 
 				// Create the texture maps and load their map data
-				// Note that the collision layer is not mounted to the scene
-				// because we only use it's map data, rather than rendering
-				// anything from it!
-				self.collisionLayer1 = new IgeTextureMap()
-					.depth(3)
-					.tileWidth(40)
-					.tileHeight(40)
-					.translateTo(0, 0, 0)
-					//.drawMouse(true)
-					//.drawGrid(1)
-					.loadMap(CollisionLayer1);
-					//.mount(self.scene1);
-
 				self.backgroundLayer1 = new IgeTextureMap()
 					.depth(0)
 					.tileWidth(40)
