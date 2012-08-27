@@ -99,17 +99,8 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * @private
 	 */
 	_objectOccupyTile: function (x, y, width, height) {
-		var xi, yi;
-
-		if (width === undefined) { width = 1; }
-		if (height === undefined) { height = 1; }
-
 		if (x !== undefined && y !== undefined) {
-			for (xi = 0; xi < width; xi++) {
-				for (yi = 0; yi < height; yi++) {
-					this._parent.map.tileData(x + xi, y + yi, this);
-				}
-			}
+			this._parent.occupyTile(x, y, width, height, this);
 		} else {
 			// Occupy tiles based upon the response from overTiles();
 			var tileArr = this.overTiles();
@@ -129,17 +120,8 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * @private
 	 */
 	_objectUnOccupyTile: function (x, y, width, height) {
-		var xi, yi;
-
-		if (width === undefined) { width = 1; }
-		if (height === undefined) { height = 1; }
-
 		if (x !== undefined && y !== undefined) {
-			for (xi = 0; xi < width; xi++) {
-				for (yi = 0; yi < height; yi++) {
-					this._parent.map.pull(x + xi, y + yi, this);
-				}
-			}
+			this._parent.unOccupyTile(x + xi, y + yi);
 		} else {
 			// Occupy tiles based upon the response from overTiles();
 			var tileArr = this.overTiles();
@@ -171,6 +153,72 @@ var IgeTileMap2d = IgeEntity.extend({
 	_resizeEvent: function (event) {
 		this.geometry = this._parent.geometry.clone();
 		this._super(event);
+	},
+
+	/**
+	 * Sets a tile or area as occupied by the passed obj parameter.
+	 * Any previous data on the specified tile or area will be removed.
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number} width
+	 * @param {Number} height
+	 * @param {*} obj
+	 * @return {*}
+	 */
+	occupyTile: function (x, y, width, height, obj) {
+		var xi, yi;
+
+		if (width === undefined) { width = 1; }
+		if (height === undefined) { height = 1; }
+
+		if (x !== undefined && y !== undefined) {
+			for (xi = 0; xi < width; xi++) {
+				for (yi = 0; yi < height; yi++) {
+					this.map.tileData(x + xi, y + yi, obj);
+				}
+			}
+		}
+		return this;
+	},
+
+	/**
+	 * Removes all data from the specified tile or area.
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number=} width
+	 * @param {Number=} height
+	 * @return {*}
+	 */
+	unOccupyTile: function (x, y, width, height) {
+		var xi, yi;
+
+		if (width === undefined) { width = 1; }
+		if (height === undefined) { height = 1; }
+
+		if (x !== undefined && y !== undefined) {
+			for (xi = 0; xi < width; xi++) {
+				for (yi = 0; yi < height; yi++) {
+					this.map.clearData(x + xi, y + yi);
+				}
+			}
+		}
+		return this;
+	},
+
+	/**
+	 * Returns true if the specified tile or tile area has
+	 * an occupied status.
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number=} width
+	 * @param {Number=} height
+	 * @return {*}
+	 */
+	isTileOccupied: function (x, y, width, height) {
+		if (width === undefined) { width = 1; }
+		if (height === undefined) { height = 1; }
+
+		return this.map.collision(x, y, width, height);
 	},
 
 	mouseDown: function (val) {
