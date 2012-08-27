@@ -125,7 +125,7 @@ var IgeEventingClass = IgeClass.extend({
 				// If there are some events, ensure that the args is ready to be used
 				if (eventCount) {
 					finalArgs = [];
-					if (typeof(args) === 'object' && args !== null && args[0] !== null) {
+					if (typeof(args) === 'object' && args !== null && args[0] !== null && args[0] !== undefined) {
 						for (i in args) {
 							if (args.hasOwnProperty(i)) {
 								finalArgs[i] = args[i];
