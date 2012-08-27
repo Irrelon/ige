@@ -55,13 +55,6 @@ var Client = IgeClass.extend({
 					.mount(self.scene1)
 					.loadMap(StaticObjectLayer1);
 
-				// Define the character's collision polygon
-				self.characterCollisionPoly = new IgePoly2d()
-					.addPoint(-0.2, 0.3)
-					.addPoint(0.2, 0.3)
-					.addPoint(0.2, 0.6)
-					.addPoint(-0.2, 0.6);
-
 				// Create a new character, add the player component
 				// and then set the type (setType() is defined in
 				// gameClasses/Character.js) so that the entity has
@@ -263,9 +256,6 @@ var Client = IgeClass.extend({
 				// Tell the camera to track our player character with some
 				// tracking smoothing (set to 20)
 				self.vp1.camera.trackTranslate(self.player1, 20);
-
-				// Enable box2d debug canvas output
-				//ige.box2d.enableDebug('box2dCanvas');
 			}
 		});
 	}

@@ -39,9 +39,6 @@ var Client = IgeClass.extend({
 				// Tell the camera to track our player character with some
 				// tracking smoothing (set to 20)
 				self.vp1.camera.trackTranslate(self.player1, 20);
-
-				// Enable box2d debug canvas output
-				//ige.box2d.enableDebug('box2dCanvas');
 			}
 		});
 	}

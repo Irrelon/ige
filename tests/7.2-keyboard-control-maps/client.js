@@ -67,32 +67,12 @@ var Client = IgeClass.extend({
 					.drawBounds(false)
 					.mount(self.scene1);
 
-				// Create the room boundaries in box2d
-				new IgeEntityBox2d()
-					.translateTo(420, 130, 0)
-					.width(880)
-					.height(20)
-					.drawBounds(true)
-					//.mount(self.scene1)
-					.box2dBody({
-						type: 'static',
-						allowSleep: true,
-						fixtures: [{
-							shape: {
-								type: 'rectangle'
-							}
-						}]
-					});
-
 				// Translate the camera to the initial player position
 				self.vp1.camera.lookAt(self.player1);
 
 				// Tell the camera to track our player character with some
 				// tracking smoothing (set to 20)
 				self.vp1.camera.trackTranslate(self.player1, 20);
-
-				// Enable box2d debug canvas output
-				//ige.box2d.enableDebug('box2dCanvas');
 			}
 		});
 	}
