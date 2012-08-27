@@ -32,8 +32,7 @@ var IgePathFinder = IgeClass.extend({
 		nodes[destination.hash] = destination;
 
 		// Keep going while there's nodes in our open list
-		while (open.length > 0)
-		{
+		while (open.length > 0) {
 			// Find the best open node (lowest f value)
 
 			// Alternately, you could simply keep the open list sorted by f
@@ -41,10 +40,8 @@ var IgePathFinder = IgeClass.extend({
 			bestCost = open[0].f;
 			bestNode = 0;
 
-			for (i = 1; i < open.length; i++)
-			{
-				if (open[i].f < bestCost)
-				{
+			for (i = 1; i < open.length; i++) {
+				if (open[i].f < bestCost) {
 					bestCost = open[i].f;
 					bestNode = i;
 				}
@@ -54,13 +51,11 @@ var IgePathFinder = IgeClass.extend({
 			currentNode = open[bestNode];
 
 			// Check if we've reached our destination
-			if (currentNode.x === destination.x && currentNode.y === destination.y)
-			{
+			if (currentNode.x === destination.x && currentNode.y === destination.y) {
 				path = [destination]; // Initialize the path with the destination node
 
 				// Go up the chain to recreate the path
-				while (currentNode.parentIndex !== -1)
-				{
+				while (currentNode.parentIndex !== -1) {
 					currentNode = closed[currentNode.parentIndex];
 					path.unshift(currentNode);
 				}
@@ -92,7 +87,7 @@ var IgePathFinder = IgeClass.extend({
 					if (existingNode) {
 						if (existingNode.closed) {
 							foundInClosed = true;
-						}else{
+						} else {
 							// normally we would say this: foundInOpen = true;
 							// but the destination is never in either list
 							foundInOpen = !isDestination;
