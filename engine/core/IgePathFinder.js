@@ -2,7 +2,7 @@ var IgePathFinder = IgeClass.extend({
 	init: function() {},
 
 	aStar: function(start, destination, board, columns, rows) {
-		//Create start and destination as true nodes
+		// Create start and destination as true nodes
 		start = new IgePathNode(start[0], start[1], -1);
 		destination = new IgePathNode(destination[0], destination[1], -1);
 
