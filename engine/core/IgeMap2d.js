@@ -19,7 +19,7 @@ var IgeMap2d = IgeClass.extend({
 				return this;
 			} else {
 				// No assignment so see if we have data to return
-				if (this._mapData[y] !== undefined) {
+				if (this._mapData[y]) {
 					return this._mapData[y][x];
 				}
 			}
