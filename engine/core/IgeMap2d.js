@@ -14,13 +14,13 @@ var IgeMap2d = IgeClass.extend({
 		if (x !== undefined && y !== undefined) {
 			if (val !== undefined) {
 				// Assign a value
-				this._mapData[x] = this._mapData[x] || [];
-				this._mapData[x][y] = val;
+				this._mapData[y] = this._mapData[y] || [];
+				this._mapData[y][x] = val;
 				return this;
 			} else {
 				// No assignment so see if we have data to return
-				if (this._mapData[x] !== undefined) {
-					return this._mapData[x][y];
+				if (this._mapData[y] !== undefined) {
+					return this._mapData[y][x];
 				}
 			}
 		}
@@ -38,8 +38,8 @@ var IgeMap2d = IgeClass.extend({
 	 */
 	clearData: function (x, y) {
 		if (x !== undefined && y !== undefined) {
-			if (this._mapData[x] !== undefined) {
-				delete this._mapData[x][y];
+			if (this._mapData[y] !== undefined) {
+				delete this._mapData[y][x];
 				return true;
 			}
 		}
@@ -62,8 +62,8 @@ var IgeMap2d = IgeClass.extend({
 		if (height === undefined) { height = 1; }
 
 		if (x !== undefined && y !== undefined) {
-			for (xi = 0; xi < width; xi++) {
-				for (yi = 0; yi < height; yi++) {
+			for (yi = 0; yi < height; yi++) {
+				for (xi = 0; xi < width; xi++) {
 					if (this.tileData(x + xi, y + yi)) {
 						return true;
 					}

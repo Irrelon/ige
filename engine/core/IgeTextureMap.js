@@ -121,10 +121,10 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		}
 
 		// Get the lowest x, y
-		for (x in mapData) {
-			if (mapData.hasOwnProperty(x)) {
-				for (y in mapData[x]) {
-					if (mapData[x].hasOwnProperty(y)) {
+		for (y in mapData) {
+			if (mapData.hasOwnProperty(y)) {
+				for (x in mapData[y]) {
+					if (mapData[y].hasOwnProperty(x)) {
 						if (x < dataX) {
 							dataX = x;
 						}
@@ -180,6 +180,24 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		}
 	},
 
+	convertOldData: function (mapData) {
+		var newData = [];
+
+		for (x in mapData) {
+			if (mapData.hasOwnProperty(x)) {
+				for (y in mapData[x]) {
+					if (mapData[x].hasOwnProperty(y)) {
+						// Grab the tile data to paint
+						newData[y] = newData[y] || [];
+						newData[y][x] = mapData[x][y];
+					}
+				}
+			}
+		}
+
+		console.log(JSON.stringify(newData));
+	},
+
 	/**
 	 * Handles rendering the texture map during engine tick events.
 	 * @param ctx
@@ -194,12 +212,12 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			x, y, tx, ty, sx, sy,
 			texture, tileData, tileEntity = this._newTileEntity(); // TODO: This is wasteful, cache it?
 
-		for (x in mapData) {
-			if (mapData.hasOwnProperty(x)) {
-				for (y in mapData[x]) {
-					if (mapData[x].hasOwnProperty(y)) {
+		for (y in mapData) {
+			if (mapData.hasOwnProperty(y)) {
+				for (x in mapData[y]) {
+					if (mapData[y].hasOwnProperty(x)) {
 						// Grab the tile data to paint
-						tileData = mapData[x][y];
+						tileData = mapData[y][x];
 
 						if (tileData) {
 							ctx.save();

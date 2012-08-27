@@ -15,14 +15,14 @@ var IgeMapStack2d = IgeClass.extend({
 		if (x !== undefined && y !== undefined) {
 			if (val !== undefined) {
 				// Assign a value
-				this._mapData[x] = this._mapData[x] || [];
-				this._mapData[x][y] = [];
-				this._mapData[x][y].push(val);
+				this._mapData[y] = this._mapData[y] || [];
+				this._mapData[y][x] = [];
+				this._mapData[y][x].push(val);
 				return this;
 			} else {
 				// No assignment so see if we have data to return
-				if (this._mapData[x] !== undefined) {
-					return this._mapData[x][y];
+				if (this._mapData[y] !== undefined) {
+					return this._mapData[y][x];
 				}
 			}
 		}
@@ -40,8 +40,8 @@ var IgeMapStack2d = IgeClass.extend({
 	 * @return {*} The current data stored at the specified point or undefined if no data exists.
 	 */
 	tileDataAtIndex: function (x, y, index) {
-		if (this._mapData[x] && this._mapData[x][y]) {
-			return this._mapData[x][y][index];
+		if (this._mapData[y] && this._mapData[y][x]) {
+			return this._mapData[y][x][index];
 		}
 
 		return undefined;
@@ -56,9 +56,9 @@ var IgeMapStack2d = IgeClass.extend({
 	 */
 	push: function (x, y, val) {
 		if (val !== undefined) {
-			this._mapData[x] = this._mapData[x] || [];
-			this._mapData[x][y] = this._mapData[x][y] || [];
-			this._mapData[x][y].push(val);
+			this._mapData[y] = this._mapData[y] || [];
+			this._mapData[y][x] = this._mapData[y][x] || [];
+			this._mapData[y][x].push(val);
 			return this;
 		}
 
@@ -73,8 +73,8 @@ var IgeMapStack2d = IgeClass.extend({
 	 * @return {*} This on success or false on failure.
 	 */
 	pull: function (x, y, val) {
-		if (this._mapData[x] && this._mapData[x][y]) {
-			this._mapData[x][y].pull(val);
+		if (this._mapData[y] && this._mapData[y][x]) {
+			this._mapData[y][x].pull(val);
 			return this;
 		}
 
@@ -96,9 +96,9 @@ var IgeMapStack2d = IgeClass.extend({
 		if (height === undefined) { height = 1; }
 
 		if (x !== undefined && y !== undefined) {
-			for (xi = 0; xi < width; xi++) {
-				for (yi = 0; yi < height; yi++) {
-					if (this._mapData[x + xi] && this._mapData[x + xi][y + yi] && this._mapData[x + xi][y + yi].length) {
+			for (yi = 0; yi < height; yi++) {
+				for (xi = 0; xi < width; xi++) {
+					if (this._mapData[y + yi] && this._mapData[y + yi][x + xi] && this._mapData[y + yi][x + xi].length) {
 						return true;
 					}
 				}
