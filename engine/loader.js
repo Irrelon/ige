@@ -7,7 +7,7 @@ window.igeLoader = (function () {
 
 		// Load the clientConfig.js file into browser memory
 		ccScript = document.createElement('script');
-		ccScript.src = igeRoot + 'coreConfig.js';
+		ccScript.src = igeRoot + 'CoreConfig.js';
 		ccScript.onload = function () {
 			self.coreConfigReady();
 		};
@@ -24,7 +24,7 @@ window.igeLoader = (function () {
 		if (typeof(igeCoreConfig) !== 'undefined') {
 			// Load the client config
 			ccScript = document.createElement('script');
-			ccScript.src = './clientConfig.js';
+			ccScript.src = './ClientConfig.js';
 			ccScript.onload = function () {
 				self.clientConfigReady();
 			};
