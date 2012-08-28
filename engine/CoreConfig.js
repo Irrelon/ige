@@ -11,6 +11,7 @@ var igeCoreConfig = {
 		'components/IgeAnimationComponent.js',
 		'components/IgeVelocityComponent.js',
 		'components/IgeTweenComponent.js',
+		'components/IgePathComponent.js',
 		'components/IgeInputComponent.js',
 		'components/IgeMousePanComponent.js',
 		'components/IgeMouseZoomComponent.js',
