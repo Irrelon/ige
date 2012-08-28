@@ -38,6 +38,12 @@ var IgePathFinder = IgeClass.extend({
 		// Loop as long as there are more points to process in our open list
 		while (openList.length) {
 
+			// Check for some major error
+			if (openList.length > 1000) {
+				this.log('Path finder error, open list nodes exceeded 1000!', 'error');
+				break;
+			}
+
 			// Grab the lowest f(x) to process next
 			lowInd = 0;
 			openCount = openList.length;
