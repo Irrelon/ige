@@ -56,7 +56,7 @@ var Client = IgeClass.extend({
 					.mount(self.objectScene);
 
 				// Create a collision tile map
-				self.collisionMap1 = new IgeMap2d()
+				self.collisionMap1 = new IgeCollisionMap2d()
 					.mapData([[null, null, null], [null, 1, null]]);
 
 				// Define a function that will be called when the
@@ -80,6 +80,7 @@ var Client = IgeClass.extend({
 				self.player = new CharacterContainer()
 					.id('player')
 					.addComponent(PlayerComponent)
+					.addComponent(IgePathComponent)
 					.isometric(true)
 					.mouseOver(overFunc)
 					.mouseOut(outFunc)
@@ -110,6 +111,19 @@ var Client = IgeClass.extend({
 				// Set the camera to track the character with some
 				// tracking smoothing turned on (100)
 				self.vp1.camera.trackTranslate(self.player, 100);
+
+				// Create a path finder and generate a path using
+				// the collision map data
+				self.pathFinder = new IgePathFinder();
+				var path1 = self.pathFinder.aStar(self.collisionMap1, new IgePoint(0, 0, 0), new IgePoint(2, 2, 0), function (tileData) {
+					// If the collision map tile data is set to 1, don't allow a path along it
+					return tileData !== 1;
+				}, true, false);
+
+				// Assign the path to the player and start it
+				self.player
+					.path.add(path1)
+					.path.start();
 			}
 		});
 	}
