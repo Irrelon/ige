@@ -8,7 +8,7 @@ var IgeViewport = IgeEntity.extend([
 	init: function (options) {
 		this._super();
 
-		this._mousePos = {x: 0, y: 0};
+		this._mousePos = IgePoint(0, 0, 0);
 		this._overflow = '';
 		this._uiX = 0;
 		this._uiY = 0;
