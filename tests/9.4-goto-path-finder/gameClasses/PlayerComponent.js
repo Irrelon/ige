@@ -22,15 +22,37 @@ var PlayerComponent = IgeClass.extend({
 	 * @private
 	 */
 	_mouseUp: function (event, x, y, button) {
-		// We get the tile's world XY and then convert it from iso to 2d
-		// with a call to "to2d()" because the tilemap is isometric and
-		// the walkTo method uses 2d co-ordinates!
-		var tilePoint = ige.$('tileMap1').mouseTileWorldXY().to2d();
+		// Get the tile co-ordinates that the mouse is currently over
+		var tilePoint = ige.$('tileMap1').mouseToTile(),
+			currentPosition = this._entity._translate,
+			currentTile,
+			newPath;
 
-		this._entity.walkTo(
+		// Clear any previous paths
+		this._entity
+			.path.clear();
+
+		// Calculate which tile our character is currently "over"
+		currentTile = new IgePoint(
+			Math.floor(currentPosition.x / this._entity._parent._tileWidth),
+			Math.floor(currentPosition.y / this._entity._parent._tileHeight),
+			0
+		);
+
+		// Create a path from the current position to the target tile
+		newPath = ige.client.pathFinder.aStar(ige.client.collisionMap1, currentTile, tilePoint, function (tileData) {
+			// If the collision map tile data is set to 1, don't allow a path along it
+			return tileData !== 1;
+		}, true, false);
+
+		this._entity
+			.path.add(newPath)
+			.path.start();
+
+		/*this._entity.walkTo(
 			tilePoint.x,
 			tilePoint.y
-		);
+		);*/
 	}
 });
 
