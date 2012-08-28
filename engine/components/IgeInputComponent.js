@@ -385,10 +385,11 @@ var IgeInputComponent = IgeEventingClass.extend({
 			if (mx > vp._translate.x - vp.geometry.x / 2 && mx < vp._translate.x + vp.geometry.x / 2) {
 				if (my > vp._translate.y - vp.geometry.y / 2 && my < vp._translate.y + vp.geometry.y / 2) {
 					// Mouse is inside this viewport
-					vp._mousePos = {
-						x: Math.floor((mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x),
-						y: Math.floor((my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y)
-					};
+					vp._mousePos = new IgePoint(
+						Math.floor((mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x),
+						Math.floor((my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y),
+						0
+					);
 
 					vpUpdated = vp;
 					break;
