@@ -86,7 +86,8 @@ var IgeNetIoServer = {
 		var commandIndex = this._networkCommandsLookup[commandName];
 
 		if (commandIndex !== undefined) {
-			if (client !== undefined) { client = client.id; }
+			// TODO: This needs to be compatible with Socket.io but also allow for arrays and string ID to be used
+			//if (client !== undefined) { client = client.id; }
 			this._io.send([commandIndex, data], client);
 		} else {
 			this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
