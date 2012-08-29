@@ -190,13 +190,13 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 										if (fixtureDef.shape.data) {
 											finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
 											finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
-											finalWidth = fixtureDef.shape.data.width !== undefined ? fixtureDef.shape.data.width : (entity._width / 2);
-											finalHeight = fixtureDef.shape.data.height !== undefined ? fixtureDef.shape.data.height : (entity._height / 2);
+											finalWidth = fixtureDef.shape.data.width !== undefined ? fixtureDef.shape.data.width : (entity.geometry.x / 2);
+											finalHeight = fixtureDef.shape.data.height !== undefined ? fixtureDef.shape.data.height : (entity.geometry.y / 2);
 										} else {
 											finalX = 0;
 											finalY = 0;
-											finalWidth = (entity._width / 2);
-											finalHeight = (entity._height / 2);
+											finalWidth = (entity.geometry.x / 2);
+											finalHeight = (entity.geometry.y / 2);
 										}
 
 										// Set the polygon as a box
