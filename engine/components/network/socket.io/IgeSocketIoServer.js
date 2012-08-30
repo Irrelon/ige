@@ -82,7 +82,7 @@ var IgeSocketIoServer = {
 
 	send: function (commandName, data, clientId) {
 		var commandIndex = this._networkCommandsLookup[commandName];
-
+		// TODO: Update to work as well as net.io with client id arrays as well
 		if (commandIndex !== undefined) {
 			if (clientId) {
 				this._socketById[clientId].json.send([commandIndex, data]);
