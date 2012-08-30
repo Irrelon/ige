@@ -11,7 +11,7 @@ var Server = IgeClass.extend({
 		// Add the networking component
 		ige.addComponent(IgeNetIoComponent);
 		ige.addComponent(IgeChatComponent);
-			// Define a network command
+		// Define a network command
 		ige.network.define('test', self._onTest)
 			// Start the network server
 			.network.start(2000, function () {
