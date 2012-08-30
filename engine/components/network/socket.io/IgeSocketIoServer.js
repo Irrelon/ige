@@ -8,6 +8,8 @@ var IgeSocketIoServer = {
 	start: function (data, callback) {
 		var self = this;
 
+		this._socketById = [];
+
 		if (typeof(data) !== 'undefined') {
 			this._port = data;
 		}
@@ -17,7 +19,7 @@ var IgeSocketIoServer = {
 		this._io = this._socketio.listen(this._port);
 
 		// Set the logging level to errors only
-		this._io.set('log level', 10);
+		this._io.set('log level', 0);
 
 		// Setup listeners
 		this._io.sockets.on('connection', function (socket) {
@@ -78,12 +80,12 @@ var IgeSocketIoServer = {
 		return this._acceptConnections;
 	},
 
-	send: function (commandName, data, client) {
+	send: function (commandName, data, clientId) {
 		var commandIndex = this._networkCommandsLookup[commandName];
 
 		if (commandIndex !== undefined) {
-			if (client) {
-				client.json.send([commandIndex, data]);
+			if (clientId) {
+				this._socketById[clientId].json.send([commandIndex, data]);
 			} else {
 				this._io.sockets.json.send([commandIndex, data]);
 			}
@@ -105,6 +107,7 @@ var IgeSocketIoServer = {
 
 		if (this._acceptConnections) {
 			this.log('Accepted connection with id ' + socket.id);
+			this._socketById[socket.id] = socket;
 
 			socket.on('message', function (data) {
 				self._onClientMessage(data, socket);
