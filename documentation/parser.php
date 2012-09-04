@@ -28,6 +28,12 @@ function parseFile($path) {
 			unset($parameters);
 			$codeLine = $matches[2][$key];
 
+			echo $codeLine . '<BR>';
+			if (strstr($codeLine, 'var IgeClass = (function () ')) {
+				echo 'LINE -------------------------------------------';
+				$codeLine = str_replace('var IgeClass = (function () ', 'var IgeClass = none.extend(', $codeLine);
+			}
+
 			//echo "<B>Comment</B>: " . var_dump($value) . '<BR>';
 			//echo "<B>Code</B>:" . $matches[2][$key] . '<BR><BR>';
 
@@ -179,6 +185,11 @@ function parseFile($path) {
 					preg_match("/(.*?)=\s*?function\s*?\((.*?)\)/", $codeLine, $argArray);
 				}
 
+				if (strstr($codeLine, '= (function')) {
+					$itemType = 'function';
+					preg_match("/(.*?)=\s*?\(function\s*?\((.*?)\)/", $codeLine, $argArray);
+				}
+
 				if ($itemType === 'function') {
 					if ($argArray[1]) {
 						$functionName = trim($argArray[1]);
@@ -226,13 +237,8 @@ function parseFile($path) {
 		}
 
 		return $docItem;
-	} else {
-		echo "Error reading input file!";
 	}
 
 	return null;
 }
-
-$data = parseFile('../engine/core/IgeObject.js');
-var_dump($data);
 ?>
