@@ -82,7 +82,7 @@ var IgeCamera = IgeEntity.extend({
 
 	/**
 	 * Gets / sets the translate tracking smoothing value.
-	 * @param val
+	 * @param {Number=} val
 	 * @return {*}
 	 */
 	trackTranslateSmoothing: function (val) {
@@ -123,7 +123,7 @@ var IgeCamera = IgeEntity.extend({
 
 	/**
 	 * Gets / sets the rotate tracking smoothing value.
-	 * @param val
+	 * @param {Number=} val
 	 * @return {*}
 	 */
 	trackRotateSmoothing: function (val) {
@@ -262,6 +262,7 @@ var IgeCamera = IgeEntity.extend({
 	 * chained commands. This method will only check for
 	 * properties that are directly related to this class.
 	 * Other properties are handled by their own class method.
+	 * @private
 	 * @return {String}
 	 */
 	_stringify: function () {
