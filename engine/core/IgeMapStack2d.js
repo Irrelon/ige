@@ -1,3 +1,8 @@
+/**
+ * Creates a new map that has two dimensions (x and y) to it's data
+ * and allows multiple items to be stored or "stacked" on a single
+ * x, y map position.
+ */
 var IgeMapStack2d = IgeClass.extend({
 	init: function (data) {
 		this._mapData = data || [];

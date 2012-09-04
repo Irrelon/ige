@@ -1,4 +1,7 @@
 // TODO: Convert doc comments to the JSDoc format
+/**
+ * Creates a new texture from an image file.
+ */
 var IgeTexture = IgeEventingClass.extend({
 	classId: 'IgeTexture',
 	IgeTexture: true,

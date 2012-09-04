@@ -1,4 +1,13 @@
+/**
+ * Creates a new path node for use with the IgePathFinder class.
+ */
 var IgePathNode = IgeClass.extend({
+	/**
+	 * @constructor
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number} score
+	 */
 	init: function(x, y, score) {
 		this.x = x;
 		this.y = y;

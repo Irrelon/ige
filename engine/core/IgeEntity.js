@@ -36,6 +36,10 @@ var IgeEntity = IgeObject.extend([
         this._worldMatrix = new IgeMatrix2d(this);
 	},
 
+	/**
+	 * Returns the position of the mouse relative to this entity.
+	 * @return {*}
+	 */
 	mousePos: function () {
 		var parentMousePos;
 
@@ -61,6 +65,7 @@ var IgeEntity = IgeObject.extend([
 	 * Translates the object to the tile co-ordinates passed.
 	 * @param x
 	 * @param y
+	 * @param z
 	 * @private
 	 */
 	translateToTile: function (x, y, z) {
@@ -160,6 +165,13 @@ var IgeEntity = IgeObject.extend([
 		this.log('Cannot determine which tiles this entity lies over because the entity is not currently mounted to a tile sheet.', 'warning');
 	},
 
+	/**
+	 * Gets / sets the anchor position that this entity's texture
+	 * will be adjusted by.
+	 * @param x
+	 * @param y
+	 * @return {*}
+	 */
 	anchor: function (x, y) {
 		if (x !== undefined && y !== undefined) {
 			this._anchor = {x: x, y: y};

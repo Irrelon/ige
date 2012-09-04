@@ -1,3 +1,6 @@
+/**
+ * Creates a new object.
+ */
 var IgeObject = IgeEventingClass.extend({
 	classId: 'IgeObject',
 

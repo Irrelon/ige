@@ -1,4 +1,7 @@
 // TODO: Implement the _stringify() method for this class
+/**
+ * Creates a new viewport.
+ */
 var IgeViewport = IgeEntity.extend([
 	{extension: IgeUiStyleExtension, overwrite: true},
 	{extension: IgeUiPositionExtension, overwrite: true}

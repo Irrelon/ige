@@ -1,4 +1,7 @@
 // TODO: Document
+/**
+ * Creates a new 3d point (x, y, z).
+ */
 var IgePoint = function (x, y, z, floor) {
 	if (floor === undefined) {
 		this._floor = true;

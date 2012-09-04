@@ -1,3 +1,6 @@
+/**
+ * Creates a new particle emitter.
+ */
 var IgeParticleEmitter = IgeEntity.extend({
 	classId: 'IgeParticleEmitter',
 	IgeParticleEmitter: true,

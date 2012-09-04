@@ -1,4 +1,7 @@
 // TODO: Implement the _stringify() method for this class
+/**
+ * Creates a new UI entity.
+ */
 var IgeUiEntity = IgeEntity.extend([
 	{extension: IgeUiStyleExtension, overwrite: true},
 	{extension: IgeUiPositionExtension, overwrite: true}

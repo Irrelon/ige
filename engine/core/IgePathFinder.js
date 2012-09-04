@@ -1,3 +1,6 @@
+/**
+ * Creates a new path using the A* path-finding algorithm.
+ */
 var IgePathFinder = IgeClass.extend({
 	init: function() {},
 

@@ -1,4 +1,7 @@
 // TODO: Clean up the variable declarations in this file so they all run on the same var call.
+/**
+ * Creates a new transformation matrix.
+ */
 var IgeMatrix2d = function() {
 	this.matrix = [
 		1.0,0.0,0.0,

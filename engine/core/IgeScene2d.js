@@ -1,3 +1,6 @@
+/**
+ * Creates a new 2d scene.
+ */
 var IgeScene2d = IgeEntity.extend({
 	classId: 'IgeScene2d',
 
