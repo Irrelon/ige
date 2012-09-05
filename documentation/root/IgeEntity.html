@@ -1,0 +1,96 @@
+<html>
+<head>
+	<link rel="stylesheet" href="../css/default.css" />
+</head>
+<body>
+	<div class="page">
+<h2>IgeEntity <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/core/IgeEntity.js">{file}</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">Creates a new entity.</div>
+</div>
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="{extends}.html">IgeObject</a></div>
+</div>
+<h2>Methods</h2>
+
+<h3>mousePos</h3>
+<div class="methodDesc">Returns the position of the mouse relative to this entity.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div><h3>translateToTileArray</h3>
+<div class="methodDesc">Translates the object to the tile co-ordinates passed.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>widthByTileArray</h3>
+<div class="methodDesc">Set the object's width to the number of tile width's specified.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">lockAspect</span> If true, sets the height accordingto the texture aspect ratio and the new width.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>heightByTileArray</h3>
+<div class="methodDesc">Set the object's height to the number of tile height's specified.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">lockAspect</span> If true, sets the height accordingto the texture aspect ratio and the new height.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>occupyTile</h3>
+<div class="methodDesc">Dummy method to help debug when programmer expects to be able to access tile-based methods but cannot. This method is overwritten when the entity is mounted to a tile map.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div><h3>overTiles</h3>
+<div class="methodDesc">Dummy method to help debug when programmer expects to be able to access tile-based methods but cannot. This method is overwritten when the entity is mounted to a tile map.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div><h3>anchorArray</h3>
+<div class="methodDesc">Gets / sets the anchor position that this entity's texture will be adjusted by.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>widthArray</h3>
+<div class="methodDesc">Gets / sets the geometry.x.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">px</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>heightArray</h3>
+<div class="methodDesc">Gets / sets the geometry.y.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">px</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>size3dArray</h3>
+<div class="methodDesc">Gets / sets the 3d geometry of the entity. The x and y values are relative to the center of the entity and the z value is wholly positive.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>lifeSpanArray</h3>
+<div class="methodDesc">Gets / sets the life span of the object in milliseconds. The life span is how long the object will exist for before being automatically destroyed.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>deathTimeArray</h3>
+<div class="methodDesc">Gets / sets the timestamp in milliseconds that denotes the time that the entity will be destroyed. The object checks it's own death time during each tick and if the current time is greater than the death time, the object will be destroyed.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>opacityArray</h3>
+<div class="methodDesc">Gets / sets the entity opacity from 0.0 to 1.0.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>textureArray</h3>
+<div class="methodDesc">Gets / sets the texture to use when rendering the entity.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeTexture</span>}<span class="argName">texture</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>cellArray</h3>
+<div class="methodDesc">Gets / sets the current texture cell used when rendering the game object's texture. If the texture is not cell-based, this value is ignored.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>dimensionsFromTexture</h3>
+<div class="methodDesc">Sets the geometry of the entity to match the width and height of the assigned texture.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div><h3>dimensionsFromCell</h3>
+<div class="methodDesc">Sets the geometry of the entity to match the width and height of the assigned texture cell. If the texture is not cell-based the entire texture width / height will be used.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div><h3>highlightArray</h3>
+<div class="methodDesc">Gets / sets the highlight mode. True is on false is off.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>localToWorldArray</h3>
+<div class="methodDesc">Converts an array of points from local space to this entity's world space using it's world transform matrix.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">points</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>aabb</h3>
+<div class="methodDesc">Calculates and returns the current axis-aligned bounding box.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div><h3>_transformContextArray</h3>
+<div class="methodDesc">Sets the canvas context transform properties to match the the game object's current transform values.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">HTMLCanvasContext</span>}<span class="argName">ctx</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>_transformPointArray</h3>
+<div class="methodDesc">Transforms a point by the entity's parent world matrix and it's own local matrix transforming the point to this entity's world space.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">igePoint</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>tickArray</h3>
+<div class="methodDesc">Processes the actions required each render frame.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">HTMLCanvasContext</span>}<span class="argName">ctx</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">dontTransform</span> If set to true, the tick method willnot transform the context based on the entity's matrices. This is useful if you have extended the class and want to process down the inheritance chain but have already transformed the entity in a previous overloaded method.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>_mouseInAabbArray</h3>
+<div class="methodDesc">Checks mouse input types and fires the correct mouse event handler.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">evc</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>_stringify</h3>
+<div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div>	</div>
+</body>
+</html>

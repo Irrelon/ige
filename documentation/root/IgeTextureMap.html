@@ -1,0 +1,48 @@
+<html>
+<head>
+	<link rel="stylesheet" href="../css/default.css" />
+</head>
+<body>
+	<div class="page">
+<h2>IgeTextureMap <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/core/IgeTextureMap.js">{file}</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">Texture maps provide a way to display textures across a tile map.</div>
+</div>
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="{extends}.html">IgeTileMap2d</a></div>
+</div>
+<h2>Methods</h2>
+
+<h3>addTextureArray</h3>
+<div class="methodDesc">Adds a texture to the texture map's internal texture list so that it can be referenced via an index so that the texture map's data will be something like [[textureId, textureCell]] or a real world example: [[0, 1], [1, 1]].</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">texture</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>paintTileArray</h3>
+<div class="methodDesc">Sets the specified tile's texture index and cell that will be used when rendering the texture map.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">textureIndex</span> </li><li>{<span class="argType"></span>}<span class="argName">cell</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>clearTileArray</h3>
+<div class="methodDesc">Clears any previous tile texture and cell data for the specified tile co-ordinates.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>loadMapArray</h3>
+<div class="methodDesc">Reads the map data from a standard map object and fills the map with the data found.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">map</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>saveMap</h3>
+<div class="methodDesc">Returns a map JSON string that can be saved to a data file and loaded with the loadMap() method.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div><h3>tileTextureIndexArray</h3>
+<div class="methodDesc">Gets / sets the specified tile's texture index.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">textureIndex</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>tileTextureCellArray</h3>
+<div class="methodDesc">Gets / sets the specified tile's texture cell.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">cell</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>tickArray</h3>
+<div class="methodDesc">Handles rendering the texture map during engine tick events.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">ctx</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>_newTileEntity</h3>
+<div class="methodDesc">Creates an entity object that a texture can use to render itself. This is basically a dummy object that has the minimum amount of data in it that a texture requires to render such as geometry, texture cell and rendering position.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div>	</div>
+</body>
+</html>
