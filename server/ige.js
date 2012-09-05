@@ -15,6 +15,10 @@ IgeAnimationComponent = require('../engine/components/IgeAnimationComponent');
 IgeVelocityComponent = require('../engine/components/IgeVelocityComponent');
 IgeTweenComponent = require('../engine/components/IgeTweenComponent');
 IgeInputComponent = require('../engine/components/IgeInputComponent');
+Box2D = require('../engine/components/physics/box2d/lib_box2d.js').Box2D;
+IgeBox2dComponent = require('../engine/components/physics/box2d/IgeBox2dComponent.js');
+CANNON = require('../engine/components/physics/cannon/lib_cannon.js');
+IgeCannonComponent = require('../engine/components/physics/cannon/IgeCannonComponent.js');
 // Extensions
 IgeTransformExtension = require('../engine/extensions/IgeTransformExtension');
 IgeUiPositionExtension = require('../engine/extensions/IgeUiPositionExtension');
