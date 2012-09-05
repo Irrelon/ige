@@ -57,4 +57,4 @@ var IgeEntityCannon = IgeEntity.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeEntity3d; }
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeEntityCannon; }

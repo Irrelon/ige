@@ -55,4 +55,4 @@ var IgeEntityBox2d = IgeEntity.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeEntity3d; }
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeEntityBox2d; }
