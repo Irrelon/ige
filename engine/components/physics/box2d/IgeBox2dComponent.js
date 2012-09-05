@@ -276,6 +276,14 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Queues a body for removal from the physics world.
+	 * @param body
+	 */
+	destroyBody: function (body) {
+		this._removeWhenReady.push(body);
+	},
+
+	/**
 	 * Steps the physics simulation forward.
 	 * @param ctx
 	 * @private
