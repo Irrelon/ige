@@ -16,6 +16,13 @@ var IgeEntityBox2d = IgeEntity.extend({
 		this.translateBy = this._translateBy;
 	},
 
+	/**
+	 * Gets / sets the physics body definition. When setting the
+	 * definition the physics body will also be created automatically
+	 * from the supplied definition.
+	 * @param def
+	 * @return {*}
+	 */
 	box2dBody: function (def) {
 		if (def !== undefined) {
 			this._box2dBodyDef = def;
@@ -29,6 +36,14 @@ var IgeEntityBox2d = IgeEntity.extend({
 		return this._box2dBodyDef;
 	},
 
+	/**
+	 * Takes over translateTo calls and processes box2d movement as well.
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return {*}
+	 * @private
+	 */
 	_translateTo: function (x, y, z) {
 		var entBox2d = this._box2dBody;
 
@@ -50,8 +65,24 @@ var IgeEntityBox2d = IgeEntity.extend({
 		return this;
 	},
 
+	/**
+	 * Takes over translateBy calls and processes box2d movement as well.
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @private
+	 */
 	_translateBy: function (x, y, z) {
 		this._translateTo(this._translate.x + x, this._translate.y + y, this._translate.z + z);
+	},
+
+	/**
+	 * Destroys the physics entity and the box2d body that
+	 * is attached to it.
+	 */
+	destroy: function () {
+		ige.box2d.destroyBody(this._box2dBody);
+		this._super();
 	}
 });
 
