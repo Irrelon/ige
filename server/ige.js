@@ -62,6 +62,9 @@ IgeChatComponent = require('../engine/components/chat/IgeChatComponent');
 	IgeMySql = require('../engine/components/database/mysql/IgeMySql');
 	IgeMySqlComponent = require('../engine/components/database/mysql/IgeMySqlComponent');
 
+IgeEntityBox2d = require('../engine/components/physics/box2d/IgeEntityBox2d.js');
+IgeEntityCannon = require('../engine/components/physics/cannon/IgeEntityCannon.js');
+
 // Include the control class
 IgeNode = require('./IgeNode');
 
