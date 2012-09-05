@@ -77,6 +77,18 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		return this._gravity;
 	},
 
+	/**
+	 * Gets the current Box2d world object.
+	 * @return {b2World}
+	 */
+	world: function () {
+		return this._world;
+	},
+
+	/**
+	 * Creates the Box2d world.
+	 * @return {*}
+	 */
 	createWorld: function () {
 		this._world = new this.b2World(
 			this._gravity,
@@ -88,6 +100,11 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		return this._entity;
 	},
 
+	/**
+	 * Creates a Box2d fixture and returns it.
+	 * @param params
+	 * @return {b2FixtureDef}
+	 */
 	createFixture: function (params) {
 		var tempDef = new this.b2FixtureDef(),
 			param;
@@ -103,6 +120,13 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		return tempDef;
 	},
 
+	/**
+	 * Creates a Box2d body and attaches it to an IGE entity
+	 * based on the supplied body definition.
+	 * @param {IgeEntity} entity
+	 * @param {Object} body
+	 * @return {b2Body}
+	 */
 	createBody: function (entity, body) {
 		var tempDef = new this.b2BodyDef(),
 			param,
@@ -251,9 +275,11 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		this._world.SetDebugDraw(debugDraw);
 	},
 
-	/** step - Step the simulation forward. {
-	 category:"method",
-	 } **/
+	/**
+	 * Steps the physics simulation forward.
+	 * @param ctx
+	 * @private
+	 */
 	_behaviour: function (ctx) {
 		var self = ige.box2d,
 			tempBod,
