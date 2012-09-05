@@ -28,9 +28,7 @@ function parseFile($path) {
 			unset($parameters);
 			$codeLine = $matches[2][$key];
 
-			echo $codeLine . '<BR>';
 			if (strstr($codeLine, 'var IgeClass = (function () ')) {
-				echo 'LINE -------------------------------------------';
 				$codeLine = str_replace('var IgeClass = (function () ', 'var IgeClass = none.extend(', $codeLine);
 			}
 
