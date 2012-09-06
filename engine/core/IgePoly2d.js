@@ -2,6 +2,8 @@
  * Creates a new 2d polygon made up of IgePoint instances.
  */
 var IgePoly2d = IgeClass.extend({
+	classId: 'IgePoly2d',
+
 	init: function () {
 		this._poly = [];
 		this._scale = new IgePoint(1, 1, 1);

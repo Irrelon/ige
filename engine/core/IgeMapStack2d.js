@@ -4,6 +4,8 @@
  * x, y map position.
  */
 var IgeMapStack2d = IgeClass.extend({
+	classId: 'IgeMapStack2d',
+
 	init: function (data) {
 		this._mapData = data || [];
 	},

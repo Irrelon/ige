@@ -2,6 +2,8 @@
  * Creates a new map that has two dimensions (x and y) to it's data.
  */
 var IgeMap2d = IgeClass.extend({
+	classId: 'IgeMap2d',
+
 	init: function (data) {
 		this._mapData = data || [];
 	},

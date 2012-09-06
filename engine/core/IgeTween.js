@@ -2,6 +2,8 @@
  * Creates a new tween instance.
  */
 var IgeTween = IgeClass.extend({
+	classId: 'IgeTween',
+
 	init: function (targetObj, propertyObj, durationMs, options) {
 		// Create a new tween object and return it
 		// so the user can decide when to start it

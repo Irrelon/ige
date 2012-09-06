@@ -2,6 +2,8 @@
  * Creates a new path node for use with the IgePathFinder class.
  */
 var IgePathNode = IgeClass.extend({
+	classId: 'IgePathNode',
+
 	/**
 	 * @constructor
 	 * @param {Number} x
