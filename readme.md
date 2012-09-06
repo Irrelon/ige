@@ -4,7 +4,7 @@ quality code. It is released under strict confidentiality and must not be shared
 to use this pre-release version for your own internal testing and development work but no work generated using this
 version must be released until a generally available launch of 1.1.0.
 
-If you have any comments, questions, requests, concerns etc please don't hesitate to discuss them on the 1.1.0 forum
-located at: https://getsatisfaction.com/irrelon_software/topics/ige_1_1_0_alpha_preview_released
+If you have any comments, questions, requests, concerns etc please don't hesitate to discuss them on the GitHub issue
+tracker for this project: https://github.com/coolbloke1324/ige/issues
 
 (C)opyright 2012 Irrelon Software Limited
