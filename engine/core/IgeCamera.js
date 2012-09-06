@@ -2,6 +2,8 @@
  * Creates a new camera that will be attached to a viewport.
  */
 var IgeCamera = IgeEntity.extend({
+	classId: 'IgeCamera',
+
 	init: function (entity) {
 		this._super();
 
