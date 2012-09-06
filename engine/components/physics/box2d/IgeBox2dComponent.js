@@ -297,7 +297,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			count,
 			destroyBody;
 
-		if (self._active) {
+		if (self._active && self._world) {
 			// Remove any bodies that were queued for removal
 			removeWhenReady = self._removeWhenReady;
 			count = removeWhenReady.length;
