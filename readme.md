@@ -7,4 +7,6 @@ generally available launch of 1.1.0 or you obtain permission from Irrelon Softwa
 If you have any comments, questions, requests, concerns etc please don't hesitate to discuss them on the GitHub issue
 tracker for this project: https://github.com/coolbloke1324/ige/issues
 
+You can also get live support from the developer via Skype: coolbloke1324
+
 (C)opyright 2012 Irrelon Software Limited
