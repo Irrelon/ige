@@ -208,38 +208,43 @@ var IgeTexture = IgeEventingClass.extend({
 	_loadScript: function (scriptUrl) {
 		var textures = ige.textures,
 			rs_sandboxContext,
-			self = this;
+			self = this,
+			scriptElem;
 
 		ige.textureLoadStart(scriptUrl);
 
 		if (!ige.isServer) {
-			$.ajax({
-				url: scriptUrl,
-				success: this.bind(function(data) {
-					this.log('Texture script "' + scriptUrl + '" loaded successfully');
-					// Parse the JS with evil eval and store the result in the asset
-					eval(data);
+			scriptElem = document.createElement('script');
+			scriptElem.onload = function(data) {
+				self.log('Texture script "' + scriptUrl + '" loaded successfully');
+				// Parse the JS with evil eval and store the result in the asset
+				eval(data);
 
-					// Store the eval data (the "image" variable is declared
-					// by the texture script and becomes availabe in this scope
-					// because we eval'd above)
-					this._mode = 1;
-					this.script = image;
+				// Store the eval data (the "image" variable is declared
+				// by the texture script and becomes available in this scope
+				// because we evaluated it above)
+				self._mode = 1;
+				self.script = image;
 
-					// Run the asset script init method
-					if (typeof(image.init) === 'function') {
-						image.init.apply(image, [ige, self]);
-					}
+				// Run the asset script init method
+				if (typeof(image.init) === 'function') {
+					image.init.apply(image, [ige, self]);
+				}
 
-					this.sizeX(image.width);
-					this.sizeY(image.height);
+				//self.sizeX(image.width);
+				//self.sizeY(image.height);
 
-					this._loaded = true;
-					self.emit('loaded');
-					ige.textureLoadEnd(scriptUrl, self);
-				}),
-				dataType: 'script'
-			});
+				self._loaded = true;
+				self.emit('loaded');
+				ige.textureLoadEnd(scriptUrl, self);
+			};
+
+			scriptElem.addEventListener('error', function () {
+				this.log('Error loading smart texture script file: ' + scriptUrl, 'error');
+			}, true);
+
+			scriptElem.src = scriptUrl;
+			document.getElementsByTagName('head')[0].appendChild(scriptElem);
 		}
 
 		if (ige.isServer) {
@@ -343,7 +348,7 @@ var IgeTexture = IgeEventingClass.extend({
 			ige._drawCount++;
 		}
 
-		if (this.mode === 1) {
+		if (this._mode === 1) {
 			// This texture is script-based (a "smart texture")
 			ctx.save();
 				this.script.render(ctx, entity, tickDelta);
