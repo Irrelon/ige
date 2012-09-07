@@ -116,6 +116,23 @@ var IgeMapStack2d = IgeClass.extend({
 	},
 
 	/**
+	 * Clears any data set at the specified map tile co-ordinates.
+	 * @param x
+	 * @param y
+	 * @return {Boolean} True if data was cleared or false if no data existed.
+	 */
+	clearData: function (x, y) {
+		if (x !== undefined && y !== undefined) {
+			if (this._mapData[y] !== undefined) {
+				delete this._mapData[y][x];
+				return true;
+			}
+		}
+
+		return false;
+	},
+
+	/**
 	 * Gets / sets the map's tile data.
 	 * @param {Array} val The map data array.
 	 * @return {*}
