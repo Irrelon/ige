@@ -80,15 +80,13 @@ var IgeNetIoServer = {
 	 * Sends a message over the network.
 	 * @param {String} commandName
 	 * @param {Object} data
-	 * @param {*=} client If specified, sets the recipient socket or a array of sockets to send to.
+	 * @param {*=} clientId If specified, sets the recipient socket id or a array of socket ids to send to.
 	 */
-	send: function (commandName, data, client) {
+	send: function (commandName, data, clientId) {
 		var commandIndex = this._networkCommandsLookup[commandName];
 
 		if (commandIndex !== undefined) {
-			// TODO: This needs to be compatible with Socket.io but also allow for arrays and string ID to be used
-			//if (client !== undefined) { client = client.id; }
-			this._io.send([commandIndex, data], client);
+			this._io.send([commandIndex, data], clientId);
 		} else {
 			this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
 		}
@@ -145,7 +143,7 @@ var IgeNetIoServer = {
 					cmd: req.commandName,
 					data: data
 				},
-				req.socket
+				req.clientId
 			);
 
 			// Remove the request as we've now responded!
@@ -188,11 +186,11 @@ var IgeNetIoServer = {
 			this.log('Accepted connection with id ' + socket.id);
 
 			socket.on('message', function (data) {
-				self._onClientMessage.apply(self, [data, socket]);
+				self._onClientMessage.apply(self, [data, socket.id]);
 			});
 
 			socket.on('disconnect', function (data) {
-				self._onClientDisconnect.apply(self, [data, socket]);
+				self._onClientDisconnect.apply(self, [data, socket.id]);
 			});
 
 			// Send an init message to the client
@@ -206,11 +204,11 @@ var IgeNetIoServer = {
 		}
 	},
 
-	_onRequest: function (data, socket) {
+	_onRequest: function (data, clientId) {
 		// The message is a network request so fire
 		// the command event with the request id and
 		// the request data
-		data.socket = socket;
+		data.clientId = clientId;
 		this._requests[data.id] = data;
 
 		if (this._debug) {
@@ -219,13 +217,13 @@ var IgeNetIoServer = {
 		}
 
 		if (this._networkCommands[data.cmd]) {
-			this._networkCommands[data.cmd](data.id, data.data, socket);
+			this._networkCommands[data.cmd](data.id, data.data, clientId);
 		}
 
-		this.emit(data.cmd, [data.id, data.data, socket]);
+		this.emit(data.cmd, [data.id, data.data, clientId]);
 	},
 
-	_onResponse: function (data, socket) {
+	_onResponse: function (data, clientId) {
 		// The message is a network response
 		// to a request we sent earlier
 		id = data.id;
@@ -240,7 +238,7 @@ var IgeNetIoServer = {
 
 		if (req) {
 			// Fire the request callback!
-			req.callback(req.cmd, [data.data, socket]);
+			req.callback(req.cmd, [data.data, clientId]);
 
 			// Delete the request from memory
 			delete this._requests[id];
@@ -250,27 +248,27 @@ var IgeNetIoServer = {
 	/**
 	 * Called when the server receives a network message from a client.
 	 * @param {Object} data The data sent by the client.
-	 * @param {Object} socket The client socket object.
+	 * @param {String} clientId The client socket id.
 	 * @private
 	 */
-	_onClientMessage: function (data, socket) {
+	_onClientMessage: function (data, clientId) {
 		var commandName = this._networkCommandsIndex[data[0]];
 
 		if (this._networkCommands[commandName]) {
-			this._networkCommands[commandName](data[1], socket);
+			this._networkCommands[commandName](data[1], clientId);
 		}
 
-		this.emit(commandName, [data[1], socket]);
+		this.emit(commandName, [data[1], clientId]);
 	},
 
 	/**
 	 * Called when a client disconnects from the server.
 	 * @param {Object} data Any data sent along with the disconnect.
-	 * @param {Object} socket The client socket object.
+	 * @param {String} clientId The client socket id.
 	 * @private
 	 */
-	_onClientDisconnect: function (data, socket) {
-		this.log('Client disconnected with id ' + socket.id);
+	_onClientDisconnect: function (data, clientId) {
+		this.log('Client disconnected with id ' + clientId);
 	}
 };
 

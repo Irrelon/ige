@@ -13,6 +13,7 @@ var IgeSocketIoComponent = IgeEventingClass.extend({
 
 		// Set some defaults
 		this._port = 8000;
+
 		/* CEXCLUDE */
 		if (ige.isServer) {
 			this.implement(IgeSocketIoServer);

@@ -81,11 +81,21 @@ var IgeSocketIoServer = {
 	},
 
 	send: function (commandName, data, clientId) {
-		var commandIndex = this._networkCommandsLookup[commandName];
-		// TODO: Update to work as well as net.io with client id arrays as well
+		var commandIndex = this._networkCommandsLookup[commandName],
+			arrCount;
+
 		if (commandIndex !== undefined) {
 			if (clientId) {
-				this._socketById[clientId].json.send([commandIndex, data]);
+				if (typeof(clientId) === 'object') {
+					// The clientId is an array, loop it and send to each client
+					arrCount = clientId.length;
+					while (arrCount--) {
+						this._socketById[clientId[arrCount]].json.send([commandIndex, data]);
+					}
+				} else {
+					// The clientId is a string, send to individual client
+					this._socketById[clientId].json.send([commandIndex, data]);
+				}
 			} else {
 				this._io.sockets.json.send([commandIndex, data]);
 			}
@@ -110,11 +120,11 @@ var IgeSocketIoServer = {
 			this._socketById[socket.id] = socket;
 
 			socket.on('message', function (data) {
-				self._onClientMessage(data, socket);
+				self._onClientMessage(data, socket.id);
 			});
 
 			socket.on('disconnect', function (data) {
-				self._onClientDisconnect(data, socket);
+				self._onClientDisconnect(data, socket.id);
 			});
 
 			// Send an init message to the client
