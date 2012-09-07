@@ -18,7 +18,7 @@ var IgeChatServer = {
             id: newRoomId,
             name: roomName,
             options: options,
-            users: {}
+            users: []
         };
 
 		// Inform all users that the room was created
@@ -77,6 +77,7 @@ var IgeChatServer = {
 					}
 				} else {
 					// Send this message to all users in the room
+					self.log('Sending to all users...');
 					self._entity.network.send('igeChatMsg', msg, room.users);
 				}
 			} else {
