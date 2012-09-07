@@ -8,26 +8,35 @@ var IgeCellSheet = IgeTexture.extend({
 	IgeSpriteSheet: true,
 
 	init: function (url, horizontalCells, verticalCells) {
+		var self = this;
 		this.on('loaded', function () {
-			if (this.image) {
+			if (self.image) {
 				// Store the cell sheet image
-				this._sheetImage = this.image;
+				self._sheetImage = this.image;
 
-				this._cellColumns = 0;
-				this._cellRows = 0;
+				self._cellColumns = 0;
+				self._cellRows = 0;
 
-				this.horizontalCells(horizontalCells || 1);
-				this.verticalCells(verticalCells || 1);
+				self.horizontalCells(horizontalCells || 1);
+				self.verticalCells(verticalCells || 1);
 
-				this._applyCells();
+				self._applyCells();
 			} else {
 				// Unable to create cells from non-image texture
 				// TODO: Medium-priority - Support cell sheets from smart-textures
-				this.log('Cannot create cell-sheet because texture has not loaded an image!', 'error');
+				self.log('Cannot create cell-sheet because texture has not loaded an image!', 'error');
 			}
 		});
 
 		this._super(url);
+	},
+
+	/**
+	 * Returns the total number of cells in the cell sheet.
+	 * @return {Number}
+	 */
+	cellCount: function () {
+		return this.horizontalCells() + this.verticalCells();
 	},
 
 	/**
