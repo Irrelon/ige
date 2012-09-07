@@ -50,8 +50,8 @@ var IgeChatServer = {
 	 * Sends a message to a room.
 	 * @param {String} roomId The ID of the room to send the message to.
 	 * @param {String} message The text body of the message to send.
-	 * @param {Number=} to The id of the user to send the message to.
-	 * @param {String} from The display name of the user that sent the message.
+	 * @param {String=} to The id of the user to send the message to.
+	 * @param {String} from The id of the user that sent the message.
 	 */
 	sendToRoom: function (roomId, message, to, from) {
 		var self = ige.chat;
@@ -64,50 +64,45 @@ var IgeChatServer = {
 				msg = {
 					roomId: roomId,
 					text: message,
-					from: from.id,
+					from: from,
 					to: to
 				};
 
 				if (to) {
 					// Send message to individual user
-					if (room.users[to]) {
-						self._entity.network.send('igeChatMsg', msg, room.users[to]);
+					if (room.users.indexOf(to) > -1) {
+						self._entity.network.send('igeChatMsg', msg, to);
 					} else {
-						console.log('Cannot send to user because specified user is not in room:', to);
+						self.log('Cannot send to user because specified user is not in room: ' + to);
 					}
 				} else {
 					// Send this message to all users in the room
-					for (i in room.users) {
-						if (room.users.hasOwnProperty(i)) {
-							self._entity.network.send('igeChatMsg', msg, room.users[i]);
-							console.log('Sent message to user:', i);
-						}
-					}
+					self._entity.network.send('igeChatMsg', msg, room.users);
 				}
 			} else {
-				console.log('Cannot send message to room with blank message!');
+				self.log('Cannot send message to room with blank message!');
 			}
 		} else {
-			console.log('Cannot send message to room with id "' + roomId + '" because it does not exist!')
+			self.log('Cannot send message to room with id "' + roomId + '" because it does not exist!');
 		}
 	},
 
-    _onMessageFromClient: function (msg, client) {
+    _onMessageFromClient: function (msg, clientId) {
 		var self = ige.chat,
 			room;
 
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (!self.emit('messageFromClient', [msg, client])) {
-            console.log('Message from client: (' + client.id + ')', msg);
+        if (!self.emit('messageFromClient', [msg, clientId])) {
+            console.log('Message from client: (' + clientId + ')', msg);
 
 			if (msg.roomId) {
 				room = self._rooms[msg.roomId];
 				if (room) {
-					if (room.users[client.id]) {
+					if (room.users.indexOf(clientId) > -1) {
 						if (msg.text) {
 							console.log('Sending message to room...');
-							self.sendToRoom(msg.roomId, msg.text, msg.to, client);
+							self.sendToRoom(msg.roomId, msg.text, msg.to, clientId);
 						} else {
 							console.log('Cannot send message because message text is empty!', msg);
 						}
@@ -126,24 +121,24 @@ var IgeChatServer = {
         }
     },
 
-    _onJoinRoomRequestFromClient: function (roomId, client) {
+    _onJoinRoomRequestFromClient: function (roomId, clientId) {
 		var self = ige.chat;
 
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (!self.emit('clientJoinRoomRequest', [roomId, client])) {
+        if (!self.emit('clientJoinRoomRequest', [roomId, clientId])) {
 			var room = self._rooms[roomId];
 
-			console.log('Client wants to join room: (' + client.id + ')', roomId);
+			self.log('Client wants to join room: (' + clientId + ')', roomId);
 
 			// Check the room exists
 			if (room) {
 				// Check that the user isn't already part of the room user list
-				if (!room.users[client.id]) {
+				if (!room.users[clientId]) {
 					// Add the user to the room
-					room.users[client.id] = client;
-					ige.network.send('igeChatJoinRoom', {roomId: roomId, joined: true}, client);
-					console.log('User "' + client.id + '" joined room ' + roomId);
+					room.users.push(clientId);
+					ige.network.send('igeChatJoinRoom', {roomId: roomId, joined: true}, clientId);
+					console.log('User "' + clientId + '" joined room ' + roomId);
 				} else {
 					// User is already in the room!
 				}
@@ -153,27 +148,27 @@ var IgeChatServer = {
         }
     },
 
-    _onLeaveRoomRequestFromClient: function (roomId, client) {
+    _onLeaveRoomRequestFromClient: function (roomId, clientId) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (!self.emit('clientLeaveRoomRequest', [roomId, client])) {
-            console.log('Client wants to leave room: (' + client.id + ')', roomId);
+        if (!self.emit('clientLeaveRoomRequest', [roomId, clientId])) {
+            console.log('Client wants to leave room: (' + clientId + ')', roomId);
         }
     },
 
-    _onClientWantsRoomList: function (data, client) {
+    _onClientWantsRoomList: function (data, clientId) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (!self.emit('clientRoomListRequest', [data, client])) {
-            console.log('Client wants the room list: (' + client.id + ')', data);
+        if (!self.emit('clientRoomListRequest', [data, clientId])) {
+            console.log('Client wants the room list: (' + clientId + ')', data);
         }
     },
 
-    _onClientWantsRoomUserList: function (roomId, client) {
+    _onClientWantsRoomUserList: function (roomId, clientId) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (!self.emit('clientRoomUserListRequest', [roomId, client])) {
-            console.log('Client wants the room user list: (' + client.id + ')', roomId);
+        if (!self.emit('clientRoomUserListRequest', [roomId, clientId])) {
+            console.log('Client wants the room user list: (' + clientId + ')', roomId);
         }
     }
 };
