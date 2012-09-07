@@ -121,7 +121,7 @@ var IgeTileMap2d = IgeEntity.extend({
 	 */
 	_objectUnOccupyTile: function (x, y, width, height) {
 		if (x !== undefined && y !== undefined) {
-			this._parent.unOccupyTile(x + xi, y + yi);
+			this._parent.unOccupyTile(x, y, width, height);
 		} else {
 			// Occupy tiles based upon the response from overTiles();
 			var tileArr = this.overTiles();
