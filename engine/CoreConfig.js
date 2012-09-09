@@ -26,6 +26,7 @@ var igeCoreConfig = {
 		'components/network/net.io/net.io-client/index.js',
 		'components/network/net.io/IgeNetIoClient.js',
 		'components/network/net.io/IgeNetIoComponent.js',
+		'components/network/stream/IgeStreamComponent.js',
 		'components/chat/IgeChatClient.js',
 		'components/chat/IgeChatComponent.js',
 		'components/cocoonjs/IgeCocoonJsComponent.js',

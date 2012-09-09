@@ -24,6 +24,9 @@ var Client = IgeClass.extend({
 				// a splash screen or a menu first? Then connect after you've
 				// got a username or something?
 				ige.network.start('http://localhost:2000', function () {
+					ige.network.addComponent(IgeStreamComponent)
+						.stream.renderLatency(160); // Render the simulation 160 milliseconds in the past
+
 					// Create the scene
 					self.scene1 = new IgeScene2d()
 						.id('scene1');

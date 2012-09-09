@@ -55,6 +55,8 @@ IgeDummyContext = require('../engine/components/network/IgeDummyContext');
 // Chat
 IgeChatServer = require('../engine/components/chat/IgeChatServer');
 IgeChatComponent = require('../engine/components/chat/IgeChatComponent');
+// Stream
+IgeStreamComponent = require('../engine/components/network/stream/IgeStreamComponent');
 // Database
 	// Mongo
 	IgeMongoDb = require('../engine/components/database/mongodb/IgeMongoDb');

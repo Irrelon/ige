@@ -160,13 +160,13 @@ var IgeStreamExtension = {
 	},
 
 	/**
-	 * Asks the network system to send the stream data to
+	 * Asks the stream system to queue the stream data to
 	 * the specified client id or array of ids.
 	 * @param clientId
 	 * @private
 	 */
 	_streamSync: function (clientId) {
-		ige.network.send('_igeStream', this._streamData(), clientId);
+		ige.network.stream.queue(this.id(), this._streamData(), clientId);
 	},
 
 	/**
