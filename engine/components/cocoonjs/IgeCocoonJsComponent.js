@@ -1,5 +1,5 @@
 var IgeCocoonJsComponent = IgeEventingClass.extend({
-	classId: '',
+	classId: 'IgeCocoonJsComponent',
 	componentId: 'cocoonJs',
 
 	init: function () {
