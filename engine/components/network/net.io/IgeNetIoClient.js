@@ -64,6 +64,7 @@ var IgeNetIoClient = {
 							}
 
 							// Setup default commands
+							self.define('_igeStream', function () { self._onStreamData.apply(self, arguments); });
 							self.define('_igeRequest', function () { self._onRequest.apply(self, arguments); });
 							self.define('_igeResponse', function () { self._onResponse.apply(self, arguments); });
 
@@ -286,6 +287,17 @@ var IgeNetIoClient = {
 	 */
 	_onError: function (data) {
 		this.log('Error with connection: ' + data.reason, 'error');
+	},
+
+	/**
+	 * Called when the client receives data from the stream system.
+	 * Handles decoding the data and calling the relevant entity
+	 * _onStreamData() methods.
+	 * @param data
+	 * @private
+	 */
+	_onStreamData: function (data) {
+
 	}
 };
 
