@@ -5,9 +5,6 @@ var Client = IgeClass.extend({
 		// Load our textures
 		var self = this;
 
-		this.obj = [];
-		this.gameTexture = {};
-
 		// Enable networking
 		ige.addComponent(IgeNetIoComponent);
 
