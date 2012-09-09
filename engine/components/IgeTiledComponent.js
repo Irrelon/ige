@@ -18,7 +18,7 @@ var IgeTiledComponent = IgeClass.extend({
 	/**
 	 * Loads a .js Tiled json-format file and converts to IGE format,
 	 * then calls the callback with the newly created scene and the
-	 * various layers as IgetextureMap instances.
+	 * various layers as IgeTextureMap instances.
 	 * @param url
 	 * @param callback
 	 */
