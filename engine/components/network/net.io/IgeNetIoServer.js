@@ -25,7 +25,6 @@ var IgeNetIoServer = {
 		this._io.on('connection', function () { self._onClientConnect.apply(self, arguments); });
 
 		// Setup default commands
-		this.define('_igeStream');
 		this.define('_igeRequest', function () { self._onRequest.apply(self, arguments); });
 		this.define('_igeResponse', function () { self._onResponse.apply(self, arguments); });
 
