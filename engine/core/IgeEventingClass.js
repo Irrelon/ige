@@ -161,6 +161,7 @@ var IgeEventingClass = IgeClass.extend({
 							// The event has a oneShot flag so since we have fired the event,
 							// lets cancel the listener now
 							this.off(eventName, tempEvt);
+							eventCount2--;
 						}
 					}
 
