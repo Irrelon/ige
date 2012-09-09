@@ -739,6 +739,11 @@ var IgeEntity = IgeObject.extend([
 
 			this._super(ctx);
 
+			// Process any automatic-mode stream updating required
+			if (this._streamMode === 1) {
+				this.streamSync();
+			}
+
 			// Update all the old values to current values
 			this._oldTranslate = this._translate.clone();
 		}
