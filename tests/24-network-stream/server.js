@@ -5,6 +5,8 @@ var Server = IgeClass.extend({
 	init: function (options) {
 		var self = this;
 
+		this.obj = [];
+
 		// Add the server-side game methods / event handlers
 		this.implement(ServerNetworkEvents);
 
@@ -21,7 +23,7 @@ var Server = IgeClass.extend({
 					if (success) {
 						// Add the network stream component
 						ige.network.addComponent(IgeStreamComponent)
-							.stream.sendInterval(200) // Send a stream update once every 30 milliseconds
+							.stream.sendInterval(30) // Send a stream update once every 30 milliseconds
 							.stream.start(); // Start the stream
 
 						// Accept incoming network connections
@@ -42,14 +44,22 @@ var Server = IgeClass.extend({
 							.mount(ige);
 
 						// Create an entity and mount it to the scene
-						self.obj = new Rotator()
+						self.obj[0] = new Rotator()
 							.id('fairy1')
 							.depth(1)
-							.width(100)
-							.height(100)
 							.translateTo(0, 0, 0)
 							.streamMode(1)
 							.mount(self.scene1);
+
+						// Create a second rotator entity and mount
+						// it to the first one at 0, 50 relative to the
+						// parent
+						self.obj[1] = new Rotator2()
+							.id('fairy2')
+							.depth(1)
+							.translateTo(0, 50, 0)
+							.streamMode(1)
+							.mount(self.obj[0]);
 					}
 				});
 			});
