@@ -95,6 +95,13 @@ var IgeNetIoClient = {
 		}
 	},
 
+	stop: function () {
+		// Check we are connected
+		if (self._state === 3) {
+			this._io.disconnect('Client requested disconnect');
+		}
+	},
+
 	/**
 	 * Gets / sets a network command and callback. When a network command
 	 * is received by the client, the callback set up for that command will
@@ -287,17 +294,6 @@ var IgeNetIoClient = {
 	 */
 	_onError: function (data) {
 		this.log('Error with connection: ' + data.reason, 'error');
-	},
-
-	/**
-	 * Called when the client receives data from the stream system.
-	 * Handles decoding the data and calling the relevant entity
-	 * _onStreamData() methods.
-	 * @param data
-	 * @private
-	 */
-	_onStreamData: function (data) {
-
 	}
 };
 
