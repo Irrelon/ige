@@ -4,17 +4,19 @@ var Rotator = IgeEntity.extend({
 	init: function () {
 		this._super();
 
-		var self = this,
-			tex;
+		var self = this;
 
 		if (!ige.isServer) {
 			// Define the texture this entity will use
-			tex = new IgeTexture('../assets/textures/sprites/fairy.png');
+			this._tex = new IgeTexture('../assets/textures/sprites/fairy.png');
 
 			// Wait for the texture to load
-			tex.on('loaded', function () {
-				self.texture(tex)
+			this._tex.on('loaded', function () {
+				self.texture(self._tex)
 					.dimensionsFromCell();
+
+				self.width(100)
+					.height(100);
 			}, false, true);
 		}
 

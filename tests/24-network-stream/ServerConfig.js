@@ -1,7 +1,8 @@
 var config = {
 	include: [
 		{name: 'ServerNetworkEvents', path: './gameClasses/ServerNetworkEvents'},
-		{name: 'Rotator', path: './gameClasses/Rotator'}
+		{name: 'Rotator', path: './gameClasses/Rotator'},
+		{name: 'Rotator2', path: './gameClasses/Rotator2'}
 	]
 };
 
