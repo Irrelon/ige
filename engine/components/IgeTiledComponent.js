@@ -1,12 +1,27 @@
+/**
+ * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
+ */
 var IgeTiledComponent = IgeClass.extend({
 	classId: 'IgeTiledComponent',
 	componentId: 'tiled',
 
+	/**
+	 * @constructor
+	 * @param entity
+	 * @param options
+	 */
 	init: function (entity, options) {
 		this._entity = entity;
 		this._options = options;
 	},
 
+	/**
+	 * Loads a .js Tiled json-format file and converts to IGE format,
+	 * then calls the callback with the newly created scene and the
+	 * various layers as IgetextureMap instances.
+	 * @param url
+	 * @param callback
+	 */
 	loadJson: function (url, callback) {
 		var self = this,
 			scriptElem;
@@ -32,35 +47,23 @@ var IgeTiledComponent = IgeClass.extend({
 			tileSetArray = data.tilesets,
 			tileSetCount = tileSetArray.length,
 			tileSetItem,
-			textureCellFrom = 1,
+			tileSetsTotal = tileSetCount,
+			tileSetsLoaded = 0,
+			textureCellLookup = [],
+			currentTexture,
+			currentCell,
 			onLoadFunc,
 			image,
 			textures = [],
 			baseScene,
+			allTexturesLoadedFunc,
 			i, k, x, y, z;
 
 		// Create a base scene that we can add all the layers to
 		baseScene = new IgeScene2d();
 
-		onLoadFunc = function (textures, tileSetCount, tileSetItem) {
-			return function () {
-				var cs = new IgeCellSheet(tileSetItem.image, this.width / tileSetItem.tilewidth, this.height / tileSetItem.tileheight);
-				cs._tiledStartingId = tileSetItem.firstgid;
-				textures.push(cs);
-			};
-		};
-
-		// Load the tile sets as textures
-		while (tileSetCount--) {
-			// Load the image into memory first so we can read the total width and height
-			image = new Image();
-
-			tileSetItem = tileSetArray[tileSetCount];
-			image.onload = onLoadFunc(textures, tileSetCount, tileSetItem);
-			image.src = tileSetItem.image;
-		}
-
-		ige.on('texturesLoaded', function () {
+		// Define the function to call when all textures have finished loading
+		allTexturesLoadedFunc = function () {
 			// Create a texture map for each layer
 			for (i = 0; i < layerCount; i++) {
 				layer = layerArray[i];
@@ -87,13 +90,47 @@ var IgeTiledComponent = IgeClass.extend({
 
 						if (layerData[z] > 0) {
 							// Paint the tile
-							textureMaps[i].paintTile(x, y, 0, layerData[z] - (textureCellFrom - 1));
+							currentTexture = textureCellLookup[layerData[z]];
+							currentCell = layerData[z] - (currentTexture._tiledStartingId - 1);
+							textureMaps[i].paintTile(x, y, textures.indexOf(currentTexture), currentCell);
 						}
 					}
 				}
 			}
 
 			callback(baseScene);
-		});
+		};
+
+		onLoadFunc = function (textures, tileSetCount, tileSetItem) {
+			return function () {
+				var cs = new IgeCellSheet(tileSetItem.image, this.width / tileSetItem.tilewidth, this.height / tileSetItem.tileheight),
+					i, cc = cs.cellCount();
+
+				cs._tiledStartingId = tileSetItem.firstgid;
+				// Fill the lookup array
+				for (i = 0; i < cc; i++) {
+					textureCellLookup[cs._tiledStartingId + i] = cs;
+				}
+
+				textures.push(cs);
+
+				tileSetsLoaded++;
+
+				if (tileSetsLoaded === tileSetsTotal) {
+					// All textures loaded, fire processing function
+					allTexturesLoadedFunc();
+				}
+			};
+		};
+
+		// Load the tile sets as textures
+		while (tileSetCount--) {
+			// Load the image into memory first so we can read the total width and height
+			image = new Image();
+
+			tileSetItem = tileSetArray[tileSetCount];
+			image.onload = onLoadFunc(textures, tileSetCount, tileSetItem);
+			image.src = tileSetItem.image;
+		}
 	}
 });
