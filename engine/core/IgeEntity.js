@@ -3,7 +3,8 @@
  */
 var IgeEntity = IgeObject.extend([
 	{extension: IgeTransformExtension, overwrite: false},
-	{extension: IgeUiInteractionExtension, overwrite: true}
+	{extension: IgeUiInteractionExtension, overwrite: true},
+	{extension: IgeStreamExtension, overwrite: false}
 ], {
 	classId: 'IgeEntity',
 
@@ -34,6 +35,9 @@ var IgeEntity = IgeObject.extend([
 
         this._localMatrix = new IgeMatrix2d(this);
         this._worldMatrix = new IgeMatrix2d(this);
+
+		// Set the stream floating point precision to 2 as default
+		this.streamFloatPrecision(2);
 	},
 
 	/**
@@ -680,10 +684,14 @@ var IgeEntity = IgeObject.extend([
 	 * method.
 	 */
 	tick: function (ctx, dontTransform) {
+		// Check if the entity should still exist
 		if (this._deathTime !== undefined && this._deathTime <= ige.tickStart) {
 			// The entity should be removed because it has died
 			this.destroy();
 		} else {
+			// Remove the stream data cache
+			delete this._streamDataCache;
+
 			// Process any behaviours assigned to the entity
 			this._processBehaviours(ctx);
 
