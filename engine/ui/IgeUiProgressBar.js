@@ -1,5 +1,7 @@
 // TODO: Document this class
 var IgeUiProgressBar = IgeUiEntity.extend({
+	classId: 'IgeUiProgressBar',
+
 	init: function () {
 		this._super();
 

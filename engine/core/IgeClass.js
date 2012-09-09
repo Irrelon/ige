@@ -47,22 +47,13 @@ var IgeClass = (function () {
 		},
 
 		/**
-		 * Gets / sets the class id. Primarily used to help identify
+		 * Gets the class id. Primarily used to help identify
 		 * what class an instance was instantiated with and is also
 		 * output during the ige.scenegraph() method's console logging
-		 * to show what class an object belogs to.
+		 * to show what class an object belongs to.
 		 */
-		classId = function (name) {
-			if (typeof(name) !== 'undefined') {
-				if (this._classId) {
-					this._classId = name;
-				} else {
-					this.prototype._classId = name;
-				}
-				return this;
-			}
-
-			return (this._classId || this.prototype._classId);
+		classId = function () {
+			return this._classId;
 		},
 
 		/**
@@ -130,6 +121,18 @@ var IgeClass = (function () {
 			extensionIndex,
 			propertyIndex,
 			propertyObject;
+
+		// Check that the class has been assigned a classId and bug out if not
+		if (!prop.classId) {
+			console.log(prop);
+			throw('Cannot create a new class without giving the class a classId property!');
+		}
+
+		// Check that the classId is not already in use
+		if (igeClassStore[prop.classId]) {
+			// This classId has already been used, bug out
+			throw('Cannot create class with classId "' + prop.classId + '" because a class with that ID has already been created!');
+		}
 
 		// Instantiate a base class (but only create the instance,
 		// don't run the init constructor)
@@ -224,6 +227,9 @@ var IgeClass = (function () {
 
 		// Add the implement method
 		IgeClass.prototype.implement = implement;
+
+		// Register the class with the class store
+		igeClassStore[prop.classId] = IgeClass;
 
 		return IgeClass;
 	};

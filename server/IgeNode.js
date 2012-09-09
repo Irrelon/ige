@@ -1,4 +1,6 @@
 var IgeNode = IgeClass.extend({
+	classId: 'IgeNode',
+
 	init: function () {
 		// Include required node modules
 		var argParse = require("node-arguments").process,

@@ -3,6 +3,7 @@
 /************************/
 ige = null;
 igeVersion = '1.1.0';
+igeClassStore = {};
 
 igeDebug = {
 	node: typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined',

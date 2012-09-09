@@ -4,6 +4,8 @@
  * text element.
  */
 var IgeUiTextBox = IgeUiEntity.extend({
+	classId: 'IgeUiTextBox',
+
 	/**
 	 * @constructor
 	 */

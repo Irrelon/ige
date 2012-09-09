@@ -1,4 +1,6 @@
 var IgeUiRadioButton = IgeUiButton.extend({
+	classId: 'IgeUiRadioButton',
+
 	radioGroup: function (val) {
 		if (val !== undefined) {
 			this._uiRadioGroup = val;

@@ -2,6 +2,8 @@
  * Creates a new class with the capability to emit events.
  */
 var IgeEventingClass = IgeClass.extend({
+	classId: 'IgeEventingClass',
+
 	/**
 	 * Add an event listener method for an event.
 	 * @param {String || Array} eventName The name of the event to listen for (string), or an array of events to listen for.

@@ -2,6 +2,8 @@
  * Provides a UI drop-down menu entity.
  */
 var IgeUiMenu = IgeUiEntity.extend({
+	classId: 'IgeUiMenu',
+
 	/**
 	 * Gets / sets the menu definition.
 	 * @param {Object=} val The menu definition object.
@@ -80,6 +82,8 @@ var IgeUiMenu = IgeUiEntity.extend({
 });
 
 var IgeUiMenuItem = IgeUiEntity.extend({
+	classId: 'IgeUiMenuItem',
+
 	menuData: function (menuData) {
 		if (menuData !== undefined) {
 			this._menuData = menuData;
