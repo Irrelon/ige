@@ -2,7 +2,7 @@
 /* Isogenic Game Engine */
 /************************/
 ige = null;
-version = '1.1.0';
+igeVersion = '1.1.0';
 
 igeDebug = {
 	node: typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined',

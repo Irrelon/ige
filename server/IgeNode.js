@@ -13,7 +13,7 @@ var IgeNode = IgeClass.extend({
 			if (args['-g']) {
 				// Output our header
 				console.log('------------------------------------------------------------------------------');
-				console.log('* Isogenic Game Engine Server ' + version + '                                          *');
+				console.log('* Isogenic Game Engine Server ' + igeVersion + '                                          *');
 				console.log('* (C)opyright 2012 Irrelon Software Limited                                  *');
 				console.log('* http://www.isogenicengine.com                                              *');
 				console.log('------------------------------------------------------------------------------');
