@@ -24,24 +24,31 @@ var IgeObject = IgeEventingClass.extend({
 	 */
 	id: function (id) {
 		if (id !== undefined) {
-			// Check if this ID already exists in the object register
-			if (ige._register[id]) {
-				// Already an object with this ID!
-				if (ige._register[id] !== this) {
-					this.log('Cannot set ID of object to "' + id + '" because that ID is already in use by another object!', 'error');
+			// Check if we're changing the id
+			if (id !== this._id) {
+				// Check if this ID already exists in the object register
+				if (ige._register[id]) {
+					// Already an object with this ID!
+					if (ige._register[id] !== this) {
+						this.log('Cannot set ID of object to "' + id + '" because that ID is already in use by another object!', 'error');
+					}
+				} else {
+					// Check if we already have an id assigned
+					if (this._id && ige._register[this._id]) {
+						// Unregister the old ID before setting this new one
+						ige.unRegister(this);
+					}
+
+					this._id = id;
+
+					// Now register this object with the object register
+					ige.register(this);
+
+					return this;
 				}
 			} else {
-				// Check if we already have an id assigned
-				if (this._id && ige._register[this._id]) {
-					// Unregister the old ID before setting this new one
-					ige.unRegister(this);
-				}
-
-				this._id = id;
-
-				// Now register this object with the object register
-				ige.register(this);
-
+				// The same ID we already have is being applied,
+				// ignore the request and return
 				return this;
 			}
 		}
