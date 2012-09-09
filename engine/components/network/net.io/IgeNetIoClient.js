@@ -64,7 +64,6 @@ var IgeNetIoClient = {
 							}
 
 							// Setup default commands
-							self.define('_igeStream', function () { self._onStreamData.apply(self, arguments); });
 							self.define('_igeRequest', function () { self._onRequest.apply(self, arguments); });
 							self.define('_igeResponse', function () { self._onResponse.apply(self, arguments); });
 
