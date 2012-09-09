@@ -38,6 +38,9 @@ var IgeEntity = IgeObject.extend([
 
 		// Set the stream floating point precision to 2 as default
 		this.streamFloatPrecision(2);
+
+		// Set the default stream sections as just the transform data
+		this.streamSections(['transform']);
 	},
 
 	/**
@@ -737,12 +740,13 @@ var IgeEntity = IgeObject.extend([
 				}
 			}
 
-			this._super(ctx);
-
 			// Process any automatic-mode stream updating required
 			if (this._streamMode === 1) {
 				this.streamSync();
 			}
+
+			// Process children
+			this._super(ctx);
 
 			// Update all the old values to current values
 			this._oldTranslate = this._translate.clone();
