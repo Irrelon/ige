@@ -24,7 +24,19 @@ var Client = IgeClass.extend({
 				// a splash screen or a menu first? Then connect after you've
 				// got a username or something?
 				ige.network.start('http://localhost:2000', function () {
-					self.log('Client connected');
+					// Create the scene
+					self.scene1 = new IgeScene2d()
+						.id('scene1');
+
+					// Create the main viewport and set the scene
+					// it will "look" at as the new scene1 we just
+					// created above
+					self.vp1 = new IgeViewport()
+						.id('vp1')
+						.autoSize(true)
+						.scene(self.scene1)
+						.drawBounds(true)
+						.mount(ige);
 				});
 			}
 		});
