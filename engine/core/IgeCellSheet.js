@@ -9,17 +9,14 @@ var IgeCellSheet = IgeTexture.extend({
 
 	init: function (url, horizontalCells, verticalCells) {
 		var self = this;
+
+		self.horizontalCells(horizontalCells || 1);
+		self.verticalCells(verticalCells || 1);
+
 		this.on('loaded', function () {
 			if (self.image) {
 				// Store the cell sheet image
 				self._sheetImage = this.image;
-
-				self._cellColumns = 0;
-				self._cellRows = 0;
-
-				self.horizontalCells(horizontalCells || 1);
-				self.verticalCells(verticalCells || 1);
-
 				self._applyCells();
 			} else {
 				// Unable to create cells from non-image texture
