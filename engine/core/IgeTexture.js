@@ -240,7 +240,7 @@ var IgeTexture = IgeEventingClass.extend({
 			};
 
 			scriptElem.addEventListener('error', function () {
-				this.log('Error loading smart texture script file: ' + scriptUrl, 'error');
+				self.log('Error loading smart texture script file: ' + scriptUrl, 'error');
 			}, true);
 
 			scriptElem.src = scriptUrl;
