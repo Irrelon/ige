@@ -28,6 +28,12 @@ var IgePoint = function (x, y, z, floor) {
 	return this;
 };
 
+/**
+ * Gets / sets the floor mode of this point. If set to true the point's
+ * data will be mathematically floored when they are assigned.
+ * @param val
+ * @return {*}
+ */
 IgePoint.prototype.floor = function (val) {
 	if (val !== undefined) {
 		this._floor = val;
@@ -37,12 +43,19 @@ IgePoint.prototype.floor = function (val) {
 	return this._floor;
 };
 
+/**
+ * Compares this point's x, y, z data with the passed point and returns
+ * true if they are the same and false if any is different.
+ * @param point
+ * @return {Boolean}
+ */
 IgePoint.prototype.compare = function (point) {
 	return this.x === point.x && this.y === point.y && this.z === point.z;
 };
 
 /**
- * Converts the point's x, y, z to an isometric x, y 2d co-ordinate.
+ * Converts the point's x, y, z to an isometric x, y 2d co-ordinate
+ * and returns an object whose x, y values are the result.
  * @return {Object}
  */
 IgePoint.prototype.toIso = function () {
@@ -52,6 +65,11 @@ IgePoint.prototype.toIso = function () {
 	return {x: sx, y: sy};
 };
 
+/**
+ * Converts this point's x, y, z data into isometric co-ordinate space
+ * and overwrites the previous x, y, z values with the result.
+ * @return {*}
+ */
 IgePoint.prototype.thisToIso = function () {
 	var val = this.toIso();
 	this.x = val.x;
@@ -61,6 +79,11 @@ IgePoint.prototype.thisToIso = function () {
 	return this;
 };
 
+/**
+ * Converts this point's x, y, z data into 2d co-ordinate space
+ * and returns an object whose x, y values are the result.
+ * @return {Object}
+ */
 IgePoint.prototype.to2d = function () {
 	var sx = this.y + this.x / 2,
 		sy = this.y - this.x / 2;
@@ -68,6 +91,11 @@ IgePoint.prototype.to2d = function () {
 	return {x: sx, y: sy};
 };
 
+/**
+ * Converts this point's x, y, z data into 2d co-ordinate space
+ * and overwrites the previous x, y, z values with the result.
+ * @return {*}
+ */
 IgePoint.prototype.thisTo2d = function () {
 	var val = this.to2d();
 	this.x = val.x;
@@ -77,10 +105,22 @@ IgePoint.prototype.thisTo2d = function () {
 	return this;
 };
 
+/**
+ * Adds this point's data by the x, y, z, values specified
+ * and returns a new IgePoint whose values are the result.
+ * @param point
+ * @return {*}
+ */
 IgePoint.prototype.addPoint = function (point) {
 	return new IgePoint(this.x + point.x, this.y + point.y, this.z + point.z);
 };
 
+/**
+ * Adds this point's data by the x, y, z values specified and
+ * overwrites the previous x, y, z values with the result.
+ * @param point
+ * @return {*}
+ */
 IgePoint.prototype.thisAddPoint = function (point) {
 	this.x += point.x;
 	this.y += point.y;
@@ -89,10 +129,26 @@ IgePoint.prototype.thisAddPoint = function (point) {
 	return this;
 };
 
+/**
+ * Multiplies this point's data by the x, y, z, values specified
+ * and returns a new IgePoint whose values are the result.
+ * @param x
+ * @param y
+ * @param z
+ * @return {*}
+ */
 IgePoint.prototype.multiply = function (x, y, z) {
 	return new IgePoint(this.x * x, this.y * y, this.z * z);
 };
 
+/**
+ * Multiplies this point's data by the x, y, z values specified and
+ * overwrites the previous x, y, z values with the result.
+ * @param x
+ * @param y
+ * @param z
+ * @return {*}
+ */
 IgePoint.prototype.thisMultiply = function (x, y, z) {
 	this.x *= x;
 	this.y *= y;
@@ -101,10 +157,26 @@ IgePoint.prototype.thisMultiply = function (x, y, z) {
 	return this;
 };
 
+/**
+ * Divides this point's data by the x, y, z, values specified
+ * and returns a new IgePoint whose values are the result.
+ * @param x
+ * @param y
+ * @param z
+ * @return {*}
+ */
 IgePoint.prototype.divide = function (x, y, z) {
 	return new IgePoint(this.x / x, this.y / y, this.z / z);
 };
 
+/**
+ * Divides this point's data by the x, y, z values specified and
+ * overwrites the previous x, y, z values with the result.
+ * @param x
+ * @param y
+ * @param z
+ * @return {*}
+ */
 IgePoint.prototype.thisDivide = function (x, y, z) {
 	this.x /= x;
 	this.y /= y;
@@ -113,8 +185,25 @@ IgePoint.prototype.thisDivide = function (x, y, z) {
 	return this;
 };
 
+/**
+ * Returns a clone of this IgePoint's data as a new instance.
+ * @return {*}
+ */
 IgePoint.prototype.clone = function () {
 	return new IgePoint(this.x, this.y, this.z);
+};
+
+/**
+ * Returns a string representation of the point's x, y, z
+ * converting floating point values into fixed using the
+ * passed precision parameter. If no precision is specified
+ * then the precision defaults to 2.
+ * @param {Number=} precision
+ * @return {String}
+ */
+IgePoint.prototype.toString = function (precision) {
+	if (precision === undefined) { precision = 2; }
+	return this.x.toFixed(precision) + ',' + this.y.toFixed(precision) + ',' + this.z.toFixed(precision);
 };
 
 if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgePoint; }
