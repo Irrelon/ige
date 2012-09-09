@@ -110,6 +110,56 @@ var IgeStreamExtension = {
 	},
 
 	/**
+	 * Gets / sets the array of sections that this entity will
+	 * encode into its stream data.
+	 * @param {Array=} sectionArray An array of strings.
+	 * @return {*}
+	 */
+	streamSections: function (sectionArray) {
+		if (sectionArray !== undefined) {
+			this._streamSections = sectionArray;
+			return this;
+		}
+
+		return this._streamSections;
+	},
+
+	/**
+	 * Gets / sets the data for the specified data section id.
+	 * @param {String} sectionId A string identifying the section to handle data get / set for.
+	 * @param {*=} data If present, this is the data that has been sent from the server to the client for this entity.
+	 * @return {String}
+	 */
+	streamSectionData: function (sectionId, data) {
+		if (sectionId === 'transform') {
+			if (data) {
+				// We have received updated data
+				var dataArr = data.split(',');
+
+				// Translate
+				if (dataArr[0]) { this._translate.x = parseFloat(dataArr[0]); }
+				if (dataArr[1]) { this._translate.y = parseFloat(dataArr[1]); }
+				if (dataArr[2]) { this._translate.z = parseFloat(dataArr[2]); }
+
+				// Scale
+				if (dataArr[3]) { this._scale.x = parseFloat(dataArr[3]); }
+				if (dataArr[4]) { this._scale.y = parseFloat(dataArr[4]); }
+				if (dataArr[5]) { this._scale.z = parseFloat(dataArr[5]); }
+
+				// Rotate
+				if (dataArr[6]) { this._rotate.x = parseFloat(dataArr[6]); }
+				if (dataArr[7]) { this._rotate.y = parseFloat(dataArr[7]); }
+				if (dataArr[8]) { this._rotate.z = parseFloat(dataArr[8]); }
+			} else {
+				// We should return stringified data
+				return this._translate.toString(this._streamFloatPrecision) + ',' + // translate
+					this._scale.toString(this._streamFloatPrecision) + ',' + // scale
+					this._rotate.toString(this._streamFloatPrecision) + ','; // rotate
+			}
+		}
+	},
+
+	/**
 	 * Asks the network system to send the stream data to
 	 * the specified client id or array of ids.
 	 * @param clientId
@@ -134,20 +184,42 @@ var IgeStreamExtension = {
 			return this._streamDataCache;
 		} else {
 			// Let's generate our stream data
-			var streamData = '';
+			var streamData = '',
+				sectionDataString = '',
+				sectionArr = this._streamSections,
+				sectionCount = sectionArr.length,
+				sectionData,
+				sectionIndex;
 
-			streamData += this.id() + ',' + this.classId() + ',' +
-				// translate
-				this._translate.toString(this._streamFloatPrecision) + ',' +
-				// scale
-				this._scale.toString(this._streamFloatPrecision) + ',' +
-				// rotate
-				this._rotate.toString(this._streamFloatPrecision) + ',';
+			// Add the default data (id and class)
+			streamData += this.id() + ',' + this._parent.id() + ',' + this.classId();
+
+			// Now loop the data sections array and compile the rest of the
+			// data string from the data section return data
+			for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
+				// Get the section data for this section id
+				sectionData = this.streamSectionData(sectionArr[sectionIndex]);
+
+				// Add the section start designator character. We do this
+				// regardless of if there is actually any section data because
+				// we want to be able to identify sections in a serial fashion
+				// on receipt of the data string on the client
+				sectionDataString += '|';
+
+				// Check if we were returned any data
+				if (sectionData) {
+					// Add the data to the section string
+					sectionDataString += sectionData;
+				}
+			}
 
 			// Add any custom data to the stream string at this point
-
+			if (sectionDataString) {
+				streamData += sectionDataString;
+			}
 
 			// Remove any .00 from the string since we don't need that data
+			// TODO: What about if a property is a string with something.00 and it should be kept?
 			streamData = streamData.replace(this._floatRemoveRegExp, ',');
 
 			// Store the data in cache in case we are asked for it again this tick
