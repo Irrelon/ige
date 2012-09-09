@@ -59,6 +59,24 @@ var IgeSocketIoServer = {
 	},
 
 	/**
+	 * Returns an associative array of all connected clients
+	 * by their ID.
+	 * @return {Array}
+	 */
+	clients: function () {
+		return this._socketById;
+	},
+
+	/**
+	 * Returns the socket associated with the specified client id.
+	 * @param {String=} clientId
+	 * @return {*}
+	 */
+	socket: function (clientId) {
+		return this._socketById[clientId];
+	},
+
+	/**
 	 * Gets / sets the current flag that determines if client connections
 	 * should be allowed to connect (true) or dropped instantly (false).
 	 * @param {Boolean} val Set to true to allow connections or false
@@ -160,6 +178,7 @@ var IgeSocketIoServer = {
 	 */
 	_onClientDisconnect: function (data, socket) {
 		this.log('Client disconnected with id ' + socket.id);
+		delete this._socketById[socket.id];
 	}
 };
 

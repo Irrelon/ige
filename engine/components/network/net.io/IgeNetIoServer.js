@@ -11,6 +11,8 @@ var IgeNetIoServer = {
 	start: function (data, callback) {
 		var self = this;
 
+		this._socketById = [];
+
 		if (typeof(data) !== 'undefined') {
 			this._port = data;
 		}
@@ -23,6 +25,7 @@ var IgeNetIoServer = {
 		this._io.on('connection', function () { self._onClientConnect.apply(self, arguments); });
 
 		// Setup default commands
+		this.define('_igeStream');
 		this.define('_igeRequest', function () { self._onRequest.apply(self, arguments); });
 		this.define('_igeResponse', function () { self._onResponse.apply(self, arguments); });
 
@@ -52,6 +55,24 @@ var IgeNetIoServer = {
 		} else {
 			this.log('Cannot define a network command without a commandName parameter!', 'error');
 		}
+	},
+
+	/**
+	 * Returns an associative array of all connected clients
+	 * by their ID.
+	 * @return {Array}
+	 */
+	clients: function () {
+		return this._socketById;
+	},
+
+	/**
+	 * Returns the socket associated with the specified client id.
+	 * @param {String=} clientId
+	 * @return {*}
+	 */
+	socket: function (clientId) {
+		return this._socketById[clientId];
 	},
 
 	/**
@@ -184,6 +205,7 @@ var IgeNetIoServer = {
 
 		if (this._acceptConnections) {
 			this.log('Accepted connection with id ' + socket.id);
+			this._socketById[socket.id] = socket;
 
 			socket.on('message', function (data) {
 				self._onClientMessage.apply(self, [data, socket.id]);
@@ -213,7 +235,7 @@ var IgeNetIoServer = {
 
 		if (this._debug) {
 			console.log('onRequest', data);
-			console.log('emitting', data.cmd, [data.id, data.data])
+			console.log('emitting', data.cmd, [data.id, data.data]);
 		}
 
 		if (this._networkCommands[data.cmd]) {
@@ -269,6 +291,7 @@ var IgeNetIoServer = {
 	 */
 	_onClientDisconnect: function (data, clientId) {
 		this.log('Client disconnected with id ' + clientId);
+		delete this._socketById[clientId];
 	}
 };
 
