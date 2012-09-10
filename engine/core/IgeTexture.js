@@ -228,7 +228,7 @@ var IgeTexture = IgeEventingClass.extend({
 
 				// Run the asset script init method
 				if (typeof(image.init) === 'function') {
-					image.init.apply(image, [ige, self]);
+					image.init.apply(image, [self]);
 				}
 
 				//self.sizeX(image.width);
@@ -293,45 +293,55 @@ var IgeTexture = IgeEventingClass.extend({
 		this._sizeY = val;
 	},
 
-	resize: function (x, y) {
+	resize: function (x, y, dontDraw) {
 		if (this._originalImage) {
-			// Create a new canvas
-			var newCanvas = document.createElement('canvas'),
-				ctx;
+			if (!this._textureCtx) {
+				// Create a new canvas
+				this._textureCanvas = document.createElement('canvas');
+			}
 
-			newCanvas.width = x;
-			newCanvas.height = y;
-			ctx = newCanvas.getContext('2d');
+			this._textureCanvas.width = x;
+			this._textureCanvas.height = y;
+			this._textureCtx = this._textureCanvas.getContext('2d');
 
-			// Draw the original image to the new canvas
-			// scaled as required
-			ctx.drawImage(
-				this._originalImage,
-				0,
-				0,
-				this._originalImage.width,
-				this._originalImage.height,
-				0,
-				0,
-				x,
-				y
-			);
+			if (!dontDraw) {
+				// Draw the original image to the new canvas
+				// scaled as required
+				this._textureCtx.drawImage(
+					this._originalImage,
+					0,
+					0,
+					this._originalImage.width,
+					this._originalImage.height,
+					0,
+					0,
+					x,
+					y
+				);
+			}
 
 			// Swap the current image for this new canvas
-			this.image = newCanvas;
+			this.image = this._textureCanvas;
 		}
 	},
 
 	restoreOriginal: function () {
 		this.image = this._originalImage;
+		delete this._textureCtx;
+		delete this._textureCanvas;
 	},
 
-	render: function (ctx, entity, tickDelta) {
+	render: function (ctx, entity) {
 		if (this._mode === 0) {
 			// This texture is image-based
 			var cell = this._cells[entity._cell],
 				geom = entity.geometry,
 				poly = entity._renderPos; // Render pos is calculated in the IgeEntity.aabb() method
+
+			if (this._preFilter && this._textureCtx) {
+				// Call the preFilter method
+				this._preFilter(this._textureCanvas, this._textureCtx, this._originalImage);
+			}
 
 			ctx.drawImage(
 				this.image,
@@ -351,11 +361,73 @@ var IgeTexture = IgeEventingClass.extend({
 		if (this._mode === 1) {
 			// This texture is script-based (a "smart texture")
 			ctx.save();
-				this.script.render(ctx, entity, tickDelta);
+				this.script.render(ctx, entity, this);
 			ctx.restore();
 
 			ige._drawCount++;
 		}
+	},
+
+	/**
+	 * Gets / sets the pre-filter method that will be called before
+	 * the texture is rendered and will allow you to modify the texture
+	 * image before rendering each tick.
+	 * @param method
+	 * @return {*}
+	 */
+	preFilter: function (method) {
+		if (method !== undefined) {
+			if (this._originalImage) {
+				if (!this._textureCtx) {
+					// Create a new canvas
+					this._textureCanvas = document.createElement('canvas');
+
+					this._textureCanvas.width = this._originalImage.width;
+					this._textureCanvas.height = this._originalImage.height;
+					this._textureCtx = this._textureCanvas.getContext('2d');
+				}
+
+				// Swap the current image for this new canvas
+				this.image = this._textureCanvas;
+
+				// Store the pre-filter method
+				this._preFilter = method;
+			}
+			return this;
+		}
+
+		return this._preFilter;
+	},
+
+	/**
+	 * Applies a filter to the texture. The filter is a method that will
+	 * take the canvas, context and originalImage parameters and then
+	 * use context calls to alter / paint the context with the texture
+	 * and any filter / adjustments that you want to apply.
+	 * @param {Function} method
+	 * @return {*}
+	 */
+	applyFilter: function (method) {
+		if (method !== undefined) {
+			if (this._originalImage) {
+				if (!this._textureCtx) {
+					// Create a new canvas
+					this._textureCanvas = document.createElement('canvas');
+
+					this._textureCanvas.width = this._originalImage.width;
+					this._textureCanvas.height = this._originalImage.height;
+					this._textureCtx = this._textureCanvas.getContext('2d');
+				}
+
+				// Swap the current image for this new canvas
+				this.image = this._textureCanvas;
+
+				// Call the passed method
+				method(this._textureCanvas, this._textureCtx, this._originalImage);
+			}
+		}
+
+		return this;
 	},
 
 	/**
