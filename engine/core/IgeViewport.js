@@ -334,6 +334,35 @@ var IgeViewport = IgeEntity.extend([
 		if (this._scene) {
 			this._scene._resizeEvent(event);
 		}
+	},
+
+	/**
+	 * Returns a string containing a code fragment that when
+	 * evaluated will reproduce this object's properties via
+	 * chained commands. This method will only check for
+	 * properties that are directly related to this class.
+	 * Other properties are handled by their own class method.
+	 * @return {String}
+	 */
+	_stringify: function () {
+		// Get the properties for all the super-classes
+		var str = this._super(), i;
+
+		// Loop properties and add property assignment code to string
+		for (i in this) {
+			if (this.hasOwnProperty(i) && this[i] !== undefined) {
+				switch (i) {
+					case '_autoSize':
+						str += ".autoSize(" + this._autoSize + ")";
+						break;
+					case '_scene':
+						str += ".scene(ige.$('" + this.scene().id() + "'))";
+						break;
+				}
+			}
+		}
+
+		return str;
 	}
 });
 
