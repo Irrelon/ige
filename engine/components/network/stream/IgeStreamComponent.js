@@ -18,15 +18,18 @@ var IgeStreamComponent = IgeClass.extend({
 
 		/* CEXCLUDE */
 		if (ige.isServer) {
+			// Define the network stream command
 			this._entity.define('_igeStream');
+
+			// Define the object that will hold the stream data queue
+			this._queuedData = {};
 		}
 		/* CEXCLUDE */
 
 		if (!ige.isServer) {
+			// Define the network stream command
 			this._entity.define('_igeStream', function () { self._onStreamData.apply(self, arguments); });
 		}
-
-		this._queuedData = {};
 	},
 
 	/**
