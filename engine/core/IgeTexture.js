@@ -285,14 +285,33 @@ var IgeTexture = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Sets the _sizeX property.
+	 * @param {Number} val
+	 */
 	sizeX: function (val) {
 		this._sizeX = val;
 	},
 
+	/**
+	 * Sets the _sizeY property.
+	 * @param {Number} val
+	 */
 	sizeY: function (val) {
 		this._sizeY = val;
 	},
 
+	/**
+	 * Resizes the original texture image to a new size. This alters
+	 * the image that the texture renders so all entities that use
+	 * this texture will output the newly resized version of the image.
+	 * @param {Number} x The new width.
+	 * @param {Number} y The new height.
+	 * @param {Boolean=} dontDraw If true the resized image will not be
+	 * drawn to the texture canvas. Useful for just resizing the texture
+	 * canvas and not the output image. Use in conjunction with the
+	 * applyFilter() and preFilter() methods.
+	 */
 	resize: function (x, y, dontDraw) {
 		if (this._originalImage) {
 			if (!this._textureCtx) {
@@ -325,12 +344,24 @@ var IgeTexture = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Sets the texture image back to the original image that the
+	 * texture first loaded. Useful if you have applied filters
+	 * or resized the image and now want to revert back to the
+	 * original.
+	 */
 	restoreOriginal: function () {
 		this.image = this._originalImage;
 		delete this._textureCtx;
 		delete this._textureCanvas;
 	},
 
+	/**
+	 * Renders the texture image to the passed canvas context.
+	 * @param {CanvasContext2d} ctx The canvas context to draw to.
+	 * @param {IgeEntity} entity The entity that this texture is
+	 * being drawn for.
+	 */
 	render: function (ctx, entity) {
 		if (this._mode === 0) {
 			// This texture is image-based
@@ -447,9 +478,14 @@ var IgeTexture = IgeEventingClass.extend({
 		return str;
 	},
 
+	/**
+	 * Destroys the item.
+	 */
 	destroy: function () {
-		this.image = null;
-		this.script = null;
+		delete this.image;
+		delete this.script;
+		delete this._textureCanvas;
+		delete this._textureCtx;
 	}
 });
 
