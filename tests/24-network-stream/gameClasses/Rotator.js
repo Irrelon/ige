@@ -26,7 +26,7 @@ var Rotator = IgeEntity.extend({
 
 	/**
 	 * Override the default IgeEntity class streamSectionData() method
-	 * so that we can check for the custom1 section handle how we deal
+	 * so that we can check for the custom1 section and handle how we deal
 	 * with it.
 	 * @param {String} sectionId A string identifying the section to
 	 * handle data get / set for.
@@ -35,7 +35,10 @@ var Rotator = IgeEntity.extend({
 	 * @return {String}
 	 */
 	streamSectionData: function (sectionId, data) {
+		// Check if the section is one that we are handling
 		if (sectionId === 'custom1') {
+			// Check if the server sent us data, if not we are supposed
+			// to return the data instead of set it
 			if (data) {
 				// We have been given new data!
 				this._customProperty = data;
@@ -44,6 +47,9 @@ var Rotator = IgeEntity.extend({
 				return this._customProperty;
 			}
 		} else {
+			// The section was not one that we handle here, so pass this
+			// to the super-class streamSectionData() method - it handles
+			// the "transform" section by itself
 			return this._super(sectionId, data);
 		}
 	},
