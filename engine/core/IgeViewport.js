@@ -165,7 +165,12 @@ var IgeViewport = IgeEntity.extend([
 		var arr = rootObject._children,
 			arrCount,
 			obj,
-			aabb;
+			aabb,
+			ga,
+			r3d,
+			xl1, xl2, xl3, xl4, xl5, xl6,
+			bf1, bf2, bf3, bf4,
+			tf1, tf2, tf3, tf4;
 
 		if (arr) {
 			arrCount = arr.length;
@@ -209,39 +214,25 @@ var IgeViewport = IgeEntity.extend([
 										//obj._transformContext(ctx);
 
 										// Calculate the 3d bounds data
-										var r3d = obj.geometry,
-											xl1 = new IgePoint(-(r3d.x / 2), 0, 0)
-												.toIso(),
-											xl2 = new IgePoint(+(r3d.x / 2), 0, 0)
-												.toIso(),
-											xl3 = new IgePoint(0, -(r3d.y / 2), 0)
-												.toIso(),
-											xl4 = new IgePoint(0, +(r3d.y / 2), 0)
-												.toIso(),
-											xl5 = new IgePoint(0, 0, -(r3d.z / 2))
-												.toIso(),
-											xl6 = new IgePoint(0, 0, +(r3d.z / 2))
-												.toIso(),
-											// Bottom face
-											bf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2))
-												.toIso(),
-											bf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2))
-												.toIso(),
-											bf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2))
-												.toIso(),
-											bf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2))
-												.toIso(),
-											// Top face
-											tf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2))
-												.toIso(),
-											tf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2))
-												.toIso(),
-											tf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2))
-												.toIso(),
-											tf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2))
-												.toIso();
+										r3d = obj.geometry;
+										xl1 = new IgePoint(-(r3d.x / 2), 0, 0).toIso();
+										xl2 = new IgePoint(+(r3d.x / 2), 0, 0).toIso();
+										xl3 = new IgePoint(0, -(r3d.y / 2), 0).toIso();
+										xl4 = new IgePoint(0, +(r3d.y / 2), 0).toIso();
+										xl5 = new IgePoint(0, 0, -(r3d.z / 2)).toIso();
+										xl6 = new IgePoint(0, 0, +(r3d.z / 2)).toIso();
+										// Bottom face
+										bf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
+										bf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
+										bf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
+										bf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
+										// Top face
+										tf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
+										tf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
+										tf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
+										tf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
 
-										var ga = ctx.globalAlpha;
+										ga = ctx.globalAlpha;
 
 										// Axis lines
 										ctx.globalAlpha = 1;
