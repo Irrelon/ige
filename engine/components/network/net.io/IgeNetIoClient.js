@@ -75,9 +75,9 @@ var IgeNetIoClient = {
 								delete self._startCallback;
 							}
 						}
+					} else {
+						self._onMessageFromServer.apply(self, arguments);
 					}
-
-					self._onMessageFromServer.apply(self, arguments);
 				});
 
 				// Define disconnect listener
@@ -133,10 +133,12 @@ var IgeNetIoClient = {
 	 * @param data
 	 */
 	send: function (commandName, data) {
-		var commandIndex = this._networkCommandsLookup[commandName];
+		var commandIndex = this._networkCommandsLookup[commandName],
+			ciEncoded;
 
 		if (commandIndex !== undefined) {
-			this._io.send([commandIndex, data]);
+			ciEncoded = String.fromCharCode(commandIndex);
+			this._io.send([ciEncoded, data]);
 		} else {
 			this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
 		}
@@ -263,7 +265,8 @@ var IgeNetIoClient = {
 	 * @private
 	 */
 	_onMessageFromServer: function (data) {
-		var commandName = this._networkCommandsIndex[data[0]];
+		var ciDecoded = data[0].charCodeAt(0),
+			commandName = this._networkCommandsIndex[ciDecoded];
 
 		if (this._networkCommands[commandName]) {
 			this._networkCommands[commandName](data[1]);
