@@ -40,6 +40,11 @@ var Client = IgeClass.extend({
 						.scene(self.scene1)
 						.drawBounds(true)
 						.mount(ige);
+
+					// We don't create any entities here because in this example the entities
+					// are created server-side and then streamed to the clients. If an entity
+					// is streamed to a client and the client doesn't have the entity in
+					// memory, the entity is automatically created. Woohoo!
 				});
 			}
 		});
