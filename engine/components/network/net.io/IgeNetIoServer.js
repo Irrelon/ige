@@ -203,22 +203,28 @@ var IgeNetIoServer = {
 		var self = this;
 
 		if (this._acceptConnections) {
-			this.log('Accepted connection with id ' + socket.id);
-			this._socketById[socket.id] = socket;
+			// Check if any listener cancels this
+			if (!this.emit('connect', socket)) {
+				this.log('Accepted connection with id ' + socket.id);
+				this._socketById[socket.id] = socket;
 
-			socket.on('message', function (data) {
-				self._onClientMessage.apply(self, [data, socket.id]);
-			});
+				socket.on('message', function (data) {
+					self._onClientMessage.apply(self, [data, socket.id]);
+				});
 
-			socket.on('disconnect', function (data) {
-				self._onClientDisconnect.apply(self, [data, socket.id]);
-			});
+				socket.on('disconnect', function (data) {
+					self._onClientDisconnect.apply(self, [data, socket.id]);
+				});
 
-			// Send an init message to the client
-			socket.send({
-				cmd: 'init',
-				ncmds: this._networkCommandsLookup
-			});
+				// Send an init message to the client
+				socket.send({
+					cmd: 'init',
+					ncmds: this._networkCommandsLookup
+				});
+			} else {
+				// Reject the connection
+				socket.disconnect();
+			}
 		} else {
 			this.log('Rejecting connection with id ' + socket.id + ' - we are not accepting connections at the moment!');
 			socket.disconnect();
