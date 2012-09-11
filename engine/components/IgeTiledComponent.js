@@ -73,6 +73,7 @@ var IgeTiledComponent = IgeClass.extend({
 					.isometricMounts(true)
 					.tileWidth(data.tilewidth)
 					.tileHeight(data.tilewidth)
+					.depth(i)
 					.mount(baseScene);
 
 				tileSetCount = tileSetArray.length;
@@ -88,11 +89,13 @@ var IgeTiledComponent = IgeClass.extend({
 					for (x = 0; x < mapWidth; x++) {
 						z = x + (y * mapWidth);
 
-						if (layerData[z] > 0) {
+						if (layerData[z] > 0 && layerData[z] !== 2147483712) {
 							// Paint the tile
 							currentTexture = textureCellLookup[layerData[z]];
-							currentCell = layerData[z] - (currentTexture._tiledStartingId - 1);
-							textureMaps[i].paintTile(x, y, textures.indexOf(currentTexture), currentCell);
+							if (currentTexture) {
+								currentCell = layerData[z] - (currentTexture._tiledStartingId - 1);
+								textureMaps[i].paintTile(x, y, textures.indexOf(currentTexture), currentCell);
+							}
 						}
 					}
 				}
