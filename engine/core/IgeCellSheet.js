@@ -20,7 +20,7 @@ var IgeCellSheet = IgeTexture.extend({
 				self._applyCells();
 			} else {
 				// Unable to create cells from non-image texture
-				// TODO: Medium-priority - Support cell sheets from smart-textures
+				// TODO: Low-priority - Support cell sheets from smart-textures
 				self.log('Cannot create cell-sheet because texture has not loaded an image!', 'error');
 			}
 		});
