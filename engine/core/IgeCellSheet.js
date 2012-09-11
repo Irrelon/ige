@@ -33,7 +33,7 @@ var IgeCellSheet = IgeTexture.extend({
 	 * @return {Number}
 	 */
 	cellCount: function () {
-		return this.horizontalCells() + this.verticalCells();
+		return this.horizontalCells() * this.verticalCells();
 	},
 
 	/**
