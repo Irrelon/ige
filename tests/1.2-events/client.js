@@ -22,51 +22,22 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					// Create the scene
-					self.scene1 = new IgeScene2d();
+					// Create a new eventing class and an event listener
+					var evClass = new IgeEventingClass(),
+						testListener = function () { console.log('Test event fired');},
+						ev;
 
-					// Create the main viewport and set the scene
-					// it will "look" at as the new scene1 we just
-					// created above
-					self.vp1 = new IgeViewport()
-						.autoSize(true)
-						.scene(self.scene1)
-						.drawBounds(true)
-						.mount(ige);
+					// Turn on the event listener
+					ev = evClass.on('test', testListener);
 
-					// Create an entity and mount it to the scene
-					self.obj[0] = new Rotator()
-						.id('fairy1')
-						.depth(1)
-						.width(100)
-						.height(100)
-						.texture(gameTexture[0])
-						.translateTo(0, 0, 0)
-						.mount(self.scene1);
+					// Fire the new event - listener should fire
+					evClass.emit('test');
 
-					// Create a second rotator entity and mount
-					// it to the first one at 0, 50 relative to the
-					// parent
-					self.obj[1] = new Rotator()
-						.id('fairy2')
-						.depth(1)
-						.width(50)
-						.height(50)
-						.texture(gameTexture[0])
-						.translateTo(0, 50, 0)
-						.mount(self.obj[0]);
+					// Turn off the event listener
+					evClass.off('test', ev);
 
-					// Create a third rotator entity and mount
-					// it to the first on at 0, -50 relative to the
-					// parent, but assign it a smart texture!
-					self.obj[1] = new Rotator()
-						.id('simpleBox')
-						.depth(1)
-						.width(50)
-						.height(50)
-						.texture(gameTexture[1])
-						.translateTo(0, -50, 0)
-						.mount(self.obj[0]);
+					// Fire the new event again - listener should not fire this time
+					evClass.emit('test');
 				}
 			});
 		});
