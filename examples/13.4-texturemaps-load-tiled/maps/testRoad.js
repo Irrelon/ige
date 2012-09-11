@@ -62,4 +62,4 @@ var tiled = { "height":20,
  "tilewidth":66,
  "version":1,
  "width":20
-}
+};
