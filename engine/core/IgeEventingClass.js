@@ -190,8 +190,9 @@ var IgeEventingClass = IgeClass.extend({
 					// Remove the listener from the event listener list
 					this._eventListeners[eventName].splice(evtListIndex, 1);
 					return true;
+				} else {
+					this.log('Failed to cancel event listener for event named "' + eventName + '" !', 'warning', evtListener);
 				}
-				this.log('Failed to cancel event listener for event named "' + eventName + '" !', 'info', evtListener);
 			} else {
 				this.log('Failed to cancel event listener!');
 			}
