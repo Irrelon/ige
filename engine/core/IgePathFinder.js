@@ -29,11 +29,22 @@ var IgePathFinder = IgeClass.extend({
 			neighborCount,
 			neighbourNode,
 			gScore,
-			bestScore;
+			bestScore,
+			endPointCheckTile,
+			tileMapData;
 
 		// Set some defaults
 		if (allowSquare === undefined) { allowSquare = true; }
 		if (allowDiagonal === undefined) { allowDiagonal = false; }
+
+		// Check that the end point on the map is actually allowed to be pathed to!
+		tileMapData = tileMap.map._mapData;
+		endPointCheckTile = tileMapData[endPoint.x] && tileMapData[endPoint.x][endPoint.y] ? tileMapData[endPoint.x][endPoint.y] : null;
+		if (!comparisonCallback(endPointCheckTile)) {
+			// There is no path to the end point because the end point
+			// is not allowed to be pathed to!
+			return [];
+		}
 
 		// Starting point to open list
 		startNode = new IgePathNode(startPoint.x, startPoint.y, 0);
