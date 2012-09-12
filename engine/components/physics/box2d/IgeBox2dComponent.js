@@ -3,6 +3,12 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	componentId: 'box2d',
 
 	init: function (entity, options) {
+		// Check that the engine has not already started
+		// as this will mess everything up if it has
+		if (ige._state !== 0) {
+			this.log('Cannot add box2d component to the ige instance once the engine has started!', 'error');
+		}
+
 		this._entity = entity;
 		this._options = options;
 
