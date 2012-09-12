@@ -128,12 +128,16 @@ var IgeStreamExtension = {
 	 * Gets / sets the data for the specified data section id.
 	 * @param {String} sectionId A string identifying the section to handle data get / set for.
 	 * @param {*=} data If present, this is the data that has been sent from the server to the client for this entity.
-	 * @return {String}
+	 * @return {*}
 	 */
 	streamSectionData: function (sectionId, data) {
 		if (sectionId === 'transform') {
 			if (data) {
 				// We have received updated data
+				// Add it to the time stream
+				this._timeStream.push(data.split(','));
+				return;
+
 				var dataArr = data.split(',');
 
 				// Translate
