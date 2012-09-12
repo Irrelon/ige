@@ -30,6 +30,10 @@ var IgeStreamComponent = IgeClass.extend({
 			// Define the network stream command
 			this._entity.define('_igeStream', function () { self._onStreamData.apply(self, arguments); });
 		}
+
+		// Set some defaults
+		this._renderLatency = 100;
+		this._streamInterval = 50;
 	},
 
 	/**
