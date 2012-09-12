@@ -194,9 +194,9 @@ IgePoint.prototype.clone = function () {
 };
 
 IgePoint.prototype.interpolate = function (endPoint, startTime, currentTime, endTime) {
-	var totalX = endValue.x - this.x,
-		totalY = endValue.y - this.y,
-		totalZ = endValue.z - this.z,
+	var totalX = endPoint.x - this.x,
+		totalY = endPoint.y - this.y,
+		totalZ = endPoint.z - this.z,
 		totalTime = endTime - startTime,
 		deltaTime = totalTime - (currentTime - startTime),
 		timeRatio = deltaTime / totalTime;
