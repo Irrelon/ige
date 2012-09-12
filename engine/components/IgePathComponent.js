@@ -133,7 +133,7 @@ var IgePathComponent = IgeClass.extend({
 
 						// Check we are being sane!
 						if (!currentPath[self._targetCellIndex]) {
-							self.log('Path complete...');
+							//self.log('Path complete...');
 
 							// Make sure we're exactly on the target
 							this.translateTo(targetPoint.x, targetPoint.y, currentPosition.z);
@@ -141,10 +141,10 @@ var IgePathComponent = IgeClass.extend({
 							// No more cells, go to next path
 							self._targetCellIndex = 0;
 							self._currentPathIndex++;
-							self.log('Advancing to next path...');
+							//self.log('Advancing to next path...');
 
 							if (!self._paths[self._currentPathIndex]) {
-								self.log('No more paths, resting now.');
+								//self.log('No more paths, resting now.');
 								// No more paths, reset and exit
 								self.clear();
 
