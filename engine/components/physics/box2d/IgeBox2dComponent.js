@@ -284,6 +284,21 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Gets / sets the callback method that will be called after
+	 * every physics world step.
+	 * @param method
+	 * @return {*}
+	 */
+	updateCallback: function (method) {
+		if (method !== undefined) {
+			this._updateCallback = method;
+			return this._entity;
+		}
+
+		return this._updateCallback;
+	},
+
+	/**
 	 * Steps the physics simulation forward.
 	 * @param ctx
 	 * @private
