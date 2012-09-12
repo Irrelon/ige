@@ -41,11 +41,17 @@ var PlayerComponent = IgeClass.extend({
 			0
 		);
 
+		console.log('Current translate: ', currentPosition.x, currentPosition.y);
+
+		console.log('Pathing from ', currentTile.x, currentTile.y, 'to', tilePoint.x, tilePoint.y);
+
 		// Create a path from the current position to the target tile
 		newPath = ige.client.pathFinder.aStar(ige.client.collisionMap1, currentTile, tilePoint, function (tileData) {
 			// If the collision map tile data is set to 1, don't allow a path along it
 			return tileData !== 1;
 		}, true, false);
+
+		console.log(newPath);
 
 		this._entity
 			.path.add(newPath)
