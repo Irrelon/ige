@@ -58,6 +58,15 @@ var IgePathComponent = IgeClass.extend({
 		return this._autoStop;
 	},
 
+	speed: function (val) {
+		if (val !== undefined) {
+			this._speed = val;
+			return this._entity;
+		}
+
+		return this._speed;
+	},
+
 	start: function (startTime) {
 		// Check that we are not already active
 		if (!this._active) {
