@@ -392,73 +392,73 @@ var IgeTileMap2d = IgeEntity.extend({
 				ctx.lineTo(gEnd.x, gEnd.y);
 				ctx.stroke();
 			}
+		}
 
-			if (this._highlightOccupied) {
-				ctx.fillStyle = '#ff0000';
-				for (x = 0; x < this.map._mapData.length; x++) {
-					if (this.map._mapData[y]) {
-						for (y = 0; y < this.map._mapData[y].length; y++) {
-							if (this.map._mapData[y][x] && this.map._mapData[y][x].length) {
-								// Tile is occupied
-								tilePoint = new IgePoint(tileWidth * x, tileHeight * y, 0);
+		if (this._highlightOccupied) {
+			ctx.fillStyle = '#ff0000';
+			for (y = 0; y < this.map._mapData.length; y++) {
+				if (this.map._mapData[y]) {
+					for (x = 0; x < this.map._mapData[y].length; x++) {
+						if (this.map._mapData[y][x] && this.map._mapData[y][x].length) {
+							// Tile is occupied
+							tilePoint = new IgePoint(tileWidth * x, tileHeight * y, 0);
 
-								// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
-								if (this._mountMode === 0) {
-									// 2d
-									ctx.fillRect(
-										tilePoint.x - tileWidth / 2,
-										tilePoint.y - tileHeight / 2,
-										tileWidth,
-										tileHeight
-									);
-								}
+							// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
+							if (this._mountMode === 0) {
+								// 2d
+								ctx.fillRect(
+									tilePoint.x - tileWidth / 2,
+									tilePoint.y - tileHeight / 2,
+									tileWidth,
+									tileHeight
+								);
+							}
 
-								if (this._mountMode === 1) {
-									// iso
-									tilePoint.thisToIso();
+							if (this._mountMode === 1) {
+								// iso
+								tilePoint.thisToIso();
 
-									ctx.beginPath();
-										ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-										ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
-										ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
-										ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
-										ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-									ctx.fill();
-								}
+								ctx.beginPath();
+								ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+								ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
+								ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
+								ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
+								ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+								ctx.fill();
 							}
 						}
 					}
 				}
 			}
+		}
 
-			if (this._drawMouse) {
-				// Paint the tile the mouse is currently intersecting
-				ctx.fillStyle = '#6000ff';
-				if (this._mountMode === 0) {
-					// 2d
-					ctx.fillRect(
-						(this._mouseTilePos.x * tileWidth) - tileWidth / 2,
-						(this._mouseTilePos.y * tileHeight) - tileHeight / 2,
-						tileWidth,
-						tileHeight
-					);
-				}
+		if (this._drawMouse) {
+			// Paint the tile the mouse is currently intersecting
+			ctx.fillStyle = '#6000ff';
+			if (this._mountMode === 0) {
+				// 2d
+				ctx.fillRect(
+					(this._mouseTilePos.x * tileWidth) - tileWidth / 2,
+					(this._mouseTilePos.y * tileHeight) - tileHeight / 2,
+					tileWidth,
+					tileHeight
+				);
+			}
 
-				if (this._mountMode === 1) {
-					// iso
-					tilePoint = this._mouseTilePos
-						.clone()
-						.thisMultiply(tileWidth, tileHeight, 0)
-						.thisToIso();
+			if (this._mountMode === 1) {
+				// iso
+				tilePoint = this._mouseTilePos
+					.clone()
+					.thisMultiply(tileWidth, tileHeight, 0)
+					.thisToIso();
 
-					ctx.beginPath();
-						ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-						ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
-						ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
-						ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
-						ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-					ctx.fill();
-				}
+				ctx.beginPath();
+				ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+				ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
+				ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
+				ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
+				ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+				ctx.fill();
 			}
 		}
 
