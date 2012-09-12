@@ -53,6 +53,8 @@ var Client = IgeClass.extend({
 					.drawMouse(true)
 					.drawBounds(false)
 					.drawBoundsData(false)
+					.occupyTile(1, 1, 1, 1, true) // This is just so we can show a red tile to the user
+					.highlightOccupied(true) // Draws a red tile wherever a tile is "occupied"
 					.mount(self.objectScene);
 
 				// Create a collision tile map
