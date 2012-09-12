@@ -30,19 +30,10 @@ var PlayerComponent = IgeClass.extend({
 			currentTile,
 			newPath;
 
-		// Clear any previous paths
-		this._entity
-			.path.clear();
-
 		// Calculate which tile our character is currently "over"
-		currentTile = new IgePoint(
-			Math.floor(currentPosition.x / this._entity._parent._tileWidth),
-			Math.floor(currentPosition.y / this._entity._parent._tileHeight),
-			0
-		);
+		currentTile = this._entity._parent.pointToTile(currentPosition.toIso());
 
 		console.log('Current translate: ', currentPosition.x, currentPosition.y);
-
 		console.log('Pathing from ', currentTile.x, currentTile.y, 'to', tilePoint.x, tilePoint.y);
 
 		// Create a path from the current position to the target tile
@@ -53,14 +44,11 @@ var PlayerComponent = IgeClass.extend({
 
 		console.log(newPath);
 
+		// Tell the entity to start pathing along the new path
 		this._entity
+			.path.clear()
 			.path.add(newPath)
 			.path.start();
-
-		/*this._entity.walkTo(
-			tilePoint.x,
-			tilePoint.y
-		);*/
 	}
 });
 
