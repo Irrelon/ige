@@ -24,6 +24,7 @@ var IgePathComponent = IgeClass.extend({
 
 	add: function (path) {
 		if (path !== undefined) {
+			this.log('Adding path to queue... (active: ' + this._active + ')');
 			this._paths.push(path);
 		}
 
@@ -60,6 +61,7 @@ var IgePathComponent = IgeClass.extend({
 	start: function (startTime) {
 		// Check that we are not already active
 		if (!this._active) {
+			this.log('Starting path traversal...');
 			// Check we have some paths to traverse!
 			if (this._paths.length) {
 				// If we don't have a current path index, set it to zero
@@ -75,6 +77,7 @@ var IgePathComponent = IgeClass.extend({
 
 				// Set pathing to active
 				this._active = true;
+				this.log('Traversal started (active: ' + this._active + ')');
 			} else {
 				this.log('Cannot start path because no paths have been added!', 'warning');
 			}
@@ -84,6 +87,7 @@ var IgePathComponent = IgeClass.extend({
 	},
 
 	stop: function () {
+		this.log('Setting pathing as inactive...');
 		this._active = false;
 		return this._entity;
 	},
@@ -91,6 +95,10 @@ var IgePathComponent = IgeClass.extend({
 	clear: function () {
 		this.stop();
 		this._paths = [];
+
+		this._currentPathIndex = -1;
+		this._targetCellIndex = -1;
+		this._targetCellArrivalTime = 0;
 
 		return this._entity;
 	},
@@ -125,15 +133,20 @@ var IgePathComponent = IgeClass.extend({
 
 						// Check we are being sane!
 						if (!currentPath[self._targetCellIndex]) {
+							self.log('Path complete...');
+
+							// Make sure we're exactly on the target
+							this.translateTo(targetPoint.x, targetPoint.y, currentPosition.z);
+
 							// No more cells, go to next path
 							self._targetCellIndex = 0;
 							self._currentPathIndex++;
+							self.log('Advancing to next path...');
 
 							if (!self._paths[self._currentPathIndex]) {
+								self.log('No more paths, resting now.');
 								// No more paths, reset and exit
-								self.stop();
-								self._currentPathIndex = -1;
-								self._targetCellIndex = -1;
+								self.clear();
 
 								return false;
 							}
