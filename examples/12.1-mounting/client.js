@@ -19,6 +19,8 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					var Rotator = IgeEntity.extend({
+						classId: 'Rotator',
+
 						tick: function (ctx) {
 							this.rotateBy(0, 0, 0.001 * ige.tickDelta * Math.PI / 180);
 							this._super(ctx);

@@ -19,6 +19,8 @@ var Client = IgeClass.extend({
 				if (success) {
 					// Define our player character classes
 					self.CharacterMonk = IgeEntity.extend({
+						classId: 'CharacterMonk',
+
 						init: function () {
 							this._super();
 
