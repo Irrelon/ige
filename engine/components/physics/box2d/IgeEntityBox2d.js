@@ -27,8 +27,13 @@ var IgeEntityBox2d = IgeEntity.extend({
 		if (def !== undefined) {
 			this._box2dBodyDef = def;
 
-			// Ask the box2d component to create a new body for us
-			this._box2dBody = ige.box2d.createBody(this, def);
+			// Check that the box2d component exists
+			if (ige.box2d) {
+				// Ask the box2d component to create a new body for us
+				this._box2dBody = ige.box2d.createBody(this, def);
+			} else {
+				this.log('You are trying to create a box2d entity but you have not added the box2d component to the ige instance!', 'error');
+			}
 
 			return this;
 		}
