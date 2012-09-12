@@ -36,6 +36,7 @@ var IgeStreamComponent = IgeClass.extend({
 		this._renderLatency = 100;
 		this._streamInterval = 50;
 		this._timeSyncInterval = 10000; // Sync the client/server clocks every ten seconds by default
+		this._timeSyncLog = {};
 	},
 
 	/**
@@ -76,9 +77,11 @@ var IgeStreamComponent = IgeClass.extend({
 		network.send('_igeNetTimeSync', new Date().getTime());
 	},
 
-	_onTimeSync: function () {
-		clientTime = new Date().getTime();
-		time = clientTime - 20; // Simulate 20ms lag
+	_onTimeSync: function (data, clientId) {
+		var clientTime = new Date().getTime();
+
+		this._timeSyncLog[clientId] = data;
+		//time = clientTime - 20; // Simulate 20ms lag
 	},
 
 	/**
