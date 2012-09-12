@@ -24,7 +24,7 @@ var IgePathComponent = IgeClass.extend({
 
 	add: function (path) {
 		if (path !== undefined) {
-			this.log('Adding path to queue... (active: ' + this._active + ')');
+			//this.log('Adding path to queue... (active: ' + this._active + ')');
 			this._paths.push(path);
 		}
 
@@ -61,7 +61,7 @@ var IgePathComponent = IgeClass.extend({
 	start: function (startTime) {
 		// Check that we are not already active
 		if (!this._active) {
-			this.log('Starting path traversal...');
+			//this.log('Starting path traversal...');
 			// Check we have some paths to traverse!
 			if (this._paths.length) {
 				// If we don't have a current path index, set it to zero
@@ -77,9 +77,9 @@ var IgePathComponent = IgeClass.extend({
 
 				// Set pathing to active
 				this._active = true;
-				this.log('Traversal started (active: ' + this._active + ')');
+				//this.log('Traversal started (active: ' + this._active + ')');
 			} else {
-				this.log('Cannot start path because no paths have been added!', 'warning');
+				//this.log('Cannot start path because no paths have been added!', 'warning');
 			}
 		}
 
@@ -87,7 +87,7 @@ var IgePathComponent = IgeClass.extend({
 	},
 
 	stop: function () {
-		this.log('Setting pathing as inactive...');
+		//this.log('Setting pathing as inactive...');
 		this._active = false;
 		return this._entity;
 	},
