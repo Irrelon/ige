@@ -249,33 +249,15 @@ var IgeTileMap2d = IgeEntity.extend({
 	},
 
 	/**
-	 * Returns the world co-ordinates of the tile the mouse is currently over.
-	 * @return {IgePoint}
+	 * Returns the tile co-ordinates of the tile that the point's world
+	 * co-ordinates reside inside.
+	 * @param point
+	 * @return {*}
 	 */
-	mouseTileWorldXY: function () {
-		if (this._mountMode === 0) {
-			return this._mouseTilePos
-				.clone()
-				.thisMultiply(this._tileWidth, this._tileHeight, 0);
-		}
-
-		if (this._mountMode === 1) {
-			return this._mouseTilePos
-				.clone()
-				.thisMultiply(this._tileWidth, this._tileHeight, 0)
-				.thisToIso();
-		}
-	},
-
-	/**
-	 * Returns the tile co-ordinates of the tile the mouse is currently over.
-	 * @return {IgePoint}
-	 */
-	mouseToTile: function () {
+	pointToTile: function (point) {
 		// TODO: Could this do with some caching to check if the input values have changed and if not, supply the same pre-calculated data if it already exists?
-		var mousePos = this.mousePos(),
-			mx = mousePos.x,
-			my = mousePos.y,
+		var mx = point.x,
+			my = point.y,
 			dx, dy, tilePos;
 
 		if (this._mountMode === 0) {
@@ -310,47 +292,39 @@ var IgeTileMap2d = IgeEntity.extend({
 	},
 
 	/**
+	 * Returns the world co-ordinates of the tile the mouse is currently over.
+	 * @return {IgePoint}
+	 */
+	mouseTileWorldXY: function () {
+		if (this._mountMode === 0) {
+			return this._mouseTilePos
+				.clone()
+				.thisMultiply(this._tileWidth, this._tileHeight, 0);
+		}
+
+		if (this._mountMode === 1) {
+			return this._mouseTilePos
+				.clone()
+				.thisMultiply(this._tileWidth, this._tileHeight, 0)
+				.thisToIso();
+		}
+	},
+
+	/**
+	 * Returns the tile co-ordinates of the tile the mouse is currently over.
+	 * @return {IgePoint}
+	 */
+	mouseToTile: function () {
+		return this.pointToTile(this.mousePos());
+	},
+
+	/**
 	 * Sets the internal mouse position data based on the current mouse position
 	 * relative to the tile map.
 	 * @private
 	 */
 	_calculateMousePosition: function () {
-		// Calculate the current tile the mouse is over based on
-		// the parent world matrix and this tile map local matrix
-		// this doesn't take into account rotation or scale yet
-		// TODO: Make sure we take into account rotation and scale by doing a proper transform!
-		var mousePos = this.mousePos(),
-			mx = mousePos.x,
-			my = mousePos.y,
-			dx, dy;
-
-		if (this._mountMode === 0) {
-			// 2d
-			dx = mx + this._tileWidth / 2;
-			dy = my + this._tileHeight / 2;
-
-			this._mouseTilePos = new IgePoint(
-				Math.floor(dx / this._tileWidth),
-				Math.floor(dy / this._tileWidth)
-			);
-		}
-
-		if (this._mountMode === 1) {
-			// iso
-			dx = mx;
-			dy = my - this._tileHeight / 2;
-
-			this._mouseTilePos = new IgePoint(
-				dx,
-				dy,
-				0
-			).to2d();
-
-			this._mouseTilePos = new IgePoint(
-				Math.floor(this._mouseTilePos.x / this._tileWidth) + 1,
-				Math.floor(this._mouseTilePos.y / this._tileHeight) + 1
-			);
-		}
+		this._mouseTilePos = this.pointToTile(this.mousePos());
 	},
 
 	tick: function (ctx) {
