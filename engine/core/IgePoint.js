@@ -193,6 +193,16 @@ IgePoint.prototype.clone = function () {
 	return new IgePoint(this.x, this.y, this.z);
 };
 
+/**
+ * Interpolates the x, y, z values of this point towards the endPoint's
+ * x, y, z values based on the passed time variables and returns a new
+ * IgePoint whose values are the result.
+ * @param endPoint
+ * @param startTime
+ * @param currentTime
+ * @param endTime
+ * @return {*}
+ */
 IgePoint.prototype.interpolate = function (endPoint, startTime, currentTime, endTime) {
 	var totalX = endPoint.x - this.x,
 		totalY = endPoint.y - this.y,
@@ -201,7 +211,7 @@ IgePoint.prototype.interpolate = function (endPoint, startTime, currentTime, end
 		deltaTime = totalTime - (currentTime - startTime),
 		timeRatio = deltaTime / totalTime;
 
-	return new IgePoint(totalX * timeRatio + this.x, totalY * timeRatio + this.y, totalZ * timeRatio + this.z);
+	return new IgePoint(endPoint.x - (totalX * timeRatio), endPoint.y - (totalY * timeRatio), endPoint.z - (totalZ * timeRatio));
 };
 
 /**
