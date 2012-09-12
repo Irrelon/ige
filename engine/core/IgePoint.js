@@ -193,6 +193,17 @@ IgePoint.prototype.clone = function () {
 	return new IgePoint(this.x, this.y, this.z);
 };
 
+IgePoint.prototype.interpolate = function (endPoint, startTime, currentTime, endTime) {
+	var totalX = endValue.x - this.x,
+		totalY = endValue.y - this.y,
+		totalZ = endValue.z - this.z,
+		totalTime = endTime - startTime,
+		deltaTime = totalTime - (currentTime - startTime),
+		timeRatio = deltaTime / totalTime;
+
+	return new IgePoint(totalX * timeRatio + this.x, totalY * timeRatio + this.y, totalZ * timeRatio + this.z);
+};
+
 /**
  * Returns a string representation of the point's x, y, z
  * converting floating point values into fixed using the
