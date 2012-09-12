@@ -199,6 +199,38 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	},
 
 	/**
+	 * Gets / sets the area of the texture map that will be rendered
+	 * during the render tick. When initially set you must provide a
+	 * width and height but afterwards you can just pass and x, y to
+	 * effectively "move" the rendering rectangle around the map.
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 * @return {*}
+	 */
+	renderArea: function (x, y, width, height) {
+		var updated = false;
+		if (this._renderArea) {
+			if (x !== undefined) { this._renderArea[0] = x; updated = true; }
+			if (y !== undefined) { this._renderArea[1] = y; updated = true; }
+			if (width !== undefined) { this._renderArea[2] = width; updated = true; }
+			if (height !== undefined) { this._renderArea[3] = height; updated = true; }
+		} else {
+			if (x !== undefined && y !== undefined && width !== undefined && height !== undefined) {
+				this._renderArea = [x, y, width, height];
+				updated = true;
+			}
+		}
+
+		if (updated) {
+			return this;
+		} else {
+			return this._renderArea;
+		}
+	},
+
+	/**
 	 * Handles rendering the texture map during engine tick events.
 	 * @param ctx
 	 */
@@ -209,45 +241,82 @@ var IgeTextureMap = IgeTileMap2d.extend({
 
 		// Draw each image that has been defined on the map
 		var mapData = this.map._mapData,
-			x, y, tx, ty, sx, sy,
-			texture, tileData, tileEntity = this._newTileEntity(); // TODO: This is wasteful, cache it?
+			x, y,
+			tileData, tileEntity = this._newTileEntity(), // TODO: This is wasteful, cache it?
+			renderArea = this._renderArea,
+			renderX, renderY, renderWidth, renderHeight;
 
-		for (y in mapData) {
-			if (mapData.hasOwnProperty(y)) {
-				for (x in mapData[y]) {
-					if (mapData[y].hasOwnProperty(x)) {
+		if (!renderArea) {
+			// Render the whole map
+			for (y in mapData) {
+				if (mapData.hasOwnProperty(y)) {
+					for (x in mapData[y]) {
+						if (mapData[y].hasOwnProperty(x)) {
+							// Grab the tile data to paint
+							tileData = mapData[y][x];
+
+							if (tileData) {
+								this._renderTile(ctx, x, y, tileData, tileEntity);
+							}
+						}
+					}
+				}
+			}
+		} else {
+			renderX = renderArea[0];
+			renderY = renderArea[1];
+			renderHeight = renderArea[2];
+			renderWidth = renderArea[3];
+
+			// Render an area of the map rather than the whole map
+			for (y = renderY; y < renderHeight; y++) {
+				if (mapData[y]) {
+					for (x = renderX; x < renderWidth; x++) {
 						// Grab the tile data to paint
 						tileData = mapData[y][x];
 
 						if (tileData) {
-							ctx.save();
-								// Translate the canvas to the tile position
-								if (this._mountMode === 0) {
-									ctx.translate(x * this._tileWidth, y * this._tileHeight);
-								}
-
-								if (this._mountMode === 1) {
-									// Convert the tile x, y to isometric
-									tx = x * this._tileWidth;
-									ty = y * this._tileHeight;
-									sx = tx - ty;
-									sy = (tx + ty) * 0.5;
-
-									ctx.translate(sx, sy);
-								}
-
-								// Set the correct texture data
-								texture = this._textureList[tileData[0]];
-								tileEntity._cell = tileData[1];
-
-								// Paint the texture
-								texture.render(ctx, tileEntity, ige.tickDelta);
-							ctx.restore();
+							this._renderTile(ctx, x, y, tileData, tileEntity);
 						}
 					}
 				}
 			}
 		}
+	},
+
+	/**
+	 * Renders a tile texture based on data from the texture map.
+	 * @param ctx
+	 * @param x
+	 * @param y
+	 * @param tileData
+	 * @param tileEntity
+	 * @private
+	 */
+	_renderTile: function (ctx, x, y, tileData, tileEntity) {
+		ctx.save();
+		// Translate the canvas to the tile position
+		if (this._mountMode === 0) {
+			ctx.translate(x * this._tileWidth, y * this._tileHeight);
+		}
+
+		if (this._mountMode === 1) {
+			// Convert the tile x, y to isometric
+			tx = x * this._tileWidth;
+			ty = y * this._tileHeight;
+			sx = tx - ty;
+			sy = (tx + ty) * 0.5;
+
+			ctx.translate(sx, sy);
+		}
+
+		// Set the correct texture data
+		texture = this._textureList[tileData[0]];
+		tileEntity._cell = tileData[1];
+
+		// Paint the texture
+		texture.render(ctx, tileEntity, ige.tickDelta);
+		ctx.restore();
 	},
 
 	/**
