@@ -74,6 +74,7 @@ var IgeTiledComponent = IgeClass.extend({
 					.tileWidth(data.tilewidth)
 					.tileHeight(data.tilewidth)
 					.depth(i)
+					.renderArea(0, 0, 30, 30)
 					.mount(baseScene);
 
 				tileSetCount = tileSetArray.length;
