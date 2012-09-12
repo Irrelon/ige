@@ -15,6 +15,6 @@ var IgeInterpolatorExtension = {
 			deltaTime = totalTime - (currentTime - startTime),
 			timeRatio = deltaTime / totalTime;
 
-		return totalValue * timeRatio + startValue;
+		return endValue - (totalValue * timeRatio);
 	}
 };
