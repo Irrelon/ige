@@ -12,7 +12,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		this._super();
 		var self = this;
 
-		this.map = new IgeMapStack2d();
+		this.map = new IgeMap2d();
 
 		this._tileWidth = tileWidth !== undefined ? tileWidth : 40;
 		this._tileHeight = tileHeight !== undefined ? tileHeight : 40;
@@ -399,7 +399,7 @@ var IgeTileMap2d = IgeEntity.extend({
 			for (y = 0; y < this.map._mapData.length; y++) {
 				if (this.map._mapData[y]) {
 					for (x = 0; x < this.map._mapData[y].length; x++) {
-						if (this.map._mapData[y][x] && this.map._mapData[y][x].length) {
+						if (this.map._mapData[y][x]) {
 							// Tile is occupied
 							tilePoint = new IgePoint(tileWidth * x, tileHeight * y, 0);
 
