@@ -699,8 +699,10 @@ var IgeEntity = IgeObject.extend([
 			// Process any behaviours assigned to the entity
 			this._processBehaviours(ctx);
 
-			// Process any interpolation
-			this._processInterpolate(ige.tickStart - ige.network.stream._renderLatency);
+			if (this._timeStream.length) {
+				// Process any interpolation
+				this._processInterpolate(ige.tickStart - ige.network.stream._renderLatency);
+			}
 
 			// Process any mouse events we need to do
 			var texture = this._texture,
