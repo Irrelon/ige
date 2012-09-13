@@ -14,11 +14,10 @@ var IgePathNode = IgeClass.extend({
 		this.x = x;
 		this.y = y;
 		this.score = score;
-		this.g = 0;
 		this.h = 0;
 		this.f = 0;
 		this.link = null;
-		//this.hash = x + ',' + y;
+		this.hash = x + ',' + y;
 		//this.closed = false;
 	}
 });
