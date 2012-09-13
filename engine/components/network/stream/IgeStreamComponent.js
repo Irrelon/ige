@@ -29,59 +29,11 @@ var IgeStreamComponent = IgeClass.extend({
 		if (!ige.isServer) {
 			// Define the network stream command
 			this._entity.define('_igeStream', function () { self._onStreamData.apply(self, arguments); });
-			this._entity.define('_igeNetTimeSync', function () { self._onTimeSync.apply(self, arguments); });
 		}
 
 		// Set some defaults
 		this._renderLatency = 100;
 		this._streamInterval = 50;
-		this._timeSyncInterval = 10000; // Sync the client/server clocks every ten seconds by default
-		this._timeSyncLog = {};
-	},
-
-	/**
-	 * Gets / sets the number of milliseconds between client/server
-	 * clock sync events. The shorter the time, the more accurate the
-	 * client simulation will be but the more network traffic you
-	 * will transceive. Default value of ten seconds (10000) is usually
-	 * enough to provide very accurate results without over-using the
-	 * bandwidth.
-	 * @param val
-	 * @return {*}
-	 */
-	timeSyncInterval: function (val) {
-		if (val !== undefined) {
-			this._timeSyncInterval = val;
-			return this;
-		}
-
-		return this._timeSyncInterval;
-	},
-
-	_startTimeSync: function () {
-		var self = this;
-
-		this.log('Starting client/server clock sync system...');
-		this._timeSyncTimer = setInterval(function () { self._sendTimeSync(); }, this._timeSyncInterval);
-
-		return this._entity;
-	},
-
-	_stopTimeSync: function () {
-		this.log('Stopping client/server clock sync system...');
-		clearInterval(this._timeSyncTimer);
-	},
-
-	_sendTimeSync: function () {
-		// Send the time sync command to all clients
-		network.send('_igeNetTimeSync', new Date().getTime());
-	},
-
-	_onTimeSync: function (data, clientId) {
-		var clientTime = new Date().getTime();
-
-		this._timeSyncLog[clientId] = data;
-		//time = clientTime - 20; // Simulate 20ms lag
 	},
 
 	/**
@@ -128,12 +80,6 @@ var IgeStreamComponent = IgeClass.extend({
 	 */
 	start: function () {
 		var self = this;
-
-		// Send a time sync request
-		this._sendTimeSync();
-
-		// Start the time sync interval timer
-		this._startTimeSync();
 
 		this.log('Starting delta stream...');
 		this._streamTimer = setInterval(function () { self._sendQueue(); }, this._streamInterval);
