@@ -40,7 +40,7 @@ var IgePathFinder = IgeClass.extend({
 		// Check that the end point on the map is actually allowed to be pathed to!
 		tileMapData = tileMap.map._mapData;
 		endPointCheckTile = tileMapData[endPoint.x] && tileMapData[endPoint.x][endPoint.y] ? tileMapData[endPoint.x][endPoint.y] : null;
-		if (!comparisonCallback(endPointCheckTile)) {
+		if (!comparisonCallback(endPointCheckTile, endPoint.x, endPoint.y)) {
 			// There is no path to the end point because the end point
 			// is not allowed to be pathed to!
 			return [];
@@ -149,29 +149,29 @@ var IgePathFinder = IgeClass.extend({
 
 		if (allowSquare) {
 			newX = x - 1; newY = y;
-			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
-			if (comparisonCallback(tileData)) {
+			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			if (comparisonCallback(tileData, newX, newY)) {
 				newNode = new IgePathNode(newX, newY, 1);
 				list.push(newNode);
 			}
 
 			newX = x + 1; newY = y;
-			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
-			if (comparisonCallback(tileData)) {
+			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			if (comparisonCallback(tileData, newX, newY)) {
 				newNode = new IgePathNode(newX, newY, 1);
 				list.push(newNode);
 			}
 
 			newX = x; newY = y - 1;
-			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
-			if (comparisonCallback(tileData)) {
+			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			if (comparisonCallback(tileData, newX, newY)) {
 				newNode = new IgePathNode(newX, newY, 1);
 				list.push(newNode);
 			}
 
 			newX = x; newY = y + 1;
-			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
-			if (comparisonCallback(tileData)) {
+			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			if (comparisonCallback(tileData, newX, newY)) {
 				newNode = new IgePathNode(newX, newY, 1);
 				list.push(newNode);
 			}
@@ -180,29 +180,29 @@ var IgePathFinder = IgeClass.extend({
 
 		if (allowDiagonal) {
 			newX = x - 1; newY = y - 1;
-			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
-			if (comparisonCallback(tileData)) {
+			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			if (comparisonCallback(tileData, newX, newY)) {
 				newNode = new IgePathNode(newX, newY, 1.4);
 				list.push(newNode);
 			}
 
 			newX = x + 1; newY = y - 1;
-			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
-			if (comparisonCallback(tileData)) {
+			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			if (comparisonCallback(tileData, newX, newY)) {
 				newNode = new IgePathNode(newX, newY, 1.4);
 				list.push(newNode);
 			}
 
 			newX = x - 1; newY = y + 1;
-			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
-			if (comparisonCallback(tileData)) {
+			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			if (comparisonCallback(tileData, newX, newY)) {
 				newNode = new IgePathNode(newX, newY, 1.4);
 				list.push(newNode);
 			}
 
 			newX = x + 1; newY = y + 1;
-			tileData = mapData[newX] && mapData[newX][newY] ? mapData[newX][newY] : null;
-			if (comparisonCallback(tileData)) {
+			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			if (comparisonCallback(tileData, newX, newY)) {
 				newNode = new IgePathNode(newX, newY, 1.4);
 				list.push(newNode);
 			}
