@@ -4,7 +4,8 @@
 var IgeEntity = IgeObject.extend([
 	{extension: IgeTransformExtension, overwrite: false},
 	{extension: IgeUiInteractionExtension, overwrite: true},
-	{extension: IgeStreamExtension, overwrite: false}
+	{extension: IgeStreamExtension, overwrite: false},
+	{extension: IgeInterpolatorExtension, overwrite: true}
 ], {
 	classId: 'IgeEntity',
 
@@ -697,6 +698,9 @@ var IgeEntity = IgeObject.extend([
 
 			// Process any behaviours assigned to the entity
 			this._processBehaviours(ctx);
+
+			// Process any interpolation
+			this._processInterpolate(ige.tickStart - ige.network.stream._renderLatency);
 
 			// Process any mouse events we need to do
 			var texture = this._texture,
