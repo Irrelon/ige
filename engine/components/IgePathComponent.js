@@ -104,7 +104,9 @@ var IgePathComponent = IgeEventingClass.extend({
 	},
 
 	clear: function () {
-		this.stop();
+		if (this._active) {
+			this.stop();
+		}
 		this._paths = [];
 
 		this._currentPathIndex = -1;
@@ -134,7 +136,7 @@ var IgePathComponent = IgeEventingClass.extend({
 				currentTime = new Date().getTime();
 
 			if (targetCell) {
-				targetPoint = {x: targetCell.x * this._parent._tileWidth, y: targetCell.y * this._parent._tileHeight}
+				targetPoint = {x: targetCell.x * this._parent._tileWidth, y: targetCell.y * this._parent._tileHeight};
 
 				if (currentPath) {
 					if (currentTime < self._targetCellArrivalTime && (targetPoint.x !== currentPosition.x || targetPoint.y !== currentPosition.y)) {
