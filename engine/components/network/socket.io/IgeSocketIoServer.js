@@ -30,6 +30,12 @@ var IgeSocketIoServer = {
 			callback();
 		}
 
+		// Set some default commands
+		this.define('_igeNetTimeSync', function () { self._onTimeSync.apply(self, arguments); });
+
+		// Start network sync
+		this.timeSyncStart();
+
 		return this._entity;
 	},
 
