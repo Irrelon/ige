@@ -20,6 +20,7 @@ var igeCoreConfig = {
 		'components/physics/box2d/IgeBox2dComponent.js',
 		'components/physics/cannon/lib_cannon.js',
 		'components/physics/cannon/IgeCannonComponent.js',
+		'components/network/IgeTimeSyncExtension.js',
 		'components/network/socket.io/client/socket.io.min.js',
 		'components/network/socket.io/IgeSocketIoClient.js',
 		'components/network/socket.io/IgeSocketIoComponent.js',

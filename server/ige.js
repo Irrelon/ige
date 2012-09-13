@@ -45,6 +45,7 @@ IgeViewport = require('../engine/core/IgeViewport');
 IgeScene2d = require('../engine/core/IgeScene2d');
 IgeEngine = require('../engine/core/IgeEngine');
 // Network
+IgeTimeSyncExtension = require('../engine/components/network/IgeTimeSyncExtension.js');
 IgeDummyContext = require('../engine/components/network/IgeDummyContext');
 	// Socket.io
 	IgeSocketIoServer = require('../engine/components/network/socket.io/IgeSocketIoServer');
