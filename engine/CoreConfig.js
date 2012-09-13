@@ -36,6 +36,7 @@ var igeCoreConfig = {
 		'extensions/IgeUiStyleExtension.js',
 		'extensions/IgeUiInteractionExtension.js',
 		'extensions/IgeStreamExtension.js',
+		'extensions/IgeInterpolatorExtension.js',
 		'core/IgePathNode.js',
 		'core/IgePathFinder.js',
 		'core/IgeTween.js',
