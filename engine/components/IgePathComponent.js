@@ -86,7 +86,7 @@ var IgePathComponent = IgeEventingClass.extend({
 
 				// Set pathing to active
 				this._active = true;
-				this.emit('active', this._entity);
+				this.emit('started', this._entity);
 				//this.log('Traversal started (active: ' + this._active + ')');
 			} else {
 				this.log('Cannot start path because no paths have been added!', 'warning');
@@ -99,7 +99,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	stop: function () {
 		//this.log('Setting pathing as inactive...');
 		this._active = false;
-		this.emit('inactive', this._entity);
+		this.emit('stopped', this._entity);
 		return this._entity;
 	},
 
@@ -142,7 +142,7 @@ var IgePathComponent = IgeEventingClass.extend({
 						this.translateTo(newPosition.x, newPosition.y, currentPosition.z);
 					} else {
 						// We are at the target cell, move to the next cell
-						this.emit('pathPointComplete', this);
+						self.emit('pointComplete', this);
 						self._targetCellIndex++;
 
 						// Check we are being sane!
@@ -152,7 +152,7 @@ var IgePathComponent = IgeEventingClass.extend({
 							// Make sure we're exactly on the target
 							this.translateTo(targetPoint.x, targetPoint.y, currentPosition.z);
 
-							this.emit('pathComplete', this);
+							self.emit('pathComplete', this);
 
 							// No more cells, go to next path
 							self._targetCellIndex = 0;
@@ -162,7 +162,7 @@ var IgePathComponent = IgeEventingClass.extend({
 							if (!self._paths[self._currentPathIndex]) {
 								//self.log('No more paths, resting now.');
 								// No more paths, reset and exit
-								this.emit('traversalComplete', this);
+								self.emit('traversalComplete', this);
 								self.clear();
 
 								return false;
