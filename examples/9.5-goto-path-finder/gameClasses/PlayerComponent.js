@@ -34,16 +34,16 @@ var PlayerComponent = IgeClass.extend({
 		// Calculate which tile our character is currently "over"
 		currentTile = this._entity._parent.pointToTile(currentPosition.toIso());
 
-		console.log('Current translate: ', currentPosition.x, currentPosition.y);
-		console.log('Pathing from ', currentTile.x, currentTile.y, 'to', tilePoint.x, tilePoint.y);
+		//console.log('Current translate: ', currentPosition.x, currentPosition.y);
+		//console.log('Pathing from ', currentTile.x, currentTile.y, 'to', tilePoint.x, tilePoint.y);
 
 		// Create a path from the current position to the target tile
-		newPath = ige.client.pathFinder.aStar(ige.client.tileMap1, currentTile, tilePoint, function (tileData) {
-			// If the collision map tile data is set to 1, don't allow a path along it
+		newPath = ige.client.pathFinder.aStar(ige.client.tileMap1, currentTile, tilePoint, function (tileData, tileX, tileY) {
+			// If the map tile data is set to 1, don't allow a path along it
 			return tileData !== 1;
 		}, true, false);
 
-		console.log(newPath);
+		//console.log(newPath);
 
 		// Tell the entity to start pathing along the new path
 		this._entity
