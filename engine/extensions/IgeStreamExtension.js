@@ -134,32 +134,30 @@ var IgeStreamExtension = {
 		if (sectionId === 'transform') {
 			if (data) {
 				// We have received updated data
+				// Translate
+				var dataArr = data.split(',');
+				if (dataArr[0]) { dataArr[0] = parseFloat(dataArr[0]); }
+				if (dataArr[1]) { dataArr[1] = parseFloat(dataArr[1]); }
+				if (dataArr[2]) { dataArr[2] = parseFloat(dataArr[2]); }
+
+				// Scale
+				if (dataArr[3]) { dataArr[3] = parseFloat(dataArr[3]); }
+				if (dataArr[4]) { dataArr[4] = parseFloat(dataArr[4]); }
+				if (dataArr[5]) { dataArr[5] = parseFloat(dataArr[5]); }
+
+				// Rotate
+				if (dataArr[6]) { dataArr[6] = parseFloat(dataArr[6]); }
+				if (dataArr[7]) { dataArr[7] = parseFloat(dataArr[7]); }
+				if (dataArr[8]) { dataArr[8] = parseFloat(dataArr[8]); }
+
 				// Add it to the time stream
-				this._timeStream.push(data.split(','));
+				this._timeStream.push([ige.network.stream._streamDataTime, dataArr]);
 
 				// Check stream length, don't allow higher than 20 items
 				if (this._timeStream.length > 20) {
 					// Remove the first item
 					this._timeStream.shift();
 				}
-				return;
-
-				var dataArr = data.split(',');
-
-				// Translate
-				if (dataArr[0]) { this._translate.x = parseFloat(dataArr[0]); }
-				if (dataArr[1]) { this._translate.y = parseFloat(dataArr[1]); }
-				if (dataArr[2]) { this._translate.z = parseFloat(dataArr[2]); }
-
-				// Scale
-				if (dataArr[3]) { this._scale.x = parseFloat(dataArr[3]); }
-				if (dataArr[4]) { this._scale.y = parseFloat(dataArr[4]); }
-				if (dataArr[5]) { this._scale.z = parseFloat(dataArr[5]); }
-
-				// Rotate
-				if (dataArr[6]) { this._rotate.x = parseFloat(dataArr[6]); }
-				if (dataArr[7]) { this._rotate.y = parseFloat(dataArr[7]); }
-				if (dataArr[8]) { this._rotate.z = parseFloat(dataArr[8]); }
 			} else {
 				// We should return stringified data
 				return this._translate.toString(this._streamFloatPrecision) + ',' + // translate
