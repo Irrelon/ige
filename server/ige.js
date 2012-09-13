@@ -25,6 +25,7 @@ IgeUiPositionExtension = require('../engine/extensions/IgeUiPositionExtension');
 IgeUiStyleExtension = require('../engine/extensions/IgeUiStyleExtension');
 IgeUiInteractionExtension = require('../engine/extensions/IgeUiInteractionExtension');
 IgeStreamExtension = require('../engine/extensions/IgeStreamExtension');
+IgeInterpolatorExtension = require('../engine/extensions/IgeInterpolatorExtension');
 // Classes
 IgeTween = require('../engine/core/IgeTween');
 IgeTexture = require('../engine/core/IgeTexture');
