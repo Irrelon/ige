@@ -396,9 +396,9 @@ var IgeTileMap2d = IgeEntity.extend({
 
 		if (this._highlightOccupied) {
 			ctx.fillStyle = '#ff0000';
-			for (y = 0; y < this.map._mapData.length; y++) {
+			for (y in this.map._mapData) {
 				if (this.map._mapData[y]) {
-					for (x = 0; x < this.map._mapData[y].length; x++) {
+					for (x in this.map._mapData[y]) {
 						if (this.map._mapData[y][x]) {
 							// Tile is occupied
 							tilePoint = new IgePoint(tileWidth * x, tileHeight * y, 0);
