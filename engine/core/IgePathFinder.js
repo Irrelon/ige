@@ -1,7 +1,7 @@
 /**
  * Creates a new path using the A* path-finding algorithm.
  */
-var IgePathFinder = IgeClass.extend({
+var IgePathFinder = IgeEventingClass.extend({
 	classId: 'IgePathFinder',
 
 	init: function() {},
@@ -59,8 +59,8 @@ var IgePathFinder = IgeClass.extend({
 		while (openList.length) {
 			// Check for some major error
 			if (openList.length > 999) {
-				console.log(openList);
 				this.log('Path finder error, open list nodes exceeded 1000!', 'error');
+				this.emit('exceededLimit');
 				break;
 			}
 
@@ -84,6 +84,8 @@ var IgePathFinder = IgeClass.extend({
 					finalPath.push(pathPoint);
 					pathPoint = pathPoint.link;
 				}
+
+				this.emit('pathFound', finalPath);
 
 				return finalPath.reverse();
 			} else {
@@ -128,8 +130,8 @@ var IgePathFinder = IgeClass.extend({
 		}
 
 		// Could not find a path, return an empty array!
-		console.log(openList, closedList);
 		this.log('Could not find a path to destination!');
+		this.emit('noPathFound');
 		return [];
 
 	},
