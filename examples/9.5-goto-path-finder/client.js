@@ -53,7 +53,7 @@ var Client = IgeClass.extend({
 					.drawMouse(true)
 					.drawBounds(false)
 					.drawBoundsData(false)
-					.occupyTile(1, 1, 1, 1, 1) // This is just so we can show a red tile to the user (x,y,width,height,value)
+					.occupyTile(1, 1, 1, 1, 1) // Mark tile as occupied with a value of 1 (x, y, width, height, value)
 					.highlightOccupied(true) // Draws a red tile wherever a tile is "occupied"
 					.mount(self.objectScene);
 
@@ -89,8 +89,8 @@ var Client = IgeClass.extend({
 				// Create a UI entity so we can test if clicking the entity will stop
 				// event propagation down to moving the player. If it's working correctly
 				// the player won't move when the entity is clicked.
-				self.button1 = new IgeUiEntity()
-					.id('testUiEntity')
+				self.topBar1 = new IgeUiEntity()
+					.id('topBar1')
 					.depth(1)
 					.backgroundColor('#474747')
 					.top(0)
