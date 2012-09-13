@@ -19,6 +19,8 @@ var IgePathFinder = IgeClass.extend({
 	aStar: function (tileMap, startPoint, endPoint, comparisonCallback, allowSquare, allowDiagonal) {
 		var openList = [],
 			closedList = [],
+			openListHash = {},
+			closedListHash = {},
 			startNode,
 			lowInd,
 			openCount,
@@ -39,10 +41,11 @@ var IgePathFinder = IgeClass.extend({
 
 		// Check that the end point on the map is actually allowed to be pathed to!
 		tileMapData = tileMap.map._mapData;
-		endPointCheckTile = tileMapData[endPoint.x] && tileMapData[endPoint.x][endPoint.y] ? tileMapData[endPoint.x][endPoint.y] : null;
+		endPointCheckTile = tileMapData[endPoint.y] && tileMapData[endPoint.y][endPoint.x] ? tileMapData[endPoint.y][endPoint.x] : null;
 		if (!comparisonCallback(endPointCheckTile, endPoint.x, endPoint.y)) {
 			// There is no path to the end point because the end point
 			// is not allowed to be pathed to!
+			this.log('Cannot path to destination because the destination tile is not pathable!');
 			return [];
 		}
 
@@ -50,12 +53,13 @@ var IgePathFinder = IgeClass.extend({
 		startNode = new IgePathNode(startPoint.x, startPoint.y, 0);
 		startPoint.link = 1;
 		openList.push(startPoint);
+		openListHash[startPoint.hash] = true;
 
 		// Loop as long as there are more points to process in our open list
 		while (openList.length) {
-
 			// Check for some major error
-			if (openList.length > 1000) {
+			if (openList.length > 999) {
+				console.log(openList);
 				this.log('Path finder error, open list nodes exceeded 1000!', 'error');
 				break;
 			}
@@ -85,9 +89,11 @@ var IgePathFinder = IgeClass.extend({
 			} else {
 				// Remove the current node from the open list
 				openList.splice(lowInd, 1);
+				delete openListHash[currentNode.hash];
 
 				// Add the current node to the closed list
 				closedList.push(currentNode);
+				closedListHash[currentNode.hash] = true;
 
 				// Get the current node's neighbors
 				neighbourList = this._getNeighbours(currentNode, endPoint, tileMap, comparisonCallback, allowSquare, allowDiagonal);
@@ -96,15 +102,15 @@ var IgePathFinder = IgeClass.extend({
 				// Loop the neighbors
 				while (neighborCount--) {
 					neighbourNode = neighbourList[neighborCount];
-					if (closedList.indexOf(neighbourNode) === -1) {
+					if (!closedListHash[neighbourNode.hash]) {
 						// Neighbor node is not on closed list
 						gScore = currentNode.score;
 						bestScore = false;
 
-						if (openList.indexOf(neighbourNode) === -1) {
+						if (!openListHash[neighbourNode.hash]) {
 							// The neighbour node is not in the open list yet
 							bestScore = true;
-							neighbourNode.g = this._heuristic(neighbourNode.x, neighbourNode.y, endPoint.x, endPoint.y);
+							neighbourNode.score = this._heuristic(neighbourNode.x, neighbourNode.y, endPoint.x, endPoint.y);
 							openList.push(neighbourNode);
 						} else if (gScore < neighbourNode.score) {
 							// The neighbour node is in the open list already
@@ -113,7 +119,7 @@ var IgePathFinder = IgeClass.extend({
 
 						if (bestScore) {
 							neighbourNode.link = currentNode;
-							neighbourNode.h = neighbourNode.score + neighbourNode.g;
+							neighbourNode.h = neighbourNode.score;
 						}
 					}
 				}
@@ -122,6 +128,8 @@ var IgePathFinder = IgeClass.extend({
 		}
 
 		// Could not find a path, return an empty array!
+		console.log(openList, closedList);
+		this.log('Could not find a path to destination!');
 		return [];
 
 	},
