@@ -124,8 +124,16 @@ var Client = IgeClass.extend({
 
 				// Assign the path to the player and start it
 				self.player
-					.path.add(path1)
-					.path.start();
+					.path.add(path1);
+
+				// Register some event listeners for the path
+				self.player.path.on('started', function () { console.log('Pathing started...'); });
+				self.player.path.on('stopped', function () { console.log('Pathing stopped.'); });
+				self.player.path.on('cleared', function () { console.log('Path data cleared.'); });
+				self.player.path.on('pointComplete', function () { console.log('Path point reached...'); });
+				self.player.path.on('pathComplete', function () { console.log('Path completed...'); });
+				self.player.path.on('traversalComplete', function () { console.log('Traversal of all paths completed.'); });
+				self.player.path.start();
 			}
 		});
 	}
