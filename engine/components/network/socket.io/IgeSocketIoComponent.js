@@ -1,4 +1,6 @@
-var IgeSocketIoComponent = IgeEventingClass.extend({
+var IgeSocketIoComponent = IgeEventingClass.extend([
+	{extension: IgeTimeSyncExtension, overwrite: false}
+], {
 	classId: 'IgeSocketIoComponent',
 	componentId: 'network',
 
