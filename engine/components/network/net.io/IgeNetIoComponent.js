@@ -1,4 +1,6 @@
-var IgeNetIoComponent = IgeEventingClass.extend({
+var IgeNetIoComponent = IgeEventingClass.extend([
+	{extension: IgeTimeSyncExtension, overwrite: false}
+], {
 	classId: 'IgeNetIoComponent',
 	componentId: 'network',
 
@@ -14,6 +16,10 @@ var IgeNetIoComponent = IgeEventingClass.extend({
 		// Set some defaults
 		this._port = 8000;
 		this._debug = false;
+
+		// Time sync defaults
+		this._timeSyncInterval = 2000; // Sync the client/server clocks every ten seconds by default
+		this._timeSyncLog = {};
 
 		/* CEXCLUDE */
 		if (ige.isServer) {

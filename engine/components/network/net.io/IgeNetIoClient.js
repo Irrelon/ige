@@ -66,6 +66,7 @@ var IgeNetIoClient = {
 							// Setup default commands
 							self.define('_igeRequest', function () { self._onRequest.apply(self, arguments); });
 							self.define('_igeResponse', function () { self._onResponse.apply(self, arguments); });
+							self.define('_igeNetTimeSync', function () { self._onTimeSync.apply(self, arguments); });
 
 							self.log('Received network command list with count: ' + commandCount);
 

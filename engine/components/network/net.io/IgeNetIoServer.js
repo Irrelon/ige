@@ -27,6 +27,10 @@ var IgeNetIoServer = {
 		// Setup default commands
 		this.define('_igeRequest', function () { self._onRequest.apply(self, arguments); });
 		this.define('_igeResponse', function () { self._onResponse.apply(self, arguments); });
+		this.define('_igeNetTimeSync', function () { self._onTimeSync.apply(self, arguments); });
+
+		// Start network sync
+		this.timeSyncStart();
 
 		return this._entity;
 	},
@@ -223,6 +227,9 @@ var IgeNetIoServer = {
 					cmd: 'init',
 					ncmds: this._networkCommandsLookup
 				});
+
+				// Send a clock sync command
+				this._sendTimeSync(undefined, socket.id);
 			} else {
 				// Reject the connection
 				socket.disconnect();
