@@ -29,13 +29,9 @@ var IgeInterpolatorExtension = {
 			dataDelta,
 			offsetDelta,
 			currentTime,
-			previousPosition,
-			nextPosition,
-			previousAngle,
-			nextAngle,
-			dist,
-			currentPosition,
-			currentAngle,
+			previousTransform,
+			nextTransform,
+			currentTransform = [],
 			i = 1;
 
 		// Find the point in the time stream that is
@@ -82,13 +78,28 @@ var IgeInterpolatorExtension = {
 			if (currentTime < 0) { currentTime = 0.0; } else if (currentTime > 1) { currentTime = 1.0; }
 
 			// Set variables up to store the previous and next data
-			previousPosition = {x: previousData[1]._transform[0], y: previousData[1]._transform[1]};
-			nextPosition = {x:nextData[1]._transform[0], y:nextData[1]._transform[1]};
-			previousAngle = previousData[1]._transform[6];
-			nextAngle = nextData[1]._transform[6];
+			previousTransform = previousData[1];
+			nextTransform = nextData[1];
 
-			// Calculate the squared distance between the previous point and next point
-			dist = this.distanceSquared(previousPosition.x, previousPosition.y, nextPosition.x, nextPosition.y);
+			// Translate
+			currentTransform[0] = this.interpolateValue(previousTransform[0], nextTransform[0], previousData[0], renderTime, nextData[0]);
+			currentTransform[1] = this.interpolateValue(previousTransform[1], nextTransform[1], previousData[0], renderTime, nextData[0]);
+			currentTransform[2] = this.interpolateValue(previousTransform[2], nextTransform[2], previousData[0], renderTime, nextData[0]);
+			// Scale
+			currentTransform[3] = this.interpolateValue(previousTransform[3], nextTransform[3], previousData[0], renderTime, nextData[0]);
+			currentTransform[4] = this.interpolateValue(previousTransform[4], nextTransform[4], previousData[0], renderTime, nextData[0]);
+			currentTransform[5] = this.interpolateValue(previousTransform[5], nextTransform[5], previousData[0], renderTime, nextData[0]);
+			// Rotate
+			currentTransform[6] = this.interpolateValue(previousTransform[6], nextTransform[6], previousData[0], renderTime, nextData[0]);
+			currentTransform[7] = this.interpolateValue(previousTransform[7], nextTransform[7], previousData[0], renderTime, nextData[0]);
+			currentTransform[8] = this.interpolateValue(previousTransform[8], nextTransform[8], previousData[0], renderTime, nextData[0]);
+
+			this.translateTo(parseFloat(currentTransform[0]), parseFloat(currentTransform[1]), parseFloat(currentTransform[2]));
+			this.scaleTo(parseFloat(currentTransform[3]), parseFloat(currentTransform[4]), parseFloat(currentTransform[5]));
+			this.rotateTo(parseFloat(currentTransform[6]), parseFloat(currentTransform[7]), parseFloat(currentTransform[8]));
+
+			/*// Calculate the squared distance between the previous point and next point
+			dist = this.distanceSquared(previousTransform.x, previousTransform.y, nextTransform.x, nextTransform.y);
 
 			// Check that the distance is not higher than the maximum lerp and if higher,
 			// set the current time to 1 to snap to the next position immediately
@@ -96,18 +107,18 @@ var IgeInterpolatorExtension = {
 
 			// Interpolate the entity position by multiplying the Delta times T, and adding the previous position
 			currentPosition = {};
-			currentPosition.x = ( (nextPosition.x - previousPosition.x) * currentTime ) + previousPosition.x;
-			currentPosition.y = ( (nextPosition.y - previousPosition.y) * currentTime ) + previousPosition.y;
-			currentAngle = ( (nextAngle - previousAngle) * currentTime ) + previousAngle;
+			currentPosition.x = ( (nextTransform.x - previousTransform.x) * currentTime ) + previousTransform.x;
+			currentPosition.y = ( (nextTransform.y - previousTransform.y) * currentTime ) + previousTransform.y;
 
 			// Now actually transform the entity
-			this.translate(entity, currentPosition.x, currentPosition.y);
-			this.rotate(entity, currentAngle);
+			this.translate(entity, currentPosition.x, currentPosition.y);*/
 
 			// Record the last time we updated the entity so we can disregard any updates
 			// that arrive and are before this timestamp (not applicable in TCP but will
 			// apply if we ever get UDP in websockets)
-			entity._lastUpdate = new Date().getTime();
+			this._lastUpdate = new Date().getTime();
 		}
 	}
 };
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeInterpolatorExtension; }
