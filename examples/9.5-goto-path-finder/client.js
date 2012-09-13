@@ -57,10 +57,6 @@ var Client = IgeClass.extend({
 					.highlightOccupied(true) // Draws a red tile wherever a tile is "occupied"
 					.mount(self.objectScene);
 
-				// Create a collision tile map
-				self.collisionMap1 = new IgeCollisionMap2d()
-					.mapData([[null, null, null], [null, 1, null]]);
-
 				// Define a function that will be called when the
 				// mouse cursor moves over one of our entities
 				overFunc = function () {
