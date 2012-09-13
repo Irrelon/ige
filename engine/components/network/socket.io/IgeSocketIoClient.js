@@ -55,6 +55,9 @@ var IgeSocketIoClient = {
 						}
 					}
 
+					// Setup default command listeners
+					self.define('_igeNetTimeSync', function () { self._onTimeSync.apply(self, arguments); });
+
 					self.log('Received network command list with count: ' + commandCount);
 
 					// Now fire the start() callback
