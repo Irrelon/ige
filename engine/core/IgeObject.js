@@ -13,6 +13,7 @@ var IgeObject = IgeEventingClass.extend({
 		this._layer = 0;
 		this._depth = 0;
 		this._dirty = true;
+		this._timeStream = [];
 	},
 
 	/**
