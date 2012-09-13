@@ -390,9 +390,9 @@ var IgeParticleEmitter = IgeEntity.extend({
 	tick: function (ctx) {
 		this._currentDelta += ige.tickDelta;
 
-		// Check if the emitter is mounted to anything, if not
+		// Check if the emitter is mounted to anything and started, if not
 		// then don't bother creating particles!
-		if (this._parent) {
+		if (this._parent && this._started) {
 			if (!this._quantityMax || this._quantityProduced < this._quantityMax) {
 				var particleCount,
 					translateX,
