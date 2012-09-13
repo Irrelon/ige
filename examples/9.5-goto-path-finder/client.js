@@ -54,6 +54,25 @@ var Client = IgeClass.extend({
 					.drawBounds(false)
 					.drawBoundsData(false)
 					.occupyTile(1, 1, 1, 1, 1) // Mark tile as occupied with a value of 1 (x, y, width, height, value)
+					.occupyTile(1, 2, 1, 1, 1)
+					.occupyTile(1, 3, 1, 1, 1)
+					.occupyTile(1, 4, 1, 1, 1)
+					.occupyTile(2, 4, 1, 1, 1)
+					.occupyTile(4, 4, 1, 1, 1)
+					.occupyTile(4, 3, 1, 1, 1)
+					.occupyTile(4, 2, 1, 1, 1)
+					.occupyTile(3, 2, 1, 1, 1)
+					.occupyTile(3, 1, 1, 1, 1)
+					.occupyTile(1, 0, 1, 1, 1)
+					.occupyTile(1, -1, 1, 1, 1)
+					.occupyTile(2, -1, 1, 1, 1)
+					.occupyTile(3, -1, 1, 1, 1)
+					.occupyTile(4, -1, 1, 1, 1)
+					.occupyTile(5, -1, 1, 1, 1)
+					.occupyTile(5, 0, 1, 1, 1)
+					.occupyTile(6, 1, 1, 1, 1)
+					.occupyTile(6, 2, 1, 1, 1)
+					.occupyTile(6, 3, 1, 1, 1)
 					.highlightOccupied(true) // Draws a red tile wherever a tile is "occupied"
 					.mount(self.objectScene);
 
@@ -113,8 +132,8 @@ var Client = IgeClass.extend({
 				// Create a path finder and generate a path using
 				// the collision map data
 				self.pathFinder = new IgePathFinder();
-				var path1 = self.pathFinder.aStar(self.tileMap1, new IgePoint(0, 0, 0), new IgePoint(2, 2, 0), function (tileData) {
-					// If the collision map tile data is set to 1, don't allow a path along it
+				var path1 = self.pathFinder.aStar(self.tileMap1, new IgePoint(0, 0, 0), new IgePoint(2, 2, 0), function (tileData, tileX, tileY) {
+					// If the map tile data is set to 1, don't allow a path along it
 					return tileData !== 1;
 				}, true, false);
 
