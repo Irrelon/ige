@@ -136,6 +136,12 @@ var IgeStreamExtension = {
 				// We have received updated data
 				// Add it to the time stream
 				this._timeStream.push(data.split(','));
+
+				// Check stream length, don't allow higher than 20 items
+				if (this._timeStream.length > 20) {
+					// Remove the first item
+					this._timeStream.shift();
+				}
 				return;
 
 				var dataArr = data.split(',');
