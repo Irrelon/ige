@@ -89,7 +89,7 @@ var IgePathComponent = IgeEventingClass.extend({
 				this.emit('active', this._entity);
 				//this.log('Traversal started (active: ' + this._active + ')');
 			} else {
-				//this.log('Cannot start path because no paths have been added!', 'warning');
+				this.log('Cannot start path because no paths have been added!', 'warning');
 			}
 		}
 
