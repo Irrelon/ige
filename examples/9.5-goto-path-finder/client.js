@@ -53,7 +53,7 @@ var Client = IgeClass.extend({
 					.drawMouse(true)
 					.drawBounds(false)
 					.drawBoundsData(false)
-					.occupyTile(1, 1, 1, 1, true) // This is just so we can show a red tile to the user
+					.occupyTile(1, 1, 1, 1, 1) // This is just so we can show a red tile to the user (x,y,width,height,value)
 					.highlightOccupied(true) // Draws a red tile wherever a tile is "occupied"
 					.mount(self.objectScene);
 
@@ -117,7 +117,7 @@ var Client = IgeClass.extend({
 				// Create a path finder and generate a path using
 				// the collision map data
 				self.pathFinder = new IgePathFinder();
-				var path1 = self.pathFinder.aStar(self.collisionMap1, new IgePoint(0, 0, 0), new IgePoint(2, 2, 0), function (tileData) {
+				var path1 = self.pathFinder.aStar(self.tileMap1, new IgePoint(0, 0, 0), new IgePoint(2, 2, 0), function (tileData) {
 					// If the collision map tile data is set to 1, don't allow a path along it
 					return tileData !== 1;
 				}, true, false);
