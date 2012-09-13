@@ -20,6 +20,7 @@ var IgeStreamComponent = IgeClass.extend({
 		if (ige.isServer) {
 			// Define the network stream command
 			this._entity.define('_igeStream');
+			this._entity.define('_igeStreamTime');
 
 			// Define the object that will hold the stream data queue
 			this._queuedData = {};
@@ -29,6 +30,7 @@ var IgeStreamComponent = IgeClass.extend({
 		if (!ige.isServer) {
 			// Define the network stream command
 			this._entity.define('_igeStream', function () { self._onStreamData.apply(self, arguments); });
+			this._entity.define('_igeStreamTime', function () { self._onStreamTime.apply(self, arguments); });
 		}
 
 		// Set some defaults
@@ -120,14 +122,33 @@ var IgeStreamComponent = IgeClass.extend({
 		var arr = this._queuedData,
 			arrIndex,
 			network = this._entity,
-			item;
+			item, currentTime = new Date().getTime(),
+			clientSentTimeData = {};
 
+		// Send the stream data
 		for (arrIndex in arr) {
 			if (arr.hasOwnProperty(arrIndex)) {
 				item = arr[arrIndex];
+
+				// Check if we've already sent this client the starting
+				// time of the stream data
+				if (!clientSentTimeData[item[1]]) {
+					// Send the stream start time
+					network.send('_igeStreamTime', currentTime, item[1]);
+					clientSentTimeData[item[1]] = true;
+				}
 				network.send('_igeStream', item[0], item[1]);
 			}
 		}
+	},
+
+	/**
+	 * Handles receiving the start time of the stream data.
+	 * @param data
+	 * @private
+	 */
+	_onStreamTime: function (data) {
+		this._streamDataTime = data;
 	},
 
 	/**
@@ -138,7 +159,7 @@ var IgeStreamComponent = IgeClass.extend({
 	 * @private
 	 */
 	_onStreamData: function (data) {
-		//console.log(data);
+		//console.log('Stream data: ', this._streamDataTime, data);
 
 		// Read the packet data into variables
 		var clientTime = new Date().getTime(),
