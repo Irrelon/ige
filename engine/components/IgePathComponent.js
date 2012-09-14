@@ -24,8 +24,13 @@ var IgePathComponent = IgeEventingClass.extend({
 
 	add: function (path) {
 		if (path !== undefined) {
-			//this.log('Adding path to queue... (active: ' + this._active + ')');
-			this._paths.push(path);
+			// Check the path array has items in it!
+			if (path.length) {
+				//this.log('Adding path to queue... (active: ' + this._active + ')');
+				this._paths.push(path);
+			} else {
+				this.log('Cannot add an empty path to the path queue!', 'warning');
+			}
 		}
 
 		return this._entity;
