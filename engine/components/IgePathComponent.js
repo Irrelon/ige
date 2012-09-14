@@ -21,7 +21,12 @@ var IgePathComponent = IgeEventingClass.extend({
 		// Add the path behaviour to the entity
 		entity.addBehaviour('path', this._behaviour);
 	},
-
+	/**
+	 * Adds a path array containing path points (IgePoint instances)
+	 * to the path queue.
+	 * @param {Array} path
+	 * @return {*}
+	 */
 	add: function (path) {
 		if (path !== undefined) {
 			// Check the path array has items in it!
@@ -36,6 +41,12 @@ var IgePathComponent = IgeEventingClass.extend({
 		return this._entity;
 	},
 
+	/**
+	 * Gets / sets the current path index that the pathing
+	 * system is traversing.
+	 * @param {Number=} index
+	 * @return {*}
+	 */
 	current: function (index) {
 		if (index !== undefined) {
 			this._currentPathIndex = index;
@@ -63,6 +74,12 @@ var IgePathComponent = IgeEventingClass.extend({
 		return this._autoStop;
 	},
 
+	/**
+	 * Gets / sets the speed at which the entity will
+	 * traverse the path.
+	 * @param {Number=} val
+	 * @return {*}
+	 */
 	speed: function (val) {
 		if (val !== undefined) {
 			this._speed = val;
@@ -72,6 +89,13 @@ var IgePathComponent = IgeEventingClass.extend({
 		return this._speed;
 	},
 
+	/**
+	 * Starts path traversal.
+	 * @param {Number=} startTime The time to start path
+	 * traversal. Defaults to new Date().getTime() if no
+	 * value is presented.
+	 * @return {*}
+	 */
 	start: function (startTime) {
 		// Check that we are not already active
 		if (!this._active) {
@@ -101,6 +125,11 @@ var IgePathComponent = IgeEventingClass.extend({
 		return this._entity;
 	},
 
+	/**
+	 * Stops path traversal but does not clear the path
+	 * queue or any path data.
+	 * @return {*}
+	 */
 	stop: function () {
 		//this.log('Setting pathing as inactive...');
 		this._active = false;
@@ -108,6 +137,10 @@ var IgePathComponent = IgeEventingClass.extend({
 		return this._entity;
 	},
 
+	/**
+	 * Clears all path queue and path data.
+	 * @return {*}
+	 */
 	clear: function () {
 		if (this._active) {
 			this.stop();
@@ -192,6 +225,16 @@ var IgePathComponent = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Calculates the position of the entity along a vector
+	 * based on the speed of the entity and the current time.
+	 * @param p1
+	 * @param p2
+	 * @param speed
+	 * @param time
+	 * @return {IgePoint}
+	 * @private
+	 */
 	_positionAlongVector: function (p1, p2, speed, time) {
 		var newPoint = new IgePoint(0, 0, 0),
 			deltaY = (p2.y - p1.y),
