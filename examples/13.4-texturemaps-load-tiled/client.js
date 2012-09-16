@@ -52,6 +52,7 @@ var Client = IgeClass.extend({
 							// We can add all our layers to our main scene by looping the
 							// array or we can pick a particular layer via the layersById
 							// object. Let's give an example:
+							var i;
 							for (i = 0; i < layerArray.length; i++) {
 								// Before we mount the layer we will adjust the size of
 								// the layer's tiles because Tiled calculates tile width
