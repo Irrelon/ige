@@ -17,6 +17,7 @@ var IgeViewport = IgeEntity.extend([
 		this._uiY = 0;
 
 		// Set default options if not specified
+		// TODO: Is this required or even used?
 		if (options === undefined) {
 			options = {
 				left: 0,
