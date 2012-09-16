@@ -50,6 +50,35 @@ Object.prototype.tween = function (props, durationMs, options) {
 /**
  * Make property non-enumerable.
  */
+Object.defineProperty(Array.prototype, 'clone', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
+
+/**
+ * Clones the array and returns a new non-referenced
+ * array.
+ * @return {*}
+ */
+Array.prototype.clone = function () {
+	var i, newArray = [];
+	for (i in this) {
+		if (this.hasOwnProperty(i)) {
+			if (this[i] instanceof Array) {
+				newArray[i] = this[i].clone();
+			} else {
+				newArray[i] = this[i];
+			}
+		}
+	}
+
+	return newArray;
+};
+
+/**
+ * Make property non-enumerable.
+ */
 Object.defineProperty(Array.prototype, 'pull', {
 	enumerable:false,
 	writable:true,
