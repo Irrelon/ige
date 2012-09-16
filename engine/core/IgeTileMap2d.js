@@ -371,7 +371,7 @@ var IgeTileMap2d = IgeEntity.extend({
 
 		while (mapData[ny] && mapData[ny][x] && (!callback || (callback && callback(mapData[ny][x])))) {
 			// Check for mapData either side of the column width
-			if (mapData[ny][x - 1] || mapData[ny][x + rect.width]) {
+			if ((mapData[ny][x - 1] && (!callback || (callback && callback(mapData[ny][x - 1])))) || (mapData[ny][x + rect.width] && (!callback || (callback && callback(mapData[ny][x + rect.width]))))) {
 				return rect;
 			}
 
