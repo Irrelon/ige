@@ -305,9 +305,9 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			renderY = renderArea[1];
 
 			// Render an area of the map rather than the whole map
-			for (y = renderY; y < renderY + renderHeight; y++) {
+			for (y = renderY; y <= renderY + renderHeight; y++) {
 				if (mapData[y]) {
-					for (x = renderX; x < renderX + renderWidth; x++) {
+					for (x = renderX; x <= renderX + renderWidth; x++) {
 						// Grab the tile data to paint
 						tileData = mapData[y][x];
 
