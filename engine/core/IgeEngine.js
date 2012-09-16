@@ -679,6 +679,18 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 
+	fps: function () {
+		return this._fps;
+	},
+
+	dpt: function () {
+		return this._dpt;
+	},
+
+	dps: function () {
+		return this._dps;
+	},
+
 	render: function (ctx, scene) {
 		// Depth-sort the viewports
 		if (this._viewportDepth) {
