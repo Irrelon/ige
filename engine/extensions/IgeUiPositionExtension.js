@@ -211,7 +211,7 @@ var IgeUiPositionExtension = {
 				geom = this.geometry;
 
 			if (this._width) { this.width(this._width, this._widthModifier, true); }
-			if (this._width) { this.height(this._height, this._heightModifier, true); }
+			if (this._height) { this.height(this._height, this._heightModifier, true); }
 
 			if (this._uiXAlign === 'right') {
 				this._translate.x = parentGeom.x2 - geom.x2 - this._uiX;
