@@ -43,7 +43,9 @@ var PlayerComponent = IgeClass.extend({
 
 	_behaviour: function (ctx) {
 		var vel = 6,
-			direction = '';
+			xVel, yVel,
+			direction = '',
+			iso = (this._parent && this._parent.isometricMounts() === true);
 
 		if (ige.input.actionState('walkUp')) {
 			direction += 'N';
@@ -63,58 +65,114 @@ var PlayerComponent = IgeClass.extend({
 
 		switch (direction) {
 			case 'N':
-				this._box2dBody.SetLinearVelocity(new IgePoint(0, -vel, 0));
-				this._box2dBody.SetAwake(true);
-				this.animation.select('walkUp');
+				if (iso) {
+					xVel = -vel;
+					yVel = -vel;
+				} else {
+					xVel = 0;
+					yVel = -vel;
+				}
+				this.imageEntity.animation.select('walkUp');
 				break;
 
 			case 'S':
+				if (iso) {
+					xVel = vel;
+					yVel = vel;
+				} else {
+					xVel = 0;
+					yVel = vel;
+				}
 				this._box2dBody.SetLinearVelocity(new IgePoint(0, vel, 0));
 				this._box2dBody.SetAwake(true);
-				this.animation.select('walkDown');
+				this.imageEntity.animation.select('walkDown');
 				break;
 
 			case 'E':
+				if (iso) {
+					xVel = vel;
+					yVel = -vel;
+				} else {
+					xVel = vel;
+					yVel = 0;
+				}
 				this._box2dBody.SetLinearVelocity(new IgePoint(vel, 0, 0));
 				this._box2dBody.SetAwake(true);
-				this.animation.select('walkRight');
+				this.imageEntity.animation.select('walkRight');
 				break;
 
 			case 'W':
+				if (iso) {
+					xVel = -vel;
+					yVel = vel;
+				} else {
+					xVel = -vel;
+					yVel = 0;
+				}
 				this._box2dBody.SetLinearVelocity(new IgePoint(-vel, 0, 0));
 				this._box2dBody.SetAwake(true);
-				this.animation.select('walkLeft');
+				this.imageEntity.animation.select('walkLeft');
 				break;
 
 			case 'NE':
+				if (iso) {
+					xVel = 0;
+					yVel = -vel;
+				} else {
+					xVel = vel;
+					yVel = -vel;
+				}
 				this._box2dBody.SetLinearVelocity(new IgePoint(vel, -vel, 0));
 				this._box2dBody.SetAwake(true);
-				this.animation.select('walkRight');
+				this.imageEntity.animation.select('walkRight');
 				break;
 
 			case 'NW':
+				if (iso) {
+					xVel = -vel;
+					yVel = 0;
+				} else {
+					xVel = -vel;
+					yVel = -vel;
+				}
 				this._box2dBody.SetLinearVelocity(new IgePoint(-vel, -vel, 0));
 				this._box2dBody.SetAwake(true);
-				this.animation.select('walkLeft');
+				this.imageEntity.animation.select('walkLeft');
 				break;
 
 			case 'SE':
+				if (iso) {
+					xVel = vel;
+					yVel = 0;
+				} else {
+					xVel = vel;
+					yVel = vel;
+				}
 				this._box2dBody.SetLinearVelocity(new IgePoint(vel, vel, 0));
 				this._box2dBody.SetAwake(true);
-				this.animation.select('walkRight');
+				this.imageEntity.animation.select('walkRight');
 				break;
 
 			case 'SW':
+				if (iso) {
+					xVel = 0;
+					yVel = vel;
+				} else {
+					xVel = -vel;
+					yVel = vel;
+				}
 				this._box2dBody.SetLinearVelocity(new IgePoint(-vel, vel, 0));
 				this._box2dBody.SetAwake(true);
-				this.animation.select('walkLeft');
+				this.imageEntity.animation.select('walkLeft');
 				break;
 
 			default:
-				this._box2dBody.SetLinearVelocity(new IgePoint(0, 0, 0));
-				this.animation.stop();
+				this.imageEntity.animation.stop();
 				break;
 		}
+
+		this._box2dBody.SetLinearVelocity(new IgePoint(xVel, yVel, 0));
+		this._box2dBody.SetAwake(true);
 	}
 });
 
