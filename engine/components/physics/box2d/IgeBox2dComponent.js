@@ -265,6 +265,45 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		return tempBod;
 	},
 
+	staticsFromMap: function (mapLayer, callback) {
+		if (mapLayer.map) {
+			var tileWidth = mapLayer.tileWidth(),
+				tileHeight = mapLayer.tileHeight(),
+				i, posX, posY,
+				rectArray, rectCount, rect;
+
+			// Get the array of rectangle bounds based on
+			// the map's data
+			rectArray = mapLayer.scanRects(callback);
+			rectCount = rectArray.length;
+
+			while (rectCount--) {
+				rect = rectArray[rectCount];
+
+				posX = (tileWidth * (rect.width / 2)) - (tileWidth / 2);
+				posY = (tileHeight * (rect.height / 2)) - (tileHeight / 2);
+
+				new IgeEntityBox2d()
+					.translateTo(rect.x * tileWidth + posX, rect.y * tileHeight + posY, 0)
+					.width(rect.width * tileWidth)
+					.height(rect.height * tileHeight)
+					.drawBounds(true)
+					.drawBoundsData(false)
+					.box2dBody({
+						type: 'static',
+						allowSleep: true,
+						fixtures: [{
+							shape: {
+								type: 'rectangle'
+							}
+						}]
+					});
+			}
+		} else {
+			this.log('Cannot extract box2d static bodies from map data because passed map does not have a .map property!', 'error');
+		}
+	},
+
 	enableDebug: function (mountScene) {
 		if (mountScene && mountScene._classId === 'IgeScene2d') {
 		// Define the debug drawing instance
@@ -403,7 +442,7 @@ var Box2dDebugPainter = IgeObject.extend({
 
 	tick: function (ctx) {
 		if (this._parent && this._parent.isometricMounts() === true) {
-			ctx.scale(1.42, 0.71);
+			ctx.scale(1.414, 0.707); // This should be super-accurate now
 			ctx.rotate(45  * Math.PI / 180);
 		}
 
