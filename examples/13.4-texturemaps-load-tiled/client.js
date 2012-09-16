@@ -30,17 +30,22 @@ var Client = IgeClass.extend({
 					self.mainScene = new IgeScene2d()
 						.id('mainScene')
 						.translateTo(0, 0, 0)
-						.drawBounds(false);
+						.drawBounds(false)
+						.drawBoundsData(false);
 
 					self.backScene = new IgeScene2d()
 						.id('backScene')
 						.depth(0)
+						.drawBounds(false)
+						.drawBoundsData(false)
 						.mount(self.mainScene);
 
 					self.objectScene = new IgeScene2d()
 						.id('objectScene')
 						.depth(1)
 						.isometricMounts(true)
+						.drawBounds(false)
+						.drawBoundsData(false)
 						.mount(self.mainScene);
 
 					// Add the box2d debug painter entity to the
@@ -54,6 +59,7 @@ var Client = IgeClass.extend({
 						.autoSize(true)
 						.scene(self.mainScene)
 						.drawBounds(true)
+						.drawBoundsData(true)
 						.mount(ige);
 
 					// Create a second viewport
@@ -76,7 +82,9 @@ var Client = IgeClass.extend({
 						.width(40)
 						.height(40)
 						.drawBounds(true)
-						//.mount(self.scene1)
+						.drawBoundsData(false)
+						//.mount(self.objectScene)
+						.isometric(true)
 						.box2dBody({
 							type: 'static',
 							allowSleep: true,
@@ -109,7 +117,8 @@ var Client = IgeClass.extend({
 						})
 						.id('player1')
 						.setType(0)
-						.drawBounds(false)
+						.drawBounds(true)
+						.drawBoundsData(true)
 						.isometric(true) // Set to use isometric movement
 						.translateTo(0, 0, 0)
 						.mount(self.objectScene);
@@ -147,11 +156,13 @@ var Client = IgeClass.extend({
 								// right-most point of a tile whereas IGE calculates the
 								// tile width as the length of one side of the tile square.
 								layerArray[i]
-									.tileWidth(50)
-									.tileHeight(50)
+									.tileWidth(40)
+									.tileHeight(40)
 									.renderArea(0, 0, 20, 20) // Set the area of the map to render by default
 									.trackTranslate(self.player1) // Use this entity as the center of the render area
 									//.isometricMounts(false)
+									.drawBounds(false)
+									.drawBoundsData(false)
 									.mount(self.backScene);
 							}
 
