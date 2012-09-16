@@ -324,7 +324,7 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * rectangle areas.
 	 * @return {Array}
 	 */
-	scanRects: function () {
+	scanRects: function (callback) {
 		var x, y,
 			rectArray = [],
 			mapData = this.map._mapData.clone();
@@ -335,8 +335,8 @@ var IgeTileMap2d = IgeEntity.extend({
 			if (mapData.hasOwnProperty(y)) {
 				for (x in mapData[y]) {
 					if (mapData[y].hasOwnProperty(x)) {
-						if (mapData[y][x]) {
-							rectArray.push(this._scanRects(mapData, parseInt(x, 10), parseInt(y, 10)));
+						if (mapData[y][x] && (!callback || (callback && callback(mapData[y][x])))) {
+							rectArray.push(this._scanRects(mapData, parseInt(x, 10), parseInt(y, 10)), callback);
 						}
 					}
 				}
@@ -346,7 +346,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		return rectArray;
 	},
 
-	_scanRects: function (mapData, x, y) {
+	_scanRects: function (mapData, x, y, callback) {
 		var rect = {
 				x: x,
 				y: y,
@@ -359,7 +359,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		// Clear the current x, y cell mapData
 		mapData[y][x] = 0;
 
-		while (mapData[y][nx]) {
+		while (mapData[y][nx] && (!callback || (callback && callback(mapData[y][nx])))) {
 			rect.width++;
 
 			// Clear the mapData for this cell
@@ -369,7 +369,7 @@ var IgeTileMap2d = IgeEntity.extend({
 			nx++;
 		}
 
-		while (mapData[ny] && mapData[ny][x]) {
+		while (mapData[ny] && mapData[ny][x] && (!callback || (callback && callback(mapData[ny][x])))) {
 			// Check for mapData either side of the column width
 			if (mapData[ny][x - 1] || mapData[ny][x + rect.width]) {
 				return rect;
@@ -378,7 +378,7 @@ var IgeTileMap2d = IgeEntity.extend({
 			// Loop the column's map data and check that there is
 			// an intact column the same width as the starting column
 			for (nx = x; nx < x + rect.width; nx++) {
-				if (!mapData[ny][nx]) {
+				if (!mapData[ny][nx] || (callback && !callback(mapData[ny][nx]))) {
 					// This row has a different column width from the starting
 					// column so return the rectangle as it stands
 					return rect;
