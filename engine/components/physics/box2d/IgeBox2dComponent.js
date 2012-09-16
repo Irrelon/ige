@@ -257,14 +257,12 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		return tempBod;
 	},
 
-	enableDebug: function (canvasId) {
+	enableDebug: function (mountScene) {
 		// Define the debug drawing instance
 		var debugDraw = new this.b2DebugDraw();
 		this._box2dDebug = true;
-		this._debugCanvas = document.getElementById(canvasId);
-		this._debugCtx = this._debugCanvas.getContext('2d');
 
-		debugDraw.SetSprite(this._debugCtx);
+		debugDraw.SetSprite(ige._ctx);
 		debugDraw.SetDrawScale(this._scaleRatio);
 		debugDraw.SetFillAlpha(0.3);
 		debugDraw.SetLineThickness(1.0);
@@ -273,12 +271,18 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			| this.b2DebugDraw.e_jointBit
 			| this.b2DebugDraw.e_pairBit
 			| this.b2DebugDraw.e_shapeBit
-			//| this.b2DebugDraw.e_aabbBit
-			//| this.b2DebugDraw.e_centerOfMassBit
+			| this.b2DebugDraw.e_aabbBit
+			| this.b2DebugDraw.e_centerOfMassBit
 		);
 
 		// Set the debug draw for the world
 		this._world.SetDebugDraw(debugDraw);
+
+		// Create the debug painter entity and mount
+		// it to the passed scene
+		new igeClassStore.Box2dDebugPainter()
+			.depth(40000) // Set a really high depth
+			.mount(mountScene);
 	},
 
 	/**
@@ -368,18 +372,6 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 				tempBod = tempBod.GetNext();
 			}
 
-			if (self._box2dDebug && this._currentCamera) {
-				// Draw the debug data
-				self._debugCanvas.width = ige.geometry.x;
-				self._debugCanvas.height = ige.geometry.y;
-
-				self._debugCtx.save();
-				this._currentCamera._transformContext(self._debugCtx);
-				self._debugCtx.translate(ige.geometry.x2, ige.geometry.y2);
-				self._world.DrawDebugData();
-				self._debugCtx.restore();
-			}
-
 			// Clear forces because we have ended our physics simulation frame
 			self._world.ClearForces();
 
@@ -390,6 +382,15 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 				self._updateCallback();
 			}
 		}
+	}
+});
+
+var Box2dDebugPainter = IgeEntity.extend({
+	classId: 'Box2dDebugPainter',
+
+	tick: function (ctx) {
+		ige.box2d._world.DrawDebugData();
+		this._super(ctx);
 	}
 });
 
