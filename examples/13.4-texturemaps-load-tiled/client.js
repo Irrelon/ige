@@ -62,39 +62,6 @@ var Client = IgeClass.extend({
 						.drawBoundsData(true)
 						.mount(ige);
 
-					// Create a second viewport
-					self.vp2 = new IgeViewport()
-						.id('vp2')
-						.depth(2)
-						.autoSize(false)
-						.left(10)
-						.top(10)
-						.width(300)
-						.height(150)
-						.scene(self.mainScene)
-						.drawBounds(false)
-						.mount(ige);
-
-					// Create the room boundaries in box2d
-					new IgeEntityBox2d()
-						.id('testBox')
-						.translateTo(200, 200, 0)
-						.width(40)
-						.height(40)
-						.drawBounds(true)
-						.drawBoundsData(false)
-						//.mount(self.objectScene)
-						.isometric(true)
-						.box2dBody({
-							type: 'static',
-							allowSleep: true,
-							fixtures: [{
-								shape: {
-									type: 'rectangle'
-								}
-							}]
-						});
-
 					// Let's create a character, then set the camera to follow him!
 					self.player1 = new Character()
 						.addComponent(PlayerComponent)
@@ -120,17 +87,15 @@ var Client = IgeClass.extend({
 						.drawBounds(true)
 						.drawBoundsData(true)
 						.isometric(true) // Set to use isometric movement
-						.translateTo(0, 0, 0)
+						.translateTo(93, 968, 0)
 						.mount(self.objectScene);
 
 					// Translate the camera to the initial player position
 					self.vp1.camera.lookAt(self.player1);
-					self.vp2.camera.lookAt(self.player1);
 
 					// Tell the camera to track our player character with some
 					// tracking smoothing (set to 20)
 					self.vp1.camera.trackTranslate(self.player1, 20);
-					self.vp2.camera.trackTranslate(self.player1, 20);
 
 					// Load the Tiled map data and handle the return data
 					ige.addComponent(IgeTiledComponent)
@@ -169,6 +134,9 @@ var Client = IgeClass.extend({
 							// Or if we wanted to only use the "DirtLayer" from the example
 							// map data, we could do this:
 							//layersById.DirtLayer.mount(self.mainScene);
+
+							// Create static box2d objects from the dirt layer
+							ige.box2d.staticsFromMap(layersById.DirtLayer);
 						});
 				}
 			});
