@@ -231,6 +231,29 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	},
 
 	/**
+	 * Get / sets the entity that will be used to determine the
+	 * center point of the map's render area. This allows the
+	 * render area to become dynamic based on this entity's position.
+	 * @param entity
+	 * @return {*}
+	 */
+	trackTranslate: function (entity) {
+		if (entity !== undefined) {
+			this._trackTranslateTarget = entity;
+			return this;
+		}
+
+		return this._trackTranslateTarget;
+	},
+
+	/**
+	 * Stops tracking the current tracking target's translation.
+	 */
+	unTrackTranslate: function () {
+		delete this._trackTranslateTarget;
+	},
+
+	/**
 	 * Handles rendering the texture map during engine tick events.
 	 * @param ctx
 	 */
@@ -244,7 +267,8 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			x, y,
 			tileData, tileEntity = this._newTileEntity(), // TODO: This is wasteful, cache it?
 			renderArea = this._renderArea,
-			renderX, renderY, renderWidth, renderHeight;
+			renderX, renderY, renderWidth, renderHeight,
+			currentTile;
 
 		if (!renderArea) {
 			// Render the whole map
@@ -263,15 +287,27 @@ var IgeTextureMap = IgeTileMap2d.extend({
 				}
 			}
 		} else {
+			renderWidth = renderArea[2];
+			renderHeight = renderArea[3];
+
+			// Check if we are tracking an entity that is used to
+			// set the center point of the render area
+			if (this._trackTranslateTarget) {
+				// Calculate which tile our character is currently "over"
+				//debugger;
+				currentTile = this.pointToTile(this._trackTranslateTarget._translate);
+				renderArea[0] = Math.floor(currentTile.x -(renderWidth / 2));
+				renderArea[1] = Math.floor(currentTile.y -(renderHeight / 2));
+
+			}
+
 			renderX = renderArea[0];
 			renderY = renderArea[1];
-			renderHeight = renderArea[2];
-			renderWidth = renderArea[3];
 
 			// Render an area of the map rather than the whole map
-			for (y = renderY; y < renderHeight; y++) {
+			for (y = renderY; y < renderY + renderHeight; y++) {
 				if (mapData[y]) {
-					for (x = renderX; x < renderWidth; x++) {
+					for (x = renderX; x < renderX + renderWidth; x++) {
 						// Grab the tile data to paint
 						tileData = mapData[y][x];
 
