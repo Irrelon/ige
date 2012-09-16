@@ -72,8 +72,7 @@ var IgeTiledComponent = IgeClass.extend({
 					.isometricMounts(true)
 					.tileWidth(data.tilewidth)
 					.tileHeight(data.tilewidth)
-					.depth(i)
-					.renderArea(0, 0, 30, 30);
+					.depth(i);
 
 				layersById[layer.name] = textureMaps[i];
 
