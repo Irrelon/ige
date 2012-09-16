@@ -52,6 +52,9 @@ var IgeEntityBox2d = IgeEntity.extend({
 	_translateTo: function (x, y, z) {
 		var entBox2d = this._box2dBody;
 
+		// Call the original translate method
+		this._translateToProto(x, y, z);
+
 		// Check if the entity has a box2d body attached
 		// and if so, is it updating or not
 		if (entBox2d && !entBox2d.updating) {
@@ -63,9 +66,6 @@ var IgeEntityBox2d = IgeEntity.extend({
 			entBox2d.SetPosition({x: x / ige.box2d._scaleRatio, y: y / ige.box2d._scaleRatio});
 			entBox2d.SetAwake(true);
 		}
-
-		// Now call the original translate method
-		this._translateToProto(x, y, z);
 
 		return this;
 	},
