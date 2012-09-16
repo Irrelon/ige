@@ -56,7 +56,6 @@ var IgeTiledComponent = IgeClass.extend({
 			onLoadFunc,
 			image,
 			textures = [],
-			baseScene,
 			allTexturesLoadedFunc,
 			i, k, x, y, z;
 
@@ -69,10 +68,14 @@ var IgeTiledComponent = IgeClass.extend({
 
 				textureMaps[i] = new IgeTextureMap()
 					.id(layer.name)
-					.isometricMounts(true)
 					.tileWidth(data.tilewidth)
 					.tileHeight(data.tilewidth)
 					.depth(i);
+
+				// Check if the layer should be isometric mounts enabled
+				if (data.orientation === 'isometric') {
+					textureMaps[i].isometricMounts(true);
+				}
 
 				layersById[layer.name] = textureMaps[i];
 
