@@ -15,7 +15,7 @@ var IgeEntity = IgeObject.extend([
 		this._width = undefined;
 		this._height = undefined;
 
-		this._anchor = {x: 0, y: 0};
+		this._anchor = new IgePoint(0, 0, 0);
 		this._renderPos = {x: 0, y: 0};
 
 		this._opacity = 1;
@@ -65,7 +65,7 @@ var IgeEntity = IgeObject.extend([
 				throw('What happened? This code path should never be reached!');
 			}
 		} else {
-			return {x: 0, y: 0};
+			return new IgePoint(0, 0, 0);
 		}
 	},
 
@@ -182,7 +182,7 @@ var IgeEntity = IgeObject.extend([
 	 */
 	anchor: function (x, y) {
 		if (x !== undefined && y !== undefined) {
-			this._anchor = {x: x, y: y};
+			this._anchor = new IgePoint(x, y, 0);
 			return this;
 		}
 
