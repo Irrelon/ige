@@ -208,12 +208,18 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 							if (fixtureDef.shape) {
 								// Create based on the shape type
 								switch (fixtureDef.shape.type) {
+									case 'circle':
+										tempShape = new this.b2CircleShape();
+										if (fixtureDef.shape.data) {
+											tempShape.SetRadius(fixtureDef.shape.data.radius / this._scaleRatio);
+										} else {
+											tempShape.SetRadius((entity.geometry.x / this._scaleRatio) / 2);
+										}
+										break;
+
 									case 'polygon':
 										tempShape = new this.b2PolygonShape();
 										tempShape.SetAsArray(fixtureDef.shape.data._poly, fixtureDef.shape.data.length());
-
-										tempFixture.shape = tempShape;
-										tempBod.CreateFixture(tempFixture);
 										break;
 
 									case 'rectangle':
@@ -238,10 +244,12 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 											new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio),
 											0
 										);
-
-										tempFixture.shape = tempShape;
-										tempBod.CreateFixture(tempFixture);
 										break;
+								}
+
+								if (tempShape) {
+									tempFixture.shape = tempShape;
+									tempBod.CreateFixture(tempFixture);
 								}
 							}
 						}
@@ -352,7 +360,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 					entityBox2dBody = entity._box2dBody;
 
 					// Check if the body is awake and is dynamic (we don't transform static bodies)
-					if (tempBod.IsAwake()) {
+					if (tempBod.IsAwake() && tempBod.m_type !== 0) {
 						// Update the entity data to match the body data
 						entityBox2dBody.updating = true;
 						entity.translateTo(tempBod.m_xf.position.x * self._scaleRatio, tempBod.m_xf.position.y * self._scaleRatio, entity._translate.z);
