@@ -32,7 +32,7 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					ige.addComponent(IgeTiledComponent)
-						.tiled.loadJson('maps/testRoad.js', function (newScene) {
+						.tiled.loadJson('maps/example.js', function (newScene) {
 							self.tiledScene = newScene;
 							self.tiledScene.mount(self.scene1);
 						});
