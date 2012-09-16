@@ -44,6 +44,7 @@ var IgeTiledComponent = IgeClass.extend({
 			layerData,
 			layerDataCount,
 			textureMaps = [],
+			layersById = {},
 			tileSetArray = data.tilesets,
 			tileSetCount = tileSetArray.length,
 			tileSetItem,
@@ -59,9 +60,6 @@ var IgeTiledComponent = IgeClass.extend({
 			allTexturesLoadedFunc,
 			i, k, x, y, z;
 
-		// Create a base scene that we can add all the layers to
-		baseScene = new IgeScene2d();
-
 		// Define the function to call when all textures have finished loading
 		allTexturesLoadedFunc = function () {
 			// Create a texture map for each layer
@@ -70,12 +68,14 @@ var IgeTiledComponent = IgeClass.extend({
 				layerData = layer.data;
 
 				textureMaps[i] = new IgeTextureMap()
+					.id(layer.name)
 					.isometricMounts(true)
 					.tileWidth(data.tilewidth)
 					.tileHeight(data.tilewidth)
 					.depth(i)
-					.renderArea(0, 0, 30, 30)
-					.mount(baseScene);
+					.renderArea(0, 0, 30, 30);
+
+				layersById[layer.name] = textureMaps[i];
 
 				tileSetCount = tileSetArray.length;
 
@@ -102,7 +102,7 @@ var IgeTiledComponent = IgeClass.extend({
 				}
 			}
 
-			callback(baseScene);
+			callback(textureMaps, layersById);
 		};
 
 		onLoadFunc = function (textures, tileSetCount, tileSetItem) {
