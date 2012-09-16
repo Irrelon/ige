@@ -319,6 +319,85 @@ var IgeTileMap2d = IgeEntity.extend({
 	},
 
 	/**
+	 * Scans the map data and returns an array of rectangle
+	 * objects that encapsulate the map data into discrete
+	 * rectangle areas.
+	 * @return {Array}
+	 */
+	scanRects: function () {
+		var x, y,
+			rectArray = [],
+			mapData = this.map._mapData.clone();
+
+		// Loop the map data and scan for blocks that can
+		// be converted into static box2d rectangle areas
+		for (y in mapData) {
+			if (mapData.hasOwnProperty(y)) {
+				for (x in mapData[y]) {
+					if (mapData[y].hasOwnProperty(x)) {
+						if (mapData[y][x]) {
+							rectArray.push(this._scanRects(mapData, parseInt(x, 10), parseInt(y, 10)));
+						}
+					}
+				}
+			}
+		}
+
+		return rectArray;
+	},
+
+	_scanRects: function (mapData, x, y) {
+		var rect = {
+				x: x,
+				y: y,
+				width: 1,
+				height: 1
+			},
+			nx = x + 1,
+			ny = y + 1;
+
+		// Clear the current x, y cell mapData
+		mapData[y][x] = 0;
+
+		while (mapData[y][nx]) {
+			rect.width++;
+
+			// Clear the mapData for this cell
+			mapData[y][nx] = 0;
+
+			// Next column
+			nx++;
+		}
+
+		while (mapData[ny] && mapData[ny][x]) {
+			// Check for mapData either side of the column width
+			if (mapData[ny][x - 1] || mapData[ny][x + rect.width]) {
+				return rect;
+			}
+
+			// Loop the column's map data and check that there is
+			// an intact column the same width as the starting column
+			for (nx = x; nx < x + rect.width; nx++) {
+				if (!mapData[ny][nx]) {
+					// This row has a different column width from the starting
+					// column so return the rectangle as it stands
+					return rect;
+				}
+			}
+
+			// Mark the row as cleared
+			for (nx = x; nx < x + rect.width; nx++) {
+				mapData[ny][nx] = 0;
+			}
+
+			rect.height++;
+			ny++;
+		}
+
+		return rect;
+	},
+
+	/**
 	 * Sets the internal mouse position data based on the current mouse position
 	 * relative to the tile map.
 	 * @private
