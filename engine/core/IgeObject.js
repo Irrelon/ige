@@ -419,12 +419,16 @@ var IgeObject = IgeEventingClass.extend({
 						sortObj.adj[i] = sortObj.adj[i] || [];
 						sortObj.adj[j] = sortObj.adj[j] || [];
 
-						if (arr[i]._projectionOverlap(arr[j])) {
-							if (arr[i]._isBehind(arr[j])) {
-								sortObj.adj[j].push(i);
-							} else {
-								sortObj.adj[i].push(j);
+						if (arr[i]._projectionOverlap) {
+							if (arr[i]._projectionOverlap(arr[j])) {
+								if (arr[i]._isBehind(arr[j])) {
+									sortObj.adj[j].push(i);
+								} else {
+									sortObj.adj[i].push(j);
+								}
 							}
+						} else {
+
 						}
 					}
 				}
