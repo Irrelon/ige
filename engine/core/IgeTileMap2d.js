@@ -336,7 +336,7 @@ var IgeTileMap2d = IgeEntity.extend({
 				for (x in mapData[y]) {
 					if (mapData[y].hasOwnProperty(x)) {
 						if (mapData[y][x] && (!callback || (callback && callback(mapData[y][x])))) {
-							rectArray.push(this._scanRects(mapData, parseInt(x, 10), parseInt(y, 10)), callback);
+							rectArray.push(this._scanRects(mapData, parseInt(x, 10), parseInt(y, 10), callback));
 						}
 					}
 				}
