@@ -294,8 +294,12 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			// set the center point of the render area
 			if (this._trackTranslateTarget) {
 				// Calculate which tile our character is currently "over"
-				//debugger;
-				currentTile = this.pointToTile(this._trackTranslateTarget._translate);
+				if (this._trackTranslateTarget.isometric() === true) {
+					currentTile = this.pointToTile(this._trackTranslateTarget._translate.toIso());
+				} else {
+					currentTile = this.pointToTile(this._trackTranslateTarget._translate);
+				}
+
 				renderArea[0] = Math.floor(currentTile.x -(renderWidth / 2));
 				renderArea[1] = Math.floor(currentTile.y -(renderHeight / 2));
 
