@@ -8,7 +8,6 @@ var Character = IgeEntityBox2d.extend({
 
 		// Setup the entity
 		self.addComponent(IgeAnimationComponent)
-			.addComponent(IgeVelocityComponent)
 			.depth(1);
 
 		// Load the character texture file
