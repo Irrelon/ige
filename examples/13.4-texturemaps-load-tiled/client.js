@@ -32,9 +32,20 @@ var Client = IgeClass.extend({
 						.translateTo(0, 0, 0)
 						.drawBounds(false);
 
+					self.backScene = new IgeScene2d()
+						.id('backScene')
+						.depth(0)
+						.mount(self.mainScene);
+
+					self.objectScene = new IgeScene2d()
+						.id('objectScene')
+						.depth(1)
+						.isometricMounts(true)
+						.mount(self.mainScene);
+
 					// Add the box2d debug painter entity to the
-					// mainScene scene
-					ige.box2d.enableDebug(self.mainScene);
+					// scene
+					ige.box2d.enableDebug(self.objectScene);
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
@@ -42,7 +53,7 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.autoSize(true)
 						.scene(self.mainScene)
-						.drawBounds(false)
+						.drawBounds(true)
 						.mount(ige);
 
 					// Create a second viewport
@@ -61,7 +72,7 @@ var Client = IgeClass.extend({
 					// Create the room boundaries in box2d
 					new IgeEntityBox2d()
 						.id('testBox')
-						.translateTo(0, 200, 0)
+						.translateTo(200, 200, 0)
 						.width(40)
 						.height(40)
 						.drawBounds(true)
@@ -92,20 +103,16 @@ var Client = IgeClass.extend({
 								friction: 0.5,
 								restitution: 0.2,
 								shape: {
-									type: 'polygon',
-									data: new IgePoly2d()
-										.addPoint(-0.5, 0.2)
-										.addPoint(0.5, 0.2)
-										.addPoint(0.5, 0.8)
-										.addPoint(-0.5, 0.8)
+									type: 'rectangle'
 								}
 							}]
 						})
 						.id('player1')
 						.setType(0)
-						.translateTo(0, 0, 0)
 						.drawBounds(false)
-						.mount(self.mainScene);
+						.isometric(true) // Set to use isometric movement
+						.translateTo(0, 0, 0)
+						.mount(self.objectScene);
 
 					// Translate the camera to the initial player position
 					self.vp1.camera.lookAt(self.player1);
@@ -145,14 +152,12 @@ var Client = IgeClass.extend({
 									.renderArea(0, 0, 20, 20) // Set the area of the map to render by default
 									.trackTranslate(self.player1) // Use this entity as the center of the render area
 									//.isometricMounts(false)
-									.mount(self.mainScene);
+									.mount(self.backScene);
 							}
 
 							// Or if we wanted to only use the "DirtLayer" from the example
-							// map data, we could do this (the layer has already been mounted
-							// from the loop above so this will not do anything unless that
-							// loop is commented out):
-							layersById.DirtLayer.mount(self.mainScene);
+							// map data, we could do this:
+							//layersById.DirtLayer.mount(self.mainScene);
 						});
 				}
 			});
