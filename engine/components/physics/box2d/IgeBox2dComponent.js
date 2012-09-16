@@ -397,11 +397,17 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	}
 });
 
-var Box2dDebugPainter = IgeEntity.extend({
+var Box2dDebugPainter = IgeObject.extend({
 	classId: 'Box2dDebugPainter',
 
 	tick: function (ctx) {
+		if (this._parent && this._parent.isometricMounts() === true) {
+			ctx.scale(1.42, 0.71);
+			ctx.rotate(45  * Math.PI / 180);
+		}
+
 		ige.box2d._world.DrawDebugData();
+
 		this._super(ctx);
 	}
 });
