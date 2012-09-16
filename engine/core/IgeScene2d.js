@@ -17,6 +17,21 @@ var IgeScene2d = IgeEntity.extend({
 	},
 
 	/**
+	 * Gets / sets the auto-size property. If set to true, the scene will
+	 * automatically resize to the screen's geometry.
+	 * @param val
+	 * @return {*}
+	 */
+	autoSize: function (val) {
+		if (typeof(val) !== 'undefined') {
+			this._autoSize = val;
+			return this;
+		}
+
+		return this._autoSize;
+	},
+
+	/**
 	 * Gets / sets the _shouldRender property. If set to true, the scene's child
 	 * object's tick methods will be called.
 	 * @param {Boolean} val
