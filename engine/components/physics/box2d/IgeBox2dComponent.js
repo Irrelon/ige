@@ -280,8 +280,8 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			| this.b2DebugDraw.e_jointBit
 			| this.b2DebugDraw.e_pairBit
 			| this.b2DebugDraw.e_shapeBit
-			| this.b2DebugDraw.e_aabbBit
-			| this.b2DebugDraw.e_centerOfMassBit
+			//| this.b2DebugDraw.e_aabbBit
+			//| this.b2DebugDraw.e_centerOfMassBit
 		);
 
 		// Set the debug draw for the world
@@ -291,6 +291,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		// it to the passed scene
 		new igeClassStore.Box2dDebugPainter()
 			.depth(40000) // Set a really high depth
+			.drawBounds(false)
 			.mount(mountScene);
 		} else {
 			this.log('Cannot enable box2d debug drawing because the passed argument is not an IgeScene2d instance. Pass your main scene instance to enable debug drawing on it.', 'error');
