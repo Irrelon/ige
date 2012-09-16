@@ -285,7 +285,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			.depth(40000) // Set a really high depth
 			.mount(mountScene);
 		} else {
-			this.log('Cannot enable box2d debug drawing because the passed argument is not an IgeScene2d instance. Pass your main scene instance to enable debug drawing on it.', 'error')
+			this.log('Cannot enable box2d debug drawing because the passed argument is not an IgeScene2d instance. Pass your main scene instance to enable debug drawing on it.', 'error');
 		}
 	},
 
