@@ -629,12 +629,8 @@ var IgeEntity = IgeObject.extend([
 			return true;
 		}
 
-		// Entity's are overlapping, check by y position
-		if ((this._translate.y + this._translate.z) > (otherObject._translate.y + otherObject._translate.z)) {
-			return true;
-		} else {
-			return false;
-		}
+		// Entity's are overlapping, calc based on x+y+z
+		return ((this._translate.x + this._translate.y + this._translate.z) > (otherObject._translate.x + otherObject._translate.y + otherObject._translate.z));
 	},
 
 	/**
