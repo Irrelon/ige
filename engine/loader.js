@@ -12,7 +12,7 @@ window.igeLoader = (function () {
 			self.coreConfigReady();
 		};
 		ccScript.addEventListener('error', function () {
-			throw('ERROR LOADING clientConfig.js - does it exist?');
+			throw('ERROR LOADING ' + igeRoot + 'CoreConfig.js' + ' - does it exist?');
 		}, true);
 
 		document.getElementsByTagName('head')[0].appendChild(ccScript);
@@ -34,7 +34,7 @@ window.igeLoader = (function () {
 
 			document.getElementsByTagName('head')[0].appendChild(ccScript);
 		} else {
-			throw('ERROR READING igeCoreConfig DATA - was it specified in coreConfig.js?');
+			throw('ERROR READING igeCoreConfig object - was it specified in CoreConfig.js?');
 		}
 	};
 
@@ -45,7 +45,7 @@ window.igeLoader = (function () {
 
 		this._fileList = [];
 		for (i = 0; i < this._coreList.length; i++) {
-			this._fileList.push(igeRoot + this._coreList[i]);
+			this._fileList.push(igeRoot + this._coreList[i][1]);
 		}
 
 		for (i = 0; i < this._clientList.length; i++) {
