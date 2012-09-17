@@ -202,8 +202,8 @@ var IgePathComponent = IgeEventingClass.extend({
 							if (!self._paths[self._currentPathIndex]) {
 								//self.log('No more paths, resting now.');
 								// No more paths, reset and exit
-								self.emit('traversalComplete', this);
 								self.clear();
+								self.emit('traversalComplete', this);
 
 								return false;
 							}
