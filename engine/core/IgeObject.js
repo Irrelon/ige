@@ -427,7 +427,7 @@ var IgeObject = IgeEventingClass.extend({
 
 						if (arr[i]._projectionOverlap && arr[j]._projectionOverlap) {
 							if (arr[i]._projectionOverlap(arr[j])) {
-								if (arr[i]._isBehind(arr[j])) {
+								if (arr[i].isBehind(arr[j])) {
 									sortObj.adj[j].push(i);
 								} else {
 									sortObj.adj[i].push(j);
@@ -455,7 +455,7 @@ var IgeObject = IgeEventingClass.extend({
 				if (layerIndex === 0) {
 					// On same layer so sort by depth
 					/*if (a._projectionOverlap(b)) {
-						if (a._isBehind(b)) {
+						if (a.isBehind(b)) {
 							return -1;
 						} else {
 							return 1;

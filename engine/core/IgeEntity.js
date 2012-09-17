@@ -581,7 +581,16 @@ var IgeEntity = IgeObject.extend([
 		);
 	},
 
-	_isBehind: function (otherObject) {
+	/**
+	 * Compares the current entity's 3d bounds to the
+	 * passed entity and determines if the current entity
+	 * is "behind" the passed one. If an entity is behind
+	 * another, it is drawn first during the scenegraph
+	 * render phase.
+	 * @param {IgeEntity} otherObject
+	 * @return {Boolean}
+	 */
+	isBehind: function (otherObject) {
 		var thisG3d = this.geometry,
 			thisMin = new IgePoint(
 				this._translate.x - thisG3d.x / 2,
