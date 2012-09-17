@@ -575,8 +575,8 @@ var Client = IgeClass.extend({
 	 * @param tileY
 	 */
 	itemAt: function (tileX, tileY) {
-		// Return the first data index at the map's tile co-ordinates
-		return this.tileMap1.map.tileDataAtIndex(tileX, tileY, 0);
+		// Return the data at the map's tile co-ordinates
+		return this.tileMap1.map.tileData(tileX, tileY);
 	},
 
 	/**
