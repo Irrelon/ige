@@ -12,6 +12,10 @@ igeDebug = {
 	throwErrors: true
 };
 
+if (igeDebug.node) {
+	igeDebug.util = require('util');
+}
+
 /**
  * Make property non-enumerable.
  */
