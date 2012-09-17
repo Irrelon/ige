@@ -45,7 +45,10 @@ window.igeLoader = (function () {
 
 		this._fileList = [];
 		for (i = 0; i < this._coreList.length; i++) {
-			this._fileList.push(igeRoot + this._coreList[i][1]);
+			// Check that the file should be loaded on the client
+			if (this._coreList[i][0] === 'c' || this._coreList[i][0] === 'cs') {
+				this._fileList.push(igeRoot + this._coreList[i][2]);
+			}
 		}
 
 		for (i = 0; i < this._clientList.length; i++) {
