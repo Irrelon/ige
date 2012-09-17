@@ -187,26 +187,8 @@ var IgeViewport = IgeEntity.extend([
 
 						if (aabb) {
 							if (obj._drawBounds || obj._drawBounds === undefined) {
-								if (obj._box2dBodyDef) {
-									// TODO: Use box2d object's shape vertices instead of existing AABB
-									switch (obj._box2dBodyDef.type) {
-										case 'static':
-											ctx.strokeStyle = 'rgba(127, 229, 127, 1)';
-											ctx.fillStyle = 'rgba(127, 229, 127, 0.3)';
-											break;
-
-										case 'dynamic':
-											ctx.strokeStyle = 'rgba(229, 178, 178, 1)';
-											ctx.fillStyle = 'rgba(229, 178, 178, 0.3)';
-											break;
-									}
-
-									ctx.fillRect(aabb.x, aabb.y, aabb.width, aabb.height);
-									ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
-								} else {
-									ctx.strokeStyle = '#00deff';
-									ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
-								}
+								ctx.strokeStyle = '#00deff';
+								ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
 
 								// Check if the object is mounted to an isometric mount
 								if (obj._parent && obj._parent._mountMode === 1) {
