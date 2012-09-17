@@ -15,10 +15,6 @@ IgeAnimationComponent = require('../engine/components/IgeAnimationComponent');
 IgeVelocityComponent = require('../engine/components/IgeVelocityComponent');
 IgeTweenComponent = require('../engine/components/IgeTweenComponent');
 IgeInputComponent = require('../engine/components/IgeInputComponent');
-Box2D = require('../engine/components/physics/box2d/lib_box2d.js').Box2D;
-IgeBox2dComponent = require('../engine/components/physics/box2d/IgeBox2dComponent.js');
-CANNON = require('../engine/components/physics/cannon/lib_cannon.js');
-IgeCannonComponent = require('../engine/components/physics/cannon/IgeCannonComponent.js');
 // Extensions
 IgeTransformExtension = require('../engine/extensions/IgeTransformExtension');
 IgeUiPositionExtension = require('../engine/extensions/IgeUiPositionExtension');
@@ -45,29 +41,36 @@ IgeCamera = require('../engine/core/IgeCamera');
 IgeViewport = require('../engine/core/IgeViewport');
 IgeScene2d = require('../engine/core/IgeScene2d');
 IgeEngine = require('../engine/core/IgeEngine');
+
 // Network
 IgeTimeSyncExtension = require('../engine/components/network/IgeTimeSyncExtension.js');
 IgeDummyContext = require('../engine/components/network/IgeDummyContext');
-	// Socket.io
-	IgeSocketIoServer = require('../engine/components/network/socket.io/IgeSocketIoServer');
-	IgeSocketIoComponent = require('../engine/components/network/socket.io/IgeSocketIoComponent');
-	// Net.io
-	IgeNetIoServer = require('../engine/components/network/net.io/IgeNetIoServer');
-	IgeNetIoComponent = require('../engine/components/network/net.io/IgeNetIoComponent');
+// + Socket.io
+IgeSocketIoServer = require('../engine/components/network/socket.io/IgeSocketIoServer');
+IgeSocketIoComponent = require('../engine/components/network/socket.io/IgeSocketIoComponent');
+// + Net.io
+IgeNetIoServer = require('../engine/components/network/net.io/IgeNetIoServer');
+IgeNetIoComponent = require('../engine/components/network/net.io/IgeNetIoComponent');
 // Chat
 IgeChatServer = require('../engine/components/chat/IgeChatServer');
 IgeChatComponent = require('../engine/components/chat/IgeChatComponent');
 // Stream
 IgeStreamComponent = require('../engine/components/network/stream/IgeStreamComponent');
 // Database
-	// Mongo
-	IgeMongoDb = require('../engine/components/database/mongodb/IgeMongoDb');
-	IgeMongoDbComponent = require('../engine/components/database/mongodb/IgeMongoDbComponent');
-	// MySQL
-	IgeMySql = require('../engine/components/database/mysql/IgeMySql');
-	IgeMySqlComponent = require('../engine/components/database/mysql/IgeMySqlComponent');
-
+// + Mongo
+IgeMongoDb = require('../engine/components/database/mongodb/IgeMongoDb');
+IgeMongoDbComponent = require('../engine/components/database/mongodb/IgeMongoDbComponent');
+// + MySQL
+IgeMySql = require('../engine/components/database/mysql/IgeMySql');
+IgeMySqlComponent = require('../engine/components/database/mysql/IgeMySqlComponent');
+// Physics
+// + Box2D
+Box2D = require('../engine/components/physics/box2d/lib_box2d.js').Box2D;
+IgeBox2dComponent = require('../engine/components/physics/box2d/IgeBox2dComponent.js');
 IgeEntityBox2d = require('../engine/components/physics/box2d/IgeEntityBox2d.js');
+// + Cannon
+CANNON = require('../engine/components/physics/cannon/lib_cannon.js');
+IgeCannonComponent = require('../engine/components/physics/cannon/IgeCannonComponent.js');
 IgeEntityCannon = require('../engine/components/physics/cannon/IgeEntityCannon.js');
 
 // Include the control class
