@@ -232,11 +232,11 @@ var IgeNetIoServer = {
 				this._sendTimeSync(undefined, socket.id);
 			} else {
 				// Reject the connection
-				socket.disconnect();
+				socket.close();
 			}
 		} else {
 			this.log('Rejecting connection with id ' + socket.id + ' - we are not accepting connections at the moment!');
-			socket.disconnect();
+			socket.close();
 		}
 	},
 
