@@ -427,8 +427,6 @@ var IgeObject = IgeEventingClass.extend({
 									sortObj.adj[i].push(j);
 								}
 							}
-						} else {
-
 						}
 					}
 				}
