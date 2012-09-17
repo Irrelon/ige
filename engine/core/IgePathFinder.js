@@ -4,7 +4,27 @@
 var IgePathFinder = IgeEventingClass.extend({
 	classId: 'IgePathFinder',
 
-	init: function() {},
+	init: function() {
+		this._neighbourLimit = 1000;
+	},
+
+	/**
+	 * Gets / sets the limit on the number of neighbour nodes
+	 * that the path-finder will analyse before reaching it's
+	 * target tile. On large maps this limit should be increased
+	 * to allow pathing where many neighbours need to be
+	 * considered.
+	 * @param val
+	 * @return {*}
+	 */
+	neighbourLimit: function (val) {
+		if (val !== undefined) {
+			this._neighbourLimit = val;
+			return this;
+		}
+
+		return this._neighbourLimit;
+	},
 
 	/**
 	 * Uses the A* algorithm to generate path data between two points.
@@ -45,7 +65,8 @@ var IgePathFinder = IgeEventingClass.extend({
 		if (!comparisonCallback(endPointCheckTile, endPoint.x, endPoint.y)) {
 			// There is no path to the end point because the end point
 			// is not allowed to be pathed to!
-			this.log('Cannot path to destination because the destination tile is not pathable!');
+			this.emit('noPathFound');
+			//this.log('Cannot path to destination because the destination tile is not pathable!');
 			return [];
 		}
 
@@ -58,8 +79,8 @@ var IgePathFinder = IgeEventingClass.extend({
 		// Loop as long as there are more points to process in our open list
 		while (openList.length) {
 			// Check for some major error
-			if (openList.length > 999) {
-				this.log('Path finder error, open list nodes exceeded 1000!', 'error');
+			if (openList.length > this._neighbourLimit) {
+				//this.log('Path finder error, open list nodes exceeded ' + this._neighbourLimit + '!', 'warning');
 				this.emit('exceededLimit');
 				break;
 			}
@@ -130,7 +151,7 @@ var IgePathFinder = IgeEventingClass.extend({
 		}
 
 		// Could not find a path, return an empty array!
-		this.log('Could not find a path to destination!');
+		//this.log('Could not find a path to destination!');
 		this.emit('noPathFound');
 		return [];
 
