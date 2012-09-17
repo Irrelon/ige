@@ -628,7 +628,13 @@ var IgeEntity = IgeObject.extend([
 		if (otherMax.z <= thisMin.z) {
 			return true;
 		}
-		console.log('ERROR WITH IS BEHIND!');
+
+		// Entity's are overlapping, check by y position
+		if ((this._translate.y + this._translate.z) > (otherObject._translate.y + otherObject._translate.z)) {
+			return true;
+		} else {
+			return false;
+		}
 	},
 
 	/**
