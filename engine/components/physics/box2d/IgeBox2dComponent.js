@@ -305,35 +305,35 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	},
 
 	enableDebug: function (mountScene) {
-		if (mountScene && mountScene._classId === 'IgeScene2d') {
-		// Define the debug drawing instance
-		var debugDraw = new this.b2DebugDraw();
-		this._box2dDebug = true;
+		if (mountScene) {
+			// Define the debug drawing instance
+			var debugDraw = new this.b2DebugDraw();
+			this._box2dDebug = true;
 
-		debugDraw.SetSprite(ige._ctx);
-		debugDraw.SetDrawScale(this._scaleRatio);
-		debugDraw.SetFillAlpha(0.3);
-		debugDraw.SetLineThickness(1.0);
-		debugDraw.SetFlags(
-			this.b2DebugDraw.e_controllerBit
-			| this.b2DebugDraw.e_jointBit
-			| this.b2DebugDraw.e_pairBit
-			| this.b2DebugDraw.e_shapeBit
-			//| this.b2DebugDraw.e_aabbBit
-			//| this.b2DebugDraw.e_centerOfMassBit
-		);
+			debugDraw.SetSprite(ige._ctx);
+			debugDraw.SetDrawScale(this._scaleRatio);
+			debugDraw.SetFillAlpha(0.3);
+			debugDraw.SetLineThickness(1.0);
+			debugDraw.SetFlags(
+				this.b2DebugDraw.e_controllerBit
+				| this.b2DebugDraw.e_jointBit
+				| this.b2DebugDraw.e_pairBit
+				| this.b2DebugDraw.e_shapeBit
+				//| this.b2DebugDraw.e_aabbBit
+				//| this.b2DebugDraw.e_centerOfMassBit
+			);
 
-		// Set the debug draw for the world
-		this._world.SetDebugDraw(debugDraw);
+			// Set the debug draw for the world
+			this._world.SetDebugDraw(debugDraw);
 
-		// Create the debug painter entity and mount
-		// it to the passed scene
-		new igeClassStore.Box2dDebugPainter()
-			.depth(40000) // Set a really high depth
-			.drawBounds(false)
-			.mount(mountScene);
+			// Create the debug painter entity and mount
+			// it to the passed scene
+			new igeClassStore.Box2dDebugPainter()
+				.depth(40000) // Set a really high depth
+				.drawBounds(false)
+				.mount(mountScene);
 		} else {
-			this.log('Cannot enable box2d debug drawing because the passed argument is not an IgeScene2d instance. Pass your main scene instance to enable debug drawing on it.', 'error');
+			this.log('Cannot enable box2d debug drawing because the passed argument is not an object on the scenegraph.', 'error');
 		}
 	},
 
