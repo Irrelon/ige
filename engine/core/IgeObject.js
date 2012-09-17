@@ -195,29 +195,35 @@ var IgeObject = IgeEventingClass.extend({
 	 * @return {*} Returns this on success or false on failure.
 	 */
 	mount: function (obj) {
-		if (obj._children) {
-			// Check that the engine will allow us to register this object
-			this.id(); // Generates a new id if none is currently set, and registers it on the object register!
+		if (obj) {
+			if (obj._children) {
+				// Check that the engine will allow us to register this object
+				this.id(); // Generates a new id if none is currently set, and registers it on the object register!
 
-			if (this._parent) {
-				if (this._parent === obj) {
-					// We are already mounted to the parent!
-					return this;
-				} else {
-					// We are already mounted to a different parent
-					this.unMount();
+				if (this._parent) {
+					if (this._parent === obj) {
+						// We are already mounted to the parent!
+						return this;
+					} else {
+						// We are already mounted to a different parent
+						this.unMount();
+					}
 				}
+
+				this._parent = obj;
+				obj._children.push(this);
+
+				this._parent._childMounted(this);
+
+				this.emit('mounted', this._parent);
+
+				return this;
+			} else {
+				// The object has no _children array!
+				return false;
 			}
-
-			this._parent = obj;
-			obj._children.push(this);
-
-			this._parent._childMounted(this);
-
-			return this;
 		} else {
-			// The object has no _children array!
-			return false;
+			this.log('Cannot mount non-existent object!', 'error');
 		}
 	},
 
