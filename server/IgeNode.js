@@ -4,7 +4,14 @@ var IgeNode = IgeClass.extend({
 	init: function () {
 		// Include required node modules
 		var argParse = require("node-arguments").process,
-			args = argParse(process.argv, {separator:'-'});
+			args = argParse(process.argv, {separator:'-'}),
+			self = this;
+
+		this.fs = require('fs');
+
+		this.exitProcess = function () {
+			process.exit(1);
+		};
 
 		// If the user requested help, print it and exit
 		if (args['-h']) {
@@ -20,12 +27,18 @@ var IgeNode = IgeClass.extend({
 				console.log('* http://www.isogenicengine.com                                              *');
 				console.log('------------------------------------------------------------------------------');
 				this.log('Starting pre-init process. IGE Game Server loading...');
+				this.log('Current working directory is: ' + process.cwd());
 
 				// Setup any passed arguments
-				this.gamePath(args['-g']);
-
-				// Call the main method
-				this.main();
+				if (this.gamePath(args['-g'])) {
+					// Set a timeout to execute the main server method
+					// so we can flush the console and see useful process
+					// info before any potential crash.
+					setTimeout(function () {
+						// Call the main method
+						self.main();
+					}, 50);
+				}
 			}
 
 			// Generate a game client-side deployment file
@@ -45,28 +58,71 @@ var IgeNode = IgeClass.extend({
 
 	gamePath: function (gamePath) {
 		if (typeof(gamePath) !== 'undefined') {
-			this.log('Starting game server in path: ' + gamePath);
-			this._gamePath = gamePath;
+			if (gamePath.substr(0, 1) === '/') {
+				// Absolute path
+				//this.log('Game path is absolute: ' + gamePath);
+				this._gamePath = gamePath + '/';
+			} else {
+				// Relative path
+				//this.log('Game path is relative: ' + gamePath);
+				this._gamePath = process.cwd() + '/' + gamePath + '/';
+			}
+
+			// Check that the game's required files exist
+			if (!this.fs.existsSync(this._gamePath + 'server.js')) {
+				// The server.js file is missing, throw an error!
+				this.log('The game\'s server.js file cannot be found at: "' + this._gamePath + 'server.js", exiting!', 'warning');
+				setTimeout(this.exitProcess, 50);
+				return false;
+			} else if (!this.fs.existsSync(this._gamePath + 'index.js')) {
+				// The index.js file is missing, throw an error!
+				this.log('The game\'s index.js file cannot be found at: "' + this._gamePath + 'index.js", exiting!', 'warning');
+				setTimeout(this.exitProcess, 50);
+				return false;
+			} else if (!this.fs.existsSync(this._gamePath + 'ServerConfig.js')) {
+				// The index.js file is missing, throw an error!
+				this.log('The game\'s ServerConfig.js file cannot be found at: "' + this._gamePath + 'ServerConfig.js", exiting!', 'warning');
+				setTimeout(this.exitProcess, 50);
+				return false;
+			} else {
+				this.log('Starting game server in path: ' + process.cwd() + '/' + gamePath);
+				return true;
+			}
 		}
 	},
 
 	main: function () {
-		this.Server = require(this._gamePath + '/server.js');
-		this.Game = require(this._gamePath + '/index.js');
+		this.Server = require(this._gamePath + 'server.js');
+		this.Game = require(this._gamePath + 'index.js');
 
 		// Load the configuration file and load any modules
-		this.config = require(this._gamePath + '/ServerConfig.js');
-		this.log('Configuration loaded. Including ' + this.config.include.length + ' module(s)...');
+		this.config = require(this._gamePath + 'ServerConfig.js');
 
 		var arr = this.config.include,
 			arrCount = arr.length,
 			i, item, itemModule;
 
+		// Loop the module items and check they exist first
+		this.log('Checking module paths declared in: ' + this._gamePath + 'ServerConfig.js');
 		for (i = 0; i < arrCount; i++) {
 			item = arr[i];
+
+			if (!this.fs.existsSync(this._gamePath + item.path + '.js')) {
+				// The module file is missing, throw an error!
+				this.log('Cannot load module from: "' + this._gamePath + item.path + '.js", exiting!', 'warning');
+				setTimeout(this.exitProcess, 50);
+				return false;
+			}
+		}
+
+		// All the modules exist, load them
+		this.log('Module paths confirmed, including ' + this.config.include.length + ' module(s)...');
+		for (i = 0; i < arrCount; i++) {
+			item = arr[i];
+
 			itemModule = require(this._gamePath + item.path);
 			eval(item.name + ' = itemModule;');
-			this.log('Module "' + item.name + '" loaded');
+			this.log('Module "' + item.name + '" loaded from: "' + this._gamePath + item.path + '.js"');
 		}
 
 		// Create a new Game instance and pass the config details to it
