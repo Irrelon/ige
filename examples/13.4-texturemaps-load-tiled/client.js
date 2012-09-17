@@ -48,10 +48,6 @@ var Client = IgeClass.extend({
 						.drawBoundsData(false)
 						.mount(self.mainScene);
 
-					// Add the box2d debug painter entity to the
-					// scene
-					ige.box2d.enableDebug(self.objectScene);
-
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
 						.id('vp1')
@@ -84,8 +80,8 @@ var Client = IgeClass.extend({
 						})
 						.id('player1')
 						.setType(0)
-						.drawBounds(true)
-						.drawBoundsData(true)
+						.drawBounds(false)
+						.drawBoundsData(false)
 						.isometric(true) // Set to use isometric movement
 						.translateTo(93, 968, 0)
 						.mount(self.objectScene);
@@ -138,6 +134,10 @@ var Client = IgeClass.extend({
 							// Create static box2d objects from the dirt layer
 							ige.box2d.staticsFromMap(layersById.DirtLayer);
 						});
+
+					// Add the box2d debug painter entity to the
+					// scene to show the box2d body outlines
+					ige.box2d.enableDebug(self.objectScene);
 				}
 			});
 		});
