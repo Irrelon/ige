@@ -40,12 +40,14 @@ var Client = IgeClass.extend({
 						.drawBoundsData(false)
 						.mount(self.mainScene);
 
-					self.objectScene = new IgeScene2d()
-						.id('objectScene')
+					self.objectLayer = new IgeTileMap2d()
+						.id('objectLayer')
 						.depth(1)
 						.isometricMounts(true)
 						.drawBounds(false)
 						.drawBoundsData(false)
+						.tileWidth(40)
+						.tileHeight(40)
 						.mount(self.mainScene);
 
 					// Create the main viewport
@@ -74,7 +76,11 @@ var Client = IgeClass.extend({
 								friction: 0.5,
 								restitution: 0.2,
 								shape: {
-									type: 'rectangle'
+									type: 'rectangle',
+									data: {
+										width: 10,
+										height: 10
+									}
 								}
 							}]
 						})
@@ -83,8 +89,8 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.drawBoundsData(false)
 						.isometric(true) // Set to use isometric movement
-						.translateTo(93, 968, 0)
-						.mount(self.objectScene);
+						.translateTo(0, 0, 0)
+						.mount(self.objectLayer);
 
 					// Translate the camera to the initial player position
 					self.vp1.camera.lookAt(self.player1);
@@ -109,7 +115,12 @@ var Client = IgeClass.extend({
 							// We can add all our layers to our main scene by looping the
 							// array or we can pick a particular layer via the layersById
 							// object. Let's give an example:
-							var i;
+							var i, destTileX = - 1, destTileY = -1,
+								tileChecker = function (tileData, tileX, tileY) {
+									// If the map tile data is set, don't path along it
+									return !tileData;
+								};
+
 							for (i = 0; i < layerArray.length; i++) {
 								// Before we mount the layer we will adjust the size of
 								// the layer's tiles because Tiled calculates tile width
@@ -133,11 +144,38 @@ var Client = IgeClass.extend({
 
 							// Create static box2d objects from the dirt layer
 							ige.box2d.staticsFromMap(layersById.DirtLayer);
+
+							// Create a path-finder
+							self.pathFinder = new IgePathFinder()
+								.neighbourLimit(1000); // Set a high limit because we are using a large map
+
+							// Create a bunch of AI characters that will walk around the screen
+							// using the path finder to find their way around. When they complete
+							// a path they will choose a new random destination and path to it.
+							// All the AI character code is in the gameClasses/CharacterAi.js
+							for (i = 0; i < 20; i++) {
+								// Pick a random tile for the entity to start on
+								while (destTileX < 0 || destTileY < 0 || !layersById.DirtLayer.map._mapData[destTileY] || !tileChecker(layersById.DirtLayer.map._mapData[destTileY][destTileX])) {
+									destTileX = Math.random() * 100 | 0;
+									destTileY = Math.random() * 100 | 0;
+								}
+
+								new CharacterAi(layersById.DirtLayer, self.pathFinder)
+									.id('ai' + i)
+									.drawBounds(false)
+									.drawBoundsData(false)
+									.isometric(true) // Set to use isometric movement
+									.mount(self.objectLayer)
+									.translateToTile(destTileX, destTileY, 0);
+
+								destTileX = -1;
+								destTileY = -1;
+							}
 						});
 
 					// Add the box2d debug painter entity to the
 					// scene to show the box2d body outlines
-					ige.box2d.enableDebug(self.objectScene);
+					//ige.box2d.enableDebug(self.objectLayer);
 				}
 			});
 		});
