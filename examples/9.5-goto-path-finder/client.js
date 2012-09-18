@@ -135,10 +135,11 @@ var Client = IgeClass.extend({
 				var path1 = self.pathFinder.aStar(self.tileMap1, new IgePoint(0, 0, 0), new IgePoint(2, 2, 0), function (tileData, tileX, tileY) {
 					// If the map tile data is set to 1, don't allow a path along it
 					return tileData !== 1;
-				}, true, false);
+				}, true, true);
 
 				// Assign the path to the player and start it
 				self.player
+					.path.drawPath(true)
 					.path.add(path1);
 
 				// Register some event listeners for the path
@@ -148,6 +149,12 @@ var Client = IgeClass.extend({
 				self.player.path.on('pointComplete', function () { console.log('Path point reached...'); });
 				self.player.path.on('pathComplete', function () { console.log('Path completed...'); });
 				self.player.path.on('traversalComplete', function () { console.log('Traversal of all paths completed.'); });
+
+				// Some error events from the path finder
+				self.pathFinder.on('noPathFound', function () { console.log('Could not find a path to the destination!'); });
+				self.pathFinder.on('exceededLimit', function () { console.log('Path finder exceeded allowed limit of nodes!'); });
+				self.pathFinder.on('pathFound', function () { console.log('Path to destination calculated...'); });
+
 				self.player.path.start();
 			}
 		});

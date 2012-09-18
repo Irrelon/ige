@@ -75,6 +75,22 @@ var IgePathComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Gets / sets the flag determining if the path component
+	 * should draw the current path of the entity to the canvas
+	 * on each tick. Useful for debugging paths.
+	 * @param {Boolean=} val
+	 * @return {*}
+	 */
+	drawPath: function (val) {
+		if (val !== undefined) {
+			this._drawPath = val;
+			return this._entity;
+		}
+
+		return this._drawPath;
+	},
+
+	/**
 	 * Gets / sets the speed at which the entity will
 	 * traverse the path.
 	 * @param {Number=} val
@@ -171,7 +187,10 @@ var IgePathComponent = IgeEventingClass.extend({
 				targetPoint,
 				newPosition,
 				distanceBetweenP1AndP2,
-				currentTime = new Date().getTime();
+				currentTime = new Date().getTime(),
+				oldTracePathPoint,
+				tracePathPoint,
+				pathPointIndex;
 
 			if (targetCell) {
 				targetPoint = {x: targetCell.x * this._parent._tileWidth, y: targetCell.y * this._parent._tileHeight};
@@ -180,6 +199,27 @@ var IgePathComponent = IgeEventingClass.extend({
 					if (currentTime < self._targetCellArrivalTime && (targetPoint.x !== currentPosition.x || targetPoint.y !== currentPosition.y)) {
 						newPosition = self._positionAlongVector(currentPosition, targetPoint, self._speed, ige.tickDelta);
 						this.translateTo(newPosition.x, newPosition.y, currentPosition.z);
+
+						if (self._drawPath) {
+							// Draw the current path
+							ctx.save();
+							ctx.strokeStyle = '#ff0000';
+
+							for (pathPointIndex = 0; pathPointIndex < currentPath.length; pathPointIndex++) {
+								tracePathPoint = new IgePoint((currentPath[pathPointIndex].x * this._parent._tileWidth), (currentPath[pathPointIndex].y * this._parent._tileHeight), 0).toIso();
+
+								if (oldTracePathPoint) {
+									ctx.beginPath();
+									ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
+									ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
+									ctx.stroke();
+									ctx.fillRect(tracePathPoint.x - 2.5, tracePathPoint.y - 2.5, 5, 5);
+								}
+
+								oldTracePathPoint = tracePathPoint;
+							}
+							ctx.restore();
+						}
 					} else {
 						// We are at the target cell, move to the next cell
 						self.emit('pointComplete', this);

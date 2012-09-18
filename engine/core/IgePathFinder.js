@@ -39,21 +39,19 @@ var IgePathFinder = IgeEventingClass.extend({
 	aStar: function (tileMap, startPoint, endPoint, comparisonCallback, allowSquare, allowDiagonal) {
 		var openList = [],
 			closedList = [],
-			openListHash = {},
-			closedListHash = {},
+			listHash = {},
 			startNode,
-			lowInd,
+			lowestFScoringIndex,
 			openCount,
 			currentNode,
 			pathPoint,
 			finalPath,
 			neighbourList,
-			neighborCount,
+			neighbourCount,
 			neighbourNode,
-			gScore,
-			bestScore,
 			endPointCheckTile,
-			tileMapData;
+			tileMapData,
+			existingNode;
 
 		// Set some defaults
 		if (allowSquare === undefined) { allowSquare = true; }
@@ -71,10 +69,11 @@ var IgePathFinder = IgeEventingClass.extend({
 		}
 
 		// Starting point to open list
-		startNode = new IgePathNode(startPoint.x, startPoint.y, 0);
-		startPoint.link = 1;
-		openList.push(startPoint);
-		openListHash[startPoint.hash] = true;
+		startNode = new IgePathNode(startPoint.x, startPoint.y, 0, 0, 0);
+		startNode.link = 1;
+		openList.push(startNode);
+		listHash[startNode.hash] = startNode;
+		startNode.listType = 1;
 
 		// Loop as long as there are more points to process in our open list
 		while (openList.length) {
@@ -85,15 +84,16 @@ var IgePathFinder = IgeEventingClass.extend({
 				break;
 			}
 
-			// Grab the lowest f(x) to process next
-			lowInd = 0;
+			// Grab the lowest f scoring node from the open list
+			// to process next
+			lowestFScoringIndex = 0;
 			openCount = openList.length;
 
 			while (openCount--) {
-				if(openList[openCount].h < openList[lowInd].h) { lowInd = openCount; }
+				if(openList[openCount].f < openList[lowestFScoringIndex].f) { lowestFScoringIndex = openCount; }
 			}
 
-			currentNode = openList[lowInd];
+			currentNode = openList[lowestFScoringIndex];
 
 			// Check if the current node is the end point
 			if (currentNode.x === endPoint.x && currentNode.y === endPoint.y) {
@@ -111,38 +111,40 @@ var IgePathFinder = IgeEventingClass.extend({
 				return finalPath.reverse();
 			} else {
 				// Remove the current node from the open list
-				openList.splice(lowInd, 1);
-				delete openListHash[currentNode.hash];
+				openList.splice(lowestFScoringIndex, 1);
 
 				// Add the current node to the closed list
 				closedList.push(currentNode);
-				closedListHash[currentNode.hash] = true;
+				currentNode.listType = -1;
 
 				// Get the current node's neighbors
 				neighbourList = this._getNeighbours(currentNode, endPoint, tileMap, comparisonCallback, allowSquare, allowDiagonal);
-				neighborCount = neighbourList.length;
+				neighbourCount = neighbourList.length;
 
-				// Loop the neighbors
-				while (neighborCount--) {
-					neighbourNode = neighbourList[neighborCount];
-					if (!closedListHash[neighbourNode.hash]) {
-						// Neighbor node is not on closed list
-						gScore = currentNode.score;
-						bestScore = false;
+				// Loop the neighbours and add each one to the open list
+				while (neighbourCount--) {
+					neighbourNode = neighbourList[neighbourCount];
+					existingNode = listHash[neighbourNode.hash];
 
-						if (!openListHash[neighbourNode.hash]) {
-							// The neighbour node is not in the open list yet
-							bestScore = true;
-							neighbourNode.score = this._heuristic(neighbourNode.x, neighbourNode.y, endPoint.x, endPoint.y);
+					// Check that the neighbour is not on the closed list
+					if (!existingNode || existingNode.listType !== -1) {
+						// The neighbour is not on the closed list so
+						// check if it is already on the open list
+						if (existingNode && existingNode.listType === 1) {
+							// The neighbour is already on the open list
+							// so check if our new path is a better score
+							if (existingNode.g > neighbourNode.g) {
+								// Pathing from the current node through this neighbour
+								// costs less that any way we've calculated before
+								existingNode.link = neighbourNode.link;
+								existingNode.g = neighbourNode.g;
+								existingNode.f = neighbourNode.f;
+							}
+						} else {
+							// Add the neighbour to the open list
 							openList.push(neighbourNode);
-						} else if (gScore < neighbourNode.score) {
-							// The neighbour node is in the open list already
-							bestScore = true;
-						}
-
-						if (bestScore) {
-							neighbourNode.link = currentNode;
-							neighbourNode.h = neighbourNode.score;
+							listHash[neighbourNode.hash] = neighbourNode;
+							neighbourNode.listType = 1;
 						}
 					}
 				}
@@ -182,28 +184,28 @@ var IgePathFinder = IgeEventingClass.extend({
 			newX = x - 1; newY = y;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY)) {
-				newNode = new IgePathNode(newX, newY, 1);
+				newNode = new IgePathNode(newX, newY, currentNode.g, 10, this._heuristic(newX, newY, endPoint.x, endPoint.y, 10), currentNode);
 				list.push(newNode);
 			}
 
 			newX = x + 1; newY = y;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY)) {
-				newNode = new IgePathNode(newX, newY, 1);
+				newNode = new IgePathNode(newX, newY, currentNode.g, 10, this._heuristic(newX, newY, endPoint.x, endPoint.y, 10), currentNode);
 				list.push(newNode);
 			}
 
 			newX = x; newY = y - 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY)) {
-				newNode = new IgePathNode(newX, newY, 1);
+				newNode = new IgePathNode(newX, newY, currentNode.g, 10, this._heuristic(newX, newY, endPoint.x, endPoint.y, 10), currentNode);
 				list.push(newNode);
 			}
 
 			newX = x; newY = y + 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY)) {
-				newNode = new IgePathNode(newX, newY, 1);
+				newNode = new IgePathNode(newX, newY, currentNode.g, 10, this._heuristic(newX, newY, endPoint.x, endPoint.y, 10), currentNode);
 				list.push(newNode);
 			}
 
@@ -213,28 +215,28 @@ var IgePathFinder = IgeEventingClass.extend({
 			newX = x - 1; newY = y - 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY)) {
-				newNode = new IgePathNode(newX, newY, 1.4);
+				newNode = new IgePathNode(newX, newY, currentNode.g, 14, this._heuristic(newX, newY, endPoint.x, endPoint.y, 14), currentNode);
 				list.push(newNode);
 			}
 
 			newX = x + 1; newY = y - 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY)) {
-				newNode = new IgePathNode(newX, newY, 1.4);
+				newNode = new IgePathNode(newX, newY, currentNode.g, 14, this._heuristic(newX, newY, endPoint.x, endPoint.y, 14), currentNode);
 				list.push(newNode);
 			}
 
 			newX = x - 1; newY = y + 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY)) {
-				newNode = new IgePathNode(newX, newY, 1.4);
+				newNode = new IgePathNode(newX, newY, currentNode.g, 14, this._heuristic(newX, newY, endPoint.x, endPoint.y, 14), currentNode);
 				list.push(newNode);
 			}
 
 			newX = x + 1; newY = y + 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY)) {
-				newNode = new IgePathNode(newX, newY, 1.4);
+				newNode = new IgePathNode(newX, newY, currentNode.g, 14, this._heuristic(newX, newY, endPoint.x, endPoint.y, 14), currentNode);
 				list.push(newNode);
 			}
 		}
@@ -251,8 +253,22 @@ var IgePathFinder = IgeEventingClass.extend({
 	 * @return {Number} Returns the heuristic cost between the co-ordinates specified.
 	 * @private
 	 */
-	_heuristic: function (x1, y1, x2, y2) {
-		return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+	_heuristic: function (x1, y1, x2, y2, moveCost) {
+		return moveCost * Math.abs(x1 - x2) + Math.abs(y1 - y2);
+	},
+
+	as: function (map, fromNode, toNode) {
+		var openList = [],
+			closedList = [];
+
+		// Add start point to open list
+		openList.push(fromNode);
+
+
+	},
+
+	_as: function (openList, closedList, currentNode, toNode) {
+
 	}
 });
 

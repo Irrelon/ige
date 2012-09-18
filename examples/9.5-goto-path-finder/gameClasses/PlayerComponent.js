@@ -41,7 +41,7 @@ var PlayerComponent = IgeClass.extend({
 		newPath = ige.client.pathFinder.aStar(ige.client.tileMap1, currentTile, tilePoint, function (tileData, tileX, tileY) {
 			// If the map tile data is set to 1, don't allow a path along it
 			return tileData !== 1;
-		}, true, false);
+		}, true, true);
 
 		//console.log(newPath);
 
