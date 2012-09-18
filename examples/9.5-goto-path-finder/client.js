@@ -172,6 +172,7 @@ var Client = IgeClass.extend({
 				// Assign the path to the player
 				self.player
 					.path.drawPath(true) // Enable debug drawing the paths
+					.path.drawPathGlow(true) // Enable path glowing (eye candy)
 					.path.add(path1)
 					.path.add(path2)
 					.path.add(path3)
