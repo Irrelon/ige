@@ -227,62 +227,6 @@ var IgePathComponent = IgeEventingClass.extend({
 					if (currentTime < self._targetCellArrivalTime && (targetPoint.x !== currentPosition.x || targetPoint.y !== currentPosition.y)) {
 						newPosition = self._positionAlongVector(currentPosition, targetPoint, self._speed, ige.tickDelta);
 						this.translateTo(newPosition.x, newPosition.y, currentPosition.z);
-
-						if (self._drawPath) {
-							// Draw the current path
-							ctx.save();
-							tempCurrentPathIndex = 0;
-
-							while (self._paths[tempCurrentPathIndex]) {
-								tempCurrentPath = self._paths[tempCurrentPathIndex];
-								oldTracePathPoint = undefined;
-
-								if (tempCurrentPathIndex === self._currentPathIndex) {
-									ctx.strokeStyle = '#0096ff';
-									ctx.fillStyle = '#0096ff';
-								} else {
-									ctx.strokeStyle = '#fff000';
-									ctx.fillStyle = '#fff000';
-								}
-
-								for (pathPointIndex = 0; pathPointIndex < tempCurrentPath.length; pathPointIndex++) {
-									if (this._parent.isometricMounts()) {
-										tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * this._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * this._parent._tileHeight), 0).toIso();
-									} else {
-										tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * this._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * this._parent._tileHeight), 0);
-									}
-
-									if (!oldTracePathPoint) {
-										// The starting point of the path
-										ctx.beginPath();
-										ctx.arc(tracePathPoint.x, tracePathPoint.y, 5, 0, Math.PI*2, true);
-										ctx.closePath();
-										ctx.fill();
-										tempColour = ctx.fillStyle;
-										ctx.fillStyle = '#eade24';
-
-										tempPathText = 'Entity: ' + this.id();
-										ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y - 22);
-
-										tempPathText = 'Path ' + tempCurrentPathIndex + ' (' + tempCurrentPath[pathPointIndex].x + ', ' + tempCurrentPath[pathPointIndex].y + ')';
-										ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y - 10);
-										ctx.fillStyle = tempColour;
-									} else {
-										// Not the starting point
-										ctx.beginPath();
-										ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
-										ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
-										ctx.stroke();
-										ctx.fillRect(tracePathPoint.x - 2.5, tracePathPoint.y - 2.5, 5, 5);
-									}
-
-									oldTracePathPoint = tracePathPoint;
-								}
-
-								tempCurrentPathIndex++;
-							}
-							ctx.restore();
-						}
 					} else {
 						// We are at the target cell, move to the next cell
 						self.emit('pointComplete', this);
@@ -323,6 +267,94 @@ var IgePathComponent = IgeEventingClass.extend({
 				} else {
 					// No path so stop pathing!
 					self.stop();
+				}
+
+				if (currentPath) {
+					if (self._drawPath) {
+						// Draw the current path
+						ctx.save();
+						tempCurrentPathIndex = 0;
+
+						while (self._paths[tempCurrentPathIndex]) {
+							tempCurrentPath = self._paths[tempCurrentPathIndex];
+							oldTracePathPoint = undefined;
+
+							for (pathPointIndex = 0; pathPointIndex < tempCurrentPath.length; pathPointIndex++) {
+								if (tempCurrentPathIndex === self._currentPathIndex) {
+									ctx.strokeStyle = '#0096ff';
+									ctx.fillStyle = '#0096ff';
+								} else {
+									ctx.strokeStyle = '#fff000';
+									ctx.fillStyle = '#fff000';
+								}
+
+								if (this._parent.isometricMounts()) {
+									tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * this._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * this._parent._tileHeight), 0).toIso();
+								} else {
+									tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * this._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * this._parent._tileHeight), 0);
+								}
+
+								if (!oldTracePathPoint) {
+									// The starting point of the path
+									ctx.beginPath();
+									ctx.arc(tracePathPoint.x, tracePathPoint.y, 5, 0, Math.PI*2, true);
+									ctx.closePath();
+
+									if (tempCurrentPathIndex < self._currentPathIndex) {
+										ctx.fillStyle = '#666666';
+									}
+
+									ctx.fill();
+									tempColour = ctx.fillStyle;
+									ctx.fillStyle = '#eade24';
+
+
+
+									tempPathText = 'Entity: ' + this.id();
+									ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y - 22);
+
+									tempPathText = 'Path ' + tempCurrentPathIndex + ' (' + tempCurrentPath[pathPointIndex].x + ', ' + tempCurrentPath[pathPointIndex].y + ')';
+									ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y - 10);
+									ctx.fillStyle = tempColour;
+								} else {
+									// Not the starting point
+									//ctx.save();
+									ctx.globalAlpha = 0.1;
+									for (var k = 3; k >= 0 ; k--) {
+										ctx.lineWidth = (k + 1) * 4 - 3.5;
+										ctx.beginPath();
+										ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
+										ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
+										if (tempCurrentPathIndex < self._currentPathIndex || (tempCurrentPathIndex === self._currentPathIndex && pathPointIndex < self._targetCellIndex)) {
+											ctx.strokeStyle = '#666666';
+											ctx.fillStyle = '#666666';
+										}
+										if (k === 0) { ctx.globalAlpha = 1; }
+
+										ctx.stroke();
+									}
+									//ctx.restore();
+
+									if (tempCurrentPathIndex === self._currentPathIndex && pathPointIndex === self._targetCellIndex) {
+										ctx.save();
+										ctx.translate(tracePathPoint.x, tracePathPoint.y);
+										ctx.rotate(45 * Math.PI / 180);
+										ctx.translate(-tracePathPoint.x, -tracePathPoint.y);
+										ctx.fillStyle = '#d024ea';
+										ctx.fillRect(tracePathPoint.x - 5, tracePathPoint.y - 5, 10, 10);
+										ctx.restore();
+									} else {
+										ctx.fillRect(tracePathPoint.x - 2.5, tracePathPoint.y - 2.5, 5, 5);
+									}
+								}
+
+								oldTracePathPoint = tracePathPoint;
+							}
+
+							tempCurrentPathIndex++;
+						}
+						ctx.restore();
+					}
 				}
 			}
 		}
