@@ -142,6 +142,30 @@ var IgePathComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Returns the last point of the last path in the
+	 * path queue.
+	 * @return {IgePoint}
+	 */
+	endPoint: function () {
+		var paths = this._paths,
+			pathCount = this._paths.length,
+			points,
+			pointCount;
+
+		if (pathCount) {
+			// We have paths so figure out the last point
+			// of the last path and return it
+			points = paths[pathCount - 1];
+			pointCount = points.length;
+
+			return points[pointCount - 1];
+		} else {
+			// No paths so return a null point
+			return null;
+		}
+	},
+
+	/**
 	 * Stops path traversal but does not clear the path
 	 * queue or any path data.
 	 * @return {*}
@@ -190,7 +214,9 @@ var IgePathComponent = IgeEventingClass.extend({
 				currentTime = new Date().getTime(),
 				oldTracePathPoint,
 				tracePathPoint,
-				pathPointIndex;
+				pathPointIndex,
+				tempCurrentPath,
+				tempCurrentPathIndex;
 
 			if (targetCell) {
 				targetPoint = {x: targetCell.x * this._parent._tileWidth, y: targetCell.y * this._parent._tileHeight};
@@ -203,20 +229,48 @@ var IgePathComponent = IgeEventingClass.extend({
 						if (self._drawPath) {
 							// Draw the current path
 							ctx.save();
-							ctx.strokeStyle = '#ff0000';
+							tempCurrentPathIndex = 0;
 
-							for (pathPointIndex = 0; pathPointIndex < currentPath.length; pathPointIndex++) {
-								tracePathPoint = new IgePoint((currentPath[pathPointIndex].x * this._parent._tileWidth), (currentPath[pathPointIndex].y * this._parent._tileHeight), 0).toIso();
+							while (self._paths[tempCurrentPathIndex]) {
+								tempCurrentPath = self._paths[tempCurrentPathIndex];
+								oldTracePathPoint = undefined;
 
-								if (oldTracePathPoint) {
-									ctx.beginPath();
-									ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
-									ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
-									ctx.stroke();
-									ctx.fillRect(tracePathPoint.x - 2.5, tracePathPoint.y - 2.5, 5, 5);
+								if (tempCurrentPathIndex === self._currentPathIndex) {
+									ctx.strokeStyle = '#0096ff';
+									ctx.fillStyle = '#0096ff';
+								} else {
+									ctx.strokeStyle = '#fff000';
+									ctx.fillStyle = '#fff000';
 								}
 
-								oldTracePathPoint = tracePathPoint;
+								for (pathPointIndex = 0; pathPointIndex < tempCurrentPath.length; pathPointIndex++) {
+									if (this._parent.isometricMounts()) {
+										tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * this._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * this._parent._tileHeight), 0).toIso();
+									} else {
+										tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * this._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * this._parent._tileHeight), 0);
+									}
+
+									if (!oldTracePathPoint) {
+										// The starting point of the path
+										ctx.beginPath();
+										ctx.arc(tracePathPoint.x, tracePathPoint.y, 5, 0, Math.PI*2, true);
+										ctx.closePath();
+										ctx.fill();
+
+										ctx.fillText('Path ' + tempCurrentPathIndex, tracePathPoint.x - Math.floor(ctx.measureText('Path ' + tempCurrentPathIndex).width / 2), tracePathPoint.y - 10);
+									} else {
+										// Not the starting point
+										ctx.beginPath();
+										ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
+										ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
+										ctx.stroke();
+										ctx.fillRect(tracePathPoint.x - 2.5, tracePathPoint.y - 2.5, 5, 5);
+									}
+
+									oldTracePathPoint = tracePathPoint;
+								}
+
+								tempCurrentPathIndex++;
 							}
 							ctx.restore();
 						}
