@@ -91,6 +91,22 @@ var IgePathComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Gets / sets the flag that determines if the path that
+	 * is drawn gets some added glow effects or not. Pure eye
+	 * candy, completely pointless otherwise.
+	 * @param val
+	 * @return {*}
+	 */
+	drawPathGlow: function (val) {
+		if (val !== undefined) {
+			this._drawPathGlow = val;
+			return this._entity;
+		}
+
+		return this._drawPathGlow;
+	},
+
+	/**
 	 * Gets / sets the speed at which the entity will
 	 * traverse the path.
 	 * @param {Number=} val
@@ -305,35 +321,53 @@ var IgePathComponent = IgeEventingClass.extend({
 									}
 
 									ctx.fill();
-									tempColour = ctx.fillStyle;
+									ctx.save();
 									ctx.fillStyle = '#eade24';
 
-
+									if (self._drawPathGlow) {
+										// Apply shadow to the text
+										ctx.shadowOffsetX = 1;
+										ctx.shadowOffsetY = 2;
+										ctx.shadowBlur    = 4;
+										ctx.shadowColor   = 'rgba(0, 0, 0, 1)';
+									}
 
 									tempPathText = 'Entity: ' + this.id();
 									ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y - 22);
 
 									tempPathText = 'Path ' + tempCurrentPathIndex + ' (' + tempCurrentPath[pathPointIndex].x + ', ' + tempCurrentPath[pathPointIndex].y + ')';
 									ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y - 10);
-									ctx.fillStyle = tempColour;
+									ctx.restore();
 								} else {
 									// Not the starting point
-									//ctx.save();
-									ctx.globalAlpha = 0.1;
-									for (var k = 3; k >= 0 ; k--) {
-										ctx.lineWidth = (k + 1) * 4 - 3.5;
+									if (self._drawPathGlow) {
+										ctx.globalAlpha = 0.1;
+										for (var k = 3; k >= 0 ; k--) {
+											ctx.lineWidth = (k + 1) * 4 - 3.5;
+											ctx.beginPath();
+											ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
+											ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
+											if (tempCurrentPathIndex < self._currentPathIndex || (tempCurrentPathIndex === self._currentPathIndex && pathPointIndex < self._targetCellIndex)) {
+												ctx.strokeStyle = '#666666';
+												ctx.fillStyle = '#333333';
+											}
+											if (k === 0) {
+												ctx.globalAlpha = 1;
+											}
+
+											ctx.stroke();
+										}
+									} else {
 										ctx.beginPath();
 										ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
 										ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
 										if (tempCurrentPathIndex < self._currentPathIndex || (tempCurrentPathIndex === self._currentPathIndex && pathPointIndex < self._targetCellIndex)) {
 											ctx.strokeStyle = '#666666';
-											ctx.fillStyle = '#666666';
+											ctx.fillStyle = '#333333';
 										}
-										if (k === 0) { ctx.globalAlpha = 1; }
 
 										ctx.stroke();
 									}
-									//ctx.restore();
 
 									if (tempCurrentPathIndex === self._currentPathIndex && pathPointIndex === self._targetCellIndex) {
 										ctx.save();
