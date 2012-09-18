@@ -216,7 +216,9 @@ var IgePathComponent = IgeEventingClass.extend({
 				tracePathPoint,
 				pathPointIndex,
 				tempCurrentPath,
-				tempCurrentPathIndex;
+				tempCurrentPathIndex,
+				tempPathText,
+				tempColour;
 
 			if (targetCell) {
 				targetPoint = {x: targetCell.x * this._parent._tileWidth, y: targetCell.y * this._parent._tileHeight};
@@ -256,8 +258,15 @@ var IgePathComponent = IgeEventingClass.extend({
 										ctx.arc(tracePathPoint.x, tracePathPoint.y, 5, 0, Math.PI*2, true);
 										ctx.closePath();
 										ctx.fill();
+										tempColour = ctx.fillStyle;
+										ctx.fillStyle = '#eade24';
 
-										ctx.fillText('Path ' + tempCurrentPathIndex, tracePathPoint.x - Math.floor(ctx.measureText('Path ' + tempCurrentPathIndex).width / 2), tracePathPoint.y - 10);
+										tempPathText = 'Entity: ' + this.id();
+										ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y - 22);
+
+										tempPathText = 'Path ' + tempCurrentPathIndex + ' (' + tempCurrentPath[pathPointIndex].x + ', ' + tempCurrentPath[pathPointIndex].y + ')';
+										ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y - 10);
+										ctx.fillStyle = tempColour;
 									} else {
 										// Not the starting point
 										ctx.beginPath();
