@@ -15,7 +15,8 @@ var CharacterAi = Character.extend({
 		this.setType(Math.random() * 8 | 0);
 
 		// Add pathing capabilities
-		this.addComponent(IgePathComponent);
+		this.addComponent(IgePathComponent)
+			.path.drawPath(true); // Enable drawing the current path
 
 		// Hook the path events
 		newPathMethod = function () {
