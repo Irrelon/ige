@@ -156,12 +156,12 @@ var Client = IgeClass.extend({
 							for (i = 0; i < 20; i++) {
 								// Pick a random tile for the entity to start on
 								while (destTileX < 0 || destTileY < 0 || !layersById.DirtLayer.map._mapData[destTileY] || !tileChecker(layersById.DirtLayer.map._mapData[destTileY][destTileX])) {
-									destTileX = Math.random() * 100 | 0;
-									destTileY = Math.random() * 100 | 0;
+									destTileX = Math.random() * 20 | 0;
+									destTileY = Math.random() * 20 | 0;
 								}
 
 								new CharacterAi(layersById.DirtLayer, self.pathFinder)
-									.id('ai' + i)
+									.id('aiEntity_' + i)
 									.drawBounds(false)
 									.drawBoundsData(false)
 									.isometric(true) // Set to use isometric movement
