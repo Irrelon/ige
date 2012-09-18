@@ -12,6 +12,11 @@ var Client = IgeClass.extend({
 		ige.start(function (success) {
 			// Check if the engine started successfully
 			if (success) {
+				// SET THIS TO TRUE TO USE ISOMETRIC OUTPUT
+				// OR FALSE TO USE 2D OUTPUT. THIS DEMO WORKS
+				// IN BOTH 2D AND ISOMETRIC! GIVE IT A GO!
+				self.isoMode = true;
+
 				// Create the scene
 				self.mainScene = new IgeScene2d()
 					.id('mainScene')
@@ -46,7 +51,7 @@ var Client = IgeClass.extend({
 				// Create an isometric tile map
 				self.tileMap1 = new IgeTileMap2d()
 					.id('tileMap1')
-					.isometricMounts(true)
+					.isometricMounts(self.isoMode)
 					.tileWidth(40)
 					.tileHeight(40)
 					.drawGrid(3)
@@ -98,12 +103,17 @@ var Client = IgeClass.extend({
 					.id('player')
 					.addComponent(PlayerComponent)
 					.addComponent(IgePathComponent)
-					.isometric(true)
 					.mouseOver(overFunc)
 					.mouseOut(outFunc)
 					.drawBounds(false)
 					.drawBoundsData(false)
 					.mount(self.tileMap1);
+
+				// Check if the tileMap1 is is iso mode
+				if (self.tileMap1.isometricMounts()) {
+					// Set the player to move isometrically
+					self.player.isometric(true);
+				}
 
 				// Create a UI entity so we can test if clicking the entity will stop
 				// event propagation down to moving the player. If it's working correctly
@@ -132,15 +142,40 @@ var Client = IgeClass.extend({
 				// Create a path finder and generate a path using
 				// the collision map data
 				self.pathFinder = new IgePathFinder();
-				var path1 = self.pathFinder.aStar(self.tileMap1, new IgePoint(0, 0, 0), new IgePoint(2, 2, 0), function (tileData, tileX, tileY) {
+
+				// Generate first path, diagonal enabled
+				var path1, path2, path3, path4;
+
+				path1 = self.pathFinder.aStar(self.tileMap1, new IgePoint(0, 0, 0), new IgePoint(3, 0, 0), function (tileData, tileX, tileY) {
 					// If the map tile data is set to 1, don't allow a path along it
 					return tileData !== 1;
 				}, true, true);
 
-				// Assign the path to the player and start it
+				// Generate first path, diagonal disabled
+				path2 = self.pathFinder.aStar(self.tileMap1, new IgePoint(3, 0, 0), new IgePoint(6, 4, 0), function (tileData, tileX, tileY) {
+					// If the map tile data is set to 1, don't allow a path along it
+					return tileData !== 1;
+				}, true, false);
+
+				// Generate first path, diagonal enabled
+				path3 = self.pathFinder.aStar(self.tileMap1, new IgePoint(6, 4, 0), new IgePoint(7, 0, 0), function (tileData, tileX, tileY) {
+					// If the map tile data is set to 1, don't allow a path along it
+					return tileData !== 1;
+				}, true, true);
+
+				// Generate first path, diagonal disabled
+				path4 = self.pathFinder.aStar(self.tileMap1, new IgePoint(7, 0, 0), new IgePoint(0, 0, 0), function (tileData, tileX, tileY) {
+					// If the map tile data is set to 1, don't allow a path along it
+					return tileData !== 1;
+				}, true, false);
+
+				// Assign the path to the player
 				self.player
-					.path.drawPath(true)
-					.path.add(path1);
+					.path.drawPath(true) // Enable debug drawing the paths
+					.path.add(path1)
+					.path.add(path2)
+					.path.add(path3)
+					.path.add(path4);
 
 				// Register some event listeners for the path
 				self.player.path.on('started', function () { console.log('Pathing started...'); });
@@ -155,6 +190,7 @@ var Client = IgeClass.extend({
 				self.pathFinder.on('exceededLimit', function () { console.log('Path finder exceeded allowed limit of nodes!'); });
 				self.pathFinder.on('pathFound', function () { console.log('Path to destination calculated...'); });
 
+				// Start traversing the path!
 				self.player.path.start();
 			}
 		});
