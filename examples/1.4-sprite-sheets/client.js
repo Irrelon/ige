@@ -38,8 +38,13 @@ var Client = IgeClass.extend({
 					self.obj[0] = new IgeEntity()
 						.id('sprite1')
 						.depth(1)
+						// Assign the sprite sheet texture to the entity
 						.texture(self.gameTexture[0])
+						// Assign cell 1 as the entity's texture cell
 						.cell(1)
+						// Apply the dimensions from the cell to the entity
+						// so that the entity's width and height now match that
+						// of the cell being used
 						.dimensionsFromCell()
 						.translateTo(0, 0, 0)
 						.mount(self.scene1);
@@ -47,8 +52,13 @@ var Client = IgeClass.extend({
 					self.obj[1] = new IgeEntity()
 						.id('sprite2')
 						.depth(1)
+						// Assign the sprite sheet texture to the entity
 						.texture(self.gameTexture[0])
+						// Assign cell 1 as the entity's texture cell
 						.cell(2)
+						// Apply the dimensions from the cell to the entity
+						// so that the entity's width and height now match that
+						// of the cell being used
 						.dimensionsFromCell()
 						.translateTo(100, 0, 0)
 						.mount(self.scene1);
