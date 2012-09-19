@@ -44,6 +44,21 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Gets / sets the rectangle that the pan operation will be limited
+	 * to using an IgeRect instance.
+	 * @param {IgeRect=} rect
+	 * @return {*}
+	 */
+	panLimit: function (rect) {
+		if (rect !== undefined) {
+			this._panLimit = rect;
+			return this._entity;
+		}
+
+		return this._panLimit;
+	},
+
+	/**
 	 * Gets / sets the enabled flag. If set to true, pan
 	 * operations will be processed. If false, no panning will
 	 * occur.
