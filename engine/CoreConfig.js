@@ -76,6 +76,7 @@ var igeCoreConfig = {
 		['cs', 'IgeCamera', 'core/IgeCamera.js'],
 		['cs', 'IgeViewport', 'core/IgeViewport.js'],
 		['cs', 'IgeScene2d', 'core/IgeScene2d.js'],
+		['cs', 'IgeQuest', 'core/IgeQuest.js'],
 		/* Physics to Entity Components */
 		['cs', 'IgeBox2dComponent', 'components/physics/box2d/IgeBox2dComponent.js'],
 		['cs', 'IgeEntityBox2d', 'components/physics/box2d/IgeEntityBox2d.js'],
