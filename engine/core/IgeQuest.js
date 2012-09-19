@@ -3,6 +3,8 @@ var IgeQuest = IgeEventingClass.extend({
 		this._linear = false;
 		this._items = [];
 
+		this._itemCount = 0;
+		this._eventCount = 0;
 		this._itemCompleteCount = 0;
 		this._eventCompleteCount = 0;
 
@@ -73,6 +75,20 @@ var IgeQuest = IgeEventingClass.extend({
 	items: function (val) {
 		if (val !== undefined) {
 			this._items = val;
+
+			// Set the event and item counts
+			var arr = this._items,
+				arrCount = arr.length,
+				i,
+				eventCount = 0;
+
+			for (i = 0; i < arrCount; i++) {
+				eventCount += arr[i].count;
+			}
+
+			this._eventCount = eventCount;
+			this._itemCount = arrCount;
+
 			return this;
 		}
 
@@ -84,7 +100,7 @@ var IgeQuest = IgeEventingClass.extend({
 	 * @return {Number}
 	 */
 	itemCount: function () {
-		return this._items.length;
+		return this._itemCount;
 	},
 
 	/**
@@ -94,16 +110,33 @@ var IgeQuest = IgeEventingClass.extend({
 	 * @return {Number}
 	 */
 	eventCount: function () {
-		var arr = this._items,
-			arrCount = arr.length,
-			i,
-			eventCount = 0;
+		return this._eventCount;
+	},
 
-		for (i = 0; i < arrCount; i++) {
-			eventCount += arr[i].count;
-		}
+	/**
+	 * Returns the number of events that have been completed.
+	 * @return {Number}
+	 */
+	eventCompleteCount: function () {
+		return this._eventCompleteCount;
+	},
 
-		return eventCount;
+	/**
+	 * Returns the number of items that have been completed.
+	 * @return {Number}
+	 */
+	itemCompleteCount: function () {
+		return this._itemCompleteCount;
+	},
+
+	/**
+	 * Returns the percentage representation of the quest's
+	 * overall completion based on number of overall events and
+	 * number of events that have been completed.
+	 * @return {Number} A number from zero to one-hundred.
+	 */
+	percentComplete: function () {
+		return Math.floor((100 / this._eventCount) * this._eventCompleteCount);
 	},
 
 	/**
@@ -142,27 +175,16 @@ var IgeQuest = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Sets up a quest item's event listener.
-	 * @param item
-	 * @private
+	 * Stops the quest and sets all the event listeners to
+	 * ignore events until the quest is restarted.
 	 */
-	_setupItemListener: function (item) {
-		var self = this;
-
-		// Check for an existing listener
-		if (!item._listener) {
-			// Set the item's internal event count to zero
-			// (number of times the event has fired)
-			item._eventCount = 0;
-			item._complete = false;
-
-			// Create the event listener
-			item._listener = item.emitter.on(item.eventName, function () {
-				// Check if the quest is currently started
-				if (self._started) {
-					self._eventComplete(item);
-				}
-			});
+	stop: function () {
+		if (this._started) {
+			this._started = false;
+			this.emit('stopped');
+		} else {
+			this.log('Cannot stop quest because it has not been started yet!', 'warning');
+			this.emit('notStarted');
 		}
 	},
 
@@ -195,6 +217,31 @@ var IgeQuest = IgeEventingClass.extend({
 		this._isComplete = false;
 
 		this.emit('reset');
+	},
+
+	/**
+	 * Sets up a quest item's event listener.
+	 * @param item
+	 * @private
+	 */
+	_setupItemListener: function (item) {
+		var self = this;
+
+		// Check for an existing listener
+		if (!item._listener) {
+			// Set the item's internal event count to zero
+			// (number of times the event has fired)
+			item._eventCount = 0;
+			item._complete = false;
+
+			// Create the event listener
+			item._listener = item.emitter.on(item.eventName, function () {
+				// Check if the quest is currently started
+				if (self._started) {
+					self._eventComplete(item);
+				}
+			});
+		}
 	},
 
 	/**
@@ -281,20 +328,6 @@ var IgeQuest = IgeEventingClass.extend({
 
 			// Reset the quest (kills current event listeners)
 			this.reset();
-		}
-	},
-
-	/**
-	 * Stops the quest and sets all the event listeners to
-	 * ignore events until the quest is restarted.
-	 */
-	stop: function () {
-		if (this._started) {
-			this._started = false;
-			this.emit('stopped');
-		} else {
-			this.log('Cannot stop quest because it has not been started yet!', 'warning');
-			this.emit('notStarted');
 		}
 	}
 });
