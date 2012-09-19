@@ -167,11 +167,12 @@ var Client = IgeClass.extend({
 							}
 						},
 						// Called when an event is fired for this item
+						// this is optional
 						eventCallback: function (item) {
 							console.log('overTile event');
 						},
 						// Called when this item has reached its item
-						// complete count.
+						// complete count. This is optional
 						itemCallback: function (item) {
 							console.log('Item completed! Quest percent: ' + this.percentComplete() + '%');
 						}
