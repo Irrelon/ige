@@ -295,7 +295,8 @@ var IgeQuest = IgeEventingClass.extend({
 	 * @private
 	 */
 	_itemComplete: function (item) {
-		var itemIndex;
+		var itemIndex,
+			arr = this._items;
 
 		// Mark the item as complete
 		item._complete = true;
@@ -319,7 +320,7 @@ var IgeQuest = IgeEventingClass.extend({
 		this._update();
 
 		// Check if the quest is linear
-		if (this._linear && this._itemCompleteCount < this.itemCount()) {
+		if (this._started && this._linear && this._itemCompleteCount < this.itemCount()) {
 			// Advance the listener to the next item
 			itemIndex = arr.indexOf(item);
 			this._setupItemListener(arr[itemIndex + 1]);
