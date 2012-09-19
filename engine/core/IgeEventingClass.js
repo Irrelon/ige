@@ -144,24 +144,29 @@ var IgeEventingClass = IgeClass.extend({
 						eventIndex = eventCount2 - eventCount;
 						tempEvt = this._eventListeners[eventName][eventIndex];
 
-						// If the sendEventName flag is set, overwrite the arguments with the event name
-						if (tempEvt.sendEventName) { finalArgs = [eventName]; }
+						// Check we have a valid event... sometimes this can be undefined
+						// usually if the event has been removed via a call to off() during
+						// this loop
+						if (tempEvt) {
+							// If the sendEventName flag is set, overwrite the arguments with the event name
+							if (tempEvt.sendEventName) { finalArgs = [eventName]; }
 
-						// Call the callback
-						retVal = tempEvt.call.apply(tempEvt.context || this, finalArgs);
+							// Call the callback
+							retVal = tempEvt.call.apply(tempEvt.context || this, finalArgs);
 
-						// If the retVal === true then store the cancel flag and return to the emitting method
-						if (retVal === true) {
-							// The receiver method asked us to send a cancel request back to the emitter
-							cancelFlag = true;
-						}
+							// If the retVal === true then store the cancel flag and return to the emitting method
+							if (retVal === true) {
+								// The receiver method asked us to send a cancel request back to the emitter
+								cancelFlag = true;
+							}
 
-						// Check if we should now cancel the event
-						if (tempEvt.oneShot) {
-							// The event has a oneShot flag so since we have fired the event,
-							// lets cancel the listener now
-							this.off(eventName, tempEvt);
-							eventCount2--;
+							// Check if we should now cancel the event
+							if (tempEvt.oneShot) {
+								// The event has a oneShot flag so since we have fired the event,
+								// lets cancel the listener now
+								this.off(eventName, tempEvt);
+								eventCount2--;
+							}
 						}
 					}
 
