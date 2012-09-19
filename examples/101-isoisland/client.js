@@ -130,7 +130,7 @@ var Client = IgeClass.extend({
 			.drawBoundsData(true) // Switch to true (and flag above) to see bounds data
 			.mount(ige);
 
-		// Create some listners for when the viewport is being panned
+		// Create some listeners for when the viewport is being panned
 		// so that we don't create an entity accidentally after a mouseUp
 		// occurs if we were panning
 		this.vp1.mousePan.on('panStart', function () {
@@ -139,11 +139,13 @@ var Client = IgeClass.extend({
 
 			// Switch the cursor mode
 			ige.client.data('cursorMode', 'panning');
+			ige.input.stopPropagation();
 		});
 
 		this.vp1.mousePan.on('panEnd', function () {
 			// Switch the cursor mode back
 			ige.client.data('cursorMode', ige.client.data('tempCursorMode'));
+			ige.input.stopPropagation();
 		});
 
 		// Create the scene that the game items will
