@@ -7,11 +7,12 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
-		// Load the fairy texture and store it in the gameTexture array
-		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
-
-		// Load a smart texture
-		gameTexture[1] = new IgeTexture('../assets/textures/smartTextures/simpleBox.js');
+		// Load a tile cell sheet and store it in the gameTexture array
+		// When you create a cell sheet you pass the number of columns and rows
+		// that make up the cells in the image. In this case the grassSheet.png
+		// file has four columns and one row. The cell sheet then automatically
+		// "cuts" up the image into individual cells that you can use for an entity.
+		gameTexture[0] = new IgeCellSheet('../assets/textures/tiles/grassSheet.png', 4, 1);
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -35,37 +36,28 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					// Create an entity and mount it to the scene
-					self.obj[0] = new Rotator()
-						.id('fairy1')
+					self.obj[0] = new IgeEntity()
+						.id('entity1')
 						.depth(1)
-						.width(100)
-						.height(100)
+						// Set the entity texture to the cell sheet we created earlier
 						.texture(gameTexture[0])
+						// Set the cell to 1... this is the FIRST cell in the sheet
+						.cell(1)
+						// Set the entity's width and height to match the cell we are using
+						.dimensionsFromCell()
 						.translateTo(0, 0, 0)
 						.mount(self.scene1);
 
-					// Create a second rotator entity and mount
-					// it to the first one at 0, 50 relative to the
-					// parent
-					self.obj[1] = new Rotator()
-						.id('fairy2')
+					self.obj[1] = new IgeEntity()
+						.id('entity2')
 						.depth(1)
-						.width(50)
-						.height(50)
+						// Set the entity texture to the cell sheet we created earlier
 						.texture(gameTexture[0])
+						// Set the cell to 4... this is the FOURTH cell in the sheet
+						.cell(4)
+						// Set the entity's width and height to match the cell we are using
+						.dimensionsFromCell()
 						.translateTo(0, 50, 0)
-						.mount(self.obj[0]);
-
-					// Create a third rotator entity and mount
-					// it to the first on at 0, -50 relative to the
-					// parent, but assign it a smart texture!
-					self.obj[1] = new Rotator()
-						.id('simpleBox')
-						.depth(1)
-						.width(50)
-						.height(50)
-						.texture(gameTexture[1])
-						.translateTo(0, -50, 0)
 						.mount(self.obj[0]);
 				}
 			});
