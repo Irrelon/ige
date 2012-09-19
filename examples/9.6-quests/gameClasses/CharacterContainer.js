@@ -109,7 +109,8 @@ var CharacterContainer = IgeEntity.extend({
 	tick: function (ctx) {
 		// Work out which tile we're over and if it's different from
 		// the last one we were over, emit an overTile event
-		var curTile;
+		var currentPosition = this._translate,
+			curTile;
 
 		// Calculate which tile our character is currently "over"
 		if (this._parent.isometricMounts()) {
@@ -122,7 +123,7 @@ var CharacterContainer = IgeEntity.extend({
 		if (!curTile.compare(this._overTile)) {
 			// Different over tile
 			this._overTile = curTile;
-			this.emit(this._overTile);
+			this.emit('overTile', this._overTile);
 		}
 
 		// Set the depth to the y co-ordinate which basically
