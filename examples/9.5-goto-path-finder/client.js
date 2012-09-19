@@ -41,7 +41,7 @@ var Client = IgeClass.extend({
 				// Create the main viewport
 				self.vp1 = new IgeViewport()
 					.addComponent(IgeMousePanComponent)
-					.mousePan.limit(new IgeRect(-500, -200, 1000, 400))
+					.mousePan.limit(new IgeRect(-300, -100, 600, 200))
 					.mousePan.enabled(true)
 					.id('vp1')
 					.autoSize(true)
