@@ -141,26 +141,47 @@ var Client = IgeClass.extend({
 
 				// Setup a quest to reach some tiles
 				self.quest1 = new IgeQuest()
+					// Setup the quest's items
 					.items([{
+						// The number of times this event should fire
+						// before we mark this quest item as complete
 						count: 1,
-						emitter: self.player1,
+						// The object to attach the event listener to
+						emitter: self.player,
+						// The name of the event to listen for
 						eventName: 'overTile',
-						evaluate: function (tile) {
-							if (tile.x === 5 && tile.y === 0) {
+						// The method that will be called by the event
+						// emitter, receiving it's parameters and then
+						// evaluating if the event constitutes the quest
+						// event we want to listen for. Returning true
+						// tells the quest system to count the event
+						// towards the item's event complete count.
+						// This is optional, if no method is specified
+						// then every event emitted will count towards
+						// the item's event complete count.
+						eventEvaluate: function (tile) {
+							// Check if the tile our character is over matches
+							// our co-ordinates
+							if (tile.x === 0 && tile.y === 4) {
 								return true;
 							}
 						},
+						// Called when an event is fired for this item
 						eventCallback: function (item) {
 							console.log('overTile event');
 						},
+						// Called when this item has reached its item
+						// complete count.
 						itemCallback: function (item) {
-							console.log('Item completed!');
+							console.log('Item completed! Quest percent: ' + this.percentComplete() + '%');
 						}
-					}]);
-
-
-
-
+					}])
+					// Called when the quest has completed all items
+					.complete(function () {
+						console.log('Quest is complete!');
+					})
+					// Start the quest listeners now
+					.start();
 
 				// Create a path finder and generate a path using
 				// the collision map data
