@@ -17,6 +17,21 @@ var IgeCamera = IgeEntity.extend({
 	},
 
 	/**
+	 * Gets / sets the rectangle that the camera translate
+	 * will be limited to using an IgeRect instance.
+	 * @param {IgeRect=} rect
+	 * @return {*}
+	 */
+	limit: function (rect) {
+		if (rect !== undefined) {
+			this._panLimit = rect;
+			return this._entity;
+		}
+
+		return this._panLimit;
+	},
+
+	/**
 	 * Pan (tween) the camera to the new specified point in
 	 * the specified time.
 	 * @param {IgePoint} point The point describing the co-ordinates to pan to.
