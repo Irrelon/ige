@@ -118,6 +118,7 @@ var CharacterContainer = IgeEntity.extend({
 			curTile = this._parent.pointToTile(currentPosition);
 		}
 
+		// Compare the last tile to the current one
 		if (!curTile.compare(this._overTile)) {
 			// Different over tile
 			this._overTile = curTile;
