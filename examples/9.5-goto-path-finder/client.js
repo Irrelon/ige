@@ -5,6 +5,9 @@ var Client = IgeClass.extend({
 		var self = this;
 		this.obj = [];
 
+		// Set the cursor mode to make new paths
+		this.data('cursorMode', 'path');
+
 		// Create the HTML canvas
 		ige.createFrontBuffer(true);
 
@@ -40,6 +43,8 @@ var Client = IgeClass.extend({
 
 				// Create the main viewport
 				self.vp1 = new IgeViewport()
+					.addComponent(IgeMousePanComponent)
+					.mousePan.enabled(true)
 					.id('vp1')
 					.autoSize(true)
 					.scene(self.mainScene)
@@ -47,6 +52,25 @@ var Client = IgeClass.extend({
 					.drawBounds(true)
 					.drawBoundsData(true)
 					.mount(ige);
+
+				// Create some listeners for when the viewport is being panned
+				// so that we don't create a new path accidentally after a mouseUp
+				// occurs if we were panning
+				self.vp1.mousePan.on('panStart', function () {
+					// Store the current cursor mode
+					ige.client.data('tempCursorMode', ige.client.data('cursorMode'));
+
+					// Switch the cursor mode
+					ige.client.data('cursorMode', 'panning');
+					ige.input.stopPropagation();
+				});
+
+				self.vp1.mousePan.on('panEnd', function () {
+					// Switch the cursor mode back
+					ige.client.data('cursorMode', ige.client.data('tempCursorMode'));
+					console.log('cursor non-panning');
+					ige.input.stopPropagation();
+				});
 
 				// Create an isometric tile map
 				self.tileMap1 = new IgeTileMap2d()
@@ -129,6 +153,7 @@ var Client = IgeClass.extend({
 					.borderTopColor('#666666')
 					.borderTopWidth(1)
 					.backgroundPosition(0, 0)
+					.mouseDown(function () { ige.input.stopPropagation(); })
 					.mouseOver(function () {this.backgroundColor('#49ceff'); ige.input.stopPropagation(); })
 					.mouseOut(function () {this.backgroundColor('#474747'); ige.input.stopPropagation(); })
 					.mouseMove(function () { ige.input.stopPropagation(); })
