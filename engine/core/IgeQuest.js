@@ -7,7 +7,7 @@ var IgeQuest = IgeEventingClass.extend({
 		this._eventCompleteCount = 0;
 
 		this._started = false;
-		this._complete = false;
+		this._isComplete = false;
 
 		if (questDefinition !== undefined) {
 			this.items(questDefinition);
@@ -25,6 +25,15 @@ var IgeQuest = IgeEventingClass.extend({
 		}
 
 		return this._completeCallback;
+	},
+
+	isComplete: function (val) {
+		if (val !== undefined) {
+			this._isComplete = val;
+			return this;
+		}
+
+		return this._isComplete;
 	},
 
 	/**
@@ -144,7 +153,7 @@ var IgeQuest = IgeEventingClass.extend({
 		// Reset quest internals
 		this._eventCompleteCount = 0;
 		this._itemCompleteCount = 0;
-		this._complete = false;
+		this._isComplete = false;
 	},
 
 	_eventComplete: function (item) {
@@ -202,7 +211,7 @@ var IgeQuest = IgeEventingClass.extend({
 		// Check if all our items are complete
 		if (this._itemCompleteCount === this.itemCount()) {
 			// Mark the quest as complete
-			this._complete = true;
+			this._isComplete = true;
 
 			// Fire the quest completed callback
 			this._completeCallback.apply(this);
