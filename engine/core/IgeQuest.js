@@ -1,4 +1,6 @@
 var IgeQuest = IgeEventingClass.extend({
+	classId: 'IgeQuest',
+
 	init: function (questDefinition, completeCallback) {
 		this._linear = false;
 		this._items = [];
@@ -205,7 +207,9 @@ var IgeQuest = IgeEventingClass.extend({
 			item._eventCount = 0;
 
 			// Cancel the event listener
-			item.emitter.off(item.eventName, item._listener);
+			if (item._listener) {
+				item.emitter.off(item.eventName, item._listener);
+			}
 
 			// Clear the reference holding the item listener
 			delete item._listener;
@@ -238,7 +242,16 @@ var IgeQuest = IgeEventingClass.extend({
 			item._listener = item.emitter.on(item.eventName, function () {
 				// Check if the quest is currently started
 				if (self._started) {
-					self._eventComplete(item);
+					// If the item has an event evaluator method...
+					if (item.eventEvaluate) {
+						// Check if the event's data evaluated to true
+						if (item.eventEvaluate.apply(self, arguments)) {
+							// The evaluator returned true so complete the event
+							self._eventComplete(item);
+						}
+					} else {
+						self._eventComplete(item);
+					}
 				}
 			});
 		}
@@ -257,7 +270,9 @@ var IgeQuest = IgeEventingClass.extend({
 		this._eventCompleteCount++;
 
 		// Fire the callback to the game logic
-		item.eventCallback.apply(this, item);
+		if (item.eventCallback) {
+			item.eventCallback.apply(this, item);
+		}
 
 		// Emit the event complete event
 		this.emit('eventComplete', item);
@@ -281,12 +296,15 @@ var IgeQuest = IgeEventingClass.extend({
 
 		// Cancel the listener
 		item.emitter.off(item.eventName, item._listener);
+		delete item._listener;
 
 		// Increment the quest's item complete count
 		this._itemCompleteCount++;
 
 		// Fire the item's itemCallback to the game logic
-		item.itemCallback.apply(this, item);
+		if (item.itemCallback) {
+			item.itemCallback.apply(this, item);
+		}
 
 		// Emit the item complete event
 		this.emit('itemComplete', item);
