@@ -23,6 +23,7 @@ var IgeCamera = IgeEntity.extend({
 	 * @return {*}
 	 */
 	limit: function (rect) {
+		// TODO: Write the usage of this limit data, currently does nothing
 		if (rect !== undefined) {
 			this._limit = rect;
 			return this._entity;
