@@ -5,9 +5,6 @@ var Client = IgeClass.extend({
 		var self = this;
 		this.obj = [];
 
-		// Set the cursor mode to make new paths
-		this.data('cursorMode', 'path');
-
 		// Create the HTML canvas
 		ige.createFrontBuffer(true);
 
@@ -68,7 +65,6 @@ var Client = IgeClass.extend({
 				self.vp1.mousePan.on('panEnd', function () {
 					// Switch the cursor mode back
 					ige.client.data('cursorMode', ige.client.data('tempCursorMode'));
-					console.log('cursor non-panning');
 					ige.input.stopPropagation();
 				});
 
