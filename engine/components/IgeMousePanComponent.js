@@ -51,11 +51,11 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	 */
 	limit: function (rect) {
 		if (rect !== undefined) {
-			this._panLimit = rect;
+			this._limit = rect;
 			return this._entity;
 		}
 
-		return this._panLimit;
+		return this._limit;
 	},
 
 	/**
@@ -117,14 +117,38 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 					panCords = {
 						x: this._panStartMouse.x - curMousePos.x,
 						y: this._panStartMouse.y - curMousePos.y
-					}, distX = Math.abs(panCords.x), distY = Math.abs(panCords.y);
+					}, distX = Math.abs(panCords.x), distY = Math.abs(panCords.y),
+					panFinalX = (panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x,
+					panFinalY = (panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y;
+
+				// Check if we have a limiter on the rectangle area
+				// that we should allow panning inside.
+				if (this._limit) {
+					// Check the pan co-ordinates against
+					// the limiter rectangle
+					if (panFinalX < this._limit.x) {
+						panFinalX = this._limit.x;
+					}
+
+					if (panFinalX > this._limit.x + this._limit.width) {
+						panFinalX = this._limit.x + this._limit.width;
+					}
+
+					if (panFinalY < this._limit.y) {
+						panFinalY = this._limit.y;
+					}
+
+					if (panFinalY > this._limit.y + this._limit.height) {
+						panFinalY = this._limit.y + this._limit.height;
+					}
+				}
 
 				if (this._panPreStart) {
 					// Check if we've reached the start threshold
 					if (distX > this._startThreshold || distY > this._startThreshold) {
 						this._entity.camera.translateTo(
-							(panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x,
-							(panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y,
+							panFinalX,
+							panFinalY,
 							0
 						);
 						this.emit('panStart');
@@ -136,8 +160,8 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 				} else {
 					// Pan has already started
 					this._entity.camera.translateTo(
-						(panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x,
-						(panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y,
+						panFinalX,
+						panFinalY,
 						0
 					);
 
@@ -162,11 +186,35 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 						panCords = {
 							x: this._panStartMouse.x - curMousePos.x,
 							y: this._panStartMouse.y - curMousePos.y
-						};
+						},
+						panFinalX = (panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x,
+						panFinalY = (panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y;
+
+					// Check if we have a limiter on the rectangle area
+					// that we should allow panning inside.
+					if (this._limit) {
+						// Check the pan co-ordinates against
+						// the limiter rectangle
+						if (panFinalX < this._limit.x) {
+							panFinalX = this._limit.x;
+						}
+
+						if (panFinalX > this._limit.x + this._limit.width) {
+							panFinalX = this._limit.x + this._limit.width;
+						}
+
+						if (panFinalY < this._limit.y) {
+							panFinalY = this._limit.y;
+						}
+
+						if (panFinalY > this._limit.y + this._limit.height) {
+							panFinalY = this._limit.y + this._limit.height;
+						}
+					}
 
 					this._entity.camera.translateTo(
-						(panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x,
-						(panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y,
+						panFinalX,
+						panFinalY,
 						0
 					);
 
