@@ -514,6 +514,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 				// Fire the listeners for this event
 				var eventCount = this._eventListeners[eventName].length,
 					eventCount2 = this._eventListeners[eventName].length - 1,
+					evc = this._eventControl,
 					finalArgs, i, cancelFlag, eventIndex, tempEvt, retVal;
 
 				// If there are some events, ensure that the args is ready to be used
@@ -533,6 +534,10 @@ var IgeInputComponent = IgeEventingClass.extend({
 					cancelFlag = false;
 
 					while (eventCount--) {
+						if (evc._cancelled) {
+							// The stopPropagation() method was called, cancel all other event calls
+							break;
+						}
 						eventIndex = eventCount2 - eventCount;
 						tempEvt = this._eventListeners[eventName][eventIndex];
 
