@@ -24,11 +24,11 @@ var IgeCamera = IgeEntity.extend({
 	 */
 	limit: function (rect) {
 		if (rect !== undefined) {
-			this._panLimit = rect;
+			this._limit = rect;
 			return this._entity;
 		}
 
-		return this._panLimit;
+		return this._limit;
 	},
 
 	/**
