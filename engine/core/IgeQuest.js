@@ -18,6 +18,12 @@ var IgeQuest = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Gets / sets the callback method that will fire when
+	 * the quest has been completed.
+	 * @param callback
+	 * @return {*}
+	 */
 	complete: function (callback) {
 		if (callback !== undefined) {
 			this._completeCallback = callback;
@@ -27,6 +33,12 @@ var IgeQuest = IgeEventingClass.extend({
 		return this._completeCallback;
 	},
 
+	/**
+	 * Gets / sets the flag that determines if the quest
+	 * has been completed successfully or not.
+	 * @param val
+	 * @return {*}
+	 */
 	isComplete: function (val) {
 		if (val !== undefined) {
 			this._isComplete = val;
@@ -94,6 +106,10 @@ var IgeQuest = IgeEventingClass.extend({
 		return eventCount;
 	},
 
+	/**
+	 * Starts the quest by setting up the quest event
+	 * listeners.
+	 */
 	start: function () {
 		if (!this._started) {
 			var self = this,
@@ -125,37 +141,67 @@ var IgeQuest = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Sets up a quest item's event listener.
+	 * @param item
+	 * @private
+	 */
 	_setupItemListener: function (item) {
 		var self = this;
 
-		// Set the item's internal event count to zero
-		// (number of times the event has fired)
-		item._eventCount = 0;
-		item._complete = false;
+		// Check for an existing listener
+		if (!item._listener) {
+			// Set the item's internal event count to zero
+			// (number of times the event has fired)
+			item._eventCount = 0;
+			item._complete = false;
 
-		// Create the event listener
-		item._listener = item.emitter.on(item.eventName, function () {
-			self._eventComplete(item);
-		});
+			// Create the event listener
+			item._listener = item.emitter.on(item.eventName, function () {
+				// Check if the quest is currently started
+				if (self._started) {
+					self._eventComplete(item);
+				}
+			});
+		}
 	},
 
+	/**
+	 * Resets the quest and item internals back to their
+	 * original values and cancels all current event listeners.
+	 */
 	reset: function () {
 		var arr = this._items,
 			arrCount = arr.length,
-			i;
+			i, item;
 
 		for (i = 0; i < arrCount; i++) {
+			item = arr[i];
+
 			// Reset all the item internals
-			arr[i]._complete = false;
-			arr[i]._eventCount = 0;
+			item._complete = false;
+			item._eventCount = 0;
+
+			// Cancel the event listener
+			item.emitter.off(item.eventName, item._listener);
+
+			// Clear the reference holding the item listener
+			delete item._listener;
 		}
 
 		// Reset quest internals
 		this._eventCompleteCount = 0;
 		this._itemCompleteCount = 0;
 		this._isComplete = false;
+
+		this.emit('reset');
 	},
 
+	/**
+	 * Handles when an event has been fired for a quest item.
+	 * @param item
+	 * @private
+	 */
 	_eventComplete: function (item) {
 		// Increment the internal event count
 		item._eventCount++;
@@ -175,6 +221,11 @@ var IgeQuest = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Handles when an item's events have all been fired.
+	 * @param item
+	 * @private
+	 */
 	_itemComplete: function (item) {
 		var itemIndex;
 
@@ -207,6 +258,12 @@ var IgeQuest = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Called when a quest item has been completed to determine
+	 * if the quest should continue or if it has also been
+	 * completed.
+	 * @private
+	 */
 	_update: function () {
 		// Check if all our items are complete
 		if (this._itemCompleteCount === this.itemCount()) {
@@ -216,14 +273,21 @@ var IgeQuest = IgeEventingClass.extend({
 			// Fire the quest completed callback
 			this._completeCallback.apply(this);
 
+			// Emit the quest complete event
+			this.emit('complete');
+
 			// Stop the quest
 			this.stop();
 
-			// Emit the quest complete event
-			this.emit('complete');
+			// Reset the quest (kills current event listeners)
+			this.reset();
 		}
 	},
 
+	/**
+	 * Stops the quest and sets all the event listeners to
+	 * ignore events until the quest is restarted.
+	 */
 	stop: function () {
 		if (this._started) {
 			this._started = false;
