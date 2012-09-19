@@ -2,16 +2,16 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
 		// Load our textures
-		var self = this,
-			gameTexture = [];
+		var self = this;
+		self.gameTexture = [];
 
 		this.obj = [];
 
-		// Load the fairy texture and store it in the gameTexture array
-		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
-
-		// Load a smart texture
-		gameTexture[1] = new IgeTexture('../assets/textures/smartTextures/simpleBox.js');
+		// Load the sprite sheet texture and store it in the gameTexture array
+		self.gameTexture[0] = new IgeSpriteSheet('../assets/textures/tiles/future-joy-tilee.png', [
+			[5, 32, 22, 31],
+			[128, 101, 96, 52]
+		]);
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -35,38 +35,23 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					// Create an entity and mount it to the scene
-					self.obj[0] = new Rotator()
-						.id('fairy1')
+					self.obj[0] = new IgeEntity()
+						.id('sprite1')
 						.depth(1)
-						.width(100)
-						.height(100)
-						.texture(gameTexture[0])
+						.texture(self.gameTexture[0])
+						.cell(1)
+						.dimensionsFromCell()
 						.translateTo(0, 0, 0)
 						.mount(self.scene1);
 
-					// Create a second rotator entity and mount
-					// it to the first one at 0, 50 relative to the
-					// parent
-					self.obj[1] = new Rotator()
-						.id('fairy2')
+					self.obj[1] = new IgeEntity()
+						.id('sprite2')
 						.depth(1)
-						.width(50)
-						.height(50)
-						.texture(gameTexture[0])
-						.translateTo(0, 50, 0)
-						.mount(self.obj[0]);
-
-					// Create a third rotator entity and mount
-					// it to the first on at 0, -50 relative to the
-					// parent, but assign it a smart texture!
-					self.obj[1] = new Rotator()
-						.id('simpleBox')
-						.depth(1)
-						.width(50)
-						.height(50)
-						.texture(gameTexture[1])
-						.translateTo(0, -50, 0)
-						.mount(self.obj[0]);
+						.texture(self.gameTexture[0])
+						.cell(2)
+						.dimensionsFromCell()
+						.translateTo(100, 0, 0)
+						.mount(self.scene1);
 				}
 			});
 		});
