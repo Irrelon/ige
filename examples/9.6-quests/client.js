@@ -139,7 +139,14 @@ var Client = IgeClass.extend({
 				// tracking smoothing turned on (100)
 				self.vp1.camera.trackTranslate(self.player, 100);
 
-				// Setup a quest to reach some tiles
+				// Setup a quest to reach some tiles. The tiles that the quest
+				// has been setup for are the path points we are creating below
+				// this quest code. That means that as the player entity moves
+				// around the pre-set path, each time they reach one of the
+				// quest's path points, the quest progress will move closer to
+				// completion. Quests can listen for any event, not just overTile
+				// events but this shows how to set up multiple quest items
+				// that once completed will trigger the quest completed callback.
 				self.quest1 = new IgeQuest()
 					// Setup the quest's items
 					.items([{
@@ -176,12 +183,40 @@ var Client = IgeClass.extend({
 						itemCallback: function (item) {
 							console.log('Item completed! Quest percent: ' + this.percentComplete() + '%');
 						}
+					}, {
+						count: 1,
+						emitter: self.player,
+						eventName: 'overTile',
+						eventEvaluate: function (tile) { if (tile.x === 3 && tile.y === 0) { return true; } },
+						eventCallback: function (item) { console.log('overTile event'); },
+						itemCallback: function (item) {	console.log('Item completed! Quest percent: ' + this.percentComplete() + '%'); }
+					}, {
+						count: 1,
+						emitter: self.player,
+						eventName: 'overTile',
+						eventEvaluate: function (tile) { if (tile.x === 6 && tile.y === 4) { return true; } },
+						eventCallback: function (item) { console.log('overTile event'); },
+						itemCallback: function (item) {	console.log('Item completed! Quest percent: ' + this.percentComplete() + '%'); }
+					}, {
+						count: 1,
+						emitter: self.player,
+						eventName: 'overTile',
+						eventEvaluate: function (tile) { if (tile.x === 7 && tile.y === 0) { return true; } },
+						eventCallback: function (item) { console.log('overTile event'); },
+						itemCallback: function (item) {	console.log('Item completed! Quest percent: ' + this.percentComplete() + '%'); }
+					}, {
+						count: 1,
+						emitter: self.player,
+						eventName: 'overTile',
+						eventEvaluate: function (tile) { if (tile.x === 0 && tile.y === 0) { return true; } },
+						eventCallback: function (item) { console.log('overTile event'); },
+						itemCallback: function (item) {	console.log('Item completed! Quest percent: ' + this.percentComplete() + '%'); }
 					}])
 					// Called when the quest has completed all items
 					.complete(function () {
 						console.log('Quest is complete!');
 					})
-					// Start the quest listeners now
+					// Start the quest now (activates event listeners)
 					.start();
 
 				// Create a path finder and generate a path using
@@ -223,7 +258,8 @@ var Client = IgeClass.extend({
 					.path.add(path3)
 					.path.add(path4);
 
-				// Register some event listeners for the path
+				// Register some event listeners for the path (these are for debug console logging so you
+				// know what events are emitted by the path component and what they mean)
 				self.player.path.on('started', function () { console.log('Pathing started...'); });
 				self.player.path.on('stopped', function () { console.log('Pathing stopped.'); });
 				self.player.path.on('cleared', function () { console.log('Path data cleared.'); });
@@ -231,7 +267,8 @@ var Client = IgeClass.extend({
 				self.player.path.on('pathComplete', function () { console.log('Path completed...'); });
 				self.player.path.on('traversalComplete', function () { console.log('Traversal of all paths completed.'); });
 
-				// Some error events from the path finder
+				// Some error events from the path finder (these are for debug console logging so you
+				// know what events are emitted by the path finder class and what they mean)
 				self.pathFinder.on('noPathFound', function () { console.log('Could not find a path to the destination!'); });
 				self.pathFinder.on('exceededLimit', function () { console.log('Path finder exceeded allowed limit of nodes!'); });
 				self.pathFinder.on('pathFound', function () { console.log('Path to destination calculated...'); });
