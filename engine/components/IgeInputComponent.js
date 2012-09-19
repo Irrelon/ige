@@ -533,6 +533,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 					// Loop and emit!
 					cancelFlag = false;
 
+					this._eventListeners._processing = true;
 					while (eventCount--) {
 						if (evc._cancelled) {
 							// The stopPropagation() method was called, cancel all other event calls
@@ -541,30 +542,29 @@ var IgeInputComponent = IgeEventingClass.extend({
 						eventIndex = eventCount2 - eventCount;
 						tempEvt = this._eventListeners[eventName][eventIndex];
 
-						// Check we have a valid event... sometimes this can be undefined
-						// usually if the event has been removed via a call to off() during
-						// this loop
-						if (tempEvt) {
-							// If the sendEventName flag is set, overwrite the arguments with the event name
-							if (tempEvt.sendEventName) { finalArgs = [eventName]; }
+						// If the sendEventName flag is set, overwrite the arguments with the event name
+						if (tempEvt.sendEventName) { finalArgs = [eventName]; }
 
-							// Call the callback
-							retVal = tempEvt.call.apply(tempEvt.context || this, finalArgs);
+						// Call the callback
+						retVal = tempEvt.call.apply(tempEvt.context || this, finalArgs);
 
-							// If the retVal === true then store the cancel flag and return to the emitting method
-							if (retVal === true || this._eventControl._cancelled === true) {
-								// The receiver method asked us to send a cancel request back to the emitter
-								cancelFlag = true;
-							}
+						// If the retVal === true then store the cancel flag and return to the emitting method
+						if (retVal === true || this._eventControl._cancelled === true) {
+							// The receiver method asked us to send a cancel request back to the emitter
+							cancelFlag = true;
+						}
 
-							// Check if we should now cancel the event
-							if (tempEvt.oneShot) {
-								// The event has a oneShot flag so since we have fired the event,
-								// lets cancel the listener now
-								this.off(eventName, tempEvt);
-							}
+						// Check if we should now cancel the event
+						if (tempEvt.oneShot) {
+							// The event has a oneShot flag so since we have fired the event,
+							// lets cancel the listener now
+							this.off(eventName, tempEvt);
 						}
 					}
+					this._eventListeners._processing = false;
+
+					// Now process any event removal
+					this._processRemovals();
 
 					if (cancelFlag) {
 						return 1;

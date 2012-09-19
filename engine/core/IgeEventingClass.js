@@ -140,35 +140,36 @@ var IgeEventingClass = IgeClass.extend({
 					// Loop and emit!
 					cancelFlag = false;
 
+					this._eventListeners._processing = true;
 					while (eventCount--) {
 						eventIndex = eventCount2 - eventCount;
 						tempEvt = this._eventListeners[eventName][eventIndex];
 
-						// Check we have a valid event... sometimes this can be undefined
-						// usually if the event has been removed via a call to off() during
-						// this loop
-						if (tempEvt) {
-							// If the sendEventName flag is set, overwrite the arguments with the event name
-							if (tempEvt.sendEventName) { finalArgs = [eventName]; }
 
-							// Call the callback
-							retVal = tempEvt.call.apply(tempEvt.context || this, finalArgs);
+						// If the sendEventName flag is set, overwrite the arguments with the event name
+						if (tempEvt.sendEventName) { finalArgs = [eventName]; }
 
-							// If the retVal === true then store the cancel flag and return to the emitting method
-							if (retVal === true) {
-								// The receiver method asked us to send a cancel request back to the emitter
-								cancelFlag = true;
-							}
+						// Call the callback
+						retVal = tempEvt.call.apply(tempEvt.context || this, finalArgs);
 
-							// Check if we should now cancel the event
-							if (tempEvt.oneShot) {
-								// The event has a oneShot flag so since we have fired the event,
-								// lets cancel the listener now
-								this.off(eventName, tempEvt);
-								eventCount2--;
-							}
+						// If the retVal === true then store the cancel flag and return to the emitting method
+						if (retVal === true) {
+							// The receiver method asked us to send a cancel request back to the emitter
+							cancelFlag = true;
+						}
+
+						// Check if we should now cancel the event
+						if (tempEvt.oneShot) {
+							// The event has a oneShot flag so since we have fired the event,
+							// lets cancel the listener now
+							this.off(eventName, tempEvt);
+							eventCount2--;
 						}
 					}
+					this._eventListeners._processing = false;
+
+					// Now process any event removal
+					this._processRemovals();
 
 					if (cancelFlag) {
 						return 1;
@@ -181,25 +182,66 @@ var IgeEventingClass = IgeClass.extend({
 	},
 
 	/**
-	 * Remove an event listener.
+	 * Loops the removals array and processes off() calls for
+	 * each array item.
+	 * @private
+	 */
+	_processRemovals: function () {
+		if (this._eventListeners) {
+			var remArr = this._eventListeners._removeQueue,
+				arrCount,
+				item;
+
+			// If the removal array exists
+			if (remArr) {
+				// Get the number of items in the removal array
+				arrCount = remArr.length;
+
+				// Loop the array
+				while (arrCount--) {
+					item = remArr[arrCount];
+
+					// Call the off() method for this item
+					this.off(item[0], item[1]);
+				}
+			}
+
+			// Remove the removal array
+			delete this._eventListeners._removeQueue;
+		}
+	},
+
+	/**
+	 * Remove an event listener. If the _processing flag is true
+	 * then the removal will be placed in the removals array to be
+	 * processed after the event loop has completed in the emit()
+	 * method.
 	 * @param {Boolean} eventName The name of the event you originally registered to listen for.
 	 * @param {Object} evtListener The event listener object to cancel.
 	 * @return {Boolean}
 	 */
 	off: function (eventName, evtListener) {
 		if (this._eventListeners) {
-			if (this._eventListeners[eventName]) {
-				// Find this listener in the list
-				var evtListIndex = this._eventListeners[eventName].indexOf(evtListener);
-				if (evtListIndex > -1) {
-					// Remove the listener from the event listener list
-					this._eventListeners[eventName].splice(evtListIndex, 1);
-					return true;
+			if (!this._eventListeners._processing) {
+				if (this._eventListeners[eventName]) {
+					// Find this listener in the list
+					var evtListIndex = this._eventListeners[eventName].indexOf(evtListener);
+					if (evtListIndex > -1) {
+						// Remove the listener from the event listener list
+						this._eventListeners[eventName].splice(evtListIndex, 1);
+						return true;
+					} else {
+						this.log('Failed to cancel event listener for event named "' + eventName + '" !', 'warning', evtListener);
+					}
 				} else {
-					this.log('Failed to cancel event listener for event named "' + eventName + '" !', 'warning', evtListener);
+					this.log('Failed to cancel event listener!');
 				}
 			} else {
-				this.log('Failed to cancel event listener!');
+				// Add the removal to a remove queue since we are processing
+				// listeners at the moment and removing one would mess up the
+				// loop!
+				this._eventListeners._removeQueue = this._eventListeners._removeQueue || [];
+				this._eventListeners._removeQueue.push([eventName, evtListener]);
 			}
 		}
 
