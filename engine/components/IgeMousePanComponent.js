@@ -49,7 +49,7 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	 * @param {IgeRect=} rect
 	 * @return {*}
 	 */
-	panLimit: function (rect) {
+	limit: function (rect) {
 		if (rect !== undefined) {
 			this._panLimit = rect;
 			return this._entity;
