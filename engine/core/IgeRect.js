@@ -2,12 +2,6 @@
  * Creates a new rectangle (x, y, width, height).
  */
 var IgeRect = function (x, y, width, height) {
-	if (floor === undefined) {
-		this._floor = true;
-	} else {
-		this.floor(floor);
-	}
-
 	// Set values to the passed parameters or
 	// zero if they are undefined
 	this.x = x = x !== undefined ? x : 0;
