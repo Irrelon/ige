@@ -50,7 +50,7 @@ IgePoint.prototype.floor = function (val) {
  * @return {Boolean}
  */
 IgePoint.prototype.compare = function (point) {
-	return this.x === point.x && this.y === point.y && this.z === point.z;
+	return point && this.x === point.x && this.y === point.y && this.z === point.z;
 };
 
 /**
