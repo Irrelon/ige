@@ -174,6 +174,8 @@ var IgeQuest = IgeEventingClass.extend({
 			this.log('Cannot start quest because it has already been started!', 'warning');
 			this.emit('alreadyStarted');
 		}
+
+		return this;
 	},
 
 	/**
@@ -188,6 +190,8 @@ var IgeQuest = IgeEventingClass.extend({
 			this.log('Cannot stop quest because it has not been started yet!', 'warning');
 			this.emit('notStarted');
 		}
+
+		return this;
 	},
 
 	/**
@@ -221,6 +225,8 @@ var IgeQuest = IgeEventingClass.extend({
 		this._isComplete = false;
 
 		this.emit('reset');
+
+		return this;
 	},
 
 	/**
