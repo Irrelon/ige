@@ -35,8 +35,8 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 		this._removeWhenReady = [];
 
-		// Add the box2d behaviour to the ige
-		ige.addBehaviour('box2dStep', this._behaviour);
+		// Set the physics step interval
+		setTimeout(this._step, 1000 / 60);
 
 		this.log('Physics component initiated!');
 	},
@@ -362,10 +362,9 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 	/**
 	 * Steps the physics simulation forward.
-	 * @param ctx
 	 * @private
 	 */
-	_behaviour: function (ctx) {
+	_step: function () {
 		var self = ige.box2d,
 			tempBod,
 			entity,
@@ -373,6 +372,9 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			removeWhenReady,
 			count,
 			destroyBody;
+
+		// Schedule another tick
+		setTimeout(self._step, 1000 / 60);
 
 		if (self._active && self._world) {
 			// Remove any bodies that were queued for removal
