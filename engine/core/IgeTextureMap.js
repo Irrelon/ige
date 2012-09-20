@@ -270,6 +270,18 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		}
 	},
 
+	renderAreaAutoSize: function (val) {
+		if (val !== undefined) {
+			this._renderAreaAutoSize = val;
+			if (val === true) {
+				// Perform resize now
+			}
+			return this;
+		}
+
+		return this._renderAreaAutoSize;
+	},
+
 	/**
 	 * Get / sets the entity that will be used to determine the
 	 * center point of the map's render area. This allows the
@@ -450,6 +462,20 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		// Paint the texture
 		texture.render(ctx, tileEntity, ige.tickDelta);
 		ctx.restore();
+	},
+
+	/**
+	 * Handles screen resize events.
+	 * @param event
+	 * @private
+	 */
+	_resizeEvent: function (event) {
+		// Set width / height of scene to match main ige (SCENES ARE ALWAYS THE FULL IGE SIZE!!)
+		if (this._renderAreaAutoSize) {
+			this._renderArea = [-Math.floor(ige.geometry.x / 2), -Math.floor(ige.geometry.y / 2), ige.geometry.x, ige.geometry.y];
+		}
+
+		this._super(event);
 	},
 
 	/**
