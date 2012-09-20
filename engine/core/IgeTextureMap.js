@@ -12,6 +12,46 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	},
 
 	/**
+	 * Gets / sets the caching mode.
+	 * @param {Number=} val
+	 * @return {*}
+	 */
+	caching: function (val) {
+		if (val !== undefined) {
+			this._caching = val;
+
+			var canvas;
+
+			switch (val) {
+				case 0:
+					// Turn off caching
+					delete this._cache;
+					break;
+
+				case 1:
+					// Turn on caching just the immediate render area
+					this._cache = [];
+
+					// Create a new canvas to cache image render data to
+					canvas = document.createElement('canvas');
+
+					this._cache.push();
+					break;
+
+				case 2:
+					// Turn on caching and pre-render the 8 rectangles
+					// around the immediate render area and the render
+					// area rectangle too.
+					break;
+			}
+
+			return this;
+		}
+
+		return this._caching;
+	},
+
+	/**
 	 * Adds a texture to the texture map's internal texture list so
 	 * that it can be referenced via an index so that the texture map's
 	 * data will be something like [[textureId, textureCell]]
@@ -267,8 +307,9 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			x, y,
 			tileData, tileEntity = this._newTileEntity(), // TODO: This is wasteful, cache it?
 			renderArea = this._renderArea,
-			renderX, renderY, renderWidth, renderHeight,
-			currentTile;
+			renderX, renderY, tempX, tempY, renderWidth, renderHeight,
+			currentTile,
+			rect;
 
 		if (!renderArea) {
 			// Render the whole map
@@ -308,19 +349,57 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			renderX = renderArea[0];
 			renderY = renderArea[1];
 
-			// Render an area of the map rather than the whole map
-			for (y = renderY; y <= renderY + renderHeight; y++) {
-				if (mapData[y]) {
-					for (x = renderX; x <= renderX + renderWidth; x++) {
-						// Grab the tile data to paint
-						tileData = mapData[y][x];
+			// Check if we are rendering in 2d or isometric mode
+			if (this._mountMode === 0) {
+				// Generate the bounds rectangle
+				rect = new IgeRect(renderX * this._tileWidth, renderY * this._tileHeight, renderWidth * this._tileWidth, renderHeight * this._tileHeight);
 
-						if (tileData) {
-							this._renderTile(ctx, x, y, tileData, tileEntity);
+				if (this._drawBounds) {
+					ctx.strokeStyle = '#ff0000';
+					ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+				}
+
+				// 2d
+				// Render an area of the map rather than the whole map
+				for (y = renderY; y <= renderY + renderHeight; y++) {
+					if (mapData[y]) {
+						for (x = renderX; x <= renderX + renderWidth; x++) {
+							// Grab the tile data to paint
+							tileData = mapData[y][x];
+
+							if (tileData) {
+								this._renderTile(ctx, x, y, tileData, tileEntity);
+							}
 						}
 					}
 				}
 			}
+
+			if (this._mountMode === 1) {
+				// Generate the bounds rectangle
+				rect = new IgeRect((renderX * this._tileWidth - currentTile.y * this._tileHeight) - 1, (renderY * (this._tileHeight / 2) + currentTile.x * (this._tileWidth / 2)) - renderHeight * (this._tileHeight / 4) - 1, renderWidth * this._tileWidth + 2, renderHeight * this._tileHeight + 2);
+
+				if (this._drawBounds) {
+					ctx.strokeStyle = '#ff0000';
+					ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+				}
+
+				// Isometric
+				// Render an area of the map rather than the whole map
+				for (y = renderY - (renderHeight / 2 + 5); y <= renderY + renderHeight + (renderHeight / 2 + 5); y++) {
+					if (mapData[y]) {
+						for (x = renderX - (renderWidth / 2 + 5); x <= renderX + renderWidth + (renderWidth / 2 + 5); x++) {
+							// Grab the tile data to paint
+							tileData = mapData[y][x];
+
+							if (tileData) {
+								this._renderTile(ctx, x, y, tileData, tileEntity, rect);
+							}
+						}
+					}
+				}
+			}
+
 		}
 	},
 
@@ -333,11 +412,13 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * @param tileEntity
 	 * @private
 	 */
-	_renderTile: function (ctx, x, y, tileData, tileEntity) {
-		ctx.save();
+	_renderTile: function (ctx, x, y, tileData, tileEntity, rect) {
+		var finalX, finalY;
+
 		// Translate the canvas to the tile position
 		if (this._mountMode === 0) {
-			ctx.translate(x * this._tileWidth, y * this._tileHeight);
+			finalX = x * this._tileWidth;
+			finalY = y * this._tileHeight;
 		}
 
 		if (this._mountMode === 1) {
@@ -347,8 +428,21 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			sx = tx - ty;
 			sy = (tx + ty) * 0.5;
 
-			ctx.translate(sx, sy);
+			finalX = sx;
+			finalY = sy;
 		}
+
+		// If we have a rectangle region we are limiting to...
+		if (rect) {
+			// Check the bounds first
+			if (!rect.xyInside(finalX, finalY)) {
+				// The point is not inside the bounds, return
+				return;
+			}
+		}
+
+		ctx.save();
+		ctx.translate(finalX, finalY);
 
 		// Set the correct texture data
 		texture = this._textureList[tileData[0]];
