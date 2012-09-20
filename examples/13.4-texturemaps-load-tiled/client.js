@@ -130,7 +130,7 @@ var Client = IgeClass.extend({
 								layerArray[i]
 									.tileWidth(40)
 									.tileHeight(40)
-									.renderArea(0, 0, 20, 20) // Set the area of the map to render by default
+									.renderArea(0, 0, 30, 10) // Set the area of the map to render by default
 									.trackTranslate(self.player1) // Use this entity as the center of the render area
 									//.isometricMounts(false)
 									.drawBounds(false)
