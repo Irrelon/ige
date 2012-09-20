@@ -145,6 +145,8 @@ var IgePathComponent = IgeEventingClass.extend({
 					this._startTime = new Date().getTime();
 				}
 
+				this._currentTime = this._startTime;
+
 				// Set pathing to active
 				this._active = true;
 				this.emit('started', this._entity);
@@ -227,20 +229,20 @@ var IgePathComponent = IgeEventingClass.extend({
 				targetPoint,
 				newPosition,
 				distanceBetweenP1AndP2,
-				currentTime = new Date().getTime(),
 				oldTracePathPoint,
 				tracePathPoint,
 				pathPointIndex,
 				tempCurrentPath,
 				tempCurrentPathIndex,
-				tempPathText,
-				tempColour;
+				tempPathText;
+
+			self._currentTime += ige.tickDelta;
 
 			if (targetCell) {
 				targetPoint = {x: targetCell.x * this._parent._tileWidth, y: targetCell.y * this._parent._tileHeight};
 
 				if (currentPath) {
-					if (currentTime < self._targetCellArrivalTime && (targetPoint.x !== currentPosition.x || targetPoint.y !== currentPosition.y)) {
+					if (self._currentTime < self._targetCellArrivalTime && (targetPoint.x !== currentPosition.x || targetPoint.y !== currentPosition.y)) {
 						newPosition = self._positionAlongVector(currentPosition, targetPoint, self._speed, ige.tickDelta);
 						this.translateTo(newPosition.x, newPosition.y, currentPosition.z);
 					} else {
@@ -278,7 +280,7 @@ var IgePathComponent = IgeEventingClass.extend({
 						targetPoint = {x: targetCell.x * this._parent._tileWidth, y: targetCell.y * this._parent._tileHeight};
 						distanceBetweenP1AndP2 = Math.distance(currentPosition.x, currentPosition.y, targetPoint.x, targetPoint.y);
 
-						self._targetCellArrivalTime = new Date().getTime() + (distanceBetweenP1AndP2 / self._speed);
+						self._targetCellArrivalTime = self._currentTime + (distanceBetweenP1AndP2 / self._speed);
 					}
 				} else {
 					// No path so stop pathing!
