@@ -307,8 +307,11 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			x, y,
 			tileData, tileEntity = this._newTileEntity(), // TODO: This is wasteful, cache it?
 			renderArea = this._renderArea,
-			renderX, renderY, tempX, tempY, renderWidth, renderHeight,
+			renderX, renderY, renderWidth, renderHeight,
+			entTranslate,
 			currentTile,
+			renderSize,
+			ratio,
 			rect;
 
 		if (!renderArea) {
@@ -328,47 +331,48 @@ var IgeTextureMap = IgeTileMap2d.extend({
 				}
 			}
 		} else {
-			renderWidth = renderArea[2];
-			renderHeight = renderArea[3];
-
 			// Check if we are tracking an entity that is used to
 			// set the center point of the render area
 			if (this._trackTranslateTarget) {
 				// Calculate which tile our character is currently "over"
 				if (this._trackTranslateTarget.isometric() === true) {
-					currentTile = this.pointToTile(this._trackTranslateTarget._translate.toIso());
+					entTranslate = this._trackTranslateTarget._translate.toIso();
 				} else {
-					currentTile = this.pointToTile(this._trackTranslateTarget._translate);
+					entTranslate = this._trackTranslateTarget._translate;
 				}
 
-				renderArea[0] = Math.floor(currentTile.x -(renderWidth / 2));
-				renderArea[1] = Math.floor(currentTile.y -(renderHeight / 2));
+				currentTile = this.pointToTile(entTranslate);
 
+				renderWidth = Math.ceil(renderArea[2] / this._tileWidth);
+				renderHeight = Math.ceil(renderArea[3] / this._tileHeight);
+
+				renderX = Math.floor(currentTile.x);
+				renderY = Math.floor(currentTile.y);
 			}
 
-			renderX = renderArea[0];
-			renderY = renderArea[1];
+			// Generate the bounds rectangle
+			rect = new IgeRect(renderArea[0] + entTranslate.x, renderArea[1] + entTranslate.y, renderArea[2], renderArea[3]);
+			if (this._drawBounds) {
+				ctx.strokeStyle = '#ff0000';
+				ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+			}
+			rect.x -= (this._tileWidth);
+			rect.y -= (this._tileHeight / 2);
+			rect.width += (this._tileWidth * 2);
+			rect.height += (this._tileHeight);
 
 			// Check if we are rendering in 2d or isometric mode
 			if (this._mountMode === 0) {
-				// Generate the bounds rectangle
-				rect = new IgeRect(renderX * this._tileWidth, renderY * this._tileHeight, renderWidth * this._tileWidth, renderHeight * this._tileHeight);
-
-				if (this._drawBounds) {
-					ctx.strokeStyle = '#ff0000';
-					ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
-				}
-
 				// 2d
 				// Render an area of the map rather than the whole map
-				for (y = renderY; y <= renderY + renderHeight; y++) {
+				for (y = renderY - Math.floor(renderHeight / 2) - 1; y <= renderY + Math.floor(renderHeight / 2) + 1; y++) {
 					if (mapData[y]) {
-						for (x = renderX; x <= renderX + renderWidth; x++) {
+						for (x = renderX - Math.floor(renderWidth / 2) - 1; x <= renderX + Math.floor(renderWidth / 2) + 1; x++) {
 							// Grab the tile data to paint
 							tileData = mapData[y][x];
 
 							if (tileData) {
-								this._renderTile(ctx, x, y, tileData, tileEntity);
+								this._renderTile(ctx, x, y, tileData, tileEntity, rect);
 							}
 						}
 					}
@@ -376,19 +380,14 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			}
 
 			if (this._mountMode === 1) {
-				// Generate the bounds rectangle
-				rect = new IgeRect((renderX * this._tileWidth - currentTile.y * this._tileHeight) - 1, (renderY * (this._tileHeight / 2) + currentTile.x * (this._tileWidth / 2)) - renderHeight * (this._tileHeight / 4) - 1, renderWidth * this._tileWidth + 2, renderHeight * this._tileHeight + 2);
-
-				if (this._drawBounds) {
-					ctx.strokeStyle = '#ff0000';
-					ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
-				}
+				renderSize = Math.abs(renderWidth) > Math.abs(renderHeight) ? renderWidth : renderHeight;
+				ratio = 1;
 
 				// Isometric
 				// Render an area of the map rather than the whole map
-				for (y = renderY - (renderHeight / 2 + 5); y <= renderY + renderHeight + (renderHeight / 2 + 5); y++) {
+				for (y = renderY - Math.floor(renderSize * ratio); y <= renderY + Math.floor(renderSize * ratio); y++) {
 					if (mapData[y]) {
-						for (x = renderX - (renderWidth / 2 + 5); x <= renderX + renderWidth + (renderWidth / 2 + 5); x++) {
+						for (x = renderX - Math.floor(renderSize * ratio); x <= renderX + Math.floor(renderSize * ratio); x++) {
 							// Grab the tile data to paint
 							tileData = mapData[y][x];
 
