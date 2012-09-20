@@ -67,6 +67,7 @@ var CharacterAi = Character.extend({
 		if (path.length) {
 			// Assign the path to the player and start it
 			self.path.clear()
+				.path.speed(0.15)
 				.path.add(path)
 				.path.start();
 
