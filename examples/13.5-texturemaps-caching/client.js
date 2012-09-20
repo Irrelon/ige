@@ -149,7 +149,7 @@ var Client = IgeClass.extend({
 
 							// Create a path-finder
 							self.pathFinder = new IgePathFinder()
-								.neighbourLimit(1000); // Set a high limit because we are using a large map
+								.neighbourLimit(100); // Set a low limit to only accept simple paths
 
 							// Create a bunch of AI characters that will walk around the screen
 							// using the path finder to find their way around. When they complete
