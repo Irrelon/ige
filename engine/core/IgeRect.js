@@ -13,6 +13,27 @@ var IgeRect = function (x, y, width, height) {
 };
 
 /**
+ * Returns boolean indicating if the passed x, y is
+ * inside the rectangle.
+ * @param x
+ * @param y
+ * @return {Boolean}
+ */
+IgeRect.prototype.xyInside = function (x, y) {
+	return x >= this.x && y > this.y && x <= this.x + this.width && y <= this.y + this.height;
+};
+
+/**
+ * Returns boolean indicating if the passed point is
+ * inside the rectangle.
+ * @param {IgePoint} point
+ * @return {Boolean}
+ */
+IgeRect.prototype.pointInside = function (point) {
+	return x >= this.x && point.y > this.y && point.x <= this.x + this.width && point.y <= this.y + this.height;
+};
+
+/**
  * Returns a string representation of the rect's x, y, width,
  * height, converting floating point values into fixed using the
  * passed precision parameter. If no precision is specified
@@ -20,7 +41,7 @@ var IgeRect = function (x, y, width, height) {
  * @param {Number=} precision
  * @return {String}
  */
-IgePoint.prototype.toString = function (precision) {
+IgeRect.prototype.toString = function (precision) {
 	if (precision === undefined) { precision = 2; }
 	return this.x.toFixed(precision) + ',' + this.y.toFixed(precision) + ',' + this.width.toFixed(precision) + ',' + this.height.toFixed(precision);
 };
