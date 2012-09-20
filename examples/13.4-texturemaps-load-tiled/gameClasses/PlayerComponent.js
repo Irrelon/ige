@@ -66,6 +66,7 @@ var PlayerComponent = IgeClass.extend({
 		switch (direction) {
 			case 'N':
 				if (iso) {
+					vel /= 1.4;
 					xVel = -vel;
 					yVel = -vel;
 				} else {
@@ -77,6 +78,7 @@ var PlayerComponent = IgeClass.extend({
 
 			case 'S':
 				if (iso) {
+					vel /= 1.4;
 					xVel = vel;
 					yVel = vel;
 				} else {
@@ -90,6 +92,7 @@ var PlayerComponent = IgeClass.extend({
 
 			case 'E':
 				if (iso) {
+					vel /= 2;
 					xVel = vel;
 					yVel = -vel;
 				} else {
@@ -103,6 +106,7 @@ var PlayerComponent = IgeClass.extend({
 
 			case 'W':
 				if (iso) {
+					vel /= 2;
 					xVel = -vel;
 					yVel = vel;
 				} else {
