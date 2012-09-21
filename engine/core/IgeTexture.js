@@ -100,9 +100,10 @@ var IgeTexture = IgeEventingClass.extend({
 			self = this;
 
 		if (!ige.isServer) {
-			if (!ige._textureImageStore[imageUrl]) {
-				ige.textureLoadStart();
+			// Increment the texture load count
+			ige.textureLoadStart();
 
+			if (!ige._textureImageStore[imageUrl]) {
 				// Create the image object
 				image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new Image();
 				image._igeTextures = image._igeTextures || [];
@@ -167,6 +168,9 @@ var IgeTexture = IgeEventingClass.extend({
 					// but nothing will have time to register a listener!
 					setTimeout(function () {
 						self.emit('loaded');
+
+						// Inform the engine that this image has loaded
+						ige.textureLoadEnd(imageUrl, self);
 					}, 1);
 				}
 			}
