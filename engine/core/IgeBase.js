@@ -8,7 +8,7 @@ igeClassStore = {};
 igeDebug = {
 	node: typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined',
 	level: ['log', 'warning', 'error'],
-	stacks: false,
+	stacks: true,
 	throwErrors: true
 };
 
