@@ -60,7 +60,6 @@ var Client = IgeClass.extend({
 					// second entity's movement
 					self.vp1.camera.trackTranslate(self.obj[1], 0)
 						.camera.trackRotate(self.obj[1], 0);
-						//.camera.panTo({x: 100, y:100, z: 0}, 5000);
 				}
 			});
 		});
