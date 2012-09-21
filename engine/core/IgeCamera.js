@@ -171,8 +171,8 @@ var IgeCamera = IgeEntity.extend({
 			entity.updateTransform();
 
 			// Copy the target's world matrix translate data
-			this._translate.x = entity._localMatrix.matrix[2];
-			this._translate.y = entity._localMatrix.matrix[5];
+			this._translate.x = entity._worldMatrix.matrix[2];
+			this._translate.y = entity._worldMatrix.matrix[5];
 
 			this.updateTransform();
 		}
@@ -187,8 +187,10 @@ var IgeCamera = IgeEntity.extend({
 	tick: function (ctx) {
 		// Check if we are tracking the translate value of a target
 		if (this._trackTranslateTarget) {
-			var targetX = this._trackTranslateTarget._localMatrix.matrix[2],
-				targetY = this._trackTranslateTarget._localMatrix.matrix[5],
+			var targetEntity = this._trackTranslateTarget,
+				targetMatrix = targetEntity._worldMatrix.matrix,
+				targetX = targetMatrix[2],
+				targetY = targetMatrix[5],
 				sourceX, sourceY, distX, distY;
 
 			if (!this._trackTranslateSmoothing) {
