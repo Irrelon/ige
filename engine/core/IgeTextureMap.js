@@ -9,6 +9,8 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		this._super(tileWidth, tileHeight);
 		this.map = new IgeMap2d();
 		this._textureList = [];
+		this._renderCenter = new IgePoint(0, 0, 0);
+		this._cacheDirty = true;
 	},
 
 	/**
@@ -18,33 +20,15 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 */
 	caching: function (val) {
 		if (val !== undefined) {
-			this._caching = val;
-
 			var canvas;
 
-			switch (val) {
-				case 0:
-					// Turn off caching
-					delete this._cache;
-					break;
-
-				case 1:
-					// Turn on caching just the immediate render area
-					this._cache = [];
-
-					// Create a new canvas to cache image render data to
-					canvas = document.createElement('canvas');
-
-					this._cache.push();
-					break;
-
-				case 2:
-					// Turn on caching and pre-render the 8 rectangles
-					// around the immediate render area and the render
-					// area rectangle too.
-					break;
+			if (val === 0) {
+				// Remove the cache canvas references
+				delete this._cache;
+				delete this._cacheCtx;
 			}
 
+			this._caching = val;
 			return this;
 		}
 
@@ -273,13 +257,22 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	renderAreaAutoSize: function (val) {
 		if (val !== undefined) {
 			this._renderAreaAutoSize = val;
-			if (val === true) {
-				// Perform resize now
-			}
 			return this;
 		}
 
 		return this._renderAreaAutoSize;
+	},
+
+	renderCenter: function (x, y) {
+		if (x !== undefined && y !== undefined) {
+			if (!this._renderCenter || this._renderCenter.x !== x || this._renderCenter.y !== y) {
+				this._renderCenter = new IgePoint(x, y, 0);
+				this._cacheDirty = true;
+			}
+			return this;
+		}
+
+		return this._renderCenter;
 	},
 
 	/**
@@ -316,15 +309,11 @@ var IgeTextureMap = IgeTileMap2d.extend({
 
 		// Draw each image that has been defined on the map
 		var mapData = this.map._mapData,
+			renderArea = this._renderArea,
 			x, y,
 			tileData, tileEntity = this._newTileEntity(), // TODO: This is wasteful, cache it?
-			renderArea = this._renderArea,
-			renderX, renderY, renderWidth, renderHeight,
 			entTranslate,
-			currentTile,
-			renderSize,
-			ratio,
-			rect;
+			cacheCanvas, cacheContext;
 
 		if (!renderArea) {
 			// Render the whole map
@@ -353,64 +342,112 @@ var IgeTextureMap = IgeTileMap2d.extend({
 					entTranslate = this._trackTranslateTarget._translate;
 				}
 
-				currentTile = this.pointToTile(entTranslate);
-
-				renderWidth = Math.ceil(renderArea[2] / this._tileWidth);
-				renderHeight = Math.ceil(renderArea[3] / this._tileHeight);
-
-				renderX = Math.floor(currentTile.x);
-				renderY = Math.floor(currentTile.y);
+				this.renderCenter(entTranslate.x, entTranslate.y);
 			}
 
-			// Generate the bounds rectangle
-			rect = new IgeRect(renderArea[0] + entTranslate.x, renderArea[1] + entTranslate.y, renderArea[2], renderArea[3]);
-			if (this._drawBounds) {
-				ctx.strokeStyle = '#ff0000';
-				ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+			document.getElementById('debug').innerHTML = entTranslate.x + ', ' + entTranslate.y + ', ' + this._cacheDirty;
+
+			// Check if we have dirty cache and if not, just render the cache!
+			if (this._caching > 0) {
+				if (this._cacheDirty) {
+					if (this._caching === 1) {
+						// Mode 1, just a single central canvas
+						cacheCanvas = this._cache[0];
+						cacheContext = this._cacheCtx[0];
+
+						// Clear the canvas
+						this._cacheCtx[0].clearRect(0, 0, cacheCanvas.width, cacheCanvas.height);
+
+						// Adjust context
+						cacheContext.save();
+						cacheContext.translate((cacheCanvas.width / 2) - this._renderCenter.x, (cacheCanvas.height / 2) - this._renderCenter.y);
+
+						// Draw the new data to the cache canvas
+						this._renderMap(this._cacheCtx[0], tileEntity, mapData, renderArea);
+
+						cacheContext.restore();
+						// Draw the cached data to the main canvas
+						this._renderMapCache(ctx, 0, renderArea);
+
+						// Set the cache to clean
+						this._cacheDirty = false;
+					}
+				} else {
+					// Draw the cached data to the main canvas context
+					this._renderMapCache(ctx, 0, renderArea);
+					this._cacheDirty = false;
+				}
+			} else {
+				this._renderMap(ctx, tileEntity, mapData, renderArea);
 			}
-			rect.x -= (this._tileWidth);
-			rect.y -= (this._tileHeight / 2);
-			rect.width += (this._tileWidth * 2);
-			rect.height += (this._tileHeight);
+		}
+	},
 
-			// Check if we are rendering in 2d or isometric mode
-			if (this._mountMode === 0) {
-				// 2d
-				// Render an area of the map rather than the whole map
-				for (y = renderY - Math.floor(renderHeight / 2) - 1; y <= renderY + Math.floor(renderHeight / 2) + 1; y++) {
-					if (mapData[y]) {
-						for (x = renderX - Math.floor(renderWidth / 2) - 1; x <= renderX + Math.floor(renderWidth / 2) + 1; x++) {
-							// Grab the tile data to paint
-							tileData = mapData[y][x];
+	_renderMapCache: function (ctx, index, renderArea) {
+		if (index === 0) {
+			ctx.drawImage(this._cache[index], -(renderArea[2] / 2) + this._renderCenter.x, -(renderArea[3] / 2) + this._renderCenter.y);
+		}
+	},
 
-							if (tileData) {
-								this._renderTile(ctx, x, y, tileData, tileEntity, rect);
-							}
+	_renderMap: function (ctx, tileEntity, mapData, renderArea) {
+		var renderCenter = this._renderCenter,
+			currentTile = this.pointToTile(this._renderCenter),
+			renderX = currentTile.x,
+			renderY = currentTile.y,
+			renderWidth = Math.ceil(renderArea[2] / this._tileWidth),
+			renderHeight = Math.ceil(renderArea[3] / this._tileHeight),
+			rect = new IgeRect(renderArea[0] + renderCenter.x, renderArea[1] + renderCenter.y, renderArea[2], renderArea[3]),
+			x, y,
+			tileData,
+			renderSize,
+			ratio;
+
+		// Generate the bounds rectangle
+		if (this._drawBounds) {
+			ctx.strokeStyle = '#ff0000';
+			ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+		}
+		rect.x -= (this._tileWidth);
+		rect.y -= (this._tileHeight / 2);
+		rect.width += (this._tileWidth * 2);
+		rect.height += (this._tileHeight);
+
+		// Check if we are rendering in 2d or isometric mode
+		if (this._mountMode === 0) {
+			// 2d
+			// Render an area of the map rather than the whole map
+			for (y = renderY - Math.floor(renderHeight / 2) - 1; y <= renderY + Math.floor(renderHeight / 2) + 1; y++) {
+				if (mapData[y]) {
+					for (x = renderX - Math.floor(renderWidth / 2) - 1; x <= renderX + Math.floor(renderWidth / 2) + 1; x++) {
+						// Grab the tile data to paint
+						tileData = mapData[y][x];
+
+						if (tileData) {
+							this._renderTile(ctx, x, y, tileData, tileEntity, rect);
 						}
 					}
 				}
 			}
+		}
 
-			if (this._mountMode === 1) {
-				renderSize = Math.abs(renderWidth) > Math.abs(renderHeight) ? renderWidth : renderHeight;
-				ratio = 1;
+		if (this._mountMode === 1) {
+			renderSize = Math.abs(renderWidth) > Math.abs(renderHeight) ? renderWidth : renderHeight;
+			ratio = 1;
 
-				// Isometric
-				// Render an area of the map rather than the whole map
-				for (y = renderY - Math.floor(renderSize * ratio); y <= renderY + Math.floor(renderSize * ratio); y++) {
-					if (mapData[y]) {
-						for (x = renderX - Math.floor(renderSize * ratio); x <= renderX + Math.floor(renderSize * ratio); x++) {
-							// Grab the tile data to paint
-							tileData = mapData[y][x];
+			// Isometric
+			// Render an area of the map rather than the whole map
+			for (y = renderY - Math.floor(renderSize * ratio); y <= renderY + Math.floor(renderSize * ratio); y++) {
+				if (mapData[y]) {
+					for (x = renderX - Math.floor(renderSize * ratio); x <= renderX + Math.floor(renderSize * ratio); x++) {
+						// Grab the tile data to paint
+						tileData = mapData[y][x];
 
-							if (tileData) {
-								this._renderTile(ctx, x, y, tileData, tileEntity, rect);
-							}
+						if (tileData) {
+							this._renderTile(ctx, x, y, tileData, tileEntity, rect);
 						}
 					}
 				}
 			}
-
 		}
 	},
 
@@ -474,9 +511,52 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		if (this._renderAreaAutoSize) {
 			var geom = this._parent.geometry;
 			this.renderArea(-Math.floor(geom.x / 2), -Math.floor(geom.y / 2), geom.x, geom.y);
+
+			// Check if caching is enabled
+			if (this._caching > 0) {
+				this._resizeCacheCanvas();
+			}
 		}
 
 		this._super(event);
+	},
+
+	/**
+	 * Resizes the cache canvas elements to the new
+	 * render area size.
+	 * @private
+	 */
+	_resizeCacheCanvas: function () {
+		if (this._cache) {
+			for (var i = 0; i < this._cache.length; i++) {
+				document.body.removeChild(this._cache[i]);
+			}
+		}
+
+		switch (this._caching) {
+			case 1:
+				// Turn on caching
+				this._cache = [];
+				this._cacheCtx = [];
+				this._cacheDirty = true;
+
+				// Create a new canvas to cache image render data to
+				canvas = document.createElement('canvas');
+
+				// Set the canvas size to the render area rectangle
+				canvas.width = this._renderArea[2];
+				canvas.height = this._renderArea[3];
+
+				document.body.appendChild(canvas);
+				canvas.style.position = 'absolute';
+				canvas.style.left = '0px';
+				canvas.style.top = '0px';
+				canvas.style.opacity = '0';
+
+				this._cache.push(canvas);
+				this._cacheCtx.push(canvas.getContext('2d'));
+				break;
+		}
 	},
 
 	/**
