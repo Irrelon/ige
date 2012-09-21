@@ -1,5 +1,7 @@
 var igeCoreConfig = {
 	include: [
+		/* Client-Side Stack Trace Support */
+		['c', 'IgeStackTrace', 'components/stackTrace/lib_stack.js'],
 		/* The IGE Core Files */
 		['cs', 'IgeBase', 'core/IgeBase.js'],
 		['cs', 'IgeClass', 'core/IgeClass.js'],
