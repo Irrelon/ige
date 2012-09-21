@@ -109,23 +109,26 @@ var IgeTiledComponent = IgeClass.extend({
 
 		onLoadFunc = function (textures, tileSetCount, tileSetItem) {
 			return function () {
-				var cs = new IgeCellSheet(tileSetItem.image, this.width / tileSetItem.tilewidth, this.height / tileSetItem.tileheight),
-					i, cc = cs.cellCount();
+				var i, cc,
+					cs = new IgeCellSheet(tileSetItem.image, this.width / tileSetItem.tilewidth, this.height / tileSetItem.tileheight)
+						.on('loaded', function () {
+							cc = this.cellCount();
 
-				cs._tiledStartingId = tileSetItem.firstgid;
-				// Fill the lookup array
-				for (i = 0; i < cc; i++) {
-					textureCellLookup[cs._tiledStartingId + i] = cs;
-				}
+							this._tiledStartingId = tileSetItem.firstgid;
+							// Fill the lookup array
+							for (i = 0; i < cc; i++) {
+								textureCellLookup[this._tiledStartingId + i] = this;
+							}
 
-				textures.push(cs);
+							textures.push(this);
 
-				tileSetsLoaded++;
+							tileSetsLoaded++;
 
-				if (tileSetsLoaded === tileSetsTotal) {
-					// All textures loaded, fire processing function
-					allTexturesLoadedFunc();
-				}
+							if (tileSetsLoaded === tileSetsTotal) {
+								// All textures loaded, fire processing function
+								allTexturesLoadedFunc();
+							}
+						});
 			};
 		};
 
