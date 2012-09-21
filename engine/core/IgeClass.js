@@ -21,7 +21,7 @@ var IgeClass = (function () {
 				console.warn(obj);
 			}
 
-			if (type === 'error') {
+			if (type === 'warning' || type === 'error') {
 				if (igeDebug.stacks) {
 					if (igeDebug.node) {
 						stack = new Error().stack;
@@ -33,7 +33,9 @@ var IgeClass = (function () {
 						}
 					}
 				}
+			}
 
+			if (type === 'error') {
 				if (igeDebug.throwErrors) {
 					throw(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
 				} else {
