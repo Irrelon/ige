@@ -345,7 +345,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 				this.renderCenter(entTranslate.x, entTranslate.y);
 			}
 
-			document.getElementById('debug').innerHTML = entTranslate.x + ', ' + entTranslate.y + ', ' + this._cacheDirty;
+			//document.getElementById('debug').innerHTML = entTranslate.x + ', ' + entTranslate.y + ', ' + this._cacheDirty;
 
 			// Check if we have dirty cache and if not, just render the cache!
 			if (this._caching > 0) {
