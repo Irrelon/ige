@@ -42,6 +42,13 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	},
 
 	/**
+	 * Forces a cache redraw on the next tick.
+	 */
+	cacheForceFrame: function () {
+		this._cacheDirty = true;
+	},
+
+	/**
 	 * Adds a texture to the texture map's internal texture list so
 	 * that it can be referenced via an index so that the texture map's
 	 * data will be something like [[textureId, textureCell]]
