@@ -148,7 +148,7 @@ var IgeTween = IgeClass.extend({
 	},
 
 	/**
-	 * Stops all tweens registerd to an object.
+	 * Stops all tweens registered to an object.
 	 * @private
 	 */
 	stopAll: function () {
