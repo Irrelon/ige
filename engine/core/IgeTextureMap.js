@@ -218,7 +218,8 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	},
 
 	convertOldData: function (mapData) {
-		var newData = [];
+		var newData = [],
+			x, y;
 
 		for (x in mapData) {
 			if (mapData.hasOwnProperty(x)) {
@@ -540,8 +541,10 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * @private
 	 */
 	_resizeCacheCanvas: function () {
+		var i;
+
 		if (this._cache) {
-			for (var i = 0; i < this._cache.length; i++) {
+			for (i = 0; i < this._cache.length; i++) {
 				document.body.removeChild(this._cache[i]);
 			}
 		}
