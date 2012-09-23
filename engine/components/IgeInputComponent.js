@@ -183,6 +183,11 @@ var IgeInputComponent = IgeEventingClass.extend({
 		canvas.addEventListener('mousemove', function (event) { self._rationalise(event); self._mouseMove(event); });
 		canvas.addEventListener('mousewheel', function (event) { self._rationalise(event); self._mouseWheel(event); });
 
+		// Touch events
+		canvas.addEventListener('touchmove', function (event) { self._rationalise(event, true); self._mouseMove(event); });
+		canvas.addEventListener('touchstart', function (event) { self._rationalise(event, true); self._mouseDown(event); });
+		canvas.addEventListener('touchend', function (event) { self._rationalise(event, true); self._mouseUp(event); });
+
 		// Kill the context menu on right-click, urgh!
 		canvas.addEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
 
@@ -198,9 +203,13 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * @param {Event} event The event object.
 	 * @private
 	 */
-	_rationalise: function (event) {
+	_rationalise: function (event, touch) {
 		event.igeX = (event.pageX - ige._canvas.offsetLeft);
 		event.igeY = (event.pageY - ige._canvas.offsetTop);
+
+		if (touch) {
+			event.button = 0; // Emulate left mouse button
+		}
 	},
 
 	/**
