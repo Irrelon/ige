@@ -31,7 +31,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			this._caching = val;
 
 			// Check if caching is enabled
-			if (this._caching > 0) {
+			if (this._caching > 0 && this._renderArea) {
 				this._resizeCacheCanvas();
 			}
 
