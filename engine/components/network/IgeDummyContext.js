@@ -19,7 +19,8 @@ var nullMethod = function () {},
 		beginPath: nullMethod,
 		clip: nullMethod,
 		transform: nullMethod,
-		setTransform: nullMethod
+		setTransform: nullMethod,
+		fillText: nullMethod
 	};
 
 if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeDummyContext; }
