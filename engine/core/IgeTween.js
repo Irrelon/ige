@@ -161,3 +161,5 @@ var IgeTween = IgeClass.extend({
 		return this;
 	}
 });
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeTween; }
