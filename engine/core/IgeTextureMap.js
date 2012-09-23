@@ -29,6 +29,12 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			}
 
 			this._caching = val;
+
+			// Check if caching is enabled
+			if (this._caching > 0) {
+				this._resizeCacheCanvas();
+			}
+
 			return this;
 		}
 
@@ -350,7 +356,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			// Check if we have dirty cache and if not, just render the cache!
 			if (this._caching > 0) {
 				if (this._cacheDirty) {
-					if (this._caching === 1) {
+					if (this._caching === 1 && this._cache && this._cache[0]) {
 						// Mode 1, just a single central canvas
 						cacheCanvas = this._cache[0];
 						cacheContext = this._cacheCtx[0];
