@@ -407,6 +407,14 @@ var IgeTileMap2d = IgeEntity.extend({
 	},
 
 	tick: function (ctx) {
+		var tileWidth = this._tileWidth,
+			tileHeight = this._tileHeight,
+			index,
+			x, y,
+			gridMaxX, gridMaxY,
+			gStart, gEnd,
+			tilePoint;
+
 		this._calculateMousePosition();
 
 		// Now check if we have any mouse events to call
@@ -428,17 +436,11 @@ var IgeTileMap2d = IgeEntity.extend({
 		// Check if we need to draw the tile grid (usually for debug)
 		if (this._drawGrid > 0) {
 			ctx.strokeStyle = '#ffffff';
-			var gridCount = this._drawGrid,
-				tileWidth = this._tileWidth,
-				tileHeight = this._tileHeight,
-				index,
-				x = -(tileWidth / 2),
-				y = -(tileHeight / 2),
-				gridMaxX = x + tileWidth * gridCount,
-				gridMaxY = y + tileHeight * gridCount,
-				gStart,
-				gEnd,
-				tilePoint;
+			gridCount = this._drawGrid;
+			x = -(tileWidth / 2);
+			y = -(tileHeight / 2);
+			gridMaxX = x + tileWidth * gridCount;
+			gridMaxY = y + tileHeight * gridCount;
 
 			for (index = 0; index <= gridCount; index++) {
 				gStart = new IgePoint(x, y + (tileHeight * index), 0);
