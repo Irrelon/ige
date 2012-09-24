@@ -135,10 +135,10 @@ var IgeTexture = IgeEventingClass.extend({
 
 						item._loaded = true;
 						item.emit('loaded');
-					}
 
-					// Inform the engine that this image has loaded
-					ige.textureLoadEnd(imageUrl, self);
+						// Inform the engine that this image has loaded
+						ige.textureLoadEnd(imageUrl, self);
+					}
 				};
 
 				// Start the image loading by setting the source url
