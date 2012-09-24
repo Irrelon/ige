@@ -543,11 +543,11 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	_resizeCacheCanvas: function () {
 		var i;
 
-		if (this._cache) {
+		/*if (this._cache) {
 			for (i = 0; i < this._cache.length; i++) {
 				document.body.removeChild(this._cache[i]);
 			}
-		}
+		}*/
 
 		switch (this._caching) {
 			case 1:
@@ -563,7 +563,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 				canvas.width = this._renderArea[2];
 				canvas.height = this._renderArea[3];
 
-				document.body.appendChild(canvas);
+				//document.body.appendChild(canvas);
 				canvas.style.position = 'absolute';
 				canvas.style.left = '0px';
 				canvas.style.top = '0px';
