@@ -48,6 +48,7 @@ var Client = IgeClass.extend({
 						.drawBoundsData(false)
 						.tileWidth(40)
 						.tileHeight(40)
+						.drawMouse(true)
 						.mount(self.mainScene);
 
 					// Create the main viewport
