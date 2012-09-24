@@ -375,7 +375,7 @@ var IgeTexture = IgeEventingClass.extend({
 
 			if (this._preFilter && this._textureCtx) {
 				// Call the preFilter method
-				this._preFilter(this._textureCanvas, this._textureCtx, this._originalImage);
+				this._preFilter.apply(this, [this._textureCanvas, this._textureCtx, this._originalImage]);
 			}
 
 			ctx.drawImage(
@@ -458,7 +458,7 @@ var IgeTexture = IgeEventingClass.extend({
 				this.image = this._textureCanvas;
 
 				// Call the passed method
-				method(this._textureCanvas, this._textureCtx, this._originalImage);
+				method.apply(this, [this._textureCanvas, this._textureCtx, this._originalImage]);
 			}
 		}
 
