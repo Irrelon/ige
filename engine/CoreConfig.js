@@ -90,6 +90,14 @@ var igeCoreConfig = {
 		['cs', 'IgeUiProgressBar', 'ui/IgeUiProgressBar.js'],
 		['cs', 'IgeUiTextBox', 'ui/IgeUiTextBox.js'],
 		['cs', 'IgeUiMenu', 'ui/IgeUiMenu.js'],
+		/* Image Filters */
+		['c', 'IgeFilters', 'core/IgeFilters.js'],
+		['c', 'IgeFilters.convolute', 'filters/convolute.js'],
+		['c', 'IgeFilters.greyScale', 'filters/greyScale.js'],
+		['c', 'IgeFilters.brighten', 'filters/brighten.js'],
+		['c', 'IgeFilters.threshold', 'filters/threshold.js'],
+		['c', 'IgeFilters.sharpen', 'filters/sharpen.js'],
+		['c', 'IgeFilters.blur', 'filters/blur.js'],
 		/* Engine Actual */
 		['cs', 'IgeEngine', 'core/IgeEngine.js']
 	]
