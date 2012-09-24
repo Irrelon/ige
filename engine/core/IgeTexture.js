@@ -429,6 +429,8 @@ var IgeTexture = IgeEventingClass.extend({
 				this._preFilter = method;
 			}
 			return this;
+		} else {
+			this.log('Cannot use pre-filter, no filter method was passed!', 'warning');
 		}
 
 		return this._preFilter;
@@ -460,6 +462,8 @@ var IgeTexture = IgeEventingClass.extend({
 				// Call the passed method
 				method(this._textureCanvas, this._textureCtx, this._originalImage, this);
 			}
+		} else {
+			this.log('Cannot apply filter, no filter method was passed!', 'warning');
 		}
 
 		return this;
