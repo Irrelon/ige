@@ -322,6 +322,9 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * Scans the map data and returns an array of rectangle
 	 * objects that encapsulate the map data into discrete
 	 * rectangle areas.
+	 * @param {Function=} callback Returns true or false for
+	 * the passed map data determining if it should be included
+	 * in a rectangle or not.
 	 * @return {Array}
 	 */
 	scanRects: function (callback) {
