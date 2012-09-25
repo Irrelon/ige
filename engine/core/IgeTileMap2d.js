@@ -362,7 +362,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		// Clear the current x, y cell mapData
 		mapData[y][x] = 0;
 
-		while (mapData[y][nx] && (!callback || (callback && callback(mapData[y][nx])))) {
+		while (mapData[y][nx] && (!callback || (callback && callback(mapData[y][nx], nx, y)))) {
 			rect.width++;
 
 			// Clear the mapData for this cell
@@ -372,16 +372,16 @@ var IgeTileMap2d = IgeEntity.extend({
 			nx++;
 		}
 
-		while (mapData[ny] && mapData[ny][x] && (!callback || (callback && callback(mapData[ny][x])))) {
+		while (mapData[ny] && mapData[ny][x] && (!callback || (callback && callback(mapData[ny][x], x, ny)))) {
 			// Check for mapData either side of the column width
-			if ((mapData[ny][x - 1] && (!callback || (callback && callback(mapData[ny][x - 1])))) || (mapData[ny][x + rect.width] && (!callback || (callback && callback(mapData[ny][x + rect.width]))))) {
+			if ((mapData[ny][x - 1] && (!callback || (callback && callback(mapData[ny][x - 1], x - 1, ny)))) || (mapData[ny][x + rect.width] && (!callback || (callback && callback(mapData[ny][x + rect.width], x + rect.width, ny))))) {
 				return rect;
 			}
 
 			// Loop the column's map data and check that there is
 			// an intact column the same width as the starting column
 			for (nx = x; nx < x + rect.width; nx++) {
-				if (!mapData[ny][nx] || (callback && !callback(mapData[ny][nx]))) {
+				if (!mapData[ny][nx] || (callback && !callback(mapData[ny][nx], nx, ny))) {
 					// This row has a different column width from the starting
 					// column so return the rectangle as it stands
 					return rect;
