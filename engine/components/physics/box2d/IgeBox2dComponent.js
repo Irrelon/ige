@@ -265,11 +265,22 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		return tempBod;
 	},
 
+	/**
+	 * Produces static box2d bodies from passed map data.
+	 * @param {IgeTileMap2d} mapLayer
+	 * @param {Function=} callback Returns true or false depending
+	 * on if the passed map data should be included as part of the
+	 * box2d static object data. This allows you to control what
+	 * parts of the map data are to be considered for box2d static
+	 * objects and which parts are to be ignored. If not passed then
+	 * any tile with any map data is considered part of the static
+	 * object data.
+	 */
 	staticsFromMap: function (mapLayer, callback) {
 		if (mapLayer.map) {
 			var tileWidth = mapLayer.tileWidth(),
 				tileHeight = mapLayer.tileHeight(),
-				i, posX, posY,
+				posX, posY,
 				rectArray, rectCount, rect;
 
 			// Get the array of rectangle bounds based on
