@@ -98,6 +98,7 @@ var igeCoreConfig = {
 		['c', 'IgeFilters.threshold', 'filters/threshold.js'],
 		['c', 'IgeFilters.sharpen', 'filters/sharpen.js'],
 		['c', 'IgeFilters.blur', 'filters/blur.js'],
+		['c', 'IgeFilters.emboss', 'filters/emboss.js'],
 		/* Engine Actual */
 		['cs', 'IgeEngine', 'core/IgeEngine.js']
 	]
