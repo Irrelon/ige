@@ -15,6 +15,7 @@ var Client = IgeClass.extend({
 		gameTexture[4] = new IgeTexture('../assets/textures/sprites/fairy.png');
 		gameTexture[5] = new IgeTexture('../assets/textures/sprites/fairy.png');
 		gameTexture[6] = new IgeTexture('../assets/textures/sprites/fairy.png');
+		gameTexture[7] = new IgeTexture('../assets/textures/sprites/fairy.png');
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -56,7 +57,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[1])
-						.translateTo(-150, 0, 0)
+						.translateTo(-300, 0, 0)
 						.mount(self.scene1);
 
 					// Create some more fairies and mount them to the scene
@@ -66,7 +67,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[2])
-						.translateTo(0, 0, 0)
+						.translateTo(-150, 0, 0)
 						.mount(self.scene1);
 
 					self.obj[3] = new Rotator()
@@ -75,7 +76,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[3])
-						.translateTo(150, 0, 0)
+						.translateTo(0, 0, 0)
 						.mount(self.scene1);
 
 					self.obj[4] = new Rotator()
@@ -84,7 +85,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[4])
-						.translateTo(-150, 150, 0)
+						.translateTo(150, 0, 0)
 						.mount(self.scene1);
 
 					self.obj[5] = new Rotator()
@@ -93,7 +94,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[5])
-						.translateTo(0, 150, 0)
+						.translateTo(300, 0, 0)
 						.mount(self.scene1);
 
 					self.obj[6] = new Rotator()
@@ -102,7 +103,16 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[6])
-						.translateTo(150, 150, 0)
+						.translateTo(-300, 150, 0)
+						.mount(self.scene1);
+
+					self.obj[7] = new Rotator()
+						.id('fairy7')
+						.depth(1)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[7])
+						.translateTo(-150, 150, 0)
 						.mount(self.scene1);
 
 					// Apply a greyscale filter to JUST the first fairy texture
@@ -124,6 +134,9 @@ var Client = IgeClass.extend({
 
 					// Apply an emboss filter to the fifth fairy texture
 					gameTexture[6].applyFilter(IgeFilters.emboss);
+
+					// Apply an emboss filter to the fifth fairy texture
+					gameTexture[7].applyFilter(IgeFilters.edgeDetect);
 				}
 			});
 		});
