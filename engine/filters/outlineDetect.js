@@ -1,4 +1,4 @@
-IgeFilters.edgeDetect = function (canvas, ctx, originalImage, texture) {
+IgeFilters.outlineDetect = function (canvas, ctx, originalImage, texture) {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.drawImage(originalImage, 0, 0);
 
@@ -12,11 +12,9 @@ IgeFilters.edgeDetect = function (canvas, ctx, originalImage, texture) {
 				canvas.height
 			),
 			[
-				0, 0, -1, 0, 0,
-				0, -1, -2, -1, 0,
-				-1, -2, 16, -2, -1,
-				0, -1, -2, -1, 0,
-				0, 0, -1, 0, 0
+				0, 1, 0,
+				1,  -4, 1,
+				0, 1, 0
 			]
 		),
 		0,
