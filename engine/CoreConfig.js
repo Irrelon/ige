@@ -22,6 +22,7 @@ var igeCoreConfig = {
 		['cs', 'IgeMousePanComponent', 'components/IgeMousePanComponent.js'],
 		['cs', 'IgeMouseZoomComponent', 'components/IgeMouseZoomComponent.js'],
 		['cs', 'IgeTiledComponent', 'components/IgeTiledComponent.js'],
+		['cs', 'IgeEntityManagerComponent', 'components/IgeEntityManagerComponent.js'],
 		/* Physics Libraries */
 		['cs', 'Box2D', 'components/physics/box2d/lib_box2d.js', 'Box2D'],
 		['cs', 'Cannon', 'components/physics/cannon/lib_cannon.js'],
