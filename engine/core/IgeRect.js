@@ -34,6 +34,37 @@ IgeRect.prototype.pointInside = function (point) {
 };
 
 /**
+ * Returns boolean indicating if the passed IgeRect is
+ * intersecting the rectangle.
+ * @param {IgeRect} rect
+ * @return {Boolean}
+ */
+IgeRect.prototype.rectIntersect = function (rect) {
+	if (rect) {
+		var sX1 = this.x,
+			sY1 = this.y,
+			sW = this.width,
+			sH = this.height,
+
+			dX1 = rect.x,
+			dY1 = rect.y,
+			dW = rect.width,
+			dH = rect.height,
+
+			sX2 = sX1 + sW,
+			sY2 = sY1 + sH,
+			dX2 = dX1 + dW,
+			dY2 = dY1 + dH;
+
+		if (sX1 < dX2 && sX2 > dX1 && sY1 < dY2 && sY2 > dY1) {
+			return true;
+		}
+	}
+
+	return false;
+};
+
+/**
  * Returns a string representation of the rect's x, y, width,
  * height, converting floating point values into fixed using the
  * passed precision parameter. If no precision is specified
