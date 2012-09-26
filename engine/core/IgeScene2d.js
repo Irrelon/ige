@@ -5,6 +5,7 @@ var IgeScene2d = IgeEntity.extend({
 	classId: 'IgeScene2d',
 
 	init: function () {
+		this._alwaysInView = true;
 		this._super();
 
 		this._shouldRender = true;

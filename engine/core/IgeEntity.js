@@ -37,6 +37,8 @@ var IgeEntity = IgeObject.extend([
         this._localMatrix = new IgeMatrix2d(this);
         this._worldMatrix = new IgeMatrix2d(this);
 
+		this._inView = true;
+
 		// Set the stream floating point precision to 2 as default
 		this.streamFloatPrecision(2);
 
@@ -375,7 +377,7 @@ var IgeEntity = IgeObject.extend([
 			var poly = new IgePoly2d(),
 				minX, minY,
 				maxX, maxY,
-				box = {},
+				box = new IgeRect(0, 0, 0, 0),
 				anc = this._anchor,
 				geom = this.geometry,
 				geomX = geom.x,
@@ -540,6 +542,7 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	_projectionOverlap: function (otherObject) {
+		// TODO: Potentially caching the IgePoints here unless this.geometry has changed may speed things up somewhat
 		var thisG3d = this.geometry,
 			thisMin = new IgePoint(
 				this._translate.x - thisG3d.x / 2,
@@ -715,51 +718,53 @@ var IgeEntity = IgeObject.extend([
 				this._processInterpolate(ige.tickStart - ige.network.stream._renderLatency);
 			}
 
-			// Process any mouse events we need to do
-			var texture = this._texture,
-				mp, aabb, mouseX, mouseY,
-				self = this;
+			if (this._inView && (!this._parent || (this._parent._inView))) {
+				// Process any mouse events we need to do
+				var texture = this._texture,
+					mp, aabb, mouseX, mouseY,
+					self = this;
 
-			if (this._mouseEventsActive) {
-				mp = ige._currentViewport._mousePos;
+				if (this._mouseEventsActive) {
+					mp = ige._currentViewport._mousePos;
 
-				if (mp) {
-					aabb = this.aabb();
-					mouseX = mp.x;
-					mouseY = mp.y;
+					if (mp) {
+						aabb = this.aabb();
+						mouseX = mp.x;
+						mouseY = mp.y;
 
-					// Check if the current mouse position is inside this aabb
-					if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
-						// Point is inside the aabb
-						ige.input.queueEvent(this, this._mouseInAabb);
-					} else {
-						if (ige.input.mouseMove) {
-							// There is a mouse move event
-							self._handleMouseOut(ige.input.mouseMove);
+						// Check if the current mouse position is inside this aabb
+						if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
+							// Point is inside the aabb
+							ige.input.queueEvent(this, this._mouseInAabb);
+						} else {
+							if (ige.input.mouseMove) {
+								// There is a mouse move event
+								self._handleMouseOut(ige.input.mouseMove);
+							}
 						}
 					}
 				}
-			}
 
-			// Transform the context by the current transform settings
-			if (!dontTransform) {
-				this._transformContext(ctx);
-			}
-
-			// Check if the entity is visible based upon its opacity
-			if (this._opacity > 0 && texture) {
-				// Draw the entity image
-				texture.render(ctx, this, ige.tickDelta);
-
-				if (this._highlight) {
-					ctx.globalCompositeOperation = 'lighter';
-					texture.render(ctx, this);
+				// Transform the context by the current transform settings
+				if (!dontTransform) {
+					this._transformContext(ctx);
 				}
-			}
 
-			// Process any automatic-mode stream updating required
-			if (this._streamMode === 1) {
-				this.streamSync();
+				// Check if the entity is visible based upon its opacity
+				if (this._opacity > 0 && texture) {
+					// Draw the entity image
+					texture.render(ctx, this, ige.tickDelta);
+
+					if (this._highlight) {
+						ctx.globalCompositeOperation = 'lighter';
+						texture.render(ctx, this);
+					}
+				}
+
+				// Process any automatic-mode stream updating required
+				if (this._streamMode === 1) {
+					this.streamSync();
+				}
 			}
 
 			// Process children

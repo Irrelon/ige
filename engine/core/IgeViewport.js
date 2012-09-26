@@ -9,6 +9,7 @@ var IgeViewport = IgeEntity.extend([
 	classId: 'IgeViewport',
 
 	init: function (options) {
+		this._alwaysInView = true;
 		this._super();
 
 		this._mousePos = new IgePoint(0, 0, 0);
@@ -70,6 +71,13 @@ var IgeViewport = IgeEntity.extend([
 	 */
 	mousePos: function () {
 		return this._mousePos;
+	},
+
+	viewArea: function () {
+		var aabb = this.aabb(),
+			camTrans = this.camera._translate;
+
+		return new IgeRect(aabb.x + camTrans.x, aabb.y + camTrans.y, aabb.width, aabb.height);
 	},
 
 	/**
@@ -237,7 +245,7 @@ var IgeViewport = IgeEntity.extend([
 
 										ctx.strokeStyle = '#a200ff';
 
-										ctx.globalAlpha = 0.6;
+										ctx.globalAlpha = 1;
 
 										// Left face
 										ctx.fillStyle = '#545454';

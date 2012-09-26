@@ -5,7 +5,9 @@ var IgeEngine = IgeEntity.extend({
 	classId: 'IgeEngine',
 
 	init: function () {
+		this._alwaysInView = true;
 		this._super();
+
 		this._id = 'ige';
 
 		this.basePath = '';
@@ -730,7 +732,7 @@ var IgeEngine = IgeEntity.extend({
 			depthSpace += '    ';
 		}
 
-		console.log(depthSpace + obj.id() + ' (' + obj._classId + ')');
+		console.log(depthSpace + obj.id() + ' (' + obj._classId + ') : ' + obj._inView);
 
 		currentDepth++;
 
@@ -745,7 +747,7 @@ var IgeEngine = IgeEntity.extend({
 				// Loop our children
 				while (arrCount--) {
 					if (arr[arrCount]._scene._shouldRender) {
-						console.log(depthSpace + '    ' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ')');
+						console.log(depthSpace + '    ' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView);
 						this.sceneGraph(arr[arrCount]._scene, currentDepth + 1);
 					}
 				}

@@ -268,9 +268,10 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		}
 	},
 
-	renderAreaAutoSize: function (val) {
+	renderAreaAutoSize: function (val, options) {
 		if (val !== undefined) {
 			this._renderAreaAutoSize = val;
+			this._renderAreaAutoSizeOptions = options;
 			return this;
 		}
 

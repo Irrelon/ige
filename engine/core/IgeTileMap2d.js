@@ -9,7 +9,9 @@ var IgeTileMap2d = IgeEntity.extend({
 	classId: 'IgeTileMap2d',
 
 	init: function (tileWidth, tileHeight) {
+		this._alwaysInView = true;
 		this._super();
+
 		var self = this;
 
 		this.map = new IgeMap2d();
