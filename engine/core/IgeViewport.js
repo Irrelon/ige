@@ -245,7 +245,7 @@ var IgeViewport = IgeEntity.extend([
 
 										ctx.strokeStyle = '#a200ff';
 
-										ctx.globalAlpha = 1;
+										ctx.globalAlpha = 0.6;
 
 										// Left face
 										ctx.fillStyle = '#545454';
