@@ -524,8 +524,21 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	_resizeEvent: function (event) {
 		// Set width / height of scene to match main ige (SCENES ARE ALWAYS THE FULL IGE SIZE!!)
 		if (this._renderAreaAutoSize) {
-			var geom = this._parent.geometry;
-			this.renderArea(-Math.floor(geom.x / 2), -Math.floor(geom.y / 2), geom.x, geom.y);
+			var geom = this._parent.geometry,
+				additionX = 0, additionY = 0;
+
+			if (this._renderAreaAutoSizeOptions) {
+				if (this._renderAreaAutoSizeOptions.bufferMultiple) {
+					additionX = (geom.x * this._renderAreaAutoSizeOptions.bufferMultiple.x) - geom.x;
+					additionY = (geom.y * this._renderAreaAutoSizeOptions.bufferMultiple.y) - geom.y;
+				}
+
+				if (this._renderAreaAutoSizeOptions.bufferPixels) {
+					additionX = this._renderAreaAutoSizeOptions.bufferPixels.x;
+					additionY = this._renderAreaAutoSizeOptions.bufferPixels.y;
+				}
+			}
+			this.renderArea(-Math.floor((geom.x + additionX) / 2), -Math.floor((geom.y + additionY) / 2), geom.x + additionX, geom.y + additionY);
 
 			// Check if caching is enabled
 			if (this._caching > 0) {
