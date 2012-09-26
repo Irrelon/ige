@@ -13,7 +13,9 @@ var IgeObject = IgeEventingClass.extend({
 		this._layer = 0;
 		this._depth = 0;
 		this._dirty = true;
+		this._depthSortMode = 0;
 		this._timeStream = [];
+		this._inView = true;
 	},
 
 	/**
@@ -398,75 +400,123 @@ var IgeObject = IgeEventingClass.extend({
 		return this._dirty;
 	},
 
+	depthSortMode: function (val) {
+		if (val !== undefined) {
+			this._depthSortMode = val;
+			return this;
+		}
+
+		return this._depthSortMode;
+	},
+
 	/**
 	 * Sorts the _children array by the layer and then depth of each object.
 	 */
 	depthSortChildren: function () {
 		// TODO: Optimise this method, it is not especially efficient at the moment!
+		var arr = this._children,
+			arrCount = arr.length,
+			sortObj,
+			i, j;
+
 		if (this._mountMode === 1) {
-			// Calculate depths from 3d bounds
-			var arr = this._children,
-				arrCount = arr.length,
+			if (this._depthSortMode === 0) {
+				// Calculate depths from 3d bounds
 				sortObj = {
 					adj: [],
 					c: [],
 					p: [],
 					order: [],
 					order_ind: arrCount - 1
-				},
-				i, j;
+				};
 
-			if (arrCount > 1) {
-				for (i = 0; i < arrCount; ++i) {
-					sortObj.c[i] = 0;
-					sortObj.p[i] = -1;
+				if (arrCount > 1) {
+					for (i = 0; i < arrCount; ++i) {
+						sortObj.c[i] = 0;
+						sortObj.p[i] = -1;
 
-					for (j = i + 1; j < arrCount; ++j) {
-						sortObj.adj[i] = sortObj.adj[i] || [];
-						sortObj.adj[j] = sortObj.adj[j] || [];
+						for (j = i + 1; j < arrCount; ++j) {
+							sortObj.adj[i] = sortObj.adj[i] || [];
+							sortObj.adj[j] = sortObj.adj[j] || [];
 
-						if (arr[i]._projectionOverlap && arr[j]._projectionOverlap) {
-							if (arr[i]._projectionOverlap(arr[j])) {
-								if (arr[i].isBehind(arr[j])) {
-									sortObj.adj[j].push(i);
-								} else {
-									sortObj.adj[i].push(j);
+							if (arr[i]._inView && arr[j]._inView && arr[i]._projectionOverlap && arr[j]._projectionOverlap) {
+								if (arr[i]._projectionOverlap(arr[j])) {
+									if (arr[i].isBehind(arr[j])) {
+										sortObj.adj[j].push(i);
+									} else {
+										sortObj.adj[i].push(j);
+									}
 								}
 							}
 						}
 					}
-				}
 
-				for (i = 0; i < arrCount; ++i) {
-					if (sortObj.c[i] === 0) {
-						this._depthSortVisit(i, sortObj);
+					for (i = 0; i < arrCount; ++i) {
+						if (sortObj.c[i] === 0) {
+							this._depthSortVisit(i, sortObj);
+						}
 					}
-				}
 
-				for (i = 0; i < sortObj.order.length; i++) {
-					arr[sortObj.order[i]].depth(i);
+					for (i = 0; i < sortObj.order.length; i++) {
+						arr[sortObj.order[i]].depth(i);
+					}
+
+					this._children.sort(function (a, b) {
+						var layerIndex = b._layer - a._layer;
+
+						if (layerIndex === 0) {
+							// On same layer so sort by depth
+							return b._depth - a._depth;
+						} else {
+							// Not on same layer so sort by layer
+							return layerIndex;
+						}
+					});
 				}
 			}
 
-			// Now sort the entities by depth
-			this._children.sort(function (a, b) {
-				var layerIndex = b._layer - a._layer;
+			if (this._depthSortMode === 1) {
+				// Now sort the entities by depth
+				this._children.sort(function (a, b) {
+					var layerIndex = b._layer - a._layer;
 
-				if (layerIndex === 0) {
-					// On same layer so sort by depth
-					/*if (a._projectionOverlap(b)) {
-						if (a.isBehind(b)) {
-							return -1;
-						} else {
-							return 1;
-						}
-					}*/
-					return b._depth - a._depth;
-				} else {
-					// Not on same layer so sort by layer
-					return layerIndex;
+					if (layerIndex === 0) {
+						// On same layer so sort by depth
+						//if (a._projectionOverlap(b)) {
+							if (a.isBehind(b)) {
+								return -1;
+							} else {
+								return 1;
+							}
+						//}
+					} else {
+						// Not on same layer so sort by layer
+						return layerIndex;
+					}
+				});
+			}
+
+			if (this._depthSortMode === 2) {
+				while (arrCount--) {
+					sortObj = arr[arrCount];
+					j = sortObj._translate;
+
+					sortObj._depth = j.x + j.y + j.z;
 				}
-			});
+
+				// Now sort the entities by depth
+				this._children.sort(function (a, b) {
+					var layerIndex = b._layer - a._layer;
+
+					if (layerIndex === 0) {
+						// On same layer so sort by depth
+						return b._depth - a._depth;
+					} else {
+						// Not on same layer so sort by layer
+						return layerIndex;
+					}
+				});
+			}
 		} else {
 			// Now sort the entities by depth
 			this._children.sort(function (a, b) {
@@ -483,10 +533,53 @@ var IgeObject = IgeEventingClass.extend({
 		}
 	},
 
+	viewChecking: function (val) {
+		if (val !== undefined) {
+			this._viewChecking = val;
+			return this;
+		}
+
+		return this._viewChecking;
+	},
+
+	viewCheckChildren: function () {
+		var arr = this._children,
+			arrCount = arr.length,
+			vpViewArea = ige._currentViewport.viewArea(),
+			item;
+
+		while (arrCount--) {
+			item = arr[arrCount];
+
+			if (item._alwaysInView) {
+				item._inView = true;
+			} else {
+				if (item.aabb) {
+					// Check the entity to see if its bounds are "inside" the
+					// viewport's visible area
+					if (vpViewArea.rectIntersect(item.aabb())) {
+						// The entity is inside the viewport visible area
+						item._inView = true;
+					} else {
+						item._inView = false;
+					}
+				} else {
+					item._inView = false;
+				}
+			}
+		}
+	},
+
 	/**
 	 * Processes the actions required each render frame.
 	 */
 	tick: function (ctx, scene) {
+		if (this._viewChecking) {
+			// Set the in-scene flag for each child based on
+			// the current viewport
+			this.viewCheckChildren();
+		}
+
 		// Depth sort all child objects
 		this.depthSortChildren();
 
@@ -498,6 +591,7 @@ var IgeObject = IgeEventingClass.extend({
 			// Loop our children and call their tick methods
 			while (arrCount--) {
 				ctx.save();
+					arr[arrCount]._inView = true;
 					arr[arrCount].tick(ctx);
 				ctx.restore();
 			}
