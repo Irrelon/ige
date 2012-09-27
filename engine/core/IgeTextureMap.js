@@ -48,6 +48,28 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		this._cacheDirty = true;
 	},
 
+	negate: function (entity) {
+		if (entity !== undefined) {
+			var x, y,
+				entityMapData = entity.map._mapData,
+				thisMapData = this.map._mapData;
+
+			for (y in entityMapData) {
+				if (entityMapData.hasOwnProperty(y)) {
+					for (x in entityMapData[y]) {
+						if (entityMapData[y].hasOwnProperty(x)) {
+							if (thisMapData[y] && thisMapData[y][x]) {
+								// This map has data in the same place as the passed
+								// entity's map so remove this map's data
+								delete thisMapData[y][x];
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+
 	/**
 	 * Adds a texture to the texture map's internal texture list so
 	 * that it can be referenced via an index so that the texture map's
