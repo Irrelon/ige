@@ -194,8 +194,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		// Touch events
 		canvas.addEventListener('touchmove', function (event) { event.preventDefault(); self._rationalise(event, true); self._mouseMove(event); });
-		canvas.addEventListener('touchstart', function (event) { self._rationalise(event, true); self._mouseDown(event); });
-		canvas.addEventListener('touchend', function (event) { self._rationalise(event, true); self._mouseUp(event); });
+		canvas.addEventListener('touchstart', function (event) { event.preventDefault(); self._rationalise(event, true); self._mouseDown(event); });
+		canvas.addEventListener('touchend', function (event) { event.preventDefault(); self._rationalise(event, true); self._mouseUp(event); });
 
 		// Kill the context menu on right-click, urgh!
 		canvas.addEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
@@ -213,12 +213,23 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_rationalise: function (event, touch) {
-		event.igeX = (event.pageX - ige._canvas.offsetLeft);
-		event.igeY = (event.pageY - ige._canvas.offsetTop);
-
 		if (touch) {
 			event.button = 0; // Emulate left mouse button
+
+			// Handle touch changed
+			if (event.changedTouches && event.changedTouches.length) {
+				event.igePageX = event.changedTouches[0].pageX;
+				event.igePageY = event.changedTouches[0].pageY;
+
+				console.log(event.changedTouches[0], event.changedTouches[0].pageX, event.changedTouches[0].pageY);
+			}
+		} else {
+			event.igePageX = event.pageX;
+			event.igePageY = event.pageY;
 		}
+
+		event.igeX = (event.igePageX - ige._canvas.offsetLeft);
+		event.igeY = (event.igePageY - ige._canvas.offsetTop);
 	},
 
 	/**
