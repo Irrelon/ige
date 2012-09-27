@@ -386,17 +386,19 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			destroyBody;
 
 		if (self._active && self._world) {
-			// Remove any bodies that were queued for removal
-			removeWhenReady = self._removeWhenReady;
-			count = removeWhenReady.length;
+			if (!self._world.IsLocked()) {
+				// Remove any bodies that were queued for removal
+				removeWhenReady = self._removeWhenReady;
+				count = removeWhenReady.length;
 
-			if (count) {
-				destroyBody = self._world.DestroyBody;
-				while (count--) {
-					destroyBody.apply(self._world, [removeWhenReady[count]]);
+				if (count) {
+					destroyBody = self._world.DestroyBody;
+					while (count--) {
+						destroyBody.apply(self._world, [removeWhenReady[count]]);
+					}
+					self._removeWhenReady = [];
+					removeWhenReady = null;
 				}
-				self._removeWhenReady = [];
-				removeWhenReady = null;
 			}
 
 			// Call the world step; frame-rate, velocity iterations, position iterations
