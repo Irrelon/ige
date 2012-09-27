@@ -501,7 +501,9 @@ var IgeObject = IgeEventingClass.extend({
 					sortObj = arr[arrCount];
 					j = sortObj._translate;
 
-					sortObj._depth = j.x + j.y + j.z;
+					if (j) {
+						sortObj._depth = j.x + j.y + j.z;
+					}
 				}
 
 				// Now sort the entities by depth
@@ -591,7 +593,6 @@ var IgeObject = IgeEventingClass.extend({
 			// Loop our children and call their tick methods
 			while (arrCount--) {
 				ctx.save();
-					arr[arrCount]._inView = true;
 					arr[arrCount].tick(ctx);
 				ctx.restore();
 			}
