@@ -643,6 +643,8 @@ var IgeEngine = IgeEntity.extend({
 				arr[arrCount]._resizeEvent(event);
 			}
 		}
+
+		ige._resized = true;
 	},
 
 	/**
@@ -712,6 +714,8 @@ var IgeEngine = IgeEntity.extend({
 			// Call the input system tick to reset any flags etc
 			ige.input.tick();
 		}
+
+		ige._resized = false;
 	},
 
 	fps: function () {
