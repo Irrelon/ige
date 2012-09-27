@@ -418,19 +418,42 @@ var IgeEngine = IgeEntity.extend({
 	 * Automatically creates a canvas element, appends it to the document.body
 	 * and sets it's 2d context as the current front-buffer for the engine.
 	 * @param autoSize
+	 * @param {Boolean=} dontScale If set to true, IGE will ignore device pixel ratios when
+	 * setting the width and height of the canvas.
 	 */
-	createFrontBuffer: function (autoSize) {
+	createFrontBuffer: function (autoSize, dontScale) {
 		if (!this.isServer) {
 			if (!this._canvas) {
+				this._pixelRatioScaling = !dontScale;
+
 				// Create a new canvas element to use as the
 				// rendering front-buffer
-				var tempCanvas = document.createElement('canvas');
-				tempCanvas.id = 'igeFrontBuffer';
-				tempCanvas.width = window.innerWidth;
-				tempCanvas.height = window.innerHeight;
-				//tempCanvas.style.cssText = "idtkscale:ScaleAspectFit;";
+				var tempCanvas = document.createElement('canvas'),
+					tempContext,
+					width, height;
 
-				ige.geometry = new IgePoint(window.innerWidth, window.innerHeight, 0);
+				if (this._pixelRatioScaling) {
+					tempContext = tempCanvas.getContext('2d');
+
+					// Support high-definition devices and "retina" (stupid marketing name)
+					// displays by adjusting for device and back store pixels ratios
+					this._devicePixelRatio = window.devicePixelRatio || 1;
+					this._backingStoreRatio = tempContext.webkitBackingStorePixelRatio ||
+						tempContext.mozBackingStorePixelRatio ||
+						tempContext.msBackingStorePixelRatio ||
+						tempContext.oBackingStorePixelRatio ||
+						tempContext.backingStorePixelRatio || 1;
+
+					this._deviceFinalDrawRatio = this._devicePixelRatio / this._backingStoreRatio;
+				} else {
+					// No auto-scaling
+					this._devicePixelRatio = 1;
+					this._backingStoreRatio = 1;
+					this._deviceFinalDrawRatio = 1;
+				}
+
+				// Set the canvas element id
+				tempCanvas.id = 'igeFrontBuffer';
 
 				this.canvas(tempCanvas, autoSize);
 				document.body.appendChild(tempCanvas);
@@ -454,10 +477,11 @@ var IgeEngine = IgeEntity.extend({
 
 				// Add some event listeners
 				window.addEventListener('resize', this._resizeEvent);
-
-				// Fire the resize event
-				this._resizeEvent();
 			}
+
+			// Fire the resize event for the first time
+			// which sets up initial canvas dimensions
+			this._resizeEvent();
 
 			// Ask the input component to setup any listeners it has
 			this.input._setupListeners();
@@ -588,7 +612,6 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	_resizeEvent: function (event) {
 		if (ige._autoSize) {
-
 			var newWidth = window.innerWidth,
 				newHeight = window.innerHeight,
 				arr = ige._children,
@@ -600,8 +623,17 @@ var IgeEngine = IgeEntity.extend({
 			if (newWidth % 2) { newWidth--; }
 			if (newHeight % 2) { newHeight--; }
 
-			ige._canvas.width = newWidth;
-			ige._canvas.height = newHeight;
+			ige._canvas.width = newWidth * this._deviceFinalDrawRatio;
+			ige._canvas.height = newHeight * this._deviceFinalDrawRatio;
+
+			if (this._deviceFinalDrawRatio !== 1) {
+				ige._canvas.style.width = newWidth + 'px';
+				ige._canvas.style.height = newHeight + 'px';
+
+				// Scale the canvas context to account for the change
+				this._ctx.scale(this._deviceFinalDrawRatio, this._deviceFinalDrawRatio);
+			}
+
 			ige.geometry = new IgePoint(newWidth, newHeight, 0);
 
 			// Loop any mounted children and check if
