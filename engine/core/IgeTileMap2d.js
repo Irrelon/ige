@@ -217,7 +217,7 @@ var IgeTileMap2d = IgeEntity.extend({
 				for (yi = 0; yi < height; yi++) {
 					item = this.map.tileData(x + xi, y + yi)
 					if (item && item._occupiedRect) {
-						delete obj._occupiedRect;
+						delete item._occupiedRect;
 					}
 					this.map.clearData(x + xi, y + yi);
 				}
