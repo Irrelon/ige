@@ -322,7 +322,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	 * @param {Function} beginContactCallback The method to call when the contact listener detects contact has started.
 	 * @param {Function} endContactCallback The method to call when the contact listener detects contact has ended.
 	 */
-	setContactListener: function (beginContactCallback, endContactCallback) {
+	contactListener: function (beginContactCallback, endContactCallback) {
 		var contactListener = new this.b2ContactListener();
 		contactListener.BeginContact = beginContactCallback;
 		contactListener.EndContact = endContactCallback;
