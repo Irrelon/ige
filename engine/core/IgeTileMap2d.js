@@ -213,7 +213,7 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * @return {*}
 	 */
 	unOccupyTile: function (x, y, width, height) {
-		var xi, yi;
+		var xi, yi, item;
 
 		if (width === undefined) { width = 1; }
 		if (height === undefined) { height = 1; }
@@ -227,13 +227,15 @@ var IgeTileMap2d = IgeEntity.extend({
 		if (x !== undefined && y !== undefined) {
 			for (xi = 0; xi < width; xi++) {
 				for (yi = 0; yi < height; yi++) {
+					item = this.map.tileData(x + xi, y + yi)
+					if (item && item._occupiedRect) {
+						delete item._occupiedRect;
+					}
 					this.map.clearData(x + xi, y + yi);
 				}
 			}
 
-			if (obj._occupiedRect) {
-				delete obj._occupiedRect;
-			}
+
 		}
 		return this;
 	},
