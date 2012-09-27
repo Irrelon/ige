@@ -220,8 +220,6 @@ var IgeInputComponent = IgeEventingClass.extend({
 			if (event.changedTouches && event.changedTouches.length) {
 				event.igePageX = event.changedTouches[0].pageX;
 				event.igePageY = event.changedTouches[0].pageY;
-
-				console.log(event.changedTouches[0], event.changedTouches[0].pageX, event.changedTouches[0].pageY);
 			}
 		} else {
 			event.igePageX = event.pageX;
