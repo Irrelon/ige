@@ -156,6 +156,8 @@ var Client = IgeClass.extend({
 							// Cancel the contact
 							contact.SetEnabled(false);
 						}
+
+						// You can also check an entity by it's group using igeEitherGroup('groupName')
 					}
 				);
 
