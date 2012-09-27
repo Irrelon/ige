@@ -86,7 +86,9 @@ var IgeEntityBox2d = IgeEntity.extend({
 	 * is attached to it.
 	 */
 	destroy: function () {
-		ige.box2d.destroyBody(this._box2dBody);
+		if (this._box2dBody) {
+			ige.box2d.destroyBody(this._box2dBody);
+		}
 		this._super();
 	}
 });
