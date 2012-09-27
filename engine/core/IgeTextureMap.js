@@ -68,6 +68,8 @@ var IgeTextureMap = IgeTileMap2d.extend({
 				}
 			}
 		}
+
+		return this;
 	},
 
 	/**
