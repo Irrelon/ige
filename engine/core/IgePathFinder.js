@@ -178,7 +178,7 @@ var IgePathFinder = IgeEventingClass.extend({
 			newY = 0,
 			newNode,
 			mapData = tileMap.map._mapData,
-			currentNodeData = mapData[y][x],
+			currentNodeData = mapData[y] && mapData[y][x] ? mapData[y][x] : undefined,
 			tileData;
 
 		if (allowSquare) {
