@@ -179,6 +179,12 @@ var IgeTileMap2d = IgeEntity.extend({
 					this.map.tileData(x + xi, y + yi, obj);
 				}
 			}
+
+			// Create an IgeRect to represent the tiles this
+			// entity has just occupied
+			if (obj._classId) {
+				obj._occupiedRect = new IgeRect(x, y, width, height);
+			}
 		}
 		return this;
 	},
@@ -202,6 +208,10 @@ var IgeTileMap2d = IgeEntity.extend({
 				for (yi = 0; yi < height; yi++) {
 					this.map.clearData(x + xi, y + yi);
 				}
+			}
+
+			if (obj._occupiedRect) {
+				delete obj._occupiedRect;
 			}
 		}
 		return this;
