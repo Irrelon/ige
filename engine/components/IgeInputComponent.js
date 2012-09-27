@@ -184,7 +184,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 		canvas.addEventListener('mousewheel', function (event) { self._rationalise(event); self._mouseWheel(event); });
 
 		// Touch events
-		canvas.addEventListener('touchmove', function (event) { self._rationalise(event, true); self._mouseMove(event); });
+		canvas.addEventListener('touchmove', function (event) { event.preventDefault(); self._rationalise(event, true); self._mouseMove(event); });
 		canvas.addEventListener('touchstart', function (event) { self._rationalise(event, true); self._mouseDown(event); });
 		canvas.addEventListener('touchend', function (event) { self._rationalise(event, true); self._mouseUp(event); });
 
