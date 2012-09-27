@@ -167,6 +167,16 @@ var IgeEntityManagerComponent = IgeClass.extend({
 		return this._areaRect;
 	},
 
+	areaRectAutoSize: function (val, options) {
+		if (val !== undefined) {
+			this._areaRectAutoSize = val;
+			this._areaRectAutoSizeOptions = options;
+			return this._entity;
+		}
+
+		return this._areaRectAutoSize;
+	},
+
 	/**
 	 * Returns the current management area.
 	 * @return {IgeRect}
@@ -209,7 +219,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 */
 	_behaviour: function (ctx) {
 		var self = this.entityManager,
-			currentArea = self.currentArea(),
+			currentArea,
 			currentAreaTiles,
 			arr = this._children,
 			arrCount = arr.length,
@@ -225,6 +235,12 @@ var IgeEntityManagerComponent = IgeClass.extend({
 			tileData,
 			renderSize,
 			ratio;
+
+		if ((!self._areaRect || ige._resized) && self._areaRectAutoSize) {
+			self._resizeEvent();
+		}
+
+		currentArea = self.currentArea();
 
 		if (self._areaCenter && self._areaRect) {
 
@@ -380,6 +396,38 @@ var IgeEntityManagerComponent = IgeClass.extend({
 			// Pop the first item off the array and pass it as arguments
 			// to the entity creation method assigned to this manager
 			createEntityFunc.apply(this, createArr.shift());
+		}
+	},
+
+	/**
+	 * Handles screen resize events.
+	 * @param event
+	 * @private
+	 */
+	_resizeEvent: function (event) {
+		// Set width / height of scene to match parent
+		if (this._areaRectAutoSize) {
+			var geom = this._entity._parent.geometry,
+				additionX = 0, additionY = 0;
+
+			if (this._areaRectAutoSizeOptions) {
+				if (this._areaRectAutoSizeOptions.bufferMultiple) {
+					additionX = (geom.x * this._areaRectAutoSizeOptions.bufferMultiple.x) - geom.x;
+					additionY = (geom.y * this._areaRectAutoSizeOptions.bufferMultiple.y) - geom.y;
+				}
+
+				if (this._areaRectAutoSizeOptions.bufferPixels) {
+					additionX = this._areaRectAutoSizeOptions.bufferPixels.x;
+					additionY = this._areaRectAutoSizeOptions.bufferPixels.y;
+				}
+			}
+
+			this.areaRect(-Math.floor((geom.x + additionX) / 2), -Math.floor((geom.y + additionY) / 2), geom.x + additionX, geom.y + additionY);
+
+			// Check if caching is enabled
+			if (this._caching > 0) {
+				this._resizeCacheCanvas();
+			}
 		}
 	}
 });
