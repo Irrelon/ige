@@ -74,7 +74,7 @@ var Client = IgeClass.extend({
 					.drawBounds(true)
 					.mount(self.scene1);
 
-				self.ball3 = new IgeEntityBox2d()
+				self.square1 = new IgeEntityBox2d()
 					.box2dBody({
 						type: 'dynamic',
 						linearDamping: 0.0,
@@ -88,12 +88,35 @@ var Client = IgeClass.extend({
 							friction: 0.5,
 							restitution: 0.2,
 							shape: {
-								type: 'circle'
+								type: 'rectangle'
 							}
 						}]
 					})
-					.id('ball3')
+					.id('square1')
 					.translateTo(-40, -470, 0)
+					.drawBounds(true)
+					.mount(self.scene1);
+
+				self.square2 = new IgeEntityBox2d()
+					.box2dBody({
+						type: 'dynamic',
+						linearDamping: 0.0,
+						angularDamping: 0.1,
+						allowSleep: true,
+						bullet: false,
+						gravitic: true,
+						fixedRotation: false,
+						fixtures: [{
+							density: 1.0,
+							friction: 0.5,
+							restitution: 0.2,
+							shape: {
+								type: 'rectangle'
+							}
+						}]
+					})
+					.id('square2')
+					.translateTo(90, -560, 0)
 					.drawBounds(true)
 					.mount(self.scene1);
 
