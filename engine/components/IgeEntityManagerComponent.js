@@ -187,7 +187,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 			areaCenter = this._areaCenter;
 
 		if (areaRect && areaCenter) {
-			return new IgeRect(areaRect.x + areaCenter.x, areaRect.y + areaCenter.y, areaRect.width, areaRect.height);
+			return new IgeRect(Math.floor(areaRect.x + areaCenter.x), Math.floor(areaRect.y + areaCenter.y), Math.floor(areaRect.width), Math.floor(areaRect.height));
 		} else {
 			return new IgeRect(0, 0, 0, 0);
 		}
@@ -282,12 +282,6 @@ var IgeEntityManagerComponent = IgeClass.extend({
 			renderWidth = Math.ceil(currentArea.width / this._tileWidth);
 			renderHeight = Math.ceil(currentArea.height / this._tileHeight);
 
-			// Generate the bounds rectangle
-			if (this._drawBounds) {
-				ctx.strokeStyle = '#ff0000';
-				ctx.strokeRect(currentArea.x, currentArea.y, currentArea.width, currentArea.height);
-			}
-
 			currentArea.x -= (this._tileWidth);
 			currentArea.y -= (this._tileHeight / 2);
 			currentArea.width += (this._tileWidth * 2);
@@ -314,6 +308,14 @@ var IgeEntityManagerComponent = IgeClass.extend({
 					renderX + Math.floor(renderSize * ratio) + 1 - (renderX - Math.floor(renderSize * ratio)),
 					renderY + Math.floor(renderSize * ratio) + 1 - (renderY - Math.floor(renderSize * ratio))
 				);
+			}
+
+			// Generate the bounds rectangle
+			if (this._drawBounds) {
+				ctx.strokeStyle = '#ff0000';
+				ctx.strokeRect(currentArea.x, currentArea.y, currentArea.width, currentArea.height);
+
+				this._highlightTileRect = currentAreaTiles;
 			}
 
 			////////////////////////////////////
@@ -344,6 +346,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 				if (maps.hasOwnProperty(mapIndex)) {
 					map = maps[mapIndex];
 					mapData = map.map._mapData;
+					// TODO: This can be optimised further by only checking the area that has changed
 
 					for (y = currentAreaTiles.y; y < currentAreaTiles.y + currentAreaTiles.height; y++) {
 						if (mapData[y]) {
