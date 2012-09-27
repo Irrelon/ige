@@ -419,7 +419,8 @@ var IgeEngine = IgeEntity.extend({
 	 * and sets it's 2d context as the current front-buffer for the engine.
 	 * @param autoSize
 	 * @param {Boolean=} dontScale If set to true, IGE will ignore device pixel ratios when
-	 * setting the width and height of the canvas.
+	 * setting the width and height of the canvas and will therefore not take into account
+	 * retina or high-definition displays whose pixel ratio is different from 1 to 1.
 	 */
 	createFrontBuffer: function (autoSize, dontScale) {
 		if (!this.isServer) {
