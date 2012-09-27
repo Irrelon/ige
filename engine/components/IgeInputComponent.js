@@ -167,6 +167,15 @@ var IgeInputComponent = IgeEventingClass.extend({
 		this._state[this.mouse.y] = 0;
 	},
 
+	debug: function (val) {
+		if (val !== undefined) {
+			this._debug = val;
+			return this;
+		}
+
+		return this._debug;
+	},
+
 	/**
 	 * Sets up the event listeners on the main window and front
 	 * buffer DOM objects.
@@ -218,6 +227,9 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_mouseDown: function (event) {
+		if (this._debug) {
+			console.log('Mouse Down', event);
+		}
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
@@ -253,6 +265,9 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_mouseUp: function (event) {
+		if (this._debug) {
+			console.log('Mouse Up', event);
+		}
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
