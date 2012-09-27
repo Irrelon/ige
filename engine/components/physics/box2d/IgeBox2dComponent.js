@@ -315,6 +315,25 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Creates a contact listener with the specified callbacks. When
+	 * contacts begin and end inside the box2d simulation the specified
+	 * callbacks are fired.
+	 * @param {Function} beginContactCallback The method to call when the contact listener detects contact has started.
+	 * @param {Function} endContactCallback The method to call when the contact listener detects contact has ended.
+	 */
+	setContactListener: function (beginContactCallback, endContactCallback) {
+		var contactListener = new this.b2ContactListener();
+		contactListener.BeginContact = beginContactCallback;
+		contactListener.EndContact = endContactCallback;
+		this._world.SetContactListener(contactListener);
+	},
+
+	/**
+	 * Creates a debug entity that outputs the bounds of each box2d
+	 * body during standard engine ticks.
+	 * @param {IgeEntity} mountScene
+	 */
 	enableDebug: function (mountScene) {
 		if (mountScene) {
 			// Define the debug drawing instance
