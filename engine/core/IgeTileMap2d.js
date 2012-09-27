@@ -52,6 +52,15 @@ var IgeTileMap2d = IgeEntity.extend({
 		return this._highlightOccupied;
 	},
 
+	highlightTileRect: function (val) {
+		if (val !== undefined) {
+			this._highlightTileRect = val;
+			return this;
+		}
+
+		return this._highlightTileRect;
+	},
+
 	/**
 	 * Gets / sets the map's tile width.
 	 * @param {Number} val Tile width.
