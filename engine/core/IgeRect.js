@@ -13,6 +13,16 @@ var IgeRect = function (x, y, width, height) {
 };
 
 /**
+ * Compares this rect's dimensions with the passed rect and returns
+ * true if they are the same and false if any is different.
+ * @param {IgeRect} rect
+ * @return {Boolean}
+ */
+IgeRect.prototype.compare = function (rect) {
+	return rect && this.x === rect.x && this.y === rect.y && this.width === rect.width && this.height === rect.height;
+};
+
+/**
  * Returns boolean indicating if the passed x, y is
  * inside the rectangle.
  * @param x
