@@ -528,6 +528,40 @@ var IgeTileMap2d = IgeEntity.extend({
 			}
 		}
 
+		if (this._highlightTileRect) {
+			ctx.fillStyle = '#e4ff00';
+			for (y = this._highlightTileRect.y; y < this._highlightTileRect.y + this._highlightTileRect.height; y++) {
+				for (x = this._highlightTileRect.x; x < this._highlightTileRect.x + this._highlightTileRect.width; x++) {
+					// Tile is occupied
+					tilePoint = new IgePoint(tileWidth * x, tileHeight * y, 0);
+
+					// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
+					if (this._mountMode === 0) {
+						// 2d
+						ctx.fillRect(
+							tilePoint.x - tileWidth / 2,
+							tilePoint.y - tileHeight / 2,
+							tileWidth,
+							tileHeight
+						);
+					}
+
+					if (this._mountMode === 1) {
+						// iso
+						tilePoint.thisToIso();
+
+						ctx.beginPath();
+						ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+						ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
+						ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
+						ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
+						ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+						ctx.fill();
+					}
+				}
+			}
+		}
+
 		if (this._drawMouse) {
 			// Paint the tile the mouse is currently intersecting
 			ctx.fillStyle = '#6000ff';
