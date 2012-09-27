@@ -7,6 +7,8 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
+		ige.input.debug(true);
+
 		// Load the fairy texture and store it in the gameTexture array
 		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
 
