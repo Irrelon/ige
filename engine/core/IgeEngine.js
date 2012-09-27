@@ -623,15 +623,15 @@ var IgeEngine = IgeEntity.extend({
 			if (newWidth % 2) { newWidth--; }
 			if (newHeight % 2) { newHeight--; }
 
-			ige._canvas.width = newWidth * this._deviceFinalDrawRatio;
-			ige._canvas.height = newHeight * this._deviceFinalDrawRatio;
+			ige._canvas.width = newWidth * ige._deviceFinalDrawRatio;
+			ige._canvas.height = newHeight * ige._deviceFinalDrawRatio;
 
-			if (this._deviceFinalDrawRatio !== 1) {
+			if (ige._deviceFinalDrawRatio !== 1) {
 				ige._canvas.style.width = newWidth + 'px';
 				ige._canvas.style.height = newHeight + 'px';
 
 				// Scale the canvas context to account for the change
-				this._ctx.scale(this._deviceFinalDrawRatio, this._deviceFinalDrawRatio);
+				ige._ctx.scale(ige._deviceFinalDrawRatio, ige._deviceFinalDrawRatio);
 			}
 
 			ige.geometry = new IgePoint(newWidth, newHeight, 0);
