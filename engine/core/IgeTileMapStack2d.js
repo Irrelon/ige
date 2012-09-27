@@ -171,6 +171,12 @@ var IgeTileMapStack2d = IgeEntity.extend({
 		if (width === undefined) { width = 1; }
 		if (height === undefined) { height = 1; }
 
+		// Floor the values
+		x = Math.floor(x);
+		y = Math.floor(y);
+		width = Math.floor(width);
+		height = Math.floor(height);
+
 		if (x !== undefined && y !== undefined) {
 			for (xi = 0; xi < width; xi++) {
 				for (yi = 0; yi < height; yi++) {
@@ -194,6 +200,12 @@ var IgeTileMapStack2d = IgeEntity.extend({
 
 		if (width === undefined) { width = 1; }
 		if (height === undefined) { height = 1; }
+
+		// Floor the values
+		x = Math.floor(x);
+		y = Math.floor(y);
+		width = Math.floor(width);
+		height = Math.floor(height);
 
 		if (x !== undefined && y !== undefined) {
 			for (xi = 0; xi < width; xi++) {
