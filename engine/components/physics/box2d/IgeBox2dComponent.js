@@ -27,6 +27,25 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		this.b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
 		this.b2ContactListener = Box2D.Dynamics.b2ContactListener;
 		this.b2Distance = Box2D.Collision.b2Distance;
+		this.b2Contact = Box2D.Dynamics.Contacts.b2Contact;
+
+		// Extend the b2Contact class to allow the IGE entity accessor
+		// and other helper methods
+		this.b2Contact.prototype.igeEntityA = function () {
+			return this.m_fixtureA.m_body._entity;
+		};
+
+		this.b2Contact.prototype.igeEntityB = function () {
+			return this.m_fixtureB.m_body._entity;
+		};
+
+		this.b2Contact.prototype.igeEitherId = function (id) {
+			return this.m_fixtureA.m_body._entity._id === id || this.m_fixtureB.m_body._entity._id === id;
+		};
+
+		this.b2Contact.prototype.igeEitherGroup = function (group) {
+			return this.m_fixtureA.m_body._entity._group === group || this.m_fixtureB.m_body._entity._group === group;
+		};
 
 		this._active = true;
 		this._sleep = true;
@@ -321,11 +340,26 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	 * callbacks are fired.
 	 * @param {Function} beginContactCallback The method to call when the contact listener detects contact has started.
 	 * @param {Function} endContactCallback The method to call when the contact listener detects contact has ended.
+	 * @param preSolve
+	 * @param postSolve
 	 */
-	contactListener: function (beginContactCallback, endContactCallback) {
+	contactListener: function (beginContactCallback, endContactCallback, preSolve, postSolve) {
 		var contactListener = new this.b2ContactListener();
-		contactListener.BeginContact = beginContactCallback;
-		contactListener.EndContact = endContactCallback;
+		if (beginContactCallback !== undefined) {
+			contactListener.BeginContact = beginContactCallback;
+		}
+
+		if (endContactCallback !== undefined) {
+			contactListener.EndContact = endContactCallback;
+		}
+
+		if (preSolve !== undefined) {
+			contactListener.PreSolve = preSolve;
+		}
+
+		if (postSolve !== undefined) {
+			contactListener.PostSolve = postSolve;
+		}
 		this._world.SetContactListener(contactListener);
 	},
 
