@@ -242,8 +242,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 
 		currentArea = self.currentArea();
 
-		if (self._areaCenter && self._areaRect) {
-
+		if (self._areaCenter && self._areaRect && !currentArea.compare(self._lastArea)) {
 			////////////////////////////////////
 			// ENTITY REMOVAL CHECKS          //
 			////////////////////////////////////
