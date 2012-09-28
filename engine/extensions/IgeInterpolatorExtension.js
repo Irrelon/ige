@@ -2,11 +2,11 @@ var IgeInterpolatorExtension = {
 	/**
 	 * Calculates the current value based on the time along the
 	 * value range.
-	 * @param startValue The value that the
-	 * @param endValue
-	 * @param startTime
-	 * @param currentTime
-	 * @param endTime
+	 * @param startValue The value that the interpolation started from.
+	 * @param endValue The target value to be interpolated to.
+	 * @param startTime The time the interpolation started.
+	 * @param currentTime The current time.
+	 * @param endTime The time the interpolation will end.
 	 * @return {Number}
 	 */
 	interpolateValue: function (startValue, endValue, startTime, currentTime, endTime) {
