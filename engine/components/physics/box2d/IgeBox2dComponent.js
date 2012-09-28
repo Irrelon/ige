@@ -77,6 +77,14 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			}
 		};
 
+		this.b2Contact.prototype.igeOtherEntity = function (entity) {
+			if (this.m_fixtureA.m_body._entity === entity) {
+				return this.m_fixtureB.m_body._entity;
+			} else {
+				return this.m_fixtureA.m_body._entity;
+			}
+		};
+
 		this._active = true;
 		this._sleep = true;
 		this._scaleRatio = 30;
