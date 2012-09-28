@@ -48,16 +48,31 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			}
 		};
 
-		this.b2Contact.prototype.igeEitherGroup = function (group) {
-			return this.m_fixtureA.m_body._entity._group === group || this.m_fixtureB.m_body._entity._group === group;
+		this.b2Contact.prototype.igeEitherGroup = function (group1, group2) {
+			if (!group2) {
+				return this.m_fixtureA.m_body._entity._group === group1 || this.m_fixtureB.m_body._entity._group === group1;
+			} else {
+				return (this.m_fixtureA.m_body._entity._group === group1 || this.m_fixtureB.m_body._entity._group === group1) &&
+					(this.m_fixtureA.m_body._entity._group === group2 || this.m_fixtureB.m_body._entity._group === group2);
+			}
 		};
 
-		this.b2Contact.prototype.igeGroupEntity = function (group) {
+		this.b2Contact.prototype.igeEntityByGroup = function (group) {
 			if (this.m_fixtureA.m_body._entity._group === group) {
 				return this.m_fixtureA.m_body._entity;
 			}
 
 			if (this.m_fixtureB.m_body._entity._group === group) {
+				return this.m_fixtureB.m_body._entity;
+			}
+		};
+
+		this.b2Contact.prototype.igeEntityById = function (id) {
+			if (this.m_fixtureA.m_body._entity._id === id) {
+				return this.m_fixtureA.m_body._entity;
+			}
+
+			if (this.m_fixtureB.m_body._entity._id === id) {
 				return this.m_fixtureB.m_body._entity;
 			}
 		};
