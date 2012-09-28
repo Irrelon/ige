@@ -39,12 +39,27 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			return this.m_fixtureB.m_body._entity;
 		};
 
-		this.b2Contact.prototype.igeEitherId = function (id) {
-			return this.m_fixtureA.m_body._entity._id === id || this.m_fixtureB.m_body._entity._id === id;
+		this.b2Contact.prototype.igeEitherId = function (id1, id2) {
+			if (!id2) {
+				return this.m_fixtureA.m_body._entity._id === id1 || this.m_fixtureB.m_body._entity._id === id1;
+			} else {
+				return (this.m_fixtureA.m_body._entity._id === id1 || this.m_fixtureB.m_body._entity._id === id1) &&
+					(this.m_fixtureA.m_body._entity._id === id2 || this.m_fixtureB.m_body._entity._id === id2);
+			}
 		};
 
 		this.b2Contact.prototype.igeEitherGroup = function (group) {
 			return this.m_fixtureA.m_body._entity._group === group || this.m_fixtureB.m_body._entity._group === group;
+		};
+
+		this.b2Contact.prototype.igeGroupEntity = function (group) {
+			if (this.m_fixtureA.m_body._entity._group === group) {
+				return this.m_fixtureA.m_body._entity;
+			}
+
+			if (this.m_fixtureB.m_body._entity._group === group) {
+				return this.m_fixtureB.m_body._entity;
+			}
 		};
 
 		this._active = true;
