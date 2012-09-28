@@ -13,6 +13,7 @@ var IgePathComponent = IgeEventingClass.extend({
 		this._targetCellIndex = -1; // Holds the target cell of the current path - where in the path we are pathing to
 		this._targetCellArrivalTime = 0; // Holds the timestamp that we will arrive at the target cell
 		this._active = false; // Determines if we should be traversing paths or not
+		this._paused = false;
 		this._warnTime = 0;
 		this._autoStop = true;
 		this._startTime = null;
@@ -139,12 +140,18 @@ var IgePathComponent = IgeEventingClass.extend({
 				if (this._targetCellIndex === -1) { this._targetCellIndex = 0; }
 
 				// If we weren't passed a start time, assign it the current time
-				if (startTime !== undefined) {
-					this._startTime = startTime;
-				} else {
-					this._startTime = new Date().getTime();
+				if (startTime === undefined) {
+					startTime = new Date().getTime();
 				}
 
+				if (this._paused) {
+					// Bring the arrival time of the target cell forward to take
+					// into account the time we were paused
+					this._targetCellArrivalTime += startTime - this._pauseTime;
+					this._paused = false;
+				}
+
+				this._startTime = startTime;
 				this._currentTime = this._startTime;
 
 				// Set pathing to active
@@ -181,6 +188,19 @@ var IgePathComponent = IgeEventingClass.extend({
 			// No paths so return a null point
 			return null;
 		}
+	},
+
+	/**
+	 * Pauses path traversal but does not clear the path
+	 * queue or any path data.
+	 * @return {*}
+	 */
+	pause: function () {
+		this._active = false;
+		this._paused = true;
+		this._pauseTime = new Date().getTime();
+		this.emit('paused', this._entity);
+		return this._entity;
 	},
 
 	/**
