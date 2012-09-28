@@ -17,7 +17,7 @@ var Rotator = IgeEntity.extend({
 
 				self.width(100)
 					.height(100);
-			}, false, true);
+			});
 		}
 
 		// Define the data sections that will be included in the stream
