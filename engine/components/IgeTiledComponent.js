@@ -111,6 +111,7 @@ var IgeTiledComponent = IgeClass.extend({
 			return function () {
 				var i, cc,
 					cs = new IgeCellSheet(tileSetItem.image, this.width / tileSetItem.tilewidth, this.height / tileSetItem.tileheight)
+						.id(tileSetItem.name)
 						.on('loaded', function () {
 							cc = this.cellCount();
 
