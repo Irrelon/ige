@@ -97,7 +97,7 @@ var IgeTiledComponent = IgeClass.extend({
 							currentTexture = textureCellLookup[layerData[z]];
 							if (currentTexture) {
 								currentCell = layerData[z] - (currentTexture._tiledStartingId - 1);
-								textureMaps[i].paintTile(x, y, textures.indexOf(currentTexture), currentCell);
+								textureMaps[i].paintTile(x, y, textureMaps[i]._textureList.indexOf(currentTexture), currentCell);
 							}
 						}
 					}
