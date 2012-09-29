@@ -72,6 +72,18 @@ var IgeClass = (function () {
 		},
 
 		/**
+		 * Removes a component by it's id.
+		 */
+		removeComponent = function (componentId) {
+			// If the component has a destroy method, call it
+			if (this[componentId] && this[componentId].destroy) {
+				this[componentId].destroy();
+			}
+			delete this[componentId];
+			return this;
+		},
+
+		/**
 		 * Copies all properties and methods from the classObj object
 		 * to "this". If the overwrite flag is not set or set to false,
 		 * only properties and methods that don't already exists in
@@ -226,6 +238,9 @@ var IgeClass = (function () {
 
 		// Add the addComponent method
 		IgeClass.prototype.addComponent = addComponent;
+
+		// Add the removeComponent method
+		IgeClass.prototype.removeComponent = removeComponent;
 
 		// Add the implement method
 		IgeClass.prototype.implement = implement;
