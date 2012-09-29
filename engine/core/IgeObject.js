@@ -689,9 +689,6 @@ var IgeObject = IgeEventingClass.extend({
 	 * scenegraph and from memory.
 	 */
 	destroy: function () {
-		var arr,
-			arrCount;
-
 		// Remove ourselves from any parent
 		this.unMount();
 
