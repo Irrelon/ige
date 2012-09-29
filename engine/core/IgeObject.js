@@ -5,6 +5,7 @@ var IgeObject = IgeEventingClass.extend({
 	classId: 'IgeObject',
 
 	init: function () {
+		this._alive = true;
 		this._mode = 0;
 		this._mountMode = 0;
 		this._parent = null;
@@ -16,6 +17,15 @@ var IgeObject = IgeEventingClass.extend({
 		this._depthSortMode = 0;
 		this._timeStream = [];
 		this._inView = true;
+	},
+
+	alive: function (val) {
+		if (val !== undefined) {
+			this._alive = val;
+			return this;
+		}
+
+		return this._alive;
 	},
 
 	/**
@@ -696,6 +706,11 @@ var IgeObject = IgeEventingClass.extend({
 		// Remove the children array severing any references
 		// to any child objects so that the GC can pick them up
 		delete this._children;
+
+		// Set a flag in case a reference to this object
+		// has been held somewhere, shows that the object
+		// should no longer be interacted with
+		this._alive = false;
 
 		return this;
 	},
