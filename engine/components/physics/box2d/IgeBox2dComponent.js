@@ -32,11 +32,17 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		// Extend the b2Contact class to allow the IGE entity accessor
 		// and other helper methods
 		this.b2Contact.prototype.igeEntityA = function () {
-			return this.m_fixtureA.m_body._entity;
+			var ent = this.m_fixtureA.m_body._entity;
+			ent._box2dOurContactFixture = this.m_fixtureA;
+			ent._box2dTheirContactFixture = this.m_fixtureB;
+			return ent;
 		};
 
 		this.b2Contact.prototype.igeEntityB = function () {
-			return this.m_fixtureB.m_body._entity;
+			var ent = this.m_fixtureB.m_body._entity;
+			ent._box2dOurContactFixture = this.m_fixtureB;
+			ent._box2dTheirContactFixture = this.m_fixtureA;
+			return ent;
 		};
 
 		this.b2Contact.prototype.igeEitherId = function (id1, id2) {
@@ -57,31 +63,45 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			}
 		};
 
+		this.b2Contact.prototype.igeBothGroups = function (group1) {
+			return (this.m_fixtureA.m_body._entity._group === group1 && this.m_fixtureB.m_body._entity._group === group1);
+		};
+
 		this.b2Contact.prototype.igeEntityByGroup = function (group) {
 			if (this.m_fixtureA.m_body._entity._group === group) {
-				return this.m_fixtureA.m_body._entity;
+				return this.igeEntityA();
 			}
 
 			if (this.m_fixtureB.m_body._entity._group === group) {
-				return this.m_fixtureB.m_body._entity;
+				return this.igeEntityB();
 			}
 		};
 
 		this.b2Contact.prototype.igeEntityById = function (id) {
 			if (this.m_fixtureA.m_body._entity._id === id) {
-				return this.m_fixtureA.m_body._entity;
+				return this.igeEntityA();
 			}
 
 			if (this.m_fixtureB.m_body._entity._id === id) {
-				return this.m_fixtureB.m_body._entity;
+				return this.igeEntityB();
+			}
+		};
+
+		this.b2Contact.prototype.igeEntityByFixtureId = function (id) {
+			if (this.m_fixtureA.igeId === id) {
+				return this.igeEntityA();
+			}
+
+			if (this.m_fixtureB.igeId === id) {
+				return this.igeEntityB();
 			}
 		};
 
 		this.b2Contact.prototype.igeOtherEntity = function (entity) {
 			if (this.m_fixtureA.m_body._entity === entity) {
-				return this.m_fixtureB.m_body._entity;
+				return this.igeEntityB();
 			} else {
-				return this.m_fixtureA.m_body._entity;
+				return this.igeEntityA();
 			}
 		};
 
@@ -196,6 +216,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			tempBod,
 			fixtureDef,
 			tempFixture,
+			finalFixture,
 			tempShape,
 			i,
 			finalX, finalY,
@@ -260,6 +281,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 							// Create the fixture
 							tempFixture = this.createFixture(fixtureDef);
+							tempFixture.igeId = fixtureDef.igeId;
 
 							// Check for a shape definition for the fixture
 							if (fixtureDef.shape) {
@@ -306,7 +328,8 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 								if (tempShape) {
 									tempFixture.shape = tempShape;
-									tempBod.CreateFixture(tempFixture);
+									finalFixture = tempBod.CreateFixture(tempFixture);
+									finalFixture.igeId = tempFixture.igeId;
 								}
 							}
 						}
