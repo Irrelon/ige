@@ -306,7 +306,10 @@ var IgeEngine = IgeEntity.extend({
 	 * @private
 	 */
 	_allTexturesLoaded: function () {
-		this.log('All textures have loaded');
+		if (!this._loggedATL) {
+			this._loggedATL = true;
+			this.log('All textures have loaded');
+		}
 
 		// Fire off an event about this
 		this.emit('texturesLoaded');
