@@ -133,6 +133,29 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	},
 
 	/**
+	 * Get / sets the entity that will be used to determine the
+	 * center point of the area to manage. This allows the
+	 * area to become dynamic based on this entity's position.
+	 * @param entity
+	 * @return {*}
+	 */
+	trackTranslate: function (entity) {
+		if (entity !== undefined) {
+			this._trackTranslateTarget = entity;
+			return this;
+		}
+
+		return this._trackTranslateTarget;
+	},
+
+	/**
+	 * Stops tracking the current tracking target's translation.
+	 */
+	unTrackTranslate: function () {
+		delete this._trackTranslateTarget;
+	},
+
+	/**
 	 * Gets / sets the center position of the management area.
 	 * @param {Number=} x
 	 * @param {Number=} y
@@ -182,7 +205,19 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 * @return {IgeRect}
 	 */
 	currentArea: function () {
-		this._areaCenter = ige.$('Cement')._renderCenter;
+		// Check if we are tracking an entity that is used to
+		// set the center point of the area
+		if (this._trackTranslateTarget) {
+			// Calculate which tile our character is currently "over"
+			if (this._trackTranslateTarget.isometric() === true) {
+				entTranslate = this._trackTranslateTarget._translate.toIso();
+			} else {
+				entTranslate = this._trackTranslateTarget._translate;
+			}
+
+			this.areaCenter(entTranslate.x, entTranslate.y);
+		}
+
 		var areaRect = this._areaRect,
 			areaCenter = this._areaCenter;
 
