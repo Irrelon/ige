@@ -417,8 +417,13 @@ var IgeEngine = IgeEntity.extend({
 		return this._autoSize;
 	},
 
-	pixelRatioScaling: function () {
+	pixelRatioScaling: function (val) {
+		if (typeof(val) !== 'undefined') {
+			this._pixelRatioScaling = val;
+			return this;
+		}
 
+		return this._pixelRatioScaling;
 	},
 
 	/**
