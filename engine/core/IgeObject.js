@@ -10,7 +10,6 @@ var IgeObject = IgeEventingClass.extend({
 		this._mountMode = 0;
 		this._parent = null;
 		this._children = [];
-		this._behaviours = [];
 		this._layer = 0;
 		this._depth = 0;
 		this._dirty = true;
@@ -98,6 +97,7 @@ var IgeObject = IgeEventingClass.extend({
 	addBehaviour: function (id, behaviour) {
 		if (typeof(id) === 'string') {
 			if (typeof(behaviour) === 'function') {
+				this._behaviours = this._behaviours || [];
 				this._behaviours.push({
 					id:id,
 					method: behaviour
@@ -123,13 +123,17 @@ var IgeObject = IgeEventingClass.extend({
 		if (id !== undefined) {
 			// Find the behaviour
 			var arr = this._behaviours,
+				arrCount;
+
+			if (arr) {
 				arrCount = arr.length;
 
-			while (arrCount--) {
-				if (arr[arrCount].id === id) {
-					// Remove the item from the array
-					arr.splice(arrCount, 1);
-					return this;
+				while (arrCount--) {
+					if (arr[arrCount].id === id) {
+						// Remove the item from the array
+						arr.splice(arrCount, 1);
+						return this;
+					}
 				}
 			}
 		}
@@ -377,15 +381,47 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Loops through all child objects of this object and destroys them
-	 * by calling each child's destroy() method.
+	 * by calling each child's destroy() method then deletes the reference
+	 * to the object's internale _children array.
 	 */
 	destroyChildren: function () {
 		var arr = this._children,
+			arrCount;
+
+		if (arr) {
 			arrCount = arr.length;
 
-		while (arrCount--) {
-			arr[arrCount].destroy();
+			while (arrCount--) {
+				arr[arrCount].destroy();
+			}
 		}
+
+		delete this._children;
+
+		return this;
+	},
+
+	destroyBehaviours: function () {
+		delete this._behaviours;
+	},
+
+	destroyComponents: function () {
+		var arr = this._components,
+			arrCount;
+
+		if (arr) {
+			arrCount = arr.length;
+
+			while (arrCount--) {
+				if (arr[arrCount].destroy) {
+					arr[arrCount].destroy();
+				}
+			}
+		}
+
+		delete this._components;
+
+		return this;
 	},
 
 	/**
@@ -658,13 +694,16 @@ var IgeObject = IgeEventingClass.extend({
 	_processBehaviours: function (ctx) {
 		if (ige._frameAlternator !== this._behaviourFA) {
 			var arr = this._behaviours,
+				arrCount;
+
+			if (arr) {
 				arrCount = arr.length;
+				while (arrCount--) {
+					arr[arrCount].method.apply(this, arguments);
+				}
 
-			while (arrCount--) {
-				arr[arrCount].method.apply(this, arguments);
+				this._behaviourFA = ige._frameAlternator;
 			}
-
-			this._behaviourFA = ige._frameAlternator;
 		}
 	},
 
@@ -697,12 +736,14 @@ var IgeObject = IgeEventingClass.extend({
 			this.destroyChildren();
 		}
 
+		// Remove any components
+		this.destroyComponents();
+
+		// Remove any behaviours
+		this.destroyBehaviours();
+
 		// Remove the object from the lookup system
 		ige.unRegister(this);
-
-		// Remove the children array severing any references
-		// to any child objects so that the GC can pick them up
-		delete this._children;
 
 		// Set a flag in case a reference to this object
 		// has been held somewhere, shows that the object

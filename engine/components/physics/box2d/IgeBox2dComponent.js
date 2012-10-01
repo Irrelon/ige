@@ -561,6 +561,14 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 				self._updateCallback();
 			}
 		}
+	},
+
+	destroy: function () {
+		// Stop processing box2d steps
+		ige.removeBehaviour('box2dStep');
+
+		// Destroy all box2d world bodies
+
 	}
 });
 

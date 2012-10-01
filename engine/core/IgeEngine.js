@@ -417,6 +417,10 @@ var IgeEngine = IgeEntity.extend({
 		return this._autoSize;
 	},
 
+	pixelRatioScaling: function () {
+
+	},
+
 	/**
 	 * Automatically creates a canvas element, appends it to the document.body
 	 * and sets it's 2d context as the current front-buffer for the engine.
@@ -428,6 +432,7 @@ var IgeEngine = IgeEntity.extend({
 	createFrontBuffer: function (autoSize, dontScale) {
 		if (!this.isServer) {
 			if (!this._canvas) {
+				this._createdFrontBuffer = true;
 				this._pixelRatioScaling = !dontScale;
 
 				// Create a new canvas element to use as the
@@ -503,6 +508,27 @@ var IgeEngine = IgeEntity.extend({
 			this._canvas.width,
 			this._canvas.height
 		);
+	},
+
+	removeCanvas: function () {
+		// Stop listening for input events
+		if (this.input) {
+			this.input._destroyListeners();
+		}
+
+		// If we were auto-sizing, remove event listener
+		if (this._autoSize) {
+			window.removeEventListener('resize', this._resizeEvent);
+		}
+
+		if (this._createdFrontBuffer) {
+			// Remove the canvas from the DOM
+			document.body.removeChild(this._canvas);
+		}
+
+		// Clear internal references
+		delete this._canvas;
+		delete this._ctx;
 	},
 
 	/**
@@ -744,14 +770,19 @@ var IgeEngine = IgeEntity.extend({
 
 		// Process the current engine tick for all child objects
 		var arr = this._children,
+			arrCount;
+
+		if (arr) {
 			arrCount = arr.length;
 
-		// Loop our viewports and call their tick methods
-		while (arrCount--) {
-			ctx.save();
+			// Loop our viewports and call their tick methods
+			while (arrCount--) {
+				ctx.save();
 				arr[arrCount].tick(ctx, scene);
-			ctx.restore();
+				ctx.restore();
+			}
 		}
+
 
 		ctx.restore();
 	},
@@ -867,6 +898,21 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		return item;
+	},
+
+	destroy: function () {
+		// Stop the engine and kill any timers
+		this.stop();
+
+		// Remove the front buffer (canvas) if we created it
+		if (!this.isServer) {
+			this.removeCanvas();
+		}
+
+		// Call class destroy() super method
+		this._super();
+
+		this.log('Engine destroy complete.');
 	}
 });
 
