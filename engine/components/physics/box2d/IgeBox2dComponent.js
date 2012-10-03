@@ -119,12 +119,16 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	},
 
 	useWorker: function (val) {
-		if (val !== undefined) {
-			this._useWorker = val;
-			return this._entity;
-		}
+		if (typeof(Worker) !== 'undefined') {
+			if (val !== undefined) {
+				this._useWorker = val;
+				return this._entity;
+			}
 
-		return this._useWorker;
+			return this._useWorker;
+		} else {
+			this.log('Web workers were not detected on this browser. Cannot access useWorker() method.', 'warning');
+		}
 	},
 
 	/**
