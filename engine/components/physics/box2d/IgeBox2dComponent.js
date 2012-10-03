@@ -118,6 +118,15 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		this.log('Physics component initiated!');
 	},
 
+	useWorker: function (val) {
+		if (val !== undefined) {
+			this._useWorker = val;
+			return this._entity;
+		}
+
+		return this._useWorker;
+	},
+
 	/**
 	 * Gets / sets if the world should allow sleep or not.
 	 * @param {Boolean=} val
@@ -483,6 +492,18 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		}
 
 		return this._updateCallback;
+	},
+
+	start: function () {
+		if (!this._active) {
+			this._active = true;
+		}
+	},
+
+	stop: function () {
+		if (this._active) {
+			this._active = false;
+		}
 	},
 
 	/**
