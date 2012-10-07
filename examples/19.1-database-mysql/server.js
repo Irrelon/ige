@@ -3,7 +3,8 @@ var Server = IgeClass.extend({
 	Server: true,
 
 	init: function (options) {
-		// Start the network server
+		// Add the mysql component to the engine and connect to the
+		// mysql server
 		ige.addComponent(IgeMySqlComponent, options.db).mysql.connect(function (err, db) {
 			// Check if we connected to mysql correctly
 			if (!err) {
@@ -15,6 +16,8 @@ var Server = IgeClass.extend({
 						console.log('Error', err);
 					}
 				});
+			} else {
+				console.log(err);
 			}
 		});
 	}
