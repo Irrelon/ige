@@ -302,9 +302,24 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		return this._renderAreaAutoSize;
 	},
 
+	/**
+	 * Gets / sets the center point that the render area will
+	 * be drawn around.
+	 * @param {Number=} x
+	 * @param {Number=} y
+	 * @return {*}
+	 */
 	renderCenter: function (x, y) {
 		if (x !== undefined && y !== undefined) {
+			// Adjust the passed x, y to account for this
+			// texture map's translation
+			x -= this._translate.x;
+			y -= this._translate.y;
+
+			// Check if anything has changed
 			if (!this._renderCenter || this._renderCenter.x !== x || this._renderCenter.y !== y) {
+				// Co-ordinates are different from previous so
+				// update them and set the cache as dirty
 				this._renderCenter = new IgePoint(x, y, 0);
 				this._cacheDirty = true;
 			}
