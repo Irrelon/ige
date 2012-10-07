@@ -313,8 +313,20 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		if (x !== undefined && y !== undefined) {
 			// Adjust the passed x, y to account for this
 			// texture map's translation
-			x -= this._translate.x;
-			y -= this._translate.y;
+			var offset;
+
+			if (this._mode === 0) {
+				// 2d mode
+				offset = this._translate;
+			}
+
+			if (this._mode === 1) {
+				// Iso mode
+				offset = this._translate.toIso();
+			}
+
+			x -= offset.x;
+			y -= offset.y;
 
 			// Check if anything has changed
 			if (!this._renderCenter || this._renderCenter.x !== x || this._renderCenter.y !== y) {

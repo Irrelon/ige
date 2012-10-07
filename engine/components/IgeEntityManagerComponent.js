@@ -164,10 +164,22 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	areaCenter: function (x, y) {
 		if (x !== undefined && y !== undefined) {
 			// Adjust the passed x, y to account for this
-			// map's translation
-			var centerOffset = this._entity._translate;
-			x -= centerOffset.x;
-			y -= centerOffset.y;
+			// texture map's translation
+			var ent = this._entity,
+				offset;
+
+			if (ent._mode === 0) {
+				// 2d mode
+				offset = ent._translate;
+			}
+
+			if (ent._mode === 1) {
+				// Iso mode
+				offset = ent._translate.toIso();
+			}
+
+			x -= offset.x;
+			y -= offset.y;
 
 			this._areaCenter = new IgePoint(x, y, 0);
 			return this._entity;
