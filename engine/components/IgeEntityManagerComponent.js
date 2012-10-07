@@ -163,6 +163,12 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 */
 	areaCenter: function (x, y) {
 		if (x !== undefined && y !== undefined) {
+			// Adjust the passed x, y to account for this
+			// map's translation
+			var centerOffset = this._entity._translate;
+			x -= centerOffset.x;
+			y -= centerOffset.y;
+
 			this._areaCenter = new IgePoint(x, y, 0);
 			return this._entity;
 		}
