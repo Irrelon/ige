@@ -461,52 +461,101 @@ var IgeObject = IgeEventingClass.extend({
 	depthSortChildren: function () {
 		// TODO: Optimise this method, it is not especially efficient at the moment!
 		var arr = this._children,
-			arrCount = arr.length,
+			arrCount,
 			sortObj,
 			i, j;
 
-		if (this._mountMode === 1) {
-			if (this._depthSortMode === 0) {
-				// Calculate depths from 3d bounds
-				sortObj = {
-					adj: [],
-					c: [],
-					p: [],
-					order: [],
-					order_ind: arrCount - 1
-				};
+		if (arr) {
+			arrCount = arr.length;
 
-				if (arrCount > 1) {
-					for (i = 0; i < arrCount; ++i) {
-						sortObj.c[i] = 0;
-						sortObj.p[i] = -1;
+			if (this._mountMode === 1) {
+				if (this._depthSortMode === 0) {
+					// Calculate depths from 3d bounds
+					sortObj = {
+						adj: [],
+						c: [],
+						p: [],
+						order: [],
+						order_ind: arrCount - 1
+					};
 
-						for (j = i + 1; j < arrCount; ++j) {
-							sortObj.adj[i] = sortObj.adj[i] || [];
-							sortObj.adj[j] = sortObj.adj[j] || [];
+					if (arrCount > 1) {
+						for (i = 0; i < arrCount; ++i) {
+							sortObj.c[i] = 0;
+							sortObj.p[i] = -1;
 
-							if (arr[i]._inView && arr[j]._inView && arr[i]._projectionOverlap && arr[j]._projectionOverlap) {
-								if (arr[i]._projectionOverlap(arr[j])) {
-									if (arr[i].isBehind(arr[j])) {
-										sortObj.adj[j].push(i);
-									} else {
-										sortObj.adj[i].push(j);
+							for (j = i + 1; j < arrCount; ++j) {
+								sortObj.adj[i] = sortObj.adj[i] || [];
+								sortObj.adj[j] = sortObj.adj[j] || [];
+
+								if (arr[i]._inView && arr[j]._inView && arr[i]._projectionOverlap && arr[j]._projectionOverlap) {
+									if (arr[i]._projectionOverlap(arr[j])) {
+										if (arr[i].isBehind(arr[j])) {
+											sortObj.adj[j].push(i);
+										} else {
+											sortObj.adj[i].push(j);
+										}
 									}
 								}
 							}
 						}
-					}
 
-					for (i = 0; i < arrCount; ++i) {
-						if (sortObj.c[i] === 0) {
-							this._depthSortVisit(i, sortObj);
+						for (i = 0; i < arrCount; ++i) {
+							if (sortObj.c[i] === 0) {
+								this._depthSortVisit(i, sortObj);
+							}
+						}
+
+						for (i = 0; i < sortObj.order.length; i++) {
+							arr[sortObj.order[i]].depth(i);
+						}
+
+						this._children.sort(function (a, b) {
+							var layerIndex = b._layer - a._layer;
+
+							if (layerIndex === 0) {
+								// On same layer so sort by depth
+								return b._depth - a._depth;
+							} else {
+								// Not on same layer so sort by layer
+								return layerIndex;
+							}
+						});
+					}
+				}
+
+				if (this._depthSortMode === 1) {
+					// Now sort the entities by depth
+					this._children.sort(function (a, b) {
+						var layerIndex = b._layer - a._layer;
+
+						if (layerIndex === 0) {
+							// On same layer so sort by depth
+							//if (a._projectionOverlap(b)) {
+								if (a.isBehind(b)) {
+									return -1;
+								} else {
+									return 1;
+								}
+							//}
+						} else {
+							// Not on same layer so sort by layer
+							return layerIndex;
+						}
+					});
+				}
+
+				if (this._depthSortMode === 2) {
+					while (arrCount--) {
+						sortObj = arr[arrCount];
+						j = sortObj._translate;
+
+						if (j) {
+							sortObj._depth = j.x + j.y + j.z;
 						}
 					}
 
-					for (i = 0; i < sortObj.order.length; i++) {
-						arr[sortObj.order[i]].depth(i);
-					}
-
+					// Now sort the entities by depth
 					this._children.sort(function (a, b) {
 						var layerIndex = b._layer - a._layer;
 
@@ -519,39 +568,7 @@ var IgeObject = IgeEventingClass.extend({
 						}
 					});
 				}
-			}
-
-			if (this._depthSortMode === 1) {
-				// Now sort the entities by depth
-				this._children.sort(function (a, b) {
-					var layerIndex = b._layer - a._layer;
-
-					if (layerIndex === 0) {
-						// On same layer so sort by depth
-						//if (a._projectionOverlap(b)) {
-							if (a.isBehind(b)) {
-								return -1;
-							} else {
-								return 1;
-							}
-						//}
-					} else {
-						// Not on same layer so sort by layer
-						return layerIndex;
-					}
-				});
-			}
-
-			if (this._depthSortMode === 2) {
-				while (arrCount--) {
-					sortObj = arr[arrCount];
-					j = sortObj._translate;
-
-					if (j) {
-						sortObj._depth = j.x + j.y + j.z;
-					}
-				}
-
+			} else {
 				// Now sort the entities by depth
 				this._children.sort(function (a, b) {
 					var layerIndex = b._layer - a._layer;
@@ -565,19 +582,6 @@ var IgeObject = IgeEventingClass.extend({
 					}
 				});
 			}
-		} else {
-			// Now sort the entities by depth
-			this._children.sort(function (a, b) {
-				var layerIndex = b._layer - a._layer;
-
-				if (layerIndex === 0) {
-					// On same layer so sort by depth
-					return b._depth - a._depth;
-				} else {
-					// Not on same layer so sort by layer
-					return layerIndex;
-				}
-			});
 		}
 	},
 
@@ -622,31 +626,38 @@ var IgeObject = IgeEventingClass.extend({
 	 * Processes the actions required each render frame.
 	 */
 	tick: function (ctx, scene) {
+		var arr = this._children,
+			arrCount,
+			arrIndex;
+
 		if (this._viewChecking) {
 			// Set the in-scene flag for each child based on
 			// the current viewport
 			this.viewCheckChildren();
 		}
 
-		// Depth sort all child objects
-		this.depthSortChildren();
+		if (arr) {
+			// Depth sort all child objects
+			this.depthSortChildren();
 
-		if (!scene) {
-			// Process the current engine tick for all child objects
-			var arr = this._children,
-				arrCount = arr.length;
+			if (!scene) {
+				// Process the current engine tick for all child objects
+				if (arr) {
+					arrCount = arr.length;
 
-			// Loop our children and call their tick methods
-			while (arrCount--) {
-				ctx.save();
-					arr[arrCount].tick(ctx);
-				ctx.restore();
-			}
-		} else {
-			// Get the index of the object to tick
-			var arrIndex = this._children.indexOf(scene);
-			if (arrIndex > -1) {
-				this._children[arrIndex].tick(ctx);
+					// Loop our children and call their tick methods
+					while (arrCount--) {
+						ctx.save();
+						arr[arrCount].tick(ctx);
+						ctx.restore();
+					}
+				}
+			} else {
+				// Get the index of the object to tick
+				arrIndex = this._children.indexOf(scene);
+				if (arrIndex > -1) {
+					this._children[arrIndex].tick(ctx);
+				}
 			}
 		}
 	},
@@ -680,11 +691,17 @@ var IgeObject = IgeEventingClass.extend({
 	 */
 	_resizeEvent: function (event) {
 		var arr = this._children,
+			arrCount;
+
+		if (arr) {
 			arrCount = arr.length;
 
-		while (arrCount--) {
-			arr[arrCount]._resizeEvent(event);
+			while (arrCount--) {
+				arr[arrCount]._resizeEvent(event);
+			}
 		}
+
+
 	},
 
 	/**
