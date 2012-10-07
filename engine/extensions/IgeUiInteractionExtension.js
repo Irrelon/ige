@@ -16,6 +16,14 @@ var IgeUiInteractionExtension = {
 	},
 
 	/**
+	 * Removes the callback that is fired when a mouse
+	 * move event is triggered.
+	 */
+	mouseMoveOff: function () {
+		delete this._mouseMove;
+	},
+
+	/**
 	 * Gets / sets the callback that is fired when a mouse
 	 * over event is triggered.
 	 * @param {Function=} callback
@@ -29,6 +37,14 @@ var IgeUiInteractionExtension = {
 		}
 
 		return this._mouseOver;
+	},
+
+	/**
+	 * Removes the callback that is fired when a mouse
+	 * over event is triggered.
+	 */
+	mouseOverOff: function () {
+		delete this._mouseOver;
 	},
 
 	/**
@@ -48,6 +64,14 @@ var IgeUiInteractionExtension = {
 	},
 
 	/**
+	 * Removes the callback that is fired when a mouse
+	 * out event is triggered.
+	 */
+	mouseOutOff: function () {
+		delete this._mouseOut;
+	},
+
+	/**
 	 * Gets / sets the callback that is fired when a mouse
 	 * up event is triggered.
 	 * @param {Function=} callback
@@ -64,6 +88,14 @@ var IgeUiInteractionExtension = {
 	},
 
 	/**
+	 * Removes the callback that is fired when a mouse
+	 * up event is triggered.
+	 */
+	mouseUpOff: function () {
+		delete this._mouseUp;
+	},
+
+	/**
 	 * Gets / sets the callback that is fired when a mouse
 	 * down event is triggered.
 	 * @param {Function=} callback
@@ -77,6 +109,14 @@ var IgeUiInteractionExtension = {
 		}
 
 		return this._mouseDown;
+	},
+
+	/**
+	 * Removes the callback that is fired when a mouse
+	 * down event is triggered.
+	 */
+	mouseDownOff: function () {
+		delete this._mouseDown;
 	},
 
 	/**
