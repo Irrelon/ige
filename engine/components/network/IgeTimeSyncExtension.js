@@ -64,7 +64,7 @@ var IgeTimeSyncExtension = {
 			localTime = new Date().getTime();
 			sendTime = parseInt(data, 10);
 
-			this.log('Time sync, server->client transit time: ' + (localTime - sendTime) + 'ms, send timestamp: ' + sendTime + ', local timestamp: ' + localTime);
+			//this.log('Time sync, server->client transit time: ' + (localTime - sendTime) + 'ms, send timestamp: ' + sendTime + ', local timestamp: ' + localTime);
 
 			// Send a response with out current clock time to the server
 			this._sendTimeSync([data, localTime]);
@@ -74,7 +74,7 @@ var IgeTimeSyncExtension = {
 			sendTime = parseInt(data[1], 10);
 			roundTrip = (localTime - parseInt(data[0], 10));
 
-			this.log('Time sync, client->server transit time: ' + (localTime - sendTime) + 'ms, roundtrip: ' + roundTrip + 'ms, send timestamp: ' + parseInt(data[0], 10) + ', local timestamp: ' + localTime);
+			//this.log('Time sync, client->server transit time: ' + (localTime - sendTime) + 'ms, roundtrip: ' + roundTrip + 'ms, send timestamp: ' + parseInt(data[0], 10) + ', local timestamp: ' + localTime);
 
 			this._timeSyncLog[clientId] = data;
 
