@@ -29,7 +29,7 @@ window.igeLoader = (function () {
 				self.clientConfigReady();
 			};
 			ccScript.addEventListener('error', function () {
-				throw('ERROR LOADING clientConfig.js - does it exist?');
+				throw('ERROR LOADING ClientConfig.js - does it exist?');
 			}, true);
 
 			document.getElementsByTagName('head')[0].appendChild(ccScript);
