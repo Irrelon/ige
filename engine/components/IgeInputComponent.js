@@ -177,6 +177,51 @@ var IgeInputComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Sets igeX and igeY properties in the event object that
+	 * can be relied on to provide the x, y co-ordinates of the
+	 * mouse event including the canvas offset.
+	 * @param {Event} event The event object.
+	 * @private
+	 */
+	_rationalise: function (event, touch) {
+		// Check if we want to prevent default behaviour
+		if (event.igeType === 'key') {
+			if (event.keyCode === 8) { // Backspace
+				// Check if the event occurred on the body
+				var elem = event.srcElement || event.target;
+
+				if (elem.tagName.toLowerCase() === 'body') {
+					// The event occurred on our body element so prevent
+					// default behaviour. This allows other elements on
+					// the page to retain focus such as text boxes etc
+					// and allows them to behave normally.
+					event.preventDefault();
+				}
+			}
+		}
+
+		if (event.igeType === 'touch') {
+			event.preventDefault();
+		}
+
+		if (touch) {
+			event.button = 0; // Emulate left mouse button
+
+			// Handle touch changed
+			if (event.changedTouches && event.changedTouches.length) {
+				event.igePageX = event.changedTouches[0].pageX;
+				event.igePageY = event.changedTouches[0].pageY;
+			}
+		} else {
+			event.igePageX = event.pageX;
+			event.igePageY = event.pageY;
+		}
+
+		event.igeX = (event.igePageX - ige._canvas.offsetLeft);
+		event.igeY = (event.igePageY - ige._canvas.offsetTop);
+	},
+
+	/**
 	 * Sets up the event listeners on the main window and front
 	 * buffer DOM objects.
 	 * @private
@@ -190,19 +235,19 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		// Define event functions and keep references for later removal
 		this._evRef = {
-			'mousedown': function (event) { self._rationalise(event); self._mouseDown(event); },
-			'mouseup': function (event) { self._rationalise(event); self._mouseUp(event); },
-			'mousemove': function (event) { self._rationalise(event); self._mouseMove(event); },
-			'mousewheel': function (event) { self._rationalise(event); self._mouseWheel(event); },
+			'mousedown': function (event) { event.igeType = 'mouse'; self._rationalise(event); self._mouseDown(event); },
+			'mouseup': function (event) { event.igeType = 'mouse'; self._rationalise(event); self._mouseUp(event); },
+			'mousemove': function (event) { event.igeType = 'mouse'; self._rationalise(event); self._mouseMove(event); },
+			'mousewheel': function (event) { event.igeType = 'mouse'; self._rationalise(event); self._mouseWheel(event); },
 
-			'touchmove': function (event) { event.preventDefault(); self._rationalise(event, true); self._mouseMove(event); },
-			'touchstart': function (event) { event.preventDefault(); self._rationalise(event, true); self._mouseDown(event); },
-			'touchend': function (event) { event.preventDefault(); self._rationalise(event, true); self._mouseUp(event); },
+			'touchmove': function (event) { event.igeType = 'touch'; self._rationalise(event, true); self._mouseMove(event); },
+			'touchstart': function (event) { event.igeType = 'touch'; self._rationalise(event, true); self._mouseDown(event); },
+			'touchend': function (event) { event.igeType = 'touch'; self._rationalise(event, true); self._mouseUp(event); },
 
 			'contextmenu': function (event) { event.preventDefault(); },
 
-			'keydown': function (event) { self._rationalise(event); self._keyDown(event); },
-			'keyup': function (event) { self._rationalise(event); self._keyUp(event); }
+			'keydown': function (event) { event.igeType = 'key'; self._rationalise(event); self._keyDown(event); },
+			'keyup': function (event) { event.igeType = 'key'; self._rationalise(event); self._keyUp(event); }
 		};
 
 		// Listen for mouse events
@@ -247,31 +292,6 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Listen for keyboard events
 		window.removeEventListener('keydown', this._evRef.keydown, false);
 		window.removeEventListener('keyup', this._evRef.keyup, false);
-	},
-
-	/**
-	 * Sets igeX and igeY properties in the event object that
-	 * can be relied on to provide the x, y co-ordinates of the
-	 * mouse event including the canvas offset.
-	 * @param {Event} event The event object.
-	 * @private
-	 */
-	_rationalise: function (event, touch) {
-		if (touch) {
-			event.button = 0; // Emulate left mouse button
-
-			// Handle touch changed
-			if (event.changedTouches && event.changedTouches.length) {
-				event.igePageX = event.changedTouches[0].pageX;
-				event.igePageY = event.changedTouches[0].pageY;
-			}
-		} else {
-			event.igePageX = event.pageX;
-			event.igePageY = event.pageY;
-		}
-
-		event.igeX = (event.igePageX - ige._canvas.offsetLeft);
-		event.igeY = (event.igePageY - ige._canvas.offsetTop);
 	},
 
 	/**
