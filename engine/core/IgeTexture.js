@@ -101,7 +101,7 @@ var IgeTexture = IgeEventingClass.extend({
 
 		if (!ige.isServer) {
 			// Increment the texture load count
-			ige.textureLoadStart();
+			ige.textureLoadStart(imageUrl, this);
 
 			if (!ige._textureImageStore[imageUrl]) {
 				// Create the image object
@@ -177,7 +177,7 @@ var IgeTexture = IgeEventingClass.extend({
 		}
 		/* CEXCLUDE */
 		if (ige.isServer) {
-			ige.textureLoadStart();
+			ige.textureLoadStart(imageUrl, this);
 
 			// Load the asset and get it's details
 			this.imageMagic.info(imageUrl, function(err, data){
@@ -215,7 +215,7 @@ var IgeTexture = IgeEventingClass.extend({
 			self = this,
 			scriptElem;
 
-		ige.textureLoadStart(scriptUrl);
+		ige.textureLoadStart(scriptUrl, this);
 
 		if (!ige.isServer) {
 			scriptElem = document.createElement('script');

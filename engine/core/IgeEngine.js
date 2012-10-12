@@ -250,10 +250,10 @@ var IgeEngine = IgeEntity.extend({
 	/**
 	 * Adds one to the number of textures currently loading.
 	 */
-	textureLoadStart: function () {
+	textureLoadStart: function (url, textureObj) {
 		this._texturesLoading++;
 		this._texturesTotal++;
-		this.emit('textureLoadStart');
+		this.emit('textureLoadStart', textureObj);
 	},
 
 	/**
@@ -266,7 +266,7 @@ var IgeEngine = IgeEntity.extend({
 
 		// Decrement the overall loading number
 		this._texturesLoading--;
-		this.emit('textureLoadEnd');
+		this.emit('textureLoadEnd', textureObj);
 
 		// If we've finished...
 		if (this._texturesLoading === 0) {
