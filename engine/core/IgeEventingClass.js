@@ -14,7 +14,8 @@ var IgeEventingClass = IgeClass.extend({
 	 * @return {Object}
 	 */
 	on: function (eventName, call, context, oneShot, sendEventName) {
-		var newListener,
+		var self = this,
+			newListener,
 			addListener,
 			existingIndex,
 			elArr,
@@ -22,9 +23,7 @@ var IgeEventingClass = IgeClass.extend({
 			eventIndex,
 			eventData,
 			eventObj,
-			eventNameArray,
-			singleEventIndex,
-			singleEventName,
+			multiEventName,
 			i;
 
 		// Check that we have an event listener object
@@ -61,41 +60,34 @@ var IgeEventingClass = IgeClass.extend({
 				// The eventName is an array of names, creating a group of events
 				// that must be fired to fire this event callback
 				if (eventName.length) {
+					debugger;
 					// Loop the event array
 					multiEvent = [];
 					multiEvent[0] = 0; // This will hold our event count total
 					multiEvent[1] = 0; // This will hold our number of events fired
-					multiEvent[2] = []; // This will hold the list of already-fired event names
 
 					// Define the multi event callback
-					multiEvent[3] = this.bind(function (firedEventName) {
-						if (multiEvent[2].indexOf(firedEventName) === -1) {
-							multiEvent[2].push(firedEventName);
-							multiEvent[1]++;
+					multiEvent[3] = function (firedEventName) {
+						multiEvent[1]++;
 
-							if (multiEvent[0] === multiEvent[1]) {
-								call.apply(context || this);
-							}
+						if (multiEvent[0] === multiEvent[1]) {
+							// All the multi-event events have fired
+							// so fire the callback
+							call.apply(context || self);
 						}
-					});
+					};
 
 					for (eventIndex in eventName) {
 						if (eventName.hasOwnProperty(eventIndex)) {
 							eventData = eventName[eventIndex];
 							eventObj = eventData[0];
-							eventNameArray = eventData[1];
+							multiEventName = eventData[1];
 
-							multiEvent[0] += eventNameArray.length;
+							// Increment the event listening count total
+							multiEvent[0]++;
 
-							for (singleEventIndex in eventNameArray) {
-								if (eventNameArray.hasOwnProperty(singleEventIndex)) {
-									// Get the event name
-									singleEventName = eventNameArray[singleEventIndex];
-
-									// Register each event against the event object with a callback
-									eventObj.on(singleEventName, multiEvent[3], null, true, true);
-								}
-							}
+							// Register each event against the event object with a callback
+							eventObj.on(multiEventName, multiEvent[3], null, true, true);
 						}
 					}
 				}
