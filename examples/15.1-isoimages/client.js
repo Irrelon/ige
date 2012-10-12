@@ -34,8 +34,8 @@ var Client = IgeClass.extend({
 	},
 
 	loadTextures: function () {
-		this.gameTexture.background1 = new IgeTexture('../assets/textures/backgrounds/resortico.png');
-		this.gameTexture.bank = new IgeTexture('../assets/textures/buildings/bank1.png');
+		this.gameTexture.background1 = new IgeTexture();
+		this.gameTexture.bank = new IgeTexture();
 		this.gameTexture.electricals = new IgeTexture('../assets/textures/buildings/electricalsShop1.png');
 		this.gameTexture.burgers = new IgeTexture('../assets/textures/buildings/burgerShop1.png');
 		this.gameTexture.base_se = new IgeTexture('../assets/textures/buildings/base_se.png');
@@ -58,6 +58,17 @@ var Client = IgeClass.extend({
 		this.gameTexture.crane_sw = new IgeTexture('../assets/textures/buildings/crane_sw.png');
 		this.gameTexture.crane_ne = new IgeTexture('../assets/textures/buildings/crane_ne.png');
 		this.gameTexture.crane_nw = new IgeTexture('../assets/textures/buildings/crane_nw.png');
+
+		// Test multi-event listening
+		ige.on([
+			[this.gameTexture.background1, 'loaded'],
+			[this.gameTexture.bank, 'loaded']
+		], function () {
+			console.log('All loaded');
+		});
+
+		this.gameTexture.background1.url('../assets/textures/backgrounds/resortico.png');
+		this.gameTexture.bank.url('../assets/textures/buildings/bank1.png');
 	},
 
 	setupScene: function () {
