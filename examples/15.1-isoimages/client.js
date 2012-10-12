@@ -70,7 +70,9 @@ var Client = IgeClass.extend({
 		this.vp1 = new IgeViewport()
 			.id('vp1')
 			.addComponent(IgeMousePanComponent)
-			.mousePan.enabled(true)
+			.addComponent(IgeMouseZoomComponent)
+			.mousePan.enabled(false)
+			.mouseZoom.enabled(true)
 			.autoSize(true)
 			.scene(this.scene1)
 			.drawBounds(true)
@@ -105,7 +107,7 @@ var Client = IgeClass.extend({
 
 	setupEntities: function () {
 		// Create an entity
-		this.obj[0] = new this.Bank(this.tileMap1, 10, 10);
+		this.obj[0] = new this.Bank(this.tileMap1, 10, 10).id('bank');
 		this.obj[1] = new this.Electricals(this.tileMap1, 2, 6);
 		this.obj[2] = new this.Burgers(this.tileMap1, 5, 6);
 		this.obj[3] = new this.SkyScraper(this.tileMap1, 15, 10).addFloors(5).addCrane('nw');
