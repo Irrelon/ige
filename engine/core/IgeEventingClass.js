@@ -60,7 +60,6 @@ var IgeEventingClass = IgeClass.extend({
 				// The eventName is an array of names, creating a group of events
 				// that must be fired to fire this event callback
 				if (eventName.length) {
-					debugger;
 					// Loop the event array
 					multiEvent = [];
 					multiEvent[0] = 0; // This will hold our event count total
