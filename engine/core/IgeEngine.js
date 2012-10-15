@@ -805,7 +805,7 @@ var IgeEngine = IgeEntity.extend({
 
 		var depthSpace = '', di;
 		for (di = 0; di < currentDepth; di++) {
-			depthSpace += '    ';
+			depthSpace += '----';
 		}
 
 		console.log(depthSpace + obj.id() + ' (' + obj._classId + ') : ' + obj._inView);
@@ -823,7 +823,7 @@ var IgeEngine = IgeEntity.extend({
 				// Loop our children
 				while (arrCount--) {
 					if (arr[arrCount]._scene._shouldRender) {
-						console.log(depthSpace + '    ' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView);
+						console.log(depthSpace + '----' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView);
 						this.sceneGraph(arr[arrCount]._scene, currentDepth + 1);
 					}
 				}
