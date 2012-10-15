@@ -286,7 +286,7 @@ var IgeTileMap2d = IgeEntity.extend({
 	/**
 	 * Returns the tile co-ordinates of the tile that the point's world
 	 * co-ordinates reside inside.
-	 * @param point
+	 * @param {IgePoint=} point
 	 * @return {*}
 	 */
 	pointToTile: function (point) {
