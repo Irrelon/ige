@@ -375,7 +375,7 @@ var IgeTexture = IgeEventingClass.extend({
 
 			if (this._preFilter && this._textureCtx) {
 				// Call the preFilter method
-				this._preFilter(this._textureCanvas, this._textureCtx, this._originalImage, this);
+				this._preFilter(this._textureCanvas, this._textureCtx, this._originalImage, this, this._preFilterData);
 			}
 
 			ctx.drawImage(
@@ -410,7 +410,7 @@ var IgeTexture = IgeEventingClass.extend({
 	 * @param method
 	 * @return {*}
 	 */
-	preFilter: function (method) {
+	preFilter: function (method, data) {
 		if (method !== undefined) {
 			if (this._originalImage) {
 				if (!this._textureCtx) {
@@ -427,6 +427,7 @@ var IgeTexture = IgeEventingClass.extend({
 
 				// Store the pre-filter method
 				this._preFilter = method;
+				this._preFilterData = data;
 			}
 			return this;
 		} else {
@@ -442,9 +443,10 @@ var IgeTexture = IgeEventingClass.extend({
 	 * use context calls to alter / paint the context with the texture
 	 * and any filter / adjustments that you want to apply.
 	 * @param {Function} method
+	 * @param {Object=} data
 	 * @return {*}
 	 */
-	applyFilter: function (method) {
+	applyFilter: function (method, data) {
 		if (method !== undefined) {
 			if (this._originalImage) {
 				if (!this._textureCtx) {
@@ -460,7 +462,7 @@ var IgeTexture = IgeEventingClass.extend({
 				this.image = this._textureCanvas;
 
 				// Call the passed method
-				method(this._textureCanvas, this._textureCtx, this._originalImage, this);
+				method(this._textureCanvas, this._textureCtx, this._originalImage, this, data);
 			}
 		} else {
 			this.log('Cannot apply filter, no filter method was passed!', 'warning');
