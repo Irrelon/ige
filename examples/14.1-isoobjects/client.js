@@ -1,6 +1,8 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
+		ige.showStats(1);
+
 		// Load our textures
 		var self = this,
 			gameTexture = [],
