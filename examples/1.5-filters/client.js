@@ -131,12 +131,10 @@ var Client = IgeClass.extend({
 					gameTexture[1].applyFilter(IgeFilters.greyScale);
 
 					// Apply a brighten filter to the second fairy texture
-					gameTexture[2].data('IgeFilters.brighten.value', 100);
-					gameTexture[2].applyFilter(IgeFilters.brighten);
+					gameTexture[2].applyFilter(IgeFilters.brighten, {value: 100});
 
 					// Apply a threshold filter to the third fairy texture
-					gameTexture[3].data('IgeFilters.threshold.value', 128);
-					gameTexture[3].applyFilter(IgeFilters.threshold);
+					gameTexture[3].applyFilter(IgeFilters.threshold, {value: 128});
 
 					// Apply a sharpen filter to the fourth fairy texture
 					gameTexture[4].applyFilter(IgeFilters.sharpen);
