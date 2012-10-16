@@ -217,7 +217,7 @@ var IgeUiPositionExtension = {
 				this._translate.x = parentGeom.x2 - geom.x2 - this._uiX;
 			} else if (this._uiXAlign === 'center') {
 				this._translate.x = this._uiX;
-			} else {
+			} else if (this._uiXAlign === 'right') {
 				this._translate.x = this._uiX + geom.x2 - (parentGeom.x2);
 			}
 
@@ -225,7 +225,7 @@ var IgeUiPositionExtension = {
 				this._translate.y = parentGeom.y2 - geom.y2 - this._uiY;
 			} else if (this._uiYAlign === 'middle') {
 				this._translate.y = this._uiY;
-			} else {
+			} else if (this._uiYAlign === 'top') {
 				this._translate.y = this._uiY + geom.y2 - (parentGeom.y2);
 			}
 
