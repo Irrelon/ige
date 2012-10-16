@@ -174,6 +174,65 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
+	 * Gets / sets the stats output mode that is in use. Set to 1 to
+	 * display default stats output at the lower-left of the HTML page.
+	 * @param {Number=} val
+	 */
+	showStats: function (val) {
+		if (val !== undefined) {
+			switch (val) {
+				case 0:
+					this._removeStatsDiv();
+					break;
+
+				case 1:
+					this._createStatsDiv();
+					break;
+			}
+
+			this._showStats = val;
+			return this;
+		}
+
+		return this._showStats;
+	},
+
+	/**
+	 * Creates the stats output div on the DOM.
+	 * @private
+	 */
+	_createStatsDiv: function () {
+		if (!document.getElementById('igeStats')) {
+			// Create the stats div
+			var div = document.createElement('div');
+			div.style.fontFamily = 'Verdana, Tahoma';
+			div.style.fontSize = "12px";
+			div.style.position = 'absolute';
+			div.style.color = '#ffffff';
+			div.style.textShadow = '1px 1px 3px #000000';
+			div.style.bottom = '10px';
+			div.style.left = '10px';
+			div.style.userSelect = 'none';
+			div.style.zIndex = 100000;
+			div.innerHTML = 'Please wait...';
+
+			// Add div to body
+			document.body.appendChild(div);
+
+			this._statsDiv = div;
+		}
+	},
+
+	/**
+	 * Removes the stats output div from the DOM.
+	 * @private
+	 */
+	_removeStatsDiv: function () {
+		document.body.removeChild(this._statsDiv);
+		delete this._statsDiv;
+	},
+
+	/**
 	 * Defines a class in the engine's class repository.
 	 * @param {String} id The unique class ID or name.
 	 * @param {Object} obj The class definition.
@@ -686,70 +745,82 @@ var IgeEngine = IgeEntity.extend({
 	 * @private
 	 */
 	_secondTick: function () {
+		var self = ige;
+
 		// Store frames per second
-		ige._fps = ige._frames;
+		self._fps = self._frames;
 
 		// Store draws per second
-		ige._dps = ige._dpt * ige._fps;
+		self._dps = self._dpt * self._fps;
 
 		// Zero out counters
-		ige._frames = 0;
-		ige._drawCount = 0;
+		self._frames = 0;
+		self._drawCount = 0;
+
+		// Check if the stats output is enabled
+		if (self._showStats) {
+			switch (self._showStats) {
+				case 1:
+					self._statsDiv.innerHTML = self._fps + 'fps ' + self._dps + 'dps ' + self._dpt + 'dpt';
+					break;
+			}
+		}
 	},
 
 	/**
 	 * Called each frame to traverse and render the scenegraph.
 	 */
 	tick: function (timeStamp, ctx) {
-		if (ige._state) {
+		var self = ige;
+		if (self._state) {
 			// Check if we were passed a context to work with
 			if (ctx === undefined) {
-				ctx = ige._ctx;
+				ctx = self._ctx;
 			}
 
 			// Schedule a new frame
-			requestAnimFrame(ige.tick);
+			requestAnimFrame(self.tick);
 
 			// Alternate the boolean frame alternator flag
-			ige._frameAlternator = !ige._frameAlternator;
+			self._frameAlternator = !self._frameAlternator;
 
 			// Get the current time in milliseconds
-			ige.tickStart = timeStamp;
+			self.tickStart = timeStamp;
 
 			// Adjust the tickStart value by the difference between
 			// the server and the client clocks (this is only applied
 			// when running as the client - the server always has a
 			// clientNetDiff of zero)
-			ige.tickStart -= ige._clientNetDiff;
+			self.tickStart -= self._clientNetDiff;
 
-			if (!ige.lastTick) {
+			if (!self.lastTick) {
 				// This is the first time we've run so set some
 				// default values and set the delta to zero
-				ige.lastTick = 0;
-				ige.tickDelta = 0;
+				self.lastTick = 0;
+				self.tickDelta = 0;
 			} else {
 				// Calculate the frame delta
-				ige.tickDelta = ige.tickStart - ige.lastTick;
+				self.tickDelta = self.tickStart - self.lastTick;
 			}
 
 			// Process any behaviours assigned to the engine
-			ige._processBehaviours(ctx);
+			self._processBehaviours(ctx);
 
 			// Render the scenegraph
-			ige.render(ctx);
+			self.render(ctx);
 
 			// Record the lastTick value so we can
 			// calculate delta on the next tick
-			ige.lastTick = ige.tickStart;
-			ige._frames++;
-			ige._dpt = ige._drawCount;
-			ige._drawCount = 0;
+			self.lastTick = self.tickStart;
+			self._frames++;
+			self._dpt = self._drawCount;
+			self._drawCount = 0;
 
 			// Call the input system tick to reset any flags etc
-			ige.input.tick();
+			self.input.tick();
 		}
 
-		ige._resized = false;
+		self._resized = false;
 	},
 
 	fps: function () {
