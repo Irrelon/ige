@@ -217,7 +217,7 @@ var IgeUiPositionExtension = {
 				this._translate.x = Math.floor(parentGeom.x2 - geom.x2 - this._uiX);
 			} else if (this._uiXAlign === 'center') {
 				this._translate.x = Math.floor(this._uiX);
-			} else if (this._uiXAlign === 'right') {
+			} else if (this._uiXAlign === 'left') {
 				this._translate.x = Math.floor(this._uiX + geom.x2 - (parentGeom.x2));
 			}
 
