@@ -213,8 +213,8 @@ var IgeFontSheet = IgeTexture.extend({
 						0, // texture y
 						this._cacheCanvas[cacheIndex].width, // texture width
 						this._cacheCanvas[cacheIndex].height, // texture height
-						renderStartX, // render x TODO: Performance - Cache these?
-						renderStartY, // render y
+						Math.floor(renderStartX), // render x TODO: Performance - Cache these?
+						Math.floor(renderStartY), // render y
 						this._cacheCanvas[cacheIndex].width, // render width
 						this._cacheCanvas[cacheIndex].height // render height
 					);
@@ -312,8 +312,8 @@ var IgeFontSheet = IgeTexture.extend({
 						2, // texture y
 						pixelWidthMap[charIndex], // texture width
 						this._sizeY - 2, // texture height
-						masterX + renderX, // render x TODO: Performance - Cache these?
-						masterY + renderStartY + renderY, // render y
+						Math.floor(masterX + renderX), // render x TODO: Performance - Cache these?
+						Math.floor(masterY + renderStartY + renderY), // render y
 						pixelWidthMap[charIndex], // render width
 						(this._sizeY - 2) // render height
 					);
