@@ -16,6 +16,7 @@ var Client = IgeClass.extend({
 		gameTexture[5] = new IgeTexture('../assets/textures/sprites/fairy.png');
 		gameTexture[6] = new IgeTexture('../assets/textures/sprites/fairy.png');
 		gameTexture[7] = new IgeTexture('../assets/textures/sprites/fairy.png');
+		gameTexture[8] = new IgeTexture('../assets/textures/sprites/fairy.png');
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -115,6 +116,15 @@ var Client = IgeClass.extend({
 						.translateTo(-150, 150, 0)
 						.mount(self.scene1);
 
+					self.obj[8] = new Rotator()
+						.id('fairy8')
+						.depth(1)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[8])
+						.translateTo(0, 150, 0)
+						.mount(self.scene1);
+
 					// Apply a greyscale filter to JUST the first fairy texture
 					gameTexture[1].applyFilter(IgeFilters.greyScale);
 
@@ -132,11 +142,14 @@ var Client = IgeClass.extend({
 					// Apply a blur filter to the fifth fairy texture
 					gameTexture[5].applyFilter(IgeFilters.blur);
 
-					// Apply an emboss filter to the fifth fairy texture
+					// Apply an emboss filter to the sixth fairy texture
 					gameTexture[6].applyFilter(IgeFilters.emboss);
 
-					// Apply an emboss filter to the fifth fairy texture
+					// Apply an emboss filter to the seventh fairy texture
 					gameTexture[7].applyFilter(IgeFilters.edgeDetect);
+
+					// Apply a colour overlay filter to the eighth fairy texture
+					gameTexture[8].applyFilter(IgeFilters.colorOverlay, {color: 'rgba(255, 0, 0, 0.5)'});
 				}
 			});
 		});
