@@ -413,6 +413,9 @@ var IgeParticleEmitter = IgeEntity.extend({
 					//vectorAngle,
 					//vectorPower,
 					velocityVector,
+					newVecX, newVecY,
+					rotX, rotY,
+					cosRot, sinRot,
 					scaleX,
 					scaleY,
 					scaleZ,
@@ -467,6 +470,19 @@ var IgeParticleEmitter = IgeEntity.extend({
 
 							// Generate the particle's initial vector angle and power
 							velocityVector = this.vectorFromBaseMinMax(this._velocityVector);
+
+							// Rotate the vector's point to match the current emitter rotation
+							rotX = velocityVector.x;
+							rotY = velocityVector.y;
+							cosRot = Math.cos(this._rotate.z);
+							sinRot = Math.sin(this._rotate.z);
+							newVecX = rotX * cosRot - rotY * sinRot;
+							newVecY = rotY * cosRot + rotX * sinRot;
+
+							// Assign the rotated vector back again
+							velocityVector.x = newVecX;
+							velocityVector.y = newVecY;
+
 							//vectorAngle = this.baseAndVarianceValue(this._vectorAngleBase, this._vectorAngleVariance, true);
 							//vectorPower = this.baseAndVarianceValue(this._vectorPowerBase, this._vectorPowerVariance, false);
 
@@ -489,6 +505,19 @@ var IgeParticleEmitter = IgeEntity.extend({
 
 							// Generate the particle's linear force vector angle and power
 							linearForceVector = this.vectorFromBaseMinMax(this._linearForceVector);
+
+							// Rotate the vector's point to match the current emitter rotation
+							rotX = linearForceVector.x;
+							rotY = linearForceVector.y;
+							cosRot = Math.cos(this._rotate.z);
+							sinRot = Math.sin(this._rotate.z);
+							newVecX = rotX * cosRot - rotY * sinRot;
+							newVecY = rotY * cosRot + rotX * sinRot;
+
+							// Assign the rotated vector back again
+							linearForceVector.x = newVecX;
+							linearForceVector.y = newVecY;
+
 							//linearForceAngle = this.baseAndVarianceValue(this._linearForceAngleBase, this._linearForceAngleVariance);
 							//linearForcePower = this.baseAndVarianceValue(this._linearForcePowerBase, this._linearForcePowerVariance, false);
 
@@ -552,9 +581,6 @@ var IgeParticleEmitter = IgeEntity.extend({
 							deathScaleX *= this._scale.x;
 							deathScaleY *= this._scale.y;
 							deathScaleZ *= this._scale.z;
-
-							// TODO: Is this adding degrees to radians? Check and fix.
-							rotate += this._rotate.z;
 
 							// Apply all the transforms (don't do this in the initial
 							// entity definition because some components may already
