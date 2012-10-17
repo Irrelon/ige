@@ -208,7 +208,7 @@ printStackTrace.implementation.prototype = {
     sourceCache: {},
 
     /**
-     * @return the text from a given URL.
+     * @return {*} the text from a given URL.
      */
     ajax: function(url) {
         var req = this.createXMLHTTPObject();
