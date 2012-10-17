@@ -4,4 +4,4 @@ for convenience and to ensure versioning compatibility. The original files were 
 
 http://www.visitmix.com/labs/ai2canvas/
 
-The copyright and ownership of the ai2canvas plugin is held at the above URL.
+The copyright and ownership of the ai2canvas plugin is held at the above URL which I believe to be a Microsoft property.
