@@ -7,14 +7,14 @@ modulePath = '../server/node_modules/';
 // Load the CoreConfig.js file
 igeCoreConfig = require('../engine/CoreConfig.js');
 
-// Loop the igeCoreConfig object's include array
-// and load the required files
 var arr = igeCoreConfig.include,
 	arrCount = arr.length,
 	arrIndex,
 	arrItem,
 	itemJs;
 
+// Loop the igeCoreConfig object's include array
+// and load the required files
 for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
 	arrItem = arr[arrIndex];
 	if (arrItem[0] === 's' || arrItem[0] === 'cs') {
