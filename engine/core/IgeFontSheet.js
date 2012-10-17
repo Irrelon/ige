@@ -113,7 +113,7 @@ var IgeFontSheet = IgeTexture.extend({
 		}
 	},
 
-	render: function (ctx, entity, tickDelta) {
+	render: function (ctx, entity) {
 		if (entity._text && this._loaded) {
 			var _ctx = ctx,
 				cacheIndex,
@@ -150,6 +150,7 @@ var IgeFontSheet = IgeTexture.extend({
 
 			totalHeight = (lineHeight * lineArr.length);
 
+			// TODO: Y-based alignment doesn't work at the moment. Fix it!
 			// Handle text alignment y
 			switch (entity._textAlignY) {
 				case 0: // Align top
@@ -183,20 +184,30 @@ var IgeFontSheet = IgeTexture.extend({
 				singleLineWidth = 0;
 			}
 
-
 			// Handle text cached alignment x
 			switch (entity._textAlignX) {
-				case 0: // Align left
-					renderStartX = -totalWidth / 2;//0;
+				/*case 0: // Align left
+					renderStartX = -entity.geometry.x2;
 				break;
 
 				case 1: // Align center
-					renderStartX = -totalWidth / 2;
+					renderStartX = -lineWidth[lineIndex] / 2;
 				break;
 
 				case 2: // Align right
-					renderStartX = -totalWidth / 2;//-totalWidth;
-				break;
+					renderStartX = entity.geometry.x2 -lineWidth[lineIndex];
+				break;*/
+				case 0: // Align left
+					renderStartX = -entity.geometry.x2;
+					break;
+
+				case 1: // Align center
+					renderStartX = -totalWidth / 2;
+					break;
+
+				case 2: // Align right
+					renderStartX = entity.geometry.x2 -totalWidth;
+					break;
 			}
 
 			// If we have caching enabled, check for the text
@@ -220,7 +231,6 @@ var IgeFontSheet = IgeTexture.extend({
 					);
 
 					ige._drawCount++;
-
 					return;
 				} else {
 					// We don't have this text cached so advance
@@ -228,7 +238,8 @@ var IgeFontSheet = IgeTexture.extend({
 					this._cacheIndex++;
 
 					if (this._cacheIndex >= this._cacheCount) {
-						this._cacheIndex = 0;
+						// Assign the new cache to the last cache item
+						this._cacheIndex = this._cacheCount - 1;
 					}
 
 					// Check if some other text was occupying this index first
@@ -249,21 +260,6 @@ var IgeFontSheet = IgeTexture.extend({
 					_ctx = this._cacheCanvas[this._cacheIndex].getContext('2d');
 					_ctx.translate(totalWidth / 2, totalHeight / 2);
 
-					// Handle text alignment x
-					switch (entity._textAlignX) {
-						case 0: // Align left
-							//masterX = -totalWidth / 2;
-						break;
-
-						case 1: // Align center
-							//masterX = totalWidth / 2;
-						break;
-
-						case 2: // Align right
-							//masterX = totalWidth / 2;
-						break;
-					}
-
 					// Handle text alignment y
 					switch (entity._textAlignY) {
 						case 0: // Align top
@@ -281,26 +277,42 @@ var IgeFontSheet = IgeTexture.extend({
 				}
 			}
 
-			//_ctx.strokeStyle = '#ff0000';
-			//_ctx.strokeRect(masterX + -(totalWidth / 2), masterY + renderStartY, totalWidth, totalHeight);
+			/*_ctx.strokeStyle = '#ff0000';
+			_ctx.strokeRect(masterX + (-totalWidth / 2), masterY + renderStartY, totalWidth, totalHeight);*/
 
 			for (lineIndex = 0; lineIndex < lineArr.length; lineIndex++) {
 				lineText = lineArr[lineIndex];
 				renderY = (lineHeight * lineIndex) + (entity._textLineSpacing * (lineIndex));
 
 				// Handle text alignment x
-				switch (entity._textAlignX) {
-					case 0: // Align left
-						renderX = -entity.geometry.x2;//0;
-					break;
+				if (!this._caching) {
+					switch (entity._textAlignX) {
+						case 0: // Align left
+							renderX = -entity.geometry.x2;
+						break;
 
-					case 1: // Align center
-						renderX = -lineWidth[lineIndex] / 2;
-					break;
+						case 1: // Align center
+							renderX = -lineWidth[lineIndex] / 2;
+						break;
 
-					case 2: // Align right
-						renderX = entity.geometry.x2 -lineWidth[lineIndex]; //totalWidth / 2
-					break;
+						case 2: // Align right
+							renderX = entity.geometry.x2 -lineWidth[lineIndex];
+						break;
+					}
+				} else {
+					switch (entity._textAlignX) {
+						case 0: // Align left
+							renderX = -totalWidth / 2;
+							break;
+
+						case 1: // Align center
+							renderX = -lineWidth[lineIndex] / 2;
+							break;
+
+						case 2: // Align right
+							renderX = (totalWidth / 2) -lineWidth[lineIndex];
+							break;
+					}
 				}
 
 				for (characterIndex = 0; characterIndex < lineText.length; characterIndex++) {
@@ -329,39 +341,18 @@ var IgeFontSheet = IgeTexture.extend({
 			// If the entity should get dimension data from the
 			// texture, we are now in a position to give it so
 			// set the width and height based on the rendered text
-			if (entity._dimensionsFromTexture) {
+			// TODO: This is a throw-back from 1.0.0, is it still valid?
+			/*if (entity._dimensionsFromTexture) {
 				entity.sizeX(totalWidth);
 				entity.sizeY(totalHeight);
 
 				entity._dimensionsFromTexture = true;
-
-				// Recalculate entity aabb
-				// TODO: High-priority - Bounds do not work when the text alignment is non-center. Don't we need to set the entity origin? If we do that, the bounds are correct but the font is rendered too far like - double the distance. Uncomment the line below to see the effect. Adjusting the final font position should do it.
-				if (entity._textAlignX === 0) {
-					entity._transform[9] = 0;
-				}
-
-				if (entity._textAlignX === 1) {
-					entity._transform[9] = 0.5;
-				}
-
-				if (entity._textAlignX === 2) {
-					entity._transform[9] = 1;
-				}
-
-				if (entity._textAlignY === 0) {
-					entity._transform[10] = 0;
-				}
-
-				if (entity._textAlignY === 1) {
-					entity._transform[10] = 0.5;
-				}
-
-				if (entity._textAlignY === 2) {
-					entity._transform[10] = 1;
-				}
-
 				entity.aabb(true);
+			}*/
+
+			if (this._caching) {
+				// We drew a cache canvas so now draw it to the screen
+				this.render(ctx, entity);
 			}
 		}
 	},
