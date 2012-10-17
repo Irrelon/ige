@@ -101,6 +101,7 @@ var igeCoreConfig = {
 		['c', 'IgeFilters.blur', 'filters/blur.js'],
 		['c', 'IgeFilters.emboss', 'filters/emboss.js'],
 		['c', 'IgeFilters.edgeDetect', 'filters/edgeDetect.js'],
+		['c', 'IgeFilters.edgeEnhance', 'filters/edgeEnhance.js'],
 		['c', 'IgeFilters.outlineDetect', 'filters/outlineDetect.js'],
 		['c', 'IgeFilters.colorOverlay', 'filters/colorOverlay.js'],
 		/* Engine Actual */

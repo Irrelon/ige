@@ -21,6 +21,7 @@ var Client = IgeClass.extend({
 		gameTexture[6] = new IgeTexture('../assets/textures/sprites/fairy.png');
 		gameTexture[7] = new IgeTexture('../assets/textures/sprites/fairy.png');
 		gameTexture[8] = new IgeTexture('../assets/textures/sprites/fairy.png');
+		gameTexture[9] = new IgeTexture('../assets/textures/sprites/fairy.png');
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -46,7 +47,7 @@ var Client = IgeClass.extend({
 					// Create an entity and mount it to the scene
 					self.obj[0] = new Rotator()
 						.id('fairy0')
-						.depth(1)
+						.depth(0)
 						.width(100)
 						.height(100)
 						.texture(gameTexture[0])
@@ -55,6 +56,7 @@ var Client = IgeClass.extend({
 
 					new IgeFontEntity()
 						.id('title0')
+						.depth(1)
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Original Image')
@@ -67,7 +69,7 @@ var Client = IgeClass.extend({
 					// parent
 					self.obj[1] = new Rotator()
 						.id('fairy1')
-						.depth(1)
+						.depth(0)
 						.width(100)
 						.height(100)
 						.texture(gameTexture[1])
@@ -76,6 +78,7 @@ var Client = IgeClass.extend({
 
 					new IgeFontEntity()
 						.id('title1')
+						.depth(0)
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Greyscale')
@@ -86,7 +89,7 @@ var Client = IgeClass.extend({
 					// Create some more fairies and mount them to the scene
 					self.obj[2] = new Rotator()
 						.id('fairy2')
-						.depth(1)
+						.depth(0)
 						.width(100)
 						.height(100)
 						.texture(gameTexture[2])
@@ -95,6 +98,7 @@ var Client = IgeClass.extend({
 
 					new IgeFontEntity()
 						.id('title2')
+						.depth(1)
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Brighten')
@@ -104,7 +108,7 @@ var Client = IgeClass.extend({
 
 					self.obj[3] = new Rotator()
 						.id('fairy3')
-						.depth(1)
+						.depth(0)
 						.width(100)
 						.height(100)
 						.texture(gameTexture[3])
@@ -113,6 +117,7 @@ var Client = IgeClass.extend({
 
 					new IgeFontEntity()
 						.id('title3')
+						.depth(1)
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Threshold')
@@ -122,7 +127,7 @@ var Client = IgeClass.extend({
 
 					self.obj[4] = new Rotator()
 						.id('fairy4')
-						.depth(1)
+						.depth(0)
 						.width(100)
 						.height(100)
 						.texture(gameTexture[4])
@@ -131,6 +136,7 @@ var Client = IgeClass.extend({
 
 					new IgeFontEntity()
 						.id('title4')
+						.depth(1)
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Sharpen')
@@ -140,7 +146,7 @@ var Client = IgeClass.extend({
 
 					self.obj[5] = new Rotator()
 						.id('fairy5')
-						.depth(1)
+						.depth(0)
 						.width(100)
 						.height(100)
 						.texture(gameTexture[5])
@@ -149,6 +155,7 @@ var Client = IgeClass.extend({
 
 					new IgeFontEntity()
 						.id('title5')
+						.depth(1)
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Blur')
@@ -158,7 +165,7 @@ var Client = IgeClass.extend({
 
 					self.obj[6] = new Rotator()
 						.id('fairy6')
-						.depth(1)
+						.depth(0)
 						.width(100)
 						.height(100)
 						.texture(gameTexture[6])
@@ -167,6 +174,7 @@ var Client = IgeClass.extend({
 
 					new IgeFontEntity()
 						.id('title6')
+						.depth(1)
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Emboss')
@@ -176,7 +184,7 @@ var Client = IgeClass.extend({
 
 					self.obj[7] = new Rotator()
 						.id('fairy7')
-						.depth(1)
+						.depth(0)
 						.width(100)
 						.height(100)
 						.texture(gameTexture[7])
@@ -185,6 +193,7 @@ var Client = IgeClass.extend({
 
 					new IgeFontEntity()
 						.id('title7')
+						.depth(1)
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Edge Detect')
@@ -194,7 +203,7 @@ var Client = IgeClass.extend({
 
 					self.obj[8] = new Rotator()
 						.id('fairy8')
-						.depth(1)
+						.depth(0)
 						.width(100)
 						.height(100)
 						.texture(gameTexture[8])
@@ -203,10 +212,30 @@ var Client = IgeClass.extend({
 
 					new IgeFontEntity()
 						.id('title8')
+						.depth(1)
+						.texture(self.verdana)
+						.textAlignX(1)
+						.text('Edge Enhance')
+						.translateTo(0, 80, 0)
+						.drawBounds(false)
+						.mount(self.scene1);
+
+					self.obj[9] = new Rotator()
+						.id('fairy9')
+						.depth(0)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[9])
+						.translateTo(150, 150, 0)
+						.mount(self.scene1);
+
+					new IgeFontEntity()
+						.id('title9')
+						.depth(1)
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Color Overlay')
-						.translateTo(0, 80, 0)
+						.translateTo(150, 80, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -223,16 +252,19 @@ var Client = IgeClass.extend({
 					gameTexture[4].applyFilter(IgeFilters.sharpen);
 
 					// Apply a blur filter to the fifth fairy texture
-					gameTexture[5].applyFilter(IgeFilters.blur);
+					gameTexture[5].applyFilter(IgeFilters.blur, {value: 15});
 
 					// Apply an emboss filter to the sixth fairy texture
 					gameTexture[6].applyFilter(IgeFilters.emboss);
 
-					// Apply an emboss filter to the seventh fairy texture
+					// Apply an edge detect filter to the seventh fairy texture
 					gameTexture[7].applyFilter(IgeFilters.edgeDetect);
 
-					// Apply a colour overlay filter to the eighth fairy texture
-					gameTexture[8].applyFilter(IgeFilters.colorOverlay, {color: 'rgba(255, 0, 0, 0.5)'});
+					// Apply an edge enhance filter to the eighth fairy texture
+					gameTexture[8].applyFilter(IgeFilters.edgeEnhance);
+
+					// Apply a colour overlay filter to the ninth fairy texture
+					gameTexture[9].applyFilter(IgeFilters.colorOverlay, {color: 'rgba(255, 0, 0, 0.5)'});
 				}
 			});
 		});
