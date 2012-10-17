@@ -15,6 +15,8 @@ var IgeParticleEmitter = IgeEntity.extend({
 		this._started = false;
 		this._particles = [];
 
+		this.applyDepthToParticles(true);
+		this.applyLayerToParticles(true);
 		this.quantityVariance(0, 0);
 		this.translateBaseX(0);
 		this.translateBaseY(0);
@@ -54,6 +56,16 @@ var IgeParticleEmitter = IgeEntity.extend({
 	} */
 	particle: function (obj) {
 		this._particle = obj;
+		return this;
+	},
+
+	applyDepthToParticles: function (val) {
+		this._applyDepthToParticles = val;
+		return this;
+	},
+
+	applyLayerToParticles: function (val) {
+		this._applyLayerToParticles = val;
 		return this;
 	},
 
@@ -551,6 +563,9 @@ var IgeParticleEmitter = IgeEntity.extend({
 							tempParticle.rotateTo(0, 0, rotate * Math.PI / 180);
 							tempParticle.scaleTo(scaleX, scaleY, scaleZ);
 							tempParticle.opacity(opacity);
+
+							if (this._applyDepthToParticles) { tempParticle.depth(this._depth); }
+							if (this._applyLayerToParticles) { tempParticle.layer(this._layer); }
 
 							if (typeof(velocityVector) === 'object') {
 								tempParticle.velocity.vector3(velocityVector, false);
