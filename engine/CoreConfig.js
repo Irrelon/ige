@@ -13,7 +13,6 @@ var igeCoreConfig = {
 		['cs', 'IgeMatrix2d', 'core/IgeMatrix2d.js'],
 		['cs', 'IgeMatrixStack', 'core/IgeMatrixStack.js'],
 		/* Components */
-		['s', 'IgeDummyContext', 'components/network/IgeDummyContext.js'],
 		['cs', 'IgeAnimationComponent', 'components/IgeAnimationComponent.js'],
 		['cs', 'IgeVelocityComponent', 'components/IgeVelocityComponent.js'],
 		['cs', 'IgeTweenComponent', 'components/IgeTweenComponent.js'],
@@ -60,6 +59,7 @@ var igeCoreConfig = {
 		['cs', 'IgeUiInteractionExtension', 'extensions/IgeUiInteractionExtension.js'],
 		['cs', 'IgeInterpolatorExtension', 'extensions/IgeInterpolatorExtension.js'],
 		/* Main Engine Classes */
+		['cs', 'IgeDummyContext', 'core/IgeDummyContext.js'],
 		['cs', 'IgePathNode', 'core/IgePathNode.js'],
 		['cs', 'IgePathFinder', 'core/IgePathFinder.js'],
 		['cs', 'IgeTween', 'core/IgeTween.js'],
@@ -104,6 +104,9 @@ var igeCoreConfig = {
 		['c', 'IgeFilters.edgeEnhance', 'filters/edgeEnhance.js'],
 		['c', 'IgeFilters.outlineDetect', 'filters/outlineDetect.js'],
 		['c', 'IgeFilters.colorOverlay', 'filters/colorOverlay.js'],
+		/* WebGL */
+		['c', 'webgl-2d', 'components/webgl-2d/webgl-2d.js'],
+		['c', 'IgeWebGlShaderBasic', 'shaders/IgeWebGlShaderBasic.js'],
 		/* Engine Actual */
 		['cs', 'IgeEngine', 'core/IgeEngine.js']
 	]
