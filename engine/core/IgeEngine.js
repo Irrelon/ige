@@ -47,8 +47,13 @@ var IgeEngine = IgeEntity.extend({
 		this.addComponent(IgeTweenComponent);
 
 		// Set some defaults
-		this.useWebGl2d(false); // If webgl should be used if available for 2d output
+		this._renderModes = [
+			'2d',
+			'three'
+		];
+
 		this._renderContext = '2d'; // The rendering context, default is 2d
+		this._renderMode = this._renderModes[this._renderContext]; // Integer representation of the render context
 		this.tickDelta = 0; // The time between the last tick and the current one
 		this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 		this._state = 0; // Currently stopped
@@ -500,133 +505,72 @@ var IgeEngine = IgeEntity.extend({
 	renderContext: function (contextId) {
 		if (contextId !== undefined) {
 			this._renderContext = contextId;
+			this._renderMode = this._renderModes[contextId];
+
 			this.log('Rendering mode set to: ' + contextId);
+
 			return this;
 		}
 
 		return this._renderContext;
 	},
 
-	useWebGl2d: function (val) {
-		if (val !== undefined) {
-			if (val) {
-				// Check if webgl is available
-				if (window.WebGLRenderingContext) {
-					this.log('WebGL is detected and available for rendering');
-					this._useWebGl2d = true;
-				} else {
-					this.log('WebGL is not available for rendering');
-					this._useWebGl2d = false;
-				}
-			} else {
-				this._useWebGl2d = false;
-			}
-			return this;
-		}
-
-		return this._useWebGl2d;
-	},
-
-	initCanvas: function (canvas) {
-		// Wrap the canvas.getContext() method with our
-		// own method to allow interception of getContext
-		// calls so we can control the response
-		canvas.igeGetContext = function () {
-			var context3d;
-
-			// Check if a 2d context was requested
-			if (ige._renderContext === '2d') {
-				// Check if we should try and use web gl for 2d rendering
-				if (ige._useWebGl2d) {
-					WebGL2D.enable(this);
-
-					// Check if a webgl-2d context is available
-					context3d = this.getContext('webgl-2d');
-
-					if (context3d) {
-						// WebGl context is available
-						ige._usingWebGl2d = true;
-						return context3d;
-					} else {
-						// WebGl is not available, use standard 2d
-						ige._usingWebGl2d = false;
-						return this.getContext('2d');
-					}
-				} else {
-					// Return the normal canvas 2d context
-					return this.getContext('2d');
-				}
-			}
-
-			if (ige._renderContext === '3d') {
-				// Check if a 3d context is available
-				context3d = this.getContext('webgl') || this.getContext('experimental-webgl');
-
-				if (context3d) {
-					// WebGl context is available
-					context3d.viewportWidth = this.width;
-					context3d.viewportHeight = this.height;
-
-					ige._usingWebGl3d = true;
-					return context3d;
-				} else {
-					// WebGl is not available, throw an error
-					ige._usingWebGl3d = false;
-					this.log('Cannot use WebGL because no 3d context could be retrieved. Does the browser support WebGL?', 'error');
-				}
-			}
-		};
-	},
-
 	/**
-	 * Automatically creates a canvas element, appends it to the document.body
-	 * and sets it's 2d context as the current front-buffer for the engine.
-	 * @param autoSize
-	 * @param {Boolean=} dontScale If set to true, IGE will ignore device pixel ratios when
-	 * setting the width and height of the canvas and will therefore not take into account
-	 * retina or high-definition displays whose pixel ratio is different from 1 to 1.
+	 * Creates a front-buffer or "drawing surface" for the renderer.
+	 *
+	 * @param {Boolean} autoSize Determines if the canvas will auto-resize
+	 * when the browser window changes dimensions. If true the canvas will
+	 * automatically fill the window when it is resized.
+	 *
+	 * @param {Boolean=} dontScale If set to true, IGE will ignore device
+	 * pixel ratios when setting the width and height of the canvas and will
+	 * therefore not take into account "retina", high-definition displays or
+	 * those whose pixel ratio is different from 1 to 1.
 	 */
 	createFrontBuffer: function (autoSize, dontScale) {
+		var self = this;
 		if (!this.isServer) {
 			if (!this._canvas) {
 				this._createdFrontBuffer = true;
 				this._pixelRatioScaling = !dontScale;
 
-				// Create a new canvas element to use as the
-				// rendering front-buffer
-				var tempCanvas = document.createElement('canvas'),
-					tempContext,
-					width, height;
-
-				this.initCanvas(tempCanvas);
-
-				if (this._pixelRatioScaling) {
-					tempContext = tempCanvas.igeGetContext();
-
-					// Support high-definition devices and "retina" (stupid marketing name)
-					// displays by adjusting for device and back store pixels ratios
-					this._devicePixelRatio = window.devicePixelRatio || 1;
-					this._backingStoreRatio = tempContext.webkitBackingStorePixelRatio ||
-						tempContext.mozBackingStorePixelRatio ||
-						tempContext.msBackingStorePixelRatio ||
-						tempContext.oBackingStorePixelRatio ||
-						tempContext.backingStorePixelRatio || 1;
-
-					this._deviceFinalDrawRatio = this._devicePixelRatio / this._backingStoreRatio;
-				} else {
-					// No auto-scaling
-					this._devicePixelRatio = 1;
-					this._backingStoreRatio = 1;
-					this._deviceFinalDrawRatio = 1;
-				}
-
-				// Set the canvas element id
-				tempCanvas.id = 'igeFrontBuffer';
-
-				this.canvas(tempCanvas, autoSize);
-				document.body.appendChild(tempCanvas);
+				this._frontBufferSetup(autoSize, dontScale);
 			}
 		}
+	},
+
+	_frontBufferSetup: function (autoSize, dontScale) {
+		// Create a new canvas element to use as the
+		// rendering front-buffer
+		var tempCanvas = document.createElement('canvas'),
+			tempContext,
+			width, height;
+
+		if (this._pixelRatioScaling) {
+			tempContext = tempCanvas.getContext(ige._renderContext);
+
+			// Support high-definition devices and "retina" (stupid marketing name)
+			// displays by adjusting for device and back store pixels ratios
+			this._devicePixelRatio = window.devicePixelRatio || 1;
+			this._backingStoreRatio = tempContext.webkitBackingStorePixelRatio ||
+				tempContext.mozBackingStorePixelRatio ||
+				tempContext.msBackingStorePixelRatio ||
+				tempContext.oBackingStorePixelRatio ||
+				tempContext.backingStorePixelRatio || 1;
+
+			this._deviceFinalDrawRatio = this._devicePixelRatio / this._backingStoreRatio;
+		} else {
+			// No auto-scaling
+			this._devicePixelRatio = 1;
+			this._backingStoreRatio = 1;
+			this._deviceFinalDrawRatio = 1;
+		}
+
+		// Set the canvas element id
+		tempCanvas.id = 'igeFrontBuffer';
+
+		this.canvas(tempCanvas, autoSize);
+		document.body.appendChild(tempCanvas);
 	},
 
 	/**
@@ -649,7 +593,7 @@ var IgeEngine = IgeEntity.extend({
 			// Fire the resize event for the first time
 			// which sets up initial canvas dimensions
 			this._resizeEvent();
-			this._ctx = this._canvas.igeGetContext();
+			this._ctx = this._canvas.getContext(this._renderContext);
 
 			// Ask the input component to setup any listeners it has
 			this.input._setupListeners();
@@ -910,7 +854,7 @@ var IgeEngine = IgeEntity.extend({
 
 			// Call post-tick methods
 			for (ptIndex = 0; ptIndex < ptCount; ptIndex++) {
-				ptArr();
+				ptArr[ptIndex]();
 			}
 
 			// Record the lastTick value so we can

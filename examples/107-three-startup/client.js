@@ -2,8 +2,8 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
 		ige.showStats(1);
-		ige.renderContext('2d');
-		ige.useWebGl2d(true);
+		ige.renderContext('three');
+		ige.addComponent(IgeThree);
 
 		// Load our textures
 		var self = this,

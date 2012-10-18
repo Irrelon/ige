@@ -105,8 +105,8 @@ var igeCoreConfig = {
 		['c', 'IgeFilters.outlineDetect', 'filters/outlineDetect.js'],
 		['c', 'IgeFilters.colorOverlay', 'filters/colorOverlay.js'],
 		/* WebGL */
-		['c', 'webgl-2d', 'components/webgl-2d/webgl-2d.js'],
-		['c', 'IgeWebGlShaderBasic', 'shaders/IgeWebGlShaderBasic.js'],
+		['c', 'three', 'components/three/three.min.js'],
+		['c', 'IgeThree', 'components/three/IgeThree.js'],
 		/* Engine Actual */
 		['cs', 'IgeEngine', 'core/IgeEngine.js']
 	]

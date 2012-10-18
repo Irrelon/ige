@@ -646,6 +646,96 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
+	 * Processes the actions required each render frame.
+	 * @param {HTMLCanvasContext} ctx
+	 * @param {Boolean} dontTransform If set to true, the tick method will
+	 * not transform the context based on the entity's matrices. This is useful
+	 * if you have extended the class and want to process down the inheritance
+	 * chain but have already transformed the entity in a previous overloaded
+	 * method.
+	 */
+	tick: function (ctx, dontTransform) {
+		// Check if the entity should still exist
+		if (this._deathTime !== undefined && this._deathTime <= ige.tickStart) {
+			// The entity should be removed because it has died
+			this.destroy();
+		} else {
+			// Remove the stream data cache
+			delete this._streamDataCache;
+
+			// Process any behaviours assigned to the entity
+			this._processBehaviours(ctx);
+
+			if (this._timeStream.length) {
+				// Process any interpolation
+				this._processInterpolate(ige.tickStart - ige.network.stream._renderLatency);
+			}
+
+			if (this._inView && (!this._parent || (this._parent._inView))) {
+				// Process any mouse events we need to do
+				var renderMode = ige._renderMode,
+					mp, aabb, mouseX, mouseY,
+					self = this;
+
+				if (this._mouseEventsActive) {
+					mp = ige._currentViewport._mousePos;
+
+					if (mp) {
+						aabb = this.aabb();
+						mouseX = mp.x;
+						mouseY = mp.y;
+
+						// Check if the current mouse position is inside this aabb
+						if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
+							// Point is inside the aabb
+							ige.input.queueEvent(this, this._mouseInAabb);
+						} else {
+							if (ige.input.mouseMove) {
+								// There is a mouse move event
+								self._handleMouseOut(ige.input.mouseMove);
+							}
+						}
+					}
+				}
+
+				// Transform the context by the current transform settings
+				if (!dontTransform) {
+					this._transformContext(ctx);
+				}
+
+				// Render the entity
+				this._renderEntity(ctx, dontTransform);
+
+				// Process any automatic-mode stream updating required
+				if (this._streamMode === 1) {
+					this.streamSync();
+				}
+			}
+
+			// Process children
+			this._super(ctx);
+
+			// Update all the old values to current values
+			this._oldTranslate = this._translate.clone();
+		}
+	},
+
+	_renderEntity: function (ctx, dontTransform) {
+		var texture = this._texture;
+
+		// Check if the entity is visible based upon its opacity
+		if (this._opacity > 0 && texture) {
+			// Draw the entity image
+			texture.render(ctx, this, ige.tickDelta);
+
+			if (this._highlight) {
+				ctx.globalCompositeOperation = 'lighter';
+				texture.render(ctx, this);
+			}
+		}
+	},
+
+	/**
 	 * Sets the canvas context transform properties to match the the game
 	 * object's current transform values.
 	 * @param {HTMLCanvasContext} ctx
@@ -690,89 +780,6 @@ var IgeEntity = IgeObject.extend([
 		}
 
 		return igePoint;
-	},
-
-	/**
-	 * Processes the actions required each render frame.
-	 * @param {HTMLCanvasContext} ctx
-	 * @param {Boolean} dontTransform If set to true, the tick method will
-	 * not transform the context based on the entity's matrices. This is useful
-	 * if you have extended the class and want to process down the inheritance
-	 * chain but have already transformed the entity in a previous overloaded
-	 * method.
-	 */
-	tick: function (ctx, dontTransform) {
-		// Check if the entity should still exist
-		if (this._deathTime !== undefined && this._deathTime <= ige.tickStart) {
-			// The entity should be removed because it has died
-			this.destroy();
-		} else {
-			// Remove the stream data cache
-			delete this._streamDataCache;
-
-			// Process any behaviours assigned to the entity
-			this._processBehaviours(ctx);
-
-			if (this._timeStream.length) {
-				// Process any interpolation
-				this._processInterpolate(ige.tickStart - ige.network.stream._renderLatency);
-			}
-
-			if (this._inView && (!this._parent || (this._parent._inView))) {
-				// Process any mouse events we need to do
-				var texture = this._texture,
-					mp, aabb, mouseX, mouseY,
-					self = this;
-
-				if (this._mouseEventsActive) {
-					mp = ige._currentViewport._mousePos;
-
-					if (mp) {
-						aabb = this.aabb();
-						mouseX = mp.x;
-						mouseY = mp.y;
-
-						// Check if the current mouse position is inside this aabb
-						if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
-							// Point is inside the aabb
-							ige.input.queueEvent(this, this._mouseInAabb);
-						} else {
-							if (ige.input.mouseMove) {
-								// There is a mouse move event
-								self._handleMouseOut(ige.input.mouseMove);
-							}
-						}
-					}
-				}
-
-				// Transform the context by the current transform settings
-				if (!dontTransform) {
-					this._transformContext(ctx);
-				}
-
-				// Check if the entity is visible based upon its opacity
-				if (this._opacity > 0 && texture) {
-					// Draw the entity image
-					texture.render(ctx, this, ige.tickDelta);
-
-					if (this._highlight) {
-						ctx.globalCompositeOperation = 'lighter';
-						texture.render(ctx, this);
-					}
-				}
-
-				// Process any automatic-mode stream updating required
-				if (this._streamMode === 1) {
-					this.streamSync();
-				}
-			}
-
-			// Process children
-			this._super(ctx);
-
-			// Update all the old values to current values
-			this._oldTranslate = this._translate.clone();
-		}
 	},
 
 	/**
