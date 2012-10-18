@@ -69,6 +69,7 @@ var IgeEngine = IgeEntity.extend({
 		this._register = {
 			'ige': this
 		}; // Holds a reference to every item in the scenegraph by it's ID
+		this._postTick = []; // An array of methods that are called upon tick completion
 
 		if (this.isServer) {
 			// Setup a dummy canvas context
@@ -865,7 +866,11 @@ var IgeEngine = IgeEntity.extend({
 	 * Called each frame to traverse and render the scenegraph.
 	 */
 	tick: function (timeStamp, ctx) {
-		var self = ige;
+		var self = ige,
+			ptArr = self._postTick,
+			ptCount = ptArr.length,
+			ptIndex;
+
 		if (self._state) {
 			// Check if we were passed a context to work with
 			if (ctx === undefined) {
@@ -902,6 +907,11 @@ var IgeEngine = IgeEntity.extend({
 
 			// Render the scenegraph
 			self.render(ctx);
+
+			// Call post-tick methods
+			for (ptIndex = 0; ptIndex < ptCount; ptIndex++) {
+				ptArr();
+			}
 
 			// Record the lastTick value so we can
 			// calculate delta on the next tick
