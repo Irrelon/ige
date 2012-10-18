@@ -9,7 +9,6 @@ var IgeEngine = IgeEntity.extend({
 		this._super();
 
 		this._id = 'ige';
-
 		this.basePath = '';
 
 		// Determine the environment we are executing in
@@ -48,6 +47,8 @@ var IgeEngine = IgeEntity.extend({
 		this.addComponent(IgeTweenComponent);
 
 		// Set some defaults
+		this.useWebGl2d(false); // If webgl should be used if available for 2d output
+		this._renderContext = '2d'; // The rendering context, default is 2d
 		this.tickDelta = 0; // The time between the last tick and the current one
 		this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 		this._state = 0; // Currently stopped
@@ -73,13 +74,17 @@ var IgeEngine = IgeEntity.extend({
 			// Setup a dummy canvas context
 			this.log('Using dummy canvas context');
 			this._ctx = IgeDummyContext;
+		} else {
+			// Set the context to a dummy context to start
+			// with in case we are in "headless" mode
+			this._ctx = IgeDummyContext;
 		}
 
 		this.dependencyTimeout(30000); // Wait 30 seconds to load all dependencies then timeout
 
 		// Add the textures loaded dependency
 		this._dependencyQueue.push(this.texturesLoaded);
-		this._dependencyQueue.push(this.canvasReady);
+		//this._dependencyQueue.push(this.canvasReady);
 
 		// Start a timer to record every second of execution
 		setInterval(this._secondTick, 1000);
@@ -103,7 +108,7 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
-	 * Returns an array of all obejects that have been assigned
+	 * Returns an array of all objects that have been assigned
 	 * the passed group name.
 	 * @param groupName
 	 */
@@ -468,7 +473,7 @@ var IgeEngine = IgeEntity.extend({
 	 * @return {Boolean}
 	 */
 	autoSize: function (val) {
-		if (typeof(val) !== 'undefined') {
+		if (val !== undefined) {
 			this._autoSize = val;
 			return this;
 		}
@@ -477,12 +482,99 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	pixelRatioScaling: function (val) {
-		if (typeof(val) !== 'undefined') {
+		if (val !== undefined) {
 			this._pixelRatioScaling = val;
 			return this;
 		}
 
 		return this._pixelRatioScaling;
+	},
+
+	/**
+	 * Gets / sets the rendering context that will be used when getting the
+	 * context from canvas elements.
+	 * @param {String=} contextId The context such as '2d'. Defaults to '2d'.
+	 * @return {*}
+	 */
+	renderContext: function (contextId) {
+		if (contextId !== undefined) {
+			this._renderContext = contextId;
+			this.log('Rendering mode set to: ' + contextId);
+			return this;
+		}
+
+		return this._renderContext;
+	},
+
+	useWebGl2d: function (val) {
+		if (val !== undefined) {
+			if (val) {
+				// Check if webgl is available
+				if (window.WebGLRenderingContext) {
+					this.log('WebGL is detected and available for rendering');
+					this._useWebGl2d = true;
+				} else {
+					this.log('WebGL is not available for rendering');
+					this._useWebGl2d = false;
+				}
+			} else {
+				this._useWebGl2d = false;
+			}
+			return this;
+		}
+
+		return this._useWebGl2d;
+	},
+
+	initCanvas: function (canvas) {
+		// Wrap the canvas.getContext() method with our
+		// own method to allow interception of getContext
+		// calls so we can control the response
+		canvas.igeGetContext = function () {
+			var context3d;
+
+			// Check if a 2d context was requested
+			if (ige._renderContext === '2d') {
+				// Check if we should try and use web gl for 2d rendering
+				if (ige._useWebGl2d) {
+					WebGL2D.enable(this);
+
+					// Check if a webgl-2d context is available
+					context3d = this.getContext('webgl-2d');
+
+					if (context3d) {
+						// WebGl context is available
+						ige._usingWebGl2d = true;
+						return context3d;
+					} else {
+						// WebGl is not available, use standard 2d
+						ige._usingWebGl2d = false;
+						return this.getContext('2d');
+					}
+				} else {
+					// Return the normal canvas 2d context
+					return this.getContext('2d');
+				}
+			}
+
+			if (ige._renderContext === '3d') {
+				// Check if a 3d context is available
+				context3d = this.getContext('webgl') || this.getContext('experimental-webgl');
+
+				if (context3d) {
+					// WebGl context is available
+					context3d.viewportWidth = this.width;
+					context3d.viewportHeight = this.height;
+
+					ige._usingWebGl3d = true;
+					return context3d;
+				} else {
+					// WebGl is not available, throw an error
+					ige._usingWebGl3d = false;
+					this.log('Cannot use WebGL because no 3d context could be retrieved. Does the browser support WebGL?', 'error');
+				}
+			}
+		};
 	},
 
 	/**
@@ -505,8 +597,10 @@ var IgeEngine = IgeEntity.extend({
 					tempContext,
 					width, height;
 
+				this.initCanvas(tempCanvas);
+
 				if (this._pixelRatioScaling) {
-					tempContext = tempCanvas.getContext('2d');
+					tempContext = tempCanvas.igeGetContext();
 
 					// Support high-definition devices and "retina" (stupid marketing name)
 					// displays by adjusting for device and back store pixels ratios
@@ -543,7 +637,6 @@ var IgeEngine = IgeEntity.extend({
 		if (!this._canvas) {
 			// Setup front-buffer canvas element
 			this._canvas = elem;
-			this._ctx = this._canvas.getContext('2d');
 
 			if (autoSize) {
 				this._autoSize = autoSize;
@@ -555,6 +648,7 @@ var IgeEngine = IgeEntity.extend({
 			// Fire the resize event for the first time
 			// which sets up initial canvas dimensions
 			this._resizeEvent();
+			this._ctx = this._canvas.igeGetContext();
 
 			// Ask the input component to setup any listeners it has
 			this.input._setupListeners();
