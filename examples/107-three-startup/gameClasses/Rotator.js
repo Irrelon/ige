@@ -1,9 +1,11 @@
 var Rotator = IgeEntity.extend({
 	classId:'Rotator',
 
-	init: function (val) {
+	init: function (x, y, z) {
 		this._super();
-		this._rotationVal = val;
+		this._rotationX = x;
+		this._rotationY = y;
+		this._rotationZ = z;
 	},
 
 	/**
@@ -12,7 +14,11 @@ var Rotator = IgeEntity.extend({
 	 */
 	tick: function (ctx) {
 		// Rotate this entity by 0.1 degrees.
-		this.rotateBy(0, 0, (this._rotationVal * ige.tickDelta) * Math.PI / 180);
+		this.rotateBy(
+			(this._rotationX * ige.tickDelta) * Math.PI / 180,
+			(this._rotationY * ige.tickDelta) * Math.PI / 180,
+			(this._rotationZ * ige.tickDelta) * Math.PI / 180
+		);
 
 		// Call the IgeEntity (super-class) tick() method
 		this._super(ctx);
