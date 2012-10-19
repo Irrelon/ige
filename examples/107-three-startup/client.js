@@ -32,36 +32,41 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Create the scene
-					self.scene1 = new IgeScene2d();
+					self.scene1 = new IgeScene2d()
+						.id('scene1');
 
 					// Create the main viewport and set the scene
 					// it will "look" at as the new scene1 we just
 					// created above
 					self.vp1 = new IgeViewport()
+						.id('vp1')
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
 						.mount(ige);
 
+					self.vp1.camera.translateTo(0, 0, 200);
+
 					// Create an entity and mount it to the scene
-					self.obj[0] = new Rotator(-0.1)
+					self.obj[0] = new Rotator(0, 0, -0.1)
 						.id('fairy1')
 						.depth(1)
 						.width(100)
 						.height(100)
 						.texture(gameTexture[0])
-						.translateTo(-35, 0, 0)
+						.translateTo(-25, 0, 0)
+						.rotateTo(0, 45 * Math.PI / 180, 0 * Math.PI / 180)
 						.mesh("models/fan.json")
 						.mount(self.scene1);
 
-					self.obj[1] = new Rotator(0.1)
+					self.obj[1] = new Rotator(0, 0, 0.1)
 						.id('fairy2')
 						.depth(1)
 						.width(100)
 						.height(100)
 						.texture(gameTexture[0])
-						.translateTo(35, 0, 0)
-						.rotateTo(0, 0, 20 * Math.PI / 180)
+						.translateTo(25, 0, 0)
+						.rotateTo(0, -45 * Math.PI / 180, 20 * Math.PI / 180)
 						.mesh("models/fan.json")
 						.mount(self.scene1);
 				}
