@@ -45,11 +45,11 @@ var Client = IgeClass.extend({
 						.drawBounds(true)
 						.mount(ige);
 
-					self.vp1.camera.translateTo(0, 0, 200);
+					self.vp1.camera.translateTo(0, 50, 200);
 
 					// Create an entity and mount it to the scene
 					self.obj[0] = new Rotator(0, 0, -0.1)
-						.id('fairy1')
+						.id('fairy0')
 						.depth(1)
 						.width(100)
 						.height(100)
@@ -60,7 +60,7 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					self.obj[1] = new Rotator(0, 0, 0.1)
-						.id('fairy2')
+						.id('fairy1')
 						.depth(1)
 						.width(100)
 						.height(100)
@@ -70,7 +70,40 @@ var Client = IgeClass.extend({
 						.mesh("models/fan.json")
 						.mount(self.scene1);
 
-					ige._postTick.push(self.moveCamera);
+					self.obj[2] = new Rotator(0, 0, -0.1)
+						.id('fairy2')
+						.depth(1)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[0])
+						.translateTo(25, 70, 0)
+						.rotateTo(0, -45 * Math.PI / 180, 0 * Math.PI / 180)
+						.mesh("models/fan.json")
+						.mount(self.scene1);
+
+					self.obj[3] = new Rotator(0, 0, 0.1)
+						.id('fairy3')
+						.depth(1)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[0])
+						.translateTo(70, 70, 45)
+						.rotateTo(0, -45 * Math.PI / 180, 20 * Math.PI / 180)
+						.mesh("models/fan.json")
+						.mount(self.scene1);
+
+					self.obj[4] = new Rotator(0, 0, -0.1)
+						.id('fairy4')
+						.depth(1)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[0])
+						.translateTo(70, 70, 90)
+						.rotateTo(0, -135 * Math.PI / 180, 0 * Math.PI / 180)
+						.mesh("models/fan.json")
+						.mount(self.scene1);
+
+					//ige._postTick.push(self.moveCamera);
 				}
 			});
 		});
