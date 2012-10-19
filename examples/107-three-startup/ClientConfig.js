@@ -13,9 +13,6 @@ var igeClientConfig = {
 		'../../engine/components/three/TexturePass.js',
 		'../../engine/components/three/ShaderPass.js',
 		'../../engine/components/three/MaskPass.js',
-
-
-
 		/* Standard game scripts */
 		'./client.js',
 		'./index.js'

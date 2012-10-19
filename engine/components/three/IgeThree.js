@@ -21,31 +21,29 @@ var IgeThree = IgeEventingClass.extend({
 		var i, il,
 			self = this;
 
-		/*this._threeCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, -2000, 10000 );
-		this._threeCamera.position.x = 0;
-		this._threeCamera.position.y = 0;
-		this._threeCamera.position.z = 500;
-		this._threeCamera.rotation.x = 45 * Math.PI / 180;
-		this._threeCamera.rotation.y = 35 * Math.PI / 180;
-		this._threeCamera.rotation.z = 30 * Math.PI / 180;*/
-
-		this._threeCamera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -2000, 10000 );
-		this._threeCamera.position.x = 0;
-		this._threeCamera.position.y = 0;
-		this._threeCamera.position.z = 0;
+		this._threeScene = new THREE.Scene();
+		this._threeCamera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 10000);
+		//this._threeCamera.position.x = 0;
+		//this._threeCamera.position.y = 0;
+		this._threeCamera.position.z = 200;
 		/*this._threeCamera.rotation.x = 45 * Math.PI / 180;
 		this._threeCamera.rotation.y = 35 * Math.PI / 180;
 		this._threeCamera.rotation.z = 30 * Math.PI / 180;*/
 
-		this._threeScene = new THREE.Scene();
+		/*this._threeCamera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -2000, 10000 );
+		this._threeCamera.position.x = 0;
+		this._threeCamera.position.y = 0;
+		this._threeCamera.position.z = 0;*/
+		/*this._threeCamera.rotation.x = 45 * Math.PI / 180;
+		this._threeCamera.rotation.y = 35 * Math.PI / 180;
+		this._threeCamera.rotation.z = 30 * Math.PI / 180;*/
 
-		var ambient = new THREE.AmbientLight( 0x242424 );
-		this._threeScene.add( ambient );
+		var ambient = new THREE.AmbientLight(0x242424);
+		this._threeScene.add(ambient);
 
-		var SHADOW_MAP_WIDTH = 2048, SHADOW_MAP_HEIGHT = 2048;
-		var light = new THREE.SpotLight( 0xd6e2ff, 1, 0, Math.PI, 1 );
-		light.position.set( 600, 400, 1000 );
-		light.target.position.set( 0, 0, 0 );
+		var light = new THREE.SpotLight(0xd6e2ff, 1, 0, Math.PI, 1);
+		light.position.set(600, 400, 1000);
+		light.target.position.set(0, 0, 0);
 
 		light.castShadow = true;
 		light.shadowCameraNear = 200;
@@ -56,67 +54,62 @@ var IgeThree = IgeEventingClass.extend({
 		light.shadowBias = 0.0005;
 		light.shadowDarkness = 0.55;
 
-		light.shadowMapWidth = SHADOW_MAP_WIDTH;
-		light.shadowMapHeight = SHADOW_MAP_HEIGHT;
+		light.shadowMapWidth = 2048;
+		light.shadowMapHeight = 2048;
 		light.shadowMapSoft = true;
-		this._threeScene.add( light );
+		this._threeScene.add(light);
 
-		var specLight = new THREE.PointLight( 0x058ee4, 0.2, 0, Math.PI, 1 );
+		/*var specLight = new THREE.PointLight( 0x058ee4, 0.2, 0, Math.PI, 1 );
 		////flameLight.position.set( 600, 400, 1000 );
 		//specLight.target.position.set( 0, 0, 0 );
-		this._threeScene.add(specLight);
+		this._threeScene.add(specLight);*/
 
-		var geometry = new THREE.CubeGeometry( 100, 100, 100),
-			//material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: false })
-			texture = THREE.ImageUtils.loadTexture('../assets/textures/particles/star1.png'),
-			material = new THREE.MeshBasicMaterial({map: texture, wireframe: false}),
-			mesh1 = new THREE.Mesh( geometry, material );
+		var geometry = new THREE.CubeGeometry(1, 1, 1),
+			material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: false }),
+			//texture = THREE.ImageUtils.loadTexture('../assets/textures/particles/star1.png'),
+			//material = new THREE.MeshBasicMaterial({map: texture, wireframe: false}),
+			mesh1 = new THREE.Mesh(geometry, material);
 
 		geometry.dynamic = true;
 
-		for (i = 0, il = geometry.vertices.length; i < il; i++) {
+		/*for (i = 0, il = geometry.vertices.length; i < il; i++) {
 			geometry.vertices[i].y += -100;
-		}
+		}*/
 
 		//material.envMap = textureCube;
-		material.combine = THREE.MixOperation;
-		material.reflectivity = 0.55;
-		material.opacity = 1;
+		//material.combine = THREE.MixOperation;
+		//material.reflectivity = 0.55;
+		//material.opacity = 1;
 
-		mesh1.position.z = 50;
-		//this._threeScene.add( mesh1 );
+		mesh1.position.z = 0;
+		//this._threeScene.add(mesh1);
 
-		var geometry = new THREE.PlaneGeometry(500, 500),
+		/*var geometry = new THREE.PlaneGeometry(500, 500),
 			//material = new THREE.MeshBasicMaterial( { color: 0x0000ff, wireframe: false }),
 			texture = THREE.ImageUtils.loadTexture('../assets/textures/backgrounds/greyGradient.png'),
 			material = new THREE.MeshBasicMaterial({map: texture, wireframe: false}),
 			mesh2 = new THREE.Mesh( geometry, material );
 
 		mesh2.position.z = 0;
-		//this._threeScene.add( mesh2 );
+		//this._threeScene.add( mesh2 );*/
 
 		this._threeLoader = new THREE.JSONLoader();
-
-		this._threeLoader.load("../../engine/components/three/fan.js", function(geometry) {
-			var fan = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial({color:0xa1592f,shininess:10000,specular:10}) );
-			fan.position.set( 156.3,-92.3, 150.3);
-			fan.receiveShadow =true;
-			fan.castShadow = true;
-			//self._threeScene.add(fan);
-		});
 
 		this._threeRenderer = new THREE.WebGLRenderer({antialias: false});
 		this._threeRenderer.setSize(window.innerWidth, window.innerHeight);
 		this._threeRenderer.autoClear = false;
-		this._threeRenderer.shadowMapEnabled = true;
-		this._threeRenderer.shadowMapSoft = true;
+		//this._threeRenderer.shadowMapEnabled = true;
+		//this._threeRenderer.shadowMapSoft = true;
 
 		// Add canvas element to DOM
 		document.body.appendChild(this._threeRenderer.domElement);
 
-		self._camX = 45;
+		/*controls = new THREE.TrackballControls(this._threeCamera, this._threeRenderer.domElement);
+		controls.rotateSpeed = 0.20;*/
+
+		/*self._camX = 45;
 		self._camY = 35;
-		self._camZ = 30;
+		self._camZ = 30;*/
 
 		/*var renderModel = new THREE.RenderPass( this._threeScene, this._threeCamera );
 		var effectBloom = new THREE.BloomPass( .9 );
@@ -134,25 +127,12 @@ var IgeThree = IgeEventingClass.extend({
 		this._threeComposer.addPass( effectFilm );*/
 
 		this._postTick.push(function () {
-			//mesh.rotation.x += 0.01;
-			//mesh.rotation.y += 0.02;
-			self._camX += 0.1 * ige.tickDelta;
-			self._camY -= 0.1 * ige.tickDelta;
-			self._camZ -= 0.1 * ige.tickDelta;
-			//ige._threeCamera.target.position.copy( mesh1.position );
-			//ige._threeCamera.lookAt(mesh1.position);
-
-			//ige._threeCamera.rotation.x = self._camX * Math.PI / 180;
-			//ige._threeCamera.rotation.y = self._camY * Math.PI / 180;
-			//ige._threeCamera.rotation.z = self._camZ * Math.PI / 180;
-
 			ige._threeRenderer.clear();
+			ige._threeRenderer.render( ige._threeScene, ige._threeCamera );
 
 			//ige._threeRenderer.setViewport(10, 10, 400, 200);
 			//ige._threeRenderer.render( ige._threeScene, ige._threeCamera );
-
 			//ige._threeRenderer.setViewport(400, 10, 400, 200);
-			ige._threeRenderer.render( ige._threeScene, ige._threeCamera );
 			//ige._threeComposer.render(0.1);
 		});
 	},

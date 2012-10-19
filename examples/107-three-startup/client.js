@@ -44,24 +44,25 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					// Create an entity and mount it to the scene
-					self.obj[0] = new Rotator()
+					self.obj[0] = new Rotator(-0.1)
 						.id('fairy1')
 						.depth(1)
 						.width(100)
 						.height(100)
 						.texture(gameTexture[0])
-						.translateTo(100, 0, 0)
-						.mesh("../../engine/components/three/fan.js")
+						.translateTo(-35, 0, 0)
+						.mesh("models/fan.json")
 						.mount(self.scene1);
 
-					self.obj[0] = new Rotator()
+					self.obj[1] = new Rotator(0.1)
 						.id('fairy2')
 						.depth(1)
 						.width(100)
 						.height(100)
 						.texture(gameTexture[0])
-						.translateTo(-100, 0, 0)
-						.mesh("../../engine/components/three/fan.js")
+						.translateTo(35, 0, 0)
+						.rotateTo(0, 0, 20 * Math.PI / 180)
+						.mesh("models/fan.json")
 						.mount(self.scene1);
 				}
 			});
