@@ -69,9 +69,29 @@ var Client = IgeClass.extend({
 						.rotateTo(0, -45 * Math.PI / 180, 20 * Math.PI / 180)
 						.mesh("models/fan.json")
 						.mount(self.scene1);
+
+					ige._postTick.push(self.moveCamera);
 				}
 			});
 		});
+	},
+
+	moveCamera: function () {
+		var self = ige.client;
+
+		if (!self._camDir) {
+			self.vp1.camera.translateBy(0.05 * ige.tickDelta, 0, 0);
+
+			if (self.vp1.camera._translate.x > 200) {
+				self._camDir = 1;
+			}
+		} else {
+			self.vp1.camera.translateBy(-0.05 * ige.tickDelta, 0, 0);
+
+			if (self.vp1.camera._translate.x < -200) {
+				self._camDir = 0;
+			}
+		}
 	}
 });
 
