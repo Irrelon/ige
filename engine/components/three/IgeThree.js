@@ -10,11 +10,12 @@ var IgeThree = IgeEventingClass.extend({
 		// processing code into them instead of their standard 2d
 		// or isometric processing
 		IgeEngine.prototype._frontBufferSetup = this.IgeEngine_frontBufferSetup;
+
+		// Alter entity methods
 		IgeEntity.prototype._transformContext = this.IgeEntity_transformContext;
 		IgeEntity.prototype._renderEntity = this.IgeEntity_renderEntity;
+		IgeEntity.prototype.material = this.IgeEntity_material;
 		IgeEntity.prototype.mesh = this.IgeEntity_mesh;
-
-		// Setup entity mounting methods
 		IgeEntity.prototype._$mount = IgeEntity.prototype.mount;
 		IgeEntity.prototype.mount = this.IgeEntity_mount;
 		IgeEntity.prototype._$unMount = IgeEntity.prototype.unMount;
@@ -256,7 +257,7 @@ var IgeThree = IgeEventingClass.extend({
 		if (m) {
 			// Update the translate, rotate and scale of the mesh
 			m.position.x = this._translate.x;
-			m.position.y = this._translate.y;
+			m.position.y = -this._translate.y;
 			m.position.z = this._translate.z;
 
 			m.rotation.x = this._rotate.x;
@@ -267,6 +268,15 @@ var IgeThree = IgeEventingClass.extend({
 			m.scale.y = this._scale.y;
 			m.scale.z = this._scale.z;
 		}
+	},
+
+	IgeEntity_material: function (material) {
+		if (material !== undefined) {
+			this._material = material;
+			return this;
+		}
+
+		return this._material;
 	},
 
 	IgeEntity_mesh: function (mesh) {
@@ -282,12 +292,9 @@ var IgeThree = IgeEventingClass.extend({
 
 					self._mesh = new THREE.Mesh(
 						geometry,
-						new THREE.MeshPhongMaterial({
-							color: 0xa1592f,
-							shininess: 10000,
-							specular: 10
-						})
+						self._material || new THREE.MeshFaceMaterial()
 					);
+
 					self._mesh.receiveShadow = true;
 					self._mesh.castShadow = true;
 
