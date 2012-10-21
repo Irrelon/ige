@@ -32,7 +32,7 @@ var IgeSocketIoComponent = IgeEventingClass.extend([
 			this.implement(IgeSocketIoClient);
 		}
 
-		this.log('Network component initiated!');
+		this.log('Network component initiated with socket.io version: ' + this._socketio.version);
 	}
 });
 
