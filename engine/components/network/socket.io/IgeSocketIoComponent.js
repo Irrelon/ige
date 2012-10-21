@@ -29,6 +29,7 @@ var IgeSocketIoComponent = IgeEventingClass.extend([
 		/* CEXCLUDE */
 
 		if (!ige.isServer) {
+			this._socketio = IgeSocketIoClient;
 			this.implement(IgeSocketIoClient);
 		}
 

@@ -3,6 +3,7 @@
  * networking systems.
  */
 var IgeNetIoClient = {
+	version: '1.0.0',
 	_initDone: false,
 	_idCounter: 0,
 	_requests: {},

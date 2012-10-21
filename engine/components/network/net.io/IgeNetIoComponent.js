@@ -30,10 +30,11 @@ var IgeNetIoComponent = IgeEventingClass.extend([
 		/* CEXCLUDE */
 
 		if (!ige.isServer) {
+			this._netio = IgeNetIoClient;
 			this.implement(IgeNetIoClient);
 		}
 
-		this.log('Network component initiated!');
+		this.log('Network component initiated with Net.IO version: ' + this._netio.version);
 	},
 
 	/**
