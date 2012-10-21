@@ -53,10 +53,12 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.width(100)
 						.height(100)
-						.texture(gameTexture[0])
-						.translateTo(-25, 0, 0)
-						.rotateTo(0, 45 * Math.PI / 180, 0 * Math.PI / 180)
-						.mesh("models/fan.json")
+						//.texture(gameTexture[0])
+						.translateTo(0, -50, 0)
+						.rotateTo(0, 0, 0)
+						.scaleTo(10, 10, 10)
+						.material(new THREE.MeshFaceMaterial())
+						.mesh('models/space_frigate_6.json')
 						.mount(self.scene1);
 
 					self.obj[1] = new Rotator(0, 0, 0.1)
@@ -65,66 +67,33 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[0])
-						.translateTo(25, 0, 0)
-						.rotateTo(0, -45 * Math.PI / 180, 20 * Math.PI / 180)
-						.mesh("models/fan.json")
+						.translateTo(0, 50, 0)
+						.rotateTo(0, 0, 0)
+						.material(new THREE.MeshPhongMaterial({
+							color: 0xa1592f,
+							shininess: 1,
+							specular: 10
+						}))
+						.mesh('models/fan.json')
 						.mount(self.scene1);
 
-					self.obj[2] = new Rotator(0, 0, -0.1)
-						.id('fairy2')
-						.depth(1)
-						.width(100)
-						.height(100)
-						.texture(gameTexture[0])
-						.translateTo(25, 70, 0)
-						.rotateTo(0, -45 * Math.PI / 180, 0 * Math.PI / 180)
-						.mesh("models/fan.json")
-						.mount(self.scene1);
-
-					self.obj[3] = new Rotator(0, 0, 0.1)
-						.id('fairy3')
-						.depth(1)
-						.width(100)
-						.height(100)
-						.texture(gameTexture[0])
-						.translateTo(70, 70, 45)
-						.rotateTo(0, -45 * Math.PI / 180, 20 * Math.PI / 180)
-						.mesh("models/fan.json")
-						.mount(self.scene1);
-
-					self.obj[4] = new Rotator(0, 0, -0.1)
-						.id('fairy4')
-						.depth(1)
-						.width(100)
-						.height(100)
-						.texture(gameTexture[0])
-						.translateTo(70, 70, 90)
-						.rotateTo(0, -135 * Math.PI / 180, 0 * Math.PI / 180)
-						.mesh("models/fan.json")
-						.mount(self.scene1);
-
-					//ige._postTick.push(self.moveCamera);
+					for (var k = 0; k < 100; k++) {
+						new Rotator(0, 0, Math.random())
+							.depth(1)
+							.width(100)
+							.height(100)
+							.translateTo((Math.random() * 800) - 400, -50, 0)
+							.rotateTo(0, 0, 0)
+							.scaleTo(10, 10, 10)
+							.material(new THREE.MeshFaceMaterial())
+							.mesh('models/space_frigate_6.json')
+							// TODO: Make models load in the ClientConfig.js file so we can pre-load them
+							// TODO: Cache models so we only load one of a kind and then re-use the mesh
+							.mount(self.scene1);
+					}
 				}
 			});
 		});
-	},
-
-	moveCamera: function () {
-		var self = ige.client;
-
-		if (!self._camDir) {
-			self.vp1.camera.translateBy(0.05 * ige.tickDelta, 0, 0);
-
-			if (self.vp1.camera._translate.x > 200) {
-				self._camDir = 1;
-			}
-		} else {
-			self.vp1.camera.translateBy(-0.05 * ige.tickDelta, 0, 0);
-
-			if (self.vp1.camera._translate.x < -200) {
-				self._camDir = 0;
-			}
-		}
 	}
 });
 
