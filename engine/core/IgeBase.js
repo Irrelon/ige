@@ -9,7 +9,8 @@ igeDebug = {
 	node: typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined',
 	level: ['log', 'warning', 'error'],
 	stacks: true,
-	throwErrors: true
+	throwErrors: true,
+	timing: true
 };
 
 if (igeDebug.node) {
