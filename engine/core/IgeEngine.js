@@ -54,6 +54,7 @@ var IgeEngine = IgeEntity.extend({
 
 		this._renderContext = '2d'; // The rendering context, default is 2d
 		this._renderMode = this._renderModes[this._renderContext]; // Integer representation of the render context
+		this._tickTime = 'NA';
 		this.tickDelta = 0; // The time between the last tick and the current one
 		this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 		this._state = 0; // Currently stopped
@@ -800,7 +801,7 @@ var IgeEngine = IgeEntity.extend({
 		if (self._showStats) {
 			switch (self._showStats) {
 				case 1:
-					self._statsDiv.innerHTML = self._fps + 'fps ' + self._dps + 'dps ' + self._dpt + 'dpt';
+					self._statsDiv.innerHTML = self._fps + 'fps ' + self._dps + 'dps ' + self._dpt + 'dpt ' + self._tickTime + 'tms';
 					break;
 			}
 		}
@@ -810,10 +811,17 @@ var IgeEngine = IgeEntity.extend({
 	 * Called each frame to traverse and render the scenegraph.
 	 */
 	tick: function (timeStamp, ctx) {
-		var self = ige,
+		//console.time('IgeEngine.tick');
+		var st,
+			et,
+			self = ige,
 			ptArr = self._postTick,
 			ptCount = ptArr.length,
 			ptIndex;
+
+		if (igeDebug.timing) {
+			st = new Date().getTime();
+		}
 
 		if (self._state) {
 			// Check if we were passed a context to work with
@@ -869,6 +877,12 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		self._resized = false;
+		//console.timeEnd('IgeEngine.tick');
+
+		if (igeDebug.timing) {
+			et = new Date().getTime();
+			ige._tickTime = et - st;
+		}
 	},
 
 	fps: function () {
