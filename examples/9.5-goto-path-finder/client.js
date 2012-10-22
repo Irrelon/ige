@@ -165,7 +165,8 @@ var Client = IgeClass.extend({
 
 				// Create a path finder and generate a path using
 				// the collision map data
-				self.pathFinder = new IgePathFinder();
+				self.pathFinder = new IgePathFinder()
+					.neighbourLimit(100);
 
 				// Generate first path, diagonal enabled
 				var path1, path2, path3, path4;
@@ -197,11 +198,11 @@ var Client = IgeClass.extend({
 				self.player
 					.path.drawPath(true) // Enable debug drawing the paths
 					.path.drawPathGlow(true) // Enable path glowing (eye candy)
-					.path.drawPathText(true) // Enable path text output
-					.path.add(path1)
-					.path.add(path2)
-					.path.add(path3)
-					.path.add(path4);
+					.path.drawPathText(true); // Enable path text output
+					//.path.add(path1)
+					//.path.add(path2)
+					//.path.add(path3)
+					//.path.add(path4);
 
 				// Register some event listeners for the path
 				self.player.path.on('started', function () { console.log('Pathing started...'); });

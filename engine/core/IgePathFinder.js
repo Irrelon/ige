@@ -36,7 +36,7 @@ var IgePathFinder = IgeEventingClass.extend({
 	 * @param {Boolean} allowDiagonal Whether to allow neighboring tiles along a diagonal axis. Defaults to false if undefined.
 	 * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
 	 */
-	aStar: function (tileMap, startPoint, endPoint, comparisonCallback, allowSquare, allowDiagonal) {
+	aStar: function (tileMap, startPoint, endPoint, comparisonCallback, allowSquare, allowDiagonal, allowInvalidDestination) {
 		var openList = [],
 			closedList = [],
 			listHash = {},
@@ -51,7 +51,8 @@ var IgePathFinder = IgeEventingClass.extend({
 			neighbourNode,
 			endPointCheckTile,
 			tileMapData,
-			existingNode;
+			existingNode,
+			lowestHNode;
 
 		// Set some defaults
 		if (allowSquare === undefined) { allowSquare = true; }
@@ -60,7 +61,7 @@ var IgePathFinder = IgeEventingClass.extend({
 		// Check that the end point on the map is actually allowed to be pathed to!
 		tileMapData = tileMap.map._mapData;
 		endPointCheckTile = tileMapData[endPoint.y] && tileMapData[endPoint.y][endPoint.x] ? tileMapData[endPoint.y][endPoint.x] : null;
-		if (!comparisonCallback(endPointCheckTile, endPoint.x, endPoint.y)) {
+		if (!allowInvalidDestination && !comparisonCallback(endPointCheckTile, endPoint.x, endPoint.y)) {
 			// There is no path to the end point because the end point
 			// is not allowed to be pathed to!
 			this.emit('noPathFound');
@@ -126,6 +127,12 @@ var IgePathFinder = IgeEventingClass.extend({
 					neighbourNode = neighbourList[neighbourCount];
 					existingNode = listHash[neighbourNode.hash];
 
+					// Check if this neighbour node has the lowest
+					// h value (distance from target) and store it
+					if (!lowestHNode || neighbourNode.h < lowestHNode.h) {
+						lowestHNode = neighbourNode;
+					}
+
 					// Check that the neighbour is not on the closed list
 					if (!existingNode || existingNode.listType !== -1) {
 						// The neighbour is not on the closed list so
@@ -152,11 +159,16 @@ var IgePathFinder = IgeEventingClass.extend({
 
 		}
 
-		// Could not find a path, return an empty array!
-		//this.log('Could not find a path to destination!');
-		this.emit('noPathFound');
-		return [];
+		if (!allowInvalidDestination) {
+			// Could not find a path, return an empty array!
+			//this.log('Could not find a path to destination!');
+			this.emit('noPathFound');
+			return [];
+		} else {
+			// We couldn't path to the destination so return
+			// the closest detected end point
 
+		}
 	},
 
 	/**
