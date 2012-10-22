@@ -492,10 +492,22 @@ var IgeTexture = IgeEventingClass.extend({
 	 * Destroys the item.
 	 */
 	destroy: function () {
+		delete this._eventListeners;
+
+		// Remove us from the image store reference array
+		if (this.image && this.image._igeTextures) {
+			this.image._igeTextures.pull(this);
+		}
+
+		// Remove the texture from the texture store
+		ige.TextureStore.pull(this);
+
 		delete this.image;
 		delete this.script;
 		delete this._textureCanvas;
 		delete this._textureCtx;
+
+		this._destroyed = true;
 	}
 });
 

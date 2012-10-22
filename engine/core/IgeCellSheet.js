@@ -112,11 +112,6 @@ var IgeCellSheet = IgeTexture.extend({
 		}
 	},
 
-	destroy: function () {
-		this.image = null;
-		this.script = null;
-	},
-
 	/**
 	 * Returns a string containing a code fragment that when
 	 * evaluated will reproduce this object.

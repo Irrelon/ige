@@ -332,8 +332,10 @@ var IgeEngine = IgeEntity.extend({
 	 * to load, it will also call the _allTexturesLoaded() method.
 	 */
 	textureLoadEnd: function (url, textureObj) {
-		// Add the texture to the TextureStore array
-		this.TextureStore.push(textureObj);
+		if (!textureObj._destroyed) {
+			// Add the texture to the TextureStore array
+			this.TextureStore.push(textureObj);
+		}
 
 		// Decrement the overall loading number
 		this._texturesLoading--;

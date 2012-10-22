@@ -50,11 +50,6 @@ var IgeSpriteSheet = IgeTexture.extend({
 		str += ".id('" + this.id() + "');";
 
 		return str;
-	},
-
-	destroy: function () {
-		this.image = null;
-		this.script = null;
 	}
 });
 
