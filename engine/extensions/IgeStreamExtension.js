@@ -32,6 +32,27 @@ var IgeStreamExtension = {
 	},
 
 	/**
+	 * Gets / sets the stream control call interval. This value
+	 * is in milliseconds and cannot be lower than 16.
+	 * @param {Number=} val Number of milliseconds between calls
+	 * to the streamControl method.
+	 * @return {*}
+	 */
+	streamControlInterval: function (val) {
+		if (method !== undefined) {
+			if (val < 16) {
+				delete this._streamControlInterval;
+			} else {
+				this._streamControlDelta = 0;
+				this._streamControlInterval = val;
+			}
+			return this;
+		}
+
+		return this._streamControlInterval;
+	},
+
+	/**
 	 * Gets / sets the precision by which floating-point values will
 	 * be encoded and sent when packaged into stream data.
 	 * @param val
@@ -72,6 +93,21 @@ var IgeStreamExtension = {
 			// Stream mode is automatic so check for the
 			// control method
 			if (this._streamControl) {
+				// Check if we have a stream control interval
+				if (this._streamControlInterval) {
+					this._streamControlDelta += ige.tickDelta;
+
+					if (this._streamControlDelta < this._streamControlInterval) {
+						// The stream control interval is still higher than
+						// the stream control delta so exit without calling the
+						// stream control method
+						return this;
+					} else {
+						// We've reached the delta we want so zero it now
+						// ready for the next loop
+						this._streamControlDelta = 0;
+					}
+				}
 				// Stream control method exists, loop clients and call
 				// the control method to see if data should be streamed
 
