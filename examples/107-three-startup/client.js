@@ -76,21 +76,6 @@ var Client = IgeClass.extend({
 						}))
 						.mesh('models/fan.json')
 						.mount(self.scene1);
-
-					for (var k = 0; k < 100; k++) {
-						new Rotator(0, 0, Math.random())
-							.depth(1)
-							.width(100)
-							.height(100)
-							.translateTo((Math.random() * 800) - 400, -50, 0)
-							.rotateTo(0, 0, 0)
-							.scaleTo(10, 10, 10)
-							.material(new THREE.MeshFaceMaterial())
-							.mesh('models/space_frigate_6.json')
-							// TODO: Make models load in the ClientConfig.js file so we can pre-load them
-							// TODO: Cache models so we only load one of a kind and then re-use the mesh
-							.mount(self.scene1);
-					}
 				}
 			});
 		});
