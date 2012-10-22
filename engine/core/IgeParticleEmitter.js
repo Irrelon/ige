@@ -50,10 +50,12 @@ var IgeParticleEmitter = IgeEntity.extend({
 		this.lifeVariance(0, 0);
 	},
 
-	/* particle - Sets the class that all particles emitted from this
-	emitter will be created from. {
-		category:"method",
-	} */
+	/**
+	 * Sets the class that all particles emitted from this
+	 * emitter will be created from.
+	 * @param {IgeEntity} obj
+	 * @return {*}
+	 */
 	particle: function (obj) {
 		this._particle = obj;
 		return this;
@@ -240,22 +242,6 @@ var IgeParticleEmitter = IgeEntity.extend({
 		return this;
 	},
 
-	/*vectorAngleBase: function (val) {
-		this._vectorAngleBase = val;
-	},
-
-	vectorAngleVariance: function (a, b) {
-		this._vectorAngleVariance = [a, b];
-	},
-
-	vectorPowerBase: function (val) {
-		this._vectorPowerBase = val;
-	},
-
-	vectorPowerVariance: function (a, b) {
-		this._vectorPowerVariance = [a, b];
-	},*/
-
 	/**
 	 * Sets the base velocity vector of each emitted particle and optionally
 	 * the min and max vectors that are used to randomize the resulting particle
@@ -284,14 +270,11 @@ var IgeParticleEmitter = IgeEntity.extend({
 		return this;
 	},
 
-	/** start - Starts the particle emitter which will begin spawning
-	particle entities based upon the emitter's current settings. {
-		category:"method",
-		returns: {
-			type:"bool",
-			desc:"Returns true if the emitter started successfully or false if not."
-		},
-	} **/
+	/**
+	 * Starts the particle emitter which will begin spawning
+	 * particle entities based upon the emitter's current settings.
+	 * @return {*}
+	 */
 	start: function () {
 		if (this._particle) {
 			this._quantityTimespan = this._quantityTimespan || 1000;
@@ -309,20 +292,21 @@ var IgeParticleEmitter = IgeEntity.extend({
 		return this;
 	},
 
-	/** stop - Stops the particle emitter. The current
-	particles will continue to process until they reach
-	their natural lifespan. {
-		category:"method",
-	} **/
+	/**
+	 * Stops the particle emitter. The current particles will
+	 * continue to process until they reach their natural lifespan.
+	 * @return {*}
+	 */
 	stop: function () {
 		this._started = false;
 		return this;
 	},
 
-	/** stopAndKill - Stops the particle emitter. The current
-	particles will be destroyed immediately. {
-		category:"method",
-	} **/
+	/**
+	 * Stops the particle emitter. The current particles will be
+	 * destroyed immediately.
+	 * @return {*}
+	 */
 	stopAndKill: function () {
 		this._started = false;
 
@@ -341,28 +325,17 @@ var IgeParticleEmitter = IgeEntity.extend({
 		return this;
 	},
 
-	/** baseAndVarianceValue - Takes a base value and a variance range
-	and returns a random value between the range, added to the base. {
-		category:"method",
-		arguments: [{
-			name:"base",
-			type:"float",
-			desc:"The base value.",
-		}, {
-			name:"variance",
-			type:"array",
-			desc:"An array containing the two values of the variance range.",
-		}, {
-			name:"floorIt",
-			type:"bool",
-			desc:"If set to true, will cause the returned value to be passed through Math.floor().",
-			flags:"optional",
-		}],
-		returns: {
-			type:"bool",
-			desc:"Returns the final value based upon the base value and variance range.",
-		},
-	} **/
+	/**
+	 * Takes a base value and a variance range and returns a random
+	 * value between the range, added to the base.
+	 * @param {Number} base The base value.
+	 * @param {Array} variance An array containing the two values of
+	 * the variance range.
+	 * @param {Boolean} floorIt If set to true, will cause the returned
+	 * value to be passed through Math.floor().
+	 * @return {Number} Returns the final value based upon the base
+	 * value and variance range.
+	 */
 	baseAndVarianceValue: function (base, variance, floorIt) {
 		base = base || 0;
 		variance = variance || [0, 0];
@@ -395,10 +368,11 @@ var IgeParticleEmitter = IgeEntity.extend({
 		}
 	},
 
-	/** tick - Creates and maintains the particles that this
-	emitter is responsible for spawning and controlling. {
-		category:"method",
-	} **/
+	/**
+	 * Creates and maintains the particles that this emitter is
+	 * responsible for spawning and controlling.
+	 * @param ctx
+	 */
 	tick: function (ctx) {
 		this._currentDelta += ige.tickDelta;
 
@@ -656,14 +630,11 @@ var IgeParticleEmitter = IgeEntity.extend({
 		this._super(ctx);
 	},
 
-	/** particles - Returns an array of the current
-	particle entities that this emitter has spawned. {
-		category:"method",
-		returns: {
-			type:"array",
-			desc:"The array of particle entities the emitter spawned.",
-		},
-	} **/
+	/**
+	 * Returns an array of the current particle entities that this
+	 * emitter has spawned.
+	 * @return {Array} The array of particle entities the emitter spawned.
+	 */
 	particles: function () {
 		return this._particles;
 	},
