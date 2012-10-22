@@ -35,6 +35,7 @@ var IgePathFinder = IgeEventingClass.extend({
 	 * @param {Boolean} allowSquare Whether to allow neighboring tiles along a square axis. Defaults to true if undefined.
 	 * @param {Boolean} allowDiagonal Whether to allow neighboring tiles along a diagonal axis. Defaults to false if undefined.
 	 * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
+	 * @param {Boolean=} allowInvalidDestination If the path finder cannot path to the destination tile, if this is true the closest path will be returned instead.
 	 */
 	aStar: function (tileMap, startPoint, endPoint, comparisonCallback, allowSquare, allowDiagonal, allowInvalidDestination) {
 		var openList = [],
@@ -70,11 +71,14 @@ var IgePathFinder = IgeEventingClass.extend({
 		}
 
 		// Starting point to open list
-		startNode = new IgePathNode(startPoint.x, startPoint.y, 0, 0, 0);
+
+		startNode = new IgePathNode(startPoint.x, startPoint.y, 0, 0, this._heuristic(startPoint.x, startPoint.y, endPoint.x, endPoint.y, 10));
 		startNode.link = 1;
 		openList.push(startNode);
 		listHash[startNode.hash] = startNode;
 		startNode.listType = 1;
+
+		lowestHNode = startNode;
 
 		// Loop as long as there are more points to process in our open list
 		while (openList.length) {
@@ -127,12 +131,6 @@ var IgePathFinder = IgeEventingClass.extend({
 					neighbourNode = neighbourList[neighbourCount];
 					existingNode = listHash[neighbourNode.hash];
 
-					// Check if this neighbour node has the lowest
-					// h value (distance from target) and store it
-					if (!lowestHNode || neighbourNode.h < lowestHNode.h) {
-						lowestHNode = neighbourNode;
-					}
-
 					// Check that the neighbour is not on the closed list
 					if (!existingNode || existingNode.listType !== -1) {
 						// The neighbour is not on the closed list so
@@ -152,14 +150,21 @@ var IgePathFinder = IgeEventingClass.extend({
 							openList.push(neighbourNode);
 							listHash[neighbourNode.hash] = neighbourNode;
 							neighbourNode.listType = 1;
+							existingNode = neighbourNode;
 						}
+					}
+
+					// Check if this neighbour node has the lowest
+					// h value (distance from target) and store it
+					if (!lowestHNode || existingNode.h < lowestHNode.h) {
+						lowestHNode = existingNode;
 					}
 				}
 			}
 
 		}
 
-		if (!allowInvalidDestination) {
+		if (!allowInvalidDestination || (allowInvalidDestination && !lowestHNode)) {
 			// Could not find a path, return an empty array!
 			//this.log('Could not find a path to destination!');
 			this.emit('noPathFound');
@@ -167,7 +172,16 @@ var IgePathFinder = IgeEventingClass.extend({
 		} else {
 			// We couldn't path to the destination so return
 			// the closest detected end point
+			pathPoint = lowestHNode;
+			finalPath = [];
 
+			while(pathPoint.link) {
+				finalPath.push(pathPoint);
+				pathPoint = pathPoint.link;
+			}
+
+			this.emit('pathFound', finalPath);
+			return finalPath.reverse();
 		}
 	},
 
@@ -258,7 +272,8 @@ var IgePathFinder = IgeEventingClass.extend({
 	},
 
 	/**
-	 * The heuristic to add to a movement cost for the A* algorithm.
+	 * The heuristic to calculate the rough cost of pathing
+	 * from the x1, y1 to x2, y2.
 	 * @param {Number} x1 The first x co-ordinate.
 	 * @param {Number} y1 The first y co-ordinate.
 	 * @param {Number} x2 The second x co-ordinate.
@@ -267,7 +282,7 @@ var IgePathFinder = IgeEventingClass.extend({
 	 * @private
 	 */
 	_heuristic: function (x1, y1, x2, y2, moveCost) {
-		return moveCost * Math.abs(x1 - x2) + Math.abs(y1 - y2);
+		return moveCost * (Math.abs(x1 - x2) + Math.abs(y1 - y2));
 	},
 
 	as: function (map, fromNode, toNode) {
