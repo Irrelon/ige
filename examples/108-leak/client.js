@@ -43,7 +43,7 @@ var Client = IgeClass.extend({
 				setInterval(function() {
 				    var temp = new RandomMovingCharacter();
 					temp.destroy();
-				}, 50);
+				}, 1);
 
 // This is the original 6.1 demo code.
 /*				for (i = 0; i < 200; i++) {
