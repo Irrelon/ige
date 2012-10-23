@@ -47,32 +47,39 @@ var Client = IgeClass.extend({
 
 					self.vp1.camera.translateTo(0, 50, 400);
 
-					// Create an entity and mount it to the scene
+					// Create a ship entity and mount it to the scene
 					self.obj[0] = new Rotator(0, 0, -0.1)
 						.id('ship0')
-						.depth(1)
-						.width(100)
-						.height(100)
 						//.texture(gameTexture[0])
-						.translateTo(-150, -50, 0)
+						.translateTo(-200, -50, 0)
 						.rotateTo(0, 0, 0)
 						.scaleTo(10, 10, 10)
 						.material(new THREE.MeshFaceMaterial())
 						.mesh('models/space_frigate_6.json')
 						.mount(self.scene1);
 
-					self.obj[1] = new Rotator(0, -0.1, 0)
+					// Create another ship entity and mount it to
+					// the scene as well, this one will have a turret
+					// mounted to it as below
+					self.obj[1] = new Rotator(0, 0.1, 0)
 						.id('ship1')
-						.depth(1)
-						.width(100)
-						.height(100)
 						//.texture(gameTexture[0])
-						.translateTo(150, -50, 0)
-						.rotateTo(0, 0, 0)
+						.translateTo(200, -50, 0)
+						.rotateTo(0, 35 * Math.PI / 180, 0)
 						.scaleTo(10, 10, 10)
 						.material(new THREE.MeshFaceMaterial())
 						.mesh('models/space_frigate_6.json')
 						.mount(self.scene1);
+
+					// Mount a turret to the second ship entity
+					self.obj[2] = new IgeEntity()
+						.id('turret1')
+						.translateTo(0, 0, 1.8)
+						.rotateTo(0, 0, 0)
+						.scaleTo(0.1, 0.1, 0.1)
+						.material(new THREE.MeshFaceMaterial())
+						.mesh('models/turret.json')
+						.mount(self.obj[1]);
 				}
 			});
 		});
