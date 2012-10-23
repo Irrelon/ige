@@ -2,6 +2,8 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
 		ige.showStats(1);
+
+		// Setup three.js interaction
 		ige.renderContext('three');
 		ige.addComponent(IgeThree);
 
@@ -23,9 +25,6 @@ var Client = IgeClass.extend({
 		ige.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
-
-			// Setup the shaders
-			//var shaders = new IgeWebGlShaderBasic(ige._ctx);
 
 			// Start the engine
 			ige.start(function (success) {
