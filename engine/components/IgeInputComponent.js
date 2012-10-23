@@ -217,8 +217,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 			event.igePageY = event.pageY;
 		}
 
-		event.igeX = (event.igePageX - ige._canvas.offsetLeft);
-		event.igeY = (event.igePageY - ige._canvas.offsetTop);
+		event.igeX = (event.igePageX - this._canvas.offsetLeft);
+		event.igeY = (event.igePageY - this._canvas.offsetTop);
 	},
 
 	/**
@@ -226,12 +226,13 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * buffer DOM objects.
 	 * @private
 	 */
-	_setupListeners: function () {
+	setupListeners: function (canvas) {
 		this.log('Setting up input event listeners...');
 
+		this._canvas = canvas;
+
 		// Setup the event listeners
-		var self = this,
-			canvas = ige._canvas;
+		var self = this;
 
 		// Define event functions and keep references for later removal
 		this._evRef = {
@@ -269,11 +270,11 @@ var IgeInputComponent = IgeEventingClass.extend({
 		window.addEventListener('keyup', this._evRef.keyup, false);
 	},
 
-	_destroyListeners: function () {
+	destroyListeners: function () {
 		this.log('Removing input event listeners...');
 
 		// Remove the event listeners
-		var canvas = ige._canvas;
+		var canvas = this._canvas;
 
 		// Listen for mouse events
 		canvas.removeEventListener('mousedown', this._evRef.mousedown, false);

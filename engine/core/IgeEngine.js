@@ -596,7 +596,7 @@ var IgeEngine = IgeEntity.extend({
 			this._headless = false;
 
 			// Ask the input component to setup any listeners it has
-			this.input._setupListeners();
+			this.input.setupListeners(this._canvas);
 		}
 	},
 
@@ -618,7 +618,7 @@ var IgeEngine = IgeEntity.extend({
 	removeCanvas: function () {
 		// Stop listening for input events
 		if (this.input) {
-			this.input._destroyListeners();
+			this.input.destroyListeners();
 		}
 
 		// If we were auto-sizing, remove event listener
