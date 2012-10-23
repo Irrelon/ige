@@ -189,6 +189,39 @@ Array.prototype.eachIsolated = function (callback) {
 /**
  * Make property non-enumerable.
  */
+Object.defineProperty(Math, 'PI180', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
+
+/**
+ * Stores a pre-calculated PI / 180 value.
+ * @type {Number}
+ */
+Math.PI180 = Math.PI / 180;
+
+/**
+ * Make property non-enumerable.
+ */
+Object.defineProperty(Math, 'radians', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
+
+/**
+ * Converts degrees to radians.
+ * @param {Number} degrees
+ * @return {Number}
+ */
+Math.radians = function (degrees) {
+	return degrees * Math.PI180;
+};
+
+/**
+ * Make property non-enumerable.
+ */
 Object.defineProperty(Math, 'distance', {
 	enumerable:false,
 	writable:true,
