@@ -481,49 +481,47 @@ var IgeObject = IgeEventingClass.extend({
 							order_ind: arrCount - 1
 						};
 
-						if (arrCount > 1) {
-							for (i = 0; i < arrCount; ++i) {
-								sortObj.c[i] = 0;
-								sortObj.p[i] = -1;
+						for (i = 0; i < arrCount; ++i) {
+							sortObj.c[i] = 0;
+							sortObj.p[i] = -1;
 
-								for (j = i + 1; j < arrCount; ++j) {
-									sortObj.adj[i] = sortObj.adj[i] || [];
-									sortObj.adj[j] = sortObj.adj[j] || [];
+							for (j = i + 1; j < arrCount; ++j) {
+								sortObj.adj[i] = sortObj.adj[i] || [];
+								sortObj.adj[j] = sortObj.adj[j] || [];
 
-									if (arr[i]._inView && arr[j]._inView && arr[i]._projectionOverlap && arr[j]._projectionOverlap) {
-										if (arr[i]._projectionOverlap(arr[j])) {
-											if (arr[i].isBehind(arr[j])) {
-												sortObj.adj[j].push(i);
-											} else {
-												sortObj.adj[i].push(j);
-											}
+								if (arr[i]._inView && arr[j]._inView && arr[i]._projectionOverlap && arr[j]._projectionOverlap) {
+									if (arr[i]._projectionOverlap(arr[j])) {
+										if (arr[i].isBehind(arr[j])) {
+											sortObj.adj[j].push(i);
+										} else {
+											sortObj.adj[i].push(j);
 										}
 									}
 								}
 							}
-
-							for (i = 0; i < arrCount; ++i) {
-								if (sortObj.c[i] === 0) {
-									this._depthSortVisit(i, sortObj);
-								}
-							}
-
-							for (i = 0; i < sortObj.order.length; i++) {
-								arr[sortObj.order[i]].depth(i);
-							}
-
-							this._children.sort(function (a, b) {
-								var layerIndex = b._layer - a._layer;
-
-								if (layerIndex === 0) {
-									// On same layer so sort by depth
-									return b._depth - a._depth;
-								} else {
-									// Not on same layer so sort by layer
-									return layerIndex;
-								}
-							});
 						}
+
+						for (i = 0; i < arrCount; ++i) {
+							if (sortObj.c[i] === 0) {
+								this._depthSortVisit(i, sortObj);
+							}
+						}
+
+						for (i = 0; i < sortObj.order.length; i++) {
+							arr[sortObj.order[i]].depth(i);
+						}
+
+						this._children.sort(function (a, b) {
+							var layerIndex = b._layer - a._layer;
+
+							if (layerIndex === 0) {
+								// On same layer so sort by depth
+								return b._depth - a._depth;
+							} else {
+								// Not on same layer so sort by layer
+								return layerIndex;
+							}
+						});
 					}
 
 					if (this._depthSortMode === 1) {
