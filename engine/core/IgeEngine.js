@@ -77,15 +77,11 @@ var IgeEngine = IgeEntity.extend({
 		}; // Holds a reference to every item in the scenegraph by it's ID
 		this._postTick = []; // An array of methods that are called upon tick completion
 
-		if (this.isServer) {
-			// Setup a dummy canvas context
-			this.log('Using dummy canvas context');
-			this._ctx = IgeDummyContext;
-		} else {
-			// Set the context to a dummy context to start
-			// with in case we are in "headless" mode
-			this._ctx = IgeDummyContext;
-		}
+		// Set the context to a dummy context to start
+		// with in case we are in "headless" mode and
+		// a replacement context never gets assigned
+		this._ctx = IgeDummyContext;
+		this._headless = true;
 
 		this.dependencyTimeout(30000); // Wait 30 seconds to load all dependencies then timeout
 
@@ -597,6 +593,7 @@ var IgeEngine = IgeEntity.extend({
 			// which sets up initial canvas dimensions
 			this._resizeEvent();
 			this._ctx = this._canvas.getContext(this._renderContext);
+			this._headless = false;
 
 			// Ask the input component to setup any listeners it has
 			this.input._setupListeners();
@@ -607,13 +604,15 @@ var IgeEngine = IgeEntity.extend({
 	 * Clears the entire canvas.
 	 */
 	clearCanvas: function () {
-		// Clear the whole canvas
-		this._ctx.clearRect(
-			0,
-			0,
-			this._canvas.width,
-			this._canvas.height
-		);
+		if (this._ctx) {
+			// Clear the whole canvas
+			this._ctx.clearRect(
+				0,
+				0,
+				this._canvas.width,
+				this._canvas.height
+			);
+		}
 	},
 
 	removeCanvas: function () {
@@ -635,6 +634,8 @@ var IgeEngine = IgeEntity.extend({
 		// Clear internal references
 		delete this._canvas;
 		delete this._ctx;
+		this._ctx = IgeDummyContext;
+		this._headless = true;
 	},
 
 	/**
@@ -753,21 +754,24 @@ var IgeEngine = IgeEntity.extend({
 				arr = ige._children,
 				arrCount = arr.length;
 
-			// Make sure we can divide the new width and height by 2...
-			// otherwise minus 1 so we get an even number so that we
-			// negate the blur effect of sub-pixel rendering
-			if (newWidth % 2) { newWidth--; }
-			if (newHeight % 2) { newHeight--; }
+			// Only update canvas dimensions if it exists
+			if (ige._canvas) {
+				// Make sure we can divide the new width and height by 2...
+				// otherwise minus 1 so we get an even number so that we
+				// negate the blur effect of sub-pixel rendering
+				if (newWidth % 2) { newWidth--; }
+				if (newHeight % 2) { newHeight--; }
 
-			ige._canvas.width = newWidth * ige._deviceFinalDrawRatio;
-			ige._canvas.height = newHeight * ige._deviceFinalDrawRatio;
+				ige._canvas.width = newWidth * ige._deviceFinalDrawRatio;
+				ige._canvas.height = newHeight * ige._deviceFinalDrawRatio;
 
-			if (ige._deviceFinalDrawRatio !== 1) {
-				ige._canvas.style.width = newWidth + 'px';
-				ige._canvas.style.height = newHeight + 'px';
+				if (ige._deviceFinalDrawRatio !== 1) {
+					ige._canvas.style.width = newWidth + 'px';
+					ige._canvas.style.height = newHeight + 'px';
 
-				// Scale the canvas context to account for the change
-				ige._ctx.scale(ige._deviceFinalDrawRatio, ige._deviceFinalDrawRatio);
+					// Scale the canvas context to account for the change
+					ige._ctx.scale(ige._deviceFinalDrawRatio, ige._deviceFinalDrawRatio);
+				}
 			}
 
 			ige.geometry = new IgePoint(newWidth, newHeight, 0);
