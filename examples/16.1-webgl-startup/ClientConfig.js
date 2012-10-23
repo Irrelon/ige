@@ -2,8 +2,13 @@ var igeClientConfig = {
 	include: [
 		/* Your custom game JS scripts */
 		'./gameClasses/ClientNetworkEvents.js',
-		'./gameClasses/Rotator.js',
+		'./gameClasses/rotator.js',
 
+		/* Models */
+		'./models/modelSpaceFrigate6.js',
+		'./models/modelTurret.js',
+
+		/* 3d filters */
 		'../../engine/components/three/EffectComposer.js',
 		'../../engine/components/three/RenderPass.js',
 		'../../engine/components/three/ShaderExtras.js',
@@ -13,6 +18,7 @@ var igeClientConfig = {
 		'../../engine/components/three/TexturePass.js',
 		'../../engine/components/three/ShaderPass.js',
 		'../../engine/components/three/MaskPass.js',
+
 		/* Standard game scripts */
 		'./client.js',
 		'./index.js'

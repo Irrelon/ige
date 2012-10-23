@@ -1,4 +1,4 @@
-{
+var modelTurret = {
 
 	"metadata" :
 	{
@@ -56,4 +56,4 @@
 	"animation" : {}
 
 
-}
+};

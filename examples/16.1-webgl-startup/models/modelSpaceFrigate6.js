@@ -1,4 +1,4 @@
-{
+var modelSpaceFrigate6 = {
 
 	"metadata" :
 	{
@@ -56,4 +56,4 @@
 	"animation" : {}
 
 
-}
+};

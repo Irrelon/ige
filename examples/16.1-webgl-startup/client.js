@@ -54,7 +54,7 @@ var Client = IgeClass.extend({
 						.rotateTo(0, 0, 0)
 						.scaleTo(10, 10, 10)
 						.material(new THREE.MeshFaceMaterial())
-						.mesh('models/space_frigate_6.json')
+						.model(modelSpaceFrigate6)
 						.mount(self.scene1);
 
 					// Create another ship entity and mount it to
@@ -67,7 +67,7 @@ var Client = IgeClass.extend({
 						.rotateTo(0, 35 * Math.PI / 180, 0)
 						.scaleTo(10, 10, 10)
 						.material(new THREE.MeshFaceMaterial())
-						.mesh('models/space_frigate_6.json')
+						.model(modelSpaceFrigate6)
 						.mount(self.scene1);
 
 					// Mount a turret to the second ship entity
@@ -77,7 +77,7 @@ var Client = IgeClass.extend({
 						.rotateTo(0, 0, 0)
 						.scaleTo(0.1, 0.1, 0.1)
 						.material(new THREE.MeshFaceMaterial())
-						.mesh('models/turret.json')
+						.model(modelTurret)
 						.mount(self.obj[1]);
 				}
 			});

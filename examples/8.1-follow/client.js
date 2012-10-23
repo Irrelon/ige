@@ -24,8 +24,6 @@ var Client = IgeClass.extend({
 						classId: 'CharacterMonk',
 
 						init: function () {
-		ige.showStats(1);
-
 							this._super();
 
 							// Setup the entity

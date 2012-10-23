@@ -2,6 +2,8 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
 		ige.showStats(1);
+
+		// Setup three.js interaction
 		ige.renderContext('three');
 		ige.addComponent(IgeThree);
 
@@ -24,8 +26,9 @@ var Client = IgeClass.extend({
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 
-			// Setup the shaders
-			//var shaders = new IgeWebGlShaderBasic(ige._ctx);
+			// Setup the input system to use events
+			// from the three.js renderer canvas
+			ige.input.setupListeners(ige.three._canvas);
 
 			// Start the engine
 			ige.start(function (success) {
@@ -47,39 +50,35 @@ var Client = IgeClass.extend({
 
 					self.vp1.camera.translateTo(0, 50, 400);
 
+					ige.input.mapAction('mouseX', ige.input.mouse.x);
+					ige.input.mapAction('mouseY', ige.input.mouse.y);
+
 					// Create a ship entity and mount it to the scene
-					self.obj[0] = new Rotator(0, 0, -0.1)
+					self.obj[0] = new IgeEntity()
 						.id('ship0')
-						//.texture(gameTexture[0])
-						.translateTo(-200, -50, 0)
-						.rotateTo(0, 0, 0)
+						.translateTo(0, 0, 0)
+						.rotateTo(0, Math.radians(0), 0)
 						.scaleTo(10, 10, 10)
 						.material(new THREE.MeshFaceMaterial())
-						.mesh('models/space_frigate_6.json')
+						.model(modelSpaceFrigate6)
 						.mount(self.scene1);
 
-					// Create another ship entity and mount it to
-					// the scene as well, this one will have a turret
-					// mounted to it as below
-					self.obj[1] = new Rotator(0, 0.1, 0)
-						.id('ship1')
-						//.texture(gameTexture[0])
-						.translateTo(200, -50, 0)
-						.rotateTo(0, 35 * Math.PI / 180, 0)
-						.scaleTo(10, 10, 10)
-						.material(new THREE.MeshFaceMaterial())
-						.mesh('models/space_frigate_6.json')
-						.mount(self.scene1);
-
-					// Mount a turret to the second ship entity
-					self.obj[2] = new IgeEntity()
+					// Mount a turret to the ship entity
+					self.obj[1] = new IgeEntity()
 						.id('turret1')
-						.translateTo(0, 0, 1.8)
-						.rotateTo(0, 0, 0)
+						.translateTo(0, -2.6, 1.8)
+						.rotateTo(0, 0, Math.radians(0))
 						.scaleTo(0.1, 0.1, 0.1)
 						.material(new THREE.MeshFaceMaterial())
-						.mesh('models/turret.json')
-						.mount(self.obj[1]);
+						.model(modelTurret)
+						.addBehaviour('lookAt', function () {
+							// Make turret "look" at the mouse position
+							var mx = ige.input.actionVal('mouseX'),
+								my = ige.input.actionVal('mouseY');
+
+							console.log(mx, my);
+						})
+						.mount(self.obj[0]);
 				}
 			});
 		});
