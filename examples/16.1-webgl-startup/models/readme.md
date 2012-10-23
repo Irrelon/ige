@@ -5,3 +5,4 @@ license for details as these models are not owned by Irrelon Software Limited an
 display purposed only.
 
 Space Frigate 6: http://www.turbosquid.com/FullPreview/Index.cfm/ID/588767
+Artist: http://www.turbosquid.com/Search/Artists/Angryfly
