@@ -61,7 +61,7 @@ var Client = IgeClass.extend({
 						.mesh('models/space_frigate_6.json')
 						.mount(self.scene1);
 
-					self.obj[0] = new Rotator(0, -0.1, 0)
+					self.obj[1] = new Rotator(0, -0.1, 0)
 						.id('ship1')
 						.depth(1)
 						.width(100)
