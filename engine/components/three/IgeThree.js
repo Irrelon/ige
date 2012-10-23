@@ -117,16 +117,16 @@ var IgeThree = IgeEventingClass.extend({
 
 			// Draw the scene
 			ige._threeRenderer.clear();
-			ige._threeRenderer.render(this._scene._threeScene, this.camera._threeCamera);
+			ige._threeRenderer.render(this._scene._threeObj, this.camera._threeCamera);
 		}
 	},
 
 	IgeScene2d_init: function (options) {
 		this._$init(options);
-		this._threeScene = new THREE.Scene();
+		this._threeObj = new THREE.Scene();
 
 		var ambient = new THREE.AmbientLight(0x242424);
-		this._threeScene.add(ambient);
+		this._threeObj.add(ambient);
 
 		var light = new THREE.SpotLight(0xd6e2ff, 1, 0, Math.PI, 1);
 		light.position.set(600, 400, 1000);
@@ -144,12 +144,12 @@ var IgeThree = IgeEventingClass.extend({
 		light.shadowMapWidth = 2048;
 		light.shadowMapHeight = 2048;
 		light.shadowMapSoft = true;
-		this._threeScene.add(light);
+		this._threeObj.add(light);
 
 		/*var specLight = new THREE.PointLight( 0x058ee4, 0.2, 0, Math.PI, 1 );
 		 ////flameLight.position.set( 600, 400, 1000 );
 		 //specLight.target.position.set( 0, 0, 0 );
-		 this._threeScene.add(specLight);*/
+		 this._threeObj.add(specLight);*/
 	},
 
 	IgeEngine_frontBufferSetup: function (autoSize, dontScale) {
@@ -158,7 +158,7 @@ var IgeThree = IgeEventingClass.extend({
 		var i, il,
 			self = this;
 
-		//this._threeScene = new THREE.Scene();
+		//this._threeObj = new THREE.Scene();
 		//this._threeCamera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 10000);
 		//this._threeCamera.position.x = 0;
 		//this._threeCamera.position.y = 0;
@@ -193,7 +193,7 @@ var IgeThree = IgeEventingClass.extend({
 		//material.opacity = 1;
 
 		//mesh1.position.z = 0;
-		//this._threeScene.add(mesh1);
+		//this._threeObj.add(mesh1);
 
 		/*var geometry = new THREE.PlaneGeometry(500, 500),
 			//material = new THREE.MeshBasicMaterial( { color: 0x0000ff, wireframe: false }),
@@ -202,7 +202,7 @@ var IgeThree = IgeEventingClass.extend({
 			mesh2 = new THREE.Mesh( geometry, material );
 
 		mesh2.position.z = 0;
-		//this._threeScene.add( mesh2 );*/
+		//this._threeObj.add( mesh2 );*/
 
 		this._threeLoader = new THREE.JSONLoader();
 
@@ -222,7 +222,7 @@ var IgeThree = IgeEventingClass.extend({
 		self._camY = 35;
 		self._camZ = 30;*/
 
-		/*var renderModel = new THREE.RenderPass( this._threeScene, this._threeCamera );
+		/*var renderModel = new THREE.RenderPass( this._threeObj, this._threeCamera );
 		var effectBloom = new THREE.BloomPass( .9 );
 		var effectVignette = new THREE.ShaderPass(THREE.ShaderExtras["colorCorrection"]);
 		var effectFilm = new THREE.FilmPass( .3, .3,1024,false );
@@ -239,10 +239,10 @@ var IgeThree = IgeEventingClass.extend({
 
 		/*this._postTick.push(function () {
 			//ige._threeRenderer.clear();
-			//ige._threeRenderer.render( ige._threeScene, ige._threeCamera );
+			//ige._threeRenderer.render( ige._threeObj, ige._threeCamera );
 
 			//ige._threeRenderer.setViewport(10, 10, 400, 200);
-			//ige._threeRenderer.render( ige._threeScene, ige._threeCamera );
+			//ige._threeRenderer.render( ige._threeObj, ige._threeCamera );
 			//ige._threeRenderer.setViewport(400, 10, 400, 200);
 			//ige._threeComposer.render(0.1);
 		});*/
@@ -253,7 +253,7 @@ var IgeThree = IgeEventingClass.extend({
 	},
 
 	IgeEntity_renderEntity: function (ctx, dontTransform) {
-		var m = this._mesh;
+		var m = this._threeObj;
 		if (m) {
 			// Update the translate, rotate and scale of the mesh
 			m.position.x = this._translate.x;
@@ -290,43 +290,43 @@ var IgeThree = IgeEventingClass.extend({
 				ige._threeLoader.load(mesh, function (geometry) {
 					self._meshLoading = false;
 
-					self._mesh = new THREE.Mesh(
+					self._threeObj = new THREE.Mesh(
 						geometry,
 						self._material || new THREE.MeshFaceMaterial()
 					);
 
-					self._mesh.receiveShadow = true;
-					self._mesh.castShadow = true;
+					self._threeObj.receiveShadow = true;
+					self._threeObj.castShadow = true;
 
-					self._mesh.position.x = self._translate.x;
-					self._mesh.position.y = self._translate.y;
-					self._mesh.position.z = self._translate.z;
+					self._threeObj.position.x = self._translate.x;
+					self._threeObj.position.y = self._translate.y;
+					self._threeObj.position.z = self._translate.z;
 
 					if (self._onMeshLoaded) {
 						self._onMeshLoaded();
 						delete self._onMeshLoaded;
 					}
 
-					self.emit('meshLoaded', self._mesh);
+					self.emit('meshLoaded', self._threeObj);
 				});
 			} else {
-				this._mesh = mesh;
+				this._threeObj = mesh;
 			}
 			return this;
 		}
 
-		return this._mesh;
+		return this._threeObj;
 	},
 
 	IgeEntity_mount: function (obj) {
 		var self = this;
 
-		if (this._mesh) {
-			obj._threeScene.add(this._mesh);
+		if (this._threeObj) {
+			obj._threeObj.add(this._threeObj);
 		} else {
 			if (this._meshLoading) {
 				this._onMeshLoaded = function () {
-					obj._threeScene.add(self._mesh);
+					obj._threeObj.add(self._threeObj);
 				};
 			}
 		}
@@ -339,11 +339,11 @@ var IgeThree = IgeEventingClass.extend({
 
 		if (this._meshLoading) {
 			this._onMeshLoaded = function () {
-				obj._threeScene.remove(self._mesh);
+				obj._threeObj.remove(self._threeObj);
 			};
 		} else {
-			if (this._mesh) {
-				obj._threeScene.remove(self._mesh);
+			if (this._threeObj) {
+				obj._threeObj.remove(self._threeObj);
 			}
 		}
 
