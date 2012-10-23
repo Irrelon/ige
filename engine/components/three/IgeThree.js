@@ -2,9 +2,12 @@ var IgeThree = IgeEventingClass.extend({
 	classId: 'IgeThree',
 	componentId: 'three',
 
-	init: function (entity, options) {
+	init: function(entity, options) {
 		this._entity = entity;
 		this._options = options;
+
+		this._loader = new THREE.JSONLoader();
+		this._geometryLoader = new THREE.GeometryLoader();
 
 		// Override a number of prototypes to inject Three-based
 		// processing code into them instead of their standard 2d
@@ -15,7 +18,7 @@ var IgeThree = IgeEventingClass.extend({
 		IgeEntity.prototype._transformContext = this.IgeEntity_transformContext;
 		IgeEntity.prototype._renderEntity = this.IgeEntity_renderEntity;
 		IgeEntity.prototype.material = this.IgeEntity_material;
-		IgeEntity.prototype.mesh = this.IgeEntity_mesh;
+		IgeEntity.prototype.model = this.IgeEntity_model;
 		IgeEntity.prototype._$mount = IgeEntity.prototype.mount;
 		IgeEntity.prototype.mount = this.IgeEntity_mount;
 		IgeEntity.prototype._$unMount = IgeEntity.prototype.unMount;
@@ -34,12 +37,12 @@ var IgeThree = IgeEventingClass.extend({
 		IgeViewport.prototype.tick = this.IgeViewport_tick;
 	},
 
-	IgeCamera_init: function (entity) {
+	IgeCamera_init: function(entity) {
 		this._$init(entity);
-		this._threeCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 10000);
+		this._threeObj = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 10000);
 	},
 
-	IgeCamera_tick: function (ctx) {
+	IgeCamera_tick: function(ctx) {
 		// Check if we are tracking the translate value of a target
 		if (this._trackTranslateTarget) {
 			var targetEntity = this._trackTranslateTarget,
@@ -82,20 +85,20 @@ var IgeThree = IgeEventingClass.extend({
 			}
 		}
 
-		this._threeCamera.position.x = this._translate.x;
-		this._threeCamera.position.y = this._translate.y;
-		this._threeCamera.position.z = this._translate.z;
+		this._threeObj.position.x = this._translate.x;
+		this._threeObj.position.y = this._translate.y;
+		this._threeObj.position.z = this._translate.z;
 
-		this._threeCamera.rotation.x = this._rotate.x;
-		this._threeCamera.rotation.y = this._rotate.y;
-		this._threeCamera.rotation.z = this._rotate.z;
+		this._threeObj.rotation.x = this._rotate.x;
+		this._threeObj.rotation.y = this._rotate.y;
+		this._threeObj.rotation.z = this._rotate.z;
 
 		// Updated local transform matrix and then transform the context
 		//this.updateTransform();
 		//this._localMatrix.transformRenderingContext(ctx);
 	},
 
-	IgeViewport_tick: function (ctx, scene) {
+	IgeViewport_tick: function(ctx, scene) {
 		// Check if we have a scene attached to this viewport
 		if (this._scene) {
 			// Store the viewport camera in the main ige so that
@@ -117,11 +120,11 @@ var IgeThree = IgeEventingClass.extend({
 
 			// Draw the scene
 			ige._threeRenderer.clear();
-			ige._threeRenderer.render(this._scene._threeObj, this.camera._threeCamera);
+			ige._threeRenderer.render(this._scene._threeObj, this.camera._threeObj);
 		}
 	},
 
-	IgeScene2d_init: function (options) {
+	IgeScene2d_init: function(options) {
 		this._$init(options);
 		this._threeObj = new THREE.Scene();
 
@@ -152,40 +155,40 @@ var IgeThree = IgeEventingClass.extend({
 		 this._threeObj.add(specLight);*/
 	},
 
-	IgeEngine_frontBufferSetup: function (autoSize, dontScale) {
+	IgeEngine_frontBufferSetup: function(autoSize, dontScale) {
 		// Run the IGE in "headless" mode and allow Three.js to handle
 		// all rendering instead
 		var i, il,
 			self = this;
 
 		//this._threeObj = new THREE.Scene();
-		//this._threeCamera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 10000);
-		//this._threeCamera.position.x = 0;
-		//this._threeCamera.position.y = 0;
-		//this._threeCamera.position.z = 200;
-		/*this._threeCamera.rotation.x = 45 * Math.PI / 180;
-		this._threeCamera.rotation.y = 35 * Math.PI / 180;
-		this._threeCamera.rotation.z = 30 * Math.PI / 180;*/
+		//this._threeObj = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 10000);
+		//this._threeObj.position.x = 0;
+		//this._threeObj.position.y = 0;
+		//this._threeObj.position.z = 200;
+		/*this._threeObj.rotation.x = 45 * Math.PI / 180;
+		 this._threeObj.rotation.y = 35 * Math.PI / 180;
+		 this._threeObj.rotation.z = 30 * Math.PI / 180;*/
 
-		/*this._threeCamera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -2000, 10000 );
-		this._threeCamera.position.x = 0;
-		this._threeCamera.position.y = 0;
-		this._threeCamera.position.z = 0;*/
-		/*this._threeCamera.rotation.x = 45 * Math.PI / 180;
-		this._threeCamera.rotation.y = 35 * Math.PI / 180;
-		this._threeCamera.rotation.z = 30 * Math.PI / 180;*/
+		/*this._threeObj = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -2000, 10000 );
+		 this._threeObj.position.x = 0;
+		 this._threeObj.position.y = 0;
+		 this._threeObj.position.z = 0;*/
+		/*this._threeObj.rotation.x = 45 * Math.PI / 180;
+		 this._threeObj.rotation.y = 35 * Math.PI / 180;
+		 this._threeObj.rotation.z = 30 * Math.PI / 180;*/
 
 		/*var geometry = new THREE.CubeGeometry(1, 1, 1),
-			material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: false }),
-			//texture = THREE.ImageUtils.loadTexture('../assets/textures/particles/star1.png'),
-			//material = new THREE.MeshBasicMaterial({map: texture, wireframe: false}),
-			mesh1 = new THREE.Mesh(geometry, material);
+		 material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: false }),
+		 //texture = THREE.ImageUtils.loadTexture('../assets/textures/particles/star1.png'),
+		 //material = new THREE.MeshBasicMaterial({map: texture, wireframe: false}),
+		 mesh1 = new THREE.Mesh(geometry, material);
 
-		geometry.dynamic = true;*/
+		 geometry.dynamic = true;*/
 
 		/*for (i = 0, il = geometry.vertices.length; i < il; i++) {
-			geometry.vertices[i].y += -100;
-		}*/
+		 geometry.vertices[i].y += -100;
+		 }*/
 
 		//material.envMap = textureCube;
 		//material.combine = THREE.MixOperation;
@@ -196,16 +199,13 @@ var IgeThree = IgeEventingClass.extend({
 		//this._threeObj.add(mesh1);
 
 		/*var geometry = new THREE.PlaneGeometry(500, 500),
-			//material = new THREE.MeshBasicMaterial( { color: 0x0000ff, wireframe: false }),
-			texture = THREE.ImageUtils.loadTexture('../assets/textures/backgrounds/greyGradient.png'),
-			material = new THREE.MeshBasicMaterial({map: texture, wireframe: false}),
-			mesh2 = new THREE.Mesh( geometry, material );
+		 //material = new THREE.MeshBasicMaterial( { color: 0x0000ff, wireframe: false }),
+		 texture = THREE.ImageUtils.loadTexture('../assets/textures/backgrounds/greyGradient.png'),
+		 material = new THREE.MeshBasicMaterial({map: texture, wireframe: false}),
+		 mesh2 = new THREE.Mesh( geometry, material );
 
-		mesh2.position.z = 0;
-		//this._threeObj.add( mesh2 );*/
-
-		this._threeLoader = new THREE.JSONLoader();
-
+		 mesh2.position.z = 0;
+		 //this._threeObj.add( mesh2 );*/
 		this._threeRenderer = new THREE.WebGLRenderer({antialias: false});
 		this._threeRenderer.setSize(window.innerWidth, window.innerHeight);
 		this._threeRenderer.autoClear = false;
@@ -213,46 +213,48 @@ var IgeThree = IgeEventingClass.extend({
 		//this._threeRenderer.shadowMapSoft = true;
 
 		// Add canvas element to DOM
-		document.body.appendChild(this._threeRenderer.domElement);
+		this.three._canvas = this._threeRenderer.domElement;
+		document.body.appendChild(this.three._canvas);
+		ige.geometry = new IgePoint(this.three._canvas.width, this.three._canvas.height, 0);
 
-		/*controls = new THREE.TrackballControls(this._threeCamera, this._threeRenderer.domElement);
-		controls.rotateSpeed = 0.20;*/
+		/*controls = new THREE.TrackballControls(this._threeObj, this._threeRenderer.domElement);
+		 controls.rotateSpeed = 0.20;*/
 
 		/*self._camX = 45;
-		self._camY = 35;
-		self._camZ = 30;*/
+		 self._camY = 35;
+		 self._camZ = 30;*/
 
-		/*var renderModel = new THREE.RenderPass( this._threeObj, this._threeCamera );
-		var effectBloom = new THREE.BloomPass( .9 );
-		var effectVignette = new THREE.ShaderPass(THREE.ShaderExtras["colorCorrection"]);
-		var effectFilm = new THREE.FilmPass( .3, .3,1024,false );
-		var effectFXAA = new THREE.ShaderPass( THREE.ShaderExtras[ "sepia" ] );
+		/*var renderModel = new THREE.RenderPass( this._threeObj, this._threeObj );
+		 var effectBloom = new THREE.BloomPass( .9 );
+		 var effectVignette = new THREE.ShaderPass(THREE.ShaderExtras["colorCorrection"]);
+		 var effectFilm = new THREE.FilmPass( .3, .3,1024,false );
+		 var effectFXAA = new THREE.ShaderPass( THREE.ShaderExtras[ "sepia" ] );
 
-		effectFilm.renderToScreen = true;
-		this._threeComposer = new THREE.EffectComposer( this._threeRenderer );
-		this._threeComposer.addPass( renderModel );
-		//composer.addPass( effectFocus );
-		//composer.addPass( effectFXAA );
-		this._threeComposer.addPass( effectBloom );
-		this._threeComposer.addPass( effectVignette );
-		this._threeComposer.addPass( effectFilm );*/
+		 effectFilm.renderToScreen = true;
+		 this._threeComposer = new THREE.EffectComposer( this._threeRenderer );
+		 this._threeComposer.addPass( renderModel );
+		 //composer.addPass( effectFocus );
+		 //composer.addPass( effectFXAA );
+		 this._threeComposer.addPass( effectBloom );
+		 this._threeComposer.addPass( effectVignette );
+		 this._threeComposer.addPass( effectFilm );*/
 
 		/*this._postTick.push(function () {
-			//ige._threeRenderer.clear();
-			//ige._threeRenderer.render( ige._threeObj, ige._threeCamera );
+		 //ige._threeRenderer.clear();
+		 //ige._threeRenderer.render( ige._threeObj, ige._threeObj );
 
-			//ige._threeRenderer.setViewport(10, 10, 400, 200);
-			//ige._threeRenderer.render( ige._threeObj, ige._threeCamera );
-			//ige._threeRenderer.setViewport(400, 10, 400, 200);
-			//ige._threeComposer.render(0.1);
-		});*/
+		 //ige._threeRenderer.setViewport(10, 10, 400, 200);
+		 //ige._threeRenderer.render( ige._threeObj, ige._threeObj );
+		 //ige._threeRenderer.setViewport(400, 10, 400, 200);
+		 //ige._threeComposer.render(0.1);
+		 });*/
 	},
 
-	IgeEntity_transformContext: function (ctx) {
+	IgeEntity_transformContext: function(ctx) {
 
 	},
 
-	IgeEntity_renderEntity: function (ctx, dontTransform) {
+	IgeEntity_renderEntity: function(ctx, dontTransform) {
 		var m = this._threeObj;
 		if (m) {
 			// Update the translate, rotate and scale of the mesh
@@ -270,7 +272,7 @@ var IgeThree = IgeEventingClass.extend({
 		}
 	},
 
-	IgeEntity_material: function (material) {
+	IgeEntity_material: function(material) {
 		if (material !== undefined) {
 			this._material = material;
 			return this;
@@ -279,72 +281,37 @@ var IgeThree = IgeEventingClass.extend({
 		return this._material;
 	},
 
-	IgeEntity_mesh: function (mesh) {
-		if (mesh !== undefined) {
-			if (typeof(mesh) === 'string') {
-				var self = this;
-				this._meshUrl = mesh;
-				this._meshLoading = true;
+	IgeEntity_model: function(model) {
+		if (model !== undefined) {
+			ige.three._geometryLoader.path = './models';
+			this._threeObj = new THREE.Mesh(
+				ige.three._geometryLoader.parse(model),
+				this._material || new THREE.MeshFaceMaterial()
+			);
 
-				// Load a url-based model
-				ige._threeLoader.load(mesh, function (geometry) {
-					self._meshLoading = false;
-
-					self._threeObj = new THREE.Mesh(
-						geometry,
-						self._material || new THREE.MeshFaceMaterial()
-					);
-
-					self._threeObj.receiveShadow = true;
-					self._threeObj.castShadow = true;
-
-					self._threeObj.position.x = self._translate.x;
-					self._threeObj.position.y = self._translate.y;
-					self._threeObj.position.z = self._translate.z;
-
-					if (self._onMeshLoaded) {
-						self._onMeshLoaded();
-						delete self._onMeshLoaded;
-					}
-
-					self.emit('meshLoaded', self._threeObj);
-				});
-			} else {
-				this._threeObj = mesh;
-			}
+			this._threeObj.receiveShadow = true;
+			this._threeObj.castShadow = true;
 			return this;
 		}
 
 		return this._threeObj;
 	},
 
-	IgeEntity_mount: function (obj) {
+	IgeEntity_mount: function(obj) {
 		var self = this;
 
 		if (this._threeObj) {
 			obj._threeObj.add(this._threeObj);
-		} else {
-			if (this._meshLoading) {
-				this._onMeshLoaded = function () {
-					obj._threeObj.add(self._threeObj);
-				};
-			}
 		}
 
 		return this._$mount(obj);
 	},
 
-	IgeEntity_unMount: function () {
+	IgeEntity_unMount: function() {
 		var self = this;
 
-		if (this._meshLoading) {
-			this._onMeshLoaded = function () {
-				obj._threeObj.remove(self._threeObj);
-			};
-		} else {
-			if (this._threeObj) {
-				obj._threeObj.remove(self._threeObj);
-			}
+		if (this._threeObj) {
+			obj._threeObj.remove(self._threeObj);
 		}
 
 		return this._$unMount();
