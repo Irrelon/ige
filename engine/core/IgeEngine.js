@@ -903,7 +903,7 @@ var IgeEngine = IgeEntity.extend({
 		return this._dps;
 	},
 
-	render: function (ctx, scene) {
+	render: function (ctx) {
 		// Depth-sort the viewports
 		if (this._viewportDepth) {
 			this.depthSortChildren();
@@ -922,7 +922,7 @@ var IgeEngine = IgeEntity.extend({
 			// Loop our viewports and call their tick methods
 			while (arrCount--) {
 				ctx.save();
-				arr[arrCount].tick(ctx, scene);
+				arr[arrCount].tick(ctx);
 				ctx.restore();
 			}
 		}

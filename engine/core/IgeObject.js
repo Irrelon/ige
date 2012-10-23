@@ -628,7 +628,7 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Processes the actions required each render frame.
 	 */
-	tick: function (ctx, scene) {
+	tick: function (ctx) {
 		var arr = this._children,
 			arrCount,
 			arrIndex;
@@ -640,27 +640,19 @@ var IgeObject = IgeEventingClass.extend({
 		}
 
 		if (arr) {
+			arrCount = arr.length;
+
 			// Depth sort all child objects
-			this.depthSortChildren();
+			if (arrCount && !ige._headless) {
+				this.depthSortChildren();
+			}
 
-			if (!scene) {
-				// Process the current engine tick for all child objects
-				if (arr) {
-					arrCount = arr.length;
 
-					// Loop our children and call their tick methods
-					while (arrCount--) {
-						ctx.save();
-						arr[arrCount].tick(ctx);
-						ctx.restore();
-					}
-				}
-			} else {
-				// Get the index of the object to tick
-				arrIndex = this._children.indexOf(scene);
-				if (arrIndex > -1) {
-					this._children[arrIndex].tick(ctx);
-				}
+			// Loop our children and call their tick methods
+			while (arrCount--) {
+				ctx.save();
+				arr[arrCount].tick(ctx);
+				ctx.restore();
 			}
 		}
 	},
