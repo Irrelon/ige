@@ -86,7 +86,7 @@ var IgeThree = IgeEventingClass.extend({
 		}
 
 		this._threeObj.position.x = this._translate.x;
-		this._threeObj.position.y = this._translate.y;
+		this._threeObj.position.y = -this._translate.y;
 		this._threeObj.position.z = this._translate.z;
 
 		this._threeObj.rotation.x = this._rotate.x;
