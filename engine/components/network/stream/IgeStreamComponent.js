@@ -1,7 +1,7 @@
 /**
  * Adds stream capabilities to the network system.
  */
-var IgeStreamComponent = IgeClass.extend({
+var IgeStreamComponent = IgeEventingClass.extend({
 	classId: 'IgeStreamComponent',
 	componentId: 'stream',
 
@@ -196,6 +196,10 @@ var IgeStreamComponent = IgeClass.extend({
 				entity = new igeClassStore[classId]()
 					.id(entityId)
 					.mount(parent);
+
+				// Since we just created an entity through receiving stream
+				// data, inform any interested listeners
+				this.emit('entityCreated', entity);
 			}
 
 			// Get the entity stream section array
