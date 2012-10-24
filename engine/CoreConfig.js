@@ -39,7 +39,6 @@ var igeCoreConfig = {
 		['cs', 'IgeNetIoComponent', 'components/network/net.io/IgeNetIoComponent.js'],
 		/* Network Stream */
 		['cs', 'IgeStreamComponent', 'components/network/stream/IgeStreamComponent.js'],
-		['cs', 'IgeStreamExtension', 'extensions/IgeStreamExtension.js'],
 		/* Chat System */
 		['c', 'IgeChatClient', 'components/chat/IgeChatClient.js'],
 		['s', 'IgeChatServer', 'components/chat/IgeChatServer.js'],
@@ -57,7 +56,6 @@ var igeCoreConfig = {
 		['cs', 'IgeUiPositionExtension', 'extensions/IgeUiPositionExtension.js'],
 		['cs', 'IgeUiStyleExtension', 'extensions/IgeUiStyleExtension.js'],
 		['cs', 'IgeUiInteractionExtension', 'extensions/IgeUiInteractionExtension.js'],
-		['cs', 'IgeInterpolatorExtension', 'extensions/IgeInterpolatorExtension.js'],
 		/* Main Engine Classes */
 		['cs', 'IgeDummyContext', 'core/IgeDummyContext.js'],
 		['cs', 'IgePathNode', 'core/IgePathNode.js'],
