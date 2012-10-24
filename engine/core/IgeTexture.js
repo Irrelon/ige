@@ -10,6 +10,8 @@ var IgeTexture = IgeEventingClass.extend({
 		/* CEXCLUDE */
 		// If on a server, import the relevant libraries
 		if (ige.isServer) {
+			this.log('Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don\'t try to load a texture on the server-side using something like an if statement around your texture laoding such as "if (!ige.isServer) {}".', 'error');
+			return this;
 			this.imageMagic = require(modulePath + 'easyimage');
 			this.vm = require('vm');
 			this.fs = require('fs');
