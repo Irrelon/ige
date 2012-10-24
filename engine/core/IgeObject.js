@@ -760,6 +760,10 @@ var IgeObject = IgeEventingClass.extend({
 		// should no longer be interacted with
 		this._alive = false;
 
+		// Remove the event listeners array in case any
+		// object references still exist there
+		delete this._eventListeners;
+
 		return this;
 	},
 
