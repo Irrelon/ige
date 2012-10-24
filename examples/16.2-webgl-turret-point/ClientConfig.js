@@ -2,6 +2,8 @@ var igeClientConfig = {
 	include: [
 		/* Your custom game JS scripts */
 		'./gameClasses/ClientNetworkEvents.js',
+		'./gameClasses/ShipControl.js',
+		'./gameClasses/TurretMouseAim.js',
 
 		/* Models */
 		'./models/modelSpaceFrigate6.js',
