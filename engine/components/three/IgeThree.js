@@ -19,6 +19,7 @@ var IgeThree = IgeEventingClass.extend({
 		IgeEntity.prototype._renderEntity = this.IgeEntity_renderEntity;
 		IgeEntity.prototype.material = this.IgeEntity_material;
 		IgeEntity.prototype.model = this.IgeEntity_model;
+		IgeEntity.prototype.mesh = this.IgeEntity_mesh;
 		IgeEntity.prototype._$mount = IgeEntity.prototype.mount;
 		IgeEntity.prototype.mount = this.IgeEntity_mount;
 		IgeEntity.prototype._$unMount = IgeEntity.prototype.unMount;
@@ -258,17 +259,23 @@ var IgeThree = IgeEventingClass.extend({
 		var m = this._threeObj;
 		if (m) {
 			// Update the translate, rotate and scale of the mesh
-			m.position.x = this._translate.x;
-			m.position.y = -this._translate.y;
-			m.position.z = this._translate.z;
+			if (m.position) {
+				m.position.x = this._translate.x;
+				m.position.y = -this._translate.y;
+				m.position.z = this._translate.z;
+			}
 
-			m.rotation.x = this._rotate.x;
-			m.rotation.y = this._rotate.y;
-			m.rotation.z = this._rotate.z;
+			if (m.rotation) {
+				m.rotation.x = this._rotate.x;
+				m.rotation.y = this._rotate.y;
+				m.rotation.z = this._rotate.z;
+			}
 
-			m.scale.x = this._scale.x;
-			m.scale.y = this._scale.y;
-			m.scale.z = this._scale.z;
+			if (m.scale) {
+				m.scale.x = this._scale.x;
+				m.scale.y = this._scale.y;
+				m.scale.z = this._scale.z;
+			}
 		}
 	},
 
@@ -297,11 +304,24 @@ var IgeThree = IgeEventingClass.extend({
 		return this._threeObj;
 	},
 
+	IgeEntity_mesh: function(mesh) {
+		if (mesh !== undefined) {
+			this._threeObj = new THREE.Mesh(
+				mesh,
+				this._material || new THREE.MeshBasicMaterial({color: 0x0000ff, wireframe: true})
+			);
+			return this;
+		}
+
+		return this._threeObj;
+	},
+
 	IgeEntity_mount: function(obj) {
 		var self = this;
 
 		if (this._threeObj) {
 			obj._threeObj.add(this._threeObj);
+			this._threeObj._igeEntity = this;
 		}
 
 		return this._$mount(obj);
@@ -311,6 +331,7 @@ var IgeThree = IgeEventingClass.extend({
 		var self = this;
 
 		if (this._threeObj) {
+			delete this._threeObj._igeEntity;
 			obj._threeObj.remove(self._threeObj);
 		}
 
