@@ -27,7 +27,12 @@ var Client = IgeClass.extend({
 				// got a username or something?
 				ige.network.start('http://localhost:2000', function () {
 					ige.network.addComponent(IgeStreamComponent)
-						.stream.renderLatency(160); // Render the simulation 160 milliseconds in the past
+						.stream.renderLatency(160) // Render the simulation 160 milliseconds in the past
+						// Create a listener that will fire whenever an entity
+						// is created because of the incoming stream data
+						.stream.on('entityCreated', function (entity) {
+							console.log('Stream entity created with ID: ' + entity.id());
+						});
 
 					// Create the scene
 					self.scene1 = new IgeScene2d()
