@@ -178,7 +178,9 @@ var IgeStreamComponent = IgeEventingClass.extend({
 			sectionDataArr = data.split('|'),
 			sectionDataCount = sectionDataArr.length,
 
-			sectionIndex;
+			sectionIndex,
+
+			justCreated;
 
 		// The first data section is always the entity ID and class name
 		// so extract those from the section array
@@ -205,6 +207,8 @@ var IgeStreamComponent = IgeEventingClass.extend({
 						.id(entityId)
 						.mount(parent);
 
+					justCreated = true;
+
 					// Since we just created an entity through receiving stream
 					// data, inform any interested listeners
 					this.emit('entityCreated', entity);
@@ -217,7 +221,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 				// data string from the data section return data
 				for (sectionIndex = 0; sectionIndex < sectionDataCount; sectionIndex++) {
 					// Tell the entity to handle this section's data
-					entity.streamSectionData(sectionArr[sectionIndex], sectionDataArr[sectionIndex]);
+					entity.streamSectionData(sectionArr[sectionIndex], sectionDataArr[sectionIndex], justCreated);
 				}
 			} else {
 				if (entity) {
