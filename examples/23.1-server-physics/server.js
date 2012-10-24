@@ -11,11 +11,11 @@ var Server = IgeClass.extend({
 		// Add physics and setup physics world
 		ige.addComponent(IgeBox2dComponent)
 			.box2d.sleep(true)
-			.box2d.gravity(0, 0)
+			.box2d.gravity(0, 10)
 			.box2d.createWorld();
 
 		// Add the networking component
-		ige.addComponent(IgeSocketIoComponent)
+		ige.addComponent(IgeNetIoComponent)
 			// Define a network command
 			.network.define('test', self._onTest)
 			// Start the network server
@@ -24,245 +24,107 @@ var Server = IgeClass.extend({
 				ige.start(function (success) {
 					// Check if the engine started successfully
 					if (success) {
+						// Add the network stream component
+						ige.network.addComponent(IgeStreamComponent)
+							.stream.sendInterval(30) // Send a stream update once every 30 milliseconds
+							.stream.start(); // Start the stream
+
 						// Accept incoming network connections
 						ige.network.acceptConnections(true);
 
 						// Create the scene
-						self.scene1 = new IgeScene2d();
+						self.scene1 = new IgeScene2d()
+							.id('scene1');
 
 						// Create the main viewport
 						self.vp1 = new IgeViewport()
+							.id('vp1')
 							.autoSize(true)
 							.scene(self.scene1)
 							.drawBounds(true)
 							.mount(ige);
 
-						// Create the texture maps and load their map data
-						self.backgroundLayer1 = new IgeTextureMap()
-							.depth(0)
-							.tileWidth(40)
-							.tileHeight(40)
-							.translateTo(0, 0, 0)
-							//.drawGrid(10)
-							.drawBounds(false)
-							//.loadMap(BackgroundLayer1)
-							.mount(self.scene1);
-
-						self.staticObjectLayer1 = new IgeTextureMap()
-							.depth(1)
-							.tileWidth(40)
-							.tileHeight(40)
-							.translateTo(0, 0, 0)
-							//.drawGrid(10)
-							.drawBounds(false)
-							//.loadMap(StaticObjectLayer1)
-							.mount(self.scene1);
-
-
-						// Create a new character, add the player component
-						// and then set the type (setType() is defined in
-						// gameClasses/Character.js) so that the entity has
-						// defined animation sequences to use.
-						self.player1 = new Character()
-							.addComponent(PlayerComponent)
+						// Create the room boundaries in box2d
+						new Floor()
+							.id('floor')
+							.translateTo(0, 50, 0)
+							.width(880)
+							.height(20)
+							.drawBounds(true)
 							.box2dBody({
-								type: 'dynamic',
-								linearDamping: 0.0,
-								angularDamping: 0.1,
+								type: 'static',
 								allowSleep: true,
-								bullet: true,
-								gravitic: true,
-								fixedRotation: true,
 								fixtures: [{
-									density: 1.0,
-									friction: 0.5,
-									restitution: 0.2,
 									shape: {
-										type: 'polygon',
-										data: new IgePoly2d()
-											.addPoint(-0.5, 0.2)
-											.addPoint(0.5, 0.2)
-											.addPoint(0.5, 0.8)
-											.addPoint(-0.5, 0.8)
+										type: 'rectangle'
 									}
 								}]
 							})
-							.id('player1')
-							.setType(0)
-							.translateTo(480, 300, 0)
-							.drawBounds(false)
+							.streamMode(1)
 							.mount(self.scene1);
 
-						// Create the room boundaries in box2d
-						new IgeEntityBox2d()
-							.translateTo(420, 130, 0)
-							.width(880)
-							.height(20)
-							.drawBounds(true)
-							//.mount(self.scene1)
-							.box2dBody({
-								type: 'static',
-								allowSleep: true,
-								fixtures: [{
-									shape: {
-										type: 'rectangle'
-									}
-								}]
-							});
-
-						new IgeEntityBox2d()
-							.translateTo(420, 510, 0)
-							.width(880)
-							.height(20)
-							.drawBounds(true)
-							//.mount(self.scene1)
-							.box2dBody({
-								type: 'static',
-								allowSleep: true,
-								fixtures: [{
-									shape: {
-										type: 'rectangle'
-									}
-								}]
-							});
-
-						new IgeEntityBox2d()
-							.translateTo(-30, 320, 0)
-							.width(20)
-							.height(400)
-							.drawBounds(true)
-							//.mount(self.scene1)
-							.box2dBody({
-								type: 'static',
-								allowSleep: true,
-								fixtures: [{
-									shape: {
-										type: 'rectangle'
-									}
-								}]
-							});
-
-						new IgeEntityBox2d()
-							.translateTo(870, 320, 0)
-							.width(20)
-							.height(400)
-							.drawBounds(true)
-							//.mount(self.scene1)
-							.box2dBody({
-								type: 'static',
-								allowSleep: true,
-								fixtures: [{
-									shape: {
-										type: 'rectangle'
-									}
-								}]
-							});
-
-						new IgeEntityBox2d()
-							.translateTo(440, 160, 0)
-							.width(80)
-							.height(40)
-							.drawBounds(true)
-							//.mount(self.scene1)
-							.box2dBody({
-								type: 'static',
-								allowSleep: true,
-								fixtures: [{
-									shape: {
-										type: 'rectangle'
-									}
-								}]
-							});
-
-						new IgeEntityBox2d()
-							.translateTo(780, 160, 0)
-							.width(160)
-							.height(40)
-							.drawBounds(true)
-							//.mount(self.scene1)
-							.box2dBody({
-								type: 'static',
-								allowSleep: true,
-								fixtures: [{
-									shape: {
-										type: 'rectangle'
-									}
-								}]
-							});
-
-						new IgeEntityBox2d()
-							.translateTo(80, 160, 0)
-							.width(200)
-							.height(40)
-							.drawBounds(true)
-							//.mount(self.scene1)
-							.box2dBody({
-								type: 'static',
-								allowSleep: true,
-								fixtures: [{
-									shape: {
-										type: 'rectangle'
-									}
-								}]
-							});
-
-						new IgeEntityBox2d()
-							.translateTo(60, 200, 0)
-							.width(80)
-							.height(40)
-							.drawBounds(true)
-							//.mount(self.scene1)
-							.box2dBody({
-								type: 'static',
-								allowSleep: true,
-								fixtures: [{
-									shape: {
-										type: 'rectangle'
-									}
-								}]
-							});
-
-						new IgeEntityBox2d()
-							.translateTo(180, 360, 0)
-							.width(80)
-							.height(40)
-							.drawBounds(true)
-							//.mount(self.scene1)
-							.box2dBody({
-								type: 'static',
-								allowSleep: true,
-								fixtures: [{
-									shape: {
-										type: 'rectangle'
-									}
-								}]
-							});
-
-						new IgeEntityBox2d()
-							.translateTo(300, 395, 0)
-							.width(80)
-							.height(30)
-							.drawBounds(true)
-							//.mount(self.scene1)
-							.box2dBody({
-								type: 'static',
-								allowSleep: true,
-								fixtures: [{
-									shape: {
-										type: 'rectangle'
-									}
-								}]
-							});
-
-						// Translate the camera to the initial player position
-						self.vp1.camera.lookAt(self.player1);
-
-						// Tell the camera to track our player character with some
-						// tracking smoothing (set to 20)
-						self.vp1.camera.trackTranslate(self.player1, 20);
+						setInterval(self.newObject, 200);
 					}
 				});
 			});
+	},
+
+	newObject: function () {
+		var objType = Math.floor(Math.random() * 2),
+			x = Math.floor(Math.random() * 400) - 200,
+			y = -350;
+
+		if (objType === 0) {
+			new Circle()
+				.translateTo(x, y, 0)
+				.drawBounds(true)
+				.box2dBody({
+					type: 'dynamic',
+					linearDamping: 0.0,
+					angularDamping: 0.1,
+					allowSleep: true,
+					bullet: false,
+					gravitic: true,
+					fixedRotation: false,
+					fixtures: [{
+						density: 1.0,
+						friction: 0.5,
+						restitution: 0.2,
+						shape: {
+							type: 'circle'
+						}
+					}]
+				})
+				.streamMode(1)
+				.lifeSpan(10000)
+				.mount(ige.$('scene1'));
+		}
+
+		if (objType === 1) {
+			new Square()
+				.translateTo(x, y, 0)
+				.drawBounds(true)
+				.box2dBody({
+					type: 'dynamic',
+					linearDamping: 0.0,
+					angularDamping: 0.1,
+					allowSleep: true,
+					bullet: false,
+					gravitic: true,
+					fixedRotation: false,
+					fixtures: [{
+						density: 1.0,
+						friction: 0.5,
+						restitution: 0.2,
+						shape: {
+							type: 'rectangle'
+						}
+					}]
+				})
+				.streamMode(1)
+				.lifeSpan(10000)
+				.mount(ige.$('scene1'));
+		}
 	}
 });
 
