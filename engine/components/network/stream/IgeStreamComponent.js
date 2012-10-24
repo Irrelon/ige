@@ -165,10 +165,16 @@ var IgeStreamComponent = IgeEventingClass.extend({
 		var clientTime = new Date().getTime(),
 			time = clientTime - 20, // Simulate 20ms lag
 
-			idSection, idArr, entityId, parentId, classId, entity, parent,
+			idSection,
+			idArr,
+			entityId,
+			parentId,
+			classId,
+			alive,
+			entity,
+			parent,
 
 			sectionArr,
-
 			sectionDataArr = data.split('|'),
 			sectionDataCount = sectionDataArr.length,
 
@@ -183,6 +189,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 		entityId = idArr[0];
 		parentId = idArr[1];
 		classId = idArr[2];
+		alive = parseInt(idArr[3], 10);
 
 		// Check that the entity parent exists
 		parent = ige.$(parentId);
@@ -191,25 +198,32 @@ var IgeStreamComponent = IgeEventingClass.extend({
 			// Check if the entity with this ID currently exists
 			entity = ige.$(entityId);
 
-			if (!entity) {
-				// The entity does not currently exist so create it!
-				entity = new igeClassStore[classId]()
-					.id(entityId)
-					.mount(parent);
+			if (alive) {
+				if (!entity) {
+					// The entity does not currently exist so create it!
+					entity = new igeClassStore[classId]()
+						.id(entityId)
+						.mount(parent);
 
-				// Since we just created an entity through receiving stream
-				// data, inform any interested listeners
-				this.emit('entityCreated', entity);
-			}
+					// Since we just created an entity through receiving stream
+					// data, inform any interested listeners
+					this.emit('entityCreated', entity);
+				}
 
-			// Get the entity stream section array
-			sectionArr = entity._streamSections;
+				// Get the entity stream section array
+				sectionArr = entity._streamSections;
 
-			// Now loop the data sections array and compile the rest of the
-			// data string from the data section return data
-			for (sectionIndex = 0; sectionIndex < sectionDataCount; sectionIndex++) {
-				// Tell the entity to handle this section's data
-				entity.streamSectionData(sectionArr[sectionIndex], sectionDataArr[sectionIndex]);
+				// Now loop the data sections array and compile the rest of the
+				// data string from the data section return data
+				for (sectionIndex = 0; sectionIndex < sectionDataCount; sectionIndex++) {
+					// Tell the entity to handle this section's data
+					entity.streamSectionData(sectionArr[sectionIndex], sectionDataArr[sectionIndex]);
+				}
+			} else {
+				if (entity) {
+					// The entity is dead so remove it
+					entity.destroy();
+				}
 			}
 		}
 	}
