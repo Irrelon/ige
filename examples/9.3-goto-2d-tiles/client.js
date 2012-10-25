@@ -15,13 +15,17 @@ var Client = IgeClass.extend({
 			// Check if the engine started successfully
 			if (success) {
 				// Create the scene
-				self.mainScene = new IgeScene2d();
+				self.mainScene = new IgeScene2d()
+					.id('mainScene');
+
 				self.objectScene = new IgeScene2d()
+					.id('objectScene')
 					.depth(0)
 					.drawBounds(false)
 					.mount(self.mainScene);
 
 				self.uiScene = new IgeScene2d()
+					.id('uiScene')
 					.depth(1)
 					.drawBounds(false)
 					.ignoreCamera(true) // We don't want the UI scene to be affected by the viewport's camera

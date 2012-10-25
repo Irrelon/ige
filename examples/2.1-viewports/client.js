@@ -29,7 +29,8 @@ var Client = IgeClass.extend({
 					ige.viewportDepth(true);
 
 					// Create our main scene
-					self.scene1 = new IgeScene2d();
+					self.scene1 = new IgeScene2d()
+						.id('scene1');;
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()

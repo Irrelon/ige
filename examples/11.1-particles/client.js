@@ -68,10 +68,12 @@ var Client = IgeClass.extend({
 					});
 
 					// Create the scene
-					self.scene1 = new IgeScene2d();
+					self.scene1 = new IgeScene2d()
+						.id('scene1');
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
+						.id('vp1')
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)

@@ -22,12 +22,14 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Create the scene
-					self.scene1 = new IgeScene2d();
+					self.scene1 = new IgeScene2d()
+						.id('scene1');
 
 					// Create the main viewport and set the scene
 					// it will "look" at as the new scene1 we just
 					// created above
 					self.vp1 = new IgeViewport()
+						.id('vp1')
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
