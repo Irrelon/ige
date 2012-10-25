@@ -26,7 +26,7 @@ var Server = IgeClass.extend({
 					if (success) {
 						// Add the network stream component
 						ige.network.addComponent(IgeStreamComponent)
-							.stream.sendInterval(30) // Send a stream update once every 30 milliseconds
+							.stream.sendInterval(60) // Send a stream update once every 60 milliseconds
 							.stream.start(); // Start the stream
 
 						// Accept incoming network connections
@@ -63,7 +63,7 @@ var Server = IgeClass.extend({
 							.streamMode(1)
 							.mount(self.scene1);
 
-						setInterval(self.newObject, 200);
+						setInterval(self.newObject, 350);
 					}
 				});
 			});
