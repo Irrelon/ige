@@ -32,7 +32,7 @@ var Rotator = IgeEntity.extend({
 	 * handle data get / set for.
 	 * @param {*=} data If present, this is the data that has been sent
 	 * from the server to the client for this entity.
-	 * @return {String}
+	 * @return {*}
 	 */
 	streamSectionData: function (sectionId, data) {
 		// Check if the section is one that we are handling
