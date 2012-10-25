@@ -36,6 +36,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 		// Set some defaults
 		this._renderLatency = 100;
 		this._streamInterval = 50;
+		this._maxSendDuration = 10; // The max ms that the send queue can take to send data
 	},
 
 	/**
@@ -119,7 +120,11 @@ var IgeStreamComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_sendQueue: function () {
-		var arr = this._queuedData,
+		var st = new Date().getTime(),
+			ct,
+			et,
+			dt,
+			arr = this._queuedData,
 			arrIndex,
 			network = this._entity,
 			item, currentTime = new Date().getTime(),
@@ -138,7 +143,22 @@ var IgeStreamComponent = IgeEventingClass.extend({
 					clientSentTimeData[item[1]] = true;
 				}
 				network.send('_igeStream', item[0], item[1]);
+
+				delete arr[arrIndex];
 			}
+
+			ct = new Date().getTime();
+			dt = ct - st;
+			if (dt > this._maxSendDuration) {
+				break;
+			}
+		}
+
+		et = new Date().getTime();
+		dt = et - st;
+
+		if (dt > 16) {
+			console.log('WARNING, Stream send is taking too long: ' + dt + 'ms');
 		}
 	},
 
