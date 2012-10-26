@@ -1,8 +1,10 @@
 var Player = IgeEntity.extend({
 	classId: 'Player',
 
-	init: function () {
+	init: function (id) {
 		this._super();
+
+		this.id(id);
 
 		var self = this;
 
@@ -20,15 +22,9 @@ var Player = IgeEntity.extend({
 		}
 
 		if (!ige.isServer) {
-			// Define the texture this entity will use
-			this._tex = new IgeTexture('./assets/PlayerTexture.js');
-
-			// Wait for the texture to load
-			this._tex.on('loaded', function () {
-				self.texture(self._tex)
-					.width(20)
-					.height(20);
-			});
+			self.texture(ige.client.textures.ship)
+			.width(20)
+			.height(20);
 		}
 
 		// Define the data sections that will be included in the stream

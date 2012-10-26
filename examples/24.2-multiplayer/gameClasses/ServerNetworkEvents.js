@@ -29,6 +29,7 @@ var ServerNetworkEvents = {
 				.mount(ige.server.scene1);
 
 			// Tell the client to track their player entity
+			console.log('Sending data...');
 			ige.network.send('playerEntity', ige.server.players[clientId].id(), clientId);
 		}
 	},
