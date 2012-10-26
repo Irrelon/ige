@@ -807,7 +807,12 @@ var IgeEngine = IgeEntity.extend({
 		if (self._showStats) {
 			switch (self._showStats) {
 				case 1:
-					self._statsDiv.innerHTML = self._fps + 'fps ' + self._dps + 'dps ' + self._dpt + 'dpt ' + self._tickTime + 'tms';
+					self._statsDiv.innerHTML = '<span class="met" title="Frames Per Second">fps: ' + self._fps + '</span> <span class="met" title="Draws Per Second">dps: ' + self._dps + '</span> <span class="met" title="Draws Per Tick">dpt: ' + self._dpt + '</span> <span class="met" title="Time Spent Processing Tick">tps: ' + self._tickTime + 'ms</span>';
+
+					if (self.network) {
+						// Add the network latency too
+						self._statsDiv.innerHTML += ' <span class="met" title="Network Latency (Time From Server to This Client)">lat: ' + self.network._latency + 'ms</span>';
+					}
 					break;
 			}
 		}
