@@ -19,6 +19,7 @@ var IgeSocketIoComponent = IgeEventingClass.extend([
 		// Time sync defaults
 		this._timeSyncInterval = 10000; // Sync the client/server clocks every ten seconds by default
 		this._timeSyncLog = {};
+		this._latency = 0;
 
 		/* CEXCLUDE */
 		if (ige.isServer) {
