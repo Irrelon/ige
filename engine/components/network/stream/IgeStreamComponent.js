@@ -171,13 +171,8 @@ var IgeStreamComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_onStreamData: function (data) {
-		//console.log('Stream data: ', this._streamDataTime, data);
-
 		// Read the packet data into variables
-		var clientTime = new Date().getTime(),
-			time = clientTime - 20, // Simulate 20ms lag
-
-			idSection,
+		var idSection,
 			idArr,
 			entityId,
 			parentId,
