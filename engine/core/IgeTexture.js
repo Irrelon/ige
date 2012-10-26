@@ -377,7 +377,9 @@ var IgeTexture = IgeEventingClass.extend({
 
 			if (this._preFilter && this._textureCtx) {
 				// Call the preFilter method
+				this._textureCtx.save();
 				this._preFilter(this._textureCanvas, this._textureCtx, this._originalImage, this, this._preFilterData);
+				this._textureCtx.restore();
 			}
 
 			ctx.drawImage(
@@ -464,7 +466,9 @@ var IgeTexture = IgeEventingClass.extend({
 				this.image = this._textureCanvas;
 
 				// Call the passed method
+				this._textureCtx.save();
 				method(this._textureCanvas, this._textureCtx, this._originalImage, this, data);
+				this._textureCtx.restore();
 			}
 		} else {
 			this.log('Cannot apply filter, no filter method was passed!', 'warning');
