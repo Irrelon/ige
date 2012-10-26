@@ -84,6 +84,8 @@ var Client = IgeClass.extend({
 						.model(modelTurret)
 						.addBehaviour('mouseAim', TurretMouseAim)
 						.mount(self.obj[0]);
+
+					self.vp1.camera.trackTranslate(self.obj[0], 10);
 				}
 			});
 		});
