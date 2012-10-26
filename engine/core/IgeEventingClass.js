@@ -181,7 +181,8 @@ var IgeEventingClass = IgeClass.extend({
 		if (this._eventListeners) {
 			var remArr = this._eventListeners._removeQueue,
 				arrCount,
-				item;
+				item,
+				result;
 
 			// If the removal array exists
 			if (remArr) {
@@ -193,7 +194,13 @@ var IgeEventingClass = IgeClass.extend({
 					item = remArr[arrCount];
 
 					// Call the off() method for this item
-					this.off(item[0], item[1]);
+					result = this.off(item[0], item[1]);
+
+					// Check if there is a callback
+					if (remArr[2]) {
+						// Call the callback with the removal result
+						remArr[2](result);
+					}
 				}
 			}
 
@@ -211,7 +218,7 @@ var IgeEventingClass = IgeClass.extend({
 	 * @param {Object} evtListener The event listener object to cancel.
 	 * @return {Boolean}
 	 */
-	off: function (eventName, evtListener) {
+	off: function (eventName, evtListener, callback) {
 		if (this._eventListeners) {
 			if (!this._eventListeners._processing) {
 				if (this._eventListeners[eventName]) {
@@ -220,6 +227,9 @@ var IgeEventingClass = IgeClass.extend({
 					if (evtListIndex > -1) {
 						// Remove the listener from the event listener list
 						this._eventListeners[eventName].splice(evtListIndex, 1);
+						if (callback) {
+							callback(true);
+						}
 						return true;
 					} else {
 						this.log('Failed to cancel event listener for event named "' + eventName + '" !', 'warning', evtListener);
@@ -232,10 +242,15 @@ var IgeEventingClass = IgeClass.extend({
 				// listeners at the moment and removing one would mess up the
 				// loop!
 				this._eventListeners._removeQueue = this._eventListeners._removeQueue || [];
-				this._eventListeners._removeQueue.push([eventName, evtListener]);
+				this._eventListeners._removeQueue.push([eventName, evtListener, callback]);
+
+				return -1;
 			}
 		}
 
+		if (callback) {
+			callback(false);
+		}
 		return false;
 	},
 
