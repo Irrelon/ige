@@ -306,6 +306,8 @@ var IgeNetIoServer = {
 	 */
 	_onClientDisconnect: function (data, clientId) {
 		this.log('Client disconnected with id ' + clientId);
+		this.emit('disconnect', clientId);
+
 		delete this._socketById[clientId];
 	}
 };

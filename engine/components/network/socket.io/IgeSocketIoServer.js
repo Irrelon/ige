@@ -189,6 +189,8 @@ var IgeSocketIoServer = {
 	 */
 	_onClientDisconnect: function (data, socket) {
 		this.log('Client disconnected with id ' + socket.id);
+		this.emit('disconnect', socket.id);
+
 		delete this._socketById[socket.id];
 	}
 };
