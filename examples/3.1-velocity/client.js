@@ -36,8 +36,9 @@ var Client = IgeClass.extend({
 					// to it, then set a velocity and add it to the scene
 					self.obj[0] = tempObj = new IgeEntity()
 						.addComponent(IgeVelocityComponent)
-						.velocity.x(-0.01)
-						.velocity.y(0.01)
+						//.velocity.x(-0.01)
+						//.velocity.y(0.01)
+						.velocity.byAngleAndPower(Math.radians(45), 0.01)
 						.depth(1)
 						.width(100)
 						.height(100)
