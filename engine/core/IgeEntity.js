@@ -1083,10 +1083,10 @@ var IgeEntity = IgeObject.extend([
 					if (dataArr[8]) { dataArr[8] = parseFloat(dataArr[8]); }
 
 					// Add it to the time stream
-					this._timeStream.push([ige.network.stream._streamDataTime, dataArr]);
+					this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
 
-					// Check stream length, don't allow higher than 20 items
-					if (this._timeStream.length > 20) {
+					// Check stream length, don't allow higher than 10 items
+					if (this._timeStream.length > 10) {
 						// Remove the first item
 						this._timeStream.shift();
 					}
@@ -1206,11 +1206,14 @@ var IgeEntity = IgeObject.extend([
 	 */
 	interpolateValue: function (startValue, endValue, startTime, currentTime, endTime) {
 		var totalValue = endValue - startValue,
-			totalTime = endTime - startTime,
-			deltaTime = totalTime - (currentTime - startTime),
-			timeRatio = deltaTime / totalTime;
+			dataDelta = endTime - startTime,
+			offsetDelta = currentTime - startTime,
+			deltaTime = offsetDelta / dataDelta;
 
-		return endValue - (totalValue * timeRatio);
+		// Clamp the current time from 0 to 1
+		if (deltaTime < 0) { deltaTime = 0; } else if (deltaTime > 1) { deltaTime = 1; }
+
+		return (totalValue * deltaTime) + startValue;
 	},
 
 	_processInterpolate: function (renderTime, maxLerp) {
