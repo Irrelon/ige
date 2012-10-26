@@ -26,7 +26,9 @@ var igeCoreConfig = {
 		['cs', 'Box2D', 'components/physics/box2d/lib_box2d.js', 'Box2D'],
 		['cs', 'Cannon', 'components/physics/cannon/lib_cannon.js'],
 		['cs', 'IgeCannonComponent', 'components/physics/cannon/IgeCannonComponent.js'],
-		['cs', 'IgeTimeSyncExtension', 'components/network/IgeTimeSyncExtension.js'],
+		/* Network Stream */
+		['cs', 'IgeTimeSyncExtension', 'components/network/stream/IgeTimeSyncExtension.js'],
+		['cs', 'IgeStreamComponent', 'components/network/stream/IgeStreamComponent.js'],
 		/* Socket.io */
 		['c', 'io', 'components/network/socket.io/client/socket.io.min.js'],
 		['c', 'IgeSocketIoClient', 'components/network/socket.io/IgeSocketIoClient.js'],
@@ -37,8 +39,6 @@ var igeCoreConfig = {
 		['c', 'IgeNetIoClient', 'components/network/net.io/IgeNetIoClient.js'],
 		['s', 'IgeNetIoServer', 'components/network/net.io/IgeNetIoServer.js'],
 		['cs', 'IgeNetIoComponent', 'components/network/net.io/IgeNetIoComponent.js'],
-		/* Network Stream */
-		['cs', 'IgeStreamComponent', 'components/network/stream/IgeStreamComponent.js'],
 		/* Chat System */
 		['c', 'IgeChatClient', 'components/chat/IgeChatClient.js'],
 		['s', 'IgeChatServer', 'components/chat/IgeChatServer.js'],
