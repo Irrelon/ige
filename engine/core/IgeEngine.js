@@ -842,9 +842,6 @@ var IgeEngine = IgeEntity.extend({
 				ctx = self._ctx;
 			}
 
-			// Schedule a new frame
-			requestAnimFrame(self.tick);
-
 			// Alternate the boolean frame alternator flag
 			self._frameAlternator = !self._frameAlternator;
 
@@ -887,6 +884,9 @@ var IgeEngine = IgeEntity.extend({
 
 			// Call the input system tick to reset any flags etc
 			self.input.tick();
+
+			// Schedule a new frame
+			requestAnimFrame(self.tick);
 		}
 
 		self._resized = false;
