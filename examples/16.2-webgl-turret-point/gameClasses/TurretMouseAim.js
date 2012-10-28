@@ -10,21 +10,24 @@ var TurretMouseAim = function () {
 			-(y / window.innerHeight) * 2 + 1,
 			0.5
 		),
-		ray,
-		intersect,
-		m,
+		worldMatrix,
 		directionVector,
-		rotateZ;
+		rotateZ,
+		dir,
+		distance;
 
-	projector.unprojectVector(vector, camera);
-	ray = new THREE.Ray(camera.position, vector.subSelf(camera.position).normalize());
-	intersect = ray.intersectObject(ige.$('plane')._threeObj, false);
+	projector.unprojectVector( vector, camera );
 
-	if (intersect.length) {
-		intersect[0].point.y = -intersect[0].point.y;
-		mouseWorld = intersect[0].point;
-		m = this._threeObj.matrixWorld.elements;
-		directionVector = {x: m[12] - mouseWorld.x, y: -m[13] - (mouseWorld.y)};
+	dir = vector.subSelf( camera.position ).normalize();
+	distance = - camera.position.z / dir.z;
+	mouseWorld = camera.position.clone().addSelf( dir.multiplyScalar( distance ) );
+
+	if (mouseWorld) {
+		// Invert the y axis
+		mouseWorld.y = -mouseWorld.y;
+
+		worldMatrix = this._threeObj.matrixWorld.elements;
+		directionVector = {x: worldMatrix[12] - mouseWorld.x, y: -worldMatrix[13] - (mouseWorld.y)};
 		rotateZ = Math.atan2(directionVector.x, directionVector.y);
 
 		this.rotateTo(0, 0, rotateZ - this._parent._rotate.z);
