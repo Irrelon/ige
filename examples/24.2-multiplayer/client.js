@@ -31,7 +31,7 @@ var Client = IgeClass.extend({
 					// than before the scene etc are created... maybe you want
 					// a splash screen or a menu first? Then connect after you've
 					// got a username or something?
-					ige.network.start('http://192.168.0.199:2000', function () {
+					ige.network.start('http://localhost:2000', function () {
 						// Setup the network command listeners
 						ige.network.define('playerEntity', self._onPlayerEntity); // Defined in ./gameClasses/ClientNetworkEvents.js
 
@@ -41,7 +41,7 @@ var Client = IgeClass.extend({
 							// Create a listener that will fire whenever an entity
 							// is created because of the incoming stream data
 							.stream.on('entityCreated', function (entity) {
-								console.log('Stream entity created with ID: ' + entity.id());
+								self.log('Stream entity created with ID: ' + entity.id());
 							});
 
 						// Create the scene
