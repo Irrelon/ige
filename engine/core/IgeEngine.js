@@ -221,6 +221,8 @@ var IgeEngine = IgeEntity.extend({
 			div.style.bottom = '10px';
 			div.style.left = '10px';
 			div.style.userSelect = 'none';
+			div.style.webkitUserSelect = 'none';
+			div.style.MozkitUserSelect = 'none';
 			div.style.zIndex = 100000;
 			div.innerHTML = 'Please wait...';
 
