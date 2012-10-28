@@ -37,8 +37,12 @@ var IgeEntity = IgeObject.extend([
 
 		this._inView = true;
 
-		// Set the stream floating point precision to 2 as default
-		this.streamFloatPrecision(2);
+		/* CEXCLUDE */
+		if (ige.isServer) {
+			// Set the stream floating point precision to 2 as default
+			this.streamFloatPrecision(2);
+		}
+		/* CEXCLUDE */
 
 		// Set the default stream sections as just the transform data
 		this.streamSections(['transform']);
