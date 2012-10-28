@@ -9,6 +9,9 @@ var IgeRect = function (x, y, width, height) {
 	this.width = width = width !== undefined ? width : 0;
 	this.height = height = height !== undefined ? height : 0;
 
+	/*this.x2 = this.x / 2;
+	this.y2 = this.y / 2;*/
+
 	return this;
 };
 
