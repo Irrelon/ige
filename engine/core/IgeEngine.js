@@ -212,26 +212,32 @@ var IgeEngine = IgeEntity.extend({
 	 * @private
 	 */
 	_createStatsDiv: function () {
-		if (!document.getElementById('igeStats')) {
-			// Create the stats div
-			var div = document.createElement('div');
-			div.style.fontFamily = 'Verdana, Tahoma';
-			div.style.fontSize = "12px";
-			div.style.position = 'absolute';
-			div.style.color = '#ffffff';
-			div.style.textShadow = '1px 1px 3px #000000';
-			div.style.bottom = '10px';
-			div.style.left = '10px';
-			div.style.userSelect = 'none';
-			div.style.webkitUserSelect = 'none';
-			div.style.MozkitUserSelect = 'none';
-			div.style.zIndex = 100000;
-			div.innerHTML = 'Please wait...';
+		if (!ige.isServer) {
+			if (!document.getElementById('igeStats')) {
+				// Create the stats div
+				var div = document.createElement('div');
+				div.style.fontFamily = 'Verdana, Tahoma';
+				div.style.fontSize = "12px";
+				div.style.position = 'absolute';
+				div.style.color = '#ffffff';
+				div.style.textShadow = '1px 1px 3px #000000';
+				div.style.bottom = '10px';
+				div.style.left = '10px';
+				div.style.userSelect = 'none';
+				div.style.webkitUserSelect = 'none';
+				div.style.MozkitUserSelect = 'none';
+				div.style.zIndex = 100000;
+				div.innerHTML = 'Please wait...';
 
-			// Add div to body
-			document.body.appendChild(div);
+				// Add div to body
+				window.addEventListener('load', function () {
+					document.body.appendChild(div);
+				});
 
-			this._statsDiv = div;
+				window.addEventListener('unload', function () {});
+
+				this._statsDiv = div;
+			}
 		}
 	},
 

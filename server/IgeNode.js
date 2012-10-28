@@ -158,6 +158,10 @@ var IgeNode = IgeClass.extend({
 			deployOptions = {obfuscate: true};
 		}
 
+		if (!this.fs.existsSync(toPath)) {
+			this.fs.mkdirSync(toPath);
+		}
+
 		this._generateStage1(gamePath, toPath, deployOptions);
 		return;
 

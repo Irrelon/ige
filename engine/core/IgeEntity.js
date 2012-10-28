@@ -38,14 +38,16 @@ var IgeEntity = IgeObject.extend([
 		this._inView = true;
 
 		/* CEXCLUDE */
-		if (ige.isServer) {
+		if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') {
 			// Set the stream floating point precision to 2 as default
 			this.streamFloatPrecision(2);
+
+			// Set the default stream sections as just the transform data
+			this.streamSections(['transform']);
 		}
 		/* CEXCLUDE */
 
-		// Set the default stream sections as just the transform data
-		this.streamSections(['transform']);
+
 	},
 
 	/**
