@@ -76,6 +76,8 @@ var IgeEngine = IgeEntity.extend({
 			'ige': this
 		}; // Holds a reference to every item in the scenegraph by it's ID
 		this._postTick = []; // An array of methods that are called upon tick completion
+		this._tsit = {}; // An object holding time-spent-in-tick (total time spent in this object's tick method)
+		this._tslt = {}; // An object holding time-spent-last-tick (time spent in this object's tick method last tick)
 
 		// Set the context to a dummy context to start
 		// with in case we are in "headless" mode and
@@ -842,6 +844,9 @@ var IgeEngine = IgeEntity.extend({
 				ctx = self._ctx;
 			}
 
+			// Schedule a new frame
+			requestAnimFrame(self.tick);
+
 			// Alternate the boolean frame alternator flag
 			self._frameAlternator = !self._frameAlternator;
 
@@ -884,9 +889,6 @@ var IgeEngine = IgeEntity.extend({
 
 			// Call the input system tick to reset any flags etc
 			self.input.tick();
-
-			// Schedule a new frame
-			requestAnimFrame(self.tick);
 		}
 
 		self._resized = false;
@@ -911,9 +913,23 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	render: function (ctx) {
+		var ts, td;
+
 		// Depth-sort the viewports
 		if (this._viewportDepth) {
-			this.depthSortChildren();
+			if (igeDebug.timing) {
+				ts = new Date().getTime();
+				this.depthSortChildren();
+				td = new Date().getTime() - ts;
+
+				if (!ige._tslt[this.id()]) {
+					ige._tslt[this.id()] = {};
+				}
+
+				ige._tslt[this.id()].depthSortChildren = td;
+			} else {
+				this.depthSortChildren();
+			}
 		}
 
 		ctx.save();
@@ -927,21 +943,55 @@ var IgeEngine = IgeEntity.extend({
 			arrCount = arr.length;
 
 			// Loop our viewports and call their tick methods
-			while (arrCount--) {
-				ctx.save();
-				arr[arrCount].tick(ctx);
-				ctx.restore();
+			if (igeDebug.timing) {
+				while (arrCount--) {
+					ctx.save();
+					ts = new Date().getTime();
+					arr[arrCount].tick(ctx);
+					td = new Date().getTime() - ts;
+
+					if (!ige._tsit[arr[arrCount].id()]) {
+						ige._tsit[arr[arrCount].id()] = 0;
+					}
+
+					if (!ige._tslt[arr[arrCount].id()]) {
+						ige._tslt[arr[arrCount].id()] = {};
+					}
+
+					ige._tsit[arr[arrCount].id()] += td;
+					ige._tslt[arr[arrCount].id()].tick = td;
+					ctx.restore();
+				}
+			} else {
+				while (arrCount--) {
+					ctx.save();
+					arr[arrCount].tick(ctx);
+					ctx.restore();
+				}
 			}
 		}
 
-
 		ctx.restore();
+	},
+
+	analyseTiming: function () {
+		if (igeDebug.timing) {
+
+		} else {
+			this.log('Cannot analyse timing because the igeDebug.timing flag is not enabled so no timing data has been recorded!', 'warning');
+		}
 	},
 
 	/**
 	 * Walks the scene graph and outputs a console map of the graph.
 	 */
 	sceneGraph: function (obj, currentDepth, lastDepth) {
+		var depthSpace = '',
+			di,
+			timingString,
+			arr,
+			arrCount;
+
 		if (currentDepth === undefined) { currentDepth = 0; }
 
 		if (!obj) {
@@ -949,19 +999,34 @@ var IgeEngine = IgeEntity.extend({
 			obj = ige;
 		}
 
-		var depthSpace = '', di;
 		for (di = 0; di < currentDepth; di++) {
 			depthSpace += '----';
 		}
 
-		console.log(depthSpace + obj.id() + ' (' + obj._classId + ') : ' + obj._inView);
+		if (igeDebug.timing) {
+			timingString = '';
+
+			timingString += 'T: ' + ige._tsit[obj.id()];
+			if (ige._tslt[obj.id()]) {
+				if (typeof(ige._tslt[obj.id()].tick) === 'number') {
+					timingString += ' | LastTick: ' + ige._tslt[obj.id()].tick;
+				}
+
+				if (typeof(ige._tslt[obj.id()].depthSortChildren) === 'number') {
+					timingString += ' | ChildDepthSort: ' + ige._tslt[obj.id()].depthSortChildren;
+				}
+			}
+
+			console.log(depthSpace + obj.id() + ' (' + obj._classId + ') : ' + obj._inView + ' Timing(' + timingString + ')');
+		} else {
+			console.log(depthSpace + obj.id() + ' (' + obj._classId + ') : ' + obj._inView);
+		}
 
 		currentDepth++;
 
 		if (obj === ige) {
 			// Loop the viewports
-			var arr = obj._children,
-				arrCount;
+			arr = obj._children;
 
 			if (arr) {
 				arrCount = arr.length;
@@ -969,14 +1034,30 @@ var IgeEngine = IgeEntity.extend({
 				// Loop our children
 				while (arrCount--) {
 					if (arr[arrCount]._scene._shouldRender) {
-						console.log(depthSpace + '----' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView);
+						if (igeDebug.timing) {
+							timingString = '';
+
+							timingString += 'T: ' + ige._tsit[arr[arrCount].id()];
+							if (ige._tslt[arr[arrCount].id()]) {
+								if (typeof(ige._tslt[arr[arrCount].id()].tick) === 'number') {
+									timingString += ' | LastTick: ' + ige._tslt[arr[arrCount].id()].tick;
+								}
+
+								if (typeof(ige._tslt[arr[arrCount].id()].depthSortChildren) === 'number') {
+									timingString += ' | ChildDepthSort: ' + ige._tslt[arr[arrCount].id()].depthSortChildren;
+								}
+							}
+
+							console.log(depthSpace + '----' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView + ' Timing(' + timingString + ')');
+						} else {
+							console.log(depthSpace + '----' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView);
+						}
 						this.sceneGraph(arr[arrCount]._scene, currentDepth + 1);
 					}
 				}
 			}
 		} else {
-			var arr = obj._children,
-				arrCount;
+			arr = obj._children;
 
 			if (arr) {
 				arrCount = arr.length;
