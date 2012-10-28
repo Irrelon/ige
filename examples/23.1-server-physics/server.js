@@ -63,7 +63,7 @@ var Server = IgeClass.extend({
 							.streamMode(1)
 							.mount(self.scene1);
 
-						setInterval(self.newObject, 350);
+						setInterval(self.newObject, 500);
 					}
 				});
 			});
