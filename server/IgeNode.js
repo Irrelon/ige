@@ -8,8 +8,6 @@ var IgeNode = IgeClass.extend({
 			self = this;
 
 		this.fs = require('fs');
-		this.parser = require('uglify-js').parser;
-		this.uglify = require('uglify-js').uglify;
 
 		// If the user requested help, print it and exit
 		if (args['-h']) {
@@ -189,11 +187,43 @@ var IgeNode = IgeClass.extend({
 	},
 
 	_generateStage1: function (gamePath, toPath, deployOptions) {
-		var fileData = '';
+		var clientCode = '', coreCode = '', finalFileData,
+			fs = this.fs,
+			igeCoreConfig = require('../engine/CoreConfig.js'),
+			arr = igeCoreConfig.include,
+			arrCount = arr.length,
+			arrIndex,
+			arrItem,
+			className,
+			nameToNew = [],
+			reg;
 
 		// Generate the engine core
-		fileData += this._createClientEngineCore(gamePath, toPath, deployOptions);
-		fileData += this._createClientGame(gamePath, toPath, deployOptions);
+		clientCode += this._createClientGame(gamePath, toPath, deployOptions);
+		coreCode += this._createClientEngineCore(gamePath, toPath, deployOptions, clientCode);
+
+		if (deployOptions.obfuscate) {
+			console.log('Compressing...');
+			finalFileData = this.obfuscate(coreCode + clientCode, null, null, true);
+
+			// Now do one last pass, replacing IGE class names with total nonsense
+			// first build a dictionary of IGE class names and then assign corresponding
+			// names to them
+			console.log('Final obfuscation...');
+			for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+				arrItem = arr[arrIndex];
+
+				className = arrItem[1];
+				nameToNew[className] = '$i_' + arrIndex;
+
+				// Replace any occurrences in the code
+				reg = new RegExp(className, 'g');
+				finalFileData = finalFileData.replace(reg, '$i_' + arrIndex);
+			}
+		}
+
+		fs.writeFileSync(toPath + '/game.js', finalFileData);
+		console.log('Complete, deployment available at: ' + toPath + '/game.js');
 
 		// Check if we should obfuscate the final file or leave it
 		// as it is, intact with all comments and code
@@ -216,7 +246,7 @@ var IgeNode = IgeClass.extend({
 		// index.html - Modified index.html which only loads deploy.js
 	},
 
-	_createClientEngineCore: function (gamePath, toPath, deployOptions) {
+	_createClientEngineCore: function (gamePath, toPath, deployOptions, clientCode) {
 		console.log('-------------------------');
 		console.log('Generating engine core...');
 		console.log('-------------------------');
@@ -232,6 +262,8 @@ var IgeNode = IgeClass.extend({
 			///////////////////////////
 			finalEngineCoreCode = '',
 			fileArr = [],
+			optionalArr = [],
+			excludeArr = [],
 			fileIndex,
 			file,
 			data = '';
@@ -240,7 +272,33 @@ var IgeNode = IgeClass.extend({
 		// and load the required files
 		for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
 			arrItem = arr[arrIndex];
-			if (arrItem[0] === 'c' || arrItem[0] === 'cs') {
+
+			if (arrItem[0].indexOf('a') > -1) {
+				// The file has an "automatic" include flag meaning
+				// it is optional based on if the class it defines
+				// is actually in use by the game
+				optionalArr.push(arrItem);
+			}
+		}
+
+		console.log('Scanning client code for class usage...');
+
+		for (fileIndex = 0; fileIndex < optionalArr.length; fileIndex++) {
+			file = optionalArr[fileIndex];
+			console.log('Checking for usage of: ' + file[1]);
+
+			if (clientCode.indexOf(file[1]) > -1) {
+				// The client code is using this class
+				console.log('Class "' + file[1] + '" in use, keeping file: engine/' + file[2]);
+			} else {
+				excludeArr.push(file);
+			}
+		}
+
+		for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+			arrItem = arr[arrIndex];
+
+			if (arrItem[0].indexOf('c') > -1 && excludeArr.indexOf(arrItem) === -1) {
 				fileArr.push('engine/' + arrItem[2]);
 			}
 		}
@@ -256,15 +314,11 @@ var IgeNode = IgeClass.extend({
 			// Remove client-exclude marked code
 			data = data.replace(/\/\* CEXCLUDE \*\/[\s\S.]*?\* CEXCLUDE \*\//g, '');
 
-			if (deployOptions.obfuscate) {
-				data = this.obfuscate(data, null, null, true);
-			}
-
 			finalEngineCoreCode += data + ';';
 		}
 
 		// Write the engine core's file data
-		fs.writeFileSync(toPath + '/core.js', finalEngineCoreCode);
+		//fs.writeFileSync(toPath + '/core.js', finalEngineCoreCode);
 
 		return finalEngineCoreCode;
 	},
@@ -314,37 +368,43 @@ var IgeNode = IgeClass.extend({
 
 			// Remove client-exclude marked code
 			data = data.replace(/\/\* CEXCLUDE \*\/[\s\S.]*?\* CEXCLUDE \*\//g, '');
-
-			if (deployOptions.obfuscate) {
-				data = this.obfuscate(data, null, null, true);
-			}
-
 			finalFileData += data + ';';
 		}
 
 		// Write the engine core's file data
-		fs.writeFileSync(toPath + '/game.js', finalFileData);
+		//fs.writeFileSync(toPath + '/game.js', finalFileData);
 
 		return finalFileData;
 	},
 
 	obfuscate: function (source, seed, opts) {
 		var jsp = this.parser,
-			pro = this.uglify,
+			UglifyJS = require('uglify-js2'),
+			compressor = UglifyJS.Compressor({warnings:false}),
+			options,
 			orig_code,
 			ast,
+			compressed_ast,
 			finCode;
 
 		// Remove client-exclude marked code
 		source = source.replace(/\/\* CEXCLUDE \*\/[\s\S.]*?\* CEXCLUDE \*\//g, '');
 
 		// Pass to the uglify-js module
-		orig_code = source;
+		/*orig_code = source;
 		ast = jsp.parse(orig_code); // parse code and get the initial AST
 		ast = pro.ast_mangle(ast); // get a new AST with mangled names
 		ast = pro.ast_squeeze(ast); // get an AST with compression optimizations
 
-		finCode = pro.gen_code(ast); // compressed code here
+		finCode = pro.gen_code(ast); // compressed code here*/
+
+		ast = UglifyJS.parse(source, options);
+		ast.figure_out_scope();
+		compressed_ast = ast.transform(compressor);
+		compressed_ast.figure_out_scope();
+		compressed_ast.compute_char_frequency();
+		compressed_ast.mangle_names();
+		finCode = compressed_ast.print_to_string();
 
 		// Return final code
 		return finCode;
