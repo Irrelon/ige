@@ -470,8 +470,10 @@ var IgeObject = IgeEventingClass.extend({
 
 			// See if we can bug-out early
 			if (arrCount > 1) {
+				// Check if the mount mode is isometric
 				if (this._mountMode === 1) {
-					if (this._depthSortMode === 0) {
+					// Check the depth sort mode
+					if (this._depthSortMode === 0) { // Slowest, uses 3d bounds
 						// Calculate depths from 3d bounds
 						sortObj = {
 							adj: [],
@@ -524,7 +526,7 @@ var IgeObject = IgeEventingClass.extend({
 						});
 					}
 
-					if (this._depthSortMode === 1) {
+					if (this._depthSortMode === 1) { // Medium speed, optimised for almost-cube shaped 3d bounds
 						// Now sort the entities by depth
 						this._children.sort(function (a, b) {
 							var layerIndex = b._layer - a._layer;
@@ -545,7 +547,7 @@ var IgeObject = IgeEventingClass.extend({
 						});
 					}
 
-					if (this._depthSortMode === 2) {
+					if (this._depthSortMode === 2) { // Fastest, optimised for cube-shaped 3d bounds
 						while (arrCount--) {
 							sortObj = arr[arrCount];
 							j = sortObj._translate;
@@ -568,7 +570,7 @@ var IgeObject = IgeEventingClass.extend({
 							}
 						});
 					}
-				} else {
+				} else { // 2d mode
 					// Now sort the entities by depth
 					this._children.sort(function (a, b) {
 						var layerIndex = b._layer - a._layer;
@@ -629,7 +631,10 @@ var IgeObject = IgeEventingClass.extend({
 	tick: function (ctx) {
 		var arr = this._children,
 			arrCount,
-			arrIndex;
+			arrIndex,
+			ts, td,
+			depthSortTime,
+			tickTime;
 
 		if (this._viewChecking) {
 			// Set the in-scene flag for each child based on
@@ -642,15 +647,45 @@ var IgeObject = IgeEventingClass.extend({
 
 			// Depth sort all child objects
 			if (arrCount && !ige._headless) {
-				this.depthSortChildren();
+				if (igeDebug.timing) {
+					if (!ige._tslt[this.id()]) {
+						ige._tslt[this.id()] = {};
+					}
+
+					ts = new Date().getTime();
+					this.depthSortChildren();
+					td = new Date().getTime() - ts;
+					ige._tslt[this.id()].depthSortChildren = td;
+				} else {
+					this.depthSortChildren();
+				}
 			}
 
-
 			// Loop our children and call their tick methods
-			while (arrCount--) {
-				ctx.save();
-				arr[arrCount].tick(ctx);
-				ctx.restore();
+			if (igeDebug.timing) {
+				while (arrCount--) {
+					ctx.save();
+					ts = new Date().getTime();
+					arr[arrCount].tick(ctx);
+					td = new Date().getTime() - ts;
+					if (!ige._tsit[arr[arrCount].id()]) {
+						ige._tsit[arr[arrCount].id()] = 0;
+					}
+
+					if (!ige._tslt[arr[arrCount].id()]) {
+						ige._tslt[arr[arrCount].id()] = {};
+					}
+
+					ige._tsit[arr[arrCount].id()] += td;
+					ige._tslt[arr[arrCount].id()].tick = td;
+					ctx.restore();
+				}
+			} else {
+				while (arrCount--) {
+					ctx.save();
+					arr[arrCount].tick(ctx);
+					ctx.restore();
+				}
 			}
 		}
 	},
