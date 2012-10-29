@@ -41,13 +41,11 @@ var IgeEntity = IgeObject.extend([
 		if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') {
 			// Set the stream floating point precision to 2 as default
 			this.streamFloatPrecision(2);
-
-			// Set the default stream sections as just the transform data
-			this.streamSections(['transform']);
 		}
 		/* CEXCLUDE */
 
-
+		// Set the default stream sections as just the transform data
+		this.streamSections(['transform']);
 	},
 
 	/**
@@ -915,6 +913,83 @@ var IgeEntity = IgeObject.extend([
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// STREAM
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Gets / sets the array of sections that this entity will
+	 * encode into its stream data.
+	 * @param {Array=} sectionArray An array of strings.
+	 * @return {*}
+	 */
+	streamSections: function (sectionArray) {
+		if (sectionArray !== undefined) {
+			this._streamSections = sectionArray;
+			return this;
+		}
+
+		return this._streamSections;
+	},
+
+	/**
+	 * Gets / sets the data for the specified data section id.
+	 * @param {String} sectionId A string identifying the section to handle data get / set for.
+	 * @param {*=} data If present, this is the data that has been sent from the server to the client for this entity.
+	 * @param {Boolean=} bypassTimeStream If true, will assign transform directly to entity instead of adding the values to the time stream.
+	 * @return {*}
+	 */
+	streamSectionData: function (sectionId, data, bypassTimeStream) {
+		if (sectionId === 'transform') {
+			if (data) {
+				// We have received updated data
+				var dataArr = data.split(',');
+
+				if (!bypassTimeStream) {
+					// Translate
+					if (dataArr[0]) { dataArr[0] = parseFloat(dataArr[0]); }
+					if (dataArr[1]) { dataArr[1] = parseFloat(dataArr[1]); }
+					if (dataArr[2]) { dataArr[2] = parseFloat(dataArr[2]); }
+
+					// Scale
+					if (dataArr[3]) { dataArr[3] = parseFloat(dataArr[3]); }
+					if (dataArr[4]) { dataArr[4] = parseFloat(dataArr[4]); }
+					if (dataArr[5]) { dataArr[5] = parseFloat(dataArr[5]); }
+
+					// Rotate
+					if (dataArr[6]) { dataArr[6] = parseFloat(dataArr[6]); }
+					if (dataArr[7]) { dataArr[7] = parseFloat(dataArr[7]); }
+					if (dataArr[8]) { dataArr[8] = parseFloat(dataArr[8]); }
+
+					// Add it to the time stream
+					this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
+
+					// Check stream length, don't allow higher than 10 items
+					if (this._timeStream.length > 10) {
+						// Remove the first item
+						this._timeStream.shift();
+					}
+				} else {
+					// Assign all the transform values immediately
+					if (dataArr[0]) { this._translate.x = parseFloat(dataArr[0]); }
+					if (dataArr[1]) { this._translate.y = parseFloat(dataArr[1]); }
+					if (dataArr[2]) { this._translate.z = parseFloat(dataArr[2]); }
+
+					// Scale
+					if (dataArr[3]) { this._scale.x = parseFloat(dataArr[3]); }
+					if (dataArr[4]) { this._scale.y = parseFloat(dataArr[4]); }
+					if (dataArr[5]) { this._scale.z = parseFloat(dataArr[5]); }
+
+					// Rotate
+					if (dataArr[6]) { this._rotate.x = parseFloat(dataArr[6]); }
+					if (dataArr[7]) { this._rotate.y = parseFloat(dataArr[7]); }
+					if (dataArr[8]) { this._rotate.z = parseFloat(dataArr[8]); }
+				}
+			} else {
+				// We should return stringified data
+				return this._translate.toString(this._streamFloatPrecision) + ',' + // translate
+					this._scale.toString(this._streamFloatPrecision) + ',' + // scale
+					this._rotate.toString(this._streamFloatPrecision) + ','; // rotate
+			}
+		}
+	},
+
 	/* CEXCLUDE */
 	/**
 	 * Gets / sets the stream mode that the stream system will use when
@@ -1059,83 +1134,6 @@ var IgeEntity = IgeObject.extend([
 		}
 
 		return this;
-	},
-
-	/**
-	 * Gets / sets the array of sections that this entity will
-	 * encode into its stream data.
-	 * @param {Array=} sectionArray An array of strings.
-	 * @return {*}
-	 */
-	streamSections: function (sectionArray) {
-		if (sectionArray !== undefined) {
-			this._streamSections = sectionArray;
-			return this;
-		}
-
-		return this._streamSections;
-	},
-
-	/**
-	 * Gets / sets the data for the specified data section id.
-	 * @param {String} sectionId A string identifying the section to handle data get / set for.
-	 * @param {*=} data If present, this is the data that has been sent from the server to the client for this entity.
-	 * @param {Boolean=} bypassTimeStream If true, will assign transform directly to entity instead of adding the values to the time stream.
-	 * @return {*}
-	 */
-	streamSectionData: function (sectionId, data, bypassTimeStream) {
-		if (sectionId === 'transform') {
-			if (data) {
-				// We have received updated data
-				var dataArr = data.split(',');
-
-				if (!bypassTimeStream) {
-					// Translate
-					if (dataArr[0]) { dataArr[0] = parseFloat(dataArr[0]); }
-					if (dataArr[1]) { dataArr[1] = parseFloat(dataArr[1]); }
-					if (dataArr[2]) { dataArr[2] = parseFloat(dataArr[2]); }
-
-					// Scale
-					if (dataArr[3]) { dataArr[3] = parseFloat(dataArr[3]); }
-					if (dataArr[4]) { dataArr[4] = parseFloat(dataArr[4]); }
-					if (dataArr[5]) { dataArr[5] = parseFloat(dataArr[5]); }
-
-					// Rotate
-					if (dataArr[6]) { dataArr[6] = parseFloat(dataArr[6]); }
-					if (dataArr[7]) { dataArr[7] = parseFloat(dataArr[7]); }
-					if (dataArr[8]) { dataArr[8] = parseFloat(dataArr[8]); }
-
-					// Add it to the time stream
-					this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
-
-					// Check stream length, don't allow higher than 10 items
-					if (this._timeStream.length > 10) {
-						// Remove the first item
-						this._timeStream.shift();
-					}
-				} else {
-					// Assign all the transform values immediately
-					if (dataArr[0]) { this._translate.x = parseFloat(dataArr[0]); }
-					if (dataArr[1]) { this._translate.y = parseFloat(dataArr[1]); }
-					if (dataArr[2]) { this._translate.z = parseFloat(dataArr[2]); }
-
-					// Scale
-					if (dataArr[3]) { this._scale.x = parseFloat(dataArr[3]); }
-					if (dataArr[4]) { this._scale.y = parseFloat(dataArr[4]); }
-					if (dataArr[5]) { this._scale.z = parseFloat(dataArr[5]); }
-
-					// Rotate
-					if (dataArr[6]) { this._rotate.x = parseFloat(dataArr[6]); }
-					if (dataArr[7]) { this._rotate.y = parseFloat(dataArr[7]); }
-					if (dataArr[8]) { this._rotate.z = parseFloat(dataArr[8]); }
-				}
-			} else {
-				// We should return stringified data
-				return this._translate.toString(this._streamFloatPrecision) + ',' + // translate
-					this._scale.toString(this._streamFloatPrecision) + ',' + // scale
-					this._rotate.toString(this._streamFloatPrecision) + ','; // rotate
-			}
-		}
 	},
 
 	/**
