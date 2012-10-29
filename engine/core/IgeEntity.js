@@ -650,6 +650,23 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
+	 * Get / set the flag determining if this entity will respond
+	 * to mouse interaction or not. When you set a mouse* event e.g.
+	 * mouseUp, mouseOver etc this flag will automatically be reset
+	 * to true.
+	 * @param {Boolean=} val
+	 * @return {*}
+	 */
+	mouseEventsActive: function (val) {
+		if (val !== undefined) {
+			this._mouseEventsActive = val;
+			return this;
+		}
+
+		return this._mouseEventsActive;
+	},
+
+	/**
 	 * Processes the actions required each render frame.
 	 * @param {HTMLCanvasContext} ctx
 	 * @param {Boolean} dontTransform If set to true, the tick method will
