@@ -45,11 +45,12 @@ var IgeThree = IgeEventingClass.extend({
 
 	IgeCamera_tick: function(ctx) {
 		// Check if we are tracking the translate value of a target
+
 		if (this._trackTranslateTarget) {
 			var targetEntity = this._trackTranslateTarget,
-				targetMatrix = targetEntity._worldMatrix.matrix,
-				targetX = targetMatrix[2],
-				targetY = targetMatrix[5],
+				//targetMatrix = targetEntity._worldMatrix.matrix,
+				targetX = targetEntity._translate.x,//targetMatrix[2],
+				targetY =  targetEntity._translate.y,//targetMatrix[5],
 				sourceX, sourceY, distX, distY;
 
 			if (!this._trackTranslateSmoothing) {
@@ -268,7 +269,7 @@ var IgeThree = IgeEventingClass.extend({
 			if (m.rotation) {
 				m.rotation.x = this._rotate.x;
 				m.rotation.y = this._rotate.y;
-				m.rotation.z = this._rotate.z;
+				m.rotation.z = -this._rotate.z;
 			}
 
 			if (m.scale) {
@@ -332,7 +333,7 @@ var IgeThree = IgeEventingClass.extend({
 
 		if (this._threeObj) {
 			delete this._threeObj._igeEntity;
-			obj._threeObj.remove(self._threeObj);
+			this._parent._threeObj.remove(this._threeObj);
 		}
 
 		return this._$unMount();
