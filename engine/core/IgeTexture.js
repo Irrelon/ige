@@ -362,6 +362,15 @@ var IgeTexture = IgeEventingClass.extend({
 		delete this._textureCanvas;
 	},
 
+	smoothing: function (val) {
+		if (val !== undefined) {
+			this._smoothing = val;
+			return this;
+		}
+
+		return this._smoothing;
+	},
+
 	/**
 	 * Renders the texture image to the passed canvas context.
 	 * @param {CanvasContext2d} ctx The canvas context to draw to.
@@ -369,6 +378,16 @@ var IgeTexture = IgeEventingClass.extend({
 	 * being drawn for.
 	 */
 	render: function (ctx, entity) {
+		if (!this._smoothing) {
+			ige._ctx.imageSmoothingEnabled = false;
+			ige._ctx.webkitImageSmoothingEnabled = false;
+			ige._ctx.mozImageSmoothingEnabled = false;
+		} else {
+			ige._ctx.imageSmoothingEnabled = true;
+			ige._ctx.webkitImageSmoothingEnabled = true;
+			ige._ctx.mozImageSmoothingEnabled = true;
+		}
+
 		if (this._mode === 0) {
 			// This texture is image-based
 			var cell = this._cells[entity._cell],
