@@ -177,6 +177,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 			entityId,
 			parentId,
 			classId,
+			classConstructor,
 			alive,
 			entity,
 			parent,
@@ -209,16 +210,25 @@ var IgeStreamComponent = IgeEventingClass.extend({
 
 			if (alive) {
 				if (!entity) {
-					// The entity does not currently exist so create it!
-					entity = new igeClassStore[classId]()
-						.id(entityId)
-						.mount(parent);
+					// Check the required class exists
+					classConstructor = igeClassStore[classId];
+					if (classConstructor) {
+						// The entity does not currently exist so create it!
+						entity = new classConstructor()
+							.id(entityId)
+							.mount(parent);
 
-					justCreated = true;
+						justCreated = true;
 
-					// Since we just created an entity through receiving stream
-					// data, inform any interested listeners
-					this.emit('entityCreated', entity);
+						// Since we just created an entity through receiving stream
+						// data, inform any interested listeners
+						this.emit('entityCreated', entity);
+					} else {
+						ige.stop();
+						ige.network.stop();
+
+						this.log('Cannot create entity with class ' + classId + ' because the class has not been defined!', 'error');
+					}
 				}
 
 				// Get the entity stream section array
