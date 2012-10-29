@@ -394,26 +394,30 @@ var IgeTexture = IgeEventingClass.extend({
 				geom = entity.geometry,
 				poly = entity._renderPos; // Render pos is calculated in the IgeEntity.aabb() method
 
-			if (this._preFilter && this._textureCtx) {
-				// Call the preFilter method
-				this._textureCtx.save();
-				this._preFilter(this._textureCanvas, this._textureCtx, this._originalImage, this, this._preFilterData);
-				this._textureCtx.restore();
+			if (cell) {
+				if (this._preFilter && this._textureCtx) {
+					// Call the preFilter method
+					this._textureCtx.save();
+					this._preFilter(this._textureCanvas, this._textureCtx, this._originalImage, this, this._preFilterData);
+					this._textureCtx.restore();
+				}
+
+				ctx.drawImage(
+					this.image,
+					cell[0], // texture x
+					cell[1], // texture y
+					cell[2], // texture width
+					cell[3], // texture height
+					poly.x, // render x
+					poly.y, // render y
+					geom.x, // render width
+					geom.y // render height
+				);
+
+				ige._drawCount++;
+			} else {
+				this.log('Cannot render texture using cell ' + entity._cell + ' because the cell does not exist in the assigned texture!', 'error');
 			}
-
-			ctx.drawImage(
-				this.image,
-				cell[0], // texture x
-				cell[1], // texture y
-				cell[2], // texture width
-				cell[3], // texture height
-				poly.x, // render x
-				poly.y, // render y
-				geom.x, // render width
-				geom.y // render height
-			);
-
-			ige._drawCount++;
 		}
 
 		if (this._mode === 1) {
