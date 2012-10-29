@@ -227,6 +227,11 @@ var IgeClass = (function () {
 				// Create an array to hold components
 				this._components = [];
 
+				// Store a reference to the global ige object
+				if (typeof(ige) !== 'undefined') {
+					this.ige = ige;
+				}
+
 				// Call the class init method
 				this.init.apply(this, arguments);
 			}
