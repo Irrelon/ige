@@ -139,6 +139,9 @@ var IgeNetIoClient = {
 			ciEncoded;
 
 		if (commandIndex !== undefined) {
+			if (this._debug) {
+				console.log('Sending "' + commandName + '" (index ' + commandIndex + ') with data:', data);
+			}
 			ciEncoded = String.fromCharCode(commandIndex);
 			this._io.send([ciEncoded, data]);
 		} else {
@@ -271,6 +274,10 @@ var IgeNetIoClient = {
 			commandName = this._networkCommandsIndex[ciDecoded];
 
 		if (this._networkCommands[commandName]) {
+			if (this._debug) {
+				console.log('Received "' + commandName + '" (index ' + ciDecoded + ') with data:', data[1]);
+			}
+
 			this._networkCommands[commandName](data[1]);
 		}
 
