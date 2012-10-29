@@ -82,7 +82,7 @@ var IgeTimeSyncExtension = {
 
 			//this.log('Time sync, client->server transit time: ' + (localTime - sendTime) + 'ms, roundtrip: ' + roundTrip + 'ms, send timestamp: ' + parseInt(data[0], 10) + ', local timestamp: ' + localTime);
 
-			this._timeSyncLog[clientId] = data;
+			this._timeSyncLog[clientId] = localTime - sendTime;
 
 		}
 	}
