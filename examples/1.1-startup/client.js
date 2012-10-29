@@ -65,7 +65,7 @@ var Client = IgeClass.extend({
 					// Create a third rotator entity and mount
 					// it to the first on at 0, -50 relative to the
 					// parent, but assign it a smart texture!
-					self.obj[1] = new Rotator()
+					self.obj[2] = new Rotator()
 						.id('simpleBox')
 						.depth(1)
 						.width(50)
