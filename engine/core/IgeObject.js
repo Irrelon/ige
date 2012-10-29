@@ -634,7 +634,8 @@ var IgeObject = IgeEventingClass.extend({
 			arrIndex,
 			ts, td,
 			depthSortTime,
-			tickTime;
+			tickTime,
+			ac1, ac2;
 
 		if (this._viewChecking) {
 			// Set the in-scene flag for each child based on
@@ -644,7 +645,7 @@ var IgeObject = IgeEventingClass.extend({
 
 		if (arr) {
 			arrCount = arr.length;
-
+			ac1 = arrCount;
 			// Depth sort all child objects
 			if (arrCount && !ige._headless) {
 				if (igeDebug.timing) {
@@ -660,7 +661,7 @@ var IgeObject = IgeEventingClass.extend({
 					this.depthSortChildren();
 				}
 			}
-
+			ac2 = arrCount;
 			// Loop our children and call their tick methods
 			if (igeDebug.timing) {
 				while (arrCount--) {
@@ -668,16 +669,18 @@ var IgeObject = IgeEventingClass.extend({
 					ts = new Date().getTime();
 					arr[arrCount].tick(ctx);
 					td = new Date().getTime() - ts;
-					if (!ige._tsit[arr[arrCount].id()]) {
-						ige._tsit[arr[arrCount].id()] = 0;
-					}
+					if (!arr[arrCount]) {
+						if (!ige._tsit[arr[arrCount].id()]) {
+							ige._tsit[arr[arrCount].id()] = 0;
+						}
 
-					if (!ige._tslt[arr[arrCount].id()]) {
-						ige._tslt[arr[arrCount].id()] = {};
-					}
+						if (!ige._tslt[arr[arrCount].id()]) {
+							ige._tslt[arr[arrCount].id()] = {};
+						}
 
-					ige._tsit[arr[arrCount].id()] += td;
-					ige._tslt[arr[arrCount].id()].tick = td;
+						ige._tsit[arr[arrCount].id()] += td;
+						ige._tslt[arr[arrCount].id()].tick = td;
+					}
 					ctx.restore();
 				}
 			} else {

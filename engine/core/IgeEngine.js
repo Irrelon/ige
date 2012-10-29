@@ -955,17 +955,18 @@ var IgeEngine = IgeEntity.extend({
 					ts = new Date().getTime();
 					arr[arrCount].tick(ctx);
 					td = new Date().getTime() - ts;
+					if (!arr[arrCount]) {
+						if (!ige._tsit[arr[arrCount].id()]) {
+							ige._tsit[arr[arrCount].id()] = 0;
+						}
 
-					if (!ige._tsit[arr[arrCount].id()]) {
-						ige._tsit[arr[arrCount].id()] = 0;
+						if (!ige._tslt[arr[arrCount].id()]) {
+							ige._tslt[arr[arrCount].id()] = {};
+						}
+
+						ige._tsit[arr[arrCount].id()] += td;
+						ige._tslt[arr[arrCount].id()].tick = td;
 					}
-
-					if (!ige._tslt[arr[arrCount].id()]) {
-						ige._tslt[arr[arrCount].id()] = {};
-					}
-
-					ige._tsit[arr[arrCount].id()] += td;
-					ige._tslt[arr[arrCount].id()].tick = td;
 					ctx.restore();
 				}
 			} else {
