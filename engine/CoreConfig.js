@@ -6,6 +6,7 @@ var igeCoreConfig = {
 		['cs', 'IgeBase', 'core/IgeBase.js'],
 		['cs', 'IgeClass', 'core/IgeClass.js'],
 		['cs', 'IgeEventingClass', 'core/IgeEventingClass.js'],
+		['ca', 'IgeTest', 'core/IgeTest.js'],
 		/* Data Classes */
 		['cs', 'IgePoint', 'core/IgePoint.js'],
 		['cs', 'IgePoly2d', 'core/IgePoly2d.js'],
