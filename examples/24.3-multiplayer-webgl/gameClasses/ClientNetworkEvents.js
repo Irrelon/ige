@@ -19,7 +19,7 @@ var ClientNetworkEvents = {
 			self._eventListener = ige.network.stream.on('entityCreated', function (entity) {
 				if (entity.id() === data) {
 					// Tell the camera to track out player entity
-					//ige.client.vp1.camera.trackTranslate(ige.$(data), 0);
+					ige.client.vp1.camera.trackTranslate(ige.$(data), 0);
 
 					// Turn off the listener for this event now that we
 					// have found and started tracking our player entity
