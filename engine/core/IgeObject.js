@@ -669,7 +669,7 @@ var IgeObject = IgeEventingClass.extend({
 					ts = new Date().getTime();
 					arr[arrCount].tick(ctx);
 					td = new Date().getTime() - ts;
-					if (!arr[arrCount]) {
+					if (arr[arrCount]) {
 						if (!ige._tsit[arr[arrCount].id()]) {
 							ige._tsit[arr[arrCount].id()] = 0;
 						}
