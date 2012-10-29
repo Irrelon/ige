@@ -1,5 +1,5 @@
 var IgeInputComponent = IgeEventingClass.extend({
-	classId: 'IgeInput',
+	classId: 'IgeInputComponent',
 	componentId: 'input',
 
 	init: function () {
