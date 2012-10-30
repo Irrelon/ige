@@ -82,6 +82,34 @@ var Client = IgeClass.extend({
 						.dimensionsFromCell()
 						.translateTo(100, 0, 0)
 						.mount(self.scene1);
+
+					// Create one more entity and animate between the table and
+					// panel cells using cell ids in the animation, this tests
+					// that cell-id based frames will animate correctly
+					self.obj[2] = new IgeEntity()
+						.id('sprite3')
+						.addComponent(IgeAnimationComponent)
+						.depth(1)
+						// Assign the sprite sheet texture to the entity.
+						// Notice we are using the gameTexture[1] instead of the
+						// gameTexture[0] as in the entity above. This allows us
+						// to use the cell ids that were defined via the
+						// IgeSpriteSheet definition on line 20 using cellById()
+						// instead of specifying the cell index via cell()
+						.texture(self.gameTexture[1])
+						// Assign cell by id "panel" as the entity's texture cell
+						// this is possible using the cellById() method which reads
+						// the assigned cell ids from the texture definition and
+						// then maps it to the cell index that it corresponds to
+						.cellById('panel')
+						// Apply the dimensions from the cell to the entity
+						// so that the entity's width and height now match that
+						// of the cell being used
+						.dimensionsFromCell()
+						.translateTo(100, 100, 0)
+						.animation.define('test', ['panel', 'table'], 1, -1, true)
+						.animation.select('test')
+						.mount(self.scene1);
 				}
 			});
 		});
