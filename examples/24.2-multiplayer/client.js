@@ -70,6 +70,12 @@ var Client = IgeClass.extend({
 						// are created server-side and then streamed to the clients. If an entity
 						// is streamed to a client and the client doesn't have the entity in
 						// memory, the entity is automatically created. Woohoo!
+
+						// Enable console logging of network messages but only show 10 of them and
+						// then stop logging them. This is a demo of how to help you debug network
+						// data messages.
+						ige.network.debugMax(10);
+						ige.network.debug(true);
 					});
 				}
 			});
