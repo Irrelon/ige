@@ -16,6 +16,13 @@ var Client = IgeClass.extend({
 			[128, 101, 96, 52]
 		]);
 
+		// Load the sprite sheet and also assign cell ids to each cell
+		self.gameTexture[1] = new IgeSpriteSheet('../assets/textures/tiles/future-joy-tilee.png', [
+			// Format of the sprite area is x, y, width, height
+			[5, 32, 22, 31, 'table'],
+			[128, 101, 96, 52, 'panel']
+		]);
+
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
 			// Create the HTML canvas
@@ -57,10 +64,18 @@ var Client = IgeClass.extend({
 					self.obj[1] = new IgeEntity()
 						.id('sprite2')
 						.depth(1)
-						// Assign the sprite sheet texture to the entity
-						.texture(self.gameTexture[0])
-						// Assign cell 1 as the entity's texture cell
-						.cell(2)
+						// Assign the sprite sheet texture to the entity.
+						// Notice we are using the gameTexture[1] instead of the
+						// gameTexture[0] as in the entity above. This allows us
+						// to use the cell ids that were defined via the
+						// IgeSpriteSheet definition on line 20 using cellById()
+						// instead of specifying the cell index via cell()
+						.texture(self.gameTexture[1])
+						// Assign cell by id "panel" as the entity's texture cell
+						// this is possible using the cellById() method which reads
+						// the assigned cell ids from the texture definition and
+						// then maps it to the cell index that it corresponds to
+						.cellById('panel')
 						// Apply the dimensions from the cell to the entity
 						// so that the entity's width and height now match that
 						// of the cell being used
