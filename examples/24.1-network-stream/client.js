@@ -31,7 +31,11 @@ var Client = IgeClass.extend({
 						// Create a listener that will fire whenever an entity
 						// is created because of the incoming stream data
 						.stream.on('entityCreated', function (entity) {
-							console.log('Stream entity created with ID: ' + entity.id());
+							this.log('Stream entity created with ID: ' + entity.id());
+							if (entity._classId === 'Mover') {
+								// Track this entity with the camera
+								//self.vp1.camera.trackTranslate(entity, 10);
+							}
 						});
 
 					// Create the scene

@@ -73,6 +73,21 @@ var Server = IgeClass.extend({
 							.streamMode(1)
 							.lifeSpan(10000)
 							.mount(self.scene1);
+
+						// Create an entity and mount it to the scene
+						self.obj[3] = new Mover()
+							.id('mover0')
+							.depth(1)
+							.translateTo(-300, -100, 0)
+							.streamMode(1)
+							.mount(self.scene1);
+
+						self.obj[4] = new Mover()
+							.id('mover1')
+							.depth(1)
+							.translateTo(300, 100, 0)
+							.streamMode(1)
+							.mount(self.scene1);
 					}
 				});
 			});
