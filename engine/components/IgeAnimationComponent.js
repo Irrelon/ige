@@ -36,11 +36,37 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 * @param {Array} frames An array of cell numbers to animate through.
 	 * @param {Number} fps The speed of the animation (frames per second).
 	 * @param {Number} loop The number of times to loop the animation, or -1 to loop forever. Defaults to -1.
+	 * @param {Boolean} convertIdsToIndex If true will convert cell ids to cell indexes to speed
+	 * up animation processing. This is true by default but should be disabled if you intend to
+	 * change the assigned texture of the entity that this animation is applied to after you have
+	 * defined the animation since the frame indexes will likely map to incorrect cells on a
+	 * different texture.
 	 * @return {*}
 	 */
-	define: function (id, frames, fps, loop) {
+	define: function (id, frames, fps, loop, convertIdsToIndex) {
 		if (frames && frames.length) {
+			var i, frame;
 			this._anims.length = this._anims.length || 0;
+
+			if (convertIdsToIndex === undefined) {
+				convertIdsToIndex = true; // Default the flag to true if undefined
+			}
+
+			if (convertIdsToIndex) {
+				// Check each frame for string values
+				for (i = 0; i < frames.length; i++) {
+					frame = frames[i];
+					if (frame) {
+						if (this._entity._texture) {
+							// The frame has a cell id so convert to an index
+							frame = this._entity._texture.cellIdToIndex(frame);
+						} else {
+							this.log('You can increase the performance of id-based cell animations by specifying the animation.define AFTER you have assigned your sprite sheet to the entity on entity with ID: ' + this._entity.id(), 'warning');
+							break;
+						}
+					}
+				}
+			}
 
 			// Store the animation
 			var frameTime = ((1000 / fps)|0);
