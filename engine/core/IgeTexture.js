@@ -378,55 +378,60 @@ var IgeTexture = IgeEventingClass.extend({
 	 * being drawn for.
 	 */
 	render: function (ctx, entity) {
-		if (!this._smoothing) {
-			ige._ctx.imageSmoothingEnabled = false;
-			ige._ctx.webkitImageSmoothingEnabled = false;
-			ige._ctx.mozImageSmoothingEnabled = false;
-		} else {
-			ige._ctx.imageSmoothingEnabled = true;
-			ige._ctx.webkitImageSmoothingEnabled = true;
-			ige._ctx.mozImageSmoothingEnabled = true;
-		}
+		// Check that the cell is not set to null. If it is then
+		// we don't render anything which effectively makes the
+		// entity "blank"
+		if (entity._cell !== null) {
+			if (!this._smoothing) {
+				ige._ctx.imageSmoothingEnabled = false;
+				ige._ctx.webkitImageSmoothingEnabled = false;
+				ige._ctx.mozImageSmoothingEnabled = false;
+			} else {
+				ige._ctx.imageSmoothingEnabled = true;
+				ige._ctx.webkitImageSmoothingEnabled = true;
+				ige._ctx.mozImageSmoothingEnabled = true;
+			}
 
-		if (this._mode === 0) {
-			// This texture is image-based
-			var cell = this._cells[entity._cell],
-				geom = entity.geometry,
-				poly = entity._renderPos; // Render pos is calculated in the IgeEntity.aabb() method
+			if (this._mode === 0) {
+				// This texture is image-based
+				var cell = this._cells[entity._cell],
+					geom = entity.geometry,
+					poly = entity._renderPos; // Render pos is calculated in the IgeEntity.aabb() method
 
-			if (cell) {
-				if (this._preFilter && this._textureCtx) {
-					// Call the preFilter method
-					this._textureCtx.save();
-					this._preFilter(this._textureCanvas, this._textureCtx, this._originalImage, this, this._preFilterData);
-					this._textureCtx.restore();
+				if (cell) {
+					if (this._preFilter && this._textureCtx) {
+						// Call the preFilter method
+						this._textureCtx.save();
+						this._preFilter(this._textureCanvas, this._textureCtx, this._originalImage, this, this._preFilterData);
+						this._textureCtx.restore();
+					}
+
+					ctx.drawImage(
+						this.image,
+						cell[0], // texture x
+						cell[1], // texture y
+						cell[2], // texture width
+						cell[3], // texture height
+						poly.x, // render x
+						poly.y, // render y
+						geom.x, // render width
+						geom.y // render height
+					);
+
+					ige._drawCount++;
+				} else {
+					this.log('Cannot render texture using cell ' + entity._cell + ' because the cell does not exist in the assigned texture!', 'error');
 				}
+			}
 
-				ctx.drawImage(
-					this.image,
-					cell[0], // texture x
-					cell[1], // texture y
-					cell[2], // texture width
-					cell[3], // texture height
-					poly.x, // render x
-					poly.y, // render y
-					geom.x, // render width
-					geom.y // render height
-				);
+			if (this._mode === 1) {
+				// This texture is script-based (a "smart texture")
+				ctx.save();
+					this.script.render(ctx, entity, this);
+				ctx.restore();
 
 				ige._drawCount++;
-			} else {
-				this.log('Cannot render texture using cell ' + entity._cell + ' because the cell does not exist in the assigned texture!', 'error');
 			}
-		}
-
-		if (this._mode === 1) {
-			// This texture is script-based (a "smart texture")
-			ctx.save();
-				this.script.render(ctx, entity, this);
-			ctx.restore();
-
-			ige._drawCount++;
 		}
 	},
 
