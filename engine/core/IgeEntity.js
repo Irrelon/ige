@@ -312,7 +312,7 @@ var IgeEntity = IgeObject.extend([
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	cell: function (val) {
-		if (val > 0) {
+		if (val > 0 || val === null) {
 			this._cell = val;
 			return this;
 		}
