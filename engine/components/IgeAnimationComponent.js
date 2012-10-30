@@ -1,6 +1,6 @@
 /**
  * The animation component class. Handles defining and controlling
- * frame-based animations based on cells from an image.
+ * frame-based animations based on cells from a texture.
  */
 var IgeAnimationComponent = IgeEventingClass.extend({
 	classId: 'IgeAnimationComponent',
