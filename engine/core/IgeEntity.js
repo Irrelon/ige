@@ -774,6 +774,15 @@ var IgeEntity = IgeObject.extend([
 		}
 	},
 
+	/**
+	 * Handles calling the texture.render() method if a texture
+	 * is applied to the entity. This part of the tick process has
+	 * been abstracted to allow it to be overridden by an extending
+	 * class.
+	 * @param ctx
+	 * @param dontTransform
+	 * @private
+	 */
 	_renderEntity: function (ctx, dontTransform) {
 		var texture = this._texture;
 
