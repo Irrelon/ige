@@ -28,7 +28,7 @@ var igeCoreConfig = {
 		['csa', 'Cannon', 'components/physics/cannon/lib_cannon.js'],
 		['csa', 'IgeCannonComponent', 'components/physics/cannon/IgeCannonComponent.js'],
 		/* Network Stream */
-		['cs', 'IgeTimeSyncExtension', 'components/network/stream/IgeTimeSyncExtension.js'],
+		['cs', 'IgeTimeSyncExtension', 'components/network/IgeTimeSyncExtension.js'],
 		['cs', 'IgeStreamComponent', 'components/network/stream/IgeStreamComponent.js'],
 		/* Socket.io */
 		['ca', 'SocketIo', 'components/network/socket.io/client/socket.io.min.js'],
