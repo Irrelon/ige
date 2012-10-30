@@ -2,7 +2,7 @@
  * The animation component class. Handles defining and controlling
  * frame-based animations based on cells from an image.
  */
-var IgeAnimationComponent = IgeClass.extend({
+var IgeAnimationComponent = IgeEventingClass.extend({
 	classId: 'IgeAnimationComponent',
 	componentId: 'animation',
 
@@ -77,6 +77,8 @@ var IgeAnimationComponent = IgeClass.extend({
 
 				this._anim = anim;
 				this._animId = animId;
+
+				this.emit('started', anim);
 			} else {
 				this.log('Cannot set animation to "' + animId + '" because the animation does not exist!', 'warning');
 			}
@@ -105,6 +107,8 @@ var IgeAnimationComponent = IgeClass.extend({
 	 * @return {*}
 	 */
 	stop: function () {
+		this.emit('stopped', this._anim);
+
 		delete this._anim;
 		delete this._animId;
 
@@ -130,6 +134,7 @@ var IgeAnimationComponent = IgeClass.extend({
 			if (anim.currentDelta > anim.totalTime) {
 				// Check if we have a single loop animation
 				if (!anim.loop) {
+					this.emit('complete', anim);
 					this.stop();
 				} else {
 					// Check if we have an infinite loop
@@ -139,6 +144,8 @@ var IgeAnimationComponent = IgeClass.extend({
 						if (Math.abs(multiple) > 1) {
 							anim.currentDelta -= ((multiple|0) * anim.totalTime); // Bitwise floor
 						}
+
+						this.emit('loopComplete', anim);
 					} else {
 						anim.currentLoop++;
 						if (anim.loop > 0 && anim.currentLoop <= anim.loop) {
@@ -147,10 +154,12 @@ var IgeAnimationComponent = IgeClass.extend({
 							if (Math.abs(multiple) > 1) {
 								anim.currentDelta -= ((multiple|0) * anim.totalTime); // Bitwise floor
 							}
+
+							this.emit('loopComplete', anim);
 						} else {
 							// The animation has ended
+							this.emit('complete', anim);
 							this.stop();
-							//return;
 						}
 					}
 				}
@@ -165,7 +174,11 @@ var IgeAnimationComponent = IgeClass.extend({
 			cell = anim.frames[frame];
 
 			// Set the current frame
-			this._entity.cell(cell);
+			if (typeof(cell) === 'string') {
+				this._entity.cellById(cell);
+			} else {
+				this._entity.cell(cell);
+			}
 		}
 	}
 });
