@@ -107,7 +107,7 @@ var Client = IgeClass.extend({
 						// of the cell being used
 						.dimensionsFromCell()
 						.translateTo(100, 100, 0)
-						.animation.define('test', ['panel', 'table'], 1, -1, true)
+						.animation.define('test', ['panel', 'table', null], 1, -1, true)
 						.animation.select('test')
 						.mount(self.scene1);
 				}
