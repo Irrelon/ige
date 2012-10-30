@@ -321,6 +321,41 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
+	 * Gets / sets the current texture cell used when rendering the game
+	 * object's texture. If the texture is not cell-based, this value is
+	 * ignored. This differs from cell() in that it accepts a string id
+	 * as the cell
+	 * @param {Number=} val
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 */
+	cellById: function (val) {
+		if (val !== undefined) {
+			if (this._texture) {
+				// Find the cell index this id corresponds to
+				var i,
+					tex = this._texture,
+					cells = tex._cells;
+
+				for (i = 1; i < cells.length; i++) {
+					if (cells[i][4] === val) {
+						// Found the cell id so assign this cell index
+						this.cell(i);
+						return this;
+					}
+				}
+
+				// We were unable to find the cell index from the cell
+				// id so produce an error
+				this.log('Could not find the cell id "' + val + '" in the assigned entity texture ' + tex.id() + ', please check your sprite sheet (texture) cell definition to ensure the cell id "' + val + '" has been assigned to a cell!', 'error');
+			} else {
+				this.log('Cannot assign cell index from cell ID until an IgeSpriteSheet has been set as the texture for this entity. Please set the texture before calling cellById().', 'error');
+			}
+		}
+
+		return this._cell;
+	},
+
+	/**
 	 * Sets the geometry of the entity to match the width and height
 	 * of the assigned texture.
 	 */
