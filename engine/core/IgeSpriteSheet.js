@@ -39,6 +39,26 @@ var IgeSpriteSheet = IgeTexture.extend({
 	},
 
 	/**
+	 * Returns the cell index that the passed cell id corresponds
+	 * to.
+	 * @param {String} id
+	 * @return {Number} The cell index that the cell id corresponds
+	 * to or -1 if a corresponding index could not be found.
+	 */
+	cellIdToIndex: function (id) {
+		var cells = this._cells,
+			i;
+		for (i = 1; i < cells.length; i++) {
+			if (cells[i][4] === id) {
+				// Found the cell id so return the index
+				return i;
+			}
+		}
+
+		return -1;
+	},
+
+	/**
 	 * Returns a string containing a code fragment that when
 	 * evaluated will reproduce this object.
 	 * @return {String}
