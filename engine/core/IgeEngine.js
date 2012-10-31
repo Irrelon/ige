@@ -72,6 +72,7 @@ var IgeEngine = IgeEntity.extend({
 		this._mousePos = new IgePoint(0, 0, 0);
 		this._currentViewport = null; // Set in IgeViewport.js tick(), holds the current rendering viewport
 		this._currentCamera = null; // Set in IgeViewport.js tick(), holds the current rendering viewport's camera
+		this._globalSmoothing = false; // Determines the default smoothing setting for new textures
 		this._register = {
 			'ige': this
 		}; // Holds a reference to every item in the scenegraph by it's ID
@@ -392,6 +393,22 @@ var IgeEngine = IgeEntity.extend({
 
 		// Fire off an event about this
 		this.emit('texturesLoaded');
+	},
+
+	/**
+	 * Gets / sets the default smoothing value for all new
+	 * IgeTexture class instances. If set to true, all newly
+	 * created textures will have smoothing enabled by default.
+	 * @param val
+	 * @return {*}
+	 */
+	globalSmoothing: function (val) {
+		if (val !== undefined) {
+			this._globalSmoothing = val;
+			return this;
+		}
+
+		return this._globalSmoothing;
 	},
 
 	/**

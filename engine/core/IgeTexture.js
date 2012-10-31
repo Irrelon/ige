@@ -20,6 +20,7 @@ var IgeTexture = IgeEventingClass.extend({
 
 		// Create an array that is used to store cell dimensions
 		this._cells = [];
+		this._smoothing = ige._globalSmoothing;
 
 		// Load the texture URL
 		if (url) {
