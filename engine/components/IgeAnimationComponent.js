@@ -56,7 +56,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 				// Check each frame for string values
 				for (i = 0; i < frames.length; i++) {
 					frame = frames[i];
-					if (frame) {
+					if (typeof(frame) === 'string') {
 						if (this._entity._texture) {
 							// The frame has a cell id so convert to an index
 							frame = this._entity._texture.cellIdToIndex(frame);
