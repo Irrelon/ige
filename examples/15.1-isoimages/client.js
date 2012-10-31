@@ -4,6 +4,9 @@ var Client = IgeClass.extend({
 	init: function () {
 		ige.showStats(1);
 
+		// Enabled texture smoothing when scaling textures
+		ige.globalSmoothing(true);
+
 		// Load our textures
 		var self = this;
 
