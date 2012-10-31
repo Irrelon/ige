@@ -28,7 +28,7 @@ var TurretMouseAim = function () {
 
 		worldMatrix = this._threeObj.matrixWorld.elements;
 		directionVector = {x: worldMatrix[12] - mouseWorld.x, y: -worldMatrix[13] - (mouseWorld.y)};
-		rotateZ = Math.atan2(directionVector.x, directionVector.y);
+		rotateZ = -Math.atan2(directionVector.x, directionVector.y);
 
 		this.rotateTo(0, 0, rotateZ - this._parent._rotate.z);
 	}
