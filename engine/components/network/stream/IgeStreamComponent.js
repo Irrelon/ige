@@ -61,6 +61,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 		return this._renderLatency;
 	},
 
+	/* CEXCLUDE */
 	/**
 	 * Gets / sets the interval by which updates to the game world are packaged
 	 * and transmitted to connected clients. The greater the value, the less
@@ -153,6 +154,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 			}
 		}
 	},
+	/* CEXCLUDE */
 
 	/**
 	 * Handles receiving the start time of the stream data.
