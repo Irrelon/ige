@@ -153,13 +153,12 @@ var IgeNode = IgeClass.extend({
 			// Load the deploy options
 			deployOptions = require(this._gamePath + '/deploy.js');
 		} else {
-			deployOptions = {
-				obfuscate: true
-			};
+			deployOptions = {};
 		}
 
 		deployOptions.fixPaths = args['-fixPaths'];
 		deployOptions.index = args['-index'];
+		deployOptions.obfuscate = args['-clear'] ? false : true;
 
 		if (!this.fs.existsSync(toPath)) {
 			this.fs.mkdirSync(toPath);
@@ -221,6 +220,7 @@ var IgeNode = IgeClass.extend({
 			if (deployOptions.fixPaths) {
 				console.log('Altering coded paths...');
 				clientCode = clientCode.replace(/\.\.\//g, '../../');
+				clientCode = clientCode.replace(/\.\.\\\//g, '..\\/..\\/');
 			}
 
 			if (deployOptions.index) {
@@ -309,16 +309,7 @@ var IgeNode = IgeClass.extend({
 
 				if ((fullCodeEval.indexOf(file[1]) > -1 || (file[0].indexOf('c') > -1 && file[0].indexOf('a') === -1)) && finalArr.indexOf(file[2]) === -1) {
 					// The client code is using this class
-					if ((file[0].indexOf('c') > -1 && file[0].indexOf('a') === -1)) {
-						console.log('REQUIRED Class "' + file[1] + '" in use, keeping file: engine/' + file[2]);
-					}
-
-					if (fullCodeEval.indexOf(file[1]) > -1) {
-						if (file[0].indexOf('a') > -1) {
-							console.log('OPTIONAL Class "' + file[1] + '" in use, keeping file: engine/' + file[2]);
-						}
-					}
-
+					console.log('Class "' + file[1] + '" used in project, keeping file: engine/' + file[2]);
 					finalArr.push(file[2]);
 
 					// Add the new file to the fullCodeEval so that any dependencies it has
