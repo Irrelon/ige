@@ -26,13 +26,17 @@ var IgeTiledComponent = IgeClass.extend({
 		var self = this,
 			scriptElem;
 
-		scriptElem = document.createElement('script');
-		scriptElem.src = url;
-		scriptElem.onload = function () {
-			self.log('Tiled data loaded, processing...');
-			self._processData(tiled, callback);
-		};
-		document.getElementsByTagName('head')[0].appendChild(scriptElem);
+		if (typeof(url) === 'string') {
+			scriptElem = document.createElement('script');
+			scriptElem.src = url;
+			scriptElem.onload = function () {
+				self.log('Tiled data loaded, processing...');
+				self._processData(tiled, callback);
+			};
+			document.getElementsByTagName('head')[0].appendChild(scriptElem);
+		} else {
+			self._processData(url, callback);
+		}
 	},
 
 	_processData: function (data, callback) {

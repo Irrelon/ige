@@ -104,7 +104,7 @@ var Client = IgeClass.extend({
 
 					// Load the Tiled map data and handle the return data
 					ige.addComponent(IgeTiledComponent)
-						.tiled.loadJson('maps/example.js', function (layerArray, layersById) {
+						.tiled.loadJson(tiledExample1, function (layerArray, layersById) {
 							// The return data from the tiled component are two arguments,
 							// the first is an array of IgeTextureMap instances, each one
 							// representing one of the Tiled map's layers. The ID of each
