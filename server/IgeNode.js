@@ -158,7 +158,9 @@ var IgeNode = IgeClass.extend({
 
 		deployOptions.fixPaths = args['-fixPaths'];
 		deployOptions.index = args['-index'];
-		deployOptions.obfuscate = args['-clear'] ? false : true;
+		deployOptions.obfuscate = args['-clear'] ? false : true
+		deployOptions.proto = args['-proto'];
+		deployOptions.clearClasses = args['-clearClasses'];
 
 		if (!this.fs.existsSync(toPath)) {
 			this.fs.mkdirSync(toPath);
@@ -204,10 +206,18 @@ var IgeNode = IgeClass.extend({
 			reg, indexData;
 
 		// Generate the engine core
-		clientCodeReturn = this._createClientGame(gamePath, toPath, deployOptions);
+		if (!deployOptions.proto) {
+			clientCodeReturn = this._createClientGame(gamePath, toPath, deployOptions);
+		} else {
+			clientCodeReturn = true;
+		}
 
 		if (clientCodeReturn) {
-			clientCode += clientCodeReturn;
+			if (!deployOptions.proto) {
+				clientCode += clientCodeReturn;
+			} else {
+				clientCode = '';
+			}
 
 			coreCodeReturn = this._createClientEngineCore(gamePath, toPath, deployOptions, clientCode);
 
@@ -233,26 +243,33 @@ var IgeNode = IgeClass.extend({
 				console.log('Compressing...');
 				finalFileData = this.obfuscate(coreCode + clientCode, null, null, true);
 
-				// Now do one last pass, replacing IGE class names with total nonsense
-				// first build a dictionary of IGE class names and then assign corresponding
-				// names to them
-				console.log('Final obfuscation...');
-				for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
-					arrItem = arr[arrIndex];
+				if (!deployOptions.clearClasses) {
+					// Now do one last pass, replacing IGE class names with total nonsense
+					// first build a dictionary of IGE class names and then assign corresponding
+					// names to them
+					console.log('Final obfuscation...');
+					for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+						arrItem = arr[arrIndex];
 
-					className = arrItem[1];
-					nameToNew[className] = '$i_' + arrIndex;
+						className = arrItem[1];
+						nameToNew[className] = '$i_' + arrIndex;
 
-					// Replace any occurrences in the code
-					reg = new RegExp(className, 'g');
-					finalFileData = finalFileData.replace(reg, '$i_' + arrIndex);
+						// Replace any occurrences in the code
+						reg = new RegExp(className, 'g');
+						finalFileData = finalFileData.replace(reg, '$i_' + arrIndex);
+					}
 				}
 			} else {
 				finalFileData = coreCode + ';' + clientCode;
 			}
 
-			fs.writeFileSync(toPath + '/game.js', finalFileData);
-			console.log('Complete, deployment available at: ' + toPath + '/game.js');
+			if (!deployOptions.proto) {
+				fs.writeFileSync(toPath + '/game.js', finalFileData);
+				console.log('Complete, deployment available at: ' + toPath + '/game.js');
+			} else {
+				fs.writeFileSync(toPath + '/ige.js', finalFileData);
+				console.log('Complete, deployment available at: ' + toPath + '/ige.js');
+			}
 		}
 
 		// Check if we should obfuscate the final file or leave it
@@ -307,7 +324,7 @@ var IgeNode = IgeClass.extend({
 				file = arr[fileIndex];
 				//console.log('Checking for usage of: ' + file[1]);
 
-				if ((fullCodeEval.indexOf(file[1]) > -1 || (file[0].indexOf('c') > -1 && file[0].indexOf('a') === -1)) && finalArr.indexOf(file[2]) === -1) {
+				if (((deployOptions.proto && file[0].indexOf('p') > -1) || (fullCodeEval.indexOf(file[1]) > -1 || (file[0].indexOf('c') > -1 && file[0].indexOf('a') === -1))) && finalArr.indexOf(file[2]) === -1) {
 					// The client code is using this class
 					console.log('Class "' + file[1] + '" used in project, keeping file: engine/' + file[2]);
 					finalArr.push(file[2]);
@@ -315,7 +332,6 @@ var IgeNode = IgeClass.extend({
 					// Add the new file to the fullCodeEval so that any dependencies it has
 					// will also be picked up
 					fullCodeEval += fs.readFileSync('engine/' + file[2], 'utf8');
-
 
 					rerun = true;
 					break;
