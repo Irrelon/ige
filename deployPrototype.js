@@ -28,3 +28,7 @@ fs.readdir(dir, function(err, files){
 		});
 	});
 });
+
+var child = exec('node ./server/ige -proto true -clearClasses true -deploy . -to ../ige_prototype/engine/core', {cwd: process.cwd()}, function (error, stdout, stderr) {
+	console.log('IGE Core Prototype Version Deployment Complete!');
+});
