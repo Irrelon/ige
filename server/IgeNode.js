@@ -158,7 +158,7 @@ var IgeNode = IgeClass.extend({
 
 		deployOptions.fixPaths = args['-fixPaths'];
 		deployOptions.index = args['-index'];
-		deployOptions.obfuscate = args['-clear'] ? false : true
+		deployOptions.obfuscate = args['-clear'] ? false : true;
 		deployOptions.proto = args['-proto'];
 		deployOptions.clearClasses = args['-clearClasses'];
 
