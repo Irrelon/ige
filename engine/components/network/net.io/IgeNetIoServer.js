@@ -247,9 +247,10 @@ var IgeNetIoServer = {
 		data.clientId = clientId;
 		this._requests[data.id] = data;
 
-		if (this._debug) {
+		if (this.debug()) {
 			console.log('onRequest', data);
 			console.log('emitting', data.cmd, [data.id, data.data]);
+			this._debugCounter++;
 		}
 
 		if (this._networkCommands[data.cmd]) {
@@ -268,8 +269,9 @@ var IgeNetIoServer = {
 		// the request id
 		req = this._requests[id];
 
-		if (this._debug) {
+		if (this.debug()) {
 			console.log('onResponse', data);
+			this._debugCounter++;
 		}
 
 		if (req) {
@@ -306,6 +308,8 @@ var IgeNetIoServer = {
 	 */
 	_onClientDisconnect: function (data, clientId) {
 		this.log('Client disconnected with id ' + clientId);
+		this.emit('disconnect', clientId);
+
 		delete this._socketById[clientId];
 	}
 };

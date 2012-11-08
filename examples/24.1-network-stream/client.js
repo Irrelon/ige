@@ -2,6 +2,8 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 
 	init: function () {
+		ige.showStats(1);
+
 		// Load our textures
 		var self = this;
 
@@ -25,7 +27,16 @@ var Client = IgeClass.extend({
 				// got a username or something?
 				ige.network.start('http://localhost:2000', function () {
 					ige.network.addComponent(IgeStreamComponent)
-						.stream.renderLatency(160); // Render the simulation 160 milliseconds in the past
+						.stream.renderLatency(160) // Render the simulation 160 milliseconds in the past
+						// Create a listener that will fire whenever an entity
+						// is created because of the incoming stream data
+						.stream.on('entityCreated', function (entity) {
+							this.log('Stream entity created with ID: ' + entity.id());
+							if (entity._classId === 'Mover') {
+								// Track this entity with the camera
+								//self.vp1.camera.trackTranslate(entity, 10);
+							}
+						});
 
 					// Create the scene
 					self.scene1 = new IgeScene2d()

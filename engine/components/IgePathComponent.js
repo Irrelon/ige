@@ -13,6 +13,7 @@ var IgePathComponent = IgeEventingClass.extend({
 		this._targetCellIndex = -1; // Holds the target cell of the current path - where in the path we are pathing to
 		this._targetCellArrivalTime = 0; // Holds the timestamp that we will arrive at the target cell
 		this._active = false; // Determines if we should be traversing paths or not
+		this._paused = false;
 		this._warnTime = 0;
 		this._autoStop = true;
 		this._startTime = null;
@@ -106,6 +107,15 @@ var IgePathComponent = IgeEventingClass.extend({
 		return this._drawPathGlow;
 	},
 
+	drawPathText: function (val) {
+		if (val !== undefined) {
+			this._drawPathText = val;
+			return this._entity;
+		}
+
+		return this._drawPathText;
+	},
+
 	/**
 	 * Gets / sets the speed at which the entity will
 	 * traverse the path.
@@ -139,12 +149,18 @@ var IgePathComponent = IgeEventingClass.extend({
 				if (this._targetCellIndex === -1) { this._targetCellIndex = 0; }
 
 				// If we weren't passed a start time, assign it the current time
-				if (startTime !== undefined) {
-					this._startTime = startTime;
-				} else {
-					this._startTime = new Date().getTime();
+				if (startTime === undefined) {
+					startTime = new Date().getTime();
 				}
 
+				if (this._paused) {
+					// Bring the arrival time of the target cell forward to take
+					// into account the time we were paused
+					this._targetCellArrivalTime += startTime - this._pauseTime;
+					this._paused = false;
+				}
+
+				this._startTime = startTime;
 				this._currentTime = this._startTime;
 
 				// Set pathing to active
@@ -181,6 +197,19 @@ var IgePathComponent = IgeEventingClass.extend({
 			// No paths so return a null point
 			return null;
 		}
+	},
+
+	/**
+	 * Pauses path traversal but does not clear the path
+	 * queue or any path data.
+	 * @return {*}
+	 */
+	pause: function () {
+		this._active = false;
+		this._paused = true;
+		this._pauseTime = new Date().getTime();
+		this.emit('paused', this._entity);
+		return this._entity;
 	},
 
 	/**
@@ -287,42 +316,68 @@ var IgePathComponent = IgeEventingClass.extend({
 					self.stop();
 				}
 
-				if (currentPath) {
-					if (self._drawPath) {
-						// Draw the current path
-						ctx.save();
-						tempCurrentPathIndex = 0;
 
-						while (self._paths[tempCurrentPathIndex]) {
-							tempCurrentPath = self._paths[tempCurrentPathIndex];
-							oldTracePathPoint = undefined;
+			}
+		}
 
-							for (pathPointIndex = 0; pathPointIndex < tempCurrentPath.length; pathPointIndex++) {
-								if (tempCurrentPathIndex === self._currentPathIndex) {
-									ctx.strokeStyle = '#0096ff';
-									ctx.fillStyle = '#0096ff';
-								} else {
-									ctx.strokeStyle = '#fff000';
-									ctx.fillStyle = '#fff000';
+		this.path._drawPathToCtx(this, ctx);
+	},
+
+	_drawPathToCtx: function (entity, ctx) {
+		if (this._paths.length) {
+			var self = this,
+				currentPath,
+				oldTracePathPoint,
+				tracePathPoint,
+				pathPointIndex,
+				tempCurrentPath,
+				tempCurrentPathIndex,
+				tempPathText;
+
+			if (self._active) {
+				currentPath = self._paths[self._currentPathIndex]
+			} else {
+				currentPath = self._paths[0];
+			}
+
+			if (currentPath) {
+				if (self._drawPath) {
+					// Draw the current path
+					ctx.save();
+					tempCurrentPathIndex = 0;
+
+					while (self._paths[tempCurrentPathIndex]) {
+						tempCurrentPath = self._paths[tempCurrentPathIndex];
+						oldTracePathPoint = undefined;
+
+						for (pathPointIndex = 0; pathPointIndex < tempCurrentPath.length; pathPointIndex++) {
+							if (tempCurrentPathIndex === self._currentPathIndex) {
+								ctx.strokeStyle = '#0096ff';
+								ctx.fillStyle = '#0096ff';
+							} else {
+								ctx.strokeStyle = '#fff000';
+								ctx.fillStyle = '#fff000';
+							}
+
+							if (entity._parent.isometricMounts()) {
+								tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0).toIso();
+							} else {
+								tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0);
+							}
+
+							if (!oldTracePathPoint) {
+								// The starting point of the path
+								ctx.beginPath();
+								ctx.arc(tracePathPoint.x, tracePathPoint.y, 5, 0, Math.PI*2, true);
+								ctx.closePath();
+
+								if (tempCurrentPathIndex < self._currentPathIndex) {
+									ctx.fillStyle = '#666666';
 								}
 
-								if (this._parent.isometricMounts()) {
-									tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * this._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * this._parent._tileHeight), 0).toIso();
-								} else {
-									tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * this._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * this._parent._tileHeight), 0);
-								}
+								ctx.fill();
 
-								if (!oldTracePathPoint) {
-									// The starting point of the path
-									ctx.beginPath();
-									ctx.arc(tracePathPoint.x, tracePathPoint.y, 5, 0, Math.PI*2, true);
-									ctx.closePath();
-
-									if (tempCurrentPathIndex < self._currentPathIndex) {
-										ctx.fillStyle = '#666666';
-									}
-
-									ctx.fill();
+								if (self._drawPathText) {
 									ctx.save();
 									ctx.fillStyle = '#eade24';
 
@@ -334,32 +389,19 @@ var IgePathComponent = IgeEventingClass.extend({
 										ctx.shadowColor   = 'rgba(0, 0, 0, 1)';
 									}
 
-									tempPathText = 'Entity: ' + this.id();
+									tempPathText = 'Entity: ' + entity.id();
 									ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y - 22);
 
 									tempPathText = 'Path ' + tempCurrentPathIndex + ' (' + tempCurrentPath[pathPointIndex].x + ', ' + tempCurrentPath[pathPointIndex].y + ')';
 									ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y - 10);
 									ctx.restore();
-								} else {
-									// Not the starting point
-									if (self._drawPathGlow) {
-										ctx.globalAlpha = 0.1;
-										for (var k = 3; k >= 0 ; k--) {
-											ctx.lineWidth = (k + 1) * 4 - 3.5;
-											ctx.beginPath();
-											ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
-											ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
-											if (tempCurrentPathIndex < self._currentPathIndex || (tempCurrentPathIndex === self._currentPathIndex && pathPointIndex < self._targetCellIndex)) {
-												ctx.strokeStyle = '#666666';
-												ctx.fillStyle = '#333333';
-											}
-											if (k === 0) {
-												ctx.globalAlpha = 1;
-											}
-
-											ctx.stroke();
-										}
-									} else {
+								}
+							} else {
+								// Not the starting point
+								if (self._drawPathGlow) {
+									ctx.globalAlpha = 0.1;
+									for (var k = 3; k >= 0 ; k--) {
+										ctx.lineWidth = (k + 1) * 4 - 3.5;
 										ctx.beginPath();
 										ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
 										ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
@@ -367,30 +409,43 @@ var IgePathComponent = IgeEventingClass.extend({
 											ctx.strokeStyle = '#666666';
 											ctx.fillStyle = '#333333';
 										}
+										if (k === 0) {
+											ctx.globalAlpha = 1;
+										}
 
 										ctx.stroke();
 									}
-
-									if (tempCurrentPathIndex === self._currentPathIndex && pathPointIndex === self._targetCellIndex) {
-										ctx.save();
-										ctx.translate(tracePathPoint.x, tracePathPoint.y);
-										ctx.rotate(45 * Math.PI / 180);
-										ctx.translate(-tracePathPoint.x, -tracePathPoint.y);
-										ctx.fillStyle = '#d024ea';
-										ctx.fillRect(tracePathPoint.x - 5, tracePathPoint.y - 5, 10, 10);
-										ctx.restore();
-									} else {
-										ctx.fillRect(tracePathPoint.x - 2.5, tracePathPoint.y - 2.5, 5, 5);
+								} else {
+									ctx.beginPath();
+									ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
+									ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
+									if (tempCurrentPathIndex < self._currentPathIndex || (tempCurrentPathIndex === self._currentPathIndex && pathPointIndex < self._targetCellIndex)) {
+										ctx.strokeStyle = '#666666';
+										ctx.fillStyle = '#333333';
 									}
+
+									ctx.stroke();
 								}
 
-								oldTracePathPoint = tracePathPoint;
+								if (tempCurrentPathIndex === self._currentPathIndex && pathPointIndex === self._targetCellIndex) {
+									ctx.save();
+									ctx.translate(tracePathPoint.x, tracePathPoint.y);
+									ctx.rotate(45 * Math.PI / 180);
+									ctx.translate(-tracePathPoint.x, -tracePathPoint.y);
+									ctx.fillStyle = '#d024ea';
+									ctx.fillRect(tracePathPoint.x - 5, tracePathPoint.y - 5, 10, 10);
+									ctx.restore();
+								} else {
+									ctx.fillRect(tracePathPoint.x - 2.5, tracePathPoint.y - 2.5, 5, 5);
+								}
 							}
 
-							tempCurrentPathIndex++;
+							oldTracePathPoint = tracePathPoint;
 						}
-						ctx.restore();
+
+						tempCurrentPathIndex++;
 					}
+					ctx.restore();
 				}
 			}
 		}

@@ -26,7 +26,10 @@ var IgeTimeSyncExtension = {
 	/* CEXCLUDE */
 	timeSyncStart: function () {
 		if (ige.isServer) {
-			// Send a time sync request
+			this._timeSyncStarted = true;
+
+			// Send a time sync request now so we
+			// have a starting value to work with
 			this._sendTimeSync();
 
 			var self = this;
@@ -43,13 +46,14 @@ var IgeTimeSyncExtension = {
 			data = new Date().getTime();
 		}
 
-		// Send the time sync command to all clients
+		// Send the time sync command
 		this.send('_igeNetTimeSync', data, clientId);
 	},
 
 	timeSyncStop: function () {
 		this.log('Stopping client/server clock sync...');
 		clearInterval(this._timeSyncTimer);
+		this._timeSyncStarted = false;
 
 		return this._entity;
 	},
@@ -64,7 +68,9 @@ var IgeTimeSyncExtension = {
 			localTime = new Date().getTime();
 			sendTime = parseInt(data, 10);
 
-			this.log('Time sync, server->client transit time: ' + (localTime - sendTime) + 'ms, send timestamp: ' + sendTime + ', local timestamp: ' + localTime);
+			this._latency = localTime - sendTime;
+
+			//this.log('Time sync, server->client transit time: ' + (localTime - sendTime) + 'ms, send timestamp: ' + sendTime + ', local timestamp: ' + localTime);
 
 			// Send a response with out current clock time to the server
 			this._sendTimeSync([data, localTime]);
@@ -74,9 +80,9 @@ var IgeTimeSyncExtension = {
 			sendTime = parseInt(data[1], 10);
 			roundTrip = (localTime - parseInt(data[0], 10));
 
-			this.log('Time sync, client->server transit time: ' + (localTime - sendTime) + 'ms, roundtrip: ' + roundTrip + 'ms, send timestamp: ' + parseInt(data[0], 10) + ', local timestamp: ' + localTime);
+			//this.log('Time sync, client->server transit time: ' + (localTime - sendTime) + 'ms, roundtrip: ' + roundTrip + 'ms, send timestamp: ' + parseInt(data[0], 10) + ', local timestamp: ' + localTime);
 
-			this._timeSyncLog[clientId] = data;
+			this._timeSyncLog[clientId] = localTime - sendTime;
 
 		}
 	}

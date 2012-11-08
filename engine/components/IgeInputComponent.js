@@ -1,5 +1,5 @@
 var IgeInputComponent = IgeEventingClass.extend({
-	classId: 'IgeInput',
+	classId: 'IgeInputComponent',
 	componentId: 'input',
 
 	init: function () {
@@ -177,35 +177,6 @@ var IgeInputComponent = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Sets up the event listeners on the main window and front
-	 * buffer DOM objects.
-	 * @private
-	 */
-	_setupListeners: function () {
-		// Setup the event listeners
-		var self = this,
-			canvas = ige._canvas;
-
-		// Listen for mouse events
-		canvas.addEventListener('mousedown', function (event) { self._rationalise(event); self._mouseDown(event); });
-		canvas.addEventListener('mouseup', function (event) { self._rationalise(event); self._mouseUp(event); });
-		canvas.addEventListener('mousemove', function (event) { self._rationalise(event); self._mouseMove(event); });
-		canvas.addEventListener('mousewheel', function (event) { self._rationalise(event); self._mouseWheel(event); });
-
-		// Touch events
-		canvas.addEventListener('touchmove', function (event) { event.preventDefault(); self._rationalise(event, true); self._mouseMove(event); });
-		canvas.addEventListener('touchstart', function (event) { event.preventDefault(); self._rationalise(event, true); self._mouseDown(event); });
-		canvas.addEventListener('touchend', function (event) { event.preventDefault(); self._rationalise(event, true); self._mouseUp(event); });
-
-		// Kill the context menu on right-click, urgh!
-		canvas.addEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
-
-		// Listen for keyboard events
-		window.addEventListener('keydown', function (event) { self._rationalise(event); self._keyDown(event); }, false);
-		window.addEventListener('keyup', function (event) { self._rationalise(event); self._keyUp(event); }, false);
-	},
-
-	/**
 	 * Sets igeX and igeY properties in the event object that
 	 * can be relied on to provide the x, y co-ordinates of the
 	 * mouse event including the canvas offset.
@@ -213,6 +184,26 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_rationalise: function (event, touch) {
+		// Check if we want to prevent default behaviour
+		if (event.igeType === 'key') {
+			if (event.keyCode === 8) { // Backspace
+				// Check if the event occurred on the body
+				var elem = event.srcElement || event.target;
+
+				if (elem.tagName.toLowerCase() === 'body') {
+					// The event occurred on our body element so prevent
+					// default behaviour. This allows other elements on
+					// the page to retain focus such as text boxes etc
+					// and allows them to behave normally.
+					event.preventDefault();
+				}
+			}
+		}
+
+		if (event.igeType === 'touch') {
+			event.preventDefault();
+		}
+
 		if (touch) {
 			event.button = 0; // Emulate left mouse button
 
@@ -220,16 +211,88 @@ var IgeInputComponent = IgeEventingClass.extend({
 			if (event.changedTouches && event.changedTouches.length) {
 				event.igePageX = event.changedTouches[0].pageX;
 				event.igePageY = event.changedTouches[0].pageY;
-
-				console.log(event.changedTouches[0], event.changedTouches[0].pageX, event.changedTouches[0].pageY);
 			}
 		} else {
 			event.igePageX = event.pageX;
 			event.igePageY = event.pageY;
 		}
 
-		event.igeX = (event.igePageX - ige._canvas.offsetLeft);
-		event.igeY = (event.igePageY - ige._canvas.offsetTop);
+		event.igeX = (event.igePageX - this._canvas.offsetLeft);
+		event.igeY = (event.igePageY - this._canvas.offsetTop);
+	},
+
+	/**
+	 * Sets up the event listeners on the main window and front
+	 * buffer DOM objects.
+	 * @private
+	 */
+	setupListeners: function (canvas) {
+		this.log('Setting up input event listeners...');
+
+		this._canvas = canvas;
+
+		// Setup the event listeners
+		var self = this;
+
+		// Define event functions and keep references for later removal
+		this._evRef = {
+			'mousedown': function (event) { event.igeType = 'mouse'; self._rationalise(event); self._mouseDown(event); },
+			'mouseup': function (event) { event.igeType = 'mouse'; self._rationalise(event); self._mouseUp(event); },
+			'mousemove': function (event) { event.igeType = 'mouse'; self._rationalise(event); self._mouseMove(event); },
+			'mousewheel': function (event) { event.igeType = 'mouse'; self._rationalise(event); self._mouseWheel(event); },
+
+			'touchmove': function (event) { event.igeType = 'touch'; self._rationalise(event, true); self._mouseMove(event); },
+			'touchstart': function (event) { event.igeType = 'touch'; self._rationalise(event, true); self._mouseDown(event); },
+			'touchend': function (event) { event.igeType = 'touch'; self._rationalise(event, true); self._mouseUp(event); },
+
+			'contextmenu': function (event) { event.preventDefault(); },
+
+			'keydown': function (event) { event.igeType = 'key'; self._rationalise(event); self._keyDown(event); },
+			'keyup': function (event) { event.igeType = 'key'; self._rationalise(event); self._keyUp(event); }
+		};
+
+		// Listen for mouse events
+		canvas.addEventListener('mousedown', this._evRef.mousedown, false);
+		canvas.addEventListener('mouseup', this._evRef.mouseup, false);
+		canvas.addEventListener('mousemove', this._evRef.mousemove, false);
+		canvas.addEventListener('mousewheel', this._evRef.mousewheel, false);
+
+		// Touch events
+		canvas.addEventListener('touchmove', this._evRef.touchmove, false);
+		canvas.addEventListener('touchstart', this._evRef.touchstart, false);
+		canvas.addEventListener('touchend', this._evRef.touchend, false);
+
+		// Kill the context menu on right-click, urgh!
+		canvas.addEventListener('contextmenu', this._evRef.contextmenu, false);
+
+		// Listen for keyboard events
+		window.addEventListener('keydown', this._evRef.keydown, false);
+		window.addEventListener('keyup', this._evRef.keyup, false);
+	},
+
+	destroyListeners: function () {
+		this.log('Removing input event listeners...');
+
+		// Remove the event listeners
+		var canvas = this._canvas;
+
+		// Listen for mouse events
+		canvas.removeEventListener('mousedown', this._evRef.mousedown, false);
+		canvas.removeEventListener('mouseup', this._evRef.mouseup, false);
+		canvas.removeEventListener('mousemove', this._evRef.mousemove, false);
+		canvas.removeEventListener('mousewheel', this._evRef.mousewheel, false);
+
+		// Touch events
+		canvas.removeEventListener('touchmove', this._evRef.touchmove, false);
+		canvas.removeEventListener('touchstart', this._evRef.touchstart, false);
+		canvas.removeEventListener('touchend', this._evRef.touchend, false);
+
+		// Kill the context menu on right-click, urgh!
+		canvas.removeEventListener('contextmenu', this._evRef.contextmenu, false);
+
+		// Listen for keyboard events
+		window.removeEventListener('keydown', this._evRef.keydown, false);
+		window.removeEventListener('keyup', this._evRef.keyup, false);
 	},
 
 	/**

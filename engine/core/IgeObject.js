@@ -5,17 +5,26 @@ var IgeObject = IgeEventingClass.extend({
 	classId: 'IgeObject',
 
 	init: function () {
+		this._alive = true;
 		this._mode = 0;
 		this._mountMode = 0;
 		this._parent = null;
 		this._children = [];
-		this._behaviours = [];
 		this._layer = 0;
 		this._depth = 0;
 		this._dirty = true;
 		this._depthSortMode = 0;
 		this._timeStream = [];
 		this._inView = true;
+	},
+
+	alive: function (val) {
+		if (val !== undefined) {
+			this._alive = val;
+			return this;
+		}
+
+		return this._alive;
 	},
 
 	/**
@@ -88,6 +97,7 @@ var IgeObject = IgeEventingClass.extend({
 	addBehaviour: function (id, behaviour) {
 		if (typeof(id) === 'string') {
 			if (typeof(behaviour) === 'function') {
+				this._behaviours = this._behaviours || [];
 				this._behaviours.push({
 					id:id,
 					method: behaviour
@@ -113,13 +123,17 @@ var IgeObject = IgeEventingClass.extend({
 		if (id !== undefined) {
 			// Find the behaviour
 			var arr = this._behaviours,
+				arrCount;
+
+			if (arr) {
 				arrCount = arr.length;
 
-			while (arrCount--) {
-				if (arr[arrCount].id === id) {
-					// Remove the item from the array
-					arr.splice(arrCount, 1);
-					return this;
+				while (arrCount--) {
+					if (arr[arrCount].id === id) {
+						// Remove the item from the array
+						arr.splice(arrCount, 1);
+						return this;
+					}
 				}
 			}
 		}
@@ -367,15 +381,47 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Loops through all child objects of this object and destroys them
-	 * by calling each child's destroy() method.
+	 * by calling each child's destroy() method then deletes the reference
+	 * to the object's internale _children array.
 	 */
 	destroyChildren: function () {
 		var arr = this._children,
+			arrCount;
+
+		if (arr) {
 			arrCount = arr.length;
 
-		while (arrCount--) {
-			arr[arrCount].destroy();
+			while (arrCount--) {
+				arr[arrCount].destroy();
+			}
 		}
+
+		delete this._children;
+
+		return this;
+	},
+
+	destroyBehaviours: function () {
+		delete this._behaviours;
+	},
+
+	destroyComponents: function () {
+		var arr = this._components,
+			arrCount;
+
+		if (arr) {
+			arrCount = arr.length;
+
+			while (arrCount--) {
+				if (arr[arrCount].destroy) {
+					arr[arrCount].destroy();
+				}
+			}
+		}
+
+		delete this._components;
+
+		return this;
 	},
 
 	/**
@@ -415,52 +461,117 @@ var IgeObject = IgeEventingClass.extend({
 	depthSortChildren: function () {
 		// TODO: Optimise this method, it is not especially efficient at the moment!
 		var arr = this._children,
-			arrCount = arr.length,
+			arrCount,
 			sortObj,
 			i, j;
 
-		if (this._mountMode === 1) {
-			if (this._depthSortMode === 0) {
-				// Calculate depths from 3d bounds
-				sortObj = {
-					adj: [],
-					c: [],
-					p: [],
-					order: [],
-					order_ind: arrCount - 1
-				};
+		if (arr) {
+			arrCount = arr.length;
 
-				if (arrCount > 1) {
-					for (i = 0; i < arrCount; ++i) {
-						sortObj.c[i] = 0;
-						sortObj.p[i] = -1;
+			// See if we can bug-out early
+			if (arrCount > 1) {
+				// Check if the mount mode is isometric
+				if (this._mountMode === 1) {
+					// Check the depth sort mode
+					if (this._depthSortMode === 0) { // Slowest, uses 3d bounds
+						// Calculate depths from 3d bounds
+						sortObj = {
+							adj: [],
+							c: [],
+							p: [],
+							order: [],
+							order_ind: arrCount - 1
+						};
 
-						for (j = i + 1; j < arrCount; ++j) {
-							sortObj.adj[i] = sortObj.adj[i] || [];
-							sortObj.adj[j] = sortObj.adj[j] || [];
+						for (i = 0; i < arrCount; ++i) {
+							sortObj.c[i] = 0;
+							sortObj.p[i] = -1;
 
-							if (arr[i]._inView && arr[j]._inView && arr[i]._projectionOverlap && arr[j]._projectionOverlap) {
-								if (arr[i]._projectionOverlap(arr[j])) {
-									if (arr[i].isBehind(arr[j])) {
-										sortObj.adj[j].push(i);
-									} else {
-										sortObj.adj[i].push(j);
+							for (j = i + 1; j < arrCount; ++j) {
+								sortObj.adj[i] = sortObj.adj[i] || [];
+								sortObj.adj[j] = sortObj.adj[j] || [];
+
+								if (arr[i]._inView && arr[j]._inView && arr[i]._projectionOverlap && arr[j]._projectionOverlap) {
+									if (arr[i]._projectionOverlap(arr[j])) {
+										if (arr[i].isBehind(arr[j])) {
+											sortObj.adj[j].push(i);
+										} else {
+											sortObj.adj[i].push(j);
+										}
 									}
 								}
 							}
 						}
-					}
 
-					for (i = 0; i < arrCount; ++i) {
-						if (sortObj.c[i] === 0) {
-							this._depthSortVisit(i, sortObj);
+						for (i = 0; i < arrCount; ++i) {
+							if (sortObj.c[i] === 0) {
+								this._depthSortVisit(i, sortObj);
+							}
 						}
+
+						for (i = 0; i < sortObj.order.length; i++) {
+							arr[sortObj.order[i]].depth(i);
+						}
+
+						this._children.sort(function (a, b) {
+							var layerIndex = b._layer - a._layer;
+
+							if (layerIndex === 0) {
+								// On same layer so sort by depth
+								return b._depth - a._depth;
+							} else {
+								// Not on same layer so sort by layer
+								return layerIndex;
+							}
+						});
 					}
 
-					for (i = 0; i < sortObj.order.length; i++) {
-						arr[sortObj.order[i]].depth(i);
+					if (this._depthSortMode === 1) { // Medium speed, optimised for almost-cube shaped 3d bounds
+						// Now sort the entities by depth
+						this._children.sort(function (a, b) {
+							var layerIndex = b._layer - a._layer;
+
+							if (layerIndex === 0) {
+								// On same layer so sort by depth
+								//if (a._projectionOverlap(b)) {
+									if (a.isBehind(b)) {
+										return -1;
+									} else {
+										return 1;
+									}
+								//}
+							} else {
+								// Not on same layer so sort by layer
+								return layerIndex;
+							}
+						});
 					}
 
+					if (this._depthSortMode === 2) { // Fastest, optimised for cube-shaped 3d bounds
+						while (arrCount--) {
+							sortObj = arr[arrCount];
+							j = sortObj._translate;
+
+							if (j) {
+								sortObj._depth = j.x + j.y + j.z;
+							}
+						}
+
+						// Now sort the entities by depth
+						this._children.sort(function (a, b) {
+							var layerIndex = b._layer - a._layer;
+
+							if (layerIndex === 0) {
+								// On same layer so sort by depth
+								return b._depth - a._depth;
+							} else {
+								// Not on same layer so sort by layer
+								return layerIndex;
+							}
+						});
+					}
+				} else { // 2d mode
+					// Now sort the entities by depth
 					this._children.sort(function (a, b) {
 						var layerIndex = b._layer - a._layer;
 
@@ -474,64 +585,6 @@ var IgeObject = IgeEventingClass.extend({
 					});
 				}
 			}
-
-			if (this._depthSortMode === 1) {
-				// Now sort the entities by depth
-				this._children.sort(function (a, b) {
-					var layerIndex = b._layer - a._layer;
-
-					if (layerIndex === 0) {
-						// On same layer so sort by depth
-						//if (a._projectionOverlap(b)) {
-							if (a.isBehind(b)) {
-								return -1;
-							} else {
-								return 1;
-							}
-						//}
-					} else {
-						// Not on same layer so sort by layer
-						return layerIndex;
-					}
-				});
-			}
-
-			if (this._depthSortMode === 2) {
-				while (arrCount--) {
-					sortObj = arr[arrCount];
-					j = sortObj._translate;
-
-					if (j) {
-						sortObj._depth = j.x + j.y + j.z;
-					}
-				}
-
-				// Now sort the entities by depth
-				this._children.sort(function (a, b) {
-					var layerIndex = b._layer - a._layer;
-
-					if (layerIndex === 0) {
-						// On same layer so sort by depth
-						return b._depth - a._depth;
-					} else {
-						// Not on same layer so sort by layer
-						return layerIndex;
-					}
-				});
-			}
-		} else {
-			// Now sort the entities by depth
-			this._children.sort(function (a, b) {
-				var layerIndex = b._layer - a._layer;
-
-				if (layerIndex === 0) {
-					// On same layer so sort by depth
-					return b._depth - a._depth;
-				} else {
-					// Not on same layer so sort by layer
-					return layerIndex;
-				}
-			});
 		}
 	},
 
@@ -575,32 +628,67 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Processes the actions required each render frame.
 	 */
-	tick: function (ctx, scene) {
+	tick: function (ctx) {
+		var arr = this._children,
+			arrCount,
+			arrIndex,
+			ts, td,
+			depthSortTime,
+			tickTime,
+			ac1, ac2;
+
 		if (this._viewChecking) {
 			// Set the in-scene flag for each child based on
 			// the current viewport
 			this.viewCheckChildren();
 		}
 
-		// Depth sort all child objects
-		this.depthSortChildren();
+		if (arr) {
+			arrCount = arr.length;
+			ac1 = arrCount;
+			// Depth sort all child objects
+			if (arrCount && !ige._headless) {
+				if (igeDebug.timing) {
+					if (!ige._tslt[this.id()]) {
+						ige._tslt[this.id()] = {};
+					}
 
-		if (!scene) {
-			// Process the current engine tick for all child objects
-			var arr = this._children,
-				arrCount = arr.length;
-
-			// Loop our children and call their tick methods
-			while (arrCount--) {
-				ctx.save();
-					arr[arrCount].tick(ctx);
-				ctx.restore();
+					ts = new Date().getTime();
+					this.depthSortChildren();
+					td = new Date().getTime() - ts;
+					ige._tslt[this.id()].depthSortChildren = td;
+				} else {
+					this.depthSortChildren();
+				}
 			}
-		} else {
-			// Get the index of the object to tick
-			var arrIndex = this._children.indexOf(scene);
-			if (arrIndex > -1) {
-				this._children[arrIndex].tick(ctx);
+			ac2 = arrCount;
+			// Loop our children and call their tick methods
+			if (igeDebug.timing) {
+				while (arrCount--) {
+					ctx.save();
+					ts = new Date().getTime();
+					arr[arrCount].tick(ctx);
+					td = new Date().getTime() - ts;
+					if (arr[arrCount]) {
+						if (!ige._tsit[arr[arrCount].id()]) {
+							ige._tsit[arr[arrCount].id()] = 0;
+						}
+
+						if (!ige._tslt[arr[arrCount].id()]) {
+							ige._tslt[arr[arrCount].id()] = {};
+						}
+
+						ige._tsit[arr[arrCount].id()] += td;
+						ige._tslt[arr[arrCount].id()].tick = td;
+					}
+					ctx.restore();
+				}
+			} else {
+				while (arrCount--) {
+					ctx.save();
+					arr[arrCount].tick(ctx);
+					ctx.restore();
+				}
 			}
 		}
 	},
@@ -634,11 +722,17 @@ var IgeObject = IgeEventingClass.extend({
 	 */
 	_resizeEvent: function (event) {
 		var arr = this._children,
+			arrCount;
+
+		if (arr) {
 			arrCount = arr.length;
 
-		while (arrCount--) {
-			arr[arrCount]._resizeEvent(event);
+			while (arrCount--) {
+				arr[arrCount]._resizeEvent(event);
+			}
 		}
+
+
 	},
 
 	/**
@@ -648,13 +742,16 @@ var IgeObject = IgeEventingClass.extend({
 	_processBehaviours: function (ctx) {
 		if (ige._frameAlternator !== this._behaviourFA) {
 			var arr = this._behaviours,
+				arrCount;
+
+			if (arr) {
 				arrCount = arr.length;
+				while (arrCount--) {
+					arr[arrCount].method.apply(this, arguments);
+				}
 
-			while (arrCount--) {
-				arr[arrCount].method.apply(this, arguments);
+				this._behaviourFA = ige._frameAlternator;
 			}
-
-			this._behaviourFA = ige._frameAlternator;
 		}
 	},
 
@@ -679,9 +776,6 @@ var IgeObject = IgeEventingClass.extend({
 	 * scenegraph and from memory.
 	 */
 	destroy: function () {
-		var arr,
-			arrCount;
-
 		// Remove ourselves from any parent
 		this.unMount();
 
@@ -690,12 +784,23 @@ var IgeObject = IgeEventingClass.extend({
 			this.destroyChildren();
 		}
 
+		// Remove any components
+		this.destroyComponents();
+
+		// Remove any behaviours
+		this.destroyBehaviours();
+
 		// Remove the object from the lookup system
 		ige.unRegister(this);
 
-		// Remove the children array severing any references
-		// to any child objects so that the GC can pick them up
-		delete this._children;
+		// Set a flag in case a reference to this object
+		// has been held somewhere, shows that the object
+		// should no longer be interacted with
+		this._alive = false;
+
+		// Remove the event listeners array in case any
+		// object references still exist there
+		delete this._eventListeners;
 
 		return this;
 	},

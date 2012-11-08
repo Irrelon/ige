@@ -1,6 +1,8 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
+		ige.showStats(1);
+
 		// Load our textures
 		var self = this,
 			gameTexture = [];
@@ -25,12 +27,14 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Create the scene
-					self.scene1 = new IgeScene2d();
+					self.scene1 = new IgeScene2d()
+						.id('scene1');
 
 					// Create the main viewport and set the scene
 					// it will "look" at as the new scene1 we just
 					// created above
 					self.vp1 = new IgeViewport()
+						.id('vp1')
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
@@ -61,7 +65,7 @@ var Client = IgeClass.extend({
 					// Create a third rotator entity and mount
 					// it to the first on at 0, -50 relative to the
 					// parent, but assign it a smart texture!
-					self.obj[1] = new Rotator()
+					self.obj[2] = new Rotator()
 						.id('simpleBox')
 						.depth(1)
 						.width(50)

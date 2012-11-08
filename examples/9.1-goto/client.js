@@ -1,6 +1,8 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
+		ige.showStats(1);
+
 		// Load our textures
 		var self = this;
 		this.obj = [];
@@ -13,12 +15,16 @@ var Client = IgeClass.extend({
 			// Check if the engine started successfully
 			if (success) {
 				// Create the scene
-				self.mainScene = new IgeScene2d();
+				self.mainScene = new IgeScene2d()
+					.id('mainScene');
+
 				self.objectScene = new IgeScene2d()
+					.id('objectScene')
 					.depth(0)
 					.mount(self.mainScene);
 
 				self.uiScene = new IgeScene2d()
+					.id('uiScene')
 					.depth(1)
 					.ignoreCamera(true) // We don't want the UI scene to be affected by the viewport's camera
 					.mount(self.mainScene);

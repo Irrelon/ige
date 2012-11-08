@@ -15,6 +15,8 @@ var IgeParticleEmitter = IgeEntity.extend({
 		this._started = false;
 		this._particles = [];
 
+		this.applyDepthToParticles(true);
+		this.applyLayerToParticles(true);
 		this.quantityVariance(0, 0);
 		this.translateBaseX(0);
 		this.translateBaseY(0);
@@ -48,12 +50,24 @@ var IgeParticleEmitter = IgeEntity.extend({
 		this.lifeVariance(0, 0);
 	},
 
-	/* particle - Sets the class that all particles emitted from this
-	emitter will be created from. {
-		category:"method",
-	} */
+	/**
+	 * Sets the class that all particles emitted from this
+	 * emitter will be created from.
+	 * @param {IgeEntity} obj
+	 * @return {*}
+	 */
 	particle: function (obj) {
 		this._particle = obj;
+		return this;
+	},
+
+	applyDepthToParticles: function (val) {
+		this._applyDepthToParticles = val;
+		return this;
+	},
+
+	applyLayerToParticles: function (val) {
+		this._applyLayerToParticles = val;
 		return this;
 	},
 
@@ -228,22 +242,6 @@ var IgeParticleEmitter = IgeEntity.extend({
 		return this;
 	},
 
-	/*vectorAngleBase: function (val) {
-		this._vectorAngleBase = val;
-	},
-
-	vectorAngleVariance: function (a, b) {
-		this._vectorAngleVariance = [a, b];
-	},
-
-	vectorPowerBase: function (val) {
-		this._vectorPowerBase = val;
-	},
-
-	vectorPowerVariance: function (a, b) {
-		this._vectorPowerVariance = [a, b];
-	},*/
-
 	/**
 	 * Sets the base velocity vector of each emitted particle and optionally
 	 * the min and max vectors that are used to randomize the resulting particle
@@ -272,14 +270,11 @@ var IgeParticleEmitter = IgeEntity.extend({
 		return this;
 	},
 
-	/** start - Starts the particle emitter which will begin spawning
-	particle entities based upon the emitter's current settings. {
-		category:"method",
-		returns: {
-			type:"bool",
-			desc:"Returns true if the emitter started successfully or false if not."
-		},
-	} **/
+	/**
+	 * Starts the particle emitter which will begin spawning
+	 * particle entities based upon the emitter's current settings.
+	 * @return {*}
+	 */
 	start: function () {
 		if (this._particle) {
 			this._quantityTimespan = this._quantityTimespan || 1000;
@@ -297,20 +292,21 @@ var IgeParticleEmitter = IgeEntity.extend({
 		return this;
 	},
 
-	/** stop - Stops the particle emitter. The current
-	particles will continue to process until they reach
-	their natural lifespan. {
-		category:"method",
-	} **/
+	/**
+	 * Stops the particle emitter. The current particles will
+	 * continue to process until they reach their natural lifespan.
+	 * @return {*}
+	 */
 	stop: function () {
 		this._started = false;
 		return this;
 	},
 
-	/** stopAndKill - Stops the particle emitter. The current
-	particles will be destroyed immediately. {
-		category:"method",
-	} **/
+	/**
+	 * Stops the particle emitter. The current particles will be
+	 * destroyed immediately.
+	 * @return {*}
+	 */
 	stopAndKill: function () {
 		this._started = false;
 
@@ -329,28 +325,17 @@ var IgeParticleEmitter = IgeEntity.extend({
 		return this;
 	},
 
-	/** baseAndVarianceValue - Takes a base value and a variance range
-	and returns a random value between the range, added to the base. {
-		category:"method",
-		arguments: [{
-			name:"base",
-			type:"float",
-			desc:"The base value.",
-		}, {
-			name:"variance",
-			type:"array",
-			desc:"An array containing the two values of the variance range.",
-		}, {
-			name:"floorIt",
-			type:"bool",
-			desc:"If set to true, will cause the returned value to be passed through Math.floor().",
-			flags:"optional",
-		}],
-		returns: {
-			type:"bool",
-			desc:"Returns the final value based upon the base value and variance range.",
-		},
-	} **/
+	/**
+	 * Takes a base value and a variance range and returns a random
+	 * value between the range, added to the base.
+	 * @param {Number} base The base value.
+	 * @param {Array} variance An array containing the two values of
+	 * the variance range.
+	 * @param {Boolean} floorIt If set to true, will cause the returned
+	 * value to be passed through Math.floor().
+	 * @return {Number} Returns the final value based upon the base
+	 * value and variance range.
+	 */
 	baseAndVarianceValue: function (base, variance, floorIt) {
 		base = base || 0;
 		variance = variance || [0, 0];
@@ -383,10 +368,11 @@ var IgeParticleEmitter = IgeEntity.extend({
 		}
 	},
 
-	/** tick - Creates and maintains the particles that this
-	emitter is responsible for spawning and controlling. {
-		category:"method",
-	} **/
+	/**
+	 * Creates and maintains the particles that this emitter is
+	 * responsible for spawning and controlling.
+	 * @param ctx
+	 */
 	tick: function (ctx) {
 		this._currentDelta += ige.tickDelta;
 
@@ -401,6 +387,9 @@ var IgeParticleEmitter = IgeEntity.extend({
 					//vectorAngle,
 					//vectorPower,
 					velocityVector,
+					newVecX, newVecY,
+					rotX, rotY,
+					cosRot, sinRot,
 					scaleX,
 					scaleY,
 					scaleZ,
@@ -455,6 +444,19 @@ var IgeParticleEmitter = IgeEntity.extend({
 
 							// Generate the particle's initial vector angle and power
 							velocityVector = this.vectorFromBaseMinMax(this._velocityVector);
+
+							// Rotate the vector's point to match the current emitter rotation
+							rotX = velocityVector.x;
+							rotY = velocityVector.y;
+							cosRot = Math.cos(this._rotate.z);
+							sinRot = Math.sin(this._rotate.z);
+							newVecX = rotX * cosRot - rotY * sinRot;
+							newVecY = rotY * cosRot + rotX * sinRot;
+
+							// Assign the rotated vector back again
+							velocityVector.x = newVecX;
+							velocityVector.y = newVecY;
+
 							//vectorAngle = this.baseAndVarianceValue(this._vectorAngleBase, this._vectorAngleVariance, true);
 							//vectorPower = this.baseAndVarianceValue(this._vectorPowerBase, this._vectorPowerVariance, false);
 
@@ -477,6 +479,19 @@ var IgeParticleEmitter = IgeEntity.extend({
 
 							// Generate the particle's linear force vector angle and power
 							linearForceVector = this.vectorFromBaseMinMax(this._linearForceVector);
+
+							// Rotate the vector's point to match the current emitter rotation
+							rotX = linearForceVector.x;
+							rotY = linearForceVector.y;
+							cosRot = Math.cos(this._rotate.z);
+							sinRot = Math.sin(this._rotate.z);
+							newVecX = rotX * cosRot - rotY * sinRot;
+							newVecY = rotY * cosRot + rotX * sinRot;
+
+							// Assign the rotated vector back again
+							linearForceVector.x = newVecX;
+							linearForceVector.y = newVecY;
+
 							//linearForceAngle = this.baseAndVarianceValue(this._linearForceAngleBase, this._linearForceAngleVariance);
 							//linearForcePower = this.baseAndVarianceValue(this._linearForcePowerBase, this._linearForcePowerVariance, false);
 
@@ -541,9 +556,6 @@ var IgeParticleEmitter = IgeEntity.extend({
 							deathScaleY *= this._scale.y;
 							deathScaleZ *= this._scale.z;
 
-							// TODO: Is this adding degrees to radians? Check and fix.
-							rotate += this._rotate.z;
-
 							// Apply all the transforms (don't do this in the initial
 							// entity definition because some components may already
 							// have initialised due to the particle template
@@ -551,6 +563,9 @@ var IgeParticleEmitter = IgeEntity.extend({
 							tempParticle.rotateTo(0, 0, rotate * Math.PI / 180);
 							tempParticle.scaleTo(scaleX, scaleY, scaleZ);
 							tempParticle.opacity(opacity);
+
+							if (this._applyDepthToParticles) { tempParticle.depth(this._depth); }
+							if (this._applyLayerToParticles) { tempParticle.layer(this._layer); }
 
 							if (typeof(velocityVector) === 'object') {
 								tempParticle.velocity.vector3(velocityVector, false);
@@ -615,14 +630,11 @@ var IgeParticleEmitter = IgeEntity.extend({
 		this._super(ctx);
 	},
 
-	/** particles - Returns an array of the current
-	particle entities that this emitter has spawned. {
-		category:"method",
-		returns: {
-			type:"array",
-			desc:"The array of particle entities the emitter spawned.",
-		},
-	} **/
+	/**
+	 * Returns an array of the current particle entities that this
+	 * emitter has spawned.
+	 * @return {Array} The array of particle entities the emitter spawned.
+	 */
 	particles: function () {
 		return this._particles;
 	},

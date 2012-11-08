@@ -1,8 +1,8 @@
 /**
  * The animation component class. Handles defining and controlling
- * frame-based animations based on cells from an image.
+ * frame-based animations based on cells from a texture.
  */
-var IgeAnimationComponent = IgeClass.extend({
+var IgeAnimationComponent = IgeEventingClass.extend({
 	classId: 'IgeAnimationComponent',
 	componentId: 'animation',
 
@@ -36,11 +36,37 @@ var IgeAnimationComponent = IgeClass.extend({
 	 * @param {Array} frames An array of cell numbers to animate through.
 	 * @param {Number} fps The speed of the animation (frames per second).
 	 * @param {Number} loop The number of times to loop the animation, or -1 to loop forever. Defaults to -1.
+	 * @param {Boolean} convertIdsToIndex If true will convert cell ids to cell indexes to speed
+	 * up animation processing. This is true by default but should be disabled if you intend to
+	 * change the assigned texture of the entity that this animation is applied to after you have
+	 * defined the animation since the frame indexes will likely map to incorrect cells on a
+	 * different texture.
 	 * @return {*}
 	 */
-	define: function (id, frames, fps, loop) {
+	define: function (id, frames, fps, loop, convertIdsToIndex) {
 		if (frames && frames.length) {
+			var i, frame;
 			this._anims.length = this._anims.length || 0;
+
+			if (convertIdsToIndex === undefined) {
+				convertIdsToIndex = true; // Default the flag to true if undefined
+			}
+
+			if (convertIdsToIndex) {
+				// Check each frame for string values
+				for (i = 0; i < frames.length; i++) {
+					frame = frames[i];
+					if (typeof(frame) === 'string') {
+						if (this._entity._texture) {
+							// The frame has a cell id so convert to an index
+							frame = this._entity._texture.cellIdToIndex(frame);
+						} else {
+							this.log('You can increase the performance of id-based cell animations by specifying the animation.define AFTER you have assigned your sprite sheet to the entity on entity with ID: ' + this._entity.id(), 'warning');
+							break;
+						}
+					}
+				}
+			}
 
 			// Store the animation
 			var frameTime = ((1000 / fps)|0);
@@ -77,6 +103,8 @@ var IgeAnimationComponent = IgeClass.extend({
 
 				this._anim = anim;
 				this._animId = animId;
+
+				this.emit('started', anim);
 			} else {
 				this.log('Cannot set animation to "' + animId + '" because the animation does not exist!', 'warning');
 			}
@@ -105,6 +133,8 @@ var IgeAnimationComponent = IgeClass.extend({
 	 * @return {*}
 	 */
 	stop: function () {
+		this.emit('stopped', this._anim);
+
 		delete this._anim;
 		delete this._animId;
 
@@ -130,6 +160,7 @@ var IgeAnimationComponent = IgeClass.extend({
 			if (anim.currentDelta > anim.totalTime) {
 				// Check if we have a single loop animation
 				if (!anim.loop) {
+					this.emit('complete', anim);
 					this.stop();
 				} else {
 					// Check if we have an infinite loop
@@ -139,6 +170,8 @@ var IgeAnimationComponent = IgeClass.extend({
 						if (Math.abs(multiple) > 1) {
 							anim.currentDelta -= ((multiple|0) * anim.totalTime); // Bitwise floor
 						}
+
+						this.emit('loopComplete', anim);
 					} else {
 						anim.currentLoop++;
 						if (anim.loop > 0 && anim.currentLoop <= anim.loop) {
@@ -147,10 +180,12 @@ var IgeAnimationComponent = IgeClass.extend({
 							if (Math.abs(multiple) > 1) {
 								anim.currentDelta -= ((multiple|0) * anim.totalTime); // Bitwise floor
 							}
+
+							this.emit('loopComplete', anim);
 						} else {
 							// The animation has ended
+							this.emit('complete', anim);
 							this.stop();
-							//return;
 						}
 					}
 				}
@@ -165,7 +200,11 @@ var IgeAnimationComponent = IgeClass.extend({
 			cell = anim.frames[frame];
 
 			// Set the current frame
-			this._entity.cell(cell);
+			if (typeof(cell) === 'string') {
+				this._entity.cellById(cell);
+			} else {
+				this._entity.cell(cell);
+			}
 		}
 	}
 });

@@ -2,6 +2,11 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 
 	init: function () {
+		ige.showStats(1);
+
+		// Enabled texture smoothing when scaling textures
+		ige.globalSmoothing(true);
+
 		// Load our textures
 		var self = this;
 
@@ -34,8 +39,6 @@ var Client = IgeClass.extend({
 	},
 
 	loadTextures: function () {
-		this.gameTexture.background1 = new IgeTexture('../assets/textures/backgrounds/resortico.png');
-		this.gameTexture.bank = new IgeTexture('../assets/textures/buildings/bank1.png');
 		this.gameTexture.electricals = new IgeTexture('../assets/textures/buildings/electricalsShop1.png');
 		this.gameTexture.burgers = new IgeTexture('../assets/textures/buildings/burgerShop1.png');
 		this.gameTexture.base_se = new IgeTexture('../assets/textures/buildings/base_se.png');
@@ -58,6 +61,22 @@ var Client = IgeClass.extend({
 		this.gameTexture.crane_sw = new IgeTexture('../assets/textures/buildings/crane_sw.png');
 		this.gameTexture.crane_ne = new IgeTexture('../assets/textures/buildings/crane_ne.png');
 		this.gameTexture.crane_nw = new IgeTexture('../assets/textures/buildings/crane_nw.png');
+
+		// Create some textures but don't load them yet
+		this.gameTexture.background1 = new IgeTexture();
+		this.gameTexture.bank = new IgeTexture();
+
+		// Test multi-event listening
+		ige.on([
+			[this.gameTexture.background1, 'loaded'],
+			[this.gameTexture.bank, 'loaded']
+		], function () {
+			console.log('All loaded');
+		});
+
+		// Load the texture images
+		this.gameTexture.background1.url('../assets/textures/backgrounds/resortico.png');
+		this.gameTexture.bank.url('../assets/textures/buildings/bank1.png');
 	},
 
 	setupScene: function () {
@@ -70,7 +89,9 @@ var Client = IgeClass.extend({
 		this.vp1 = new IgeViewport()
 			.id('vp1')
 			.addComponent(IgeMousePanComponent)
-			.mousePan.enabled(true)
+			.addComponent(IgeMouseZoomComponent)
+			.mousePan.enabled(false)
+			.mouseZoom.enabled(true)
 			.autoSize(true)
 			.scene(this.scene1)
 			.drawBounds(true)
@@ -105,7 +126,7 @@ var Client = IgeClass.extend({
 
 	setupEntities: function () {
 		// Create an entity
-		this.obj[0] = new this.Bank(this.tileMap1, 10, 10);
+		this.obj[0] = new this.Bank(this.tileMap1, 10, 10).id('bank');
 		this.obj[1] = new this.Electricals(this.tileMap1, 2, 6);
 		this.obj[2] = new this.Burgers(this.tileMap1, 5, 6);
 		this.obj[3] = new this.SkyScraper(this.tileMap1, 15, 10).addFloors(5).addCrane('nw');

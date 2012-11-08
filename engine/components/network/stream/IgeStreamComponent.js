@@ -1,7 +1,7 @@
 /**
  * Adds stream capabilities to the network system.
  */
-var IgeStreamComponent = IgeClass.extend({
+var IgeStreamComponent = IgeEventingClass.extend({
 	classId: 'IgeStreamComponent',
 	componentId: 'stream',
 
@@ -61,6 +61,7 @@ var IgeStreamComponent = IgeClass.extend({
 		return this._renderLatency;
 	},
 
+	/* CEXCLUDE */
 	/**
 	 * Gets / sets the interval by which updates to the game world are packaged
 	 * and transmitted to connected clients. The greater the value, the less
@@ -119,7 +120,10 @@ var IgeStreamComponent = IgeClass.extend({
 	 * @private
 	 */
 	_sendQueue: function () {
-		var arr = this._queuedData,
+		var st = new Date().getTime(),
+			ct,
+			dt,
+			arr = this._queuedData,
 			arrIndex,
 			network = this._entity,
 			item, currentTime = new Date().getTime(),
@@ -138,9 +142,19 @@ var IgeStreamComponent = IgeClass.extend({
 					clientSentTimeData[item[1]] = true;
 				}
 				network.send('_igeStream', item[0], item[1]);
+
+				delete arr[arrIndex];
+			}
+
+			ct = new Date().getTime();
+			dt = ct - st;
+			if (dt > this._streamInterval) {
+				console.log('WARNING, Stream send is taking too long: ' + dt + 'ms');
+				break;
 			}
 		}
 	},
+	/* CEXCLUDE */
 
 	/**
 	 * Handles receiving the start time of the stream data.
@@ -159,20 +173,24 @@ var IgeStreamComponent = IgeClass.extend({
 	 * @private
 	 */
 	_onStreamData: function (data) {
-		//console.log('Stream data: ', this._streamDataTime, data);
-
 		// Read the packet data into variables
-		var clientTime = new Date().getTime(),
-			time = clientTime - 20, // Simulate 20ms lag
-
-			idSection, idArr, entityId, parentId, classId, entity, parent,
+		var idSection,
+			idArr,
+			entityId,
+			parentId,
+			classId,
+			classConstructor,
+			alive,
+			entity,
+			parent,
 
 			sectionArr,
-
 			sectionDataArr = data.split('|'),
 			sectionDataCount = sectionDataArr.length,
 
-			sectionIndex;
+			sectionIndex,
+
+			justCreated;
 
 		// The first data section is always the entity ID and class name
 		// so extract those from the section array
@@ -183,6 +201,7 @@ var IgeStreamComponent = IgeClass.extend({
 		entityId = idArr[0];
 		parentId = idArr[1];
 		classId = idArr[2];
+		alive = parseInt(idArr[3], 10);
 
 		// Check that the entity parent exists
 		parent = ige.$(parentId);
@@ -191,55 +210,42 @@ var IgeStreamComponent = IgeClass.extend({
 			// Check if the entity with this ID currently exists
 			entity = ige.$(entityId);
 
-			if (!entity) {
-				// The entity does not currently exist so create it!
-				entity = new igeClassStore[classId]()
-					.id(entityId)
-					.mount(parent);
-			}
+			if (alive) {
+				if (!entity) {
+					// Check the required class exists
+					classConstructor = igeClassStore[classId];
+					if (classConstructor) {
+						// The entity does not currently exist so create it!
+						entity = new classConstructor()
+							.id(entityId)
+							.mount(parent);
 
-			// Get the entity stream section array
-			sectionArr = entity._streamSections;
+						justCreated = true;
 
-			// Now loop the data sections array and compile the rest of the
-			// data string from the data section return data
-			for (sectionIndex = 0; sectionIndex < sectionDataCount; sectionIndex++) {
-				// Tell the entity to handle this section's data
-				entity.streamSectionData(sectionArr[sectionIndex], sectionDataArr[sectionIndex]);
-			}
-		}
-		return;
+						// Since we just created an entity through receiving stream
+						// data, inform any interested listeners
+						this.emit('entityCreated', entity);
+					} else {
+						ige.stop();
+						ige.network.stop();
 
-		while (count--) {
-			finalDataObject = {};
-			dataItem = entityMsgArray[count].split(',');
+						this.log('Cannot create entity with class ' + classId + ' because the class has not been defined!', 'error');
+					}
+				}
 
-			entity = this.ige.entities.byId[dataItem[0]];
-			if (entity) {
-				// Only add the update to the queue if it was sent after
-				// the latest update time
-				if (!entity._latestUpdate) { entity._latestUpdate = 0; }
-				if (typeof(entity._targetData) == 'undefined') { entity._targetData = []; }
-				if (entity._latestUpdate < time) {
-					finalDataObject._transform = [];
-					// translate
-					finalDataObject._transform[0] = parseFloat(dataItem[1]);
-					finalDataObject._transform[1] = parseFloat(dataItem[2]);
-					// scale
-					finalDataObject._transform[3] = parseFloat(dataItem[3]);
-					finalDataObject._transform[4] = parseFloat(dataItem[4]);
-					// rotate
-					finalDataObject._transform[6] = parseFloat(dataItem[5]);
-					// origin
-					finalDataObject._transform[9] = parseFloat(dataItem[6]);
-					finalDataObject._transform[10] = parseFloat(dataItem[7]);
-					// opacity
-					finalDataObject._transform[12] = parseFloat(dataItem[8]);
+				// Get the entity stream section array
+				sectionArr = entity._streamSections;
 
-					// We add this.ige.time.serverTimeDiff to the packet's time to convert
-					// from the server's clock time to the clients
-					entity._targetData.push([time + this.ige.time.totalServerToClientClockLatency, finalDataObject]);
-					entity._nextTarget = new Date().getTime() + this._streamInterval;
+				// Now loop the data sections array and compile the rest of the
+				// data string from the data section return data
+				for (sectionIndex = 0; sectionIndex < sectionDataCount; sectionIndex++) {
+					// Tell the entity to handle this section's data
+					entity.streamSectionData(sectionArr[sectionIndex], sectionDataArr[sectionIndex], justCreated);
+				}
+			} else {
+				if (entity) {
+					// The entity is dead so remove it
+					entity.destroy();
 				}
 			}
 		}

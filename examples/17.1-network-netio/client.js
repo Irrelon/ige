@@ -2,6 +2,8 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 
 	init: function () {
+		ige.showStats(1);
+
 		// Load our textures
 		var self = this;
 
@@ -34,7 +36,7 @@ var Client = IgeClass.extend({
 					ige.network.send('test', {moo: 'Some test data!'});
 
 					// Send the server a request (gets a callback when the server responds!)
-					ige.network.request('testRequest', {hello:100}, function (data) {
+					ige.network.request('testRequest', {hello:100}, function (commandName, data) {
 						console.log('Request response received from server via callback with data:', data);
 					});
 				});

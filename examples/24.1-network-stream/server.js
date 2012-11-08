@@ -42,21 +42,52 @@ var Server = IgeClass.extend({
 
 						// Create an entity and mount it to the scene
 						self.obj[0] = new Rotator()
-							.id('fairy1')
+							.id('fairy0')
 							.depth(1)
 							.translateTo(0, 0, 0)
 							.streamMode(1)
 							.mount(self.scene1);
 
+						// Add a value to the custom property that the
+						// rotator class "custom1" stream section will
+						// stream to clients
+						self.obj[0]._customProperty = 'Hello';
+
 						// Create a second rotator entity and mount
 						// it to the first one at 0, 50 relative to the
 						// parent
 						self.obj[1] = new Rotator2()
-							.id('fairy2')
+							.id('fairy1')
 							.depth(1)
 							.translateTo(0, 50, 0)
 							.streamMode(1)
 							.mount(self.obj[0]);
+
+						// Create a third rotator entity that will only
+						// "live" for 10 seconds - helps to test the stream
+						// based entity destruction system
+						self.obj[2] = new Rotator2()
+							.id('fairy2')
+							.depth(1)
+							.translateTo(0, 150, 0)
+							.streamMode(1)
+							.lifeSpan(10000)
+							.mount(self.scene1);
+
+						// Create an entity and mount it to the scene
+						self.obj[3] = new Mover()
+							.id('mover0')
+							.depth(1)
+							.translateTo(-300, -100, 0)
+							.streamMode(1)
+							.mount(self.scene1);
+
+						self.obj[4] = new Mover()
+							.id('mover1')
+							.depth(1)
+							.translateTo(300, 100, 0)
+							.streamMode(1)
+							.mount(self.scene1);
 					}
 				});
 			});

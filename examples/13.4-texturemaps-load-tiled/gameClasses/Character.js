@@ -125,6 +125,16 @@ var Character = IgeEntityBox2d.extend({
 		this.imageEntity._characterType = type;
 
 		return this;
+	},
+
+	destroy: function () {
+		// Destroy the texture object
+		if (this._characterTexture) {
+			this._characterTexture.destroy();
+		}
+
+		// Call the super class
+		this._super();
 	}
 });
 

@@ -133,6 +133,29 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	},
 
 	/**
+	 * Get / sets the entity that will be used to determine the
+	 * center point of the area to manage. This allows the
+	 * area to become dynamic based on this entity's position.
+	 * @param entity
+	 * @return {*}
+	 */
+	trackTranslate: function (entity) {
+		if (entity !== undefined) {
+			this._trackTranslateTarget = entity;
+			return this;
+		}
+
+		return this._trackTranslateTarget;
+	},
+
+	/**
+	 * Stops tracking the current tracking target's translation.
+	 */
+	unTrackTranslate: function () {
+		delete this._trackTranslateTarget;
+	},
+
+	/**
 	 * Gets / sets the center position of the management area.
 	 * @param {Number=} x
 	 * @param {Number=} y
@@ -140,6 +163,24 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 */
 	areaCenter: function (x, y) {
 		if (x !== undefined && y !== undefined) {
+			// Adjust the passed x, y to account for this
+			// texture map's translation
+			var ent = this._entity,
+				offset;
+
+			if (ent._mode === 0) {
+				// 2d mode
+				offset = ent._translate;
+			}
+
+			if (ent._mode === 1) {
+				// Iso mode
+				offset = ent._translate.toIso();
+			}
+
+			x -= offset.x;
+			y -= offset.y;
+
 			this._areaCenter = new IgePoint(x, y, 0);
 			return this._entity;
 		}
@@ -167,17 +208,39 @@ var IgeEntityManagerComponent = IgeClass.extend({
 		return this._areaRect;
 	},
 
+	areaRectAutoSize: function (val, options) {
+		if (val !== undefined) {
+			this._areaRectAutoSize = val;
+			this._areaRectAutoSizeOptions = options;
+			return this._entity;
+		}
+
+		return this._areaRectAutoSize;
+	},
+
 	/**
 	 * Returns the current management area.
 	 * @return {IgeRect}
 	 */
 	currentArea: function () {
-		this._areaCenter = ige.$('Cement')._renderCenter;
+		// Check if we are tracking an entity that is used to
+		// set the center point of the area
+		if (this._trackTranslateTarget) {
+			// Calculate which tile our character is currently "over"
+			if (this._trackTranslateTarget.isometric() === true) {
+				entTranslate = this._trackTranslateTarget._translate.toIso();
+			} else {
+				entTranslate = this._trackTranslateTarget._translate;
+			}
+
+			this.areaCenter(entTranslate.x, entTranslate.y);
+		}
+
 		var areaRect = this._areaRect,
 			areaCenter = this._areaCenter;
 
 		if (areaRect && areaCenter) {
-			return new IgeRect(areaRect.x + areaCenter.x, areaRect.y + areaCenter.y, areaRect.width, areaRect.height);
+			return new IgeRect(Math.floor(areaRect.x + areaCenter.x), Math.floor(areaRect.y + areaCenter.y), Math.floor(areaRect.width), Math.floor(areaRect.height));
 		} else {
 			return new IgeRect(0, 0, 0, 0);
 		}
@@ -209,7 +272,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 */
 	_behaviour: function (ctx) {
 		var self = this.entityManager,
-			currentArea = self.currentArea(),
+			currentArea,
 			currentAreaTiles,
 			arr = this._children,
 			arrCount = arr.length,
@@ -226,8 +289,13 @@ var IgeEntityManagerComponent = IgeClass.extend({
 			renderSize,
 			ratio;
 
-		if (self._areaCenter && self._areaRect) {
+		if ((!self._areaRect || ige._resized) && self._areaRectAutoSize) {
+			self._resizeEvent();
+		}
 
+		currentArea = self.currentArea();
+
+		if (self._areaCenter && self._areaRect && !currentArea.compare(self._lastArea)) {
 			////////////////////////////////////
 			// ENTITY REMOVAL CHECKS          //
 			////////////////////////////////////
@@ -266,12 +334,6 @@ var IgeEntityManagerComponent = IgeClass.extend({
 			renderWidth = Math.ceil(currentArea.width / this._tileWidth);
 			renderHeight = Math.ceil(currentArea.height / this._tileHeight);
 
-			// Generate the bounds rectangle
-			if (this._drawBounds) {
-				ctx.strokeStyle = '#ff0000';
-				ctx.strokeRect(currentArea.x, currentArea.y, currentArea.width, currentArea.height);
-			}
-
 			currentArea.x -= (this._tileWidth);
 			currentArea.y -= (this._tileHeight / 2);
 			currentArea.width += (this._tileWidth * 2);
@@ -298,6 +360,14 @@ var IgeEntityManagerComponent = IgeClass.extend({
 					renderX + Math.floor(renderSize * ratio) + 1 - (renderX - Math.floor(renderSize * ratio)),
 					renderY + Math.floor(renderSize * ratio) + 1 - (renderY - Math.floor(renderSize * ratio))
 				);
+			}
+
+			// Generate the bounds rectangle
+			if (this._drawBounds) {
+				ctx.strokeStyle = '#ff0000';
+				ctx.strokeRect(currentArea.x, currentArea.y, currentArea.width, currentArea.height);
+
+				this._highlightTileRect = currentAreaTiles;
 			}
 
 			////////////////////////////////////
@@ -328,6 +398,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 				if (maps.hasOwnProperty(mapIndex)) {
 					map = maps[mapIndex];
 					mapData = map.map._mapData;
+					// TODO: This can be optimised further by only checking the area that has changed
 
 					for (y = currentAreaTiles.y; y < currentAreaTiles.y + currentAreaTiles.height; y++) {
 						if (mapData[y]) {
@@ -380,6 +451,38 @@ var IgeEntityManagerComponent = IgeClass.extend({
 			// Pop the first item off the array and pass it as arguments
 			// to the entity creation method assigned to this manager
 			createEntityFunc.apply(this, createArr.shift());
+		}
+	},
+
+	/**
+	 * Handles screen resize events.
+	 * @param event
+	 * @private
+	 */
+	_resizeEvent: function (event) {
+		// Set width / height of scene to match parent
+		if (this._areaRectAutoSize) {
+			var geom = this._entity._parent.geometry,
+				additionX = 0, additionY = 0;
+
+			if (this._areaRectAutoSizeOptions) {
+				if (this._areaRectAutoSizeOptions.bufferMultiple) {
+					additionX = (geom.x * this._areaRectAutoSizeOptions.bufferMultiple.x) - geom.x;
+					additionY = (geom.y * this._areaRectAutoSizeOptions.bufferMultiple.y) - geom.y;
+				}
+
+				if (this._areaRectAutoSizeOptions.bufferPixels) {
+					additionX = this._areaRectAutoSizeOptions.bufferPixels.x;
+					additionY = this._areaRectAutoSizeOptions.bufferPixels.y;
+				}
+			}
+
+			this.areaRect(-Math.floor((geom.x + additionX) / 2), -Math.floor((geom.y + additionY) / 2), geom.x + additionX, geom.y + additionY);
+
+			// Check if caching is enabled
+			if (this._caching > 0) {
+				this._resizeCacheCanvas();
+			}
 		}
 	}
 });

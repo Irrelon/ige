@@ -1,6 +1,8 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
+		ige.showStats(1);
+
 		// Load our textures
 		var self = this,
 			gameTexture = [],
@@ -19,10 +21,12 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Create the scene
-					self.scene1 = new IgeScene2d();
+					self.scene1 = new IgeScene2d()
+						.id('scene1');;
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
+						.id('vp1')
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
@@ -32,8 +36,9 @@ var Client = IgeClass.extend({
 					// to it, then set a velocity and add it to the scene
 					self.obj[0] = tempObj = new IgeEntity()
 						.addComponent(IgeVelocityComponent)
-						.velocity.x(-0.01)
-						.velocity.y(0.01)
+						//.velocity.x(-0.01)
+						//.velocity.y(0.01)
+						.velocity.byAngleAndPower(Math.radians(45), 0.01)
 						.depth(1)
 						.width(100)
 						.height(100)

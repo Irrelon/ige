@@ -214,19 +214,19 @@ var IgeUiPositionExtension = {
 			if (this._height) { this.height(this._height, this._heightModifier, true); }
 
 			if (this._uiXAlign === 'right') {
-				this._translate.x = parentGeom.x2 - geom.x2 - this._uiX;
+				this._translate.x = Math.floor(parentGeom.x2 - geom.x2 - this._uiX);
 			} else if (this._uiXAlign === 'center') {
-				this._translate.x = this._uiX;
-			} else {
-				this._translate.x = this._uiX + geom.x2 - (parentGeom.x2);
+				this._translate.x = Math.floor(this._uiX);
+			} else if (this._uiXAlign === 'left') {
+				this._translate.x = Math.floor(this._uiX + geom.x2 - (parentGeom.x2));
 			}
 
 			if (this._uiYAlign === 'bottom') {
-				this._translate.y = parentGeom.y2 - geom.y2 - this._uiY;
+				this._translate.y = Math.floor(parentGeom.y2 - geom.y2 - this._uiY);
 			} else if (this._uiYAlign === 'middle') {
-				this._translate.y = this._uiY;
-			} else {
-				this._translate.y = this._uiY + geom.y2 - (parentGeom.y2);
+				this._translate.y = Math.floor(this._uiY);
+			} else if (this._uiYAlign === 'top') {
+				this._translate.y = Math.floor(this._uiY + geom.y2 - (parentGeom.y2));
 			}
 
 			this.dirty(true);

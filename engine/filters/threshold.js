@@ -1,4 +1,4 @@
-IgeFilters.threshold = function (canvas, ctx, originalImage, texture) {
+IgeFilters.threshold = function (canvas, ctx, originalImage, texture, data) {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.drawImage(originalImage, 0, 0);
 
@@ -11,18 +11,19 @@ IgeFilters.threshold = function (canvas, ctx, originalImage, texture) {
 				canvas.width,
 				canvas.height
 			),
-			texture
+			texture,
+			data
 		),
 		0,
 		0
 	);
 };
 
-IgeFilters._threshold = function (imageData, texture) {
+IgeFilters._threshold = function (imageData, texture, data) {
 	var arr,
 		arrCount,
 		i, r, g, b, v,
-		threshold = texture.data('IgeFilters.threshold.value');
+		threshold = texture.data('IgeFilters.threshold.value') || data.value;
 
 	arr = imageData.data;
 	arrCount = arr.length;

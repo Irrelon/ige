@@ -26,13 +26,17 @@ var IgeTiledComponent = IgeClass.extend({
 		var self = this,
 			scriptElem;
 
-		scriptElem = document.createElement('script');
-		scriptElem.src = url;
-		scriptElem.onload = function () {
-			self.log('Tiled data loaded, processing...');
-			self._processData(tiled, callback);
-		};
-		document.getElementsByTagName('head')[0].appendChild(scriptElem);
+		if (typeof(url) === 'string') {
+			scriptElem = document.createElement('script');
+			scriptElem.src = url;
+			scriptElem.onload = function () {
+				self.log('Tiled data loaded, processing...');
+				self._processData(tiled, callback);
+			};
+			document.getElementsByTagName('head')[0].appendChild(scriptElem);
+		} else {
+			self._processData(url, callback);
+		}
 	},
 
 	_processData: function (data, callback) {
@@ -97,7 +101,7 @@ var IgeTiledComponent = IgeClass.extend({
 							currentTexture = textureCellLookup[layerData[z]];
 							if (currentTexture) {
 								currentCell = layerData[z] - (currentTexture._tiledStartingId - 1);
-								textureMaps[i].paintTile(x, y, textures.indexOf(currentTexture), currentCell);
+								textureMaps[i].paintTile(x, y, textureMaps[i]._textureList.indexOf(currentTexture), currentCell);
 							}
 						}
 					}
@@ -111,6 +115,7 @@ var IgeTiledComponent = IgeClass.extend({
 			return function () {
 				var i, cc,
 					cs = new IgeCellSheet(tileSetItem.image, this.width / tileSetItem.tilewidth, this.height / tileSetItem.tileheight)
+						.id(tileSetItem.name)
 						.on('loaded', function () {
 							cc = this.cellCount();
 

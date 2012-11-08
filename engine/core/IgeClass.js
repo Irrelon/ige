@@ -68,6 +68,29 @@ var IgeClass = (function () {
 		addComponent = function (component, options) {
 			var newComponent = new component(this, options);
 			this[newComponent.componentId] = newComponent;
+
+			// Add the component reference to the class component array
+			this._components.push(newComponent);
+
+			return this;
+		},
+
+		/**
+		 * Removes a component by it's id.
+		 */
+		removeComponent = function (componentId) {
+			// If the component has a destroy method, call it
+			if (this[componentId] && this[componentId].destroy) {
+				this[componentId].destroy();
+			}
+
+			// Remove the component from the class component array
+			if (this._components) {
+				this._components.pull(this[componentId]);
+			}
+
+			// Remove the component namespace from the class object
+			delete this[componentId];
 			return this;
 		},
 
@@ -201,6 +224,15 @@ var IgeClass = (function () {
 		function IgeClass() {
 			this._data = {};
 			if (!initializing && this.init) {
+				// Create an array to hold components
+				this._components = [];
+
+				// Store a reference to the global ige object
+				if (typeof(ige) !== 'undefined') {
+					this.ige = ige;
+				}
+
+				// Call the class init method
 				this.init.apply(this, arguments);
 			}
 		}
@@ -226,6 +258,9 @@ var IgeClass = (function () {
 
 		// Add the addComponent method
 		IgeClass.prototype.addComponent = addComponent;
+
+		// Add the removeComponent method
+		IgeClass.prototype.removeComponent = removeComponent;
 
 		// Add the implement method
 		IgeClass.prototype.implement = implement;

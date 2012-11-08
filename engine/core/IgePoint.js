@@ -130,6 +130,30 @@ IgePoint.prototype.thisAddPoint = function (point) {
 };
 
 /**
+ * Minuses this point's data by the x, y, z, values specified
+ * and returns a new IgePoint whose values are the result.
+ * @param point
+ * @return {*}
+ */
+IgePoint.prototype.minusPoint = function (point) {
+	return new IgePoint(this.x - point.x, this.y - point.y, this.z - point.z);
+};
+
+/**
+ * Minuses this point's data by the x, y, z values specified and
+ * overwrites the previous x, y, z values with the result.
+ * @param point
+ * @return {*}
+ */
+IgePoint.prototype.thisMinusPoint = function (point) {
+	this.x -= point.x;
+	this.y -= point.y;
+	this.z -= point.z;
+
+	return this;
+};
+
+/**
  * Multiplies this point's data by the x, y, z, values specified
  * and returns a new IgePoint whose values are the result.
  * @param x

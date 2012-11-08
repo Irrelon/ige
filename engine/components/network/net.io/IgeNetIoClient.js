@@ -3,6 +3,7 @@
  * networking systems.
  */
 var IgeNetIoClient = {
+	version: '1.0.0',
 	_initDone: false,
 	_idCounter: 0,
 	_requests: {},
@@ -138,6 +139,10 @@ var IgeNetIoClient = {
 			ciEncoded;
 
 		if (commandIndex !== undefined) {
+			if (this.debug()) {
+				console.log('Sending "' + commandName + '" (index ' + commandIndex + ') with data:', data);
+				this._debugCounter++;
+			}
 			ciEncoded = String.fromCharCode(commandIndex);
 			this._io.send([ciEncoded, data]);
 		} else {
@@ -218,8 +223,9 @@ var IgeNetIoClient = {
 		// the request data
 		this._requests[data.id] = data;
 
-		if (this._debug) {
+		if (this.debug()) {
 			console.log('onRequest', data);
+			this._debugCounter++;
 		}
 
 		if (this._networkCommands[data.cmd]) {
@@ -238,8 +244,9 @@ var IgeNetIoClient = {
 		// the request id
 		req = this._requests[id];
 
-		if (this._debug) {
+		if (this.debug()) {
 			console.log('onResponse', data);
+			this._debugCounter++;
 		}
 
 		if (req) {
@@ -270,6 +277,11 @@ var IgeNetIoClient = {
 			commandName = this._networkCommandsIndex[ciDecoded];
 
 		if (this._networkCommands[commandName]) {
+			if (this.debug()) {
+				console.log('Received "' + commandName + '" (index ' + ciDecoded + ') with data:', data[1]);
+				this._debugCounter++;
+			}
+
 			this._networkCommands[commandName](data[1]);
 		}
 

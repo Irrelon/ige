@@ -7,13 +7,19 @@ var IgeEntityBox2d = IgeEntity.extend({
 	init: function () {
 		this._super();
 
-		// Store the existing translate methods
+		// Store the existing transform methods
 		this._translateToProto = this.translateTo;
 		this._translateByProto = this.translateBy;
 
-		// Take over the translate methods
+		this._rotateToProto = this.rotateTo;
+		this._rotateByProto = this.rotateBy;
+
+		// Take over the transform methods
 		this.translateTo = this._translateTo;
 		this.translateBy = this._translateBy;
+
+		this.rotateTo = this._rotateTo;
+		this.rotateBy = this._rotateBy;
 	},
 
 	/**
@@ -52,7 +58,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 	_translateTo: function (x, y, z) {
 		var entBox2d = this._box2dBody;
 
-		// Call the original translate method
+		// Call the original method
 		this._translateToProto(x, y, z);
 
 		// Check if the entity has a box2d body attached
@@ -79,6 +85,46 @@ var IgeEntityBox2d = IgeEntity.extend({
 	 */
 	_translateBy: function (x, y, z) {
 		this._translateTo(this._translate.x + x, this._translate.y + y, this._translate.z + z);
+	},
+
+	/**
+	 * Takes over translateTo calls and processes box2d movement as well.
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return {*}
+	 * @private
+	 */
+	_rotateTo: function (x, y, z) {
+		var entBox2d = this._box2dBody;
+
+		// Call the original method
+		this._rotateToProto(x, y, z);
+
+		// Check if the entity has a box2d body attached
+		// and if so, is it updating or not
+		if (entBox2d && !entBox2d.updating) {
+			// We have an entity with a box2d definition that is
+			// not currently updating so let's override the standard
+			// transform op and take over
+
+			// Translate the body
+			entBox2d.SetAngle(z);
+			entBox2d.SetAwake(true);
+		}
+
+		return this;
+	},
+
+	/**
+	 * Takes over translateBy calls and processes box2d movement as well.
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @private
+	 */
+	_rotateBy: function (x, y, z) {
+		this._rotateTo(this._rotate.x + x, this._rotate.y + y, this._rotate.z + z);
 	},
 
 	/**

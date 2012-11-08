@@ -1,6 +1,11 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
+		ige.showStats(1);
+
+		// Enabled texture smoothing when scaling textures
+		ige.globalSmoothing(true);
+
 		// Load our textures
 		var self = this,
 			gameTexture = [];
@@ -21,11 +26,13 @@ var Client = IgeClass.extend({
 				if (success) {
 					// Create the scene
 					self.scene1 = new IgeScene2d()
+						.id('scene1')
 						.translateTo(0, 0, 0)
 						.drawBounds(false);
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
+						.id('vp1')
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)

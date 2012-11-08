@@ -2,6 +2,8 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 
 	init: function () {
+		ige.showStats(1);
+
 		// Load our textures
 		var self = this;
 
@@ -9,7 +11,7 @@ var Client = IgeClass.extend({
 		this.gameTexture = {};
 
 		// Enable networking
-		ige.addComponent(IgeSocketIoComponent);
+		ige.addComponent(IgeNetIoComponent);
 
 		// Implement our game methods
 		this.implement(ClientNetworkEvents);
@@ -17,23 +19,42 @@ var Client = IgeClass.extend({
 		// Create the HTML canvas
 		ige.createFrontBuffer(true);
 
-		// Ask the engine to start
-		ige.start(function (success) {
-			// Check if the engine started successfully
-			if (success) {
-				// Start the networking (you can do this elsewhere if it
-				// makes sense to connect to the server later on rather
-				// than before the scene etc are created... maybe you want
-				// a splash screen or a menu first? Then connect after you've
-				// got a username or something?
-				ige.network.start('http://localhost:2000', function () {
-					// Define network command listeners
-					ige.network.define('test', self._onTest);
+		this.gameTexture.rect = new IgeTexture('./assets/Rect.js');
+		this.gameTexture.circle = new IgeTexture('./assets/Circle.js');
 
-					// Send the server a test message
-					ige.network.send('test', {moo: 'Some test data!'});
-				});
-			}
+		ige.on('texturesLoaded', function () {
+			// Ask the engine to start
+			ige.start(function (success) {
+				// Check if the engine started successfully
+				if (success) {
+					// Start the networking (you can do this elsewhere if it
+					// makes sense to connect to the server later on rather
+					// than before the scene etc are created... maybe you want
+					// a splash screen or a menu first? Then connect after you've
+					// got a username or something?
+					ige.network.start('http://192.168.0.199:2000', function () {
+						ige.network.addComponent(IgeStreamComponent)
+							.stream.renderLatency(60) // Render the simulation 160 milliseconds in the past
+							// Create a listener that will fire whenever an entity
+							// is created because of the incoming stream data
+							.stream.on('entityCreated', function (entity) {
+								//console.log('Stream entity created with ID: ' + entity.id());
+							});
+
+						// Create the scene
+						self.scene1 = new IgeScene2d()
+							.id('scene1');
+
+						// Create the main viewport
+						self.vp1 = new IgeViewport()
+							.id('vp1')
+							.autoSize(true)
+							.scene(self.scene1)
+							.drawBounds(true)
+							.mount(ige);
+					});
+				}
+			});
 		});
 	}
 });

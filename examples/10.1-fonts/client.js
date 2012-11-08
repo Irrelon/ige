@@ -1,14 +1,16 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
+		ige.showStats(1);
+
 		// Load our textures
 		var self = this,
 			gameTexture = [];
 
 		this.obj = [];
 
-		gameTexture[0] = new IgeFontSheet('../assets/textures/fonts/eater_26pt.png', 0);
-		gameTexture[1] = new IgeFontSheet('../assets/textures/fonts/verdana_10px.png', 0);
+		gameTexture[0] = new IgeFontSheet('../assets/textures/fonts/eater_26pt.png', 3);
+		gameTexture[1] = new IgeFontSheet('../assets/textures/fonts/verdana_10px.png', 1);
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -28,10 +30,12 @@ var Client = IgeClass.extend({
 					});
 
 					// Create the scene
-					self.scene1 = new IgeScene2d();
+					self.scene1 = new IgeScene2d()
+						.id('scene1');
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
+						.id('vp1')
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)

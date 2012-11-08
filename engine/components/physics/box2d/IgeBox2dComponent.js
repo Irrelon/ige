@@ -27,6 +27,83 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		this.b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
 		this.b2ContactListener = Box2D.Dynamics.b2ContactListener;
 		this.b2Distance = Box2D.Collision.b2Distance;
+		this.b2Contact = Box2D.Dynamics.Contacts.b2Contact;
+
+		// Extend the b2Contact class to allow the IGE entity accessor
+		// and other helper methods
+		this.b2Contact.prototype.igeEntityA = function () {
+			var ent = this.m_fixtureA.m_body._entity;
+			ent._box2dOurContactFixture = this.m_fixtureA;
+			ent._box2dTheirContactFixture = this.m_fixtureB;
+			return ent;
+		};
+
+		this.b2Contact.prototype.igeEntityB = function () {
+			var ent = this.m_fixtureB.m_body._entity;
+			ent._box2dOurContactFixture = this.m_fixtureB;
+			ent._box2dTheirContactFixture = this.m_fixtureA;
+			return ent;
+		};
+
+		this.b2Contact.prototype.igeEitherId = function (id1, id2) {
+			if (!id2) {
+				return this.m_fixtureA.m_body._entity._id === id1 || this.m_fixtureB.m_body._entity._id === id1;
+			} else {
+				return (this.m_fixtureA.m_body._entity._id === id1 || this.m_fixtureB.m_body._entity._id === id1) &&
+					(this.m_fixtureA.m_body._entity._id === id2 || this.m_fixtureB.m_body._entity._id === id2);
+			}
+		};
+
+		this.b2Contact.prototype.igeEitherGroup = function (group1, group2) {
+			if (!group2) {
+				return this.m_fixtureA.m_body._entity._group === group1 || this.m_fixtureB.m_body._entity._group === group1;
+			} else {
+				return (this.m_fixtureA.m_body._entity._group === group1 || this.m_fixtureB.m_body._entity._group === group1) &&
+					(this.m_fixtureA.m_body._entity._group === group2 || this.m_fixtureB.m_body._entity._group === group2);
+			}
+		};
+
+		this.b2Contact.prototype.igeBothGroups = function (group1) {
+			return (this.m_fixtureA.m_body._entity._group === group1 && this.m_fixtureB.m_body._entity._group === group1);
+		};
+
+		this.b2Contact.prototype.igeEntityByGroup = function (group) {
+			if (this.m_fixtureA.m_body._entity._group === group) {
+				return this.igeEntityA();
+			}
+
+			if (this.m_fixtureB.m_body._entity._group === group) {
+				return this.igeEntityB();
+			}
+		};
+
+		this.b2Contact.prototype.igeEntityById = function (id) {
+			if (this.m_fixtureA.m_body._entity._id === id) {
+				return this.igeEntityA();
+			}
+
+			if (this.m_fixtureB.m_body._entity._id === id) {
+				return this.igeEntityB();
+			}
+		};
+
+		this.b2Contact.prototype.igeEntityByFixtureId = function (id) {
+			if (this.m_fixtureA.igeId === id) {
+				return this.igeEntityA();
+			}
+
+			if (this.m_fixtureB.igeId === id) {
+				return this.igeEntityB();
+			}
+		};
+
+		this.b2Contact.prototype.igeOtherEntity = function (entity) {
+			if (this.m_fixtureA.m_body._entity === entity) {
+				return this.igeEntityB();
+			} else {
+				return this.igeEntityA();
+			}
+		};
 
 		this._active = true;
 		this._sleep = true;
@@ -39,6 +116,19 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		ige.addBehaviour('box2dStep', this._behaviour);
 
 		this.log('Physics component initiated!');
+	},
+
+	useWorker: function (val) {
+		if (typeof(Worker) !== 'undefined') {
+			if (val !== undefined) {
+				this._useWorker = val;
+				return this._entity;
+			}
+
+			return this._useWorker;
+		} else {
+			this.log('Web workers were not detected on this browser. Cannot access useWorker() method.', 'warning');
+		}
 	},
 
 	/**
@@ -139,6 +229,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			tempBod,
 			fixtureDef,
 			tempFixture,
+			finalFixture,
 			tempShape,
 			i,
 			finalX, finalY,
@@ -203,6 +294,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 							// Create the fixture
 							tempFixture = this.createFixture(fixtureDef);
+							tempFixture.igeId = fixtureDef.igeId;
 
 							// Check for a shape definition for the fixture
 							if (fixtureDef.shape) {
@@ -249,7 +341,8 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 								if (tempShape) {
 									tempFixture.shape = tempShape;
-									tempBod.CreateFixture(tempFixture);
+									finalFixture = tempBod.CreateFixture(tempFixture);
+									finalFixture.igeId = tempFixture.igeId;
 								}
 							}
 						}
@@ -315,6 +408,40 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Creates a contact listener with the specified callbacks. When
+	 * contacts begin and end inside the box2d simulation the specified
+	 * callbacks are fired.
+	 * @param {Function} beginContactCallback The method to call when the contact listener detects contact has started.
+	 * @param {Function} endContactCallback The method to call when the contact listener detects contact has ended.
+	 * @param preSolve
+	 * @param postSolve
+	 */
+	contactListener: function (beginContactCallback, endContactCallback, preSolve, postSolve) {
+		var contactListener = new this.b2ContactListener();
+		if (beginContactCallback !== undefined) {
+			contactListener.BeginContact = beginContactCallback;
+		}
+
+		if (endContactCallback !== undefined) {
+			contactListener.EndContact = endContactCallback;
+		}
+
+		if (preSolve !== undefined) {
+			contactListener.PreSolve = preSolve;
+		}
+
+		if (postSolve !== undefined) {
+			contactListener.PostSolve = postSolve;
+		}
+		this._world.SetContactListener(contactListener);
+	},
+
+	/**
+	 * Creates a debug entity that outputs the bounds of each box2d
+	 * body during standard engine ticks.
+	 * @param {IgeEntity} mountScene
+	 */
 	enableDebug: function (mountScene) {
 		if (mountScene) {
 			// Define the debug drawing instance
@@ -369,6 +496,18 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		}
 
 		return this._updateCallback;
+	},
+
+	start: function () {
+		if (!this._active) {
+			this._active = true;
+		}
+	},
+
+	stop: function () {
+		if (this._active) {
+			this._active = false;
+		}
 	},
 
 	/**
@@ -447,6 +586,14 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 				self._updateCallback();
 			}
 		}
+	},
+
+	destroy: function () {
+		// Stop processing box2d steps
+		ige.removeBehaviour('box2dStep');
+
+		// Destroy all box2d world bodies
+
 	}
 });
 

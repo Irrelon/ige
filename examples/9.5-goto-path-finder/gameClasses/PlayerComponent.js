@@ -50,7 +50,7 @@ var PlayerComponent = IgeClass.extend({
 		newPath = ige.client.pathFinder.aStar(ige.client.tileMap1, startTile, endTile, function (tileData, tileX, tileY) {
 			// If the map tile data is set to 1, don't allow a path along it
 			return tileData !== 1;
-		}, true, true);
+		}, true, true, true);
 
 		// Tell the entity to start pathing along the new path
 		this._entity

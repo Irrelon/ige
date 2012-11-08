@@ -14,7 +14,8 @@ var IgeEventingClass = IgeClass.extend({
 	 * @return {Object}
 	 */
 	on: function (eventName, call, context, oneShot, sendEventName) {
-		var newListener,
+		var self = this,
+			newListener,
 			addListener,
 			existingIndex,
 			elArr,
@@ -22,9 +23,7 @@ var IgeEventingClass = IgeClass.extend({
 			eventIndex,
 			eventData,
 			eventObj,
-			eventNameArray,
-			singleEventIndex,
-			singleEventName,
+			multiEventName,
 			i;
 
 		// Check that we have an event listener object
@@ -65,37 +64,29 @@ var IgeEventingClass = IgeClass.extend({
 					multiEvent = [];
 					multiEvent[0] = 0; // This will hold our event count total
 					multiEvent[1] = 0; // This will hold our number of events fired
-					multiEvent[2] = []; // This will hold the list of already-fired event names
 
 					// Define the multi event callback
-					multiEvent[3] = this.bind(function (firedEventName) {
-						if (multiEvent[2].indexOf(firedEventName) === -1) {
-							multiEvent[2].push(firedEventName);
-							multiEvent[1]++;
+					multiEvent[3] = function (firedEventName) {
+						multiEvent[1]++;
 
-							if (multiEvent[0] === multiEvent[1]) {
-								call.apply(context || this);
-							}
+						if (multiEvent[0] === multiEvent[1]) {
+							// All the multi-event events have fired
+							// so fire the callback
+							call.apply(context || self);
 						}
-					});
+					};
 
 					for (eventIndex in eventName) {
 						if (eventName.hasOwnProperty(eventIndex)) {
 							eventData = eventName[eventIndex];
 							eventObj = eventData[0];
-							eventNameArray = eventData[1];
+							multiEventName = eventData[1];
 
-							multiEvent[0] += eventNameArray.length;
+							// Increment the event listening count total
+							multiEvent[0]++;
 
-							for (singleEventIndex in eventNameArray) {
-								if (eventNameArray.hasOwnProperty(singleEventIndex)) {
-									// Get the event name
-									singleEventName = eventNameArray[singleEventIndex];
-
-									// Register each event against the event object with a callback
-									eventObj.on(singleEventName, multiEvent[3], null, true, true);
-								}
-							}
+							// Register each event against the event object with a callback
+							eventObj.on(multiEventName, multiEvent[3], null, true, true);
 						}
 					}
 				}
@@ -190,7 +181,8 @@ var IgeEventingClass = IgeClass.extend({
 		if (this._eventListeners) {
 			var remArr = this._eventListeners._removeQueue,
 				arrCount,
-				item;
+				item,
+				result;
 
 			// If the removal array exists
 			if (remArr) {
@@ -202,7 +194,13 @@ var IgeEventingClass = IgeClass.extend({
 					item = remArr[arrCount];
 
 					// Call the off() method for this item
-					this.off(item[0], item[1]);
+					result = this.off(item[0], item[1]);
+
+					// Check if there is a callback
+					if (remArr[2]) {
+						// Call the callback with the removal result
+						remArr[2](result);
+					}
 				}
 			}
 
@@ -220,7 +218,7 @@ var IgeEventingClass = IgeClass.extend({
 	 * @param {Object} evtListener The event listener object to cancel.
 	 * @return {Boolean}
 	 */
-	off: function (eventName, evtListener) {
+	off: function (eventName, evtListener, callback) {
 		if (this._eventListeners) {
 			if (!this._eventListeners._processing) {
 				if (this._eventListeners[eventName]) {
@@ -229,6 +227,9 @@ var IgeEventingClass = IgeClass.extend({
 					if (evtListIndex > -1) {
 						// Remove the listener from the event listener list
 						this._eventListeners[eventName].splice(evtListIndex, 1);
+						if (callback) {
+							callback(true);
+						}
 						return true;
 					} else {
 						this.log('Failed to cancel event listener for event named "' + eventName + '" !', 'warning', evtListener);
@@ -241,10 +242,15 @@ var IgeEventingClass = IgeClass.extend({
 				// listeners at the moment and removing one would mess up the
 				// loop!
 				this._eventListeners._removeQueue = this._eventListeners._removeQueue || [];
-				this._eventListeners._removeQueue.push([eventName, evtListener]);
+				this._eventListeners._removeQueue.push([eventName, evtListener, callback]);
+
+				return -1;
 			}
 		}
 
+		if (callback) {
+			callback(false);
+		}
 		return false;
 	},
 

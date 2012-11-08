@@ -1,4 +1,4 @@
-IgeFilters.brighten = function (canvas, ctx, originalImage, texture) {
+IgeFilters.brighten = function (canvas, ctx, originalImage, texture, data) {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.drawImage(originalImage, 0, 0);
 
@@ -11,17 +11,18 @@ IgeFilters.brighten = function (canvas, ctx, originalImage, texture) {
 				canvas.width,
 				canvas.height
 			),
-			texture
+			texture,
+			data
 		),
 		0,
 		0
 	);
 };
 
-IgeFilters._brighten = function (imageData, texture) {
+IgeFilters._brighten = function (imageData, texture, data) {
 	var arr,
 		arrCount,
-		i, adjustment = texture.data('IgeFilters.brighten.value');
+		i, adjustment = texture.data('IgeFilters.brighten.value') || data.value;
 
 	arr = imageData.data;
 	arrCount = arr.length;

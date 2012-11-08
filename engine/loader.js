@@ -29,7 +29,7 @@ window.igeLoader = (function () {
 				self.clientConfigReady();
 			};
 			ccScript.addEventListener('error', function () {
-				throw('ERROR LOADING clientConfig.js - does it exist?');
+				throw('ERROR LOADING ClientConfig.js - does it exist?');
 			}, true);
 
 			document.getElementsByTagName('head')[0].appendChild(ccScript);
@@ -46,7 +46,7 @@ window.igeLoader = (function () {
 		this._fileList = [];
 		for (i = 0; i < this._coreList.length; i++) {
 			// Check that the file should be loaded on the client
-			if (this._coreList[i][0] === 'c' || this._coreList[i][0] === 'cs') {
+			if (this._coreList[i][0].indexOf('c') > -1) {
 				this._fileList.push(igeRoot + this._coreList[i][2]);
 			}
 		}

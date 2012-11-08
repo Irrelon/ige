@@ -178,6 +178,16 @@ var Character = IgeEntityBox2d.extend({
 		// the closer they become to the bottom of the screen
 		this.depth(this._translate.y);
 		this._super(ctx);
+	},
+
+	destroy: function () {
+		// Destroy the texture object
+		if (this._characterTexture) {
+			this._characterTexture.destroy();
+		}
+
+		// Call the super class
+		this._super();
 	}
 });
 
