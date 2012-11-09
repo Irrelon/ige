@@ -131,7 +131,7 @@ var IgeViewport = IgeEntity.extend([
 
 			// Draw the scene
 			ctx.save();
-				this._scene.tick(ctx, scene);
+				this._scene.tick(ctx);
 			ctx.restore();
 
 			// Check if we should draw bounds on this viewport
@@ -144,14 +144,16 @@ var IgeViewport = IgeEntity.extend([
 
 			// Check if we should draw the mouse position on this
 			// viewport (usually for debug purposes)
-			if (this._drawMouse && ctx === ige._ctx && this._mousePos) {
+			if (this._drawMouse && ctx === ige._ctx) {
 				ctx.save();
+					var mp = this.mousePos();
+
 					// Re-scale the context to ensure that output is always 1:1
 					ctx.scale(1 / this.camera._scale.x, 1 / this.camera._scale.y);
 
 					// Work out the re-scale mouse position
-					var mx = Math.floor(this._mousePos.x * this.camera._scale.x),
-						my = Math.floor(this._mousePos.y * this.camera._scale.y),
+					var mx = Math.floor(mp.x * this.camera._scale.x),
+						my = Math.floor(mp.y * this.camera._scale.y),
 						textMeasurement;
 
 					ctx.fillStyle = '#fc00ff';
