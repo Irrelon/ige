@@ -824,11 +824,26 @@ var IgeEngine = IgeEntity.extend({
 		ige._resized = true;
 	},
 
+	/**
+	 * Adds a new watch expression to the watch list which will be
+	 * displayed in the stats overlay during a call to _statsTick().
+	 * @param {String} evalString The expression to evaluate and
+	 * display the result of in the stats overlay.
+	 * @returns {Integer} The index of the new watch expression you
+	 * just added to the watch array.
+	 */
 	watch: function (evalString) {
 		this._watch = this._watch || [];
 		this._watch.push(evalString);
+
+		return this._watch.length - 1;
 	},
 
+	/**
+	 * Removes a watch expression by it's array index.
+	 * @param {Number} index The index of the watch expression to
+	 * remove from the watch array.
+	 */
 	unWatch: function (index) {
 		this._watch = this._watch || [];
 		this._watch.splice(index, 1);
@@ -853,6 +868,10 @@ var IgeEngine = IgeEntity.extend({
 		self._drawCount = 0;
 	},
 
+	/**
+	 * Updates the stats HTML overlay with the latest data.
+	 * @private
+	 */
 	_statsTick: function () {
 		var self = ige;
 
