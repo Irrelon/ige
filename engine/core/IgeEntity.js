@@ -732,8 +732,7 @@ var IgeEntity = IgeObject.extend([
 
 			if (this._inView && (!this._parent || (this._parent._inView))) {
 				// Process any mouse events we need to do
-				var renderMode = ige._renderMode,
-					mp, aabb, mouseX, mouseY,
+				var mp, aabb, mouseX, mouseY,
 					self = this;
 
 				if (this._mouseEventsActive) {
