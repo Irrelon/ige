@@ -53,8 +53,12 @@ var IgeEntity = IgeObject.extend([
 	 * @return {*}
 	 */
 	mousePos: function () {
-		var mp = ige._currentViewport._mousePos;
-		return this._transformPoint({x: mp.x, y: mp.y});
+		if (ige._currentViewport) {
+			var mp = ige._currentViewport._mousePos;
+			return this._transformPoint({x: mp.x, y: mp.y});
+		} else {
+			return {x: 0, y: 0};
+		}
 	},
 
 	/**
