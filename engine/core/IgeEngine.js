@@ -827,14 +827,15 @@ var IgeEngine = IgeEntity.extend({
 	/**
 	 * Adds a new watch expression to the watch list which will be
 	 * displayed in the stats overlay during a call to _statsTick().
-	 * @param {String} evalString The expression to evaluate and
-	 * display the result of in the stats overlay.
+	 * @param {*} evalStringOrObject The expression to evaluate and
+	 * display the result of in the stats overlay, or an object that
+	 * contains a "value" property.
 	 * @returns {Integer} The index of the new watch expression you
 	 * just added to the watch array.
 	 */
-	watch: function (evalString) {
+	watch: function (evalStringOrObject) {
 		this._watch = this._watch || [];
-		this._watch.push(evalString);
+		this._watch.push(evalStringOrObject);
 
 		return this._watch.length - 1;
 	},
@@ -876,6 +877,7 @@ var IgeEngine = IgeEntity.extend({
 			i,
 			watchCount,
 			watchItem,
+			itemName,
 			res,
 			html = '';
 
@@ -889,12 +891,18 @@ var IgeEngine = IgeEntity.extend({
 						for (i = 0; i < watchCount; i++) {
 							watchItem = self._watch[i];
 
-							try {
-								eval('res = ' + watchItem);
-							} catch (err) {
-								res = '<span style="color:#ff0000;">' + err + '</span>';
+							if (typeof(watchItem) === 'string') {
+								itemName = watchItem;
+								try {
+									eval('res = ' + watchItem);
+								} catch (err) {
+									res = '<span style="color:#ff0000;">' + err + '</span>';
+								}
+							} else {
+								itemName = watchItem.name;
+								res = watchItem.value;
 							}
-							html += i + ' (<a href="javascript:ige.unWatch(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">Remove</a>): ' + watchItem + ': <span style="color:#00c6ff">' + res + '</span><br />';
+							html += i + ' (<a href="javascript:ige.unWatch(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">Remove</a>): <span style="color:#7aff80">' + itemName + '</span>: <span style="color:#00c6ff">' + res + '</span><br />';
 						}
 						html += '<br />';
 					}
