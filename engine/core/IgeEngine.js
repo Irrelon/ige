@@ -854,8 +854,7 @@ var IgeEngine = IgeEntity.extend({
 	 * @private
 	 */
 	_secondTick: function () {
-		var self = ige,
-			i, watchCount, watchItem;
+		var self = ige;
 
 		// Store frames per second
 		self._fps = self._frames;
@@ -873,28 +872,40 @@ var IgeEngine = IgeEntity.extend({
 	 * @private
 	 */
 	_statsTick: function () {
-		var self = ige;
+		var self = ige,
+			i,
+			watchCount,
+			watchItem,
+			res,
+			html = '';
 
 		// Check if the stats output is enabled
 		if (self._showStats && !self._statsPauseUpdate) {
 			switch (self._showStats) {
 				case 1:
-					self._statsDiv.innerHTML = '';
-
 					if (self._watch && self._watch.length) {
 						watchCount = self._watch.length;
 
 						for (i = 0; i < watchCount; i++) {
 							watchItem = self._watch[i];
-							self._statsDiv.innerHTML += i + ': ' + watchItem + ': <span style="color:#00c6ff">' + eval(watchItem) + '</span> <a href="javascript:ige.unWatch(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">remove</a><br />';
+
+							try {
+								eval('res = ' + watchItem);
+							} catch (err) {
+								res = '<span style="color:#ff0000;">' + err + '</span>';
+							}
+							html += i + ' (<a href="javascript:ige.unWatch(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">Remove</a>): ' + watchItem + ': <span style="color:#00c6ff">' + res + '</span><br />';
 						}
+						html += '<br />';
 					}
-					self._statsDiv.innerHTML += '<span class="met" title="Frames Per Second">fps: ' + self._fps + '</span> <span class="met" title="Draws Per Second">dps: ' + self._dps + '</span> <span class="met" title="Draws Per Tick">dpt: ' + self._dpt + '</span> <span class="met" title="Time Spent Processing Tick">tps: ' + self._tickTime + 'ms</span>';
+					html += '<span class="met" title="Frames Per Second">fps: ' + self._fps + '</span> <span class="met" title="Draws Per Second">dps: ' + self._dps + '</span> <span class="met" title="Draws Per Tick">dpt: ' + self._dpt + '</span> <span class="met" title="Time Spent Processing Tick">tps: ' + self._tickTime + 'ms</span>';
 
 					if (self.network) {
 						// Add the network latency too
-						self._statsDiv.innerHTML += ' <span class="met" title="Network Latency (Time From Server to This Client)">lat: ' + self.network._latency + 'ms</span>';
+						html += ' <span class="met" title="Network Latency (Time From Server to This Client)">lat: ' + self.network._latency + 'ms</span>';
 					}
+
+					self._statsDiv.innerHTML = html;
 					break;
 			}
 		}
