@@ -53,24 +53,8 @@ var IgeEntity = IgeObject.extend([
 	 * @return {*}
 	 */
 	mousePos: function () {
-		var parentMousePos;
-
-		// Get the parent mouse position
-		if (this._parent) {
-			if (this._parent.mousePos) {
-				parentMousePos = this._parent.mousePos();
-
-				// Transform the parent mouse position to the current local position
-				//return this._localMatrix.transformCoord({x: parentMousePos.x, y: parentMousePos.y});
-				return new IgePoint(parentMousePos.x - this._translate.x, parentMousePos.y - this._translate.y, 0);
-			} else {
-				// This path should not ever be reached! Every parent object
-				// should have a mousePos() method or inherit one!
-				throw('What happened? This code path should never be reached!');
-			}
-		} else {
-			return new IgePoint(0, 0, 0);
-		}
+		var mp = ige._mousePos;
+		return this._transformPoint({x: mp.x, y: mp.y});
 	},
 
 	/**
@@ -358,11 +342,17 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Sets the geometry of the entity to match the width and height
 	 * of the assigned texture.
+	 * @param {Number=} percent The percentage size to resize to.
 	 */
-	dimensionsFromTexture: function () {
+	dimensionsFromTexture: function (percent) {
 		if (this._texture) {
-			this.width(this._texture._sizeX);
-			this.height(this._texture._sizeY);
+			if (percent === undefined) {
+				this.width(this._texture._sizeX);
+				this.height(this._texture._sizeY);
+			} else {
+				this.width(Math.floor(this._texture._sizeX / 100 * percent));
+				this.height(Math.floor(this._texture._sizeY / 100 * percent));
+			}
 		}
 
 		return this;
@@ -837,7 +827,7 @@ var IgeEntity = IgeObject.extend([
 			// Apply any local transforms
 			tempMat.multiply(this._localMatrix);
 			// Now transform the point
-			tempMat.transformCoord(igePoint);
+			tempMat.getInverse().transformCoord(igePoint);
 		} else {
 			this._localMatrix.transformCoord(igePoint);
 		}
