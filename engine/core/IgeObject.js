@@ -740,17 +740,13 @@ var IgeObject = IgeEventingClass.extend({
 	 * @private
 	 */
 	_processBehaviours: function (ctx) {
-		if (ige._frameAlternator !== this._behaviourFA) {
-			var arr = this._behaviours,
-				arrCount;
+		var arr = this._behaviours,
+			arrCount;
 
-			if (arr) {
-				arrCount = arr.length;
-				while (arrCount--) {
-					arr[arrCount].method.apply(this, arguments);
-				}
-
-				this._behaviourFA = ige._frameAlternator;
+		if (arr) {
+			arrCount = arr.length;
+			while (arrCount--) {
+				arr[arrCount].method.apply(this, arguments);
 			}
 		}
 	},
