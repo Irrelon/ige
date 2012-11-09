@@ -388,11 +388,22 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Converts an array of points from local space to this entity's
-	 * world space using it's world transform matrix.
-	 * @param points
+	 * world space using it's world transform matrix. This will alter
+	 * the points passed in the array directly.
+	 * @param {Array} points
 	 */
 	localToWorld: function (points) {
 		this._worldMatrix.transform(points);
+	},
+
+	/**
+	 * Converts a point from local space to this entity's
+	 * world space using it's world transform matrix. This will alter
+	 * the point's data directly.
+	 * @param {IgePoint} points
+	 */
+	localToWorldPoint: function (point) {
+		this._worldMatrix.transform([point]);
 	},
 
 	/**
