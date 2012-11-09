@@ -188,16 +188,27 @@ var IgeEngine = IgeEntity.extend({
 	 * Gets / sets the stats output mode that is in use. Set to 1 to
 	 * display default stats output at the lower-left of the HTML page.
 	 * @param {Number=} val
+	 * @param {Number=} interval The number of milliseconds between stats
+	 * updates.
 	 */
-	showStats: function (val) {
+	showStats: function (val, interval) {
 		if (val !== undefined) {
 			switch (val) {
 				case 0:
+					clearInterval(this._statsTimer);
 					this._removeStatsDiv();
 					break;
 
 				case 1:
 					this._createStatsDiv();
+					if (interval !== undefined) {
+						this._statsInterval = interval;
+					} else {
+						if (this._statsInterval === undefined) {
+							this._statsInterval = 16;
+						}
+					}
+					this._statsTimer = setInterval(this._statsTick, this._statsInterval);
 					break;
 			}
 
@@ -813,12 +824,23 @@ var IgeEngine = IgeEntity.extend({
 		ige._resized = true;
 	},
 
+	watch: function (evalString) {
+		this._watch = this._watch || [];
+		this._watch.push(evalString);
+	},
+
+	unWatch: function (index) {
+		this._watch = this._watch || [];
+		this._watch.splice(index, 1);
+	},
+
 	/**
 	 * Is called every second and does things like calculate the current FPS.
 	 * @private
 	 */
 	_secondTick: function () {
-		var self = ige;
+		var self = ige,
+			i, watchCount, watchItem;
 
 		// Store frames per second
 		self._fps = self._frames;
@@ -829,12 +851,26 @@ var IgeEngine = IgeEntity.extend({
 		// Zero out counters
 		self._frames = 0;
 		self._drawCount = 0;
+	},
+
+	_statsTick: function () {
+		var self = ige;
 
 		// Check if the stats output is enabled
-		if (self._showStats) {
+		if (self._showStats && !self._statsPauseUpdate) {
 			switch (self._showStats) {
 				case 1:
-					self._statsDiv.innerHTML = '<span class="met" title="Frames Per Second">fps: ' + self._fps + '</span> <span class="met" title="Draws Per Second">dps: ' + self._dps + '</span> <span class="met" title="Draws Per Tick">dpt: ' + self._dpt + '</span> <span class="met" title="Time Spent Processing Tick">tps: ' + self._tickTime + 'ms</span>';
+					self._statsDiv.innerHTML = '';
+
+					if (self._watch && self._watch.length) {
+						watchCount = self._watch.length;
+
+						for (i = 0; i < watchCount; i++) {
+							watchItem = self._watch[i];
+							self._statsDiv.innerHTML += i + ': ' + watchItem + ': <span style="color:#00c6ff">' + eval(watchItem) + '</span> <a href="javascript:ige.unWatch(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">remove</a><br />';
+						}
+					}
+					self._statsDiv.innerHTML += '<span class="met" title="Frames Per Second">fps: ' + self._fps + '</span> <span class="met" title="Draws Per Second">dps: ' + self._dps + '</span> <span class="met" title="Draws Per Tick">dpt: ' + self._dpt + '</span> <span class="met" title="Time Spent Processing Tick">tps: ' + self._tickTime + 'ms</span>';
 
 					if (self.network) {
 						// Add the network latency too
