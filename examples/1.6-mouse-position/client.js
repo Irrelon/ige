@@ -26,6 +26,14 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
+					ige.viewportDepth(true);
+
+					// Create a custom watch object
+					self.customWatchObj = {
+						name: 'Custom 1',
+						value: 0
+					};
+
 					// Create the scene
 					self.scene1 = new IgeScene2d()
 						.id('scene1');
@@ -38,6 +46,22 @@ var Client = IgeClass.extend({
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
+						.drawMouse(true)
+						.mount(ige);
+
+					self.vp2 = new IgeViewport()
+						.id('vp2')
+						.depth(2)
+						.autoSize(false)
+						.width(300)
+						.height(150)
+						.right(10)
+						.bottom(10)
+						.borderWidth(1)
+						.borderColor('#ffffff')
+						.scene(self.scene1)
+						.drawBounds(true)
+						.drawMouse(true)
 						.mount(ige);
 
 					self.vp1.camera.translateTo(100, 20, 0);
@@ -57,7 +81,7 @@ var Client = IgeClass.extend({
 					// Create a second rotator entity and mount
 					// it to the first one at 0, 50 relative to the
 					// parent
-					self.obj[1] = new Rotator()
+					self.obj[1] = new IgeEntity()
 						.id('fairy2')
 						.depth(1)
 						.width(50)
@@ -66,6 +90,10 @@ var Client = IgeClass.extend({
 						.translateTo(0, 50, 0)
 						.rotateTo(0, 0, Math.radians(90))
 						.mouseMove(function () {
+							// Set the custom watch object's value
+							// to the ID of the current viewport
+							self.customWatchObj.value = ige._currentViewport.id();
+
 							// Get the mouse position relative to the center
 							// of this entity
 							var mp = this.mousePos();
@@ -96,10 +124,13 @@ var Client = IgeClass.extend({
 					ige.watch("ige.mousePos().y");
 
 					ige.watch("ige._currentViewport.mousePos().x");
-					ige.watch("ige._currentViewport2.mousePos().y");
+					ige.watch("ige._currentViewport.mousePos().y");
 
 					ige.watch("ige.$('fairy2').mousePos().x");
 					ige.watch("ige.$('fairy2').mousePos().y");
+
+					// Now add a custom object to the watch list
+					ige.watch(self.customWatchObj);
 				}
 			});
 		});
