@@ -6,8 +6,10 @@ var Rotator = IgeEntity.extend({
 	 * @param ctx The canvas context to render to.
 	 */
 	tick: function (ctx) {
-		// Rotate this entity by 0.1 degrees.
-		this.rotateBy(0, 0, (0.1 * ige.tickDelta) * Math.PI / 180);
+		if (this.newFrame()) {
+			// Rotate this entity by 0.1 degrees.
+			this.rotateBy(0, 0, Math.radians(0.1 * ige.tickDelta));
+		}
 
 		// Call the IgeEntity (super-class) tick() method
 		this._super(ctx);
