@@ -704,6 +704,10 @@ var IgeEntity = IgeObject.extend([
 		return this._mouseEventsActive;
 	},
 
+	newFrame: function () {
+		return ige._frameAlternator !== this._frameAlternatorCurrent;
+	},
+
 	/**
 	 * Processes the actions required each render frame.
 	 * @param {HTMLCanvasContext} ctx
@@ -719,15 +723,17 @@ var IgeEntity = IgeObject.extend([
 			// The entity should be removed because it has died
 			this.destroy();
 		} else {
-			// Remove the stream data cache
-			delete this._streamDataCache;
+			if (this.newFrame()) {
+				// Remove the stream data cache
+				delete this._streamDataCache;
 
-			// Process any behaviours assigned to the entity
-			this._processBehaviours(ctx);
+				// Process any behaviours assigned to the entity
+				this._processBehaviours(ctx);
 
-			if (this._timeStream.length) {
-				// Process any interpolation
-				this._processInterpolate(ige.tickStart - ige.network.stream._renderLatency);
+				if (this._timeStream.length) {
+					// Process any interpolation
+					this._processInterpolate(ige.tickStart - ige.network.stream._renderLatency);
+				}
 			}
 
 			if (this._inView && (!this._parent || (this._parent._inView))) {
@@ -735,7 +741,7 @@ var IgeEntity = IgeObject.extend([
 				var mp, aabb, mouseX, mouseY,
 					self = this;
 
-				if (this._mouseEventsActive) {
+				if (this._mouseEventsActive && ige._currentViewport) {
 					mp = ige._currentViewport._mousePos;
 
 					if (mp) {
@@ -749,7 +755,9 @@ var IgeEntity = IgeObject.extend([
 							ige.input.queueEvent(this, this._mouseInAabb);
 						} else {
 							if (ige.input.mouseMove) {
-								// There is a mouse move event
+								// There is a mouse move event but we are not inside the entity
+								// so fire a mouse out event (_handleMouseOut will check if the
+								// mouse WAS inside before firing an out event).
 								self._handleMouseOut(ige.input.mouseMove);
 							}
 						}
@@ -773,8 +781,16 @@ var IgeEntity = IgeObject.extend([
 			// Process children
 			this._super(ctx);
 
-			// Update all the old values to current values
-			this._oldTranslate = this._translate.clone();
+			if (this.newFrame()) {
+				// Update all the old values to current values
+				this._oldTranslate = this._translate.clone();
+			}
+
+			// Update this object's current frame alternator value
+			// which allows us to determine if we are still on the
+			// same frame if any tick-based methods are called again
+			// during this tick frame
+			this._frameAlternatorCurrent = ige._frameAlternator;
 		}
 	},
 
