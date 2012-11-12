@@ -120,17 +120,18 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					// Add some watch variables
-					ige.watch("ige.mousePos().x");
-					ige.watch("ige.mousePos().y");
+					ige.watchStart("ige.mousePos().x");
+					ige.watchStart("ige.mousePos().y");
 
-					ige.watch("ige._currentViewport.mousePos().x");
-					ige.watch("ige._currentViewport.mousePos().y");
+					ige.watchStart("ige._currentViewport._id");
+					ige.watchStart("ige.$('vp1').mousePos().x");
+					ige.watchStart("ige.$('vp1').mousePos().y");
 
-					ige.watch("ige.$('fairy2').mousePos().x");
-					ige.watch("ige.$('fairy2').mousePos().y");
+					ige.watchStart("ige.$('fairy2').mousePos().x");
+					ige.watchStart("ige.$('fairy2').mousePos().y");
 
 					// Now add a custom object to the watch list
-					ige.watch(self.customWatchObj);
+					ige.watchStart(self.customWatchObj);
 				}
 			});
 		});
