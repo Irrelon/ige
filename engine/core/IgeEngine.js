@@ -833,7 +833,7 @@ var IgeEngine = IgeEntity.extend({
 	 * @returns {Integer} The index of the new watch expression you
 	 * just added to the watch array.
 	 */
-	watch: function (evalStringOrObject) {
+	watchStart: function (evalStringOrObject) {
 		this._watch = this._watch || [];
 		this._watch.push(evalStringOrObject);
 
@@ -845,9 +845,26 @@ var IgeEngine = IgeEntity.extend({
 	 * @param {Number} index The index of the watch expression to
 	 * remove from the watch array.
 	 */
-	unWatch: function (index) {
+	watchStop: function (index) {
 		this._watch = this._watch || [];
 		this._watch.splice(index, 1);
+	},
+
+	traceSet: function (obj, propName) {
+		var currentVal = obj[propName];
+
+		Object.defineProperty(obj, propName, {
+			get: function () {
+				return currentVal;
+			},
+			set: function (val) {
+				currentVal = val;
+			}
+		});
+	},
+
+	traceSetOff: function (object, propertyName) {
+		Object.defineProperty(object, propertyName, {set: this.prototype[propertyName]});
 	},
 
 	/**
@@ -902,7 +919,7 @@ var IgeEngine = IgeEntity.extend({
 								itemName = watchItem.name;
 								res = watchItem.value;
 							}
-							html += i + ' (<a href="javascript:ige.unWatch(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">Remove</a>): <span style="color:#7aff80">' + itemName + '</span>: <span style="color:#00c6ff">' + res + '</span><br />';
+							html += i + ' (<a href="javascript:ige.watchStop(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">Remove</a>): <span style="color:#7aff80">' + itemName + '</span>: <span style="color:#00c6ff">' + res + '</span><br />';
 						}
 						html += '<br />';
 					}
