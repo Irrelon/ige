@@ -70,8 +70,8 @@ var IgeStreamComponent = IgeEventingClass.extend({
 	 */
 	sendInterval: function (ms) {
 		if (ms !== undefined) {
-			this.log('Setting delta stream interval to ' + ms + 'ms');
-			this._streamInterval = ms;
+			this.log('Setting delta stream interval to ' + (ms / ige._timeScale) + 'ms');
+			this._streamInterval = ms / ige._timeScale;
 			return this._entity;
 		}
 
@@ -126,7 +126,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 			arr = this._queuedData,
 			arrIndex,
 			network = this._entity,
-			item, currentTime = new Date().getTime(),
+			item, currentTime = ige._currentTime,
 			clientSentTimeData = {};
 
 		// Send the stream data
