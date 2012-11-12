@@ -149,7 +149,7 @@ var IgeSocketIoServer = {
 				});
 
 				socket.on('disconnect', function (data) {
-					self._onClientDisconnect(data, socket.id);
+					self._onClientDisconnect(data, socket);
 				});
 
 				// Send an init message to the client
