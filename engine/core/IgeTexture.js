@@ -161,6 +161,14 @@ var IgeTexture = IgeEventingClass.extend({
 					self.sizeX(image.width);
 					self.sizeY(image.height);
 
+					if (image.width % 2) {
+						this.log('This texture\'s width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning');
+					}
+
+					if (image.height % 2) {
+						this.log('This texture\'s height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning');
+					}
+
 					self._cells[1] = [0, 0, self._sizeX, self._sizeY];
 
 					self._loaded = true;
