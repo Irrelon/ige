@@ -57,7 +57,7 @@ var IgeMouseZoomComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_mouseDown: function (event) {
-		if (this._enabled) {
+		if (this._enabled && event.igeViewport.id() === this._entity.id()) {
 			// Record the mouse down position - zoom starting
 			var curMousePos = ige._mousePos;
 			this._zoomStartMouse = {
