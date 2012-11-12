@@ -85,11 +85,15 @@ var IgeCamera = IgeEntity.extend({
 	 * @param {Number=} smoothing Determines how quickly the camera
 	 * will track the target, the higher the number, the slower the
 	 * tracking will be.
+	 * @param {Boolean=} rounding Sets if the smoothing system is
+	 * allowed to use floating point values or not. If enabled then
+	 * it will not use floating point values.
 	 * @return {*}
 	 */
-	trackTranslate: function (entity, smoothing) {
+	trackTranslate: function (entity, smoothing, rounding) {
 		if (entity !== undefined) {
 			this.log('Camera on viewport ' + this._entity.id() + ' is now tracking translation target ' + entity.id());
+			this._trackTranslateRounding = rounding;
 			this._trackTranslateSmoothing = smoothing >= 1  ? smoothing : 0;
 			this._trackTranslateTarget = entity;
 			return this._entity;
@@ -110,6 +114,26 @@ var IgeCamera = IgeEntity.extend({
 		}
 
 		return this._trackTranslateSmoothing;
+	},
+
+	/**
+	 * Gets / sets the translate tracking smoothing rounding
+	 * either enabled or disabled. When enabled the translate
+	 * smoothing value will be rounded so that floating point
+	 * values are not used which can help when smoothing on a
+	 * scene that has texture smoothing disabled so sub-pixel
+	 * rendering doesn't work and objects appear to "snap"
+	 * into position as the smoothing interpolates.
+	 * @param {Boolean=} val
+	 * @return {*}
+	 */
+	trackTranslateRounding: function (val) {
+		if (val !== undefined) {
+			this._trackTranslateRounding = val;
+			return this;
+		}
+
+		return this._trackTranslateRounding;
 	},
 
 	/**
@@ -204,8 +228,13 @@ var IgeCamera = IgeEntity.extend({
 				distX = Math.round(targetX - sourceX);
 				distY = Math.round(targetY - sourceY);
 
-				this._translate.x += distX / this._trackTranslateSmoothing;
-				this._translate.y += distY / this._trackTranslateSmoothing;
+				if (this._trackTranslateRounding) {
+					this._translate.x += Math.round(distX / this._trackTranslateSmoothing);
+					this._translate.y += Math.round(distY / this._trackTranslateSmoothing);
+				} else {
+					this._translate.x += distX / this._trackTranslateSmoothing;
+					this._translate.y += distY / this._trackTranslateSmoothing;
+				}
 			}
 		}
 
