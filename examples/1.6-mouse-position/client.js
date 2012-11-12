@@ -29,8 +29,8 @@ var Client = IgeClass.extend({
 					ige.viewportDepth(true);
 
 					// Create a custom watch object
-					self.customWatchObj = {
-						name: 'Custom 1',
+					self.customWatchObj1 = {
+						name: 'Mouse Move Viewport ID',
 						value: 0
 					};
 
@@ -43,6 +43,8 @@ var Client = IgeClass.extend({
 					// created above
 					self.vp1 = new IgeViewport()
 						.id('vp1')
+						.addComponent(IgeMousePanComponent)
+						.mousePan.enabled(true)
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
@@ -51,6 +53,8 @@ var Client = IgeClass.extend({
 
 					self.vp2 = new IgeViewport()
 						.id('vp2')
+						.addComponent(IgeMousePanComponent)
+						.mousePan.enabled(true)
 						.depth(2)
 						.autoSize(false)
 						.width(300)
@@ -60,7 +64,7 @@ var Client = IgeClass.extend({
 						.borderWidth(1)
 						.borderColor('#ffffff')
 						.scene(self.scene1)
-						.drawBounds(true)
+						.drawBounds(false)
 						.drawMouse(true)
 						.mount(ige);
 
@@ -81,7 +85,7 @@ var Client = IgeClass.extend({
 					// Create a second rotator entity and mount
 					// it to the first one at 0, 50 relative to the
 					// parent
-					self.obj[1] = new IgeEntity()
+					self.obj[1] = new Rotator()
 						.id('fairy2')
 						.depth(1)
 						.width(50)
@@ -89,14 +93,15 @@ var Client = IgeClass.extend({
 						.texture(gameTexture[0])
 						.translateTo(0, 50, 0)
 						.rotateTo(0, 0, Math.radians(90))
-						.mouseMove(function () {
+						.mouseMove(function (event, eventControl, data) {
 							// Set the custom watch object's value
 							// to the ID of the current viewport
-							self.customWatchObj.value = ige._currentViewport.id();
+							self.customWatchObj1.value = event.igeViewport.id();
 
 							// Get the mouse position relative to the center
-							// of this entity
-							var mp = this.mousePos();
+							// of this entity based on the viewport the event
+							// occurred in
+							var mp = this.mousePosAbsolute(event.igeViewport);
 
 							// Convert the mouse position from the entity's
 							// local co-ordinates to the world co-ordinates
@@ -123,15 +128,14 @@ var Client = IgeClass.extend({
 					ige.watchStart("ige.mousePos().x");
 					ige.watchStart("ige.mousePos().y");
 
-					ige.watchStart("ige._currentViewport._id");
 					ige.watchStart("ige.$('vp1').mousePos().x");
 					ige.watchStart("ige.$('vp1').mousePos().y");
 
-					ige.watchStart("ige.$('fairy2').mousePos().x");
-					ige.watchStart("ige.$('fairy2').mousePos().y");
+					ige.watchStart("ige.$('vp2').mousePos().x");
+					ige.watchStart("ige.$('vp2').mousePos().y");
 
 					// Now add a custom object to the watch list
-					ige.watchStart(self.customWatchObj);
+					ige.watchStart(self.customWatchObj1);
 				}
 			});
 		});
