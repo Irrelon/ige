@@ -490,6 +490,10 @@ var IgeInputComponent = IgeEventingClass.extend({
 					);
 
 					vpUpdated = vp;
+
+					// Record the viewport that this event occurred on in the
+					// event object
+					event.igeViewport = vp;
 					break;
 				}
 			}
@@ -560,9 +564,9 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * @param context
 	 * @param ev
 	 */
-	queueEvent: function (context, ev) {
+	queueEvent: function (context, ev, data) {
 		if (ev !== undefined) {
-			this._eventQueue.push([context, ev]);
+			this._eventQueue.push([context, ev, data]);
 		}
 
 		return this;
@@ -579,7 +583,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 			evc = this._eventControl;
 
 		while (arrCount--) {
-			arr[arrCount][1].apply(arr[arrCount][0], [evc]);
+			arr[arrCount][1].apply(arr[arrCount][0], [evc, arr[arrCount][2]]);
 			if (evc._cancelled) {
 				// The last event queue method stopped propagation so cancel all further
 				// event processing (the last event took control of the input)
