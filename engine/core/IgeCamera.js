@@ -171,8 +171,8 @@ var IgeCamera = IgeEntity.extend({
 			entity.updateTransform();
 
 			// Copy the target's world matrix translate data
-			this._translate.x = entity._worldMatrix.matrix[2];
-			this._translate.y = entity._worldMatrix.matrix[5];
+			this._translate.x = Math.floor(entity._worldMatrix.matrix[2]);
+			this._translate.y = Math.floor(entity._worldMatrix.matrix[5]);
 
 			this.updateTransform();
 		}
