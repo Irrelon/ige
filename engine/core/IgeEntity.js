@@ -1337,7 +1337,7 @@ var IgeEntity = IgeObject.extend([
 		// closest to the render time and assign the
 		// previous and next data points
 		while (timeStream[i]) {
-			if (timeStream[i][0] >= renderTime) {
+			if (timeStream[i][0] > renderTime) {
 				// We have previous and next data points from the
 				// time stream so store them
 				previousData = timeStream[i - 1];
@@ -1356,7 +1356,7 @@ var IgeEntity = IgeObject.extend([
 					previousData = timeStream[timeStream.length - 2];
 					nextData = timeStream[timeStream.length - 1];
 					timeStream.shift();
-					this.emit('entityInterpolationLag');
+					this.emit('interpolationLag');
 				}
 			}
 		} else {
@@ -1366,12 +1366,38 @@ var IgeEntity = IgeObject.extend([
 
 		// If we have data to use
 		if (nextData && previousData) {
+			/*previousData = [
+				previousData[0],
+				[
+					this._translate.x,
+					this._translate.y,
+					this._translate.z,
+
+					this._scale.x,
+					this._scale.y,
+					this._scale.z,
+
+					this._rotate.x,
+					this._rotate.y,
+					this._rotate.z
+				]
+			];*/
+
+			// Store the data so outside systems can access them
+			this._timeStreamPreviousData = previousData;
+			this._timeStreamNextData = nextData;
+
 			// Calculate the delta times
 			dataDelta = nextData[0] - previousData[0];
 			offsetDelta = renderTime - previousData[0];
 
+			this._timeStreamDataDelta = Math.floor(dataDelta);
+			this._timeStreamOffsetDelta = Math.floor(offsetDelta);
+
 			// Calculate the current time between the two data points
 			currentTime = offsetDelta / dataDelta;
+
+			this._timeStreamCurrentInterpolateTime = currentTime;
 
 			// Clamp the current time from 0 to 1
 			if (currentTime < 0) { currentTime = 0.0; } else if (currentTime > 1) { currentTime = 1.0; }
