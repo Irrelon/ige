@@ -88,11 +88,11 @@ var IgeCellSheet = IgeTexture.extend({
 
 				// Check if the cell width and height are non-floating-point
 				if (cellWidth !== parseInt(cellWidth, 10)) {
-					this.log('Cell width is a floating-point number! (Image Width ' + imgWidth + ' / Number of Columns ' + columns + ' = ' + cellWidth + ')', 'warning');
+					this.log('Cell width is a floating-point number! (Image Width ' + imgWidth + ' / Number of Columns ' + columns + ' = ' + cellWidth + ') in file: ' + this._url, 'warning');
 				}
 
 				if (cellHeight !== parseInt(cellHeight, 10)) {
-					this.log('Cell height is a floating-point number! (Image Height ' + imgHeight + ' / Number of Rows ' + rows + ' = ' + cellHeight, 'warning');
+					this.log('Cell height is a floating-point number! (Image Height ' + imgHeight + ' / Number of Rows ' + rows + ' = ' + cellHeight + ')  in file: ' + this._url, 'warning');
 				}
 
 				// Check if we need to calculate individual cell data
