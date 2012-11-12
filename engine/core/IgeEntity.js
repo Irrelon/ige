@@ -257,7 +257,7 @@ var IgeEntity = IgeObject.extend([
 			return this;
 		}
 
-		return this.deathTime() - new Date().getTime();
+		return this.deathTime() - ige._currentTime;
 	},
 
 	/**
