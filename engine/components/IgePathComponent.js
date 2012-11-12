@@ -207,7 +207,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	pause: function () {
 		this._active = false;
 		this._paused = true;
-		this._pauseTime = new Date().getTime();
+		this._pauseTime = ige._currentTime;
 		this.emit('paused', this._entity);
 		return this._entity;
 	},

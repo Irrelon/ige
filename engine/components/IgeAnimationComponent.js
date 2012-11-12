@@ -99,7 +99,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 			if (anim) {
 				anim.currentDelta = 0;
 				anim.currentLoop = 0;
-				anim.startTime = new Date().getTime();
+				anim.startTime = ige._currentTime;
 
 				this._anim = anim;
 				this._animId = animId;
