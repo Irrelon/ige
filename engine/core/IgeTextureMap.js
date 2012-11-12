@@ -332,7 +332,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			if (!this._renderCenter || this._renderCenter.x !== x || this._renderCenter.y !== y) {
 				// Co-ordinates are different from previous so
 				// update them and set the cache as dirty
-				this._renderCenter = new IgePoint(x, y, 0);
+				this._renderCenter = new IgePoint(Math.floor(x), Math.floor(y), 0);
 				this._cacheDirty = true;
 			}
 			return this;
