@@ -201,8 +201,8 @@ var IgeCamera = IgeEntity.extend({
 				sourceX = this._translate.x;
 				sourceY = this._translate.y;
 
-				distX = targetX - sourceX;
-				distY = targetY - sourceY;
+				distX = Math.round(targetX - sourceX);
+				distY = Math.round(targetY - sourceY);
 
 				this._translate.x += distX / this._trackTranslateSmoothing;
 				this._translate.y += distY / this._trackTranslateSmoothing;
