@@ -219,7 +219,7 @@ var IgeNetIoServer = {
 				});
 
 				socket.on('disconnect', function (data) {
-					self._onClientDisconnect.apply(self, [data, socket.id]);
+					self._onClientDisconnect.apply(self, [data, socket]);
 				});
 
 				// Send an init message to the client
@@ -303,14 +303,14 @@ var IgeNetIoServer = {
 	/**
 	 * Called when a client disconnects from the server.
 	 * @param {Object} data Any data sent along with the disconnect.
-	 * @param {String} clientId The client socket id.
+	 * @param {Object} socket The client socket object.
 	 * @private
 	 */
-	_onClientDisconnect: function (data, clientId) {
-		this.log('Client disconnected with id ' + clientId);
-		this.emit('disconnect', clientId);
+	_onClientDisconnect: function (data, socket) {
+		this.log('Client disconnected with id ' + socket.id);
+		this.emit('disconnect', socket.id);
 
-		delete this._socketById[clientId];
+		delete this._socketById[socket.id];
 	}
 };
 
