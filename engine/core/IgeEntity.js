@@ -253,7 +253,7 @@ var IgeEntity = IgeObject.extend([
 	 */
 	lifeSpan: function (milliseconds) {
 		if (milliseconds !== undefined) {
-			this.deathTime(new Date().getTime() + milliseconds);
+			this.deathTime(ige._currentTime + milliseconds);
 			return this;
 		}
 
