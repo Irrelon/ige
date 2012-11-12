@@ -150,7 +150,7 @@ var IgePathComponent = IgeEventingClass.extend({
 
 				// If we weren't passed a start time, assign it the current time
 				if (startTime === undefined) {
-					startTime = new Date().getTime();
+					startTime = ige._currentTime;
 				}
 
 				if (this._paused) {
@@ -265,7 +265,7 @@ var IgePathComponent = IgeEventingClass.extend({
 				tempCurrentPathIndex,
 				tempPathText;
 
-			self._currentTime += ige.tickDelta;
+			self._currentTime = ige._currentTime;//ige.tickDelta;
 
 			if (targetCell) {
 				targetPoint = {x: targetCell.x * this._parent._tileWidth, y: targetCell.y * this._parent._tileHeight};

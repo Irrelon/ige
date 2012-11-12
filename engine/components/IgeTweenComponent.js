@@ -24,10 +24,7 @@ var IgeTweenComponent = IgeClass.extend({
 
 	/**
 	 * Start tweening particular properties for the object.
-	 * @param obj
-	 * @param propertyNameAndValue
-	 * @param durationMs
-	 * @param options
+	 * @param tween
 	 * @return {Number} The index of the added tween or -1 on error.
 	 */
 	start: function (tween) {
@@ -39,7 +36,7 @@ var IgeTweenComponent = IgeClass.extend({
 
 		if (targetObj) {
 			// Check / fill some option defaults
-			if (tween._startTime === undefined) { tween._startTime = new Date().getTime(); }
+			if (tween._startTime === undefined) { tween._startTime = ige._currentTime; }
 			if (tween._durationMs === undefined) { tween._durationMs = 0; }
 
 			// Calculate the end time
