@@ -230,6 +230,7 @@ var IgeEngine = IgeEntity.extend({
 			if (!document.getElementById('igeStats')) {
 				// Create the stats div
 				var div = document.createElement('div');
+				div.className = 'igeStatsFloater';
 				div.style.fontFamily = 'Verdana, Tahoma';
 				div.style.fontSize = "12px";
 				div.style.position = 'absolute';
