@@ -1400,7 +1400,7 @@ var IgeEntity = IgeObject.extend([
 			this._timeStreamCurrentInterpolateTime = currentTime;
 
 			// Clamp the current time from 0 to 1
-			if (currentTime < 0) { currentTime = 0.0; } else if (currentTime > 1) { currentTime = 1.0; }
+			//if (currentTime < 0) { currentTime = 0.0; } else if (currentTime > 1) { currentTime = 1.0; }
 
 			// Set variables up to store the previous and next data
 			previousTransform = previousData[1];
