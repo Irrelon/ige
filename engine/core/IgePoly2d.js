@@ -63,6 +63,26 @@ var IgePoly2d = IgeClass.extend({
 	},
 
 	/**
+	 * Returns a copy of this IgePoly2d object that is
+	 * it's own version, separate from the original.
+	 * @return {IgePoly2d}
+	 */
+	clone: function () {
+		var newPoly = new IgePoly2d(),
+			arr = this._poly,
+			arrCount = arr.length,
+			i;
+
+		for (i = 0; i < arrCount; i++) {
+			newPoly.addPoint(arr[i].x, arr[i].y);
+		}
+
+		newPoly.scale(this._scale.x, this._scale.y);
+
+		return newPoly;
+	},
+
+	/**
 	 * Draws the polygon bounding lines to the passed context.
 	 * @param {HTMLCanvasContext} ctx
 	 */
