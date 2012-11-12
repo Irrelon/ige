@@ -2,6 +2,7 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 
 	init: function () {
+		//ige.timeScale(0.1);
 		ige.showStats(1);
 
 		// Load our textures
@@ -42,11 +43,21 @@ var Client = IgeClass.extend({
 							// is created because of the incoming stream data
 							.stream.on('entityCreated', function (entity) {
 								self.log('Stream entity created with ID: ' + entity.id());
+
 							});
+
+						self.mainScene = new IgeScene2d()
+							.id('mainScene');
 
 						// Create the scene
 						self.scene1 = new IgeScene2d()
-							.id('scene1');
+							.id('scene1')
+							.mount(self.mainScene);
+
+						self.uiScene = new IgeScene2d()
+							.id('uiScene')
+							.ignoreCamera(true)
+							.mount(self.mainScene);
 
 						// Create the main viewport and set the scene
 						// it will "look" at as the new scene1 we just
@@ -54,8 +65,8 @@ var Client = IgeClass.extend({
 						self.vp1 = new IgeViewport()
 							.id('vp1')
 							.autoSize(true)
-							.scene(self.scene1)
-							.drawBounds(true)
+							.scene(self.mainScene)
+							.drawBounds(false)
 							.mount(ige);
 
 						// Define our player controls
@@ -76,6 +87,40 @@ var Client = IgeClass.extend({
 						// data messages.
 						ige.network.debugMax(10);
 						ige.network.debug(true);
+
+						// Create an IgeUiTimeStream entity that will allow us to "visualise" the
+						// timestream data being interpolated by the player entity
+						self.tsVis = new IgeUiTimeStream()
+							.height(140)
+							.width(400)
+							.top(0)
+							.center(0)
+							.mount(self.uiScene);
+
+						self.custom1 = {
+							name: 'Delta',
+							value: 0
+						};
+
+						self.custom2 = {
+							name: 'Data Delta',
+							value: 0
+						};
+
+						self.custom3 = {
+							name: 'Offset Delta',
+							value: 0
+						};
+
+						self.custom4 = {
+							name: 'Interpolate Time',
+							value: 0
+						};
+
+						ige.watchStart(self.custom1);
+						ige.watchStart(self.custom2);
+						ige.watchStart(self.custom3);
+						ige.watchStart(self.custom4);
 					});
 				}
 			});
