@@ -858,6 +858,7 @@ var IgeEngine = IgeEntity.extend({
 				return currentVal;
 			},
 			set: function (val) {
+				debugger;
 				currentVal = val;
 			}
 		});
