@@ -72,6 +72,7 @@ var IgeEngine = IgeEntity.extend({
 		this._mousePos = new IgePoint(0, 0, 0);
 		this._currentViewport = null; // Set in IgeViewport.js tick(), holds the current rendering viewport
 		this._currentCamera = null; // Set in IgeViewport.js tick(), holds the current rendering viewport's camera
+		this._currentTime = 0; // The current engine time
 		this._globalSmoothing = false; // Determines the default smoothing setting for new textures
 		this._register = {
 			'ige': this
@@ -79,6 +80,7 @@ var IgeEngine = IgeEntity.extend({
 		this._postTick = []; // An array of methods that are called upon tick completion
 		this._tsit = {}; // An object holding time-spent-in-tick (total time spent in this object's tick method)
 		this._tslt = {}; // An object holding time-spent-last-tick (time spent in this object's tick method last tick)
+		this._timeScale = 1; // The default time scaling factor to speed up or slow down engine time
 
 		// Set the context to a dummy context to start
 		// with in case we are in "headless" mode and
@@ -937,17 +939,38 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 
+	timeScale: function (val) {
+		if (val !== undefined) {
+			this._timeScale = val;
+			return this;
+		}
+
+		return this._timeScale;
+	},
+
+	incrementTime: function (val, lastVal) {
+		if (!lastVal) { lastVal = val; }
+		this._currentTime += ((val - lastVal) * this._timeScale);
+		return this._currentTime;
+	},
+
 	/**
 	 * Called each frame to traverse and render the scenegraph.
 	 */
 	tick: function (timeStamp, ctx) {
-		//console.time('IgeEngine.tick');
 		var st,
 			et,
 			self = ige,
 			ptArr = self._postTick,
 			ptCount = ptArr.length,
 			ptIndex;
+
+		// Scale the timestamp according to the current
+		// engine's time scaling factor
+		self.incrementTime(timeStamp, self._timeScaleLastTimestamp);
+
+		self._timeScaleLastTimestamp = timeStamp;
+		timeStamp = Math.floor(self._currentTime);
 
 		if (igeDebug.timing) {
 			st = new Date().getTime();
@@ -1007,7 +1030,6 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		self._resized = false;
-		//console.timeEnd('IgeEngine.tick');
 
 		if (igeDebug.timing) {
 			et = new Date().getTime();
