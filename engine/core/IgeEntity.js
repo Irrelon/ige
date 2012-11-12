@@ -50,14 +50,27 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Returns the position of the mouse relative to this entity.
-	 * @return {*}
+	 * @return {IgePoint}
 	 */
-	mousePos: function () {
-		if (ige._currentViewport) {
-			var mp = ige._currentViewport._mousePos;
-			return this._transformPoint({x: mp.x, y: mp.y});
+	mousePos: function (viewport) {
+		viewport = viewport || ige._currentViewport;
+		if (viewport) {
+			var mp = viewport._mousePos.clone();
+			mp.x += viewport._translate.x;
+			mp.y += viewport._translate.y;
+			return this._transformPoint(mp);
 		} else {
-			return {x: 0, y: 0};
+			return new IgePoint(0, 0, 0);
+		}
+	},
+
+	mousePosAbsolute: function (viewport) {
+		viewport = viewport || ige._currentViewport;
+		if (viewport) {
+			var mp = viewport._mousePos.clone();
+			return this._transformPoint(mp);
+		} else {
+			return new IgePoint(0, 0, 0);
 		}
 	},
 
@@ -411,15 +424,16 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Calculates and returns the current axis-aligned bounding box.
+	 * Calculates and returns the current axis-aligned bounding box in
+	 * world co-ordinates.
 	 * @return {Object} An object with the properties: x, y, width, height
 	 */
-	aabb: function (recalc) {
-		if (recalc || !this._aabb) {
+	aabb: function (recalculate) {
+		if (recalculate || !this._aabb) {
 			var poly = new IgePoly2d(),
 				minX, minY,
 				maxX, maxY,
-				box = new IgeRect(0, 0, 0, 0),
+				box,
 				anc = this._anchor,
 				geom = this.geometry,
 				geomX = geom.x,
@@ -482,10 +496,7 @@ var IgeEntity = IgeObject.extend([
 					poly._poly[3].y
 				);
 
-				box.x = minX;
-				box.y = minY;
-				box.width = maxX - minX;
-				box.height = maxY - minY;
+				box = new IgeRect(minX, minY, maxX - minX, maxY - minY);
 			}
 
 			// Handle isometric entities
@@ -537,18 +548,22 @@ var IgeEntity = IgeObject.extend([
 					poly._poly[3].y
 				);
 
-				box.x = minX;
-				box.y = minY;
-				box.width = maxX - minX;
-				box.height = maxY - minY;
+				box = new IgeRect(Math.floor(minX), Math.floor(minY), Math.floor(maxX - minX), Math.floor(maxY - minY));
 			}
 
 			this._aabb = box;
-
-			return box;
-		} else {
-			return this._aabb;
 		}
+
+		return this._aabb;
+	},
+
+	localAabb: function (recalculate) {
+		if (!this._localAabb || recalculate) {
+			var aabb = this.aabb();
+			this._localAabb = new IgeRect(-Math.floor(aabb.width / 2), -Math.floor(aabb.height / 2), Math.floor(aabb.width), Math.floor(aabb.height));
+		}
+
+		return this._localAabb;
 	},
 
 	_swapVars: function (x, y) {
@@ -742,15 +757,16 @@ var IgeEntity = IgeObject.extend([
 					self = this;
 
 				if (this._mouseEventsActive && ige._currentViewport) {
-					mp = ige._currentViewport._mousePos;
+					mp = this.mousePos();
 
 					if (mp) {
-						aabb = this.aabb();
+						aabb = this.localAabb(); //this.aabb();
 						mouseX = mp.x;
 						mouseY = mp.y;
 
 						// Check if the current mouse position is inside this aabb
-						if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
+						//if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
+						if (aabb.xyInside(mouseX, mouseY)) {
 							// Point is inside the aabb
 							ige.input.queueEvent(this, this._mouseInAabb);
 						} else {
@@ -871,20 +887,20 @@ var IgeEntity = IgeObject.extend([
 	 * @param evc
 	 * @private
 	 */
-	_mouseInAabb: function (evc) {
+	_mouseInAabb: function (evc, data) {
 		if (ige.input.mouseMove) {
 			// There is a mouse move event
-			this._handleMouseIn(ige.input.mouseMove, evc);
+			this._handleMouseIn(ige.input.mouseMove, evc, data);
 		}
 
 		if (ige.input.mouseDown) {
 			// There is a mouse down event
-			this._handleMouseDown(ige.input.mouseDown, evc);
+			this._handleMouseDown(ige.input.mouseDown, evc, data);
 		}
 
 		if (ige.input.mouseUp) {
 			// There is a mouse up event
-			this._handleMouseUp(ige.input.mouseUp, evc);
+			this._handleMouseUp(ige.input.mouseUp, evc, data);
 		}
 	},
 
