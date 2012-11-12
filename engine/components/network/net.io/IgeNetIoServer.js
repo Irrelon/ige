@@ -225,7 +225,9 @@ var IgeNetIoServer = {
 				// Send an init message to the client
 				socket.send({
 					cmd: 'init',
-					ncmds: this._networkCommandsLookup
+					ncmds: this._networkCommandsLookup,
+					ts: ige._timeScale,
+					ct: ige._currentTime
 				});
 
 				// Send a clock sync command
