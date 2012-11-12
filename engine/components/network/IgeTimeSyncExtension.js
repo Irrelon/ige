@@ -43,7 +43,7 @@ var IgeTimeSyncExtension = {
 
 	_sendTimeSync: function (data, clientId) {
 		if (!data) {
-			data = new Date().getTime();
+			data = ige._currentTime;
 		}
 
 		// Send the time sync command
@@ -60,17 +60,25 @@ var IgeTimeSyncExtension = {
 	/* CEXCLUDE */
 
 	_onTimeSync: function (data, clientId) {
-		var localTime = new Date().getTime(),
+		var localTime = Math.floor(ige._currentTime),
 			sendTime,
-			roundTrip;
+			roundTrip,
+			direction;
 
 		if (!ige.isServer) {
-			localTime = new Date().getTime();
 			sendTime = parseInt(data, 10);
 
 			this._latency = localTime - sendTime;
 
-			//this.log('Time sync, server->client transit time: ' + (localTime - sendTime) + 'ms, send timestamp: ' + sendTime + ', local timestamp: ' + localTime);
+			/*if (localTime < sendTime) {
+				direction = 'behind';
+			} else if (localTime > sendTime) {
+				direction = 'in front of';
+			} else {
+				direction = 'same as';
+			}
+
+			this.log('Time sync, client clock ' + (localTime - sendTime) + 'ms ' + direction + ' server, send timestamp: ' + sendTime + ', local timestamp: ' + localTime);*/
 
 			// Send a response with out current clock time to the server
 			this._sendTimeSync([data, localTime]);
@@ -80,7 +88,15 @@ var IgeTimeSyncExtension = {
 			sendTime = parseInt(data[1], 10);
 			roundTrip = (localTime - parseInt(data[0], 10));
 
-			//this.log('Time sync, client->server transit time: ' + (localTime - sendTime) + 'ms, roundtrip: ' + roundTrip + 'ms, send timestamp: ' + parseInt(data[0], 10) + ', local timestamp: ' + localTime);
+			/*if (localTime < sendTime) {
+				direction = 'behind';
+			} else if (localTime > sendTime) {
+				direction = 'in front of';
+			} else {
+				direction = 'same as';
+			}
+
+			this.log('Time sync, server clock ' + (localTime - sendTime) + 'ms ' + direction + ' client, roundtrip: ' + roundTrip + 'ms, send timestamp: ' + parseInt(data[0], 10) + ', local timestamp: ' + localTime);*/
 
 			this._timeSyncLog[clientId] = localTime - sendTime;
 
