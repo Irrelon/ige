@@ -12,16 +12,17 @@ var Client = IgeClass.extend({
 		this.verdana = new IgeFontSheet('../assets/textures/fonts/verdana_10px.png', 20);
 
 		// Load the fairy texture a few times and store it in the gameTexture array
-		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
-		gameTexture[1] = new IgeTexture('../assets/textures/sprites/fairy.png');
-		gameTexture[2] = new IgeTexture('../assets/textures/sprites/fairy.png');
-		gameTexture[3] = new IgeTexture('../assets/textures/sprites/fairy.png');
-		gameTexture[4] = new IgeTexture('../assets/textures/sprites/fairy.png');
-		gameTexture[5] = new IgeTexture('../assets/textures/sprites/fairy.png');
-		gameTexture[6] = new IgeTexture('../assets/textures/sprites/fairy.png');
-		gameTexture[7] = new IgeTexture('../assets/textures/sprites/fairy.png');
-		gameTexture[8] = new IgeTexture('../assets/textures/sprites/fairy.png');
-		gameTexture[9] = new IgeTexture('../assets/textures/sprites/fairy.png');
+		gameTexture[0] = new IgeTexture('../assets/textures/sprites/lenna.png');
+		gameTexture[1] = new IgeTexture('../assets/textures/sprites/lenna.png');
+		gameTexture[2] = new IgeTexture('../assets/textures/sprites/lenna.png');
+		gameTexture[3] = new IgeTexture('../assets/textures/sprites/lenna.png');
+		gameTexture[4] = new IgeTexture('../assets/textures/sprites/lenna.png');
+		gameTexture[5] = new IgeTexture('../assets/textures/sprites/lenna.png');
+		gameTexture[6] = new IgeTexture('../assets/textures/sprites/lenna.png');
+		gameTexture[7] = new IgeTexture('../assets/textures/sprites/lenna.png');
+		gameTexture[8] = new IgeTexture('../assets/textures/sprites/lenna.png');
+		gameTexture[9] = new IgeTexture('../assets/textures/sprites/lenna.png');
+		gameTexture[10] = new IgeTexture('../assets/textures/sprites/lenna.png');
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -241,6 +242,25 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.mount(self.scene1);
 
+					self.obj[9] = new Rotator()
+						.id('fairy10')
+						.depth(0)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[10])
+						.translateTo(300, 150, 0)
+						.mount(self.scene1);
+
+					new IgeFontEntity()
+						.id('title10')
+						.depth(1)
+						.texture(self.verdana)
+						.textAlignX(1)
+						.text('Sobel')
+						.translateTo(300, 80, 0)
+						.drawBounds(false)
+						.mount(self.scene1);
+
 					// Apply a greyscale filter to JUST the first fairy texture
 					gameTexture[1].applyFilter(IgeFilters.greyScale);
 
@@ -260,13 +280,16 @@ var Client = IgeClass.extend({
 					gameTexture[6].applyFilter(IgeFilters.emboss);
 
 					// Apply an edge detect filter to the seventh fairy texture
-					gameTexture[7].applyFilter(IgeFilters.edgeDetect);
+					gameTexture[7].applyFilter(IgeFilters.edgeDetect, {value: 80});
 
 					// Apply an edge enhance filter to the eighth fairy texture
 					gameTexture[8].applyFilter(IgeFilters.edgeEnhance);
 
 					// Apply a colour overlay filter to the ninth fairy texture
-					gameTexture[9].applyFilter(IgeFilters.colorOverlay, {color: 'rgba(255, 0, 0, 0.5)'});
+					gameTexture[9].applyFilter(IgeFilters.colorOverlay, {color: 'rgba(0, 0, 255, 0.5)'});
+
+					// Apply a sobel filter to the tenth fairy texture
+					gameTexture[10].applyFilter(IgeFilters.sobel);
 				}
 			});
 		});
