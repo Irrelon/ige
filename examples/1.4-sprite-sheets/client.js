@@ -110,6 +110,17 @@ var Client = IgeClass.extend({
 						.animation.define('test', ['panel', 'table', null], 1, -1, true)
 						.animation.select('test')
 						.mount(self.scene1);
+
+					// Create a new separate texture from the cell of one of the sprite sheets!
+					self.gameTexture[2] = self.gameTexture[1].textureFromCell('panel');
+
+					// Create another entity using the new texture
+					self.obj[3] = new IgeEntity()
+						.id('sprite4')
+						.texture(self.gameTexture[2])
+						.dimensionsFromTexture()
+						.translateTo(-100, 100, 0)
+						.mount(self.scene1);
 				}
 			});
 		});

@@ -296,118 +296,85 @@ var IgeTexture = IgeEventingClass.extend({
 		}
 	},
 
-
+	/**
+	 * Sets the image element that the IgeTexture will use when
+	 * rendering. This is a special method not designed to be called
+	 * directly by any game code and is used specifically when
+	 * assigning an existing canvas element to an IgeTexture.
+	 * @param {Image} imageElement The canvas / image to use as
+	 * the image data for the IgeTexture.
+	 * @private
+	 */
 	_setImage: function (imageElement) {
 		var image,
 			self = this;
 
 		if (!ige.isServer) {
-			// Increment the texture load count
-			ige.textureLoadStart(imageUrl, this);
+			// Create the image object
+			image = this.image = this._originalImage = imageElement;
+			image._igeTextures = image._igeTextures || [];
 
-			if (!ige._textureImageStore[imageUrl]) {
-				// Create the image object
-				image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new Image();
-				image._igeTextures = image._igeTextures || [];
+			// Mark the image as loaded
+			image._loaded = true;
 
-				// Add this texture to the textures that are using this image
-				image._igeTextures.push(this);
+			this._mode = 0;
 
-				image.onload = function () {
-					// Mark the image as loaded
-					this._loaded = true;
+			this.sizeX(image.width);
+			this.sizeY(image.height);
 
-					// Log success
-					ige.log('Texture image "' + imageUrl + '" loaded successfully');
-
-					// Loop textures that are using this image
-					var arr = this._igeTextures,
-						arrCount = arr.length, i,
-						item;
-
-					for (i = 0; i < arrCount; i++) {
-						item = arr[i];
-
-						item._mode = 0;
-
-						item.sizeX(image.width);
-						item.sizeY(image.height);
-
-						item._cells[1] = [0, 0, item._sizeX, item._sizeY];
-
-						item._loaded = true;
-						item.emit('loaded');
-
-						// Inform the engine that this image has loaded
-						ige.textureLoadEnd(imageUrl, self);
-					}
-				};
-
-				// Start the image loading by setting the source url
-				image.src = imageUrl;
-			} else {
-				// Grab the cached image object
-				image = this.image = this._originalImage = ige._textureImageStore[imageUrl];
-
-				// Add this texture to the textures that are using this image
-				image._igeTextures.push(this);
-
-				if (image._loaded) {
-					// The cached image object is already loaded so
-					// fire off the relevant events
-					self._mode = 0;
-
-					self.sizeX(image.width);
-					self.sizeY(image.height);
-
-					if (image.width % 2) {
-						this.log('This texture\'s width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning');
-					}
-
-					if (image.height % 2) {
-						this.log('This texture\'s height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning');
-					}
-
-					self._cells[1] = [0, 0, self._sizeX, self._sizeY];
-
-					self._loaded = true;
-
-					// Set a timeout here so that when this event is emitted,
-					// the code creating the texture is given a chance to
-					// set a listener first, otherwise this will be emitted
-					// but nothing will have time to register a listener!
-					setTimeout(function () {
-						self.emit('loaded');
-
-						// Inform the engine that this image has loaded
-						ige.textureLoadEnd(imageUrl, self);
-					}, 1);
-				}
-			}
+			this._cells[1] = [0, 0, this._sizeX, this._sizeY];
 		}
-		/* CEXCLUDE */
-		if (ige.isServer) {
-			ige.textureLoadStart(imageUrl, this);
+	},
 
-			// Load the asset and get it's details
-			this.imageMagic.info(imageUrl, function(err, data){
-				if (!err) {
-					// Assign the data to the image for later use
-					self.log('Texture image "' + imageUrl + '" loaded successfully');
-					self.sizeX(data.width);
-					self.sizeY(data.height);
+	/**
+	 * Creates a new texture from a cell in the existing texture
+	 * and returns the new texture.
+	 * @param {Number} indexOrId The cell index or id to use.
+	 * @return {*}
+	 */
+	textureFromCell: function (indexOrId) {
+		var index;
 
-					self._cells[1] = [0, 0, self._sizeX, self._sizeY];
-
-					self._loaded = true;
-					self.emit('loaded');
-					ige.textureLoadEnd(imageUrl, self);
-				} else {
-					console.log('Cannot execute imagemagick "identify". Is the image file valid and is imagemagick installed?', 'error', [__dirname + '/' + imageUrl, err]);
-				}
-			});
+		if (typeof(indexOrId) === 'string') {
+			index = this.cellIdToIndex(indexOrId);
+		} else {
+			index = indexOrId;
 		}
-		/* CEXCLUDE */
+
+		if (this._cells[index]) {
+			// Create a new IgeTexture, then draw the existing cell
+			// to it's internal canvas
+			var cell = this._cells[index],
+				tex = new IgeTexture(),
+				canvas = document.createElement('canvas'),
+				ctx = canvas.getContext('2d');
+
+			canvas.width = cell[2];
+			canvas.height = cell[3];
+
+			// Draw the cell to the canvas
+			ctx.drawImage(
+				this._originalImage,
+				cell[0],
+				cell[1],
+				cell[2],
+				cell[3],
+				0,
+				0,
+				cell[2],
+				cell[3]
+			);
+
+			// Set the new texture's image to the canvas
+			tex._setImage(canvas);
+
+			// Returnt the new texture
+			return tex;
+		} else {
+			this.log('Unable to create new texture from passed cell index because the cell does not exist!', 'warning');
+		}
+
+		return false;
 	},
 
 	/**
@@ -622,16 +589,6 @@ var IgeTexture = IgeEventingClass.extend({
 		}
 
 		return this;
-	},
-
-	textureFromCell: function (index) {
-		if (this._cells[index]) {
-			// Create a new IgeTexture, then draw the existing cell
-			// to it's internal canvas
-
-		} else {
-			this.log('Unable to create new texture from passed cell index because the cell does not exist!', 'warning');
-		}
 	},
 
 	/**
