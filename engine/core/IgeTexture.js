@@ -89,15 +89,13 @@ var IgeTexture = IgeEventingClass.extend({
 		return this._url;
 	},
 
-	/** _loadImage - Loads an image into an img tag and sets an onload event to capture
-	when the image has finished loading. {
-		category:"method",
-		arguments: [{
-			type:"string",
-			name:"imageUrl",
-			desc:"The image url used to load the image data.",
-		}],
-	} **/
+	/**
+	 * Loads an image into an img tag and sets an onload event
+	 * to capture when the image has finished loading.
+	 * @param {String} imageUrl The image url used to load the
+	 * image data.
+	 * @private
+	 */
 	_loadImage: function (imageUrl) {
 		var image,
 			self = this;
@@ -211,15 +209,13 @@ var IgeTexture = IgeEventingClass.extend({
 		/* CEXCLUDE */
 	},
 
-	/** _loadScript - Loads a render script into a script tag and sets an
-	onload event to capture	when the script has finished loading. {
-		category:"method",
-		arguments: [{
-			type:"string",
-			name:"scriptUrl",
-			desc:"The script url used to load the script data.",
-		}],
-	} **/
+	/**
+	 * Loads a render script into a script tag and sets an onload
+	 * event to capture when the script has finished loading.
+	 * @param {String} scriptUrl The script url used to load the
+	 * script data.
+	 * @private
+	 */
 	_loadScript: function (scriptUrl) {
 		var textures = ige.textures,
 			rs_sandboxContext,
@@ -298,6 +294,120 @@ var IgeTexture = IgeEventingClass.extend({
 				}
 			}));
 		}
+	},
+
+
+	_setImage: function (imageElement) {
+		var image,
+			self = this;
+
+		if (!ige.isServer) {
+			// Increment the texture load count
+			ige.textureLoadStart(imageUrl, this);
+
+			if (!ige._textureImageStore[imageUrl]) {
+				// Create the image object
+				image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new Image();
+				image._igeTextures = image._igeTextures || [];
+
+				// Add this texture to the textures that are using this image
+				image._igeTextures.push(this);
+
+				image.onload = function () {
+					// Mark the image as loaded
+					this._loaded = true;
+
+					// Log success
+					ige.log('Texture image "' + imageUrl + '" loaded successfully');
+
+					// Loop textures that are using this image
+					var arr = this._igeTextures,
+						arrCount = arr.length, i,
+						item;
+
+					for (i = 0; i < arrCount; i++) {
+						item = arr[i];
+
+						item._mode = 0;
+
+						item.sizeX(image.width);
+						item.sizeY(image.height);
+
+						item._cells[1] = [0, 0, item._sizeX, item._sizeY];
+
+						item._loaded = true;
+						item.emit('loaded');
+
+						// Inform the engine that this image has loaded
+						ige.textureLoadEnd(imageUrl, self);
+					}
+				};
+
+				// Start the image loading by setting the source url
+				image.src = imageUrl;
+			} else {
+				// Grab the cached image object
+				image = this.image = this._originalImage = ige._textureImageStore[imageUrl];
+
+				// Add this texture to the textures that are using this image
+				image._igeTextures.push(this);
+
+				if (image._loaded) {
+					// The cached image object is already loaded so
+					// fire off the relevant events
+					self._mode = 0;
+
+					self.sizeX(image.width);
+					self.sizeY(image.height);
+
+					if (image.width % 2) {
+						this.log('This texture\'s width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning');
+					}
+
+					if (image.height % 2) {
+						this.log('This texture\'s height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning');
+					}
+
+					self._cells[1] = [0, 0, self._sizeX, self._sizeY];
+
+					self._loaded = true;
+
+					// Set a timeout here so that when this event is emitted,
+					// the code creating the texture is given a chance to
+					// set a listener first, otherwise this will be emitted
+					// but nothing will have time to register a listener!
+					setTimeout(function () {
+						self.emit('loaded');
+
+						// Inform the engine that this image has loaded
+						ige.textureLoadEnd(imageUrl, self);
+					}, 1);
+				}
+			}
+		}
+		/* CEXCLUDE */
+		if (ige.isServer) {
+			ige.textureLoadStart(imageUrl, this);
+
+			// Load the asset and get it's details
+			this.imageMagic.info(imageUrl, function(err, data){
+				if (!err) {
+					// Assign the data to the image for later use
+					self.log('Texture image "' + imageUrl + '" loaded successfully');
+					self.sizeX(data.width);
+					self.sizeY(data.height);
+
+					self._cells[1] = [0, 0, self._sizeX, self._sizeY];
+
+					self._loaded = true;
+					self.emit('loaded');
+					ige.textureLoadEnd(imageUrl, self);
+				} else {
+					console.log('Cannot execute imagemagick "identify". Is the image file valid and is imagemagick installed?', 'error', [__dirname + '/' + imageUrl, err]);
+				}
+			});
+		}
+		/* CEXCLUDE */
 	},
 
 	/**
@@ -512,6 +622,16 @@ var IgeTexture = IgeEventingClass.extend({
 		}
 
 		return this;
+	},
+
+	textureFromCell: function (index) {
+		if (this._cells[index]) {
+			// Create a new IgeTexture, then draw the existing cell
+			// to it's internal canvas
+
+		} else {
+			this.log('Unable to create new texture from passed cell index because the cell does not exist!', 'warning');
+		}
 	},
 
 	/**
