@@ -212,8 +212,12 @@ var IgePathFinder = IgeEventingClass.extend({
 				pathPoint = pathPoint.link;
 			}
 
+			// Reverse the final path so it is from
+			// start to finish
+			finalPath = finalPath.reverse();
+
 			this.emit('pathFound', finalPath);
-			return finalPath.reverse();
+			return finalPath;
 		}
 	},
 
