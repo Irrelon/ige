@@ -246,9 +246,15 @@ var IgeEngine = IgeEntity.extend({
 				div.innerHTML = 'Please wait...';
 
 				// Add div to body
-				window.addEventListener('load', function () {
+				if (document && document.readyState === 'complete') {
+					// The page has already loaded so add div now
 					document.body.appendChild(div);
-				});
+				} else {
+					// The page is not loaded yet so add a listener
+					window.addEventListener('load', function () {
+						document.body.appendChild(div);
+					});
+				}
 
 				window.addEventListener('unload', function () {});
 
