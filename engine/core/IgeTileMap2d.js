@@ -20,6 +20,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		this._tileHeight = tileHeight !== undefined ? tileHeight : 40;
 
 		this._drawGrid = 0;
+        this._gridColor = '#ffffff';
 	},
 
 	/**
@@ -35,6 +36,20 @@ var IgeTileMap2d = IgeEntity.extend({
 		}
 
 		return this._drawGrid;
+	},
+
+	/**
+	 * Gets / sets the color of the grid overlay. It can accepts a string
+	 * @param val
+	 * @return {*}
+	 */
+	gridColor: function (val)  {
+		if (val !== undefined) {
+			this._gridColor = val;
+			return this;
+		}
+
+		return this._gridColor;
 	},
 
 	/**
@@ -473,7 +488,7 @@ var IgeTileMap2d = IgeEntity.extend({
 
 		// Check if we need to draw the tile grid (usually for debug)
 		if (this._drawGrid > 0) {
-			ctx.strokeStyle = '#ffffff';
+			ctx.strokeStyle = this._gridColor;
 			gridCount = this._drawGrid;
 			x = -(tileWidth / 2);
 			y = -(tileHeight / 2);
