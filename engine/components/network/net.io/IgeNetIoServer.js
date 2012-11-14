@@ -256,7 +256,7 @@ var IgeNetIoServer = {
 		}
 
 		if (this._networkCommands[data.cmd]) {
-			this._networkCommands[data.cmd](data.id, data.data, clientId);
+			this._networkCommands[data.cmd](data.data, clientId, data.id);
 		}
 
 		this.emit(data.cmd, [data.id, data.data, clientId]);
