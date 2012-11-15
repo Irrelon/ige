@@ -271,6 +271,8 @@ var IgeClass = (function () {
 		return IgeClass;
 	};
 
+	IgeClass.prototype._classId = 'IgeClass';
+
 	return IgeClass;
 }());
 
