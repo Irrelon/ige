@@ -21,7 +21,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 
 	/**
 	 * The behaviour method executed each tick.
-	 * @param ctx
+	 * @param {CanvasRenderingContext2D} ctx
 	 * @private
 	 */
 	_behaviour: function (ctx) {
@@ -143,7 +143,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 
 	/**
 	 * Handles the animation processing each render tick.
-	 * @param {CanvasContext2d} ctx The rendering context to use when doing draw operations.
+	 * @param {CanvasRenderingContext2D} ctx The rendering context to use when doing draw operations.
 	 */
 	tick: function (ctx) {
 		if (this._anim) {

@@ -66,6 +66,16 @@ body .page {
     margin: 0;
 }
 
+.argType {
+    font-weight: normal;
+    padding: 2px;
+}
+
+.argName {
+    color: #06F;
+    font-style: italic;
+}
+
 .argList li {
     margin-bottom: 2px;
     line-height: 24px;

@@ -10,6 +10,11 @@ var IgeClass = (function () {
 		// TODO: Add parameters to all the doc comments below.
 		/**
 		 * Provides logging capabilities to all IgeClass instances.
+		 * @param {String} text The text to log.
+		 * @param {String} type The type of log to output, can be 'log',
+		 * 'info', 'warning' or 'error'.
+		 * @param {Object=} obj An optional object that will be output
+		 * before the log text is output.
 		 */
 		log = function (text, type, obj) {
 			var indent = '',
@@ -49,7 +54,7 @@ var IgeClass = (function () {
 		},
 
 		/**
-		 * Gets the class id. Primarily used to help identify
+		 * Returns the class id. Primarily used to help identify
 		 * what class an instance was instantiated with and is also
 		 * output during the ige.scenegraph() method's console logging
 		 * to show what class an object belongs to.
@@ -64,6 +69,9 @@ var IgeClass = (function () {
 		 * The new component instance is then added to "this" via
 		 * a property name that is defined in the component class as
 		 * "componentId".
+		 * @param {IgeClass} component The class definition of the component.
+		 * @param {Object=} options An options parameter to pass to the component
+		 * on init.
 		 */
 		addComponent = function (component, options) {
 			var newComponent = new component(this, options);
@@ -77,6 +85,7 @@ var IgeClass = (function () {
 
 		/**
 		 * Removes a component by it's id.
+		 * @param {String} componentId The id of the component to remove.
 		 */
 		removeComponent = function (componentId) {
 			// If the component has a destroy method, call it
@@ -100,6 +109,8 @@ var IgeClass = (function () {
 		 * only properties and methods that don't already exists in
 		 * "this" will be copied. If overwrite is true, they will be
 		 * copied regardless.
+		 * @param {Function} classObj
+		 * @param {Boolean} overwrite
 		 */
 		implement = function (classObj, overwrite) {
 			var i, obj = classObj.prototype || classObj;

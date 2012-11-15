@@ -187,7 +187,7 @@ var IgeCamera = IgeEntity.extend({
 	/**
 	 * Translates the camera to the center of the specified entity so
 	 * that the camera is "looking at" the entity.
-	 * @param entity
+	 * @param {IgeEntity} entity
 	 * @return {*}
 	 */
 	lookAt: function (entity) {
@@ -206,7 +206,7 @@ var IgeCamera = IgeEntity.extend({
 
 	/**
 	 * Process operations during the engine tick.
-	 * @param ctx
+	 * @param {CanvasRenderingContext2D} ctx
 	 */
 	tick: function (ctx) {
 		// Check if we are tracking the translate value of a target

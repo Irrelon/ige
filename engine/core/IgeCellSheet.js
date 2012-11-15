@@ -62,10 +62,11 @@ var IgeCellSheet = IgeTexture.extend({
 		return this._cellRows;
 	},
 
-	/** _applyCells - Sets the x, y, width and height of each sheet cell and stores
-	that information in the this._cells array. {
-		category:"method",
-	} **/
+	/**
+	 * Sets the x, y, width and height of each sheet cell and stores
+	 * that information in the this._cells array.
+	 * @private
+	 */
 	_applyCells: function () {
 		var imgWidth, imgHeight,
 			rows, columns,
