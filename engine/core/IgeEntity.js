@@ -36,6 +36,7 @@ var IgeEntity = IgeObject.extend([
         this._worldMatrix = new IgeMatrix2d(this);
 
 		this._inView = true;
+		this._hidden = false;
 
 		/* CEXCLUDE */
 		if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') {
@@ -46,6 +47,22 @@ var IgeEntity = IgeObject.extend([
 
 		// Set the default stream sections as just the transform data
 		this.streamSections(['transform']);
+	},
+
+	/**
+	 * Sets the entity as visible and able to be interacted with.
+	 */
+	show: function () {
+		this._hidden = false;
+		return this;
+	},
+
+	/**
+	 * Sets the entity as hidden and cannot be interacted with.
+	 */
+	hide: function () {
+		this._hidden = true;
+		return this;
 	},
 
 	/**
@@ -751,7 +768,7 @@ var IgeEntity = IgeObject.extend([
 				}
 			}
 
-			if (this._inView && (!this._parent || (this._parent._inView))) {
+			if (!this._hidden && this._inView && (!this._parent || (this._parent._inView))) {
 				// Process any mouse events we need to do
 				var mp, aabb, mouseX, mouseY,
 					self = this;
