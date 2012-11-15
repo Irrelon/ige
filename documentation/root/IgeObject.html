@@ -5,14 +5,14 @@
 <body>
 	<div class="page">
 <h2>IgeObject <span>CLASS</span></h2>
-<p>Declared in <a href="../../engine/core/IgeObject.js">{file}</a></p>
+<p>Declared in <a href="../../engine/core/IgeObject.js">IgeObject.js</a></p>
 <div class="itemBox">
 	<div class="header">Description</div>
 	<div class="content">Creates a new object.</div>
 </div>
 <div class="itemBox">
 	<div class="header">Extends</div>
-	<div class="content"><a href="{extends}.html">IgeEventingClass</a></div>
+	<div class="content"><a href="IgeEventingClass.html">IgeEventingClass</a></div>
 </div>
 <h2>Methods</h2>
 
@@ -71,7 +71,7 @@
 <div class="methodDesc">Gets / sets the current render depth of the object (higher depths are drawn over lower depths).</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
 <div class="methodReturnDesc"></div><h3>destroyChildren</h3>
-<div class="methodDesc">Loops through all child objects of this object and destroys them by calling each child's destroy() method.</div>
+<div class="methodDesc">Loops through all child objects of this object and destroys them by calling each child's destroy() method then deletes the reference to the object's internale _children array.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc"></div><h3>dirtyArray</h3>
 <div class="methodDesc">Gets / sets the dirty flag for this object. If you specify a val parameter the parent of this object will also have it's dirty method called with the same parameter. This means that dirty flags bubble down the child / parent chain.</div>

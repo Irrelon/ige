@@ -5,18 +5,24 @@
 <body>
 	<div class="page">
 <h2>IgeTextureMap <span>CLASS</span></h2>
-<p>Declared in <a href="../../engine/core/IgeTextureMap.js">{file}</a></p>
+<p>Declared in <a href="../../engine/core/IgeTextureMap.js">IgeTextureMap.js</a></p>
 <div class="itemBox">
 	<div class="header">Description</div>
 	<div class="content">Texture maps provide a way to display textures across a tile map.</div>
 </div>
 <div class="itemBox">
 	<div class="header">Extends</div>
-	<div class="content"><a href="{extends}.html">IgeTileMap2d</a></div>
+	<div class="content"><a href="IgeTileMap2d.html">IgeTileMap2d</a></div>
 </div>
 <h2>Methods</h2>
 
-<h3>addTextureArray</h3>
+<h3>cachingArray</h3>
+<div class="methodDesc">Gets / sets the caching mode.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>cacheForceFrame</h3>
+<div class="methodDesc">Forces a cache redraw on the next tick.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div><h3>addTextureArray</h3>
 <div class="methodDesc">Adds a texture to the texture map's internal texture list so that it can be referenced via an index so that the texture map's data will be something like [[textureId, textureCell]] or a real world example: [[0, 1], [1, 1]].</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">texture</span> </li></ul></div>
 <div class="methodReturnDesc"></div><h3>paintTileArray</h3>
@@ -37,9 +43,30 @@
 <div class="methodReturnDesc"></div><h3>tileTextureCellArray</h3>
 <div class="methodDesc">Gets / sets the specified tile's texture cell.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">cell</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>renderAreaArray</h3>
+<div class="methodDesc">Gets / sets the area of the texture map that will be rendered during the render tick. When initially set you must provide a width and height but afterwards you can just pass and x, y to effectively "move" the rendering rectangle around the map.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">width</span> </li><li>{<span class="argType"></span>}<span class="argName">height</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>renderCenterArray</h3>
+<div class="methodDesc">Gets / sets the center point that the render area will be drawn around.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>trackTranslateArray</h3>
+<div class="methodDesc">Get / sets the entity that will be used to determine the center point of the map's render area. This allows the render area to become dynamic based on this entity's position.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">entity</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>unTrackTranslate</h3>
+<div class="methodDesc">Stops tracking the current tracking target's translation.</div>
+<div class="methodArgs"></div>
 <div class="methodReturnDesc"></div><h3>tickArray</h3>
 <div class="methodDesc">Handles rendering the texture map during engine tick events.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">ctx</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>_renderTileArray</h3>
+<div class="methodDesc">Renders a tile texture based on data from the texture map.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">ctx</span> </li><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">tileData</span> </li><li>{<span class="argType"></span>}<span class="argName">tileEntity</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>_resizeEventArray</h3>
+<div class="methodDesc">Handles screen resize events.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>_resizeCacheCanvas</h3>
+<div class="methodDesc">Resizes the cache canvas elements to the new render area size.</div>
+<div class="methodArgs"></div>
 <div class="methodReturnDesc"></div><h3>_newTileEntity</h3>
 <div class="methodDesc">Creates an entity object that a texture can use to render itself. This is basically a dummy object that has the minimum amount of data in it that a texture requires to render such as geometry, texture cell and rendering position.</div>
 <div class="methodArgs"></div>

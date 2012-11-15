@@ -5,14 +5,14 @@
 <body>
 	<div class="page">
 <h2>IgeEngine <span>CLASS</span></h2>
-<p>Declared in <a href="../../engine/core/IgeEngine.js">{file}</a></p>
+<p>Declared in <a href="../../engine/core/IgeEngine.js">IgeEngine.js</a></p>
 <div class="itemBox">
 	<div class="header">Description</div>
 	<div class="content">The base engine class definition.</div>
 </div>
 <div class="itemBox">
 	<div class="header">Extends</div>
-	<div class="content"><a href="{extends}.html">IgeEntity</a></div>
+	<div class="content"><a href="IgeEntity.html">IgeEntity</a></div>
 </div>
 <h2>Methods</h2>
 
@@ -20,7 +20,7 @@
 <div class="methodDesc">Returns an object from the engine's object register by the object's id. If the item passed is not a string id then the item is returned as is. If no item is passed the engine itself is returned.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">item</span> </li></ul></div>
 <div class="methodReturnDesc"></div><h3>$$Array</h3>
-<div class="methodDesc">Returns an array of all obejects that have been assigned the passed group name.</div>
+<div class="methodDesc">Returns an array of all objects that have been assigned the passed group name.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">groupName</span> </li></ul></div>
 <div class="methodReturnDesc"></div><h3>registerArray</h3>
 <div class="methodDesc">Register an object with the engine object register. The register allows you to access an object by it's id with a call to ige.$(objectId).</div>
@@ -28,6 +28,15 @@
 <div class="methodReturnDesc"></div><h3>setFpsArray</h3>
 <div class="methodDesc">Sets the frame rate at which new engine ticks are fired. Setting this rate will override the default requestAnimFrame() method as defined in IgeBase.js and on the client-side, will stop usage of any available requestAnimationFrame() method and will use a setTimeout()-based version instead.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">fpsRate</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>showStatsArray</h3>
+<div class="methodDesc">Gets / sets the stats output mode that is in use. Set to 1 to display default stats output at the lower-left of the HTML page.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li><li>{<span class="argType">Number</span>}<span class="argName">interval</span> The number of milliseconds between statsupdates.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>_createStatsDiv</h3>
+<div class="methodDesc">Creates the stats output div on the DOM.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div><h3>_removeStatsDiv</h3>
+<div class="methodDesc">Removes the stats output div from the DOM.</div>
+<div class="methodArgs"></div>
 <div class="methodReturnDesc"></div><h3>defineClassArray</h3>
 <div class="methodDesc">Defines a class in the engine's class repository.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> The unique class ID or name.</li><li>{<span class="argType">Object</span>}<span class="argName">obj</span> The class definition.</li></ul></div>
@@ -61,6 +70,9 @@
 <div class="methodReturnDesc"></div><h3>_allTexturesLoaded</h3>
 <div class="methodDesc">Emits the "texturesLoaded" event.</div>
 <div class="methodArgs"></div>
+<div class="methodReturnDesc"></div><h3>globalSmoothingArray</h3>
+<div class="methodDesc">Gets / sets the default smoothing value for all new IgeTexture class instances. If set to true, all newly created textures will have smoothing enabled by default.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
 <div class="methodReturnDesc"></div><h3>canvasReady</h3>
 <div class="methodDesc">Checks to ensure that a canvas has been assigned to the engine or that the engine is in server mode.</div>
 <div class="methodArgs"></div>
@@ -79,9 +91,12 @@
 <div class="methodReturnDesc"></div><h3>autoSizeArray</h3>
 <div class="methodDesc">Gets / sets the _autoSize property. If set to true, the engine will listen for any change in screen size and resize the front-buffer (canvas) element to match the new screen size.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>renderContextArray</h3>
+<div class="methodDesc">Gets / sets the rendering context that will be used when getting the context from canvas elements.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">contextId</span> The context such as '2d'. Defaults to '2d'.</li></ul></div>
 <div class="methodReturnDesc"></div><h3>createFrontBufferArray</h3>
-<div class="methodDesc">Automatically creates a canvas element, appends it to the document.body and sets it's 2d context as the current front-buffer for the engine.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">autoSize</span> </li></ul></div>
+<div class="methodDesc">Creates a front-buffer or "drawing surface" for the renderer.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">autoSize</span> Determines if the canvas will auto-resizewhen the browser window changes dimensions. If true the canvas will automatically fill the window when it is resized.</li><li>{<span class="argType">Boolean</span>}<span class="argName">dontScale</span> If set to true, IGE will ignore devicepixel ratios when setting the width and height of the canvas and will therefore not take into account "retina", high-definition displays or those whose pixel ratio is different from 1 to 1.</li></ul></div>
 <div class="methodReturnDesc"></div><h3>canvasArray</h3>
 <div class="methodDesc">Sets the canvas element that will be used as the front-buffer.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">elem</span> </li><li>{<span class="argType"></span>}<span class="argName">autoSize</span> </li></ul></div>
@@ -106,8 +121,17 @@
 <div class="methodReturnDesc"></div><h3>_resizeEventArray</h3>
 <div class="methodDesc">Handles the screen resize event.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>watchStartArray</h3>
+<div class="methodDesc">Adds a new watch expression to the watch list which will be displayed in the stats overlay during a call to _statsTick().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">evalStringOrObject</span> The expression to evaluate anddisplay the result of in the stats overlay, or an object that contains a "value" property. just added to the watch array.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>watchStopArray</h3>
+<div class="methodDesc">Removes a watch expression by it's array index.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">index</span> The index of the watch expression toremove from the watch array.</li></ul></div>
 <div class="methodReturnDesc"></div><h3>_secondTick</h3>
 <div class="methodDesc">Is called every second and does things like calculate the current FPS.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div><h3>_statsTick</h3>
+<div class="methodDesc">Updates the stats HTML overlay with the latest data.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc"></div><h3>tick</h3>
 <div class="methodDesc">Called each frame to traverse and render the scenegraph.</div>
