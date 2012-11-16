@@ -221,10 +221,10 @@ function parseFile($path) {
 					}
 				}
 
-				/*echo "RETURNDATA <B>" . $param['name'] . "</B> {" . $param['type'] . "}";
+				echo "RETURNDATA <B>" . $param['name'] . "</B> {" . $param['type'] . "}";
 				if ($param['optional']) { echo " (*Optional*)"; }
 				if ($param['desc']) { echo " " . $param['desc']; }
-				echo "<BR>";*/
+				echo "<BR>";
 				$returnData = $param;
 			}
 
