@@ -103,9 +103,9 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Translates the object to the tile co-ordinates passed.
-	 * @param {Number} x
-	 * @param {Number} y
-	 * @param {Number} z
+	 * @param {Number} x The x tile co-ordinate.
+	 * @param {Number} y The y tile co-ordinate.
+	 * @param {Number=} z The z tile co-ordinate.
 	 * @private
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
@@ -131,7 +131,7 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Set the object's width to the number of tile width's specified.
-	 * @param {Number} val
+	 * @param {Number} val Number of tiles.
 	 * @param {Boolean=} lockAspect If true, sets the height according
 	 * to the texture aspect ratio and the new width.
 	 * @private
@@ -163,7 +163,7 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Set the object's height to the number of tile height's specified.
-	 * @param val
+	 * @param {Number} val Number of tiles.
 	 * @param {Boolean=} lockAspect If true, sets the height according
 	 * to the texture aspect ratio and the new height.
 	 * @private
@@ -214,8 +214,8 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Gets / sets the anchor position that this entity's texture
 	 * will be adjusted by.
-	 * @param x
-	 * @param y
+	 * @param {Number=} x The x anchor value.
+	 * @param {Number=} y The y anchor value.
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -229,8 +229,8 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Gets / sets the geometry.x.
-	 * @param {Number=} px
+	 * Gets / sets the geometry x value.
+	 * @param {Number=} px The new x value in pixels.
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -246,8 +246,8 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Gets / sets the geometry.y.
-	 * @param {Number=} px
+	 * Gets / sets the geometry y value.
+	 * @param {Number=} px The new y value in pixels.
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -265,10 +265,10 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Gets / sets the 3d geometry of the entity. The x and y values are
 	 * relative to the center of the entity and the z value is wholly
-	 * positive.
-	 * @param {Number=} x
-	 * @param {Number=} y
-	 * @param {Number=} z
+	 * positive from the "floor".
+	 * @param {Number=} x The new x value in pixels.
+	 * @param {Number=} y The new y value in pixels.
+	 * @param {Number=} z The new z value in pixels.
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -285,7 +285,8 @@ var IgeEntity = IgeObject.extend([
 	 * Gets / sets the life span of the object in milliseconds. The life
 	 * span is how long the object will exist for before being automatically
 	 * destroyed.
-	 * @param {Number=} milliseconds
+	 * @param {Number=} milliseconds The number of milliseconds the entity
+	 * will live for from the current time.
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -303,7 +304,10 @@ var IgeEntity = IgeObject.extend([
 	 * that the entity will be destroyed. The object checks it's own death
 	 * time during each tick and if the current time is greater than the
 	 * death time, the object will be destroyed.
-	 * @param {Number=} val
+	 * @param {Number=} val The death time timestamp. This is a time relative
+	 * to the engine's start time of zero rather than the current time that
+	 * would be retrieved from new Date().getTime(). It is usually easier
+	 * to call lifeSpan() rather than setting the deathTime directly.
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -318,7 +322,7 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Gets / sets the entity opacity from 0.0 to 1.0.
-	 * @param {Number=} val
+	 * @param {Number=} val The opacity value.
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -333,7 +337,7 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Gets / sets the texture to use when rendering the entity.
-	 * @param {IgeTexture=} texture
+	 * @param {IgeTexture=} texture The texture object.
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -350,7 +354,7 @@ var IgeEntity = IgeObject.extend([
 	 * Gets / sets the current texture cell used when rendering the game
 	 * object's texture. If the texture is not cell-based, this value is
 	 * ignored.
-	 * @param {Number=} val
+	 * @param {Number=} val The cell index.
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -368,7 +372,7 @@ var IgeEntity = IgeObject.extend([
 	 * object's texture. If the texture is not cell-based, this value is
 	 * ignored. This differs from cell() in that it accepts a string id
 	 * as the cell
-	 * @param {Number=} val
+	 * @param {Number=} val The cell id.
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -438,7 +442,7 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Gets / sets the highlight mode. True is on false is off.
-	 * @param {Boolean} val
+	 * @param {Boolean} val The highlight mode true or false.
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -455,7 +459,7 @@ var IgeEntity = IgeObject.extend([
 	 * Converts an array of points from local space to this entity's
 	 * world space using it's world transform matrix. This will alter
 	 * the points passed in the array directly.
-	 * @param {Array} points
+	 * @param {Array} points The array of IgePoints to convert.
 	 */
 	localToWorld: function (points) {
 		this._worldMatrix.transform(points);
@@ -465,7 +469,7 @@ var IgeEntity = IgeObject.extend([
 	 * Converts a point from local space to this entity's world space
 	 * using it's world transform matrix. This will alter the point's
 	 * data directly.
-	 * @param {IgePoint} point
+	 * @param {IgePoint} point The IgePoint to convert.
 	 */
 	localToWorldPoint: function (point) {
 		this._worldMatrix.transform([point]);
@@ -628,8 +632,8 @@ var IgeEntity = IgeObject.extend([
 	 * is the y argument and index[1] is the x argument. This method
 	 * is used specifically in the 3d bounds intersection process to
 	 * determine entity depth sorting.
-	 * @param {Number} x
-	 * @param {Number} y
+	 * @param {Number} x The first value.
+	 * @param {Number} y The second value.
 	 * @return {Array} The swapped arguments.
 	 * @private
 	 */
@@ -775,7 +779,7 @@ var IgeEntity = IgeObject.extend([
 	 * to mouse interaction or not. When you set a mouse* event e.g.
 	 * mouseUp, mouseOver etc this flag will automatically be reset
 	 * to true.
-	 * @param {Boolean=} val
+	 * @param {Boolean=} val The flag value true or false.
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -794,11 +798,13 @@ var IgeEntity = IgeObject.extend([
 	 * frame alternator value will be set to match the engine's
 	 * after each call to the entity.tick() method so the return
 	 * value of this method can be used to determine if the tick()
-	 * method has already been run for this entity. This is useful
-	 * if you have multiple viewports which will cause the entity
-	 * tick() method to fire once for each viewport but you only
-	 * want to execute update code such as movement etc on the
-	 * first time the tick() method is called.
+	 * method has already been run for this entity.
+	 *
+	 * This is useful if you have multiple viewports which will
+	 * cause the entity tick() method to fire once for each viewport
+	 * but you only want to execute update code such as movement etc
+	 * on the first time the tick() method is called.
+	 *
 	 * @return {Boolean} If false, the entity's tick method has
 	 * not yet been processed for this tick.
 	 */
@@ -808,7 +814,7 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Processes the actions required each render frame.
-	 * @param {CanvasRenderingContext2D} ctx
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
 	 * @param {Boolean} dontTransform If set to true, the tick method will
 	 * not transform the context based on the entity's matrices. This is useful
 	 * if you have extended the class and want to process down the inheritance
@@ -920,7 +926,8 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Sets the canvas context transform properties to match the the game
 	 * object's current transform values.
-	 * @param {CanvasRenderingContext2D} ctx
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to apply
+	 * the transformation matrix to.
 	 * @private
 	 */
 	_transformContext: function (ctx) {
@@ -945,7 +952,7 @@ var IgeEntity = IgeObject.extend([
 	 * Transforms a point by the entity's parent world matrix and
 	 * it's own local matrix transforming the point to this entity's
 	 * world space.
-	 * @param {IgePoint} point
+	 * @param {IgePoint} point The point to transform.
 	 * @return {IgePoint} The transformed point.
 	 * @private
 	 */
