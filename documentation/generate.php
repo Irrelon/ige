@@ -40,7 +40,19 @@ function recurse ($path) {
 }
 
 function parseTemplate($str, $item, $path, $file) {
-	var_dump($item);
+	// First check for if statements in the template with a regexp
+	preg_match_all("/=if\{(.*?)\}\[([\s\S.]*?)\=if\{\g1\}]/", $str, $ifArray);
+
+	//var_dump($ifArray);
+
+	foreach ($ifArray[0] as $matchKey => $matchString) {
+		echo $ifArray[1][$matchKey] . ' <BR><BR>';
+		if (!$item[$ifArray[1][$matchKey]]) {
+			// Remove the if container code
+			$str = preg_replace("/=if\{" . $ifArray[1][$matchKey] . "\}\[([\s\S.]*?)\=if\{" . $ifArray[1][$matchKey] . "}]/", '', $str);
+		}
+	}
+
 	$argumentsHtml = '';
 	if ($item['params']) {
 		foreach ($item['params'] as $argKey => $argVal) {
