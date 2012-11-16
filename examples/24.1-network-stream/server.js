@@ -46,6 +46,7 @@ var Server = IgeClass.extend({
 							.depth(1)
 							.translateTo(0, 0, 0)
 							.streamMode(1)
+							//.streamSyncInterval(200)
 							.mount(self.scene1);
 
 						// Add a value to the custom property that the
