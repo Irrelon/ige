@@ -51,56 +51,64 @@ function parseFile($path) {
 
 			// Grab the parameter markers
 			reset($descriptionLines);
-			$paramText = '';
+			$itemText = '';
 			$returnText = '';
 			$parametersArray = Array();
 			$privateMethod = false;
 			$constructorMethod = false;
-			// TODO: Handle @return markers as well!
+			$mode = '';
+
 			foreach ($descriptionLines[1] as $descripKey => $descripText) {
 				if (substr($descripText, 0, 1) === '@') {
-					if (substr($descripText, 0, 6) === '@param') {
-						if (trim($paramText)) {
-							// We have an existing parameter's data, store it
-							$parametersArray[] = trim($paramText);
+					// Check if we are already in a mode and if so, store the entry
+					// for it
+					if ($mode == '@param') {
+						$parametersArray[] = $itemText;
+						$itemText = '';
+						$mode = '';
+					}
 
-							// Now clear the text ready for the next parameter
-							$paramText = '';
-						}
-						$paramText .= $descripText;
+					if ($mode == '@return') {
+						$returnText = $itemText;
+						$itemText = '';
+						$mode = '';
+					}
+
+					if (substr($descripText, 0, 6) === '@param') {
+						$mode = '@param';
+						$itemText = trim($descripText);
+					}
+
+					if (substr($descripText, 0, 7) === '@return') {
+						$mode = '@return';
+						$itemText = trim($descripText);
 					}
 
 					if (substr($descripText, 0, 8) === '@private') {
 						$privateMethod = true;
+						$mode = '';
 					}
 
 					if (substr($descripText, 0, 12) === '@constructor') {
 						$constructorMethod = true;
-					}
-
-					if (substr($descripText, 0, 7) === '@return') {
-						if (trim($paramText)) {
-							// We have an existing parameter's data, store it
-							$returnText = trim($descripText);
-
-							// Now clear the text
-							$paramText = '';
-						}
-						//$paramText .= $descripText;
+						$mode = '';
 					}
 				} else {
-					if ($paramText) {
-						$paramText .= $descripText . ' ';
-					}
-
-					if ($returnText) {
-						$returnText .= $descripText . ' ';
+					if ($mode) {
+						if ($itemText) {
+							$itemText .= ' ';
+						}
+						$itemText .= trim($descripText);
 					}
 				}
 			}
 
-			if (trim($paramText)) {
-				$parametersArray[] = trim($paramText);
+			if ($mode == '@param') {
+				$parametersArray[] = $itemText;
+			}
+
+			if ($mode == '@return') {
+				$returnText = $itemText;
 			}
 
 			// Extract type, name and description from parameter line
@@ -190,42 +198,23 @@ function parseFile($path) {
 						$param['optional'] = false;
 					}
 
-					// Extract the parameter name
+					// Extract the description
 					preg_match("/\}\s(.*?)$/", $returnText, $paramLine);
-
-					// Check if more than one word exists in the line
-					if (strstr($paramLine[1], ' ')) {
-						// Split the text by space
-						$textSplit = explode(' ', $paramLine[1]);
-
-						foreach ($textSplit as $paramDescKey => $paramDescVal) {
-							$param['desc'] .= $paramDescVal . ' ';
-						}
-
-						$param['desc'] = trim($param['desc']);
-					}
+					$param['desc'] = trim($paramLine[1]);
 				} else {
-					// Extract the parameter name
-					preg_match("/\s(.*?)$/", $returnText, $paramLine);
-
-					// Check if more than one word exists in the line
-					if (strstr($paramLine[1], ' ')) {
-						// Split the text by space
-						$textSplit = explode(' ', $paramLine[1]);
-
-						foreach ($textSplit as $paramDescKey => $paramDescVal) {
-							$param['desc'] .= $paramDescVal . ' ';
-						}
-
-						$param['desc'] = trim($param['desc']);
-					}
+					// Extract the description
+					preg_match("/\}\s(.*?)$/", $returnText, $paramLine);
+					$param['desc'] = trim($paramLine[1]);
 				}
 
-				echo "RETURNDATA <B>" . $param['name'] . "</B> {" . $param['type'] . "}";
+				/*echo "RETURNSTUFF <B>" . $param['name'] . "</B> {" . $param['type'] . "}";
 				if ($param['optional']) { echo " (*Optional*)"; }
 				if ($param['desc']) { echo " " . $param['desc']; }
-				echo "<BR>";
+				echo "<BR>";*/
 				$returnData = $param;
+				//$returnData['original'] = $returnText;
+			} else {
+				$returnData = null;
 			}
 
 			// Check if the code is a class that is extending another
