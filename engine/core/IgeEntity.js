@@ -1,5 +1,6 @@
 /**
- * Creates a new entity.
+ * Creates an entity and handles the entity's life cycle and
+ * all related entity actions / methods.
  */
 var IgeEntity = IgeObject.extend([
 	{extension: IgeTransformExtension, overwrite: false},
