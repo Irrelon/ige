@@ -52,6 +52,8 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Sets the entity as visible and able to be interacted with.
+	 * @return {*} The object this method was called from to allow
+	 * method chaining.
 	 */
 	show: function () {
 		this._hidden = false;
@@ -60,6 +62,8 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Sets the entity as hidden and cannot be interacted with.
+	 * @return {*} The object this method was called from to allow
+	 * method chaining.
 	 */
 	hide: function () {
 		this._hidden = true;
@@ -67,8 +71,13 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Returns the position of the mouse relative to this entity.
-	 * @return {IgePoint}
+	 * Gets the position of the mouse relative to this entity.
+	 * @param {IgeViewport=} viewport The viewport to use as the
+	 * base from which the mouse position is determined. If no
+	 * viewport is specified then the current viewport the engine
+	 * is rendering to is used instead.
+	 * @return {IgePoint} The mouse point relative to the entity
+	 * center.
 	 */
 	mousePos: function (viewport) {
 		viewport = viewport || ige._currentViewport;
@@ -98,6 +107,8 @@ var IgeEntity = IgeObject.extend([
 	 * @param {Number} y
 	 * @param {Number} z
 	 * @private
+	 * @return {*} The object this method was called from to allow
+	 * method chaining.
 	 */
 	translateToTile: function (x, y, z) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
@@ -124,6 +135,8 @@ var IgeEntity = IgeObject.extend([
 	 * @param {Boolean=} lockAspect If true, sets the height according
 	 * to the texture aspect ratio and the new width.
 	 * @private
+	 * @return {*} The object this method was called from to allow
+	 * method chaining.
 	 */
 	widthByTile: function (val, lockAspect) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
@@ -154,6 +167,8 @@ var IgeEntity = IgeObject.extend([
 	 * @param {Boolean=} lockAspect If true, sets the height according
 	 * to the texture aspect ratio and the new height.
 	 * @private
+	 * @return {*} The object this method was called from to allow
+	 * method chaining.
 	 */
 	heightByTile: function (val, lockAspect) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
@@ -201,7 +216,8 @@ var IgeEntity = IgeObject.extend([
 	 * will be adjusted by.
 	 * @param x
 	 * @param y
-	 * @return {*}
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	anchor: function (x, y) {
 		if (x !== undefined && y !== undefined) {
@@ -215,7 +231,8 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Gets / sets the geometry.x.
 	 * @param {Number=} px
-	 * @return {*}
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	width: function (px) {
 		if (px !== undefined) {
@@ -231,7 +248,8 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Gets / sets the geometry.y.
 	 * @param {Number=} px
-	 * @return {*}
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	height: function (px) {
 		if (px !== undefined) {
@@ -248,10 +266,11 @@ var IgeEntity = IgeObject.extend([
 	 * Gets / sets the 3d geometry of the entity. The x and y values are
 	 * relative to the center of the entity and the z value is wholly
 	 * positive.
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @return {*}
+	 * @param {Number=} x
+	 * @param {Number=} y
+	 * @param {Number=} z
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	size3d: function (x, y, z) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
@@ -267,7 +286,8 @@ var IgeEntity = IgeObject.extend([
 	 * span is how long the object will exist for before being automatically
 	 * destroyed.
 	 * @param {Number=} milliseconds
-	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	lifeSpan: function (milliseconds) {
 		if (milliseconds !== undefined) {
@@ -284,7 +304,8 @@ var IgeEntity = IgeObject.extend([
 	 * time during each tick and if the current time is greater than the
 	 * death time, the object will be destroyed.
 	 * @param {Number=} val
-	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	deathTime: function (val) {
 		if (val !== undefined) {
@@ -298,7 +319,8 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Gets / sets the entity opacity from 0.0 to 1.0.
 	 * @param {Number=} val
-	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	opacity: function (val) {
 		if (val !== undefined) {
@@ -312,7 +334,8 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Gets / sets the texture to use when rendering the entity.
 	 * @param {IgeTexture=} texture
-	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	texture: function (texture) {
 		if (texture !== undefined) {
@@ -328,7 +351,8 @@ var IgeEntity = IgeObject.extend([
 	 * object's texture. If the texture is not cell-based, this value is
 	 * ignored.
 	 * @param {Number=} val
-	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	cell: function (val) {
 		if (val > 0 || val === null) {
@@ -345,7 +369,8 @@ var IgeEntity = IgeObject.extend([
 	 * ignored. This differs from cell() in that it accepts a string id
 	 * as the cell
 	 * @param {Number=} val
-	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	cellById: function (val) {
 		if (val !== undefined) {
@@ -378,6 +403,8 @@ var IgeEntity = IgeObject.extend([
 	 * Sets the geometry of the entity to match the width and height
 	 * of the assigned texture.
 	 * @param {Number=} percent The percentage size to resize to.
+	 * @return {*} The object this method was called from to allow
+	 * method chaining.
 	 */
 	dimensionsFromTexture: function (percent) {
 		if (this._texture) {
@@ -397,6 +424,8 @@ var IgeEntity = IgeObject.extend([
 	 * Sets the geometry of the entity to match the width and height
 	 * of the assigned texture cell. If the texture is not cell-based
 	 * the entire texture width / height will be used.
+	 * @return {*} The object this method was called from to allow
+	 * method chaining
 	 */
 	dimensionsFromCell: function () {
 		if (this._texture) {
@@ -410,7 +439,8 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Gets / sets the highlight mode. True is on false is off.
 	 * @param {Boolean} val
-	 * @return {*}
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	highlight: function (val) {
 		if (val !== undefined) {
@@ -432,10 +462,10 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Converts a point from local space to this entity's
-	 * world space using it's world transform matrix. This will alter
-	 * the point's data directly.
-	 * @param {IgePoint} points
+	 * Converts a point from local space to this entity's world space
+	 * using it's world transform matrix. This will alter the point's
+	 * data directly.
+	 * @param {IgePoint} point
 	 */
 	localToWorldPoint: function (point) {
 		this._worldMatrix.transform([point]);
@@ -444,7 +474,7 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Calculates and returns the current axis-aligned bounding box in
 	 * world co-ordinates.
-	 * @return {Object} An object with the properties: x, y, width, height
+	 * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
 	 */
 	aabb: function (recalculate) {
 		if (recalculate || !this._aabb) {
@@ -575,6 +605,15 @@ var IgeEntity = IgeObject.extend([
 		return this._aabb;
 	},
 
+	/**
+	 * Calculates and returns the local axis-aligned bounding box
+	 * for the entity. This is the AABB relative to the entity's
+	 * center point.
+	 * @param {Boolean=} recalculate If true this will force the
+	 * recalculation of the local AABB instead of returning a cached
+	 * value.
+	 * @return {IgeRect} The local AABB.
+	 */
 	localAabb: function (recalculate) {
 		if (!this._localAabb || recalculate) {
 			var aabb = this.aabb();
@@ -584,6 +623,16 @@ var IgeEntity = IgeObject.extend([
 		return this._localAabb;
 	},
 
+	/**
+	 * Takes two values and returns them as an array where index [0]
+	 * is the y argument and index[1] is the x argument. This method
+	 * is used specifically in the 3d bounds intersection process to
+	 * determine entity depth sorting.
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @return {Array} The swapped arguments.
+	 * @private
+	 */
 	_swapVars: function (x, y) {
 		return [y, x];
 	},
@@ -660,13 +709,14 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Compares the current entity's 3d bounds to the
-	 * passed entity and determines if the current entity
-	 * is "behind" the passed one. If an entity is behind
-	 * another, it is drawn first during the scenegraph
+	 * Compares the current entity's 3d bounds to the passed entity and
+	 * determines if the current entity is "behind" the passed one. If an
+	 * entity is behind another, it is drawn first during the scenegraph
 	 * render phase.
-	 * @param {IgeEntity} otherObject
-	 * @return {Boolean}
+	 * @param {IgeEntity} otherObject The other entity to check this
+	 * entity's 3d bounds against.
+	 * @return {Boolean} If true this entity is "behind" the passed entity
+	 * or false if not.
 	 */
 	isBehind: function (otherObject) {
 		var thisG3d = this.geometry,
@@ -726,7 +776,8 @@ var IgeEntity = IgeObject.extend([
 	 * mouseUp, mouseOver etc this flag will automatically be reset
 	 * to true.
 	 * @param {Boolean=} val
-	 * @return {*}
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	mouseEventsActive: function (val) {
 		if (val !== undefined) {
@@ -737,6 +788,20 @@ var IgeEntity = IgeObject.extend([
 		return this._mouseEventsActive;
 	},
 
+	/**
+	 * Determines if the frame alternator value for this entity
+	 * matches the engine's frame alternator value. The entity's
+	 * frame alternator value will be set to match the engine's
+	 * after each call to the entity.tick() method so the return
+	 * value of this method can be used to determine if the tick()
+	 * method has already been run for this entity. This is useful
+	 * if you have multiple viewports which will cause the entity
+	 * tick() method to fire once for each viewport but you only
+	 * want to execute update code such as movement etc on the
+	 * first time the tick() method is called.
+	 * @return {Boolean} If false, the entity's tick method has
+	 * not yet been processed for this tick.
+	 */
 	newFrame: function () {
 		return ige._frameAlternator !== this._frameAlternatorCurrent;
 	},
@@ -880,10 +945,11 @@ var IgeEntity = IgeObject.extend([
 	 * Transforms a point by the entity's parent world matrix and
 	 * it's own local matrix transforming the point to this entity's
 	 * world space.
-	 * @param igePoint
+	 * @param {IgePoint} point
+	 * @return {IgePoint} The transformed point.
 	 * @private
 	 */
-	_transformPoint: function (igePoint) {
+	_transformPoint: function (point) {
 		if (this._parent) {
 			var tempMat = new IgeMatrix2d();
 			// Copy the parent world matrix
@@ -891,18 +957,21 @@ var IgeEntity = IgeObject.extend([
 			// Apply any local transforms
 			tempMat.multiply(this._localMatrix);
 			// Now transform the point
-			tempMat.getInverse().transformCoord(igePoint);
+			tempMat.getInverse().transformCoord(point);
 		} else {
-			this._localMatrix.transformCoord(igePoint);
+			this._localMatrix.transformCoord(point);
 		}
 
-		return igePoint;
+		return point;
 	},
 
 	/**
 	 * Checks mouse input types and fires the correct mouse event
-	 * handler.
-	 * @param evc
+	 * handler. This is an internal method that should never be
+	 * called externally.
+	 * @param {Object} evc The input component event control object.
+	 * @param {Object} data Data passed by the input component into
+	 * the new event.
 	 * @private
 	 */
 	_mouseInAabb: function (evc, data) {
@@ -923,12 +992,13 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Returns a string containing a code fragment that when
+	 * Generates a string containing a code fragment that when
 	 * evaluated will reproduce this object's properties via
 	 * chained commands. This method will only check for
 	 * properties that are directly related to this class.
 	 * Other properties are handled by their own class method.
-	 * @return {String}
+	 * @return {String} The string code fragment that will
+	 * reproduce this entity when evaluated.
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
@@ -992,6 +1062,13 @@ var IgeEntity = IgeObject.extend([
 		return str;
 	},
 
+	/**
+	 * Destroys the entity by removing it from the scenegraph,
+	 * calling destroy() on any child entities and removing
+	 * any active event listeners for the entity. Once an entity
+	 * has been destroyed it's this._alive flag is also set to
+	 * false.
+	 */
 	destroy: function () {
 		this._alive = false;
 		this.emit('destroyed', this);
@@ -1015,7 +1092,8 @@ var IgeEntity = IgeObject.extend([
 	 * Gets / sets the array of sections that this entity will
 	 * encode into its stream data.
 	 * @param {Array=} sectionArray An array of strings.
-	 * @return {*}
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	streamSections: function (sectionArray) {
 		if (sectionArray !== undefined) {
@@ -1028,10 +1106,14 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Gets / sets the data for the specified data section id.
-	 * @param {String} sectionId A string identifying the section to handle data get / set for.
-	 * @param {*=} data If present, this is the data that has been sent from the server to the client for this entity.
-	 * @param {Boolean=} bypassTimeStream If true, will assign transform directly to entity instead of adding the values to the time stream.
-	 * @return {*}
+	 * @param {String} sectionId A string identifying the section to
+	 * handle data get / set for.
+	 * @param {*=} data If present, this is the data that has been sent
+	 * from the server to the client for this entity.
+	 * @param {Boolean=} bypassTimeStream If true, will assign transform
+	 * directly to entity instead of adding the values to the time stream.
+	 * @return {*} "this" when a data argument is passed to allow method
+	 * chaining or the current value if no data argument is specified.
 	 */
 	streamSectionData: function (sectionId, data, bypassTimeStream) {
 		if (sectionId === 'transform') {
@@ -1093,7 +1175,8 @@ var IgeEntity = IgeObject.extend([
 	 * Gets / sets the stream mode that the stream system will use when
 	 * handling pushing data updates to connected clients.
 	 * @param {Number=} val A value representing the stream mode.
-	 * @return {*}
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	streamMode: function (val) {
 		if (val !== undefined) {
@@ -1108,8 +1191,9 @@ var IgeEntity = IgeObject.extend([
 	 * Gets / sets the stream control callback function that will be called
 	 * each time the entity tick method is called and stream-able data is
 	 * updated.
-	 * @param {Function=} method
-	 * @return {*}
+	 * @param {Function=} method The stream control method.
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	streamControl: function (method) {
 		if (method !== undefined) {
@@ -1121,31 +1205,49 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Gets / sets the stream control call interval. This value
-	 * is in milliseconds and cannot be lower than 16.
-	 * @param {Number=} val Number of milliseconds between calls
-	 * to the streamControl method.
-	 * @return {*}
+	 * Gets / sets the stream sync interval. This value
+	 * is in milliseconds and cannot be lower than 16. It will
+	 * determine how often data from this entity is added to the
+	 * stream queue.
+	 * @param {Number=} val Number of milliseconds between adding
+	 * stream data for this entity to the stream queue.
+	 * @param {String=} sectionId Optional id of the stream data
+	 * section you want to set the interval for. If omitted the
+	 * interval will be applied to all sections.
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
-	streamControlInterval: function (val) {
-		if (method !== undefined) {
-			if (val < 16) {
-				delete this._streamControlInterval;
+	streamSyncInterval: function (val, sectionId) {
+		if (val !== undefined) {
+			if (!sectionId) {
+				if (val < 16) {
+					delete this._streamSyncInterval;
+				} else {
+					this._streamSyncDelta = 0;
+					this._streamSyncInterval = val;
+				}
 			} else {
-				this._streamControlDelta = 0;
-				this._streamControlInterval = val;
+				this._streamSyncSectionInterval = this._streamSyncSectionInterval || {};
+				this._streamSyncSectionDelta = this._streamSyncSectionDelta || {};
+				if (val < 16) {
+					delete this._streamSyncSectionInterval[sectionId];
+				} else {
+					this._streamSyncSectionDelta[sectionId] = 0;
+					this._streamSyncSectionInterval[sectionId] = val;
+				}
 			}
 			return this;
 		}
 
-		return this._streamControlInterval;
+		return this._streamSyncInterval;
 	},
 
 	/**
 	 * Gets / sets the precision by which floating-point values will
 	 * be encoded and sent when packaged into stream data.
-	 * @param val
-	 * @return {*}
+	 * @param {Number=} val The number of decimal places to preserve.
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
 	 */
 	streamFloatPrecision: function (val) {
 		if (val !== undefined) {
@@ -1175,28 +1277,29 @@ var IgeEntity = IgeObject.extend([
 	 * of client ids.
 	 * @param {String, Array} clientId Either a string ID or an array of string IDs of
 	 * each client to send the stream data to.
-	 * @return {*}
+	 * @return {IgeEntity} "this".
 	 */
 	streamSync: function (clientId) {
 		if (this._streamMode === 1) {
+			// Check if we have a stream sync interval
+			if (this._streamSyncInterval) {
+				this._streamSyncDelta += ige.tickDelta;
+
+				if (this._streamSyncDelta < this._streamSyncInterval) {
+					// The stream sync interval is still higher than
+					// the stream sync delta so exit without calling the
+					// stream sync method
+					return this;
+				} else {
+					// We've reached the delta we want so zero it now
+					// ready for the next loop
+					this._streamSyncDelta = 0;
+				}
+			}
+
 			// Stream mode is automatic so check for the
 			// control method
 			if (this._streamControl) {
-				// Check if we have a stream control interval
-				if (this._streamControlInterval) {
-					this._streamControlDelta += ige.tickDelta;
-
-					if (this._streamControlDelta < this._streamControlInterval) {
-						// The stream control interval is still higher than
-						// the stream control delta so exit without calling the
-						// stream control method
-						return this;
-					} else {
-						// We've reached the delta we want so zero it now
-						// ready for the next loop
-						this._streamControlDelta = 0;
-					}
-				}
 				// Stream control method exists, loop clients and call
 				// the control method to see if data should be streamed
 
@@ -1237,7 +1340,9 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Asks the stream system to queue the stream data to
 	 * the specified client id or array of ids.
-	 * @param clientId
+	 * @param {String, Array} clientId The id or array of ids of the
+	 * client(s) to queue stream data for. The stream data being queued
+	 * is returned by a call to this._streamData().
 	 * @private
 	 */
 	_streamSync: function (clientId) {
@@ -1250,7 +1355,8 @@ var IgeEntity = IgeObject.extend([
 	 * the last time the stream data was generated. The returned data is
 	 * a string that has been compressed in various ways to reduce network
 	 * overhead during transmission.
-	 * @return {String}
+	 * @return {String} The string representation of the stream data for
+	 * this entity.
 	 * @private
 	 */
 	_streamData: function () {
@@ -1265,6 +1371,7 @@ var IgeEntity = IgeObject.extend([
 				sectionCount = sectionArr.length,
 				sectionData,
 				sectionIndex,
+				sectionId,
 				aliveInt = this._alive ? 1: 0;
 
 			// Add the default data (id and class)
@@ -1275,8 +1382,25 @@ var IgeEntity = IgeObject.extend([
 				// Now loop the data sections array and compile the rest of the
 				// data string from the data section return data
 				for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
-					// Get the section data for this section id
-					sectionData = this.streamSectionData(sectionArr[sectionIndex]);
+					sectionData = '';
+					sectionId = sectionArr[sectionIndex];
+
+					if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
+						// Check if the section interval has been reached
+						this._streamSyncSectionDelta[sectionId] += ige.tickDelta;
+						console.log(this._streamSyncSectionDelta[sectionId]);
+
+						if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
+							// Get the section data for this section id
+							sectionData = this.streamSectionData(sectionId);
+
+							// Reset the section delta
+							this._streamSyncSectionDelta[sectionId] = 0;
+						}
+					} else {
+						// Get the section data for this section id
+						sectionData = this.streamSectionData(sectionId);
+					}
 
 					// Add the section start designator character. We do this
 					// regardless of if there is actually any section data because
