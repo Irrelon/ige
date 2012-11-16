@@ -1440,12 +1440,12 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Calculates the current value based on the time along the
 	 * value range.
-	 * @param startValue The value that the interpolation started from.
-	 * @param endValue The target value to be interpolated to.
-	 * @param startTime The time the interpolation started.
-	 * @param currentTime The current time.
-	 * @param endTime The time the interpolation will end.
-	 * @return {Number}
+	 * @param {Number} startValue The value that the interpolation started from.
+	 * @param {Number} endValue The target value to be interpolated to.
+	 * @param {Number} startTime The time the interpolation started.
+	 * @param {Number} currentTime The current time.
+	 * @param {Number} endTime The time the interpolation will end.
+	 * @return {Number} The interpolated value.
 	 */
 	interpolateValue: function (startValue, endValue, startTime, currentTime, endTime) {
 		var totalValue = endValue - startValue,
@@ -1459,6 +1459,14 @@ var IgeEntity = IgeObject.extend([
 		return (totalValue * deltaTime) + startValue;
 	},
 
+	/**
+	 * Processes the time stream for the entity.
+	 * @param {Number} renderTime The time that the time stream is
+	 * targetting to render the entity at.
+	 * @param {Number} maxLerp The maximum lerp before the value
+	 * is assigned directly instead of being interpolated.
+	 * @private
+	 */
 	_processInterpolate: function (renderTime, maxLerp) {
 		// Set the maximum lerp to 200 if none is present
 		if (!maxLerp) { maxLerp = 200; }
