@@ -10,13 +10,13 @@
 	<div class="header">Description</div>
 	<div class="content">Creates a new map that has two dimensions (x and y) to it's data and allows multiple items to be stored or "stacked" on a single x, y map position.</div>
 </div>
+<!--=if{extends}[-->
 <div class="itemBox">
 	<div class="header">Extends</div>
 	<div class="content"><a href="IgeClass.html">IgeClass</a></div>
 </div>
-<h2>Methods</h2>
-
-<h3>tileData(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Array</span> <span class="argName">val</span>)</h3>
+<!--=if{extends}]-->
+<h2>Methods</h2><h3>tileData(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Array</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the data stored at the specified map tile co-ordinates. If data already exists at the specified co-ordinates, it is replaced with the passed data.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Array</span>}<span class="argName">val</span> The array of data items to set at the specified co-ordinates.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} This or an array of data items at the specified co-ordinates.</div><h3>tileDataAtIndex(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">index</span>)</h3>
