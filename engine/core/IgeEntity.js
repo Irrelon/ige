@@ -93,9 +93,9 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Translates the object to the tile co-ordinates passed.
-	 * @param x
-	 * @param y
-	 * @param z
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number} z
 	 * @private
 	 */
 	translateToTile: function (x, y, z) {
@@ -742,7 +742,7 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Processes the actions required each render frame.
-	 * @param {HTMLCanvasContext} ctx
+	 * @param {CanvasRenderingContext2D} ctx
 	 * @param {Boolean} dontTransform If set to true, the tick method will
 	 * not transform the context based on the entity's matrices. This is useful
 	 * if you have extended the class and want to process down the inheritance
@@ -832,11 +832,11 @@ var IgeEntity = IgeObject.extend([
 	 * is applied to the entity. This part of the tick process has
 	 * been abstracted to allow it to be overridden by an extending
 	 * class.
-	 * @param ctx
-	 * @param dontTransform
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to render
+	 * the entity to.
 	 * @private
 	 */
-	_renderEntity: function (ctx, dontTransform) {
+	_renderEntity: function (ctx) {
 		var texture = this._texture;
 
 		// Check if the entity is visible based upon its opacity
@@ -854,7 +854,7 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Sets the canvas context transform properties to match the the game
 	 * object's current transform values.
-	 * @param {HTMLCanvasContext} ctx
+	 * @param {CanvasRenderingContext2D} ctx
 	 * @private
 	 */
 	_transformContext: function (ctx) {
