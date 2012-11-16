@@ -21,6 +21,8 @@ var IgeUiInteractionExtension = {
 	 */
 	mouseMoveOff: function () {
 		delete this._mouseMove;
+
+		return this;
 	},
 
 	/**
@@ -45,6 +47,8 @@ var IgeUiInteractionExtension = {
 	 */
 	mouseOverOff: function () {
 		delete this._mouseOver;
+
+		return this;
 	},
 
 	/**
@@ -69,6 +73,8 @@ var IgeUiInteractionExtension = {
 	 */
 	mouseOutOff: function () {
 		delete this._mouseOut;
+
+		return this;
 	},
 
 	/**
@@ -93,6 +99,8 @@ var IgeUiInteractionExtension = {
 	 */
 	mouseUpOff: function () {
 		delete this._mouseUp;
+
+		return this;
 	},
 
 	/**
@@ -117,6 +125,8 @@ var IgeUiInteractionExtension = {
 	 */
 	mouseDownOff: function () {
 		delete this._mouseDown;
+
+		return this;
 	},
 
 	/**
