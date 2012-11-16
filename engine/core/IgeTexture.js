@@ -119,6 +119,14 @@ var IgeTexture = IgeEventingClass.extend({
 					// Log success
 					ige.log('Texture image "' + imageUrl + '" loaded successfully');
 
+					if (image.width % 2) {
+						self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
+					}
+
+					if (image.height % 2) {
+						self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
+					}
+
 					// Loop textures that are using this image
 					var arr = this._igeTextures,
 						arrCount = arr.length, i,
