@@ -626,26 +626,30 @@ var IgeEngine = IgeEntity.extend({
 	 * @param autoSize
 	 */
 	canvas: function (elem, autoSize) {
-		if (!this._canvas) {
-			// Setup front-buffer canvas element
-			this._canvas = elem;
+		if (elem !== undefined) {
+			if (!this._canvas) {
+				// Setup front-buffer canvas element
+				this._canvas = elem;
 
-			if (autoSize) {
-				this._autoSize = autoSize;
+				if (autoSize) {
+					this._autoSize = autoSize;
 
-				// Add some event listeners
-				window.addEventListener('resize', this._resizeEvent);
+					// Add some event listeners
+					window.addEventListener('resize', this._resizeEvent);
+				}
+
+				// Fire the resize event for the first time
+				// which sets up initial canvas dimensions
+				this._resizeEvent();
+				this._ctx = this._canvas.getContext(this._renderContext);
+				this._headless = false;
+
+				// Ask the input component to setup any listeners it has
+				this.input.setupListeners(this._canvas);
 			}
-
-			// Fire the resize event for the first time
-			// which sets up initial canvas dimensions
-			this._resizeEvent();
-			this._ctx = this._canvas.getContext(this._renderContext);
-			this._headless = false;
-
-			// Ask the input component to setup any listeners it has
-			this.input.setupListeners(this._canvas);
 		}
+
+		return this._canvas;
 	},
 
 	/**
@@ -831,6 +835,9 @@ var IgeEngine = IgeEntity.extend({
 			}
 		}
 
+		if (ige._canvas) {
+			ige.geometry = new IgePoint(ige._canvas.width, ige._canvas.height, 0);
+		}
 		ige._resized = true;
 	},
 
