@@ -81,12 +81,12 @@ function parseFile($path) {
 					if (substr($descripText, 0, 7) === '@return') {
 						if (trim($paramText)) {
 							// We have an existing parameter's data, store it
-							$returnText = trim($paramText);
+							$returnText = trim($descripText);
 
 							// Now clear the text
 							$paramText = '';
 						}
-						$paramText .= $descripText;
+						//$paramText .= $descripText;
 					}
 				} else {
 					if ($paramText) {
@@ -172,13 +172,12 @@ function parseFile($path) {
 			}
 
 			// Extract type and description from return line
-			/*if ($returnText) {
+			if ($returnText) {
 				// Check for type
-				preg_match("/\{(.*?)\}/", $paramVal, $paramType);
+				preg_match("/\{(.*?)\}/", $returnText, $paramType);
 				unset($param);
 				$param['type'] = $paramType[1];
 				$param['optional'] = false;
-				$param['name'] = '';
 				$param['desc'] = '';
 
 				if ($param['type']) {
@@ -192,48 +191,42 @@ function parseFile($path) {
 					}
 
 					// Extract the parameter name
-					preg_match("/\}\s(.*?)$/", $paramVal, $paramLine);
+					preg_match("/\}\s(.*?)$/", $returnText, $paramLine);
 
 					// Check if more than one word exists in the line
 					if (strstr($paramLine[1], ' ')) {
 						// Split the text by space
 						$textSplit = explode(' ', $paramLine[1]);
-						$param['name'] = trim($textSplit[0], ' ');
 
 						foreach ($textSplit as $paramDescKey => $paramDescVal) {
-							if ($paramDescKey !== 0) {
-								$param['desc'] .= $paramDescVal . ' ';
-							}
+							$param['desc'] .= $paramDescVal . ' ';
 						}
 
 						$param['desc'] = trim($param['desc']);
-					} else {
-						$param['name'] = $paramLine[1];
 					}
 				} else {
 					// Extract the parameter name
-					preg_match("/\s(.*?)$/", $paramVal, $paramLine);
+					preg_match("/\s(.*?)$/", $returnText, $paramLine);
 
 					// Check if more than one word exists in the line
 					if (strstr($paramLine[1], ' ')) {
 						// Split the text by space
 						$textSplit = explode(' ', $paramLine[1]);
-						$param['name'] = trim($textSplit[0], ' ');
 
 						foreach ($textSplit as $paramDescKey => $paramDescVal) {
-							if ($paramDescKey !== 0) {
-								$param['desc'] .= $paramDescVal . ' ';
-							}
+							$param['desc'] .= $paramDescVal . ' ';
 						}
 
 						$param['desc'] = trim($param['desc']);
-					} else {
-						$param['name'] = $paramLine[1];
 					}
 				}
 
-				$parameters[] = $param;
-			}*/
+				/*echo "RETURNDATA <B>" . $param['name'] . "</B> {" . $param['type'] . "}";
+				if ($param['optional']) { echo " (*Optional*)"; }
+				if ($param['desc']) { echo " " . $param['desc']; }
+				echo "<BR>";*/
+				$returnData = $param;
+			}
 
 			// Check if the code is a class that is extending another
 			preg_match_all("/=\s(.*?)\.extend/", $codeLine, $extendedClass);
@@ -302,8 +295,8 @@ function parseFile($path) {
 					$item['arguments'] = $arguments;
 					$item['private'] = $privateMethod;
 					$item['constructor'] = $constructorMethod;
-					if ($returnText) {
-						$item['returnType'] = $returnText;
+					if ($returnData) {
+						$item['returnData'] = $returnData;
 					}
 					break;
 			}

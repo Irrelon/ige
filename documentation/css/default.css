@@ -66,6 +66,10 @@ body .page {
     margin: 0;
 }
 
+.methodDesc {
+    margin-bottom: 10px;
+}
+
 .argType {
     font-weight: normal;
     padding: 2px;

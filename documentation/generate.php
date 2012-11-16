@@ -56,12 +56,18 @@ function parseTemplate($str, $item, $path, $file) {
 	}
 
 	$paramsHtml = '(' . $paramsHtml . ')';
+	if ($item["returnData"]) {
+		$returnHtml = 'Returns {<span class="argType">' . $item["returnData"]["type"] . '</span>} ' . $item["returnData"]["desc"];
+	} else {
+		$returnHtml = '';
+	}
 
-	$str = str_replace('={returnType}', $item["returnType"], $str);
+	$str = str_replace('={returnType}', $item["returnData"]["type"], $str);
 	$str = str_replace('={path}', ENGINE_RELATIVE . $path, $str);
 	$str = str_replace('={file}', $file, $str);
 	$str = str_replace('={arguments}', $argumentsHtml, $str);
 	$str = str_replace('={params}', $paramsHtml, $str);
+	$str = str_replace('={returnDesc}', $returnHtml, $str);
 
 	preg_match_all("/={(.*?)}/", $str, $matches);
 

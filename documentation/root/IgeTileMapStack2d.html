@@ -16,48 +16,48 @@
 </div>
 <h2>Methods</h2>
 
-<h3>@param valdrawGrid(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<h3>drawGrid()</h3>
 <div class="methodDesc">Gets / sets the number of grid cells that the tile map should paint to the context during the tick method.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param valhighlightOccupied(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>highlightOccupied()</h3>
 <div class="methodDesc">Gets / sets the flag that determines if the tile map will paint the occupied tiles with an overlay colour so that it is easy to spot them.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param {Number} val Tile width.tileWidth(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>tileWidth()</h3>
 <div class="methodDesc">Gets / sets the map's tile width.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param {Number} val Tile height.tileHeight(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>tileHeight()</h3>
 <div class="methodDesc">Gets / sets the map's tile height.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>_objectOccupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>_objectOccupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>)</h3>
 <div class="methodDesc">Attached to objects that are mounted to the tile sheet. Adds the object to the tile map at the passed tile co-ordinates. If no tile co-ordinates are passed, will use the array returned from calling overTiles() and will add the object to each tile the object is "over".</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Number</span>}<span class="argName">width</span> </li><li>{<span class="argType">Number</span>}<span class="argName">height</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>_objectUnOccupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>_objectUnOccupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>)</h3>
 <div class="methodDesc">Attached to objects that are mounted to the tile sheet. Removes the object from the tile map at the passed tile co-ordinates. If no tile co-ordinates are passed, will use the array returned from calling overTiles() and will remove the object from each tile the object is "over".</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Number</span>}<span class="argName">width</span> </li><li>{<span class="argType">Number</span>}<span class="argName">height</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>_objectOverTiles(<span class="argType">Array</span> <span class="argName">The</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>_objectOverTiles()</h3>
 <div class="methodDesc">Attached to objects that are mounted to the tile sheet. This method returns an array of tile co-ordinates that the object is currently over, calculated using the current world co-ordinates of the object as well as it's 3d geometry.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">The</span> array of tile co-ordinates as IgePoint instances.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param {*} objoccupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>, <span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>occupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>)</h3>
 <div class="methodDesc">Sets a tile or area as occupied by the passed obj parameter. Any previous data on the specified tile or area will be removed.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Number</span>}<span class="argName">width</span> </li><li>{<span class="argType">Number</span>}<span class="argName">height</span> </li><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param {Number=} heightunOccupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Number</span>}<span class="argName">width</span> </li><li>{<span class="argType">Number</span>}<span class="argName">height</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>unOccupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>)</h3>
 <div class="methodDesc">Removes all data from the specified tile or area.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Number</span>}<span class="argName">width</span> </li><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param {Number=} heightisTileOccupied(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Number</span>}<span class="argName">width</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>isTileOccupied(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>)</h3>
 <div class="methodDesc">Returns true if the specified tile or tile area has an occupied status.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Number</span>}<span class="argName">width</span> </li><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param pointpointToTile(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Number</span>}<span class="argName">width</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>pointToTile()</h3>
 <div class="methodDesc">Returns the tile co-ordinates of the tile that the point's world co-ordinates reside inside.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>mouseTileWorldXY(<span class="argType">IgePoint</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>mouseTileWorldXY()</h3>
 <div class="methodDesc">Returns the world co-ordinates of the tile the mouse is currently over.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>mouseToTile(<span class="argType">IgePoint</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>mouseToTile()</h3>
 <div class="methodDesc">Returns the tile co-ordinates of the tile the mouse is currently over.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>_calculateMousePosition()</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>_calculateMousePosition()</h3>
 <div class="methodDesc">Sets the internal mouse position data based on the current mouse position relative to the tile map.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div>	</div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>	</div>
 </body>
 </html>

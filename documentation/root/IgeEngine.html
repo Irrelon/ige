@@ -22,126 +22,126 @@
 <div class="methodReturnDesc"></div><h3>$$(<span class="argType"></span> <span class="argName">groupName</span>)</h3>
 <div class="methodDesc">Returns an array of all objects that have been assigned the passed group name.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">groupName</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param objregister(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodReturnDesc"></div><h3>register()</h3>
 <div class="methodDesc">Register an object with the engine object register. The register allows you to access an object by it's id with a call to ige.$(objectId).</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>setFps(<span class="argType">Number</span> <span class="argName">fpsRate</span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>setFps(<span class="argType">Number</span> <span class="argName">fpsRate</span>)</h3>
 <div class="methodDesc">Sets the frame rate at which new engine ticks are fired. Setting this rate will override the default requestAnimFrame() method as defined in IgeBase.js and on the client-side, will stop usage of any available requestAnimationFrame() method and will use a setTimeout()-based version instead.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">fpsRate</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>showStats(<span class="argType">Number</span> <span class="argName">val</span>, <span class="argType">Number</span> <span class="argName">interval</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>showStats(<span class="argType">Number</span> <span class="argName">val</span>, <span class="argType">Number</span> <span class="argName">interval</span>)</h3>
 <div class="methodDesc">Gets / sets the stats output mode that is in use. Set to 1 to display default stats output at the lower-left of the HTML page.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li><li>{<span class="argType">Number</span>}<span class="argName">interval</span> The number of milliseconds between statsupdates.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>_createStatsDiv()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>_createStatsDiv()</h3>
 <div class="methodDesc">Creates the stats output div on the DOM.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>_removeStatsDiv()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>_removeStatsDiv()</h3>
 <div class="methodDesc">Removes the stats output div from the DOM.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>defineClass(<span class="argType">String</span> <span class="argName">id</span>, <span class="argType">Object</span> <span class="argName">obj</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>defineClass(<span class="argType">String</span> <span class="argName">id</span>, <span class="argType">Object</span> <span class="argName">obj</span>)</h3>
 <div class="methodDesc">Defines a class in the engine's class repository.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> The unique class ID or name.</li><li>{<span class="argType">Object</span>}<span class="argName">obj</span> The class definition.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param {String} id The ID of the class to retrieve.getClass(<span class="argType">Object</span> <span class="argName">The</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>getClass()</h3>
 <div class="methodDesc">Retrieves a class by it's ID that was defined with a call to defineClass().</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">The</span> class definition.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param optionsnewClassInstance(<span class="argType"></span> <span class="argName">id</span>, <span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">Object</span>} The class definition.</div><h3>newClassInstance(<span class="argType"></span> <span class="argName">id</span>)</h3>
 <div class="methodDesc">Generates a new instance of a class defined with a call to the defineClass() method. Passes the options parameter to the new class during it's constructor call.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">id</span> </li><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>dependencyCheck(<span class="argType">Boolean</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">id</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>dependencyCheck()</h3>
 <div class="methodDesc">Checks if all engine start dependencies have been satisfied.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param {Boolean} valviewportDepth(<span class="argType">Boolean</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>viewportDepth()</h3>
 <div class="methodDesc">Gets / sets the flag that determines if viewports should be sorted by depth like regular entities, before they are processed for rendering each frame. Depth-sorting viewports increases processing requirements so if you do not need to stack viewports in a particular order, keep this flag false.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>dependencyTimeout(<span class="argType"></span> <span class="argName">val</span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div><h3>dependencyTimeout(<span class="argType"></span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Sets the number of milliseconds before the engine gives up waiting for dependencies to be satisfied and cancels the startup procedure.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>textureLoadStart()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div><h3>textureLoadStart()</h3>
 <div class="methodDesc">Adds one to the number of textures currently loading.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>textureLoadEnd()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div><h3>textureLoadEnd()</h3>
 <div class="methodDesc">Subtracts one from the number of textures currently loading and if no more need to load, it will also call the _allTexturesLoaded() method.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>@param {String} urltextureFromUrl(<span class="argType">IgeTexture</span> <span class="argName"></span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div><h3>textureFromUrl()</h3>
 <div class="methodDesc">Returns a texture from the texture store by it's url.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeTexture</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>texturesLoaded(<span class="argType">Boolean</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">IgeTexture</span>} </div><h3>texturesLoaded()</h3>
 <div class="methodDesc">Checks if all textures have finished loading and returns true if so.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>_allTexturesLoaded()</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">IgeTexture</span>} </div><h3>_allTexturesLoaded()</h3>
 <div class="methodDesc">Emits the "texturesLoaded" event.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>@param valglobalSmoothing(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">IgeTexture</span>} </div><h3>globalSmoothing()</h3>
 <div class="methodDesc">Gets / sets the default smoothing value for all new IgeTexture class instances. If set to true, all newly created textures will have smoothing enabled by default.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>canvasReady(<span class="argType">Boolean</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>canvasReady()</h3>
 <div class="methodDesc">Checks to ensure that a canvas has been assigned to the engine or that the engine is in server mode.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>newId(<span class="argType">String</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>newId()</h3>
 <div class="methodDesc">Generates a new unique ID</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>newIdHex(<span class="argType">String</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>newIdHex()</h3>
 <div class="methodDesc">Generates a new 16-character hexadecimal unique ID</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>start(<span class="argType"></span> <span class="argName">callback</span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>start(<span class="argType"></span> <span class="argName">callback</span>)</h3>
 <div class="methodDesc">Starts the engine.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">callback</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>stop(<span class="argType">Boolean</span> <span class="argName"></span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>stop()</h3>
 <div class="methodDesc">Stops the engine.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param valautoSize(<span class="argType">Boolean</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>autoSize()</h3>
 <div class="methodDesc">Gets / sets the _autoSize property. If set to true, the engine will listen for any change in screen size and resize the front-buffer (canvas) element to match the new screen size.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param {String=} contextId The context such as '2d'. Defaults to '2d'.renderContext(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div><h3>renderContext()</h3>
 <div class="methodDesc">Gets / sets the rendering context that will be used when getting the context from canvas elements.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>createFrontBuffer(<span class="argType">Boolean</span> <span class="argName">autoSize</span>, <span class="argType">Boolean</span> <span class="argName">dontScale</span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>createFrontBuffer(<span class="argType">Boolean</span> <span class="argName">autoSize</span>, <span class="argType">Boolean</span> <span class="argName">dontScale</span>)</h3>
 <div class="methodDesc">Creates a front-buffer or "drawing surface" for the renderer.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">autoSize</span> Determines if the canvas will auto-resizewhen the browser window changes dimensions. If true the canvas will automatically fill the window when it is resized.</li><li>{<span class="argType">Boolean</span>}<span class="argName">dontScale</span> If set to true, IGE will ignore devicepixel ratios when setting the width and height of the canvas and will therefore not take into account "retina", high-definition displays or those whose pixel ratio is different from 1 to 1.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>canvas(<span class="argType"></span> <span class="argName">elem</span>, <span class="argType"></span> <span class="argName">autoSize</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>canvas(<span class="argType"></span> <span class="argName">elem</span>, <span class="argType"></span> <span class="argName">autoSize</span>)</h3>
 <div class="methodDesc">Sets the canvas element that will be used as the front-buffer.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">elem</span> </li><li>{<span class="argType"></span>}<span class="argName">autoSize</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>clearCanvas()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>clearCanvas()</h3>
 <div class="methodDesc">Clears the entire canvas.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>openUrl(<span class="argType"></span> <span class="argName">url</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>openUrl(<span class="argType"></span> <span class="argName">url</span>)</h3>
 <div class="methodDesc">Opens a new window to the specified url. When running in a native wrapper, will load the url in place of any existing page being displayed in the native web view.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">url</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>showWebView(<span class="argType">String</span> <span class="argName">url</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>showWebView(<span class="argType">String</span> <span class="argName">url</span>)</h3>
 <div class="methodDesc">Loads the specified URL as an HTML overlay on top of the front buffer in an iFrame. If running in a native wrapper, will load the url in place of any existing page being displayed in the native web view.  When the overlay is in use, no mouse or touch events will be fired on the front buffer. Once you are finished with the overlay, call hideOverlay() to re-enable interaction with the front buffer.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">url</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>hideWebView(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>hideWebView()</h3>
 <div class="methodDesc">Hides the web view overlay.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>layerCall(<span class="argType"></span> <span class="argName">js</span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>layerCall(<span class="argType"></span> <span class="argName">js</span>)</h3>
 <div class="methodDesc">Evaluates javascript sent from another frame.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">js</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>mousePos(<span class="argType">IgePoint</span> <span class="argName"></span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>mousePos()</h3>
 <div class="methodDesc">Returns the mouse position relative to the main front buffer.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName"></span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>_resizeEvent(<span class="argType"></span> <span class="argName">event</span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>_resizeEvent(<span class="argType"></span> <span class="argName">event</span>)</h3>
 <div class="methodDesc">Handles the screen resize event.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>@param {*} evalStringOrObject The expression to evaluate anddisplay the result of in the stats overlay, or an object that contains a "value" property.just added to the watch array. watchStart(<span class="argType">Integer</span> <span class="argName">The</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>watchStart()</h3>
 <div class="methodDesc">Adds a new watch expression to the watch list which will be displayed in the stats overlay during a call to _statsTick().</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Integer</span>}<span class="argName">The</span> index of the new watch expression youjust added to the watch array.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>watchStop(<span class="argType">Number</span> <span class="argName">index</span>)</h3>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">Integer</span>} The index of the new watch expression youjust added to the watch array.</div><h3>watchStop(<span class="argType">Number</span> <span class="argName">index</span>)</h3>
 <div class="methodDesc">Removes a watch expression by it's array index.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">index</span> The index of the watch expression toremove from the watch array.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>_secondTick()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Integer</span>} The index of the new watch expression youjust added to the watch array.</div><h3>_secondTick()</h3>
 <div class="methodDesc">Is called every second and does things like calculate the current FPS.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>_statsTick()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Integer</span>} The index of the new watch expression youjust added to the watch array.</div><h3>_statsTick()</h3>
 <div class="methodDesc">Updates the stats HTML overlay with the latest data.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>tick()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Integer</span>} The index of the new watch expression youjust added to the watch array.</div><h3>tick()</h3>
 <div class="methodDesc">Called each frame to traverse and render the scenegraph.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>sceneGraph()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Integer</span>} The index of the new watch expression youjust added to the watch array.</div><h3>sceneGraph()</h3>
 <div class="methodDesc">Walks the scene graph and outputs a console map of the graph.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>getSceneGraphData()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Integer</span>} The index of the new watch expression youjust added to the watch array.</div><h3>getSceneGraphData()</h3>
 <div class="methodDesc">Walks the scenegraph and returns a data object of the graph.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div>	</div>
+<div class="methodReturnDesc">Returns {<span class="argType">Integer</span>} The index of the new watch expression youjust added to the watch array.</div>	</div>
 </body>
 </html>
