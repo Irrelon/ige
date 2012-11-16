@@ -23,6 +23,27 @@ var IgeEntityBox2d = IgeEntity.extend({
 	},
 
 	/**
+	 * Gets / sets the box2d body's active flag which determines
+	 * if it will be included as part of the physics simulation
+	 * or not.
+	 * @param {Boolean=} val Set to true to include the body in
+	 * the physics simulation or false for it to be ignored.
+	 * @return {*}
+	 */
+	box2dActive: function (val) {
+		if (this._box2dBody) {
+			if (val !== undefined) {
+				this._box2dBody.SetActive(val);
+				return this;
+			}
+
+			return this._box2dBody.IsActive();
+		}
+
+		return this;
+	},
+
+	/**
 	 * Gets / sets the physics body definition. When setting the
 	 * definition the physics body will also be created automatically
 	 * from the supplied definition.
