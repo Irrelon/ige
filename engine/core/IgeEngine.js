@@ -833,11 +833,12 @@ var IgeEngine = IgeEntity.extend({
 			while (arrCount--) {
 				arr[arrCount]._resizeEvent(event);
 			}
+		} else {
+			if (ige._canvas) {
+				ige.geometry = new IgePoint(ige._canvas.width, ige._canvas.height, 0);
+			}
 		}
 
-		if (ige._canvas) {
-			ige.geometry = new IgePoint(ige._canvas.width, ige._canvas.height, 0);
-		}
 		ige._resized = true;
 	},
 
