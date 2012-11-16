@@ -5,36 +5,36 @@
 <body>
 	<div class="page">
 <h2>IgeMap2d <span>CLASS</span></h2>
-<p>Declared in <a href="../../engine/core/IgeMap2d.js">{file}</a></p>
+<p>Declared in <a href="../../engine/core/IgeMap2d.js">IgeMap2d.js</a></p>
 <div class="itemBox">
 	<div class="header">Description</div>
 	<div class="content">Creates a new map that has two dimensions (x and y) to it's data.</div>
 </div>
 <div class="itemBox">
 	<div class="header">Extends</div>
-	<div class="content"><a href="{extends}.html">IgeClass</a></div>
+	<div class="content"><a href="IgeClass.html">IgeClass</a></div>
 </div>
 <h2>Methods</h2>
 
-<h3>tileDataArray</h3>
+<h3>@param {*=} val The data to set on the map tile co-ordinate.tileData(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">*</span> <span class="argName"></span>)</h3>
 <div class="methodDesc">Gets / sets a value on the specified map tile co-ordinates.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">*</span>}<span class="argName">val</span> The data to set on the map tile co-ordinate.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>clearDataArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param yclearData(<span class="argType"></span> <span class="argName">x</span>, <span class="argType">Boolean</span> <span class="argName">True</span>)</h3>
 <div class="methodDesc">Clears any data set at the specified map tile co-ordinates.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>collisionArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">True</span> if data was cleared or false if no data existed.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>collision(<span class="argType"></span> <span class="argName">x</span>, <span class="argType"></span> <span class="argName">y</span>, <span class="argType"></span> <span class="argName">width</span>, <span class="argType"></span> <span class="argName">height</span>)</h3>
 <div class="methodDesc">Checks if the tile area passed has any data stored in it. If so, returns true, otherwise false.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">width</span> </li><li>{<span class="argType"></span>}<span class="argName">height</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>mapDataArray</h3>
+<div class="methodReturnDesc"></div><h3>@param {Array} val The map data array.mapData(<span class="argType">*</span> <span class="argName"></span>)</h3>
 <div class="methodDesc">Gets / sets the map's tile data.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">val</span> The map data array.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>mapDataString</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>mapDataString(<span class="argType">String</span> <span class="argName"></span>)</h3>
 <div class="methodDesc">Returns a string of the map's data in JSON format.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>insertMapDataArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>insertMapData(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Array</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Inserts map data into the map at the given co-ordinates. Please note this is not used for setting a tile's value. This is used to add large sections of map data at the specified co-ordinates. To set an individual tile value, please use tile(x, y, val).</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Array</span>}<span class="argName">val</span> The map data array.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>rotateDataArray</h3>
+<div class="methodReturnDesc"></div><h3>rotateData(<span class="argType">Array</span> <span class="argName">val</span>, <span class="argType">Number</span> <span class="argName">mode</span>)</h3>
 <div class="methodDesc">Rotates map data either -90 degrees (anti-clockwise), 90 degrees (clockwise) or 180 degrees. Useful when you want to define one section of a map and then re-use it in slightly different layouts.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">val</span> The map data array to rotate.</li><li>{<span class="argType">Number</span>}<span class="argName">mode</span> Either -90, 90 or 180 to denote the type of rotation to perform.</li></ul></div>
 <div class="methodReturnDesc"></div>	</div>

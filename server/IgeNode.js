@@ -134,6 +134,21 @@ var IgeNode = IgeClass.extend({
 			itemModule = require(this._gamePath + item.path);
 			eval(item.name + ' = itemModule;');
 			this.log('Module "' + item.name + '" loaded from: "' + this._gamePath + item.path + '.js"');
+
+			/*if (itemModule.prototype) {
+				console.warn('CLASS ID is defined: ' + itemModule.prototype._classId);
+			}
+			if (itemModule.prototype && itemModule.prototype._classId) {
+				eval(itemModule.prototype._classId + ' = itemModule;');
+				this.log('Module "' + itemModule.prototype._classId + '" loaded from: "' + this._gamePath + item.path + '.js"');
+			} if (item.name) {
+				eval(item.name + ' = itemModule;');
+				this.log('Module "' + item.name + '" loaded from: "' + this._gamePath + item.path + '.js"');
+			} else {
+				//console.warn(itemModule.prototype._classId);
+				console.warn('Cannot load class / file from "' + this._gamePath + item.path + '" because the class does not have a classId property and no name property was assigned to it\'s include code!');
+				//process.exit();
+			}*/
 		}
 
 		// Create a new Game instance and pass the config details to it

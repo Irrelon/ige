@@ -5,92 +5,143 @@
 <body>
 	<div class="page">
 <h2>IgeEntity <span>CLASS</span></h2>
-<p>Declared in <a href="../../engine/core/IgeEntity.js">{file}</a></p>
+<p>Declared in <a href="../../engine/core/IgeEntity.js">IgeEntity.js</a></p>
 <div class="itemBox">
 	<div class="header">Description</div>
 	<div class="content">Creates a new entity.</div>
 </div>
 <div class="itemBox">
 	<div class="header">Extends</div>
-	<div class="content"><a href="{extends}.html">IgeObject</a></div>
+	<div class="content"><a href="IgeObject.html">IgeObject</a></div>
 </div>
 <h2>Methods</h2>
 
-<h3>mousePos</h3>
-<div class="methodDesc">Returns the position of the mouse relative to this entity.</div>
+<h3>show()</h3>
+<div class="methodDesc">Sets the entity as visible and able to be interacted with.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>translateToTileArray</h3>
+<div class="methodReturnDesc"></div><h3>hide()</h3>
+<div class="methodDesc">Sets the entity as hidden and cannot be interacted with.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div><h3>mousePos(<span class="argType">IgePoint</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Returns the position of the mouse relative to this entity.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>translateToTile(<span class="argType"></span> <span class="argName">x</span>, <span class="argType"></span> <span class="argName">y</span>, <span class="argType"></span> <span class="argName">z</span>)</h3>
 <div class="methodDesc">Translates the object to the tile co-ordinates passed.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>widthByTileArray</h3>
+<div class="methodReturnDesc"></div><h3>widthByTile(<span class="argType">Number</span> <span class="argName">val</span>, <span class="argType">Boolean</span> <span class="argName">lockAspect</span>)</h3>
 <div class="methodDesc">Set the object's width to the number of tile width's specified.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">lockAspect</span> If true, sets the height accordingto the texture aspect ratio and the new width.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>heightByTileArray</h3>
+<div class="methodReturnDesc"></div><h3>heightByTile(<span class="argType"></span> <span class="argName">val</span>, <span class="argType">Boolean</span> <span class="argName">lockAspect</span>)</h3>
 <div class="methodDesc">Set the object's height to the number of tile height's specified.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">lockAspect</span> If true, sets the height accordingto the texture aspect ratio and the new height.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>occupyTile</h3>
+<div class="methodReturnDesc"></div><h3>occupyTile()</h3>
 <div class="methodDesc">Dummy method to help debug when programmer expects to be able to access tile-based methods but cannot. This method is overwritten when the entity is mounted to a tile map.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>overTiles</h3>
+<div class="methodReturnDesc"></div><h3>overTiles()</h3>
 <div class="methodDesc">Dummy method to help debug when programmer expects to be able to access tile-based methods but cannot. This method is overwritten when the entity is mounted to a tile map.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>anchorArray</h3>
+<div class="methodReturnDesc"></div><h3>@param yanchor(<span class="argType"></span> <span class="argName">x</span>, <span class="argType">*</span> <span class="argName"></span>)</h3>
 <div class="methodDesc">Gets / sets the anchor position that this entity's texture will be adjusted by.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>widthArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Number=} pxwidth(<span class="argType">*</span> <span class="argName"></span>)</h3>
 <div class="methodDesc">Gets / sets the geometry.x.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">px</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>heightArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Number=} pxheight(<span class="argType">*</span> <span class="argName"></span>)</h3>
 <div class="methodDesc">Gets / sets the geometry.y.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">px</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>size3dArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param zsize3d(<span class="argType"></span> <span class="argName">x</span>, <span class="argType"></span> <span class="argName">y</span>, <span class="argType">*</span> <span class="argName"></span>)</h3>
 <div class="methodDesc">Gets / sets the 3d geometry of the entity. The x and y values are relative to the center of the entity and the z value is wholly positive.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>lifeSpanArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Number=} millisecondslifeSpan(<span class="argType">*</span> <span class="argName">Returns</span>)</h3>
 <div class="methodDesc">Gets / sets the life span of the object in milliseconds. The life span is how long the object will exist for before being automatically destroyed.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>deathTimeArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">Returns</span> this when setting the value or the current value if none is specified.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Number=} valdeathTime(<span class="argType">*</span> <span class="argName">Returns</span>)</h3>
 <div class="methodDesc">Gets / sets the timestamp in milliseconds that denotes the time that the entity will be destroyed. The object checks it's own death time during each tick and if the current time is greater than the death time, the object will be destroyed.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>opacityArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">Returns</span> this when setting the value or the current value if none is specified.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Number=} valopacity(<span class="argType">*</span> <span class="argName">Returns</span>)</h3>
 <div class="methodDesc">Gets / sets the entity opacity from 0.0 to 1.0.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>textureArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">Returns</span> this when setting the value or the current value if none is specified.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {IgeTexture=} texturetexture(<span class="argType">*</span> <span class="argName">Returns</span>)</h3>
 <div class="methodDesc">Gets / sets the texture to use when rendering the entity.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeTexture</span>}<span class="argName">texture</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>cellArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">Returns</span> this when setting the value or the current value if none is specified.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Number=} valcell(<span class="argType">*</span> <span class="argName">Returns</span>)</h3>
 <div class="methodDesc">Gets / sets the current texture cell used when rendering the game object's texture. If the texture is not cell-based, this value is ignored.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>dimensionsFromTexture</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">Returns</span> this when setting the value or the current value if none is specified.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Number=} valcellById(<span class="argType">*</span> <span class="argName">Returns</span>)</h3>
+<div class="methodDesc">Gets / sets the current texture cell used when rendering the game object's texture. If the texture is not cell-based, this value is ignored. This differs from cell() in that it accepts a string id as the cell</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">Returns</span> this when setting the value or the current value if none is specified.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>dimensionsFromTexture(<span class="argType">Number</span> <span class="argName">percent</span>)</h3>
 <div class="methodDesc">Sets the geometry of the entity to match the width and height of the assigned texture.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>dimensionsFromCell</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">percent</span> The percentage size to resize to.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>dimensionsFromCell()</h3>
 <div class="methodDesc">Sets the geometry of the entity to match the width and height of the assigned texture cell. If the texture is not cell-based the entire texture width / height will be used.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>highlightArray</h3>
+<div class="methodReturnDesc"></div><h3>@param {Boolean} valhighlight(<span class="argType">*</span> <span class="argName"></span>)</h3>
 <div class="methodDesc">Gets / sets the highlight mode. True is on false is off.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>localToWorldArray</h3>
-<div class="methodDesc">Converts an array of points from local space to this entity's world space using it's world transform matrix.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">points</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>aabb</h3>
-<div class="methodDesc">Calculates and returns the current axis-aligned bounding box.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>_transformContextArray</h3>
-<div class="methodDesc">Sets the canvas context transform properties to match the the game object's current transform values.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">HTMLCanvasContext</span>}<span class="argName">ctx</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>_transformPointArray</h3>
-<div class="methodDesc">Transforms a point by the entity's parent world matrix and it's own local matrix transforming the point to this entity's world space.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">igePoint</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>tickArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>localToWorld(<span class="argType">Array</span> <span class="argName">points</span>)</h3>
+<div class="methodDesc">Converts an array of points from local space to this entity's world space using it's world transform matrix. This will alter the points passed in the array directly.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">points</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>localToWorldPoint(<span class="argType">IgePoint</span> <span class="argName">points</span>)</h3>
+<div class="methodDesc">Converts a point from local space to this entity's world space using it's world transform matrix. This will alter the point's data directly.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName">points</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>aabb(<span class="argType">Object</span> <span class="argName">An</span>)</h3>
+<div class="methodDesc">Calculates and returns the current axis-aligned bounding box in world co-ordinates.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">An</span> object with the properties: x, y, width, height</li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {IgeEntity} otherObjectisBehind(<span class="argType">Boolean</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Compares the current entity's 3d bounds to the passed entity and determines if the current entity is "behind" the passed one. If an entity is behind another, it is drawn first during the scenegraph render phase.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Boolean=} valmouseEventsActive(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Get / set the flag determining if this entity will respond to mouse interaction or not. When you set a mouse* event e.g. mouseUp, mouseOver etc this flag will automatically be reset to true.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>tick(<span class="argType">HTMLCanvasContext</span> <span class="argName">ctx</span>, <span class="argType">Boolean</span> <span class="argName">dontTransform</span>)</h3>
 <div class="methodDesc">Processes the actions required each render frame.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">HTMLCanvasContext</span>}<span class="argName">ctx</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">dontTransform</span> If set to true, the tick method willnot transform the context based on the entity's matrices. This is useful if you have extended the class and want to process down the inheritance chain but have already transformed the entity in a previous overloaded method.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>_mouseInAabbArray</h3>
+<div class="methodReturnDesc"></div><h3>_renderEntity(<span class="argType"></span> <span class="argName">ctx</span>, <span class="argType"></span> <span class="argName">dontTransform</span>)</h3>
+<div class="methodDesc">Handles calling the texture.render() method if a texture is applied to the entity. This part of the tick process has been abstracted to allow it to be overridden by an extending class.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">ctx</span> </li><li>{<span class="argType"></span>}<span class="argName">dontTransform</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>_transformContext(<span class="argType">HTMLCanvasContext</span> <span class="argName">ctx</span>)</h3>
+<div class="methodDesc">Sets the canvas context transform properties to match the the game object's current transform values.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">HTMLCanvasContext</span>}<span class="argName">ctx</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>_transformPoint(<span class="argType"></span> <span class="argName">igePoint</span>)</h3>
+<div class="methodDesc">Transforms a point by the entity's parent world matrix and it's own local matrix transforming the point to this entity's world space.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">igePoint</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>_mouseInAabb(<span class="argType"></span> <span class="argName">evc</span>)</h3>
 <div class="methodDesc">Checks mouse input types and fires the correct mouse event handler.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">evc</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>_stringify</h3>
+<div class="methodReturnDesc"></div><h3>_stringify(<span class="argType">String</span> <span class="argName"></span>)</h3>
 <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>
-<div class="methodArgs"></div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Array=} sectionArray An array of strings.streamSections(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Gets / sets the array of sections that this entity will encode into its stream data.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Boolean=} bypassTimeStream If true, will assign transform directly to entity instead of adding the values to the time stream.streamSectionData(<span class="argType">String</span> <span class="argName">sectionId</span>, <span class="argType">*</span> <span class="argName">data</span>, <span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Gets / sets the data for the specified data section id.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">sectionId</span> A string identifying the section to handle data get / set for.</li><li>{<span class="argType">*</span>}<span class="argName">data</span> If present, this is the data that has been sent from the server to the client for this entity.</li><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Number=} val A value representing the stream mode.streamMode(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Gets / sets the stream mode that the stream system will use when handling pushing data updates to connected clients.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Function=} methodstreamControl(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Gets / sets the stream control callback function that will be called each time the entity tick method is called and stream-able data is updated.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Number=} val Number of milliseconds between callsto the streamControl method.streamControlInterval(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Gets / sets the stream control call interval. This value is in milliseconds and cannot be lower than 16.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param valstreamFloatPrecision(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Gets / sets the precision by which floating-point values will be encoded and sent when packaged into stream data.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {String, Array} clientId Either a string ID or an array of string IDs ofeach client to send the stream data to.streamSync(<span class="argType">*</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Queues stream data for this entity to be sent to the specified client id or array of client ids.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>_streamSync(<span class="argType"></span> <span class="argName">clientId</span>)</h3>
+<div class="methodDesc">Asks the stream system to queue the stream data to the specified client id or array of ids.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">clientId</span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>_streamData(<span class="argType">String</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Generates and returns the current stream data for this entity. The data will usually include only properties that have changed since the last time the stream data was generated. The returned data is a string that has been compressed in various ways to reduce network overhead during transmission.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param endTime The time the interpolation will end.interpolateValue(<span class="argType"></span> <span class="argName">startValue</span>, <span class="argType"></span> <span class="argName">endValue</span>, <span class="argType"></span> <span class="argName">startTime</span>, <span class="argType"></span> <span class="argName">currentTime</span>, <span class="argType">Number</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Calculates the current value based on the time along the value range.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">startValue</span> The value that the interpolation started from.</li><li>{<span class="argType"></span>}<span class="argName">endValue</span> The target value to be interpolated to.</li><li>{<span class="argType"></span>}<span class="argName">startTime</span> The time the interpolation started.</li><li>{<span class="argType"></span>}<span class="argName">currentTime</span> The current time.</li><li>{<span class="argType">Number</span>}<span class="argName"></span> </li></ul></div>
 <div class="methodReturnDesc"></div>	</div>
 </body>
 </html>

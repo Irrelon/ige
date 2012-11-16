@@ -5,29 +5,32 @@
 <body>
 	<div class="page">
 <h2>IgeEventingClass <span>CLASS</span></h2>
-<p>Declared in <a href="../../engine/core/IgeEventingClass.js">{file}</a></p>
+<p>Declared in <a href="../../engine/core/IgeEventingClass.js">IgeEventingClass.js</a></p>
 <div class="itemBox">
 	<div class="header">Description</div>
 	<div class="content">Creates a new class with the capability to emit events.</div>
 </div>
 <div class="itemBox">
 	<div class="header">Extends</div>
-	<div class="content"><a href="{extends}.html">IgeClass</a></div>
+	<div class="content"><a href="IgeClass.html">IgeClass</a></div>
 </div>
 <h2>Methods</h2>
 
-<h3>onArray</h3>
+<h3>@param {Boolean=} sendEventName If set, will instruct the emitter to send the event name as the argument instead of any emitted arguments.on(<span class="argType">String || Array</span> <span class="argName">eventName</span>, <span class="argType">Function</span> <span class="argName">call</span>, <span class="argType">Object</span> <span class="argName">context</span>, <span class="argType">Boolean</span> <span class="argName">oneShot</span>, <span class="argType">Object</span> <span class="argName"></span>)</h3>
 <div class="methodDesc">Add an event listener method for an event.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String || Array</span>}<span class="argName">eventName</span> The name of the event to listen for (string), or an array of events to listen for.</li><li>{<span class="argType">Function</span>}<span class="argName">call</span> The method to call when the event listener is triggered.</li><li>{<span class="argType">Object</span>}<span class="argName">context</span> The context in which the call to the listening method will be made (sets the 'this' variable in the method to the object passed as this parameter).</li><li>{<span class="argType">Boolean</span>}<span class="argName">oneShot</span> If set, will instruct the listener to only listen to the event being fired once and will not fire again.</li><li>{<span class="argType">Boolean</span>}<span class="argName">sendEventName</span> If set, will instruct the emitter to send the event name as the argument instead of any emitted arguments.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>emitArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String || Array</span>}<span class="argName">eventName</span> The name of the event to listen for (string), or an array of events to listen for.</li><li>{<span class="argType">Function</span>}<span class="argName">call</span> The method to call when the event listener is triggered.</li><li>{<span class="argType">Object</span>}<span class="argName">context</span> The context in which the call to the listening method will be made (sets the 'this' variable in the method to the object passed as this parameter).</li><li>{<span class="argType">Boolean</span>}<span class="argName">oneShot</span> If set, will instruct the listener to only listen to the event being fired once and will not fire again.</li><li>{<span class="argType">Object</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {Object || Array} args The arguments to send to any listening methods. If you are sending multiple arguments, use an array containing each argument.emit(<span class="argType">Object</span> <span class="argName">eventName</span>, <span class="argType">Number</span> <span class="argName"></span>)</h3>
 <div class="methodDesc">Emit an event by name.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">eventName</span> The name of the event to listen for.</li><li>{<span class="argType">Object || Array</span>}<span class="argName">args</span> The arguments to send to any listening methods. If you are sending multiple arguments, use an array containing each argument.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>offArray</h3>
-<div class="methodDesc">Remove an event listener.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">eventName</span> The name of the event you originally registered to listen for.</li><li>{<span class="argType">Object</span>}<span class="argName">evtListener</span> The event listener object to cancel.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>eventList</h3>
-<div class="methodDesc">Returns an object containing the current event listeners.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">eventName</span> The name of the event to listen for.</li><li>{<span class="argType">Number</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>_processRemovals()</h3>
+<div class="methodDesc">Loops the removals array and processes off() calls for each array item.</div>
 <div class="methodArgs"></div>
+<div class="methodReturnDesc"></div><h3>@param {Object} evtListener The event listener object to cancel.off(<span class="argType">Boolean</span> <span class="argName">eventName</span>, <span class="argType">Boolean</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Remove an event listener. If the _processing flag is true then the removal will be placed in the removals array to be processed after the event loop has completed in the emit() method.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">eventName</span> The name of the event you originally registered to listen for.</li><li>{<span class="argType">Boolean</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>eventList(<span class="argType">Object</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Returns an object containing the current event listeners.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName"></span> </li></ul></div>
 <div class="methodReturnDesc"></div>	</div>
 </body>
 </html>

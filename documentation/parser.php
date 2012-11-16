@@ -52,6 +52,7 @@ function parseFile($path) {
 			// Grab the parameter markers
 			reset($descriptionLines);
 			$paramText = '';
+			$returnText = '';
 			$parametersArray = Array();
 			$privateMethod = false;
 			$constructorMethod = false;
@@ -76,9 +77,24 @@ function parseFile($path) {
 					if (substr($descripText, 0, 12) === '@constructor') {
 						$constructorMethod = true;
 					}
+
+					if (substr($descripText, 0, 7) === '@return') {
+						if (trim($paramText)) {
+							// We have an existing parameter's data, store it
+							$returnText = trim($paramText);
+
+							// Now clear the text
+							$paramText = '';
+						}
+						$paramText .= $descripText;
+					}
 				} else {
 					if ($paramText) {
 						$paramText .= $descripText . ' ';
+					}
+
+					if ($returnText) {
+						$returnText .= $descripText . ' ';
 					}
 				}
 			}
@@ -155,6 +171,70 @@ function parseFile($path) {
 				$parameters[] = $param;
 			}
 
+			// Extract type and description from return line
+			/*if ($returnText) {
+				// Check for type
+				preg_match("/\{(.*?)\}/", $paramVal, $paramType);
+				unset($param);
+				$param['type'] = $paramType[1];
+				$param['optional'] = false;
+				$param['name'] = '';
+				$param['desc'] = '';
+
+				if ($param['type']) {
+					// Check if the parameter is optional
+					if (substr($param['type'], strlen($param['type']) - 1, 1) === '=') {
+						// The parameter is optional, remove the = from the type name
+						$param['type'] = substr($param['type'], 0, strlen($param['type']) - 1);
+						$param['optional'] = true;
+					} else {
+						$param['optional'] = false;
+					}
+
+					// Extract the parameter name
+					preg_match("/\}\s(.*?)$/", $paramVal, $paramLine);
+
+					// Check if more than one word exists in the line
+					if (strstr($paramLine[1], ' ')) {
+						// Split the text by space
+						$textSplit = explode(' ', $paramLine[1]);
+						$param['name'] = trim($textSplit[0], ' ');
+
+						foreach ($textSplit as $paramDescKey => $paramDescVal) {
+							if ($paramDescKey !== 0) {
+								$param['desc'] .= $paramDescVal . ' ';
+							}
+						}
+
+						$param['desc'] = trim($param['desc']);
+					} else {
+						$param['name'] = $paramLine[1];
+					}
+				} else {
+					// Extract the parameter name
+					preg_match("/\s(.*?)$/", $paramVal, $paramLine);
+
+					// Check if more than one word exists in the line
+					if (strstr($paramLine[1], ' ')) {
+						// Split the text by space
+						$textSplit = explode(' ', $paramLine[1]);
+						$param['name'] = trim($textSplit[0], ' ');
+
+						foreach ($textSplit as $paramDescKey => $paramDescVal) {
+							if ($paramDescKey !== 0) {
+								$param['desc'] .= $paramDescVal . ' ';
+							}
+						}
+
+						$param['desc'] = trim($param['desc']);
+					} else {
+						$param['name'] = $paramLine[1];
+					}
+				}
+
+				$parameters[] = $param;
+			}*/
+
 			// Check if the code is a class that is extending another
 			preg_match_all("/=\s(.*?)\.extend/", $codeLine, $extendedClass);
 			$itemType = '';
@@ -222,6 +302,9 @@ function parseFile($path) {
 					$item['arguments'] = $arguments;
 					$item['private'] = $privateMethod;
 					$item['constructor'] = $constructorMethod;
+					if ($returnText) {
+						$item['returnType'] = $returnText;
+					}
 					break;
 			}
 

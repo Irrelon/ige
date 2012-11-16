@@ -40,19 +40,28 @@ function recurse ($path) {
 }
 
 function parseTemplate($str, $item, $path, $file) {
+	var_dump($item);
 	$argumentsHtml = '';
 	if ($item['params']) {
 		foreach ($item['params'] as $argKey => $argVal) {
 			$argumentsHtml .= '<li>{<span class="argType">' . $argVal['type'] . '</span>}<span class="argName">' . $argVal['name'] . '</span> ' . $argVal['desc'] . '</li>';
+			if ($paramsHtml) {
+				$paramsHtml .= ', ';
+			}
+			$paramsHtml .= '<span class="argType">' . $argVal['type'] . '</span> <span class="argName">' . $argVal['name'] . '</span>';
 		}
 		if ($argumentsHtml) {
 			$argumentsHtml = '<ul class="argList">' . $argumentsHtml . '</ul>';
 		}
 	}
 
+	$paramsHtml = '(' . $paramsHtml . ')';
+
+	$str = str_replace('={returnType}', $item["returnType"], $str);
 	$str = str_replace('={path}', ENGINE_RELATIVE . $path, $str);
 	$str = str_replace('={file}', $file, $str);
 	$str = str_replace('={arguments}', $argumentsHtml, $str);
+	$str = str_replace('={params}', $paramsHtml, $str);
 
 	preg_match_all("/={(.*?)}/", $str, $matches);
 

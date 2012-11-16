@@ -5,27 +5,30 @@
 <body>
 	<div class="page">
 <h2>IgePoly2d <span>CLASS</span></h2>
-<p>Declared in <a href="../../engine/core/IgePoly2d.js">{file}</a></p>
+<p>Declared in <a href="../../engine/core/IgePoly2d.js">IgePoly2d.js</a></p>
 <div class="itemBox">
 	<div class="header">Description</div>
 	<div class="content">Creates a new 2d polygon made up of IgePoint instances.</div>
 </div>
 <div class="itemBox">
 	<div class="header">Extends</div>
-	<div class="content"><a href="{extends}.html">IgeClass</a></div>
+	<div class="content"><a href="IgeClass.html">IgeClass</a></div>
 </div>
 <h2>Methods</h2>
 
-<h3>addPointArray</h3>
+<h3>addPoint(<span class="argType"></span> <span class="argName">x</span>, <span class="argType"></span> <span class="argName">y</span>)</h3>
 <div class="methodDesc">Adds a point to the polygon relative to the polygon center at 0, 0.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>length</h3>
+<div class="methodReturnDesc"></div><h3>length(<span class="argType">Number</span> <span class="argName"></span>)</h3>
 <div class="methodDesc">Returns the length of the poly array.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>pointInPolyArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>@param {IgePoint} pointpointInPoly(<span class="argType">Boolean</span> <span class="argName"></span>)</h3>
 <div class="methodDesc">Check if a point is inside this polygon.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName">point</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>renderArray</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>clone(<span class="argType">IgePoly2d</span> <span class="argName"></span>)</h3>
+<div class="methodDesc">Returns a copy of this IgePoly2d object that is it's own version, separate from the original.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoly2d</span>}<span class="argName"></span> </li></ul></div>
+<div class="methodReturnDesc"></div><h3>render(<span class="argType">HTMLCanvasContext</span> <span class="argName">ctx</span>)</h3>
 <div class="methodDesc">Draws the polygon bounding lines to the passed context.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">HTMLCanvasContext</span>}<span class="argName">ctx</span> </li></ul></div>
 <div class="methodReturnDesc"></div>	</div>

@@ -25,6 +25,9 @@ var IgeTransformExtension = {
 	},
 
 	translate: function () {
+		if (arguments.length) {
+			this.log('You called translate with arguments, did you mean translateTo or translateBy instead of translate?', 'warning');
+		}
 		//this.tween = this._translateAccessorTween;
 		this.x = this._translateAccessorX;
 		this.y = this._translateAccessorY;
@@ -91,6 +94,9 @@ var IgeTransformExtension = {
 	},
 
 	rotate: function () {
+		if (arguments.length) {
+			this.log('You called rotate with arguments, did you mean rotateTo or rotateBy instead of rotate?', 'warning');
+		}
 		//this.tween = this._rotateAccessorTween;
 		this.x = this._rotateAccessorX;
 		this.y = this._rotateAccessorY;
@@ -154,6 +160,9 @@ var IgeTransformExtension = {
 	},
 
 	scale: function () {
+		if (arguments.length) {
+			this.log('You called scale with arguments, did you mean scaleTo or scaleBy instead of scale?', 'warning');
+		}
 		//this.tween = this._scaleAccessorTween;
 		this.x = this._scaleAccessorX;
 		this.y = this._scaleAccessorY;
