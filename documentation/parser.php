@@ -274,7 +274,7 @@ function parseFile($path) {
 				case 'class':
 					$item['type'] = 'class';
 					$item['name'] = $className;
-					$item['extends'] = $extendedClass;
+					$item['extends'] = $extendedClass != 'none' ? $extendedClass : '';
 					break;
 
 				case 'function':
