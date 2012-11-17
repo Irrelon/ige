@@ -1053,7 +1053,7 @@ var IgeEntity = IgeObject.extend([
 							str += ".height(" + this.height() + ")";
 						}
 						break;
-					case 'geometry':
+					case '_geometry':
 						str += ".size3d(" + this._geometry.x + ", " + this._geometry.y + ", " + this._geometry.z + ")";
 						break;
 					case '_deathTime':
