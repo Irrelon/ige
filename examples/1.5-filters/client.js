@@ -25,6 +25,7 @@ var Client = IgeClass.extend({
 		gameTexture[10] = new IgeTexture('../assets/textures/sprites/lenna.png');
 		gameTexture[11] = new IgeTexture('../assets/textures/sprites/tron.png');
 		gameTexture[12] = new IgeTexture('../assets/textures/sprites/tronGlowMask.png');
+		gameTexture[13] = new IgeTexture('../assets/textures/sprites/tron.png');
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -271,7 +272,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[11])
-						.translateTo(0, yStart + 520, 0)
+						.translateTo(-150, yStart + 520, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -279,8 +280,46 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.texture(self.verdana)
 						.textAlignX(1)
-						.text('Glow')
+						.text('Glow: Original')
+						.translateTo(-150, yStart + 450, 0)
+						.drawBounds(false)
+						.mount(self.scene1);
+
+					self.obj[12] = new IgeEntity()
+						.id('fairy12')
+						.depth(0)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[12])
+						.translateTo(0, yStart + 520, 0)
+						.mount(self.scene1);
+
+					new IgeFontEntity()
+						.id('title12')
+						.depth(1)
+						.texture(self.verdana)
+						.textAlignX(1)
+						.text('Glow: Mask Image')
 						.translateTo(0, yStart + 450, 0)
+						.drawBounds(false)
+						.mount(self.scene1);
+
+					self.obj[13] = new IgeEntity()
+						.id('fairy13')
+						.depth(0)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[13])
+						.translateTo(150, yStart + 520, 0)
+						.mount(self.scene1);
+
+					new IgeFontEntity()
+						.id('title13')
+						.depth(1)
+						.texture(self.verdana)
+						.textAlignX(1)
+						.text('Glow: Result')
+						.translateTo(150, yStart + 450, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -315,7 +354,7 @@ var Client = IgeClass.extend({
 					gameTexture[10].applyFilter(IgeFilters.sobel);
 
 					// Apply a glow mask filter to the eleventh  texture
-					gameTexture[11].applyFilter(IgeFilters.glow, {glowMask: gameTexture[12], blurPasses:10, glowPasses: 2});
+					gameTexture[13].applyFilter(IgeFilters.glow, {glowMask: gameTexture[12], blurPasses:10, glowPasses: 2});
 				}
 			});
 		});
