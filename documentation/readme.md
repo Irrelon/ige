@@ -1,4 +1,3 @@
 # Documentation
-This folder contains some (probably outdated) docs relating to the engine. Unless specified in this file they are to be
-considered useless. The final docs that will occupy this folder will be mostly auto-generated from the source code and
-then augmented with UML diagrams.
+This folder contains some docs relating to the engine API. The documentation for version 1.1.0 is not yet complete but
+these files are included anyway as they may be of some help.
