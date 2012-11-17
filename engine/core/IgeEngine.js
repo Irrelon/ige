@@ -971,6 +971,14 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
+	 * Get the current time from the engine.
+	 * @return {Number} The current time.
+	 */
+	currentTime: function () {
+		return this._currentTime;
+	},
+
+	/**
 	 * Called each frame to traverse and render the scenegraph.
 	 */
 	tick: function (timeStamp, ctx) {
