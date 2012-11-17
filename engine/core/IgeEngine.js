@@ -34,8 +34,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		// Create storage
-		this.ClassStore = {};
-		this.TextureStore = [];
+		this._textureStore = [];
 
 		// Set the initial id as the current time in milliseconds. This ensures that under successive
 		// restarts of the engine, new ids will still always be created compared to earlier runs -
@@ -278,7 +277,7 @@ var IgeEngine = IgeEntity.extend({
 	 * @param {Object} obj The class definition.
 	 */
 	defineClass: function (id, obj) {
-		ige.ClassStore[id] = obj;
+		igeClassStore[id] = obj;
 	},
 
 	/**
@@ -288,7 +287,7 @@ var IgeEngine = IgeEntity.extend({
 	 * @return {Object} The class definition.
 	 */
 	getClass: function (id) {
-		return ige.ClassStore[id];
+		return igeClassStore[id];
 	},
 
 	/**
@@ -300,7 +299,7 @@ var IgeEngine = IgeEntity.extend({
 	 * @return {*}
 	 */
 	newClassInstance: function (id, options) {
-		return new ige.ClassStore[id](options);
+		return new igeClassStore[id](options);
 	},
 
 	/**
@@ -361,8 +360,8 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	textureLoadEnd: function (url, textureObj) {
 		if (!textureObj._destroyed) {
-			// Add the texture to the TextureStore array
-			this.TextureStore.push(textureObj);
+			// Add the texture to the _textureStore array
+			this._textureStore.push(textureObj);
 		}
 
 		// Decrement the overall loading number
@@ -382,7 +381,7 @@ var IgeEngine = IgeEntity.extend({
 	 * @return {IgeTexture}
 	 */
 	textureFromUrl: function (url) {
-		var arr = this.TextureStore,
+		var arr = this._textureStore,
 			arrCount = arr.length,
 			item;
 

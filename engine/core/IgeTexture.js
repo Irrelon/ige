@@ -628,7 +628,7 @@ var IgeTexture = IgeEventingClass.extend({
 		}
 
 		// Remove the texture from the texture store
-		ige.TextureStore.pull(this);
+		ige._textureStore.pull(this);
 
 		delete this.image;
 		delete this.script;
