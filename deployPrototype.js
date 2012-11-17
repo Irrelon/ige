@@ -29,6 +29,8 @@ var fs = require('fs'),
 	});
 });*/
 
+// TODO: Scan code in blank_game and update paths to change /ige to /ige_prototype
+
 // Generate the obfuscated deployment
 var child = exec('node ./server/ige -proto true -clearClasses true -deploy . -to ../ige_prototype/engine/core', {cwd: process.cwd()}, function (error, stdout, stderr) {
 	console.log('IGE Core Prototype Version Deployment Complete!');
