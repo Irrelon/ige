@@ -35,6 +35,8 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
+					var yStart = -300;
+
 					// Create the scene
 					self.scene1 = new IgeScene2d()
 						.id('scene1');
@@ -56,7 +58,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[0])
-						.translateTo(0, -150, 0)
+						.translateTo(0, yStart + 70, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -65,7 +67,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Original Image')
-						.translateTo(0, -220, 0)
+						.translateTo(0, yStart, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -78,7 +80,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[1])
-						.translateTo(-300, 0, 0)
+						.translateTo(-300, yStart + 220, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -87,7 +89,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Greyscale')
-						.translateTo(-300, -70, 0)
+						.translateTo(-300, yStart + 150, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -98,7 +100,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[2])
-						.translateTo(-150, 0, 0)
+						.translateTo(-150, yStart + 220, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -107,7 +109,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Brighten')
-						.translateTo(-150, -70, 0)
+						.translateTo(-150, yStart + 150, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -117,7 +119,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[3])
-						.translateTo(0, 0, 0)
+						.translateTo(0, yStart + 220, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -126,7 +128,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Threshold')
-						.translateTo(0, -70, 0)
+						.translateTo(0, yStart + 150, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -136,7 +138,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[4])
-						.translateTo(150, 0, 0)
+						.translateTo(150, yStart + 220, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -145,7 +147,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Sharpen')
-						.translateTo(150, -70, 0)
+						.translateTo(150, yStart + 150, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -155,7 +157,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[5])
-						.translateTo(300, 0, 0)
+						.translateTo(300, yStart + 220, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -164,7 +166,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Blur')
-						.translateTo(300, -70, 0)
+						.translateTo(300, yStart + 150, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -174,7 +176,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[6])
-						.translateTo(-300, 150, 0)
+						.translateTo(-300, yStart + 370, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -183,7 +185,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Emboss')
-						.translateTo(-300, 80, 0)
+						.translateTo(-300, yStart + 300, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -193,7 +195,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[7])
-						.translateTo(-150, 150, 0)
+						.translateTo(-150, yStart + 370, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -202,7 +204,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Edge Detect')
-						.translateTo(-150, 80, 0)
+						.translateTo(-150, yStart + 300, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -212,7 +214,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[8])
-						.translateTo(0, 150, 0)
+						.translateTo(0, yStart + 370, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -221,7 +223,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Edge Enhance')
-						.translateTo(0, 80, 0)
+						.translateTo(0, yStart + 300, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -231,7 +233,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[9])
-						.translateTo(150, 150, 0)
+						.translateTo(150, yStart + 370, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -240,7 +242,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Color Overlay')
-						.translateTo(150, 80, 0)
+						.translateTo(150, yStart + 300, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -250,7 +252,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[10])
-						.translateTo(300, 150, 0)
+						.translateTo(300, yStart + 370, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -259,7 +261,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Sobel')
-						.translateTo(300, 80, 0)
+						.translateTo(300, yStart + 300, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -269,7 +271,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[11])
-						.translateTo(0, 300, 0)
+						.translateTo(0, yStart + 520, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -278,7 +280,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Glow')
-						.translateTo(0, 160, 0)
+						.translateTo(0, yStart + 450, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -313,7 +315,7 @@ var Client = IgeClass.extend({
 					gameTexture[10].applyFilter(IgeFilters.sobel);
 
 					// Apply a glow mask filter to the eleventh  texture
-					gameTexture[10].applyFilter(IgeFilters.glow, {glowMask: gameTexture[11], blurPasses:5, glowPasses: 2});
+					gameTexture[11].applyFilter(IgeFilters.glow, {glowMask: gameTexture[12], blurPasses:10, glowPasses: 2});
 				}
 			});
 		});
