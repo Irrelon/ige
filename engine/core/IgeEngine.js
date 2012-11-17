@@ -53,7 +53,7 @@ var IgeEngine = IgeEntity.extend({
 
 		this._renderContext = '2d'; // The rendering context, default is 2d
 		this._renderMode = this._renderModes[this._renderContext]; // Integer representation of the render context
-		this._tickTime = 'NA';
+		this._tickTime = 'NA'; // The time the tick started
 		this.tickDelta = 0; // The time between the last tick and the current one
 		this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 		this._state = 0; // Currently stopped
