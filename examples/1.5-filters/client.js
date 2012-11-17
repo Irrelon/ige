@@ -23,6 +23,8 @@ var Client = IgeClass.extend({
 		gameTexture[8] = new IgeTexture('../assets/textures/sprites/lenna.png');
 		gameTexture[9] = new IgeTexture('../assets/textures/sprites/lenna.png');
 		gameTexture[10] = new IgeTexture('../assets/textures/sprites/lenna.png');
+		gameTexture[11] = new IgeTexture('../assets/textures/sprites/tron.png');
+		gameTexture[12] = new IgeTexture('../assets/textures/sprites/tronGlowMask.png');
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -242,7 +244,7 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.mount(self.scene1);
 
-					self.obj[9] = new Rotator()
+					self.obj[10] = new Rotator()
 						.id('fairy10')
 						.depth(0)
 						.width(100)
@@ -258,6 +260,25 @@ var Client = IgeClass.extend({
 						.textAlignX(1)
 						.text('Sobel')
 						.translateTo(300, 80, 0)
+						.drawBounds(false)
+						.mount(self.scene1);
+
+					self.obj[11] = new Rotator()
+						.id('fairy11')
+						.depth(0)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[11])
+						.translateTo(0, 300, 0)
+						.mount(self.scene1);
+
+					new IgeFontEntity()
+						.id('title11')
+						.depth(1)
+						.texture(self.verdana)
+						.textAlignX(1)
+						.text('Glow')
+						.translateTo(0, 160, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -290,6 +311,9 @@ var Client = IgeClass.extend({
 
 					// Apply a sobel filter to the tenth fairy texture
 					gameTexture[10].applyFilter(IgeFilters.sobel);
+
+					// Apply a glow mask filter to the eleventh  texture
+					gameTexture[10].applyFilter(IgeFilters.glow, {glowMask: gameTexture[11], blurPasses:5, glowPasses: 2});
 				}
 			});
 		});
