@@ -59,6 +59,23 @@ var IgeTimeSyncExtension = {
 	},
 	/* CEXCLUDE */
 
+	/**
+	 * Converts a timestamp on the client to approx. time
+	 * on the server using the difference in client/server
+	 * clocks and the network latency between this client
+	 * and the server.
+	 * @param {Number} time The client timestamp (usually
+	 * the result of new Date().getTime() or
+	 * ige.currentTime()).
+	 */
+	timeToServerTime: function (time) {
+		if (time !== undefined) {
+			return time + this._latency;
+		}
+
+		return this._latency;
+	},
+
 	_onTimeSync: function (data, clientId) {
 		var localTime = Math.floor(ige._currentTime),
 			sendTime,
