@@ -374,7 +374,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 	 * @param ctx
 	 */
 	tick: function (ctx) {
-		this._currentDelta += ige.tickDelta;
+		this._currentDelta += ige._tickDelta;
 
 		// Check if the emitter is mounted to anything and started, if not
 		// then don't bother creating particles!

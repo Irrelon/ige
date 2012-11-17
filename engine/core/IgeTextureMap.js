@@ -566,7 +566,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		tileEntity._cell = tileData[1];
 
 		// Paint the texture
-		texture.render(ctx, tileEntity, ige.tickDelta);
+		texture.render(ctx, tileEntity, ige._tickDelta);
 		ctx.restore();
 	},
 

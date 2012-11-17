@@ -914,7 +914,7 @@ var IgeEntity = IgeObject.extend([
 		// Check if the entity is visible based upon its opacity
 		if (this._opacity > 0 && texture) {
 			// Draw the entity image
-			texture.render(ctx, this, ige.tickDelta);
+			texture.render(ctx, this, ige._tickDelta);
 
 			if (this._highlight) {
 				ctx.globalCompositeOperation = 'lighter';
@@ -1290,7 +1290,7 @@ var IgeEntity = IgeObject.extend([
 		if (this._streamMode === 1) {
 			// Check if we have a stream sync interval
 			if (this._streamSyncInterval) {
-				this._streamSyncDelta += ige.tickDelta;
+				this._streamSyncDelta += ige._tickDelta;
 
 				if (this._streamSyncDelta < this._streamSyncInterval) {
 					// The stream sync interval is still higher than
@@ -1394,7 +1394,7 @@ var IgeEntity = IgeObject.extend([
 
 					if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
 						// Check if the section interval has been reached
-						this._streamSyncSectionDelta[sectionId] += ige.tickDelta;
+						this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
 						console.log(this._streamSyncSectionDelta[sectionId]);
 
 						if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {

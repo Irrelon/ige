@@ -54,7 +54,7 @@ var IgeEngine = IgeEntity.extend({
 		this._renderContext = '2d'; // The rendering context, default is 2d
 		this._renderMode = this._renderModes[this._renderContext]; // Integer representation of the render context
 		this._tickTime = 'NA'; // The time the tick started
-		this.tickDelta = 0; // The time between the last tick and the current one
+		this._tickDelta = 0; // The time between the last tick and the current one
 		this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 		this._state = 0; // Currently stopped
 		this._textureImageStore = {};
@@ -1024,10 +1024,10 @@ var IgeEngine = IgeEntity.extend({
 				// This is the first time we've run so set some
 				// default values and set the delta to zero
 				self.lastTick = 0;
-				self.tickDelta = 0;
+				self._tickDelta = 0;
 			} else {
 				// Calculate the frame delta
-				self.tickDelta = self.tickStart - self.lastTick;
+				self._tickDelta = self.tickStart - self.lastTick;
 			}
 
 			// Process any behaviours assigned to the engine

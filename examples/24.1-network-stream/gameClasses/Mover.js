@@ -64,14 +64,14 @@ var Mover = IgeEntity.extend({
 		// transform updates to the client automatically
 		if (ige.isServer) {
 			if (this._moveDir) {
-				this.translateBy(0.35 * ige.tickDelta, 0, 0);
+				this.translateBy(0.35 * ige._tickDelta, 0, 0);
 
 				if (this._translate.x > 300) {
 					this._translate.x = 300;
 					this._moveDir = 0;
 				}
 			} else {
-				this.translateBy(-0.35 * ige.tickDelta, 0, 0);
+				this.translateBy(-0.35 * ige._tickDelta, 0, 0);
 
 				if (this._translate.x < -300) {
 					this._translate.x = -300;

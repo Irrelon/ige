@@ -147,14 +147,14 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 */
 	tick: function (ctx) {
 		if (this._anim) {
-			var tickDelta = ige.tickDelta,
+			var _tickDelta = ige._tickDelta,
 				anim = this._anim,
 				multiple,
 				cell,
 				frame;
 
 			// Advance the internal animation timer
-			anim.currentDelta += tickDelta;
+			anim.currentDelta += _tickDelta;
 
 			// Check if the animation timer is greater than the total animation time
 			if (anim.currentDelta > anim.totalTime) {

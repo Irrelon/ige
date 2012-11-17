@@ -183,7 +183,7 @@ var IgeVelocityComponent = IgeClass.extend({
 	},
 
 	tick: function (ctx) {
-		var delta = ige.tickDelta,
+		var delta = ige._tickDelta,
 			vel = this._velocity,
 			x, y, z;
 

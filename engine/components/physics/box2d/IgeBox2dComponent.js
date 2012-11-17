@@ -541,7 +541,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			}
 
 			// Call the world step; frame-rate, velocity iterations, position iterations
-			self._world.Step(ige.tickDelta / 1000, 8, 8);
+			self._world.Step(ige._tickDelta / 1000, 8, 8);
 
 			// Loop the physics objects and move the entities they are assigned to
 			tempBod = self._world.GetBodyList();

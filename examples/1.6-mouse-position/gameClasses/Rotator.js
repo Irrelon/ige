@@ -8,7 +8,7 @@ var Rotator = IgeEntity.extend({
 	tick: function (ctx) {
 		if (this.newFrame()) {
 			// Rotate this entity by 0.1 degrees.
-			this.rotateBy(0, 0, Math.radians(0.1 * ige.tickDelta));
+			this.rotateBy(0, 0, Math.radians(0.1 * ige._tickDelta));
 		}
 
 		// Call the IgeEntity (super-class) tick() method
