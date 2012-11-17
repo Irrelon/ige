@@ -3,7 +3,7 @@ var fs = require('fs'),
 	dir = '../ige_prototype/examples/',
 	data = {};
 
-fs.readdir(dir, function(err, files){
+/*fs.readdir(dir, function(err, files){
 	if (err) { throw(err); }
 
 	files.forEach(function(file){
@@ -27,8 +27,9 @@ fs.readdir(dir, function(err, files){
 
 		});
 	});
-});
+});*/
 
+// Generate the obfuscated deployment
 var child = exec('node ./server/ige -proto true -clearClasses true -deploy . -to ../ige_prototype/engine/core', {cwd: process.cwd()}, function (error, stdout, stderr) {
 	console.log('IGE Core Prototype Version Deployment Complete!');
 });
