@@ -26,6 +26,8 @@ var Client = IgeClass.extend({
 		gameTexture[11] = new IgeTexture('../assets/textures/sprites/tron.png');
 		gameTexture[12] = new IgeTexture('../assets/textures/sprites/tronGlowMask.png');
 		gameTexture[13] = new IgeTexture('../assets/textures/sprites/tron.png');
+		gameTexture[14] = new IgeTexture('../assets/textures/sprites/tron.png');
+		gameTexture[15] = new IgeTexture('../assets/textures/sprites/tronGlowMask.png');
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -272,7 +274,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[11])
-						.translateTo(-150, yStart + 520, 0)
+						.translateTo(-300, yStart + 520, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -281,7 +283,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Glow: Original')
-						.translateTo(-150, yStart + 450, 0)
+						.translateTo(-300, yStart + 450, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -291,7 +293,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[12])
-						.translateTo(0, yStart + 520, 0)
+						.translateTo(-150, yStart + 520, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -300,7 +302,7 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Glow: Mask Image')
-						.translateTo(0, yStart + 450, 0)
+						.translateTo(-150, yStart + 450, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -310,7 +312,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[13])
-						.translateTo(150, yStart + 520, 0)
+						.translateTo(0, yStart + 520, 0)
 						.mount(self.scene1);
 
 					new IgeFontEntity()
@@ -319,6 +321,25 @@ var Client = IgeClass.extend({
 						.texture(self.verdana)
 						.textAlignX(1)
 						.text('Glow: Result')
+						.translateTo(0, yStart + 450, 0)
+						.drawBounds(false)
+						.mount(self.scene1);
+
+					self.obj[14] = new IgeEntity()
+						.id('fairy14')
+						.depth(0)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[14])
+						.translateTo(150, yStart + 520, 0)
+						.mount(self.scene1);
+
+					new IgeFontEntity()
+						.id('title14')
+						.depth(1)
+						.texture(self.verdana)
+						.textAlignX(1)
+						.text('Glow: Dynamic')
 						.translateTo(150, yStart + 450, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
@@ -353,8 +374,32 @@ var Client = IgeClass.extend({
 					// Apply a sobel filter to the tenth fairy texture
 					gameTexture[10].applyFilter(IgeFilters.sobel);
 
-					// Apply a glow mask filter to the eleventh  texture
-					gameTexture[13].applyFilter(IgeFilters.glow, {glowMask: gameTexture[12], blurPasses:10, glowPasses: 2});
+					// Apply a glow mask filter to the eleventh texture
+					gameTexture[13].applyFilter(IgeFilters.glowMask, {glowMask: gameTexture[12], blurPasses:50, glowPasses: 2});
+
+					// Pre-apply the blur to the glow mask so we don't calc it every tick
+					gameTexture[15].applyFilter(IgeFilters.blur, {value:80});
+					glowFilterData = {glowMask: gameTexture[15], blurPasses:0, glowPasses: 2};
+
+					// Set a pre-filter on texture 14 so every tick it applies the filter
+					gameTexture[14].preFilter(IgeFilters.glowMask, glowFilterData);
+
+					// Now every few ms change the glow filter data values to make it pulse
+					setInterval(function () {
+						// Make a new glowPassDirection property
+						if (!glowFilterData.glowPassDirection) {
+							glowFilterData.glowPasses++;
+
+							if (glowFilterData.glowPasses > 14) {
+								glowFilterData.glowPassDirection = 1;
+							}
+						} else {
+							glowFilterData.glowPasses--;
+							if (glowFilterData.glowPasses < 1) {
+								glowFilterData.glowPassDirection = 0;
+							}
+						}
+					}, 64);
 				}
 			});
 		});

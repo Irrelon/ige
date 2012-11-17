@@ -106,7 +106,7 @@ var igeCoreConfig = {
 		['cap', 'IgeFilters.colorOverlay', 'filters/colorOverlay.js'],
 		['cap', 'IgeFilters.sobel', 'filters/sobel.js'],
 		['cap', 'IgeFilters.invert', 'filters/invert.js'],
-		['cap', 'IgeFilters.glow', 'filters/glow.js'],
+		['cap', 'IgeFilters.glow', 'filters/glowMask.js'],
 		/* WebGL */
 		['ca', 'THREE', 'components/three/three.min.js'],
 		['ca', 'IgeThree', 'components/three/IgeThree.js'],
