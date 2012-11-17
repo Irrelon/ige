@@ -52,7 +52,7 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					// Create an entity and mount it to the scene
-					self.obj[0] = new Rotator()
+					self.obj[0] = new IgeEntity()
 						.id('fairy0')
 						.depth(0)
 						.width(100)
@@ -71,10 +71,10 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.mount(self.scene1);
 
-					// Create a second rotator entity and mount
+					// Create a second IgeEntity entity and mount
 					// it to the first one at 0, 50 relative to the
 					// parent
-					self.obj[1] = new Rotator()
+					self.obj[1] = new IgeEntity()
 						.id('fairy1')
 						.depth(0)
 						.width(100)
@@ -94,7 +94,7 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					// Create some more fairies and mount them to the scene
-					self.obj[2] = new Rotator()
+					self.obj[2] = new IgeEntity()
 						.id('fairy2')
 						.depth(0)
 						.width(100)
@@ -113,7 +113,7 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.mount(self.scene1);
 
-					self.obj[3] = new Rotator()
+					self.obj[3] = new IgeEntity()
 						.id('fairy3')
 						.depth(0)
 						.width(100)
@@ -132,7 +132,7 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.mount(self.scene1);
 
-					self.obj[4] = new Rotator()
+					self.obj[4] = new IgeEntity()
 						.id('fairy4')
 						.depth(0)
 						.width(100)
@@ -151,7 +151,7 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.mount(self.scene1);
 
-					self.obj[5] = new Rotator()
+					self.obj[5] = new IgeEntity()
 						.id('fairy5')
 						.depth(0)
 						.width(100)
@@ -170,7 +170,7 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.mount(self.scene1);
 
-					self.obj[6] = new Rotator()
+					self.obj[6] = new IgeEntity()
 						.id('fairy6')
 						.depth(0)
 						.width(100)
@@ -189,7 +189,7 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.mount(self.scene1);
 
-					self.obj[7] = new Rotator()
+					self.obj[7] = new IgeEntity()
 						.id('fairy7')
 						.depth(0)
 						.width(100)
@@ -208,7 +208,7 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.mount(self.scene1);
 
-					self.obj[8] = new Rotator()
+					self.obj[8] = new IgeEntity()
 						.id('fairy8')
 						.depth(0)
 						.width(100)
@@ -227,7 +227,7 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.mount(self.scene1);
 
-					self.obj[9] = new Rotator()
+					self.obj[9] = new IgeEntity()
 						.id('fairy9')
 						.depth(0)
 						.width(100)
@@ -246,7 +246,7 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.mount(self.scene1);
 
-					self.obj[10] = new Rotator()
+					self.obj[10] = new IgeEntity()
 						.id('fairy10')
 						.depth(0)
 						.width(100)
@@ -265,7 +265,7 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.mount(self.scene1);
 
-					self.obj[11] = new Rotator()
+					self.obj[11] = new IgeEntity()
 						.id('fairy11')
 						.depth(0)
 						.width(100)
