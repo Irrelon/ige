@@ -12,10 +12,10 @@ var Client = IgeClass.extend({
 		ige.input.debug(true);
 
 		// Load the fairy texture and store it in the gameTexture array
-		gameTexture[0] = new IgeTexture('../examples/assets/textures/sprites/fairy.png');
+		gameTexture[0] = new IgeTexture('../ige/examples/assets/textures/sprites/fairy.png');
 
 		// Load a smart texture
-		gameTexture[1] = new IgeTexture('../examples/assets/textures/smartTextures/simpleBox.js');
+		gameTexture[1] = new IgeTexture('../ige/examples/assets/textures/smartTextures/simpleBox.js');
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
