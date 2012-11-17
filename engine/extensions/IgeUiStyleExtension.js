@@ -71,13 +71,13 @@ var IgeUiStyleExtension = {
 			if (typeof(x) === 'string') {
 				// Work out the actual size in pixels
 				// from the percentage
-				x = this.geometry.x / 100 * parseInt(x, 10);
+				x = this._geometry.x / 100 * parseInt(x, 10);
 			}
 
 			if (typeof(y) === 'string') {
 				// Work out the actual size in pixels
 				// from the percentage
-				y = this.geometry.y / 100 * parseInt(y, 10);
+				y = this._geometry.y / 100 * parseInt(y, 10);
 			}
 			this._backgroundSize = {x: x, y: y};
 

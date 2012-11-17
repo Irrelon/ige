@@ -28,7 +28,7 @@ var IgeEntity = IgeObject.extend([
 		this._scale = new IgePoint(1, 1, 1);
 		this._origin = new IgePoint(0.5, 0.5, 0.5);
 
-		this.geometry = new IgePoint(40, 40, 40);
+		this._geometry = new IgePoint(40, 40, 40);
 
 		this._highlight = false;
 		this._mouseEventsActive = false;
@@ -148,7 +148,7 @@ var IgeEntity = IgeObject.extend([
 			if (lockAspect) {
 				if (this._texture) {
 					// Calculate the height based on the new width
-					ratio = this._texture._sizeX / this.geometry.x;
+					ratio = this._texture._sizeX / this._geometry.x;
 					this.height(this._texture._sizeY / ratio);
 				} else {
 					this.log('Cannot set height based on texture aspect ratio and new width because no texture is currently assigned to the entity!', 'error');
@@ -180,7 +180,7 @@ var IgeEntity = IgeObject.extend([
 			if (lockAspect) {
 				if (this._texture) {
 					// Calculate the width based on the new height
-					ratio = this._texture._sizeY / this.geometry.y;
+					ratio = this._texture._sizeY / this._geometry.y;
 					this.width(this._texture._sizeX / ratio);
 				} else {
 					this.log('Cannot set width based on texture aspect ratio and new height because no texture is currently assigned to the entity!', 'error');
@@ -237,8 +237,8 @@ var IgeEntity = IgeObject.extend([
 	width: function (px) {
 		if (px !== undefined) {
 			this._width = px;
-			this.geometry.x = px;
-			this.geometry.x2 = (px / 2);
+			this._geometry.x = px;
+			this._geometry.x2 = (px / 2);
 			return this;
 		}
 
@@ -254,8 +254,8 @@ var IgeEntity = IgeObject.extend([
 	height: function (px) {
 		if (px !== undefined) {
 			this._height = px;
-			this.geometry.y = px;
-			this.geometry.y2 = (px / 2);
+			this._geometry.y = px;
+			this._geometry.y2 = (px / 2);
 			return this;
 		}
 
@@ -274,11 +274,11 @@ var IgeEntity = IgeObject.extend([
 	 */
 	size3d: function (x, y, z) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
-			this.geometry = new IgePoint(x, y, z);
+			this._geometry = new IgePoint(x, y, z);
 			return this;
 		}
 
-		return this.geometry;
+		return this._geometry;
 	},
 
 	/**
@@ -487,7 +487,7 @@ var IgeEntity = IgeObject.extend([
 				maxX, maxY,
 				box,
 				anc = this._anchor,
-				geom = this.geometry,
+				geom = this._geometry,
 				geomX = geom.x,
 				geomY = geom.y,
 				geomZ = geom.z,
@@ -670,8 +670,8 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	_projectionOverlap: function (otherObject) {
-		// TODO: Potentially caching the IgePoints here unless this.geometry has changed may speed things up somewhat
-		var thisG3d = this.geometry,
+		// TODO: Potentially caching the IgePoints here unless this._geometry has changed may speed things up somewhat
+		var thisG3d = this._geometry,
 			thisMin = new IgePoint(
 				this._translate.x - thisG3d.x / 2,
 				this._translate.y - thisG3d.y / 2,
@@ -682,7 +682,7 @@ var IgeEntity = IgeObject.extend([
 				this._translate.y + thisG3d.y / 2,
 				this._translate.z + thisG3d.z
 			),
-			otherG3d = otherObject.geometry,
+			otherG3d = otherObject._geometry,
 			otherMin = new IgePoint(
 				otherObject._translate.x - otherG3d.x / 2,
 				otherObject._translate.y - otherG3d.y / 2,
@@ -723,7 +723,7 @@ var IgeEntity = IgeObject.extend([
 	 * or false if not.
 	 */
 	isBehind: function (otherObject) {
-		var thisG3d = this.geometry,
+		var thisG3d = this._geometry,
 			thisMin = new IgePoint(
 				this._translate.x - thisG3d.x / 2,
 				this._translate.y - thisG3d.y / 2,
@@ -734,7 +734,7 @@ var IgeEntity = IgeObject.extend([
 				this._translate.y + thisG3d.y / 2,
 				this._translate.z + thisG3d.z
 			),
-			otherG3d = otherObject.geometry,
+			otherG3d = otherObject._geometry,
 			otherMin = new IgePoint(
 				otherObject._translate.x - otherG3d.x / 2,
 				otherObject._translate.y - otherG3d.y / 2,
@@ -1054,7 +1054,7 @@ var IgeEntity = IgeObject.extend([
 						}
 						break;
 					case 'geometry':
-						str += ".size3d(" + this.geometry.x + ", " + this.geometry.y + ", " + this.geometry.z + ")";
+						str += ".size3d(" + this._geometry.x + ", " + this._geometry.y + ", " + this._geometry.z + ")";
 						break;
 					case '_deathTime':
 						str += ".deathTime('" + this.deathTime() + "')";

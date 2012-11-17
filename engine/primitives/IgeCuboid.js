@@ -4,7 +4,7 @@ var IgeCuboid = IgeEntity.extend({
 	tick: function (ctx) {
 		this._transformContext(ctx);
 
-		var r3d = this.geometry,
+		var r3d = this._geometry,
 			xl1 = new IgePoint(-(r3d.x / 2), 0, 0)
 				.toIso(),
 			xl2 = new IgePoint(+(r3d.x / 2), 0, 0)

@@ -578,7 +578,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	_resizeEvent: function (event) {
 		// Set width / height of scene to match parent
 		if (this._renderAreaAutoSize) {
-			var geom = this._parent.geometry,
+			var geom = this._parent._geometry,
 				additionX = 0, additionY = 0;
 
 			if (this._renderAreaAutoSizeOptions) {

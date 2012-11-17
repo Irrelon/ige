@@ -236,8 +236,8 @@ var ClientObjects = {
 			// Adjust the skyscraper geometry to match the number of floors
 			// so that it will depth-sort against other buildings correctly
 			this.size3d(
-				this.geometry.x,
-				this.geometry.y,
+				this._geometry.x,
+				this._geometry.y,
 				12.5 + (this.data('floors') * 25 * (this._parent._tileWidth / 40))
 			);
 
@@ -268,8 +268,8 @@ var ClientObjects = {
 				// Adjust the skyscraper geometry to match the number of floors
 				// so that it will depth-sort against other buildings correctly
 				this.size3d(
-					this.geometry.x,
-					this.geometry.y,
+					this._geometry.x,
+					this._geometry.y,
 					12.5 + (this.data('floors') * 25 * (this._parent._tileWidth / 40))
 				);
 			}

@@ -43,7 +43,7 @@ var IgeEntityCannon = IgeEntity.extend({
 			// Translate the body
 			entCannon.position.x = x / scaleRatio;
 			entCannon.position.y = y / scaleRatio;
-			entCannon.position.z = (z + this.geometry.z2) / scaleRatio;
+			entCannon.position.z = (z + this._geometry.z2) / scaleRatio;
 		}
 
 		// Now call the original translate method

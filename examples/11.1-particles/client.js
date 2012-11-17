@@ -104,7 +104,7 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.width(10)
 						.height(10)
-						.translateTo(0, ige.geometry.y2, 0)
+						.translateTo(0, ige._geometry.y2, 0)
 						.mount(self.scene1)
 						.start();
 

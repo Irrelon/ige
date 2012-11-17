@@ -51,8 +51,8 @@ var Client = IgeClass.extend({
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.walkTo(
-							(Math.random() * ige.geometry.x) - ige.geometry.x2,
-							(Math.random() * ige.geometry.y) - ige.geometry.y2
+							(Math.random() * ige._geometry.x) - ige._geometry.x2,
+							(Math.random() * ige._geometry.y) - ige._geometry.y2
 						)
 						.mount(self.scene1);
 				}

@@ -307,8 +307,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.igeX - ige.geometry.x2,
-			my = event.igeY - ige.geometry.y2,
+		var mx = event.igeX - ige._geometry.x2,
+			my = event.igeY - ige._geometry.y2,
 			self = this;
 
 		event.igeBaseX = mx;
@@ -345,8 +345,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.igeX - ige.geometry.x2,
-			my = event.igeY - ige.geometry.y2,
+		var mx = event.igeX - ige._geometry.x2,
+			my = event.igeY - ige._geometry.y2,
 			self = this;
 
 		event.igeBaseX = mx;
@@ -380,8 +380,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		ige._mouseOverVp = this._updateMouseData(event);
 
-		var mx = event.igeX - ige.geometry.x2,
-			my = event.igeY - ige.geometry.y2,
+		var mx = event.igeX - ige._geometry.x2,
+			my = event.igeY - ige._geometry.y2,
 			self = this;
 
 		event.igeBaseX = mx;
@@ -406,8 +406,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.igeX - ige.geometry.x2,
-			my = event.igeY - ige.geometry.y2,
+		var mx = event.igeX - ige._geometry.x2,
+			my = event.igeY - ige._geometry.y2,
 			self = this;
 
 		event.igeBaseX = mx;
@@ -470,8 +470,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		var arr = ige._children,
 			arrCount = arr.length,
 			vp, vpUpdated,
-			mx = event.igeX - ige.geometry.x / 2,
-			my = event.igeY - ige.geometry.y / 2;
+			mx = event.igeX - ige._geometry.x / 2,
+			my = event.igeY - ige._geometry.y / 2;
 
 		ige._mousePos.x = mx;
 		ige._mousePos.y = my;
@@ -480,8 +480,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 			vp = arr[arr.length - (arrCount + 1)];
 			// Check if the mouse is inside this viewport's bounds
 			// TODO: Update this code to take into account viewport rotation and camera rotation
-			if (mx > vp._translate.x - vp.geometry.x / 2 && mx < vp._translate.x + vp.geometry.x / 2) {
-				if (my > vp._translate.y - vp.geometry.y / 2 && my < vp._translate.y + vp.geometry.y / 2) {
+			if (mx > vp._translate.x - vp._geometry.x / 2 && mx < vp._translate.x + vp._geometry.x / 2) {
+				if (my > vp._translate.y - vp._geometry.y / 2 && my < vp._translate.y + vp._geometry.y / 2) {
 					// Mouse is inside this viewport
 					vp._mousePos = new IgePoint(
 						Math.floor((mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x),

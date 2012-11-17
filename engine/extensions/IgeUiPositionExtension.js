@@ -123,25 +123,25 @@ var IgeUiPositionExtension = {
 			if (typeof(px) === 'string') {
 				if (this._parent) {
 					// Percentage
-					var parentWidth = this._parent.geometry.x,
+					var parentWidth = this._parent._geometry.x,
 						val = parseInt(px, 10);
 
 					// Calculate real width from percentage
-					this.geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
-					this.geometry.x2 = Math.floor(this.geometry.x / 2);
+					this._geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
+					this._geometry.x2 = Math.floor(this._geometry.x / 2);
 				} else {
 					// We don't have a parent so use the main canvas
 					// as a reference
-					var parentWidth = ige.geometry.x,
+					var parentWidth = ige._geometry.x,
 						val = parseInt(px, 10);
 
 					// Calculate real height from percentage
-					this.geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
-					this.geometry.x2 = Math.floor(this.geometry.x / 2);
+					this._geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
+					this._geometry.x2 = Math.floor(this._geometry.x / 2);
 				}
 			} else {
-				this.geometry.x = px;
-				this.geometry.x2 = Math.floor(this.geometry.x / 2);
+				this._geometry.x = px;
+				this._geometry.x2 = Math.floor(this._geometry.x / 2);
 			}
 
 			if (!noUpdate) {
@@ -169,25 +169,25 @@ var IgeUiPositionExtension = {
 			if (typeof(px) === 'string') {
 				if (this._parent) {
 					// Percentage
-					var parentHeight = this._parent.geometry.y,
+					var parentHeight = this._parent._geometry.y,
 						val = parseInt(px, 10);
 
 					// Calculate real height from percentage
-					this.geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
-					this.geometry.y2 = Math.floor(this.geometry.y / 2);
+					this._geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
+					this._geometry.y2 = Math.floor(this._geometry.y / 2);
 				} else {
 					// We don't have a parent so use the main canvas
 					// as a reference
-					var parentHeight = ige.geometry.y,
+					var parentHeight = ige._geometry.y,
 						val = parseInt(px, 10);
 
 					// Calculate real height from percentage
-					this.geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
-					this.geometry.y2 = Math.floor(this.geometry.y / 2);
+					this._geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
+					this._geometry.y2 = Math.floor(this._geometry.y / 2);
 				}
 			} else {
-				this.geometry.y = px;
-				this.geometry.y2 = Math.floor(this.geometry.y / 2);
+				this._geometry.y = px;
+				this._geometry.y2 = Math.floor(this._geometry.y / 2);
 			}
 
 			if (!noUpdate) {
@@ -207,8 +207,8 @@ var IgeUiPositionExtension = {
 		// TODO: Update so that it takes into account the parent element's position etc
 	_updateUiPosition: function () {
 		if (this._parent) {
-			var parentGeom = this._parent.geometry,
-				geom = this.geometry;
+			var parentGeom = this._parent._geometry,
+				geom = this._geometry;
 
 			if (this._width) { this.width(this._width, this._widthModifier, true); }
 			if (this._height) { this.height(this._height, this._heightModifier, true); }

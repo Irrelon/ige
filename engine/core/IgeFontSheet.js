@@ -187,7 +187,7 @@ var IgeFontSheet = IgeTexture.extend({
 			// Handle text cached alignment x
 			switch (entity._textAlignX) {
 				/*case 0: // Align left
-					renderStartX = -entity.geometry.x2;
+					renderStartX = -entity._geometry.x2;
 				break;
 
 				case 1: // Align center
@@ -195,10 +195,10 @@ var IgeFontSheet = IgeTexture.extend({
 				break;
 
 				case 2: // Align right
-					renderStartX = entity.geometry.x2 -lineWidth[lineIndex];
+					renderStartX = entity._geometry.x2 -lineWidth[lineIndex];
 				break;*/
 				case 0: // Align left
-					renderStartX = -entity.geometry.x2;
+					renderStartX = -entity._geometry.x2;
 					break;
 
 				case 1: // Align center
@@ -206,7 +206,7 @@ var IgeFontSheet = IgeTexture.extend({
 					break;
 
 				case 2: // Align right
-					renderStartX = entity.geometry.x2 -totalWidth;
+					renderStartX = entity._geometry.x2 -totalWidth;
 					break;
 			}
 
@@ -288,7 +288,7 @@ var IgeFontSheet = IgeTexture.extend({
 				if (!this._caching) {
 					switch (entity._textAlignX) {
 						case 0: // Align left
-							renderX = -entity.geometry.x2;
+							renderX = -entity._geometry.x2;
 						break;
 
 						case 1: // Align center
@@ -296,7 +296,7 @@ var IgeFontSheet = IgeTexture.extend({
 						break;
 
 						case 2: // Align right
-							renderX = entity.geometry.x2 -lineWidth[lineIndex];
+							renderX = entity._geometry.x2 -lineWidth[lineIndex];
 						break;
 					}
 				} else {

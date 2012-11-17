@@ -825,7 +825,7 @@ var IgeEngine = IgeEntity.extend({
 				}
 			}
 
-			ige.geometry = new IgePoint(newWidth, newHeight, 0);
+			ige._geometry = new IgePoint(newWidth, newHeight, 0);
 
 			// Loop any mounted children and check if
 			// they should also get resized
@@ -834,7 +834,7 @@ var IgeEngine = IgeEntity.extend({
 			}
 		} else {
 			if (ige._canvas) {
-				ige.geometry = new IgePoint(ige._canvas.width, ige._canvas.height, 0);
+				ige._geometry = new IgePoint(ige._canvas.width, ige._canvas.height, 0);
 			}
 		}
 
@@ -1093,7 +1093,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		ctx.save();
-		ctx.translate(this.geometry.x2, this.geometry.y2);
+		ctx.translate(this._geometry.x2, this._geometry.y2);
 
 		// Process the current engine tick for all child objects
 		var arr = this._children,

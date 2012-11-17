@@ -22,7 +22,7 @@ var ClientObjects = {
 				halfImageHeight = texture.image.height / 2,
 				quarterImageWidth = texture.image.width / 4,
 				imageScale = 0.3,
-				yPos = ((-halfImageHeight + quarterImageWidth) * imageScale) + (this.geometry.z2 + (this.geometry.z2 / 4));
+				yPos = ((-halfImageHeight + quarterImageWidth) * imageScale) + (this._geometry.z2 + (this._geometry.z2 / 4));
 
 			this.imageEntity = new IgeEntity()
 				.texture(texture)
@@ -243,8 +243,8 @@ var ClientObjects = {
 			// Adjust the skyscraper geometry to match the number of floors
 			// so that it will depth-sort against other buildings correctly
 			this.size3d(
-				this.geometry.x,
-				this.geometry.y,
+				this._geometry.x,
+				this._geometry.y,
 				12.5 + (this.data('floors') * 25 * (this._parent._tileWidth / 40))
 			);
 
@@ -275,8 +275,8 @@ var ClientObjects = {
 				// Adjust the skyscraper geometry to match the number of floors
 				// so that it will depth-sort against other buildings correctly
 				this.size3d(
-					this.geometry.x,
-					this.geometry.y,
+					this._geometry.x,
+					this._geometry.y,
 					12.5 + (this.data('floors') * 25 * (this._parent._tileWidth / 40))
 				);
 			}

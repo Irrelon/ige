@@ -23,14 +23,14 @@ var IgeViewport = IgeEntity.extend([
 			options = {
 				left: 0,
 				top: 0,
-				width: ige.geometry.x,
-				height: ige.geometry.y,
+				width: ige._geometry.x,
+				height: ige._geometry.y,
 				autoSize: true
 			};
 		}
 
 		// Setup default objects
-		this.geometry = new IgePoint(options.width || 250, options.height || 150, 0);
+		this._geometry = new IgePoint(options.width || 250, options.height || 150, 0);
 		this.camera = new IgeCamera(this);
 		this.camera._entity = this;
 		//this._drawMouse = true;
@@ -100,19 +100,19 @@ var IgeViewport = IgeEntity.extend([
 
 			// Translate to the top-left of the viewport
 			ctx.translate(
-				-(this.geometry.x * this._origin.x) | 0,
-				-(this.geometry.y * this._origin.y) | 0
+				-(this._geometry.x * this._origin.x) | 0,
+				-(this._geometry.y * this._origin.y) | 0
 			);
 
 			// Clear the rectangle area of the viewport
-			ctx.clearRect(0, 0, this.geometry.x, this.geometry.y);
+			ctx.clearRect(0, 0, this._geometry.x, this._geometry.y);
 
 			// Clip the context so we only draw "inside" the viewport area
 			// TODO: CocoonJS doesn't like the ctx.clip() method, find out why
 			// and report a bug if required.
 			if (!ige.cocoonJs || (ige.cocoonJs && !ige.cocoonJs.detected)) {
 				ctx.beginPath();
-					ctx.rect(0, 0, this.geometry.x, this.geometry.y);
+					ctx.rect(0, 0, this._geometry.x, this._geometry.y);
 
 					// Paint a border if required
 					if (this._borderColor) {
@@ -123,7 +123,7 @@ var IgeViewport = IgeEntity.extend([
 			}
 
 			// Translate back to the center of the viewport
-			ctx.translate((this.geometry.x / 2) | 0, (this.geometry.y / 2) | 0);
+			ctx.translate((this._geometry.x / 2) | 0, (this._geometry.y / 2) | 0);
 
 			// Transform the context to the center of the viewport
 			// by processing the viewport's camera tick method
@@ -207,7 +207,7 @@ var IgeViewport = IgeEntity.extend([
 										//obj._transformContext(ctx);
 
 										// Calculate the 3d bounds data
-										r3d = obj.geometry;
+										r3d = obj._geometry;
 										xl1 = new IgePoint(-(r3d.x / 2), 0, 0).toIso();
 										xl2 = new IgePoint(+(r3d.x / 2), 0, 0).toIso();
 										xl3 = new IgePoint(0, -(r3d.y / 2), 0).toIso();
@@ -309,7 +309,7 @@ var IgeViewport = IgeEntity.extend([
 	 */
 	_resizeEvent: function (event) {
 		if (this._autoSize && this._parent) {
-			this.geometry = this._parent.geometry.clone();
+			this._geometry = this._parent._geometry.clone();
 		}
 
 		this._updateUiPosition();

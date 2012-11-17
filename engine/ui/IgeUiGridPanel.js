@@ -11,8 +11,8 @@ var IgeUiGridPanel = IgeUiEntity.extend({
 	_childMounted: function (obj) {
 		this._super(obj);
 
-		var gridWidth = Math.floor(this.geometry.x / this._gridCellWidth),
-			gridHeight = Math.floor(this.geometry.y / this._gridCellHeight),
+		var gridWidth = Math.floor(this._geometry.x / this._gridCellWidth),
+			gridHeight = Math.floor(this._geometry.y / this._gridCellHeight),
 			totalChildren = this._children.length - 1, positionX, positionY;
 
 		// Position this child in the grid

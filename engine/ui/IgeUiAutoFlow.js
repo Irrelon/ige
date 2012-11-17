@@ -15,7 +15,7 @@ var IgeUiAutoFlow = IgeUiEntity.extend({
 
 		for (i = 0; i < arrCount; i++) {
 			item = arr[i];
-			itemY = item.geometry.y;
+			itemY = item._geometry.y;
 
 			item.top(currentY);
 
