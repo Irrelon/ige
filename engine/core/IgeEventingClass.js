@@ -157,10 +157,16 @@ var IgeEventingClass = IgeClass.extend({
 							eventCount2--;
 						}
 					}
-					this._eventListeners._processing = false;
 
-					// Now process any event removal
-					this._processRemovals();
+					// Check that the array still exists because an event
+					// could have triggered a method that destroyed our object
+					// which would have deleted the array!
+					if (this._eventListeners) {
+						this._eventListeners._processing = false;
+
+						// Now process any event removal
+						this._processRemovals();
+					}
 
 					if (cancelFlag) {
 						return 1;
