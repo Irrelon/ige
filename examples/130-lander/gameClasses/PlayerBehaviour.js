@@ -8,6 +8,7 @@ var PlayerBehaviour = function () {
 		if (this.controls.left) {
 			// Record the new state
 			this.controls.left = false;
+			this._box2dBody.SetAngularVelocity(0);
 		}
 	}
 
@@ -20,6 +21,7 @@ var PlayerBehaviour = function () {
 		if (this.controls.right) {
 			// Record the new state
 			this.controls.right = false;
+			this._box2dBody.SetAngularVelocity(0);
 		}
 	}
 
@@ -36,11 +38,13 @@ var PlayerBehaviour = function () {
 	}
 
 	if (this.controls.left) {
-		this.rotateBy(0, 0, Math.radians(-0.2 * ige._tickDelta));
+		this._box2dBody.SetAngularVelocity(-2.5);
+		//this.rotateBy(0, 0, Math.radians(-0.2 * ige._tickDelta));
 	}
 
 	if (this.controls.right) {
-		this.rotateBy(0, 0, Math.radians(0.2 * ige._tickDelta));
+		this._box2dBody.SetAngularVelocity(2.5);
+		//this.rotateBy(0, 0, Math.radians(0.2 * ige._tickDelta));
 	}
 
 	if (this.controls.thrust) {

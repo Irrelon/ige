@@ -15,7 +15,8 @@ var ClientWorld = {
 			.id('vp1')
 			.autoSize(true)
 			.scene(this.mainScene)
-			.drawBounds(true)
+			.drawBounds(false)
+			.drawBoundsData(true)
 			.mount(ige);
 	}
 };
