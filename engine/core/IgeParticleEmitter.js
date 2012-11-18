@@ -283,6 +283,11 @@ var IgeParticleEmitter = IgeEntity.extend({
 	 */
 	start: function () {
 		if (this._particle) {
+			// Update the transform matrix before starting
+			// otherwise some particles might read the old
+			// matrix values if the start method was chained!
+			this.updateTransform();
+
 			this._quantityTimespan = this._quantityTimespan || 1000;
 			this._maxParticles = this.baseAndVarianceValue(this._quantityBase, this._quantityVariance, true);
 			this._particlesPerTimeVector = this._quantityTimespan / this._maxParticles; // 1 Particle every x milliseconds (x stored in this._particlesPerTimeVector)
@@ -572,6 +577,9 @@ var IgeParticleEmitter = IgeEntity.extend({
 							// Apply all the transforms (don't do this in the initial
 							// entity definition because some components may already
 							// have initialised due to the particle template
+							if (translateX < 10) {
+								debugger;
+							}
 							tempParticle.translateTo(translateX, translateY, translateZ);
 							tempParticle.rotateTo(0, 0, rotate * Math.PI / 180);
 							tempParticle.scaleTo(scaleX, scaleY, scaleZ);
@@ -620,11 +628,6 @@ var IgeParticleEmitter = IgeEntity.extend({
 									.duration(life));
 							}
 
-							// Start the relevant tweens
-							for (i = 0; i < tweens.length; i++) {
-								tweens[i].start();
-							}
-
 							if (typeof(life) === 'number') {
 								tempParticle.lifeSpan(life);
 							}
@@ -634,6 +637,11 @@ var IgeParticleEmitter = IgeEntity.extend({
 
 							// Add the particle to the scene
 							tempParticle.mount(this._particleMountTarget || this._parent);
+
+							// Start the relevant tweens
+							for (i = 0; i < tweens.length; i++) {
+								tweens[i].start();
+							}
 						}
 					}
 				}
