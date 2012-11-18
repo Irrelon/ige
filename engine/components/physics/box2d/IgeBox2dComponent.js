@@ -11,6 +11,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 		this._entity = entity;
 		this._options = options;
+		this._mode = 0;
 
 		this.b2Color = Box2D.Common.b2Color;
 		this.b2Vec2 = Box2D.Common.Math.b2Vec2;
@@ -28,6 +29,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		this.b2ContactListener = Box2D.Dynamics.b2ContactListener;
 		this.b2Distance = Box2D.Collision.b2Distance;
 		this.b2Contact = Box2D.Dynamics.Contacts.b2Contact;
+		this.b2FilterData = Box2D.Dynamics.b2FilterData;
 
 		// Extend the b2Contact class to allow the IGE entity accessor
 		// and other helper methods
@@ -105,15 +107,11 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			}
 		};
 
-		this._active = true;
 		this._sleep = true;
 		this._scaleRatio = 30;
 		this._gravity = new this.b2Vec2(0, 0);
 
 		this._removeWhenReady = [];
-
-		// Add the box2d behaviour to the ige
-		ige.addBehaviour('box2dStep', this._behaviour);
 
 		this.log('Physics component initiated!');
 	},
@@ -129,6 +127,15 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		} else {
 			this.log('Web workers were not detected on this browser. Cannot access useWorker() method.', 'warning');
 		}
+	},
+
+	mode: function (val) {
+		if (val !== undefined) {
+			this._mode = val;
+			return this._entity;
+		}
+
+		return this._mode;
 	},
 
 	/**
@@ -207,7 +214,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 		for (param in params) {
 			if (params.hasOwnProperty(param)) {
-				if (param !== 'shape') {
+				if (param !== 'shape' && param !== 'filter') {
 					tempDef[param] = params[param];
 				}
 			}
@@ -231,6 +238,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			tempFixture,
 			finalFixture,
 			tempShape,
+			tempFilterData,
 			i,
 			finalX, finalY,
 			finalWidth, finalHeight;
@@ -344,6 +352,16 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 									finalFixture = tempBod.CreateFixture(tempFixture);
 									finalFixture.igeId = tempFixture.igeId;
 								}
+							}
+
+							if (fixtureDef.filter && finalFixture) {
+								tempFilterData = new ige.box2d.b2FilterData();
+
+								if (fixtureDef.filter.categoryBits !== undefined) { tempFilterData.categoryBits = fixtureDef.filter.categoryBits; }
+								if (fixtureDef.filter.maskBits !== undefined) { tempFilterData.maskBits = fixtureDef.filter.maskBits; }
+								if (fixtureDef.filter.groupIndex !== undefined) { tempFilterData.groupIndex = fixtureDef.filter.groupIndex; }
+
+								finalFixture.SetFilterData(tempFilterData);
 							}
 						}
 						break;
@@ -501,12 +519,26 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	start: function () {
 		if (!this._active) {
 			this._active = true;
+
+			if (this._mode === 0) {
+				// Add the box2d behaviour to the ige
+				ige.addBehaviour('box2dStep', this._behaviour);
+			} else {
+				this._intervalTimer = setInterval(this._behaviour, 1000 / 60);
+			}
 		}
 	},
 
 	stop: function () {
 		if (this._active) {
 			this._active = false;
+
+			if (this._mode === 0) {
+				// Add the box2d behaviour to the ige
+				ige.removeBehaviour('box2dStep');
+			} else {
+				clearInterval(this._intervalTimer);
+			}
 		}
 	},
 
@@ -541,7 +573,11 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			}
 
 			// Call the world step; frame-rate, velocity iterations, position iterations
-			self._world.Step(ige._tickDelta / 1000, 8, 8);
+			if (self._mode === 0) {
+				self._world.Step(ige._tickDelta / 1000, 8, 3);
+			} else {
+				self._world.Step(1 / 60, 8, 3);
+			}
 
 			// Loop the physics objects and move the entities they are assigned to
 			tempBod = self._world.GetBodyList();
