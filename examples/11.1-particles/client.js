@@ -105,6 +105,7 @@ var Client = IgeClass.extend({
 						.width(10)
 						.height(10)
 						.translateTo(0, ige._geometry.y2, 0)
+						.particleMountTarget(self.scene1)
 						.mount(self.scene1)
 						.start();
 
