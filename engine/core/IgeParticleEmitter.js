@@ -10,11 +10,14 @@ var IgeParticleEmitter = IgeEntity.extend({
 		this._super();
 
 		// Set some defaults
-		this._quantityTimespan = 1000;
 		this._currentDelta = 0;
 		this._started = false;
 		this._particles = [];
 
+		this.quantityTimespan(1000);
+		this.quantityBase(10);
+		this.velocityVector(new IgePoint(0, 0, 0), new IgePoint(0, 0, 0), new IgePoint(0, 0, 0));
+		this.linearForceVector(new IgePoint(0, 0, 0), new IgePoint(0, 0, 0), new IgePoint(0, 0, 0));
 		this.applyDepthToParticles(true);
 		this.applyLayerToParticles(true);
 		this.quantityVariance(0, 0);
@@ -28,9 +31,9 @@ var IgeParticleEmitter = IgeEntity.extend({
 		this.rotateVariance(0, 0);
 		this.deathRotateBase(0);
 		this.deathRotateVariance(0, 0);
-		this.scaleBaseX(0);
-		this.scaleBaseY(0);
-		this.scaleBaseZ(0);
+		this.scaleBaseX(1);
+		this.scaleBaseY(1);
+		this.scaleBaseZ(1);
 		this.scaleVarianceX(0, 0);
 		this.scaleVarianceY(0, 0);
 		this.scaleVarianceZ(0, 0);
@@ -58,6 +61,11 @@ var IgeParticleEmitter = IgeEntity.extend({
 	 */
 	particle: function (obj) {
 		this._particle = obj;
+		return this;
+	},
+
+	particleMountTarget: function (obj) {
+		this._particleMountTarget = obj;
 		return this;
 	},
 
@@ -442,14 +450,17 @@ var IgeParticleEmitter = IgeEntity.extend({
 							translateY = this.baseAndVarianceValue(this._translateBaseY, this._translateVarianceY, true);
 							translateZ = this.baseAndVarianceValue(this._translateBaseZ, this._translateVarianceZ, true);
 
+							//translateX += this._worldMatrix.matrix[2];
+							//translateY += this._worldMatrix.matrix[5];
+
 							// Generate the particle's initial vector angle and power
 							velocityVector = this.vectorFromBaseMinMax(this._velocityVector);
 
 							// Rotate the vector's point to match the current emitter rotation
 							rotX = velocityVector.x;
 							rotY = velocityVector.y;
-							cosRot = Math.cos(this._rotate.z);
-							sinRot = Math.sin(this._rotate.z);
+							cosRot = this._worldMatrix.matrix[0]; //Math.cos(this._rotate.z);
+							sinRot = this._worldMatrix.matrix[3]; //Math.sin(this._rotate.z);
 							newVecX = rotX * cosRot - rotY * sinRot;
 							newVecY = rotY * cosRot + rotX * sinRot;
 
@@ -483,8 +494,8 @@ var IgeParticleEmitter = IgeEntity.extend({
 							// Rotate the vector's point to match the current emitter rotation
 							rotX = linearForceVector.x;
 							rotY = linearForceVector.y;
-							cosRot = Math.cos(this._rotate.z);
-							sinRot = Math.sin(this._rotate.z);
+							cosRot = this._worldMatrix.matrix[0]; //Math.cos(this._rotate.z);
+							sinRot = this._worldMatrix.matrix[3]; //Math.sin(this._rotate.z);
 							newVecX = rotX * cosRot - rotY * sinRot;
 							newVecY = rotY * cosRot + rotX * sinRot;
 
@@ -544,8 +555,8 @@ var IgeParticleEmitter = IgeEntity.extend({
 
 							// Add the current transform of the emitter to the final
 							// particle transforms
-							translateX += this._translate.x;
-							translateY += this._translate.y;
+							translateX += this._worldMatrix.matrix[2]; //this._translate.x;
+							translateY += this._worldMatrix.matrix[5]; //this._translate.y;
 							translateZ += this._translate.z;
 
 							scaleX *= this._scale.x;
@@ -620,7 +631,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 							this._particles.push(tempParticle);
 
 							// Add the particle to the scene
-							tempParticle.mount(this._parent);
+							tempParticle.mount(this._particleMountTarget || this._parent);
 						}
 					}
 				}
