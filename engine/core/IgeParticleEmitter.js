@@ -16,8 +16,6 @@ var IgeParticleEmitter = IgeEntity.extend({
 
 		this.quantityTimespan(1000);
 		this.quantityBase(10);
-		this.velocityVector(new IgePoint(0, 0, 0), new IgePoint(0, 0, 0), new IgePoint(0, 0, 0));
-		this.linearForceVector(new IgePoint(0, 0, 0), new IgePoint(0, 0, 0), new IgePoint(0, 0, 0));
 		this.applyDepthToParticles(true);
 		this.applyLayerToParticles(true);
 		this.quantityVariance(0, 0);
@@ -453,20 +451,22 @@ var IgeParticleEmitter = IgeEntity.extend({
 							//translateX += this._worldMatrix.matrix[2];
 							//translateY += this._worldMatrix.matrix[5];
 
-							// Generate the particle's initial vector angle and power
-							velocityVector = this.vectorFromBaseMinMax(this._velocityVector);
+							if (this._velocityVector) {
+								// Generate the particle's initial vector angle and power
+								velocityVector = this.vectorFromBaseMinMax(this._velocityVector);
 
-							// Rotate the vector's point to match the current emitter rotation
-							rotX = velocityVector.x;
-							rotY = velocityVector.y;
-							cosRot = this._worldMatrix.matrix[0]; //Math.cos(this._rotate.z);
-							sinRot = this._worldMatrix.matrix[3]; //Math.sin(this._rotate.z);
-							newVecX = rotX * cosRot - rotY * sinRot;
-							newVecY = rotY * cosRot + rotX * sinRot;
+								// Rotate the vector's point to match the current emitter rotation
+								rotX = velocityVector.x;
+								rotY = velocityVector.y;
+								cosRot = this._worldMatrix.matrix[0]; //Math.cos(this._rotate.z);
+								sinRot = this._worldMatrix.matrix[3]; //Math.sin(this._rotate.z);
+								newVecX = rotX * cosRot - rotY * sinRot;
+								newVecY = rotY * cosRot + rotX * sinRot;
 
-							// Assign the rotated vector back again
-							velocityVector.x = newVecX;
-							velocityVector.y = newVecY;
+								// Assign the rotated vector back again
+								velocityVector.x = newVecX;
+								velocityVector.y = newVecY;
+							}
 
 							//vectorAngle = this.baseAndVarianceValue(this._vectorAngleBase, this._vectorAngleVariance, true);
 							//vectorPower = this.baseAndVarianceValue(this._vectorPowerBase, this._vectorPowerVariance, false);
@@ -489,19 +489,21 @@ var IgeParticleEmitter = IgeEntity.extend({
 							life = this.baseAndVarianceValue(this._lifeBase, this._lifeVariance, true);
 
 							// Generate the particle's linear force vector angle and power
-							linearForceVector = this.vectorFromBaseMinMax(this._linearForceVector);
+							if (this._linearForceVector) {
+								linearForceVector = this.vectorFromBaseMinMax(this._linearForceVector);
 
-							// Rotate the vector's point to match the current emitter rotation
-							rotX = linearForceVector.x;
-							rotY = linearForceVector.y;
-							cosRot = this._worldMatrix.matrix[0]; //Math.cos(this._rotate.z);
-							sinRot = this._worldMatrix.matrix[3]; //Math.sin(this._rotate.z);
-							newVecX = rotX * cosRot - rotY * sinRot;
-							newVecY = rotY * cosRot + rotX * sinRot;
+								// Rotate the vector's point to match the current emitter rotation
+								rotX = linearForceVector.x;
+								rotY = linearForceVector.y;
+								cosRot = this._worldMatrix.matrix[0]; //Math.cos(this._rotate.z);
+								sinRot = this._worldMatrix.matrix[3]; //Math.sin(this._rotate.z);
+								newVecX = rotX * cosRot - rotY * sinRot;
+								newVecY = rotY * cosRot + rotX * sinRot;
 
-							// Assign the rotated vector back again
-							linearForceVector.x = newVecX;
-							linearForceVector.y = newVecY;
+								// Assign the rotated vector back again
+								linearForceVector.x = newVecX;
+								linearForceVector.y = newVecY;
+							}
 
 							//linearForceAngle = this.baseAndVarianceValue(this._linearForceAngleBase, this._linearForceAngleVariance);
 							//linearForcePower = this.baseAndVarianceValue(this._linearForcePowerBase, this._linearForcePowerVariance, false);
