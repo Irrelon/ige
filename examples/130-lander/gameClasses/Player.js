@@ -20,25 +20,39 @@ var Player = IgeEntityBox2d.extend({
 			.width(20)
 			.height(20);
 
-		// Define the polygon for collision, we need two because box2d
-		// does not support concave shapes and our ship has a concave
-		// section at the bottom so we create two convex polygons to
-		// create a single composite concave shape
-		var collisionPoly1, collisionPoly2;
-
-		collisionPoly1 = new IgePoly2d()
+		// Define the polygon for collision
+		var collisionPoly = new IgePoly2d()
 			.addPoint(0, -this._geometry.y2)
+			.addPoint(this._geometry.x2, this._geometry.y2)
 			.addPoint(0, this._geometry.y2 - 5)
 			.addPoint(-this._geometry.x2, this._geometry.y2);
 
-		collisionPoly2 = new IgePoly2d()
-			.addPoint(0, -this._geometry.y2)
-			.addPoint(this._geometry.x2, this._geometry.y2)
-			.addPoint(0, this._geometry.y2 - 5);
-
 		// Scale the polygon by the box2d scale ratio
-		collisionPoly1.divide(ige.box2d._scaleRatio);
-		collisionPoly2.divide(ige.box2d._scaleRatio);
+		collisionPoly.divide(ige.box2d._scaleRatio);
+
+		// Now convert this polygon into an array of triangles
+		var triangles = collisionPoly.triangulate();
+		this.triangles = triangles;
+
+		// Create an array of box2d fixture definitions
+		// based on the triangles
+		var fixDefs = [];
+
+		for (var i = 0; i < this.triangles.length; i++) {
+			fixDefs.push({
+				density: 1.0,
+				friction: 1.0,
+				restitution: 0.2,
+				filter: {
+					categoryBits: 0x0002,
+					maskBits: 0xffff & ~0x0004
+				},
+				shape: {
+					type: 'polygon',
+					data: this.triangles[i]
+				}
+			});
+		}
 
 		// Setup the box2d physics properties
 		self.box2dBody({
@@ -49,31 +63,7 @@ var Player = IgeEntityBox2d.extend({
 			bullet: true,
 			gravitic: true,
 			fixedRotation: false,
-			fixtures: [{
-				density: 1.0,
-				friction: 1.0,
-				restitution: 0.2,
-				filter: {
-					categoryBits: 0x0002,
-					maskBits: 0xffff & ~0x0004
-				},
-				shape: {
-					type: 'polygon',
-					data: collisionPoly1
-				}
-			}, {
-				density: 1.0,
-				friction: 1.0,
-				restitution: 0.2,
-				filter: {
-					categoryBits: 0x0002,
-					maskBits: 0xffff & ~0x0004
-				},
-				shape: {
-					type: 'polygon',
-					data: collisionPoly2
-				}
-			}]
+			fixtures: fixDefs
 		});
 
 		// Add a particle emitter for the thrust particles
@@ -81,7 +71,7 @@ var Player = IgeEntityBox2d.extend({
 			// Set the particle entity to generate for each particle
 			.particle(ThrustParticle)
 			// Set particle life to 300ms
-			.lifeBase(600)
+			.lifeBase(1200)
 			// Set output to 60 particles a second (1000ms)
 			.quantityBase(60)
 			.quantityTimespan(1000)
