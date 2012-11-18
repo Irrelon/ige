@@ -577,9 +577,6 @@ var IgeParticleEmitter = IgeEntity.extend({
 							// Apply all the transforms (don't do this in the initial
 							// entity definition because some components may already
 							// have initialised due to the particle template
-							if (translateX < 10) {
-								debugger;
-							}
 							tempParticle.translateTo(translateX, translateY, translateZ);
 							tempParticle.rotateTo(0, 0, rotate * Math.PI / 180);
 							tempParticle.scaleTo(scaleX, scaleY, scaleZ);
