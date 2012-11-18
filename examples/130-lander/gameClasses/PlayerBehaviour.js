@@ -49,5 +49,11 @@ var PlayerBehaviour = function () {
 
 		this._box2dBody.ApplyForce(thrustVector, this._box2dBody.GetWorldCenter());
 		this._box2dBody.SetAwake(true);
+
+		// Enable the particle emitter
+		this.thrustEmitter.start();
+	} else {
+		// Disable the particle emitter
+		this.thrustEmitter.stop();
 	}
 };
