@@ -6,7 +6,9 @@ var igeClientConfig = {
 		'./gameClasses/Player.js',
 		'./gameClasses/PlayerBehaviour.js',
 		'./gameClasses/ThrustParticle.js',
+		'./gameClasses/ExplosionParticle.js',
 		'./gameClasses/LandingPad.js',
+		'./gameClasses/ClientCountDown.js',
 		/* Standard game scripts */
 		'./client.js',
 		'./index.js'

@@ -17,7 +17,7 @@ var ThrustParticle = IgeEntityBox2d.extend({
 			.group('thrustParticle');
 
 		// Setup the box2d physics properties
-		this.box2dBody({
+		/*this.box2dBody({
 			type: 'dynamic',
 			linearDamping: 0.0,
 			angularDamping: 0.1,
@@ -26,18 +26,18 @@ var ThrustParticle = IgeEntityBox2d.extend({
 			gravitic: true,
 			fixedRotation: true,
 			fixtures: [{
-				density: 1.0,
+				density: 0.1,
 				friction: 0.5,
-				restitution: 1.0,
+				restitution: 0.1,
 				filter: {
-					categoryBits: 0x0004,
-					maskBits: 0xffff & ~0x0002 & ~0x0004
+					categoryBits: 0x0008,
+					maskBits: 0xffff & ~0x0004 & ~0x0008
 				},
 				shape: {
-					type: 'circle'
+					type: 'rectangle'
 				}
 			}]
-		});
+		});*/
 	},
 
 	destroy: function () {

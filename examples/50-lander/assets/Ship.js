@@ -1,7 +1,7 @@
 var image = {
 	render: function (ctx, entity) {
 		// Draw the player entity
-		ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+		ctx.fillStyle = '#0090ff';
 		ctx.beginPath();
 		ctx.moveTo(0, -entity._geometry.y2);
 		ctx.lineTo(entity._geometry.x2, entity._geometry.y2);

@@ -5,19 +5,19 @@ var LandingPad = IgeEntityBox2d.extend({
 		this._super();
 
 		// Set the rectangle colour (this is read in the Rectangle.js smart texture)
-		this._rectColor = '#7ac1ea';
+		this._rectColor = '#ffc600';
 
-		this.group('floor')
+		this.group('landingPad')
 			.texture(ige.client.textures.rectangle)
 			.translateTo(0, 50, 0)
-			.width(100)
-			.height(50)
+			.width(80)
+			.height(5)
 			.box2dBody({
 				type: 'static',
 				allowSleep: true,
 				fixtures: [{
 					filter: {
-						categoryBits: 0x0001,
+						categoryBits: 0x0002,
 						maskBits: 0xffff
 					},
 					shape: {
