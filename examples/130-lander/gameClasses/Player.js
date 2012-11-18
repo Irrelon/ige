@@ -36,7 +36,19 @@ var Player = IgeEntityBox2d.extend({
 					type: 'circle'
 				}
 			}]
-		})
+		});
+
+		// Add a particle emitter for the thrust particles
+		self.thrustEmitter = new IgeParticleEmitter()
+			.particle(ThrustParticle)
+			.lifeBase(400)
+			.quantityTimespan(1000)
+			.quantityBase(60)
+			.velocityVector(new IgePoint(0, 0.1, 0), new IgePoint(-0.05, 0.1, 0), new IgePoint(0.05, 0.05, 0))
+			.particleMountTarget(ige.client.objectScene)
+			.deathOpacityBase(0)
+			.translateTo(0, 3, 0)
+			.mount(self);
 	}
 });
 
