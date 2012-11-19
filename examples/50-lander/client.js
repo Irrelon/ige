@@ -67,6 +67,9 @@ var Client = IgeClass.extend({
 								// The player has crashed!
 								self.player.crash();
 							} else if (contact.igeEitherGroup('landingPad') && contact.igeEitherGroup('ship')) {
+								// Clear the old orb data
+								delete self.player._oldOrb;
+
 								// If the player ship touches a landing pad, check velocity and angle
 								var degrees = Math.degrees(self.player._rotate.z),
 									wound = Math.round(degrees / 360);
