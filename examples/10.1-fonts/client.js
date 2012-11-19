@@ -9,8 +9,8 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
-		gameTexture[0] = new IgeFontSheet('../assets/textures/fonts/eater_26pt.png', 3);
-		gameTexture[1] = new IgeFontSheet('../assets/textures/fonts/verdana_10px.png', 1);
+		gameTexture[0] = new IgeFontSheet('../assets/textures/fonts/eater_26pt.png', 4);
+		gameTexture[1] = new IgeFontSheet('../assets/textures/fonts/verdana_10px.png', 2);
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -42,7 +42,7 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					// Create an entity
-					new IgeFontEntity()
+					self.obj[0] = new IgeFontEntity()
 						.id('font1')
 						.depth(1)
 						.width(480)
@@ -50,13 +50,14 @@ var Client = IgeClass.extend({
 						.texture(gameTexture[0])
 						.textAlignX(0)
 						//.textAlignY(0)
+						.colorOverlay('#ff0000')
 						.textLineSpacing(-34)
 						.text('Align Left\nAnother Line')
 						.center(0)
 						.middle(0)
 						.mount(self.scene1);
 
-					new IgeFontEntity()
+					self.obj[1] = new IgeFontEntity()
 						.id('font2')
 						.depth(1)
 						.width(480)
@@ -70,7 +71,7 @@ var Client = IgeClass.extend({
 						.middle(110)
 						.mount(self.scene1);
 
-					new IgeFontEntity()
+					self.obj[2] = new IgeFontEntity()
 						.id('font3')
 						.depth(1)
 						.width(480)
@@ -84,7 +85,7 @@ var Client = IgeClass.extend({
 						.middle(220)
 						.mount(self.scene1);
 
-					new IgeFontEntity()
+					self.obj[3] = new IgeFontEntity()
 						.id('font4')
 						.depth(1)
 						.width(200)

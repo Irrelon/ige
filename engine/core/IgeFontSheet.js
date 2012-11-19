@@ -330,6 +330,23 @@ var IgeFontSheet = IgeTexture.extend({
 						(this._sizeY - 2) // render height
 					);
 
+					// Check if we should overlay with a colour
+					if (entity._colorOverlay) {
+						_ctx.save();
+						// Set the composite operation and draw the colour over the top
+						_ctx.globalCompositeOperation = 'source-atop';
+
+						_ctx.fillStyle = entity._colorOverlay;
+						_ctx.fillRect(
+							Math.floor(masterX + renderX), // render x TODO: Performance - Cache these?
+							Math.floor(masterY + renderStartY + renderY), // render y
+							pixelWidthMap[charIndex], // render width
+							(this._sizeY - 2) // render height
+						);
+						_ctx.restore();
+					}
+
+
 					renderX += measuredWidthMap[charIndex] || 0;
 
 					ige._drawCount++;

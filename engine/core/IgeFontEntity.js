@@ -48,6 +48,29 @@ var IgeFontEntity = IgeUiEntity.extend({
 	},
 
 	/**
+	 * Gets / sets the string hex or rgba value of the colour
+	 * to use as an overlay when rending this entity's texture.
+	 * @param {String=} val The colour value as hex e.g. '#ff0000'
+	 * or as rgba e.g. 'rbga(255, 0, 0, 0.5)'. To remove an overlay
+	 * colour simply passed an empty string.
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
+	colorOverlay: function (val) {
+		if (val !== undefined) {
+			this._colorOverlay = val;
+
+			// Kill the cache for this text
+			if (this._texture && this._texture._caching && this._texture._cacheText[this._text]) {
+				delete this._texture._cacheText[this._text];
+			}
+			return this;
+		}
+
+		return this._colorOverlay;
+	},
+
+	/**
 	 * Returns a string containing a code fragment that when
 	 * evaluated will reproduce this object's properties via
 	 * chained commands. This method will only check for
