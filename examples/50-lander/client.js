@@ -80,13 +80,20 @@ var Client = IgeClass.extend({
 								if (Math.degrees(self.player._rotate.z) > 30 || Math.degrees(self.player._rotate.z) < -30) {
 									console.log(Math.degrees(self.player._rotate.z));
 									self.player.crash();
+								} else {
+									// The player has landed
+									self.player._landed = true;
 								}
 							}
-						}/*,
+						},
 						// Listen for when contact's end
 						function (contact) {
 							//console.log('Contact ends between', contact.igeEntityA()._id, 'and', contact.igeEntityB()._id);
-						},
+							if (contact.igeEitherGroup('landingPad') && contact.igeEitherGroup('ship')) {
+								// The player has taken off
+								self.player._landed = false;
+							}
+						}/*,
 						// Handle pre-solver events
 						function (contact) {
 							// If player ship collides with lunar surface, crash!

@@ -6,6 +6,7 @@ var Player = IgeEntityBox2d.extend({
 		var self = this;
 
 		self._thrustPower = 0.5;
+		self._fuel = 100;
 
 		self.controls = {
 			left: false,
@@ -21,7 +22,9 @@ var Player = IgeEntityBox2d.extend({
 			.height(20);
 
 		// Define the polygon for collision
-		var collisionPoly = new IgePoly2d()
+		var triangles,
+			fixDefs,
+			collisionPoly = new IgePoly2d()
 			.addPoint(0, -this._geometry.y2)
 			.addPoint(this._geometry.x2, this._geometry.y2)
 			.addPoint(0, this._geometry.y2 - 5)
@@ -31,12 +34,12 @@ var Player = IgeEntityBox2d.extend({
 		collisionPoly.divide(ige.box2d._scaleRatio);
 
 		// Now convert this polygon into an array of triangles
-		var triangles = collisionPoly.triangulate();
+		triangles = collisionPoly.triangulate();
 		this.triangles = triangles;
 
 		// Create an array of box2d fixture definitions
 		// based on the triangles
-		var fixDefs = [];
+		fixDefs = [];
 
 		for (var i = 0; i < this.triangles.length; i++) {
 			fixDefs.push({
@@ -172,6 +175,26 @@ var Player = IgeEntityBox2d.extend({
 		this._box2dBody.SetAngularVelocity(0);
 		this._box2dBody.SetLinearVelocity(new IgePoint(0, 0, 0));
 		this._box2dBody.SetActive(true);
+
+		// Reset fuel
+		this._fuel = 100;
+	},
+
+	tick: function (ctx) {
+		if (this._landed) {
+			if (this._fuel < 100) {
+				this._fuel += 0.01 * ige._tickDelta;
+
+				if (this._fuel > 100) {
+					this._fuel = 100;
+				}
+			}
+		}
+
+		// Update the fuel progress bar to show player fuel
+		ige.$('fuelBar').progress(this._fuel);
+
+		this._super(ctx);
 	}
 });
 
