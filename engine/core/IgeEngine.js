@@ -978,6 +978,29 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
+	 * Gets / sets the option to determine if the engine should
+	 * schedule it's own ticks or if you want to manually advance
+	 * the engine by calling tick when you wish to.
+	 * @param val
+	 * @return {*}
+	 */
+	useManualTicks: function (val) {
+		if (val !== undefined) {
+			this._useManualTicks = val;
+			return this;
+		}
+
+		return this._useManualTicks;
+	},
+
+	/**
+	 * Schedules a manual tick.
+	 */
+	manualTick: function () {
+		requestAnimFrame(this.tick);
+	},
+
+	/**
 	 * Called each frame to traverse and render the scenegraph.
 	 */
 	tick: function (timeStamp, ctx) {
@@ -1005,8 +1028,11 @@ var IgeEngine = IgeEntity.extend({
 				ctx = self._ctx;
 			}
 
-			// Schedule a new frame
-			requestAnimFrame(self.tick);
+			// If the engine is not in manual tick mode...
+			if (!ige._useManualTicks) {
+				// Schedule a new frame
+				requestAnimFrame(self.tick);
+			}
 
 			// Alternate the boolean frame alternator flag
 			self._frameAlternator = !self._frameAlternator;
