@@ -981,7 +981,7 @@ var IgeEngine = IgeEntity.extend({
 	 * Gets / sets the option to determine if the engine should
 	 * schedule it's own ticks or if you want to manually advance
 	 * the engine by calling tick when you wish to.
-	 * @param val
+	 * @param {Boolean=} val
 	 * @return {*}
 	 */
 	useManualTicks: function (val) {
@@ -997,7 +997,29 @@ var IgeEngine = IgeEntity.extend({
 	 * Schedules a manual tick.
 	 */
 	manualTick: function () {
-		requestAnimFrame(this.tick);
+		if (this._manualFrameAlternator !== this._frameAlternator) {
+			this._manualFrameAlternator = this._frameAlternator;
+			requestAnimFrame(this.tick);
+		}
+	},
+
+	/**
+	 * Gets / sets the option to determine if the engine should
+	 * render on every tick or wait for a manualRender() call.
+	 * @param {Boolean=} val
+	 * @return {*}
+	 */
+	useManualRender: function (val) {
+		if (val !== undefined) {
+			this._useManualRender = val;
+			return this;
+		}
+
+		return this._useManualRender;
+	},
+
+	manualRender: function () {
+		this._manualRender = true;
 	},
 
 	/**
@@ -1028,14 +1050,16 @@ var IgeEngine = IgeEntity.extend({
 				ctx = self._ctx;
 			}
 
+			// Alternate the boolean frame alternator flag
+			self._frameAlternator = !self._frameAlternator;
+
 			// If the engine is not in manual tick mode...
 			if (!ige._useManualTicks) {
 				// Schedule a new frame
 				requestAnimFrame(self.tick);
+			} else {
+				self._manualFrameAlternator = !self._frameAlternator;
 			}
-
-			// Alternate the boolean frame alternator flag
-			self._frameAlternator = !self._frameAlternator;
 
 			// Get the current time in milliseconds
 			self.tickStart = timeStamp;
@@ -1060,7 +1084,16 @@ var IgeEngine = IgeEntity.extend({
 			self._processBehaviours(ctx);
 
 			// Render the scenegraph
-			self.render(ctx);
+			if (!self._useManualRender) {
+				self.render(ctx);
+			} else {
+				if (self._manualRender) {
+					self.render(ctx);
+					self._manualRender = false;
+				} else {
+					self.render(IgeDummyContext);
+				}
+			}
 
 			// Call post-tick methods
 			for (ptIndex = 0; ptIndex < ptCount; ptIndex++) {
