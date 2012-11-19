@@ -65,6 +65,9 @@ var IgeScene2d = IgeEntity.extend({
 				// Translate the scene so it is always center of the camera
 				var cam = ige._currentCamera;
 				this.translateTo(cam._translate.x, cam._translate.y, cam._translate.z);
+				this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
+				this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);
+				//this._localMatrix.multiply(ige._currentCamera._worldMatrix.getInverse());
 			}
 			this._super(ctx);
 		}
