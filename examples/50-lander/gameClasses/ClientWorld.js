@@ -14,17 +14,24 @@ var ClientWorld = {
 			.mount(this.mainScene);
 
 		// Create UI elements
+		new IgeFontEntity()
+			.texture(ige.client.textures.font)
+			.width(100)
+			.text('Fuel Level')
+			.top(5)
+			.right(10)
+			.mount(this.uiScene);
+
 		new IgeUiProgressBar()
 			.id('fuelBar')
 			.max(100)
 			.min(0)
 			.right(10)
-			.top(10)
+			.top(40)
 			.width(100)
 			.height(12)
-			.barBackColor('#005804')
-			.barColor('#00ff0c')
-			.barText('Fuel: ', '', '#000000')
+			.barBackColor('#953800')
+			.barColor('#ff6000')
 			.mount(this.uiScene);
 
 		// Create the main viewport and set the scene

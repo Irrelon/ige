@@ -9,7 +9,6 @@ var LandingPad = IgeEntityBox2d.extend({
 
 		this.group('landingPad')
 			.texture(ige.client.textures.rectangle)
-			.translateTo(0, 50, 0)
 			.width(80)
 			.height(5)
 			.box2dBody({

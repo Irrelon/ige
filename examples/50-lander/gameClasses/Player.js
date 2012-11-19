@@ -57,6 +57,25 @@ var Player = IgeEntityBox2d.extend({
 			});
 		}
 
+		// Add a sensor to the fixtures so we can detect
+		// when the ship is near an orb
+		fixDefs.push({
+			density: 0.0,
+			friction: 0.0,
+			restitution: 0.0,
+			isSensor: true,
+			filter: {
+				categoryBits: 0x0008,
+				maskBits: 0x0100
+			},
+			shape: {
+				type: 'circle',
+				data: {
+					radius: 60
+				}
+			}
+		});
+
 		// Setup the box2d physics properties
 		self.box2dBody({
 			type: 'dynamic',
@@ -118,6 +137,8 @@ var Player = IgeEntityBox2d.extend({
 
 	crash: function () {
 		var self = this;
+
+		this.dropOrb();
 
 		// The player crashed
 		// Create a particle emitter at this location then remove the ship,
@@ -191,7 +212,7 @@ var Player = IgeEntityBox2d.extend({
 	tick: function (ctx) {
 		if (this._landed) {
 			if (this._fuel < 100) {
-				this._fuel += 0.01 * ige._tickDelta;
+				this._fuel += 0.1 * ige._tickDelta;
 
 				if (this._fuel > 100) {
 					this._fuel = 100;
@@ -207,6 +228,48 @@ var Player = IgeEntityBox2d.extend({
 		//ige.$('vp1').camera.scaleTo(camScale, camScale, camScale);
 
 		this._super(ctx);
+
+		// If we are carrying an orb draw a connecting line to it
+		if (this._carryingOrb) {
+			ctx.save();
+				ctx.rotate(-this._rotate.z);
+				ctx.strokeStyle = '#a6fff6';
+				ctx.beginPath();
+				ctx.moveTo(0, 0);
+				ctx.lineTo(this._orb._translate.x - this._translate.x, this._orb._translate.y - this._translate.y);
+				ctx.stroke();
+			ctx.restore();
+		}
+	},
+
+	carryOrb: function (orb, contact) {
+		var distanceJointDef = new ige.box2d.b2DistanceJointDef(),
+			bodyA = contact.m_fixtureA.m_body,
+			bodyB = contact.m_fixtureB.m_body;
+
+		distanceJointDef.Initialize(
+			bodyA,
+			bodyB,
+			bodyA.GetWorldCenter(),
+			bodyB.GetWorldCenter()
+		);
+
+		this._orbRope = ige.box2d._world.CreateJoint(distanceJointDef);
+
+		this._carryingOrb = true;
+		this._orb = orb;
+
+		orb.originalStart(orb._translate);
+	},
+
+	dropOrb: function () {
+		if (this._carryingOrb) {
+			ige.box2d._world.DestroyJoint(this._orbRope);
+			delete this._orbRope;
+			delete this._orb;
+
+			this._carryingOrb = false;
+		}
 	}
 });
 
