@@ -1,3 +1,7 @@
+/**
+ * Provides native canvas font rendering supporting multi-line
+ * text and alignment options.
+ */
 var IgeFontSmartTexture = {
 	render: function (ctx, entity) {
 		if (entity._nativeFont && entity._text) {
