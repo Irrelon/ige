@@ -40,6 +40,20 @@ var ClientWorld = {
 			.right(10)
 			.mount(this.uiScene);
 
+		// Define the player fuel bar
+		new IgeUiProgressBar()
+			.id('player_fuelBar')
+			.max(100)
+			.min(0)
+			.right(10)
+			.top(120)
+			//.translateTo(0, -25, 0)
+			.width(100)
+			.height(10)
+			.barBackColor('#953800')
+			.barColor('#ff6000')
+			.mount(ige.client.uiScene);
+
 		// Create the main viewport and set the scene
 		// it will "look" at as the new scene1 we just
 		// created above

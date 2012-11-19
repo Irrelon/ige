@@ -22,20 +22,6 @@ var Player = IgeEntityBox2d.extend({
 			.width(20)
 			.height(20);
 
-		// Define the player fuel bar
-		new IgeUiProgressBar()
-			.id(this.id() + '_fuelBar')
-			.max(100)
-			.min(0)
-			//.right(10)
-			//.top(120)
-			.translateTo(0, -25, 0)
-			.width(40)
-			.height(6)
-			.barBackColor('#953800')
-			.barColor('#ff6000')
-			.mount(ige.client.objectScene);
-
 		// Define the polygon for collision
 		var triangles,
 			fixDefs,
@@ -262,9 +248,9 @@ var Player = IgeEntityBox2d.extend({
 		}
 
 		// Update the fuel progress bar to show player fuel
-		ige.$(this.id() + '_fuelBar')
-			.progress(this._fuel)
-			.translateTo(this._translate.x, this._translate.y - 25, 0);
+		ige.$('player_fuelBar')
+			.progress(this._fuel);
+			//.translateTo(this._translate.x, this._translate.y - 25, 0);
 
 		ige.$('scoreText').text(this._score + ' points');
 

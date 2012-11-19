@@ -76,7 +76,7 @@ var Client = IgeClass.extend({
 								}
 
 								if (wound < 0) {
-									degrees += (360 * wound);
+									degrees -= (360 * wound);
 								}
 
 								self.player._rotate.z = Math.radians(degrees);
