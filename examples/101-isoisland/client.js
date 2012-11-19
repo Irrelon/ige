@@ -3,6 +3,10 @@ var Client = IgeClass.extend({
 
 	init: function () {
 		ige.showStats(1);
+		ige.useManualRender(true);
+		ige.input.on('inputEvent', function () {
+			ige.manualRender();
+		});
 
 		// Load our textures
 		var self = this;
