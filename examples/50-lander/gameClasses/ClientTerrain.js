@@ -82,5 +82,18 @@ var ClientTerrain = {
 				allowSleep: true,
 				fixtures: fixtureArr
 			});
+
+		// Create the entity that will render the terrain
+		var TerrainEntity = IgeEntity.extend({
+			classId: 'TerrainEntity',
+			tick: function (ctx) {
+				this._super(ctx);
+				ctx.strokeStyle = '#ffffff';
+				ige.client.terrainPoly.render(ctx);
+			}
+		});
+
+		new TerrainEntity()
+			.mount(ige.client.mainScene);
 	}
 };

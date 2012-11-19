@@ -53,17 +53,6 @@ var Client = IgeClass.extend({
 
 					self.vp1.camera.trackTranslate(self.player, 20);
 
-					var Test = IgeEntity.extend({
-						classId: 'Test',
-						tick: function (ctx) {
-							this._super(ctx);
-							ctx.strokeStyle = '#ffffff';
-							ige.client.terrainPoly.render(ctx);
-						}
-					});
-
-					new Test().mount(ige.client.mainScene);
-
 					// Set the contact listener methods to detect when
 					// contacts (collisions) begin and end
 					ige.box2d.contactListener(

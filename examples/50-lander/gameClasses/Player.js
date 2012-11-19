@@ -155,7 +155,15 @@ var Player = IgeEntityBox2d.extend({
 		// Create a count down at the death location
 		this._countDownText = new ClientCountDown('Respawn in ', 3, 's', 1000)
 			.translateTo(this._translate.x, this._translate.y, 0)
+			.rotateTo(0, 0, -ige.client.vp1.camera._rotate.z)
 			.mount(ige.client.objectScene)
+			.start();
+
+		// Add a tween on the countdown text for fun!
+		this._countDownText._rotate.tween()
+			.duration(2000)
+			.properties({z: Math.radians(360)})
+			.easing('outElastic')
 			.start();
 
 		// Hook the complete event so we can schedule a respawn
@@ -193,6 +201,10 @@ var Player = IgeEntityBox2d.extend({
 
 		// Update the fuel progress bar to show player fuel
 		ige.$('fuelBar').progress(this._fuel);
+
+		// Scale the camera based on flight height
+		var camScale = 1 + (0.1 * (this._translate.y / 100));
+		//ige.$('vp1').camera.scaleTo(camScale, camScale, camScale);
 
 		this._super(ctx);
 	}
