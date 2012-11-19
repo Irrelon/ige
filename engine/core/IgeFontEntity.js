@@ -26,6 +26,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 	textAlignX: function (val) {
 		if (val !== undefined) {
 			this._textAlignX = val;
+			this.clearCache();
 			return this;
 		}
 		return this._textAlignX;
@@ -34,6 +35,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 	textAlignY: function (val) {
 		if (val !== undefined) {
 			this._textAlignY = val;
+			this.clearCache();
 			return this;
 		}
 		return this._textAlignY;
@@ -42,6 +44,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 	textLineSpacing: function (val) {
 		if (val !== undefined) {
 			this._textLineSpacing = val;
+			this.clearCache();
 			return this;
 		}
 		return this._textLineSpacing;
@@ -61,13 +64,42 @@ var IgeFontEntity = IgeUiEntity.extend({
 			this._colorOverlay = val;
 
 			// Kill the cache for this text
-			if (this._texture && this._texture._caching && this._texture._cacheText[this._text]) {
-				delete this._texture._cacheText[this._text];
-			}
+			this.clearCache();
 			return this;
 		}
 
 		return this._colorOverlay;
+	},
+
+	/**
+	 * Clears the texture cache for this entity's text string.
+	 */
+	clearCache: function () {
+		if (this._texture && this._texture._caching && this._texture._cacheText[this._text]) {
+			delete this._texture._cacheText[this._text];
+		}
+	},
+
+	/**
+	 * When using native font rendering (canvasContext.fillText())
+	 * this sets the font and size as per the canvasContext.font
+	 * string specification.
+	 * @param {String=} val The font style string.
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
+	nativeFont: function (val) {
+		if (val !== undefined) {
+			this._nativeFont = val;
+
+			// Assign the native font smart texture
+			var tex = new IgeSmartTexture(IgeFontSmartTexture);
+			this.texture(tex);
+
+			return this;
+		}
+
+		return this._nativeFont;
 	},
 
 	/**
