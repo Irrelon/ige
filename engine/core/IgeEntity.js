@@ -71,6 +71,23 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
+	 * Gets / sets the string hex or rgba value of the colour
+	 * to use as an overlay when rending this entity's texture.
+	 * @param {String=} val The colour value as hex e.g. '#ff0000'
+	 * or as rgba e.g. 'rbga(255, 0, 0, 0.5)'.
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
+	colorOverlay: function (val) {
+		if (val !== undefined) {
+			this._colorOverlay = val;
+			return this;
+		}
+
+		return this._colorOverlay;
+	},
+
+	/**
 	 * Gets the position of the mouse relative to this entity.
 	 * @param {IgeViewport=} viewport The viewport to use as the
 	 * base from which the mouse position is determined. If no
@@ -91,6 +108,16 @@ var IgeEntity = IgeObject.extend([
 		}
 	},
 
+	/**
+	 * Gets the position of the mouse relative to this entity not
+	 * taking into account viewport translation.
+	 * @param {IgeViewport=} viewport The viewport to use as the
+	 * base from which the mouse position is determined. If no
+	 * viewport is specified then the current viewport the engine
+	 * is rendering to is used instead.
+	 * @return {IgePoint} The mouse point relative to the entity
+	 * center.
+	 */
 	mousePosAbsolute: function (viewport) {
 		viewport = viewport || ige._currentViewport;
 		if (viewport) {
