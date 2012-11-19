@@ -79,6 +79,14 @@ var IgeUiProgressBar = IgeUiEntity.extend({
 
 	progress: function (val) {
 		if (val !== undefined) {
+			if (val < this._min) {
+				val = this._min;
+			}
+
+			if (val > this._max) {
+				val = this._max;
+			}
+
 			this._progress = val;
 			return this;
 		}
@@ -126,7 +134,7 @@ var IgeUiProgressBar = IgeUiEntity.extend({
 			ctx.textBaseline = 'middle';
 
 			ctx.fillStyle = this._barText.color;
-			ctx.fillText(this._barText.pre + String(progress) + this._barText.post, 0, 0);
+			ctx.fillText(this._barText.pre + String(Math.floor(progress)) + this._barText.post, 0, 0);
 		}
 	},
 
