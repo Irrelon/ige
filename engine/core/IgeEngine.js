@@ -869,7 +869,7 @@ var IgeEngine = IgeEntity.extend({
 
 	/**
 	 * Sets a trace up on the setter of the passed object's
-	 * specified property. When the proprety is set by any
+	 * specified property. When the property is set by any
 	 * code the debugger line is activated and code execution
 	 * will be paused allowing you to step through code or
 	 * examine the call stack to see where the property set
@@ -905,8 +905,15 @@ var IgeEngine = IgeEntity.extend({
 		});
 	},
 
-	traceSetOff: function (object, propertyName) {
-		Object.defineProperty(object, propertyName, {set: function (val) { this.___igeTraceCurrentVal = val; }});
+	/**
+	 * Turns off a trace that was created by calling traceSet.
+	 * @param {Object} object The object whose property you want
+	 * to disable a trace against.
+	 * @param {String} propName The name of the property you
+	 * want to disable the trace for.
+	 */
+	traceSetOff: function (object, propName) {
+		Object.defineProperty(object, propName, {set: function (val) { this.___igeTraceCurrentVal = val; }});
 	},
 
 	/**
