@@ -30,6 +30,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		this.b2Distance = Box2D.Collision.b2Distance;
 		this.b2Contact = Box2D.Dynamics.Contacts.b2Contact;
 		this.b2FilterData = Box2D.Dynamics.b2FilterData;
+		this.b2DistanceJointDef = Box2D.Dynamics.Joints.b2DistanceJointDef;
 
 		// Extend the b2Contact class to allow the IGE entity accessor
 		// and other helper methods
@@ -362,6 +363,10 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 								if (fixtureDef.filter.groupIndex !== undefined) { tempFilterData.groupIndex = fixtureDef.filter.groupIndex; }
 
 								finalFixture.SetFilterData(tempFilterData);
+							}
+
+							if (fixtureDef.density !== undefined && finalFixture) {
+								finalFixture.SetDensity(fixtureDef.density);
 							}
 						}
 						break;
