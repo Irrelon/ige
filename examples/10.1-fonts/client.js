@@ -64,6 +64,7 @@ var Client = IgeClass.extend({
 						.texture(gameTexture[0])
 						.textAlignX(1)
 						//.textAlignY(1)
+						.colorOverlay('#00ff00')
 						.textLineSpacing(-34)
 						.text('Align Center\nAnother Line')
 						.center(0)
