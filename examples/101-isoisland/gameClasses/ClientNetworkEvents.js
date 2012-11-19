@@ -10,6 +10,7 @@ var ClientNetworkEvents = {
 			// Our login was successful!
 			ige.client.log('Server accepted our login request...');
 			ige.client.startClient();
+			ige.manualRender();
 		} else {
 			ige.client.log('Server rejected our login request!');
 		}
@@ -42,6 +43,8 @@ var ClientNetworkEvents = {
 
 			entity.place();
 		}
+
+		ige.manualRender();
 	},
 
 	_placeItem: function (data) {
