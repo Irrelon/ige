@@ -177,51 +177,6 @@ var IgeInputComponent = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Sets igeX and igeY properties in the event object that
-	 * can be relied on to provide the x, y co-ordinates of the
-	 * mouse event including the canvas offset.
-	 * @param {Event} event The event object.
-	 * @private
-	 */
-	_rationalise: function (event, touch) {
-		// Check if we want to prevent default behaviour
-		if (event.igeType === 'key') {
-			if (event.keyCode === 8) { // Backspace
-				// Check if the event occurred on the body
-				var elem = event.srcElement || event.target;
-
-				if (elem.tagName.toLowerCase() === 'body') {
-					// The event occurred on our body element so prevent
-					// default behaviour. This allows other elements on
-					// the page to retain focus such as text boxes etc
-					// and allows them to behave normally.
-					event.preventDefault();
-				}
-			}
-		}
-
-		if (event.igeType === 'touch') {
-			event.preventDefault();
-		}
-
-		if (touch) {
-			event.button = 0; // Emulate left mouse button
-
-			// Handle touch changed
-			if (event.changedTouches && event.changedTouches.length) {
-				event.igePageX = event.changedTouches[0].pageX;
-				event.igePageY = event.changedTouches[0].pageY;
-			}
-		} else {
-			event.igePageX = event.pageX;
-			event.igePageY = event.pageY;
-		}
-
-		event.igeX = (event.igePageX - this._canvas.offsetLeft);
-		event.igeY = (event.igePageY - this._canvas.offsetTop);
-	},
-
-	/**
 	 * Sets up the event listeners on the main window and front
 	 * buffer DOM objects.
 	 * @private
@@ -294,6 +249,56 @@ var IgeInputComponent = IgeEventingClass.extend({
 		window.removeEventListener('keydown', this._evRef.keydown, false);
 		window.removeEventListener('keyup', this._evRef.keyup, false);
 	},
+
+	/**
+	 * Sets igeX and igeY properties in the event object that
+	 * can be relied on to provide the x, y co-ordinates of the
+	 * mouse event including the canvas offset.
+	 * @param {Event} event The event object.
+	 * @param {Boolean} touch If the event was a touch event or
+	 * not.
+	 * @private
+	 */
+	_rationalise: function (event, touch) {
+		// Check if we want to prevent default behaviour
+		if (event.igeType === 'key') {
+			if (event.keyCode === 8) { // Backspace
+				// Check if the event occurred on the body
+				var elem = event.srcElement || event.target;
+
+				if (elem.tagName.toLowerCase() === 'body') {
+					// The event occurred on our body element so prevent
+					// default behaviour. This allows other elements on
+					// the page to retain focus such as text boxes etc
+					// and allows them to behave normally.
+					event.preventDefault();
+				}
+			}
+		}
+
+		if (event.igeType === 'touch') {
+			event.preventDefault();
+		}
+
+		if (touch) {
+			event.button = 0; // Emulate left mouse button
+
+			// Handle touch changed
+			if (event.changedTouches && event.changedTouches.length) {
+				event.igePageX = event.changedTouches[0].pageX;
+				event.igePageY = event.changedTouches[0].pageY;
+			}
+		} else {
+			event.igePageX = event.pageX;
+			event.igePageY = event.pageY;
+		}
+
+		event.igeX = (event.igePageX - this._canvas.offsetLeft);
+		event.igeY = (event.igePageY - this._canvas.offsetTop);
+
+		this.emit('inputEvent', event);
+	},
+
 
 	/**
 	 * Emits the "mouseDown" event.
