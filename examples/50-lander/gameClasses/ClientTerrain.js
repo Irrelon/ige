@@ -25,7 +25,7 @@ var ClientTerrain = {
 					if (this.terrain[i] * 20 < 160) {
 						this.terrain[i + 1] = this.terrain[i];
 						this.landingPadPositions.push(
-							[(i) * 4 * 20 + 40, (this.terrain[i] * 20) - 2, 0]
+							[(i) * 4 * 20 + 40, (this.terrain[i] * 20) - 4, 0]
 						);
 
 						terrainPoly.addPoint(i * 4, this.terrain[i]);

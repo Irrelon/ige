@@ -63,4 +63,10 @@ var PlayerBehaviour = function () {
 		// Disable the particle emitter
 		this.thrustEmitter.stop();
 	}
+
+	if (ige.input.actionState('drop')) {
+		if (this._carryingOrb) {
+			this.dropOrb();
+		}
+	}
 };

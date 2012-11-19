@@ -17,8 +17,26 @@ var ClientWorld = {
 		new IgeFontEntity()
 			.texture(ige.client.textures.font)
 			.width(100)
-			.text('Fuel Level')
+			.text('Score')
 			.top(5)
+			.right(10)
+			.mount(this.uiScene);
+
+		new IgeFontEntity()
+			.id('scoreText')
+			.texture(ige.client.textures.font)
+			.width(100)
+			.text('0 points')
+			.colorOverlay('#ff6000')
+			.top(35)
+			.right(10)
+			.mount(this.uiScene);
+
+		new IgeFontEntity()
+			.texture(ige.client.textures.font)
+			.width(100)
+			.text('Fuel Level')
+			.top(80)
 			.right(10)
 			.mount(this.uiScene);
 
@@ -27,7 +45,7 @@ var ClientWorld = {
 			.max(100)
 			.min(0)
 			.right(10)
-			.top(40)
+			.top(120)
 			.width(100)
 			.height(12)
 			.barBackColor('#953800')

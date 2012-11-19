@@ -42,6 +42,7 @@ var Client = IgeClass.extend({
 					ige.input.mapAction('left', ige.input.key.left);
 					ige.input.mapAction('right', ige.input.key.right);
 					ige.input.mapAction('thrust', ige.input.key.up);
+					ige.input.mapAction('drop', ige.input.key.space);
 
 					self.player = new Player()
 						.addBehaviour('PlayerControl', PlayerBehaviour)
@@ -109,6 +110,11 @@ var Client = IgeClass.extend({
 							// You can also check an entity by it's group using igeEitherGroup('groupName')
 						}*/
 					);
+
+					/*new ClientScore('+1 for orb')
+						.translateTo(0, 0, 0)
+						.mount(ige.client.objectScene)
+						.start(1000);*/
 				}
 			});
 		});

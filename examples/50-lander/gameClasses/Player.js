@@ -7,6 +7,7 @@ var Player = IgeEntityBox2d.extend({
 
 		self._thrustPower = 0.5;
 		self._fuel = 100;
+		self._score = 0;
 
 		self.controls = {
 			left: false,
@@ -222,6 +223,7 @@ var Player = IgeEntityBox2d.extend({
 
 		// Update the fuel progress bar to show player fuel
 		ige.$('fuelBar').progress(this._fuel);
+		ige.$('scoreText').text(this._score + ' points');
 
 		// Scale the camera based on flight height
 		var camScale = 1 + (0.1 * (this._translate.y / 100));

@@ -10,11 +10,18 @@ var ClientScore = IgeFontEntity.extend({
 			.texture(ige.client.textures.font)
 			.textAlignX(1)
 			.textLineSpacing(0)
-			.text(score);
+			.text(score)
+			.hide();
 	},
 
-	start: function () {
+	start: function (inMs) {
 		var self = this;
+		if (inMs) {
+			setTimeout(function () { self.start(); }, inMs);
+			return;
+		}
+
+		this.show();
 
 		this._translate.tween()
 			.duration(3000)
@@ -23,7 +30,15 @@ var ClientScore = IgeFontEntity.extend({
 			})
 			.easing('outElastic')
 			.afterTween(function () {
-				self.destroy();
+				self.tween()
+					.duration(500)
+					.properties({
+						_opacity: 0
+					})
+					.afterTween(function () {
+						self.destroy();
+					})
+					.start();
 			})
 			.start();
 
