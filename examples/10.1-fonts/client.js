@@ -2,6 +2,7 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
 		ige.showStats(1);
+		//ige.useManualTicks(true);
 
 		// Load our textures
 		var self = this,
