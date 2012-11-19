@@ -867,22 +867,46 @@ var IgeEngine = IgeEntity.extend({
 		this._watch.splice(index, 1);
 	},
 
-	traceSet: function (obj, propName) {
-		var currentVal = obj[propName];
+	/**
+	 * Sets a trace up on the setter of the passed object's
+	 * specified property. When the proprety is set by any
+	 * code the debugger line is activated and code execution
+	 * will be paused allowing you to step through code or
+	 * examine the call stack to see where the property set
+	 * originated.
+	 * @param {Object} obj The object whose property you want
+	 * to trace.
+	 * @param {String} propName The name of the property you
+	 * want to put the trace on.
+	 * @param {Number} sampleCount The number of times you
+	 * want the trace to break with the debugger line before
+	 * automatically switching off the trace.
+	 */
+	traceSet: function (obj, propName, sampleCount) {
+		obj.___igeTraceCurrentVal = obj[propName];
+		obj.___igeTraceMax = sampleCount || 1;
+		obj.___igeTraceCount = 0;
 
 		Object.defineProperty(obj, propName, {
 			get: function () {
-				return currentVal;
+				return this.___igeTraceCurrentVal;
 			},
 			set: function (val) {
 				debugger;
-				currentVal = val;
+				this.___igeTraceCurrentVal = val;
+				this.___igeTraceCount++;
+
+				if (this.___igeTraceCount === this.___igeTraceMax) {
+					// Maximum amount of trace samples reached, turn off
+					// the trace system
+					ige.traceSetOff(obj, propName);
+				}
 			}
 		});
 	},
 
 	traceSetOff: function (object, propertyName) {
-		Object.defineProperty(object, propertyName, {set: this.prototype[propertyName]});
+		Object.defineProperty(object, propertyName, {set: function (val) { this.___igeTraceCurrentVal = val; }});
 	},
 
 	/**
