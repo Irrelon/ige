@@ -22,6 +22,20 @@ var Player = IgeEntityBox2d.extend({
 			.width(20)
 			.height(20);
 
+		// Define the player fuel bar
+		new IgeUiProgressBar()
+			.id(this.id() + '_fuelBar')
+			.max(100)
+			.min(0)
+			//.right(10)
+			//.top(120)
+			.translateTo(0, -25, 0)
+			.width(40)
+			.height(6)
+			.barBackColor('#953800')
+			.barColor('#ff6000')
+			.mount(ige.client.objectScene);
+
 		// Define the polygon for collision
 		var triangles,
 			fixDefs,
@@ -208,22 +222,26 @@ var Player = IgeEntityBox2d.extend({
 
 		// Reset fuel
 		this._fuel = 100;
+
+		new ClientScore('-' + (100) + ' for crash!')
+			.colorOverlay('#ff6f6f')
+			.translateTo(this._translate.x, this._translate.y + 50, 0)
+			.mount(ige.client.objectScene)
+			.start();
+
+		this._score -= 100;
 	},
 
 	tick: function (ctx) {
 		if (this._landed) {
 			if (this._fuel < 100) {
-				this._fuel += 0.1 * ige._tickDelta;
+				this._fuel += 0.05 * ige._tickDelta;
 
 				if (this._fuel > 100) {
 					this._fuel = 100;
 				}
 			}
 		}
-
-		// Update the fuel progress bar to show player fuel
-		ige.$('fuelBar').progress(this._fuel);
-		ige.$('scoreText').text(this._score + ' points');
 
 		// Scale the camera based on flight height
 		var camScale = 1 + (0.1 * (this._translate.y / 100));
@@ -242,31 +260,52 @@ var Player = IgeEntityBox2d.extend({
 				ctx.stroke();
 			ctx.restore();
 		}
+
+		// Update the fuel progress bar to show player fuel
+		ige.$(this.id() + '_fuelBar')
+			.progress(this._fuel)
+			.translateTo(this._translate.x, this._translate.y - 25, 0);
+
+		ige.$('scoreText').text(this._score + ' points');
+
+		if (this._dropTime < this._currentTime - 2000) {
+			// Remove the old orb from memory so we can pick
+			// it up again if required
+			debugger;
+			delete this._oldOrb;
+			delete this._dropTime;
+		}
 	},
 
 	carryOrb: function (orb, contact) {
-		var distanceJointDef = new ige.box2d.b2DistanceJointDef(),
-			bodyA = contact.m_fixtureA.m_body,
-			bodyB = contact.m_fixtureB.m_body;
+		if (!this._oldOrb || (this._oldOrb !== orb)) {
+			var distanceJointDef = new ige.box2d.b2DistanceJointDef(),
+				bodyA = contact.m_fixtureA.m_body,
+				bodyB = contact.m_fixtureB.m_body;
 
-		distanceJointDef.Initialize(
-			bodyA,
-			bodyB,
-			bodyA.GetWorldCenter(),
-			bodyB.GetWorldCenter()
-		);
+			distanceJointDef.Initialize(
+				bodyA,
+				bodyB,
+				bodyA.GetWorldCenter(),
+				bodyB.GetWorldCenter()
+			);
 
-		this._orbRope = ige.box2d._world.CreateJoint(distanceJointDef);
+			this._orbRope = ige.box2d._world.CreateJoint(distanceJointDef);
 
-		this._carryingOrb = true;
-		this._orb = orb;
+			this._carryingOrb = true;
+			this._orb = orb;
 
-		orb.originalStart(orb._translate);
+			orb.originalStart(orb._translate);
+		}
 	},
 
 	dropOrb: function () {
 		if (this._carryingOrb) {
 			ige.box2d._world.DestroyJoint(this._orbRope);
+
+			this._oldOrb = this._orb;
+			this._dropTime = ige._currentTime;
+
 			delete this._orbRope;
 			delete this._orb;
 

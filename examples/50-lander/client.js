@@ -68,7 +68,20 @@ var Client = IgeClass.extend({
 								self.player.crash();
 							} else if (contact.igeEitherGroup('landingPad') && contact.igeEitherGroup('ship')) {
 								// If the player ship touches a landing pad, check velocity and angle
-								if (Math.degrees(self.player._rotate.z) > 30 || Math.degrees(self.player._rotate.z) < -30) {
+								var degrees = Math.degrees(self.player._rotate.z),
+									wound = Math.round(degrees / 360);
+
+								if (wound > 0) {
+									degrees -= (360 * wound);
+								}
+
+								if (wound < 0) {
+									degrees += (360 * wound);
+								}
+
+								self.player._rotate.z = Math.radians(degrees);
+
+								if (degrees > 30 || degrees < -30) {
 									self.player.crash();
 								} else {
 									// The player has landed

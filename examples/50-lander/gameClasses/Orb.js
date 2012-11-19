@@ -66,10 +66,15 @@ var Orb = IgeEntityBox2d.extend({
 			.mount(ige.client.objectScene)
 			.start();
 
-		new ClientScore('+' + this.distanceBonus(landingPad) + ' for distance')
+		new ClientScore('+' + distScore + ' for distance')
 			.translateTo(this._translate.x, this._translate.y - 30, 0)
 			.mount(ige.client.objectScene)
 			.start(500);
+
+		new ClientScore('+' + (this._scoreValue + distScore) + ' total')
+			.translateTo(this._translate.x, this._translate.y - 15, 0)
+			.mount(ige.client.objectScene)
+			.start(3000);
 
 		ige.client.player._score += this._scoreValue + distScore;
 
