@@ -82,7 +82,7 @@ var Client = IgeClass.extend({
 	 * loaded into memory successfully.
 	 */
 	loadTextures: function () {
-		this.gameTexture.background1 = new IgeTexture('../assets/textures/backgrounds/resortico.png');
+		this.gameTexture.background1 = new IgeTexture('../assets/textures/backgrounds/grassTile.png');
 		this.gameTexture.bank = new IgeTexture('../assets/textures/buildings/bank1.png');
 		this.gameTexture.electricals = new IgeTexture('../assets/textures/buildings/electricalsShop1.png');
 		this.gameTexture.burgers = new IgeTexture('../assets/textures/buildings/burgerShop1.png');
@@ -123,6 +123,16 @@ var Client = IgeClass.extend({
 		this.mainScene = new IgeScene2d()
 			.id('mainScene');
 
+		// Resize the background and then create a background pattern
+		this.gameTexture.background1.resize(40, 20);
+
+		this.backgroundScene = new IgeScene2d()
+			.id('backgroundScene')
+			.depth(0)
+			.backgroundPattern(this.gameTexture.background1, 'repeat', true, true)
+			.ignoreCamera(true) // We want the scene to remain static
+			.mount(this.mainScene);
+
 		// Create the main viewport and tell it to "look"
 		// at gameScene with auto-sizing enabled to fill the
 		// browser window, then move the camera
@@ -159,7 +169,7 @@ var Client = IgeClass.extend({
 		// is then mounted to the main scene.
 		this.gameScene = new IgeScene2d()
 			.id('gameScene')
-			.depth(0)
+			.depth(1)
 			.translateTo(0, -360, 0)
 			.mount(this.mainScene);
 
@@ -171,17 +181,9 @@ var Client = IgeClass.extend({
 		// scenegraph.
 		this.uiScene = new IgeScene2d()
 			.id('uiScene')
-			.depth(1)
+			.depth(2)
 			.ignoreCamera(true)
 			.mount(this.mainScene);
-
-		// Create the background image
-		this.backDrop = new IgeEntity()
-			.layer(0)
-			.texture(this.gameTexture.background1)
-			.dimensionsFromTexture()
-			.translateTo(0, 250, 0)
-			.mount(this.gameScene);
 
 		// Create a collision map. We don't mount this to
 		// our scene because we are only going to use it

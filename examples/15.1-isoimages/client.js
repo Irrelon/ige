@@ -75,40 +75,44 @@ var Client = IgeClass.extend({
 		});
 
 		// Load the texture images
-		this.gameTexture.background1.url('../assets/textures/backgrounds/resortico.png');
+		this.gameTexture.background1.url('../assets/textures/backgrounds/grassTile.png');
 		this.gameTexture.bank.url('../assets/textures/buildings/bank1.png');
 	},
 
 	setupScene: function () {
 		// Create the scene
-		this.scene1 = new IgeScene2d()
-			.id('scene1')
-			.isometric(false);
+		this.mainScene = new IgeScene2d()
+			.id('mainScene');
+
+		// Resize the background and then create a background pattern
+		this.gameTexture.background1.resize(40, 20);
+		this.backgroundScene = new IgeScene2d()
+			.id('backgroundScene')
+			.depth(0)
+			.backgroundPattern(this.gameTexture.background1, 'repeat', true, true)
+			.ignoreCamera(true) // We want the scene to remain static
+			.mount(this.mainScene);
+
+		this.objectScene = new IgeScene2d()
+			.id('objectScene')
+			.depth(1)
+			.isometric(false)
+			.mount(this.mainScene);
 
 		// Create the main viewport
 		this.vp1 = new IgeViewport()
 			.id('vp1')
 			.addComponent(IgeMousePanComponent)
 			.addComponent(IgeMouseZoomComponent)
-			.mousePan.enabled(false)
-			.mouseZoom.enabled(true)
+			.mousePan.enabled(true)
+			.mouseZoom.enabled(false)
 			.autoSize(true)
-			.scene(this.scene1)
+			.scene(this.mainScene)
 			.drawBounds(true)
 			.drawBoundsData(true)
-			.mount(ige)
-			.camera.translateTo(0, 200, 0);
+			.mount(ige);
 
-		// Create the background image
-		this.backdrop = new IgeEntity()
-			.id('backdrop')
-			.layer(0)
-			.texture(this.gameTexture.background1)
-			.dimensionsFromTexture()
-			.translateTo(0, 250, 0)
-			.drawBounds(false)
-			.drawBoundsData(false)
-			.mount(this.scene1);
+		this.vp1.camera.translateTo(0, 200, 0);
 
 		// Create the tile map
 		this.tileMap1 = new IgeTileMap2d()
@@ -121,7 +125,7 @@ var Client = IgeClass.extend({
 			//.highlightOccupied(true)
 			.drawBounds(false)
 			.drawBoundsData(false)
-			.mount(this.scene1);
+			.mount(this.objectScene);
 	},
 
 	setupEntities: function () {
