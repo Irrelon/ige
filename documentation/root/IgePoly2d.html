@@ -16,7 +16,13 @@
 	<div class="content"><a href="IgeClass.html">IgeClass</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3>addPoint(<span class="argType"></span> <span class="argName">x</span>, <span class="argType"></span> <span class="argName">y</span>)</h3>
+<h2>Methods</h2><h3>multiply(<span class="argType">Number</span> <span class="argName">factor</span>)</h3>
+<div class="methodDesc">Multiplies the points of the polygon by the supplied factor.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">factor</span> The multiplication factor.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>divide(<span class="argType">Number</span> <span class="argName">value</span>)</h3>
+<div class="methodDesc">Divides the points of the polygon by the supplied value.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">value</span> The divide value.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>addPoint(<span class="argType"></span> <span class="argName">x</span>, <span class="argType"></span> <span class="argName">y</span>)</h3>
 <div class="methodDesc">Adds a point to the polygon relative to the polygon center at 0, 0.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
 <div class="methodReturnDesc"></div><h3>length()</h3>
@@ -28,9 +34,12 @@
 <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div><h3>clone()</h3>
 <div class="methodDesc">Returns a copy of this IgePoly2d object that is it's own version, separate from the original.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">IgePoly2d</span>} </div><h3>render(<span class="argType">HTMLCanvasContext</span> <span class="argName">ctx</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">IgePoly2d</span>} </div><h3>clockWiseTriangle()</h3>
+<div class="methodDesc">Determines if the polygon is clockwise or not.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} A boolean true if clockwise or false if not.</div><h3>render(<span class="argType">CanvasRenderingContext2D</span> <span class="argName">ctx</span>)</h3>
 <div class="methodDesc">Draws the polygon bounding lines to the passed context.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">HTMLCanvasContext</span>}<span class="argName">ctx</span> </li></ul></div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> </li></ul></div>
 <div class="methodReturnDesc"></div>	</div>
 </body>
 </html>
