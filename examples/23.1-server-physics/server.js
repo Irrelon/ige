@@ -12,7 +12,8 @@ var Server = IgeClass.extend({
 		ige.addComponent(IgeBox2dComponent)
 			.box2d.sleep(true)
 			.box2d.gravity(0, 10)
-			.box2d.createWorld();
+			.box2d.createWorld()
+			.box2d.start();
 
 		// Add the networking component
 		ige.addComponent(IgeNetIoComponent)

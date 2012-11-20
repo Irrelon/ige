@@ -7,7 +7,8 @@ var Game = IgeClass.extend({
 			.addComponent(IgeBox2dComponent)
 			.box2d.sleep(true)
 			.box2d.gravity(0, 0)
-			.box2d.createWorld();
+			.box2d.createWorld()
+			.box2d.start();
 
 		if (!ige.isServer) {
 			ige.client = new App();
