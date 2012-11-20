@@ -140,6 +140,25 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
+	 * Gets / sets the texture to use as the background
+	 * pattern for this entity.
+	 * @param {IgeTexture} texture The texture to use as
+	 * the background.
+	 * @return {*}
+	 */
+	backgroundPattern: function (texture, repeat, trackCamera, isoTile) {
+		if (texture !== undefined) {
+			this._backgroundPattern = texture;
+			this._backgroundPatternRepeat = repeat || 'repeat';
+			this._backgroundPatternTrackCamera = trackCamera;
+			this._backgroundPatternIsoTile = isoTile;
+			return this;
+		}
+
+		return this._backgroundPattern;
+	},
+
+	/**
 	 * Set the object's width to the number of tile width's specified.
 	 * @param {Number} val Number of tiles.
 	 * @param {Boolean=} lockAspect If true, sets the height according
@@ -919,16 +938,49 @@ var IgeEntity = IgeObject.extend([
 	 * @private
 	 */
 	_renderEntity: function (ctx) {
-		var texture = this._texture;
+		if (this._opacity > 0) {
+			// Check if the entity has a background pattern
+			if (this._backgroundPattern) {
+				if (!this._backgroundPatternFill) {
+					// We have a pattern but no fill produced
+					// from it. Check if we have a context to
+					// generate a pattern from
+					if (ctx) {
+						// Produce the pattern fill
+						this._backgroundPatternFill = ctx.createPattern(this._backgroundPattern.image, this._backgroundPatternRepeat);
+					}
+				}
 
-		// Check if the entity is visible based upon its opacity
-		if (this._opacity > 0 && texture) {
-			// Draw the entity image
-			texture.render(ctx, this, ige._tickDelta);
+				if (this._backgroundPatternFill) {
+					// Draw the fill
+					ctx.save();
+					ctx.fillStyle = this._backgroundPatternFill;
+					ctx.rect(-this._geometry.x2, -this._geometry.y2, this._geometry.x, this._geometry.y);
+					if (this._backgroundPatternTrackCamera) {
+						ctx.translate(-ige._currentCamera._translate.x, -ige._currentCamera._translate.y);
+						ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
+					}
+					ctx.fill();
+					if (this._backgroundPatternIsoTile) {
+						ctx.translate(-Math.floor(this._backgroundPattern.image.width) / 2, -Math.floor(this._backgroundPattern.image.height / 2));
+						ctx.fill();
+					}
 
-			if (this._highlight) {
-				ctx.globalCompositeOperation = 'lighter';
-				texture.render(ctx, this);
+					ctx.restore();
+				}
+			}
+
+			var texture = this._texture;
+
+			// Check if the entity is visible based upon its opacity
+			if (texture) {
+				// Draw the entity image
+				texture.render(ctx, this, ige._tickDelta);
+
+				if (this._highlight) {
+					ctx.globalCompositeOperation = 'lighter';
+					texture.render(ctx, this);
+				}
 			}
 		}
 	},
