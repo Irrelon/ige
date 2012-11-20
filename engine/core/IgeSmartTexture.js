@@ -1,5 +1,5 @@
 /**
- * Creates a new texture from an image file.
+ * Creates a new texture from a smart texture object.
  */
 var IgeSmartTexture = IgeEventingClass.extend({
 	classId: 'IgeSmartTexture',
