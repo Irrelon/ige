@@ -19,8 +19,8 @@ body {
 	position: absolute;
 	left: 50%;
 	top: 48%;
-	width: 70px;
-	height: 70px;
+	width: 80px;
+	height: 80px;
 	margin-left: -35px;
 	margin-top: -35px;
 }
@@ -29,7 +29,7 @@ body {
 	position: relative;
 	width: 60px;
 	height: 60px;
-	left:10px;
+	left: 10px;
 	top: 10px;
 	background-image: url(http://www.isogenicengine.com/logo/irrelon.png);
 }
@@ -63,22 +63,41 @@ body {
 	margin:0 auto;
 	position:relative;
 	top:-132px;
-	left: 5px;
+	left: 0px;
 	-moz-animation:spinoffPulse 1s infinite linear;
 	-webkit-animation:spinoffPulse 1s infinite linear;
 }
 
 .loadingText {
-	position: relative;
-	top: -115px;
-	color: #ffffff;
-	font-family: Verdana, sans;
-	font-size: 14px;
-	text-align: center;
-	width: 80px;
-	font-variant: small-caps;
-	-moz-animation:fadePulse 1s infinite linear;
-	-webkit-animation:fadePulse 1s infinite linear;
+    position: absolute;
+    top: 90px;
+    color: white;
+    font-family: Verdana, sans-serif;
+    font-size: 14px;
+    text-align: center;
+    width: 250px;
+    font-variant: small-caps;
+    -moz-animation: fadePulse 1s infinite linear;
+    -webkit-animation: fadePulse 1s infinite linear;
+    left: -85px;
+}
+
+.loadingLink {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    color: white;
+    font-family: Verdana, sans-serif;
+    font-size: 12px;
+    font-variant: small-caps;
+    width: 250px;
+    text-align: right;
+    opacity: 1;
+}
+
+.loadingLink a {
+    color: #ffffff;
+    opacity: 0.7;
 }
 
 @-moz-keyframes fadePulse {
