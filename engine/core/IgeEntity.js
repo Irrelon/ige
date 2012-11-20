@@ -174,7 +174,7 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Set the object's height to the number of tile height's specified.
 	 * @param {Number} val Number of tiles.
-	 * @param {Boolean=} lockAspect If true, sets the height according
+	 * @param {Boolean=} lockAspect If true, sets the width according
 	 * to the texture aspect ratio and the new height.
 	 * @private
 	 * @return {*} The object this method was called from to allow
