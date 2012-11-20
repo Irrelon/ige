@@ -472,12 +472,14 @@ var IgeEngine = IgeEntity.extend({
 
 				// Check if we have a DOM, that there is an igeLoading element
 				// and if so, remove it from the DOM now
-				if (document.getElementsByClassName && document.getElementsByClassName('igeLoading')) {
-					var arr = document.getElementsByClassName('igeLoading'),
-						arrCount = arr.length;
+				if (!this.isServer) {
+					if (document.getElementsByClassName && document.getElementsByClassName('igeLoading')) {
+						var arr = document.getElementsByClassName('igeLoading'),
+							arrCount = arr.length;
 
-					while (arrCount--) {
-						arr[arrCount].parentNode.removeChild(arr[arrCount]);
+						while (arrCount--) {
+							arr[arrCount].parentNode.removeChild(arr[arrCount]);
+						}
 					}
 				}
 
