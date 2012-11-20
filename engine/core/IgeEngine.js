@@ -470,6 +470,13 @@ var IgeEngine = IgeEntity.extend({
 				ige.log('Starting engine...');
 				ige._state = 1;
 
+				// Check if we have a DOM, that there is an igeLoading element
+				// and if so, remove it from the DOM now
+				if (document.getElementById && document.getElementById('igeLoading')) {
+					var element = document.getElementById('igeLoading');
+					element.parentNode.removeChild(element);
+				}
+
 				requestAnimFrame(ige.tick);
 
 				ige.log('Engine started');
