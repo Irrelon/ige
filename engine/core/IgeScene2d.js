@@ -19,7 +19,7 @@ var IgeScene2d = IgeEntity.extend({
 
 	/**
 	 * Gets / sets the auto-size property. If set to true, the scene will
-	 * automatically resize to the screen's geometry.
+	 * automatically resize to the engine's canvas geometry.
 	 * @param val
 	 * @return {*}
 	 */
