@@ -413,33 +413,88 @@ var IgeTexture = IgeEventingClass.extend({
 	 */
 	resize: function (x, y, dontDraw) {
 		if (this._originalImage) {
-			if (!this._textureCtx) {
-				// Create a new canvas
-				this._textureCanvas = document.createElement('canvas');
+			if (this._loaded) {
+				if (!this._textureCtx) {
+					// Create a new canvas
+					this._textureCanvas = document.createElement('canvas');
+				}
+
+				this._textureCanvas.width = x;
+				this._textureCanvas.height = y;
+				this._textureCtx = this._textureCanvas.getContext('2d');
+
+				if (!dontDraw) {
+					// Draw the original image to the new canvas
+					// scaled as required
+					this._textureCtx.drawImage(
+						this._originalImage,
+						0,
+						0,
+						this._originalImage.width,
+						this._originalImage.height,
+						0,
+						0,
+						x,
+						y
+					);
+				}
+
+				// Swap the current image for this new canvas
+				this.image = this._textureCanvas;
+			} else {
+				this.log('Cannot resize texture because the texture image (' + this._url + ') has not loaded into memory yet!', 'error');
 			}
+		}
+	},
 
-			this._textureCanvas.width = x;
-			this._textureCanvas.height = y;
-			this._textureCtx = this._textureCanvas.getContext('2d');
+	/**
+	 * Resizes the original texture image to a new size based on percentage.
+	 * This alters the image that the texture renders so all entities that use
+	 * this texture will output the newly resized version of the image.
+	 * @param {Number} x The new width.
+	 * @param {Number} y The new height.
+	 * @param {Boolean=} dontDraw If true the resized image will not be
+	 * drawn to the texture canvas. Useful for just resizing the texture
+	 * canvas and not the output image. Use in conjunction with the
+	 * applyFilter() and preFilter() methods.
+	 */
+	resizeByPercent: function (x, y, dontDraw) {
+		if (this._originalImage) {
+			if (this._loaded) {
+				// Calc final x/y values
+				x = Math.floor((this.image.width / 100) * x);
+				y = Math.floor((this.image.height / 100) * y);
 
-			if (!dontDraw) {
-				// Draw the original image to the new canvas
-				// scaled as required
-				this._textureCtx.drawImage(
-					this._originalImage,
-					0,
-					0,
-					this._originalImage.width,
-					this._originalImage.height,
-					0,
-					0,
-					x,
-					y
-				);
+				if (!this._textureCtx) {
+					// Create a new canvas
+					this._textureCanvas = document.createElement('canvas');
+				}
+
+				this._textureCanvas.width = x;
+				this._textureCanvas.height = y;
+				this._textureCtx = this._textureCanvas.getContext('2d');
+
+				if (!dontDraw) {
+					// Draw the original image to the new canvas
+					// scaled as required
+					this._textureCtx.drawImage(
+						this._originalImage,
+						0,
+						0,
+						this._originalImage.width,
+						this._originalImage.height,
+						0,
+						0,
+						x,
+						y
+					);
+				}
+
+				// Swap the current image for this new canvas
+				this.image = this._textureCanvas;
+			} else {
+				this.log('Cannot resize texture because the texture image (' + this._url + ') has not loaded into memory yet!', 'error');
 			}
-
-			// Swap the current image for this new canvas
-			this.image = this._textureCanvas;
 		}
 	},
 
