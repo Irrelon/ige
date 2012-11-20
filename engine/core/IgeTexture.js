@@ -356,6 +356,17 @@ var IgeTexture = IgeEventingClass.extend({
 				canvas = document.createElement('canvas'),
 				ctx = canvas.getContext('2d');
 
+			// Set smoothing mode
+			if (!this._smoothing) {
+				ctx.imageSmoothingEnabled = false;
+				ctx.webkitImageSmoothingEnabled = false;
+				ctx.mozImageSmoothingEnabled = false;
+			} else {
+				ctx.imageSmoothingEnabled = true;
+				ctx.webkitImageSmoothingEnabled = true;
+				ctx.mozImageSmoothingEnabled = true;
+			}
+
 			canvas.width = cell[2];
 			canvas.height = cell[3];
 
@@ -423,6 +434,17 @@ var IgeTexture = IgeEventingClass.extend({
 				this._textureCanvas.height = y;
 				this._textureCtx = this._textureCanvas.getContext('2d');
 
+				// Set smoothing mode
+				if (!this._smoothing) {
+					this._textureCtx.imageSmoothingEnabled = false;
+					this._textureCtx.webkitImageSmoothingEnabled = false;
+					this._textureCtx.mozImageSmoothingEnabled = false;
+				} else {
+					this._textureCtx.imageSmoothingEnabled = true;
+					this._textureCtx.webkitImageSmoothingEnabled = true;
+					this._textureCtx.mozImageSmoothingEnabled = true;
+				}
+
 				if (!dontDraw) {
 					// Draw the original image to the new canvas
 					// scaled as required
@@ -473,6 +495,17 @@ var IgeTexture = IgeEventingClass.extend({
 				this._textureCanvas.width = x;
 				this._textureCanvas.height = y;
 				this._textureCtx = this._textureCanvas.getContext('2d');
+
+				// Set smoothing mode
+				if (!this._smoothing) {
+					this._textureCtx.imageSmoothingEnabled = false;
+					this._textureCtx.webkitImageSmoothingEnabled = false;
+					this._textureCtx.mozImageSmoothingEnabled = false;
+				} else {
+					this._textureCtx.imageSmoothingEnabled = true;
+					this._textureCtx.webkitImageSmoothingEnabled = true;
+					this._textureCtx.mozImageSmoothingEnabled = true;
+				}
 
 				if (!dontDraw) {
 					// Draw the original image to the new canvas
@@ -600,6 +633,17 @@ var IgeTexture = IgeEventingClass.extend({
 					this._textureCanvas.width = this._originalImage.width;
 					this._textureCanvas.height = this._originalImage.height;
 					this._textureCtx = this._textureCanvas.getContext('2d');
+
+					// Set smoothing mode
+					if (!this._smoothing) {
+						this._textureCtx.imageSmoothingEnabled = false;
+						this._textureCtx.webkitImageSmoothingEnabled = false;
+						this._textureCtx.mozImageSmoothingEnabled = false;
+					} else {
+						this._textureCtx.imageSmoothingEnabled = true;
+						this._textureCtx.webkitImageSmoothingEnabled = true;
+						this._textureCtx.mozImageSmoothingEnabled = true;
+					}
 				}
 
 				// Swap the current image for this new canvas
@@ -636,6 +680,17 @@ var IgeTexture = IgeEventingClass.extend({
 					this._textureCanvas.width = this._originalImage.width;
 					this._textureCanvas.height = this._originalImage.height;
 					this._textureCtx = this._textureCanvas.getContext('2d');
+
+					// Set smoothing mode
+					if (!this._smoothing) {
+						this._textureCtx.imageSmoothingEnabled = false;
+						this._textureCtx.webkitImageSmoothingEnabled = false;
+						this._textureCtx.mozImageSmoothingEnabled = false;
+					} else {
+						this._textureCtx.imageSmoothingEnabled = true;
+						this._textureCtx.webkitImageSmoothingEnabled = true;
+						this._textureCtx.mozImageSmoothingEnabled = true;
+					}
 				}
 
 				// Swap the current image for this new canvas
