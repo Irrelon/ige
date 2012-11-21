@@ -58,6 +58,10 @@ var Client = IgeClass.extend({
 						.isometricMounts(true)
 						.mount(self.scene1);
 
+					var overFunc,
+						outFunc,
+						upFunc;
+
 					// Define a function that will be called when the
 					// mouse cursor moves over one of our entities
 					overFunc = function () {
@@ -74,6 +78,12 @@ var Client = IgeClass.extend({
 						this.drawBoundsData(false);
 					};
 
+					// Define a function that will be called when the
+					// mouse button "up" event occurs on one of our entities
+					upFunc = function () {
+						console.log(this.overTiles());
+					};
+
 					// Create an entity
 					self.obj[0] = new IgeEntity()
 						.id('fairy1')
@@ -85,7 +95,8 @@ var Client = IgeClass.extend({
 						.heightByTile(1)
 						.drawBounds(false)
 						.mouseOver(overFunc)
-						.mouseOut(outFunc);
+						.mouseOut(outFunc)
+						.mouseUp(upFunc);
 
 					self.obj[1] = new IgeEntity()
 						.id('fairy2')
@@ -97,7 +108,8 @@ var Client = IgeClass.extend({
 						.heightByTile(1)
 						.drawBounds(false)
 						.mouseOver(overFunc)
-						.mouseOut(outFunc);
+						.mouseOut(outFunc)
+						.mouseUp(upFunc);
 
 					// Create two isometric 3d entities
 					self.obj[2] = new IgeEntity()
@@ -108,7 +120,8 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.size3d(40, 40, 0)
 						.mouseOver(overFunc)
-						.mouseOut(outFunc);
+						.mouseOut(outFunc)
+						.mouseUp(upFunc);
 
 					self.obj[3] = new IgeEntity()
 						.id('3d2')
@@ -118,7 +131,8 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.size3d(40, 40, 0)
 						.mouseOver(overFunc)
-						.mouseOut(outFunc);
+						.mouseOut(outFunc)
+						.mouseUp(upFunc);
 
 					// Create two fairy entities, and mount each one
 					// to it's 3d entity as created above
