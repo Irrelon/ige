@@ -116,6 +116,10 @@ var IgeTileMap2d = IgeEntity.extend({
 		obj.tileWidth = this.tileWidth;
 		obj.tileHeight = this.tileHeight;
 
+		// Set default values
+		obj._tileWidth = obj._tileWidth || 1;
+		obj._tileHeight = obj._tileHeight || 1;
+
 		this._super(obj);
 	},
 
