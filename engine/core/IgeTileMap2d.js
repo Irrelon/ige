@@ -120,50 +120,52 @@ var IgeTileMap2d = IgeEntity.extend({
 	},
 
 	/**
-	 * Attached to objects that are mounted to the tile map. Adds the
-	 * object to the tile map at the passed tile co-ordinates. If no tile
-	 * co-ordinates are passed, will use the array returned from calling
-	 * overTiles() and will add the object to each tile the object is "over".
-	 * @param {Number=} x
-	 * @param {Number=} y
-	 * @param {Number=} width
-	 * @param {Number=} height
+	 * This method is attached to objects that are mounted to the tile map.
+	 * Adds the object to the tile map at the passed tile co-ordinates. If
+	 * no tile co-ordinates are passed, will use the current tile position
+	 * and the tileWidth() and tileHeight() values.
+	 * @param {Number=} x X co-ordinate of the tile to occupy.
+	 * @param {Number=} y Y co-ordinate of the tile to occupy.
+	 * @param {Number=} width Number of tiles along the x-axis to occupy.
+	 * @param {Number=} height Number of tiles along the y-axis to occupy.
 	 * @private
 	 */
 	_objectOccupyTile: function (x, y, width, height) {
 		if (x !== undefined && y !== undefined) {
 			this._parent.occupyTile(x, y, width, height, this);
 		} else {
-			// Occupy tiles based upon the response from overTiles();
-			var tileArr = this.overTiles();
+			// Occupy tiles based upon tile point and tile width/height
+			var tilePoint = this._parent.pointToTile(this._translate);
+			this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
 		}
 		return this;
 	},
 
 	/**
-	 * Attached to objects that are mounted to the tile map. Removes the
-	 * object from the tile map at the passed tile co-ordinates. If no tile
-	 * co-ordinates are passed, will use the array returned from calling
-	 * overTiles() and will remove the object from each tile the object is "over".
-	 * @param {Number=} x
-	 * @param {Number=} y
-	 * @param {Number=} width
-	 * @param {Number=} height
+	 * This method is attached to objects that are mounted to the tile map.
+	 * Removes the object from the tile map at the passed tile co-ordinates.
+	 * If no tile co-ordinates are passed, will use the current tile position
+	 * and the tileWidth() and tileHeight() values.
+	 * @param {Number=} x X co-ordinate of the tile to un-occupy.
+	 * @param {Number=} y Y co-ordinate of the tile to un-occupy.
+	 * @param {Number=} width Number of tiles along the x-axis to un-occupy.
+	 * @param {Number=} height Number of tiles along the y-axis to un-occupy.
 	 * @private
 	 */
 	_objectUnOccupyTile: function (x, y, width, height) {
 		if (x !== undefined && y !== undefined) {
 			this._parent.unOccupyTile(x, y, width, height);
 		} else {
-			// Occupy tiles based upon the response from overTiles();
-			var tileArr = this.overTiles();
+			// Un-occupy tiles based upon tile point and tile width/height
+			var tilePoint = this._parent.pointToTile(this._translate);
+			this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
 		}
 		return this;
 	},
 
 	/**
-	 * Attached to objects that are mounted to the tile map. This method
-	 * returns an array of tile co-ordinates that the object is currently
+	 * This method is attached to objects that are mounted to the tile map.
+	 * Returns an array of tile co-ordinates that the object is currently
 	 * over, calculated using the current world co-ordinates of the object
 	 * as well as it's 3d geometry.
 	 * @private
@@ -193,11 +195,12 @@ var IgeTileMap2d = IgeEntity.extend({
 
 	/**
 	 * Sets a tile or area as occupied by the passed obj parameter.
-	 * Any previous data on the specified tile or area will be removed.
-	 * @param {Number} x
-	 * @param {Number} y
-	 * @param {Number} width
-	 * @param {Number} height
+	 * Any previous occupy data on the specified tile or area will be
+	 * overwritten.
+	 * @param {Number} x X co-ordinate of the tile to un-occupy.
+	 * @param {Number} y Y co-ordinate of the tile to un-occupy.
+	 * @param {Number} width Number of tiles along the x-axis to occupy.
+	 * @param {Number} height Number of tiles along the y-axis to occupy.
 	 * @param {*} obj
 	 * @return {*}
 	 */
