@@ -110,6 +110,12 @@ var IgeTileMap2d = IgeEntity.extend({
 		obj.unOccupyTile = this._objectUnOccupyTile;
 		obj.overTiles = this._objectOverTiles;
 
+		// We can also re-use the tile size methods since
+		// they alter the same properties on the calling
+		// entity anyway.
+		obj.tileWidth = this.tileWidth;
+		obj.tileHeight = this.tileHeight;
+
 		this._super(obj);
 	},
 
@@ -164,16 +170,20 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * @return {Array} The array of tile co-ordinates as IgePoint instances.
 	 */
 	_objectOverTiles: function () {
-		if (this._tileWidth && this._tileHeight) {
-			var x, y;
-			for (x = 0; x < this._tileWidth; x++) {
-				for (y = 0; y < this._tileHeight; y++) {
-					// TODO: // Finish writing this!
-				}
+		var x,
+			y,
+			tileWidth = this._tileWidth || 1,
+			tileHeight = this._tileHeight || 1,
+			tile = this._parent.pointToTile(this._translate),
+			tileArr = [];
+
+		for (x = 0; x < tileWidth; x++) {
+			for (y = 0; y < tileHeight; y++) {
+				tileArr.push(new IgePoint(tile.x + x, tile.y + y, 0));
 			}
-		} else {
-			this.log('Cannot calculate which tiles this entity is currently "over" because it has not been assigned either a tileWidth or a tileHeight.', 'error');
 		}
+
+		return tileArr;
 	},
 
 	_resizeEvent: function (event) {
@@ -302,7 +312,7 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * Returns the tile co-ordinates of the tile that the point's world
 	 * co-ordinates reside inside.
 	 * @param {IgePoint=} point
-	 * @return {*}
+	 * @return {IgePoint} The tile co-ordinates as a point object.
 	 */
 	pointToTile: function (point) {
 		// TODO: Could this do with some caching to check if the input values have changed and if not, supply the same pre-calculated data if it already exists?
