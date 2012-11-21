@@ -228,7 +228,7 @@ var IgeEntity = IgeObject.extend([
 	 * is overwritten when the entity is mounted to a tile map.
 	 */
 	occupyTile: function () {
-		this.log('Cannot occupy a tile because the entity is not currently mounted to a tile sheet.', 'warning');
+		this.log('Cannot occupy a tile because the entity is not currently mounted to a tile map.', 'warning');
 	},
 
 	/**
@@ -237,7 +237,7 @@ var IgeEntity = IgeObject.extend([
 	 * is overwritten when the entity is mounted to a tile map.
 	 */
 	overTiles: function () {
-		this.log('Cannot determine which tiles this entity lies over because the entity is not currently mounted to a tile sheet.', 'warning');
+		this.log('Cannot determine which tiles this entity lies over because the entity is not currently mounted to a tile map.', 'warning');
 	},
 
 	/**
