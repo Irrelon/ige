@@ -81,7 +81,21 @@ var IgeObject = IgeEventingClass.extend({
 	 */
 	group: function (val) {
 		if (val !== undefined) {
+			// Check if we already have a group
+			if (this._group) {
+				// Check if the group being assigned is different from
+				// the current one
+				if (this._group !== val) {
+					// The group is different so remove this object
+					// from the current group association
+					ige.groupUnRegister(this);
+				}
+			}
+
 			this._group = val;
+
+			// Now register this object with the group it has been assigned
+			ige.groupRegister(this);
 			return this;
 		}
 

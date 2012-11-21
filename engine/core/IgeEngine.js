@@ -76,6 +76,7 @@ var IgeEngine = IgeEntity.extend({
 		this._register = {
 			'ige': this
 		}; // Holds a reference to every item in the scenegraph by it's ID
+		this._groupRegister = {}; // Holds reference to every item with a group
 		this._postTick = []; // An array of methods that are called upon tick completion
 		this._tsit = {}; // An object holding time-spent-in-tick (total time spent in this object's tick method)
 		this._tslt = {}; // An object holding time-spent-last-tick (time spent in this object's tick method last tick)
@@ -117,17 +118,18 @@ var IgeEngine = IgeEntity.extend({
 	/**
 	 * Returns an array of all objects that have been assigned
 	 * the passed group name.
-	 * @param groupName
+	 * @param {String} groupName The name of the group to return
+	 * all objects for.
 	 */
 	$$: function (groupName) {
-		//TODO
+		return this._groupRegister[groupName] || [];
 	},
 
 	/**
 	 * Register an object with the engine object register. The
 	 * register allows you to access an object by it's id with
 	 * a call to ige.$(objectId).
-	 * @param obj
+	 * @param {Object} obj The object to register.
 	 * @return {*}
 	 */
 	register: function (obj) {
@@ -148,11 +150,52 @@ var IgeEngine = IgeEntity.extend({
 		return this._register;
 	},
 
+	/**
+	 * Un-register an object with the engine object register. The
+	 * object will no longer be accessible via ige.$().
+	 * @param {Object} obj The object to un-register.
+	 * @return {*}
+	 */
 	unRegister: function (obj) {
 		if (obj !== undefined) {
+			// Check if the object is registered in the ID lookup
 			if (this._register[obj.id()]) {
 				delete this._register[obj.id()];
 				obj._registered = false;
+			}
+		}
+
+		return this;
+	},
+
+	/**
+	 * Register an object with the engine group register. The
+	 * register allows you to access an object by it's group with
+	 * a call to ige.$$(groupName).
+	 * @param {Object} obj The object to register.
+	 * @return {*}
+	 */
+	groupRegister: function (obj) {
+		if (obj !== undefined) {
+			this._groupRegister[obj._group] = this._groupRegister[obj._group] || [];
+			this._groupRegister[obj._group].push(obj);
+			obj._groupRegistered = true;
+		}
+
+		return this._register;
+	},
+
+	/**
+	 * Un-register an object with the engine group register. The
+	 * object will no longer be accessible via ige.$$().
+	 * @param {Object} obj The object to un-register.
+	 * @return {*}
+	 */
+	groupUnRegister: function (obj) {
+		if (obj !== undefined) {
+			if (this._groupRegister[obj._group]) {
+				this._groupRegister[obj._group].pull(obj);
+				obj._groupRegistered = false;
 			}
 		}
 
