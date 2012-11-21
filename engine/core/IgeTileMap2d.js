@@ -114,7 +114,7 @@ var IgeTileMap2d = IgeEntity.extend({
 	},
 
 	/**
-	 * Attached to objects that are mounted to the tile sheet. Adds the
+	 * Attached to objects that are mounted to the tile map. Adds the
 	 * object to the tile map at the passed tile co-ordinates. If no tile
 	 * co-ordinates are passed, will use the array returned from calling
 	 * overTiles() and will add the object to each tile the object is "over".
@@ -135,7 +135,7 @@ var IgeTileMap2d = IgeEntity.extend({
 	},
 
 	/**
-	 * Attached to objects that are mounted to the tile sheet. Removes the
+	 * Attached to objects that are mounted to the tile map. Removes the
 	 * object from the tile map at the passed tile co-ordinates. If no tile
 	 * co-ordinates are passed, will use the array returned from calling
 	 * overTiles() and will remove the object from each tile the object is "over".
@@ -156,7 +156,7 @@ var IgeTileMap2d = IgeEntity.extend({
 	},
 
 	/**
-	 * Attached to objects that are mounted to the tile sheet. This method
+	 * Attached to objects that are mounted to the tile map. This method
 	 * returns an array of tile co-ordinates that the object is currently
 	 * over, calculated using the current world co-ordinates of the object
 	 * as well as it's 3d geometry.
