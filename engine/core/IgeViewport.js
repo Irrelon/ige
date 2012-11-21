@@ -166,6 +166,24 @@ var IgeViewport = IgeEntity.extend([
 		}
 	},
 
+	drawBoundsLimitId: function (id) {
+		if (id !== undefined) {
+			this._drawBoundsLimitId = id;
+			return this;
+		}
+
+		return this._drawBoundsLimitId;
+	},
+
+	drawBoundsLimitGroup: function (group) {
+		if (group !== undefined) {
+			this._drawBoundsLimitGroup = group;
+			return this;
+		}
+
+		return this._drawBoundsLimitGroup;
+	},
+
 	/**
 	 * Draws the bounding data for each entity in the scenegraph.
 	 * @param ctx
@@ -191,107 +209,109 @@ var IgeViewport = IgeEntity.extend([
 				index++;
 
 				if (obj._shouldRender !== false) {
-					if (typeof(obj.aabb) === 'function') {
-						// Grab the AABB and then draw it
-						aabb = obj.aabb();
+					if ((!this._drawBoundsLimitId && !this._drawBoundsLimitGroup) || ((this._drawBoundsLimitId && this._drawBoundsLimitId === obj.id()) || (this._drawBoundsLimitGroup && this._drawBoundsLimitGroup === obj.group()))) {
+						if (typeof(obj.aabb) === 'function') {
+							// Grab the AABB and then draw it
+							aabb = obj.aabb();
 
-						if (aabb) {
-							if (obj._drawBounds || obj._drawBounds === undefined) {
-								ctx.strokeStyle = '#00deff';
-								ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
+							if (aabb) {
+								if (obj._drawBounds || obj._drawBounds === undefined) {
+									ctx.strokeStyle = '#00deff';
+									ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
 
-								// Check if the object is mounted to an isometric mount
-								if (obj._parent && obj._parent._mountMode === 1) {
-									ctx.save();
-										ctx.translate(aabb.x + aabb.width / 2, aabb.y + aabb.height / 2);
-										//obj._transformContext(ctx);
+									// Check if the object is mounted to an isometric mount
+									if (obj._parent && obj._parent._mountMode === 1) {
+										ctx.save();
+											ctx.translate(aabb.x + aabb.width / 2, aabb.y + aabb.height / 2);
+											//obj._transformContext(ctx);
 
-										// Calculate the 3d bounds data
-										r3d = obj._geometry;
-										xl1 = new IgePoint(-(r3d.x / 2), 0, 0).toIso();
-										xl2 = new IgePoint(+(r3d.x / 2), 0, 0).toIso();
-										xl3 = new IgePoint(0, -(r3d.y / 2), 0).toIso();
-										xl4 = new IgePoint(0, +(r3d.y / 2), 0).toIso();
-										xl5 = new IgePoint(0, 0, -(r3d.z / 2)).toIso();
-										xl6 = new IgePoint(0, 0, +(r3d.z / 2)).toIso();
-										// Bottom face
-										bf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
-										bf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
-										bf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
-										bf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
-										// Top face
-										tf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
-										tf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
-										tf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
-										tf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
+											// Calculate the 3d bounds data
+											r3d = obj._geometry;
+											xl1 = new IgePoint(-(r3d.x / 2), 0, 0).toIso();
+											xl2 = new IgePoint(+(r3d.x / 2), 0, 0).toIso();
+											xl3 = new IgePoint(0, -(r3d.y / 2), 0).toIso();
+											xl4 = new IgePoint(0, +(r3d.y / 2), 0).toIso();
+											xl5 = new IgePoint(0, 0, -(r3d.z / 2)).toIso();
+											xl6 = new IgePoint(0, 0, +(r3d.z / 2)).toIso();
+											// Bottom face
+											bf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
+											bf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
+											bf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
+											bf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
+											// Top face
+											tf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
+											tf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
+											tf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
+											tf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
 
-										ga = ctx.globalAlpha;
+											ga = ctx.globalAlpha;
 
-										// Axis lines
-										ctx.globalAlpha = 1;
-										ctx.strokeStyle = '#ff0000';
-										ctx.beginPath();
-										ctx.moveTo(xl1.x, xl1.y);
-										ctx.lineTo(xl2.x, xl2.y);
-										ctx.stroke();
-										ctx.strokeStyle = '#00ff00';
-										ctx.beginPath();
-										ctx.moveTo(xl3.x, xl3.y);
-										ctx.lineTo(xl4.x, xl4.y);
-										ctx.stroke();
-										ctx.strokeStyle = '#fffc00';
-										ctx.beginPath();
-										ctx.moveTo(xl5.x, xl5.y);
-										ctx.lineTo(xl6.x, xl6.y);
-										ctx.stroke();
+											// Axis lines
+											ctx.globalAlpha = 1;
+											ctx.strokeStyle = '#ff0000';
+											ctx.beginPath();
+											ctx.moveTo(xl1.x, xl1.y);
+											ctx.lineTo(xl2.x, xl2.y);
+											ctx.stroke();
+											ctx.strokeStyle = '#00ff00';
+											ctx.beginPath();
+											ctx.moveTo(xl3.x, xl3.y);
+											ctx.lineTo(xl4.x, xl4.y);
+											ctx.stroke();
+											ctx.strokeStyle = '#fffc00';
+											ctx.beginPath();
+											ctx.moveTo(xl5.x, xl5.y);
+											ctx.lineTo(xl6.x, xl6.y);
+											ctx.stroke();
 
-										ctx.strokeStyle = '#a200ff';
+											ctx.strokeStyle = '#a200ff';
 
-										ctx.globalAlpha = 0.6;
+											ctx.globalAlpha = 0.6;
 
-										// Left face
-										ctx.fillStyle = '#545454';
-										ctx.beginPath();
-										ctx.moveTo(bf3.x, bf3.y);
-										ctx.lineTo(bf4.x, bf4.y);
-										ctx.lineTo(tf4.x, tf4.y);
-										ctx.lineTo(tf3.x, tf3.y);
-										ctx.lineTo(bf3.x, bf3.y);
-										ctx.fill();
-										ctx.stroke();
+											// Left face
+											ctx.fillStyle = '#545454';
+											ctx.beginPath();
+											ctx.moveTo(bf3.x, bf3.y);
+											ctx.lineTo(bf4.x, bf4.y);
+											ctx.lineTo(tf4.x, tf4.y);
+											ctx.lineTo(tf3.x, tf3.y);
+											ctx.lineTo(bf3.x, bf3.y);
+											ctx.fill();
+											ctx.stroke();
 
-										// Right face
-										ctx.fillStyle = '#282828';
-										ctx.beginPath();
-										ctx.moveTo(bf3.x, bf3.y);
-										ctx.lineTo(bf2.x, bf2.y);
-										ctx.lineTo(tf2.x, tf2.y);
-										ctx.lineTo(tf3.x, tf3.y);
-										ctx.lineTo(bf3.x, bf3.y);
-										ctx.fill();
-										ctx.stroke();
+											// Right face
+											ctx.fillStyle = '#282828';
+											ctx.beginPath();
+											ctx.moveTo(bf3.x, bf3.y);
+											ctx.lineTo(bf2.x, bf2.y);
+											ctx.lineTo(tf2.x, tf2.y);
+											ctx.lineTo(tf3.x, tf3.y);
+											ctx.lineTo(bf3.x, bf3.y);
+											ctx.fill();
+											ctx.stroke();
 
-										// Top face
-										ctx.fillStyle = '#676767';
-										ctx.beginPath();
-										ctx.moveTo(tf1.x, tf1.y);
-										ctx.lineTo(tf2.x, tf2.y);
-										ctx.lineTo(tf3.x, tf3.y);
-										ctx.lineTo(tf4.x, tf4.y);
-										ctx.lineTo(tf1.x, tf1.y);
-										ctx.fill();
-										ctx.stroke();
+											// Top face
+											ctx.fillStyle = '#676767';
+											ctx.beginPath();
+											ctx.moveTo(tf1.x, tf1.y);
+											ctx.lineTo(tf2.x, tf2.y);
+											ctx.lineTo(tf3.x, tf3.y);
+											ctx.lineTo(tf4.x, tf4.y);
+											ctx.lineTo(tf1.x, tf1.y);
+											ctx.fill();
+											ctx.stroke();
 
-										ctx.globalAlpha = ga;
-									ctx.restore();
+											ctx.globalAlpha = ga;
+										ctx.restore();
+									}
 								}
-							}
 
-							if (this._drawBoundsData  && (obj._drawBounds || obj._drawBoundsData === undefined)) {
-								ctx.globalAlpha = 1;
-								ctx.fillStyle = '#f6ff00';
-								ctx.fillText('ID: ' + obj.id() + ' ' + '(' + obj.classId() + ') ' + obj.layer() + ':' + obj.depth().toFixed(0), aabb.x + aabb.width + 3, aabb.y + 10);
-								ctx.fillText('X: ' + obj._translate.x.toFixed(2) + ', ' + 'Y: ' + obj._translate.y.toFixed(2) + ', ' + 'Z: ' + obj._translate.z.toFixed(2), aabb.x + aabb.width + 3, aabb.y + 20);
+								if (this._drawBoundsData  && (obj._drawBounds || obj._drawBoundsData === undefined)) {
+									ctx.globalAlpha = 1;
+									ctx.fillStyle = '#f6ff00';
+									ctx.fillText('ID: ' + obj.id() + ' ' + '(' + obj.classId() + ') ' + obj.layer() + ':' + obj.depth().toFixed(0), aabb.x + aabb.width + 3, aabb.y + 10);
+									ctx.fillText('X: ' + obj._translate.x.toFixed(2) + ', ' + 'Y: ' + obj._translate.y.toFixed(2) + ', ' + 'Z: ' + obj._translate.z.toFixed(2), aabb.x + aabb.width + 3, aabb.y + 20);
+								}
 							}
 						}
 					}
