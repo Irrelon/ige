@@ -1380,7 +1380,7 @@ var IgeEngine = IgeEntity.extend({
 	/**
 	 * Walks the scenegraph and returns a data object of the graph.
 	 */
-	getSceneGraphData: function (obj) {
+	getSceneGraphData: function (obj, noRef) {
 		var item, items = [], tempItem, tempItem2, tempItems,
 			arr, arrCount;
 
@@ -1391,9 +1391,12 @@ var IgeEngine = IgeEntity.extend({
 
 		item = {
 			text: obj.id() + ' (' + obj._classId + ')',
-			parent: obj._parent,
 			id: obj.id()
 		};
+
+		if (!noRef) {
+			item.parent = obj._parent;
+		}
 
 		if (obj === ige) {
 			// Loop the viewports
@@ -1406,12 +1409,15 @@ var IgeEngine = IgeEntity.extend({
 				while (arrCount--) {
 					tempItem = {
 						text: arr[arrCount].id() + ' (' + arr[arrCount]._classId + ')',
-						parent: arr[arrCount]._parent,
 						id: arr[arrCount].id()
 					};
 
+					if (!noRef) {
+						tempItem.parent = arr[arrCount]._parent;
+					}
+
 					if (arr[arrCount]._scene) {
-						tempItem2 = this.getSceneGraphData(arr[arrCount]._scene);
+						tempItem2 = this.getSceneGraphData(arr[arrCount]._scene, noRef);
 						tempItem.items = [tempItem2];
 					}
 
@@ -1426,7 +1432,7 @@ var IgeEngine = IgeEntity.extend({
 
 				// Loop our children
 				while (arrCount--) {
-					tempItem = this.getSceneGraphData(arr[arrCount]);
+					tempItem = this.getSceneGraphData(arr[arrCount], noRef);
 					items.push(tempItem);
 				}
 			}
