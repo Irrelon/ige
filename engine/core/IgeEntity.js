@@ -263,8 +263,15 @@ var IgeEntity = IgeObject.extend([
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	width: function (px) {
+	width: function (px, lockAspect) {
 		if (px !== undefined) {
+			if (lockAspect) {
+				// Calculate the height from the change in width
+				var ratio = px / this._geometry.x;
+				debugger;
+				this.height(this._geometry.y * ratio);
+			}
+
 			this._width = px;
 			this._geometry.x = px;
 			this._geometry.x2 = (px / 2);
@@ -280,8 +287,14 @@ var IgeEntity = IgeObject.extend([
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	height: function (px) {
+	height: function (px, lockAspect) {
 		if (px !== undefined) {
+			if (lockAspect) {
+				// Calculate the width from the change in height
+				var ratio = px / this._geometry.y;
+				this.width(this._geometry.x * ratio);
+			}
+
 			this._height = px;
 			this._geometry.y = px;
 			this._geometry.y2 = (px / 2);

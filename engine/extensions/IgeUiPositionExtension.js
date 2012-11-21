@@ -115,7 +115,7 @@ var IgeUiPositionExtension = {
 	 * it has been calculated.
 	 * @return {*}
 	 */
-	width: function (px, modifier, noUpdate) {
+	width: function (px, lockAspect, modifier, noUpdate) {
 		if (px !== undefined) {
 			this._width = px;
 			this._widthModifier = modifier !== undefined ? modifier : 0;
@@ -124,10 +124,20 @@ var IgeUiPositionExtension = {
 				if (this._parent) {
 					// Percentage
 					var parentWidth = this._parent._geometry.x,
-						val = parseInt(px, 10);
+						val = parseInt(px, 10),
+						newVal,
+						ratio;
 
 					// Calculate real width from percentage
-					this._geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
+					newVal = (parentWidth / 100 * val) + this._widthModifier | 0;
+
+					if (lockAspect) {
+						// Calculate the height from the change in width
+						ratio = newVal / this._geometry.x;
+						this.height(this._geometry.y / ratio, false, 0, noUpdate);
+					}
+
+					this._geometry.x = newVal;
 					this._geometry.x2 = Math.floor(this._geometry.x / 2);
 				} else {
 					// We don't have a parent so use the main canvas
@@ -140,6 +150,12 @@ var IgeUiPositionExtension = {
 					this._geometry.x2 = Math.floor(this._geometry.x / 2);
 				}
 			} else {
+				if (lockAspect) {
+					// Calculate the height from the change in width
+					var ratio = px / this._geometry.x;
+					this.height(this._geometry.y * ratio, false, 0, noUpdate);
+				}
+
 				this._geometry.x = px;
 				this._geometry.x2 = Math.floor(this._geometry.x / 2);
 			}
@@ -161,7 +177,7 @@ var IgeUiPositionExtension = {
 	 * it has been calculated.
 	 * @return {*}
 	 */
-	height: function (px, modifier, noUpdate) {
+	height: function (px, lockAspect, modifier, noUpdate) {
 		if (px !== undefined) {
 			this._height = px;
 			this._heightModifier = modifier !== undefined ? modifier : 0;
@@ -170,10 +186,21 @@ var IgeUiPositionExtension = {
 				if (this._parent) {
 					// Percentage
 					var parentHeight = this._parent._geometry.y,
-						val = parseInt(px, 10);
+						val = parseInt(px, 10),
+						newVal,
+						ratio;
 
 					// Calculate real height from percentage
-					this._geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
+					// Calculate real width from percentage
+					newVal = (parentHeight / 100 * val) + this._heightModifier | 0;
+
+					if (lockAspect) {
+						// Calculate the height from the change in width
+						ratio = newVal / this._geometry.y;
+						this.width(this._geometry.x / ratio, false, 0, noUpdate);
+					}
+
+					this._geometry.y = newVal;
 					this._geometry.y2 = Math.floor(this._geometry.y / 2);
 				} else {
 					// We don't have a parent so use the main canvas
@@ -186,6 +213,12 @@ var IgeUiPositionExtension = {
 					this._geometry.y2 = Math.floor(this._geometry.y / 2);
 				}
 			} else {
+				if (lockAspect) {
+					// Calculate the height from the change in width
+					var ratio = px / this._geometry.y;
+					this.width(this._geometry.x * ratio, false, 0, noUpdate);
+				}
+
 				this._geometry.y = px;
 				this._geometry.y2 = Math.floor(this._geometry.y / 2);
 			}
@@ -210,8 +243,8 @@ var IgeUiPositionExtension = {
 			var parentGeom = this._parent._geometry,
 				geom = this._geometry;
 
-			if (this._width) { this.width(this._width, this._widthModifier, true); }
-			if (this._height) { this.height(this._height, this._heightModifier, true); }
+			if (this._width) { this.width(this._width, false, this._widthModifier, true); }
+			if (this._height) { this.height(this._height, false, this._heightModifier, true); }
 
 			if (this._uiXAlign === 'right') {
 				this._translate.x = Math.floor(parentGeom.x2 - geom.x2 - this._uiX);
