@@ -139,7 +139,13 @@ var IgeTileMap2d = IgeEntity.extend({
 			this._parent.occupyTile(x, y, width, height, this);
 		} else {
 			// Occupy tiles based upon tile point and tile width/height
-			var tilePoint = this._parent.pointToTile(this._translate);
+			var trPoint = new IgePoint(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
+				tilePoint = this._parent.pointToTile(trPoint);
+
+			if (this._parent._mountMode === 1) {
+				tilePoint.thisToIso();
+			}
+
 			this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
 		}
 		return this;
@@ -161,7 +167,13 @@ var IgeTileMap2d = IgeEntity.extend({
 			this._parent.unOccupyTile(x, y, width, height);
 		} else {
 			// Un-occupy tiles based upon tile point and tile width/height
-			var tilePoint = this._parent.pointToTile(this._translate);
+			var trPoint = new IgePoint(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
+				tilePoint = this._parent.pointToTile(trPoint);
+
+			if (this._parent._mountMode === 1) {
+				tilePoint.thisToIso();
+			}
+
 			this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
 		}
 		return this;

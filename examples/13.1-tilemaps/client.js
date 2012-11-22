@@ -44,6 +44,7 @@ var Client = IgeClass.extend({
 						.drawGrid(3)
 						//.drawMouse(true)
 						.translateTo(-200, 0, 0)
+						.highlightOccupied(true)
 						.drawBounds(false)
 						.mount(self.scene1);
 
@@ -56,6 +57,7 @@ var Client = IgeClass.extend({
 						//.drawMouse(true)
 						.drawBounds(false)
 						.isometricMounts(true)
+						.highlightOccupied(true)
 						.mount(self.scene1);
 
 					var overFunc,
@@ -90,10 +92,13 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.texture(gameTexture[0])
 						.mount(self.tileMap1)
-						.translateToTile(0, 0, 0)
-						.widthByTile(1)
-						.heightByTile(1)
+						.widthByTile(2)
+						.heightByTile(2)
+						.translateToTile(0.5, 0.5, 0)
 						.drawBounds(false)
+						.tileWidth(2)
+						.tileHeight(2)
+						.occupyTile()
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.mouseUp(upFunc);
@@ -103,10 +108,13 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.texture(gameTexture[0])
 						.mount(self.tileMap1)
-						.translateToTile(1, 0, 0)
+						.translateToTile(2, 2, 0)
 						.widthByTile(1)
 						.heightByTile(1)
 						.drawBounds(false)
+						.tileWidth(1)
+						.tileHeight(1)
+						.occupyTile()
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.mouseUp(upFunc);
@@ -118,6 +126,9 @@ var Client = IgeClass.extend({
 						.mount(self.tileMap2)
 						.translateToTile(0, 0, 0)
 						.drawBounds(false)
+						.tileWidth(1)
+						.tileHeight(1)
+						.occupyTile()
 						.size3d(40, 40, 0)
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
@@ -127,9 +138,12 @@ var Client = IgeClass.extend({
 						.id('3d2')
 						.isometric(true)
 						.mount(self.tileMap2)
-						.translateToTile(1, 0, 0)
+						.translateToTile(1.5, 0.5, 0)
 						.drawBounds(false)
-						.size3d(40, 40, 0)
+						.tileWidth(2)
+						.tileHeight(2)
+						.occupyTile()
+						.size3d(80, 80, 0)
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.mouseUp(upFunc);
