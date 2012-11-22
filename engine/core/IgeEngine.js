@@ -51,6 +51,7 @@ var IgeEngine = IgeEntity.extend({
 			'three'
 		];
 
+		this._debugEvents = {}; // Holds debug event booleans for named events
 		this._renderContext = '2d'; // The rendering context, default is 2d
 		this._renderMode = this._renderModes[this._renderContext]; // Integer representation of the render context
 		this._tickTime = 'NA'; // The time the tick started
@@ -200,6 +201,24 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		return this;
+	},
+
+	debug: function (eventName) {
+		if (this._debugEvents[eventName] === true || this._debugEvents[eventName] === ige._frames) {
+			debugger;
+		}
+	},
+
+	debugEventOn: function (eventName) {
+		this._debugEvents[eventName] = true;
+	},
+
+	debugEventOff: function (eventName) {
+		this._debugEvents[eventName] = false;
+	},
+
+	triggerDebugEventFrame: function (eventName) {
+		this._debugEvents[eventName] = ige._frames;
 	},
 
 	/**
