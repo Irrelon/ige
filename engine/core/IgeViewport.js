@@ -12,6 +12,7 @@ var IgeViewport = IgeEntity.extend([
 		this._alwaysInView = true;
 		this._super();
 
+		this._mouseAlwaysInside = true;
 		this._mousePos = new IgePoint(0, 0, 0);
 		this._overflow = '';
 		this._uiX = 0;

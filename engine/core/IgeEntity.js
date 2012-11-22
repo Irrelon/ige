@@ -917,7 +917,7 @@ var IgeEntity = IgeObject.extend([
 
 						// Check if the current mouse position is inside this aabb
 						//if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
-						if (aabb.xyInside(mouseX, mouseY)) {
+						if (aabb.xyInside(mouseX, mouseY) || this._mouseAlwaysInside) {
 							// Point is inside the aabb
 							ige.input.queueEvent(this, this._mouseInAabb);
 						} else {

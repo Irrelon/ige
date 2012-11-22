@@ -5,6 +5,7 @@ var IgeScene2d = IgeEntity.extend({
 	classId: 'IgeScene2d',
 
 	init: function () {
+		this._mouseAlwaysInside = true;
 		this._alwaysInView = true;
 		this._super();
 
