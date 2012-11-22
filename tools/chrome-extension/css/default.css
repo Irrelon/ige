@@ -128,3 +128,19 @@ body {
 	0% { -webkit-transform:rotate(0deg); }
 	100% { -webkit-transform:rotate(360deg); }
 }
+
+ul li {
+    margin-left: 5px;
+    padding-left: 5px;
+    cursor: pointer;
+}
+
+li.selected {
+    /*background-color: #000;
+    color:  #fff;*/
+    font-weight: bold;
+}
+
+li.selected ul {
+    font-weight: normal;
+}
