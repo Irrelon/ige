@@ -94,3 +94,5 @@ var ClientItem = IgeEntity.extend({
 		this._super();
 	}
 });
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = ClientItem; }
