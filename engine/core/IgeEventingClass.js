@@ -101,8 +101,9 @@ var IgeEventingClass = IgeClass.extend({
 
 	/**
 	 * Emit an event by name.
-	 * @param {Object} eventName The name of the event to listen for.
-	 * @param {Object || Array} args The arguments to send to any listening methods. If you are sending multiple arguments, use an array containing each argument.
+	 * @param {Object} eventName The name of the event to emit.
+	 * @param {Object || Array} args The arguments to send to any listening methods.
+	 * If you are sending multiple arguments, use an array containing each argument.
 	 * @return {Number}
 	 */
 	emit: function (eventName, args) {
