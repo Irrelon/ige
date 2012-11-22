@@ -88,7 +88,7 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_mouseDown: function (event) {
-		if (this._enabled && event.igeViewport.id() === this._entity.id()) {
+		if (!this._panStarted && this._enabled && event.igeViewport.id() === this._entity.id()) {
 			// Record the mouse down position - pan pre-start
 			var curMousePos = ige._mousePos;
 			this._panStartMouse = curMousePos.clone();
