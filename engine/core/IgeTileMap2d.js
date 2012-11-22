@@ -140,7 +140,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		} else {
 			// Occupy tiles based upon tile point and tile width/height
 			var tilePoint = this._parent.pointToTile(this._translate);
-			this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
+			this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
 		}
 		return this;
 	},
