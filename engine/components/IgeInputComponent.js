@@ -609,8 +609,9 @@ var IgeInputComponent = IgeEventingClass.extend({
 	/**
 	 * Emit an event by name. Overrides the IgeEventingClass emit method and
 	 * checks for propagation stopped by calling ige.input.stopPropagation().
-	 * @param {Object} eventName The name of the event to listen for.
-	 * @param {Object || Array} args The arguments to send to any listening methods. If you are sending multiple arguments, use an array containing each argument.
+	 * @param {Object} eventName The name of the event to emit.
+	 * @param {Object || Array} args The arguments to send to any listening methods.
+	 * If you are sending multiple arguments, use an array containing each argument.
 	 * @return {Number}
 	 */
 	emit: function (eventName, args) {
@@ -656,7 +657,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 						retVal = tempEvt.call.apply(tempEvt.context || this, finalArgs);
 
 						// If the retVal === true then store the cancel flag and return to the emitting method
-						if (retVal === true || this._eventControl._cancelled === true) {
+						if (retVal === true || evc._cancelled === true) {
 							// The receiver method asked us to send a cancel request back to the emitter
 							cancelFlag = true;
 						}
