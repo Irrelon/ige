@@ -22,9 +22,9 @@ var IgeMouseZoomComponent = IgeEventingClass.extend({
 		this._enabled = false;
 
 		// Listen for the mouse events we need to operate a mouse zoom
-		ige.input.on('mouseDown', function (event) { self._mouseDown(event); });
-		ige.input.on('mouseMove', function (event) { self._mouseMove(event); });
-		ige.input.on('mouseUp', function (event) { self._mouseUp(event); });
+		this._entity.mouseDown(function (event) { self._mouseDown(event); });
+		this._entity.mouseMove(function (event) { self._mouseMove(event); });
+		this._entity.mouseUp(function (event) { self._mouseUp(event); });
 	},
 
 	/**
