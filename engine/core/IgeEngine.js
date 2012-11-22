@@ -221,6 +221,26 @@ var IgeEngine = IgeEntity.extend({
 		this._debugEvents[eventName] = ige._frames;
 	},
 
+	hideAllExcept: function (id) {
+		var i,
+			arr = this._register;
+
+		for (i in arr) {
+			if (i !== id) {
+				arr[i].opacity(0);
+			}
+		}
+	},
+
+	showAll: function () {
+		var i,
+			arr = this._register;
+
+		for (i in arr) {
+			arr[i].show();
+		}
+	},
+
 	/**
 	 * Sets the frame rate at which new engine ticks are fired.
 	 * Setting this rate will override the default requestAnimFrame()

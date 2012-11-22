@@ -85,7 +85,8 @@ var IgeEntity = IgeObject.extend([
 			var mp = viewport._mousePos.clone();
 			mp.x += viewport._translate.x;
 			mp.y += viewport._translate.y;
-			return this._transformPoint(mp);
+			this._transformPoint(mp)
+			return mp;
 		} else {
 			return new IgePoint(0, 0, 0);
 		}
@@ -105,10 +106,23 @@ var IgeEntity = IgeObject.extend([
 		viewport = viewport || ige._currentViewport;
 		if (viewport) {
 			var mp = viewport._mousePos.clone();
-			return this._transformPoint(mp);
+			this._transformPoint(mp);
+			return mp;
 		} else {
 			return new IgePoint(0, 0, 0);
 		}
+	},
+
+	mousePosWorld: function (viewport) {
+		viewport = viewport || ige._currentViewport;
+		var mp = this.mousePosAbsolute(viewport);
+		this.localToWorldPoint(mp, viewport);
+
+		if (this._ignoreCamera) {
+			viewport.camera._worldMatrix.transform([mp]);
+		}
+
+		return mp;
 	},
 
 	/**
@@ -503,8 +517,13 @@ var IgeEntity = IgeObject.extend([
 	 * the points passed in the array directly.
 	 * @param {Array} points The array of IgePoints to convert.
 	 */
-	localToWorld: function (points) {
+	localToWorld: function (points, viewport) {
+		viewport = viewport || ige._currentViewport;
 		this._worldMatrix.transform(points);
+
+		if (this._ignoreCamera) {
+			//viewport.camera._worldMatrix.transform(points);
+		}
 	},
 
 	/**
@@ -513,7 +532,8 @@ var IgeEntity = IgeObject.extend([
 	 * data directly.
 	 * @param {IgePoint} point The IgePoint to convert.
 	 */
-	localToWorldPoint: function (point) {
+	localToWorldPoint: function (point, viewport) {
+		viewport = viewport || ige._currentViewport;
 		this._worldMatrix.transform([point]);
 	},
 
@@ -916,8 +936,10 @@ var IgeEntity = IgeObject.extend([
 					this._transformContext(ctx);
 				}
 
-				// Render the entity
-				this._renderEntity(ctx, dontTransform);
+				if (!this._dontRender) {
+					// Render the entity
+					this._renderEntity(ctx, dontTransform);
+				}
 
 				// Process any automatic-mode stream updating required
 				if (this._streamMode === 1) {

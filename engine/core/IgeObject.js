@@ -241,6 +241,9 @@ var IgeObject = IgeEventingClass.extend({
 				}
 
 				this._parent = obj;
+				if (!this._ignoreCamera && this._parent._ignoreCamera) {
+					this._ignoreCamera = this._parent._ignoreCamera;
+				}
 				obj._children.push(this);
 
 				this._parent._childMounted(this);
