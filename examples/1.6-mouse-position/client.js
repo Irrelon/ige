@@ -62,7 +62,7 @@ var Client = IgeClass.extend({
 
 					self.uiScene = new IgeScene2d()
 						.id('uiScene')
-						.ignoreCamera(true)
+						.ignoreCamera(false)
 						.mount(self.mainScene);
 
 					// Create the main viewport and set the scene
@@ -91,7 +91,7 @@ var Client = IgeClass.extend({
 						.borderWidth(1)
 						.borderColor('#ffffff')
 						.scene(self.mainScene)
-						.drawBounds(false)
+						.drawBounds(true)
 						.drawMouse(true)
 						.mount(ige);
 
