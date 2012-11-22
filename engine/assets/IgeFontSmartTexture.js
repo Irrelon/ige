@@ -36,6 +36,16 @@ var IgeFontSmartTexture = {
 				ctx.translate(entity._geometry.x2, 0);
 			}
 
+			if (entity._nativeStroke) {
+				ctx.lineWidth = entity._nativeStroke;
+
+				if (entity._nativeStrokeColor) {
+					ctx.strokeStyle = entity._nativeStrokeColor;
+				} else {
+					ctx.strokeStyle = entity._colorOverlay;
+				}
+			}
+
 			// Handle multi-line text
 			if (text.indexOf('\n') > -1) {
 				// Split each line into an array item
@@ -53,6 +63,11 @@ var IgeFontSmartTexture = {
 
 				// Measure text
 				textSize = ctx.measureText(lineArr[i]);
+
+				// Check if we should stroke the text too
+				if (entity._nativeStroke) {
+					ctx.strokeText(lineArr[i], 0, renderY);
+				}
 
 				// Draw text
 				ctx.fillText(lineArr[i], 0, renderY);

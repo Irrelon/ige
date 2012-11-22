@@ -103,6 +103,36 @@ var IgeFontEntity = IgeUiEntity.extend({
 	},
 
 	/**
+	 * Gets / sets the text stroke size that applies when using
+	 * a native font for text rendering.
+	 * @param {Number=} val The size of the text stroke.
+	 * @return {*}
+	 */
+	nativeStroke: function (val) {
+		if (val !== undefined) {
+			this._nativeStroke = val;
+			return this;
+		}
+
+		return this._nativeStroke;
+	},
+
+	/**
+	 * Gets / sets the text stroke color that applies when using
+	 * a native font for text rendering.
+	 * @param {Number=} val The color of the text stroke.
+	 * @return {*}
+	 */
+	nativeStrokeColor: function (val) {
+		if (val !== undefined) {
+			this._nativeStrokeColor = val;
+			return this;
+		}
+
+		return this._nativeStrokeColor;
+	},
+
+	/**
 	 * Returns a string containing a code fragment that when
 	 * evaluated will reproduce this object's properties via
 	 * chained commands. This method will only check for
