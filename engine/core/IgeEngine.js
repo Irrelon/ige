@@ -1396,6 +1396,12 @@ var IgeEngine = IgeEntity.extend({
 
 		if (!noRef) {
 			item.parent = obj._parent;
+		} else {
+			if (obj._parent) {
+				item.parentId = obj._parent.id();
+			} else {
+				item.parentId = 'sceneGraph';
+			}
 		}
 
 		if (obj === ige) {
@@ -1414,6 +1420,10 @@ var IgeEngine = IgeEntity.extend({
 
 					if (!noRef) {
 						tempItem.parent = arr[arrCount]._parent;
+					} else {
+						if (arr[arrCount]._parent) {
+							tempItem.parentId = arr[arrCount]._parent.id();
+						}
 					}
 
 					if (arr[arrCount]._scene) {
