@@ -47,6 +47,13 @@ var IgeScene2d = IgeEntity.extend({
 		return this._shouldRender;
 	},
 
+	/**
+	 * Gets / sets the flag that determines if the scene will ignore camera
+	 * transform values allowing the scene to remain static on screen
+	 * regardless of the camera transform.
+	 * @param {Boolean=} val True to ignore, false to not ignore.
+	 * @return {*}
+	 */
 	ignoreCamera: function (val) {
 		if (val !== undefined) {
 			this._ignoreCamera = val;
