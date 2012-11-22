@@ -16,15 +16,8 @@ var IgeMouseZoomComponent = IgeEventingClass.extend({
 		this._entity = entity;
 		this._options = options;
 
-		var self = this;
-
 		// Set the zoom component to inactive to start with
 		this._enabled = false;
-
-		// Listen for the mouse events we need to operate a mouse zoom
-		this._entity.mouseDown(function (event) { self._mouseDown(event); });
-		this._entity.mouseMove(function (event) { self._mouseMove(event); });
-		this._entity.mouseUp(function (event) { self._mouseUp(event); });
 	},
 
 	/**
@@ -35,10 +28,17 @@ var IgeMouseZoomComponent = IgeEventingClass.extend({
 	 * @return {*}
 	 */
 	enabled: function (val) {
+		var self = this;
+
 		if (val !== undefined) {
 			this._enabled = val;
 
-			if (!this._enabled) {
+			if (this._enabled) {
+				// Listen for the mouse events we need to operate a mouse pan
+				this._entity.mouseDown(function (event) { self._mouseDown(event); });
+				this._entity.mouseMove(function (event) { self._mouseMove(event); });
+				this._entity.mouseUp(function (event) { self._mouseUp(event); });
+			} else {
 				// Remove the zoom start data
 				delete this._zoomStartMouse;
 				delete this._zoomStartCamera;

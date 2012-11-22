@@ -16,16 +16,9 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 		this._entity = entity;
 		this._options = options;
 
-		var self = this;
-
 		// Set the pan component to inactive to start with
 		this._enabled = false;
 		this._startThreshold = 5; // The number of pixels the mouse should move to activate a pan
-
-		// Listen for the mouse events we need to operate a mouse pan
-		this._entity.mouseDown(function (event) { self._mouseDown(event); });
-		this._entity.mouseMove(function (event) { self._mouseMove(event); });
-		this._entity.mouseUp(function (event) { self._mouseUp(event); });
 	},
 
 	/**
@@ -66,10 +59,17 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	 * @return {*}
 	 */
 	enabled: function (val) {
+		var self = this;
+
 		if (val !== undefined) {
 			this._enabled = val;
 
-			if (!this._enabled) {
+			if (this._enabled) {
+				// Listen for the mouse events we need to operate a mouse pan
+				this._entity.mouseDown(function (event) { self._mouseDown(event); });
+				this._entity.mouseMove(function (event) { self._mouseMove(event); });
+				this._entity.mouseUp(function (event) { self._mouseUp(event); });
+			} else {
 				// Remove the pan start data
 				delete this._panStartMouse;
 				delete this._panStartCamera;
