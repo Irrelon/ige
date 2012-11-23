@@ -807,6 +807,7 @@ var IgeObject = IgeEventingClass.extend({
 
 		// Remove the object from the lookup system
 		ige.unRegister(this);
+		ige.groupUnRegister(this);
 
 		// Set a flag in case a reference to this object
 		// has been held somewhere, shows that the object
