@@ -1,10 +1,35 @@
 <html>
 <head>
-    <link href="./css/default.css" rel="stylesheet" type="text/css" />
+    <script src="./js/jquery.min.js"></script>
     <script src="./panel.js"></script>
+    <link href="./css/default.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
-<ul id="sceneGraph_items"></ul>
-<div id="igeConsole"></div>
+<div class="tabView active" id="igeSceneGraphView">
+    <div class="leftPane">
+        <ul id="sceneGraph_items"></ul>
+    </div>
+    <div class="rightPane">
+        <div id="sceneGraphItem">
+            <div class="drop"></div>
+            <div id="id"></div>
+            <div id="classId"></div>
+            <div id="parentId"></div>
+            <div id="childCount"></div>
+            <div id="transform">
+                <div id="translate">
+                    <input type="text" id="translateX" value="0" />
+                    <input type="text" id="translateY" value="0" />
+                    <input type="text" id="translateZ" value="0" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="tabView" id="igeDebugView"></div>
+<div id="tabStrip">
+    <div class="tab" id="igeSceneGraph">SceneGraph</div>
+    <div class="tab" id="igeDebug">Debug</div>
+</div>
 </body>
 </html>

@@ -3,6 +3,7 @@ html {
     height: 100%;
     margin: 0;
     padding: 0;
+    overflow: hidden;
 }
 
 body {
@@ -13,6 +14,7 @@ body {
     padding: 0;
     font-family: Verdana, sans-serif;
     font-size: 12px;
+    overflow: hidden;
 }
 
 .loadingFloat {
@@ -129,10 +131,20 @@ body {
 	100% { -webkit-transform:rotate(360deg); }
 }
 
+ul {
+    margin: 0px;
+    padding: 0px 0px 0px 10px;
+}
+
 ul li {
-    margin-left: 5px;
-    padding-left: 5px;
+    margin-left: 0px;
+    padding-left: 0px;
     cursor: pointer;
+    list-style: none;
+}
+
+li ul {
+    padding-left: 20px;
 }
 
 li.selected {
@@ -143,4 +155,53 @@ li.selected {
 
 li.selected ul {
     font-weight: normal;
+}
+
+.tabView {
+    display: none;
+}
+
+.tabView.active {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+}
+
+.leftPane {
+    display: block;
+    width: 300px;
+    overflow: auto;
+}
+
+.rightPane {
+    display: block;
+    width: 300px;
+    overflow: auto;
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    border-left: #CCC 1px solid;
+    background-color: white;
+}
+
+
+#tabStrip {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    height: 24px;
+    background: white;
+    border-top: #CCC 1px solid;
+}
+
+#tabStrip .tab {
+    float: left;
+    padding: 4px;
+    border-right: 1px #CCC solid;
+    cursor: pointer;
+}
+
+#tabStrip .tab.active {
+    background-color: #c2d3ff;
 }

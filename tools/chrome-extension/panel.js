@@ -29,20 +29,42 @@ function addToSG(item) {
 		}
 	};
 
-	mouseUp = function () {
-		var arr = document.getElementsByClassName('sgItem'),
-			arrCount = arr.length,
-			i;
-
-		for (i = 0; i < arrCount; i++) {
-			arr[i].className = 'sgItem';
-		}
-
+	mouseUp = function (event) {
 		event.stopPropagation();
+
+		$('.sgItem').removeClass('selected');
+		$(this).addClass('selected');
+
 		selectedItem = this.id;
-		this.className = 'sgItem selected';
+		$('#id').html(this.id);
+
 		chrome.devtools.inspectedWindow.eval("ige.$('vp1').drawBoundsLimitId('" + this.id + "');", function (result, isException) {
 
+		});
+
+		// Grab data about the object from the engine
+		chrome.devtools.inspectedWindow.eval("ige.$('" + this.id + "').classId()", function (result, isException) {
+			$('#classId').html(result);
+		});
+
+		chrome.devtools.inspectedWindow.eval("ige.$('" + this.id + "')._parent.id()", function (result, isException) {
+			if (result) {
+				$('#parentId').html(result);
+			} else {
+				$('#parentId').html('');
+			}
+		});
+
+		chrome.devtools.inspectedWindow.eval("ige.$('" + this.id + "')._translate.x", function (result, isException) {
+			$('#translateX').val(result);
+		});
+
+		chrome.devtools.inspectedWindow.eval("ige.$('" + this.id + "')._translate.y", function (result, isException) {
+			$('#translateY').val(result);
+		});
+
+		chrome.devtools.inspectedWindow.eval("ige.$('" + this.id + "')._translate.z", function (result, isException) {
+			$('#translateZ').val(result);
 		});
 	};
 
@@ -78,4 +100,24 @@ function addToSG(item) {
 chrome.devtools.inspectedWindow.eval("ige.$('vp1').drawBounds(true).drawBoundsData(true);");
 chrome.devtools.inspectedWindow.eval('ige.getSceneGraphData(ige, true);', function (result, isException) {
 	addToSG(result);
+});
+
+// Setup the dev tool tabs
+$(document).ready(function () {
+	$('.tab').click(function () {
+		// Remove active from all tab views
+		$('.tabView').removeClass('active');
+		$('#tabStrip .tab').removeClass('active');
+		$('#' + this.id + 'View').addClass('active');
+		$(this).addClass('active');
+
+		$('#' + this.id + 'View').height(window.innerHeight - $('#tabStrip').height());
+		$('.leftPane').height(window.innerHeight - $('#tabStrip').height());
+		$('.rightPane').height(window.innerHeight - $('#tabStrip').height());
+
+		$('.leftPane').width(window.innerWidth - $('.rightPane').width());
+	});
+
+	// Select the first tab
+	$('#igeSceneGraph').click();
 });
