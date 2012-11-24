@@ -8,12 +8,12 @@ var Client = IgeClass.extend({
 		// Load our textures
 		self.obj = [];
 
-		// Load the fairy texture and store it in the gameTextures object
-		self.gameTextures = {};
-		self.gameTextures.fairy = new IgeTexture('../assets/textures/sprites/fairy.png');
+		// Load the fairy texture and store it in the gameTexture object
+		self.gameTexture = {};
+		self.gameTexture.fairy = new IgeTexture('../assets/textures/sprites/fairy.png');
 
 		// Load a smart texture
-		self.gameTextures.simpleBox = new IgeTexture('../assets/textures/smartTextures/simpleBox.js');
+		self.gameTexture.simpleBox = new IgeTexture('../assets/textures/smartTextures/simpleBox.js');
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -44,7 +44,7 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.width(100)
 						.height(100)
-						.texture(self.gameTextures.fairy)
+						.texture(self.gameTexture.fairy)
 						.translateTo(0, 0, 0)
 						.mount(self.scene1);
 
@@ -56,7 +56,7 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.width(50)
 						.height(50)
-						.texture(self.gameTextures.fairy)
+						.texture(self.gameTexture.fairy)
 						.translateTo(0, 50, 0)
 						.mount(self.obj[0]);
 
@@ -68,7 +68,7 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.width(50)
 						.height(50)
-						.texture(self.gameTextures.simpleBox)
+						.texture(self.gameTexture.simpleBox)
 						.translateTo(0, -50, 0)
 						.mount(self.obj[0]);
 				}
