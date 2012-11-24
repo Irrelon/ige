@@ -54,14 +54,14 @@ var IgeScene2d = IgeEntity.extend({
 	 * @param {IgeObject} obj
 	 * @return {*} Returns this on success or false on failure.
 	 */
-	mount: function (obj) {
+	/*mount: function (obj) {
 		if (obj) {
 			// Make sure we are not being asked to mount to a viewport
 			if (!obj.IgeViewport) {
 				this._super(obj);
 			}
 		}
-	},
+	},*/
 
 	/**
 	 * Gets / sets the flag that determines if the scene will ignore camera
