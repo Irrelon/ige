@@ -1,11 +1,18 @@
 /**
- * Creates a new texture from an image file.
+ * Creates a new texture.
  */
 var IgeTexture = IgeEventingClass.extend({
 	classId: 'IgeTexture',
 	IgeTexture: true,
 
-	init: function (url) {
+	/**
+	 * Constructor for a new IgeTexture.
+	 * @param {String, Object} urlOrObject Either a string URL that
+	 * points to the path of the image or script you wish to use as
+	 * the texture image, or an object containing a smart texture.
+	 * @return {*}
+	 */
+	init: function (urlOrObject) {
 		/* CEXCLUDE */
 		// If on a server, import the relevant libraries
 		if (ige.isServer) {
@@ -21,18 +28,18 @@ var IgeTexture = IgeEventingClass.extend({
 		this._cells = [];
 		this._smoothing = ige._globalSmoothing;
 
-		var type = typeof(url);
+		var type = typeof(urlOrObject);
 
 		if (type === 'string') {
 			// Load the texture URL
-			if (url) {
-				this.url(url);
+			if (urlOrObject) {
+				this.url(urlOrObject);
 			}
 		}
 
 		if (type === 'object') {
 			// Assign the texture script object
-			this.assignSmartTextureImage(imageObject);
+			this.assignSmartTextureImage(urlOrObject);
 		}
 	},
 
