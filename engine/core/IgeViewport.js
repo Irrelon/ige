@@ -7,6 +7,7 @@ var IgeViewport = IgeEntity.extend([
 	{extension: IgeUiPositionExtension, overwrite: true}
 ], {
 	classId: 'IgeViewport',
+	IgeViewport: true,
 
 	init: function (options) {
 		this._alwaysInView = true;
