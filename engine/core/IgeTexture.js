@@ -18,9 +18,6 @@ var IgeTexture = IgeEventingClass.extend({
 		if (ige.isServer) {
 			this.log('Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don\'t try to load a texture on the server-side using something like an if statement around your texture laoding such as "if (!ige.isServer) {}".', 'error');
 			return this;
-			this.imageMagic = require(modulePath + 'easyimage');
-			this.vm = require('vm');
-			this.fs = require('fs');
 		}
 		/* CEXCLUDE */
 
@@ -215,29 +212,6 @@ var IgeTexture = IgeEventingClass.extend({
 				}
 			}
 		}
-		/* CEXCLUDE */
-		if (ige.isServer) {
-			ige.textureLoadStart(imageUrl, this);
-
-			// Load the asset and get it's details
-			this.imageMagic.info(imageUrl, function(err, data){
-				if (!err) {
-					// Assign the data to the image for later use
-					self.log('Texture image "' + imageUrl + '" loaded successfully');
-					self.sizeX(data.width);
-					self.sizeY(data.height);
-
-					self._cells[1] = [0, 0, self._sizeX, self._sizeY];
-
-					self._loaded = true;
-					self.emit('loaded');
-					ige.textureLoadEnd(imageUrl, self);
-				} else {
-					console.log('Cannot execute imagemagick "identify". Is the image file valid and is imagemagick installed?', 'error', [__dirname + '/' + imageUrl, err]);
-				}
-			});
-		}
-		/* CEXCLUDE */
 	},
 
 	/**
@@ -287,43 +261,6 @@ var IgeTexture = IgeEventingClass.extend({
 
 			scriptElem.src = scriptUrl;
 			document.getElementsByTagName('head')[0].appendChild(scriptElem);
-		}
-
-		if (ige.isServer) {
-			// Load the render script code and execute it inside a new context
-			rs_sandboxContext = {};
-			textures.fs.readFile(scriptUrl, this.bind(function(err, data) {
-				try {
-					textures.vm.runInNewContext(data, rs_sandboxContext);
-
-					// Check if the script defined an image object which is
-					// required for asset scripts
-					if (typeof(rs_sandboxContext.image) === 'object') {
-						this.log('Texture script "' + scriptUrl + '" loaded successfully');
-						// Store the image object
-						var image = rs_sandboxContext.image;
-
-						// Run the asset script init method
-						if (typeof(image.init) === 'function') {
-							image.init.apply(image, [ige, this]);
-						}
-
-						// Set the size of the asset based upon the script data
-						this.sizeX(image.width);
-						this.sizeY(image.height);
-
-						this._loaded = true;
-						self.emit('loaded');
-						ige.textureLoadEnd(scriptUrl, self);
-					} else {
-						// The script did not define an image object!
-						this.log('Error reading asset render script data. The script does not contain an image variable!', 'error', [this.url, rs_sandboxContext]);
-					}
-				} catch(err2) {
-					// The script contained a JS error
-					this.log('Error executing asset render script: ', 'error', [err2, this.url]);
-				}
-			}));
 		}
 	},
 
