@@ -294,59 +294,6 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	},
 
 	/**
-	 * Gets / sets the area of the texture map that will be rendered
-	 * during the render tick. When initially set you must provide a
-	 * width and height but afterwards you can just pass and x, y to
-	 * effectively "move" the rendering rectangle around the map.
-	 * @param x
-	 * @param y
-	 * @param width
-	 * @param height
-	 * @return {*}
-	 */
-	renderArea: function (x, y, width, height) {
-
-	},
-
-	renderAreaAutoSize: function (val, options) {
-
-	},
-
-	/**
-	 * Gets / sets the center point that the render area will
-	 * be drawn around.
-	 * @param {Number=} x
-	 * @param {Number=} y
-	 * @return {*}
-	 */
-	renderCenter: function (x, y) {
-
-	},
-
-	/**
-	 * Get / sets the entity that will be used to determine the
-	 * center point of the map's render area. This allows the
-	 * render area to become dynamic based on this entity's position.
-	 * @param entity
-	 * @return {*}
-	 */
-	trackTranslate: function (entity) {
-		if (entity !== undefined) {
-			this._trackTranslateTarget = entity;
-			return this;
-		}
-
-		return this._trackTranslateTarget;
-	},
-
-	/**
-	 * Stops tracking the current tracking target's translation.
-	 */
-	unTrackTranslate: function () {
-		delete this._trackTranslateTarget;
-	},
-
-	/**
 	 * Handles rendering the texture map during engine tick events.
 	 * @param ctx
 	 */
@@ -512,7 +459,10 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	},
 
 	_drawSectionsToCtx: function (ctx) {
-		var x, y, tileData;
+		var x, y, tileData,
+			sectionRenderX, sectionRenderY,
+			sectionAbsX, sectionAbsY,
+			sectionWidth, sectionHeight;
 
 		// Render the map sections
 		if (this._mountMode === 1) {
@@ -520,35 +470,50 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			ctx.translate(-(this._tileWidth / 2), -(this._tileHeight / 2));
 		}
 
+		sectionWidth = (this._tileWidth * this._autoSection);
+		sectionHeight = (this._tileHeight * this._autoSection);
+
 		for (x in this._sections) {
 			if (this._sections.hasOwnProperty(x)) {
 				for (y in this._sections[x]) {
 					if (this._sections[x].hasOwnProperty(y)) {
-						// Grab the canvas to paint
-						tileData = this._sections[x][y];
+						sectionRenderX = x * (this._tileWidth * this._autoSection);
+						sectionRenderY = y * (this._tileHeight * this._autoSection);
+						sectionAbsX = sectionRenderX - ige._currentCamera._translate.x;
+						sectionAbsY = sectionRenderY - ige._currentCamera._translate.y;
 
-						ctx.drawImage(
-							tileData,
-							0, 0,
-							(this._tileWidth * this._autoSection),
-							(this._tileHeight * this._autoSection),
-							x * (this._tileWidth * this._autoSection),
-							y * (this._tileHeight * this._autoSection),
-							(this._tileWidth * this._autoSection),
-							(this._tileHeight * this._autoSection)
-						);
+						if (this._mountMode === 1) {
+							sectionAbsY -= (this._tileWidth / 2);
+						}
 
-						ige._drawCount++;
+						// Check if the section is "on screen"
+						if ((sectionAbsX + sectionWidth >= -this._geometry.x2 && sectionAbsX <= this._geometry.x2) && (sectionAbsY + sectionHeight >= -this._geometry.y2 && sectionAbsY <= this._geometry.y2)) {
+							// Grab the canvas to paint
+							tileData = this._sections[x][y];
 
-						if (this._drawSections) {
-							// Draw a bounding rectangle around the section
-							ctx.strokeStyle = '#ff00f6';
-							ctx.strokeRect(
-								x * (this._tileWidth * this._autoSection),
-								y * (this._tileHeight * this._autoSection),
-								(this._tileWidth * this._autoSection),
-								(this._tileHeight * this._autoSection)
+							ctx.drawImage(
+								tileData,
+								0, 0,
+								sectionWidth,
+								sectionHeight,
+								sectionRenderX,
+								sectionRenderY,
+								sectionWidth,
+								sectionHeight
 							);
+
+							ige._drawCount++;
+
+							if (this._drawSections) {
+								// Draw a bounding rectangle around the section
+								ctx.strokeStyle = '#ff00f6';
+								ctx.strokeRect(
+									x * (this._tileWidth * this._autoSection),
+									y * (this._tileHeight * this._autoSection),
+									(this._tileWidth * this._autoSection),
+									(this._tileHeight * this._autoSection)
+								);
+							}
 						}
 					}
 				}
