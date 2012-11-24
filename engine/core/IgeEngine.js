@@ -1358,6 +1358,31 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 
+	saveSceneGraph: function (item) {
+		var arr, arrCount, i;
+
+		if (!item) {
+			item = this.getSceneGraphData();
+		}
+
+		if (item.obj.stringify) {
+			item.str = item.obj.stringify();
+		} else {
+			console.log('Class ' + item.classId + ' has no stringify() method! For object: ' + item.id, item.obj);
+		}
+		arr = item.items;
+
+		if (arr) {
+			arrCount = arr.length;
+
+			for (i = 0; i < arrCount; i++) {
+				this.saveSceneGraph(arr[i]);
+			}
+		}
+
+		return item;
+	},
+
 	/**
 	 * Walks the scene graph and outputs a console map of the graph.
 	 */
@@ -1460,11 +1485,13 @@ var IgeEngine = IgeEntity.extend({
 
 		item = {
 			text: obj.id() + ' (' + obj._classId + ')',
-			id: obj.id()
+			id: obj.id(),
+			classId: obj.classId()
 		};
 
 		if (!noRef) {
 			item.parent = obj._parent;
+			item.obj = obj;
 		} else {
 			if (obj._parent) {
 				item.parentId = obj._parent.id();
@@ -1484,11 +1511,13 @@ var IgeEngine = IgeEntity.extend({
 				while (arrCount--) {
 					tempItem = {
 						text: arr[arrCount].id() + ' (' + arr[arrCount]._classId + ')',
-						id: arr[arrCount].id()
+						id: arr[arrCount].id(),
+						classId: arr[arrCount].classId()
 					};
 
 					if (!noRef) {
 						tempItem.parent = arr[arrCount]._parent;
+						tempItem.obj = arr[arrCount];
 					} else {
 						if (arr[arrCount]._parent) {
 							tempItem.parentId = arr[arrCount]._parent.id();
