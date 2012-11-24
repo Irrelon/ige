@@ -66,7 +66,6 @@ var igeCoreConfig = {
 		['csap', 'IgeCellSheet', 'core/IgeCellSheet.js'],
 		['csap', 'IgeSpriteSheet', 'core/IgeSpriteSheet.js'],
 		['csap', 'IgeFontSheet', 'core/IgeFontSheet.js'],
-		['csap', 'IgeSmartTexture', 'core/IgeSmartTexture.js'],
 		['csap', 'IgeFontSmartTexture', 'assets/IgeFontSmartTexture.js'],
 		['csap', 'IgeObject', 'core/IgeObject.js'],
 		['csap', 'IgeEntity', 'core/IgeEntity.js'],

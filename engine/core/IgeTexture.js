@@ -21,9 +21,18 @@ var IgeTexture = IgeEventingClass.extend({
 		this._cells = [];
 		this._smoothing = ige._globalSmoothing;
 
-		// Load the texture URL
-		if (url) {
-			this.url(url);
+		var type = typeof(url);
+
+		if (type === 'string') {
+			// Load the texture URL
+			if (url) {
+				this.url(url);
+			}
+		}
+
+		if (type === 'object') {
+			// Assign the texture script object
+			this.assignSmartTextureImage(imageObject);
 		}
 	},
 
@@ -312,6 +321,36 @@ var IgeTexture = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Assigns a render script to the smart texture.
+	 * @param {String} scriptObj The script object.
+	 * @private
+	 */
+	assignSmartTextureImage: function (scriptObj) {
+		var textures = ige.textures,
+			rs_sandboxContext,
+			self = this,
+			scriptElem;
+
+		//ige.textureLoadStart(scriptUrl, this);
+
+		// Store the script data
+		self._mode = 1;
+		self.script = scriptObj;
+
+		// Run the asset script init method
+		if (typeof(scriptObj.init) === 'function') {
+			scriptObj.init.apply(scriptObj, [self]);
+		}
+
+		//self.sizeX(image.width);
+		//self.sizeY(image.height);
+
+		self._loaded = true;
+		self.emit('loaded');
+		//ige.textureLoadEnd(scriptUrl, self);
+	},
+
+	/**
 	 * Sets the image element that the IgeTexture will use when
 	 * rendering. This is a special method not designed to be called
 	 * directly by any game code and is used specifically when
@@ -562,7 +601,7 @@ var IgeTexture = IgeEventingClass.extend({
 
 	/**
 	 * Renders the texture image to the passed canvas context.
-	 * @param {CanvasContext2d} ctx The canvas context to draw to.
+	 * @param {CanvasRenderingContext2d} ctx The canvas context to draw to.
 	 * @param {IgeEntity} entity The entity that this texture is
 	 * being drawn for.
 	 */
