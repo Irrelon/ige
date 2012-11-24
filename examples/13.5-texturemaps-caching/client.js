@@ -104,7 +104,7 @@ var Client = IgeClass.extend({
 
 					// Tell the camera to track our player character with some
 					// tracking smoothing (set to 20)
-					self.vp1.camera.trackTranslate(self.player1, 20);
+					self.vp1.camera.trackTranslate(self.player1, 100);
 
 					// Load the Tiled map data and handle the return data
 					ige.addComponent(IgeTiledComponent)
@@ -137,14 +137,10 @@ var Client = IgeClass.extend({
 								layerArray[i]
 									.tileWidth(40)
 									.tileHeight(40)
-									//.renderArea(-100, -300, 200, 600) // Set the area of the map to render by default
-									//.renderCenter(0, 0)
-									.renderAreaAutoSize(true, {bufferMultiple: {x: 1.2, y: 1.4}})
-									.trackTranslate(self.player1) // Use this entity as the center of the render area
 									.drawBounds(false)
 									.drawBoundsData(false)
-									//.isometricMounts(false)
-									.caching(1) // Set caching mode to 1
+									.autoSection(20)
+									.drawSectionBounds(true)
 									.mount(self.backScene);
 							}
 

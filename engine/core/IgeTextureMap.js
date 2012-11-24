@@ -14,34 +14,6 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	},
 
 	/**
-	 * Gets / sets the caching mode.
-	 * @param {Number=} val
-	 * @return {*}
-	 */
-	caching: function (val) {
-		if (val !== undefined) {
-			var canvas;
-
-			if (val === 0) {
-				// Remove the cache canvas references
-				delete this._cache;
-				delete this._cacheCtx;
-			}
-
-			this._caching = val;
-
-			// Check if caching is enabled
-			if (this._caching > 0 && this._renderArea) {
-				this._resizeCacheCanvas();
-			}
-
-			return this;
-		}
-
-		return this._caching;
-	},
-
-	/**
 	 * Gets / sets the auto sectioning mode. If enabled the texture map
 	 * will render to off-screen canvases in sections denoted by the
 	 * number passed. For instance if you pass 10, the canvas sections
@@ -65,13 +37,13 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * @param {Number=} val The boolean flag value.
 	 * @return {*}
 	 */
-	drawSections: function (val) {
+	drawSectionBounds: function (val) {
 		if (val !== undefined) {
-			this._drawSections = val;
+			this._drawSectionBounds = val;
 			return this;
 		}
 
-		return this._drawSections;
+		return this._drawSectionBounds;
 	},
 
 	/**
@@ -505,7 +477,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 
 							ige._drawCount++;
 
-							if (this._drawSections) {
+							if (this._drawSectionBounds) {
 								// Draw a bounding rectangle around the section
 								ctx.strokeStyle = '#ff00f6';
 								ctx.strokeRect(
@@ -622,79 +594,6 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		ctx.restore();
 
 		return regions;
-	},
-
-	/**
-	 * Handles screen resize events.
-	 * @param event
-	 * @private
-	 */
-	_resizeEvent: function (event) {
-		// Set width / height of scene to match parent
-		if (this._renderAreaAutoSize) {
-			var geom = this._parent._geometry,
-				additionX = 0, additionY = 0;
-
-			if (this._renderAreaAutoSizeOptions) {
-				if (this._renderAreaAutoSizeOptions.bufferMultiple) {
-					additionX = (geom.x * this._renderAreaAutoSizeOptions.bufferMultiple.x) - geom.x;
-					additionY = (geom.y * this._renderAreaAutoSizeOptions.bufferMultiple.y) - geom.y;
-				}
-
-				if (this._renderAreaAutoSizeOptions.bufferPixels) {
-					additionX = this._renderAreaAutoSizeOptions.bufferPixels.x;
-					additionY = this._renderAreaAutoSizeOptions.bufferPixels.y;
-				}
-			}
-			this.renderArea(-Math.floor((geom.x + additionX) / 2), -Math.floor((geom.y + additionY) / 2), geom.x + additionX, geom.y + additionY);
-
-			// Check if caching is enabled
-			if (this._caching > 0) {
-				this._resizeCacheCanvas();
-			}
-		}
-
-		this._super(event);
-	},
-
-	/**
-	 * Resizes the cache canvas elements to the new
-	 * render area size.
-	 * @private
-	 */
-	_resizeCacheCanvas: function () {
-		var i;
-
-		/*if (this._cache) {
-			for (i = 0; i < this._cache.length; i++) {
-				document.body.removeChild(this._cache[i]);
-			}
-		}*/
-
-		switch (this._caching) {
-			case 1:
-				// Turn on caching
-				this._cache = [];
-				this._cacheCtx = [];
-				this._cacheDirty = true;
-
-				// Create a new canvas to cache image render data to
-				canvas = document.createElement('canvas');
-
-				// Set the canvas size to the render area rectangle
-				canvas.width = this._renderArea[2];
-				canvas.height = this._renderArea[3];
-
-				//document.body.appendChild(canvas);
-				canvas.style.position = 'absolute';
-				canvas.style.left = '0px';
-				canvas.style.top = '0px';
-				canvas.style.opacity = '0';
-
-				this._cache.push(canvas);
-				this._cacheCtx.push(canvas.getContext('2d'));
-				break;
-		}
 	},
 
 	/**
