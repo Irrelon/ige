@@ -42,6 +42,39 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	},
 
 	/**
+	 * Gets / sets the auto sectioning mode. If enabled the texture map
+	 * will render to off-screen canvases in sections denoted by the
+	 * number passed. For instance if you pass 10, the canvas sections
+	 * will be 10x10 tiles in size.
+	 * @param {Number=} val The size in tiles of each section.
+	 * @return {*}
+	 */
+	autoSection: function (val) {
+		if (val !== undefined) {
+			this._autoSection = val;
+			return this;
+		}
+
+		return this._autoSection;
+	},
+
+	/**
+	 * Gets / sets the draw sections flag. If true the texture map will
+	 * output debug lines between each section of the map when using the
+	 * auto section system.
+	 * @param {Number=} val The boolean flag value.
+	 * @return {*}
+	 */
+	drawSections: function (val) {
+		if (val !== undefined) {
+			this._drawSections = val;
+			return this;
+		}
+
+		return this._drawSections;
+	},
+
+	/**
 	 * Forces a cache redraw on the next tick.
 	 */
 	cacheForceFrame: function () {
@@ -272,34 +305,11 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * @return {*}
 	 */
 	renderArea: function (x, y, width, height) {
-		var updated = false;
-		if (this._renderArea) {
-			if (x !== undefined) { this._renderArea[0] = x; updated = true; }
-			if (y !== undefined) { this._renderArea[1] = y; updated = true; }
-			if (width !== undefined) { this._renderArea[2] = width; updated = true; }
-			if (height !== undefined) { this._renderArea[3] = height; updated = true; }
-		} else {
-			if (x !== undefined && y !== undefined && width !== undefined && height !== undefined) {
-				this._renderArea = [x, y, width, height];
-				updated = true;
-			}
-		}
 
-		if (updated) {
-			return this;
-		} else {
-			return this._renderArea;
-		}
 	},
 
 	renderAreaAutoSize: function (val, options) {
-		if (val !== undefined) {
-			this._renderAreaAutoSize = val;
-			this._renderAreaAutoSizeOptions = options;
-			return this;
-		}
 
-		return this._renderAreaAutoSize;
 	},
 
 	/**
@@ -310,38 +320,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * @return {*}
 	 */
 	renderCenter: function (x, y) {
-		if (x !== undefined && y !== undefined) {
-			// Adjust the passed x, y to account for this
-			// texture map's translation
-			var offset;
 
-			if (this._mode === 0) {
-				// 2d mode
-				offset = this._translate;
-			}
-
-			if (this._mode === 1) {
-				// Iso mode
-				offset = this._translate.toIso();
-			}
-
-			x -= offset.x;
-			y -= offset.y;
-
-			x = Math.floor(x);
-			y = Math.floor(y);
-
-			// Check if anything has changed
-			if (!this._renderCenter || this._renderCenter.x !== x || this._renderCenter.y !== y) {
-				// Co-ordinates are different from previous so
-				// update them and set the cache as dirty
-				this._renderCenter = new IgePoint(x, y, 0);
-				this._cacheDirty = true;
-			}
-			return this;
-		}
-
-		return this._renderCenter;
 	},
 
 	/**
@@ -378,13 +357,126 @@ var IgeTextureMap = IgeTileMap2d.extend({
 
 		// Draw each image that has been defined on the map
 		var mapData = this.map._mapData,
-			renderArea = this._renderArea,
 			x, y,
+			tx, ty,
+			xInt, yInt,
+			finalX, finalY,
+			finalPoint,
 			tileData, tileEntity = this._newTileEntity(), // TODO: This is wasteful, cache it?
-			entTranslate,
-			cacheCanvas, cacheContext;
+			sectionX, sectionY,
+			tempSectionX, tempSectionY,
+			_ctx,
+			regions, region, i;
 
-		if (!renderArea) {
+		if (this._autoSection > 0) {
+			if (this._cacheDirty) {
+				// We have a dirty cache so render the section cache
+				// data first
+				this._sections = [];
+				this._sectionCtx = [];
+
+				// Loop the map data
+				for (y in mapData) {
+					if (mapData.hasOwnProperty(y)) {
+						for (x in mapData[y]) {
+							if (mapData[y].hasOwnProperty(x)) {
+								xInt = parseInt(x);
+								yInt = parseInt(y);
+
+								// Calculate the tile's final resting position in absolute
+								// co-ordinates so we can work out which section canvas to
+								// paint the tile to
+								if (this._mountMode === 0) {
+									finalX = xInt;
+									finalY = yInt;
+								}
+
+								if (this._mountMode === 1) {
+									// Convert the tile x, y to isometric
+									tx = xInt * this._tileWidth;
+									ty = yInt * this._tileHeight;
+									finalX = (tx - ty) / this._tileWidth;
+									finalY = ((tx + ty) * 0.5) / this._tileHeight;
+									finalPoint = new IgePoint(finalX, finalY, 0);
+									//finalPoint.thisTo2d();
+
+									finalX = finalPoint.x;
+									finalY = finalPoint.y;
+								}
+
+								// Grab the tile data to paint
+								tileData = mapData[y][x];
+
+								// Work out which section to paint to
+								sectionX = Math.floor(finalX / this._autoSection);
+								sectionY = Math.floor(finalY / this._autoSection);
+
+								this._ensureSectionExists(sectionX, sectionY);
+
+								_ctx = this._sectionCtx[sectionX][sectionY];
+
+								if (tileData) {
+									regions = this._renderTile(
+										_ctx,
+										xInt,
+										yInt,
+										tileData,
+										tileEntity,
+										null,
+										sectionX,
+										sectionY
+									);
+
+									// Check if the tile overlapped another section
+									if (regions) {
+										// Loop the regions and re-render the tile on the
+										// other sections that it overlaps
+										for (i = 0; i < regions.length; i++) {
+											region = regions[i];
+
+											tempSectionX = sectionX;
+											tempSectionY = sectionY;
+
+											if (region.x) {
+												tempSectionX += region.x;
+											}
+
+											if (region.y) {
+												tempSectionY += region.y;
+											}
+
+											this._ensureSectionExists(tempSectionX, tempSectionY);
+											_ctx = this._sectionCtx[tempSectionX][tempSectionY];
+
+											// TODO: Set a clipping region or create a rectangle
+											// that the renderer can use to only draw the section
+											// of the tile that we need. This stops dithered out
+											// lines from bleeding into multi-draws
+
+											this._renderTile(
+												_ctx,
+												xInt,
+												yInt,
+												tileData,
+												tileEntity,
+												null,
+												tempSectionX,
+												tempSectionY
+											);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+
+				// Set the cache to clean!
+				this._cacheDirty = false;
+			}
+
+			this._drawSectionsToCtx(ctx);
+		} else {
 			// Render the whole map
 			for (y in mapData) {
 				if (mapData.hasOwnProperty(y)) {
@@ -400,119 +492,63 @@ var IgeTextureMap = IgeTileMap2d.extend({
 					}
 				}
 			}
-		} else {
-			// Check if we are tracking an entity that is used to
-			// set the center point of the render area
-			if (this._trackTranslateTarget) {
-				// Calculate which tile our character is currently "over"
-				if (this._trackTranslateTarget.isometric() === true) {
-					entTranslate = this._trackTranslateTarget._translate.toIso();
-				} else {
-					entTranslate = this._trackTranslateTarget._translate;
-				}
-
-				this.renderCenter(entTranslate.x, entTranslate.y);
-			}
-
-			//document.getElementById('debug').innerHTML = entTranslate.x + ', ' + entTranslate.y + ', ' + this._cacheDirty;
-
-			// Check if we have dirty cache and if not, just render the cache!
-			if (this._caching > 0) {
-				if (this._cacheDirty) {
-					if (this._caching === 1 && this._cache && this._cache[0]) {
-						// Mode 1, just a single central canvas
-						cacheCanvas = this._cache[0];
-						cacheContext = this._cacheCtx[0];
-
-						// Clear the canvas
-						this._cacheCtx[0].clearRect(0, 0, cacheCanvas.width, cacheCanvas.height);
-
-						// Adjust context
-						cacheContext.save();
-						cacheContext.translate((cacheCanvas.width / 2) - this._renderCenter.x, (cacheCanvas.height / 2) - this._renderCenter.y);
-
-						// Draw the new data to the cache canvas
-						this._renderMap(this._cacheCtx[0], tileEntity, mapData, renderArea);
-
-						cacheContext.restore();
-						// Draw the cached data to the main canvas
-						this._renderMapCache(ctx, 0, renderArea);
-
-						// Set the cache to clean
-						this._cacheDirty = false;
-					}
-				} else {
-					// Draw the cached data to the main canvas context
-					this._renderMapCache(ctx, 0, renderArea);
-					this._cacheDirty = false;
-				}
-			} else {
-				this._renderMap(ctx, tileEntity, mapData, renderArea);
-			}
 		}
 	},
 
-	_renderMapCache: function (ctx, index, renderArea) {
-		if (index === 0) {
-			ctx.drawImage(this._cache[index], -(renderArea[2] / 2) + this._renderCenter.x, -(renderArea[3] / 2) + this._renderCenter.y);
+	_ensureSectionExists: function (sectionX, sectionY) {
+		this._sections[sectionX] = this._sections[sectionX] || [];
+		this._sectionCtx[sectionX] = this._sectionCtx[sectionX] || [];
+
+		if (!this._sections[sectionX][sectionY]) {
+			this._sections[sectionX][sectionY] = document.createElement('canvas');
+			this._sections[sectionX][sectionY].width = (this._tileWidth * this._autoSection);
+			this._sections[sectionX][sectionY].height = (this._tileHeight * this._autoSection);
+
+			this._sectionCtx[sectionX][sectionY] = this._sections[sectionX][sectionY].getContext('2d');
+
+			// One-time translate the context
+			this._sectionCtx[sectionX][sectionY].translate(this._tileWidth / 2, this._tileHeight / 2);
 		}
 	},
 
-	_renderMap: function (ctx, tileEntity, mapData, renderArea) {
-		var renderCenter = this._renderCenter,
-			currentTile = this.pointToTile(this._renderCenter),
-			renderX = currentTile.x,
-			renderY = currentTile.y,
-			renderWidth = Math.ceil(renderArea[2] / this._tileWidth),
-			renderHeight = Math.ceil(renderArea[3] / this._tileHeight),
-			rect = new IgeRect(renderArea[0] + renderCenter.x, renderArea[1] + renderCenter.y, renderArea[2], renderArea[3]),
-			x, y,
-			tileData,
-			renderSize,
-			ratio;
+	_drawSectionsToCtx: function (ctx) {
+		var x, y, tileData;
 
-		// Generate the bounds rectangle
-		if (this._drawBounds) {
-			ctx.strokeStyle = '#ff0000';
-			ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
-		}
-		rect.x -= (this._tileWidth);
-		rect.y -= (this._tileHeight / 2);
-		rect.width += (this._tileWidth * 2);
-		rect.height += (this._tileHeight);
-
-		// Check if we are rendering in 2d or isometric mode
-		if (this._mountMode === 0) {
-			// 2d
-			// Render an area of the map rather than the whole map
-			for (y = renderY - Math.floor(renderHeight / 2) - 1; y <= renderY + Math.floor(renderHeight / 2) + 1; y++) {
-				if (mapData[y]) {
-					for (x = renderX - Math.floor(renderWidth / 2) - 1; x <= renderX + Math.floor(renderWidth / 2) + 1; x++) {
-						// Grab the tile data to paint
-						tileData = mapData[y][x];
-
-						if (tileData) {
-							this._renderTile(ctx, x, y, tileData, tileEntity, rect);
-						}
-					}
-				}
-			}
-		}
-
+		// Render the map sections
 		if (this._mountMode === 1) {
-			renderSize = Math.abs(renderWidth) > Math.abs(renderHeight) ? renderWidth : renderHeight;
-			ratio = 1;
+			// Translate the canvas for iso
+			ctx.translate(-(this._tileWidth / 2), -(this._tileHeight / 2));
+		}
 
-			// Isometric
-			// Render an area of the map rather than the whole map
-			for (y = renderY - Math.floor(renderSize * ratio); y <= renderY + Math.floor(renderSize * ratio); y++) {
-				if (mapData[y]) {
-					for (x = renderX - Math.floor(renderSize * ratio); x <= renderX + Math.floor(renderSize * ratio); x++) {
-						// Grab the tile data to paint
-						tileData = mapData[y][x];
+		for (x in this._sections) {
+			if (this._sections.hasOwnProperty(x)) {
+				for (y in this._sections[x]) {
+					if (this._sections[x].hasOwnProperty(y)) {
+						// Grab the canvas to paint
+						tileData = this._sections[x][y];
 
-						if (tileData) {
-							this._renderTile(ctx, x, y, tileData, tileEntity, rect);
+						ctx.drawImage(
+							tileData,
+							0, 0,
+							(this._tileWidth * this._autoSection),
+							(this._tileHeight * this._autoSection),
+							x * (this._tileWidth * this._autoSection),
+							y * (this._tileHeight * this._autoSection),
+							(this._tileWidth * this._autoSection),
+							(this._tileHeight * this._autoSection)
+						);
+
+						ige._drawCount++;
+
+						if (this._drawSections) {
+							// Draw a bounding rectangle around the section
+							ctx.strokeStyle = '#ff00f6';
+							ctx.strokeRect(
+								x * (this._tileWidth * this._autoSection),
+								y * (this._tileHeight * this._autoSection),
+								(this._tileWidth * this._autoSection),
+								(this._tileHeight * this._autoSection)
+							);
 						}
 					}
 				}
@@ -529,8 +565,11 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * @param tileEntity
 	 * @private
 	 */
-	_renderTile: function (ctx, x, y, tileData, tileEntity, rect) {
-		var finalX, finalY;
+	_renderTile: function (ctx, x, y, tileData, tileEntity, rect, sectionX, sectionY) {
+		var finalX, finalY, regions,
+			xm1, xp1, ym1, yp1, regObj,
+			xAdjust = this._mountMode === 1 ? this._tileWidth / 2 : 0,
+			yAdjust = this._mountMode === 1 ? this._tileHeight / 2 : 0;
 
 		// Translate the canvas to the tile position
 		if (this._mountMode === 0) {
@@ -549,6 +588,13 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			finalY = sy;
 		}
 
+		if (sectionX !== undefined) {
+			finalX -= sectionX * this._autoSection * this._tileWidth;
+		}
+		if (sectionY !== undefined) {
+			finalY -= sectionY * this._autoSection * this._tileHeight;
+		}
+
 		// If we have a rectangle region we are limiting to...
 		if (rect) {
 			// Check the bounds first
@@ -556,6 +602,46 @@ var IgeTextureMap = IgeTileMap2d.extend({
 				// The point is not inside the bounds, return
 				return;
 			}
+		}
+
+		if (finalX - (xAdjust) < 0) {
+			regions = regions || [];
+			regions.push({x: -1});
+			xm1 = true;
+
+			regObj = regObj || {};
+			regObj.x = -1;
+		}
+
+		if (finalX + (xAdjust) > (ctx.canvas.width - (this._tileWidth))) {
+			regions = regions || [];
+			regions.push({x: 1});
+			xp1 = true;
+
+			regObj = regObj || {};
+			regObj.x = 1;
+		}
+
+		if (finalY - (0) < 0) {
+			regions = regions || [];
+			regions.push({y: -1});
+			ym1 = true;
+
+			regObj = regObj || {};
+			regObj.y = -1;
+		}
+
+		if (finalY + (0) > (ctx.canvas.height - (this._tileHeight))) {
+			regions = regions || [];
+			regions.push({y: 1});
+			yp1 = true;
+
+			regObj = regObj || {};
+			regObj.y = 1;
+		}
+
+		if (xm1 || ym1 || xp1 || yp1) {
+			regions.push(regObj);
 		}
 
 		ctx.save();
@@ -568,6 +654,8 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		// Paint the texture
 		texture.render(ctx, tileEntity, ige._tickDelta);
 		ctx.restore();
+
+		return regions;
 	},
 
 	/**
