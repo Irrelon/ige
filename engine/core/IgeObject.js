@@ -859,31 +859,31 @@ var IgeObject = IgeEventingClass.extend({
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
 					case '_group':
-						str += ".group('" + this.group() + "')";
+						str += ".group(" + this.group() + ")";
 						break;
 					case '_drawBounds':
-						str += ".drawBounds('" + this.drawBounds() + "')";
+						str += ".drawBounds(" + this.drawBounds() + ")";
 						break;
 					case '_drawBoundsData':
-						str += ".drawBoundsData('" + this.drawBoundsData() + "')";
+						str += ".drawBoundsData(" + this.drawBoundsData() + ")";
 						break;
 					case '_drawMouse':
-						str += ".drawMouse('" + this.drawMouse() + "')";
+						str += ".drawMouse(" + this.drawMouse() + ")";
 						break;
 					case '_mode':
-						str += ".mode('" + this.mode() + "')";
+						str += ".mode(" + this.mode() + ")";
 						break;
 					case '_isometricMounts':
-						str += ".isometricMounts('" + this.isometricMounts() + "')";
+						str += ".isometricMounts(" + this.isometricMounts() + ")";
 						break;
 					case '_indestructible':
-						str += ".indestructible('" + this.indestructible() + "')";
+						str += ".indestructible(" + this.indestructible() + ")";
 						break;
 					case '_layer':
-						str += ".layer('" + this.layer() + "')";
+						str += ".layer(" + this.layer() + ")";
 						break;
 					case '_depth':
-						str += ".depth('" + this.depth() + "')";
+						str += ".depth(" + this.depth() + ")";
 						break;
 				}
 			}

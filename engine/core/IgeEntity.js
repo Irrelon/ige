@@ -1154,10 +1154,10 @@ var IgeEntity = IgeObject.extend([
 						str += ".size3d(" + this._geometry.x + ", " + this._geometry.y + ", " + this._geometry.z + ")";
 						break;
 					case '_deathTime':
-						str += ".deathTime('" + this.deathTime() + "')";
+						str += ".deathTime(" + this.deathTime() + ")";
 						break;
 					case '_highlight':
-						str += ".highlight('" + this.highlight() + "')";
+						str += ".highlight(" + this.highlight() + ")";
 						break;
 				}
 			}
