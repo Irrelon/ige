@@ -49,6 +49,21 @@ var IgeScene2d = IgeEntity.extend({
 	},
 
 	/**
+	 * Mounts this object to the passed object in the scenegraph. Makes sure
+	 * that the object being mounted to is not a viewport.
+	 * @param {IgeObject} obj
+	 * @return {*} Returns this on success or false on failure.
+	 */
+	mount: function (obj) {
+		if (obj) {
+			// Make sure we are not being asked to mount to a viewport
+			if (!obj.IgeViewport) {
+				this._super(obj);
+			}
+		}
+	},
+
+	/**
 	 * Gets / sets the flag that determines if the scene will ignore camera
 	 * transform values allowing the scene to remain static on screen
 	 * regardless of the camera transform.
