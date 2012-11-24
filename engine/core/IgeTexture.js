@@ -58,7 +58,15 @@ var IgeTexture = IgeEventingClass.extend({
 
 		if (!this._id) {
 			// The item has no id so generate one automatically
-			this._id = ige.newIdHex();
+			if (this._url) {
+				// Generate an ID from the URL string of the image
+				// this texture is using. Useful for always reproducing
+				// the same ID for the same texture :)
+				this._id = ige.newIdFromString(this._url);
+			} else {
+				// We don't have a URL so generate a random ID
+				this._id = ige.newIdHex();
+			}
 			ige.register(this);
 		}
 

@@ -541,6 +541,36 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
+	 * Generates a new 16-character hexadecimal ID based on
+	 * the passed string. Will always generate the same ID
+	 * for the same string.
+	 * @param {String} str A string to generate the ID from.
+	 * @return {String}
+	 */
+	newIdFromString: function (str) {
+		if (str !== undefined) {
+			var id,
+				val = 0,
+				count = str.length,
+				i;
+
+			for (i = 0; i < count; i++) {
+				val += str.charCodeAt(i) * Math.pow(10, 17);
+			}
+
+			id = (val).toString(16);
+
+			// Check if the ID is already in use
+			while (ige.$(id)) {
+				val += Math.pow(10, 17);
+				id = (val).toString(16);
+			}
+
+			return id;
+		}
+	},
+
+	/**
 	 * Starts the engine.
 	 * @param callback
 	 */
