@@ -367,21 +367,30 @@ var IgeTextureMap = IgeTileMap2d.extend({
 											this._ensureSectionExists(tempSectionX, tempSectionY);
 											_ctx = this._sectionCtx[tempSectionX][tempSectionY];
 
-											// TODO: Set a clipping region or create a rectangle
-											// that the renderer can use to only draw the section
-											// of the tile that we need. This stops dithered out
-											// lines from bleeding into multi-draws
+											this._sectionTileRegion = this._sectionTileRegion || [];
+											this._sectionTileRegion[tempSectionX] = this._sectionTileRegion[tempSectionX] || [];
+											this._sectionTileRegion[tempSectionX][tempSectionY] = this._sectionTileRegion[tempSectionX][tempSectionY] || [];
+											this._sectionTileRegion[tempSectionX][tempSectionY][xInt] = this._sectionTileRegion[tempSectionX][tempSectionY][xInt] || [];
 
-											this._renderTile(
-												_ctx,
-												xInt,
-												yInt,
-												tileData,
-												tileEntity,
-												null,
-												tempSectionX,
-												tempSectionY
-											);
+											if (!this._sectionTileRegion[tempSectionX][tempSectionY][xInt][yInt]) {
+												this._sectionTileRegion[tempSectionX][tempSectionY][xInt][yInt] = true;
+
+												// TODO: Set a clipping region or create a rectangle
+												// that the renderer can use to only draw the section
+												// of the tile that we need. This stops dithered out
+												// lines from bleeding into multi-draws
+
+												this._renderTile(
+													_ctx,
+													xInt,
+													yInt,
+													tileData,
+													tileEntity,
+													null,
+													tempSectionX,
+													tempSectionY
+												);
+											}
 										}
 									}
 								}
@@ -392,6 +401,9 @@ var IgeTextureMap = IgeTileMap2d.extend({
 
 				// Set the cache to clean!
 				this._cacheDirty = false;
+
+				// Remove the temporary section tile painted data
+				delete this._sectionTileRegion;
 			}
 
 			this._drawSectionsToCtx(ctx);

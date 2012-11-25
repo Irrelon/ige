@@ -43,7 +43,7 @@ var Client = IgeClass.extend({
 						.depth(0)
 						.tileWidth(40)
 						.tileHeight(40)
-						.drawGrid(3)
+						//.drawGrid(3)
 						//.drawMouse(true)
 						.translateTo(0, 0, 0)
 						.drawBounds(false)
