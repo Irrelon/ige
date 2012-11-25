@@ -108,7 +108,7 @@ var IgeUiProgressBar = IgeUiEntity.extend({
 	render: function (ctx) {
 		// Check for an auto-progress update
 		if (this._bindDataObject && this._bindDataProperty) {
-			if (!this._bindDataObject._alive) {
+			if (this._bindDataObject._alive === false) {
 				// The object we have bind data from has been
 				// destroyed so release our reference to it!
 				delete this._bindDataObject;
