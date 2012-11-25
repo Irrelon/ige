@@ -45,6 +45,7 @@ var Client = IgeClass.extend({
 						.tileHeight(40)
 						//.drawGrid(3)
 						//.drawMouse(true)
+						.autoSection(10)
 						.translateTo(-200, 0, 0)
 						.drawBounds(false)
 						.mount(self.scene1);
@@ -55,6 +56,7 @@ var Client = IgeClass.extend({
 						.tileWidth(40)
 						.tileHeight(40)
 						.drawGrid(3)
+						.autoSection(10)
 						//.drawMouse(true)
 						.drawBounds(false)
 						.isometricMounts(true)
