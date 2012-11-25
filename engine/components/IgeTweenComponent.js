@@ -33,6 +33,19 @@ var IgeTweenComponent = IgeClass.extend({
 	 * @return {Number} The index of the added tween or -1 on error.
 	 */
 	start: function (tween) {
+		// Setup the tween's step
+		if (this._setupStep(tween)) {
+			// Push the tween into the IgeTweenComponent's _tweens array
+			this._tweens.push(tween);
+
+			// Enable tweening on the IgeTweenComponent
+			this.enable();
+
+			return tween; // Return the tween
+		}
+	},
+
+	_setupStep: function (tween) {
 		var targetObj = tween._targetObj,
 			step = tween._steps[tween._currentStep],
 			propertyNameAndValue, // = tween._propertyObj
@@ -68,15 +81,9 @@ var IgeTweenComponent = IgeClass.extend({
 			tween._targetData = targetData;
 			tween._destTime = tween._endTime - tween._startTime;
 
-			this._tweens.push(tween);
-
-			// Enable tweening on this entity
-			this.enable();
-
 			return tween; // Return the tween
 		} else {
 			this.log('Cannot start tweening properties of the specified object "' + obj + '" because it does not exist!', 'error');
-			return -1;
 		}
 	},
 
@@ -179,7 +186,7 @@ var IgeTweenComponent = IgeClass.extend({
 					// the current time
 					if (deltaTime >= destTime) {
 						// The tween time indicates the tween has ended so set to
-						// the ending value and stop the tween
+						// the ending value
 						targets = tween._targetData;
 
 						for (targetIndex in targets) {
@@ -189,16 +196,22 @@ var IgeTweenComponent = IgeClass.extend({
 							}
 						}
 
-						// Now stop tweening this tween
-						tween.stop();
+						if (tween._steps.length === tween._currentStep + 1) {
+							// Now stop tweening this tween
+							tween.stop();
 
-						// If there is a callback, call it
-						if (typeof(tween._afterTween) === 'function') {
-							// Fire the beforeTween callback
-							tween._afterTween(tween);
+							// If there is a callback, call it
+							if (typeof(tween._afterTween) === 'function') {
+								// Fire the beforeTween callback
+								tween._afterTween(tween);
 
-							// Delete the callback so we don't store it any longer
-							delete tween._afterTween;
+								// Delete the callback so we don't store it any longer
+								delete tween._afterTween;
+							}
+						} else {
+							// Start the next step
+							tween._currentStep++;
+							this._setupStep(tween);
 						}
 					} else {
 						// The tween is still active, process the tween by passing it's details
