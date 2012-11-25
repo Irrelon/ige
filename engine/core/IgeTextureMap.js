@@ -451,8 +451,8 @@ var IgeTextureMap = IgeTileMap2d.extend({
 					if (this._sections[x].hasOwnProperty(y)) {
 						sectionRenderX = x * (this._tileWidth * this._autoSection);
 						sectionRenderY = y * (this._tileHeight * this._autoSection);
-						sectionAbsX = sectionRenderX - ige._currentCamera._translate.x;
-						sectionAbsY = sectionRenderY - ige._currentCamera._translate.y;
+						sectionAbsX = this._translate.x + sectionRenderX - ige._currentCamera._translate.x;
+						sectionAbsY = this._translate.y + sectionRenderY - ige._currentCamera._translate.y;
 
 						if (this._mountMode === 1) {
 							sectionAbsX -= (this._tileWidth / 2);
