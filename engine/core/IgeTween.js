@@ -51,12 +51,54 @@ var IgeTween = IgeClass.extend({
 	},
 
 	/**
+	 * Gets / sets the repeat mode for the tween. If the mode
+	 * is set to 1 the tween will repeat from the first step.
+	 * If set to 2 the tween will reverse the order of the steps
+	 * each time the repeat occurs. The count determines the
+	 * number of times the tween will be repeated before stopping.
+	 * Setting the count to -1 will make it repeat infinitely.
+	 * @param val
+	 * @param count
+	 * @return {*}
+	 */
+	repeatMode: function (val, count) {
+		if (val !== undefined) {
+			this._repeatMode = val;
+			this.repeatCount(count);
+			return this;
+		}
+
+		return this._repeatMode;
+	},
+
+	/**
+	 * Gets / sets the repeat count. The count determines the
+	 * number of times the tween will be repeated before stopping.
+	 * Setting the count to -1 will make it repeat infinitely.
+	 * This setting is used in conjunction with the repeatMode()
+	 * method. If you just set a repeat count and no mode then
+	 * the tween will not repeat.
+	 * @param val
+	 * @return {*}
+	 */
+	repeatCount: function (val) {
+		if (val !== undefined) {
+			this._repeatCount = val;
+			return this;
+		}
+
+		return this._repeatCount;
+	},
+
+	/**
 	 * Defines a step in a multi-stage tween.
 	 * @param {Object} propertyObj The properties to
 	 * tween during this step.
 	 * @param {Number=} durationMs The number of milliseconds
 	 * to spend tweening this step, or if not provided uses
 	 * the current tween durationMs setting.
+	 * @param {String=} easing The name of the easing method
+	 * to use during this step.
 	 * @return {*}
 	 */
 	step: function (propertyObj, durationMs, easing) {
