@@ -282,7 +282,6 @@ var IgeEntity = IgeObject.extend([
 			if (lockAspect) {
 				// Calculate the height from the change in width
 				var ratio = px / this._geometry.x;
-				debugger;
 				this.height(this._geometry.y * ratio);
 			}
 
