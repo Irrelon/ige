@@ -59,13 +59,14 @@ var IgeTween = IgeClass.extend({
 	 * the current tween durationMs setting.
 	 * @return {*}
 	 */
-	step: function (propertyObj, durationMs) {
+	step: function (propertyObj, durationMs, easing) {
 		if (propertyObj !== undefined) {
 			// Check if we have already been given a standard
 			// non-staged property
 			this._steps.push({
 				props: propertyObj,
-				durationMs: durationMs
+				durationMs: durationMs,
+				easing: easing
 			});
 		}
 

@@ -51,6 +51,7 @@ var IgeTweenComponent = IgeClass.extend({
 			propertyNameAndValue, // = tween._propertyObj
 			durationMs,
 			endTime,
+			easing,
 			propertyIndex,
 			targetData = [];
 
@@ -60,8 +61,19 @@ var IgeTweenComponent = IgeClass.extend({
 
 		if (targetObj) {
 			// Check / fill some option defaults
-			if (tween._startTime === undefined) { tween._startTime = ige._currentTime; }
-			durationMs = step.durationMs !== undefined ? step.durationMs : tween._durationMs;
+			if (tween._currentStep === 0) {
+				// Because we are on step zero we can check for a start time
+				if (tween._startTime === undefined) {
+					tween._startTime = ige._currentTime;
+				}
+			} else {
+				// We're not on step zero anymore so the new step start time
+				// is NOW!
+				tween._startTime = ige._currentTime;
+			}
+
+			durationMs = step.durationMs ? step.durationMs : tween._durationMs;
+			tween._selectedEasing = step.easing ? step.easing : tween._easing;
 
 			// Calculate the end time
 			tween._endTime = tween._startTime + durationMs;
@@ -180,7 +192,7 @@ var IgeTweenComponent = IgeClass.extend({
 
 					deltaTime = currentTime - tween._startTime; // Delta from start time to current time
 					destTime = tween._destTime;
-					easing = tween._easing;
+					easing = tween._selectedEasing;
 
 					// Check if the tween has reached it's destination based upon
 					// the current time
