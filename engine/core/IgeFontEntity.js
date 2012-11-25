@@ -146,7 +146,13 @@ var IgeFontEntity = IgeUiEntity.extend({
 	tick: function (ctx) {
 		// Check for an auto-progress update
 		if (this._bindDataObject && this._bindDataProperty) {
-			this._text = this._bindDataPreText + this._bindDataObject[this._bindDataProperty] + this._bindDataPostText;
+			if (!this._bindDataObject._alive) {
+				// The object we have bind data from has been
+				// destroyed so release our reference to it!
+				delete this._bindDataObject;
+			} else {
+				this._text = this._bindDataPreText + this._bindDataObject[this._bindDataProperty] + this._bindDataPostText;
+			}
 		}
 
 		this._super(ctx);
