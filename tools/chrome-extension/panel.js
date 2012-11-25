@@ -99,6 +99,7 @@ function addToSG(item) {
 
 // Setup the dev tool tabs
 $(document).ready(function () {
+	// Hook the tab clicks
 	$('.tab').click(function () {
 		// Remove active from all tab views
 		$('.tabView').removeClass('active');
@@ -113,6 +114,7 @@ $(document).ready(function () {
 		$('.leftPane').width(window.innerWidth - $('.rightPane').width());
 	});
 
+	// Hook the scenegraph refresh button
 	$('#refreshSceneGraph').click(function () {
 		// Store the left pane's scroll position
 		var leftPaneScroll = $('.leftPane').scrollTop();
@@ -129,6 +131,11 @@ $(document).ready(function () {
 			// Restore the scroll position
 			$('.leftPane').scrollTop(leftPaneScroll);
 		});
+	});
+
+	// Hook the transform value changes
+	$('#translateX, #translateY, #translateZ').change(function () {
+		chrome.devtools.inspectedWindow.eval("ige.$('" + selectedItem + "').translateTo(" + $('#translateX').val() + ", " + $('#translateY').val() + ", " + $('#translateZ').val() + ");");
 	});
 
 	// Load the scenegraph tab
