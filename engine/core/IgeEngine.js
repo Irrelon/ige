@@ -1218,13 +1218,13 @@ var IgeEngine = IgeEntity.extend({
 			}
 
 			// Get the current time in milliseconds
-			self.tickStart = timeStamp;
+			self._tickStart = timeStamp;
 
 			// Adjust the tickStart value by the difference between
 			// the server and the client clocks (this is only applied
 			// when running as the client - the server always has a
 			// clientNetDiff of zero)
-			self.tickStart -= self._clientNetDiff;
+			self._tickStart -= self._clientNetDiff;
 
 			if (!self.lastTick) {
 				// This is the first time we've run so set some
@@ -1233,7 +1233,7 @@ var IgeEngine = IgeEntity.extend({
 				self._tickDelta = 0;
 			} else {
 				// Calculate the frame delta
-				self._tickDelta = self.tickStart - self.lastTick;
+				self._tickDelta = self._tickStart - self.lastTick;
 			}
 
 			// Process any behaviours assigned to the engine
@@ -1258,7 +1258,7 @@ var IgeEngine = IgeEntity.extend({
 
 			// Record the lastTick value so we can
 			// calculate delta on the next tick
-			self.lastTick = self.tickStart;
+			self.lastTick = self._tickStart;
 			self._frames++;
 			self._dpt = self._drawCount;
 			self._drawCount = 0;

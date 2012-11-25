@@ -885,7 +885,7 @@ var IgeEntity = IgeObject.extend([
 	 */
 	tick: function (ctx, dontTransform) {
 		// Check if the entity should still exist
-		if (this._deathTime !== undefined && this._deathTime <= ige.tickStart) {
+		if (this._deathTime !== undefined && this._deathTime <= ige._tickStart) {
 			// The entity should be removed because it has died
 			this.destroy();
 		} else {
@@ -898,7 +898,7 @@ var IgeEntity = IgeObject.extend([
 
 				if (this._timeStream.length) {
 					// Process any interpolation
-					this._processInterpolate(ige.tickStart - ige.network.stream._renderLatency);
+					this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
 				}
 			}
 

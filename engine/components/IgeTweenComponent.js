@@ -1,3 +1,8 @@
+/**
+ * This component is already included in the IgeEngine (ige)
+ * instance and is not designed for use in any other way!
+ * It handles global tween processing on all tweening values.
+ */
 var IgeTweenComponent = IgeClass.extend({
 	classId: 'IgeTweenComponent',
 	componentId: 'tween',
@@ -24,23 +29,29 @@ var IgeTweenComponent = IgeClass.extend({
 
 	/**
 	 * Start tweening particular properties for the object.
-	 * @param tween
+	 * @param {IgeTween} tween The tween to start.
 	 * @return {Number} The index of the added tween or -1 on error.
 	 */
 	start: function (tween) {
 		var targetObj = tween._targetObj,
-			propertyNameAndValue = tween._propertyObj,
+			step = tween._steps[tween._currentStep],
+			propertyNameAndValue, // = tween._propertyObj
+			durationMs,
 			endTime,
 			propertyIndex,
 			targetData = [];
 
+		if (step) {
+			propertyNameAndValue = step.props;
+		}
+
 		if (targetObj) {
 			// Check / fill some option defaults
 			if (tween._startTime === undefined) { tween._startTime = ige._currentTime; }
-			if (tween._durationMs === undefined) { tween._durationMs = 0; }
+			durationMs = step.durationMs !== undefined ? step.durationMs : tween._durationMs;
 
 			// Calculate the end time
-			tween._endTime = tween._startTime + tween._durationMs;
+			tween._endTime = tween._startTime + durationMs;
 
 			for (propertyIndex in propertyNameAndValue) {
 				if (propertyNameAndValue.hasOwnProperty(propertyIndex)) {
@@ -56,19 +67,6 @@ var IgeTweenComponent = IgeClass.extend({
 
 			tween._targetData = targetData;
 			tween._destTime = tween._endTime - tween._startTime;
-
-			// Push the new tween into the tweens array
-			/*this._tweens.push({
-				targets: targetData, // The tween target properties and values
-				duration: durationMs, // The duration that the tween should run for
-				easing: options.easing, // Easing method to use
-				startTime: options.startTime, // The time to start the tween op
-				endTime: endTime, // The time the tween will end
-				destTime: endTime - options.startTime, // The difference between start and end times
-				beforeTween: options.beforeTween, // Callback before tween starts
-				afterTween: options.afterTween, // Callback when tween ends
-				_started: false // Internal flag for if tween has started yet
-			});*/
 
 			this._tweens.push(tween);
 
@@ -143,7 +141,7 @@ var IgeTweenComponent = IgeClass.extend({
 	 */
 	tick: function (ctx) {
 		if (this._tweens && this._tweens.length) {
-			var currentTime = ige.tickStart,
+			var currentTime = ige._tickStart,
 				tweens = this._tweens,
 				tweenCount = tweens.length,
 				tween,

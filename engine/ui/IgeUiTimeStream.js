@@ -9,7 +9,7 @@ var IgeUiTimeStream = IgeUiEntity.extend({
 		// Draw timeline
 		var i, text, xAdjust,
 			arr, arrCount, arrItem,
-			renderTime = ige.tickStart - ige.network.stream._renderLatency,
+			renderTime = ige._tickStart - ige.network.stream._renderLatency,
 			deltaTime;
 
 		this._super(ctx);

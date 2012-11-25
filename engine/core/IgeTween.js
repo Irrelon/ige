@@ -8,7 +8,9 @@ var IgeTween = IgeClass.extend({
 		// Create a new tween object and return it
 		// so the user can decide when to start it
 		this._targetObj = targetObj;
-		this._propertyObj = propertyObj !== undefined ? propertyObj : {};
+		this._steps = [];
+		this._currentStep = 0;
+		if (propertyObj !== undefined) { this.step(propertyObj); }
 		this._durationMs = durationMs !== undefined ? durationMs : 0;
 		this._started = false;
 
@@ -39,7 +41,32 @@ var IgeTween = IgeClass.extend({
 	 */
 	properties: function (propertyObj) {
 		if (propertyObj !== undefined) {
-			this._propertyObj = propertyObj;
+			// Reset any existing steps and add this new one
+			this._steps = [];
+			this._currentStep = 0;
+			this.step(propertyObj);
+		}
+
+		return this;
+	},
+
+	/**
+	 * Defines a step in a multi-stage tween.
+	 * @param {Object} propertyObj The properties to
+	 * tween during this step.
+	 * @param {Number=} durationMs The number of milliseconds
+	 * to spend tweening this step, or if not provided uses
+	 * the current tween durationMs setting.
+	 * @return {*}
+	 */
+	step: function (propertyObj, durationMs) {
+		if (propertyObj !== undefined) {
+			// Check if we have already been given a standard
+			// non-staged property
+			this._steps.push({
+				props: propertyObj,
+				durationMs: durationMs
+			});
 		}
 
 		return this;
