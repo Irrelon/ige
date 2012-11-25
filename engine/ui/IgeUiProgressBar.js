@@ -94,7 +94,23 @@ var IgeUiProgressBar = IgeUiEntity.extend({
 		return this._progress;
 	},
 
+	autoData: function (obj, propName) {
+		if (obj !== undefined && propName !== undefined) {
+			// Set the object and property to automatically
+			// track progress from
+			this._autoDataObject = obj;
+			this._autoDataProperty = propName;
+		}
+
+		return this;
+	},
+
 	render: function (ctx) {
+		// Check for an auto-progress update
+		if (this._autoDataObject && this._autoDataProperty) {
+			this.progress(parseInt(this._autoDataObject[this._autoDataProperty]));
+		}
+
 		var min = this._min,
 			max = this._max,
 			progress = this._progress,

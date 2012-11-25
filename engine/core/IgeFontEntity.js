@@ -23,6 +23,17 @@ var IgeFontEntity = IgeUiEntity.extend({
 		return this._text;
 	},
 
+	autoData: function (obj, propName, preText, postText) {
+		if (obj !== undefined && propName !== undefined) {
+			this._autoDataObject = obj;
+			this._autoDataProperty = propName;
+			this._autoDataPreText = preText || '';
+			this._autoDataPostText = postText || '';
+		}
+
+		return this;
+	},
+
 	textAlignX: function (val) {
 		if (val !== undefined) {
 			this._textAlignX = val;
@@ -130,6 +141,15 @@ var IgeFontEntity = IgeUiEntity.extend({
 		}
 
 		return this._nativeStrokeColor;
+	},
+
+	tick: function (ctx) {
+		// Check for an auto-progress update
+		if (this._autoDataObject && this._autoDataProperty) {
+			this._text = this._autoDataPreText + this._autoDataObject[this._autoDataProperty] + this._autoDataPostText;
+		}
+
+		this._super(ctx);
 	},
 
 	/**
