@@ -23,12 +23,12 @@ var IgeFontEntity = IgeUiEntity.extend({
 		return this._text;
 	},
 
-	autoData: function (obj, propName, preText, postText) {
+	bindData: function (obj, propName, preText, postText) {
 		if (obj !== undefined && propName !== undefined) {
-			this._autoDataObject = obj;
-			this._autoDataProperty = propName;
-			this._autoDataPreText = preText || '';
-			this._autoDataPostText = postText || '';
+			this._bindDataObject = obj;
+			this._bindDataProperty = propName;
+			this._bindDataPreText = preText || '';
+			this._bindDataPostText = postText || '';
 		}
 
 		return this;
@@ -145,8 +145,8 @@ var IgeFontEntity = IgeUiEntity.extend({
 
 	tick: function (ctx) {
 		// Check for an auto-progress update
-		if (this._autoDataObject && this._autoDataProperty) {
-			this._text = this._autoDataPreText + this._autoDataObject[this._autoDataProperty] + this._autoDataPostText;
+		if (this._bindDataObject && this._bindDataProperty) {
+			this._text = this._bindDataPreText + this._bindDataObject[this._bindDataProperty] + this._bindDataPostText;
 		}
 
 		this._super(ctx);

@@ -94,12 +94,12 @@ var IgeUiProgressBar = IgeUiEntity.extend({
 		return this._progress;
 	},
 
-	autoData: function (obj, propName) {
+	bindData: function (obj, propName) {
 		if (obj !== undefined && propName !== undefined) {
 			// Set the object and property to automatically
 			// track progress from
-			this._autoDataObject = obj;
-			this._autoDataProperty = propName;
+			this._bindDataObject = obj;
+			this._bindDataProperty = propName;
 		}
 
 		return this;
@@ -107,8 +107,8 @@ var IgeUiProgressBar = IgeUiEntity.extend({
 
 	render: function (ctx) {
 		// Check for an auto-progress update
-		if (this._autoDataObject && this._autoDataProperty) {
-			this.progress(parseInt(this._autoDataObject[this._autoDataProperty]));
+		if (this._bindDataObject && this._bindDataProperty) {
+			this.progress(parseInt(this._bindDataObject[this._bindDataProperty]));
 		}
 
 		var min = this._min,
