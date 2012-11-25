@@ -44,17 +44,10 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					self.obj[0]._translate.tween()
-						.step({
+						.properties({
 							x: 100
-						}, 2000, 'outElastic')
-						.step({
-							x: 0,
-							y: -100
-						}, 4000, 'inOutElastic')
-						.step({
-							x: -100,
-							y: 100
-						}, 1000, 'outElastic')
+						})
+						.duration(1000)
 						.start();
 				}
 			});
