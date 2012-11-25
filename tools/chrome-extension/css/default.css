@@ -197,11 +197,17 @@ li.selected ul {
 
 #tabStrip .tab {
     float: left;
-    padding: 4px;
+    padding: 5px;
     border-right: 1px #CCC solid;
     cursor: pointer;
 }
 
 #tabStrip .tab.active {
     background-color: #c2d3ff;
+}
+
+#refreshSceneGraph {
+    margin-top: -4;
+    margin-left: -4;
+    margin-right: -4;
 }

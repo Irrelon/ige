@@ -97,11 +97,6 @@ function addToSG(item) {
 	}
 }
 
-chrome.devtools.inspectedWindow.eval("ige.$('vp1').drawBounds(true).drawBoundsData(true);");
-chrome.devtools.inspectedWindow.eval('ige.getSceneGraphData(ige, true);', function (result, isException) {
-	addToSG(result);
-});
-
 // Setup the dev tool tabs
 $(document).ready(function () {
 	$('.tab').click(function () {
@@ -118,6 +113,24 @@ $(document).ready(function () {
 		$('.leftPane').width(window.innerWidth - $('.rightPane').width());
 	});
 
-	// Select the first tab
-	$('#igeSceneGraph').click();
+	$('#refreshSceneGraph').click(function () {
+		// Store the left pane's scroll position
+		var leftPaneScroll = $('.leftPane').scrollTop();
+
+		// Clear the scenegraph data
+		$('#sceneGraph_items').html('');
+
+		chrome.devtools.inspectedWindow.eval("ige.$('vp1').drawBounds(true).drawBoundsData(true);");
+		chrome.devtools.inspectedWindow.eval('ige.getSceneGraphData(ige, true);', function (result, isException) {
+			addToSG(result);
+
+			$('#igeSceneGraph').click();
+
+			// Restore the scroll position
+			$('.leftPane').scrollTop(leftPaneScroll);
+		});
+	});
+
+	// Load the scenegraph tab
+	$('#refreshSceneGraph').click();
 });
