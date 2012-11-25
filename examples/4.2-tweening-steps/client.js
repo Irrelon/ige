@@ -33,29 +33,34 @@ var Client = IgeClass.extend({
 						.drawBoundsData(true)
 						.mount(ige);
 
-					self.obj[0] = new IgeEntity()
-						.id('fairy0')
-						.depth(0)
-						.width(100)
-						.height(100)
-						.texture(gameTexture[0])
-						.drawBounds(false)
-						.drawBoundsData(false)
-						.mount(self.scene1);
+					for (i = 0; i < 10; i++) {
+						self.obj[i] = new IgeEntity()
+							.id('fairy' + i)
+							.depth(i)
+							.width(100)
+							.height(100)
+							.texture(gameTexture[0])
+							.drawBounds(false)
+							.drawBoundsData(false)
+							.mount(self.scene1);
 
-					self.obj[0]._translate.tween()
-						.step({
-							x: 100
-						}, 2000, 'outElastic')
-						.step({
-							x: 0,
-							y: -100
-						}, 4000, 'inOutElastic')
-						.step({
-							x: -100,
-							y: 100
-						}, 1000, 'outElastic')
-						.start();
+						self.obj[i]._translate.tween()
+							.step({
+								x: 100 + (i * 20),
+								y: 0 + (i * 20)
+							}, 1000, 'inOutSine')
+							.step({
+								x: 0,
+								y: -100
+							}, 1000, 'inOutSine')
+							.step({
+								x: -100 - (i * 20),
+								y: 100 + (i * 20)
+							}, 1000, 'inOutSine')
+							.repeatMode(2, -1)
+							.startTime(ige._currentTime + i)
+							.start();
+					}
 				}
 			});
 		});
