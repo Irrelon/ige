@@ -141,7 +141,10 @@ var IgeViewport = IgeEntity.extend([
 			if (this._drawBounds && ctx === ige._ctx) {
 				// Traverse the scenegraph and draw axis-aligned
 				// bounding boxes for every object
+				ctx.save();
+				ctx.translate(-this._translate.x, -this._translate.y);
 				this.drawAABBs(ctx, this._scene, 0);
+				ctx.restore();
 			}
 
 			// Check if we should draw the mouse position on this
