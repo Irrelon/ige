@@ -37,11 +37,11 @@ var Server = IgeClass.extend({
 					.drawBoundsData(true)
 					.mount(ige);
 
-				// Create 200 random tweening entities and add
+				// Create 100 random tweening entities and add
 				// mouse over and mouse out event listeners to
 				// them based on the functions we defined above,
 				// then add them to the scene!
-				for (i = 0; i < 200; i++) {
+				for (i = 0; i < 100; i++) {
 					self.obj[i] = new RandomTweener()
 						.id('fairy' + i)
 						.depth(i)
