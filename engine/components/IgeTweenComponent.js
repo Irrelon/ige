@@ -169,7 +169,8 @@ var IgeTweenComponent = IgeClass.extend({
 				easing,
 				item,
 				targets,
-				targetIndex;
+				targetIndex,
+				stopped;
 
 			// Loop the item's tweens
 			while (tweenCount--) {
@@ -209,16 +210,47 @@ var IgeTweenComponent = IgeClass.extend({
 						}
 
 						if (tween._steps.length === tween._currentStep + 1) {
-							// Now stop tweening this tween
-							tween.stop();
+							// The tween has ended, is the tween repeat mode enabled?
+							if (tween._repeatMode) {
+								// We have a repeat mode, lets check for a count
+								if (tween._repeatCount !== -1) {
+									// Check if the repeat count has reached the
+									// number of repeats we wanted
+									tween._repeatedCount++;
+									if (tween._repeatCount === tween._repeatedCount) {
+										// The tween has ended
+										stopped = true;
+									}
+								}
 
-							// If there is a callback, call it
-							if (typeof(tween._afterTween) === 'function') {
-								// Fire the beforeTween callback
-								tween._afterTween(tween);
+								if (!stopped) {
+									// Work out what mode we're running on
+									if (tween._repeatMode === 2) {
+										// We are on "reverse loop" mode so now
+										// reverse the tween's steps and then
+										// start from step zero
+										tween._steps.reverse();
+									}
 
-								// Delete the callback so we don't store it any longer
-								delete tween._afterTween;
+									tween._currentStep = 0;
+									this._setupStep(tween);
+								}
+							} else {
+								stopped = true;
+							}
+
+							if (stopped) {
+								// Now stop tweening this tween
+								tween.stop();
+
+								// If there is a callback, call it
+								if (typeof(tween._afterTween) === 'function') {
+									// Fire the beforeTween callback
+									tween._afterTween(tween);
+
+									// Delete the callback so we don't store it any longer
+									delete tween._afterTween;
+								}
 							}
 						} else {
 							// Start the next step

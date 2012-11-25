@@ -84,6 +84,7 @@ var IgeTween = IgeClass.extend({
 	repeatCount: function (val) {
 		if (val !== undefined) {
 			this._repeatCount = val;
+			this._repeatedCount = 0;
 			return this;
 		}
 
