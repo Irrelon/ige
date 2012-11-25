@@ -154,6 +154,31 @@ Array.prototype.eachReverse = function (callback) {
 /**
  * Make property non-enumerable.
  */
+Object.defineProperty(Array.prototype, 'destroyAll', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
+
+/**
+ * Iterates through an array's items and calls each item's
+ * destroy() method if it exists. Useful for destroying an
+ * array of IgeEntity instances.
+ */
+Array.prototype.destroyAll = function () {
+	var arrCount = this.length,
+		i;
+
+	for (i = arrCount - 1; i >= 0; i--) {
+		if (typeof(this[i].destroy) === 'function') {
+			this[i].destroy();
+		}
+	}
+};
+
+/**
+ * Make property non-enumerable.
+ */
 Object.defineProperty(Array.prototype, 'eachIsolated', {
 	enumerable:false,
 	writable:true,
