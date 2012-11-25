@@ -945,10 +945,10 @@ var IgeEntity = IgeObject.extend([
 				if (this._streamMode === 1) {
 					this.streamSync();
 				}
-			}
 
-			// Process children
-			this._super(ctx);
+				// Process children
+				this._super(ctx);
+			}
 
 			if (this.newFrame()) {
 				// Update all the old values to current values
