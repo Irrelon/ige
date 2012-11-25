@@ -460,7 +460,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 						}
 
 						// Check if the section is "on screen"
-						if ((sectionAbsX + sectionWidth >= -this._geometry.x2 && sectionAbsX - (this._tileWidth) <= this._geometry.x2) && (sectionAbsY + sectionHeight + (this._tileHeight / 2) >= -this._geometry.y2 && sectionAbsY <= this._geometry.y2)) {
+						if ((sectionAbsX + sectionWidth + (this._tileHeight / 2) >= -this._geometry.x2 && sectionAbsX - (this._tileWidth / 2) <= this._geometry.x2) && (sectionAbsY + sectionHeight + (this._tileHeight / 2) >= -this._geometry.y2 && sectionAbsY <= this._geometry.y2)) {
 							// Grab the canvas to paint
 							tileData = this._sections[x][y];
 
