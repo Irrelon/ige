@@ -33,39 +33,28 @@ var Client = IgeClass.extend({
 						.drawBoundsData(true)
 						.mount(ige);
 
-					// Define a function that will be called when the
-					// mouse cursor moves over one of our entities
-					overFunc = function () {
-						this.highlight(true);
-						this.drawBounds(true);
-						this.drawBoundsData(true);
-					};
+					self.obj[0] = new IgeEntity()
+						.id('fairy0')
+						.depth(0)
+						.width(100)
+						.height(100)
+						.texture(gameTexture[0])
+						.drawBounds(false)
+						.drawBoundsData(false)
+						.mount(self.scene1);
 
-					// Define a function that will be called when the
-					// mouse cursor moves away from one of our entities
-					outFunc = function () {
-						this.highlight(false);
-						this.drawBounds(false);
-						this.drawBoundsData(false);
-					};
-
-					// Create 100 random tweening entities and add
-					// mouse over and mouse out event listeners to
-					// them based on the functions we defined above,
-					// then add them to the scene!
-					for (i = 0; i < 100; i++) {
-						self.obj[0] = new RandomTweener()
-							.id('fairy' + i)
-							.depth(i)
-							.width(100)
-							.height(100)
-							.texture(gameTexture[0])
-							.drawBounds(false)
-							.drawBoundsData(false)
-							.mouseOver(overFunc)
-							.mouseOut(outFunc)
-							.mount(self.scene1);
-					}
+					self.obj[0]._translate.tween()
+						.step({
+							x: 100
+						}, null, 'outElastic')
+						.step({
+							x: 0
+						})
+						.step({
+							x: -100
+						})
+						.duration(1000)
+						.start();
 				}
 			});
 		});
