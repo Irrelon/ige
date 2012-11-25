@@ -375,11 +375,6 @@ var IgeTextureMap = IgeTileMap2d.extend({
 											if (!this._sectionTileRegion[tempSectionX][tempSectionY][xInt][yInt]) {
 												this._sectionTileRegion[tempSectionX][tempSectionY][xInt][yInt] = true;
 
-												// TODO: Set a clipping region or create a rectangle
-												// that the renderer can use to only draw the section
-												// of the tile that we need. This stops dithered out
-												// lines from bleeding into multi-draws
-
 												this._renderTile(
 													_ctx,
 													xInt,
