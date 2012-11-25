@@ -50,6 +50,7 @@ var Client = IgeClass.extend({
 						.autoSection(10)
 						.drawSectionBounds(true)
 						.isometricMounts(true)
+						//.translateTo(300, 300, 0)
 						.mount(self.mainScene);
 
 					var texIndex = self.textureMap1.addTexture(self.gameTexture.grassSheet);
