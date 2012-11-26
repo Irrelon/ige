@@ -899,6 +899,8 @@ var IgeEntity = IgeObject.extend([
 					// Process any interpolation
 					this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
 				}
+
+				this._oldTranslate = this._translate.clone();
 			}
 
 			if (!this._hidden && this._inView && (!this._parent || (this._parent._inView))) {
@@ -947,11 +949,6 @@ var IgeEntity = IgeObject.extend([
 
 				// Process children
 				this._super(ctx);
-			}
-
-			if (this.newFrame()) {
-				// Update all the old values to current values
-				this._oldTranslate = this._translate.clone();
 			}
 
 			// Update this object's current frame alternator value
