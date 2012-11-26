@@ -148,3 +148,5 @@ var IgeTiledComponent = IgeClass.extend({
 		}
 	}
 });
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeTiledComponent; }
