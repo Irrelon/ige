@@ -34,7 +34,7 @@ var IgeTweenComponent = IgeClass.extend({
 	 */
 	start: function (tween) {
 		// Setup the tween's step
-		if (this._setupStep(tween)) {
+		if (this._setupStep(tween, false)) {
 			// Push the tween into the IgeTweenComponent's _tweens array
 			this._tweens.push(tween);
 
