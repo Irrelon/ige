@@ -300,6 +300,10 @@ var IgeTileMap2d = IgeEntity.extend({
 		return this.map.collision(x, y, width, height);
 	},
 
+	tileOccupiedBy: function (x, y) {
+		return this.map.tileData(x, y);
+	},
+
 	mouseDown: function (val) {
 		if (val !== undefined) {
 			this._tileMapMouseDown = val;
