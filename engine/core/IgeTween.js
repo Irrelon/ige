@@ -13,6 +13,7 @@ var IgeTween = IgeClass.extend({
 		if (propertyObj !== undefined) { this.step(propertyObj); }
 		this._durationMs = durationMs !== undefined ? durationMs : 0;
 		this._started = false;
+		this._stepDirection = false;
 
 		// Sort out the options
 		if (options && options.easing) { this.easing(options.easing); } else { this.easing('none'); }
@@ -150,6 +151,34 @@ var IgeTween = IgeClass.extend({
 	afterTween: function (callback) {
 		if (callback !== undefined) {
 			this._afterTween = callback;
+		}
+
+		return this;
+	},
+
+	/**
+	 * Sets the method to be called just before a tween step has
+	 * started.
+	 * @param callback
+	 * @return {*}
+	 */
+	beforeStep: function (callback) {
+		if (callback !== undefined) {
+			this._beforeStep = callback;
+		}
+
+		return this;
+	},
+
+	/**
+	 * Sets the method to be called just after a tween step has
+	 * ended.
+	 * @param callback
+	 * @return {*}
+	 */
+	afterStep: function (callback) {
+		if (callback !== undefined) {
+			this._afterStep = callback;
 		}
 
 		return this;
