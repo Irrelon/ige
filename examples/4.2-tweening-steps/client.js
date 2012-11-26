@@ -33,7 +33,7 @@ var Client = IgeClass.extend({
 						.drawBoundsData(true)
 						.mount(ige);
 
-					for (i = 0; i < 10; i++) {
+					for (i = 0; i < 1; i++) {
 						self.obj[i] = new IgeEntity()
 							.id('fairy' + i)
 							.depth(i)
@@ -57,6 +57,12 @@ var Client = IgeClass.extend({
 								x: -100 - (i * 20),
 								y: 100 + (i * 20)
 							}, 1000, 'inOutSine')
+							.beforeStep(function (tween, step) {
+								console.log('beforeStep', step);
+							})
+							.afterStep(function (tween, step) {
+								console.log('afterStep', step);
+							})
 							.repeatMode(2, -1)
 							.startTime(ige._currentTime + i)
 							.start();
