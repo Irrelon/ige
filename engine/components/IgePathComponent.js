@@ -22,6 +22,7 @@ var IgePathComponent = IgeEventingClass.extend({
 		// Add the path behaviour to the entity
 		entity.addBehaviour('path', this._behaviour);
 	},
+
 	/**
 	 * Adds a path array containing path points (IgePoint instances)
 	 * to the path queue.
@@ -55,6 +56,25 @@ var IgePathComponent = IgeEventingClass.extend({
 		}
 
 		return this._currentPathIndex;
+	},
+
+	previousTargetPoint: function () {
+		if (this._paths.length) {
+			var tpI = this._targetCellIndex > 0 ? this._targetCellIndex - 1 : this._targetCellIndex,
+				entParent = this._entity._parent,
+				targetCell = this._paths[this._currentPathIndex][tpI];
+
+			return new IgePoint(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0);
+		}
+	},
+
+	currentTargetPoint: function () {
+		if (this._paths.length) {
+			var entParent = this._entity._parent,
+				targetCell = this._paths[this._currentPathIndex][this._targetCellIndex];
+
+			return new IgePoint(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0);
+		}
 	},
 
 	warnTime: function (val) {
