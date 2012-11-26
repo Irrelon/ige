@@ -228,7 +228,9 @@ var IgeTween = IgeClass.extend({
 	 */
 	stop: function () {
 		ige.tween.stop(this);
-		this._targetObj._tweenArr.pull(this);
+		if (this._targetObj._tweenArr) {
+			this._targetObj._tweenArr.pull(this);
+		}
 
 		return this;
 	},
