@@ -562,8 +562,13 @@ var IgeParticleEmitter = IgeEntity.extend({
 
 							// Add the current transform of the emitter to the final
 							// particle transforms
-							translateX += this._worldMatrix.matrix[2]; //this._translate.x;
-							translateY += this._worldMatrix.matrix[5]; //this._translate.y;
+							if (this._ignoreCamera) {
+								translateX += this._translate.x;
+								translateY += this._translate.y;
+							} else {
+								translateX += this._worldMatrix.matrix[2];
+								translateY += this._worldMatrix.matrix[5];
+							}
 							translateZ += this._translate.z;
 
 							scaleX *= this._scale.x;
