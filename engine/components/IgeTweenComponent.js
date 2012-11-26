@@ -45,7 +45,7 @@ var IgeTweenComponent = IgeClass.extend({
 		}
 	},
 
-	_setupStep: function (tween) {
+	_setupStep: function (tween, newTime) {
 		var targetObj = tween._targetObj,
 			step = tween._steps[tween._currentStep],
 			propertyNameAndValue, // = tween._propertyObj
@@ -61,7 +61,7 @@ var IgeTweenComponent = IgeClass.extend({
 
 		if (targetObj) {
 			// Check / fill some option defaults
-			if (tween._currentStep === 0) {
+			if (tween._currentStep === 0 && !newTime) {
 				// Because we are on step zero we can check for a start time
 				if (tween._startTime === undefined) {
 					tween._startTime = ige._currentTime;
@@ -170,6 +170,7 @@ var IgeTweenComponent = IgeClass.extend({
 				item,
 				targets,
 				targetIndex,
+				stepIndex,
 				stopped;
 
 			// Loop the item's tweens
@@ -186,6 +187,17 @@ var IgeTweenComponent = IgeClass.extend({
 
 							// Delete the callback so we don't store it any longer
 							delete tween._beforeTween;
+						}
+
+						// Check if we have a beforeStep callback to fire
+						if (typeof(tween._beforeStep) === 'function') {
+							// Fire the beforeStep callback
+							if (tween._stepDirection) {
+								stepIndex = tween._steps.length - (tween._currentStep + 1);
+							} else {
+								stepIndex = tween._currentStep;
+							}
+							tween._beforeStep(tween, stepIndex);
 						}
 
 						tween._started = true;
@@ -209,6 +221,17 @@ var IgeTweenComponent = IgeClass.extend({
 							}
 						}
 
+						// Check if we have a afterStep callback to fire
+						if (typeof(tween._afterStep) === 'function') {
+							// Fire the afterStep
+							if (tween._stepDirection) {
+								stepIndex = tween._steps.length - (tween._currentStep + 1);
+							} else {
+								stepIndex = tween._currentStep;
+							}
+							tween._afterStep(tween, stepIndex);
+						}
+
 						if (tween._steps.length === tween._currentStep + 1) {
 							// The tween has ended, is the tween repeat mode enabled?
 							if (tween._repeatMode) {
@@ -225,15 +248,38 @@ var IgeTweenComponent = IgeClass.extend({
 
 								if (!stopped) {
 									// Work out what mode we're running on
+									if (tween._repeatMode === 1) {
+										tween._currentStep = 0;
+									}
+
 									if (tween._repeatMode === 2) {
 										// We are on "reverse loop" mode so now
 										// reverse the tween's steps and then
 										// start from step zero
+										tween._stepDirection = !tween._stepDirection;
 										tween._steps.reverse();
+
+										tween._currentStep = 1;
 									}
 
-									tween._currentStep = 0;
-									this._setupStep(tween);
+									// Check if we have a stepsComplete callback to fire
+									if (typeof(tween._stepsComplete) === 'function') {
+										// Fire the stepsComplete callback
+										tween._stepsComplete(tween, tween._currentStep);
+									}
+
+									// Check if we have a beforeStep callback to fire
+									if (typeof(tween._beforeStep) === 'function') {
+										// Fire the beforeStep callback
+										if (tween._stepDirection) {
+											stepIndex = tween._steps.length - (tween._currentStep + 1);
+										} else {
+											stepIndex = tween._currentStep;
+										}
+										tween._beforeStep(tween, stepIndex);
+									}
+
+									this._setupStep(tween, true);
 								}
 							} else {
 								stopped = true;
@@ -245,7 +291,7 @@ var IgeTweenComponent = IgeClass.extend({
 
 								// If there is a callback, call it
 								if (typeof(tween._afterTween) === 'function') {
-									// Fire the beforeTween callback
+									// Fire the afterTween callback
 									tween._afterTween(tween);
 
 									// Delete the callback so we don't store it any longer
@@ -255,7 +301,19 @@ var IgeTweenComponent = IgeClass.extend({
 						} else {
 							// Start the next step
 							tween._currentStep++;
-							this._setupStep(tween);
+
+							// Check if we have a beforeStep callback to fire
+							if (typeof(tween._beforeStep) === 'function') {
+								// Fire the beforeStep callback
+								if (tween._stepDirection) {
+									stepIndex = tween._steps.length - (tween._currentStep + 1);
+								} else {
+									stepIndex = tween._currentStep;
+								}
+								tween._beforeStep(tween, stepIndex);
+							}
+
+							this._setupStep(tween, true);
 						}
 					} else {
 						// The tween is still active, process the tween by passing it's details
