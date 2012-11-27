@@ -299,6 +299,61 @@ Math.distance = function (x1, y1, x2, y2) {
 };
 
 /**
+ * Make property non-enumerable.
+ */
+Object.defineProperty(ImageData.prototype, 'pixelAt', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
+
+/**
+ * Augments the canvas context getImageData() object "ImageData" with the
+ * pixelAt() method. Gets the pixel color data for the given pixel at the
+ * x, y co-ordinates specified.
+ * @param {Number} x The x co-ordinate of the pixel.
+ * @param {Number} y The y co-ordinate of the pixel.
+ * @return {Object} An object containing the pixel color data in properties
+ * {r, g, b, a}.
+ */
+ImageData.prototype.pixelAt = function (x, y) {
+	var data = this.data,
+		pixelStart = (y * this.width * 4) + (x * 4);
+
+	return {
+		r: data[pixelStart],
+		g: data[pixelStart + 1],
+		b: data[pixelStart + 2],
+		a: data[pixelStart + 3]
+	};
+};
+
+/**
+ * Make property non-enumerable.
+ */
+Object.defineProperty(ImageData.prototype, 'isTransparent', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
+
+/**
+ * Augments the canvas context getImageData() object "ImageData" with the
+ * isTransparent() method. Determines if the pixel at the passed x, y is
+ * fully transparent or not.
+ * @param {Number} x The x co-ordinate of the pixel.
+ * @param {Number} y The y co-ordinate of the pixel.
+ * @return {Boolean} True if fully transparent, false if not.
+ * {r, g, b, a}.
+ */
+ImageData.prototype.isTransparent = function (x, y) {
+	var data = this.data,
+		pixelStart = (y * this.width * 4) + (x * 4);
+
+	return data[pixelStart + 3] === 0;
+};
+
+/**
  * Turn off the right-click default behaviour in the browser for the passed element.
  * @param obj
  */
