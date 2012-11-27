@@ -23,6 +23,11 @@ var Client = IgeClass.extend({
 			[128, 101, 96, 52, 'panel']
 		]);
 
+		// Because the shrubbery image has distinct bounds around each sprite image, we
+		// can ask the engine to detect the sprite bounds for us by not providing them
+		// so here we load the shrubbery image but do not pass any sprite area data!
+		self.gameTexture[3] = new IgeSpriteSheet('../assets/textures/tiles/shrubbery.png');
+
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
 			// Create the HTML canvas
@@ -58,7 +63,7 @@ var Client = IgeClass.extend({
 						// so that the entity's width and height now match that
 						// of the cell being used
 						.dimensionsFromCell()
-						.translateTo(0, 0, 0)
+						.translateTo(0, -100, 0)
 						.mount(self.scene1);
 
 					self.obj[1] = new IgeEntity()
@@ -80,7 +85,7 @@ var Client = IgeClass.extend({
 						// so that the entity's width and height now match that
 						// of the cell being used
 						.dimensionsFromCell()
-						.translateTo(100, 0, 0)
+						.translateTo(100, -100, 0)
 						.mount(self.scene1);
 
 					// Create one more entity and animate between the table and
@@ -106,7 +111,7 @@ var Client = IgeClass.extend({
 						// so that the entity's width and height now match that
 						// of the cell being used
 						.dimensionsFromCell()
-						.translateTo(100, 100, 0)
+						.translateTo(100, 0, 0)
 						.animation.define('test', ['panel', 'table', null], 1, -1, true)
 						.animation.select('test')
 						.mount(self.scene1);
@@ -119,8 +124,25 @@ var Client = IgeClass.extend({
 						.id('sprite4')
 						.texture(self.gameTexture[2])
 						.dimensionsFromTexture()
-						.translateTo(-100, 100, 0)
+						.translateTo(-100, 0, 0)
 						.mount(self.scene1);
+
+					var xAdj = 0,
+						xAdj2 = 0;
+					for (var i = 1; i < self.gameTexture[3].cellCount(); i++) {
+						if (i > 1) {
+							xAdj += self.gameTexture[3]._cells[i][2] / 2;
+						}
+
+						new IgeEntity()
+							.texture(self.gameTexture[3])
+							.cell(i)
+							.dimensionsFromCell()
+							.translateTo(-450 + xAdj + xAdj2, 130, 0)
+							.mount(self.scene1);
+
+						xAdj += (self.gameTexture[3]._cells[i][2] / 2) + 5;
+					}
 				}
 			});
 		});
