@@ -991,7 +991,7 @@ var IgeEntity = IgeObject.extend([
 
 					// This is the proper way to do this but firefox has a bug which I'm gonna report
 					// so instead I have to use ANOTHER translate call instead. So crap!
-					//ctx.rect(-this._geometry.x, -this._geometry.y, this._geometry.x, this._geometry.y);
+					//ctx.rect(-this._geometry.x2, -this._geometry.y2, this._geometry.x, this._geometry.y);
 					ctx.translate(-this._geometry.x2, -this._geometry.y2);
 					ctx.rect(0, 0, this._geometry.x, this._geometry.y);
 					if (this._backgroundPatternTrackCamera) {
