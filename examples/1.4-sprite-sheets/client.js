@@ -11,7 +11,7 @@ var Client = IgeClass.extend({
 
 		// Load the sprite sheet texture and store it in the gameTexture array
 		self.gameTexture[0] = new IgeSpriteSheet('../assets/textures/tiles/future-joy-tilee.png', [
-			// Format of the sprite area is x, y, width, height
+			// Format of the sprite bounding rectangle array is x, y, width, height
 			[5, 32, 22, 31],
 			[128, 101, 96, 52]
 		]);

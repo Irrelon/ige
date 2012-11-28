@@ -166,3 +166,8 @@ pip-log.txt
 
 .old*
 .deploy*
+
+npm-debug.log
+
+# Ignore all node_modules
+./server/node_modules*
