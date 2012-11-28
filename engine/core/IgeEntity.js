@@ -986,7 +986,14 @@ var IgeEntity = IgeObject.extend([
 					// Draw the fill
 					ctx.save();
 					ctx.fillStyle = this._backgroundPatternFill;
-					ctx.rect(-this._geometry.x2, -this._geometry.y2, this._geometry.x, this._geometry.y);
+
+					// TODO: When firefox has fixed their bug regarding negative rect co-ordinates, revert this change
+
+					// This is the proper way to do this but firefox has a bug which I'm gonna report
+					// so instead I have to use ANOTHER translate call instead. So crap!
+					//ctx.rect(-this._geometry.x, -this._geometry.y, this._geometry.x, this._geometry.y);
+					ctx.translate(-this._geometry.x2, -this._geometry.y2);
+					ctx.rect(0, 0, this._geometry.x, this._geometry.y);
 					if (this._backgroundPatternTrackCamera) {
 						ctx.translate(-ige._currentCamera._translate.x, -ige._currentCamera._translate.y);
 						ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
