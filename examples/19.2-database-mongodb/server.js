@@ -17,10 +17,26 @@ var Server = IgeClass.extend({
 							if (!err) {
 								console.log(rows);
 
-								// Remove the last insert we did
-								ige.mongo.remove('user', {id:1}, function (err, results) {
+								// Update the data
+								ige.mongo.update('user', {/* Search object */ username: 'test'}, {/* Update data object */ 'username':'foobarmoo!', 'newField':'somethingNew!!'}, function (err, results) {
 									if (!err) {
-										console.log('Removed successfully');
+										// Query the database to show the updated data
+										ige.mongo.findAll('user', {}, function (err, rows) {
+											if (!err) {
+												console.log(rows);
+
+												// Remove the insert we did
+												ige.mongo.remove('user', {'password':'moo'}, function (err, results) {
+													if (!err) {
+														console.log('Removed successfully');
+													} else {
+														console.log('Error', err);
+													}
+												});
+											} else {
+												console.log('Error', err);
+											}
+										});
 									} else {
 										console.log('Error', err);
 									}

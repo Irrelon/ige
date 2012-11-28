@@ -107,16 +107,19 @@ var IgeMongoDb = {
 
 	/**
 	 * Inserts a new row into the database.
-	 * @param coll The collection name to insert the row into.
-	 * @param json The JSON data to insert. Must be wrapped in an array to
+	 * @param {String} coll The collection name to operate on.
+	 * @param {Object} json The JSON data to insert. Must be wrapped in an array to
 	 * work e.g. [{myData: true}]
-	 * @param callback A callback method to call once the insert is complete.
+	 * @param {Function} callback The method to call once the DB operation
+	 * has been completed.
 	 */
 	insert: function (coll, json, callback) {
 		var self = this;
 
 		this.client.collection(coll, function (err, tempCollection) {
 			if (!err) {
+				self.collectionIdToId(coll, json);
+
 				// Got the collection
 				tempCollection.insert(json, function (err, docs) {
 					var i;
@@ -148,7 +151,14 @@ var IgeMongoDb = {
 		});
 	},
 
-	/* remove - Removes all rows that match the passed criteria */
+	/**
+	 * Removes all rows that match the passed criteria.
+	 * @param {String} coll The collection name to operate on.
+	 * @param {Object} json The object containing the fields that a record
+	 * must match to be removed.
+	 * @param {Function} callback The method to call once the DB operation
+	 * has been completed.
+	 */
 	remove: function (coll, json, callback) {
 		var self = this;
 
@@ -157,7 +167,7 @@ var IgeMongoDb = {
 				self.collectionIdToId(coll, json);
 
 				// Got the collection (or err)
-				tempCollection.remove(json, {safe:true}, function (err, tempCollection) {
+				tempCollection.remove(json, {safe: true, single: false}, function (err, tempCollection) {
 					// Got results array (or err)
 					// Callback the result array
 					if (typeof(callback) === 'function') {
@@ -170,7 +180,14 @@ var IgeMongoDb = {
 		});
 	},
 
-	/* findAll - Finds many rows of data and returns them as an array */
+	/**
+	 * Finds all records matching the search object and returns them as an array.
+	 * @param {String} coll The collection name to operate on.
+	 * @param {Object} json The object containing the fields that a record
+	 * must match to be returned by the find operation.
+	 * @param {Function} callback The method to call once the DB operation
+	 * has been completed.
+	 */
 	findAll: function (coll, json, callback) {
 		var self = this;
 
@@ -200,20 +217,134 @@ var IgeMongoDb = {
 				self.log('Mongo cannot run a findAll on collection ' + coll + ' with error: ' + err, 'error', tempCollection);
 			}
 		});
-
 	},
 
-	/* idToCollectionId - MongoDB specific - Finds the _id field returned by the database and
-	renames it to COLL_id where COLL = collection name e.g. with data from the "test" collection
-	the resulting object would have its ID stored in the field called test_id. This is very
-	useful when making Mongo data compatible with other databases whose tables will usually have
-	their ID (primary key) fields in the format of tableName_dbId */
+	/**
+	 * Performs a database update operation which will only update the fields
+	 * of records that match the searchJson object fields, with the corresponding
+	 * fields in the updateJson object. It will NOT overwrite the updated document
+	 * with only the fields in the updateJson object.
+	 * @param {String} coll The collection name to operate on.
+	 * @param {Object} searchJson The object containing the fields
+	 * that a record must match to be updated.
+	 * @param updateJson The object containing the fields to update
+	 * matching records with.
+	 * @param {Function} callback The method to call once the DB operation
+	 * has been completed.
+	 * @param {Object} options The options object containing three boolean
+	 * values: safe, multi and upsert. See the MongoDB docs for more information.
+	 */
+	update: function (coll, searchJson, updateJson, callback, options) {
+		var self = this;
+
+		// Set some options defaults
+		options = options || {
+			safe: true,
+			multi: true,
+			upsert: false
+		};
+
+		this.client.collection(coll, function (err, tempCollection) {
+			if (!err) {
+				var finalUpdateJson;
+
+				self.collectionIdToId(coll, searchJson);
+				self.collectionIdToId(coll, updateJson);
+
+				// Ensure we only update, not overwrite!
+				finalUpdateJson = {
+					'$set': updateJson
+				};
+
+				// Got the collection (or err)
+				tempCollection.update(searchJson, finalUpdateJson, options,  function (err, results) {
+					// Got the result cursor (or err)
+					// Callback the results
+					if (typeof(callback) === 'function') {
+						callback.apply(self, [err, results]);
+					}
+				});
+			} else {
+				self.log('Mongo cannot run a findAll on collection ' + coll + ' with error: ' + err, 'error', tempCollection);
+			}
+		});
+	},
+
+	/**
+	 * Performs a database update operation which overwrites any matching documents
+	 * with the document in the overwriteJson argument.
+	 * @param {String} coll The collection name to operate on.
+	 * @param {Object} searchJson The object containing the fields
+	 * that a record must match to be updated.
+	 * @param overwriteJson The object containing the fields to overwrite
+	 * matching records with.
+	 * @param {Function} callback The method to call once the DB operation
+	 * has been completed.
+	 * @param {Object} options The options object containing three boolean
+	 * values: safe, multi and upsert. See the MongoDB docs for more information.
+	 */
+	overwrite: function (coll, searchJson, overwriteJson, callback, options) {
+		var self = this;
+
+		// Set some options defaults
+		options = options || {
+			safe: true,
+			multi: true,
+			upsert: false
+		};
+
+		this.client.collection(coll, function (err, tempCollection) {
+			if (!err) {
+				self.collectionIdToId(coll, searchJson);
+				self.collectionIdToId(coll, overwriteJson);
+
+				// Got the collection (or err)
+				tempCollection.update(searchJson, overwriteJson, options,  function (err, tempCursor) {
+					// Got the result cursor (or err)
+					if (!err) {
+						tempCursor.toArray(function (err, results) {
+							var i;
+
+							if (results) {
+								for (i in results) {
+									if (results.hasOwnProperty(i)) {
+										self.idToCollectionId(coll, results[i]);
+									}
+								}
+							}
+						});
+					}
+
+					// Callback the results
+					if (typeof(callback) === 'function') {
+						callback.apply(self, [err, results]);
+					}
+				});
+			} else {
+				self.log('Mongo cannot run a findAll on collection ' + coll + ' with error: ' + err, 'error', tempCollection);
+			}
+		});
+	},
+
+	/**
+	 * MongoDB specific - Finds the _id field returned by the database and
+	 * renames it to COLL_id where COLL = collection name e.g. with data from the "test" collection
+	 * the resulting object would have its ID stored in the field called test_id. This is very
+	 * useful when making Mongo data compatible with other databases whose tables will usually have
+	 * their ID (primary key) fields in the format of tableName_dbId.
+	 * @param coll
+	 * @param obj
+	 */
 	idToCollectionId: function (coll, obj) {
 		obj[coll + '_db_id'] = String(obj._id);
 		delete obj._id;
 	},
 
-	/* collectionIdToId - MongoDB specific - Reverse of the idToCollectionId method */
+	/**
+	 * MongoDB specific - Reverse of the idToCollectionId method.
+	 * @param coll
+	 * @param obj
+	 */
 	collectionIdToId: function (coll, obj) {
 		if (obj[coll + '_db_id']) {
 			obj._id = new this.client.bson_serializer.ObjectID(obj[coll + '_db_id']);
