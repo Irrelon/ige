@@ -27,27 +27,32 @@ var IgeTiledComponent = IgeClass.extend({
 			scriptElem;
 
 		if (typeof(url) === 'string') {
-			scriptElem = document.createElement('script');
-			scriptElem.src = url;
-			scriptElem.onload = function () {
-				self.log('Tiled data loaded, processing...');
-				self._processData(tiled, callback);
-			};
-			document.getElementsByTagName('head')[0].appendChild(scriptElem);
+			if (!ige.isServer) {
+				scriptElem = document.createElement('script');
+				scriptElem.src = url;
+				scriptElem.onload = function () {
+					self.log('Tiled data loaded, processing...');
+					self._processData(tiled, callback);
+				};
+				document.getElementsByTagName('head')[0].appendChild(scriptElem);
+			} else {
+				this.log('URL-based Tiled data is only available client-side. If you want to load Tiled map data on the server please include the map file in your ServerConfig.js file and then specify the map\'s data object instead of the URL.', 'error');
+			}
 		} else {
 			self._processData(url, callback);
 		}
 	},
 
 	_processData: function (data, callback) {
-		var mapWidth = data.width,
+		var mapClass = ige.isServer === true ? IgeTileMap2d : IgeTextureMap,
+			mapWidth = data.width,
 			mapHeight = data.height,
 			layerArray = data.layers,
 			layerCount = layerArray.length,
 			layer,
 			layerData,
 			layerDataCount,
-			textureMaps = [],
+			maps = [],
 			layersById = {},
 			tileSetArray = data.tilesets,
 			tileSetCount = tileSetArray.length,
@@ -65,12 +70,12 @@ var IgeTiledComponent = IgeClass.extend({
 
 		// Define the function to call when all textures have finished loading
 		allTexturesLoadedFunc = function () {
-			// Create a texture map for each layer
+			// Create a map for each layer
 			for (i = 0; i < layerCount; i++) {
 				layer = layerArray[i];
 				layerData = layer.data;
 
-				textureMaps[i] = new IgeTextureMap()
+				maps[i] = new mapClass()
 					.id(layer.name)
 					.tileWidth(data.tilewidth)
 					.tileHeight(data.tilewidth)
@@ -78,15 +83,16 @@ var IgeTiledComponent = IgeClass.extend({
 
 				// Check if the layer should be isometric mounts enabled
 				if (data.orientation === 'isometric') {
-					textureMaps[i].isometricMounts(true);
+					maps[i].isometricMounts(true);
 				}
 
-				layersById[layer.name] = textureMaps[i];
-
+				layersById[layer.name] = maps[i];
 				tileSetCount = tileSetArray.length;
 
-				for (k = 0; k < tileSetCount; k++) {
-					textureMaps[i].addTexture(textures[k]);
+				if (!ige.isServer) {
+					for (k = 0; k < tileSetCount; k++) {
+						maps[i].addTexture(textures[k]);
+					}
 				}
 
 				// Loop through the layer data and paint the tiles
@@ -97,54 +103,67 @@ var IgeTiledComponent = IgeClass.extend({
 						z = x + (y * mapWidth);
 
 						if (layerData[z] > 0 && layerData[z] !== 2147483712) {
-							// Paint the tile
-							currentTexture = textureCellLookup[layerData[z]];
-							if (currentTexture) {
-								currentCell = layerData[z] - (currentTexture._tiledStartingId - 1);
-								textureMaps[i].paintTile(x, y, textureMaps[i]._textureList.indexOf(currentTexture), currentCell);
+							if (!ige.isServer) {
+								// Paint the tile
+								currentTexture = textureCellLookup[layerData[z]];
+								if (currentTexture) {
+									currentCell = layerData[z] - (currentTexture._tiledStartingId - 1);
+									maps[i].paintTile(x, y, maps[i]._textureList.indexOf(currentTexture), currentCell);
+								}
+							} else {
+								// Server-side we don't paint tiles on a texture map
+								// we just mark the map data so that it can be used
+								// to do things like path-finding and auto-creating
+								// static physics objects.
+								maps[i].occupyTile(x, y, 1, 1, layerData[z]);
 							}
 						}
 					}
 				}
 			}
 
-			callback(textureMaps, layersById);
+			callback(maps, layersById);
 		};
 
-		onLoadFunc = function (textures, tileSetCount, tileSetItem) {
-			return function () {
-				var i, cc,
-					cs = new IgeCellSheet(tileSetItem.image, this.width / tileSetItem.tilewidth, this.height / tileSetItem.tileheight)
-						.id(tileSetItem.name)
-						.on('loaded', function () {
-							cc = this.cellCount();
+		if (!ige.isServer) {
+			onLoadFunc = function (textures, tileSetCount, tileSetItem) {
+				return function () {
+					var i, cc,
+						cs = new IgeCellSheet(tileSetItem.image, this.width / tileSetItem.tilewidth, this.height / tileSetItem.tileheight)
+							.id(tileSetItem.name)
+							.on('loaded', function () {
+								cc = this.cellCount();
 
-							this._tiledStartingId = tileSetItem.firstgid;
-							// Fill the lookup array
-							for (i = 0; i < cc; i++) {
-								textureCellLookup[this._tiledStartingId + i] = this;
-							}
+								this._tiledStartingId = tileSetItem.firstgid;
+								// Fill the lookup array
+								for (i = 0; i < cc; i++) {
+									textureCellLookup[this._tiledStartingId + i] = this;
+								}
 
-							textures.push(this);
+								textures.push(this);
 
-							tileSetsLoaded++;
+								tileSetsLoaded++;
 
-							if (tileSetsLoaded === tileSetsTotal) {
-								// All textures loaded, fire processing function
-								allTexturesLoadedFunc();
-							}
-						});
+								if (tileSetsLoaded === tileSetsTotal) {
+									// All textures loaded, fire processing function
+									allTexturesLoadedFunc();
+								}
+							});
+				};
 			};
-		};
 
-		// Load the tile sets as textures
-		while (tileSetCount--) {
-			// Load the image into memory first so we can read the total width and height
-			image = new Image();
+			// Load the tile sets as textures
+			while (tileSetCount--) {
+				// Load the image into memory first so we can read the total width and height
+				image = new Image();
 
-			tileSetItem = tileSetArray[tileSetCount];
-			image.onload = onLoadFunc(textures, tileSetCount, tileSetItem);
-			image.src = tileSetItem.image;
+				tileSetItem = tileSetArray[tileSetCount];
+				image.onload = onLoadFunc(textures, tileSetCount, tileSetItem);
+				image.src = tileSetItem.image;
+			}
+		} else {
+			// We're on the server so no textures are actually loaded
+			allTexturesLoadedFunc();
 		}
 	}
 });
