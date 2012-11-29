@@ -999,9 +999,12 @@ var IgeEntity = IgeObject.extend([
 						ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
 					}
 					ctx.fill();
+					ige._drawCount++;
+
 					if (this._backgroundPatternIsoTile) {
 						ctx.translate(-Math.floor(this._backgroundPattern.image.width) / 2, -Math.floor(this._backgroundPattern.image.height / 2));
 						ctx.fill();
+						ige._drawCount++;
 					}
 
 					ctx.restore();
