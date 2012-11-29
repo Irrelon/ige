@@ -340,7 +340,9 @@ var IgePathComponent = IgeEventingClass.extend({
 			}
 		}
 
-		this.path._drawPathToCtx(this, ctx);
+		if (!ige.isServer) {
+			this.path._drawPathToCtx(this, ctx);
+		}
 	},
 
 	_drawPathToCtx: function (entity, ctx) {
