@@ -291,8 +291,8 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			if (this._cacheDirty) {
 				// We have a dirty cache so render the section cache
 				// data first
-				this._sections = [];
-				this._sectionCtx = [];
+				this._sections = this._sections || [];
+				this._sectionCtx = this._sectionCtx || [];
 
 				// Loop the map data
 				for (y in mapData) {
@@ -306,11 +306,13 @@ var IgeTextureMap = IgeTileMap2d.extend({
 								// co-ordinates so we can work out which section canvas to
 								// paint the tile to
 								if (this._mountMode === 0) {
+									// We're rendering a 2d map
 									finalX = xInt;
 									finalY = yInt;
 								}
 
 								if (this._mountMode === 1) {
+									// We're rendering an iso map
 									// Convert the tile x, y to isometric
 									tx = xInt * this._tileWidth;
 									ty = yInt * this._tileHeight;
