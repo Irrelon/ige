@@ -50,6 +50,7 @@ var IgeTiledComponent = IgeClass.extend({
 			layerArray = data.layers,
 			layerCount = layerArray.length,
 			layer,
+			layerType,
 			layerData,
 			layerDataCount,
 			maps = [],
@@ -66,59 +67,71 @@ var IgeTiledComponent = IgeClass.extend({
 			image,
 			textures = [],
 			allTexturesLoadedFunc,
-			i, k, x, y, z;
+			i, k, x, y, z,
+			ent;
 
 		// Define the function to call when all textures have finished loading
 		allTexturesLoadedFunc = function () {
 			// Create a map for each layer
 			for (i = 0; i < layerCount; i++) {
 				layer = layerArray[i];
-				layerData = layer.data;
+				layerType = layer.type;
 
-				maps[i] = new mapClass()
-					.id(layer.name)
-					.tileWidth(data.tilewidth)
-					.tileHeight(data.tilewidth)
-					.depth(i);
+				// Check if the layer is a tile layer or an object layer
+				if (layerType === 'tilelayer') {
+					layerData = layer.data;
 
-				// Check if the layer should be isometric mounts enabled
-				if (data.orientation === 'isometric') {
-					maps[i].isometricMounts(true);
-				}
+					maps[i] = new mapClass()
+						.id(layer.name)
+						.tileWidth(data.tilewidth)
+						.tileHeight(data.tilewidth)
+						.depth(i);
 
-				layersById[layer.name] = maps[i];
-				tileSetCount = tileSetArray.length;
+					maps[i].type = layerType;
 
-				if (!ige.isServer) {
-					for (k = 0; k < tileSetCount; k++) {
-						maps[i].addTexture(textures[k]);
+					// Check if the layer should be isometric mounts enabled
+					if (data.orientation === 'isometric') {
+						maps[i].isometricMounts(true);
 					}
-				}
 
-				// Loop through the layer data and paint the tiles
-				layerDataCount = layerData.length;
+					layersById[layer.name] = maps[i];
+					tileSetCount = tileSetArray.length;
 
-				for (y = 0; y < mapHeight; y++) {
-					for (x = 0; x < mapWidth; x++) {
-						z = x + (y * mapWidth);
+					if (!ige.isServer) {
+						for (k = 0; k < tileSetCount; k++) {
+							maps[i].addTexture(textures[k]);
+						}
+					}
 
-						if (layerData[z] > 0 && layerData[z] !== 2147483712) {
-							if (!ige.isServer) {
-								// Paint the tile
-								currentTexture = textureCellLookup[layerData[z]];
-								if (currentTexture) {
-									currentCell = layerData[z] - (currentTexture._tiledStartingId - 1);
-									maps[i].paintTile(x, y, maps[i]._textureList.indexOf(currentTexture), currentCell);
+					// Loop through the layer data and paint the tiles
+					layerDataCount = layerData.length;
+
+					for (y = 0; y < mapHeight; y++) {
+						for (x = 0; x < mapWidth; x++) {
+							z = x + (y * mapWidth);
+
+							if (layerData[z] > 0 && layerData[z] !== 2147483712) {
+								if (!ige.isServer) {
+									// Paint the tile
+									currentTexture = textureCellLookup[layerData[z]];
+									if (currentTexture) {
+										currentCell = layerData[z] - (currentTexture._tiledStartingId - 1);
+										maps[i].paintTile(x, y, maps[i]._textureList.indexOf(currentTexture), currentCell);
+									}
+								} else {
+									// Server-side we don't paint tiles on a texture map
+									// we just mark the map data so that it can be used
+									// to do things like path-finding and auto-creating
+									// static physics objects.
+									maps[i].occupyTile(x, y, 1, 1, layerData[z]);
 								}
-							} else {
-								// Server-side we don't paint tiles on a texture map
-								// we just mark the map data so that it can be used
-								// to do things like path-finding and auto-creating
-								// static physics objects.
-								maps[i].occupyTile(x, y, 1, 1, layerData[z]);
 							}
 						}
 					}
+				}
+
+				if (layerType === 'objectgroup') {
+					maps[i] = layer;
 				}
 			}
 
