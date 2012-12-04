@@ -205,7 +205,9 @@ var IgeTileMap2d = IgeEntity.extend({
 	},
 
 	_resizeEvent: function (event) {
-		this._geometry = this._parent._geometry.clone();
+		if (this._parent) {
+			this._geometry = this._parent._geometry.clone();
+		}
 		this._super(event);
 	},
 
