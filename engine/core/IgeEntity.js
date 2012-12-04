@@ -1,3 +1,4 @@
+// TODO: Should we add some sort of auto-recalculate flag so if the width / height / geom changes it autochanges the aabb and localAabb?
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
