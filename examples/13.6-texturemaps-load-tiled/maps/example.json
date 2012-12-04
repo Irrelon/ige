@@ -21,6 +21,30 @@
          "width":100,
          "x":0,
          "y":0
+        }, 
+        {
+         "height":100,
+         "name":"ObjectLayer1",
+         "objects":[
+                {
+                 "gid":5,
+                 "height":0,
+                 "name":"",
+                 "properties":
+                    {
+
+                    },
+                 "type":"",
+                 "width":0,
+                 "x":101,
+                 "y":51
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "width":100,
+         "x":0,
+         "y":0
         }],
  "orientation":"isometric",
  "properties":
@@ -31,7 +55,7 @@
  "tilesets":[
         {
          "firstgid":1,
-         "image":"..\/..\/assets\/textures\/tiles\/grassSheet.png",
+         "image":"..\/assets\/textures\/tiles\/grassSheet.png",
          "imageheight":50,
          "imagewidth":400,
          "margin":0,
@@ -46,7 +70,7 @@
         }, 
         {
          "firstgid":5,
-         "image":"..\/..\/assets\/textures\/tiles\/dirtSheet.png",
+         "image":"..\/assets\/textures\/tiles\/dirtSheet.png",
          "imageheight":50,
          "imagewidth":400,
          "margin":0,

@@ -21,6 +21,30 @@ var tiledExample1 = { "height":100,
          "width":100,
          "x":0,
          "y":0
+        }, 
+        {
+         "height":100,
+         "name":"ObjectLayer1",
+         "objects":[
+                {
+                 "gid":5,
+                 "height":0,
+                 "name":"",
+                 "properties":
+                    {
+
+                    },
+                 "type":"",
+                 "width":0,
+                 "x":0,
+                 "y":0
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "width":100,
+         "x":0,
+         "y":0
         }],
  "orientation":"isometric",
  "properties":

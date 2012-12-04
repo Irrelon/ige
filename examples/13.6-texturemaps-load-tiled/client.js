@@ -128,19 +128,27 @@ var Client = IgeClass.extend({
 								};
 
 							for (i = 0; i < layerArray.length; i++) {
-								// Before we mount the layer we will adjust the size of
-								// the layer's tiles because Tiled calculates tile width
-								// based on the line from the left-most point to the
-								// right-most point of a tile whereas IGE calculates the
-								// tile width as the length of one side of the tile square.
-								layerArray[i]
-									.tileWidth(40)
-									.tileHeight(40)
-									.autoSection(20)
-									//.isometricMounts(false)
-									.drawBounds(false)
-									.drawBoundsData(false)
-									.mount(self.backScene);
+								// Check if the layer is a tile layer
+								if (layerArray[i].type === 'tilelayer') {
+									// Before we mount the layer we will adjust the size of
+									// the layer's tiles because Tiled calculates tile width
+									// based on the line from the left-most point to the
+									// right-most point of a tile whereas IGE calculates the
+									// tile width as the length of one side of the tile square.
+									layerArray[i]
+										.tileWidth(40)
+										.tileHeight(40)
+										.autoSection(20)
+										//.isometricMounts(false)
+										.drawBounds(false)
+										.drawBoundsData(false)
+										.mount(self.backScene);
+								}
+
+								// Check if the layer is an "object" layer
+								if (layerArray[i].type === 'objectlayer') {
+									//layerArray[i].mount(self.backScene);
+								}
 							}
 
 							// Or if we wanted to only use the "DirtLayer" from the example
