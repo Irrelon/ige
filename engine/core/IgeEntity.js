@@ -130,6 +130,15 @@ var IgeEntity = IgeObject.extend([
 		}
 	},
 
+	/**
+	 * Gets the position of the mouse in world co-ordinates.
+	 * @param {IgeViewport=} viewport The viewport to use as the
+	 * base from which the mouse position is determined. If no
+	 * viewport is specified then the current viewport the engine
+	 * is rendering to is used instead.
+	 * @return {IgePoint} The mouse point relative to the world
+	 * center.
+	 */
 	mousePosWorld: function (viewport) {
 		viewport = viewport || ige._currentViewport;
 		var mp = this.mousePosAbsolute(viewport);
@@ -1027,6 +1036,7 @@ var IgeEntity = IgeObject.extend([
 					ctx.restore();
 				}
 			}
+
 
 			var texture = this._texture;
 
