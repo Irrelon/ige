@@ -94,6 +94,22 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
+	 * Rotate's the entity to point at the target point.
+	 * @param {IgePoint} point The point in world co-ordinates to
+	 * point the entity at.
+	 * @return {*}
+	 */
+	rotateToPoint: function (point) {
+		this.rotateTo(
+			this._rotate.x,
+			this._rotate.y,
+			-Math.atan2(this._translate.x - point.x, -this._translate.y - point.y) - this._parent._rotate.z
+		);
+
+		return this;
+	},
+
+	/**
 	 * Gets the position of the mouse relative to this entity not
 	 * taking into account viewport translation.
 	 * @param {IgeViewport=} viewport The viewport to use as the
