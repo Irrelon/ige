@@ -35,7 +35,7 @@ var Client = IgeClass.extend({
 						.drawBounds(true)
 						.mount(ige);
 
-					self.vp1.camera.translateTo(200, 0, 0);
+					self.vp1.camera.translateTo(200, 200, 0);
 
 					// Create an entity and mount it to the scene
 					self.obj[0] = new IgeEntity()
@@ -44,7 +44,7 @@ var Client = IgeClass.extend({
 						.width(30)
 						.height(30)
 						.texture(self.gameTexture.ship)
-						.translateTo(200, 0, 0)
+						.translateTo(200, 200, 0)
 						.addBehaviour('mouseAim', MouseAim)
 						.mount(self.scene1);
 				}
