@@ -103,7 +103,7 @@ var IgeEntity = IgeObject.extend([
 		this.rotateTo(
 			this._rotate.x,
 			this._rotate.y,
-			-Math.atan2(this._translate.x - point.x, -this._translate.y - point.y) - this._parent._rotate.z
+			(Math.atan2(this._translate.y - point.y, this._translate.x - point.x) - this._parent._rotate.z) + Math.radians(270)
 		);
 
 		return this;
