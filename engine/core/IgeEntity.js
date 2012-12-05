@@ -94,7 +94,7 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Rotate's the entity to point at the target point.
+	 * Rotates the entity to point at the target point.
 	 * @param {IgePoint} point The point in world co-ordinates to
 	 * point the entity at.
 	 * @return {*}
