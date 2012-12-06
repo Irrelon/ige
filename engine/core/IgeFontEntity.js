@@ -17,6 +17,26 @@ var IgeFontEntity = IgeUiEntity.extend({
 		this.cache(true);
 	},
 
+	width: function (val, lockAspect, modifier, noUpdate) {
+		if (val !== undefined) {
+			if (this._geometry.x !== val) {
+				this.clearCache();
+			}
+		}
+
+		return this._super(val, lockAspect, modifier, noUpdate);
+	},
+
+	height: function (val, lockAspect, modifier, noUpdate) {
+		if (val !== undefined) {
+			if (this._geometry.y !== val) {
+				this.clearCache();
+			}
+		}
+
+		return this._super(val, lockAspect, modifier, noUpdate);
+	},
+
 	text: function (text) {
 		if (text !== undefined) {
 			if (this._text !== text) {
