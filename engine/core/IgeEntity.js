@@ -1110,7 +1110,7 @@ var IgeEntity = IgeObject.extend([
 			var texture = this._texture;
 
 			// Check if the entity is visible based upon its opacity
-			if (texture) {
+			if (texture && texture._loaded) {
 				// Draw the entity image
 				texture.render(ctx, this, ige._tickDelta);
 
