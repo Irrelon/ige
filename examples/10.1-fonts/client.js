@@ -10,8 +10,8 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
-		gameTexture[0] = new IgeFontSheet('../assets/textures/fonts/eater_26pt.png', 4);
-		gameTexture[1] = new IgeFontSheet('../assets/textures/fonts/verdana_10px.png', 2);
+		gameTexture[0] = new IgeFontSheet('../assets/textures/fonts/eater_26pt.png');
+		gameTexture[1] = new IgeFontSheet('../assets/textures/fonts/verdana_10px.png');
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
