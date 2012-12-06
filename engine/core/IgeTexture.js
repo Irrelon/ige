@@ -327,7 +327,7 @@ var IgeTexture = IgeEventingClass.extend({
 	/**
 	 * Creates a new texture from a cell in the existing texture
 	 * and returns the new texture.
-	 * @param {Number} indexOrId The cell index or id to use.
+	 * @param {Number, String} indexOrId The cell index or id to use.
 	 * @return {*}
 	 */
 	textureFromCell: function (indexOrId) {
@@ -347,6 +347,14 @@ var IgeTexture = IgeEventingClass.extend({
 		return tex;
 	},
 
+	/**
+	 * Called by textureFromCell() when the texture is ready
+	 * to be processed. See textureFromCell() for description.
+	 * @param {IgeTexture} tex The new texture to paint to.
+	 * @param {Number, String} indexOrId The cell index or id
+	 * to use.
+	 * @private
+	 */
 	_textureFromCell: function (tex, indexOrId) {
 		var index,
 			cell,
@@ -395,6 +403,7 @@ var IgeTexture = IgeEventingClass.extend({
 
 			// Set the new texture's image to the canvas
 			tex._setImage(canvas);
+			tex._loaded = true;
 
 			// Fire the loaded event
 			setTimeout(function () {
