@@ -71,6 +71,36 @@ var IgeEntity = IgeObject.extend([
 		return this;
 	},
 
+	// TODO: DOCUMENT
+	cache: function (val) {
+		if (val !== undefined) {
+			this._cache = val;
+
+			if (val) {
+				// Create the off-screen canvas
+				this._cacheCanvas = document.createElement('canvas');
+				this._cacheCtx = this._cacheCanvas.getContext('2d');
+				this._cacheDirty = true;
+			} else {
+				// Remove the off-screen canvas
+				delete this._cacheCanvas;
+			}
+
+			return this;
+		}
+
+		return this._cache;
+	},
+
+	cacheDirty: function (val) {
+		if (val !== undefined) {
+			this._cacheDirty = val;
+			return this;
+		}
+
+		return this._cacheDirty;
+	},
+
 	/**
 	 * Gets the position of the mouse relative to this entity.
 	 * @param {IgeViewport=} viewport The viewport to use as the
@@ -964,8 +994,31 @@ var IgeEntity = IgeObject.extend([
 				}
 
 				if (!this._dontRender) {
-					// Render the entity
-					this._renderEntity(ctx, dontTransform);
+					// Check for cached version
+					if (this._cache) {
+						// Caching is enabled
+						if (!this._cacheDirty) {
+							this._renderCache(ctx);
+						} else {
+							// The cache is not clean so re-draw it
+							// Render the entity to the cache
+							var _canvas = this._cacheCanvas,
+								_ctx = this._cacheCtx;
+
+							_canvas.width = this._geometry.x;
+							_canvas.height = this._geometry.y;
+
+							// Translate to the center of the canvas
+							_ctx.translate(this._geometry.x2, this._geometry.y2);
+
+							this._renderEntity(_ctx, dontTransform);
+							this._renderCache(ctx);
+							this._cacheDirty = false;
+						}
+					} else {
+						// Render the entity
+						this._renderEntity(ctx, dontTransform);
+					}
 				}
 
 				// Process any automatic-mode stream updating required
@@ -1037,7 +1090,6 @@ var IgeEntity = IgeObject.extend([
 				}
 			}
 
-
 			var texture = this._texture;
 
 			// Check if the entity is visible based upon its opacity
@@ -1050,6 +1102,26 @@ var IgeEntity = IgeObject.extend([
 					texture.render(ctx, this);
 				}
 			}
+		}
+	},
+
+	_renderCache: function (ctx) {
+		// We have a clean cached version so output that
+		ctx.drawImage(
+			this._cacheCanvas,
+			-this._geometry.x2, -this._geometry.y2
+		);
+
+		ige._drawCount++;
+
+		if (this._highlight) {
+			ctx.globalCompositeOperation = 'lighter';
+			ctx.drawImage(
+				this._cacheCanvas,
+				-this._geometry.x2, -this._geometry.y2
+			);
+
+			ige._drawCount++;
 		}
 	},
 
