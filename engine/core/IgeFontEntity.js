@@ -42,8 +42,10 @@ var IgeFontEntity = IgeUiEntity.extend({
 
 	textAlignX: function (val) {
 		if (val !== undefined) {
+			if (this._textAlignX !== val) {
+				this.clearCache();
+			}
 			this._textAlignX = val;
-			this.clearCache();
 			return this;
 		}
 		return this._textAlignX;
@@ -51,8 +53,10 @@ var IgeFontEntity = IgeUiEntity.extend({
 
 	textAlignY: function (val) {
 		if (val !== undefined) {
+			if (this._textAlignY !== val) {
+				this.clearCache();
+			}
 			this._textAlignY = val;
-			this.clearCache();
 			return this;
 		}
 		return this._textAlignY;
@@ -60,8 +64,10 @@ var IgeFontEntity = IgeUiEntity.extend({
 
 	textLineSpacing: function (val) {
 		if (val !== undefined) {
+			if (this._textLineSpacing !== val) {
+				this.clearCache();
+			}
 			this._textLineSpacing = val;
-			this.clearCache();
 			return this;
 		}
 		return this._textLineSpacing;
@@ -78,10 +84,10 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	colorOverlay: function (val) {
 		if (val !== undefined) {
+			if (this._colorOverlay !== val) {
+				this.clearCache();
+			}
 			this._colorOverlay = val;
-
-			// Kill the cache for this text
-			this.clearCache();
 			return this;
 		}
 
@@ -111,6 +117,9 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	nativeFont: function (val) {
 		if (val !== undefined) {
+			if (this._nativeFont !== val) {
+				this.clearCache();
+			}
 			this._nativeFont = val;
 
 			// Assign the native font smart texture
@@ -131,6 +140,9 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	nativeStroke: function (val) {
 		if (val !== undefined) {
+			if (this._nativeStroke !== val) {
+				this.clearCache();
+			}
 			this._nativeStroke = val;
 			return this;
 		}
@@ -146,6 +158,9 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	nativeStrokeColor: function (val) {
 		if (val !== undefined) {
+			if (this._nativeStrokeColor !== val) {
+				this.clearCache();
+			}
 			this._nativeStrokeColor = val;
 			return this;
 		}
