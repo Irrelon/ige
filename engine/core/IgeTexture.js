@@ -331,7 +331,27 @@ var IgeTexture = IgeEventingClass.extend({
 	 * @return {*}
 	 */
 	textureFromCell: function (indexOrId) {
-		var index;
+		var tex = new IgeTexture(),
+			self = this;
+
+		if (this._loaded) {
+			this._textureFromCell(tex, indexOrId);
+		} else {
+			// The texture has not yet loaded, return the new texture and set a listener to handle
+			// when this texture has loaded so we can assign the texture's image properly
+			this.on('loaded', function () {
+				self._textureFromCell(tex, indexOrId);
+			})
+		}
+
+		return false;
+	},
+
+	_textureFromCell: function (tex, indexOrId) {
+		var index,
+			cell,
+			canvas,
+			ctx;
 
 		if (typeof(indexOrId) === 'string') {
 			index = this.cellIdToIndex(indexOrId);
@@ -342,10 +362,9 @@ var IgeTexture = IgeEventingClass.extend({
 		if (this._cells[index]) {
 			// Create a new IgeTexture, then draw the existing cell
 			// to it's internal canvas
-			var cell = this._cells[index],
-				tex = new IgeTexture(),
-				canvas = document.createElement('canvas'),
-				ctx = canvas.getContext('2d');
+			cell = this._cells[index];
+			canvas = document.createElement('canvas');
+			ctx = canvas.getContext('2d');
 
 			// Set smoothing mode
 			if (!this._smoothing) {
@@ -377,13 +396,16 @@ var IgeTexture = IgeEventingClass.extend({
 			// Set the new texture's image to the canvas
 			tex._setImage(canvas);
 
-			// Returnt the new texture
+			// Fire the loaded event
+			setTimeout(function () {
+				tex.emit('loaded');
+			}, 1);
+
+			// Return the new texture
 			return tex;
 		} else {
-			this.log('Unable to create new texture from passed cell index because the cell does not exist!', 'warning');
+			this.log('Unable to create new texture from passed cell index (' + indexOrId + ') because the cell does not exist!', 'warning');
 		}
-
-		return false;
 	},
 
 	/**
