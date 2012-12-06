@@ -25,13 +25,15 @@ var IgeSpriteSheet = IgeTexture.extend({
 				for (i = 0; i < cells.length; i++) {
 					self._cells[i + 1] = cells[i];
 
-					// Check cell for division by 2 modulus warnings
-					if (cells[i][2] % 2) {
-						this.log('This texture\'s cell definition defines a cell width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning', cells[i]);
-					}
+					if (this._checkModulus) {
+						// Check cell for division by 2 modulus warnings
+						if (cells[i][2] % 2) {
+							this.log('This texture\'s cell definition defines a cell width is not divisible by 2 which can cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning', cells[i]);
+						}
 
-					if (cells[i][3] % 2) {
-						this.log('This texture\'s cell definition defines a cell height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning', cells[i]);
+						if (cells[i][3] % 2) {
+							this.log('This texture\'s cell definition defines a cell height is not divisible by 2 which can cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning', cells[i]);
+						}
 					}
 				}
 			} else {
