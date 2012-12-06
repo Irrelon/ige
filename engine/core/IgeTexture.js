@@ -344,7 +344,7 @@ var IgeTexture = IgeEventingClass.extend({
 			})
 		}
 
-		return false;
+		return tex;
 	},
 
 	_textureFromCell: function (tex, indexOrId) {
@@ -400,9 +400,6 @@ var IgeTexture = IgeEventingClass.extend({
 			setTimeout(function () {
 				tex.emit('loaded');
 			}, 1);
-
-			// Return the new texture
-			return tex;
 		} else {
 			this.log('Unable to create new texture from passed cell index (' + indexOrId + ') because the cell does not exist!', 'warning');
 		}
