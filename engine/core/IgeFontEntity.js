@@ -12,10 +12,16 @@ var IgeFontEntity = IgeUiEntity.extend({
 		this._textAlignX = 1;
 		this._textAlignY = 1;
 		this._textLineSpacing = 0;
+
+		// Enable caching by default for font entities!
+		this.cache(true);
 	},
 
 	text: function (text) {
 		if (text !== undefined) {
+			if (this._text !== text) {
+				this.clearCache();
+			}
 			this._text = text;
 			return this;
 		}
@@ -86,6 +92,10 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 * Clears the texture cache for this entity's text string.
 	 */
 	clearCache: function () {
+		if (this._cache) {
+			this._cacheDirty = true;
+		}
+
 		if (this._texture && this._texture._caching && this._texture._cacheText[this._text]) {
 			delete this._texture._cacheText[this._text];
 		}
@@ -151,7 +161,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 				// destroyed so release our reference to it!
 				delete this._bindDataObject;
 			} else {
-				this._text = this._bindDataPreText + this._bindDataObject[this._bindDataProperty] + this._bindDataPostText;
+				this.text(this._bindDataPreText + this._bindDataObject[this._bindDataProperty] + this._bindDataPostText)
 			}
 		}
 

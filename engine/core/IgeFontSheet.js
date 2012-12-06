@@ -12,23 +12,11 @@
 var IgeFontSheet = IgeTexture.extend({
 	classId: 'IgeFontSheet',
 
-	init: function (url, cacheCount) {
+	init: function (url) {
 		this._super(url);
 
-		if (typeof(cacheCount) === 'undefined') {
-			// Default to storing one cached text image
-			cacheCount = 1;
-		}
-
-		if (cacheCount) {
-			// Setup an array that will hold cached data
-			this._cacheCount = cacheCount;
-			this._cacheIndex = -1;
-			this._cacheText = {};
-			this._cacheIndexes = [];
-			this._cacheCanvas = [];
-
-			this._caching = true;
+		if (arguments[1]) {
+			this.log('Font sheets no longer accept a caching limit value. All font output is now cached by default via the actual font entity - fontEntity.cache(true);', 'warning');
 		}
 
 		// Set the _noDimensions flag which tells any entity
@@ -116,7 +104,6 @@ var IgeFontSheet = IgeTexture.extend({
 	render: function (ctx, entity) {
 		if (entity._text && this._loaded) {
 			var _ctx = ctx,
-				cacheIndex,
 				text = entity._text,
 				lineText,
 				lineArr = [],
@@ -186,17 +173,6 @@ var IgeFontSheet = IgeTexture.extend({
 
 			// Handle text cached alignment x
 			switch (entity._textAlignX) {
-				/*case 0: // Align left
-					renderStartX = -entity._geometry.x2;
-				break;
-
-				case 1: // Align center
-					renderStartX = -lineWidth[lineIndex] / 2;
-				break;
-
-				case 2: // Align right
-					renderStartX = entity._geometry.x2 -lineWidth[lineIndex];
-				break;*/
 				case 0: // Align left
 					renderStartX = -entity._geometry.x2;
 					break;
@@ -210,73 +186,6 @@ var IgeFontSheet = IgeTexture.extend({
 					break;
 			}
 
-			// If we have caching enabled, check for the text
-			// in cache. If we don't have it, render it
-			if (this._caching) {
-				// Check for an existing cache of this text
-				cacheIndex = this._cacheText[text];
-				if (typeof(cacheIndex) !== 'undefined') {
-					// We have a cache of this text so just draw it
-					// and return
-					_ctx.drawImage(
-						this._cacheCanvas[cacheIndex],
-						0, // texture x
-						0, // texture y
-						this._cacheCanvas[cacheIndex].width, // texture width
-						this._cacheCanvas[cacheIndex].height, // texture height
-						Math.floor(renderStartX), // render x TODO: Performance - Cache these?
-						Math.floor(renderStartY), // render y
-						this._cacheCanvas[cacheIndex].width, // render width
-						this._cacheCanvas[cacheIndex].height // render height
-					);
-
-					ige._drawCount++;
-					return;
-				} else {
-					// We don't have this text cached so advance
-					// the cache index and store this text in the cache
-					this._cacheIndex++;
-
-					if (this._cacheIndex >= this._cacheCount) {
-						// Assign the new cache to the last cache item
-						this._cacheIndex = this._cacheCount - 1;
-					}
-
-					// Check if some other text was occupying this index first
-					if (this._cacheIndexes[this._cacheIndex]) {
-						// Remove old entry
-						delete this._cacheText[this._cacheIndexes[this._cacheIndex]];
-					}
-
-					// Log which cache index we are using for this text
-					this._cacheText[text] = this._cacheIndex;
-					this._cacheIndexes[this._cacheIndex] = text;
-
-					// Create a new canvas for this cached text
-					this._cacheCanvas[this._cacheIndex] = document.createElement('canvas');
-					this._cacheCanvas[this._cacheIndex].width = totalWidth;
-					this._cacheCanvas[this._cacheIndex].height = totalHeight;
-
-					_ctx = this._cacheCanvas[this._cacheIndex].getContext('2d');
-					_ctx.translate(totalWidth / 2, totalHeight / 2);
-
-					// Handle text alignment y
-					switch (entity._textAlignY) {
-						case 0: // Align top
-							masterY = (entity._textLineSpacing * ((lineArr.length - 1) / 2));//-totalHeight / 2;
-						break;
-
-						case 1: // Align middle
-							masterY = (entity._textLineSpacing * ((lineArr.length - 1) / 2));
-						break;
-
-						case 2: // Align bottom
-							masterY = (entity._textLineSpacing * ((lineArr.length - 1) / 2));//totalHeight / 2 + (entity._textLineSpacing * (lineArr.length - 1));
-						break;
-					}
-				}
-			}
-
 			/*_ctx.strokeStyle = '#ff0000';
 			_ctx.strokeRect(masterX + (-totalWidth / 2), masterY + renderStartY, totalWidth, totalHeight);*/
 
@@ -285,34 +194,18 @@ var IgeFontSheet = IgeTexture.extend({
 				renderY = (lineHeight * lineIndex) + (entity._textLineSpacing * (lineIndex));
 
 				// Handle text alignment x
-				if (!this._caching) {
-					switch (entity._textAlignX) {
-						case 0: // Align left
-							renderX = -entity._geometry.x2;
-						break;
+				switch (entity._textAlignX) {
+					case 0: // Align left
+						renderX = -entity._geometry.x2;
+					break;
 
-						case 1: // Align center
-							renderX = -lineWidth[lineIndex] / 2;
-						break;
+					case 1: // Align center
+						renderX = -lineWidth[lineIndex] / 2;
+					break;
 
-						case 2: // Align right
-							renderX = entity._geometry.x2 -lineWidth[lineIndex];
-						break;
-					}
-				} else {
-					switch (entity._textAlignX) {
-						case 0: // Align left
-							renderX = -totalWidth / 2;
-							break;
-
-						case 1: // Align center
-							renderX = -lineWidth[lineIndex] / 2;
-							break;
-
-						case 2: // Align right
-							renderX = (totalWidth / 2) -lineWidth[lineIndex];
-							break;
-					}
+					case 2: // Align right
+						renderX = entity._geometry.x2 -lineWidth[lineIndex];
+					break;
 				}
 
 				for (characterIndex = 0; characterIndex < lineText.length; characterIndex++) {
@@ -346,7 +239,6 @@ var IgeFontSheet = IgeTexture.extend({
 						_ctx.restore();
 					}
 
-
 					renderX += measuredWidthMap[charIndex] || 0;
 
 					ige._drawCount++;
@@ -366,11 +258,6 @@ var IgeFontSheet = IgeTexture.extend({
 				entity._dimensionsFromTexture = true;
 				entity.aabb(true);
 			}*/
-
-			if (this._caching) {
-				// We drew a cache canvas so now draw it to the screen
-				this.render(ctx, entity);
-			}
 		}
 	},
 
