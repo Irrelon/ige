@@ -71,7 +71,16 @@ var IgeEntity = IgeObject.extend([
 		return this;
 	},
 
-	// TODO: DOCUMENT
+	/**
+	 * Gets / sets the cache flag that determines if the entity's
+	 * texture rendering output should be stored on an off-screen
+	 * canvas instead of calling the texture.render() method each
+	 * tick. Useful for expensive texture calls such as rendering
+	 * fonts etc.
+	 * @param {Boolean=} val True to enable caching, false to
+	 * disable caching.
+	 * @return {*}
+	 */
 	cache: function (val) {
 		if (val !== undefined) {
 			this._cache = val;
@@ -92,6 +101,14 @@ var IgeEntity = IgeObject.extend([
 		return this._cache;
 	},
 
+	/**
+	 * Gets / sets the cache dirty flag. If set to true this will
+	 * instruct the entity to re-draw it's cached image from the
+	 * assigned texture. Once that occurs the flag will automatically
+	 * be set back to false.
+	 * @param {Boolean=} val True to force a cache update.
+	 * @return {*}
+	 */
 	cacheDirty: function (val) {
 		if (val !== undefined) {
 			this._cacheDirty = val;
@@ -1105,6 +1122,13 @@ var IgeEntity = IgeObject.extend([
 		}
 	},
 
+	/**
+	 * Draws the cached off-screen canvas image data to the passed canvas
+	 * context.
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to render
+	 * the entity to.
+	 * @private
+	 */
 	_renderCache: function (ctx) {
 		// We have a clean cached version so output that
 		ctx.drawImage(
