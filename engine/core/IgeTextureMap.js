@@ -424,6 +424,8 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	},
 
 	_ensureSectionExists: function (sectionX, sectionY) {
+		var sectionCtx;
+
 		this._sections[sectionX] = this._sections[sectionX] || [];
 		this._sectionCtx[sectionX] = this._sectionCtx[sectionX] || [];
 
@@ -432,10 +434,21 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			this._sections[sectionX][sectionY].width = (this._tileWidth * this._autoSection);
 			this._sections[sectionX][sectionY].height = (this._tileHeight * this._autoSection);
 
-			this._sectionCtx[sectionX][sectionY] = this._sections[sectionX][sectionY].getContext('2d');
+			sectionCtx = this._sectionCtx[sectionX][sectionY] = this._sections[sectionX][sectionY].getContext('2d');
+
+			// Ensure the canvas is using the correct image antialiasing mode
+			if (!ige._globalSmoothing) {
+				sectionCtx.imageSmoothingEnabled = false;
+				sectionCtx.webkitImageSmoothingEnabled = false;
+				sectionCtx.mozImageSmoothingEnabled = false;
+			} else {
+				sectionCtx.imageSmoothingEnabled = true;
+				sectionCtx.webkitImageSmoothingEnabled = true;
+				sectionCtx.mozImageSmoothingEnabled = true;
+			}
 
 			// One-time translate the context
-			this._sectionCtx[sectionX][sectionY].translate(this._tileWidth / 2, this._tileHeight / 2);
+			sectionCtx.translate(this._tileWidth / 2, this._tileHeight / 2);
 		}
 	},
 
