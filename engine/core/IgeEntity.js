@@ -1022,8 +1022,15 @@ var IgeEntity = IgeObject.extend([
 							var _canvas = this._cacheCanvas,
 								_ctx = this._cacheCtx;
 
-							_canvas.width = this._geometry.x;
-							_canvas.height = this._geometry.y;
+							if (this._geometry.x > 0 && this._geometry.y > 0) {
+								_canvas.width = this._geometry.x;
+								_canvas.height = this._geometry.y;
+							} else {
+								// We cannot set a zero size for a canvas, it will
+								// cause the browser to freak out
+								_canvas.width = 1;
+								_canvas.height = 1;
+							}
 
 							// Translate to the center of the canvas
 							_ctx.translate(this._geometry.x2, this._geometry.y2);
