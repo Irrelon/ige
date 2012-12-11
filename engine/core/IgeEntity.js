@@ -986,7 +986,7 @@ var IgeEntity = IgeObject.extend([
 				this._oldTranslate = this._translate.clone();
 			}
 
-			if (!this._hidden && this._inView && (!this._parent || (this._parent._inView))) {
+			if (!this._hidden && this._inView && (!this._parent || (this._parent._inView)) && !this._streamJustCreated) {
 				// Process any mouse events we need to do
 				var mp, aabb, mouseX, mouseY,
 					self = this;
@@ -1327,7 +1327,7 @@ var IgeEntity = IgeObject.extend([
 		// Check if the entity is streaming
 		if (this._streamMode === 1) {
 			delete this._streamDataCache;
-			this.streamSync();
+			this.streamDestroy();
 		}
 		/* CEXCLUDE */
 
@@ -1371,7 +1371,7 @@ var IgeEntity = IgeObject.extend([
 				// We have received updated data
 				var dataArr = data.split(',');
 
-				if (!bypassTimeStream) {
+				if (!bypassTimeStream && !this._streamJustCreated) {
 					// Translate
 					if (dataArr[0]) { dataArr[0] = parseFloat(dataArr[0]); }
 					if (dataArr[1]) { dataArr[1] = parseFloat(dataArr[1]); }
@@ -1523,10 +1523,10 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Queues stream data for this entity to be sent to the specified client id or array
-	 * of client ids.
-	 * @param {String, Array} clientId Either a string ID or an array of string IDs of
-	 * each client to send the stream data to.
+	 * Queues stream data for this entity to be sent to the
+	 * specified client id or array of client ids.
+	 * @param {Array} clientId An array of string IDs of each
+	 * client to send the stream data to.
 	 * @return {IgeEntity} "this".
 	 */
 	streamSync: function (clientId) {
@@ -1547,34 +1547,30 @@ var IgeEntity = IgeObject.extend([
 				}
 			}
 
-			// Stream mode is automatic so check for the
-			// control method
-			if (this._streamControl) {
-				// Stream control method exists, loop clients and call
-				// the control method to see if data should be streamed
+			// Grab an array of connected clients from the network
+			// system
+			var recipientArr = [],
+				clientArr = ige.network.clients(),
+				i;
 
-				// Grab an array of connected clients from the network
-				// system
-				var clientArr = ige.network.clients(),
-					i;
-
-				for (i in clientArr) {
-					if (clientArr.hasOwnProperty(i)) {
+			for (i in clientArr) {
+				if (clientArr.hasOwnProperty(i)) {
+					// Check for a stream control method
+					if (this._streamControl) {
 						// Call the callback method and if it returns true,
 						// send the stream data to this client
 						if (this._streamControl.apply(this, [i])) {
-							this._streamSync(i);
+							recipientArr.push(i);
 						}
+					} else {
+						// No control method so process for this client
+						recipientArr.push(i);
 					}
 				}
-
-				return this;
-			} else {
-				// Stream control method does not exist, send data
-				// to all connected clients now
-				this._streamSync();
-				return this;
 			}
+
+			this._streamSync(recipientArr);
+			return this;
 		}
 
 		if (this._streamMode === 2) {
@@ -1588,15 +1584,111 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
+	 * Override this method if your entity should send data through to
+	 * the client when it is being created on the client for the first
+	 * time through the network stream. Valid return values must not
+	 * include circular references!
+	 * @private
+	 */
+	_streamCreateData: function () {},
+
+	/**
 	 * Asks the stream system to queue the stream data to
 	 * the specified client id or array of ids.
-	 * @param {String, Array} clientId The id or array of ids of the
+	 * @param {Array} recipientArr The array of ids of the
 	 * client(s) to queue stream data for. The stream data being queued
 	 * is returned by a call to this._streamData().
 	 * @private
 	 */
-	_streamSync: function (clientId) {
-		ige.network.stream.queue(this.id(), this._streamData(), clientId);
+	_streamSync: function (recipientArr) {
+		var arrCount = recipientArr.length,
+			arrIndex,
+			clientId,
+			stream = ige.network.stream,
+			thisId = this.id(),
+			filteredArr = [];
+
+		// Loop the recipient array
+		for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+			clientId = recipientArr[arrIndex];
+
+			// Check if the client has already received a create
+			// command for this entity
+			stream._streamClientCreated[thisId] = stream._streamClientCreated[thisId] || {};
+			if (!stream._streamClientCreated[thisId][clientId]) {
+				this.streamCreate(clientId);
+			}
+
+			// Get the stream data
+			var data = this._streamData();
+
+			// Is the data different from the last data we sent
+			// this client?
+			stream._streamClientData[thisId] = stream._streamClientData[thisId] || {};
+			if (stream._streamClientData[thisId][clientId] !== data) {
+				filteredArr.push(clientId);
+
+				// Store the new data for later comparison
+				stream._streamClientData[thisId][clientId] = data;
+			}
+		}
+
+		if (filteredArr.length) {
+			stream.queue(thisId, data, filteredArr);
+		}
+	},
+
+	streamCreate: function (clientId) {
+		var thisId = this.id(),
+			arr,
+			i;
+
+		// Send the client an entity create command first
+		ige.network.send('_igeStreamCreate', [
+			this.classId(),
+			thisId,
+			this._parent.id(),
+			this._streamCreateData()
+		], clientId);
+
+		if (clientId) {
+			// Mark the client as having received a create
+			// command for this entity
+			ige.network.stream._streamClientCreated[thisId][clientId] = true;
+		} else {
+			// Mark all clients as having received this create
+			arr = ige.network.clients();
+
+			for (i in arr) {
+				if (arr.hasOwnProperty(i)) {
+					ige.network.stream._streamClientCreated[thisId][i] = true;
+				}
+			}
+		}
+	},
+
+	streamDestroy: function (clientId) {
+		var thisId = this.id(),
+			arr,
+			i;
+
+		// Send the client an entity create command first
+		ige.network.send('_igeStreamDestroy', thisId, clientId);
+
+		if (clientId) {
+			// Mark the client as having received a destroy
+			// command for this entity
+			ige.network.stream._streamClientCreated[thisId][clientId] = false;
+		} else {
+			// Mark all clients as having received this destroy
+			arr = ige.network.clients();
+
+			for (i in arr) {
+				if (arr.hasOwnProperty(i)) {
+					ige.network.stream._streamClientCreated[thisId][i] = false;
+				}
+			}
+		}
 	},
 
 	/**
@@ -1621,11 +1713,10 @@ var IgeEntity = IgeObject.extend([
 				sectionCount = sectionArr.length,
 				sectionData,
 				sectionIndex,
-				sectionId,
-				aliveInt = this._alive ? 1: 0;
+				sectionId;
 
-			// Add the default data (id and class)
-			streamData += this.id() + ',' + this._parent.id() + ',' + this.classId() + ',' + aliveInt;
+			// Add the entity id
+			streamData += this.id();
 
 			// Only send further data if the entity is still "alive"
 			if (this._alive) {
@@ -1638,7 +1729,6 @@ var IgeEntity = IgeObject.extend([
 					if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
 						// Check if the section interval has been reached
 						this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
-						console.log(this._streamSyncSectionDelta[sectionId]);
 
 						if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
 							// Get the section data for this section id
