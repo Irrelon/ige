@@ -584,6 +584,16 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
+	 * Returns the absolute world position of the entity as an
+	 * IgePoint.
+	 * @return {IgePoint} The absolute world position of the
+	 * entity.
+	 */
+	worldPosition: function () {
+		return new IgePoint(this._worldMatrix.matrix[2], this._worldMatrix.matrix[5], 0);
+	},
+
+	/**
 	 * Converts an array of points from local space to this entity's
 	 * world space using it's world transform matrix. This will alter
 	 * the points passed in the array directly.
