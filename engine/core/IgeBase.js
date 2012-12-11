@@ -18,6 +18,12 @@ igeDebug = {
 
 			if (!val) {
 				this._timing = false;
+
+				// Check if the engine exists
+				if (ige) {
+					// Turn off stats display in the engine
+					ige.showStats(0);
+				}
 			}
 
 			return this;
