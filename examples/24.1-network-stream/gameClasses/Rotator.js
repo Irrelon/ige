@@ -1,7 +1,8 @@
 var Rotator = IgeEntity.extend({
 	classId: 'Rotator',
 
-	init: function () {
+	init: function (speed) {
+		this._rotateSpeed = speed;
 		this._super();
 
 		var self = this;
@@ -22,6 +23,10 @@ var Rotator = IgeEntity.extend({
 
 		// Define the data sections that will be included in the stream
 		this.streamSections(['transform', 'custom1']);
+	},
+
+	_streamCreateData: function () {
+		return this._rotateSpeed;
 	},
 
 	/**
@@ -64,7 +69,7 @@ var Rotator = IgeEntity.extend({
 		// transform updates to the client automatically
 		if (ige.isServer) {
 			// Rotate this entity by 0.1 degrees.
-			this.rotateBy(0, 0, (0.1 * ige._tickDelta) * Math.PI / 180);
+			this.rotateBy(0, 0, (this._rotateSpeed * ige._tickDelta) * Math.PI / 180);
 		}
 
 		// Call the IgeEntity (super-class) tick() method

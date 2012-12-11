@@ -41,7 +41,7 @@ var Server = IgeClass.extend({
 							.mount(ige);
 
 						// Create an entity and mount it to the scene
-						self.obj[0] = new Rotator()
+						self.obj[0] = new Rotator(0)
 							.id('fairy0')
 							.depth(1)
 							.translateTo(0, 0, 0)
@@ -57,7 +57,7 @@ var Server = IgeClass.extend({
 						// Create a second rotator entity and mount
 						// it to the first one at 0, 50 relative to the
 						// parent
-						self.obj[1] = new Rotator2()
+						self.obj[1] = new Rotator2(0)
 							.id('fairy1')
 							.depth(1)
 							.translateTo(0, 50, 0)
@@ -67,7 +67,7 @@ var Server = IgeClass.extend({
 						// Create a third rotator entity that will only
 						// "live" for 10 seconds - helps to test the stream
 						// based entity destruction system
-						self.obj[2] = new Rotator2()
+						self.obj[2] = new Rotator2(0.1)
 							.id('fairy2')
 							.depth(1)
 							.translateTo(0, 150, 0)

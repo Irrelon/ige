@@ -1,10 +1,8 @@
 var Player = IgeEntity.extend({
 	classId: 'Player',
 
-	init: function (id) {
+	init: function () {
 		this._super();
-
-		this.id(id);
 
 		var self = this;
 
