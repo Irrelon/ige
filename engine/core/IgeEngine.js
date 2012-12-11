@@ -5,6 +5,15 @@ var IgeEngine = IgeEntity.extend({
 	classId: 'IgeEngine',
 
 	init: function () {
+		// Deal with some debug settings first
+		if (igeDebug) {
+			if (!igeDebug._enabled) {
+				// Debug is not enabled so ensure that
+				// timing debugs are disabled
+				igeDebug._timing = false;
+			}
+		}
+
 		this._alwaysInView = true;
 		this._super();
 
@@ -1194,7 +1203,7 @@ var IgeEngine = IgeEntity.extend({
 		self._timeScaleLastTimestamp = timeStamp;
 		timeStamp = Math.floor(self._currentTime);
 
-		if (igeDebug.timing) {
+		if (igeDebug._timing) {
 			st = new Date().getTime();
 		}
 
@@ -1267,7 +1276,7 @@ var IgeEngine = IgeEntity.extend({
 
 		self._resized = false;
 
-		if (igeDebug.timing) {
+		if (igeDebug._timing) {
 			et = new Date().getTime();
 			ige._tickTime = et - st;
 		}
@@ -1290,7 +1299,7 @@ var IgeEngine = IgeEntity.extend({
 
 		// Depth-sort the viewports
 		if (this._viewportDepth) {
-			if (igeDebug.timing) {
+			if (igeDebug._timing) {
 				ts = new Date().getTime();
 				this.depthSortChildren();
 				td = new Date().getTime() - ts;
@@ -1316,7 +1325,7 @@ var IgeEngine = IgeEntity.extend({
 			arrCount = arr.length;
 
 			// Loop our viewports and call their tick methods
-			if (igeDebug.timing) {
+			if (igeDebug._timing) {
 				while (arrCount--) {
 					ctx.save();
 					ts = new Date().getTime();
@@ -1349,10 +1358,10 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	analyseTiming: function () {
-		if (igeDebug.timing) {
+		if (igeDebug._timing) {
 
 		} else {
-			this.log('Cannot analyse timing because the igeDebug.timing flag is not enabled so no timing data has been recorded!', 'warning');
+			this.log('Cannot analyse timing because the igeDebug._timing flag is not enabled so no timing data has been recorded!', 'warning');
 		}
 	},
 
@@ -1402,7 +1411,7 @@ var IgeEngine = IgeEntity.extend({
 			depthSpace += '----';
 		}
 
-		if (igeDebug.timing) {
+		if (igeDebug._timing) {
 			timingString = '';
 
 			timingString += 'T: ' + ige._tsit[obj.id()];
@@ -1433,7 +1442,7 @@ var IgeEngine = IgeEntity.extend({
 				// Loop our children
 				while (arrCount--) {
 					if (arr[arrCount]._scene._shouldRender) {
-						if (igeDebug.timing) {
+						if (igeDebug._timing) {
 							timingString = '';
 
 							timingString += 'T: ' + ige._tsit[arr[arrCount].id()];

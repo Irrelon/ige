@@ -667,7 +667,7 @@ var IgeObject = IgeEventingClass.extend({
 			ac1 = arrCount;
 			// Depth sort all child objects
 			if (arrCount && !ige._headless) {
-				if (igeDebug.timing) {
+				if (igeDebug._timing) {
 					if (!ige._tslt[this.id()]) {
 						ige._tslt[this.id()] = {};
 					}
@@ -682,7 +682,7 @@ var IgeObject = IgeEventingClass.extend({
 			}
 			ac2 = arrCount;
 			// Loop our children and call their tick methods
-			if (igeDebug.timing) {
+			if (igeDebug._timing) {
 				while (arrCount--) {
 					ctx.save();
 					ts = new Date().getTime();

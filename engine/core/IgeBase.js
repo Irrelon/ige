@@ -6,15 +6,29 @@ igeVersion = '1.1.0';
 igeClassStore = {};
 
 igeDebug = {
-	node: typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined',
-	level: ['log', 'warning', 'error'],
-	stacks: true,
-	throwErrors: true,
-	timing: true
+	_enabled: true,
+	_node: typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined',
+	_level: ['log', 'warning', 'error'],
+	_stacks: true,
+	_throwErrors: true,
+	_timing: true,
+	enabled: function (val) {
+		if (val !== undefined) {
+			this._enabled = val;
+
+			if (!val) {
+				this._timing = false;
+			}
+
+			return this;
+		}
+
+		return this._enabled;
+	}
 };
 
-if (igeDebug.node) {
-	igeDebug.util = require('util');
+if (igeDebug._node) {
+	igeDebug._util = require('util');
 }
 
 /**

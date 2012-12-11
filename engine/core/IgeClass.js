@@ -17,37 +17,39 @@ var IgeClass = (function () {
 		 * before the log text is output.
 		 */
 		log = function (text, type, obj) {
-			var indent = '',
-				stack;
+			if (igeDebug._enabled) {
+				var indent = '',
+					stack;
 
-			type = type || 'log';
+				type = type || 'log';
 
-			if (obj !== undefined) {
-				console.warn(obj);
-			}
+				if (obj !== undefined) {
+					console.warn(obj);
+				}
 
-			if (type === 'warning' || type === 'error') {
-				if (igeDebug.stacks) {
-					if (igeDebug.node) {
-						stack = new Error().stack;
-						//console.log(color.magenta('Stack:'), color.red(stack));
-						console.log('Stack:', stack);
-					} else {
-						if (typeof(printStackTrace) === 'function') {
-							console.log('Stack:', printStackTrace().join('\n ---- '));
+				if (type === 'warning' || type === 'error') {
+					if (igeDebug._stacks) {
+						if (igeDebug._node) {
+							stack = new Error().stack;
+							//console.log(color.magenta('Stack:'), color.red(stack));
+							console.log('Stack:', stack);
+						} else {
+							if (typeof(printStackTrace) === 'function') {
+								console.log('Stack:', printStackTrace().join('\n ---- '));
+							}
 						}
 					}
 				}
-			}
 
-			if (type === 'error') {
-				if (igeDebug.throwErrors) {
-					throw(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
+				if (type === 'error') {
+					if (igeDebug._throwErrors) {
+						throw(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
+					} else {
+						console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
+					}
 				} else {
 					console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
 				}
-			} else {
-				console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
 			}
 
 			return this;
