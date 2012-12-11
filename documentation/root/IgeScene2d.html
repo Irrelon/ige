@@ -22,7 +22,13 @@
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>shouldRender(<span class="argType">Boolean</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the _shouldRender property. If set to true, the scene's child object's tick methods will be called.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div><h3>tick()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div><h3>/*mount(<span class="argType">IgeObject</span> <span class="argName">obj</span>)</h3>
+<div class="methodDesc">Mounts this object to the passed object in the scenegraph. Makes sure that the object being mounted to is not a viewport.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeObject</span>}<span class="argName">obj</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} Returns this on success or false on failure.</div><h3>ignoreCamera(<span class="argType">Boolean</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">Gets / sets the flag that determines if the scene will ignore camera transform values allowing the scene to remain static on screen regardless of the camera transform.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> True to ignore, false to not ignore.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>tick()</h3>
 <div class="methodDesc">Processes the actions required each render frame.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc"></div><h3>_resizeEvent(<span class="argType"></span> <span class="argName">event</span>)</h3>

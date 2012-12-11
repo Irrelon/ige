@@ -16,9 +16,12 @@
 	<div class="content"><a href="IgeTileMap2d.html">IgeTileMap2d</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3>caching(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
-<div class="methodDesc">Gets / sets the caching mode.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+<h2>Methods</h2><h3>autoSection(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">Gets / sets the auto sectioning mode. If enabled the texture map will render to off-screen canvases in sections denoted by the number passed. For instance if you pass 10, the canvas sections will be 10x10 tiles in size.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The size in tiles of each section.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>drawSectionBounds(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">Gets / sets the draw sections flag. If true the texture map will output debug lines between each section of the map when using the auto section system.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The boolean flag value.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>cacheForceFrame()</h3>
 <div class="methodDesc">Forces a cache redraw on the next tick.</div>
 <div class="methodArgs"></div>
@@ -43,30 +46,12 @@
 <div class="methodReturnDesc"></div><h3>tileTextureCell(<span class="argType"></span> <span class="argName">x</span>, <span class="argType"></span> <span class="argName">y</span>, <span class="argType"></span> <span class="argName">cell</span>)</h3>
 <div class="methodDesc">Gets / sets the specified tile's texture cell.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">cell</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>renderArea(<span class="argType"></span> <span class="argName">x</span>, <span class="argType"></span> <span class="argName">y</span>, <span class="argType"></span> <span class="argName">width</span>, <span class="argType"></span> <span class="argName">height</span>)</h3>
-<div class="methodDesc">Gets / sets the area of the texture map that will be rendered during the render tick. When initially set you must provide a width and height but afterwards you can just pass and x, y to effectively "move" the rendering rectangle around the map.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">width</span> </li><li>{<span class="argType"></span>}<span class="argName">height</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>renderCenter(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>)</h3>
-<div class="methodDesc">Gets / sets the center point that the render area will be drawn around.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>trackTranslate(<span class="argType"></span> <span class="argName">entity</span>)</h3>
-<div class="methodDesc">Get / sets the entity that will be used to determine the center point of the map's render area. This allows the render area to become dynamic based on this entity's position.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">entity</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>unTrackTranslate()</h3>
-<div class="methodDesc">Stops tracking the current tracking target's translation.</div>
-<div class="methodArgs"></div>
 <div class="methodReturnDesc"></div><h3>tick(<span class="argType"></span> <span class="argName">ctx</span>)</h3>
 <div class="methodDesc">Handles rendering the texture map during engine tick events.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">ctx</span> </li></ul></div>
 <div class="methodReturnDesc"></div><h3>_renderTile(<span class="argType"></span> <span class="argName">ctx</span>, <span class="argType"></span> <span class="argName">x</span>, <span class="argType"></span> <span class="argName">y</span>, <span class="argType"></span> <span class="argName">tileData</span>, <span class="argType"></span> <span class="argName">tileEntity</span>)</h3>
 <div class="methodDesc">Renders a tile texture based on data from the texture map.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">ctx</span> </li><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">tileData</span> </li><li>{<span class="argType"></span>}<span class="argName">tileEntity</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>_resizeEvent(<span class="argType"></span> <span class="argName">event</span>)</h3>
-<div class="methodDesc">Handles screen resize events.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>_resizeCacheCanvas()</h3>
-<div class="methodDesc">Resizes the cache canvas elements to the new render area size.</div>
-<div class="methodArgs"></div>
 <div class="methodReturnDesc"></div><h3>_newTileEntity()</h3>
 <div class="methodDesc">Creates an entity object that a texture can use to render itself. This is basically a dummy object that has the minimum amount of data in it that a texture requires to render such as geometry, texture cell and rendering position.</div>
 <div class="methodArgs"></div>

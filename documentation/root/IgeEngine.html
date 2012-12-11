@@ -19,12 +19,21 @@
 <h2>Methods</h2><h3>$(<span class="argType"></span> <span class="argName">item</span>)</h3>
 <div class="methodDesc">Returns an object from the engine's object register by the object's id. If the item passed is not a string id then the item is returned as is. If no item is passed the engine itself is returned.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">item</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>$$(<span class="argType"></span> <span class="argName">groupName</span>)</h3>
+<div class="methodReturnDesc"></div><h3>$$(<span class="argType">String</span> <span class="argName">groupName</span>)</h3>
 <div class="methodDesc">Returns an array of all objects that have been assigned the passed group name.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">groupName</span> </li></ul></div>
-<div class="methodReturnDesc"></div><h3>register(<span class="argType"></span> <span class="argName">obj</span>)</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">groupName</span> The name of the group to return all objects for.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>register(<span class="argType">Object</span> <span class="argName">obj</span>)</h3>
 <div class="methodDesc">Register an object with the engine object register. The register allows you to access an object by it's id with a call to ige.$(objectId).</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">obj</span> </li></ul></div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">obj</span> The object to register.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>unRegister(<span class="argType">Object</span> <span class="argName">obj</span>)</h3>
+<div class="methodDesc">Un-register an object with the engine object register. The object will no longer be accessible via ige.$().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">obj</span> The object to un-register.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>groupRegister(<span class="argType">Object</span> <span class="argName">obj</span>)</h3>
+<div class="methodDesc">Register an object with the engine group register. The register allows you to access an object by it's group with a call to ige.$$(groupName).</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">obj</span> The object to register.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>groupUnRegister(<span class="argType">Object</span> <span class="argName">obj</span>)</h3>
+<div class="methodDesc">Un-register an object with the engine group register. The object will no longer be accessible via ige.$$().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">obj</span> The object to un-register.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>setFps(<span class="argType">Number</span> <span class="argName">fpsRate</span>)</h3>
 <div class="methodDesc">Sets the frame rate at which new engine ticks are fired. Setting this rate will override the default requestAnimFrame() method as defined in IgeBase.js and on the client-side, will stop usage of any available requestAnimationFrame() method and will use a setTimeout()-based version instead.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">fpsRate</span> </li></ul></div>
@@ -82,6 +91,9 @@
 <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div><h3>newIdHex()</h3>
 <div class="methodDesc">Generates a new 16-character hexadecimal unique ID</div>
 <div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div><h3>newIdFromString(<span class="argType">String</span> <span class="argName">str</span>)</h3>
+<div class="methodDesc">Generates a new 16-character hexadecimal ID based on the passed string. Will always generate the same ID for the same string.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">str</span> A string to generate the ID from.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div><h3>start(<span class="argType"></span> <span class="argName">callback</span>)</h3>
 <div class="methodDesc">Starts the engine.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">callback</span> </li></ul></div>

@@ -22,13 +22,25 @@
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining.</div><h3>hide()</h3>
 <div class="methodDesc">Sets the entity as hidden and cannot be interacted with.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining.</div><h3>mousePos(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining.</div><h3>cache(<span class="argType">Boolean</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">Gets / sets the cache flag that determines if the entity's texture rendering output should be stored on an off-screen canvas instead of calling the texture.render() method each tick. Useful for expensive texture calls such as rendering fonts etc.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> True to enable caching, false to disable caching.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>cacheDirty(<span class="argType">Boolean</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">Gets / sets the cache dirty flag. If set to true this will instruct the entity to re-draw it's cached image from the assigned texture. Once that occurs the flag will automatically be set back to false.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> True to force a cache update.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>mousePos(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
 <div class="methodDesc">Gets the position of the mouse relative to this entity.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeViewport</span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the entity center.</div><h3>mousePosAbsolute(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the entity center.</div><h3>rotateToPoint(<span class="argType">IgePoint</span> <span class="argName">point</span>)</h3>
+<div class="methodDesc">Rotates the entity to point at the target point.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName">point</span> The point in world co-ordinates to point the entity at.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>mousePosAbsolute(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
 <div class="methodDesc">Gets the position of the mouse relative to this entity not taking into account viewport translation.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeViewport</span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the entity center.</div><h3>translateToTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the entity center.</div><h3>mousePosWorld(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
+<div class="methodDesc">Gets the position of the mouse in world co-ordinates.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeViewport</span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the world center.</div><h3>translateToTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
 <div class="methodDesc">Translates the object to the tile co-ordinates passed.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x tile co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y tile co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The z tile co-ordinate.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining.</div><h3>backgroundPattern(<span class="argType">IgeTexture</span> <span class="argName">texture</span>)</h3>
@@ -114,6 +126,9 @@
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to render to.</li><li>{<span class="argType">Boolean</span>}<span class="argName">dontTransform</span> If set to true, the tick method will not transform the context based on the entity's matrices. This is useful if you have extended the class and want to process down the inheritance chain but have already transformed the entity in a previous overloaded method.</li></ul></div>
 <div class="methodReturnDesc"></div><h3>_renderEntity(<span class="argType">CanvasRenderingContext2D</span> <span class="argName">ctx</span>)</h3>
 <div class="methodDesc">Handles calling the texture.render() method if a texture is applied to the entity. This part of the tick process has been abstracted to allow it to be overridden by an extending class.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to render the entity to.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>_renderCache(<span class="argType">CanvasRenderingContext2D</span> <span class="argName">ctx</span>)</h3>
+<div class="methodDesc">Draws the cached off-screen canvas image data to the passed canvas context.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to render the entity to.</li></ul></div>
 <div class="methodReturnDesc"></div><h3>_transformContext(<span class="argType">CanvasRenderingContext2D</span> <span class="argName">ctx</span>)</h3>
 <div class="methodDesc">Sets the canvas context transform properties to match the the game object's current transform values.</div>

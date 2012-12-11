@@ -8,7 +8,7 @@
 <p>Declared in <a href="../../engine/core/IgeTexture.js">IgeTexture.js</a></p>
 <div class="itemBox">
 	<div class="header">Description</div>
-	<div class="content">Creates a new texture from an image file.</div>
+	<div class="content">Creates a new texture.</div>
 </div>
 <!--=if{extends}[-->
 <div class="itemBox">
@@ -16,7 +16,10 @@
 	<div class="content"><a href="IgeEventingClass.html">IgeEventingClass</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3>id(<span class="argType">String</span> <span class="argName">id</span>)</h3>
+<h2>Methods</h2><h3>init(<span class="argType">String, Object</span> <span class="argName">urlOrObject</span>)</h3>
+<div class="methodDesc">Constructor for a new IgeTexture.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String, Object</span>}<span class="argName">urlOrObject</span> Either a string URL that points to the path of the image or script you wish to use as the texture image, or an object containing a smart texture.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>id(<span class="argType">String</span> <span class="argName">id</span>)</h3>
 <div class="methodDesc">Gets / sets the current object id. If no id is currently assigned and no id is passed to the method, it will automatically generate and assign a new id as a 16 character hexadecimal value typed as a string.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> </li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} Returns this when setting the value or the current value if none is specified.</div><h3>url(<span class="argType">String</span> <span class="argName">url</span>)</h3>
@@ -28,13 +31,19 @@
 <div class="methodReturnDesc"></div><h3>_loadScript(<span class="argType">String</span> <span class="argName">scriptUrl</span>)</h3>
 <div class="methodDesc">Loads a render script into a script tag and sets an onload event to capture when the script has finished loading.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">scriptUrl</span> The script url used to load the script data.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>assignSmartTextureImage(<span class="argType">String</span> <span class="argName">scriptObj</span>)</h3>
+<div class="methodDesc">Assigns a render script to the smart texture.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">scriptObj</span> The script object.</li></ul></div>
 <div class="methodReturnDesc"></div><h3>_setImage(<span class="argType">Image</span> <span class="argName">imageElement</span>)</h3>
 <div class="methodDesc">Sets the image element that the IgeTexture will use when rendering. This is a special method not designed to be called directly by any game code and is used specifically when assigning an existing canvas element to an IgeTexture.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Image</span>}<span class="argName">imageElement</span> The canvas / image to use as the image data for the IgeTexture.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>textureFromCell(<span class="argType">Number</span> <span class="argName">indexOrId</span>)</h3>
+<div class="methodReturnDesc"></div><h3>textureFromCell(<span class="argType">Number, String</span> <span class="argName">indexOrId</span>)</h3>
 <div class="methodDesc">Creates a new texture from a cell in the existing texture and returns the new texture.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">indexOrId</span> The cell index or id to use.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>sizeX(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number, String</span>}<span class="argName">indexOrId</span> The cell index or id to use.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>_textureFromCell(<span class="argType">IgeTexture</span> <span class="argName">tex</span>, <span class="argType">Number, String</span> <span class="argName">indexOrId</span>)</h3>
+<div class="methodDesc">Called by textureFromCell() when the texture is ready to be processed. See textureFromCell() for description.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeTexture</span>}<span class="argName">tex</span> The new texture to paint to.</li><li>{<span class="argType">Number, String</span>}<span class="argName">indexOrId</span> The cell index or id to use.</li></ul></div>
+<div class="methodReturnDesc"></div><h3>sizeX(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Sets the _sizeX property.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
 <div class="methodReturnDesc"></div><h3>sizeY(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
@@ -49,9 +58,9 @@
 <div class="methodReturnDesc"></div><h3>restoreOriginal()</h3>
 <div class="methodDesc">Sets the texture image back to the original image that the texture first loaded. Useful if you have applied filters or resized the image and now want to revert back to the original.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>render(<span class="argType">CanvasContext2d</span> <span class="argName">ctx</span>, <span class="argType">IgeEntity</span> <span class="argName">entity</span>)</h3>
+<div class="methodReturnDesc"></div><h3>render(<span class="argType">CanvasRenderingContext2d</span> <span class="argName">ctx</span>, <span class="argType">IgeEntity</span> <span class="argName">entity</span>)</h3>
 <div class="methodDesc">Renders the texture image to the passed canvas context.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasContext2d</span>}<span class="argName">ctx</span> The canvas context to draw to.</li><li>{<span class="argType">IgeEntity</span>}<span class="argName">entity</span> The entity that this texture is being drawn for.</li></ul></div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2d</span>}<span class="argName">ctx</span> The canvas context to draw to.</li><li>{<span class="argType">IgeEntity</span>}<span class="argName">entity</span> The entity that this texture is being drawn for.</li></ul></div>
 <div class="methodReturnDesc"></div><h3>preFilter(<span class="argType"></span> <span class="argName">method</span>)</h3>
 <div class="methodDesc">Gets / sets the pre-filter method that will be called before the texture is rendered and will allow you to modify the texture image before rendering each tick.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">method</span> </li></ul></div>
