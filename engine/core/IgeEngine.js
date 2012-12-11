@@ -60,6 +60,7 @@ var IgeEngine = IgeEntity.extend({
 			'three'
 		];
 
+		this._showSgTree = false;
 		this._debugEvents = {}; // Holds debug event booleans for named events
 		this._renderContext = '2d'; // The rendering context, default is 2d
 		this._renderMode = this._renderModes[this._renderContext]; // Integer representation of the render context
@@ -105,7 +106,7 @@ var IgeEngine = IgeEntity.extend({
 		//this._dependencyQueue.push(this.canvasReady);
 
 		// Start a timer to record every second of execution
-		setInterval(this._secondTick, 1000);
+		this._secondTimer = setInterval(this._secondTick, 1000);
 	},
 
 	/**
@@ -327,11 +328,11 @@ var IgeEngine = IgeEntity.extend({
 				div.style.position = 'absolute';
 				div.style.color = '#ffffff';
 				div.style.textShadow = '1px 1px 3px #000000';
-				div.style.bottom = '10px';
-				div.style.left = '10px';
+				div.style.bottom = '4px';
+				div.style.left = '4px';
 				div.style.userSelect = 'none';
 				div.style.webkitUserSelect = 'none';
-				div.style.MozkitUserSelect = 'none';
+				div.style.MozUserSelect = 'none';
 				div.style.zIndex = 100000;
 				div.innerHTML = 'Please wait...';
 
@@ -970,6 +971,10 @@ var IgeEngine = IgeEntity.extend({
 			}
 		}
 
+		if (ige._showSgTree) {
+			document.getElementById('igeSgTree').style.height = (ige._geometry.y - 30) + 'px';
+		}
+
 		ige._resized = true;
 	},
 
@@ -1064,6 +1069,99 @@ var IgeEngine = IgeEntity.extend({
 		// Zero out counters
 		self._frames = 0;
 		self._drawCount = 0;
+
+		if (self._showSgTree) {
+			// Update the scenegraph tree
+			document.getElementById('sceneGraph_items').innerHTML = '';
+
+			// Get the scenegraph data
+			self.addToSgTree(self.getSceneGraphData(self, true));
+		}
+	},
+
+	addToSgTree: function (item) {
+		var elem = document.createElement('li'),
+			arr,
+			arrCount,
+			i,
+			mouseOver,
+			mouseOut,
+			mouseUp;
+
+		mouseOver = function (event) {
+			if (!selectedItem) {
+				event.stopPropagation();
+				//document.getElementById('igeConsole').innerHTML += "ige.$('vp1').drawBoundsLimitId('" + this.id + "');" + '<br />';
+				chrome.devtools.inspectedWindow.eval("ige.$('vp1').drawBoundsLimitId('" + this.id + "');", function (result, isException) {
+
+				});
+			}
+		};
+
+		mouseOut = function (event) {
+			if (!selectedItem) {
+				event.stopPropagation();
+				//document.getElementById('igeConsole').innerHTML += "ige.$('vp1').drawBoundsLimitId('');" + '<br />';
+				chrome.devtools.inspectedWindow.eval("ige.$('vp1').drawBoundsLimitId('');", function (result, isException) {
+
+				});
+			}
+		};
+
+		mouseUp = function (event) {
+			event.stopPropagation();
+
+			var elems = document.getElementsByClassName('sgItem selected');
+			for (i = 0; i < elems.length; i++) {
+				elems[i].className = 'sgItem';
+			}
+
+			this.className += ' selected';
+			ige._sgTreeSelected = this.id;
+
+			ige.$('vp1').drawBoundsLimitId(this.id);
+		};
+
+		//elem.addEventListener('mouseover', mouseOver, false);
+		//elem.addEventListener('mouseout', mouseOut, false);
+		elem.addEventListener('mouseup', mouseUp, false);
+
+		elem.id = item.id;
+		elem.innerHTML = item.text;
+		elem.className = 'sgItem';
+
+		if (ige._sgTreeSelected === item.id) {
+			elem.className += ' selected';
+		}
+
+		if (igeDebug._timing) {
+			if (ige._tsit[item.id]) {
+				timingString = '<span>' + ige._tsit[item.id] + 'ms</span>';
+				/*if (ige._tslt[item.id]) {
+					if (typeof(ige._tslt[item.id].tick) === 'number') {
+						timingString += ' | LastTick: ' + ige._tslt[item.id].tick;
+					}
+				}*/
+
+				elem.innerHTML += ' ' + timingString;
+			}
+		}
+
+		document.getElementById(item.parentId + '_items').appendChild(elem);
+
+		if (item.items) {
+			// Create a ul inside the li
+			elem = document.createElement('ul');
+			elem.id = item.id + '_items';
+			document.getElementById(item.id).appendChild(elem);
+
+			arr = item.items;
+			arrCount = arr.length;
+
+			for (i = 0; i < arrCount; i++) {
+				ige.addToSgTree(arr[i]);
+			}
+		}
 	},
 
 	/**
@@ -1104,16 +1202,47 @@ var IgeEngine = IgeEntity.extend({
 						}
 						html += '<br />';
 					}
-					html += '<span class="met" title="Frames Per Second">fps: ' + self._fps + '</span> <span class="met" title="Draws Per Second">dps: ' + self._dps + '</span> <span class="met" title="Draws Per Tick">dpt: ' + self._dpt + '</span> <span class="met" title="Time Spent Processing Tick">tps: ' + self._tickTime + 'ms</span>';
+					html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowSceneGraph();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Tick">' + self._dpt + ' dpt</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
 
 					if (self.network) {
 						// Add the network latency too
-						html += ' <span class="met" title="Network Latency (Time From Server to This Client)">lat: ' + self.network._latency + 'ms</span>';
+						html += ' <span class="met" title="Network Latency (Time From Server to This Client)">' + self.network._latency + ' ms\/net</span>';
 					}
 
 					self._statsDiv.innerHTML = html;
 					break;
 			}
+		}
+	},
+
+	toggleShowSceneGraph: function () {
+		this._showSgTree = !this._showSgTree;
+
+		if (this._showSgTree) {
+			var elem1 = document.createElement('div'),
+				elem2;
+
+			elem1.id = 'igeSgTree';
+			elem1.style.height = (ige._geometry.y - 30) + 'px';
+			elem1.style.overflow = 'auto';
+			elem1.addEventListener('mousemove', function (event) {
+				event.stopPropagation();
+			});
+			elem1.addEventListener('mouseup', function (event) {
+				event.stopPropagation();
+			});
+			elem1.addEventListener('mousedown', function (event) {
+				event.stopPropagation();
+			});
+
+			elem2 = document.createElement('ul');
+			elem2.id = 'sceneGraph_items';
+			elem1.appendChild(elem2);
+
+			document.body.appendChild(elem1);
+		} else {
+			var child = document.getElementById('igeSgTree');
+			child.parentNode.removeChild(child);
 		}
 	},
 
