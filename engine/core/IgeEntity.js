@@ -1588,9 +1588,8 @@ var IgeEntity = IgeObject.extend([
 	 * the client when it is being created on the client for the first
 	 * time through the network stream. Valid return values must not
 	 * include circular references!
-	 * @private
 	 */
-	_streamCreateData: function () {},
+	streamCreateData: function () {},
 
 	/**
 	 * Asks the stream system to queue the stream data to
@@ -1648,7 +1647,7 @@ var IgeEntity = IgeObject.extend([
 			this.classId(),
 			thisId,
 			this._parent.id(),
-			this._streamCreateData()
+			this.streamCreateData()
 		], clientId);
 
 		if (clientId) {
