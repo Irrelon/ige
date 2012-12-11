@@ -25,7 +25,7 @@ var Rotator = IgeEntity.extend({
 		this.streamSections(['transform', 'custom1']);
 	},
 
-	_streamCreateData: function () {
+	streamCreateData: function () {
 		return this._rotateSpeed;
 	},
 

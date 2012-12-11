@@ -57,7 +57,7 @@ var Server = IgeClass.extend({
 						// Create a second rotator entity and mount
 						// it to the first one at 0, 50 relative to the
 						// parent
-						self.obj[1] = new Rotator2(0)
+						self.obj[1] = new Rotator2(0.1)
 							.id('fairy1')
 							.depth(1)
 							.translateTo(0, 50, 0)
