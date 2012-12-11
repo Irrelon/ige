@@ -3,12 +3,7 @@ var Game = IgeClass.extend({
 
 	init: function (App, options) {
 		// Create the engine
-		ige = new IgeEngine()
-			.addComponent(IgeBox2dComponent)
-			.box2d.sleep(true)
-			.box2d.gravity(0, 0)
-			.box2d.createWorld()
-			.box2d.start();
+		ige = new IgeEngine();
 
 		if (!ige.isServer) {
 			ige.client = new App();
