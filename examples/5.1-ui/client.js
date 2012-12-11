@@ -51,6 +51,7 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.width(100)
 						.height(100)
+						.translateTo(450, 0, 0)
 						.texture(gameTexture[0])
 						.mouseOver(function () { this.highlight(true); this.drawBoundsData(true); })
 						.mouseOut(function () { this.highlight(false); this.drawBoundsData(false); })
@@ -139,21 +140,29 @@ var Client = IgeClass.extend({
 						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
 						.mount(self.scene3);
 
-					self.obj[6] = new IgeUiTextBox()
-						.id('textBox1')
-						.fontSheet(gameTexture[3])
-						.backgroundColor('#000000')
-						.borderColor('#ffffff')
-						.borderWidth(1)
-						.borderRadius(5)
-						.center(0)
-						.middle(70)
-						.width(300)
-						.height(24)
-						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
-						.mount(self.scene3)
-						.value('Type text to see text input!')
-						.focus(true);
+					var i, txBox;
+
+					for (i = 0; i < 30; i++) {
+						txBox = new IgeUiTextBox()
+							.id('textBox' + i)
+							.fontSheet(gameTexture[3])
+							.backgroundColor('#000000')
+							.borderColor('#ffffff')
+							.borderWidth(1)
+							.borderRadius(5)
+							.left(100 + (320 * Math.floor(i / 15)))
+							.middle(-210 + (30 * i) - (450 * Math.floor(i / 15)))
+							.width(300)
+							.height(24)
+							.cache(true)
+							.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
+							.mount(self.scene3)
+							.value('Type text to see text input!');
+
+						if (i === 0) {
+							txBox.focus(true);
+						}
+					}
 
 					// Define some menu item methods
 					var overFunc = function () {
