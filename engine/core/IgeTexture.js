@@ -137,7 +137,7 @@ var IgeTexture = IgeEventingClass.extend({
 					this._loaded = true;
 
 					// Log success
-					ige.log('Texture image "' + imageUrl + '" loaded successfully');
+					ige.log('Texture image (' + imageUrl + ') loaded successfully');
 
 					if (image.width % 2) {
 						self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
