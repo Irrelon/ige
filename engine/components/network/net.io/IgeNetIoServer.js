@@ -11,7 +11,7 @@ var IgeNetIoServer = {
 	start: function (data, callback) {
 		var self = this;
 
-		this._socketById = [];
+		this._socketById = {};
 
 		if (typeof(data) !== 'undefined') {
 			this._port = data;
@@ -61,9 +61,10 @@ var IgeNetIoServer = {
 	},
 
 	/**
-	 * Returns an associative array of all connected clients
-	 * by their ID.
-	 * @return {Array}
+	 * Returns an object with each key being the ID of
+	 * a connected client and each value being the socket
+	 * that is related to that client.
+	 * @return {Object}
 	 */
 	clients: function () {
 		return this._socketById;
