@@ -713,29 +713,7 @@ var IgeEngine = IgeEntity.extend({
 	_frontBufferSetup: function (autoSize, dontScale) {
 		// Create a new canvas element to use as the
 		// rendering front-buffer
-		var tempCanvas = document.createElement('canvas'),
-			tempContext,
-			width, height;
-
-		if (this._pixelRatioScaling) {
-			tempContext = tempCanvas.getContext(ige._renderContext);
-
-			// Support high-definition devices and "retina" (stupid marketing name)
-			// displays by adjusting for device and back store pixels ratios
-			this._devicePixelRatio = window.devicePixelRatio || 1;
-			this._backingStoreRatio = tempContext.webkitBackingStorePixelRatio ||
-				tempContext.mozBackingStorePixelRatio ||
-				tempContext.msBackingStorePixelRatio ||
-				tempContext.oBackingStorePixelRatio ||
-				tempContext.backingStorePixelRatio || 1;
-
-			this._deviceFinalDrawRatio = this._devicePixelRatio / this._backingStoreRatio;
-		} else {
-			// No auto-scaling
-			this._devicePixelRatio = 1;
-			this._backingStoreRatio = 1;
-			this._deviceFinalDrawRatio = 1;
-		}
+		var tempCanvas = document.createElement('canvas');
 
 		// Set the canvas element id
 		tempCanvas.id = 'igeFrontBuffer';
@@ -754,6 +732,26 @@ var IgeEngine = IgeEntity.extend({
 			if (!this._canvas) {
 				// Setup front-buffer canvas element
 				this._canvas = elem;
+				this._ctx = this._canvas.getContext(this._renderContext);
+
+				// Handle pixel ratio settings
+				if (this._pixelRatioScaling) {
+					// Support high-definition devices and "retina" (stupid marketing name)
+					// displays by adjusting for device and back store pixels ratios
+					this._devicePixelRatio = window.devicePixelRatio || 1;
+					this._backingStoreRatio = this._ctx.webkitBackingStorePixelRatio ||
+						this._ctx.mozBackingStorePixelRatio ||
+						this._ctx.msBackingStorePixelRatio ||
+						this._ctx.oBackingStorePixelRatio ||
+						this._ctx.backingStorePixelRatio || 1;
+
+					this._deviceFinalDrawRatio = this._devicePixelRatio / this._backingStoreRatio;
+				} else {
+					// No auto-scaling
+					this._devicePixelRatio = 1;
+					this._backingStoreRatio = 1;
+					this._deviceFinalDrawRatio = 1;
+				}
 
 				if (autoSize) {
 					this._autoSize = autoSize;
