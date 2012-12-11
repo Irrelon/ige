@@ -17,17 +17,57 @@ var IgeUiTextBox = IgeUiEntity.extend({
 		this._hasFocus = false;
 		this._value = '';
 
-		this._fontEntity = new IgeFontEntity();
-		this._fontEntity.width(this.width());
-		this._fontEntity.height(this.height());
-		this._fontEntity.left(5);
-		this._fontEntity.middle(0);
-		this._fontEntity.textAlignX(0);
-		this._fontEntity.textAlignY(0);
-		this._fontEntity.mount(this);
+		this._fontEntity = new IgeFontEntity()
+			.left(5)
+			.middle(0)
+			.textAlignX(0)
+			.textAlignY(0)
+			.mount(this);
 
 		// Listen for keyboard events to capture text input
 		ige.input.on('keyDown', function (event) { self._keyDown(event); });
+	},
+
+	/**
+	 * Extended method to auto-update the width of the child
+	 * font entity automatically to fill the text box.
+	 * @param px
+	 * @param lockAspect
+	 * @param modifier
+	 * @param noUpdate
+	 * @return {*}
+	 */
+	width: function (px, lockAspect, modifier, noUpdate) {
+		var val;
+
+		// Call the main super class method
+		val = this._super(px, lockAspect, modifier, noUpdate);
+
+		// Update the font entity width
+		this._fontEntity.width(px, lockAspect, modifier, noUpdate);
+
+		return val;
+	},
+
+	/**
+	 * Extended method to auto-update the height of the child
+	 * font entity automatically to fill the text box.
+	 * @param px
+	 * @param lockAspect
+	 * @param modifier
+	 * @param noUpdate
+	 * @return {*}
+	 */
+	height: function (px, lockAspect, modifier, noUpdate) {
+		var val;
+
+		// Call the main super class method
+		val = this._super(px, lockAspect, modifier, noUpdate);
+
+		// Update the font entity height
+		this._fontEntity.height(px, lockAspect, modifier, noUpdate);
+
+		return val;
 	},
 
 	/**

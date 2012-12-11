@@ -11,6 +11,12 @@ var Client = IgeClass.extend({
 		// Create the HTML canvas
 		ige.createFrontBuffer(true);
 
+		ige.addComponent(IgeBox2dComponent)
+			.box2d.sleep(true)
+			.box2d.gravity(0, 0)
+			.box2d.createWorld()
+			.box2d.start();
+
 		ige.start(function (success) {
 			// Check if the engine started successfully
 			if (success) {
