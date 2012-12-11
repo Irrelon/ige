@@ -2,8 +2,8 @@ var Rotator = IgeEntity.extend({
 	classId: 'Rotator',
 
 	init: function (speed) {
-		this._rotateSpeed = speed;
 		this._super();
+		this._rotateSpeed = speed;
 
 		var self = this;
 
