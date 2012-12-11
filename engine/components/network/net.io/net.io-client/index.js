@@ -7,14 +7,23 @@ var NetIo = {};
  * @private
  */
 NetIo._debug = {
-	node: typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined',
-	level: ['log', 'warning', 'error'],
-	stacks: false,
-	throwErrors: true,
-	trace: {
+	_enabled: true,
+	_node: typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined',
+	_level: ['log', 'warning', 'error'],
+	_stacks: false,
+	_throwErrors: true,
+	_trace: {
 		setup: false,
 		enabled: false,
 		match: ''
+	},
+	enabled: function (val) {
+		if (val !== undefined) {
+			this._enabled = val;
+			return this;
+		}
+
+		return this._enabled;
 	}
 };
 
@@ -33,37 +42,39 @@ NetIo.Class = (function () {
 		 * Provides logging capabilities to all Class instances.
 		 */
 			log = function (text, type, obj) {
-			var indent = '',
-				i,
-				stack;
-			if (!NetIo._debug.trace.indentLevel) { NetIo._debug.trace.indentLevel = 0; }
+			if (NetIo._debug._enabled) {
+				var indent = '',
+					i,
+					stack;
+				if (!NetIo._debug._trace.indentLevel) { NetIo._debug._trace.indentLevel = 0; }
 
-			for (i = 0; i < NetIo._debug.trace.indentLevel; i++) {
-				indent += '  ';
-			}
-
-			type = type || 'log';
-
-			if (type === 'error') {
-				if (NetIo._debug.stacks) {
-					if (NetIo._debug.node) {
-						stack = new Error().stack;
-						//console.log(color.magenta('Stack:'), color.red(stack));
-						console.log('Stack:', stack);
-					} else {
-						if (typeof(printStackTrace) === 'function') {
-							console.log('Stack:', printStackTrace().join('\n ---- '));
-						}
-					}
+				for (i = 0; i < NetIo._debug._trace.indentLevel; i++) {
+					indent += '  ';
 				}
 
-				if (NetIo._debug.throwErrors) {
-					throw(indent + 'Net.io *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
+				type = type || 'log';
+
+				if (type === 'error') {
+					if (NetIo.stacks) {
+						if (NetIo._debug._node) {
+							stack = new Error().stack;
+							//console.log(color.magenta('Stack:'), color.red(stack));
+							console.log('Stack:', stack);
+						} else {
+							if (typeof(printStackTrace) === 'function') {
+								console.log('Stack:', printStackTrace().join('\n ---- '));
+							}
+						}
+					}
+
+					if (NetIo._debug._throwErrors) {
+						throw(indent + 'Net.io *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
+					} else {
+						console.log(indent + 'Net.io *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
+					}
 				} else {
 					console.log(indent + 'Net.io *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
 				}
-			} else {
-				console.log(indent + 'Net.io *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
 			}
 
 			return this;
