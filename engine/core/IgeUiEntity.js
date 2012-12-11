@@ -286,8 +286,10 @@ var IgeUiEntity = IgeEntity.extend([
 			this._transformContext(ctx);
 		}
 
-		this._renderBackground(ctx);
-		this._renderBorder(ctx);
+		if (!this._cache || this._cacheDirty) {
+			this._renderBackground(ctx);
+			this._renderBorder(ctx);
+		}
 
 		// TODO: CocoonJS doesn't like the ctx.clip() method, find out why
 		// and report a bug if required.
