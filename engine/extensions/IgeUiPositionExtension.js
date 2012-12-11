@@ -117,7 +117,7 @@ var IgeUiPositionExtension = {
 	 */
 	width: function (px, lockAspect, modifier, noUpdate) {
 		if (px !== undefined) {
-			this._width = px;
+			this._uiWidth = px;
 			this._widthModifier = modifier !== undefined ? modifier : 0;
 
 			if (typeof(px) === 'string') {
@@ -179,7 +179,7 @@ var IgeUiPositionExtension = {
 	 */
 	height: function (px, lockAspect, modifier, noUpdate) {
 		if (px !== undefined) {
-			this._height = px;
+			this._uiHeight = px;
 			this._heightModifier = modifier !== undefined ? modifier : 0;
 
 			if (typeof(px) === 'string') {
@@ -243,8 +243,8 @@ var IgeUiPositionExtension = {
 			var parentGeom = this._parent._geometry,
 				geom = this._geometry;
 
-			if (this._width) { this.width(this._width, false, this._widthModifier, true); }
-			if (this._height) { this.height(this._height, false, this._heightModifier, true); }
+			if (this._uiWidth) { this.width(this._uiWidth, false, this._widthModifier, true); }
+			if (this._uiHeight) { this.height(this._uiHeight, false, this._heightModifier, true); }
 
 			if (this._uiXAlign === 'right') {
 				this._translate.x = Math.floor(parentGeom.x2 - geom.x2 - this._uiX);
