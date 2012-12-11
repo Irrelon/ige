@@ -75,6 +75,27 @@ Object.prototype.tween = function (props, durationMs, options) {
 /**
  * Make property non-enumerable.
  */
+Object.defineProperty(Object.prototype, 'theSameAs', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
+
+/**
+ * Augments all objects with the theSameAs() method. Checks if the
+ * property values of this object are equal to the property values
+ * of the passed object. If they are the same then this method will
+ * return true. Objects must not contain circular references!
+ * @param {Object} obj The object to compare this one to.
+ * @return {Boolean}
+ */
+Object.prototype.theSameAs = function (obj) {
+	return JSON.stringify(this) === JSON.stringify(obj);
+};
+
+/**
+ * Make property non-enumerable.
+ */
 Object.defineProperty(Array.prototype, 'clone', {
 	enumerable:false,
 	writable:true,
