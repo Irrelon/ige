@@ -547,6 +547,9 @@ var IgeEntity = IgeObject.extend([
 				this.width(Math.floor(this._texture._sizeX / 100 * percent));
 				this.height(Math.floor(this._texture._sizeY / 100 * percent));
 			}
+
+			// Recalculate localAabb
+			this.localAabb(true);
 		}
 
 		return this;
@@ -563,6 +566,9 @@ var IgeEntity = IgeObject.extend([
 		if (this._texture) {
 			this.width(this._texture._cells[this._cell][2]);
 			this.height(this._texture._cells[this._cell][3]);
+
+			// Recalculate localAabb
+			this.localAabb(true);
 		}
 
 		return this;
