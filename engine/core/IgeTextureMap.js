@@ -526,6 +526,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * @private
 	 */
 	_renderTile: function (ctx, x, y, tileData, tileEntity, rect, sectionX, sectionY) {
+		// TODO: Handle scaling so tiles don't loose res on scaled cached sections
 		var finalX, finalY, regions,
 			xm1, xp1, ym1, yp1, regObj,
 			xAdjust = this._mountMode === 1 ? this._tileWidth / 2 : 0,
