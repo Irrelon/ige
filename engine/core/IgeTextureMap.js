@@ -86,7 +86,30 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 */
 	addTexture: function (texture) {
 		this._textureList.push(texture);
+		this._allTexturesLoaded = false;
 		return this._textureList.length - 1;
+	},
+
+	/**
+	 * Checks the status of all the textures that have been added to
+	 * this texture map and returns true if they are all loaded.
+	 * @return {Boolean} True if all textures are loaded, false if
+	 * not.
+	 */
+	allTexturesLoaded: function () {
+		if (!this._allTexturesLoaded) {
+			var arr = this._textureList,
+				arrCount = arr.length;
+
+			while (arrCount--) {
+				if (!arr[arrCount]._loaded) {
+					return false;
+				}
+			}
+		}
+
+		this._allTexturesLoaded = true;
+		return true;
 	},
 
 	/**
@@ -116,15 +139,6 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		this.map.clearData(x, y);
 	},
 
-	_loadMapTextureLoaded: function () {
-		this._loadMapTexturesLoading--;
-
-		if (this._loadMapTexturesLoading === 0) {
-			// Fire all textures loaded
-			this.emit('loadMapAllTexturesLoaded');
-		}
-	},
-
 	/**
 	 * Reads the map data from a standard map object and fills the map
 	 * with the data found.
@@ -135,33 +149,18 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			// Empty the existing array
 			this._textureList = [];
 
-			// Set the number of textures we need to load
-			this._loadMapTexturesLoading = map.textures.length;
-
 			var tex = [], i,
-				self = this,
-				_texLoaded = function () {
-					self._loadMapTextureLoaded();
-				};
-
-			// Setup a listener so we can process when all textures have finished loading
-			this.on('loadMapAllTexturesLoaded', function () {
-				var k;
-				for (k = 0; k < map.textures.length; k++) {
-					self.addTexture(tex[k]);
-				}
-
-				// Fill in the map data
-				self.map.mapData(map.data);
-			});
+				self = this;
 
 			// Loop the texture list and create each texture object
 			for (i = 0; i < map.textures.length; i++) {
 				// Load each texture
 				eval('tex[' + i + '] = ' + map.textures[0]);
-				// Listen for when the texture loads
-				tex[i].on('loaded', _texLoaded);
+				self.addTexture(tex[i]);
 			}
+
+			// Fill in the map data
+			self.map.mapData(map.data);
 		} else {
 			// Just fill in the map data
 			this.map.mapData(map.data);
@@ -289,104 +288,107 @@ var IgeTextureMap = IgeTileMap2d.extend({
 
 		if (this._autoSection > 0) {
 			if (this._cacheDirty) {
-				// We have a dirty cache so render the section cache
-				// data first
-				this._sections = this._sections || [];
-				this._sectionCtx = this._sectionCtx || [];
+				// Check that all the textures we need to use are loaded
+				if (this.allTexturesLoaded()) {
+					// We have a dirty cache so render the section cache
+					// data first
+					this._sections = this._sections || [];
+					this._sectionCtx = this._sectionCtx || [];
 
-				// Loop the map data
-				for (y in mapData) {
-					if (mapData.hasOwnProperty(y)) {
-						for (x in mapData[y]) {
-							if (mapData[y].hasOwnProperty(x)) {
-								xInt = parseInt(x);
-								yInt = parseInt(y);
+					// Loop the map data
+					for (y in mapData) {
+						if (mapData.hasOwnProperty(y)) {
+							for (x in mapData[y]) {
+								if (mapData[y].hasOwnProperty(x)) {
+									xInt = parseInt(x);
+									yInt = parseInt(y);
 
-								// Calculate the tile's final resting position in absolute
-								// co-ordinates so we can work out which section canvas to
-								// paint the tile to
-								if (this._mountMode === 0) {
-									// We're rendering a 2d map
-									finalX = xInt;
-									finalY = yInt;
-								}
+									// Calculate the tile's final resting position in absolute
+									// co-ordinates so we can work out which section canvas to
+									// paint the tile to
+									if (this._mountMode === 0) {
+										// We're rendering a 2d map
+										finalX = xInt;
+										finalY = yInt;
+									}
 
-								if (this._mountMode === 1) {
-									// We're rendering an iso map
-									// Convert the tile x, y to isometric
-									tx = xInt * this._tileWidth;
-									ty = yInt * this._tileHeight;
-									finalX = (tx - ty) / this._tileWidth;
-									finalY = ((tx + ty) * 0.5) / this._tileHeight;
-									finalPoint = new IgePoint(finalX, finalY, 0);
-									//finalPoint.thisTo2d();
+									if (this._mountMode === 1) {
+										// We're rendering an iso map
+										// Convert the tile x, y to isometric
+										tx = xInt * this._tileWidth;
+										ty = yInt * this._tileHeight;
+										finalX = (tx - ty) / this._tileWidth;
+										finalY = ((tx + ty) * 0.5) / this._tileHeight;
+										finalPoint = new IgePoint(finalX, finalY, 0);
+										//finalPoint.thisTo2d();
 
-									finalX = finalPoint.x;
-									finalY = finalPoint.y;
-								}
+										finalX = finalPoint.x;
+										finalY = finalPoint.y;
+									}
 
-								// Grab the tile data to paint
-								tileData = mapData[y][x];
+									// Grab the tile data to paint
+									tileData = mapData[y][x];
 
-								// Work out which section to paint to
-								sectionX = Math.floor(finalX / this._autoSection);
-								sectionY = Math.floor(finalY / this._autoSection);
+									// Work out which section to paint to
+									sectionX = Math.floor(finalX / this._autoSection);
+									sectionY = Math.floor(finalY / this._autoSection);
 
-								this._ensureSectionExists(sectionX, sectionY);
+									this._ensureSectionExists(sectionX, sectionY);
 
-								_ctx = this._sectionCtx[sectionX][sectionY];
+									_ctx = this._sectionCtx[sectionX][sectionY];
 
-								if (tileData) {
-									regions = this._renderTile(
-										_ctx,
-										xInt,
-										yInt,
-										tileData,
-										tileEntity,
-										null,
-										sectionX,
-										sectionY
-									);
+									if (tileData) {
+										regions = this._renderTile(
+											_ctx,
+											xInt,
+											yInt,
+											tileData,
+											tileEntity,
+											null,
+											sectionX,
+											sectionY
+										);
 
-									// Check if the tile overlapped another section
-									if (regions) {
-										// Loop the regions and re-render the tile on the
-										// other sections that it overlaps
-										for (i = 0; i < regions.length; i++) {
-											region = regions[i];
+										// Check if the tile overlapped another section
+										if (regions) {
+											// Loop the regions and re-render the tile on the
+											// other sections that it overlaps
+											for (i = 0; i < regions.length; i++) {
+												region = regions[i];
 
-											tempSectionX = sectionX;
-											tempSectionY = sectionY;
+												tempSectionX = sectionX;
+												tempSectionY = sectionY;
 
-											if (region.x) {
-												tempSectionX += region.x;
-											}
+												if (region.x) {
+													tempSectionX += region.x;
+												}
 
-											if (region.y) {
-												tempSectionY += region.y;
-											}
+												if (region.y) {
+													tempSectionY += region.y;
+												}
 
-											this._ensureSectionExists(tempSectionX, tempSectionY);
-											_ctx = this._sectionCtx[tempSectionX][tempSectionY];
+												this._ensureSectionExists(tempSectionX, tempSectionY);
+												_ctx = this._sectionCtx[tempSectionX][tempSectionY];
 
-											this._sectionTileRegion = this._sectionTileRegion || [];
-											this._sectionTileRegion[tempSectionX] = this._sectionTileRegion[tempSectionX] || [];
-											this._sectionTileRegion[tempSectionX][tempSectionY] = this._sectionTileRegion[tempSectionX][tempSectionY] || [];
-											this._sectionTileRegion[tempSectionX][tempSectionY][xInt] = this._sectionTileRegion[tempSectionX][tempSectionY][xInt] || [];
+												this._sectionTileRegion = this._sectionTileRegion || [];
+												this._sectionTileRegion[tempSectionX] = this._sectionTileRegion[tempSectionX] || [];
+												this._sectionTileRegion[tempSectionX][tempSectionY] = this._sectionTileRegion[tempSectionX][tempSectionY] || [];
+												this._sectionTileRegion[tempSectionX][tempSectionY][xInt] = this._sectionTileRegion[tempSectionX][tempSectionY][xInt] || [];
 
-											if (!this._sectionTileRegion[tempSectionX][tempSectionY][xInt][yInt]) {
-												this._sectionTileRegion[tempSectionX][tempSectionY][xInt][yInt] = true;
+												if (!this._sectionTileRegion[tempSectionX][tempSectionY][xInt][yInt]) {
+													this._sectionTileRegion[tempSectionX][tempSectionY][xInt][yInt] = true;
 
-												this._renderTile(
-													_ctx,
-													xInt,
-													yInt,
-													tileData,
-													tileEntity,
-													null,
-													tempSectionX,
-													tempSectionY
-												);
+													this._renderTile(
+														_ctx,
+														xInt,
+														yInt,
+														tileData,
+														tileEntity,
+														null,
+														tempSectionX,
+														tempSectionY
+													);
+												}
 											}
 										}
 									}
@@ -394,13 +396,13 @@ var IgeTextureMap = IgeTileMap2d.extend({
 							}
 						}
 					}
+
+					// Set the cache to clean!
+					this._cacheDirty = false;
+
+					// Remove the temporary section tile painted data
+					delete this._sectionTileRegion;
 				}
-
-				// Set the cache to clean!
-				this._cacheDirty = false;
-
-				// Remove the temporary section tile painted data
-				delete this._sectionTileRegion;
 			}
 
 			this._drawSectionsToCtx(ctx);
