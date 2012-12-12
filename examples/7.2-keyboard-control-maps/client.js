@@ -34,6 +34,7 @@ var Client = IgeClass.extend({
 
 				// Create the texture maps and load their map data
 				self.backgroundLayer1 = new IgeTextureMap()
+					.id('backMap1')
 					.depth(0)
 					.tileWidth(40)
 					.tileHeight(40)
@@ -41,9 +42,11 @@ var Client = IgeClass.extend({
 					//.drawGrid(10)
 					.drawBounds(false)
 					.loadMap(BackgroundLayer1)
+					.autoSection(20)
 					.mount(self.scene1);
 
 				self.staticObjectLayer1 = new IgeTextureMap()
+					.id('backMap2')
 					.depth(1)
 					.tileWidth(40)
 					.tileHeight(40)
@@ -51,6 +54,7 @@ var Client = IgeClass.extend({
 					//.drawGrid(10)
 					.drawBounds(false)
 					.mount(self.scene1)
+					.autoSection(20)
 					.loadMap(StaticObjectLayer1);
 
 				// Create a new character, add the player component

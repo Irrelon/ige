@@ -42,6 +42,7 @@ var Client = IgeClass.extend({
 					.translateTo(0, 0, 0)
 					//.drawGrid(10)
 					.drawBounds(false)
+					.autoSection(20)
 					.loadMap(BackgroundLayer1)
 					.mount(self.scene1);
 
@@ -53,6 +54,7 @@ var Client = IgeClass.extend({
 					//.drawGrid(10)
 					.drawBounds(false)
 					.mount(self.scene1)
+					.autoSection(20)
 					.loadMap(StaticObjectLayer1);
 
 				// Create a new character, add the player component
