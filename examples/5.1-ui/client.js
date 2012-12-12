@@ -154,7 +154,7 @@ var Client = IgeClass.extend({
 							.middle(-210 + (30 * i) - (450 * Math.floor(i / 15)))
 							.width(300)
 							.height(24)
-							.cache(true)
+							//.cache(true)
 							.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
 							.mount(self.scene3)
 							.value('Type text to see text input!');
