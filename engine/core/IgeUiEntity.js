@@ -286,6 +286,7 @@ var IgeUiEntity = IgeEntity.extend([
 			this._transformContext(ctx);
 		}
 
+		// TODO: Investigate caching expensive background and border calls
 		if (!this._cache || this._cacheDirty) {
 			this._renderBackground(ctx);
 			this._renderBorder(ctx);
