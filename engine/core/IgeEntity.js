@@ -1611,7 +1611,8 @@ var IgeEntity = IgeObject.extend([
 			clientId,
 			stream = ige.network.stream,
 			thisId = this.id(),
-			filteredArr = [];
+			filteredArr = [],
+			createResult = true; // We set this to true by default
 
 		// Loop the recipient array
 		for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
@@ -1621,20 +1622,25 @@ var IgeEntity = IgeObject.extend([
 			// command for this entity
 			stream._streamClientCreated[thisId] = stream._streamClientCreated[thisId] || {};
 			if (!stream._streamClientCreated[thisId][clientId]) {
-				this.streamCreate(clientId);
+				createResult = this.streamCreate(clientId);
 			}
 
-			// Get the stream data
-			var data = this._streamData();
+			// Make sure that if we had to create the entity for
+			// this client that the create worked before bothering
+			// to waste bandwidth on stream updates
+			if (createResult) {
+				// Get the stream data
+				var data = this._streamData();
 
-			// Is the data different from the last data we sent
-			// this client?
-			stream._streamClientData[thisId] = stream._streamClientData[thisId] || {};
-			if (stream._streamClientData[thisId][clientId] !== data) {
-				filteredArr.push(clientId);
+				// Is the data different from the last data we sent
+				// this client?
+				stream._streamClientData[thisId] = stream._streamClientData[thisId] || {};
+				if (stream._streamClientData[thisId][clientId] !== data) {
+					filteredArr.push(clientId);
 
-				// Store the new data for later comparison
-				stream._streamClientData[thisId][clientId] = data;
+					// Store the new data for later comparison
+					stream._streamClientData[thisId][clientId] = data;
+				}
 			}
 		}
 
@@ -1644,32 +1650,38 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	streamCreate: function (clientId) {
-		var thisId = this.id(),
-			arr,
-			i;
+		if (this._parent) {
+			var thisId = this.id(),
+				arr,
+				i;
 
-		// Send the client an entity create command first
-		ige.network.send('_igeStreamCreate', [
-			this.classId(),
-			thisId,
-			this._parent.id(),
-			this.streamCreateData()
-		], clientId);
+			// Send the client an entity create command first
+			ige.network.send('_igeStreamCreate', [
+				this.classId(),
+				thisId,
+				this._parent.id(),
+				this.streamCreateData()
+			], clientId);
 
-		if (clientId) {
-			// Mark the client as having received a create
-			// command for this entity
-			ige.network.stream._streamClientCreated[thisId][clientId] = true;
-		} else {
-			// Mark all clients as having received this create
-			arr = ige.network.clients();
+			if (clientId) {
+				// Mark the client as having received a create
+				// command for this entity
+				ige.network.stream._streamClientCreated[thisId][clientId] = true;
+			} else {
+				// Mark all clients as having received this create
+				arr = ige.network.clients();
 
-			for (i in arr) {
-				if (arr.hasOwnProperty(i)) {
-					ige.network.stream._streamClientCreated[thisId][i] = true;
+				for (i in arr) {
+					if (arr.hasOwnProperty(i)) {
+						ige.network.stream._streamClientCreated[thisId][i] = true;
+					}
 				}
 			}
+
+			return true;
 		}
+
+		return false;
 	},
 
 	streamDestroy: function (clientId) {
