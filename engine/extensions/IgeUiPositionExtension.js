@@ -137,6 +137,7 @@ var IgeUiPositionExtension = {
 						this.height(this._geometry.y / ratio, false, 0, noUpdate);
 					}
 
+					this._width = newVal;
 					this._geometry.x = newVal;
 					this._geometry.x2 = Math.floor(this._geometry.x / 2);
 				} else {
@@ -148,6 +149,8 @@ var IgeUiPositionExtension = {
 					// Calculate real height from percentage
 					this._geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
 					this._geometry.x2 = Math.floor(this._geometry.x / 2);
+
+					this._width = this._geometry.x;
 				}
 			} else {
 				if (lockAspect) {
@@ -156,6 +159,7 @@ var IgeUiPositionExtension = {
 					this.height(this._geometry.y * ratio, false, 0, noUpdate);
 				}
 
+				this._width = px;
 				this._geometry.x = px;
 				this._geometry.x2 = Math.floor(this._geometry.x / 2);
 			}
@@ -200,6 +204,7 @@ var IgeUiPositionExtension = {
 						this.width(this._geometry.x / ratio, false, 0, noUpdate);
 					}
 
+					this._height = newVal;
 					this._geometry.y = newVal;
 					this._geometry.y2 = Math.floor(this._geometry.y / 2);
 				} else {
@@ -211,6 +216,7 @@ var IgeUiPositionExtension = {
 					// Calculate real height from percentage
 					this._geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
 					this._geometry.y2 = Math.floor(this._geometry.y / 2);
+					this._height = this._geometry.y;
 				}
 			} else {
 				if (lockAspect) {
@@ -219,6 +225,7 @@ var IgeUiPositionExtension = {
 					this.width(this._geometry.x * ratio, false, 0, noUpdate);
 				}
 
+				this._height = px;
 				this._geometry.y = px;
 				this._geometry.y2 = Math.floor(this._geometry.y / 2);
 			}
