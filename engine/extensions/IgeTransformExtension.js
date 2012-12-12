@@ -282,7 +282,7 @@ var IgeTransformExtension = {
 	 * update the transformation matrix accordingly.
 	 */
 	updateTransform: function () {
-		// TODO: Is this the fastest way of doing this? Take a look at CAAT to see how they do it. (Thanks Ibon)
+		// TODO: Do we need to calc this if the entity transform hasn't changed?
 		this._localMatrix.identity();
 		if (this._mode === 0) {
 			// 2d translation
@@ -309,6 +309,7 @@ var IgeTransformExtension = {
 		this._localMatrix.multiply(this._localMatrix._newRotate(this._rotate.z));
 		this._localMatrix.multiply(this._localMatrix._newScale(this._scale.x, this._scale.y));
 
+		// TODO: If the parent and local transforms are unchanged, we should used cached values
 		if (this._parent) {
 			this._worldMatrix.copy(this._parent._worldMatrix);
 			this._worldMatrix.multiply(this._localMatrix);
