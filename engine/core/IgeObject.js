@@ -75,31 +75,35 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Gets / sets the arbitrary group name that the object belongs to.
+	 * Gets / sets the arbitrary category name that the object belongs to.
 	 * @param {String=} val
 	 * @return {*}
 	 */
-	group: function (val) {
+	category: function (val) {
 		if (val !== undefined) {
-			// Check if we already have a group
-			if (this._group) {
-				// Check if the group being assigned is different from
+			// Check if we already have a category
+			if (this._category) {
+				// Check if the category being assigned is different from
 				// the current one
-				if (this._group !== val) {
-					// The group is different so remove this object
-					// from the current group association
-					ige.groupUnRegister(this);
+				if (this._category !== val) {
+					// The category is different so remove this object
+					// from the current category association
+					ige.categoryUnRegister(this);
 				}
 			}
 
-			this._group = val;
+			this._category = val;
 
-			// Now register this object with the group it has been assigned
-			ige.groupRegister(this);
+			// Now register this object with the category it has been assigned
+			ige.categoryRegister(this);
 			return this;
 		}
 
-		return this._group;
+		return this._category;
+	},
+
+	group: function () {
+		this.log('The group() method has been renamed to category(). Please update your code.', 'error');
 	},
 
 	/**
@@ -807,7 +811,7 @@ var IgeObject = IgeEventingClass.extend({
 
 		// Remove the object from the lookup system
 		ige.unRegister(this);
-		ige.groupUnRegister(this);
+		ige.categoryUnRegister(this);
 
 		// Set a flag in case a reference to this object
 		// has been held somewhere, shows that the object
@@ -858,8 +862,8 @@ var IgeObject = IgeEventingClass.extend({
 		for (i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-					case '_group':
-						str += ".group(" + this.group() + ")";
+					case '_category':
+						str += ".category(" + this.category() + ")";
 						break;
 					case '_drawBounds':
 						str += ".drawBounds(" + this.drawBounds() + ")";

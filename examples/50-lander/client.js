@@ -63,10 +63,10 @@ var Client = IgeClass.extend({
 							//console.log('Contact begins between', contact.igeEntityA()._id, 'and', contact.igeEntityB()._id);
 
 							// If player ship collides with lunar surface, crash!
-							if (contact.igeEitherGroup('floor') && contact.igeEitherGroup('ship')) {
+							if (contact.igeEitherCategory('floor') && contact.igeEitherCategory('ship')) {
 								// The player has crashed!
 								self.player.crash();
-							} else if (contact.igeEitherGroup('landingPad') && contact.igeEitherGroup('ship')) {
+							} else if (contact.igeEitherCategory('landingPad') && contact.igeEitherCategory('ship')) {
 								// Clear the old orb data
 								delete self.player._oldOrb;
 
@@ -90,27 +90,27 @@ var Client = IgeClass.extend({
 									// The player has landed
 									self.player._landed = true;
 								}
-							} else if (!self.player._carryingOrb && contact.igeEitherGroup('orb') && contact.igeEitherGroup('ship')) {
+							} else if (!self.player._carryingOrb && contact.igeEitherCategory('orb') && contact.igeEitherCategory('ship')) {
 								// Check if it is our sensor
 								if (contact.m_fixtureA.IsSensor() || contact.m_fixtureB.IsSensor()) {
 									// Sensor has collided, attach orb to ship!
 									// Set carrying orb
-									self.player.carryOrb(contact.igeEntityByGroup('orb'), contact);
+									self.player.carryOrb(contact.igeEntityByCategory('orb'), contact);
 								}
-							} else if (contact.igeEitherGroup('orb') && contact.igeEitherGroup('landingPad')) {
+							} else if (contact.igeEitherCategory('orb') && contact.igeEitherCategory('landingPad')) {
 								// Orb has reached landing pad, score!
-								if (self.player._carryingOrb && self.player._orb === contact.igeEntityByGroup('orb')) {
+								if (self.player._carryingOrb && self.player._orb === contact.igeEntityByCategory('orb')) {
 									// The orb the player was carrying has reached a pad
-									self.player._orb.deposit(true, contact.igeEntityByGroup('landingPad'));
+									self.player._orb.deposit(true, contact.igeEntityByCategory('landingPad'));
 								} else {
-									contact.igeEntityByGroup('orb').deposit(false, contact.igeEntityByGroup('landingPad'));
+									contact.igeEntityByCategory('orb').deposit(false, contact.igeEntityByCategory('landingPad'));
 								}
 							}
 						},
 						// Listen for when contact's end
 						function (contact) {
 							//console.log('Contact ends between', contact.igeEntityA()._id, 'and', contact.igeEntityB()._id);
-							if (contact.igeEitherGroup('landingPad') && contact.igeEitherGroup('ship')) {
+							if (contact.igeEitherCategory('landingPad') && contact.igeEitherCategory('ship')) {
 								// The player has taken off
 								self.player._landed = false;
 							}
@@ -118,12 +118,12 @@ var Client = IgeClass.extend({
 						// Handle pre-solver events
 						function (contact) {
 							// If player ship collides with lunar surface, crash!
-							if (contact.igeEitherGroup('orb') && contact.igeEitherGroup('ship')) {
+							if (contact.igeEitherCategory('orb') && contact.igeEitherCategory('ship')) {
 								// Cancel the contact
 								contact.SetEnabled(false);
 							}
 
-							// You can also check an entity by it's group using igeEitherGroup('groupName')
+							// You can also check an entity by it's category using igeEitherCategory('categoryName')
 						}*/
 					);
 

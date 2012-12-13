@@ -14,7 +14,7 @@ var ThrustParticle = IgeEntityBox2d.extend({
 			.width(5)
 			.height(5)
 			.layer(1)
-			.group('thrustParticle');
+			.category('thrustParticle');
 
 		// Setup the box2d physics properties
 		/*this.box2dBody({

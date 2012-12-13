@@ -94,7 +94,7 @@ var ClientTerrain = {
 
 		// Now create a box2d entity
 		new IgeEntityBox2d()
-			.group('floor')
+			.category('floor')
 			.box2dBody({
 				type: 'static',
 				allowSleep: true,

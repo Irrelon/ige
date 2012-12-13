@@ -180,13 +180,13 @@ var IgeViewport = IgeEntity.extend([
 		return this._drawBoundsLimitId;
 	},
 
-	drawBoundsLimitGroup: function (group) {
-		if (group !== undefined) {
-			this._drawBoundsLimitGroup = group;
+	drawBoundsLimitCategory: function (category) {
+		if (category !== undefined) {
+			this._drawBoundsLimitCategory = category;
 			return this;
 		}
 
-		return this._drawBoundsLimitGroup;
+		return this._drawBoundsLimitCategory;
 	},
 
 	/**
@@ -214,7 +214,7 @@ var IgeViewport = IgeEntity.extend([
 				index++;
 
 				if (obj._shouldRender !== false) {
-					if ((!this._drawBoundsLimitId && !this._drawBoundsLimitGroup) || ((this._drawBoundsLimitId && this._drawBoundsLimitId === obj.id()) || (this._drawBoundsLimitGroup && this._drawBoundsLimitGroup === obj.group()))) {
+					if ((!this._drawBoundsLimitId && !this._drawBoundsLimitCategory) || ((this._drawBoundsLimitId && this._drawBoundsLimitId === obj.id()) || (this._drawBoundsLimitCategory && this._drawBoundsLimitCategory === obj.category()))) {
 						if (typeof(obj.aabb) === 'function') {
 							// Grab the AABB and then draw it
 							aabb = obj.aabb();

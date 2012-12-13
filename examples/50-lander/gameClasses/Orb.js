@@ -7,7 +7,7 @@ var Orb = IgeEntityBox2d.extend({
 		// Set the rectangle colour (this is read in the Rectangle.js smart texture)
 		this._rectColor = '#ffc600';
 
-		this.group('orb')
+		this.category('orb')
 			.texture(ige.client.textures.orb)
 			.width(10)
 			.height(10)

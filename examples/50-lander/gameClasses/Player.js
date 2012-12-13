@@ -17,7 +17,7 @@ var Player = IgeEntityBox2d.extend({
 
 		self.id(id);
 		self.addComponent(IgeVelocityComponent)
-			.group('ship')
+			.category('ship')
 			.texture(ige.client.textures.ship)
 			.width(20)
 			.height(20);

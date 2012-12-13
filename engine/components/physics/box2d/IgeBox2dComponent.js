@@ -57,25 +57,25 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			}
 		};
 
-		this.b2Contact.prototype.igeEitherGroup = function (group1, group2) {
-			if (!group2) {
-				return this.m_fixtureA.m_body._entity._group === group1 || this.m_fixtureB.m_body._entity._group === group1;
+		this.b2Contact.prototype.igeEitherCategory = function (category1, category2) {
+			if (!category2) {
+				return this.m_fixtureA.m_body._entity._category === category1 || this.m_fixtureB.m_body._entity._category === category1;
 			} else {
-				return (this.m_fixtureA.m_body._entity._group === group1 || this.m_fixtureB.m_body._entity._group === group1) &&
-					(this.m_fixtureA.m_body._entity._group === group2 || this.m_fixtureB.m_body._entity._group === group2);
+				return (this.m_fixtureA.m_body._entity._category === category1 || this.m_fixtureB.m_body._entity._category === category1) &&
+					(this.m_fixtureA.m_body._entity._category === category2 || this.m_fixtureB.m_body._entity._category === category2);
 			}
 		};
 
-		this.b2Contact.prototype.igeBothGroups = function (group1) {
-			return (this.m_fixtureA.m_body._entity._group === group1 && this.m_fixtureB.m_body._entity._group === group1);
+		this.b2Contact.prototype.igeBothCategories = function (category1) {
+			return (this.m_fixtureA.m_body._entity._category === category1 && this.m_fixtureB.m_body._entity._category === category1);
 		};
 
-		this.b2Contact.prototype.igeEntityByGroup = function (group) {
-			if (this.m_fixtureA.m_body._entity._group === group) {
+		this.b2Contact.prototype.igeEntityByCategory = function (category) {
+			if (this.m_fixtureA.m_body._entity._category === category) {
 				return this.igeEntityA();
 			}
 
-			if (this.m_fixtureB.m_body._entity._group === group) {
+			if (this.m_fixtureB.m_body._entity._category === category) {
 				return this.igeEntityB();
 			}
 		};
@@ -360,7 +360,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 								if (fixtureDef.filter.categoryBits !== undefined) { tempFilterData.categoryBits = fixtureDef.filter.categoryBits; }
 								if (fixtureDef.filter.maskBits !== undefined) { tempFilterData.maskBits = fixtureDef.filter.maskBits; }
-								if (fixtureDef.filter.groupIndex !== undefined) { tempFilterData.groupIndex = fixtureDef.filter.groupIndex; }
+								if (fixtureDef.filter.categoryIndex !== undefined) { tempFilterData.categoryIndex = fixtureDef.filter.categoryIndex; }
 
 								finalFixture.SetFilterData(tempFilterData);
 							}

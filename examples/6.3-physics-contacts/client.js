@@ -162,7 +162,7 @@ var Client = IgeClass.extend({
 							contact.SetEnabled(false);
 						}
 
-						// You can also check an entity by it's group using igeEitherGroup('groupName')
+						// You can also check an entity by it's category using igeEitherCategory('categoryName')
 					}
 				);
 
