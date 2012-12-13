@@ -600,6 +600,16 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
+	 * Returns the absolute world rotation z of the entity as a
+	 * value in radians.
+	 * @return {Number} The absolute world rotation z of the
+	 * entity.
+	 */
+	worldRotationZ: function () {
+		return this._worldMatrix.rotationRadians();
+	},
+
+	/**
 	 * Converts an array of points from local space to this entity's
 	 * world space using it's world transform matrix. This will alter
 	 * the points passed in the array directly.
