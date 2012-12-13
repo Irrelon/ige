@@ -39,7 +39,7 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					// Create an entity and mount it to the scene
-					self.obj[0] = new Rotator()
+					self.obj[0] = new Rotator(0.1)
 						.id('fairy1')
 						.depth(1)
 						.width(100)
@@ -51,7 +51,7 @@ var Client = IgeClass.extend({
 					// Create a second rotator entity and mount
 					// it to the first one at 0, 50 relative to the
 					// parent
-					self.obj[1] = new Rotator()
+					self.obj[1] = new Rotator(0.1)
 						.id('fairy2')
 						.depth(1)
 						.width(50)
@@ -63,7 +63,7 @@ var Client = IgeClass.extend({
 					// Create a third rotator entity and mount
 					// it to the first on at 0, -50 relative to the
 					// parent, but assign it a smart texture!
-					self.obj[2] = new Rotator()
+					self.obj[2] = new Rotator(0.1)
 						.id('simpleBox')
 						.depth(1)
 						.width(50)
