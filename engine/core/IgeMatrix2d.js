@@ -98,6 +98,24 @@ IgeMatrix2d.prototype = {
 	},
 
 	/**
+	 * Gets the rotation from the matrix and returns it in
+	 * radians.
+	 * @return {Number}
+	 */
+	rotationRadians: function () {
+		return Math.acos(this.matrix[0]);
+	},
+
+	/**
+	 * Gets the rotation from the matrix and returns it in
+	 * degrees.
+	 * @return {Number}
+	 */
+	rotationDegrees: function () {
+		return Math.degrees(Math.acos(this.matrix[0]));
+	},
+
+	/**
 	 * Create a scale matrix.
 	 * @param x {number} x scale magnitude.
 	 * @param y {number} y scale magnitude.
