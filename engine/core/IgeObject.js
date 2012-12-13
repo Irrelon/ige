@@ -107,6 +107,133 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Adds this entity to a group or groups passed as
+	 * arguments.
+	 * @param {String} groupName A group to add the entity to.
+	 * This method accepts multiple arguments, each is a group
+	 * name to add the entity to.
+	 * @return {*}
+	 */
+	addGroup: function () {
+		var arrCount = arguments.length,
+			groupName;
+
+		while (arrCount--) {
+			groupName = arguments[arrCount];
+
+			if (!this._groups || this._groups.indexOf(groupName) === -1) {
+				this._groups = this._groups || [];
+				this._groups.push(groupName);
+
+				// Now register this object with the group it has been assigned
+				ige.groupRegister(this, groupName);
+			}
+		}
+
+		return this;
+	},
+
+	/**
+	 * Checks if the entity is in the specified group or
+	 * groups. This method accepts multiple arguments, each
+	 * of which is a group name. If multiple group names
+	 * are passed, the method will only return true if the
+	 * entity is in ALL the passed groups.
+	 * @param {String} groupName The name of the group to
+	 * check to see if this entity is a member of.
+	 * @return {Boolean}
+	 */
+	inGroup: function () {
+		var arrCount = arguments.length,
+			groupName;
+
+		while (arrCount--) {
+			groupName = arguments[arrCount];
+
+			if (groupName !== undefined) {
+				if (!this._groups || this._groups.indexOf(groupName) === -1) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	},
+
+	/**
+	 * Checks if the entity is in the specified group or
+	 * groups. This method accepts multiple arguments, each
+	 * of which is a group name. If multiple group names
+	 * are passed, the method will return true if the entity
+	 * is in ANY of the the passed groups.
+	 * @param {String} groupName The name of the group to
+	 * check to see if this entity is a member of.
+	 * @return {Boolean}
+	 */
+	inAnyGroup: function () {
+		var arrCount = arguments.length,
+			groupName;
+
+		while (arrCount--) {
+			groupName = arguments[arrCount];
+
+			if (groupName !== undefined) {
+				if (this._groups && this._groups.indexOf(groupName) !== -1) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	},
+
+	groupCount: function () {
+		return this._groups ? this._groups.length : 0;
+	},
+
+	/**
+	 * Removes the entity from the group or groups passed. This
+	 * method accepts multiple arguments and will remove the entity
+	 * from all groups passed as arguments.
+	 * @param {String} groupName The name of the group to remove
+	 * this entity as a member of.
+	 * @return {*}
+	 */
+	removeGroup: function () {
+		if (this._groups) {
+			var arrCount = arguments.length,
+				groupName;
+
+			while (arrCount--) {
+				groupName = arguments[arrCount];
+				this._groups.pull(groupName);
+
+				// Now un-register this object with the group it has been assigned
+				ige.groupUnRegister(this, groupName);
+			}
+		}
+
+		return this;
+	},
+
+	/**
+	 * Removes the entity from all groups it is a member of.
+	 * @return {*}
+	 */
+	removeAllGroups: function () {
+		// Loop through all groups and un-register one at a time
+		var arr = this._groups,
+			arrCount = arr.length;
+
+		while (arrCount--) {
+			ige.groupUnRegister(this, arr[arrCount]);
+		}
+
+		delete this._groups;
+		return this;
+	},
+
+	/**
 	 * Adds a behaviour to the object's active behaviour list.
 	 * @param {String} id
 	 * @param {Function} behaviour
