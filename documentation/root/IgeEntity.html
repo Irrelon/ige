@@ -22,51 +22,217 @@
 <div class="methodDesc">Sets the entity as visible and able to be interacted with.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining.</div>
-<h3>hide()</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Show a hidden entity</h1>
+
+<pre><code>entity.show();
+</code></pre>
+</div>
+					</div>
+				<h3>hide()</h3>
 <div class="methodDesc">Sets the entity as hidden and cannot be interacted with.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining.</div>
-<h3>cache(<span class="argType">Boolean</span> <span class="argName">val</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Hide a visible entity</h1>
+
+<pre><code>entity.hide();
+</code></pre>
+</div>
+					</div>
+				<h3>cache(<span class="argType">Boolean</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the cache flag that determines if the entity's texture rendering output should be stored on an off-screen canvas instead of calling the texture.render() method each tick. Useful for expensive texture calls such as rendering fonts etc.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> True to enable caching, false to disable caching.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>cacheDirty(<span class="argType">Boolean</span> <span class="argName">val</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Enable entity caching</h1>
+
+<pre><code>entity.cache(true);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Disable entity caching</h1>
+
+<pre><code>entity.cache(false);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get caching flag value</h1>
+
+<pre><code>var val = entity.cache();
+</code></pre>
+</div>
+					</div>
+				<h3>cacheDirty(<span class="argType">Boolean</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the cache dirty flag. If set to true this will instruct the entity to re-draw it's cached image from the assigned texture. Once that occurs the flag will automatically be set back to false.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> True to force a cache update.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>mousePos(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Get cache dirty flag value</h1>
+
+<pre><code>var val = entity.cacheDirty();
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set cache dirty flag value</h1>
+
+<pre><code>entity.cacheDirty(true);
+</code></pre>
+</div>
+					</div>
+				<h3>mousePos(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
 <div class="methodDesc">Gets the position of the mouse relative to this entity.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeViewport</span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the entity center.</div>
-<h3>rotateToPoint(<span class="argType">IgePoint</span> <span class="argName">point</span>)</h3>
-<div class="methodDesc">Rotates the entity to point at the target point.</div>
+<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the entity</div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Get the mouse position relative to the entity</h1>
+
+<pre><code>// The returned value is an object with properties x, y, z
+var mousePos = entity.mousePos();
+</code></pre>
+
+<p>center.</p>
+</div>
+					</div>
+				<h3>rotateToPoint(<span class="argType">IgePoint</span> <span class="argName">point</span>)</h3>
+<div class="methodDesc">Rotates the entity to point at the target point around the z axis.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName">point</span> The point in world co-ordinates to point the entity at.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>mousePosAbsolute(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Point the entity at another entity</h1>
+
+<pre><code>entity.rotateToPoint(otherEntity.worldPosition());
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Point the entity at mouse</h1>
+
+<pre><code>entity.rotateToPoint(ige._currentViewport.mousePos());
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Point the entity at an arbitrary point x, y</h1>
+
+<pre><code>entity.rotateToPoint(new IgePoint(x, y, 0));
+</code></pre>
+</div>
+					</div>
+				<h3>mousePosAbsolute(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
 <div class="methodDesc">Gets the position of the mouse relative to this entity not taking into account viewport translation.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeViewport</span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the entity center.</div>
-<h3>mousePosWorld(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Get absolute mouse position</h1>
+
+<pre><code>var mousePosAbs = entity.mousePosAbsolute();
+</code></pre>
+</div>
+					</div>
+				<h3>mousePosWorld(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
 <div class="methodDesc">Gets the position of the mouse in world co-ordinates.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeViewport</span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the world center.</div>
-<h3>translateToTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Get mouse position in world co-ordinates</h1>
+
+<pre><code>var mousePosWorld = entity.mousePosWorld();
+</code></pre>
+</div>
+					</div>
+				<h3>translateToTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
 <div class="methodDesc">Translates the object to the tile co-ordinates passed.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x tile co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y tile co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The z tile co-ordinate.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining.</div>
-<h3>backgroundPattern(<span class="argType">IgeTexture</span> <span class="argName">texture</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Translate entity to tile</h1>
+
+<pre><code>// Create a tile map
+var tileMap = new IgeTileMap2d()
+    .tileWidth(40)
+    .tileHeight(40);
+
+// Mount our entity to the tile map
+entity.mount(tileMap);
+
+// Translate the entity to the tile x:10, y:12
+entity.translateToTile(10, 12, 0);
+</code></pre>
+</div>
+					</div>
+				<h3>backgroundPattern(<span class="argType">IgeTexture</span> <span class="argName">texture</span>, <span class="argType">String</span> <span class="argName">repeat</span>, <span class="argType">Boolean</span> <span class="argName">trackCamera</span>, <span class="argType">Boolean</span> <span class="argName">isoTile</span>)</h3>
 <div class="methodDesc">Gets / sets the texture to use as the background pattern for this entity.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeTexture</span>}<span class="argName">texture</span> The texture to use as the background.</li></ul></div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeTexture</span>}<span class="argName">texture</span> The texture to use as the background.</li><li>{<span class="argType">String</span>}<span class="argName">repeat</span> The type of repeat mode either: "repeat", "repeat-x", "repeat-y" or "none".</li><li>{<span class="argType">Boolean</span>}<span class="argName">trackCamera</span> If set to true, will track the camera translation and "move" the background with the camera.</li><li>{<span class="argType">Boolean</span>}<span class="argName">isoTile</span> If true the tiles of the background will be treated as isometric and will therefore be drawn so that they are layered seamlessly in isometric view.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>widthByTile(<span class="argType">Number</span> <span class="argName">val</span>, <span class="argType">Boolean</span> <span class="argName">lockAspect</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set a background pattern for this entity with 2d tiling</h1>
+
+<pre><code>var texture = new IgeTexture('path/to/my/texture.png');
+entity.backgroundPattern(texture, 'repeat', true, false);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set a background pattern for this entity with isometric tiling</h1>
+
+<pre><code>var texture = new IgeTexture('path/to/my/texture.png');
+entity.backgroundPattern(texture, 'repeat', true, true);
+</code></pre>
+</div>
+					</div>
+				<h3>widthByTile(<span class="argType">Number</span> <span class="argName">val</span>, <span class="argType">Boolean</span> <span class="argName">lockAspect</span>)</h3>
 <div class="methodDesc">Set the object's width to the number of tile width's specified.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> Number of tiles.</li><li>{<span class="argType">Boolean</span>}<span class="argName">lockAspect</span> If true, sets the height according to the texture aspect ratio and the new width.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining.</div>
-<h3>heightByTile(<span class="argType">Number</span> <span class="argName">val</span>, <span class="argType">Boolean</span> <span class="argName">lockAspect</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the width of the entity based on the tile width of the map the entity is mounted to</h1>
+
+<pre><code>// Set the entity width to the size of 1 tile with
+// lock aspect enabled which will automatically size
+// the height as well so as to maintain the aspect
+// ratio of the entity
+entity.widthByTile(1, true);
+</code></pre>
+</div>
+					</div>
+				<h3>heightByTile(<span class="argType">Number</span> <span class="argName">val</span>, <span class="argType">Boolean</span> <span class="argName">lockAspect</span>)</h3>
 <div class="methodDesc">Set the object's height to the number of tile height's specified.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> Number of tiles.</li><li>{<span class="argType">Boolean</span>}<span class="argName">lockAspect</span> If true, sets the width according to the texture aspect ratio and the new height.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining.</div>
-<h3>occupyTile()</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the height of the entity based on the tile height of the map the entity is mounted to</h1>
+
+<pre><code>// Set the entity height to the size of 1 tile with
+// lock aspect enabled which will automatically size
+// the width as well so as to maintain the aspect
+// ratio of the entity
+entity.heightByTile(1, true);
+</code></pre>
+</div>
+					</div>
+				<h3>occupyTile()</h3>
 <div class="methodDesc">Dummy method to help debug when programmer expects to be able to access tile-based methods but cannot. This method is overwritten when the entity is mounted to a tile map.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc"></div>
@@ -82,59 +248,212 @@
 <div class="methodDesc">Gets / sets the geometry x value.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">px</span> The new x value in pixels.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>height(<span class="argType">Number</span> <span class="argName">px</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the width of the entity</h1>
+
+<pre><code>entity.width(40);
+</code></pre>
+</div>
+					</div>
+				<h3>height(<span class="argType">Number</span> <span class="argName">px</span>)</h3>
 <div class="methodDesc">Gets / sets the geometry y value.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">px</span> The new y value in pixels.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>size3d(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
-<div class="methodDesc">Gets / sets the 3d geometry of the entity. The x and y values are relative to the center of the entity and the z value is wholly positive from the "floor".</div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the height of the entity</h1>
+
+<pre><code>entity.height(40);
+</code></pre>
+</div>
+					</div>
+				<h3>size3d(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
+<div class="methodDesc">Gets / sets the 3d geometry of the entity. The x and y values are relative to the center of the entity and the z value is wholly positive from the "floor". Primarily used when creating isometric container entities.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The new x value in pixels.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The new y value in pixels.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The new z value in pixels.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>lifeSpan(<span class="argType">Number</span> <span class="argName">milliseconds</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the dimensions of the entity (width, height and length)</h1>
+
+<pre><code>entity.size3d(40, 40, 20);
+</code></pre>
+</div>
+					</div>
+				<h3>lifeSpan(<span class="argType">Number</span> <span class="argName">milliseconds</span>)</h3>
 <div class="methodDesc">Gets / sets the life span of the object in milliseconds. The life span is how long the object will exist for before being automatically destroyed.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">milliseconds</span> The number of milliseconds the entity will live for from the current time.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>deathTime(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the lifespan of the entity to 2 seconds after which it will automatically be destroyed</h1>
+
+<pre><code>entity.lifeSpan(2000);
+</code></pre>
+</div>
+					</div>
+				<h3>deathTime(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the timestamp in milliseconds that denotes the time that the entity will be destroyed. The object checks it's own death time during each tick and if the current time is greater than the death time, the object will be destroyed.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The death time timestamp. This is a time relative to the engine's start time of zero rather than the current time that would be retrieved from new Date().getTime(). It is usually easier to call lifeSpan() rather than setting the deathTime directly.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>opacity(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the death time of the entity to 60 seconds after engine start</h1>
+
+<pre><code>entity.deathTime(60000);
+</code></pre>
+</div>
+					</div>
+				<h3>opacity(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the entity opacity from 0.0 to 1.0.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The opacity value.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>texture(<span class="argType">IgeTexture</span> <span class="argName">texture</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity to half-visible</h1>
+
+<pre><code>entity.opacity(0.5);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity to fully-visible</h1>
+
+<pre><code>entity.opacity(1.0);
+</code></pre>
+</div>
+					</div>
+				<h3>texture(<span class="argType">IgeTexture</span> <span class="argName">texture</span>)</h3>
 <div class="methodDesc">Gets / sets the texture to use when rendering the entity.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeTexture</span>}<span class="argName">texture</span> The texture object.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>cell(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity texture (image)</h1>
+
+<pre><code>var texture = new IgeTexture('path/to/some/texture.png');
+entity.texture(texture);
+</code></pre>
+</div>
+					</div>
+				<h3>cell(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the current texture cell used when rendering the game object's texture. If the texture is not cell-based, this value is ignored.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The cell index.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>cellById(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity texture as a 4x4 cell sheet and then set the cell to use</h1>
+
+<pre><code>var texture = new IgeCellSheet('path/to/some/cellSheet.png', 4, 4);
+entity.texture(texture)
+    .cell(3);
+</code></pre>
+</div>
+					</div>
+				<h3>cellById(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the current texture cell used when rendering the game object's texture. If the texture is not cell-based, this value is ignored. This differs from cell() in that it accepts a string id as the cell</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The cell id.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>dimensionsFromTexture(<span class="argType">Number</span> <span class="argName">percent</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity texture as a sprite sheet with cell ids and then set the cell to use</h1>
+
+<pre><code>var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
+    [0, 0, 40, 40, 'robotHead'],
+    [40, 0, 40, 40, 'humanHead'],
+]);
+
+// Assign the texture, set the cell to use and then
+// set the entity to the size of the cell automatically!
+entity.texture(texture)
+    .cellById('robotHead')
+    .dimensionsFromCell();
+</code></pre>
+</div>
+					</div>
+				<h3>dimensionsFromTexture(<span class="argType">Number</span> <span class="argName">percent</span>)</h3>
 <div class="methodDesc">Sets the geometry of the entity to match the width and height of the assigned texture.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">percent</span> The percentage size to resize to.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining.</div>
-<h3>dimensionsFromCell()</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity dimensions based on the assigned texture</h1>
+
+<pre><code>var texture = new IgeTexture('path/to/some/texture.png');
+
+// Assign the texture, and then set the entity to the
+// size of the texture automatically!
+entity.texture(texture)
+    .dimensionsFromTexture();
+</code></pre>
+</div>
+					</div>
+				<h3>dimensionsFromCell()</h3>
 <div class="methodDesc">Sets the geometry of the entity to match the width and height of the assigned texture cell. If the texture is not cell-based the entire texture width / height will be used.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining</div>
-<h3>highlight(<span class="argType">Boolean</span> <span class="argName">val</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity dimensions based on the assigned texture and cell</h1>
+
+<pre><code>var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
+    [0, 0, 40, 40, 'robotHead'],
+    [40, 0, 40, 40, 'humanHead'],
+]);
+// Assign the texture, set the cell to use and then
+// set the entity to the size of the cell automatically!
+entity.texture(texture)
+    .cellById('robotHead')
+    .dimensionsFromCell();
+</code></pre>
+</div>
+					</div>
+				<h3>highlight(<span class="argType">Boolean</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the highlight mode. True is on false is off.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> The highlight mode true or false.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>worldPosition()</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity to render highlighted</h1>
+
+<pre><code>entity.highlight(true);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get the current highlight state</h1>
+
+<pre><code>var isHighlighted = entity.highlight();
+</code></pre>
+</div>
+					</div>
+				<h3>worldPosition()</h3>
 <div class="methodDesc">Returns the absolute world position of the entity as an IgePoint.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The absolute world position of the entity.</div>
-<h3>worldRotationZ()</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Get the world position of the entity</h1>
+
+<pre><code>var wordPos = entity.worldPosition();
+</code></pre>
+</div>
+					</div>
+				<h3>worldRotationZ()</h3>
 <div class="methodDesc">Returns the absolute world rotation z of the entity as a value in radians.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc">Returns {<span class="argType">Number</span>} The absolute world rotation z of the entity.</div>
-<h3>localToWorld(<span class="argType">Array</span> <span class="argName">points</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Get the world rotation of the entity's z axis</h1>
+
+<pre><code>var wordRot = entity.worldRotationZ();
+</code></pre>
+</div>
+					</div>
+				<h3>localToWorld(<span class="argType">Array</span> <span class="argName">points</span>)</h3>
 <div class="methodDesc">Converts an array of points from local space to this entity's world space using it's world transform matrix. This will alter the points passed in the array directly.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">points</span> The array of IgePoints to convert.</li></ul></div>
 <div class="methodReturnDesc"></div>
@@ -142,15 +461,67 @@
 <div class="methodDesc">Converts a point from local space to this entity's world space using it's world transform matrix. This will alter the point's data directly.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName">point</span> The IgePoint to convert.</li></ul></div>
 <div class="methodReturnDesc"></div>
-<h3>aabb()</h3>
+<h3>aabb(<span class="argType">Boolean</span> <span class="argName">recalculate</span>)</h3>
 <div class="methodDesc">Calculates and returns the current axis-aligned bounding box in world co-ordinates.</div>
-<div class="methodArgs"></div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">recalculate</span> If true this will force the recalculation of the AABB instead of returning a cached value.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">IgeRect</span>} The axis-aligned bounding box in world co-ordinates.</div>
-<h3>localAabb(<span class="argType">Boolean</span> <span class="argName">recalculate</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Get the entity axis-aligned bounding box dimensions</h1>
+
+<pre><code>var aabb = entity.aabb();
+
+console.log(aabb.x);
+console.log(aabb.y);
+console.log(aabb.width);
+console.log(aabb.height);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get the entity axis-aligned bounding box dimensions forcing the engine to update the values first</h1>
+
+<pre><code>var aabb = entity.aabb(true); // Call with true to force update
+
+console.log(aabb.x);
+console.log(aabb.y);
+console.log(aabb.width);
+console.log(aabb.height);
+</code></pre>
+</div>
+					</div>
+				<h3>localAabb(<span class="argType">Boolean</span> <span class="argName">recalculate</span>)</h3>
 <div class="methodDesc">Calculates and returns the local axis-aligned bounding box for the entity. This is the AABB relative to the entity's center point.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">recalculate</span> If true this will force the recalculation of the local AABB instead of returning a cached value.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">IgeRect</span>} The local AABB.</div>
-<h3>_swapVars(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Get the entity local axis-aligned bounding box dimensions</h1>
+
+<pre><code>var aabb = entity.localAabb();
+
+console.log(aabb.x);
+console.log(aabb.y);
+console.log(aabb.width);
+console.log(aabb.height);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get the entity local axis-aligned bounding box dimensions forcing the engine to update the values first</h1>
+
+<pre><code>var aabb = entity.localAabb(true); // Call with true to force update
+
+console.log(aabb.x);
+console.log(aabb.y);
+console.log(aabb.width);
+console.log(aabb.height);
+</code></pre>
+</div>
+					</div>
+				<h3>_swapVars(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>)</h3>
 <div class="methodDesc">Takes two values and returns them as an array where index [0] is the y argument and index[1] is the x argument. This method is used specifically in the 3d bounds intersection process to determine entity depth sorting.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The first value.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The second value.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} The swapped arguments.</div>
@@ -158,15 +529,55 @@
 <div class="methodDesc">Compares the current entity's 3d bounds to the passed entity and determines if the current entity is "behind" the passed one. If an entity is behind another, it is drawn first during the scenegraph render phase.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeEntity</span>}<span class="argName">otherObject</span> The other entity to check this entity's 3d bounds against.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} If true this entity is "behind" the passed entity or false if not.</div>
-<h3>mouseEventsActive(<span class="argType">Boolean</span> <span class="argName">val</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Determine if this entity is "behind" another entity based on the current depth-sort</h1>
+
+<pre><code>var behind = entity.isBehind(otherEntity);
+</code></pre>
+</div>
+					</div>
+				<h3>mouseEventsActive(<span class="argType">Boolean</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Get / set the flag determining if this entity will respond to mouse interaction or not. When you set a mouse* event e.g. mouseUp, mouseOver etc this flag will automatically be reset to true.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> The flag value true or false.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>newFrame()</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set entity to ignore mouse events</h1>
+
+<pre><code>entity.mouseEventsActive(false);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set entity to receive mouse events</h1>
+
+<pre><code>entity.mouseEventsActive(true);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get current flag value</h1>
+
+<pre><code>var val = entity.mouseEventsActive();
+</code></pre>
+</div>
+					</div>
+				<h3>newFrame()</h3>
 <div class="methodDesc">Determines if the frame alternator value for this entity matches the engine's frame alternator value. The entity's frame alternator value will be set to match the engine's after each call to the entity.tick() method so the return value of this method can be used to determine if the tick() method has already been run for this entity.  This is useful if you have multiple viewports which will cause the entity tick() method to fire once for each viewport but you only want to execute update code such as movement etc on the first time the tick() method is called.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} If false, the entity's tick method has not yet been processed for this tick.</div>
-<h3>tick(<span class="argType">CanvasRenderingContext2D</span> <span class="argName">ctx</span>, <span class="argType">Boolean</span> <span class="argName">dontTransform</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Determine if the entity has already had it's tick method called</h1>
+
+<pre><code>var tickAlreadyCalled = entity.newFrame();
+</code></pre>
+</div>
+					</div>
+				<h3>tick(<span class="argType">CanvasRenderingContext2D</span> <span class="argName">ctx</span>, <span class="argType">Boolean</span> <span class="argName">dontTransform</span>)</h3>
 <div class="methodDesc">Processes the actions required each render frame.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to render to.</li><li>{<span class="argType">Boolean</span>}<span class="argName">dontTransform</span> If set to true, the tick method will not transform the context based on the entity's matrices. This is useful if you have extended the class and want to process down the inheritance chain but have already transformed the entity in a previous overloaded method.</li></ul></div>
 <div class="methodReturnDesc"></div>
@@ -182,11 +593,35 @@
 <div class="methodDesc">Sets the canvas context transform properties to match the the game object's current transform values.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to apply the transformation matrix to.</li></ul></div>
 <div class="methodReturnDesc"></div>
-<h3>_transformPoint(<span class="argType">IgePoint</span> <span class="argName">point</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Transform a canvas context to the entity's local matrix values</h1>
+
+<pre><code>var canvas = document.createElement('canvas');
+canvas.width = 800;
+canvas.height = 600;
+
+var ctx = canvas.getContext('2d');
+entity._transformContext(ctx);
+</code></pre>
+</div>
+					</div>
+				<h3>_transformPoint(<span class="argType">IgePoint</span> <span class="argName">point</span>)</h3>
 <div class="methodDesc">Transforms a point by the entity's parent world matrix and it's own local matrix transforming the point to this entity's world space.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName">point</span> The point to transform.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The transformed point.</div>
-<h3>_mouseInAabb(<span class="argType">Object</span> <span class="argName">evc</span>, <span class="argType">Object</span> <span class="argName">data</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Transform a point by the entity's world matrix values</h1>
+
+<pre><code>var point = new IgePoint(0, 0, 0);
+entity._transformPoint(point);
+
+console.log(point);
+</code></pre>
+</div>
+					</div>
+				<h3>_mouseInAabb(<span class="argType">Object</span> <span class="argName">evc</span>, <span class="argType">Object</span> <span class="argName">data</span>)</h3>
 <div class="methodDesc">Checks mouse input types and fires the correct mouse event handler. This is an internal method that should never be called externally.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">evc</span> The input component event control object.</li><li>{<span class="argType">Object</span>}<span class="argName">data</span> Data passed by the input component into the new event.</li></ul></div>
 <div class="methodReturnDesc"></div>
@@ -198,31 +633,123 @@
 <div class="methodDesc">Destroys the entity by removing it from the scenegraph, calling destroy() on any child entities and removing any active event listeners for the entity. Once an entity has been destroyed it's this._alive flag is also set to false.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc"></div>
-<h3>streamSections(<span class="argType">Array</span> <span class="argName">sectionArray</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Destroy the entity</h1>
+
+<pre><code>entity.destroy();
+</code></pre>
+</div>
+					</div>
+				<h3>streamSections(<span class="argType">Array</span> <span class="argName">sectionArray</span>)</h3>
 <div class="methodDesc">Gets / sets the array of sections that this entity will encode into its stream data.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">sectionArray</span> An array of strings.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>streamSectionData(<span class="argType">String</span> <span class="argName">sectionId</span>, <span class="argType">*</span> <span class="argName">data</span>, <span class="argType">Boolean</span> <span class="argName">bypassTimeStream</span>)</h3>
-<div class="methodDesc">Gets / sets the data for the specified data section id.</div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Define the sections this entity will use in the network stream. Use the default "transform" section as well as a "custom1" section</h1>
+
+<pre><code>entity.streamSections('transform', 'custom1');
+</code></pre>
+</div>
+					</div>
+				<h3>streamSectionData(<span class="argType">String</span> <span class="argName">sectionId</span>, <span class="argType">*</span> <span class="argName">data</span>, <span class="argType">Boolean</span> <span class="argName">bypassTimeStream</span>)</h3>
+<div class="methodDesc">Gets / sets the data for the specified data section id. This method is usually not called directly and instead is part of the network stream system. General use case is to write your own custom streamSectionData method in a class that extends IgeEntity so that you can control the data that the entity will send and receive over the network stream.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">sectionId</span> A string identifying the section to handle data get / set for.</li><li>{<span class="argType">*</span>}<span class="argName">data</span> If present, this is the data that has been sent from the server to the client for this entity.</li><li>{<span class="argType">Boolean</span>}<span class="argName">bypassTimeStream</span> If true, will assign transform directly to entity instead of adding the values to the time stream.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when a data argument is passed to allow method chaining or the current value if no data argument is specified.</div>
 <h3>streamMode(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the stream mode that the stream system will use when handling pushing data updates to connected clients.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> A value representing the stream mode.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>streamControl(<span class="argType">Function</span> <span class="argName">method</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity to disable streaming</h1>
+
+<pre><code>entity.streamMode(0);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity to automatic streaming</h1>
+
+<pre><code>entity.streamMode(1);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity to manual (advanced mode) streaming</h1>
+
+<pre><code>entity.streamMode(2);
+</code></pre>
+</div>
+					</div>
+				<h3>streamControl(<span class="argType">Function</span> <span class="argName">method</span>)</h3>
 <div class="methodDesc">Gets / sets the stream control callback function that will be called each time the entity tick method is called and stream-able data is updated.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">method</span> The stream control method.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>streamSyncInterval(<span class="argType">Number</span> <span class="argName">val</span>, <span class="argType">String</span> <span class="argName">sectionId</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity's stream control method to control when this entity is streamed and when it is not</h1>
+
+<pre><code>entity.streamControl(function (clientId) {
+    // Let's use an example where we only want this entity to stream
+    // to one particular client with the id 4039589434
+    if (clientId === '4039589434') {
+        // Returning true tells the network stream to send data
+        // about this entity to the client
+        return true;
+    } else {
+        // Returning false tells the network stream NOT to send
+        // data about this entity to the client
+        return false;
+    }
+});
+</code></pre>
+
+<p>Further reading: <a href="http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/manual/networking-multiplayer/realtime-network-streaming/stream-modes-and-controlling-streaming/">Controlling Streaming</a></p>
+</div>
+					</div>
+				<h3>streamSyncInterval(<span class="argType">Number</span> <span class="argName">val</span>, <span class="argType">String</span> <span class="argName">sectionId</span>)</h3>
 <div class="methodDesc">Gets / sets the stream sync interval. This value is in milliseconds and cannot be lower than 16. It will determine how often data from this entity is added to the stream queue.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> Number of milliseconds between adding stream data for this entity to the stream queue.</li><li>{<span class="argType">String</span>}<span class="argName">sectionId</span> Optional id of the stream data section you want to set the interval for. If omitted the interval will be applied to all sections.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>streamFloatPrecision(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity's stream update (sync) interval to 1 second because this entity's data is not highly important to the simulation so save some bandwidth!</h1>
+
+<pre><code>entity.streamSyncInterval(1000);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity's stream update (sync) interval to 16 milliseconds because this entity's data is very important to the simulation so send as often as possible!</h1>
+
+<pre><code>entity.streamSyncInterval(16);
+</code></pre>
+</div>
+					</div>
+				<h3>streamFloatPrecision(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the precision by which floating-point values will be encoded and sent when packaged into stream data.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The number of decimal places to preserve.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>streamSync(<span class="argType">Array</span> <span class="argName">clientId</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the float precision to 2</h1>
+
+<pre><code>// This will mean that any data using floating-point values
+// that gets sent across the network stream will be rounded
+// to 2 decimal places. This helps save bandwidth by not
+// having to send the entire number since precision above
+// 2 decimal places is usually not that important to the
+// simulation.
+entity.streamFloatPrecision(2);
+</code></pre>
+</div>
+					</div>
+				<h3>streamSync(<span class="argType">Array</span> <span class="argName">clientId</span>)</h3>
 <div class="methodDesc">Queues stream data for this entity to be sent to the specified client id or array of client ids.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">clientId</span> An array of string IDs of each client to send the stream data to.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">IgeEntity</span>} "this".</div>
@@ -234,7 +761,63 @@
 <div class="methodDesc">Asks the stream system to queue the stream data to the specified client id or array of ids.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">recipientArr</span> The array of ids of the client(s) to queue stream data for. The stream data being queued is returned by a call to this._streamData().</li></ul></div>
 <div class="methodReturnDesc"></div>
-<h3>_streamData()</h3>
+<h3>streamCreate(<span class="argType">*</span> <span class="argName">clientId</span>)</h3>
+<div class="methodDesc">Issues a create entity command to the passed client id or array of ids. If no id is passed it will issue the command to all connected clients. If using streamMode(1) this method is called automatically.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">clientId</span> The id or array of ids to send the command to.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Send a create command for this entity to all clients</h1>
+
+<pre><code>entity.streamCreate();
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Send a create command for this entity to an array of client ids</h1>
+
+<pre><code>entity.streamCreate(['43245325', '326755464', '436743453']);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Send a create command for this entity to a single client id</h1>
+
+<pre><code>entity.streamCreate('43245325');
+</code></pre>
+</div>
+					</div>
+				<h3>streamDestroy(<span class="argType">*</span> <span class="argName">clientId</span>)</h3>
+<div class="methodDesc">Issues a destroy entity command to the passed client id or array of ids. If no id is passed it will issue the command to all connected clients. If using streamMode(1) this method is called automatically.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">clientId</span> The id or array of ids to send the command to.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Send a destroy command for this entity to all clients</h1>
+
+<pre><code>entity.streamDestroy();
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Send a destroy command for this entity to an array of client ids</h1>
+
+<pre><code>entity.streamDestroy(['43245325', '326755464', '436743453']);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Send a destroy command for this entity to a single client id</h1>
+
+<pre><code>entity.streamDestroy('43245325');
+</code></pre>
+</div>
+					</div>
+				<h3>_streamData()</h3>
 <div class="methodDesc">Generates and returns the current stream data for this entity. The data will usually include only properties that have changed since the last time the stream data was generated. The returned data is a string that has been compressed in various ways to reduce network overhead during transmission.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc">Returns {<span class="argType">String</span>} The string representation of the stream data for this entity.</div>

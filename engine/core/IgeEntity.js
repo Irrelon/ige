@@ -1,4 +1,3 @@
-// TODO: Should we add some sort of auto-recalculate flag so if the width / height / geom changes it autochanges the aabb and localAabb?
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -53,6 +52,8 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Sets the entity as visible and able to be interacted with.
+	 * @example #Show a hidden entity
+	 *     entity.show();
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
@@ -63,6 +64,8 @@ var IgeEntity = IgeObject.extend([
 
 	/**
 	 * Sets the entity as hidden and cannot be interacted with.
+	 * @example #Hide a visible entity
+	 *     entity.hide();
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
@@ -79,6 +82,12 @@ var IgeEntity = IgeObject.extend([
 	 * fonts etc.
 	 * @param {Boolean=} val True to enable caching, false to
 	 * disable caching.
+	 * @example #Enable entity caching
+	 *     entity.cache(true);
+	 * @example #Disable entity caching
+	 *     entity.cache(false);
+	 * @example #Get caching flag value
+	 *     var val = entity.cache();
 	 * @return {*}
 	 */
 	cache: function (val) {
@@ -107,6 +116,10 @@ var IgeEntity = IgeObject.extend([
 	 * assigned texture. Once that occurs the flag will automatically
 	 * be set back to false.
 	 * @param {Boolean=} val True to force a cache update.
+	 * @example #Get cache dirty flag value
+	 *     var val = entity.cacheDirty();
+	 * @example #Set cache dirty flag value
+	 *     entity.cacheDirty(true);
 	 * @return {*}
 	 */
 	cacheDirty: function (val) {
@@ -125,6 +138,9 @@ var IgeEntity = IgeObject.extend([
 	 * viewport is specified then the current viewport the engine
 	 * is rendering to is used instead.
 	 * @return {IgePoint} The mouse point relative to the entity
+	 * @example #Get the mouse position relative to the entity
+	 *     // The returned value is an object with properties x, y, z
+	 *     var mousePos = entity.mousePos();
 	 * center.
 	 */
 	mousePos: function (viewport) {
@@ -141,9 +157,15 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Rotates the entity to point at the target point.
+	 * Rotates the entity to point at the target point around the z axis.
 	 * @param {IgePoint} point The point in world co-ordinates to
 	 * point the entity at.
+	 * @example #Point the entity at another entity
+	 *     entity.rotateToPoint(otherEntity.worldPosition());
+	 * @example #Point the entity at mouse
+	 *     entity.rotateToPoint(ige._currentViewport.mousePos());
+	 * @example #Point the entity at an arbitrary point x, y
+	 *     entity.rotateToPoint(new IgePoint(x, y, 0));
 	 * @return {*}
 	 */
 	rotateToPoint: function (point) {
@@ -163,6 +185,8 @@ var IgeEntity = IgeObject.extend([
 	 * base from which the mouse position is determined. If no
 	 * viewport is specified then the current viewport the engine
 	 * is rendering to is used instead.
+	 * @example #Get absolute mouse position
+	 *     var mousePosAbs = entity.mousePosAbsolute();
 	 * @return {IgePoint} The mouse point relative to the entity
 	 * center.
 	 */
@@ -172,9 +196,9 @@ var IgeEntity = IgeObject.extend([
 			var mp = viewport._mousePos.clone();
 			this._transformPoint(mp);
 			return mp;
-		} else {
-			return new IgePoint(0, 0, 0);
 		}
+		
+		return new IgePoint(0, 0, 0);
 	},
 
 	/**
@@ -183,6 +207,8 @@ var IgeEntity = IgeObject.extend([
 	 * base from which the mouse position is determined. If no
 	 * viewport is specified then the current viewport the engine
 	 * is rendering to is used instead.
+	 * @example #Get mouse position in world co-ordinates
+	 *     var mousePosWorld = entity.mousePosWorld();
 	 * @return {IgePoint} The mouse point relative to the world
 	 * center.
 	 */
@@ -203,7 +229,17 @@ var IgeEntity = IgeObject.extend([
 	 * @param {Number} x The x tile co-ordinate.
 	 * @param {Number} y The y tile co-ordinate.
 	 * @param {Number=} z The z tile co-ordinate.
-	 * @private
+	 * @example #Translate entity to tile
+	 *     // Create a tile map
+	 *     var tileMap = new IgeTileMap2d()
+	 *         .tileWidth(40)
+	 *         .tileHeight(40);
+	 *     
+	 *     // Mount our entity to the tile map
+	 *     entity.mount(tileMap);
+	 *     
+	 *     // Translate the entity to the tile x:10, y:12
+	 *     entity.translateToTile(10, 12, 0);
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
@@ -231,6 +267,19 @@ var IgeEntity = IgeObject.extend([
 	 * pattern for this entity.
 	 * @param {IgeTexture} texture The texture to use as
 	 * the background.
+	 * @param {String=} repeat The type of repeat mode either: "repeat",
+	 * "repeat-x", "repeat-y" or "none".
+	 * @param {Boolean=} trackCamera If set to true, will track the camera
+	 * translation and "move" the background with the camera.
+	 * @param {Boolean=} isoTile If true the tiles of the background will
+	 * be treated as isometric and will therefore be drawn so that they are
+	 * layered seamlessly in isometric view.
+	 * @example #Set a background pattern for this entity with 2d tiling
+	 *     var texture = new IgeTexture('path/to/my/texture.png');
+	 *     entity.backgroundPattern(texture, 'repeat', true, false);
+	 * @example #Set a background pattern for this entity with isometric tiling
+	 *     var texture = new IgeTexture('path/to/my/texture.png');
+	 *     entity.backgroundPattern(texture, 'repeat', true, true);
 	 * @return {*}
 	 */
 	backgroundPattern: function (texture, repeat, trackCamera, isoTile) {
@@ -250,7 +299,12 @@ var IgeEntity = IgeObject.extend([
 	 * @param {Number} val Number of tiles.
 	 * @param {Boolean=} lockAspect If true, sets the height according
 	 * to the texture aspect ratio and the new width.
-	 * @private
+	 * @example #Set the width of the entity based on the tile width of the map the entity is mounted to
+	 *     // Set the entity width to the size of 1 tile with
+	 *     // lock aspect enabled which will automatically size
+	 *     // the height as well so as to maintain the aspect
+	 *     // ratio of the entity
+	 *     entity.widthByTile(1, true);
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
@@ -282,7 +336,12 @@ var IgeEntity = IgeObject.extend([
 	 * @param {Number} val Number of tiles.
 	 * @param {Boolean=} lockAspect If true, sets the width according
 	 * to the texture aspect ratio and the new height.
-	 * @private
+	 * @example #Set the height of the entity based on the tile height of the map the entity is mounted to
+	 *     // Set the entity height to the size of 1 tile with
+	 *     // lock aspect enabled which will automatically size
+	 *     // the width as well so as to maintain the aspect
+	 *     // ratio of the entity
+	 *     entity.heightByTile(1, true);
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
@@ -347,6 +406,8 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Gets / sets the geometry x value.
 	 * @param {Number=} px The new x value in pixels.
+	 * @example #Set the width of the entity
+	 *     entity.width(40);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -370,6 +431,8 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Gets / sets the geometry y value.
 	 * @param {Number=} px The new y value in pixels.
+	 * @example #Set the height of the entity
+	 *     entity.height(40);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -393,10 +456,13 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Gets / sets the 3d geometry of the entity. The x and y values are
 	 * relative to the center of the entity and the z value is wholly
-	 * positive from the "floor".
+	 * positive from the "floor". Primarily used when creating isometric
+	 * container entities.
 	 * @param {Number=} x The new x value in pixels.
 	 * @param {Number=} y The new y value in pixels.
 	 * @param {Number=} z The new z value in pixels.
+	 * @example #Set the dimensions of the entity (width, height and length)
+	 *     entity.size3d(40, 40, 20);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -415,6 +481,8 @@ var IgeEntity = IgeObject.extend([
 	 * destroyed.
 	 * @param {Number=} milliseconds The number of milliseconds the entity
 	 * will live for from the current time.
+	 * @example #Set the lifespan of the entity to 2 seconds after which it will automatically be destroyed
+	 *     entity.lifeSpan(2000);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -436,6 +504,8 @@ var IgeEntity = IgeObject.extend([
 	 * to the engine's start time of zero rather than the current time that
 	 * would be retrieved from new Date().getTime(). It is usually easier
 	 * to call lifeSpan() rather than setting the deathTime directly.
+	 * @example #Set the death time of the entity to 60 seconds after engine start
+	 *     entity.deathTime(60000);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -451,6 +521,10 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Gets / sets the entity opacity from 0.0 to 1.0.
 	 * @param {Number=} val The opacity value.
+	 * @example #Set the entity to half-visible
+	 *     entity.opacity(0.5);
+	 * @example #Set the entity to fully-visible
+	 *     entity.opacity(1.0);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -466,6 +540,9 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Gets / sets the texture to use when rendering the entity.
 	 * @param {IgeTexture=} texture The texture object.
+	 * @example #Set the entity texture (image)
+	 *     var texture = new IgeTexture('path/to/some/texture.png');
+	 *     entity.texture(texture);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -483,6 +560,10 @@ var IgeEntity = IgeObject.extend([
 	 * object's texture. If the texture is not cell-based, this value is
 	 * ignored.
 	 * @param {Number=} val The cell index.
+	 * @example #Set the entity texture as a 4x4 cell sheet and then set the cell to use
+	 *     var texture = new IgeCellSheet('path/to/some/cellSheet.png', 4, 4);
+	 *     entity.texture(texture)
+	 *         .cell(3);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -501,6 +582,17 @@ var IgeEntity = IgeObject.extend([
 	 * ignored. This differs from cell() in that it accepts a string id
 	 * as the cell
 	 * @param {Number=} val The cell id.
+	 * @example #Set the entity texture as a sprite sheet with cell ids and then set the cell to use
+	 *     var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
+	 *         [0, 0, 40, 40, 'robotHead'],
+	 *         [40, 0, 40, 40, 'humanHead'],
+	 *     ]);
+	 *     
+	 *     // Assign the texture, set the cell to use and then
+	 *     // set the entity to the size of the cell automatically!
+	 *     entity.texture(texture)
+	 *         .cellById('robotHead')
+	 *         .dimensionsFromCell();
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -535,6 +627,13 @@ var IgeEntity = IgeObject.extend([
 	 * Sets the geometry of the entity to match the width and height
 	 * of the assigned texture.
 	 * @param {Number=} percent The percentage size to resize to.
+	 * @example #Set the entity dimensions based on the assigned texture
+	 *     var texture = new IgeTexture('path/to/some/texture.png');
+	 *	
+	 *     // Assign the texture, and then set the entity to the
+	 *     // size of the texture automatically!
+	 *     entity.texture(texture)
+	 *         .dimensionsFromTexture();
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
@@ -559,6 +658,17 @@ var IgeEntity = IgeObject.extend([
 	 * Sets the geometry of the entity to match the width and height
 	 * of the assigned texture cell. If the texture is not cell-based
 	 * the entire texture width / height will be used.
+	 * @example #Set the entity dimensions based on the assigned texture and cell
+	 *     var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
+	 *         [0, 0, 40, 40, 'robotHead'],
+	 *         [40, 0, 40, 40, 'humanHead'],
+	 *     ]);
+	 *
+	 *     // Assign the texture, set the cell to use and then
+	 *     // set the entity to the size of the cell automatically!
+	 *     entity.texture(texture)
+	 *         .cellById('robotHead')
+	 *         .dimensionsFromCell();
 	 * @return {*} The object this method was called from to allow
 	 * method chaining
 	 */
@@ -577,6 +687,10 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Gets / sets the highlight mode. True is on false is off.
 	 * @param {Boolean} val The highlight mode true or false.
+	 * @example #Set the entity to render highlighted
+	 *     entity.highlight(true);
+	 * @example #Get the current highlight state
+	 *     var isHighlighted = entity.highlight();
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -592,6 +706,8 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Returns the absolute world position of the entity as an
 	 * IgePoint.
+	 * @example #Get the world position of the entity
+	 *     var wordPos = entity.worldPosition();
 	 * @return {IgePoint} The absolute world position of the
 	 * entity.
 	 */
@@ -602,6 +718,8 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Returns the absolute world rotation z of the entity as a
 	 * value in radians.
+	 * @example #Get the world rotation of the entity's z axis
+	 *     var wordRot = entity.worldRotationZ();
 	 * @return {Number} The absolute world rotation z of the
 	 * entity.
 	 */
@@ -638,6 +756,23 @@ var IgeEntity = IgeObject.extend([
 	/**
 	 * Calculates and returns the current axis-aligned bounding box in
 	 * world co-ordinates.
+	 * @param {Boolean=} recalculate If true this will force the
+	 * recalculation of the AABB instead of returning a cached
+	 * value.
+	 * @example #Get the entity axis-aligned bounding box dimensions
+	 *     var aabb = entity.aabb();
+	 *     
+	 *     console.log(aabb.x);
+	 *     console.log(aabb.y);
+	 *     console.log(aabb.width);
+	 *     console.log(aabb.height);
+	 * @example #Get the entity axis-aligned bounding box dimensions forcing the engine to update the values first
+	 *     var aabb = entity.aabb(true); // Call with true to force update
+	 *     
+	 *     console.log(aabb.x);
+	 *     console.log(aabb.y);
+	 *     console.log(aabb.width);
+	 *     console.log(aabb.height);
 	 * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
 	 */
 	aabb: function (recalculate) {
@@ -776,6 +911,20 @@ var IgeEntity = IgeObject.extend([
 	 * @param {Boolean=} recalculate If true this will force the
 	 * recalculation of the local AABB instead of returning a cached
 	 * value.
+	 * @example #Get the entity local axis-aligned bounding box dimensions
+	 *     var aabb = entity.localAabb();
+	 *	
+	 *     console.log(aabb.x);
+	 *     console.log(aabb.y);
+	 *     console.log(aabb.width);
+	 *     console.log(aabb.height);
+	 * @example #Get the entity local axis-aligned bounding box dimensions forcing the engine to update the values first
+	 *     var aabb = entity.localAabb(true); // Call with true to force update
+	 *	
+	 *     console.log(aabb.x);
+	 *     console.log(aabb.y);
+	 *     console.log(aabb.width);
+	 *     console.log(aabb.height);
 	 * @return {IgeRect} The local AABB.
 	 */
 	localAabb: function (recalculate) {
@@ -879,6 +1028,8 @@ var IgeEntity = IgeObject.extend([
 	 * render phase.
 	 * @param {IgeEntity} otherObject The other entity to check this
 	 * entity's 3d bounds against.
+	 * @example #Determine if this entity is "behind" another entity based on the current depth-sort 
+	 *     var behind = entity.isBehind(otherEntity);
 	 * @return {Boolean} If true this entity is "behind" the passed entity
 	 * or false if not.
 	 */
@@ -940,6 +1091,12 @@ var IgeEntity = IgeObject.extend([
 	 * mouseUp, mouseOver etc this flag will automatically be reset
 	 * to true.
 	 * @param {Boolean=} val The flag value true or false.
+	 * @example #Set entity to ignore mouse events
+	 *     entity.mouseEventsActive(false);
+	 * @example #Set entity to receive mouse events
+	 *     entity.mouseEventsActive(true);
+	 * @example #Get current flag value
+	 *     var val = entity.mouseEventsActive();
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -964,7 +1121,9 @@ var IgeEntity = IgeObject.extend([
 	 * cause the entity tick() method to fire once for each viewport
 	 * but you only want to execute update code such as movement etc
 	 * on the first time the tick() method is called.
-	 *
+	 * 
+	 * @example #Determine if the entity has already had it's tick method called
+	 *     var tickAlreadyCalled = entity.newFrame();
 	 * @return {Boolean} If false, the entity's tick method has
 	 * not yet been processed for this tick.
 	 */
@@ -1187,6 +1346,13 @@ var IgeEntity = IgeObject.extend([
 	 * object's current transform values.
 	 * @param {CanvasRenderingContext2D} ctx The canvas context to apply
 	 * the transformation matrix to.
+	 * @example #Transform a canvas context to the entity's local matrix values
+	 *     var canvas = document.createElement('canvas');
+	 *     canvas.width = 800;
+	 *     canvas.height = 600;
+	 *     
+	 *     var ctx = canvas.getContext('2d');
+	 *     entity._transformContext(ctx);
 	 * @private
 	 */
 	_transformContext: function (ctx) {
@@ -1212,6 +1378,11 @@ var IgeEntity = IgeObject.extend([
 	 * it's own local matrix transforming the point to this entity's
 	 * world space.
 	 * @param {IgePoint} point The point to transform.
+	 * @example #Transform a point by the entity's world matrix values
+	 *     var point = new IgePoint(0, 0, 0);
+	 *     entity._transformPoint(point);
+	 *     
+	 *     console.log(point);
 	 * @return {IgePoint} The transformed point.
 	 * @private
 	 */
@@ -1334,6 +1505,8 @@ var IgeEntity = IgeObject.extend([
 	 * any active event listeners for the entity. Once an entity
 	 * has been destroyed it's this._alive flag is also set to
 	 * false.
+	 * @example #Destroy the entity
+	 *     entity.destroy();
 	 */
 	destroy: function () {
 		this._alive = false;
@@ -1358,6 +1531,8 @@ var IgeEntity = IgeObject.extend([
 	 * Gets / sets the array of sections that this entity will
 	 * encode into its stream data.
 	 * @param {Array=} sectionArray An array of strings.
+	 * @example #Define the sections this entity will use in the network stream. Use the default "transform" section as well as a "custom1" section
+	 *     entity.streamSections('transform', 'custom1');
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -1371,7 +1546,11 @@ var IgeEntity = IgeObject.extend([
 	},
 
 	/**
-	 * Gets / sets the data for the specified data section id.
+	 * Gets / sets the data for the specified data section id. This method
+	 * is usually not called directly and instead is part of the network
+	 * stream system. General use case is to write your own custom streamSectionData
+	 * method in a class that extends IgeEntity so that you can control the
+	 * data that the entity will send and receive over the network stream.
 	 * @param {String} sectionId A string identifying the section to
 	 * handle data get / set for.
 	 * @param {*=} data If present, this is the data that has been sent
@@ -1441,6 +1620,12 @@ var IgeEntity = IgeObject.extend([
 	 * Gets / sets the stream mode that the stream system will use when
 	 * handling pushing data updates to connected clients.
 	 * @param {Number=} val A value representing the stream mode.
+	 * @example #Set the entity to disable streaming
+	 *     entity.streamMode(0);
+	 * @example #Set the entity to automatic streaming
+	 *     entity.streamMode(1);
+	 * @example #Set the entity to manual (advanced mode) streaming
+	 *     entity.streamMode(2);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -1458,6 +1643,22 @@ var IgeEntity = IgeObject.extend([
 	 * each time the entity tick method is called and stream-able data is
 	 * updated.
 	 * @param {Function=} method The stream control method.
+	 * @example #Set the entity's stream control method to control when this entity is streamed and when it is not
+	 *     entity.streamControl(function (clientId) {
+	 *         // Let's use an example where we only want this entity to stream
+	 *         // to one particular client with the id 4039589434
+	 *         if (clientId === '4039589434') {
+	 *             // Returning true tells the network stream to send data
+	 *             // about this entity to the client
+	 *             return true;
+	 *         } else {
+	 *             // Returning false tells the network stream NOT to send
+	 *             // data about this entity to the client
+	 *             return false;
+	 *         }
+	 *     });
+	 * 
+	 * Further reading: [Controlling Streaming](http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/manual/networking-multiplayer/realtime-network-streaming/stream-modes-and-controlling-streaming/)
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -1480,6 +1681,10 @@ var IgeEntity = IgeObject.extend([
 	 * @param {String=} sectionId Optional id of the stream data
 	 * section you want to set the interval for. If omitted the
 	 * interval will be applied to all sections.
+	 * @example #Set the entity's stream update (sync) interval to 1 second because this entity's data is not highly important to the simulation so save some bandwidth!
+	 *     entity.streamSyncInterval(1000);
+	 * @example #Set the entity's stream update (sync) interval to 16 milliseconds because this entity's data is very important to the simulation so send as often as possible!
+	 *     entity.streamSyncInterval(16);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -1512,6 +1717,14 @@ var IgeEntity = IgeObject.extend([
 	 * Gets / sets the precision by which floating-point values will
 	 * be encoded and sent when packaged into stream data.
 	 * @param {Number=} val The number of decimal places to preserve.
+	 * @example #Set the float precision to 2
+	 *     // This will mean that any data using floating-point values
+	 *     // that gets sent across the network stream will be rounded
+	 *     // to 2 decimal places. This helps save bandwidth by not
+	 *     // having to send the entire number since precision above
+	 *     // 2 decimal places is usually not that important to the
+	 *     // simulation.
+	 *     entity.streamFloatPrecision(2);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -1659,6 +1872,21 @@ var IgeEntity = IgeObject.extend([
 		}
 	},
 
+	/**
+	 * Issues a create entity command to the passed client id
+	 * or array of ids. If no id is passed it will issue the
+	 * command to all connected clients. If using streamMode(1)
+	 * this method is called automatically.
+	 * @param {*} clientId The id or array of ids to send
+	 * the command to.
+	 * @example #Send a create command for this entity to all clients
+	 *     entity.streamCreate();
+	 * @example #Send a create command for this entity to an array of client ids
+	 *     entity.streamCreate(['43245325', '326755464', '436743453']);
+	 * @example #Send a create command for this entity to a single client id
+	 *     entity.streamCreate('43245325');
+	 * @return {Boolean}
+	 */
 	streamCreate: function (clientId) {
 		if (this._parent) {
 			var thisId = this.id(),
@@ -1694,6 +1922,21 @@ var IgeEntity = IgeObject.extend([
 		return false;
 	},
 
+	/**
+	 * Issues a destroy entity command to the passed client id
+	 * or array of ids. If no id is passed it will issue the
+	 * command to all connected clients. If using streamMode(1)
+	 * this method is called automatically.
+	 * @param {*} clientId The id or array of ids to send
+	 * the command to.
+	 * @example #Send a destroy command for this entity to all clients
+	 *     entity.streamDestroy();
+	 * @example #Send a destroy command for this entity to an array of client ids
+	 *     entity.streamDestroy(['43245325', '326755464', '436743453']);
+	 * @example #Send a destroy command for this entity to a single client id
+	 *     entity.streamDestroy('43245325');
+	 * @return {Boolean}
+	 */
 	streamDestroy: function (clientId) {
 		var thisId = this.id(),
 			arr,
@@ -1716,6 +1959,8 @@ var IgeEntity = IgeObject.extend([
 				}
 			}
 		}
+		
+		return true;
 	},
 
 	/**
