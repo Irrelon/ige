@@ -187,6 +187,18 @@ var IgeObject = IgeEventingClass.extend({
 		return false;
 	},
 
+	/**
+	 * Gets an array of all groups this entity belongs to.
+	 * @return {*}
+	 */
+	groups: function () {
+		return this._groups;
+	},
+
+	/**
+	 * Gets the number of groups this entity belongs to.
+	 * @return {Number}
+	 */
 	groupCount: function () {
 		return this._groups ? this._groups.length : 0;
 	},
@@ -939,6 +951,7 @@ var IgeObject = IgeEventingClass.extend({
 		// Remove the object from the lookup system
 		ige.unRegister(this);
 		ige.categoryUnRegister(this);
+		ige.groupUnRegister(this);
 
 		// Set a flag in case a reference to this object
 		// has been held somewhere, shows that the object

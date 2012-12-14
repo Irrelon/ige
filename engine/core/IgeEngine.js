@@ -253,12 +253,19 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	groupUnRegister: function (obj, groupName) {
 		if (obj !== undefined) {
-			if (this._groupRegister[groupName]) {
-				this._groupRegister[groupName].pull(obj);
+			if (groupName !== undefined) {
+				if (this._groupRegister[groupName]) {
+					this._groupRegister[groupName].pull(obj);
 
-				if (!obj.groupCount()) {
-					obj._groupRegister = false;
+					if (!obj.groupCount()) {
+						obj._groupRegister = false;
+					}
 				}
+			} else {
+				// Call the removeAllGroups() method which will loop
+				// all the groups that the object belongs to and
+				// automatically un-register them
+				obj.removeAllGroups();
 			}
 		}
 
