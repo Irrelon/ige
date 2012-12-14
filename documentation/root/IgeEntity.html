@@ -641,7 +641,203 @@ console.log(point);
 </code></pre>
 </div>
 					</div>
-				<h3>streamSections(<span class="argType">Array</span> <span class="argName">sectionArray</span>)</h3>
+				<h3>translateBy(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
+<div class="methodDesc">Translates the entity by adding the passed values to the current translation values.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The z co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Translate the entity by 10 along the x axis</h1>
+
+<pre><code>entity.translateBy(10, 0, 0);
+</code></pre>
+</div>
+					</div>
+				<h3>translateTo(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
+<div class="methodDesc">Translates the entity to the passed values.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The z co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Translate the entity to 10, 0, 0</h1>
+
+<pre><code>entity.translateTo(10, 0, 0);
+</code></pre>
+</div>
+					</div>
+				<h3>translate()</h3>
+<div class="methodDesc">Gets the translate accessor object.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Use the translate accessor object to alter the y co-ordinate of the entity to 10</h1>
+
+<pre><code>entity.translate().y(10);
+</code></pre>
+</div>
+					</div>
+				<h3>_translateAccessorX(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">The translate accessor method for the x axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.translate().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>_translateAccessorY(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">The translate accessor method for the y axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.translate().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>_translateAccessorZ(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">The translate accessor method for the z axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.translate().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>rotateBy(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
+<div class="methodDesc">Rotates the entity by adding the passed values to the current rotation values.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The z co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Rotate the entity by 10 degrees about the z axis</h1>
+
+<pre><code>entity.rotateBy(0, 0, Math.radians(10));
+</code></pre>
+</div>
+					</div>
+				<h3>rotateTo(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
+<div class="methodDesc">Rotates the entity to the passed values.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The z co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Rotate the entity to 10 degrees about the z axis</h1>
+
+<pre><code>entity.rotateTo(0, 0, Math.radians(10));
+</code></pre>
+</div>
+					</div>
+				<h3>rotate()</h3>
+<div class="methodDesc">Gets the translate accessor object.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Use the rotate accessor object to rotate the entity about the z axis 10 degrees</h1>
+
+<pre><code>entity.rotate().z(Math.radians(10));
+</code></pre>
+</div>
+					</div>
+				<h3>_rotateAccessorX(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">The rotate accessor method for the x axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.rotate().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>_rotateAccessorY(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">The rotate accessor method for the y axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.rotate().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>_rotateAccessorZ(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">The rotate accessor method for the z axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.rotate().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>scaleBy(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
+<div class="methodDesc">Scales the entity by adding the passed values to the current scale values.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The z co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Scale the entity by 2 on the x axis</h1>
+
+<pre><code>entity.scaleBy(2, 0, 0);
+</code></pre>
+</div>
+					</div>
+				<h3>scaleTo(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
+<div class="methodDesc">Scale the entity to the passed values.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The z co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity scale to 1 on all axes</h1>
+
+<pre><code>entity.scaleTo(1, 1, 1);
+</code></pre>
+</div>
+					</div>
+				<h3>scale()</h3>
+<div class="methodDesc">Gets the scale accessor object.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Use the scale accessor object to set the scale of the entity on the x axis to 1</h1>
+
+<pre><code>entity.scale().x(1);
+</code></pre>
+</div>
+					</div>
+				<h3>_scaleAccessorX(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">The scale accessor method for the x axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.scale().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>_scaleAccessorY(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">The scale accessor method for the y axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.scale().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>_scaleAccessorZ(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">The scale accessor method for the z axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.scale().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>originBy(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
+<div class="methodDesc">Sets the origin of the entity by adding the passed values to the current origin values.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The z co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Add 0.5 to the origin on the x axis</h1>
+
+<pre><code>entity.originBy(0.5, 0, 0);
+</code></pre>
+</div>
+					</div>
+				<h3>originTo(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
+<div class="methodDesc">Set the origin of the entity to the passed values.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The z co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Set the entity origin to 0.5 on all axes</h1>
+
+<pre><code>entity.originTo(0.5, 0.5, 0.5);
+</code></pre>
+</div>
+					</div>
+				<h3>origin()</h3>
+<div class="methodDesc">Gets the origin accessor object.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Use the origin accessor object to set the origin of the entity on the x axis to 1</h1>
+
+<pre><code>entity.origin().x(1);
+</code></pre>
+</div>
+					</div>
+				<h3>_originAccessorX(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">The origin accessor method for the x axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.origin().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>_originAccessorY(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">The origin accessor method for the y axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.origin().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>_originAccessorZ(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">The origin accessor method for the z axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.origin().</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>updateTransform()</h3>
+<div class="methodDesc">Checks the current transform values against the previous ones. If any value is different, the appropriate method is called which will update the transformation matrix accordingly.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div>
+<h3>streamSections(<span class="argType">Array</span> <span class="argName">sectionArray</span>)</h3>
 <div class="methodDesc">Gets / sets the array of sections that this entity will encode into its stream data.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">sectionArray</span> An array of strings.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>

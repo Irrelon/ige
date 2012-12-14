@@ -52,10 +52,8 @@ var igeCoreConfig = {
 		/* CocoonJS Support */
 		['csap', 'IgeCocoonJsComponent', 'components/cocoonjs/IgeCocoonJsComponent.js'],
 		/* General Extensions */
-		['csap', 'IgeTransformExtension', 'extensions/IgeTransformExtension.js'],
 		['csap', 'IgeUiPositionExtension', 'extensions/IgeUiPositionExtension.js'],
 		['csap', 'IgeUiStyleExtension', 'extensions/IgeUiStyleExtension.js'],
-		['csap', 'IgeUiInteractionExtension', 'extensions/IgeUiInteractionExtension.js'],
 		/* Main Engine Classes */
 		['csap', 'IgeDummyContext', 'core/IgeDummyContext.js'],
 		['csap', 'IgePathNode', 'core/IgePathNode.js'],

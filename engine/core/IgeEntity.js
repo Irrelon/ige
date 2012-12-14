@@ -2,10 +2,7 @@
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
  */
-var IgeEntity = IgeObject.extend([
-	{extension: IgeTransformExtension, overwrite: false},
-	{extension: IgeUiInteractionExtension, overwrite: true}
-], {
+var IgeEntity = IgeObject.extend({
 	classId: 'IgeEntity',
 
 	init: function () {
@@ -1522,6 +1519,756 @@ var IgeEntity = IgeObject.extend([
 
 		// Call IgeObject.destroy()
 		this._super();
+	},
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// INTERACTION
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Gets / sets the callback that is fired when a mouse
+	 * move event is triggered.
+	 * @param {Function=} callback
+	 * @example #Hook the mouse move event and stop it propagating further down the scenegraph
+	 *     entity.mouseMove(function (event, control) {
+	 *         // Mouse moved with button
+	 *         console.log('Mouse move button: ' + event.button);
+	 *         
+	 *         // Stop the event propagating further down the scenegraph
+	 *         control.stopPropagation();
+	 *         
+	 *         // You can ALSO stop propagation without the control object
+	 *         // reference via the global reference:
+	 *         ige.input.stopPropagation();
+	 *     });
+	 * @return {*}
+	 */
+	mouseMove: function (callback) {
+		if (callback) {
+			this._mouseMove = callback;
+			this._mouseEventsActive = true;
+			return this;
+		}
+
+		return this._mouseMove;
+	},
+
+	/**
+	 * Removes the callback that is fired when a mouse
+	 * move event is triggered.
+	 */
+	mouseMoveOff: function () {
+		delete this._mouseMove;
+
+		return this;
+	},
+
+	/**
+	 * Gets / sets the callback that is fired when a mouse
+	 * over event is triggered.
+	 * @param {Function=} callback
+	 * @example #Hook the mouse over event and stop it propagating further down the scenegraph
+	 *     entity.mouseOver(function (event, control) {
+	 *         // Mouse over with button
+	 *         console.log('Mouse over button: ' + event.button);
+	 *         
+	 *         // Stop the event propagating further down the scenegraph
+	 *         control.stopPropagation();
+	 *         
+	 *         // You can ALSO stop propagation without the control object
+	 *         // reference via the global reference:
+	 *         ige.input.stopPropagation();
+	 *     });
+	 * @return {*}
+	 */
+	mouseOver: function (callback) {
+		if (callback) {
+			this._mouseOver = callback;
+			this._mouseEventsActive = true;
+			return this;
+		}
+
+		return this._mouseOver;
+	},
+
+	/**
+	 * Removes the callback that is fired when a mouse
+	 * over event is triggered.
+	 */
+	mouseOverOff: function () {
+		delete this._mouseOver;
+
+		return this;
+	},
+
+	/**
+	 * Gets / sets the callback that is fired when a mouse
+	 * out event is triggered.
+	 * @param {Function=} callback
+	 * @example #Hook the mouse out event and stop it propagating further down the scenegraph
+	 *     entity.mouseOut(function (event, control) {
+	 *         // Mouse out with button
+	 *         console.log('Mouse out button: ' + event.button);
+	 *         
+	 *         // Stop the event propagating further down the scenegraph
+	 *         control.stopPropagation();
+	 *         
+	 *         // You can ALSO stop propagation without the control object
+	 *         // reference via the global reference:
+	 *         ige.input.stopPropagation();
+	 *     });
+	 * @return {*}
+	 */
+	mouseOut: function (callback) {
+		if (callback) {
+			this._mouseOut = callback;
+			this._mouseEventsActive = true;
+			return this;
+		}
+
+		return this._mouseOut;
+	},
+
+	/**
+	 * Removes the callback that is fired when a mouse
+	 * out event is triggered.
+	 */
+	mouseOutOff: function () {
+		delete this._mouseOut;
+
+		return this;
+	},
+
+	/**
+	 * Gets / sets the callback that is fired when a mouse
+	 * up event is triggered.
+	 * @param {Function=} callback
+	 * @example #Hook the mouse up event and stop it propagating further down the scenegraph
+	 *     entity.mouseUp(function (event, control) {
+	 *         // Mouse up with button
+	 *         console.log('Mouse up button: ' + event.button);
+	 *         
+	 *         // Stop the event propagating further down the scenegraph
+	 *         control.stopPropagation();
+	 *         
+	 *         // You can ALSO stop propagation without the control object
+	 *         // reference via the global reference:
+	 *         ige.input.stopPropagation();
+	 *     });
+	 * @return {*}
+	 */
+	mouseUp: function (callback) {
+		if (callback) {
+			this._mouseUp = callback;
+			this._mouseEventsActive = true;
+			return this;
+		}
+
+		return this._mouseUp;
+	},
+
+	/**
+	 * Removes the callback that is fired when a mouse
+	 * up event is triggered.
+	 */
+	mouseUpOff: function () {
+		delete this._mouseUp;
+
+		return this;
+	},
+
+	/**
+	 * Gets / sets the callback that is fired when a mouse
+	 * down event is triggered.
+	 * @param {Function=} callback
+	 * @example #Hook the mouse down event and stop it propagating further down the scenegraph
+	 *     entity.mouseDown(function (event, control) {
+	 *         // Mouse down with button
+	 *         console.log('Mouse down button: ' + event.button);
+	 *         
+	 *         // Stop the event propagating further down the scenegraph
+	 *         control.stopPropagation();
+	 *         
+	 *         // You can ALSO stop propagation without the control object
+	 *         // reference via the global reference:
+	 *         ige.input.stopPropagation();
+	 *     });
+	 * @return {*}
+	 */
+	mouseDown: function (callback) {
+		if (callback) {
+			this._mouseDown = callback;
+			this._mouseEventsActive = true;
+			return this;
+		}
+
+		return this._mouseDown;
+	},
+
+	/**
+	 * Removes the callback that is fired when a mouse
+	 * down event is triggered.
+	 */
+	mouseDownOff: function () {
+		delete this._mouseDown;
+
+		return this;
+	},
+
+	/**
+	 * Handler method that determines which mouse-move event
+	 * to fire, a mouse-over or a mouse-move.
+	 * @private
+	 */
+	_handleMouseIn: function (event, evc, data) {
+		// TODO: Set local mouse point based on 0, 0 at top-left of entity rather than screen
+		// Check if the mouse move is a mouse over
+		if (!this._mouseStateOver) {
+			this._mouseStateOver = true;
+			if (this._mouseOver) { this._mouseOver(event, evc, data); }
+		}
+
+		if (this._mouseMove) { this._mouseMove(event, evc, data); }
+	},
+
+	/**
+	 * Handler method that determines if a mouse-out event
+	 * should be fired.
+	 * @private
+	 */
+	_handleMouseOut: function (event, evc, data) {
+		// The mouse went away from this entity so
+		// set mouse-down to false, regardless of the situation
+		this._mouseStateDown = false;
+
+		// Check if the mouse move is a mouse out
+		if (this._mouseStateOver) {
+			this._mouseStateOver = false;
+			if (this._mouseOut) { this._mouseOut(event, evc, data); }
+		}
+	},
+
+	/**
+	 * Handler method that determines if a mouse-up event
+	 * should be fired.
+	 * @private
+	 */
+	_handleMouseUp: function (event, evc, data) {
+		// Reset the mouse-down flag
+		this._mouseStateDown = false;
+		if (this._mouseUp) { this._mouseUp(event, evc, data); }
+	},
+
+	/**
+	 * Handler method that determines if a mouse-down event
+	 * should be fired.
+	 * @private
+	 */
+	_handleMouseDown: function (event, evc, data) {
+		if (!this._mouseStateDown) {
+			this._mouseStateDown = true;
+			if (this._mouseDown) { this._mouseDown(event, evc, data); }
+		}
+	},
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// TRANSFORM
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Translates the entity by adding the passed values to
+	 * the current translation values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Translate the entity by 10 along the x axis
+	 *     entity.translateBy(10, 0, 0);
+	 * @return {*}
+	 */
+	translateBy: function (x, y, z) {
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._translate.x += x;
+			this._translate.y += y;
+			this._translate.z += z;
+		} else {
+			this.log('translateBy() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
+		return this._entity || this;
+	},
+
+	/**
+	 * Translates the entity to the passed values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Translate the entity to 10, 0, 0
+	 *     entity.translateTo(10, 0, 0);
+	 * @return {*}
+	 */
+	translateTo: function (x, y, z) {
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._translate.x = x;
+			this._translate.y = y;
+			this._translate.z = z;
+		} else {
+			this.log('translateTo() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
+		return this._entity || this;
+	},
+
+	/**
+	 * Gets the translate accessor object.
+	 * @example #Use the translate accessor object to alter the y co-ordinate of the entity to 10
+	 *     entity.translate().y(10);
+	 * @return {*}
+	 */
+	translate: function () {
+		if (arguments.length) {
+			this.log('You called translate with arguments, did you mean translateTo or translateBy instead of translate?', 'warning');
+		}
+
+		this.x = this._translateAccessorX;
+		this.y = this._translateAccessorY;
+		this.z = this._translateAccessorZ;
+
+		return this._entity || this;
+	},
+
+	/**
+	 * The translate accessor method for the x axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.translate().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
+	_translateAccessorX: function (val) {
+		if (val !== undefined) {
+			this._translate.x = val;
+			return this._entity || this;
+		}
+
+		return this._translate.x;
+	},
+
+	/**
+	 * The translate accessor method for the y axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.translate().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
+	_translateAccessorY: function (val) {
+		if (val !== undefined) {
+			this._translate.y = val;
+			return this._entity || this;
+		}
+
+		return this._translate.y;
+	},
+
+	/**
+	 * The translate accessor method for the z axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.translate().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
+	_translateAccessorZ: function (val) {
+		// TODO: Do we need to do anything to the matrix here for iso views?
+		//this._localMatrix.translateTo(this._translate.x, this._translate.y);
+		if (val !== undefined) {
+			this._translate.z = val;
+			return this._entity || this;
+		}
+
+		return this._translate.z;
+	},
+
+	/**
+	 * Rotates the entity by adding the passed values to
+	 * the current rotation values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Rotate the entity by 10 degrees about the z axis
+	 *     entity.rotateBy(0, 0, Math.radians(10));
+	 * @return {*}
+	 */
+	rotateBy: function (x, y, z) {
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._rotate.x += x;
+			this._rotate.y += y;
+			this._rotate.z += z;
+		} else {
+			this.log('rotateBy() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
+		return this._entity || this;
+	},
+
+	/**
+	 * Rotates the entity to the passed values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Rotate the entity to 10 degrees about the z axis
+	 *     entity.rotateTo(0, 0, Math.radians(10));
+	 * @return {*}
+	 */
+	rotateTo: function (x, y, z) {
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._rotate.x = x;
+			this._rotate.y = y;
+			this._rotate.z = z;
+		} else {
+			this.log('rotateTo() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
+		return this._entity || this;
+	},
+
+	/**
+	 * Gets the translate accessor object.
+	 * @example #Use the rotate accessor object to rotate the entity about the z axis 10 degrees
+	 *     entity.rotate().z(Math.radians(10));
+	 * @return {*}
+	 */
+	rotate: function () {
+		if (arguments.length) {
+			this.log('You called rotate with arguments, did you mean rotateTo or rotateBy instead of rotate?', 'warning');
+		}
+		
+		this.x = this._rotateAccessorX;
+		this.y = this._rotateAccessorY;
+		this.z = this._rotateAccessorZ;
+
+		return this._entity || this;
+	},
+
+	/**
+	 * The rotate accessor method for the x axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.rotate().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
+	_rotateAccessorX: function (val) {
+		if (val !== undefined) {
+			this._rotate.x = val;
+			return this._entity || this;
+		}
+
+		return this._rotate.x;
+	},
+
+	/**
+	 * The rotate accessor method for the y axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.rotate().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
+	_rotateAccessorY: function (val) {
+		if (val !== undefined) {
+			this._rotate.y = val;
+			return this._entity || this;
+		}
+
+		return this._rotate.y;
+	},
+
+	/**
+	 * The rotate accessor method for the z axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.rotate().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
+	_rotateAccessorZ: function (val) {
+		if (val !== undefined) {
+			this._rotate.z = val;
+			return this._entity || this;
+		}
+
+		return this._rotate.z;
+	},
+
+	/**
+	 * Scales the entity by adding the passed values to
+	 * the current scale values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Scale the entity by 2 on the x axis
+	 *     entity.scaleBy(2, 0, 0);
+	 * @return {*}
+	 */
+	scaleBy: function (x, y, z) {
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._scale.x += x;
+			this._scale.y += y;
+			this._scale.z += z;
+		} else {
+			this.log('scaleBy() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
+		return this._entity || this;
+	},
+
+	/**
+	 * Scale the entity to the passed values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Set the entity scale to 1 on all axes
+	 *     entity.scaleTo(1, 1, 1);
+	 * @return {*}
+	 */
+	scaleTo: function (x, y, z) {
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._scale.x = x;
+			this._scale.y = y;
+			this._scale.z = z;
+		} else {
+			this.log('scaleTo() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
+		return this._entity || this;
+	},
+
+	/**
+	 * Gets the scale accessor object.
+	 * @example #Use the scale accessor object to set the scale of the entity on the x axis to 1
+	 *     entity.scale().x(1);
+	 * @return {*}
+	 */
+	scale: function () {
+		if (arguments.length) {
+			this.log('You called scale with arguments, did you mean scaleTo or scaleBy instead of scale?', 'warning');
+		}
+		
+		this.x = this._scaleAccessorX;
+		this.y = this._scaleAccessorY;
+		this.z = this._scaleAccessorZ;
+
+		return this._entity || this;
+	},
+
+	/**
+	 * The scale accessor method for the x axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.scale().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
+	_scaleAccessorX: function (val) {
+		if (val !== undefined) {
+			this._scale.x = val;
+			return this._entity || this;
+		}
+
+		return this._scale.x;
+	},
+
+	/**
+	 * The scale accessor method for the y axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.scale().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
+	_scaleAccessorY: function (val) {
+		if (val !== undefined) {
+			this._scale.y = val;
+			return this._entity || this;
+		}
+
+		return this._scale.y;
+	},
+
+	/**
+	 * The scale accessor method for the z axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.scale().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
+	_scaleAccessorZ: function (val) {
+		if (val !== undefined) {
+			this._scale.z = val;
+			return this._entity || this;
+		}
+
+		return this._scale.z;
+	},
+
+	/**
+	 * Sets the origin of the entity by adding the passed values to
+	 * the current origin values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Add 0.5 to the origin on the x axis
+	 *     entity.originBy(0.5, 0, 0);
+	 * @return {*}
+	 */
+	originBy: function (x, y, z) {
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._origin.x += x;
+			this._origin.y += y;
+			this._origin.z += z;
+		} else {
+			this.log('originBy() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
+		return this._entity || this;
+	},
+
+	/**
+	 * Set the origin of the entity to the passed values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Set the entity origin to 0.5 on all axes
+	 *     entity.originTo(0.5, 0.5, 0.5);
+	 * @return {*}
+	 */
+	originTo: function (x, y, z) {
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._origin.x = x;
+			this._origin.y = y;
+			this._origin.z = z;
+		} else {
+			this.log('originTo() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
+		return this._entity || this;
+	},
+
+	/**
+	 * Gets the origin accessor object.
+	 * @example #Use the origin accessor object to set the origin of the entity on the x axis to 1
+	 *     entity.origin().x(1);
+	 * @return {*}
+	 */
+	origin: function () {
+		this.x = this._originAccessorX;
+		this.y = this._originAccessorY;
+		this.z = this._originAccessorZ;
+
+		return this._entity || this;
+	},
+
+	/**
+	 * The origin accessor method for the x axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.origin().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
+	_originAccessorX: function (val) {
+		if (val !== undefined) {
+			this._origin.x = val;
+			return this._entity || this;
+		}
+
+		return this._origin.x;
+	},
+
+	/**
+	 * The origin accessor method for the y axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.origin().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
+	_originAccessorY: function (val) {
+		if (val !== undefined) {
+			this._origin.y = val;
+			return this._entity || this;
+		}
+
+		return this._origin.y;
+	},
+
+	/**
+	 * The origin accessor method for the z axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.origin().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
+	_originAccessorZ: function (val) {
+		if (val !== undefined) {
+			this._origin.z = val;
+			return this._entity || this;
+		}
+
+		return this._origin.z;
+	},
+
+	_rotatePoint: function (point, radians, origin) {
+		var cosAngle = Math.cos(radians),
+			sinAngle = Math.sin(radians);
+
+		return {
+			x: origin.x + (point.x - origin.x) * cosAngle + (point.y - origin.y) * sinAngle,
+			y: origin.y - (point.x - origin.x) * sinAngle + (point.y - origin.y) * cosAngle
+		};
+	},
+
+	/**
+	 * Checks the current transform values against the previous ones. If
+	 * any value is different, the appropriate method is called which will
+	 * update the transformation matrix accordingly.
+	 */
+	updateTransform: function () {
+		// TODO: Do we need to calc this if the entity transform hasn't changed?
+		this._localMatrix.identity();
+		if (this._mode === 0) {
+			// 2d translation
+			this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
+		}
+
+		if (this._mode === 1) {
+			// iso translation
+			var isoPoint = this._translateIso = new IgePoint(
+				this._translate.x,
+				this._translate.y,
+				this._translate.z + this._geometry.z / 2
+			).toIso();
+
+			if (this._parent && this._parent._geometry.z) {
+				// This adjusts the child entity so that 0, 0, 0 inside the
+				// parent is the center of the base of the parent
+				isoPoint.y += this._parent._geometry.z / 1.6;
+			}
+
+			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
+		}
+
+		this._localMatrix.multiply(this._localMatrix._newRotate(this._rotate.z));
+		this._localMatrix.multiply(this._localMatrix._newScale(this._scale.x, this._scale.y));
+
+		// TODO: If the parent and local transforms are unchanged, we should used cached values
+		if (this._parent) {
+			this._worldMatrix.copy(this._parent._worldMatrix);
+			this._worldMatrix.multiply(this._localMatrix);
+		} else {
+			this._worldMatrix.copy(this._localMatrix);
+		}
 	},
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
