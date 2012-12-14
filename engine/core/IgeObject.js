@@ -26,6 +26,12 @@ var IgeObject = IgeEventingClass.extend({
 	 * destroyed.
 	 * @param {Boolean=} val The value to set the alive flag
 	 * to.
+	 * @example #Get the alive flag value
+	 *     var entity = new IgeEntity();
+	 *     console.log(entity.alive());
+	 * @example #Set the alive flag value
+	 *     var entity = new IgeEntity();
+	 *     entity.alive(true);
 	 * @return {*}
 	 */
 	alive: function (val) {
@@ -42,6 +48,15 @@ var IgeObject = IgeEventingClass.extend({
 	 * id is passed to the method, it will automatically generate and assign a
 	 * new id as a 16 character hexadecimal value typed as a string.
 	 * @param {String=} id
+	 * @example #Get the id of an entity
+	 *     var entity = new IgeEntity();
+	 *     console.log(entity.id());
+	 * @example #Set the id of an entity
+	 *     var entity = new IgeEntity();
+	 *     entity.id('myNewId');
+	 * @example #Set the id of an entity via chaining
+	 *     var entity = new IgeEntity()
+	 *         .id('myNewId');
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	id: function (id) {
@@ -87,6 +102,30 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Gets / sets the arbitrary category name that the object belongs to.
 	 * @param {String=} val
+	 * @example #Get the category of an entity
+	 *     var entity = new IgeEntity();
+	 *     console.log(entity.category());
+	 * @example #Set the category of an entity
+	 *     var entity = new IgeEntity();
+	 *     entity.category('myNewCategory');
+	 * @example #Set the category of an entity via chaining
+	 *     var entity = new IgeEntity()
+	 *         .category('myNewCategory');
+	 * @example #Get all the entities belonging to a category
+	 *     var entityArray = ige.$$('categoryName');
+	 * @example #Remove the category of an entity
+	 *     // Set category to some name
+	 *     var entity = new IgeEntity()
+	 *         .category('myCategory');
+	 *         
+	 *     // Will output "myCategory"
+	 *     console.log(entity.category());
+	 *     
+	 *     // Now remove the category
+	 *     entity.category('');
+	 *     
+	 *     // Will return ""
+	 *     console.log(entity.category());
 	 * @return {*}
 	 */
 	category: function (val) {
@@ -101,11 +140,14 @@ var IgeObject = IgeEventingClass.extend({
 					ige.categoryUnRegister(this);
 				}
 			}
-
+			
 			this._category = val;
 
-			// Now register this object with the category it has been assigned
-			ige.categoryRegister(this);
+			// Check the category is not a blank string
+			if (val) {
+				// Now register this object with the category it has been assigned
+				ige.categoryRegister(this);
+			}
 			return this;
 		}
 
@@ -113,7 +155,8 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
-	 * A warning method to help developers move to the new groups system.
+	 * DEPRECIATED - Use category() instead. A warning method to
+	 * help developers move to the new groups system.
 	 */
 	group: function () {
 		this.log('The group() method has been renamed to category(). Please update your code.', 'error');
@@ -341,6 +384,19 @@ var IgeObject = IgeEventingClass.extend({
 	 * Adds a behaviour to the object's active behaviour list.
 	 * @param {String} id
 	 * @param {Function} behaviour
+	 * @example #Add a behaviour with the id "myBehaviour"
+	 *     var entity = new IgeEntity();
+	 *     entity.addBehaviour('myBehaviour', function () {
+	 *         // Code here will execute during each engine tick for
+	 *         // this entity. I can access the entity via the "this"
+	 *         // keyword such as:
+	 *         this._somePropertyOfTheEntity = 'moo';
+	 *     });
+	 *     
+	 *     // Now since each tick we are setting _somePropertyOfTheEntity
+	 *     // to equal "moo" we can console log the property and get
+	 *     // the value as "moo"
+	 *     console.log(entity._somePropertyOfTheEntity);
 	 * @return {*} Returns this on success or false on failure.
 	 */
 	addBehaviour: function (id, behaviour) {
@@ -366,6 +422,17 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Removes a behaviour to the object's active behaviour list by it's id.
 	 * @param {String} id
+	 * @example #Remove a behaviour with the id "myBehaviour"
+	 *     var entity = new IgeEntity();
+	 *     entity.addBehaviour('myBehaviour', function () {
+	 *         // Code here will execute during each engine tick for
+	 *         // this entity. I can access the entity via the "this"
+	 *         // keyword such as:
+	 *         this._somePropertyOfTheEntity = 'moo';
+	 *     });
+	 *     
+	 *     // Now remove the "myBehaviour" behaviour
+	 *     entity.removeBehaviour('myBehaviour');
 	 * @return {*} Returns this on success or false on failure.
 	 */
 	removeBehaviour: function (id) {
@@ -393,7 +460,17 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Gets / sets the boolean flag determining if this object should have
 	 * it's bounds drawn when the bounds for all objects are being drawn.
+	 * In order for bounds to be drawn the viewport the object is being drawn
+	 * to must also have draw bounds enabled.
 	 * @param {Boolean} val
+	 * @example #Enable draw bounds
+	 *     var entity = new IgeEntity();
+	 *     entity.drawBounds(true);
+	 * @example #Disable draw bounds
+	 *     var entity = new IgeEntity();
+	 *     entity.drawBounds(false);
+	 * @example #Get the current flag value
+	 *     console.log(entity.drawBounds());
 	 * @return {*}
 	 */
 	drawBounds: function (val) {
@@ -410,6 +487,14 @@ var IgeObject = IgeEventingClass.extend({
 	 * it's bounds data drawn when the bounds for all objects are being drawn.
 	 * Bounds data includes the object ID and it's current depth etc.
 	 * @param {Boolean} val
+	 * @example #Enable draw bounds data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawBoundsData(true);
+	 * @example #Disable draw bounds data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawBoundsData(false);
+	 * @example #Get the current flag value
+	 *     console.log(entity.drawBoundsData());
 	 * @return {*}
 	 */
 	drawBoundsData: function (val) {
@@ -425,7 +510,15 @@ var IgeObject = IgeEventingClass.extend({
 	 * Gets / sets the boolean flag determining if this object should have
 	 * it's mouse position data drawn when the bounds for all objects are
 	 * being drawn.
-	 * @param val
+	 * @param {Boolean=} val
+	 * @example #Enable draw mouse position data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawMouse(true);
+	 * @example #Disable draw mouse position data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawMouse(false);
+	 * @example #Get the current flag value
+	 *     console.log(entity.drawMouse());
 	 * @return {*}
 	 */
 	drawMouse: function (val) {
@@ -440,6 +533,19 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Returns the object's parent object (the object that
 	 * it is mounted to).
+	 * @example #Get the object parent
+	 *     // Create a couple of entities and give them ids
+	 *     var entity1 = new IgeEntity().id('entity1'),
+	 *         entity2 = new IgeEntity().id('entity2');
+	 *     
+	 *     // Mount entity2 to entity1
+	 *     entity2.mount(entity1);
+	 *     
+	 *     // Get the parent of entity2 (which is entity1)
+	 *     var parent = entity2.parent();
+	 *     
+	 *     // Log the parent's id (will output "entity1")
+	 *     console.log(parent.id());
 	 * @return {*}
 	 */
 	parent: function () {
@@ -448,7 +554,20 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Returns the object's children as an array of objects.
-	 * @return {Array}
+	 * @example #Get the child objects array
+	 *     // Create a couple of entities and give them ids
+	 *     var entity1 = new IgeEntity().id('entity1'),
+	 *         entity2 = new IgeEntity().id('entity2');
+	 *	
+	 *     // Mount entity2 to entity1
+	 *     entity2.mount(entity1);
+	 *	
+	 *     // Get the chilren array entity1
+	 *     var childArray = entity1.children();
+	 *	
+	 *     // Log the child array contents (will contain entity2)
+	 *     console.log(childArray);
+	 * @return {Array} The array of child objects.
 	 */
 	children: function () {
 		return this._children;
@@ -457,6 +576,13 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Mounts this object to the passed object in the scenegraph.
 	 * @param {IgeObject} obj
+	 * @example #Mount an entity to another entity
+	 *     // Create a couple of entities and give them ids
+	 *     var entity1 = new IgeEntity().id('entity1'),
+	 *         entity2 = new IgeEntity().id('entity2');
+	 *	
+	 *     // Mount entity2 to entity1
+	 *     entity2.mount(entity1);
 	 * @return {*} Returns this on success or false on failure.
 	 */
 	mount: function (obj) {
@@ -497,6 +623,16 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Unmounts this object from it's parent object in the scenegraph.
+	 * @example #Unmount an entity from another entity
+	 *     // Create a couple of entities and give them ids
+	 *     var entity1 = new IgeEntity().id('entity1'),
+	 *         entity2 = new IgeEntity().id('entity2');
+	 *	
+	 *     // Mount entity2 to entity1
+	 *     entity2.mount(entity1);
+	 *     
+	 *     // Now unmount entity2 from entity1
+	 *     entity2.unMount();
 	 * @return {*} Returns this on success or false on failure.
 	 */
 	unMount: function () {
@@ -522,7 +658,7 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Clones the object and all it's children and returns a new object.
+	 * NOT IMPLEMENTED - Clones the object and all it's children and returns a new object.
 	 */
 		// TODO: Write this function!
 	clone: function () {
@@ -531,7 +667,13 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Gets / sets the positioning mode of the entity.
-	 * @param val 0 = 2d, 1 = isometric
+	 * @param {Number=} val 0 = 2d, 1 = isometric
+	 * @example #Set the positioning mode to 2d
+	 *     var entity = new IgeEntity()
+	 *         .mode(0);
+	 * @example #Set the positioning mode to isometric
+	 *     var entity = new IgeEntity()
+	 *         .mode(1);
 	 * @return {*}
 	 */
 	mode: function (val) {
@@ -548,6 +690,12 @@ var IgeObject = IgeEventingClass.extend({
 	 * or in 2d.
 	 * @param {Boolean} val Set to true to position this object in
 	 * isometric space or false to position it in 2d space.
+	 * @example #Set the positioning mode to isometric
+	 *     var entity = new IgeEntity()
+	 *         .isometric(true);
+	 * @example #Set the positioning mode to 2d
+	 *     var entity = new IgeEntity()
+	 *         .isometric(false);
 	 * @return {*}
 	 */
 	isometric: function (val) {
@@ -571,6 +719,12 @@ var IgeObject = IgeEventingClass.extend({
 	 * and depth sorting of objects mounted to this object, or false to
 	 * enable 2d positioning and depth-sorting of objects mounted to this
 	 * object.
+	 * @example #Set children to be positioned and depth sorted in 2d
+	 *     var entity = new IgeEntity()
+	 *         .isometricMounts(false);
+	 * @example #Set children to be positioned and depth sorted in isometric
+	 *     var entity = new IgeEntity()
+	 *         .isometricMounts(true);
 	 * @return {*}
 	 */
 	isometricMounts: function (val) {
@@ -591,6 +745,15 @@ var IgeObject = IgeEventingClass.extend({
 	 * Gets / sets the indestructible flag. If set to true, the object will
 	 * not be destroyed even if a call to the destroy() method is made.
 	 * @param {Number=} val
+	 * @example #Set an entity to indestructible
+	 *     var entity = new IgeEntity()
+	 *         .indestructible(true);
+	 * @example #Set an entity to destructible
+	 *     var entity = new IgeEntity()
+	 *         .indestructible(false);
+	 * @example #Get an entity's indestructible flag value
+	 *     var entity = new IgeEntity()
+	 *     console.log(entity.indestructible());
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	indestructible: function (val) {
@@ -603,8 +766,45 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Gets / sets the current entity layer.
+	 * Gets / sets the current entity layer. This affects how the entity is depth-sorted
+	 * against other entities of the same parent. Please note that entities are first sorted
+	 * by their layer and then by their depth, and only entities of the same layer will be
+	 * sorted against each other by their depth values.
 	 * @param {Number=} val
+	 * @example #Set an entity's layer to 22
+	 *     var entity = new IgeEntity()
+	 *         .layer(22);
+	 * @example #Get an entity's layer value
+	 *     var entity = new IgeEntity()
+	 *     console.log(entity.layer());
+	 * @example #How layers and depths are handled together
+	 *     var entity1 = new IgeEntity(),
+	 *         entity2 = new IgeEntity(),
+	 *         entity3 = new IgeEntity();
+	 *         
+	 *     // Set entity1 to at layer zero and depth 100
+	 *     entity1.layer(0)
+	 *         .depth(100);
+	 *     
+	 *     // Set entity2 and 3 to be at layer 1
+	 *     entity2.layer(1);
+	 *     entity3.layer(1);
+	 *	
+	 *     // Set entity3 to have a higher depth than entity2
+	 *     entity2.depth(0);
+	 *     entity3.depth(1);
+	 *     
+	 *     // The engine sorts first based on layer from lowest to highest
+	 *     // and then within each layer, by depth from lowest to highest.
+	 *     // This means that entity1 will be drawn before entity 2 and 3
+	 *     // because even though it's depth is higher, it is not on the same
+	 *     // layer as entity 2 and 3.
+	 *     
+	 *     // Based on the layers and depths we have assigned, here
+	 *     // is how the engine will sort the draw order of the entities
+	 *     // entity1
+	 *     // entity2
+	 *     // entity3
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	layer: function (val) {
@@ -618,8 +818,44 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Gets / sets the current render depth of the object (higher depths
-	 * are drawn over lower depths).
+	 * are drawn over lower depths). Please note that entities are first sorted
+	 * by their layer and then by their depth, and only entities of the same layer will be
+	 * sorted against each other by their depth values.
 	 * @param {Number=} val
+	 * @example #Set an entity's depth to 1
+	 *     var entity = new IgeEntity()
+	 *         .depth(1);
+	 * @example #Get an entity's depth value
+	 *     var entity = new IgeEntity()
+	 *     console.log(entity.depth());
+	 * @example #How layers and depths are handled together
+	 *     var entity1 = new IgeEntity(),
+	 *         entity2 = new IgeEntity(),
+	 *         entity3 = new IgeEntity();
+	 *
+	 *     // Set entity1 to at layer zero and depth 100
+	 *     entity1.layer(0)
+	 *         .depth(100);
+	 *
+	 *     // Set entity2 and 3 to be at layer 1
+	 *     entity2.layer(1);
+	 *     entity3.layer(1);
+	 *
+	 *     // Set entity3 to have a higher depth than entity2
+	 *     entity2.depth(0);
+	 *     entity3.depth(1);
+	 *
+	 *     // The engine sorts first based on layer from lowest to highest
+	 *     // and then within each layer, by depth from lowest to highest.
+	 *     // This means that entity1 will be drawn before entity 2 and 3
+	 *     // because even though it's depth is higher, it is not on the same
+	 *     // layer as entity 2 and 3.
+	 *
+	 *     // Based on the layers and depths we have assigned, here
+	 *     // is how the engine will sort the draw order of the entities
+	 *     // entity1
+	 *     // entity2
+	 *     // entity3
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	depth: function (val) {
@@ -634,7 +870,7 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Loops through all child objects of this object and destroys them
 	 * by calling each child's destroy() method then deletes the reference
-	 * to the object's internale _children array.
+	 * to the object's internal _children array.
 	 */
 	destroyChildren: function () {
 		var arr = this._children,
