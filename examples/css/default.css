@@ -155,7 +155,8 @@ body {
     padding-left: 2px;
     padding-right: 6px;
     margin-right: 1px;
-    width: 75px;
+    min-width: 75px;
+    white-space: nowrap;
 }
 
 #igeSgTree {
