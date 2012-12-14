@@ -651,10 +651,19 @@ var IgeObject = IgeEventingClass.extend({
 		return this;
 	},
 
+	/**
+	 * Removes all references to any behaviour methods that were added to
+	 * this object.
+	 */
 	destroyBehaviours: function () {
 		delete this._behaviours;
 	},
 
+	/**
+	 * Loops through all components added to this object and calls their
+	 * destroy() method, then removes any references to the components.
+	 * @return {*}
+	 */
 	destroyComponents: function () {
 		var arr = this._components,
 			arrCount;
@@ -696,6 +705,25 @@ var IgeObject = IgeEventingClass.extend({
 		return this._dirty;
 	},
 
+	/**
+	 * Gets / sets the depth sort mode that is used when
+	 * depth sorting this object's children against each other. This
+	 * mode only applies if this object's mount mode is isometric,
+	 * as set by calling isometricMounts(true). If the mount mode is
+	 * 2d, the depth sorter will use a very fast 2d depth sort that
+	 * does not use 3d bounds at all.
+	 * @param {Number=} val The mode to use when depth sorting
+	 * this object's children, given as an integer value.
+	 * @example Turn off all depth sorting for this object's children
+	 * entity.depthSortMode(-1);
+	 * @example Use 3d bounds when sorting this object's children
+	 * entity.depthSortMode(0);
+	 * @example Use 3d bounds optimised for mostly cube-shaped bounds when sorting this object's children
+	 * entity.depthSortMode(1);
+	 * @example Use 3d bounds optimised for all cube-shaped bounds when sorting this object's children
+	 * entity.depthSortMode(2);
+	 * @return {*}
+	 */
 	depthSortMode: function (val) {
 		if (val !== undefined) {
 			this._depthSortMode = val;
@@ -840,6 +868,14 @@ var IgeObject = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Gets / sets the view checking flag that if set to true
+	 * will ask the engine to check during each tick if this
+	 * object is actually "on screen" or not, and bypass it
+	 * if it is not. The default is this flag set to false.
+	 * @param {Boolean=} val The boolean flag value.
+	 * @return {*}
+	 */
 	viewChecking: function (val) {
 		if (val !== undefined) {
 			this._viewChecking = val;
@@ -849,6 +885,12 @@ var IgeObject = IgeEventingClass.extend({
 		return this._viewChecking;
 	},
 
+	/**
+	 * When view checking is enabled, this method is called to
+	 * determine if this object is within the bounds of an active
+	 * viewport, essentially determining if the object is
+	 * "on screen" or not.
+	 */
 	viewCheckChildren: function () {
 		var arr = this._children,
 			arrCount = arr.length,
