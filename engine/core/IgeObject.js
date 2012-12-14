@@ -18,6 +18,16 @@ var IgeObject = IgeEventingClass.extend({
 		this._inView = true;
 	},
 
+	/**
+	 * Determines if the object is alive or not. The alive
+	 * value is automatically set to false when the object's
+	 * destroy() method is called. Useful for checking if
+	 * an object that you are holding a reference to has been
+	 * destroyed.
+	 * @param {Boolean=} val The value to set the alive flag
+	 * to.
+	 * @return {*}
+	 */
 	alive: function (val) {
 		if (val !== undefined) {
 			this._alive = val;
@@ -102,6 +112,9 @@ var IgeObject = IgeEventingClass.extend({
 		return this._category;
 	},
 
+	/**
+	 * A warning method to help developers move to the new groups system.
+	 */
 	group: function () {
 		this.log('The group() method has been renamed to category(). Please update your code.', 'error');
 	},
