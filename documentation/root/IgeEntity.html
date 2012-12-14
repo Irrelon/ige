@@ -641,7 +641,153 @@ console.log(point);
 </code></pre>
 </div>
 					</div>
-				<h3>translateBy(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
+				<h3>mouseMove(<span class="argType">Function</span> <span class="argName">callback</span>)</h3>
+<div class="methodDesc">Gets / sets the callback that is fired when a mouse move event is triggered.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">callback</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Hook the mouse move event and stop it propagating further down the scenegraph</h1>
+
+<pre><code>entity.mouseMove(function (event, control) {
+    // Mouse moved with button
+    console.log('Mouse move button: ' + event.button);
+
+    // Stop the event propagating further down the scenegraph
+    control.stopPropagation();
+
+    // You can ALSO stop propagation without the control object
+    // reference via the global reference:
+    ige.input.stopPropagation();
+});
+</code></pre>
+</div>
+					</div>
+				<h3>mouseMoveOff()</h3>
+<div class="methodDesc">Removes the callback that is fired when a mouse move event is triggered.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div>
+<h3>mouseOver(<span class="argType">Function</span> <span class="argName">callback</span>)</h3>
+<div class="methodDesc">Gets / sets the callback that is fired when a mouse over event is triggered.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">callback</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Hook the mouse over event and stop it propagating further down the scenegraph</h1>
+
+<pre><code>entity.mouseOver(function (event, control) {
+    // Mouse over with button
+    console.log('Mouse over button: ' + event.button);
+
+    // Stop the event propagating further down the scenegraph
+    control.stopPropagation();
+
+    // You can ALSO stop propagation without the control object
+    // reference via the global reference:
+    ige.input.stopPropagation();
+});
+</code></pre>
+</div>
+					</div>
+				<h3>mouseOverOff()</h3>
+<div class="methodDesc">Removes the callback that is fired when a mouse over event is triggered.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div>
+<h3>mouseOut(<span class="argType">Function</span> <span class="argName">callback</span>)</h3>
+<div class="methodDesc">Gets / sets the callback that is fired when a mouse out event is triggered.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">callback</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Hook the mouse out event and stop it propagating further down the scenegraph</h1>
+
+<pre><code>entity.mouseOut(function (event, control) {
+    // Mouse out with button
+    console.log('Mouse out button: ' + event.button);
+
+    // Stop the event propagating further down the scenegraph
+    control.stopPropagation();
+
+    // You can ALSO stop propagation without the control object
+    // reference via the global reference:
+    ige.input.stopPropagation();
+});
+</code></pre>
+</div>
+					</div>
+				<h3>mouseOutOff()</h3>
+<div class="methodDesc">Removes the callback that is fired when a mouse out event is triggered.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div>
+<h3>mouseUp(<span class="argType">Function</span> <span class="argName">callback</span>)</h3>
+<div class="methodDesc">Gets / sets the callback that is fired when a mouse up event is triggered.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">callback</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Hook the mouse up event and stop it propagating further down the scenegraph</h1>
+
+<pre><code>entity.mouseUp(function (event, control) {
+    // Mouse up with button
+    console.log('Mouse up button: ' + event.button);
+
+    // Stop the event propagating further down the scenegraph
+    control.stopPropagation();
+
+    // You can ALSO stop propagation without the control object
+    // reference via the global reference:
+    ige.input.stopPropagation();
+});
+</code></pre>
+</div>
+					</div>
+				<h3>mouseUpOff()</h3>
+<div class="methodDesc">Removes the callback that is fired when a mouse up event is triggered.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div>
+<h3>mouseDown(<span class="argType">Function</span> <span class="argName">callback</span>)</h3>
+<div class="methodDesc">Gets / sets the callback that is fired when a mouse down event is triggered.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">callback</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Hook the mouse down event and stop it propagating further down the scenegraph</h1>
+
+<pre><code>entity.mouseDown(function (event, control) {
+    // Mouse down with button
+    console.log('Mouse down button: ' + event.button);
+
+    // Stop the event propagating further down the scenegraph
+    control.stopPropagation();
+
+    // You can ALSO stop propagation without the control object
+    // reference via the global reference:
+    ige.input.stopPropagation();
+});
+</code></pre>
+</div>
+					</div>
+				<h3>mouseDownOff()</h3>
+<div class="methodDesc">Removes the callback that is fired when a mouse down event is triggered.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div>
+<h3>_handleMouseIn()</h3>
+<div class="methodDesc">Handler method that determines which mouse-move event to fire, a mouse-over or a mouse-move.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div>
+<h3>_handleMouseOut()</h3>
+<div class="methodDesc">Handler method that determines if a mouse-out event should be fired.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div>
+<h3>_handleMouseUp()</h3>
+<div class="methodDesc">Handler method that determines if a mouse-up event should be fired.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div>
+<h3>_handleMouseDown()</h3>
+<div class="methodDesc">Handler method that determines if a mouse-down event should be fired.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div>
+<h3>translateBy(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">z</span>)</h3>
 <div class="methodDesc">Translates the entity by adding the passed values to the current translation values.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The z co-ordinate.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
