@@ -323,15 +323,17 @@ var IgeObject = IgeEventingClass.extend({
 	 * @return {*}
 	 */
 	removeAllGroups: function () {
-		// Loop through all groups and un-register one at a time
-		var arr = this._groups,
-			arrCount = arr.length;
+		if (this._groups) {
+			// Loop through all groups and un-register one at a time
+			var arr = this._groups,
+				arrCount = arr.length;
 
-		while (arrCount--) {
-			ige.groupUnRegister(this, arr[arrCount]);
+			while (arrCount--) {
+				ige.groupUnRegister(this, arr[arrCount]);
+			}
+
+			delete this._groups;
 		}
-
-		delete this._groups;
 		return this;
 	},
 
