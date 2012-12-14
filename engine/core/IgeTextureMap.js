@@ -86,7 +86,9 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 */
 	addTexture: function (texture) {
 		this._textureList.push(texture);
-		this._allTexturesLoaded = false;
+		if (!texture._loaded) {
+			this._allTexturesLoaded = false;
+		}
 		return this._textureList.length - 1;
 	},
 
