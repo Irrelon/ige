@@ -112,6 +112,12 @@ var IgeObject = IgeEventingClass.extend({
 	 * @param {String} groupName A group to add the entity to.
 	 * This method accepts multiple arguments, each is a group
 	 * name to add the entity to.
+	 * @example Add Entity To a Single Group
+	 * var entity = new IgeEntity();
+	 * entity.addGroup('g1');
+	 * @example Add Entity To Multiple Groups
+	 * var entity = new IgeEntity();
+	 * entity.addGroup('g1', 'g2', 'g3');
 	 * @return {*}
 	 */
 	addGroup: function () {
@@ -141,6 +147,19 @@ var IgeObject = IgeEventingClass.extend({
 	 * entity is in ALL the passed groups.
 	 * @param {String} groupName The name of the group to
 	 * check to see if this entity is a member of.
+	 * @example Check if Entity Belongs To All Of The Passed Groups
+	 * // Add a couple of groups
+	 * var entity = new IgeEntity();
+	 * entity.addGroup('g1', 'g2');
+	 *
+	 * // This will output "false" (entity is not part of g3)
+	 * console.log(entity.inGroup('g1', 'g3'));
+	 *
+	 * // This will output "true"
+	 * console.log(entity.inGroup('g1'));
+	 *
+	 * // This will output "true"
+	 * console.log(entity.inGroup('g1', 'g2'));
 	 * @return {Boolean}
 	 */
 	inGroup: function () {
@@ -168,6 +187,16 @@ var IgeObject = IgeEventingClass.extend({
 	 * is in ANY of the the passed groups.
 	 * @param {String} groupName The name of the group to
 	 * check to see if this entity is a member of.
+	 * @example Check if Entity Belongs To Any Of The Passed Groups
+	 * // Add a couple of groups
+	 * var entity = new IgeEntity();
+	 * entity.addGroup('g1', 'g2');
+	 *
+	 * // This will output "false"
+	 * console.log(entity.inAnyGroup('g3'));
+	 *
+	 * // This will output "true"
+	 * console.log(entity.inAnyGroup('g3', 'g1'));
 	 * @return {Boolean}
 	 */
 	inAnyGroup: function () {
@@ -189,14 +218,26 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Gets an array of all groups this entity belongs to.
+	 * @example Get Array of Groups Entity Belongs To
+	 * var entity = new IgeEntity();
+	 * entity.addGroup('g1', 'g3');
+	 *
+	 * // This will output "['g1', 'g3']"
+	 * console.log(entity.groups());
 	 * @return {*}
 	 */
 	groups: function () {
-		return this._groups;
+		return this._groups || [];
 	},
 
 	/**
 	 * Gets the number of groups this entity belongs to.
+	 * @example Get Number of Groups Entity Belongs To
+	 * var entity = new IgeEntity();
+	 * entity.addGroup('g1', 'g3');
+	 *
+	 * // This will output "2"
+	 * console.log(entity.groupCount());
 	 * @return {Number}
 	 */
 	groupCount: function () {
@@ -209,6 +250,30 @@ var IgeObject = IgeEventingClass.extend({
 	 * from all groups passed as arguments.
 	 * @param {String} groupName The name of the group to remove
 	 * this entity as a member of.
+	 * @example Remove Entity From Single Group
+	 * var entity = new IgeEntity();
+	 * entity.addGroup('g1', 'g3');
+	 *
+	 * // This will output "['g1', 'g3']"
+	 * console.log(entity.groups());
+	 *
+	 * // Remove entity from a single group
+	 * entity.removeGroup('g1');
+	 *
+	 * // This will output "['g3']"
+	 * console.log(entity.groups());
+	 * @example Remove Entity From Multiple Groups
+	 * var entity = new IgeEntity();
+	 * entity.addGroup('g1', 'g3', 'g2');
+	 *
+	 * // This will output "['g1', 'g3', 'g2']"
+	 * console.log(entity.groups());
+	 *
+	 * // Remove entity from multiple groups
+	 * entity.removeGroup('g1', 'g3');
+	 *
+	 * // This will output "['g2']"
+	 * console.log(entity.groups());
 	 * @return {*}
 	 */
 	removeGroup: function () {
@@ -230,6 +295,18 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Removes the entity from all groups it is a member of.
+	 * @example
+	 * var entity = new IgeEntity();
+	 * entity.addGroup('g1', 'g3', 'g2');
+	 *
+	 * // This will output "['g1', 'g3', 'g2']"
+	 * console.log(entity.groups());
+	 *
+	 * // Remove all the groups
+	 * entity.removeAllGroups();
+	 *
+	 * // This will output "[]"
+	 * console.log(entity.groups());
 	 * @return {*}
 	 */
 	removeAllGroups: function () {
