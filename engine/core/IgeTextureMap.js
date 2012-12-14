@@ -292,8 +292,12 @@ var IgeTextureMap = IgeTileMap2d.extend({
 				if (this.allTexturesLoaded()) {
 					// We have a dirty cache so render the section cache
 					// data first
-					this._sections = this._sections || [];
-					this._sectionCtx = this._sectionCtx || [];
+				    // TODO: Shouldn't we be replacing these arrays with new ones to drop the old ones from memory?
+				    // TODO: Gonna do that now and see what the result is.
+                    this._sections = []; //this._sections || [];
+                    this._sectionCtx = []; //this._sectionCtx || [];
+                    // TODO: This isn't ideal because we are almost certainly dropping sections that are still relevant,
+                    // TODO: so we should scan and garbabe collect I think, instead.
 
 					// Loop the map data
 					for (y in mapData) {
