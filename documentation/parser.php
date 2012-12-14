@@ -54,6 +54,7 @@ function parseFile($path) {
 			$itemText = '';
 			$returnText = '';
 			$parametersArray = Array();
+			$exampleArray = Array();
 			$privateMethod = false;
 			$constructorMethod = false;
 			$mode = '';
@@ -61,7 +62,7 @@ function parseFile($path) {
 			foreach ($descriptionLines[1] as $descripKey => $descripText) {
 				if (substr($descripText, 0, 1) === '@') {
 					// Check if we are already in a mode and if so, store the entry
-					// for it
+					// for it because we have found a new entry to process
 					if ($mode == '@param') {
 						$parametersArray[] = $itemText;
 						$itemText = '';
@@ -70,6 +71,12 @@ function parseFile($path) {
 
 					if ($mode == '@return') {
 						$returnText = $itemText;
+						$itemText = '';
+						$mode = '';
+					}
+
+					if ($mode == '@example') {
+						$exampleArray[] = str_replace('@example ', '', $itemText);
 						$itemText = '';
 						$mode = '';
 					}
@@ -84,6 +91,11 @@ function parseFile($path) {
 						$itemText = trim($descripText);
 					}
 
+					if (substr($descripText, 0, 8) === '@example') {
+						$mode = '@example';
+						$itemText = $descripText;
+					}
+
 					if (substr($descripText, 0, 8) === '@private') {
 						$privateMethod = true;
 						$mode = '';
@@ -94,11 +106,29 @@ function parseFile($path) {
 						$mode = '';
 					}
 				} else {
+					// Handle new lines
 					if ($mode) {
-						if ($itemText) {
-							$itemText .= ' ';
+						switch ($mode) {
+							case '@example':
+								$descripText = str_replace("\t", '<!TT>', $descripText);
+								$descripText = str_replace("    ", '<!TT>', $descripText);
+								$descripText = str_replace("\n", '<!BN>', $descripText);
+								$descripText = str_replace("\r", '<!BR>', $descripText);
+								$descripText = trim($descripText);
+								$descripText = str_replace('<!TT>', "\t", $descripText);
+								$descripText = str_replace('<!BN>', "\n", $descripText);
+								$descripText = str_replace('<!BR>', "\r", $descripText);
+
+								$itemText .= $descripText;
+								break;
+
+							default:
+								if ($itemText) {
+									$itemText .= ' ';
+								}
+								$itemText .= trim($descripText);
+								break;
 						}
-						$itemText .= trim($descripText);
 					}
 				}
 			}
@@ -109,6 +139,10 @@ function parseFile($path) {
 
 			if ($mode == '@return') {
 				$returnText = $itemText;
+			}
+
+			if ($mode == '@example') {
+				$exampleArray[] = str_replace('@example ', '', $itemText);
 			}
 
 			// Extract type, name and description from parameter line
@@ -286,6 +320,9 @@ function parseFile($path) {
 					$item['constructor'] = $constructorMethod;
 					if ($returnData) {
 						$item['returnData'] = $returnData;
+					}
+					if ($exampleArray) {
+						$item['examples'] = $exampleArray;
 					}
 					break;
 			}

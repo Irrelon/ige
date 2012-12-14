@@ -1,6 +1,8 @@
 <html>
 <head>
-	<link rel="stylesheet" href="../css/default.css" />
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 </head>
 <body>
 	<div class="page">
@@ -19,18 +21,29 @@
 <h2>Methods</h2><h3>cellCount()</h3>
 <div class="methodDesc">Returns the total number of cells in the cell sheet.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Number</span>} </div><h3>horizontalCells(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Number</span>} </div>
+<h3>horizontalCells(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the number of horizontal cells in the cell sheet.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The integer count of the number of horizontal cells in the cell sheet.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>verticalCells(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodReturnDesc"></div>
+<h3>verticalCells(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the number of vertical cells in the cell sheet.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The integer count of the number of vertical cells in the cell sheet.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>_applyCells()</h3>
+<div class="methodReturnDesc"></div>
+<h3>_applyCells()</h3>
 <div class="methodDesc">Sets the x, y, width and height of each sheet cell and stores that information in the this._cells array.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div><h3>stringify()</h3>
+<div class="methodReturnDesc"></div>
+<h3>stringify()</h3>
 <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>	</div>
+<div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
+	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
 </body>
 </html>

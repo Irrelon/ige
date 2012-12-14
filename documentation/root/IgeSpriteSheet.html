@@ -1,6 +1,8 @@
 <html>
 <head>
-	<link rel="stylesheet" href="../css/default.css" />
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 </head>
 <body>
 	<div class="page">
@@ -19,15 +21,25 @@
 <h2>Methods</h2><h3>detectCells(<span class="argType"></span> <span class="argName">img</span>)</h3>
 <div class="methodDesc">Uses the sprite sheet image pixel data to detect distinct sprite bounds.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">img</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Array</span>} An array of cell bounds.</div><h3>cellCount()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Array</span>} An array of cell bounds.</div>
+<h3>cellCount()</h3>
 <div class="methodDesc">Returns the total number of cells in the cell sheet.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Number</span>} </div><h3>cellIdToIndex(<span class="argType">String</span> <span class="argName">id</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Number</span>} </div>
+<h3>cellIdToIndex(<span class="argType">String</span> <span class="argName">id</span>)</h3>
 <div class="methodDesc">Returns the cell index that the passed cell id corresponds to.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Number</span>} The cell index that the cell id corresponds to or -1 if a corresponding index could not be found.</div><h3>stringify()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Number</span>} The cell index that the cell id corresponds to or -1 if a corresponding index could not be found.</div>
+<h3>stringify()</h3>
 <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>	</div>
+<div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
+	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
 </body>
 </html>

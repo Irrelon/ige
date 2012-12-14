@@ -4,6 +4,7 @@
  * JSDoc comments found in the engine source code.
  */
 require('parser.php');
+include_once("markdown.php");
 
 /**
  * Recursively processes a path and extracts JSDoc comment data from
@@ -74,12 +75,35 @@ function parseTemplate($str, $item, $path, $file) {
 		$returnHtml = '';
 	}
 
+	$examplesHtml = '';
+	if ($item["examples"]) {
+		foreach ($item['examples'] as $exampleKey => $exampleContent) {
+			if (trim($exampleContent)) {
+				// Parse markdown
+				$exampleContent = Markdown($exampleContent);
+
+				$examplesHtml .= '
+					<div class="methodExample">
+						<div class="content">' . $exampleContent . '</div>
+					</div>
+				';
+
+				if ($examplesHtml) {
+					echo "Example--: " . $examplesHtml . '<BR><BR>';
+				}
+			}
+		}
+
+		//$item["examplesHtml"] = $examplesHtml;
+	}
+
 	$str = str_replace('={returnType}', $item["returnData"]["type"], $str);
 	$str = str_replace('={path}', ENGINE_RELATIVE . $path, $str);
 	$str = str_replace('={file}', $file, $str);
 	$str = str_replace('={arguments}', $argumentsHtml, $str);
 	$str = str_replace('={params}', $paramsHtml, $str);
 	$str = str_replace('={returnDesc}', $returnHtml, $str);
+	$str = str_replace('={examplesHtml}', $examplesHtml, $str);
 
 	preg_match_all("/={(.*?)}/", $str, $matches);
 

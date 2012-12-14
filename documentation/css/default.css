@@ -100,3 +100,28 @@ body .page {
     padding-right: 4px;
     margin-left: 5px;
 }
+
+.methodExample {
+    border: 1px #cccccc solid;
+    padding: 10px;
+    background-color: #f4f4f4;
+    margin-top: 10px;
+}
+
+.methodExample h1:before {
+    content: 'Example: ';
+}
+
+.methodExample h1 {
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0;
+    margin-bottom: 5px;
+}
+
+.methodExample pre {
+    margin: 0;
+    padding: 10px;
+    border: #cccccc 1px solid;
+    /*background-color: #111122;*/
+}

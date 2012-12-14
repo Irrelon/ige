@@ -1,6 +1,8 @@
 <html>
 <head>
-	<link rel="stylesheet" href="../css/default.css" />
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 </head>
 <body>
 	<div class="page">
@@ -19,51 +21,73 @@
 <h2>Methods</h2><h3>drawGrid(<span class="argType"></span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the number of grid cells that the tile map should paint to the context during the tick method.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>gridColor(<span class="argType"></span> <span class="argName">val</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>gridColor(<span class="argType"></span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the color of the grid overlay. It can accepts a string</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>highlightOccupied(<span class="argType"></span> <span class="argName">val</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>highlightOccupied(<span class="argType"></span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the flag that determines if the tile map will paint the occupied tiles with an overlay colour so that it is easy to spot them.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>tileWidth(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>tileWidth(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the map's tile width.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> Tile width.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>tileHeight(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>tileHeight(<span class="argType">Number</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the map's tile height.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> Tile height.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>_objectOccupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>_objectOccupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>)</h3>
 <div class="methodDesc">This method is attached to objects that are mounted to the tile map. Adds the object to the tile map at the passed tile co-ordinates. If no tile co-ordinates are passed, will use the current tile position and the tileWidth() and tileHeight() values.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> X co-ordinate of the tile to occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> Y co-ordinate of the tile to occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">width</span> Number of tiles along the x-axis to occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">height</span> Number of tiles along the y-axis to occupy.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>_objectUnOccupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>)</h3>
+<div class="methodReturnDesc"></div>
+<h3>_objectUnOccupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>)</h3>
 <div class="methodDesc">This method is attached to objects that are mounted to the tile map. Removes the object from the tile map at the passed tile co-ordinates. If no tile co-ordinates are passed, will use the current tile position and the tileWidth() and tileHeight() values.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> X co-ordinate of the tile to un-occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> Y co-ordinate of the tile to un-occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">width</span> Number of tiles along the x-axis to un-occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">height</span> Number of tiles along the y-axis to un-occupy.</li></ul></div>
-<div class="methodReturnDesc"></div><h3>_objectOverTiles()</h3>
+<div class="methodReturnDesc"></div>
+<h3>_objectOverTiles()</h3>
 <div class="methodDesc">This method is attached to objects that are mounted to the tile map. Returns an array of tile co-ordinates that the object is currently over, calculated using the current world co-ordinates of the object as well as it's 3d geometry.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Array</span>} The array of tile co-ordinates as IgePoint instances.</div><h3>occupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>, <span class="argType">*</span> <span class="argName">obj</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Array</span>} The array of tile co-ordinates as IgePoint instances.</div>
+<h3>occupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>, <span class="argType">*</span> <span class="argName">obj</span>)</h3>
 <div class="methodDesc">Sets a tile or area as occupied by the passed obj parameter. Any previous occupy data on the specified tile or area will be overwritten.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> X co-ordinate of the tile to un-occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> Y co-ordinate of the tile to un-occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">width</span> Number of tiles along the x-axis to occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">height</span> Number of tiles along the y-axis to occupy.</li><li>{<span class="argType">*</span>}<span class="argName">obj</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>unOccupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>unOccupyTile(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>)</h3>
 <div class="methodDesc">Removes all data from the specified tile or area.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Number</span>}<span class="argName">width</span> </li><li>{<span class="argType">Number</span>}<span class="argName">height</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>isTileOccupied(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>isTileOccupied(<span class="argType">Number</span> <span class="argName">x</span>, <span class="argType">Number</span> <span class="argName">y</span>, <span class="argType">Number</span> <span class="argName">width</span>, <span class="argType">Number</span> <span class="argName">height</span>)</h3>
 <div class="methodDesc">Returns true if the specified tile or tile area has an occupied status.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Number</span>}<span class="argName">width</span> </li><li>{<span class="argType">Number</span>}<span class="argName">height</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div><h3>pointToTile(<span class="argType">IgePoint</span> <span class="argName">point</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>pointToTile(<span class="argType">IgePoint</span> <span class="argName">point</span>)</h3>
 <div class="methodDesc">Returns the tile co-ordinates of the tile that the point's world co-ordinates reside inside.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName">point</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The tile co-ordinates as a point object.</div><h3>mouseTileWorldXY()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The tile co-ordinates as a point object.</div>
+<h3>mouseTileWorldXY()</h3>
 <div class="methodDesc">Returns the world co-ordinates of the tile the mouse is currently over.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} </div><h3>mouseToTile()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} </div>
+<h3>mouseToTile()</h3>
 <div class="methodDesc">Returns the tile co-ordinates of the tile the mouse is currently over.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} </div><h3>scanRects(<span class="argType">Function</span> <span class="argName">callback</span>)</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} </div>
+<h3>scanRects(<span class="argType">Function</span> <span class="argName">callback</span>)</h3>
 <div class="methodDesc">Scans the map data and returns an array of rectangle objects that encapsulate the map data into discrete rectangle areas.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">callback</span> Returns true or false for the passed map data determining if it should be included in a rectangle or not.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Array</span>} </div><h3>_calculateMousePosition()</h3>
+<div class="methodReturnDesc">Returns {<span class="argType">Array</span>} </div>
+<h3>_calculateMousePosition()</h3>
 <div class="methodDesc">Sets the internal mouse position data based on the current mouse position relative to the tile map.</div>
 <div class="methodArgs"></div>
-<div class="methodReturnDesc"></div>	</div>
+<div class="methodReturnDesc"></div>
+	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
 </body>
 </html>
