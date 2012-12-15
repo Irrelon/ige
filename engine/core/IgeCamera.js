@@ -203,12 +203,8 @@ var IgeCamera = IgeEntity.extend({
 
 		return this;
 	},
-
-	/**
-	 * Process operations during the engine tick.
-	 * @param {CanvasRenderingContext2D} ctx
-	 */
-	tick: function (ctx) {
+	
+	update: function (ctx) {
 		// Check if we are tracking the translate value of a target
 		if (this._trackTranslateTarget) {
 			var targetEntity = this._trackTranslateTarget,
@@ -256,8 +252,15 @@ var IgeCamera = IgeEntity.extend({
 			}
 		}
 
-		// Updated local transform matrix and then transform the context
 		this.updateTransform();
+	},
+
+	/**
+	 * Process operations during the engine tick.
+	 * @param {CanvasRenderingContext2D} ctx
+	 */
+	tick: function (ctx) {
+		// Updated local transform matrix and then transform the context
 		this._localMatrix.transformRenderingContext(ctx);
 	},
 
