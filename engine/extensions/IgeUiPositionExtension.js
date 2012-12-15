@@ -248,7 +248,7 @@ var IgeUiPositionExtension = {
 	_updateUiPosition: function () {
 		if (this._parent) {
 			var parentGeom = this._parent._geometry.multiplyPoint(this._parent._scale),
-				geom = this._geometry;
+				geom = this._geometry.multiplyPoint(this._scale);
 
 			if (this._uiWidth) { this.width(this._uiWidth, false, this._widthModifier, true); }
 			if (this._uiHeight) { this.height(this._uiHeight, false, this._heightModifier, true); }
