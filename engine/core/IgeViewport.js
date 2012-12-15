@@ -55,7 +55,7 @@ var IgeViewport = IgeEntity.extend([
 
 	/**
 	 * Gets / sets the scene that the viewport will render.
-	 * @param {IgeScene2d, IgeSceneIso} scene
+	 * @param {IgeScene2d} scene
 	 * @return {*}
 	 */
 	scene: function (scene) {

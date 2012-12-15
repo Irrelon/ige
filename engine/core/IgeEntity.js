@@ -144,6 +144,11 @@ var IgeEntity = IgeObject.extend({
 		viewport = viewport || ige._currentViewport;
 		if (viewport) {
 			var mp = viewport._mousePos.clone();
+
+			if (this._ignoreCamera) {
+				mp.thisAddPoint(ige._currentCamera._translate);
+			}
+			
 			mp.x += viewport._translate.x;
 			mp.y += viewport._translate.y;
 			this._transformPoint(mp);
