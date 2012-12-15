@@ -165,9 +165,8 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Adds this entity to a group or groups passed as
 	 * arguments.
-	 * @param {String} groupName A group to add the entity to.
-	 * This method accepts multiple arguments, each is a group
-	 * name to add the entity to.
+	 * @param {*} groupName A group or array of group names
+	 * to add the entity to.
 	 * @example #Add entity to a single group
 	 *     var entity = new IgeEntity();
 	 *     entity.addGroup('g1');
@@ -262,7 +261,7 @@ var IgeObject = IgeEventingClass.extend({
 	 * array of groups. If multiple group names are passed,
 	 * as an array the method will only return true if the
 	 * entity is in ALL the passed groups.
-	 * @param {String} groupName The name of the group or array
+	 * @param {*} groupName The name of the group or array
 	 * if group names to check if this entity is a member of.
 	 * @example #Check if entity belongs to all of the passed groups
 	 *     // Add a couple of groups
@@ -306,7 +305,7 @@ var IgeObject = IgeEventingClass.extend({
 	 * array of group names. If multiple group names are passed
 	 * as an array, the method will return true if the entity
 	 * is in ANY of the the passed groups.
-	 * @param {String} groupName The name of the group or array of
+	 * @param {*} groupName The name of the group or array of
 	 * group names to check if this entity is a member of.
 	 * @example #Check if entity belongs to any of the passed groups
 	 *     // Add a couple of groups
@@ -374,8 +373,8 @@ var IgeObject = IgeEventingClass.extend({
 	 * Removes the entity from the group or groups passed. This
 	 * method accepts multiple arguments and will remove the entity
 	 * from all groups passed as arguments.
-	 * @param {String} groupName The name of the group to remove
-	 * this entity as a member of.
+	 * @param {*} groupName The name of the group or array of group
+	 * names to remove this entity as a member of.
 	 * @example #Remove entity from single group
 	 *     var entity = new IgeEntity();
 	 *     entity.addGroup('g1', 'g2');
