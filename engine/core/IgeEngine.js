@@ -60,11 +60,15 @@ var IgeEngine = IgeEntity.extend({
 			'three'
 		];
 
+		this._enableUpdates = true;
+		this._enableRenders = true;
 		this._showSgTree = false;
 		this._debugEvents = {}; // Holds debug event booleans for named events
 		this._renderContext = '2d'; // The rendering context, default is 2d
 		this._renderMode = this._renderModes[this._renderContext]; // Integer representation of the render context
-		this._tickTime = 'NA'; // The time the tick started
+		this._tickTime = 'NA'; // The time the tick took to process
+		this._updateTime = 'NA'; // The time the tick update section took to process
+		this._renderTime = 'NA'; // The time the tick render section took to process
 		this._tickDelta = 0; // The time between the last tick and the current one
 		this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 		this._state = 0; // Currently stopped
@@ -90,8 +94,10 @@ var IgeEngine = IgeEntity.extend({
 		this._categoryRegister = {}; // Holds reference to every item with a category
 		this._groupRegister = {}; // Holds reference to every item with a group
 		this._postTick = []; // An array of methods that are called upon tick completion
-		this._tsit = {}; // An object holding time-spent-in-tick (total time spent in this object's tick method)
-		this._tslt = {}; // An object holding time-spent-last-tick (time spent in this object's tick method last tick)
+		this._timeSpentInUpdate = {}; // An object holding time-spent-in-update (total time spent in this object's update method)
+		this._timeSpentLastUpdate = {}; // An object holding time-spent-last-update (time spent in this object's update method last tick)
+		this._timeSpentInTick = {}; // An object holding time-spent-in-tick (total time spent in this object's tick method)
+		this._timeSpentLastTick = {}; // An object holding time-spent-last-tick (time spent in this object's tick method last tick)
 		this._timeScale = 1; // The default time scaling factor to speed up or slow down engine time
 
 		// Set the context to a dummy context to start
@@ -270,6 +276,33 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		return this;
+	},
+	
+	enableUpdates: function (val) {
+		if (val !== undefined) {
+			this._enableUpdates = val;
+			return this;
+		}
+		
+		return this._enableUpdates;
+	},
+
+	enableRenders: function (val) {
+		if (val !== undefined) {
+			this._enableRenders = val;
+			return this;
+		}
+
+		return this._enableRenders;
+	},
+	
+	timing: function (val) {
+		if (val !== undefined) {
+			igeDebug._timing = val;
+			return this;
+		}
+
+		return igeDebug._timing;
 	},
 
 	debug: function (eventName) {
@@ -1195,11 +1228,11 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		if (igeDebug._timing) {
-			if (ige._tsit[item.id]) {
-				timingString = '<span>' + ige._tsit[item.id] + 'ms</span>';
-				/*if (ige._tslt[item.id]) {
-					if (typeof(ige._tslt[item.id].tick) === 'number') {
-						timingString += ' | LastTick: ' + ige._tslt[item.id].tick;
+			if (ige._timeSpentInTick[item.id]) {
+				timingString = '<span>' + ige._timeSpentInTick[item.id] + 'ms</span>';
+				/*if (ige._timeSpentLastTick[item.id]) {
+					if (typeof(ige._timeSpentLastTick[item.id].ms) === 'number') {
+						timingString += ' | LastTick: ' + ige._timeSpentLastTick[item.id].ms;
 					}
 				}*/
 
@@ -1262,7 +1295,7 @@ var IgeEngine = IgeEntity.extend({
 						}
 						html += '<br />';
 					}
-					html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowSceneGraph();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Tick">' + self._dpt + ' dpt</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
+					html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowSceneGraph();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Tick">' + self._dpt + ' dpt</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span>';
 
 					if (self.network) {
 						// Add the network latency too
@@ -1380,6 +1413,8 @@ var IgeEngine = IgeEntity.extend({
 	tick: function (timeStamp, ctx) {
 		var st,
 			et,
+			updateStart,
+			renderStart,
 			self = ige,
 			ptArr = self._postTick,
 			ptCount = ptArr.length,
@@ -1435,15 +1470,38 @@ var IgeEngine = IgeEntity.extend({
 			// Process any behaviours assigned to the engine
 			self._processBehaviours(ctx);
 
-			// Render the scenegraph
-			if (!self._useManualRender) {
-				self.render(ctx);
-			} else {
-				if (self._manualRender) {
-					self.render(ctx);
-					self._manualRender = false;
+			// Update the scenegraph
+			if (self._enableUpdates) {
+				if (igeDebug._timing) {
+					updateStart = new Date().getTime();
+					self.update(ctx);
+					ige._updateTime = new Date().getTime() - updateStart;
 				} else {
-					self.render(IgeDummyContext);
+					self.update(ctx);
+				}
+			}
+			
+			// Render the scenegraph
+			if (self._enableRenders) {
+				if (!self._useManualRender) {
+					if (igeDebug._timing) {
+						renderStart = new Date().getTime();
+						self.render(ctx);
+						ige._renderTime = new Date().getTime() - renderStart;
+					} else {
+						self.render(ctx);
+					}
+				} else {
+					if (self._manualRender) {
+						if (igeDebug._timing) {
+							renderStart = new Date().getTime();
+							self.render(ctx);
+							ige._renderTime = new Date().getTime() - renderStart;
+						} else {
+							self.render(ctx);
+						}
+						self._manualRender = false;
+					}
 				}
 			}
 
@@ -1470,17 +1528,40 @@ var IgeEngine = IgeEntity.extend({
 			ige._tickTime = et - st;
 		}
 	},
+	
+	update: function (ctx) {
+		var arr = this._children,
+			arrCount, us, ud;
 
-	fps: function () {
-		return this._fps;
-	},
+		if (arr) {
+			arrCount = arr.length;
 
-	dpt: function () {
-		return this._dpt;
-	},
+			// Loop our viewports and call their update methods
+			if (igeDebug._timing) {
+				while (arrCount--) {
+					us = new Date().getTime();
+					arr[arrCount].update(ctx);
+					ud = new Date().getTime() - ts;
+					
+					if (arr[arrCount]) {
+						if (!ige._timeSpentInUpdate[arr[arrCount].id()]) {
+							ige._timeSpentInUpdate[arr[arrCount].id()] = 0;
+						}
 
-	dps: function () {
-		return this._dps;
+						if (!ige._timeSpentLastUpdate[arr[arrCount].id()]) {
+							ige._timeSpentLastUpdate[arr[arrCount].id()] = {};
+						}
+
+						ige._timeSpentInUpdate[arr[arrCount].id()] += ud;
+						ige._timeSpentLastUpdate[arr[arrCount].id()].ms = ud;
+					}
+				}
+			} else {
+				while (arrCount--) {
+					arr[arrCount].update(ctx);
+				}
+			}
+		}
 	},
 
 	render: function (ctx) {
@@ -1493,11 +1574,11 @@ var IgeEngine = IgeEntity.extend({
 				this.depthSortChildren();
 				td = new Date().getTime() - ts;
 
-				if (!ige._tslt[this.id()]) {
-					ige._tslt[this.id()] = {};
+				if (!ige._timeSpentLastTick[this.id()]) {
+					ige._timeSpentLastTick[this.id()] = {};
 				}
 
-				ige._tslt[this.id()].depthSortChildren = td;
+				ige._timeSpentLastTick[this.id()].depthSortChildren = td;
 			} else {
 				this.depthSortChildren();
 			}
@@ -1521,16 +1602,16 @@ var IgeEngine = IgeEntity.extend({
 					arr[arrCount].tick(ctx);
 					td = new Date().getTime() - ts;
 					if (arr[arrCount]) {
-						if (!ige._tsit[arr[arrCount].id()]) {
-							ige._tsit[arr[arrCount].id()] = 0;
+						if (!ige._timeSpentInTick[arr[arrCount].id()]) {
+							ige._timeSpentInTick[arr[arrCount].id()] = 0;
 						}
 
-						if (!ige._tslt[arr[arrCount].id()]) {
-							ige._tslt[arr[arrCount].id()] = {};
+						if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
+							ige._timeSpentLastTick[arr[arrCount].id()] = {};
 						}
 
-						ige._tsit[arr[arrCount].id()] += td;
-						ige._tslt[arr[arrCount].id()].tick = td;
+						ige._timeSpentInTick[arr[arrCount].id()] += td;
+						ige._timeSpentLastTick[arr[arrCount].id()].ms = td;
 					}
 					ctx.restore();
 				}
@@ -1544,6 +1625,18 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		ctx.restore();
+	},
+
+	fps: function () {
+		return this._fps;
+	},
+
+	dpt: function () {
+		return this._dpt;
+	},
+
+	dps: function () {
+		return this._dps;
 	},
 
 	analyseTiming: function () {
@@ -1603,14 +1696,14 @@ var IgeEngine = IgeEntity.extend({
 		if (igeDebug._timing) {
 			timingString = '';
 
-			timingString += 'T: ' + ige._tsit[obj.id()];
-			if (ige._tslt[obj.id()]) {
-				if (typeof(ige._tslt[obj.id()].tick) === 'number') {
-					timingString += ' | LastTick: ' + ige._tslt[obj.id()].tick;
+			timingString += 'T: ' + ige._timeSpentInTick[obj.id()];
+			if (ige._timeSpentLastTick[obj.id()]) {
+				if (typeof(ige._timeSpentLastTick[obj.id()].ms) === 'number') {
+					timingString += ' | LastTick: ' + ige._timeSpentLastTick[obj.id()].ms;
 				}
 
-				if (typeof(ige._tslt[obj.id()].depthSortChildren) === 'number') {
-					timingString += ' | ChildDepthSort: ' + ige._tslt[obj.id()].depthSortChildren;
+				if (typeof(ige._timeSpentLastTick[obj.id()].depthSortChildren) === 'number') {
+					timingString += ' | ChildDepthSort: ' + ige._timeSpentLastTick[obj.id()].depthSortChildren;
 				}
 			}
 
@@ -1634,14 +1727,14 @@ var IgeEngine = IgeEntity.extend({
 						if (igeDebug._timing) {
 							timingString = '';
 
-							timingString += 'T: ' + ige._tsit[arr[arrCount].id()];
-							if (ige._tslt[arr[arrCount].id()]) {
-								if (typeof(ige._tslt[arr[arrCount].id()].tick) === 'number') {
-									timingString += ' | LastTick: ' + ige._tslt[arr[arrCount].id()].tick;
+							timingString += 'T: ' + ige._timeSpentInTick[arr[arrCount].id()];
+							if (ige._timeSpentLastTick[arr[arrCount].id()]) {
+								if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].ms) === 'number') {
+									timingString += ' | LastTick: ' + ige._timeSpentLastTick[arr[arrCount].id()].ms;
 								}
 
-								if (typeof(ige._tslt[arr[arrCount].id()].depthSortChildren) === 'number') {
-									timingString += ' | ChildDepthSort: ' + ige._tslt[arr[arrCount].id()].depthSortChildren;
+								if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren) === 'number') {
+									timingString += ' | ChildDepthSort: ' + ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren;
 								}
 							}
 

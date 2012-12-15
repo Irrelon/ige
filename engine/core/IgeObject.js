@@ -1262,70 +1262,107 @@ var IgeObject = IgeEventingClass.extend({
 			}
 		}
 	},
+	
+	update: function (ctx) {
+		// Check that we are alive before processing further
+		if (this._alive) {
+			var arr = this._children,
+				arrCount;
+
+			if (arr) {
+				arrCount = arr.length;
+				
+				// Depth sort all child objects
+				if (arrCount && !ige._headless) {
+					if (igeDebug._timing) {
+						if (!ige._timeSpentLastTick[this.id()]) {
+							ige._timeSpentLastTick[this.id()] = {};
+						}
+
+						ts = new Date().getTime();
+						this.depthSortChildren();
+						td = new Date().getTime() - ts;
+						ige._timeSpentLastTick[this.id()].depthSortChildren = td;
+					} else {
+						this.depthSortChildren();
+					}
+				}
+
+				// Loop our children and call their update methods
+				if (igeDebug._timing) {
+					while (arrCount--) {
+						ts = new Date().getTime();
+						arr[arrCount].update(ctx);
+						td = new Date().getTime() - ts;
+						if (arr[arrCount]) {
+							if (!ige._timeSpentInTick[arr[arrCount].id()]) {
+								ige._timeSpentInTick[arr[arrCount].id()] = 0;
+							}
+
+							if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
+								ige._timeSpentLastTick[arr[arrCount].id()] = {};
+							}
+
+							ige._timeSpentInTick[arr[arrCount].id()] += td;
+							ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
+						}
+					}
+				} else {
+					while (arrCount--) {
+						arr[arrCount].update(ctx);
+					}
+				}
+			}
+		}
+	},
 
 	/**
 	 * Processes the actions required each render frame.
 	 */
 	tick: function (ctx) {
-		var arr = this._children,
-			arrCount,
-			arrIndex,
-			ts, td,
-			depthSortTime,
-			tickTime,
-			ac1, ac2;
-
-		if (this._viewChecking) {
-			// Set the in-scene flag for each child based on
-			// the current viewport
-			this.viewCheckChildren();
-		}
-
-		if (arr) {
-			arrCount = arr.length;
-			ac1 = arrCount;
-			// Depth sort all child objects
-			if (arrCount && !ige._headless) {
-				if (igeDebug._timing) {
-					if (!ige._tslt[this.id()]) {
-						ige._tslt[this.id()] = {};
-					}
-
-					ts = new Date().getTime();
-					this.depthSortChildren();
-					td = new Date().getTime() - ts;
-					ige._tslt[this.id()].depthSortChildren = td;
-				} else {
-					this.depthSortChildren();
-				}
+		// Check that we are alive before processing further
+		if (this._alive) {
+			var arr = this._children,
+				arrCount,
+				ts, td;
+	
+			if (this._viewChecking) {
+				// Set the in-scene flag for each child based on
+				// the current viewport
+				this.viewCheckChildren();
 			}
-			ac2 = arrCount;
-			// Loop our children and call their tick methods
-			if (igeDebug._timing) {
-				while (arrCount--) {
-					ctx.save();
-					ts = new Date().getTime();
-					arr[arrCount].tick(ctx);
-					td = new Date().getTime() - ts;
-					if (arr[arrCount]) {
-						if (!ige._tsit[arr[arrCount].id()]) {
-							ige._tsit[arr[arrCount].id()] = 0;
+	
+			// Loop the child objects of this object
+			if (arr) {
+				arrCount = arr.length;
+				
+				// Loop our children and call their tick methods
+				if (igeDebug._timing) {
+					while (arrCount--) {
+						ctx.save();
+						ts = new Date().getTime();
+						arr[arrCount].tick(ctx);
+						td = new Date().getTime() - ts;
+						if (arr[arrCount]) {
+							if (!ige._timeSpentInTick[arr[arrCount].id()]) {
+								ige._timeSpentInTick[arr[arrCount].id()] = 0;
+							}
+	
+							if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
+								ige._timeSpentLastTick[arr[arrCount].id()] = {};
+							}
+	
+							ige._timeSpentInTick[arr[arrCount].id()] += td;
+							ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
 						}
-
-						if (!ige._tslt[arr[arrCount].id()]) {
-							ige._tslt[arr[arrCount].id()] = {};
-						}
-
-						ige._tsit[arr[arrCount].id()] += td;
-						ige._tslt[arr[arrCount].id()].tick = td;
+						ctx.restore();
 					}
-					ctx.restore();
-				}
-			} else {
-				while (arrCount--) {
-					ctx.save();
-					arr[arrCount].tick(ctx);
-					ctx.restore();
+				} else {
+					while (arrCount--) {
+						ctx.save();
+						arr[arrCount].tick(ctx);
+						ctx.restore();
+					}
 				}
 			}
 		}

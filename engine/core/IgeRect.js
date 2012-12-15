@@ -17,6 +17,10 @@ var IgeRect = IgeClass.extend({
 
 		return this;
 	},
+	
+	minusPoint: function (point) {
+		return new IgeRect(this.x - point.x, this.y - point.y, this.width, this.height);
+	},
 
 	/**
 	 * Compares this rect's dimensions with the passed rect and returns

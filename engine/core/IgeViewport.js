@@ -72,7 +72,13 @@ var IgeViewport = IgeEntity.extend([
 	 * @return {IgePoint}
 	 */
 	mousePos: function () {
-		return this._mousePos;
+		// Viewport mouse position is calculated and assigned in the
+		// IgeInputComponent class.
+		return this._mousePos.clone();
+	},
+	
+	mousePosWorld: function () {
+		return this._transformPoint(this._mousePos.clone());
 	},
 
 	viewArea: function () {
@@ -80,6 +86,26 @@ var IgeViewport = IgeEntity.extend([
 			camTrans = this.camera._translate;
 
 		return new IgeRect(aabb.x + camTrans.x, aabb.y + camTrans.y, aabb.width, aabb.height);
+	},
+
+	/**
+	 * Processes the updates before the render tick is called.
+	 * @param ctx
+	 */
+	update: function (ctx) {
+		// Check if we have a scene attached to this viewport
+		if (this._scene) {
+			// Store the viewport camera in the main ige so that
+			// down the scenegraph we can choose to negate the camera
+			// transform effects
+			ige._currentCamera = this.camera;
+			ige._currentViewport = this;
+
+			this._scene._parent = this;
+
+			this._super(ctx);
+			this._scene.update(ctx);
+		}
 	},
 
 	/**

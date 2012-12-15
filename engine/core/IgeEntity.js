@@ -146,11 +146,57 @@ var IgeEntity = IgeObject.extend({
 			var mp = viewport._mousePos.clone();
 			mp.x += viewport._translate.x;
 			mp.y += viewport._translate.y;
-			this._transformPoint(mp)
+			this._transformPoint(mp);
 			return mp;
 		} else {
 			return new IgePoint(0, 0, 0);
 		}
+	},
+
+	/**
+	 * Gets the position of the mouse relative to this entity not
+	 * taking into account viewport translation.
+	 * @param {IgeViewport=} viewport The viewport to use as the
+	 * base from which the mouse position is determined. If no
+	 * viewport is specified then the current viewport the engine
+	 * is rendering to is used instead.
+	 * @example #Get absolute mouse position
+	 *     var mousePosAbs = entity.mousePosAbsolute();
+	 * @return {IgePoint} The mouse point relative to the entity
+	 * center.
+	 */
+	mousePosAbsolute: function (viewport) {
+		viewport = viewport || ige._currentViewport;
+		if (viewport) {
+			var mp = viewport._mousePos.clone();
+			this._transformPoint(mp);
+			return mp;
+		}
+
+		return new IgePoint(0, 0, 0);
+	},
+
+	/**
+	 * Gets the position of the mouse in world co-ordinates.
+	 * @param {IgeViewport=} viewport The viewport to use as the
+	 * base from which the mouse position is determined. If no
+	 * viewport is specified then the current viewport the engine
+	 * is rendering to is used instead.
+	 * @example #Get mouse position in world co-ordinates
+	 *     var mousePosWorld = entity.mousePosWorld();
+	 * @return {IgePoint} The mouse point relative to the world
+	 * center.
+	 */
+	mousePosWorld: function (viewport) {
+		viewport = viewport || ige._currentViewport;
+		var mp = this.mousePos(viewport);
+		this.localToWorldPoint(mp, viewport);
+
+		if (this._ignoreCamera) {
+			viewport.camera._worldMatrix.transform([mp]);
+		}
+
+		return mp;
 	},
 
 	/**
@@ -173,52 +219,6 @@ var IgeEntity = IgeObject.extend({
 		);
 
 		return this;
-	},
-
-	/**
-	 * Gets the position of the mouse relative to this entity not
-	 * taking into account viewport translation.
-	 * @param {IgeViewport=} viewport The viewport to use as the
-	 * base from which the mouse position is determined. If no
-	 * viewport is specified then the current viewport the engine
-	 * is rendering to is used instead.
-	 * @example #Get absolute mouse position
-	 *     var mousePosAbs = entity.mousePosAbsolute();
-	 * @return {IgePoint} The mouse point relative to the entity
-	 * center.
-	 */
-	mousePosAbsolute: function (viewport) {
-		viewport = viewport || ige._currentViewport;
-		if (viewport) {
-			var mp = viewport._mousePos.clone();
-			this._transformPoint(mp);
-			return mp;
-		}
-		
-		return new IgePoint(0, 0, 0);
-	},
-
-	/**
-	 * Gets the position of the mouse in world co-ordinates.
-	 * @param {IgeViewport=} viewport The viewport to use as the
-	 * base from which the mouse position is determined. If no
-	 * viewport is specified then the current viewport the engine
-	 * is rendering to is used instead.
-	 * @example #Get mouse position in world co-ordinates
-	 *     var mousePosWorld = entity.mousePosWorld();
-	 * @return {IgePoint} The mouse point relative to the world
-	 * center.
-	 */
-	mousePosWorld: function (viewport) {
-		viewport = viewport || ige._currentViewport;
-		var mp = this.mousePosAbsolute(viewport);
-		this.localToWorldPoint(mp, viewport);
-
-		if (this._ignoreCamera) {
-			viewport.camera._worldMatrix.transform([mp]);
-		}
-
-		return mp;
 	},
 
 	/**
@@ -1129,6 +1129,67 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * Sets the canvas context transform properties to match the the game
+	 * object's current transform values.
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to apply
+	 * the transformation matrix to.
+	 * @example #Transform a canvas context to the entity's local matrix values
+	 *     var canvas = document.createElement('canvas');
+	 *     canvas.width = 800;
+	 *     canvas.height = 600;
+	 *
+	 *     var ctx = canvas.getContext('2d');
+	 *     entity._transformContext(ctx);
+	 * @private
+	 */
+	_transformContext: function (ctx) {
+		if (this._parent) {
+			// TODO: Does this only work one level deep? we need to alter a _worldOpacity property down the chain
+			ctx.globalAlpha = this._parent._opacity * this._opacity;
+		} else {
+			ctx.globalAlpha = this._opacity;
+		}
+
+		this._localMatrix.transformRenderingContext(ctx);
+	},
+	
+	update: function (ctx) {
+		// Check if the entity should still exist
+		if (this._deathTime !== undefined && this._deathTime <= ige._tickStart) {
+			// The entity should be removed because it has died
+			this.destroy();
+		} else {
+			// Remove the stream data cache
+			delete this._streamDataCache;
+
+			// Process any behaviours assigned to the entity
+			this._processBehaviours(ctx);
+
+			if (this._timeStream.length) {
+				// Process any interpolation
+				this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
+			}
+
+			// Check for changes to the transform values
+			// directly without calling the transform methods
+			this.updateTransform();
+
+			// Update the aabb
+			this.aabb(true); // TODO: This is wasteful, find a way to determine if a recalc is required rather than doing it every tick
+
+			this._oldTranslate = this._translate.clone();
+
+			// Update this object's current frame alternator value
+			// which allows us to determine if we are still on the
+			// same frame
+			this._frameAlternatorCurrent = ige._frameAlternator;
+		}
+
+		// Process super class
+		this._super(ctx);
+	},
+
+	/**
 	 * Processes the actions required each render frame.
 	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
 	 * @param {Boolean} dontTransform If set to true, the tick method will
@@ -1138,109 +1199,82 @@ var IgeEntity = IgeObject.extend({
 	 * method.
 	 */
 	tick: function (ctx, dontTransform) {
-		// Check if the entity should still exist
-		if (this._deathTime !== undefined && this._deathTime <= ige._tickStart) {
-			// The entity should be removed because it has died
-			this.destroy();
-		} else {
-			if (this.newFrame()) {
-				// Remove the stream data cache
-				delete this._streamDataCache;
+		if (!this._hidden && this._inView && (!this._parent || (this._parent._inView)) && !this._streamJustCreated) {
+			// Process any mouse events we need to do
+			var mp, aabb, mouseX, mouseY,
+				self = this;
 
-				// Process any behaviours assigned to the entity
-				this._processBehaviours(ctx);
+			if (this._mouseEventsActive && ige._currentViewport) {
+				mp = this.mousePosWorld();
 
-				if (this._timeStream.length) {
-					// Process any interpolation
-					this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
-				}
+				if (mp) {
+					aabb = this.aabb(); //this.localAabb();
+					mouseX = mp.x;
+					mouseY = mp.y;
 
-				this._oldTranslate = this._translate.clone();
-			}
-
-			if (!this._hidden && this._inView && (!this._parent || (this._parent._inView)) && !this._streamJustCreated) {
-				// Process any mouse events we need to do
-				var mp, aabb, mouseX, mouseY,
-					self = this;
-
-				if (this._mouseEventsActive && ige._currentViewport) {
-					mp = this.mousePos();
-
-					if (mp) {
-						aabb = this.localAabb(); //this.aabb();
-						mouseX = mp.x;
-						mouseY = mp.y;
-
-						// Check if the current mouse position is inside this aabb
-						//if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
-						if (aabb.xyInside(mouseX, mouseY) || this._mouseAlwaysInside) {
-							// Point is inside the aabb
-							ige.input.queueEvent(this, this._mouseInAabb);
-						} else {
-							if (ige.input.mouseMove) {
-								// There is a mouse move event but we are not inside the entity
-								// so fire a mouse out event (_handleMouseOut will check if the
-								// mouse WAS inside before firing an out event).
-								self._handleMouseOut(ige.input.mouseMove);
-							}
-						}
-					}
-				}
-
-				// Transform the context by the current transform settings
-				if (!dontTransform) {
-					this._transformContext(ctx);
-				}
-
-				if (!this._dontRender) {
-					// Check for cached version
-					if (this._cache) {
-						// Caching is enabled
-						if (!this._cacheDirty) {
-							this._renderCache(ctx);
-						} else {
-							// The cache is not clean so re-draw it
-							// Render the entity to the cache
-							var _canvas = this._cacheCanvas,
-								_ctx = this._cacheCtx;
-
-							if (this._geometry.x > 0 && this._geometry.y > 0) {
-								_canvas.width = this._geometry.x;
-								_canvas.height = this._geometry.y;
-							} else {
-								// We cannot set a zero size for a canvas, it will
-								// cause the browser to freak out
-								_canvas.width = 1;
-								_canvas.height = 1;
-							}
-
-							// Translate to the center of the canvas
-							_ctx.translate(this._geometry.x2, this._geometry.y2);
-
-							this._renderEntity(_ctx, dontTransform);
-							this._renderCache(ctx);
-							this._cacheDirty = false;
-						}
+					// Check if the current mouse position is inside this aabb
+					//if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
+					if (aabb.xyInside(mouseX, mouseY) || this._mouseAlwaysInside) {
+						// Point is inside the aabb
+						ige.input.queueEvent(this, this._mouseInAabb);
 					} else {
-						// Render the entity
-						this._renderEntity(ctx, dontTransform);
+						if (ige.input.mouseMove) {
+							// There is a mouse move event but we are not inside the entity
+							// so fire a mouse out event (_handleMouseOut will check if the
+							// mouse WAS inside before firing an out event).
+							self._handleMouseOut(ige.input.mouseMove);
+						}
 					}
 				}
-
-				// Process any automatic-mode stream updating required
-				if (this._streamMode === 1) {
-					this.streamSync();
-				}
-
-				// Process children
-				this._super(ctx);
 			}
 
-			// Update this object's current frame alternator value
-			// which allows us to determine if we are still on the
-			// same frame if any tick-based methods are called again
-			// during this tick frame
-			this._frameAlternatorCurrent = ige._frameAlternator;
+			// Transform the context by the current transform settings
+			if (!dontTransform) {
+				this._transformContext(ctx);
+			}
+
+			if (!this._dontRender) {
+				// Check for cached version
+				if (this._cache) {
+					// Caching is enabled
+					if (!this._cacheDirty) {
+						this._renderCache(ctx);
+					} else {
+						// The cache is not clean so re-draw it
+						// Render the entity to the cache
+						var _canvas = this._cacheCanvas,
+							_ctx = this._cacheCtx;
+
+						if (this._geometry.x > 0 && this._geometry.y > 0) {
+							_canvas.width = this._geometry.x;
+							_canvas.height = this._geometry.y;
+						} else {
+							// We cannot set a zero size for a canvas, it will
+							// cause the browser to freak out
+							_canvas.width = 1;
+							_canvas.height = 1;
+						}
+
+						// Translate to the center of the canvas
+						_ctx.translate(this._geometry.x2, this._geometry.y2);
+
+						this._renderEntity(_ctx, dontTransform);
+						this._renderCache(ctx);
+						this._cacheDirty = false;
+					}
+				} else {
+					// Render the entity
+					this._renderEntity(ctx, dontTransform);
+				}
+			}
+
+			// Process any automatic-mode stream updating required
+			if (this._streamMode === 1) {
+				this.streamSync();
+			}
+
+			// Process children
+			this._super(ctx);
 		}
 	},
 
@@ -1336,38 +1370,6 @@ var IgeEntity = IgeObject.extend({
 
 			ige._drawCount++;
 		}
-	},
-
-	/**
-	 * Sets the canvas context transform properties to match the the game
-	 * object's current transform values.
-	 * @param {CanvasRenderingContext2D} ctx The canvas context to apply
-	 * the transformation matrix to.
-	 * @example #Transform a canvas context to the entity's local matrix values
-	 *     var canvas = document.createElement('canvas');
-	 *     canvas.width = 800;
-	 *     canvas.height = 600;
-	 *     
-	 *     var ctx = canvas.getContext('2d');
-	 *     entity._transformContext(ctx);
-	 * @private
-	 */
-	_transformContext: function (ctx) {
-		// Check for changes to the transform values
-		// directly without calling the transform methods
-		this.updateTransform();
-
-		// Update the aabb
-		this.aabb(true); // TODO: This is wasteful, find a way to determine if a recalc is required rather than doing it every tick
-
-		if (this._parent) {
-			// TODO: Does this only work one level deep? we need to alter a _worldOpacity property down the chain
-			ctx.globalAlpha = this._parent._opacity * this._opacity;
-		} else {
-			ctx.globalAlpha = this._opacity;
-		}
-
-		this._localMatrix.transformRenderingContext(ctx);
 	},
 
 	/**
