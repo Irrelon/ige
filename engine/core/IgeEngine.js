@@ -1411,6 +1411,11 @@ var IgeEngine = IgeEntity.extend({
 	 * Called each frame to traverse and render the scenegraph.
 	 */
 	tick: function (timeStamp, ctx) {
+		/* TODO:
+			Make the scenegraph process simplified. Walk the scenegraph once and grab the order in a flat array
+			then process updates and ticks. This will also allow a layered rendering system that can render the
+			first x number of entities then stop, allowing a step through of the renderer in realtime
+		 */
 		var st,
 			et,
 			updateStart,
