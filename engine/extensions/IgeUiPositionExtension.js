@@ -247,26 +247,26 @@ var IgeUiPositionExtension = {
 		// TODO: Update so that it takes into account the parent element's position etc
 	_updateUiPosition: function () {
 		if (this._parent) {
-			var parentGeom = this._parent._geometry.multiplyPoint(this._parent._scale),
-				geom = this._geometry.multiplyPoint(this._scale);
+			var parentGeom = this._parent._geometry,
+				geomScaled = this._geometry.multiplyPoint(this._scale);
 
 			if (this._uiWidth) { this.width(this._uiWidth, false, this._widthModifier, true); }
 			if (this._uiHeight) { this.height(this._uiHeight, false, this._heightModifier, true); }
 
 			if (this._uiXAlign === 'right') {
-				this._translate.x = Math.floor(parentGeom.x2 - geom.x2 - this._uiX);
+				this._translate.x = Math.floor(parentGeom.x2 - geomScaled.x2 - this._uiX);
 			} else if (this._uiXAlign === 'center') {
 				this._translate.x = Math.floor(this._uiX);
 			} else if (this._uiXAlign === 'left') {
-				this._translate.x = Math.floor(this._uiX + geom.x2 - (parentGeom.x2));
+				this._translate.x = Math.floor(this._uiX + geomScaled.x2 - (parentGeom.x2));
 			}
 
 			if (this._uiYAlign === 'bottom') {
-				this._translate.y = Math.floor(parentGeom.y2 - geom.y2 - this._uiY);
+				this._translate.y = Math.floor(parentGeom.y2 - geomScaled.y2 - this._uiY);
 			} else if (this._uiYAlign === 'middle') {
 				this._translate.y = Math.floor(this._uiY);
 			} else if (this._uiYAlign === 'top') {
-				this._translate.y = Math.floor(this._uiY + geom.y2 - (parentGeom.y2));
+				this._translate.y = Math.floor(this._uiY + geomScaled.y2 - (parentGeom.y2));
 			}
 
 			this.dirty(true);
