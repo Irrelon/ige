@@ -31,7 +31,15 @@ var IgeUiEntity = IgeEntity.extend([
 		this._paddingTop = 0;
 		this._paddingRight = 0;
 		this._paddingBottom = 0;
-		this._overflow = 'hidden';
+	},
+	
+	overflow: function (val) {
+		if (val !== undefined) {
+			this._overflow = val;
+			return this;
+		}
+		
+		return this._overflow;
 	},
 
 	_renderBackground: function (ctx) {
