@@ -1178,7 +1178,8 @@ var IgeEngine = IgeEntity.extend({
 			this.className += ' selected';
 			ige._sgTreeSelected = this.id;
 
-			ige.$('vp1').drawBoundsLimitId(this.id);
+			ige._currentViewport.drawBounds(true);
+			ige._currentViewport.drawBoundsLimitId(this.id);
 		};
 
 		//elem.addEventListener('mouseover', mouseOver, false);
