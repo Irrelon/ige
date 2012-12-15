@@ -11,7 +11,6 @@ var igeCoreConfig = {
 		['csap', 'IgePoly2d', 'core/IgePoly2d.js'],
 		['csap', 'IgeRect', 'core/IgeRect.js'],
 		['csap', 'IgeMatrix2d', 'core/IgeMatrix2d.js'],
-		['csa', 'IgeMatrixStack', 'core/IgeMatrixStack.js'],
 		/* Components */
 		['csap', 'IgeAnimationComponent', 'components/IgeAnimationComponent.js'],
 		['csap', 'IgeVelocityComponent', 'components/IgeVelocityComponent.js'],
