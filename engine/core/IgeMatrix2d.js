@@ -103,7 +103,7 @@ IgeMatrix2d.prototype = {
 	 * @return {Number}
 	 */
 	rotationRadians: function () {
-		return Math.acos(this.matrix[0]);
+		return Math.asin(this.matrix[3]);
 	},
 
 	/**
