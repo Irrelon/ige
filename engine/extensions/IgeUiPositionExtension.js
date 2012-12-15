@@ -238,6 +238,30 @@ var IgeUiPositionExtension = {
 
 		return this._height;
 	},
+	
+	autoScaleX: function (val, lockAspect) {
+		if (val !== undefined) {
+			this._autoScaleX = val;
+			this._autoScaleLockAspect = lockAspect;
+
+			this._updateUiPosition();
+			return this;
+		}
+
+		return this._autoScaleX;
+	},
+
+	autoScaleY: function (val, lockAspect) {
+		if (val !== undefined) {
+			this._autoScaleY = val;
+			this._autoScaleLockAspect = lockAspect;
+
+			this._updateUiPosition();
+			return this;
+		}
+
+		return this._autoScaleY;
+	},
 
 	/**
 	 * Sets the correct translate x and y for the viewport's left, right
@@ -248,7 +272,46 @@ var IgeUiPositionExtension = {
 	_updateUiPosition: function () {
 		if (this._parent) {
 			var parentGeom = this._parent._geometry,
-				geomScaled = this._geometry.multiplyPoint(this._scale);
+				geomScaled = this._geometry.multiplyPoint(this._scale),
+				percent,
+				newVal,
+				ratio;
+			
+			if (this._autoScaleX) {
+				// Get the percentage as an integer
+				percent = parseInt(this._autoScaleX, 10);
+	
+				// Calculate new width from percentage
+				newVal = (parentGeom.x / 100 * percent);
+	
+				// Calculate scale ratio
+				ratio = newVal / this._geometry.x;
+	
+				// Set the new scale
+				this._scale.x = ratio;
+				
+				if (this._autoScaleLockAspect) {
+					this._scale.y = ratio;
+				}
+			}
+
+			if (this._autoScaleY) {
+				// Get the percentage as an integer
+				percent = parseInt(this._autoScaleY, 10);
+
+				// Calculate new height from percentage
+				newVal = (parentGeom.y / 100 * percent);
+
+				// Calculate scale ratio
+				ratio = newVal / this._geometry.y;
+
+				// Set the new scale
+				this._scale.y = ratio;
+
+				if (this._autoScaleLockAspect) {
+					this._scale.x = ratio;
+				}
+			}
 
 			if (this._uiWidth) { this.width(this._uiWidth, false, this._widthModifier, true); }
 			if (this._uiHeight) { this.height(this._uiHeight, false, this._heightModifier, true); }
