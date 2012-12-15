@@ -155,9 +155,61 @@ entity.addGroup('g1', 'g2', 'g3');
 </code></pre>
 </div>
 					</div>
-				<h3>inGroup(<span class="argType">String</span> <span class="argName">groupName</span>)</h3>
-<div class="methodDesc">Checks if the entity is in the specified group or groups. This method accepts multiple arguments, each of which is a group name. If multiple group names are passed, the method will only return true if the entity is in ALL the passed groups.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">groupName</span> The name of the group to check to see if this entity is a member of.</li></ul></div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Add entity to multiple groups via an array</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup(['g1', 'g2', 'g3']);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Add entity to multiple groups via multiple arrays</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup(['g1', 'g2', 'g3'], ['g4', 'g5']);
+</code></pre>
+</div>
+					</div>
+				<h3>inGroup(<span class="argType">*</span> <span class="argName">groupName</span>, <span class="argType">Boolean</span> <span class="argName">matchAllGroups</span>)</h3>
+<div class="methodDesc">Checks if the entity is in the group or array of group names passed.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">groupName</span> A group name or array of names.</li><li>{<span class="argType">Boolean</span>}<span class="argName">matchAllGroups</span> If set to true, will cause the method to check if the entity is in ALL the groups, otherwise the method will check if the entity is in ANY group.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Check if the entity is in a group</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g2');
+
+// Will output true since entity is part of g1 group
+console.log(entity.inGroup('g1', false);
+
+// Will output false since entity is not part of g3 group
+console.log(entity.inGroup('g3', false);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Check if the entity is in an array of groups using ANY and ALL options</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g2');
+
+// Will output true since entity is part of g1 group
+console.log(entity.inGroup(['g1, 'g3'], false);
+
+// Will output false since entity is not part of g3 group
+console.log(entity.inGroup(['g1, 'g3'], true);
+</code></pre>
+</div>
+					</div>
+				<h3>inAllGroups(<span class="argType">String</span> <span class="argName">groupName</span>)</h3>
+<div class="methodDesc">Checks if the entity is in the specified group or array of groups. If multiple group names are passed, as an array the method will only return true if the entity is in ALL the passed groups.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">groupName</span> The name of the group or array if group names to check if this entity is a member of.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
 
 					<div class="methodExample">
@@ -165,22 +217,22 @@ entity.addGroup('g1', 'g2', 'g3');
 
 <pre><code>// Add a couple of groups
 var entity = new IgeEntity();
-entity.addGroup('g1', 'g2');
+entity.addGroup(['g1', 'g2']);
 
 // This will output "false" (entity is not part of g3)
-console.log(entity.inGroup('g1', 'g3'));
+console.log(entity.inAllGroups(['g1', 'g3']));
 
 // This will output "true"
-console.log(entity.inGroup('g1'));
+console.log(entity.inAllGroups('g1'));
 
 // This will output "true"
-console.log(entity.inGroup('g1', 'g2'));
+console.log(entity.inAllGroups(['g1', 'g2']));
 </code></pre>
 </div>
 					</div>
 				<h3>inAnyGroup(<span class="argType">String</span> <span class="argName">groupName</span>)</h3>
-<div class="methodDesc">Checks if the entity is in the specified group or groups. This method accepts multiple arguments, each of which is a group name. If multiple group names are passed, the method will return true if the entity is in ANY of the the passed groups.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">groupName</span> The name of the group to check to see if this entity is a member of.</li></ul></div>
+<div class="methodDesc">Checks if the entity is in the specified group or array of group names. If multiple group names are passed as an array, the method will return true if the entity is in ANY of the the passed groups.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">groupName</span> The name of the group or array of group names to check if this entity is a member of.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
 
 					<div class="methodExample">
@@ -194,7 +246,7 @@ entity.addGroup('g1', 'g2');
 console.log(entity.inAnyGroup('g3'));
 
 // This will output "true"
-console.log(entity.inAnyGroup('g3', 'g1'));
+console.log(entity.inAnyGroup(['g3', 'g1']));
 </code></pre>
 </div>
 					</div>
@@ -207,9 +259,9 @@ console.log(entity.inAnyGroup('g3', 'g1'));
 						<div class="content"><h1>Get array of groups entity belongs to</h1>
 
 <pre><code>var entity = new IgeEntity();
-entity.addGroup('g1', 'g3');
+entity.addGroup('g1', 'g2');
 
-// This will output "['g1', 'g3']"
+// This will output "['g1', 'g2']"
 console.log(entity.groups());
 </code></pre>
 </div>
@@ -223,7 +275,7 @@ console.log(entity.groups());
 						<div class="content"><h1>Get number of groups entity belongs to</h1>
 
 <pre><code>var entity = new IgeEntity();
-entity.addGroup('g1', 'g3');
+entity.addGroup('g1', 'g2');
 
 // This will output "2"
 console.log(entity.groupCount());
@@ -239,15 +291,15 @@ console.log(entity.groupCount());
 						<div class="content"><h1>Remove entity from single group</h1>
 
 <pre><code>var entity = new IgeEntity();
-entity.addGroup('g1', 'g3');
+entity.addGroup('g1', 'g2');
 
-// This will output "['g1', 'g3']"
+// This will output "['g1', 'g2']"
 console.log(entity.groups());
 
 // Remove entity from a single group
 entity.removeGroup('g1');
 
-// This will output "['g3']"
+// This will output "['g2']"
 console.log(entity.groups());
 </code></pre>
 </div>
@@ -266,6 +318,42 @@ console.log(entity.groups());
 entity.removeGroup('g1', 'g3');
 
 // This will output "['g2']"
+console.log(entity.groups());
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Remove entity from multiple groups via an array</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g3', 'g2');
+
+// This will output "['g1', 'g3', 'g2']"
+console.log(entity.groups());
+
+// Remove entity from multiple groups
+entity.removeGroup(['g1', 'g3']);
+
+// This will output "['g2']"
+console.log(entity.groups());
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Remove entity from multiple groups via multiple arrays</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7');
+
+// This will output "['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7']"
+console.log(entity.groups());
+
+// Remove entity from multiple groups
+entity.removeGroup(['g1', 'g3'], ['g5', 'g6', 'g7']);
+
+// This will output "['g2', 'g4']"
 console.log(entity.groups());
 </code></pre>
 </div>

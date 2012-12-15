@@ -174,21 +174,44 @@ var IgeObject = IgeEventingClass.extend({
 	 * @example #Add entity to multiple groups
 	 *     var entity = new IgeEntity();
 	 *     entity.addGroup('g1', 'g2', 'g3');
+	 * @example #Add entity to multiple groups via an array
+	 *     var entity = new IgeEntity();
+	 *     entity.addGroup(['g1', 'g2', 'g3']);
+	 * @example #Add entity to multiple groups via multiple arrays
+	 *     var entity = new IgeEntity();
+	 *     entity.addGroup(['g1', 'g2', 'g3'], ['g4', 'g5']);
 	 * @return {*}
 	 */
 	addGroup: function () {
 		var arrCount = arguments.length,
-			groupName;
+			groupName,
+			groupItemCount;
 
 		while (arrCount--) {
 			groupName = arguments[arrCount];
+			
+			// Check if the argument is an array
+			if (groupName instanceof Array) {
+				groupItemCount = groupName.length;
+				
+				// Add each group of the array to the entity
+				while (groupItemCount--) {
+					if (!this._groups || this._groups.indexOf(groupName[groupItemCount]) === -1) {
+						this._groups = this._groups || [];
+						this._groups.push(groupName[groupItemCount]);
 
-			if (!this._groups || this._groups.indexOf(groupName) === -1) {
-				this._groups = this._groups || [];
-				this._groups.push(groupName);
-
-				// Now register this object with the group it has been assigned
-				ige.groupRegister(this, groupName);
+						// Now register this object with the group it has been assigned
+						ige.groupRegister(this, groupName[groupItemCount]);
+					}
+				}
+			} else {
+				if (!this._groups || this._groups.indexOf(groupName) === -1) {
+					this._groups = this._groups || [];
+					this._groups.push(groupName);
+	
+					// Now register this object with the group it has been assigned
+					ige.groupRegister(this, groupName);
+				}
 			}
 		}
 
@@ -196,40 +219,83 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Checks if the entity is in the specified group or
-	 * groups. This method accepts multiple arguments, each
-	 * of which is a group name. If multiple group names
-	 * are passed, the method will only return true if the
-	 * entity is in ALL the passed groups.
-	 * @param {String} groupName The name of the group to
-	 * check to see if this entity is a member of.
-	 * @example #Check if entity belongs to all of the passed groups
-	 *     // Add a couple of groups
+	 * Checks if the entity is in the group or array of group
+	 * names passed.
+	 * @param {*} groupName A group name or array of names.
+	 * @param {Boolean=} matchAllGroups If set to true, will cause
+	 * the method to check if the entity is in ALL the groups,
+	 * otherwise the method will check if the entity is in ANY group.
+	 * @example #Check if the entity is in a group
 	 *     var entity = new IgeEntity();
 	 *     entity.addGroup('g1', 'g2');
 	 *	
-	 *     // This will output "false" (entity is not part of g3)
-	 *     console.log(entity.inGroup('g1', 'g3'));
+	 *     // Will output true since entity is part of g1 group
+	 *     console.log(entity.inGroup('g1', false);
 	 *	
-	 *     // This will output "true"
-	 *     console.log(entity.inGroup('g1'));
-	 *	
-	 *     // This will output "true"
-	 *     console.log(entity.inGroup('g1', 'g2'));
+	 *     // Will output false since entity is not part of g3 group
+	 *     console.log(entity.inGroup('g3', false);
+	 * @example #Check if the entity is in an array of groups using ANY and ALL options
+	 *     var entity = new IgeEntity();
+	 *     entity.addGroup('g1', 'g2');
+	 *     
+	 *     // Will output true since entity is part of g1 group
+	 *     console.log(entity.inGroup(['g1, 'g3'], false);
+	 *     
+	 *     // Will output false since entity is not part of g3 group
+	 *     console.log(entity.inGroup(['g1, 'g3'], true);
 	 * @return {Boolean}
 	 */
-	inGroup: function () {
-		var arrCount = arguments.length,
-			groupName;
+	inGroup: function (groupName, matchAllGroups) {
+		if (groupName) {
+			if (matchAllGroups) {
+				return this.inAllGroups(groupName);
+			} else {
+				return this.inAnyGroup(groupName);
+			}
+		}
+		
+		return false;
+	},
 
-		while (arrCount--) {
-			groupName = arguments[arrCount];
-
-			if (groupName !== undefined) {
-				if (!this._groups || this._groups.indexOf(groupName) === -1) {
-					return false;
+	/**
+	 * Checks if the entity is in the specified group or
+	 * array of groups. If multiple group names are passed,
+	 * as an array the method will only return true if the
+	 * entity is in ALL the passed groups.
+	 * @param {String} groupName The name of the group or array
+	 * if group names to check if this entity is a member of.
+	 * @example #Check if entity belongs to all of the passed groups
+	 *     // Add a couple of groups
+	 *     var entity = new IgeEntity();
+	 *     entity.addGroup(['g1', 'g2']);
+	 *	
+	 *     // This will output "false" (entity is not part of g3)
+	 *     console.log(entity.inAllGroups(['g1', 'g3']));
+	 *	
+	 *     // This will output "true"
+	 *     console.log(entity.inAllGroups('g1'));
+	 *	
+	 *     // This will output "true"
+	 *     console.log(entity.inAllGroups(['g1', 'g2']));
+	 * @return {Boolean}
+	 */
+	inAllGroups: function (groupName) {
+		var arrItem, arrCount;
+		
+		if (groupName instanceof Array) {
+			arrCount = groupName.length;
+			
+			while (arrCount--) {
+				arrItem = groupName[arrCount];
+			
+				if (arrItem) {
+					if (!this._groups || this._groups.indexOf(arrItem) === -1) {
+						return false;
+					}
 				}
 			}
+		} else {
+			return !(!this._groups || this._groups.indexOf(groupName) === -1);
 		}
 
 		return true;
@@ -237,12 +303,11 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Checks if the entity is in the specified group or
-	 * groups. This method accepts multiple arguments, each
-	 * of which is a group name. If multiple group names
-	 * are passed, the method will return true if the entity
+	 * array of group names. If multiple group names are passed
+	 * as an array, the method will return true if the entity
 	 * is in ANY of the the passed groups.
-	 * @param {String} groupName The name of the group to
-	 * check to see if this entity is a member of.
+	 * @param {String} groupName The name of the group or array of
+	 * group names to check if this entity is a member of.
 	 * @example #Check if entity belongs to any of the passed groups
 	 *     // Add a couple of groups
 	 *     var entity = new IgeEntity();
@@ -252,21 +317,26 @@ var IgeObject = IgeEventingClass.extend({
 	 *     console.log(entity.inAnyGroup('g3'));
 	 *	
 	 *     // This will output "true"
-	 *     console.log(entity.inAnyGroup('g3', 'g1'));
+	 *     console.log(entity.inAnyGroup(['g3', 'g1']));
 	 * @return {Boolean}
 	 */
-	inAnyGroup: function () {
-		var arrCount = arguments.length,
-			groupName;
+	inAnyGroup: function (groupName) {
+		var arrItem, arrCount;
 
-		while (arrCount--) {
-			groupName = arguments[arrCount];
+		if (groupName instanceof Array) {
+			arrCount = groupName.length;
 
-			if (groupName !== undefined) {
-				if (this._groups && this._groups.indexOf(groupName) !== -1) {
-					return true;
+			while (arrCount--) {
+				arrItem = groupName[arrCount];
+
+				if (arrItem) {
+					if (this._groups && this._groups.indexOf(arrItem) > -1) {
+						return true;
+					}
 				}
 			}
+		} else {
+			return (this._groups && this._groups.indexOf(groupName) > -1);
 		}
 
 		return false;
@@ -276,9 +346,9 @@ var IgeObject = IgeEventingClass.extend({
 	 * Gets an array of all groups this entity belongs to.
 	 * @example #Get array of groups entity belongs to
 	 *     var entity = new IgeEntity();
-	 *     entity.addGroup('g1', 'g3');
+	 *     entity.addGroup('g1', 'g2');
 	 *	
-	 *     // This will output "['g1', 'g3']"
+	 *     // This will output "['g1', 'g2']"
 	 *     console.log(entity.groups());
 	 * @return {*}
 	 */
@@ -290,7 +360,7 @@ var IgeObject = IgeEventingClass.extend({
 	 * Gets the number of groups this entity belongs to.
 	 * @example #Get number of groups entity belongs to
 	 *     var entity = new IgeEntity();
-	 *     entity.addGroup('g1', 'g3');
+	 *     entity.addGroup('g1', 'g2');
 	 *	
 	 *     // This will output "2"
 	 *     console.log(entity.groupCount());
@@ -308,15 +378,15 @@ var IgeObject = IgeEventingClass.extend({
 	 * this entity as a member of.
 	 * @example #Remove entity from single group
 	 *     var entity = new IgeEntity();
-	 *     entity.addGroup('g1', 'g3');
+	 *     entity.addGroup('g1', 'g2');
 	 *	
-	 *     // This will output "['g1', 'g3']"
+	 *     // This will output "['g1', 'g2']"
 	 *     console.log(entity.groups());
 	 *	
 	 *     // Remove entity from a single group
 	 *     entity.removeGroup('g1');
 	 *	
-	 *     // This will output "['g3']"
+	 *     // This will output "['g2']"
 	 *     console.log(entity.groups());
 	 * @example #Remove entity from multiple groups
 	 *     var entity = new IgeEntity();
@@ -330,19 +400,56 @@ var IgeObject = IgeEventingClass.extend({
 	 *	
 	 *     // This will output "['g2']"
 	 *     console.log(entity.groups());
+	 * @example #Remove entity from multiple groups via an array
+	 *     var entity = new IgeEntity();
+	 *     entity.addGroup('g1', 'g3', 'g2');
+	 *	
+	 *     // This will output "['g1', 'g3', 'g2']"
+	 *     console.log(entity.groups());
+	 *	
+	 *     // Remove entity from multiple groups
+	 *     entity.removeGroup(['g1', 'g3']);
+	 *	
+	 *     // This will output "['g2']"
+	 *     console.log(entity.groups());
+	 * @example #Remove entity from multiple groups via multiple arrays
+	 *     var entity = new IgeEntity();
+	 *     entity.addGroup('g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7');
+	 *	
+	 *     // This will output "['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7']"
+	 *     console.log(entity.groups());
+	 *	
+	 *     // Remove entity from multiple groups
+	 *     entity.removeGroup(['g1', 'g3'], ['g5', 'g6', 'g7']);
+	 *	
+	 *     // This will output "['g2', 'g4']"
+	 *     console.log(entity.groups());
 	 * @return {*}
 	 */
 	removeGroup: function () {
 		if (this._groups) {
 			var arrCount = arguments.length,
-				groupName;
+				groupName,
+				groupNameCount;
 
 			while (arrCount--) {
 				groupName = arguments[arrCount];
-				this._groups.pull(groupName);
+				
+				if (groupName instanceof Array) {
+					groupNameCount = groupName.length;
+					
+					while (groupNameCount--) {
+						this._groups.pull(groupName[groupNameCount]);
 
-				// Now un-register this object with the group it has been assigned
-				ige.groupUnRegister(this, groupName);
+						// Now un-register this object with the group it has been assigned
+						ige.groupUnRegister(this, groupName[groupNameCount]);
+					}
+				} else {
+					this._groups.pull(groupName);
+	
+					// Now un-register this object with the group it has been assigned
+					ige.groupUnRegister(this, groupName);
+				}
 			}
 		}
 
