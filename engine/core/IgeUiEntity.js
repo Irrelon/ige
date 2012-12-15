@@ -1,6 +1,8 @@
 // TODO: Implement the _stringify() method for this class
 /**
- * Creates a new UI entity.
+ * Creates a new UI entity. UI entities use more resources and CPU
+ * than standard IgeEntity instances so only use them if an IgeEntity
+ * won't do the job.
  */
 var IgeUiEntity = IgeEntity.extend([
 	{extension: IgeUiStyleExtension, overwrite: true},
@@ -139,8 +141,8 @@ var IgeUiEntity = IgeEntity.extend([
 	_renderBorder: function (ctx) {
 		var rad,
 			geom = this._geometry,
-			left = -(geom.x / 2) | 0,
-			top = -(geom.y / 2) | 0,
+			left = -(geom.x2) | 0,
+			top = -(geom.y2) | 0,
 			width = geom.x,
 			height = geom.y;
 
