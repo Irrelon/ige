@@ -247,7 +247,7 @@ var IgeUiPositionExtension = {
 		// TODO: Update so that it takes into account the parent element's position etc
 	_updateUiPosition: function () {
 		if (this._parent) {
-			var parentGeom = this._parent._geometry,
+			var parentGeom = this._parent._geometry.multiplyPoint(this._parent._scale),
 				geom = this._geometry;
 
 			if (this._uiWidth) { this.width(this._uiWidth, false, this._widthModifier, true); }

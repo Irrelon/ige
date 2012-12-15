@@ -168,6 +168,16 @@ var IgePoint = IgeClass.extend({
 	},
 
 	/**
+	 * Multiplies this point's data by the point specified
+	 * and returns a new IgePoint whose values are the result.
+	 * @param {IgePoint} point
+	 * @return {*}
+	 */
+	multiplyPoint: function (point) {
+		return new IgePoint(this.x * point.x, this.y * point.y, this.z * point.z);
+	},
+
+	/**
 	 * Multiplies this point's data by the x, y, z values specified and
 	 * overwrites the previous x, y, z values with the result.
 	 * @param x
