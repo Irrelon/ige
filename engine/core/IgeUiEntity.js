@@ -287,10 +287,10 @@ var IgeUiEntity = IgeEntity.extend([
 		}
 
 		// TODO: Investigate caching expensive background and border calls
-		if (!this._cache || this._cacheDirty) {
+		//if (!this._cache || this._cacheDirty) {
 			this._renderBackground(ctx);
 			this._renderBorder(ctx);
-		}
+		//}
 
 		// TODO: CocoonJS doesn't like the ctx.clip() method, find out why
 		// and report a bug if required.
