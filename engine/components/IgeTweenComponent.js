@@ -118,10 +118,11 @@ var IgeTweenComponent = IgeClass.extend({
 		this._tweens.pull(tween);
 
 		if (!this._tweens.length) {
-			// Disable tweening on this item
+			// Disable tweening on this item as there are
+			// no more tweens to process
 			this.disable();
 		}
-
+		
 		return this;
 	},
 
@@ -186,6 +187,7 @@ var IgeTweenComponent = IgeClass.extend({
 			// Loop the item's tweens
 			while (tweenCount--) {
 				tween = tweens[tweenCount];
+				stopped = false;
 
 				// Check if we should be starting this tween yet
 				if (tween._started || currentTime >= tween._startTime) {
