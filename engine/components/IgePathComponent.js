@@ -92,6 +92,41 @@ var IgePathComponent = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Gets the current direction.
+	 * @return {String} A string such as N, S, E, W, NW, NE, SW, SE.
+	 * If there is currently no direction then the return value is a blank string.
+	 */
+	currentDirection: function () {
+		var cell = this.currentTargetCell(),
+			dir = '';
+		
+		if (cell) {
+			dir = cell.direction;
+			
+			if (this._entity._mode === 1) {
+				// Convert direction for isometric
+				if (dir === 'E') {
+					dir = 'SE';
+				}
+		
+				if (dir === 'S') {
+					dir = 'SW';
+				}
+		
+				if (dir === 'W') {
+					dir = 'NW';
+				}
+		
+				if (dir === 'N') {
+					dir = 'NE';
+				}
+			}
+		}
+
+		return dir;
+	},
+
 	warnTime: function (val) {
 		if (val !== undefined) {
 			this._warnTime = val;
