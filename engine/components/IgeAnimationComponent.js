@@ -124,7 +124,8 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Starts an animation only if an animation is not already started.
+	 * Starts an animation only if the passed animation is not already
+	 * started.
 	 * @param {String} animId The id of the animation to start.
 	 * @param {Object=} options An object with some option properties.
 	 * @return {*}
