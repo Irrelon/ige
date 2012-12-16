@@ -1212,7 +1212,11 @@ var IgeEngine = IgeEntity.extend({
 			ige._sgTreeSelected = this.id;
 
 			ige._currentViewport.drawBounds(true);
-			ige._currentViewport.drawBoundsLimitId(this.id);
+			if (this.id !== 'ige') {
+				ige._currentViewport.drawBoundsLimitId(this.id);
+			} else {
+				ige._currentViewport.drawBoundsLimitId('');
+			}
 		};
 
 		//elem.addEventListener('mouseover', mouseOver, false);
