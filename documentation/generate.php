@@ -57,11 +57,16 @@ function parseTemplate($str, $item, $path, $file) {
 	$argumentsHtml = '';
 	if ($item['params']) {
 		foreach ($item['params'] as $argKey => $argVal) {
+			if (substr($argVal['type'], 0, 3) === 'Ige') {
+				// The type is an Ige* based class type, so link it!
+				$argVal['type'] = '<a href="./' . $argVal['type'] . '.html">' . $argVal['type'] . '</a>';
+			}
+			
 			$argumentsHtml .= '<li>{<span class="argType">' . $argVal['type'] . '</span>}<span class="argName">' . $argVal['name'] . '</span> ' . $argVal['desc'] . '</li>';
 			if ($paramsHtml) {
 				$paramsHtml .= ', ';
 			}
-			$paramsHtml .= '<span class="argType">' . $argVal['type'] . '</span> <span class="argName">' . $argVal['name'] . '</span>';
+			$paramsHtml .= '<span class="argType">{' . $argVal['type'] . '}</span> <span class="argName">' . $argVal['name'] . '</span>';
 		}
 		if ($argumentsHtml) {
 			$argumentsHtml = '<ul class="argList">' . $argumentsHtml . '</ul>';
