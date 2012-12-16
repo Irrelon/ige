@@ -20,7 +20,8 @@ var IgePathComponent = IgeEventingClass.extend({
 		this._speed = 0.1;
 
 		// Add the path behaviour to the entity
-		entity.addBehaviour('path', this._behaviour);
+		entity.addBehaviour('path', this._updateBehaviour, false);
+		entity.addBehaviour('path', this._tickBehaviour, true);
 	},
 
 	/**
@@ -74,6 +75,20 @@ var IgePathComponent = IgeEventingClass.extend({
 				targetCell = this._paths[this._currentPathIndex][this._targetCellIndex];
 
 			return new IgePoint(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0);
+		}
+	},
+
+	previousTargetCell: function () {
+		if (this._paths.length) {
+			var tpI = this._targetCellIndex > 0 ? this._targetCellIndex - 1 : this._targetCellIndex;
+
+			return this._paths[this._currentPathIndex][tpI];
+		}
+	},
+
+	currentTargetCell: function () {
+		if (this._paths.length) {
+			return this._paths[this._currentPathIndex][this._targetCellIndex];
 		}
 	},
 
@@ -268,7 +283,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	 * @param ctx
 	 * @private
 	 */
-	_behaviour: function (ctx) {
+	_updateBehaviour: function (ctx) {
 		// TODO: Fix the distance, time, speed issue so that if we have a large tick delta, it carries on the path instead of extending the current to target cell
 		if (this.path._active) {
 			var self = this.path,
@@ -339,7 +354,9 @@ var IgePathComponent = IgeEventingClass.extend({
 
 			}
 		}
-
+	},
+	
+	_tickBehaviour: function (ctx) {
 		if (!ige.isServer) {
 			this.path._drawPathToCtx(this, ctx);
 		}

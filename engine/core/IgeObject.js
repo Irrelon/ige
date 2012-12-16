@@ -491,29 +491,39 @@ var IgeObject = IgeEventingClass.extend({
 	 * Adds a behaviour to the object's active behaviour list.
 	 * @param {String} id
 	 * @param {Function} behaviour
+	 * @param {Boolean=} duringTick If true, will execute the behaviour
+	 * during the tick() method instead of the update() method.
 	 * @example #Add a behaviour with the id "myBehaviour"
 	 *     var entity = new IgeEntity();
 	 *     entity.addBehaviour('myBehaviour', function () {
-	 *         // Code here will execute during each engine tick for
+	 *         // Code here will execute during each engine update for
 	 *         // this entity. I can access the entity via the "this"
 	 *         // keyword such as:
 	 *         this._somePropertyOfTheEntity = 'moo';
 	 *     });
 	 *     
-	 *     // Now since each tick we are setting _somePropertyOfTheEntity
+	 *     // Now since each update we are setting _somePropertyOfTheEntity
 	 *     // to equal "moo" we can console log the property and get
 	 *     // the value as "moo"
 	 *     console.log(entity._somePropertyOfTheEntity);
 	 * @return {*} Returns this on success or false on failure.
 	 */
-	addBehaviour: function (id, behaviour) {
+	addBehaviour: function (id, behaviour, duringTick) {
 		if (typeof(id) === 'string') {
 			if (typeof(behaviour) === 'function') {
-				this._behaviours = this._behaviours || [];
-				this._behaviours.push({
-					id:id,
-					method: behaviour
-				});
+				if (duringTick) {
+					this._tickBehaviours = this._tickBehaviours || [];
+					this._tickBehaviours.push({
+						id:id,
+						method: behaviour
+					});
+				} else {
+					this._updateBehaviours = this._updateBehaviours || [];
+					this._updateBehaviours.push({
+						id:id,
+						method: behaviour
+					});	
+				}
 
 				return this;
 			} else {
@@ -529,10 +539,12 @@ var IgeObject = IgeEventingClass.extend({
 	/**
 	 * Removes a behaviour to the object's active behaviour list by it's id.
 	 * @param {String} id
+	 * @param {Boolean=} duringTick If true will look to remove the behaviour
+	 * from the tick method rather than the update method.
 	 * @example #Remove a behaviour with the id "myBehaviour"
 	 *     var entity = new IgeEntity();
 	 *     entity.addBehaviour('myBehaviour', function () {
-	 *         // Code here will execute during each engine tick for
+	 *         // Code here will execute during each engine update for
 	 *         // this entity. I can access the entity via the "this"
 	 *         // keyword such as:
 	 *         this._somePropertyOfTheEntity = 'moo';
@@ -542,12 +554,18 @@ var IgeObject = IgeEventingClass.extend({
 	 *     entity.removeBehaviour('myBehaviour');
 	 * @return {*} Returns this on success or false on failure.
 	 */
-	removeBehaviour: function (id) {
+	removeBehaviour: function (id, duringTick) {
 		if (id !== undefined) {
-			// Find the behaviour
-			var arr = this._behaviours,
+			var arr,
 				arrCount;
+			
+			if (duringTick) {
+				arr = this._tickBehaviours;
+			} else {
+				arr = this._updateBehaviours;
+			}
 
+			// Find the behaviour
 			if (arr) {
 				arrCount = arr.length;
 
@@ -1004,7 +1022,8 @@ var IgeObject = IgeEventingClass.extend({
 	 * this object.
 	 */
 	destroyBehaviours: function () {
-		delete this._behaviours;
+		delete this._updateBehaviours;
+		delete this._tickBehaviours;
 	},
 
 	/**
@@ -1428,8 +1447,8 @@ var IgeObject = IgeEventingClass.extend({
 	 * Calls each behaviour method for the object.
 	 * @private
 	 */
-	_processBehaviours: function (ctx) {
-		var arr = this._behaviours,
+	_processUpdateBehaviours: function (ctx) {
+		var arr = this._updateBehaviours,
 			arrCount;
 
 		if (arr) {
@@ -1440,6 +1459,22 @@ var IgeObject = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Calls each behaviour method for the object.
+	 * @private
+	 */
+	_processTickBehaviours: function (ctx) {
+		var arr = this._tickBehaviours,
+			arrCount;
+
+		if (arr) {
+			arrCount = arr.length;
+			while (arrCount--) {
+				arr[arrCount].method.apply(this, arguments);
+			}
+		}
+	},
+	
 	/**
 	 * Called when a child object is mounted to this object.
 	 * @param obj

@@ -1586,9 +1586,6 @@ var IgeEngine = IgeEntity.extend({
 				self._tickDelta = self._tickStart - self.lastTick;
 			}
 
-			// Process any behaviours assigned to the engine
-			self._processBehaviours(ctx);
-
 			// Update the scenegraph
 			if (self._enableUpdates) {
 				if (igeDebug._timing) {
@@ -1652,6 +1649,9 @@ var IgeEngine = IgeEntity.extend({
 		var arr = this._children,
 			arrCount, us, ud;
 
+		// Process any behaviours assigned to the engine
+		this._processUpdateBehaviours(ctx);
+
 		if (arr) {
 			arrCount = arr.length;
 
@@ -1685,6 +1685,9 @@ var IgeEngine = IgeEntity.extend({
 
 	render: function (ctx) {
 		var ts, td;
+
+		// Process any behaviours assigned to the engine
+		this._processTickBehaviours(ctx);
 
 		// Depth-sort the viewports
 		if (this._viewportDepth) {

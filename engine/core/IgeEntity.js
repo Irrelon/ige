@@ -1168,7 +1168,7 @@ var IgeEntity = IgeObject.extend({
 			delete this._streamDataCache;
 
 			// Process any behaviours assigned to the entity
-			this._processBehaviours(ctx);
+			this._processUpdateBehaviours(ctx);
 
 			if (this._timeStream.length) {
 				// Process any interpolation
@@ -1206,6 +1206,9 @@ var IgeEntity = IgeObject.extend({
 	 */
 	tick: function (ctx, dontTransform) {
 		if (!this._hidden && this._inView && (!this._parent || (this._parent._inView)) && !this._streamJustCreated) {
+			// Process any behaviours assigned to the entity
+			this._processTickBehaviours(ctx);
+			
 			// Process any mouse events we need to do
 			var mp, aabb, mouseX, mouseY,
 				self = this;

@@ -247,28 +247,28 @@ var IgePathFinder = IgeEventingClass.extend({
 			newX = x - 1; newY = y;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode);
+				newNode = new IgePathNode(newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode, 'W');
 				list.push(newNode);
 			}
 
 			newX = x + 1; newY = y;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode);
+				newNode = new IgePathNode(newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode, 'E');
 				list.push(newNode);
 			}
 
 			newX = x; newY = y - 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode);
+				newNode = new IgePathNode(newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode, 'N');
 				list.push(newNode);
 			}
 
 			newX = x; newY = y + 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode);
+				newNode = new IgePathNode(newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode, 'S');
 				list.push(newNode);
 			}
 
@@ -278,28 +278,28 @@ var IgePathFinder = IgeEventingClass.extend({
 			newX = x - 1; newY = y - 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode);
+				newNode = new IgePathNode(newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode, 'NW');
 				list.push(newNode);
 			}
 
 			newX = x + 1; newY = y - 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode);
+				newNode = new IgePathNode(newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode, 'NE');
 				list.push(newNode);
 			}
 
 			newX = x - 1; newY = y + 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode);
+				newNode = new IgePathNode(newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode, 'SW');
 				list.push(newNode);
 			}
 
 			newX = x + 1; newY = y + 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode);
+				newNode = new IgePathNode(newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode, 'SE');
 				list.push(newNode);
 			}
 		}

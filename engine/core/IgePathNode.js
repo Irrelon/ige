@@ -12,8 +12,9 @@ var IgePathNode = IgeClass.extend({
 	 * @param {Number} moveCost
 	 * @param {Number} h
 	 * @param {Object} parent
+	 * @param {String} direction
 	 */
-	init: function(x, y, g, moveCost, h, parent) {
+	init: function(x, y, g, moveCost, h, parent, direction) {
 		this.x = x;
 		this.y = y;
 		this.g = g + moveCost; // Cost of moving from the start point along the path to this node (parentNode.g + moveCost)
@@ -23,6 +24,7 @@ var IgePathNode = IgeClass.extend({
 		this.link = parent;
 		this.hash = x + ',' + y;
 		this.listType = 0;
+		this.direction = direction;
 	}
 });
 
