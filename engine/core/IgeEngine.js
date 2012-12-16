@@ -1146,6 +1146,47 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
+	 * Finds the first Ige* based class that the passed object
+	 * has been derived from.
+	 * @param obj
+	 * @return {*}
+	 */
+	findBaseClass: function (obj) {
+		if (obj._classId.substr(0, 3) === 'Ige') {
+			return obj._classId;
+		} else {
+			if (obj.__proto__._classId) { 
+				return this.findBaseClass(obj.__proto__);
+			} else {
+				return '';
+			}
+		}
+	},
+
+	/**
+	 * Returns an array of all classes the passed object derives from
+	 * in order from base to current.
+	 * @param obj
+	 * @param arr
+	 * @return {*}
+	 */
+	getClassDerivedList: function (obj, arr) {
+		if (!arr) {
+			arr = [];
+		} else {
+			if (obj._classId) {
+				arr.push(obj._classId);
+			}
+		}
+		
+		if (obj.__proto__._classId) {
+			this.getClassDerivedList(obj.__proto__, arr);
+		}
+		
+		return arr;
+	},
+
+	/**
 	 * Is called every second and does things like calculate the current FPS.
 	 * @private
 	 */
@@ -1178,7 +1219,8 @@ var IgeEngine = IgeEntity.extend({
 			i,
 			mouseOver,
 			mouseOut,
-			mouseUp;
+			mouseUp,
+			dblClick;
 
 		mouseOver = function (event) {
 			if (!selectedItem) {
@@ -1219,9 +1261,54 @@ var IgeEngine = IgeEntity.extend({
 			}
 		};
 
+		dblClick = function (event) {
+			event.stopPropagation();
+			var console = document.getElementById('igeSgConsole'),
+				obj = ige.$(this.id),
+				classId = ige.findBaseClass(obj),
+				derivedArr,
+				classList = '',
+				i;
+
+			console.value += "ige.$('" + this.id + "')";
+			
+			if (classId) {
+				// The class is a native engine class so show the doc manual page for it
+				document.getElementById('igeSgDocPage').style.display = 'block';
+				document.getElementById('igeSgDocPage').src = 'http://www.isogenicengine.com/engine/documentation/root/' + classId + '.html';
+				
+				derivedArr = ige.getClassDerivedList(obj);
+				derivedArr.reverse();
+				
+				// Build a class breadcrumb
+				for (i in derivedArr) {
+					if (derivedArr.hasOwnProperty(i)) {
+						if (classList) {
+							classList += ' &gt ';
+						}
+						
+						if (derivedArr[i].substr(0, 3) === 'Ige') {
+							classList += '<a href="' + 'http://www.isogenicengine.com/engine/documentation/root/' + derivedArr[i] + '.html" target="igeSgDocPage">' + derivedArr[i] + '</a>';
+						} else {
+							classList += derivedArr[i];
+						}
+					}
+				}
+				
+				// Show the derived class list
+				document.getElementById('igeSgItemClassChain').innerHTML = '<B>Inheritance</B>: ' + classList;
+				document.getElementById('igeSgItemClassChain').style.display = 'block';
+			} else {
+				// Not a native class, hide the doc page
+				document.getElementById('igeSgItemClassChain').style.display = 'none';
+				document.getElementById('igeSgDocPage').style.display = 'none';
+			}
+		};
+
 		//elem.addEventListener('mouseover', mouseOver, false);
 		//elem.addEventListener('mouseout', mouseOut, false);
 		elem.addEventListener('mouseup', mouseUp, false);
+		elem.addEventListener('dblclick', dblClick, false);
 
 		elem.id = item.id;
 		elem.innerHTML = item.text;
@@ -1316,6 +1403,7 @@ var IgeEngine = IgeEntity.extend({
 		this._showSgTree = !this._showSgTree;
 
 		if (this._showSgTree) {
+			// Create the scenegraph tree
 			var elem1 = document.createElement('div'),
 				elem2;
 
@@ -1337,8 +1425,34 @@ var IgeEngine = IgeEntity.extend({
 			elem1.appendChild(elem2);
 
 			document.body.appendChild(elem1);
+			
+			// Create the IGE console
+			var consoleHolderElem = document.createElement('div'),
+				consoleElem = document.createElement('input'),
+				classChainElem = document.createElement('div'),
+				dociFrame = document.createElement('iframe');
+
+			consoleHolderElem.id = 'igeSgConsoleHolder';
+			consoleHolderElem.innerHTML = '<div><b>Console</b>: Double-Click a SceneGraph Object to Script it Here</div>';
+			
+			consoleElem.type = 'text';
+			consoleElem.id = 'igeSgConsole';
+			
+			classChainElem.id = 'igeSgItemClassChain';
+
+			dociFrame.id = 'igeSgDocPage';
+			dociFrame.name = 'igeSgDocPage';
+
+			consoleHolderElem.appendChild(consoleElem);
+			consoleHolderElem.appendChild(classChainElem);
+			consoleHolderElem.appendChild(dociFrame);
+			
+			document.body.appendChild(consoleHolderElem);
 		} else {
 			var child = document.getElementById('igeSgTree');
+			child.parentNode.removeChild(child);
+
+			child = document.getElementById('igeSgConsoleHolder');
 			child.parentNode.removeChild(child);
 		}
 	},
