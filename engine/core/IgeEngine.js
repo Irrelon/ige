@@ -1217,30 +1217,8 @@ var IgeEngine = IgeEntity.extend({
 			arr,
 			arrCount,
 			i,
-			mouseOver,
-			mouseOut,
 			mouseUp,
 			dblClick;
-
-		mouseOver = function (event) {
-			if (!selectedItem) {
-				event.stopPropagation();
-				//document.getElementById('igeConsole').innerHTML += "ige.$('vp1').drawBoundsLimitId('" + this.id + "');" + '<br />';
-				chrome.devtools.inspectedWindow.eval("ige.$('vp1').drawBoundsLimitId('" + this.id + "');", function (result, isException) {
-
-				});
-			}
-		};
-
-		mouseOut = function (event) {
-			if (!selectedItem) {
-				event.stopPropagation();
-				//document.getElementById('igeConsole').innerHTML += "ige.$('vp1').drawBoundsLimitId('');" + '<br />';
-				chrome.devtools.inspectedWindow.eval("ige.$('vp1').drawBoundsLimitId('');", function (result, isException) {
-
-				});
-			}
-		};
 
 		mouseUp = function (event) {
 			event.stopPropagation();
