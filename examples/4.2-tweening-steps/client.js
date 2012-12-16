@@ -42,6 +42,7 @@ var Client = IgeClass.extend({
 							.texture(gameTexture[0])
 							.drawBounds(false)
 							.drawBoundsData(false)
+							.opacity(0)
 							.mount(self.scene1);
 
 						self.obj[i]._translate.tween()
@@ -65,6 +66,13 @@ var Client = IgeClass.extend({
 							})
 							.repeatMode(2, -1)
 							.startTime(ige._currentTime + i)
+							.start();
+
+						self.obj[i].tween()
+							.properties({
+								_opacity: 1
+							})
+							.duration(2000)
 							.start();
 					}
 				}
