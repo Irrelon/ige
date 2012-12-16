@@ -339,6 +339,50 @@ Math.distance = function (x1, y1, x2, y2) {
 	return Math.sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)));
 };
 
+if (typeof(CanvasRenderingContext2D) !== 'undefined') {
+	// Extend the canvas context to add some helper methods
+	/**
+	 * Make property non-enumerable.
+	 */
+	Object.defineProperty(CanvasRenderingContext2D.prototype, 'circle', {
+		enumerable:false,
+		writable:true,
+		configurable:true
+	});
+
+	Object.defineProperty(CanvasRenderingContext2D.prototype, 'strokeCircle', {
+		enumerable:false,
+		writable:true,
+		configurable:true
+	});
+
+	Object.defineProperty(CanvasRenderingContext2D.prototype, 'fillCircle', {
+		enumerable:false,
+		writable:true,
+		configurable:true
+	});
+
+	CanvasRenderingContext2D.prototype.circle = function (x, y, radius) {
+		this.arc(x, y, radius, 0, 2 * Math.PI, false);
+	};
+
+	CanvasRenderingContext2D.prototype.strokeCircle = function (x, y, radius) {
+		this.save();
+		this.beginPath();
+		this.arc(x, y, radius, 0, 2 * Math.PI, false);
+		this.stroke();
+		this.restore();
+	};
+
+	CanvasRenderingContext2D.prototype.fillCircle = function (x, y, radius) {
+		this.save();
+		this.beginPath();
+		this.arc(x, y, radius, 0, 2 * Math.PI, false);
+		this.fill();
+		this.restore();
+	};
+}
+
 if (typeof(ImageData) !== 'undefined') {
 	/**
 	 * Make property non-enumerable.
