@@ -5,6 +5,7 @@ var IgeObject = IgeEventingClass.extend({
 	classId: 'IgeObject',
 
 	init: function () {
+		this._newBorn = true;
 		this._alive = true;
 		this._mode = 0;
 		this._mountMode = 0;
@@ -715,6 +716,9 @@ var IgeObject = IgeEventingClass.extend({
 
 				this._parent._childMounted(this);
 
+				obj.updateTransform();
+				obj.aabb(true);
+
 				this.emit('mounted', this._parent);
 
 				return this;
@@ -1266,6 +1270,7 @@ var IgeObject = IgeEventingClass.extend({
 	update: function (ctx) {
 		// Check that we are alive before processing further
 		if (this._alive) {
+			if (this._newBorn) { this._newBorn = false; }
 			var arr = this._children,
 				arrCount;
 
@@ -1339,29 +1344,33 @@ var IgeObject = IgeEventingClass.extend({
 				// Loop our children and call their tick methods
 				if (igeDebug._timing) {
 					while (arrCount--) {
-						ctx.save();
-						ts = new Date().getTime();
-						arr[arrCount].tick(ctx);
-						td = new Date().getTime() - ts;
-						if (arr[arrCount]) {
-							if (!ige._timeSpentInTick[arr[arrCount].id()]) {
-								ige._timeSpentInTick[arr[arrCount].id()] = 0;
+						if (!arr[arrCount]._newBorn) {
+							ctx.save();
+							ts = new Date().getTime();
+							arr[arrCount].tick(ctx);
+							td = new Date().getTime() - ts;
+							if (arr[arrCount]) {
+								if (!ige._timeSpentInTick[arr[arrCount].id()]) {
+									ige._timeSpentInTick[arr[arrCount].id()] = 0;
+								}
+		
+								if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
+									ige._timeSpentLastTick[arr[arrCount].id()] = {};
+								}
+		
+								ige._timeSpentInTick[arr[arrCount].id()] += td;
+								ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
 							}
-	
-							if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
-								ige._timeSpentLastTick[arr[arrCount].id()] = {};
-							}
-	
-							ige._timeSpentInTick[arr[arrCount].id()] += td;
-							ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
+							ctx.restore();
 						}
-						ctx.restore();
 					}
 				} else {
 					while (arrCount--) {
-						ctx.save();
-						arr[arrCount].tick(ctx);
-						ctx.restore();
+						if (!arr[arrCount]._newBorn) {
+							ctx.save();
+							arr[arrCount].tick(ctx);
+							ctx.restore();
+						}
 					}
 				}
 			}
