@@ -97,6 +97,15 @@ var Client = IgeClass.extend({
 
 					self.vp1.camera.translateTo(0, 0, 0);
 					self.vp2.camera.scaleTo(2, 2, 2);
+					
+					self.cont = new IgeUiEntity()
+						.id('cont')
+						.middle(0)
+						.center(0)
+						.width(300)
+						.height(200)
+						.scaleTo(0.5, 0.5, 0.5)
+						.mount(self.mainScene);
 
 					// Create an entity and mount it to the scene
 					self.obj[0] = new IgeUiEntity()
@@ -110,7 +119,7 @@ var Client = IgeClass.extend({
 						.bottom(0)
 						.scaleTo(0.5, 0.5, 1)
 						//.rotateTo(0, 0, Math.radians(180))
-						.mount(self.uiScene);
+						.mount(self.cont);
 
 					// Create a second rotator entity and mount
 					// it to the first one at 0, 50 relative to the
@@ -122,8 +131,9 @@ var Client = IgeClass.extend({
 						.height(50)
 						.texture(gameTexture[0])
 						//.translateTo(0, 50, 0)
-						.center(50)
-						.middle(0)
+						.scaleTo(1.5, 1.5, 1.5)
+						.left(0)
+						.bottom(0)
 						//.rotateTo(0, 0, Math.radians(90))
 						.mouseMove(function (event, eventControl, data) {
 							// Set the custom watch object's value
