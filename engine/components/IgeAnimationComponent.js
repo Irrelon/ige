@@ -107,9 +107,9 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 				
 				// Check for any callbacks in the options object
 				if (options !== undefined) {
-					this._completeCallback = options.complete;
-					this._loopCallback = options.loopComplete;
-					this._stoppedCallback = options.stopped;
+					this._completeCallback = options.onComplete;
+					this._loopCallback = options.onLoop;
+					this._stoppedCallback = options.onStopped;
 				}
 
 				this.emit('started', anim);
