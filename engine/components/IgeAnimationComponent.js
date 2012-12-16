@@ -90,9 +90,10 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	/**
 	 * Starts an animation.
 	 * @param {String} animId The id of the animation to start.
+	 * @param {Object=} options An object with some option properties.
 	 * @return {*}
 	 */
-	start: function (animId) {
+	start: function (animId, options) {
 		if (this._anims) {
 			var anim = this._anims[animId];
 
@@ -103,6 +104,13 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 
 				this._anim = anim;
 				this._animId = animId;
+				
+				// Check for any callbacks in the options object
+				if (options !== undefined) {
+					this._completeCallback = options.complete;
+					this._loopCallback = options.loopComplete;
+					this._stoppedCallback = options.stopped;
+				}
 
 				this.emit('started', anim);
 			} else {
@@ -118,11 +126,12 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	/**
 	 * Starts an animation only if an animation is not already started.
 	 * @param {String} animId The id of the animation to start.
+	 * @param {Object=} options An object with some option properties.
 	 * @return {*}
 	 */
-	select: function (animId) {
+	select: function (animId, options) {
 		if (this._animId !== animId) {
-			this.start(animId);
+			this.start(animId, options);
 		}
 
 		return this._entity;
@@ -133,6 +142,10 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 * @return {*}
 	 */
 	stop: function () {
+		if (this._stoppedCallback) {
+			this._stoppedCallback.call(this);
+		}
+		
 		this.emit('stopped', this._anim);
 
 		delete this._anim;
@@ -160,6 +173,9 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 			if (anim.currentDelta > anim.totalTime) {
 				// Check if we have a single loop animation
 				if (!anim.loop) {
+					if (this._completeCallback) {
+						this._completeCallback.call(this);
+					}
 					this.emit('complete', anim);
 					this.stop();
 				} else {
@@ -171,6 +187,9 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 							anim.currentDelta -= ((multiple|0) * anim.totalTime); // Bitwise floor
 						}
 
+						if (this._loopCallback) {
+							this._loopCallback.call(this);
+						}
 						this.emit('loopComplete', anim);
 					} else {
 						anim.currentLoop++;
@@ -181,9 +200,15 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 								anim.currentDelta -= ((multiple|0) * anim.totalTime); // Bitwise floor
 							}
 
+							if (this._loopCallback) {
+								this._loopCallback.call(this);
+							}
 							this.emit('loopComplete', anim);
 						} else {
 							// The animation has ended
+							if (this._completeCallback) {
+								this._completeCallback.call(this, []);
+							}
 							this.emit('complete', anim);
 							this.stop();
 						}
