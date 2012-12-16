@@ -1234,37 +1234,42 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * ALPHA CODE DO NOT USE YET.
 	 * When view checking is enabled, this method is called to
 	 * determine if this object is within the bounds of an active
 	 * viewport, essentially determining if the object is
 	 * "on screen" or not.
 	 */
 	viewCheckChildren: function () {
-		var arr = this._children,
-			arrCount = arr.length,
-			vpViewArea = ige._currentViewport.viewArea(),
-			item;
-
-		while (arrCount--) {
-			item = arr[arrCount];
-
-			if (item._alwaysInView) {
-				item._inView = true;
-			} else {
-				if (item.aabb) {
-					// Check the entity to see if its bounds are "inside" the
-					// viewport's visible area
-					if (vpViewArea.rectIntersect(item.aabb())) {
-						// The entity is inside the viewport visible area
-						item._inView = true;
+		if (ige._currentViewport) {
+			var arr = this._children,
+				arrCount = arr.length,
+				vpViewArea = ige._currentViewport.viewArea(),
+				item;
+	
+			while (arrCount--) {
+				item = arr[arrCount];
+	
+				if (item._alwaysInView) {
+					item._inView = true;
+				} else {
+					if (item.aabb) {
+						// Check the entity to see if its bounds are "inside" the
+						// viewport's visible area
+						if (vpViewArea.rectIntersect(item.aabb(true))) {
+							// The entity is inside the viewport visible area
+							item._inView = true;
+						} else {
+							item._inView = false;
+						}
 					} else {
 						item._inView = false;
 					}
-				} else {
-					item._inView = false;
 				}
 			}
 		}
+		
+		return this;
 	},
 	
 	update: function (ctx) {

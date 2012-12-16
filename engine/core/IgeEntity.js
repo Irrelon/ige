@@ -778,7 +778,7 @@ var IgeEntity = IgeObject.extend({
 	 * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
 	 */
 	aabb: function (recalculate) {
-		if (recalculate || !this._aabb) {
+		if (!this._aabb || recalculate) { //  && this.newFrame()
 			var poly = new IgePoly2d(),
 				minX, minY,
 				maxX, maxY,
@@ -1180,7 +1180,8 @@ var IgeEntity = IgeObject.extend({
 			this.updateTransform();
 
 			// Update the aabb
-			this.aabb(true); // TODO: This is wasteful, find a way to determine if a recalc is required rather than doing it every tick
+			// TODO: This is wasteful, find a way to determine if a recalc is required rather than doing it every tick
+			this.aabb(true);
 
 			this._oldTranslate = this._translate.clone();
 
