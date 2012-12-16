@@ -1824,6 +1824,28 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * Translates the entity to the passed point.
+	 * @param {IgePoint} point The point with co-ordinates.
+	 * @example #Translate the entity to 10, 0, 0
+	 *     var point = new IgePoint(10, 0, 0),
+	 *         entity = new IgeEntity();
+	 *     
+	 *     entity.translateToPoint(point);
+	 * @return {*}
+	 */
+	translateToPoint: function (point) {
+		if (point !== undefined) {
+			this._translate.x = point.x;
+			this._translate.y = point.y;
+			this._translate.z = point.z;
+		} else {
+			this.log('translateToPoint() called with a missing or undefined point parameter!', 'error');
+		}
+
+		return this._entity || this;
+	},
+
+	/**
 	 * Gets the translate accessor object.
 	 * @example #Use the translate accessor object to alter the y co-ordinate of the entity to 10
 	 *     entity.translate().y(10);
