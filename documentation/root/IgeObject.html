@@ -380,9 +380,9 @@ console.log(entity.groups());
 </code></pre>
 </div>
 					</div>
-				<h3>addBehaviour(<span class="argType">{String}</span> <span class="argName">id</span>, <span class="argType">{Function}</span> <span class="argName">behaviour</span>)</h3>
+				<h3>addBehaviour(<span class="argType">{String}</span> <span class="argName">id</span>, <span class="argType">{Function}</span> <span class="argName">behaviour</span>, <span class="argType">{Boolean}</span> <span class="argName">duringTick</span>)</h3>
 <div class="methodDesc">Adds a behaviour to the object's active behaviour list.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> </li><li>{<span class="argType">Function</span>}<span class="argName">behaviour</span> </li></ul></div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> </li><li>{<span class="argType">Function</span>}<span class="argName">behaviour</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">duringTick</span> If true, will execute the behaviour during the tick() method instead of the update() method.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} Returns this on success or false on failure.</div>
 
 					<div class="methodExample">
@@ -390,22 +390,22 @@ console.log(entity.groups());
 
 <pre><code>var entity = new IgeEntity();
 entity.addBehaviour('myBehaviour', function () {
-    // Code here will execute during each engine tick for
+    // Code here will execute during each engine update for
     // this entity. I can access the entity via the "this"
     // keyword such as:
     this._somePropertyOfTheEntity = 'moo';
 });
 
-// Now since each tick we are setting _somePropertyOfTheEntity
+// Now since each update we are setting _somePropertyOfTheEntity
 // to equal "moo" we can console log the property and get
 // the value as "moo"
 console.log(entity._somePropertyOfTheEntity);
 </code></pre>
 </div>
 					</div>
-				<h3>removeBehaviour(<span class="argType">{String}</span> <span class="argName">id</span>)</h3>
+				<h3>removeBehaviour(<span class="argType">{String}</span> <span class="argName">id</span>, <span class="argType">{Boolean}</span> <span class="argName">duringTick</span>)</h3>
 <div class="methodDesc">Removes a behaviour to the object's active behaviour list by it's id.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> </li></ul></div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">duringTick</span> If true will look to remove the behaviour from the tick method rather than the update method.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} Returns this on success or false on failure.</div>
 
 					<div class="methodExample">
@@ -413,7 +413,7 @@ console.log(entity._somePropertyOfTheEntity);
 
 <pre><code>var entity = new IgeEntity();
 entity.addBehaviour('myBehaviour', function () {
-    // Code here will execute during each engine tick for
+    // Code here will execute during each engine update for
     // this entity. I can access the entity via the "this"
     // keyword such as:
     this._somePropertyOfTheEntity = 'moo';
@@ -877,7 +877,11 @@ entity3.depth(1);
 <div class="methodDesc">Handles screen resize events. Calls the _resizeEvent method of every child object mounted to this object.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
 <div class="methodReturnDesc"></div>
-<h3>_processBehaviours()</h3>
+<h3>_processUpdateBehaviours()</h3>
+<div class="methodDesc">Calls each behaviour method for the object.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc"></div>
+<h3>_processTickBehaviours()</h3>
 <div class="methodDesc">Calls each behaviour method for the object.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc"></div>
