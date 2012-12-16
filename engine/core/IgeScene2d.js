@@ -21,7 +21,9 @@ var IgeScene2d = IgeEntity.extend({
 	/**
 	 * Gets / sets the auto-size property. If set to true, the scene will
 	 * automatically resize to the engine's canvas geometry.
-	 * @param val
+	 * @param {Boolean=} val If true, will autosize the scene to match the
+	 * main canvas geometry. This is enabled by default and is unlikely to
+	 * help you if you switch it off.
 	 * @return {*}
 	 */
 	autoSize: function (val) {
@@ -36,7 +38,7 @@ var IgeScene2d = IgeEntity.extend({
 	/**
 	 * Gets / sets the _shouldRender property. If set to true, the scene's child
 	 * object's tick methods will be called.
-	 * @param {Boolean} val
+	 * @param {Boolean} val If set to false, no child entities will be rendered.
 	 * @return {Boolean}
 	 */
 	shouldRender: function (val) {
@@ -47,21 +49,6 @@ var IgeScene2d = IgeEntity.extend({
 
 		return this._shouldRender;
 	},
-
-	/**
-	 * Mounts this object to the passed object in the scenegraph. Makes sure
-	 * that the object being mounted to is not a viewport.
-	 * @param {IgeObject} obj
-	 * @return {*} Returns this on success or false on failure.
-	 */
-	/*mount: function (obj) {
-		if (obj) {
-			// Make sure we are not being asked to mount to a viewport
-			if (!obj.IgeViewport) {
-				this._super(obj);
-			}
-		}
-	},*/
 
 	/**
 	 * Gets / sets the flag that determines if the scene will ignore camera
@@ -94,6 +81,7 @@ var IgeScene2d = IgeEntity.extend({
 
 	/**
 	 * Processes the actions required each render frame.
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
 	 */
 	tick: function (ctx) {
 		if (this._shouldRender) {
