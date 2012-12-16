@@ -105,6 +105,30 @@ var mousePos = entity.mousePos();
 <p>center.</p>
 </div>
 					</div>
+				<h3>mousePosAbsolute(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
+<div class="methodDesc">Gets the position of the mouse relative to this entity not taking into account viewport translation.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeViewport</span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the entity center.</div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Get absolute mouse position</h1>
+
+<pre><code>var mousePosAbs = entity.mousePosAbsolute();
+</code></pre>
+</div>
+					</div>
+				<h3>mousePosWorld(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
+<div class="methodDesc">Gets the position of the mouse in world co-ordinates.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeViewport</span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the world center.</div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Get mouse position in world co-ordinates</h1>
+
+<pre><code>var mousePosWorld = entity.mousePosWorld();
+</code></pre>
+</div>
+					</div>
 				<h3>rotateToPoint(<span class="argType">IgePoint</span> <span class="argName">point</span>)</h3>
 <div class="methodDesc">Rotates the entity to point at the target point around the z axis.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName">point</span> The point in world co-ordinates to point the entity at.</li></ul></div>
@@ -130,30 +154,6 @@ var mousePos = entity.mousePos();
 						<div class="content"><h1>Point the entity at an arbitrary point x, y</h1>
 
 <pre><code>entity.rotateToPoint(new IgePoint(x, y, 0));
-</code></pre>
-</div>
-					</div>
-				<h3>mousePosAbsolute(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
-<div class="methodDesc">Gets the position of the mouse relative to this entity not taking into account viewport translation.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeViewport</span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the entity center.</div>
-
-					<div class="methodExample">
-						<div class="content"><h1>Get absolute mouse position</h1>
-
-<pre><code>var mousePosAbs = entity.mousePosAbsolute();
-</code></pre>
-</div>
-					</div>
-				<h3>mousePosWorld(<span class="argType">IgeViewport</span> <span class="argName">viewport</span>)</h3>
-<div class="methodDesc">Gets the position of the mouse in world co-ordinates.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgeViewport</span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the world center.</div>
-
-					<div class="methodExample">
-						<div class="content"><h1>Get mouse position in world co-ordinates</h1>
-
-<pre><code>var mousePosWorld = entity.mousePosWorld();
 </code></pre>
 </div>
 					</div>
@@ -577,6 +577,22 @@ console.log(aabb.height);
 </code></pre>
 </div>
 					</div>
+				<h3>_transformContext(<span class="argType">CanvasRenderingContext2D</span> <span class="argName">ctx</span>)</h3>
+<div class="methodDesc">Sets the canvas context transform properties to match the the game object's current transform values.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to apply the transformation matrix to.</li></ul></div>
+<div class="methodReturnDesc"></div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Transform a canvas context to the entity's local matrix values</h1>
+
+<pre><code>var canvas = document.createElement('canvas');
+canvas.width = 800;
+canvas.height = 600;
+var ctx = canvas.getContext('2d');
+entity._transformContext(ctx);
+</code></pre>
+</div>
+					</div>
 				<h3>tick(<span class="argType">CanvasRenderingContext2D</span> <span class="argName">ctx</span>, <span class="argType">Boolean</span> <span class="argName">dontTransform</span>)</h3>
 <div class="methodDesc">Processes the actions required each render frame.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to render to.</li><li>{<span class="argType">Boolean</span>}<span class="argName">dontTransform</span> If set to true, the tick method will not transform the context based on the entity's matrices. This is useful if you have extended the class and want to process down the inheritance chain but have already transformed the entity in a previous overloaded method.</li></ul></div>
@@ -589,24 +605,7 @@ console.log(aabb.height);
 <div class="methodDesc">Draws the cached off-screen canvas image data to the passed canvas context.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to render the entity to.</li></ul></div>
 <div class="methodReturnDesc"></div>
-<h3>_transformContext(<span class="argType">CanvasRenderingContext2D</span> <span class="argName">ctx</span>)</h3>
-<div class="methodDesc">Sets the canvas context transform properties to match the the game object's current transform values.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to apply the transformation matrix to.</li></ul></div>
-<div class="methodReturnDesc"></div>
-
-					<div class="methodExample">
-						<div class="content"><h1>Transform a canvas context to the entity's local matrix values</h1>
-
-<pre><code>var canvas = document.createElement('canvas');
-canvas.width = 800;
-canvas.height = 600;
-
-var ctx = canvas.getContext('2d');
-entity._transformContext(ctx);
-</code></pre>
-</div>
-					</div>
-				<h3>_transformPoint(<span class="argType">IgePoint</span> <span class="argName">point</span>)</h3>
+<h3>_transformPoint(<span class="argType">IgePoint</span> <span class="argName">point</span>)</h3>
 <div class="methodDesc">Transforms a point by the entity's parent world matrix and it's own local matrix transforming the point to this entity's world space.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName">point</span> The point to transform.</li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The transformed point.</div>
@@ -808,6 +807,21 @@ console.log(point);
 						<div class="content"><h1>Translate the entity to 10, 0, 0</h1>
 
 <pre><code>entity.translateTo(10, 0, 0);
+</code></pre>
+</div>
+					</div>
+				<h3>translateToPoint(<span class="argType">IgePoint</span> <span class="argName">point</span>)</h3>
+<div class="methodDesc">Translates the entity to the passed point.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">IgePoint</span>}<span class="argName">point</span> The point with co-ordinates.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+
+					<div class="methodExample">
+						<div class="content"><h1>Translate the entity to 10, 0, 0</h1>
+
+<pre><code>var point = new IgePoint(10, 0, 0),
+    entity = new IgeEntity();
+
+entity.translateToPoint(point);
 </code></pre>
 </div>
 					</div>
