@@ -1202,14 +1202,6 @@ var IgeEngine = IgeEntity.extend({
 		// Zero out counters
 		self._frames = 0;
 		self._drawCount = 0;
-
-		if (self._showSgTree) {
-			// Update the scenegraph tree
-			document.getElementById('sceneGraph_items').innerHTML = '';
-
-			// Get the scenegraph data
-			self.addToSgTree(self.getSceneGraphData(self, true));
-		}
 	},
 
 	addToSgTree: function (item) {
@@ -1382,7 +1374,8 @@ var IgeEngine = IgeEntity.extend({
 
 		if (this._showSgTree) {
 			// Create the scenegraph tree
-			var elem1 = document.createElement('div'),
+			var self = this,
+				elem1 = document.createElement('div'),
 				elem2;
 
 			elem1.id = 'igeSgTree';
@@ -1426,6 +1419,23 @@ var IgeEngine = IgeEntity.extend({
 			consoleHolderElem.appendChild(dociFrame);
 			
 			document.body.appendChild(consoleHolderElem);
+
+			this.sgTreeUpdate();
+			
+			// Now finally, add a refresh button to the scene button
+			var button = document.createElement('input');
+			button.type = 'button';
+			button.id = 'igeSgRefreshTree'
+			button.style.position = 'absolute';
+			button.style.top = '0px';
+			button.style.right = '0px'
+			button.value = 'Refresh';
+			
+			button.addEventListener('click', function () {
+				self.sgTreeUpdate();
+			}, false);
+			
+			document.getElementById('igeSgTree').appendChild(button);
 		} else {
 			var child = document.getElementById('igeSgTree');
 			child.parentNode.removeChild(child);
@@ -1433,6 +1443,14 @@ var IgeEngine = IgeEntity.extend({
 			child = document.getElementById('igeSgConsoleHolder');
 			child.parentNode.removeChild(child);
 		}
+	},
+	
+	sgTreeUpdate: function () {
+		// Update the scenegraph tree
+		document.getElementById('sceneGraph_items').innerHTML = '';
+
+		// Get the scenegraph data
+		this.addToSgTree(this.getSceneGraphData(this, true));
 	},
 
 	timeScale: function (val) {
