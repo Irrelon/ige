@@ -151,6 +151,10 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 		delete this._anim;
 		delete this._animId;
 
+		delete this._completeCallback;
+		delete this._loopCallback;
+		delete this._stoppedCallback;
+
 		return this._entity;
 	},
 
