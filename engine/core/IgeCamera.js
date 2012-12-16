@@ -187,16 +187,33 @@ var IgeCamera = IgeEntity.extend({
 	/**
 	 * Translates the camera to the center of the specified entity so
 	 * that the camera is "looking at" the entity.
-	 * @param {IgeEntity} entity
+	 * @param {IgeEntity} entity The entity to look at.
+	 * @param {Number=} durationMs If specified, will cause the
+	 * camera to tween to the location of the entity rather than
+	 * snapping to it instantly.
+	 * @param {String=} easing The easing method name to use if
+	 * tweening by duration.
 	 * @return {*}
 	 */
-	lookAt: function (entity) {
+	lookAt: function (entity, durationMs, easing) {
 		if (entity !== undefined) {
 			entity.updateTransform();
 
-			// Copy the target's world matrix translate data
-			this._translate.x = Math.floor(entity._worldMatrix.matrix[2]);
-			this._translate.y = Math.floor(entity._worldMatrix.matrix[5]);
+			if (!durationMs) {
+				// Copy the target's world matrix translate data
+				this._translate.x = Math.floor(entity._worldMatrix.matrix[2]);
+				this._translate.y = Math.floor(entity._worldMatrix.matrix[5]);
+			} else {
+				this._translate.tween()
+					.properties({
+						x: Math.floor(entity._worldMatrix.matrix[2]),
+						y: Math.floor(entity._worldMatrix.matrix[5]),
+						z: 0
+					})
+					.duration(durationMs)
+					.easing(easing)
+					.start();
+			}
 
 			this.updateTransform();
 		}
