@@ -9,7 +9,7 @@ var IgeTween = IgeClass.extend({
 		// so the user can decide when to start it
 		this._targetObj = targetObj;
 		this._steps = [];
-		this._currentStep = 0;
+		this._currentStep = -1;
 		if (propertyObj !== undefined) { this.step(propertyObj); }
 		this._durationMs = durationMs !== undefined ? durationMs : 0;
 		this._started = false;
@@ -44,7 +44,7 @@ var IgeTween = IgeClass.extend({
 		if (propertyObj !== undefined) {
 			// Reset any existing steps and add this new one
 			this._steps = [];
-			this._currentStep = 0;
+			this._currentStep = -1;
 			this.step(propertyObj);
 		}
 
@@ -212,8 +212,14 @@ var IgeTween = IgeClass.extend({
 
 	/**
 	 * Starts the tweening operation.
+	 * @param {Number=} timeMs If set, the tween will start this
+	 * many milliseconds in the future.
 	 */
-	start: function () {
+	start: function (timeMs) {
+		if (timeMs !== undefined) {
+			this.startTime(timeMs + ige._currentTime);
+		}
+		
 		ige.tween.start(this);
 
 		// Add the tween to the target object's tween array
@@ -236,7 +242,7 @@ var IgeTween = IgeClass.extend({
 	},
 
 	/**
-	 * Starts all tweens registerd to an object.
+	 * Starts all tweens registered to an object.
 	 * @private
 	 */
 	startAll: function () {

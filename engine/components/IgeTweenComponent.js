@@ -33,16 +33,26 @@ var IgeTweenComponent = IgeClass.extend({
 	 * @return {Number} The index of the added tween or -1 on error.
 	 */
 	start: function (tween) {
-		// Setup the tween's step
-		if (this._setupStep(tween, false)) {
+		if (tween._startTime > ige._currentTime) {
+			// The tween is scheduled for later
 			// Push the tween into the IgeTweenComponent's _tweens array
 			this._tweens.push(tween);
-
-			// Enable tweening on the IgeTweenComponent
-			this.enable();
-
-			return tween; // Return the tween
+		} else {
+			// The tween should start immediately
+			tween._currentStep = 0;
+			
+			// Setup the tween's step
+			if (this._setupStep(tween, false)) {
+				// Push the tween into the IgeTweenComponent's _tweens array
+				this._tweens.push(tween);
+			}
 		}
+
+		// Enable tweening on the IgeTweenComponent
+		this.enable();
+
+		// Return the tween
+		return tween;
 	},
 
 	_setupStep: function (tween, newTime) {
@@ -180,6 +190,14 @@ var IgeTweenComponent = IgeClass.extend({
 				// Check if we should be starting this tween yet
 				if (tween._started || currentTime >= tween._startTime) {
 					if (!tween._started) {
+						// Check if the tween's step is -1 indicating no step
+						// data has been set up yet
+						if (tween._currentStep === -1) {
+							// Setup the tween step now
+							tween._currentStep = 0;
+							this._setupStep(tween, false);
+						}
+						
 						// Check if we have a beforeTween callback to fire
 						if (typeof(tween._beforeTween) === 'function') {
 							// Fire the beforeTween callback
