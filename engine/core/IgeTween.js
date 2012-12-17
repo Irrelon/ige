@@ -10,7 +10,7 @@ var IgeTween = IgeClass.extend({
 		this._targetObj = targetObj;
 		this._steps = [];
 		this._currentStep = -1;
-		if (propertyObj !== undefined) { this.step(propertyObj); }
+		if (propertyObj !== undefined) { this.stepTo(propertyObj); }
 		this._durationMs = durationMs !== undefined ? durationMs : 0;
 		this._started = false;
 		this._stepDirection = false;
@@ -45,7 +45,7 @@ var IgeTween = IgeClass.extend({
 			// Reset any existing steps and add this new one
 			this._steps = [];
 			this._currentStep = -1;
-			this.step(propertyObj);
+			this.stepTo(propertyObj);
 		}
 
 		return this;
@@ -93,7 +93,8 @@ var IgeTween = IgeClass.extend({
 	},
 
 	/**
-	 * Defines a step in a multi-stage tween.
+	 * Defines a step in a multi-stage tween. Uses the properties
+	 * as destination value.
 	 * @param {Object} propertyObj The properties to
 	 * tween during this step.
 	 * @param {Number=} durationMs The number of milliseconds
@@ -103,17 +104,37 @@ var IgeTween = IgeClass.extend({
 	 * to use during this step.
 	 * @return {*}
 	 */
-	step: function (propertyObj, durationMs, easing) {
+	stepTo: function (propertyObj, durationMs, easing) {
 		if (propertyObj !== undefined) {
 			// Check if we have already been given a standard
 			// non-staged property
 			this._steps.push({
 				props: propertyObj,
 				durationMs: durationMs,
-				easing: easing
+				easing: easing,
+				isDela: false
 			});
 		}
 
+		return this;
+	},
+	
+	/**
+	 * Defines a step in a multi-stage tween. Uses the properties
+	 * as deltas, not as destination values
+	 * @param {Object} propertyObj The properties to
+	 * tween during this step.
+	 * @param {Number=} durationMs The number of milliseconds
+	 * to spend tweening this step, or if not provided uses
+	 * the current tween durationMs setting.
+	 * @param {String=} easing The name of the easing method
+	 * to use during this step.
+	 * @return {*}
+	 */
+	stepBy: function (propertyObj, durationMs, easing) {
+		this.stepTo(propertyObj, durationMs, easing);
+		this._steps[this._steps.length - 1].isDelta = true;
+		
 		return this;
 	},
 

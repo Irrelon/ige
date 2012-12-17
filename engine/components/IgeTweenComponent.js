@@ -93,9 +93,8 @@ var IgeTweenComponent = IgeClass.extend({
 					targetData.push({
 						targetObj: targetObj,
 						propName: propertyIndex,
-						startVal: targetObj[propertyIndex], // The starting value of the tween
-						endVal: propertyNameAndValue[propertyIndex], // The target value of the tween
-						deltaVal: propertyNameAndValue[propertyIndex] - targetObj[propertyIndex] // The diff between start and end values
+						deltaVal: propertyNameAndValue[propertyIndex] - (step.isDelta ? 0 : targetObj[propertyIndex]), // The diff between end and start values
+						oldDelta: 0 // Var to save the old delta in order to get the actual difference data.
 					});
 				}
 			}
@@ -237,7 +236,15 @@ var IgeTweenComponent = IgeClass.extend({
 						for (targetIndex in targets) {
 							if (targets.hasOwnProperty(targetIndex)) {
 								item = targets[targetIndex];
-								item.targetObj[item.propName] = item.endVal;
+								//revert the property by the delta amount that was added too much
+								if (deltaTime != destTime) {
+									var destDelta = this.easing[easing](
+										destTime,
+										item.deltaVal,
+										destTime
+									);
+									item.targetObj[item.propName] -= item.oldDelta - destDelta;
+								}
 							}
 						}
 
@@ -343,12 +350,13 @@ var IgeTweenComponent = IgeClass.extend({
 						for (targetIndex in targets) {
 							if (targets.hasOwnProperty(targetIndex)) {
 								item = targets[targetIndex];
-								item.targetObj[item.propName] = this.easing[easing](
+								var currentDelta = this.easing[easing](
 									deltaTime,
-									item.startVal,
 									item.deltaVal,
 									destTime
 								);
+								item.targetObj[item.propName] += currentDelta - item.oldDelta;
+								item.oldDelta = currentDelta;
 							}
 						}
 					}
@@ -364,174 +372,174 @@ var IgeTweenComponent = IgeClass.extend({
 	easing: {
 		// Easing equations converted from AS to JS from original source at
 		// http://robertpenner.com/easing/
-		none: function(t, b, c, d) {
-			return c*t/d + b;
+		none: function(t, c, d) {
+			return c*t/d;
 		},
-		inQuad: function(t, b, c, d) {
-			return c*(t/=d)*t + b;
+		inQuad: function(t, c, d) {
+			return c*(t/=d)*t;
 		},
-		outQuad: function(t, b, c, d) {
-			return -c *(t/=d)*(t-2) + b;
+		outQuad: function(t, c, d) {
+			return -c *(t/=d)*(t-2);
 		},
-		inOutQuad: function(t, b, c, d) {
-			if((t/=d/2) < 1) { return c/2*t*t + b; }
-			return -c/2 *((--t)*(t-2) - 1) + b;
+		inOutQuad: function(t, c, d) {
+			if((t/=d/2) < 1) { return c/2*t*t; }
+			return -c/2 *((--t)*(t-2) - 1);
 		},
-		inCubic: function(t, b, c, d) {
-			return c*(t/=d)*t*t + b;
+		inCubic: function(t, c, d) {
+			return c*(t/=d)*t*t;
 		},
-		outCubic: function(t, b, c, d) {
-			return c*((t=t/d-1)*t*t + 1) + b;
+		outCubic: function(t, c, d) {
+			return c*((t=t/d-1)*t*t + 1);
 		},
-		inOutCubic: function(t, b, c, d) {
-			if((t/=d/2) < 1) { return c/2*t*t*t + b; }
-			return c/2*((t-=2)*t*t + 2) + b;
+		inOutCubic: function(t, c, d) {
+			if((t/=d/2) < 1) { return c/2*t*t*t; }
+			return c/2*((t-=2)*t*t + 2);
 		},
-		outInCubic: function(t, b, c, d) {
-			if(t < d/2) { return this.outCubic(t*2, b, c/2, d); }
-			return this.inCubic((t*2)-d, b+c/2, c/2, d);
+		outInCubic: function(t, c, d) {
+			if(t < d/2) { return this.outCubic(t*2, c/2, d); }
+			return this.inCubic((t*2)-d, c/2, c/2, d);
 		},
-		inQuart: function(t, b, c, d) {
-			return c*(t/=d)*t*t*t + b;
+		inQuart: function(t, c, d) {
+			return c*(t/=d)*t*t*t;
 		},
-		outQuart: function(t, b, c, d) {
-			return -c *((t=t/d-1)*t*t*t - 1) + b;
+		outQuart: function(t, c, d) {
+			return -c *((t=t/d-1)*t*t*t - 1);
 		},
-		inOutQuart: function(t, b, c, d) {
-			if((t/=d/2) < 1) { return c/2*t*t*t*t + b; }
-			return -c/2 *((t-=2)*t*t*t - 2) + b;
+		inOutQuart: function(t, c, d) {
+			if((t/=d/2) < 1) { return c/2*t*t*t*t; }
+			return -c/2 *((t-=2)*t*t*t - 2);
 		},
-		outInQuart: function(t, b, c, d) {
-			if(t < d/2) { return this.outQuart(t*2, b, c/2, d); }
-			return this.inQuart((t*2)-d, b+c/2, c/2, d);
+		outInQuart: function(t, c, d) {
+			if(t < d/2) { return this.outQuart(t*2, c/2, d); }
+			return this.inQuart((t*2)-d, c/2, c/2, d);
 		},
-		inQuint: function(t, b, c, d) {
-			return c*(t/=d)*t*t*t*t + b;
+		inQuint: function(t, c, d) {
+			return c*(t/=d)*t*t*t*t;
 		},
-		outQuint: function(t, b, c, d) {
-			return c*((t=t/d-1)*t*t*t*t + 1) + b;
+		outQuint: function(t, c, d) {
+			return c*((t=t/d-1)*t*t*t*t + 1);
 		},
-		inOutQuint: function(t, b, c, d) {
-			if((t/=d/2) < 1) { return c/2*t*t*t*t*t + b; }
-			return c/2*((t-=2)*t*t*t*t + 2) + b;
+		inOutQuint: function(t, c, d) {
+			if((t/=d/2) < 1) { return c/2*t*t*t*t*t; }
+			return c/2*((t-=2)*t*t*t*t + 2);
 		},
-		outInQuint: function(t, b, c, d) {
-			if(t < d/2) { return this.outQuint(t*2, b, c/2, d); }
-			return this.inQuint((t*2)-d, b+c/2, c/2, d);
+		outInQuint: function(t, c, d) {
+			if(t < d/2) { return this.outQuint(t*2, c/2, d); }
+			return this.inQuint((t*2)-d, c/2, c/2, d);
 		},
-		inSine: function(t, b, c, d) {
-			return -c * Math.cos(t/d *(Math.PI/2)) + c + b;
+		inSine: function(t, c, d) {
+			return -c * Math.cos(t/d *(Math.PI/2)) + c;
 		},
-		outSine: function(t, b, c, d) {
-			return c * Math.sin(t/d *(Math.PI/2)) + b;
+		outSine: function(t, c, d) {
+			return c * Math.sin(t/d *(Math.PI/2));
 		},
-		inOutSine: function(t, b, c, d) {
-			return -c/2 *(Math.cos(Math.PI*t/d) - 1) + b;
+		inOutSine: function(t, c, d) {
+			return -c/2 *(Math.cos(Math.PI*t/d) - 1);
 		},
-		outInSine: function(t, b, c, d) {
-			if(t < d/2) { return this.outSine(t*2, b, c/2, d); }
-			return this.inSine((t*2)-d, b+c/2, c/2, d);
+		outInSine: function(t, c, d) {
+			if(t < d/2) { return this.outSine(t*2, c/2, d); }
+			return this.inSine((t*2)-d, c/2, c/2, d);
 		},
-		inExpo: function(t, b, c, d) {
-			return(t === 0) ? b : c * Math.pow(2, 10 *(t/d - 1)) + b - c * 0.001;
+		inExpo: function(t, c, d) {
+			return(t === 0) ? 0 : c * Math.pow(2, 10 *(t/d - 1)) - c * 0.001;
 		},
-		outExpo: function(t, b, c, d) {
-			return(t === d) ? b+c : c * 1.001 *(-Math.pow(2, -10 * t/d) + 1) + b;
+		outExpo: function(t, c, d) {
+			return(t === d) ? c : c * 1.001 *(-Math.pow(2, -10 * t/d) + 1);
 		},
-		inOutExpo: function(t, b, c, d) {
-			if(t === 0) { return b; }
-			if(t === d) { return b+c; }
-			if((t/=d/2) < 1) { return c/2 * Math.pow(2, 10 *(t - 1)) + b - c * 0.0005; }
-			return c/2 * 1.0005 *(-Math.pow(2, -10 * --t) + 2) + b;
+		inOutExpo: function(t, c, d) {
+			if(t === 0) { return 0; }
+			if(t === d) { return c; }
+			if((t/=d/2) < 1) { return c/2 * Math.pow(2, 10 *(t - 1)) - c * 0.0005; }
+			return c/2 * 1.0005 *(-Math.pow(2, -10 * --t) + 2);
 		},
-		outInExpo: function(t, b, c, d) {
-			if(t < d/2) { return this.outExpo(t*2, b, c/2, d); }
-			return this.inExpo((t*2)-d, b+c/2, c/2, d);
+		outInExpo: function(t, c, d) {
+			if(t < d/2) { return this.outExpo(t*2, c/2, d); }
+			return this.inExpo((t*2)-d, c/2, c/2, d);
 		},
-		inCirc: function(t, b, c, d) {
-			return -c *(Math.sqrt(1 -(t/=d)*t) - 1) + b;
+		inCirc: function(t, c, d) {
+			return -c *(Math.sqrt(1 -(t/=d)*t) - 1);
 		},
-		outCirc: function(t, b, c, d) {
-			return c * Math.sqrt(1 -(t=t/d-1)*t) + b;
+		outCirc: function(t, c, d) {
+			return c * Math.sqrt(1 -(t=t/d-1)*t);
 		},
-		inOutCirc: function(t, b, c, d) {
-			if((t/=d/2) < 1) { return -c/2 *(Math.sqrt(1 - t*t) - 1) + b; }
-			return c/2 *(Math.sqrt(1 -(t-=2)*t) + 1) + b;
+		inOutCirc: function(t, c, d) {
+			if((t/=d/2) < 1) { return -c/2 *(Math.sqrt(1 - t*t) - 1); }
+			return c/2 *(Math.sqrt(1 -(t-=2)*t) + 1);
 		},
-		outInCirc: function(t, b, c, d) {
-			if(t < d/2) { return this.outCirc(t*2, b, c/2, d); }
-			return this.inCirc((t*2)-d, b+c/2, c/2, d);
+		outInCirc: function(t, c, d) {
+			if(t < d/2) { return this.outCirc(t*2, c/2, d); }
+			return this.inCirc((t*2)-d, c/2, c/2, d);
 		},
-		inElastic: function(t, b, c, d, a, p) {
+		inElastic: function(t, c, d, a, p) {
 			var s;
-			if(t===0) {return b;}
-			if((t/=d)===1) { return b+c; }
+			if(t===0) {return 0;}
+			if((t/=d)===1) { return c; }
 			if(!p) { p=d*0.3; }
 			if(!a || a < Math.abs(c)) { a=c; s=p/4; } else { s = p/(2*Math.PI) * Math.asin(c/a); }
-			return -(a*Math.pow(2,10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p )) + b;
+			return -(a*Math.pow(2,10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p ));
 		},
-		outElastic: function(t, b, c, d, a, p) {
+		outElastic: function(t, c, d, a, p) {
 			var s;
-			if(t===0) { return b; }
-			if((t/=d)===1) { return b+c; }
+			if(t===0) { return 0; }
+			if((t/=d)===1) { return c; }
 			if(!p) { p=d*0.3; }
 			if(!a || a < Math.abs(c)) { a=c; s=p/4; } else { s = p/(2*Math.PI) * Math.asin(c/a); }
-			return(a*Math.pow(2,-10*t) * Math.sin((t*d-s)*(2*Math.PI)/p ) + c + b);
+			return(a*Math.pow(2,-10*t) * Math.sin((t*d-s)*(2*Math.PI)/p ) + c);
 		},
-		inOutElastic: function(t, b, c, d, a, p) {
+		inOutElastic: function(t, c, d, a, p) {
 			var s;
-			if(t===0) { return b; }
-			if((t/=d/2)===2) { return b+c; }
+			if(t===0) { return 0; }
+			if((t/=d/2)===2) { return c; }
 			if(!p) { p=d*(0.3*1.5); }
 			if(!a || a < Math.abs(c)) { a=c; s=p/4; } else { s = p/(2*Math.PI) * Math.asin(c/a); }
-			if(t < 1) { return -0.5*(a*Math.pow(2,10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p )) + b; }
-			return a*Math.pow(2,-10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p )*0.5 + c + b;
+			if(t < 1) { return -0.5*(a*Math.pow(2,10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p)); }
+			return a*Math.pow(2,-10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p )*0.5 + c;
 		},
-		outInElastic: function(t, b, c, d, a, p) {
-			if(t < d/2) { return this.outElastic(t*2, b, c/2, d, a, p); }
-			return this.inElastic((t*2)-d, b+c/2, c/2, d, a, p);
+		outInElastic: function(t, c, d, a, p) {
+			if(t < d/2) { return this.outElastic(t*2, c/2, d, a, p); }
+			return this.inElastic((t*2)-d, c/2, c/2, d, a, p);
 		},
-		inBack: function(t, b, c, d, s) {
+		inBack: function(t, c, d, s) {
 			if(s === undefined) { s = 1.70158; }
-			return c*(t/=d)*t*((s+1)*t - s) + b;
+			return c*(t/=d)*t*((s+1)*t - s);
 		},
-		outBack: function(t, b, c, d, s) {
+		outBack: function(t, c, d, s) {
 			if(s === undefined) { s = 1.70158; }
-			return c*((t=t/d-1)*t*((s+1)*t + s) + 1) + b;
+			return c*((t=t/d-1)*t*((s+1)*t + s) + 1);
 		},
-		inOutBack: function(t, b, c, d, s) {
+		inOutBack: function(t, c, d, s) {
 			if(s === undefined) { s = 1.70158; }
-			if((t/=d/2) < 1) { return c/2*(t*t*(((s*=(1.525))+1)*t - s)) + b; }
-			return c/2*((t-=2)*t*(((s*=(1.525))+1)*t + s) + 2) + b;
+			if((t/=d/2) < 1) { return c/2*(t*t*(((s*=(1.525))+1)*t - s)); }
+			return c/2*((t-=2)*t*(((s*=(1.525))+1)*t + s) + 2);
 		},
-		outInBack: function(t, b, c, d, s) {
-			if(t < d/2) { return this.outBack(t*2, b, c/2, d, s); }
-			return this.inBack((t*2)-d, b+c/2, c/2, d, s);
+		outInBack: function(t, c, d, s) {
+			if(t < d/2) { return this.outBack(t*2, c/2, d, s); }
+			return this.inBack((t*2)-d, c/2, c/2, d, s);
 		},
-		inBounce: function(t, b, c, d) {
-			return c - this.outBounce(d-t, 0, c, d) + b;
+		inBounce: function(t, c, d) {
+			return c - this.outBounce(d-t, 0, c, d);
 		},
-		outBounce: function(t, b, c, d) {
+		outBounce: function(t, c, d) {
 			if((t/=d) <(1/2.75)) {
-				return c*(7.5625*t*t) + b;
+				return c*(7.5625*t*t);
 			} else if(t <(2/2.75)) {
-				return c*(7.5625*(t-=(1.5/2.75))*t + 0.75) + b;
+				return c*(7.5625*(t-=(1.5/2.75))*t + 0.75);
 			} else if(t <(2.5/2.75)) {
-				return c*(7.5625*(t-=(2.25/2.75))*t + 0.9375) + b;
+				return c*(7.5625*(t-=(2.25/2.75))*t + 0.9375);
 			} else {
-				return c*(7.5625*(t-=(2.625/2.75))*t + 0.984375) + b;
+				return c*(7.5625*(t-=(2.625/2.75))*t + 0.984375);
 			}
 		},
-		inOutBounce: function(t, b, c, d) {
+		inOutBounce: function(t, c, d) {
 			if(t < d/2) {
-				return this.inBounce(t*2, 0, c, d) * 0.5 + b;
+				return this.inBounce(t*2, 0, c, d) * 0.5;
 			} else {
-				return this.outBounce(t*2-d, 0, c, d) * 0.5 + c*0.5 + b;
+				return this.outBounce(t*2-d, 0, c, d) * 0.5 + c*0.5;
 			}
 		},
-		outInBounce: function(t, b, c, d) {
-			if(t < d/2) { return this.outBounce(t*2, b, c/2, d); }
-			return this.inBounce((t*2)-d, b+c/2, c/2, d);
+		outInBounce: function(t, c, d) {
+			if(t < d/2) { return this.outBounce(t*2, c/2, d); }
+			return this.inBounce((t*2)-d, c/2, c/2, d);
 		}
 	}
 });
