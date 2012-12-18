@@ -33,7 +33,7 @@ var Client = IgeClass.extend({
 						.drawBoundsData(true)
 						.mount(ige);
 
-					for (i = 0; i < 1; i++) {
+					for (i = 0; i < 10; i++) {
 						self.obj[i] = new IgeEntity()
 							.id('fairy' + i)
 							.depth(i)
@@ -46,15 +46,15 @@ var Client = IgeClass.extend({
 							.mount(self.scene1);
 
 						self.obj[i]._translate.tween()
-							.step({
+							.stepTo({
 								x: 100 + (i * 20),
 								y: 0 + (i * 20)
 							}, 1000, 'inOutSine')
-							.step({
+							.stepTo({
 								x: 0,
-								y: -100
+								y: -100 - (i * 20)
 							}, 1000, 'inOutSine')
-							.step({
+							.stepTo({
 								x: -100 - (i * 20),
 								y: 100 + (i * 20)
 							}, 1000, 'inOutSine')
@@ -64,13 +64,13 @@ var Client = IgeClass.extend({
 							.afterStep(function (tween, step) {
 								console.log('afterStep', step);
 							})
-							.repeatMode(2, -1)
+							.repeatMode(1, -1)
 							.startTime(ige._currentTime + i)
 							.start();
 
 						self.obj[i].tween()
 							.properties({
-								_opacity: 1
+								_opacity: 0.6
 							})
 							.duration(2000)
 							.start();
