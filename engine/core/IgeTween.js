@@ -93,6 +93,14 @@ var IgeTween = IgeClass.extend({
 	},
 
 	/**
+	 * DEPRECIATED, Renamed to stepTo().
+	 */
+	step: function () {
+		this.log('The step method has been renamed to stepTo(). Please update your code as the step() method will soon be removed.', 'warning');
+		this.stepTo.call(arguments);
+	},
+
+	/**
 	 * Defines a step in a multi-stage tween. Uses the properties
 	 * as destination value.
 	 * @param {Object} propertyObj The properties to
