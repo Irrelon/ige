@@ -95,9 +95,10 @@ var IgeTween = IgeClass.extend({
 	/**
 	 * DEPRECIATED, Renamed to stepTo().
 	 */
-	step: function () {
+	step: function (propertyObj, durationMs, easing) {
 		this.log('The step method has been renamed to stepTo(). Please update your code as the step() method will soon be removed.', 'warning');
-		this.stepTo.call(arguments);
+		this.stepTo(propertyObj, durationMs, easing);
+		return this;
 	},
 
 	/**
