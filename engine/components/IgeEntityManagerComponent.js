@@ -105,6 +105,13 @@ var IgeEntityManagerComponent = IgeClass.extend({
 		return this._overwatchMode;
 	},
 
+	/**
+	 * Adds a callback method that is called before an entity is
+	 * created and asks the callback to return true if the entity
+	 * should be allowed to be created, or false if not.
+	 * @param {Function=} val The callback method.
+	 * @return {*}
+	 */
 	createCheck: function (val) {
 		if (val !== undefined) {
 			this._createCheck = val;
@@ -114,6 +121,13 @@ var IgeEntityManagerComponent = IgeClass.extend({
 		return this._createCheck;
 	},
 
+	/**
+	 * Adds a callback method that is called to allow you to execute
+	 * the required code to create the desired entity from the map
+	 * data you are being passed.
+	 * @param {Function=} val The callback method.
+	 * @return {*}
+	 */
 	createEntityFromMapData: function (val) {
 		if (val !== undefined) {
 			this._createEntityFromMapData = val;
@@ -123,6 +137,13 @@ var IgeEntityManagerComponent = IgeClass.extend({
 		return this._createEntityFromMapData;
 	},
 
+	/**
+	 * Adds a callback method that is called before an entity is removed
+	 * and if the callback returns true then the entity will be removed
+	 * or if false, will not.
+	 * @param {Function=} val The callback method.
+	 * @return {*}
+	 */
 	removeCheck: function (val) {
 		if (val !== undefined) {
 			this._removeCheck = val;
