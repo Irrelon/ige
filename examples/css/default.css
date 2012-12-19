@@ -82,6 +82,21 @@ body {
     left: -85px;
 }
 
+#loadingProgress {
+    width: 200px;
+    height: 7px;
+    position: absolute;
+    top: 120px;
+    left: 50%;
+    margin-left: -100px;
+}
+
+#loadingProgressBar {
+    width: 0px;
+    height: 1px;
+    background: rgba(0, 183, 229, 0.9);
+}
+
 .loadingLink {
     position: absolute;
     right: 10px;
