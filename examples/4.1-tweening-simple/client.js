@@ -44,7 +44,7 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					self.obj[0]._translate.tween()
-						.properties({
+						.stepBy({
 							x: 100
 						})
 						.duration(1000)
