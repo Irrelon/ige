@@ -60,7 +60,7 @@ var RandomTweener = IgeEntity.extend({
 
 		this._translate.tween()
 			.duration(7000)
-			.properties({
+			.stepTo({
 				x: (Math.random() * 1440) - 720,
 				y: (Math.random() * 900) - 450
 			})
@@ -72,7 +72,7 @@ var RandomTweener = IgeEntity.extend({
 
 		this._rotate.tween()
 			.duration(7000)
-			.properties({z: (Math.random() * 360) * Math.PI / 180})
+			.stepBy({z: (Math.random() * 360) * Math.PI / 180})
 			.easing('outElastic')
 			.start();
 	}
