@@ -690,38 +690,42 @@ var IgeTexture = IgeEventingClass.extend({
 	 * @return {*}
 	 */
 	applyFilter: function (method, data) {
-		if (method !== undefined) {
-			if (this._originalImage) {
-				if (!this._textureCtx) {
-					// Create a new canvas
-					this._textureCanvas = document.createElement('canvas');
-
-					this._textureCanvas.width = this._originalImage.width;
-					this._textureCanvas.height = this._originalImage.height;
-					this._textureCtx = this._textureCanvas.getContext('2d');
-
-					// Set smoothing mode
-					if (!this._smoothing) {
-						this._textureCtx.imageSmoothingEnabled = false;
-						this._textureCtx.webkitImageSmoothingEnabled = false;
-						this._textureCtx.mozImageSmoothingEnabled = false;
-					} else {
-						this._textureCtx.imageSmoothingEnabled = true;
-						this._textureCtx.webkitImageSmoothingEnabled = true;
-						this._textureCtx.mozImageSmoothingEnabled = true;
+		if (this._loaded) {
+			if (method !== undefined) {
+				if (this._originalImage) {
+					if (!this._textureCtx) {
+						// Create a new canvas
+						this._textureCanvas = document.createElement('canvas');
+	
+						this._textureCanvas.width = this._originalImage.width;
+						this._textureCanvas.height = this._originalImage.height;
+						this._textureCtx = this._textureCanvas.getContext('2d');
+	
+						// Set smoothing mode
+						if (!this._smoothing) {
+							this._textureCtx.imageSmoothingEnabled = false;
+							this._textureCtx.webkitImageSmoothingEnabled = false;
+							this._textureCtx.mozImageSmoothingEnabled = false;
+						} else {
+							this._textureCtx.imageSmoothingEnabled = true;
+							this._textureCtx.webkitImageSmoothingEnabled = true;
+							this._textureCtx.mozImageSmoothingEnabled = true;
+						}
 					}
+	
+					// Swap the current image for this new canvas
+					this.image = this._textureCanvas;
+	
+					// Call the passed method
+					this._textureCtx.save();
+					method(this._textureCanvas, this._textureCtx, this._originalImage, this, data);
+					this._textureCtx.restore();
 				}
-
-				// Swap the current image for this new canvas
-				this.image = this._textureCanvas;
-
-				// Call the passed method
-				this._textureCtx.save();
-				method(this._textureCanvas, this._textureCtx, this._originalImage, this, data);
-				this._textureCtx.restore();
+			} else {
+				this.log('Cannot apply filter, no filter method was passed!', 'warning');
 			}
 		} else {
-			this.log('Cannot apply filter, no filter method was passed!', 'warning');
+			this.log('Cannot apply filter, the texture you are trying to apply the filter to has not yet loaded!', 'error');
 		}
 
 		return this;
