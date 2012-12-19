@@ -105,7 +105,10 @@ var IgeViewport = IgeEntity.extend([
 
 			this.camera.update(ctx);
 			this._super(ctx);
-			this._scene.update(ctx);
+			
+			if (this._scene.newFrame()) {
+				this._scene.update(ctx);
+			}
 		}
 	},
 
