@@ -501,7 +501,8 @@ var IgeTileMap2d = IgeEntity.extend({
 			x, y,
 			gridMaxX, gridMaxY,
 			gStart, gEnd,
-			tilePoint;
+			tilePoint,
+			gridCount;
 
 		this._calculateMousePosition();
 

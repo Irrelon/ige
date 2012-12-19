@@ -538,7 +538,9 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		var finalX, finalY, regions,
 			xm1, xp1, ym1, yp1, regObj,
 			xAdjust = this._mountMode === 1 ? this._tileWidth / 2 : 0,
-			yAdjust = this._mountMode === 1 ? this._tileHeight / 2 : 0;
+			yAdjust = this._mountMode === 1 ? this._tileHeight / 2 : 0,
+			tx, ty, sx, sy,
+			texture;
 
 		// Translate the canvas to the tile position
 		if (this._mountMode === 0) {

@@ -58,6 +58,7 @@ var IgeSpriteSheet = IgeTexture.extend({
 			ctx = canvas.getContext('2d'),
 			pixels,
 			x, y,
+			newRect,
 			spriteRects = [];
 
 		canvas.width = img.width;

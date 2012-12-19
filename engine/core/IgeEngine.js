@@ -1251,7 +1251,8 @@ var IgeEngine = IgeEntity.extend({
 			arrCount,
 			i,
 			mouseUp,
-			dblClick;
+			dblClick,
+			timingString;
 
 		mouseUp = function (event) {
 			event.stopPropagation();

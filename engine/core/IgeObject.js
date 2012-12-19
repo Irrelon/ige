@@ -1296,7 +1296,8 @@ var IgeObject = IgeEventingClass.extend({
 		if (this._alive) {
 			if (this._newBorn) { this._newBorn = false; }
 			var arr = this._children,
-				arrCount;
+				arrCount,
+				ts, td;
 
 			if (arr) {
 				arrCount = arr.length;
