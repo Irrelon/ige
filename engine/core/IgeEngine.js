@@ -59,7 +59,8 @@ var IgeEngine = IgeEntity.extend({
 			'2d',
 			'three'
 		];
-
+		
+		this._loadingPreText = undefined; // The text to put in front of the loading percent on the loading progress screen
 		this._enableUpdates = true;
 		this._enableRenders = true;
 		this._showSgTree = false;
@@ -547,7 +548,11 @@ var IgeEngine = IgeEntity.extend({
 				elem.style.width = currentWidth + 'px';
 				
 				if (textElem) {
-					textElem.innerHTML = 'Loading ' + Math.floor((100 / this._texturesTotal) * (this._texturesTotal - this._texturesLoading)) + '%';
+					if (this._loadingPreText === undefined) {
+						// Fill the text to use
+						this._loadingPreText = textElem.innerHTML;
+					}
+					textElem.innerHTML = this._loadingPreText + ' ' + Math.floor((100 / this._texturesTotal) * (this._texturesTotal - this._texturesLoading)) + '%';
 				}
 			}
 		}
