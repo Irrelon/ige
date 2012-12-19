@@ -530,11 +530,38 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
+	 * Updates the loading screen DOM elements to show the update progress.
+	 */
+	updateProgress: function () {
+		// Check for a loading progress bar DOM element
+		if (typeof(document) !== 'undefined' && document.getElementById) {
+			var elem = document.getElementById('loadingProgressBar'),
+				textElem = document.getElementById('loadingText');
+			
+			if (elem) {
+				// Calculate the width from progress
+				var totalWidth = parseInt(elem.parentNode.offsetWidth),
+					currentWidth = Math.floor((totalWidth / this._texturesTotal) * (this._texturesTotal - this._texturesLoading));
+				
+				// Set the current bar width
+				elem.style.width = currentWidth + 'px';
+				
+				if (textElem) {
+					textElem.innerHTML = 'Loading ' + Math.floor((100 / this._texturesTotal) * (this._texturesTotal - this._texturesLoading)) + '%';
+				}
+			}
+		}
+	},
+
+	/**
 	 * Adds one to the number of textures currently loading.
 	 */
 	textureLoadStart: function (url, textureObj) {
 		this._texturesLoading++;
 		this._texturesTotal++;
+		
+		this.updateProgress();
+		
 		this.emit('textureLoadStart', textureObj);
 	},
 
@@ -543,6 +570,8 @@ var IgeEngine = IgeEntity.extend({
 	 * to load, it will also call the _allTexturesLoaded() method.
 	 */
 	textureLoadEnd: function (url, textureObj) {
+		var self = this;
+		
 		if (!textureObj._destroyed) {
 			// Add the texture to the _textureStore array
 			this._textureStore.push(textureObj);
@@ -550,12 +579,19 @@ var IgeEngine = IgeEntity.extend({
 
 		// Decrement the overall loading number
 		this._texturesLoading--;
+		
+		this.updateProgress();
+		
 		this.emit('textureLoadEnd', textureObj);
 
 		// If we've finished...
 		if (this._texturesLoading === 0) {
 			// All textures have finished loading
-			this._allTexturesLoaded();
+			this.updateProgress();
+			
+			setTimeout(function () {
+				self._allTexturesLoaded();
+			}, 100);
 		}
 	},
 
