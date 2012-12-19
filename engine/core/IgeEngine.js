@@ -1660,7 +1660,7 @@ var IgeEngine = IgeEntity.extend({
 				while (arrCount--) {
 					us = new Date().getTime();
 					arr[arrCount].update(ctx);
-					ud = new Date().getTime() - ts;
+					ud = new Date().getTime() - us;
 					
 					if (arr[arrCount]) {
 						if (!ige._timeSpentInUpdate[arr[arrCount].id()]) {
