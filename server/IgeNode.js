@@ -176,6 +176,7 @@ var IgeNode = IgeClass.extend({
 		deployOptions.obfuscate = args['-clear'] ? false : true;
 		deployOptions.proto = args['-proto'];
 		deployOptions.clearClasses = args['-clearClasses'];
+		deployOptions.debug = args['-debug'];
 
 		if (!this.fs.existsSync(toPath)) {
 			this.fs.mkdirSync(toPath);
@@ -256,7 +257,7 @@ var IgeNode = IgeClass.extend({
 
 			if (deployOptions.obfuscate) {
 				console.log('Compressing...');
-				finalFileData = this.obfuscate(coreCode + clientCode, null, null, true);
+				finalFileData = this.obfuscate(coreCode + clientCode, null, null, deployOptions);
 
 				if (!deployOptions.clearClasses) {
 					// Now do one last pass, replacing IGE class names with total nonsense
@@ -443,10 +444,15 @@ var IgeNode = IgeClass.extend({
 		return finalFileData;
 	},
 
-	obfuscate: function (source, seed, opts) {
+	obfuscate: function (source, seed, opts, deployOptions) {
 		var jsp = this.parser,
 			UglifyJS = require('uglify-js2'),
-			compressor = UglifyJS.Compressor({warnings:false}),
+			compressor = UglifyJS.Compressor(
+				{
+					warnings:false,
+					drop_debugger: !deployOptions.debug
+				}
+			),
 			options,
 			orig_code,
 			ast,
