@@ -60,6 +60,8 @@ var IgeEngine = IgeEntity.extend({
 			'three'
 		];
 		
+		this._requireScriptTotal = 0;
+		this._requireScriptLoading = 0;
 		this._loadingPreText = undefined; // The text to put in front of the loading percent on the loading progress screen
 		this._enableUpdates = true;
 		this._enableRenders = true;
@@ -277,6 +279,41 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		return this;
+	},
+	
+	requireScript: function (url) {
+		if (url !== undefined) {
+			var self = this;
+			
+			// Add to the load counter
+			self._requireScriptTotal++;
+			self._requireScriptLoading++;
+			
+			// Create the script element
+			var elem = document.createElement('script');
+			elem.addEventListener('load', function () {
+				self._requireScriptLoaded(this);
+			});
+			
+			// For compatibility with CocoonJS
+			document.body.appendChild(elem);
+			
+			// Set the source to load the url
+			elem.src = url;
+			
+			this.emit('requireScriptLoading', url);
+		}
+	},
+	
+	_requireScriptLoaded: function (elem) {
+		this._requireScriptLoading--;
+		
+		this.emit('requireScriptLoaded', elem.src);
+		
+		if (this._requireScriptLoading === 0) {
+			// All scripts have loaded, fire the engine event
+			this.emit('allRequireScriptsLoaded');
+		}
 	},
 	
 	enableUpdates: function (val) {
