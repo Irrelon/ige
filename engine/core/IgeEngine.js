@@ -81,6 +81,7 @@ var IgeEngine = IgeEntity.extend({
 		this._dependencyQueue = []; // Holds an array of functions that must all return true for the engine to start
 		this._drawCount = 0; // Holds the number of draws since the last frame (calls to drawImage)
 		this._dps = 0; // Number of draws that occurred last tick
+		this._dpt = 0;
 		this._frames = 0; // Number of frames looped through since last second tick
 		this._fps = 0; // Number of frames per second
 		this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
@@ -904,8 +905,9 @@ var IgeEngine = IgeEntity.extend({
 
 	/**
 	 * Sets the canvas element that will be used as the front-buffer.
-	 * @param elem
-	 * @param autoSize
+	 * @param elem The canvas element.
+	 * @param autoSize If set to true, the engine will automatically size
+	 * the canvas to the width and height of the window upon window resize.
 	 */
 	canvas: function (elem, autoSize) {
 		if (elem !== undefined) {
