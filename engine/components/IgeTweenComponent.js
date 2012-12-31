@@ -236,15 +236,18 @@ var IgeTweenComponent = IgeClass.extend({
 						for (targetIndex in targets) {
 							if (targets.hasOwnProperty(targetIndex)) {
 								item = targets[targetIndex];
-								//revert the property by the delta amount that was added too much
-								if (deltaTime != destTime) {
-									var destDelta = this.easing[easing](
-										destTime,
-										item.deltaVal,
-										destTime
-									);
-									item.targetObj[item.propName] -= item.oldDelta - destDelta;
-								}
+								
+								//add by the delta amount to destination
+								var currentDelta = this.easing[easing](
+									destTime,
+									item.deltaVal,
+									destTime
+								);
+								item.targetObj[item.propName] += currentDelta - item.oldDelta;
+								
+								//round the value to correct floating point operation imprecisions
+								var roundingPrecision = Math.pow(10, 15-(item.targetObj[item.propName].toFixed(0).toString().length));
+								item.targetObj[item.propName] = Math.round(item.targetObj[item.propName] * roundingPrecision)/roundingPrecision;
 							}
 						}
 
