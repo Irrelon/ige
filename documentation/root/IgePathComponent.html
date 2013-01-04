@@ -30,7 +30,22 @@
 <div class="methodDesc">Gets the current direction.</div>
 <div class="methodArgs"></div>
 <div class="methodReturnDesc">Returns {<span class="argType">String</span>} A string such as N, S, E, W, NW, NE, SW, SE. If there is currently no direction then the return value is a blank string.</div>
-<h3>drawPath(<span class="argType">{Boolean}</span> <span class="argName">val</span>)</h3>
+
+					<div class="methodExample">
+						<div class="content"><h1>Get the direction of movement along the current path</h1>
+
+<pre><code>// Create an entity and add the path component
+var entity = new IgeEntity()
+    .addComponent(IgePathComponent);
+
+// Create a path and add it to the entity
+// ...
+// Now get the current direction
+var direction = entity.path.currentDirection();
+</code></pre>
+</div>
+					</div>
+				<h3>drawPath(<span class="argType">{Boolean}</span> <span class="argName">val</span>)</h3>
 <div class="methodDesc">Gets / sets the flag determining if the path component should draw the current path of the entity to the canvas on each tick. Useful for debugging paths.</div>
 <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
 <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
