@@ -64,6 +64,11 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 		if (val !== undefined) {
 			this._enabled = val;
 
+			// Reset pan values.
+			// This prevents problems if mouse pan is disabled mid-pan.
+			this._panPreStart = false;
+			this._panStarted  = false;
+
 			if (this._enabled) {
 				// Listen for the mouse events we need to operate a mouse pan
 				this._entity.mouseDown(function (event) { self._mouseDown(event); });
