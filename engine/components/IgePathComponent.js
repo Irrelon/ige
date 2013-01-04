@@ -97,6 +97,15 @@ var IgePathComponent = IgeEventingClass.extend({
 
 	/**
 	 * Gets the current direction.
+	 * @example #Get the direction of movement along the current path
+	 *     // Create an entity and add the path component
+	 *     var entity = new IgeEntity()
+	 *         .addComponent(IgePathComponent);
+	 *     
+	 *     // Create a path and add it to the entity
+	 *     // ...
+	 *     // Now get the current direction
+	 *     var direction = entity.path.currentDirection();
 	 * @return {String} A string such as N, S, E, W, NW, NE, SW, SE.
 	 * If there is currently no direction then the return value is a blank string.
 	 */
