@@ -1,0 +1,81 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgePathComponent <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/components/IgePathComponent.js">IgePathComponent.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">Handles entity path traversal.</div>
+</div>
+<!--=if{extends}[-->
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="IgeEventingClass.html">IgeEventingClass</a></div>
+</div>
+<!--=if{extends}]-->
+<h2>Methods</h2><h3>add(<span class="argType">{Array}</span> <span class="argName">path</span>)</h3>
+<div class="methodDesc">Adds a path array containing path points (IgePoint instances) to the path queue.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">path</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>current(<span class="argType">{Number}</span> <span class="argName">index</span>)</h3>
+<div class="methodDesc">Gets / sets the current path index that the pathing system is traversing.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">index</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>currentDirection()</h3>
+<div class="methodDesc">Gets the current direction.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">String</span>} A string such as N, S, E, W, NW, NE, SW, SE. If there is currently no direction then the return value is a blank string.</div>
+<h3>drawPath(<span class="argType">{Boolean}</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">Gets / sets the flag determining if the path component should draw the current path of the entity to the canvas on each tick. Useful for debugging paths.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>drawPathGlow(<span class="argType">{}</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">Gets / sets the flag that determines if the path that is drawn gets some added glow effects or not. Pure eye candy, completely pointless otherwise.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>speed(<span class="argType">{Number}</span> <span class="argName">val</span>)</h3>
+<div class="methodDesc">Gets / sets the speed at which the entity will traverse the path.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>start(<span class="argType">{Number}</span> <span class="argName">startTime</span>)</h3>
+<div class="methodDesc">Starts path traversal.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">startTime</span> The time to start path traversal. Defaults to new Date().getTime() if no value is presented.</li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>endPoint()</h3>
+<div class="methodDesc">Returns the last point of the last path in the path queue.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} </div>
+<h3>pause()</h3>
+<div class="methodDesc">Pauses path traversal but does not clear the path queue or any path data.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>stop()</h3>
+<div class="methodDesc">Stops path traversal but does not clear the path queue or any path data.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>clear()</h3>
+<div class="methodDesc">Clears all path queue and path data.</div>
+<div class="methodArgs"></div>
+<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+<h3>_updateBehaviour(<span class="argType">{}</span> <span class="argName">ctx</span>)</h3>
+<div class="methodDesc">The behaviour method executed each tick.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">ctx</span> </li></ul></div>
+<div class="methodReturnDesc"></div>
+<h3>_positionAlongVector(<span class="argType">{}</span> <span class="argName">p1</span>, <span class="argType">{}</span> <span class="argName">p2</span>, <span class="argType">{}</span> <span class="argName">speed</span>, <span class="argType">{}</span> <span class="argName">time</span>)</h3>
+<div class="methodDesc">Calculates the position of the entity along a vector based on the speed of the entity and the current time.</div>
+<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">p1</span> </li><li>{<span class="argType"></span>}<span class="argName">p2</span> </li><li>{<span class="argType"></span>}<span class="argName">speed</span> </li><li>{<span class="argType"></span>}<span class="argName">time</span> </li></ul></div>
+<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} </div>
+	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>
