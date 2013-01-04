@@ -139,15 +139,28 @@ var IgePathComponent = IgeEventingClass.extend({
 		return dir;
 	},
 
-	warnTime: function (val) {
-		if (val !== undefined) {
-			this._warnTime = val;
+	/**
+	 * Gets / sets the time towards the end of the path when the path
+	 * component will emit a "almostComplete" event.
+	 * @param {Number=} ms The time in milliseconds to emit the event
+	 * on before the end of the path.
+	 * @return {*}
+	 */
+	warnTime: function (ms) {
+		if (ms !== undefined) {
+			this._warnTime = ms;
 			return this._entity;
 		}
 
 		return this._warnTime;
 	},
 
+	/**
+	 * Gets / sets the flag determining if the entity moving along
+	 * the path will stop automatically at the end of the path.
+	 * @param {Boolean=} val If true, will stop at the end of the path.
+	 * @return {*}
+	 */
 	autoStop: function (val) {
 		if (val !== undefined) {
 			this._autoStop = val;
@@ -161,7 +174,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	 * Gets / sets the flag determining if the path component
 	 * should draw the current path of the entity to the canvas
 	 * on each tick. Useful for debugging paths.
-	 * @param {Boolean=} val
+	 * @param {Boolean=} val If true, will draw the path.
 	 * @return {*}
 	 */
 	drawPath: function (val) {
@@ -177,7 +190,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	 * Gets / sets the flag that determines if the path that
 	 * is drawn gets some added glow effects or not. Pure eye
 	 * candy, completely pointless otherwise.
-	 * @param val
+	 * @param {Boolean=} val If true will add glow effects to the path.
 	 * @return {*}
 	 */
 	drawPathGlow: function (val) {
@@ -189,6 +202,12 @@ var IgePathComponent = IgeEventingClass.extend({
 		return this._drawPathGlow;
 	},
 
+	/**
+	 * Gets / sets the flag that determines if the path that
+	 * is drawn gets some added labels or not.
+	 * @param {Boolean=} val If true will draw labels on each path point.
+	 * @return {*}
+	 */
 	drawPathText: function (val) {
 		if (val !== undefined) {
 			this._drawPathText = val;
@@ -327,7 +346,8 @@ var IgePathComponent = IgeEventingClass.extend({
 
 	/**
 	 * The behaviour method executed each tick.
-	 * @param ctx
+	 * @param {CanvasRenderingContext2d} ctx The canvas that is currently being
+	 * rendered to.
 	 * @private
 	 */
 	_updateBehaviour: function (ctx) {
@@ -539,15 +559,15 @@ var IgePathComponent = IgeEventingClass.extend({
 
 	/**
 	 * Calculates the position of the entity along a vector
-	 * based on the speed of the entity and the current time.
-	 * @param p1
-	 * @param p2
-	 * @param speed
-	 * @param time
+	 * based on the speed of the entity and the delta time.
+	 * @param {IgePoint} p1 Vector starting point
+	 * @param {IgePoint} p2 Vevtor ending point
+	 * @param {Number} speed Speed along the vector
+	 * @param {Number} deltaTime The time between the last upadte and now.
 	 * @return {IgePoint}
 	 * @private
 	 */
-	_positionAlongVector: function (p1, p2, speed, time) {
+	_positionAlongVector: function (p1, p2, speed, deltaTime) {
 		var newPoint = new IgePoint(0, 0, 0),
 			deltaY = (p2.y - p1.y),
 			deltaX = (p2.x - p1.x),
@@ -556,8 +576,8 @@ var IgePathComponent = IgeEventingClass.extend({
 			yVelocity = speed * deltaY / distanceBetweenP1AndP2;
 
 		if (distanceBetweenP1AndP2 > 0) {
-			newPoint.x = p1.x + (xVelocity * time);
-			newPoint.y = p1.y + (yVelocity * time);
+			newPoint.x = p1.x + (xVelocity * deltaTime);
+			newPoint.y = p1.y + (yVelocity * deltaTime);
 		}
 
 		return newPoint;
