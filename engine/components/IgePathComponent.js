@@ -1,3 +1,6 @@
+/**
+ * Handles entity path traversal.
+ */
 var IgePathComponent = IgeEventingClass.extend({
 	classId: 'IgePathComponent',
 	componentId: 'path',
