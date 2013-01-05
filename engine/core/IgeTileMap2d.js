@@ -508,15 +508,15 @@ var IgeTileMap2d = IgeEntity.extend({
 
 		// Now check if we have any mouse events to call
 		if (ige.input.mouseMove && this._tileMapMouseOver) {
-			this._tileMapMouseOver(this._mouseTilePos.x, this._mouseTilePos.y);
+			this._tileMapMouseOver(this._mouseTilePos.x, this._mouseTilePos.y, ige.input.mouseMove);
 		}
 
 		if (ige.input.mouseDown && this._tileMapMouseDown) {
-			this._tileMapMouseDown(this._mouseTilePos.x, this._mouseTilePos.y);
+			this._tileMapMouseDown(this._mouseTilePos.x, this._mouseTilePos.y, ige.input.mouseDown);
 		}
 
 		if (ige.input.mouseUp && this._tileMapMouseUp) {
-			this._tileMapMouseUp(this._mouseTilePos.x, this._mouseTilePos.y);
+			this._tileMapMouseUp(this._mouseTilePos.x, this._mouseTilePos.y, ige.input.mouseUp);
 		}
 
 		// Transform the context ready for drawing
