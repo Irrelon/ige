@@ -1736,6 +1736,8 @@ var IgeEntity = IgeObject.extend({
 		if (!this._mouseStateOver) {
 			this._mouseStateOver = true;
 			if (this._mouseOver) { this._mouseOver(event, evc, data); }
+			
+			this.emit('mouseMove', [event, evc, data]);
 		}
 
 		if (this._mouseMove) { this._mouseMove(event, evc, data); }
@@ -1755,6 +1757,8 @@ var IgeEntity = IgeObject.extend({
 		if (this._mouseStateOver) {
 			this._mouseStateOver = false;
 			if (this._mouseOut) { this._mouseOut(event, evc, data); }
+			
+			this.emit('mouseOut', [event, evc, data]);
 		}
 	},
 
@@ -1767,6 +1771,8 @@ var IgeEntity = IgeObject.extend({
 		// Reset the mouse-down flag
 		this._mouseStateDown = false;
 		if (this._mouseUp) { this._mouseUp(event, evc, data); }
+		
+		this.emit('mouseUp', [event, evc, data]);
 	},
 
 	/**
@@ -1778,6 +1784,8 @@ var IgeEntity = IgeObject.extend({
 		if (!this._mouseStateDown) {
 			this._mouseStateDown = true;
 			if (this._mouseDown) { this._mouseDown(event, evc, data); }
+			
+			this.emit('mouseDown', [event, evc, data]);
 		}
 	},
 	
