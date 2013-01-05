@@ -38,6 +38,7 @@ var Client = IgeClass.extend({
 
 					// Create the tile map
 					self.tileMap1 = new IgeTileMap2d()
+						.id('tileMap1')
 						.depth(0)
 						.tileWidth(40)
 						.tileHeight(40)
@@ -46,9 +47,13 @@ var Client = IgeClass.extend({
 						.translateTo(-200, 0, 0)
 						.highlightOccupied(true)
 						.drawBounds(false)
+						.mouseUp(function (x, y, event) {
+							console.log(this.id(), x, y, event.button);
+						})
 						.mount(self.scene1);
 
 					self.tileMap2 = new IgeTileMap2d()
+						.id('tileMap2')
 						.depth(1)
 						.translateTo(200, 0, 0)
 						.tileWidth(40)
@@ -58,6 +63,9 @@ var Client = IgeClass.extend({
 						.drawBounds(false)
 						.isometricMounts(true)
 						.highlightOccupied(true)
+						.mouseUp(function (x, y, event) {
+							console.log(this.id(), x, y, event.button);
+						})
 						.mount(self.scene1);
 
 					var overFunc,
