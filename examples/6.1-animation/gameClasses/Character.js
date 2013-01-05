@@ -173,7 +173,7 @@ var Character = IgeEntity.extend({
 		return this;
 	},
 
-	tick: function (ctx) {
+	update: function (ctx) {
 		// Set the depth to the y co-ordinate which basically
 		// makes the entity appear further in the foreground
 		// the closer they become to the bottom of the screen
