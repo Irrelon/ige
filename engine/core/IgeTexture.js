@@ -134,7 +134,7 @@ var IgeTexture = IgeEventingClass.extend({
 
 				image.onload = function () {
 					// Mark the image as loaded
-					this._loaded = true;
+					image._loaded = true;
 
 					// Log success
 					ige.log('Texture image (' + imageUrl + ') loaded successfully');
@@ -148,7 +148,7 @@ var IgeTexture = IgeEventingClass.extend({
 					}
 
 					// Loop textures that are using this image
-					var arr = this._igeTextures,
+					var arr = image._igeTextures,
 						arrCount = arr.length, i,
 						item;
 
