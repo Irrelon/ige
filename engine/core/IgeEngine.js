@@ -416,7 +416,7 @@ var IgeEngine = IgeEntity.extend({
 	 * updates.
 	 */
 	showStats: function (val, interval) {
-		if (val !== undefined) {
+		if (val !== undefined && (!ige.cocoonJs || !ige.cocoonJs.detected)) {
 			switch (val) {
 				case 0:
 					clearInterval(this._statsTimer);
