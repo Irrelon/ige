@@ -15,16 +15,7 @@ var IgeTweenComponent = IgeClass.extend({
 		this._tweens = [];
 
 		// Add the tween behaviour to the entity
-		entity.addBehaviour('tween', this._behaviour);
-	},
-
-	/**
-	 * The behaviour method executed each tick.
-	 * @param ctx
-	 * @private
-	 */
-	_behaviour: function (ctx) {
-		this.tween.tick(ctx);
+		entity.addBehaviour('tween', this.update);
 	},
 
 	/**
@@ -110,7 +101,7 @@ var IgeTweenComponent = IgeClass.extend({
 
 	/**
 	 * Removes the specified tween from the active tween list.
-	 * @param {IgeTween} The tween to stop.
+	 * @param {IgeTween} tween The tween to stop.
 	 */
 	stop: function (tween) {
 		// Store the new tween details in the item
@@ -168,10 +159,11 @@ var IgeTweenComponent = IgeClass.extend({
 	/**
 	 * Process tweening for the object.
 	 */
-	tick: function (ctx) {
-		if (this._tweens && this._tweens.length) {
+	update: function (ctx) {
+		var thisTween = this.tween;
+		if (thisTween._tweens && thisTween._tweens.length) {
 			var currentTime = ige._tickStart,
-				tweens = this._tweens,
+				tweens = thisTween._tweens,
 				tweenCount = tweens.length,
 				tween,
 				deltaTime,
@@ -196,7 +188,7 @@ var IgeTweenComponent = IgeClass.extend({
 						if (tween._currentStep === -1) {
 							// Setup the tween step now
 							tween._currentStep = 0;
-							this._setupStep(tween, false);
+							thisTween._setupStep(tween, false);
 						}
 						
 						// Check if we have a beforeTween callback to fire
@@ -238,7 +230,7 @@ var IgeTweenComponent = IgeClass.extend({
 								item = targets[targetIndex];
 								
 								//add by the delta amount to destination
-								var currentDelta = this.easing[easing](
+								var currentDelta = thisTween.easing[easing](
 									destTime,
 									item.deltaVal,
 									destTime
@@ -309,7 +301,7 @@ var IgeTweenComponent = IgeClass.extend({
 										tween._beforeStep(tween, stepIndex);
 									}
 
-									this._setupStep(tween, true);
+									thisTween._setupStep(tween, true);
 								}
 							} else {
 								stopped = true;
@@ -343,7 +335,7 @@ var IgeTweenComponent = IgeClass.extend({
 								tween._beforeStep(tween, stepIndex);
 							}
 
-							this._setupStep(tween, true);
+							thisTween._setupStep(tween, true);
 						}
 					} else {
 						// The tween is still active, process the tween by passing it's details
@@ -353,7 +345,7 @@ var IgeTweenComponent = IgeClass.extend({
 						for (targetIndex in targets) {
 							if (targets.hasOwnProperty(targetIndex)) {
 								item = targets[targetIndex];
-								var currentDelta = this.easing[easing](
+								var currentDelta = thisTween.easing[easing](
 									deltaTime,
 									item.deltaVal,
 									destTime
