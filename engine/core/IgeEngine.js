@@ -335,9 +335,22 @@ var IgeEngine = IgeEntity.extend({
 		return this._enableRenders;
 	},
 	
-	timing: function (val) {
+	debugEnabled: function (val) {
 		if (val !== undefined) {
-			igeDebug._timing = val;
+			if (igeDebug) {
+				igeDebug._enabled = val;
+			}
+			return this;
+		}
+
+		return igeDebug._enabled;
+	},
+	
+	debugTiming: function (val) {
+		if (val !== undefined) {
+			if (igeDebug) {
+				igeDebug._timing = val;
+			}
 			return this;
 		}
 
