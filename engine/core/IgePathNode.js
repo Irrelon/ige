@@ -15,7 +15,6 @@ var IgePathNode = IgePoint.extend({
 	 * @param {String} direction
 	 */
 	init: function(x, y, g, moveCost, h, parent, direction) {
-		//this._super(x, y, 0);
 		this.z = 0; // Compat with IgePoint
 		
 		this.x = x;
