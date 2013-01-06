@@ -14,7 +14,7 @@ var IgeTweenComponent = IgeClass.extend({
 		// Setup the array that will hold our active tweens
 		this._tweens = [];
 
-		// Add the tween behaviour to the entity
+		// Add the tween behaviour to the entity 
 		entity.addBehaviour('tween', this.update);
 	},
 
@@ -170,6 +170,8 @@ var IgeTweenComponent = IgeClass.extend({
 				destTime,
 				easing,
 				item,
+				targetProp,
+				targetPropVal,
 				targets,
 				targetIndex,
 				stepIndex,
@@ -228,6 +230,8 @@ var IgeTweenComponent = IgeClass.extend({
 						for (targetIndex in targets) {
 							if (targets.hasOwnProperty(targetIndex)) {
 								item = targets[targetIndex];
+								targetProp = item.targetObj;
+								targetPropVal = targetProp[item.propName];
 								
 								//add by the delta amount to destination
 								var currentDelta = thisTween.easing[easing](
@@ -235,11 +239,11 @@ var IgeTweenComponent = IgeClass.extend({
 									item.deltaVal,
 									destTime
 								);
-								item.targetObj[item.propName] += currentDelta - item.oldDelta;
+								targetPropVal += currentDelta - item.oldDelta;
 								
-								//round the value to correct floating point operation imprecisions
-								var roundingPrecision = Math.pow(10, 15-(item.targetObj[item.propName].toFixed(0).toString().length));
-								item.targetObj[item.propName] = Math.round(item.targetObj[item.propName] * roundingPrecision)/roundingPrecision;
+								// Round the value to correct floating point operation imprecision
+								var roundingPrecision = Math.pow(10, 15-(targetPropVal.toFixed(0).toString().length));
+								targetProp[item.propName] = Math.round(targetPropVal * roundingPrecision)/roundingPrecision;
 							}
 						}
 
