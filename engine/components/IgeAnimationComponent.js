@@ -92,12 +92,49 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 * @param {String} id The ID of the animation to alter the FPS for.
 	 * @param {Number=} fps The number of frames per second the animation
 	 * should play at.
+	 * @example #Set the specified animation's FPS
+	 *     // Create an entity, add the animation component and define
+	 *     // an animation with an FPS of 25
+	 *     var entity = new IgeEntity()
+	 *         .addComponent(IgeAnimationComponent)
+	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
+	 *     
+	 *     // Change the FPS to 12
+	 *     entity.animation.setFps('anim1', 12);
 	 * @return {*}
 	 */
 	setFps: function (id, fps) {
 		if (this._anims && this._anims[id]) {
 			this._anims[id].frameTime = ((1000 / fps)|0);
 			this._anims[id].totalTime = frames.length * frameTime;
+		}
+		
+		return this._entity;
+	},
+	
+	/**
+	 * Sets all the animations assigned to an entity to the specified FPS.
+	 * @param {Number=} fps The number of frames per second the animations
+	 * should play at.
+	 * @example #Set all entity animations to specified FPS
+	 *     // Create an entity, add the animation component and define
+	 *     // a couple of animations with an FPS of 25
+	 *     var entity = new IgeEntity()
+	 *         .addComponent(IgeAnimationComponent)
+	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
+	 *         .animation.define('anim2', [5, 6, 7, 8], 25, -1);
+	 *     
+	 *     // Change the FPS of all animations to 12
+	 *     entity.animation.setAllFps(12);
+	 * @return {*}
+	 */
+	setAllFps: function (fps) {
+		if (this._anims) {
+			for (id in this._anims) {
+				if (this._anims.hasOwnProperty(id)) {
+					this.setFps(id, fps);
+				}
+			}
 		}
 		
 		return this._entity;
