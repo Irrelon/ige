@@ -10,7 +10,9 @@ var IgeTween = IgeClass.extend({
 		this._targetObj = targetObj;
 		this._steps = [];
 		this._currentStep = -1;
-		if (propertyObj !== undefined) { this.stepTo(propertyObj); }
+		if (propertyObj !== undefined) {
+			this.stepTo(propertyObj);
+		}
 		this._durationMs = durationMs !== undefined ? durationMs : 0;
 		this._started = false;
 		this._stepDirection = false;
@@ -111,9 +113,11 @@ var IgeTween = IgeClass.extend({
 	 * the current tween durationMs setting.
 	 * @param {String=} easing The name of the easing method
 	 * to use during this step.
+	 * @param {Boolean=} delta If true will set the step to use
+	 * delta values instead of absolute values as the destination.
 	 * @return {*}
 	 */
-	stepTo: function (propertyObj, durationMs, easing) {
+	stepTo: function (propertyObj, durationMs, easing, delta) {
 		if (propertyObj !== undefined) {
 			// Check if we have already been given a standard
 			// non-staged property
@@ -121,7 +125,7 @@ var IgeTween = IgeClass.extend({
 				props: propertyObj,
 				durationMs: durationMs,
 				easing: easing,
-				isDela: false
+				isDelta: delta
 			});
 		}
 
@@ -141,8 +145,12 @@ var IgeTween = IgeClass.extend({
 	 * @return {*}
 	 */
 	stepBy: function (propertyObj, durationMs, easing) {
-		this.stepTo(propertyObj, durationMs, easing);
-		this._steps[this._steps.length - 1].isDelta = true;
+		this.stepTo(
+			propertyObj,
+			durationMs,
+			easing,
+			true
+		);
 		
 		return this;
 	},
