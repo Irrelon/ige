@@ -106,7 +106,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	setFps: function (id, fps) {
 		if (this._anims && this._anims[id]) {
 			this._anims[id].frameTime = ((1000 / fps)|0);
-			this._anims[id].totalTime = frames.length * frameTime;
+			this._anims[id].totalTime = this._anims[id].frames.length * this._anims[id].frameTime;
 		}
 		
 		return this._entity;
@@ -131,7 +131,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	setAllFps: function (fps) {
 		if (this._anims) {
 			for (id in this._anims) {
-				if (this._anims.hasOwnProperty(id)) {
+				if (this._anims.hasOwnProperty(id) && id!=='length') {
 					this.setFps(id, fps);
 				}
 			}
