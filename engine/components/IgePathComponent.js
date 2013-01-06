@@ -118,20 +118,38 @@ var IgePathComponent = IgeEventingClass.extend({
 			
 			if (this._entity._mode === 1) {
 				// Convert direction for isometric
-				if (dir === 'E') {
-					dir = 'SE';
-				}
-		
-				if (dir === 'S') {
-					dir = 'SW';
-				}
-		
-				if (dir === 'W') {
-					dir = 'NW';
-				}
-		
-				if (dir === 'N') {
-					dir = 'NE';
+				switch (dir) {
+					case 'E':
+						dir = 'SE';
+						break;
+					
+					case 'S':
+						dir = 'SW';
+						break;
+					
+					case 'W':
+						dir = 'NW';
+						break;
+					
+					case 'N':
+						dir = 'NE';
+						break;
+					
+					case 'NE':
+						dir = 'W';
+						break;
+					
+					case 'SW':
+						dir = 'E';
+						break;
+					
+					case 'NW':
+						dir = 'N';
+						break;
+					
+					case 'SE':
+						dir = 'S';
+						break;
 				}
 			}
 		}
