@@ -66,7 +66,7 @@ function parseTemplate($str, $item, $path, $file) {
 			if ($paramsHtml) {
 				$paramsHtml .= ', ';
 			}
-			$paramsHtml .= '<span class="argType">{' . $argVal['type'] . '}</span> <span class="argName">' . $argVal['name'] . '</span>';
+			$paramsHtml .= '{<span class="argType">' . $argVal['type'] . '</span>} <span class="argName">' . $argVal['name'] . '</span>';
 		}
 		if ($argumentsHtml) {
 			$argumentsHtml = '<ul class="argList">' . $argumentsHtml . '</ul>';
