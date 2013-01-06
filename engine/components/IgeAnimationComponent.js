@@ -88,6 +88,22 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Sets the specified animation's FPS.
+	 * @param {String} id The ID of the animation to alter the FPS for.
+	 * @param {Number=} fps The number of frames per second the animation
+	 * should play at.
+	 * @return {*}
+	 */
+	setFps: function (id, fps) {
+		if (this._anims && this._anims[id]) {
+			this._anims[id].frameTime = ((1000 / fps)|0);
+			this._anims[id].totalTime = frames.length * frameTime;
+		}
+		
+		return this._entity;
+	},
+
+	/**
 	 * Starts an animation.
 	 * @param {String} animId The id of the animation to start.
 	 * @param {Object=} options An object with some option properties.
