@@ -17,7 +17,7 @@ h2 span {
 }
 
 h3 {
-    border-bottom: 2px solid #aaaaaa;
+    /*border-bottom: 2px solid #aaaaaa;*/
 }
 
 body .page {
@@ -63,12 +63,9 @@ body .page {
     margin: 0;
 }
 
-.methodDesc {
-    margin-bottom: 10px;
-}
-
 .argType {
-    font-weight: normal;
+    font-weight: bold;
+    font-variant: small-caps;
     padding: 2px;
 }
 
@@ -77,9 +74,13 @@ body .page {
     font-style: italic;
 }
 
+.argList {
+    list-style-type: square;
+    margin: 0;
+}
+
 .argList li {
     margin-bottom: 10px;
-    line-height: 18px;
 }
 
 .argList .argType {
@@ -98,11 +99,50 @@ body .page {
     margin-left: 5px;
 }
 
+.methodTitle {
+    font-weight: normal;
+    font-size: 20px;
+    color: white;
+    background: #333;
+    padding-left: 5px;
+    padding-bottom: 5px;
+    display: block;
+    margin: 0;
+}
+
+.methodSection {
+    background: #FEFFCE;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-left: 1px #CCC solid;
+    border-right: 1px #CCC solid;
+    border-bottom: 1px #CCC solid;
+}
+
+.methodName {
+    font-weight: bold;
+}
+
+.methodDesc {
+    margin-bottom: 10px;
+}
+
+.methodDefinition {
+    margin-bottom: 10px;
+}
+
+.methodArgs {
+    margin-bottom: 10px;
+}
+
+.methodReturnDesc {
+    margin-bottom: 10px;
+}
+
 .methodExample {
     border: 1px #cccccc solid;
     padding: 10px;
     background-color: #f4f4f4;
-    margin-top: 10px;
 }
 
 .methodExample h1:before {
