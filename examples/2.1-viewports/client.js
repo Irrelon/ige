@@ -1,7 +1,9 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
-		ige.showStats(1);
+		//ige.showStats(1);
+		ige.debugEnabled(false);
+		ige.debugTiming(false);
 
 		// Load our textures
 		var self = this,
@@ -15,7 +17,7 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
-		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
+		gameTexture[0] = new IgeTexture('./assets/textures/sprites/fairy.png');
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
