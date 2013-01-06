@@ -18,43 +18,86 @@
 	<div class="content"><a href="IgeEventingClass.html">IgeEventingClass</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3>init(<span class="argType">{}</span> <span class="argName">entity</span>, <span class="argType">{}</span> <span class="argName">options</span>)</h3>
-<div class="methodDesc"></div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">entity</span> </li><li>{<span class="argType"></span>}<span class="argName">options</span> </li></ul></div>
-<div class="methodReturnDesc"></div>
-<h3>renderLatency(<span class="argType">{}</span> <span class="argName">latency</span>)</h3>
-<div class="methodDesc">Gets /Sets the amount of milliseconds in the past that the renderer will show updates from the stream. This allows us to interpolate from a previous position to the next position in the stream update. Updates come in and are already in the past when they are received so we need to set this latency value to something greater than the highest level of acceptable network latency. Usually this is a value between 100 and 200ms. If your game requires much tighter latency you will have to reduce the number of players / network updates / data size in order to compensate. A value of 100 in this call is the standard that most triple-A FPS games accept as normal render latency and should be OK for your game.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">latency</span> </li></ul></div>
-<div class="methodReturnDesc"></div>
-<h3>sendInterval(<span class="argType">{Number}</span> <span class="argName">ms</span>)</h3>
-<div class="methodDesc">Gets / sets the interval by which updates to the game world are packaged and transmitted to connected clients. The greater the value, the less updates are sent per second.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">ms</span> The number of milliseconds between stream messages.</li></ul></div>
-<div class="methodReturnDesc"></div>
-<h3>start()</h3>
-<div class="methodDesc">Starts the stream of world updates to connected clients.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc"></div>
-<h3>stop()</h3>
-<div class="methodDesc">Stops the stream of world updates to connected clients.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc"></div>
-<h3>queue(<span class="argType">{}</span> <span class="argName">id</span>, <span class="argType">{}</span> <span class="argName">data</span>, <span class="argType">{}</span> <span class="argName">clientId</span>)</h3>
-<div class="methodDesc">Queues stream data to be sent during the next stream data interval.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">id</span> </li><li>{<span class="argType"></span>}<span class="argName">data</span> </li><li>{<span class="argType"></span>}<span class="argName">clientId</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>_sendQueue()</h3>
-<div class="methodDesc">Asks the server to send the data packets for all the queued stream data to the specified clients.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc"></div>
-<h3>_onStreamTime(<span class="argType">{}</span> <span class="argName">data</span>)</h3>
-<div class="methodDesc">Handles receiving the start time of the stream data.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">data</span> </li></ul></div>
-<div class="methodReturnDesc"></div>
-<h3>_onStreamData(<span class="argType">{}</span> <span class="argName">data</span>)</h3>
-<div class="methodDesc">Called when the client receives data from the stream system. Handles decoding the data and calling the relevant entity _onStreamData() methods.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">data</span> </li></ul></div>
-<div class="methodReturnDesc"></div>
-	</div>
+<h2>Methods</h2><h3 class="methodTitle">init</h3>
+<div class="methodSection">
+    <!---->
+    <div class="methodDefinition"><span class="methodName">init</span>({<span class="argType"></span>} <span class="argName">entity</span>, {<span class="argType"></span>} <span class="argName">options</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">entity</span> </li><li>{<span class="argType"></span>}<span class="argName">options</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">renderLatency</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets /Sets the amount of milliseconds in the past that the renderer will show updates from the stream. This allows us to interpolate from a previous position to the next position in the stream update. Updates come in and are already in the past when they are received so we need to set this latency value to something greater than the highest level of acceptable network latency. Usually this is a value between 100 and 200ms. If your game requires much tighter latency you will have to reduce the number of players / network updates / data size in order to compensate. A value of 100 in this call is the standard that most triple-A FPS games accept as normal render latency and should be OK for your game.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">renderLatency</span>({<span class="argType"></span>} <span class="argName">latency</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">latency</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">sendInterval</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the interval by which updates to the game world are packaged and transmitted to connected clients. The greater the value, the less updates are sent per second.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">sendInterval</span>({<span class="argType">Number</span>} <span class="argName">ms</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">ms</span> The number of milliseconds between stream messages.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">start</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Starts the stream of world updates to connected clients.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">start</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">stop</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Stops the stream of world updates to connected clients.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">stop</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">queue</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Queues stream data to be sent during the next stream data interval.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">queue</span>({<span class="argType"></span>} <span class="argName">id</span>, {<span class="argType"></span>} <span class="argName">data</span>, {<span class="argType"></span>} <span class="argName">clientId</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">id</span> </li><li>{<span class="argType"></span>}<span class="argName">data</span> </li><li>{<span class="argType"></span>}<span class="argName">clientId</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">_sendQueue</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Asks the server to send the data packets for all the queued stream data to the specified clients.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_sendQueue</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">_onStreamTime</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Handles receiving the start time of the stream data.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_onStreamTime</span>({<span class="argType"></span>} <span class="argName">data</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">data</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">_onStreamData</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Called when the client receives data from the stream system. Handles decoding the data and calling the relevant entity _onStreamData() methods.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_onStreamData</span>({<span class="argType"></span>} <span class="argName">data</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">data</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div>	</div>
     <script type="text/javascript">
         $(function () {
             $('code').attr('data-language', 'javascript');

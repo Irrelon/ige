@@ -18,31 +18,61 @@
 	<div class="content"><a href="IgeUiEntity.html">IgeUiEntity</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3>colorOverlay(<span class="argType">{String}</span> <span class="argName">val</span>)</h3>
-<div class="methodDesc">Gets / sets the string hex or rgba value of the colour to use as an overlay when rending this entity's texture.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">val</span> The colour value as hex e.g. '#ff0000' or as rgba e.g. 'rbga(255, 0, 0, 0.5)'. To remove an overlay colour simply passed an empty string.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>clearCache()</h3>
-<div class="methodDesc">Clears the texture cache for this entity's text string.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc"></div>
-<h3>nativeFont(<span class="argType">{String}</span> <span class="argName">val</span>)</h3>
-<div class="methodDesc">When using native font rendering (canvasContext.fillText()) this sets the font and size as per the canvasContext.font string specification.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">val</span> The font style string.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
-<h3>nativeStroke(<span class="argType">{Number}</span> <span class="argName">val</span>)</h3>
-<div class="methodDesc">Gets / sets the text stroke size that applies when using a native font for text rendering.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The size of the text stroke.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>nativeStrokeColor(<span class="argType">{Number}</span> <span class="argName">val</span>)</h3>
-<div class="methodDesc">Gets / sets the text stroke color that applies when using a native font for text rendering.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The color of the text stroke.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>_stringify()</h3>
-<div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
-	</div>
+<h2>Methods</h2><h3 class="methodTitle">colorOverlay</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the string hex or rgba value of the colour to use as an overlay when rending this entity's texture.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">colorOverlay</span>({<span class="argType">String</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">val</span> The colour value as hex e.g. '#ff0000' or as rgba e.g. 'rbga(255, 0, 0, 0.5)'. To remove an overlay colour simply passed an empty string.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
+    
+</div><h3 class="methodTitle">clearCache</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Clears the texture cache for this entity's text string.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">clearCache</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">nativeFont</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">When using native font rendering (canvasContext.fillText()) this sets the font and size as per the canvasContext.font string specification.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">nativeFont</span>({<span class="argType">String</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">val</span> The font style string.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
+    
+</div><h3 class="methodTitle">nativeStroke</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the text stroke size that applies when using a native font for text rendering.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">nativeStroke</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The size of the text stroke.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">nativeStrokeColor</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the text stroke color that applies when using a native font for text rendering.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">nativeStrokeColor</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The color of the text stroke.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">_stringify</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_stringify</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
+    
+</div>	</div>
     <script type="text/javascript">
         $(function () {
             $('code').attr('data-language', 'javascript');

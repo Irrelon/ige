@@ -18,39 +18,79 @@
 	<div class="content"><a href="IgeEntity.html">IgeEntity</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3>autoSize(<span class="argType">{}</span> <span class="argName">val</span>)</h3>
-<div class="methodDesc">Gets / sets the auto-size property. If set to true, the viewport will automatically resize to fill the entire scene.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>scene(<span class="argType">{<a href="./IgeScene2d.html">IgeScene2d</a>}</span> <span class="argName">scene</span>)</h3>
-<div class="methodDesc">Gets / sets the scene that the viewport will render.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeScene2d.html">IgeScene2d</a></span>}<span class="argName">scene</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>mousePos()</h3>
-<div class="methodDesc">Returns the viewport's mouse position.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} </div>
-<h3>update(<span class="argType">{}</span> <span class="argName">ctx</span>)</h3>
-<div class="methodDesc">Processes the updates before the render tick is called.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">ctx</span> </li></ul></div>
-<div class="methodReturnDesc"></div>
-<h3>tick()</h3>
-<div class="methodDesc">Processes the actions required each render frame.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc"></div>
-<h3>drawAABBs(<span class="argType">{}</span> <span class="argName">ctx</span>, <span class="argType">{}</span> <span class="argName">rootObject</span>, <span class="argType">{}</span> <span class="argName">index</span>)</h3>
-<div class="methodDesc">Draws the bounding data for each entity in the scenegraph.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">ctx</span> </li><li>{<span class="argType"></span>}<span class="argName">rootObject</span> </li><li>{<span class="argType"></span>}<span class="argName">index</span> </li></ul></div>
-<div class="methodReturnDesc"></div>
-<h3>_resizeEvent(<span class="argType">{}</span> <span class="argName">event</span>)</h3>
-<div class="methodDesc">Handles screen resize events.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
-<div class="methodReturnDesc"></div>
-<h3>_stringify()</h3>
-<div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
-	</div>
+<h2>Methods</h2><h3 class="methodTitle">autoSize</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the auto-size property. If set to true, the viewport will automatically resize to fill the entire scene.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">autoSize</span>({<span class="argType"></span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">scene</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the scene that the viewport will render.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">scene</span>({<span class="argType"><a href="./IgeScene2d.html">IgeScene2d</a></span>} <span class="argName">scene</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeScene2d.html">IgeScene2d</a></span>}<span class="argName">scene</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">mousePos</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns the viewport's mouse position.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">mousePos</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} </div>
+    
+</div><h3 class="methodTitle">update</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Processes the updates before the render tick is called.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">update</span>({<span class="argType"></span>} <span class="argName">ctx</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">ctx</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">tick</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Processes the actions required each render frame.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">tick</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">drawAABBs</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Draws the bounding data for each entity in the scenegraph.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">drawAABBs</span>({<span class="argType"></span>} <span class="argName">ctx</span>, {<span class="argType"></span>} <span class="argName">rootObject</span>, {<span class="argType"></span>} <span class="argName">index</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">ctx</span> </li><li>{<span class="argType"></span>}<span class="argName">rootObject</span> </li><li>{<span class="argType"></span>}<span class="argName">index</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">_resizeEvent</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Handles screen resize events.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_resizeEvent</span>({<span class="argType"></span>} <span class="argName">event</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">_stringify</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_stringify</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
+    
+</div>	</div>
     <script type="text/javascript">
         $(function () {
             $('code').attr('data-language', 'javascript');

@@ -18,27 +18,52 @@
 	<div class="content"><a href="IgeClass.html">IgeClass</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3>compare(<span class="argType">{<a href="./IgeRect.html">IgeRect</a>}</span> <span class="argName">rect</span>)</h3>
-<div class="methodDesc">Compares this rect's dimensions with the passed rect and returns true if they are the same and false if any is different.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>}<span class="argName">rect</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
-<h3>xyInside(<span class="argType">{}</span> <span class="argName">x</span>, <span class="argType">{}</span> <span class="argName">y</span>)</h3>
-<div class="methodDesc">Returns boolean indicating if the passed x, y is inside the rectangle.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
-<h3>pointInside(<span class="argType">{<a href="./IgePoint.html">IgePoint</a>}</span> <span class="argName">point</span>)</h3>
-<div class="methodDesc">Returns boolean indicating if the passed point is inside the rectangle.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">point</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
-<h3>rectIntersect(<span class="argType">{<a href="./IgeRect.html">IgeRect</a>}</span> <span class="argName">rect</span>)</h3>
-<div class="methodDesc">Returns boolean indicating if the passed IgeRect is intersecting the rectangle.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>}<span class="argName">rect</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
-<h3>toString(<span class="argType">{Number}</span> <span class="argName">precision</span>)</h3>
-<div class="methodDesc">Returns a string representation of the rect's x, y, width, height, converting floating point values into fixed using the passed precision parameter. If no precision is specified then the precision defaults to 2.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">precision</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
-	</div>
+<h2>Methods</h2><h3 class="methodTitle">compare</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Compares this rect's dimensions with the passed rect and returns true if they are the same and false if any is different.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">compare</span>({<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>} <span class="argName">rect</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>}<span class="argName">rect</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+    
+</div><h3 class="methodTitle">xyInside</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns boolean indicating if the passed x, y is inside the rectangle.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">xyInside</span>({<span class="argType"></span>} <span class="argName">x</span>, {<span class="argType"></span>} <span class="argName">y</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+    
+</div><h3 class="methodTitle">pointInside</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns boolean indicating if the passed point is inside the rectangle.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">pointInside</span>({<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+    
+</div><h3 class="methodTitle">rectIntersect</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns boolean indicating if the passed IgeRect is intersecting the rectangle.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">rectIntersect</span>({<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>} <span class="argName">rect</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>}<span class="argName">rect</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+    
+</div><h3 class="methodTitle">toString</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a string representation of the rect's x, y, width, height, converting floating point values into fixed using the passed precision parameter. If no precision is specified then the precision defaults to 2.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">toString</span>({<span class="argType">Number</span>} <span class="argName">precision</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">precision</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
+    
+</div>	</div>
     <script type="text/javascript">
         $(function () {
             $('code').attr('data-language', 'javascript');

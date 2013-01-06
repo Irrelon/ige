@@ -18,31 +18,61 @@
 	<div class="content"><a href="IgeEntity.html">IgeEntity</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3>autoSize(<span class="argType">{Boolean}</span> <span class="argName">val</span>)</h3>
-<div class="methodDesc">Gets / sets the auto-size property. If set to true, the scene will automatically resize to the engine's canvas geometry.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> If true, will autosize the scene to match the main canvas geometry. This is enabled by default and is unlikely to help you if you switch it off.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>shouldRender(<span class="argType">{Boolean}</span> <span class="argName">val</span>)</h3>
-<div class="methodDesc">Gets / sets the _shouldRender property. If set to true, the scene's child object's tick methods will be called.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> If set to false, no child entities will be rendered.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
-<h3>ignoreCamera(<span class="argType">{Boolean}</span> <span class="argName">val</span>)</h3>
-<div class="methodDesc">Gets / sets the flag that determines if the scene will ignore camera transform values allowing the scene to remain static on screen regardless of the camera transform.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> True to ignore, false to not ignore.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>tick(<span class="argType">{CanvasRenderingContext2D}</span> <span class="argName">ctx</span>)</h3>
-<div class="methodDesc">Processes the actions required each render frame.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to render to.</li></ul></div>
-<div class="methodReturnDesc"></div>
-<h3>_resizeEvent(<span class="argType">{}</span> <span class="argName">event</span>)</h3>
-<div class="methodDesc">Handles screen resize events.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
-<div class="methodReturnDesc"></div>
-<h3>_stringify()</h3>
-<div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
-	</div>
+<h2>Methods</h2><h3 class="methodTitle">autoSize</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the auto-size property. If set to true, the scene will automatically resize to the engine's canvas geometry.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">autoSize</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> If true, will autosize the scene to match the main canvas geometry. This is enabled by default and is unlikely to help you if you switch it off.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">shouldRender</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the _shouldRender property. If set to true, the scene's child object's tick methods will be called.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">shouldRender</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> If set to false, no child entities will be rendered.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+    
+</div><h3 class="methodTitle">ignoreCamera</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the flag that determines if the scene will ignore camera transform values allowing the scene to remain static on screen regardless of the camera transform.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">ignoreCamera</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> True to ignore, false to not ignore.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">tick</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Processes the actions required each render frame.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">tick</span>({<span class="argType">CanvasRenderingContext2D</span>} <span class="argName">ctx</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to render to.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">_resizeEvent</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Handles screen resize events.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_resizeEvent</span>({<span class="argType"></span>} <span class="argName">event</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">_stringify</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_stringify</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
+    
+</div>	</div>
     <script type="text/javascript">
         $(function () {
             $('code').attr('data-language', 'javascript');

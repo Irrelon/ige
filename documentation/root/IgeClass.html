@@ -13,11 +13,15 @@
 	<div class="content">The base class system.</div>
 </div>
 <!---->
-<h2>Methods</h2><h3>log(<span class="argType">{String}</span> <span class="argName">text</span>, <span class="argType">{String}</span> <span class="argName">type</span>, <span class="argType">{Object}</span> <span class="argName">obj</span>)</h3>
-<div class="methodDesc">Provides logging capabilities to all IgeClass instances.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">text</span> The text to log.</li><li>{<span class="argType">String</span>}<span class="argName">type</span> The type of log to output, can be 'log', 'info', 'warning' or 'error'.</li><li>{<span class="argType">Object</span>}<span class="argName">obj</span> An optional object that will be output before the log text is output.</li></ul></div>
-<div class="methodReturnDesc"></div>
-
+<h2>Methods</h2><h3 class="methodTitle">log</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Provides logging capabilities to all IgeClass instances.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">log</span>({<span class="argType">String</span>} <span class="argName">text</span>, {<span class="argType">String</span>} <span class="argName">type</span>, {<span class="argType">Object</span>} <span class="argName">obj</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">text</span> The text to log.</li><li>{<span class="argType">String</span>}<span class="argName">type</span> The type of log to output, can be 'log', 'info', 'warning' or 'error'.</li><li>{<span class="argType">Object</span>}<span class="argName">obj</span> An optional object that will be output before the log text is output.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
 					<div class="methodExample">
 						<div class="content"><h1>Log a message</h1>
 
@@ -75,11 +79,16 @@ entity.log('An error message', 'error');
 </code></pre>
 </div>
 					</div>
-				<h3>classId()</h3>
-<div class="methodDesc">Returns the class id. Primarily used to help identify what class an instance was instantiated with and is also output during the ige.scenegraph() method's console logging to show what class an object belongs to.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc"></div>
-
+				
+</div><h3 class="methodTitle">classId</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns the class id. Primarily used to help identify what class an instance was instantiated with and is also output during the ige.scenegraph() method's console logging to show what class an object belongs to.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">classId</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
 					<div class="methodExample">
 						<div class="content"><h1>Get the class id of an object</h1>
 
@@ -90,11 +99,16 @@ console.log(entity.classId());
 </code></pre>
 </div>
 					</div>
-				<h3>addComponent(<span class="argType">{<a href="./IgeClass.html">IgeClass</a>}</span> <span class="argName">component</span>, <span class="argType">{Object}</span> <span class="argName">options</span>)</h3>
-<div class="methodDesc">Creates a new instance of the component argument passing the options argument to the component as it is initialised. The new component instance is then added to "this" via a property name that is defined in the component class as "componentId".</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeClass.html">IgeClass</a></span>}<span class="argName">component</span> The class definition of the component.</li><li>{<span class="argType">Object</span>}<span class="argName">options</span> An options parameter to pass to the component on init.</li></ul></div>
-<div class="methodReturnDesc"></div>
-
+				
+</div><h3 class="methodTitle">addComponent</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Creates a new instance of the component argument passing the options argument to the component as it is initialised. The new component instance is then added to "this" via a property name that is defined in the component class as "componentId".</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">addComponent</span>({<span class="argType"><a href="./IgeClass.html">IgeClass</a></span>} <span class="argName">component</span>, {<span class="argType">Object</span>} <span class="argName">options</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeClass.html">IgeClass</a></span>}<span class="argName">component</span> The class definition of the component.</li><li>{<span class="argType">Object</span>}<span class="argName">options</span> An options parameter to pass to the component on init.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
 					<div class="methodExample">
 						<div class="content"><h1>Add the velocity component to an entity</h1>
 
@@ -108,11 +122,16 @@ entity.velocity.byAngleAndPower(Math.radians(20), 0.1);
 </code></pre>
 </div>
 					</div>
-				<h3>removeComponent(<span class="argType">{String}</span> <span class="argName">componentId</span>)</h3>
-<div class="methodDesc">Removes a component by it's id.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">componentId</span> The id of the component to remove.</li></ul></div>
-<div class="methodReturnDesc"></div>
-
+				
+</div><h3 class="methodTitle">removeComponent</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes a component by it's id.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">removeComponent</span>({<span class="argType">String</span>} <span class="argName">componentId</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">componentId</span> The id of the component to remove.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
 					<div class="methodExample">
 						<div class="content"><h1>Remove a component by it's id (namespace)</h1>
 
@@ -127,11 +146,16 @@ entity.removeComponent('velocity');
 </code></pre>
 </div>
 					</div>
-				<h3>implement(<span class="argType">{Function}</span> <span class="argName">classObj</span>, <span class="argType">{Boolean}</span> <span class="argName">overwrite</span>)</h3>
-<div class="methodDesc">Copies all properties and methods from the classObj object to "this". If the overwrite flag is not set or set to false, only properties and methods that don't already exists in "this" will be copied. If overwrite is true, they will be copied regardless.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">classObj</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">overwrite</span> </li></ul></div>
-<div class="methodReturnDesc"></div>
-
+				
+</div><h3 class="methodTitle">implement</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Copies all properties and methods from the classObj object to "this". If the overwrite flag is not set or set to false, only properties and methods that don't already exists in "this" will be copied. If overwrite is true, they will be copied regardless.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">implement</span>({<span class="argType">Function</span>} <span class="argName">classObj</span>, {<span class="argType">Boolean</span>} <span class="argName">overwrite</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">classObj</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">overwrite</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
 					<div class="methodExample">
 						<div class="content"><h1>Implement all the methods of an object into another object</h1>
 
@@ -172,11 +196,16 @@ entity2.newMethod2();
 </code></pre>
 </div>
 					</div>
-				<h3>data(<span class="argType">{String}</span> <span class="argName">key</span>, <span class="argType">{*}</span> <span class="argName">value</span>)</h3>
-<div class="methodDesc">Gets / sets a key / value pair in the object's data object. Useful for storing arbitrary game data in the object.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">key</span> The key under which the data resides.</li><li>{<span class="argType">*</span>}<span class="argName">value</span> The data to set under the specified key.</li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-
+				
+</div><h3 class="methodTitle">data</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets a key / value pair in the object's data object. Useful for storing arbitrary game data in the object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">data</span>({<span class="argType">String</span>} <span class="argName">key</span>, {<span class="argType">*</span>} <span class="argName">value</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">key</span> The key under which the data resides.</li><li>{<span class="argType">*</span>}<span class="argName">value</span> The data to set under the specified key.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
 					<div class="methodExample">
 						<div class="content"><h1>Set some arbitrary data key value pair</h1>
 
@@ -195,11 +224,16 @@ console.log(entity.data('playerName'));
 </code></pre>
 </div>
 					</div>
-				<h3>IgeClass.extend()</h3>
-<div class="methodDesc">Create a new IgeClass that inherits from this class</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Function</span>} </div>
-
+				
+</div><h3 class="methodTitle">IgeClass.extend</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Create a new IgeClass that inherits from this class</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">IgeClass.extend</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Function</span>} </div>
+    
 					<div class="methodExample">
 						<div class="content"><h1>Creating a new class by extending an existing one</h1>
 
@@ -214,7 +248,8 @@ console.log(entity.data('playerName'));
 <p>Further reading: <a href="http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/manual/engine-fundamentals/classes/extending-classes/">Extending Classes</a></p>
 </div>
 					</div>
-					</div>
+				
+</div>	</div>
     <script type="text/javascript">
         $(function () {
             $('code').attr('data-language', 'javascript');

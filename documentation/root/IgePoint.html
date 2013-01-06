@@ -18,79 +18,169 @@
 	<div class="content"><a href="IgeClass.html">IgeClass</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3>floor(<span class="argType">{}</span> <span class="argName">val</span>)</h3>
-<div class="methodDesc">Gets / sets the floor mode of this point. If set to true the point's data will be mathematically floored when they are assigned.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>compare(<span class="argType">{}</span> <span class="argName">point</span>)</h3>
-<div class="methodDesc">Compares this point's x, y, z data with the passed point and returns true if they are the same and false if any is different.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
-<h3>toIso()</h3>
-<div class="methodDesc">Converts the point's x, y, z to an isometric x, y 2d co-ordinate and returns an object whose x, y values are the result.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Object</span>} </div>
-<h3>thisToIso()</h3>
-<div class="methodDesc">Converts this point's x, y, z data into isometric co-ordinate space and overwrites the previous x, y, z values with the result.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>to2d()</h3>
-<div class="methodDesc">Converts this point's x, y, z data into 2d co-ordinate space and returns an object whose x, y values are the result.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">Object</span>} </div>
-<h3>thisTo2d()</h3>
-<div class="methodDesc">Converts this point's x, y, z data into 2d co-ordinate space and overwrites the previous x, y, z values with the result.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>addPoint(<span class="argType">{}</span> <span class="argName">point</span>)</h3>
-<div class="methodDesc">Adds this point's data by the x, y, z, values specified and returns a new IgePoint whose values are the result.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>thisAddPoint(<span class="argType">{}</span> <span class="argName">point</span>)</h3>
-<div class="methodDesc">Adds this point's data by the x, y, z values specified and overwrites the previous x, y, z values with the result.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>minusPoint(<span class="argType">{}</span> <span class="argName">point</span>)</h3>
-<div class="methodDesc">Minuses this point's data by the x, y, z, values specified and returns a new IgePoint whose values are the result.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>thisMinusPoint(<span class="argType">{}</span> <span class="argName">point</span>)</h3>
-<div class="methodDesc">Minuses this point's data by the x, y, z values specified and overwrites the previous x, y, z values with the result.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>multiply(<span class="argType">{}</span> <span class="argName">x</span>, <span class="argType">{}</span> <span class="argName">y</span>, <span class="argType">{}</span> <span class="argName">z</span>)</h3>
-<div class="methodDesc">Multiplies this point's data by the x, y, z, values specified and returns a new IgePoint whose values are the result.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>multiplyPoint(<span class="argType">{<a href="./IgePoint.html">IgePoint</a>}</span> <span class="argName">point</span>)</h3>
-<div class="methodDesc">Multiplies this point's data by the point specified and returns a new IgePoint whose values are the result.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">point</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>thisMultiply(<span class="argType">{}</span> <span class="argName">x</span>, <span class="argType">{}</span> <span class="argName">y</span>, <span class="argType">{}</span> <span class="argName">z</span>)</h3>
-<div class="methodDesc">Multiplies this point's data by the x, y, z values specified and overwrites the previous x, y, z values with the result.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>divide(<span class="argType">{}</span> <span class="argName">x</span>, <span class="argType">{}</span> <span class="argName">y</span>, <span class="argType">{}</span> <span class="argName">z</span>)</h3>
-<div class="methodDesc">Divides this point's data by the x, y, z, values specified and returns a new IgePoint whose values are the result.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>thisDivide(<span class="argType">{}</span> <span class="argName">x</span>, <span class="argType">{}</span> <span class="argName">y</span>, <span class="argType">{}</span> <span class="argName">z</span>)</h3>
-<div class="methodDesc">Divides this point's data by the x, y, z values specified and overwrites the previous x, y, z values with the result.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>clone()</h3>
-<div class="methodDesc">Returns a clone of this IgePoint's data as a new instance.</div>
-<div class="methodArgs"></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>interpolate(<span class="argType">{}</span> <span class="argName">endPoint</span>, <span class="argType">{}</span> <span class="argName">startTime</span>, <span class="argType">{}</span> <span class="argName">currentTime</span>, <span class="argType">{}</span> <span class="argName">endTime</span>)</h3>
-<div class="methodDesc">Interpolates the x, y, z values of this point towards the endPoint's x, y, z values based on the passed time variables and returns a new IgePoint whose values are the result.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">endPoint</span> </li><li>{<span class="argType"></span>}<span class="argName">startTime</span> </li><li>{<span class="argType"></span>}<span class="argName">currentTime</span> </li><li>{<span class="argType"></span>}<span class="argName">endTime</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-<h3>toString(<span class="argType">{Number}</span> <span class="argName">precision</span>)</h3>
-<div class="methodDesc">Returns a string representation of the point's x, y, z converting floating point values into fixed using the passed precision parameter. If no precision is specified then the precision defaults to 2.</div>
-<div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">precision</span> </li></ul></div>
-<div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
-	</div>
+<h2>Methods</h2><h3 class="methodTitle">floor</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the floor mode of this point. If set to true the point's data will be mathematically floored when they are assigned.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">floor</span>({<span class="argType"></span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">compare</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Compares this point's x, y, z data with the passed point and returns true if they are the same and false if any is different.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">compare</span>({<span class="argType"></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+    
+</div><h3 class="methodTitle">toIso</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Converts the point's x, y, z to an isometric x, y 2d co-ordinate and returns an object whose x, y values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">toIso</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Object</span>} </div>
+    
+</div><h3 class="methodTitle">thisToIso</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Converts this point's x, y, z data into isometric co-ordinate space and overwrites the previous x, y, z values with the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisToIso</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">to2d</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Converts this point's x, y, z data into 2d co-ordinate space and returns an object whose x, y values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">to2d</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Object</span>} </div>
+    
+</div><h3 class="methodTitle">thisTo2d</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Converts this point's x, y, z data into 2d co-ordinate space and overwrites the previous x, y, z values with the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisTo2d</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">addPoint</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Adds this point's data by the x, y, z, values specified and returns a new IgePoint whose values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">addPoint</span>({<span class="argType"></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">thisAddPoint</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Adds this point's data by the x, y, z values specified and overwrites the previous x, y, z values with the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisAddPoint</span>({<span class="argType"></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">minusPoint</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Minuses this point's data by the x, y, z, values specified and returns a new IgePoint whose values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">minusPoint</span>({<span class="argType"></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">thisMinusPoint</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Minuses this point's data by the x, y, z values specified and overwrites the previous x, y, z values with the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisMinusPoint</span>({<span class="argType"></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">multiply</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Multiplies this point's data by the x, y, z, values specified and returns a new IgePoint whose values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">multiply</span>({<span class="argType"></span>} <span class="argName">x</span>, {<span class="argType"></span>} <span class="argName">y</span>, {<span class="argType"></span>} <span class="argName">z</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">multiplyPoint</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Multiplies this point's data by the point specified and returns a new IgePoint whose values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">multiplyPoint</span>({<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">thisMultiply</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Multiplies this point's data by the x, y, z values specified and overwrites the previous x, y, z values with the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisMultiply</span>({<span class="argType"></span>} <span class="argName">x</span>, {<span class="argType"></span>} <span class="argName">y</span>, {<span class="argType"></span>} <span class="argName">z</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">divide</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Divides this point's data by the x, y, z, values specified and returns a new IgePoint whose values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">divide</span>({<span class="argType"></span>} <span class="argName">x</span>, {<span class="argType"></span>} <span class="argName">y</span>, {<span class="argType"></span>} <span class="argName">z</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">thisDivide</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Divides this point's data by the x, y, z values specified and overwrites the previous x, y, z values with the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisDivide</span>({<span class="argType"></span>} <span class="argName">x</span>, {<span class="argType"></span>} <span class="argName">y</span>, {<span class="argType"></span>} <span class="argName">z</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">clone</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a clone of this IgePoint's data as a new instance.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">clone</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">interpolate</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Interpolates the x, y, z values of this point towards the endPoint's x, y, z values based on the passed time variables and returns a new IgePoint whose values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">interpolate</span>({<span class="argType"></span>} <span class="argName">endPoint</span>, {<span class="argType"></span>} <span class="argName">startTime</span>, {<span class="argType"></span>} <span class="argName">currentTime</span>, {<span class="argType"></span>} <span class="argName">endTime</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">endPoint</span> </li><li>{<span class="argType"></span>}<span class="argName">startTime</span> </li><li>{<span class="argType"></span>}<span class="argName">currentTime</span> </li><li>{<span class="argType"></span>}<span class="argName">endTime</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">toString</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a string representation of the point's x, y, z converting floating point values into fixed using the passed precision parameter. If no precision is specified then the precision defaults to 2.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">toString</span>({<span class="argType">Number</span>} <span class="argName">precision</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">precision</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
+    
+</div>	</div>
     <script type="text/javascript">
         $(function () {
             $('code').attr('data-language', 'javascript');
