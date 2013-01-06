@@ -16,16 +16,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 		this._anims = {};
 
 		// Add the animation behaviour to the entity
-		entity.addBehaviour('tween', this._behaviour);
-	},
-
-	/**
-	 * The behaviour method executed each tick.
-	 * @param {CanvasRenderingContext2D} ctx
-	 * @private
-	 */
-	_behaviour: function (ctx) {
-		this.animation.tick(ctx);
+		entity.addBehaviour('tween', this._update);
 	},
 
 	/**
@@ -41,6 +32,13 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 * change the assigned texture of the entity that this animation is applied to after you have
 	 * defined the animation since the frame indexes will likely map to incorrect cells on a
 	 * different texture.
+	 * @example #Define an animation
+	 *     // Create an entity, add the animation component and define
+	 *     // an animation using frames 1, 2, 3 and 4, with an FPS of
+	 *     // 25 and looping forever (-1)
+	 *     var entity = new IgeEntity()
+	 *         .addComponent(IgeAnimationComponent)
+	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 * @return {*}
 	 */
 	define: function (id, frames, fps, loop, convertIdsToIndex) {
@@ -141,9 +139,17 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Starts an animation.
+	 * Starts an animation from the beginning frame.
 	 * @param {String} animId The id of the animation to start.
 	 * @param {Object=} options An object with some option properties.
+	 * @example #Start an animation
+	 *     // Create an entity, add the animation component, define
+	 *     // an animation and then start it
+	 *     var entity = new IgeEntity()
+	 *         .addComponent(IgeAnimationComponent)
+	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
+	 *         
+	 *     entity.animation.start('anim1');
 	 * @return {*}
 	 */
 	start: function (animId, options) {
@@ -181,6 +187,19 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 * started.
 	 * @param {String} animId The id of the animation to start.
 	 * @param {Object=} options An object with some option properties.
+	 * @example #Select an animation
+	 *     // Create an entity, add the animation component, define
+	 *     // an animation and then select it
+	 *     var entity = new IgeEntity()
+	 *         .addComponent(IgeAnimationComponent)
+	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
+	 *         
+	 *     entity.animation.select('anim1');
+	 *     
+	 *     // Selecting the same animation twice will NOT reset the
+	 *     // animation because it is already playing. This is how
+	 *     // select() differs from start()
+	 *     entity.animation.select('anim1');
 	 * @return {*}
 	 */
 	select: function (animId, options) {
@@ -193,6 +212,8 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 
 	/**
 	 * Stops the current animation.
+	 * @example #Stop the current animation
+	 *     entity.animation.stop();
 	 * @return {*}
 	 */
 	stop: function () {
@@ -211,15 +232,17 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 
 		return this._entity;
 	},
-
+	
 	/**
-	 * Handles the animation processing each render tick.
+	 * Handles the animation processing each update.
 	 * @param {CanvasRenderingContext2D} ctx The rendering context to use when doing draw operations.
 	 */
-	tick: function (ctx) {
-		if (this._anim) {
+	_update: function (ctx) {
+		var self = this.animation;
+		
+		if (self._anim) {
 			var _tickDelta = ige._tickDelta,
-				anim = this._anim,
+				anim = self._anim,
 				multiple,
 				cell,
 				frame;
@@ -231,11 +254,11 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 			if (anim.currentDelta > anim.totalTime) {
 				// Check if we have a single loop animation
 				if (!anim.loop) {
-					if (this._completeCallback) {
-						this._completeCallback.call(this);
+					if (self._completeCallback) {
+						self._completeCallback.call(self);
 					}
-					this.emit('complete', anim);
-					this.stop();
+					self.emit('complete', anim);
+					self.stop();
 				} else {
 					// Check if we have an infinite loop
 					if (anim.loop === -1) {
@@ -245,10 +268,10 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 							anim.currentDelta -= ((multiple|0) * anim.totalTime); // Bitwise floor
 						}
 
-						if (this._loopCallback) {
-							this._loopCallback.call(this);
+						if (self._loopCallback) {
+							self._loopCallback.call(self);
 						}
-						this.emit('loopComplete', anim);
+						self.emit('loopComplete', anim);
 					} else {
 						anim.currentLoop++;
 						if (anim.loop > 0 && anim.currentLoop <= anim.loop) {
@@ -258,17 +281,17 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 								anim.currentDelta -= ((multiple|0) * anim.totalTime); // Bitwise floor
 							}
 
-							if (this._loopCallback) {
-								this._loopCallback.call(this);
+							if (self._loopCallback) {
+								self._loopCallback.call(self);
 							}
-							this.emit('loopComplete', anim);
+							self.emit('loopComplete', anim);
 						} else {
 							// The animation has ended
-							if (this._completeCallback) {
-								this._completeCallback.call(this, []);
+							if (self._completeCallback) {
+								self._completeCallback.call(self, []);
 							}
-							this.emit('complete', anim);
-							this.stop();
+							self.emit('complete', anim);
+							self.stop();
 						}
 					}
 				}
@@ -284,9 +307,9 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 
 			// Set the current frame
 			if (typeof(cell) === 'string') {
-				this._entity.cellById(cell);
+				self._entity.cellById(cell);
 			} else {
-				this._entity.cell(cell);
+				self._entity.cell(cell);
 			}
 		}
 	}
