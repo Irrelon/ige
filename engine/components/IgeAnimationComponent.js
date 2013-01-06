@@ -102,9 +102,13 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 * @return {*}
 	 */
 	setFps: function (id, fps) {
-		if (this._anims && this._anims[id]) {
-			this._anims[id].frameTime = ((1000 / fps)|0);
-			this._anims[id].totalTime = frames.length * frameTime;
+		if (this._anims) {
+			var anim = this._anims[id];
+			
+			if (anim) {
+				anim.frameTime = ((1000 / fps)|0);
+				anim.totalTime = anim.frameCount * anim.frameTime;
+			}
 		}
 		
 		return this._entity;
