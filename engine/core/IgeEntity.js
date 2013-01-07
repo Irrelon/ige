@@ -939,6 +939,36 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * Calculates the axis-aligned bounding box for this entity, including
+	 * all child entity bounding boxes and returns the final composite
+	 * bounds.
+	 * @example #Get the composite AABB
+	 *     var entity = new IgeEntity(),
+	 *         aabb = entity.compositeAabb();
+	 * @return {IgeRect}
+	 */
+	compositeAabb: function (rect) {
+		if (rect === undefined) {
+			rect = this.aabb().clone();
+		}
+
+		var arr = this._children,
+			arrCount;
+
+		// Now loop all children and get the aabb for each of them
+		// them add those bounds to the current rect
+		if (arr) {
+			arrCount = arr.length;
+
+			while (arrCount--) {
+				rect.thisCombineRect(arr[arrCount].compositeAabb());
+			}
+		}
+
+		return rect;
+	},
+
+	/**
 	 * Takes two values and returns them as an array where index [0]
 	 * is the y argument and index[1] is the x argument. This method
 	 * is used specifically in the 3d bounds intersection process to
