@@ -175,7 +175,8 @@ var IgeTweenComponent = IgeClass.extend({
 				targets,
 				targetIndex,
 				stepIndex,
-				stopped;
+				stopped,
+				currentDelta;
 
 			// Loop the item's tweens
 			while (tweenCount--) {
@@ -233,12 +234,20 @@ var IgeTweenComponent = IgeClass.extend({
 								targetProp = item.targetObj;
 								targetPropVal = targetProp[item.propName];
 								
-								//add by the delta amount to destination
-								var currentDelta = thisTween.easing[easing](
-									destTime,
-									item.deltaVal,
-									destTime
-								);
+								// Check if the destination time is not zero
+								// because otherwise the easing method will provide
+								// a divide by zero error resulting in a NaN value
+								if (destTime !== 0) {
+									// Add the delta amount to destination
+									currentDelta = thisTween.easing[easing](
+										destTime,
+										item.deltaVal,
+										destTime
+									);
+								} else {
+									currentDelta = item.deltaVal;
+								}
+								
 								targetPropVal += currentDelta - item.oldDelta;
 								
 								// Round the value to correct floating point operation imprecision
