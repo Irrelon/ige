@@ -214,6 +214,15 @@ var IgeViewport = IgeEntity.extend([
 
 		return this._drawBoundsLimitCategory;
 	},
+	
+	drawCompositeBounds: function (val) {
+		if (val !== undefined) {
+			this._drawCompositeBounds = val;
+			return this;
+		}
+		
+		return this._drawCompositeBounds;
+	},
 
 	/**
 	 * Draws the bounding data for each entity in the scenegraph.
@@ -247,12 +256,14 @@ var IgeViewport = IgeEntity.extend([
 							aabb = obj.aabb();
 							aabbC = obj.compositeAabb();
 
+							if (this._drawCompositeBounds && aabbC) {
+								// Draw composite bounds
+								ctx.strokeStyle = '#ff0000';
+								ctx.strokeRect(aabbC.x, aabbC.y, aabbC.width, aabbC.height);
+							}
+							
 							if (aabb) {
 								if (obj._drawBounds || obj._drawBounds === undefined) {
-									// Draw composite bounds
-									ctx.strokeStyle = '#ff0000';
-									ctx.strokeRect(aabbC.x, aabbC.y, aabbC.width, aabbC.height);
-
 									// Draw individual bounds
 									ctx.strokeStyle = '#00deff';
 									ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
