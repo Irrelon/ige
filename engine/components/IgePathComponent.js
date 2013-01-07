@@ -136,11 +136,11 @@ var IgePathComponent = IgeEventingClass.extend({
 						break;
 					
 					case 'NE':
-						dir = 'W';
+						dir = 'E';
 						break;
 					
 					case 'SW':
-						dir = 'E';
+						dir = 'W';
 						break;
 					
 					case 'NW':
