@@ -268,7 +268,7 @@ var Client = IgeClass.extend({
 				self.player.path.on('cleared', function () { console.log('Path data cleared.'); });
 				self.player.path.on('pointComplete', function () { console.log('Path point reached...'); });
 				self.player.path.on('pathComplete', function () { console.log('Path completed...'); });
-				self.player.path.on('traversalComplete', function () { console.log('Traversal of all paths completed.'); });
+				self.player.path.on('traversalComplete', function () { this._entity.character.animation.stop(); console.log('Traversal of all paths completed.'); });
 
 				// Some error events from the path finder (these are for debug console logging so you
 				// know what events are emitted by the path finder class and what they mean)
