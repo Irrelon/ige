@@ -143,6 +143,16 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Checks the current animation state, either started
+	 * or stopped. 
+	 * @return {Boolean} True if an animation is currently playing
+	 * or false if not.
+	 */
+	playing: function () {
+		return this._playing;
+	},
+
+	/**
 	 * Starts an animation from the beginning frame.
 	 * @param {String} animId The id of the animation to start.
 	 * @param {Object=} options An object with some option properties.
@@ -174,6 +184,8 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 					this._loopCallback = options.onLoop;
 					this._stoppedCallback = options.onStopped;
 				}
+				
+				this._playing = true;
 
 				this.emit('started', anim);
 			} else {
@@ -226,6 +238,8 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 		}
 		
 		this.emit('stopped', this._anim);
+		
+		this._playing = false;
 
 		delete this._anim;
 		delete this._animId;
