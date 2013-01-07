@@ -36,10 +36,11 @@ var Client = IgeClass.extend({
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
+						.drawCompositeBounds(true)
 						.mount(ige);
 
-					// Create an entity and mount it to the scene
-					self.obj[0] = new Rotator(0.1)
+					// Create a composite entity
+					self.obj[0] = new Rotator(0)
 						.id('fairy1')
 						.depth(1)
 						.width(100)
@@ -48,10 +49,7 @@ var Client = IgeClass.extend({
 						.translateTo(0, 0, 0)
 						.mount(self.scene1);
 
-					// Create a second rotator entity and mount
-					// it to the first one at 0, 50 relative to the
-					// parent
-					self.obj[1] = new Rotator(0.1)
+					self.obj[1] = new Rotator(0)
 						.id('fairy2')
 						.depth(1)
 						.width(50)
@@ -60,16 +58,31 @@ var Client = IgeClass.extend({
 						.translateTo(0, 50, 0)
 						.mount(self.obj[0]);
 
-					// Create a third rotator entity and mount
-					// it to the first on at 0, -50 relative to the
-					// parent, but assign it a smart texture!
-					self.obj[2] = new Rotator(0.1)
-						.id('simpleBox')
+					self.obj[2] = new Rotator(0)
+						.id('simpleBox1')
 						.depth(1)
 						.width(50)
 						.height(50)
 						.texture(self.gameTexture.simpleBox)
 						.translateTo(0, -50, 0)
+						.mount(self.obj[0]);
+					
+					self.obj[3] = new Rotator(0)
+						.id('fairy3')
+						.depth(1)
+						.width(50)
+						.height(50)
+						.texture(self.gameTexture.fairy)
+						.translateTo(-50, 0, 0)
+						.mount(self.obj[0]);
+					
+					self.obj[4] = new Rotator(0)
+						.id('fairy4')
+						.depth(1)
+						.width(50)
+						.height(50)
+						.texture(self.gameTexture.fairy)
+						.translateTo(50, 0, 0)
 						.mount(self.obj[0]);
 				}
 			});
