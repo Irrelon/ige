@@ -226,6 +226,7 @@ var IgeViewport = IgeEntity.extend([
 			arrCount,
 			obj,
 			aabb,
+			aabbC,
 			ga,
 			r3d,
 			xl1, xl2, xl3, xl4, xl5, xl6,
@@ -244,9 +245,15 @@ var IgeViewport = IgeEntity.extend([
 						if (typeof(obj.aabb) === 'function') {
 							// Grab the AABB and then draw it
 							aabb = obj.aabb();
+							aabbC = obj.compositeAabb();
 
 							if (aabb) {
 								if (obj._drawBounds || obj._drawBounds === undefined) {
+									// Draw composite bounds
+									ctx.strokeStyle = '#ff0000';
+									ctx.strokeRect(aabbC.x, aabbC.y, aabbC.width, aabbC.height);
+
+									// Draw individual bounds
 									ctx.strokeStyle = '#00deff';
 									ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
 
@@ -342,6 +349,7 @@ var IgeViewport = IgeEntity.extend([
 									ctx.fillStyle = '#f6ff00';
 									ctx.fillText('ID: ' + obj.id() + ' ' + '(' + obj.classId() + ') ' + obj.layer() + ':' + obj.depth().toFixed(0), aabb.x + aabb.width + 3, aabb.y + 10);
 									ctx.fillText('X: ' + obj._translate.x.toFixed(2) + ', ' + 'Y: ' + obj._translate.y.toFixed(2) + ', ' + 'Z: ' + obj._translate.z.toFixed(2), aabb.x + aabb.width + 3, aabb.y + 20);
+									ctx.fillText('Num Children: ' + obj._children.length, aabb.x + aabb.width + 3, aabb.y + 40);
 								}
 							}
 						}
