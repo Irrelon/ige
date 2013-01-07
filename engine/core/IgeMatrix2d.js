@@ -1,4 +1,4 @@
-// TODO: Clean up the variable declarations in this file so they all run on the same var call.
+// TODO: Clean up the variable declarations in this file so they all run on the same var call at the top of the method.
 /**
  * Creates a new transformation matrix.
  */
@@ -18,8 +18,8 @@ IgeMatrix2d.prototype = {
 
 	/**
 	 * Transform a point by this matrix. The parameter point will be modified with the transformation values.
-	 * @param point {IgePoint}.
-	 * @return {IgePoint} the parameter point.
+	 * @param {IgePoint} point
+	 * @return {IgePoint} The passed point.
 	 */
 	transformCoord: function(point) {
 		var x = point.x,
@@ -28,14 +28,20 @@ IgeMatrix2d.prototype = {
 
 		point.x = x * tm[0] + y * tm[1] + tm[2];
 		point.y = x * tm[3] + y * tm[4] + tm[5];
+		
+		/* DEXCLUDE */
+		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
+			this.log('The matrix operation produced a NaN value!', 'error');
+		}
+		/* DEXCLUDE */
 
 		return point;
 	},
 
 	/**
 	 * Transform a point by this matrix in inverse. The parameter point will be modified with the transformation values.
-	 * @param point {IgePoint}.
-	 * @return {IgePoint} the parameter point.
+	 * @param {IgePoint} point.
+	 * @return {IgePoint} The passed point.
 	 */
 	transformCoordInverse: function(point) {
 		var x = point.x,
@@ -44,6 +50,12 @@ IgeMatrix2d.prototype = {
 
 		point.x = x * tm[0] - y * tm[1] + tm[2];
 		point.y = x * tm[3] + y * tm[4] - tm[5];
+		
+		/* DEXCLUDE */
+		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
+			this.log('The matrix operation produced a NaN value!', 'error');
+		}
+		/* DEXCLUDE */
 
 		return point;
 	},
@@ -61,10 +73,8 @@ IgeMatrix2d.prototype = {
 
 	/**
 	 * Create a new rotation matrix and set it up for the specified angle in radians.
-	 * @param angle {number}
-	 * @return {IgeMatrix2d} a matrix object.
-	 *
-	 * @static
+	 * @param {Number} angle
+	 * @return {IgeMatrix2d} A new matrix object.
 	 */
 	_newRotate: function(angle) {
 		var m = new IgeMatrix2d();
@@ -93,6 +103,12 @@ IgeMatrix2d.prototype = {
 		tm[1] = -s;
 		tm[3] = s;
 		tm[4] = c;
+		
+		/* DEXCLUDE */
+		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
+			this.log('The matrix operation produced a NaN value!', 'error');
+		}
+		/* DEXCLUDE */
 
 		return this;
 	},
@@ -117,8 +133,8 @@ IgeMatrix2d.prototype = {
 
 	/**
 	 * Create a scale matrix.
-	 * @param x {number} x scale magnitude.
-	 * @param y {number} y scale magnitude.
+	 * @param {Number} x X scale magnitude.
+	 * @param {Number} y Y scale magnitude.
 	 *
 	 * @return {IgeMatrix2d} a matrix object.
 	 *
@@ -145,21 +161,25 @@ IgeMatrix2d.prototype = {
 	},
 
 	scaleTo: function(x, y) {
+		var tm = this.matrix;
 		//this.identity();
-		this.matrix[0] = x;
-		this.matrix[4] = y;
+		tm[0] = x;
+		tm[4] = y;
+		
+		/* DEXCLUDE */
+		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
+			this.log('The matrix operation produced a NaN value!', 'error');
+		}
+		/* DEXCLUDE */
 
 		return this;
 	},
 
 	/**
 	 * Create a translation matrix.
-	 * @param x {number} x translation magnitude.
-	 * @param y {number} y translation magnitude.
-	 *
-	 * @return {IgeMatrix2d} a matrix object.
-	 * @static
-	 *
+	 * @param {Number} x X translation magnitude.
+	 * @param {Number} y Y translation magnitude.
+	 * @return {IgeMatrix2d} A new matrix object.
 	 */
 	_newTranslate: function (x, y) {
 		var m = new IgeMatrix2d();
@@ -187,16 +207,24 @@ IgeMatrix2d.prototype = {
 	 * @param y
 	 */
 	translateTo: function (x, y) {
-		this.matrix[2] = x;
-		this.matrix[5] = y;
+		var tm = this.matrix;
+		
+		tm[2] = x;
+		tm[5] = y;
+		
+		/* DEXCLUDE */
+		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
+			this.log('The matrix operation produced a NaN value!', 'error');
+		}
+		/* DEXCLUDE */
 
 		return this;
 	},
 
 	/**
 	 * Copy into this matrix the given matrix values.
-	 * @param matrix {IgeMatrix2d}
-	 * @return this
+	 * @param {IgeMatrix2d} matrix 
+	 * @return {Object} "this".
 	 */
 	copy: function (matrix) {
 		matrix = matrix.matrix;
@@ -217,7 +245,7 @@ IgeMatrix2d.prototype = {
 
 	/**
 	 * Set this matrix to the identity matrix.
-	 * @return this
+	 * @return {Object} "this".
 	 */
 	identity: function() {
 
@@ -239,8 +267,9 @@ IgeMatrix2d.prototype = {
 
 	/**
 	 * Multiply this matrix by a given matrix.
-	 * @param m {IgeMatrix2d}
-	 * @return this
+	 * @param {IgeMatrix2d} m The IgeMatrix2d to multiply the
+	 * current matrix by.
+	 * @return {Object} "this".
 	 */
 	multiply: function (m) {
 		var tm = this.matrix,
@@ -281,8 +310,9 @@ IgeMatrix2d.prototype = {
 
 	/**
 	 * Premultiply this matrix by a given matrix.
-	 * @param m {IgeMatrix2d}
-	 * @return this
+	 * @param {IgeMatrix2d} m The IgeMatrix2d to premultiply the
+	 * current matrix by.
+	 * @return {Object} "this".
 	 */
 	premultiply: function(m) {
 
@@ -316,7 +346,7 @@ IgeMatrix2d.prototype = {
 
 	/**
 	 * Creates a new inverse matrix from this matrix.
-	 * @return {IgeMatrix2d} an inverse matrix.
+	 * @return {IgeMatrix2d} An inverse matrix.
 	 */
 	getInverse: function() {
 		var tm = this.matrix;
@@ -359,8 +389,7 @@ IgeMatrix2d.prototype = {
 
 	/**
 	 * Multiply this matrix by a scalar.
-	 * @param scalar {number} scalar value
-	 *
+	 * @param scalar {number} Scalar value.
 	 * @return this
 	 */
 	multiplyScalar: function (scalar) {
@@ -374,8 +403,11 @@ IgeMatrix2d.prototype = {
 	},
 
 	/**
-	 *
-	 * @param ctx
+	 * Transforms the passed rendering context by the current matrix
+	 * data using the setTransform() method so that the matrix data
+	 * is set non-cumulative with the previous matrix data.
+	 * @param {CanvasRenderingContext2d} ctx The rendering context to
+	 * set the transform matrix for.
 	 */
 	transformRenderingContextSet: function(ctx) {
 		var m = this.matrix;
@@ -384,8 +416,11 @@ IgeMatrix2d.prototype = {
 	},
 
 	/**
-	 *
-	 * @param ctx
+	 * Transforms the passed rendering context by the current matrix
+	 * data using the transform() method so that the matrix data
+	 * is set cumulative with the previous matrix data.
+	 * @param {CanvasRenderingContext2d} ctx The rendering context to
+	 * set the transform matrix for.
 	 */
 	transformRenderingContext: function(ctx) {
 		var m = this.matrix;
