@@ -82,7 +82,7 @@ var Client = IgeClass.extend({
 						.width(50)
 						.height(50)
 						.texture(self.gameTexture.fairy)
-						.translateTo(50, 0, 0)
+						.translateTo(150, 0, 0)
 						.mount(self.obj[0]);
 				}
 			});
