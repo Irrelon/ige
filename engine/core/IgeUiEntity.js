@@ -11,7 +11,7 @@ var IgeUiEntity = IgeEntity.extend([
 	classId: 'IgeUiEntity',
 
 	init: function () {
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		// Set some defaults
 		this._uiX = 0;
@@ -269,7 +269,7 @@ var IgeUiEntity = IgeEntity.extend([
 	},
 
 	cell: function (val) {
-		var ret = this._super(val);
+		var ret = IgeEntity.prototype.cell.call(this, val);
 
 		if (ret === this && this._patternTexture) {
 			this.backgroundImage(
@@ -282,7 +282,7 @@ var IgeUiEntity = IgeEntity.extend([
 	},
 
 	mount: function (obj) {
-		var ret = this._super(obj);
+		var ret = IgeEntity.prototype.mount.call(this, obj);
 
 		if (this._parent) {
 			this._updateUiPosition();
@@ -316,7 +316,7 @@ var IgeUiEntity = IgeEntity.extend([
 		}
 
 		ctx.translate(this._paddingLeft, this._paddingTop);
-		this._super(ctx, true);
+		IgeEntity.prototype.tick.call(this, ctx, true);
 	},
 
 	/**
@@ -326,7 +326,7 @@ var IgeUiEntity = IgeEntity.extend([
 	 */
 	_resizeEvent: function (event) {
 		this._updateUiPosition();
-		this._super(event);
+		IgeEntity.prototype._resizeEvent.call(this, event);
 	}
 });
 

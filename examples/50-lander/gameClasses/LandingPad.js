@@ -2,7 +2,7 @@ var LandingPad = IgeEntityBox2d.extend({
 	classId: 'LandingPad',
 
 	init: function () {
-		this._super();
+		IgeEntityBox2d.prototype.init.call(this);
 
 		// Set the rectangle colour (this is read in the Rectangle.js smart texture)
 		this._rectColor = '#ffc600';

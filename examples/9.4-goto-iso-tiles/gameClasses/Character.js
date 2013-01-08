@@ -4,7 +4,7 @@ var Character = IgeEntity.extend({
 
 	init: function () {
 		var self = this;
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		// Setup the entity
 		self.addComponent(IgeAnimationComponent)
@@ -176,7 +176,7 @@ var Character = IgeEntity.extend({
 		// makes the entity appear further in the foreground
 		// the closer they become to the bottom of the screen
 		this.depth(this._translate.y);
-		this._super(ctx);
+		IgeEntity.prototype.tick.call(this, ctx);
 	},
 
 	destroy: function () {
@@ -186,7 +186,7 @@ var Character = IgeEntity.extend({
 		}
 
 		// Call the super class
-		this._super();
+		IgeEntity.prototype.destroy.call(this);
 	}
 });
 

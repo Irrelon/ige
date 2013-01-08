@@ -5,7 +5,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 	classId: 'IgeEntityBox2d',
 
 	init: function () {
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		// Store the existing transform methods
 		this._translateToProto = this.translateTo;
@@ -156,7 +156,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 		if (this._box2dBody) {
 			ige.box2d.destroyBody(this._box2dBody);
 		}
-		this._super();
+		IgeEntity.prototype.destroy.call(this);
 	}
 });
 

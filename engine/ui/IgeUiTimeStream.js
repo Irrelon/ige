@@ -12,7 +12,7 @@ var IgeUiTimeStream = IgeUiEntity.extend({
 			renderTime = ige._tickStart - ige.network.stream._renderLatency,
 			deltaTime;
 
-		this._super(ctx);
+		IgeUiEntity.prototype.tick.call(this, ctx);
 
 		ctx.strokeStyle = '#fffc00';
 		ctx.beginPath();

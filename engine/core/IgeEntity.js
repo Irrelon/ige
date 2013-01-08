@@ -6,7 +6,7 @@ var IgeEntity = IgeObject.extend({
 	classId: 'IgeEntity',
 
 	init: function () {
-		this._super();
+		IgeObject.prototype.init.call(this);
 
 		this._width = undefined;
 		this._height = undefined;
@@ -1259,7 +1259,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		// Process super class
-		this._super(ctx);
+		IgeObject.prototype.update.call(this,ctx);
 	},
 
 	/**
@@ -1350,7 +1350,7 @@ var IgeEntity = IgeObject.extend({
 			}
 
 			// Process children
-			this._super(ctx);
+			IgeObject.prototype.tick.call(this,ctx);
 		}
 	},
 
@@ -1514,7 +1514,7 @@ var IgeEntity = IgeObject.extend({
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = IgeObject.prototype._stringify.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
@@ -1596,7 +1596,7 @@ var IgeEntity = IgeObject.extend({
 		/* CEXCLUDE */
 
 		// Call IgeObject.destroy()
-		this._super();
+		IgeObject.prototype.destroy.call(this);
 	},
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////

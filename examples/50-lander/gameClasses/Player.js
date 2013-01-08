@@ -2,7 +2,7 @@ var Player = IgeEntityBox2d.extend({
 	classId: 'Player',
 
 	init: function (id) {
-		this._super();
+		IgeEntityBox2d.prototype.init.call(this);
 		var self = this;
 
 		self._thrustPower = 0.5;
@@ -233,7 +233,7 @@ var Player = IgeEntityBox2d.extend({
 		var camScale = 1 + (0.1 * (this._translate.y / 100));
 		//ige.$('vp1').camera.scaleTo(camScale, camScale, camScale);
 
-		this._super(ctx);
+		IgeEntityBox2d.prototype.tick.call(this, ctx);
 
 		// If we are carrying an orb draw a connecting line to it
 		if (this._carryingOrb) {

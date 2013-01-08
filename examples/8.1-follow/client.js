@@ -24,7 +24,7 @@ var Client = IgeClass.extend({
 						classId: 'CharacterMonk',
 
 						init: function () {
-							this._super();
+							IgeEntity.prototype.init.call(this);
 
 							// Setup the entity
 							this.addComponent(IgeAnimationComponent)
@@ -94,7 +94,7 @@ var Client = IgeClass.extend({
 								ige.input.actionVal('mouseY')
 							);
 
-							this._super(ctx);
+							IgeEntity.prototype.tick.call(this, ctx);
 						}
 					});
 

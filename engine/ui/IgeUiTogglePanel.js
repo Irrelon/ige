@@ -2,7 +2,7 @@ var IgeUiTogglePanel = IgeUiEntity.extend({
 	classId: 'IgeUiTogglePanel',
 
 	init: function (title, titleTexture, toggleOffTexture, toggleOnTexture) {
-		this._super();
+		IgeUiEntity.prototype.init.call(this);
 
 		this.backgroundColor('#222222');
 

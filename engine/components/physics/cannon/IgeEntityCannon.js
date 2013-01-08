@@ -5,7 +5,7 @@ var IgeEntityCannon = IgeEntity.extend({
 	classId: 'IgeEntityCannon',
 
 	init: function () {
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		// Store the existing translate methods
 		this._translateToProto = this.translateTo;

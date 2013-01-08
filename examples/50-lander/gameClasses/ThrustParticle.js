@@ -3,7 +3,7 @@ var ThrustParticle = IgeEntityBox2d.extend({
 
 	init: function (emitter) {
 		this._emitter = emitter;
-		this._super();
+		IgeEntityBox2d.prototype.init.call(this);
 
 		// Set the rectangle colour (this is read in the Rectangle.js smart texture)
 		this._rectColor = '#ff5a00';
@@ -45,6 +45,6 @@ var ThrustParticle = IgeEntityBox2d.extend({
 		if (this._emitter !== undefined) {
 			this._emitter._particles.pull(this);
 		}
-		this._super();
+		IgeEntityBox2d.prototype.destroy.call(this);
 	}
 });

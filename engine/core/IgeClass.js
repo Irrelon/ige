@@ -288,42 +288,11 @@ var IgeClass = (function () {
 		initializing = true;
 		prototype = new this();
 		initializing = false;
-		
-		if (this.prototype._classId !== 'IgeClass') {
-			prototype._superClass = this.prototype;
-		}
 
 		// Copy the properties over onto the new prototype
 		for (name in prop) {
-			// Check if we're overwriting an existing function
-			if (typeof(prop[name]) === "function" && typeof(_super[name]) === "function" && fnTest.test(prop[name])) {
-				// Allow access to original source code
-				// so we can edit the engine live
-				prototype['__' + name] = prop[name];
-
-				// Assign a new method to allow access to the
-				// super-class method via this._super() in the
-				// new method
-				prototype[name] = (function (name, fn) {
-					return function () {
-						var tmp = this._super,
-							ret;
-
-						// Add a new ._super() method that is the same method
-						// but on the super-class
-						this._super = _super[name];
-
-						// The method only need to be bound temporarily, so we
-						// remove it when we're done executing
-						ret = fn['__' + name].apply(this, arguments);
-						//ret = fn.apply(this, arguments);
-						this._super = tmp;
-
-						return ret;
-					};
-				}(name, prototype));
-			} else {
-				// The prop is not a method
+			// Copy the property
+			if (name !== '_superClass') {
 				prototype[name] = prop[name];
 			}
 		}
@@ -347,6 +316,9 @@ var IgeClass = (function () {
 				}
 			}
 		}
+		
+		prototype._superClass = this.prototype;
+		//console.log(prop.classId, 'extends', this.prototype._classId);
 
 		// The dummy class constructor
 		function IgeClass() {
@@ -381,7 +353,7 @@ var IgeClass = (function () {
 		IgeClass.prototype.data = data;
 
 		// Add class name capability
-		IgeClass.prototype.classId = classId;
+		IgeClass.prototype.classId = classId; // This is a method that returns _classId
 		IgeClass.prototype._classId = prop.classId || 'IgeClass';
 
 		// Add the addComponent method

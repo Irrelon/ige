@@ -41,7 +41,7 @@ var Client = IgeClass.extend({
 
 						init: function (emitter) {
 							this._emitter = emitter;
-							this._super();
+							IgeEntity.prototype.init.call(this);
 
 							// Setup the particle default values
 							this.addComponent(IgeVelocityComponent)
@@ -55,7 +55,7 @@ var Client = IgeClass.extend({
 						},
 
 						tick: function (ctx) {
-							this._super(ctx);
+							IgeEntity.prototype.tick.call(this, ctx);
 						},
 
 						destroy: function () {
@@ -63,7 +63,7 @@ var Client = IgeClass.extend({
 							if (this._emitter !== undefined) {
 								this._emitter._particles.pull(this);
 							}
-							this._super();
+							IgeEntity.prototype.destroy.call(this);
 						}
 					});
 

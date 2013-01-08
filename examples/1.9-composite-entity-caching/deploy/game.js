@@ -1368,14 +1368,14 @@ var IgeClass = (function () {
 				prototype['__' + name] = prop[name];
 
 				// Assign a new method to allow access to the
-				// super-class method via this._super() in the
+				// super-class method via CLASSNAME.prototype._editNAME_.call(this) in the
 				// new method
 				prototype[name] = (function (name, fn) {
 					return function () {
 						var tmp = this._super,
 							ret;
 
-						// Add a new ._super() method that is the same method
+						// Add a new .CLASSNAME.prototype._editNAME_.call(this) method that is the same method
 						// but on the super-class
 						this._super = _super[name];
 
@@ -6128,7 +6128,7 @@ var IgeCellSheet = IgeTexture.extend({
 			}
 		});
 
-		this._super(url);
+		CLASSNAME.prototype._editNAME_.call(this, url);
 	},
 
 	/**
@@ -6276,7 +6276,7 @@ var IgeSpriteSheet = IgeTexture.extend({
 			}
 		});
 
-		this._super(url);
+		CLASSNAME.prototype._editNAME_.call(this, url);
 	},
 
 	/**
@@ -8098,7 +8098,7 @@ var IgeEntity = IgeObject.extend({
 	classId: 'IgeEntity',
 
 	init: function () {
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		this._width = undefined;
 		this._height = undefined;
@@ -9279,7 +9279,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		// Process super class
-		this._super(ctx);
+		CLASSNAME.prototype._editNAME_.call(this, ctx);
 	},
 
 	/**
@@ -9370,7 +9370,7 @@ var IgeEntity = IgeObject.extend({
 			}
 
 			// Process children
-			this._super(ctx);
+			CLASSNAME.prototype._editNAME_.call(this, ctx);
 		}
 	},
 
@@ -9534,7 +9534,7 @@ var IgeEntity = IgeObject.extend({
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = CLASSNAME.prototype._editNAME_.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
@@ -9610,7 +9610,7 @@ var IgeEntity = IgeObject.extend({
 		
 
 		// Call IgeObject.destroy()
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 	},
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -10801,7 +10801,7 @@ var IgeTileMap2d = IgeEntity.extend({
 
 	init: function (tileWidth, tileHeight) {
 		this._alwaysInView = true;
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		var self = this;
 
@@ -10911,7 +10911,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		obj._tileWidth = obj._tileWidth || 1;
 		obj._tileHeight = obj._tileHeight || 1;
 
-		this._super(obj);
+		CLASSNAME.prototype._editNAME_.call(this, obj);
 	},
 
 	/**
@@ -10999,7 +10999,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		if (this._parent) {
 			this._geometry = this._parent._geometry.clone();
 		}
-		this._super(event);
+		CLASSNAME.prototype._editNAME_.call(this, event);
 	},
 
 	/**
@@ -11457,7 +11457,7 @@ var IgeTileMap2d = IgeEntity.extend({
 			}
 		}
 
-		this._super(ctx, true);
+		CLASSNAME.prototype._editNAME_.call(this, ctx, true);
 	}
 });
 
@@ -11470,7 +11470,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	classId: 'IgeTextureMap',
 
 	init: function (tileWidth, tileHeight) {
-		this._super(tileWidth, tileHeight);
+		CLASSNAME.prototype._editNAME_.call(this, tileWidth, tileHeight);
 		this.map = new IgeMap2d();
 		this._textureList = [];
 		this._renderCenter = new IgePoint(0, 0, 0);
@@ -11737,7 +11737,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	tick: function (ctx) {
 		// TODO: This is being called at the wrong time, drawing children before this parent! FIX THIS
 		// Run the IgeTileMap2d tick method
-		this._super(ctx);
+		CLASSNAME.prototype._editNAME_.call(this, ctx);
 
 		// Draw each image that has been defined on the map
 		var mapData = this.map._mapData,
@@ -12139,7 +12139,7 @@ var IgeCamera = IgeEntity.extend({
 	classId: 'IgeCamera',
 
 	init: function (entity) {
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		this._trackRotateTarget = undefined;
 		this._trackTranslateTarget = undefined;
@@ -12469,7 +12469,7 @@ var IgeCamera = IgeEntity.extend({
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = CLASSNAME.prototype._editNAME_.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
@@ -12502,7 +12502,7 @@ var IgeViewport = IgeEntity.extend([
 
 	init: function (options) {
 		this._alwaysInView = true;
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		this._mouseAlwaysInside = true;
 		this._mousePos = new IgePoint(0, 0, 0);
@@ -12595,7 +12595,7 @@ var IgeViewport = IgeEntity.extend([
 			this._scene._parent = this;
 
 			this.camera.update(ctx);
-			this._super(ctx);
+			CLASSNAME.prototype._editNAME_.call(this, ctx);
 			
 			if (this._scene.newFrame()) {
 				this._scene.update(ctx);
@@ -12619,7 +12619,7 @@ var IgeViewport = IgeEntity.extend([
 
 			// Render our scene data
 			//ctx.globalAlpha = ctx.globalAlpha * this._parent._opacity * this._opacity;
-			this._super(ctx);
+			CLASSNAME.prototype._editNAME_.call(this, ctx);
 
 			// Translate to the top-left of the viewport
 			ctx.translate(
@@ -12876,7 +12876,7 @@ var IgeViewport = IgeEntity.extend([
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = CLASSNAME.prototype._editNAME_.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
@@ -12905,7 +12905,7 @@ var IgeScene2d = IgeEntity.extend({
 	init: function () {
 		this._mouseAlwaysInside = true;
 		this._alwaysInView = true;
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		this._shouldRender = true;
 		this._autoSize = true;
@@ -12974,7 +12974,7 @@ var IgeScene2d = IgeEntity.extend({
 			//this._localMatrix.multiply(ige._currentCamera._worldMatrix.getInverse());
 		}
 		
-		this._super(ctx);
+		CLASSNAME.prototype._editNAME_.call(this, ctx);
 	},
 
 	/**
@@ -12983,7 +12983,7 @@ var IgeScene2d = IgeEntity.extend({
 	 */
 	tick: function (ctx) {
 		if (this._shouldRender) {
-			this._super(ctx);
+			CLASSNAME.prototype._editNAME_.call(this, ctx);
 		}
 	},
 
@@ -13017,7 +13017,7 @@ var IgeScene2d = IgeEntity.extend({
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = CLASSNAME.prototype._editNAME_.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
@@ -13054,7 +13054,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		this._alwaysInView = true;
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		this._id = 'ige';
 		this.basePath = '';
@@ -13073,7 +13073,7 @@ var IgeEngine = IgeEntity.extend({
 		console.log('------------------------------------------------------------------------------');
 
 		// Call super-class method
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		// Check if we should add the CocoonJS support component
 		if (!this.isServer) {
@@ -15094,7 +15094,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		// Call class destroy() super method
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		this.log('Engine destroy complete.');
 	}
@@ -15108,7 +15108,7 @@ if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { 
 	classId:'Rotator',
 
 	init: function (speed) {
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		if (speed !== undefined) {
 			this._rSpeed = speed;
@@ -15126,7 +15126,7 @@ if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { 
 		this.rotateBy(0, 0, (this._rSpeed * ige._tickDelta) * Math.PI / 180);
 
 		// Call the IgeEntity (super-class) tick() method
-		this._super(ctx);
+		CLASSNAME.prototype._editNAME_.call(this, ctx);
 	}
 });
 

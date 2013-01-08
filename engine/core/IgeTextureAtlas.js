@@ -6,7 +6,7 @@ var IgeTextureAtlas = IgeTextureMap.extend({
 	classId: 'IgeTextureAtlas',
 
 	init: function (tileWidth, tileHeight) {
-		this._super(tileWidth, tileHeight);
+		IgeTextureMap.prototype.init.call(this, tileWidth, tileHeight);
 	},
 
 	/**

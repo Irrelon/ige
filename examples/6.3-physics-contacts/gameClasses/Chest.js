@@ -4,7 +4,7 @@ var Chest = IgeEntity.extend({
 
 	init: function () {
 		var self = this;
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		// Load the chest texture file
 		this._chestTexture = new IgeCellSheet('../assets/textures/tiles/tilef.png', 16, 16);

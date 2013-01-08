@@ -10,7 +10,7 @@ var IgeTileMap2d = IgeEntity.extend({
 
 	init: function (tileWidth, tileHeight) {
 		this._alwaysInView = true;
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		var self = this;
 
@@ -120,7 +120,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		obj._tileWidth = obj._tileWidth || 1;
 		obj._tileHeight = obj._tileHeight || 1;
 
-		this._super(obj);
+		IgeEntity.prototype._childMounted.call(this, obj);
 	},
 
 	/**
@@ -208,7 +208,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		if (this._parent) {
 			this._geometry = this._parent._geometry.clone();
 		}
-		this._super(event);
+		IgeEntity.prototype._resizeEvent.call(this, event);
 	},
 
 	/**
@@ -666,7 +666,7 @@ var IgeTileMap2d = IgeEntity.extend({
 			}
 		}
 
-		this._super(ctx, true);
+		IgeEntity.prototype.tick.call(this, ctx, true);
 	}
 });
 

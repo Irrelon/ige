@@ -4,7 +4,7 @@ var Character = IgeEntityBox2d.extend({
 
 	init: function () {
 		var self = this;
-		this._super();
+		IgeEntityBox2d.prototype.init.call(this);
 
 		// Setup the entity
 		self.depth(1)
@@ -135,7 +135,7 @@ var Character = IgeEntityBox2d.extend({
 		}
 
 		// Call the super class
-		this._super();
+		IgeEntityBox2d.prototype.destroy.call(this);
 	}
 });
 

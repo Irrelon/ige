@@ -7,7 +7,7 @@ var IgeScene2d = IgeEntity.extend({
 	init: function () {
 		this._mouseAlwaysInside = true;
 		this._alwaysInView = true;
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		this._shouldRender = true;
 		this._autoSize = true;
@@ -76,7 +76,7 @@ var IgeScene2d = IgeEntity.extend({
 			//this._localMatrix.multiply(ige._currentCamera._worldMatrix.getInverse());
 		}
 		
-		this._super(ctx);
+		IgeEntity.prototype.update.call(this, ctx);
 	},
 
 	/**
@@ -85,7 +85,7 @@ var IgeScene2d = IgeEntity.extend({
 	 */
 	tick: function (ctx) {
 		if (this._shouldRender) {
-			this._super(ctx);
+			IgeEntity.prototype.tick.call(this, ctx);
 		}
 	},
 
@@ -119,7 +119,7 @@ var IgeScene2d = IgeEntity.extend({
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = IgeEntity.prototype._stringify.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {

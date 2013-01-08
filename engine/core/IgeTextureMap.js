@@ -6,7 +6,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	classId: 'IgeTextureMap',
 
 	init: function (tileWidth, tileHeight) {
-		this._super(tileWidth, tileHeight);
+		IgeTileMap2d.prototype.init.call(this, tileWidth, tileHeight);
 		this.map = new IgeMap2d();
 		this._textureList = [];
 		this._renderCenter = new IgePoint(0, 0, 0);
@@ -273,7 +273,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	tick: function (ctx) {
 		// TODO: This is being called at the wrong time, drawing children before this parent! FIX THIS
 		// Run the IgeTileMap2d tick method
-		this._super(ctx);
+		IgeTileMap2d.prototype.tick.call(this, ctx);
 
 		// Draw each image that has been defined on the map
 		var mapData = this.map._mapData,

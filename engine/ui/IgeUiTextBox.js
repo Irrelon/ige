@@ -10,7 +10,7 @@ var IgeUiTextBox = IgeUiEntity.extend({
 	 * @constructor
 	 */
 	init: function () {
-		this._super();
+		IgeUiEntity.prototype.init.call(this);
 
 		var self = this;
 
@@ -41,7 +41,7 @@ var IgeUiTextBox = IgeUiEntity.extend({
 		var val;
 
 		// Call the main super class method
-		val = this._super(px, lockAspect, modifier, noUpdate);
+		val = IgeUiEntity.prototype.width.call(this, px, lockAspect, modifier, noUpdate);
 
 		// Update the font entity width
 		this._fontEntity.width(px, lockAspect, modifier, noUpdate);
@@ -62,7 +62,7 @@ var IgeUiTextBox = IgeUiEntity.extend({
 		var val;
 
 		// Call the main super class method
-		val = this._super(px, lockAspect, modifier, noUpdate);
+		val = IgeUiEntity.prototype.height.call(this, px, lockAspect, modifier, noUpdate);
 
 		// Update the font entity height
 		this._fontEntity.height(px, lockAspect, modifier, noUpdate);

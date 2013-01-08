@@ -2,7 +2,7 @@ var ClientCountDown = IgeFontEntity.extend({
 	classId: 'ClientCountDown',
 
 	init: function (prefix, countdownFrom, sufix, interval) {
-		this._super();
+		IgeFontEntity.prototype.init.call(this);
 
 		this._prefix = prefix || '';
 		this._countdown = countdownFrom;

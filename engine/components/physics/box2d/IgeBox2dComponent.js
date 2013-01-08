@@ -649,7 +649,7 @@ var Box2dDebugPainter = IgeObject.extend({
 
 		ige.box2d._world.DrawDebugData();
 
-		this._super(ctx);
+		IgeObject.prototype.tick.call(this, ctx);
 	}
 });
 

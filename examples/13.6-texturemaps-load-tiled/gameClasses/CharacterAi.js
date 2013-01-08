@@ -6,7 +6,7 @@ var CharacterAi = Character.extend({
 		var self = this,
 			newPathMethod;
 
-		this._super();
+		Character.prototype.init.call(this);
 
 		this.pathFinder = pathFinder;
 		this.collisionMap = collisionMap;
@@ -81,7 +81,7 @@ var CharacterAi = Character.extend({
 			this.newPath();
 		}
 
-		this._super(ctx);
+		Character.prototype.tick.call(this, ctx);
 	}
 });
 

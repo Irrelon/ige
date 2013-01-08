@@ -6,7 +6,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 	classId: 'IgeFontEntity',
 
 	init: function () {
-		this._super();
+		IgeUiEntity.prototype.init.call(this);
 
 		this._text = undefined;
 		this._textAlignX = 1;
@@ -24,7 +24,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 			}
 		}
 
-		return this._super(val, lockAspect, modifier, noUpdate);
+		return IgeUiEntity.prototype.width.call(this, val, lockAspect, modifier, noUpdate);
 	},
 
 	height: function (val, lockAspect, modifier, noUpdate) {
@@ -34,7 +34,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 			}
 		}
 
-		return this._super(val, lockAspect, modifier, noUpdate);
+		return IgeUiEntity.prototype.height.call(this, val, lockAspect, modifier, noUpdate);
 	},
 
 	text: function (text) {
@@ -200,7 +200,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 			}
 		}
 
-		this._super(ctx);
+		IgeUiEntity.prototype.tick.call(this, ctx);
 	},
 
 	/**
@@ -213,7 +213,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = IgeUiEntity.prototype._stringify.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {

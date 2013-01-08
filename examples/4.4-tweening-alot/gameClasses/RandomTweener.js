@@ -2,7 +2,7 @@ var RandomTweener = IgeEntity.extend({
 	classId: 'RandomTweener',
 
 	init: function () {
-		this._super();
+		IgeEntity.prototype.init.call(this);
 		this.newTween();
 	},
 

@@ -84,7 +84,7 @@ var IgeCuboid = IgeEntity.extend({
 		//ctx.fillStyle = '#ffffff';
 		//ctx.fillText(this.id(), 0, 0);
 
-		this._super(ctx, true);
+		IgeEntity.prototype.tick.call(this, ctx, true);
 
 		if (this._drawBounds) {
 			var ga = ctx.globalAlpha;

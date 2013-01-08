@@ -15,7 +15,6 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		this._alwaysInView = true;
-		this._super();
 
 		this._id = 'ige';
 		this.basePath = '';
@@ -32,9 +31,8 @@ var IgeEngine = IgeEntity.extend({
 		console.log('* (C)opyright 2012 Irrelon Software Limited                                  *');
 		console.log('* http://www.isogenicengine.com                                              *');
 		console.log('------------------------------------------------------------------------------');
-
-		// Call super-class method
-		this._super();
+		
+		IgeEntity.prototype.init.call(this);
 
 		// Check if we should add the CocoonJS support component
 		if (!this.isServer) {
@@ -2069,7 +2067,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		// Call class destroy() super method
-		this._super();
+		IgeEntity.prototype.destroy.call(this);
 
 		this.log('Engine destroy complete.');
 	}

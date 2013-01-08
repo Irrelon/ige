@@ -2,7 +2,7 @@ var Ship = IgeEntity.extend({
 	classId: 'Ship',
 
 	init: function (id) {
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		var self = this;
 
@@ -68,7 +68,7 @@ var Ship = IgeEntity.extend({
 			// The section was not one that we handle here, so pass this
 			// to the super-class streamSectionData() method - it handles
 			// the "transform" section by itself
-			return this._super(sectionId, data);
+			return IgeEntity.prototype.streamSectionData.call(this, sectionId, data);
 		}
 	},
 
@@ -155,7 +155,7 @@ var Ship = IgeEntity.extend({
 		}
 
 		// Call the IgeEntity (super-class) tick() method
-		this._super(ctx);
+		IgeEntity.prototype.tick.call(this, ctx);
 	}
 });
 

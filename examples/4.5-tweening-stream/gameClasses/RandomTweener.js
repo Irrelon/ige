@@ -6,7 +6,7 @@ var RandomTweener = IgeEntity.extend({
 			overFunc,
 			outFunc;
 
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		if (!ige.isServer) {
 			this.depth(ige.client.scene1._children.length);

@@ -2,7 +2,7 @@ var IgeCollisionMap2d = IgeEntity.extend({
 	classId: 'IgeCollisionMap2d',
 
 	init: function (tileWidth, tileHeight) {
-		this._super();
+		IgeEntity.prototype.init.call(this);
 		var self = this;
 
 		this.map = new IgeMap2d();

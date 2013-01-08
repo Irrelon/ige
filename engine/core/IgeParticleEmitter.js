@@ -7,7 +7,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 
 	init: function () {
 		// IgeBody.init()
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		// Set some defaults
 		this._currentDelta = 0;
@@ -650,7 +650,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 			}
 		}
 
-		this._super(ctx);
+		IgeEntity.prototype.tick.call(this, ctx);
 	},
 
 	/**
@@ -672,7 +672,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = IgeEntity.prototype._stringify.call(this), i;
 		return str;
 
 		// TODO: WRITE THIS FOR THIS CLASS - EPIC AMOUNT OF WORK HERE

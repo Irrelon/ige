@@ -2,7 +2,7 @@ var Rotator = IgeEntity.extend({
 	classId:'Rotator',
 
 	init: function (x, y, z) {
-		this._super();
+		IgeEntity.prototype.init.call(this);
 		this._rotationX = x;
 		this._rotationY = y;
 		this._rotationZ = z;
@@ -21,7 +21,7 @@ var Rotator = IgeEntity.extend({
 		);
 
 		// Call the IgeEntity (super-class) tick() method
-		this._super(ctx);
+		IgeEntity.prototype.tick.call(this, ctx);
 	}
 });
 

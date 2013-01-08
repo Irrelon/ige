@@ -10,7 +10,7 @@ var Rotator = IgeEntity.extend({
 		//this.rotateBy(0, 0, (0.1 * ige._tickDelta) * Math.PI / 180);
 
 		// Call the IgeEntity (super-class) tick() method
-		this._super(ctx);
+		IgeEntity.prototype.tick.call(this, ctx);
 	}
 });
 

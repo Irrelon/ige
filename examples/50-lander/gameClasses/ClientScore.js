@@ -2,7 +2,7 @@ var ClientScore = IgeFontEntity.extend({
 	classId: 'ClientScore',
 
 	init: function (score) {
-		this._super();
+		IgeFontEntity.prototype.init.call(this);
 
 		this.depth(1)
 			.width(480)

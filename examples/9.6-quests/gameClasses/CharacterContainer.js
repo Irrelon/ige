@@ -4,7 +4,7 @@ var CharacterContainer = IgeEntity.extend({
 
 	init: function () {
 		var self = this;
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		// Setup the entity 3d bounds
 		self.size3d(20, 20, 40);
@@ -55,7 +55,7 @@ var CharacterContainer = IgeEntity.extend({
 			this.character.animation.start(dir);
 		}
 		
-		this._super(ctx);
+		IgeEntity.prototype.update.call(this, ctx);
 	}
 });
 

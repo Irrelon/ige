@@ -26,7 +26,7 @@ var Client = IgeClass.extend({
 
 						tick: function (ctx) {
 							this.rotateBy(0, 0, (0.1 * ige._tickDelta) * Math.PI / 180);
-							this._super(ctx);
+							IgeEntity.prototype.tick.call(this, ctx);
 						}
 					});
 

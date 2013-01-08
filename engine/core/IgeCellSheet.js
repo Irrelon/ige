@@ -25,7 +25,7 @@ var IgeCellSheet = IgeTexture.extend({
 			}
 		});
 
-		this._super(url);
+		IgeTexture.prototype.init.call(this, url);
 	},
 
 	/**

@@ -2,7 +2,7 @@ var Rotator = IgeEntity.extend({
 	classId:'Rotator',
 
 	init: function (speed) {
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		if (speed !== undefined) {
 			this._rSpeed = speed;
@@ -20,7 +20,7 @@ var Rotator = IgeEntity.extend({
 		this.rotateBy(0, 0, (this._rSpeed * ige._tickDelta) * Math.PI / 180);
 
 		// Call the IgeEntity (super-class) tick() method
-		this._super(ctx);
+		IgeEntity.prototype.tick.call(this, ctx);
 	}
 });
 
