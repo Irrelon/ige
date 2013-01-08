@@ -1304,7 +1304,7 @@ var IgeObject = IgeEventingClass.extend({
 				
 				// Depth sort all child objects
 				if (arrCount && !ige._headless) {
-					if (igeDebug._timing) {
+					if (igeConfig.debug._timing) {
 						if (!ige._timeSpentLastTick[this.id()]) {
 							ige._timeSpentLastTick[this.id()] = {};
 						}
@@ -1319,7 +1319,7 @@ var IgeObject = IgeEventingClass.extend({
 				}
 
 				// Loop our children and call their update methods
-				if (igeDebug._timing) {
+				if (igeConfig.debug._timing) {
 					while (arrCount--) {
 						ts = new Date().getTime();
 						arr[arrCount].update(ctx);
@@ -1367,7 +1367,7 @@ var IgeObject = IgeEventingClass.extend({
 				arrCount = arr.length;
 				
 				// Loop our children and call their tick methods
-				if (igeDebug._timing) {
+				if (igeConfig.debug._timing) {
 					while (arrCount--) {
 						if (!arr[arrCount]._newBorn) {
 							ctx.save();

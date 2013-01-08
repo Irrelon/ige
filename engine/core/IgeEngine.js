@@ -6,11 +6,11 @@ var IgeEngine = IgeEntity.extend({
 
 	init: function () {
 		// Deal with some debug settings first
-		if (igeDebug) {
-			if (!igeDebug._enabled) {
+		if (igeConfig.debug) {
+			if (!igeConfig.debug._enabled) {
 				// Debug is not enabled so ensure that
 				// timing debugs are disabled
-				igeDebug._timing = false;
+				igeConfig.debug._timing = false;
 			}
 		}
 
@@ -338,24 +338,24 @@ var IgeEngine = IgeEntity.extend({
 	
 	debugEnabled: function (val) {
 		if (val !== undefined) {
-			if (igeDebug) {
-				igeDebug._enabled = val;
+			if (igeConfig.debug) {
+				igeConfig.debug._enabled = val;
 			}
 			return this;
 		}
 
-		return igeDebug._enabled;
+		return igeConfig.debug._enabled;
 	},
 	
 	debugTiming: function (val) {
 		if (val !== undefined) {
-			if (igeDebug) {
-				igeDebug._timing = val;
+			if (igeConfig.debug) {
+				igeConfig.debug._timing = val;
 			}
 			return this;
 		}
 
-		return igeDebug._timing;
+		return igeConfig.debug._timing;
 	},
 
 	debug: function (eventName) {
@@ -1383,7 +1383,7 @@ var IgeEngine = IgeEntity.extend({
 			elem.className += ' selected';
 		}
 
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 			if (ige._timeSpentInTick[item.id]) {
 				timingString = '<span>' + ige._timeSpentInTick[item.id] + 'ms</span>';
 				/*if (ige._timeSpentLastTick[item.id]) {
@@ -1641,7 +1641,7 @@ var IgeEngine = IgeEntity.extend({
 		self._timeScaleLastTimestamp = timeStamp;
 		timeStamp = Math.floor(self._currentTime);
 
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 			st = new Date().getTime();
 		}
 
@@ -1683,7 +1683,7 @@ var IgeEngine = IgeEntity.extend({
 
 			// Update the scenegraph
 			if (self._enableUpdates) {
-				if (igeDebug._timing) {
+				if (igeConfig.debug._timing) {
 					updateStart = new Date().getTime();
 					self.update(ctx);
 					ige._updateTime = new Date().getTime() - updateStart;
@@ -1695,7 +1695,7 @@ var IgeEngine = IgeEntity.extend({
 			// Render the scenegraph
 			if (self._enableRenders) {
 				if (!self._useManualRender) {
-					if (igeDebug._timing) {
+					if (igeConfig.debug._timing) {
 						renderStart = new Date().getTime();
 						self.render(ctx);
 						ige._renderTime = new Date().getTime() - renderStart;
@@ -1704,7 +1704,7 @@ var IgeEngine = IgeEntity.extend({
 					}
 				} else {
 					if (self._manualRender) {
-						if (igeDebug._timing) {
+						if (igeConfig.debug._timing) {
 							renderStart = new Date().getTime();
 							self.render(ctx);
 							ige._renderTime = new Date().getTime() - renderStart;
@@ -1734,7 +1734,7 @@ var IgeEngine = IgeEntity.extend({
 
 		self._resized = false;
 
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 			et = new Date().getTime();
 			ige._tickTime = et - st;
 		}
@@ -1751,7 +1751,7 @@ var IgeEngine = IgeEntity.extend({
 			arrCount = arr.length;
 
 			// Loop our viewports and call their update methods
-			if (igeDebug._timing) {
+			if (igeConfig.debug._timing) {
 				while (arrCount--) {
 					us = new Date().getTime();
 					arr[arrCount].update(ctx);
@@ -1786,7 +1786,7 @@ var IgeEngine = IgeEntity.extend({
 
 		// Depth-sort the viewports
 		if (this._viewportDepth) {
-			if (igeDebug._timing) {
+			if (igeConfig.debug._timing) {
 				ts = new Date().getTime();
 				this.depthSortChildren();
 				td = new Date().getTime() - ts;
@@ -1812,7 +1812,7 @@ var IgeEngine = IgeEntity.extend({
 			arrCount = arr.length;
 
 			// Loop our viewports and call their tick methods
-			if (igeDebug._timing) {
+			if (igeConfig.debug._timing) {
 				while (arrCount--) {
 					ctx.save();
 					ts = new Date().getTime();
@@ -1857,10 +1857,10 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	analyseTiming: function () {
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 
 		} else {
-			this.log('Cannot analyse timing because the igeDebug._timing flag is not enabled so no timing data has been recorded!', 'warning');
+			this.log('Cannot analyse timing because the igeConfig.debug._timing flag is not enabled so no timing data has been recorded!', 'warning');
 		}
 	},
 
@@ -1910,7 +1910,7 @@ var IgeEngine = IgeEntity.extend({
 			depthSpace += '----';
 		}
 
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 			timingString = '';
 
 			timingString += 'T: ' + ige._timeSpentInTick[obj.id()];
@@ -1941,7 +1941,7 @@ var IgeEngine = IgeEntity.extend({
 				// Loop our children
 				while (arrCount--) {
 					if (arr[arrCount]._scene._shouldRender) {
-						if (igeDebug._timing) {
+						if (igeConfig.debug._timing) {
 							timingString = '';
 
 							timingString += 'T: ' + ige._timeSpentInTick[arr[arrCount].id()];

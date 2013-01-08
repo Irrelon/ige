@@ -51,7 +51,7 @@ var IgeClass = (function () {
 		 *     entity.log('An error message', 'error');
 		 */
 		log = function (text, type, obj) {
-			if (igeDebug._enabled) {
+			if (igeConfig.debug._enabled) {
 				var indent = '',
 					stack;
 
@@ -62,8 +62,8 @@ var IgeClass = (function () {
 				}
 
 				if (type === 'warning' || type === 'error') {
-					if (igeDebug._stacks) {
-						if (igeDebug._node) {
+					if (igeConfig.debug._stacks) {
+						if (igeConfig.debug._node) {
 							stack = new Error().stack;
 							//console.log(color.magenta('Stack:'), color.red(stack));
 							console.log('Stack:', stack);
@@ -76,7 +76,7 @@ var IgeClass = (function () {
 				}
 
 				if (type === 'error') {
-					if (igeDebug._throwErrors) {
+					if (igeConfig.debug._throwErrors) {
 						throw(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
 					} else {
 						console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
@@ -288,6 +288,10 @@ var IgeClass = (function () {
 		initializing = true;
 		prototype = new this();
 		initializing = false;
+		
+		if (this.prototype._classId !== 'IgeClass') {
+			prototype._superClass = this.prototype;
+		}
 
 		// Copy the properties over onto the new prototype
 		for (name in prop) {
