@@ -76,7 +76,9 @@ var IgeEntity = IgeObject.extend({
 	 * texture rendering output should be stored on an off-screen
 	 * canvas instead of calling the texture.render() method each
 	 * tick. Useful for expensive texture calls such as rendering
-	 * fonts etc.
+	 * fonts etc. If enabled, this will automatically disable advanced
+	 * composite caching on this entity with a call to
+	 * compositeCache(false).
 	 * @param {Boolean=} val True to enable caching, false to
 	 * disable caching.
 	 * @example #Enable entity caching
@@ -96,6 +98,9 @@ var IgeEntity = IgeObject.extend({
 				this._cacheCanvas = document.createElement('canvas');
 				this._cacheCtx = this._cacheCanvas.getContext('2d');
 				this._cacheDirty = true;
+				
+				// Switch off composite caching
+				this.compositeCache(false);
 			} else {
 				// Remove the off-screen canvas
 				delete this._cacheCanvas;
@@ -105,6 +110,38 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._cache;
+	},
+
+	/**
+	 * Gets / sets composite caching. Composite caching draws this entity
+	 * and all of it's children (and their children etc) to a single off
+	 * screen canvas so that the entity does not need to be redrawn with
+	 * all it's children every tick. For composite entities where little
+	 * change occurs this will massively increase rendering performance.
+	 * If enabled, this will automatically disable simple caching on this
+	 * entity with a call to cache(false).
+	 * compositeCache(false).
+	 * @param {Boolean=} val
+	 * @example #Enable entity composite caching
+	 *     entity.compositeCache(true);
+	 * @example #Disable entity composite caching
+	 *     entity.compositeCache(false);
+	 * @example #Get composite caching flag value
+	 *     var val = entity.cache();
+	 * @return {*}
+	 */
+	compositeCache: function (val) {
+		if (val !== undefined) {
+			this._compositeCache = val;
+			
+			if (val) {
+				// Switch off normal caching
+				this.cache(false);
+			}
+			return this;
+		}
+		
+		return this._compositeCache;
 	},
 
 	/**
