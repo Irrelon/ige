@@ -24,10 +24,7 @@ var PlayerComponent = IgeClass.extend({
 	 * @private
 	 */
 	_mouseUp: function (event, x, y, button) {
-		this._entity.walkTo(
-			ige.$('vp1')._mousePos.x,
-			ige.$('vp1')._mousePos.y
-		);
+		this._entity.walkTo(x, y);
 	}
 });
 
