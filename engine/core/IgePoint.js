@@ -8,7 +8,7 @@ var IgePoint = IgeClass.extend({
 		if (floor === undefined) {
 			this._floor = true;
 		} else {
-			this.floor(floor);
+			this._floor = floor;
 		}
 
 		// Set values to the passed parameters or
