@@ -294,9 +294,7 @@ var IgeClass = (function () {
 		for (name in prop) {
 			if (prop.hasOwnProperty(name)) {
 				// Copy the property
-				if (name !== '_superClass') {
-					prototype[name] = prop[name];
-				}
+				prototype[name] = prop[name];
 			}
 		}
 
@@ -337,7 +335,7 @@ var IgeClass = (function () {
 		// Enforce the constructor to be what we expect
 		IgeClass.prototype.constructor = IgeClass;
 
-		// And make this class extendable
+		// And make this class extensible
 		IgeClass.extend = arguments.callee;
 
 		// Add log capability
@@ -362,6 +360,57 @@ var IgeClass = (function () {
 		// Register the class with the class store
 		igeClassStore[prop.classId] = IgeClass;
 
+		return IgeClass;
+	};
+
+	/**
+	 * Test method
+	 * @param prop
+	 * @return {Function}
+	 */
+	IgeClass.vanilla = function (prop) {
+		var IgeClass = prop.init || function () {},
+			prototype = new this();
+		
+		// Copy the properties over onto the new prototype
+		for (name in prop) {
+			if (prop.hasOwnProperty(name) && name !== 'init') {
+				// Copy the property
+				prototype[name] = prop[name];
+			}
+		}
+		
+		// Populate our constructed prototype object
+		IgeClass.prototype = prototype;
+
+		// Enforce the constructor to be what we expect
+		IgeClass.prototype.constructor = IgeClass;
+		
+		// And make this class extensible
+		IgeClass.extend = this.extend;
+		
+		// Add log capability
+		IgeClass.prototype.log = log;
+
+		// Add data capability
+		IgeClass.prototype.data = data;
+
+		// Add class name capability
+		IgeClass.prototype.classId = classId; // This is a method that returns _classId
+		IgeClass.prototype._classId = prop.classId || 'IgeClass';
+
+		// Add the addComponent method
+		IgeClass.prototype.addComponent = addComponent;
+
+		// Add the removeComponent method
+		IgeClass.prototype.removeComponent = removeComponent;
+
+		// Add the implement method
+		IgeClass.prototype.implement = implement;
+
+		// Register the class with the class store
+		igeClassStore[prop.classId] = IgeClass;
+		
 		return IgeClass;
 	};
 
