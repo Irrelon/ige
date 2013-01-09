@@ -395,7 +395,7 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
-	 * Sets the frame rate at which new engine ticks are fired.
+	 * Sets the frame rate at which new engine steps are fired.
 	 * Setting this rate will override the default requestAnimFrame()
 	 * method as defined in IgeBase.js and on the client-side, will
 	 * stop usage of any available requestAnimationFrame() method
@@ -788,7 +788,7 @@ var IgeEngine = IgeEntity.extend({
 					}
 				}
 
-				requestAnimFrame(ige.tick);
+				requestAnimFrame(ige.engineStep);
 
 				ige.log('Engine started');
 
@@ -1591,7 +1591,7 @@ var IgeEngine = IgeEntity.extend({
 	manualTick: function () {
 		if (this._manualFrameAlternator !== this._frameAlternator) {
 			this._manualFrameAlternator = this._frameAlternator;
-			requestAnimFrame(this.tick);
+			requestAnimFrame(this.engineStep);
 		}
 	},
 
@@ -1617,7 +1617,7 @@ var IgeEngine = IgeEntity.extend({
 	/**
 	 * Called each frame to traverse and render the scenegraph.
 	 */
-	tick: function (timeStamp, ctx) {
+	engineStep: function (timeStamp, ctx) {
 		/* TODO:
 			Make the scenegraph process simplified. Walk the scenegraph once and grab the order in a flat array
 			then process updates and ticks. This will also allow a layered rendering system that can render the
@@ -1655,7 +1655,7 @@ var IgeEngine = IgeEntity.extend({
 			// If the engine is not in manual tick mode...
 			if (!ige._useManualTicks) {
 				// Schedule a new frame
-				requestAnimFrame(self.tick);
+				requestAnimFrame(self.engineStep);
 			} else {
 				self._manualFrameAlternator = !self._frameAlternator;
 			}
