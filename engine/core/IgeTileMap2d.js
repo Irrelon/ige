@@ -106,15 +106,15 @@ var IgeTileMap2d = IgeEntity.extend({
 
 	_childMounted: function (obj) {
 		// Augment the child with tile powers!
-		obj.occupyTile = this._objectOccupyTile;
-		obj.unOccupyTile = this._objectUnOccupyTile;
-		obj.overTiles = this._objectOverTiles;
+		obj.occupyTile = obj.occupyTile || this._objectOccupyTile;
+		obj.unOccupyTile = obj.unOccupyTile || this._objectUnOccupyTile;
+		obj.overTiles = obj.overTiles || this._objectOverTiles;
 
 		// We can also re-use the tile size methods since
 		// they alter the same properties on the calling
 		// entity anyway.
-		obj.tileWidth = this.tileWidth;
-		obj.tileHeight = this.tileHeight;
+		obj.tileWidth = obj.tileWidth || this.tileWidth;
+		obj.tileHeight = obj.tileHeight || this.tileHeight;
 
 		// Set default values
 		obj._tileWidth = obj._tileWidth || 1;
