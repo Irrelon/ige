@@ -734,8 +734,10 @@ var IgeObject = IgeEventingClass.extend({
 
 				this._parent._childMounted(this);
 
-				obj.updateTransform();
-				obj.aabb(true);
+				if (obj.updateTransform) {
+					obj.updateTransform();
+					obj.aabb(true);
+				}
 
 				this.emit('mounted', this._parent);
 
