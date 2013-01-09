@@ -127,6 +127,7 @@ var IgeClass = (function () {
 			this[newComponent.componentId] = newComponent;
 
 			// Add the component reference to the class component array
+			this._components = this._components || [];
 			this._components.push(newComponent);
 
 			return this;
@@ -235,6 +236,7 @@ var IgeClass = (function () {
 		data = function (key, value) {
 			if (key !== undefined) {
 				if (value !== undefined) {
+					this._data = this._data || {};
 					this._data[key] = value;
 
 					return this;
@@ -259,8 +261,7 @@ var IgeClass = (function () {
 	 * @return {Function}
 	 */
 	IgeClass.extend = function () {
-		var _super = this.prototype,
-			name,
+		var name,
 			prototype,
 			// Set prop to the last argument passed
 			prop = arguments[arguments.length - 1],
@@ -291,9 +292,11 @@ var IgeClass = (function () {
 
 		// Copy the properties over onto the new prototype
 		for (name in prop) {
-			// Copy the property
-			if (name !== '_superClass') {
-				prototype[name] = prop[name];
+			if (prop.hasOwnProperty(name)) {
+				// Copy the property
+				if (name !== '_superClass') {
+					prototype[name] = prop[name];
+				}
 			}
 		}
 
@@ -317,21 +320,12 @@ var IgeClass = (function () {
 			}
 		}
 		
-		prototype._superClass = this.prototype;
+		//prototype._superClass = this.prototype;
 		//console.log(prop.classId, 'extends', this.prototype._classId);
 
 		// The dummy class constructor
 		function IgeClass() {
-			this._data = {};
 			if (!initializing && this.init) {
-				// Create an array to hold components
-				this._components = [];
-
-				// Store a reference to the global ige object
-				if (typeof(ige) !== 'undefined') {
-					this.ige = ige;
-				}
-
 				// Call the class init method
 				this.init.apply(this, arguments);
 			}
