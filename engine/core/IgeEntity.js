@@ -406,6 +406,92 @@ var IgeEntity = IgeObject.extend({
 
 		return this;
 	},
+	
+	/**
+	 * Adds the object to the tile map at the passed tile co-ordinates. If
+	 * no tile co-ordinates are passed, will use the current tile position
+	 * and the tileWidth() and tileHeight() values.
+	 * @param {Number=} x X co-ordinate of the tile to occupy.
+	 * @param {Number=} y Y co-ordinate of the tile to occupy.
+	 * @param {Number=} width Number of tiles along the x-axis to occupy.
+	 * @param {Number=} height Number of tiles along the y-axis to occupy.
+	 */
+	occupyTile: function (x, y, width, height) {
+		// Check that the entity is mounted to a tile map
+		if (this._parent && this._parent.IgeTileMap2d) {
+			if (x !== undefined && y !== undefined) {
+				this._parent.occupyTile(x, y, width, height, this);
+			} else {
+				// Occupy tiles based upon tile point and tile width/height
+				var trPoint = new IgePoint(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
+					tilePoint = this._parent.pointToTile(trPoint);
+	
+				if (this._parent._mountMode === 1) {
+					tilePoint.thisToIso();
+				}
+	
+				this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
+			}
+		}
+		return this;
+	},
+	
+	/**
+	 * Removes the object from the tile map at the passed tile co-ordinates.
+	 * If no tile co-ordinates are passed, will use the current tile position
+	 * and the tileWidth() and tileHeight() values.
+	 * @param {Number=} x X co-ordinate of the tile to un-occupy.
+	 * @param {Number=} y Y co-ordinate of the tile to un-occupy.
+	 * @param {Number=} width Number of tiles along the x-axis to un-occupy.
+	 * @param {Number=} height Number of tiles along the y-axis to un-occupy.
+	 * @private
+	 */
+	unOccupyTile: function (x, y, width, height) {
+		// Check that the entity is mounted to a tile map
+		if (this._parent && this._parent.IgeTileMap2d) {
+			if (x !== undefined && y !== undefined) {
+				this._parent.unOccupyTile(x, y, width, height);
+			} else {
+				// Un-occupy tiles based upon tile point and tile width/height
+				var trPoint = new IgePoint(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
+					tilePoint = this._parent.pointToTile(trPoint);
+	
+				if (this._parent._mountMode === 1) {
+					tilePoint.thisToIso();
+				}
+	
+				this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
+			}
+		}
+		return this;
+	},
+	
+	/**
+	 * Returns an array of tile co-ordinates that the object is currently
+	 * over, calculated using the current world co-ordinates of the object
+	 * as well as it's 3d geometry.
+	 * @private
+	 * @return {Array} The array of tile co-ordinates as IgePoint instances.
+	 */
+	overTiles: function () {
+		// Check that the entity is mounted to a tile map
+		if (this._parent && this._parent.IgeTileMap2d) {
+			var x,
+				y,
+				tileWidth = this._tileWidth || 1,
+				tileHeight = this._tileHeight || 1,
+				tile = this._parent.pointToTile(this._translate),
+				tileArr = [];
+	
+			for (x = 0; x < tileWidth; x++) {
+				for (y = 0; y < tileHeight; y++) {
+					tileArr.push(new IgePoint(tile.x + x, tile.y + y, 0));
+				}
+			}
+	
+			return tileArr;
+		}
+	},
 
 	/**
 	 * Gets / sets the anchor position that this entity's texture
