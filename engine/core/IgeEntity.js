@@ -408,24 +408,6 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
-	 * Dummy method to help debug when programmer expects to be
-	 * able to access tile-based methods but cannot. This method
-	 * is overwritten when the entity is mounted to a tile map.
-	 */
-	occupyTile: function () {
-		this.log('Cannot occupy a tile because the entity is not currently mounted to a tile map.', 'warning');
-	},
-
-	/**
-	 * Dummy method to help debug when programmer expects to be
-	 * able to access tile-based methods but cannot. This method
-	 * is overwritten when the entity is mounted to a tile map.
-	 */
-	overTiles: function () {
-		this.log('Cannot determine which tiles this entity lies over because the entity is not currently mounted to a tile map.', 'warning');
-	},
-
-	/**
 	 * Gets / sets the anchor position that this entity's texture
 	 * will be adjusted by.
 	 * @param {Number=} x The x anchor value.
