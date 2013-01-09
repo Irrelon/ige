@@ -1683,10 +1683,10 @@ var IgeEngine = IgeEntity.extend({
 			if (self._enableUpdates) {
 				if (igeConfig.debug._timing) {
 					updateStart = new Date().getTime();
-					self.update(ctx);
+					self.updateSceneGraph(ctx);
 					ige._updateTime = new Date().getTime() - updateStart;
 				} else {
-					self.update(ctx);
+					self.updateSceneGraph(ctx);
 				}
 			}
 			
@@ -1695,19 +1695,19 @@ var IgeEngine = IgeEntity.extend({
 				if (!self._useManualRender) {
 					if (igeConfig.debug._timing) {
 						renderStart = new Date().getTime();
-						self.render(ctx);
+						self.renderSceneGraph(ctx);
 						ige._renderTime = new Date().getTime() - renderStart;
 					} else {
-						self.render(ctx);
+						self.renderSceneGraph(ctx);
 					}
 				} else {
 					if (self._manualRender) {
 						if (igeConfig.debug._timing) {
 							renderStart = new Date().getTime();
-							self.render(ctx);
+							self.renderSceneGraph(ctx);
 							ige._renderTime = new Date().getTime() - renderStart;
 						} else {
-							self.render(ctx);
+							self.renderSceneGraph(ctx);
 						}
 						self._manualRender = false;
 					}
@@ -1738,7 +1738,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 	
-	update: function (ctx) {
+	updateSceneGraph: function (ctx) {
 		var arr = this._children,
 			arrCount, us, ud;
 
@@ -1776,7 +1776,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 
-	render: function (ctx) {
+	renderSceneGraph: function (ctx) {
 		var ts, td;
 
 		// Process any behaviours assigned to the engine
