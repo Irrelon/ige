@@ -124,6 +124,15 @@ var IgeRect = IgeClass.extend({
 	},
 
 	/**
+	 * Returns a clone of this object that is not a reference
+	 * but retains the same values.
+	 * @return {IgeRect}
+	 */
+	clone: function () {
+		return new IgeRect(this.x, this.y, this.width, this.height);
+	},
+
+	/**
 	 * Returns a string representation of the rect's x, y, width,
 	 * height, converting floating point values into fixed using the
 	 * passed precision parameter. If no precision is specified
@@ -135,6 +144,6 @@ var IgeRect = IgeClass.extend({
 		if (precision === undefined) { precision = 2; }
 		return this.x.toFixed(precision) + ',' + this.y.toFixed(precision) + ',' + this.width.toFixed(precision) + ',' + this.height.toFixed(precision);
 	}
-})
+});
 
 if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeRect; }
