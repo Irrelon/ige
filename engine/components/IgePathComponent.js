@@ -388,11 +388,27 @@ var IgePathComponent = IgeEventingClass.extend({
 			self._currentTime = ige._currentTime;//ige._tickDelta;
 
 			if (targetCell) {
-				targetPoint = {x: targetCell.x * this._parent._tileWidth, y: targetCell.y * this._parent._tileHeight};
+				if (targetCell.mode === 0) {
+					targetPoint = {
+						x: targetCell.x * this._parent._tileWidth,
+						y: targetCell.y * this._parent._tileHeight
+					};
+				} else {
+					targetPoint = {
+						x: targetCell.x,
+						y: targetCell.y
+					};
+				}
 
 				if (currentPath) {
 					if (self._currentTime < self._targetCellArrivalTime && (targetPoint.x !== currentPosition.x || targetPoint.y !== currentPosition.y)) {
-						newPosition = self._positionAlongVector(currentPosition, targetPoint, self._speed, ige._tickDelta);
+						newPosition = self._positionAlongVector(
+							currentPosition,
+							targetPoint,
+							self._speed,
+							ige._tickDelta
+						);
+						
 						this.translateTo(newPosition.x, newPosition.y, currentPosition.z);
 					} else {
 						// We are at the target cell, move to the next cell
