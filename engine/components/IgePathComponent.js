@@ -68,7 +68,7 @@ var IgePathComponent = IgeEventingClass.extend({
 				entParent = this._entity._parent,
 				targetCell = this._paths[this._currentPathIndex][tpI];
 
-			return new IgePoint(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0);
+			return targetCell.mode===0?new IgePoint(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0):targetCell.clone();
 		}
 	},
 
@@ -77,7 +77,7 @@ var IgePathComponent = IgeEventingClass.extend({
 			var entParent = this._entity._parent,
 				targetCell = this._paths[this._currentPathIndex][this._targetCellIndex];
 
-			return new IgePoint(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0);
+			return targetCell.mode===0?new IgePoint(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0):targetCell.clone();
 		}
 	},
 
@@ -442,7 +442,11 @@ var IgePathComponent = IgeEventingClass.extend({
 						// Set the new target cell's arrival time
 						currentPath = self._paths[self._currentPathIndex];
 						targetCell = currentPath[self._targetCellIndex];
-						targetPoint = {x: targetCell.x * this._parent._tileWidth, y: targetCell.y * this._parent._tileHeight};
+						if(targetCell.mode===0){
+							targetPoint = {x: targetCell.x * this._parent._tileWidth, y: targetCell.y * this._parent._tileHeight};
+						}else{
+							targetPoint = targetCell.clone();
+						}
 						distanceBetweenP1AndP2 = Math.distance(currentPosition.x, currentPosition.y, targetPoint.x, targetPoint.y);
 
 						self._targetCellArrivalTime = self._currentTime + (distanceBetweenP1AndP2 / self._speed);
@@ -498,11 +502,19 @@ var IgePathComponent = IgeEventingClass.extend({
 								ctx.strokeStyle = '#fff000';
 								ctx.fillStyle = '#fff000';
 							}
-
-							if (entity._parent.isometricMounts()) {
-								tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0).toIso();
-							} else {
-								tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0);
+							
+							if(tempCurrentPath[pathPointIndex].mode===0){
+								if (entity._parent.isometricMounts()) {
+									tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0).toIso();
+								} else {
+									tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0);
+								}
+							}else{
+								if (entity._parent.isometricMounts()) {
+									tracePathPoint = tempCurrentPath[pathPointIndex].clone().toIso();
+								} else {
+									tracePathPoint = tempCurrentPath[pathPointIndex].clone();
+								}
 							}
 
 							if (!oldTracePathPoint) {
