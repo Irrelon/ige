@@ -62,22 +62,30 @@ var IgePathComponent = IgeEventingClass.extend({
 		return this._currentPathIndex;
 	},
 
+	/**
+	 * Gets the path node point that the entity is travelling from.
+	 * @return {IgePoint} A new point representing the travelled from node.
+	 */
 	previousTargetPoint: function () {
 		if (this._paths.length) {
 			var tpI = this._targetCellIndex > 0 ? this._targetCellIndex - 1 : this._targetCellIndex,
 				entParent = this._entity._parent,
 				targetCell = this._paths[this._currentPathIndex][tpI];
 
-			return targetCell.mode===0?new IgePoint(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0):targetCell.clone();
+			return targetCell.mode === 0 ? new IgePoint(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0) : targetCell.clone();
 		}
 	},
 
+	/**
+	 * Gets the path node point that the entity is travelling to.
+	 * @return {IgePoint} A new point representing the travelling to node.
+	 */
 	currentTargetPoint: function () {
 		if (this._paths.length) {
 			var entParent = this._entity._parent,
 				targetCell = this._paths[this._currentPathIndex][this._targetCellIndex];
 
-			return targetCell.mode===0?new IgePoint(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0):targetCell.clone();
+			return targetCell.mode === 0 ? new IgePoint(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0) : targetCell.clone();
 		}
 	},
 
