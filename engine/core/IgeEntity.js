@@ -2823,6 +2823,8 @@ var IgeEntity = IgeObject.extend({
 				this._parent.id(),
 				this.streamCreateData()
 			], clientId);
+			
+			ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
 
 			if (clientId) {
 				// Mark the client as having received a create
@@ -2867,6 +2869,8 @@ var IgeEntity = IgeObject.extend({
 
 		// Send the client an entity create command first
 		ige.network.send('_igeStreamDestroy', thisId, clientId);
+		
+		ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
 
 		if (clientId) {
 			// Mark the client as having received a destroy
