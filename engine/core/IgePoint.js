@@ -251,6 +251,38 @@ var IgePoint = IgeClass.extend({
 	},
 
 	/**
+	 * Rotates the point by the given radians.
+	 * @param {Number} radians Radians to rotate by.
+	 * @return {IgePoint} A new point with the rotated x, y.
+	 */
+	rotate: function (radians) {
+		var s = Math.sin(radians),
+			c = Math.cos(radians),
+			x = c * this.x - s * this.y,
+			y = s * this.x - c * this.y;
+		
+		return new IgePoint(x, y, this.z);
+	},
+	
+	/**
+	 * Rotates the point by the given radians and updates this point
+	 * to the new x, y values.
+	 * @param {Number} radians Radians to rotate by.
+	 * @return {IgePoint} This point.
+	 */
+	thisRotate: function (radians) {
+		var s = Math.sin(radians),
+			c = Math.cos(radians),
+			x = this.x,
+			y = this.y;
+		
+		this.x = c * x - s * y;
+		this.y = s * x - c * y;
+		
+		return this;
+	},
+
+	/**
 	 * Returns a string representation of the point's x, y, z
 	 * converting floating point values into fixed using the
 	 * passed precision parameter. If no precision is specified
