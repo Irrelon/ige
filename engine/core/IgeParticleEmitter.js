@@ -583,7 +583,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 							// entity definition because some components may already
 							// have initialised due to the particle template
 							tempParticle.translateTo(translateX, translateY, translateZ);
-							tempParticle.rotateTo(0, 0, rotate * Math.PI / 180);
+							tempParticle.rotateTo(0, 0, Math.radians(rotate));
 							tempParticle.scaleTo(scaleX, scaleY, scaleZ);
 							tempParticle.opacity(opacity);
 
@@ -602,7 +602,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 							if (typeof(deathRotate) !== 'undefined') {
 								tweens.push(new IgeTween()
 									.targetObj(tempParticle._rotate)
-									.properties({z: (deathRotate * Math.PI / 180)})
+									.properties({z: Math.radians(deathRotate)})
 									.duration(life));
 							}
 							if (typeof(deathOpacity) !== 'undefined') {
