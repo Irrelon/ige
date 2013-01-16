@@ -34,9 +34,11 @@ var Client = IgeClass.extend({
 						.id('vp1')
 						.autoSize(true)
 						.drawBounds(true)
-						//.drawBoundsData(true)
+						.drawBoundsData(true)
 						.scene(self.mainScene)
 						.camera.translateTo(200, 0, 0)
+						//.camera.scaleTo(0.2, 0.2, 0.2)
+						//.camera.rotateTo(0, 0, Math.radians(10))
 						.mount(ige);
 
 					// Create the sprite scene
