@@ -117,7 +117,7 @@ var Client = IgeClass.extend({
 						//.translateTo(0, 0, 0)
 						.center(0)
 						.bottom(0)
-						.scaleTo(0.5, 0.5, 1)
+						.scaleTo(1.5, 1.5, 1)
 						//.rotateTo(0, 0, Math.radians(180))
 						.mount(self.cont);
 
