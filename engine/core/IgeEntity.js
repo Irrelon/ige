@@ -143,10 +143,14 @@ var IgeEntity = IgeObject.extend({
 	mousePos: function (viewport) {
 		viewport = viewport || ige._currentViewport;
 		if (viewport) {
-			var mp = viewport._mousePos.clone();
+			var mp = viewport._mousePos.clone(),
+				cam;
 
 			if (this._ignoreCamera) {
-				mp.thisAddPoint(ige._currentCamera._translate);
+				/*cam = ige._currentCamera;
+				mp.thisMultiply(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
+				//mp.thisRotate(-cam._rotate.z);
+				mp.thisAddPoint(cam._translate);*/
 			}
 			
 			mp.x += viewport._translate.x;
@@ -198,7 +202,7 @@ var IgeEntity = IgeObject.extend({
 		this.localToWorldPoint(mp, viewport);
 
 		if (this._ignoreCamera) {
-			viewport.camera._worldMatrix.transform([mp]);
+			//viewport.camera._worldMatrix.getInverse().transform([mp]);
 		}
 
 		return mp;
