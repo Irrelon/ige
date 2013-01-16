@@ -180,10 +180,12 @@ var IgeEntity = IgeObject.extend({
 	mousePos: function (viewport) {
 		viewport = viewport || ige._currentViewport;
 		if (viewport) {
-			var mp = viewport._mousePos.clone();
+			var mp = viewport._mousePos.clone(),
+				cam = ige._currentCamera;
 
 			if (this._ignoreCamera) {
-				mp.thisAddPoint(ige._currentCamera._translate);
+				mp.thisMultiply(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
+				mp.thisAddPoint(cam._translate);
 			}
 			
 			mp.x += viewport._translate.x;
