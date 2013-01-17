@@ -39,13 +39,14 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					// Create an entity and mount it to the scene
-					self.obj[0] = new Rotator(0.1)
+					self.obj[0] = new RenderOverrideEntity(0.1)
 						.id('fairy1')
 						.depth(1)
 						.width(100)
 						.height(100)
 						.texture(self.gameTexture.fairy)
 						.translateTo(0, 0, 0)
+						.rotateTo(0, 0, Math.radians(45))
 						.mount(self.scene1);
 
 					// Create a second rotator entity and mount
