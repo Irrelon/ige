@@ -732,9 +732,9 @@ var IgeTexture = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Creates a clone of the texture and returns it. The returned
-	 * texture is a new, distinct texture separate from this one.
-	 * @return {*}
+	 * Creates a clone of the texture.
+	 * @return {IgeTexture} A new, distinct texture with the same attributes
+	 * as the one being cloned.
 	 */
 	clone: function () {
 		return this.textureFromCell(1);
