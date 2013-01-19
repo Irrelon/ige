@@ -234,15 +234,17 @@ var IgeClass = (function () {
 		 * @return {*}
 		 */
 		data = function (key, value) {
-			if (key !== undefined) {
-				if (value !== undefined) {
-					this._data = this._data || {};
-					this._data[key] = value;
-
-					return this;
+			if (this._data) {
+				if (key !== undefined) {
+					if (value !== undefined) {
+						this._data = this._data || {};
+						this._data[key] = value;
+	
+						return this;
+					}
+	
+					return this._data[key];
 				}
-
-				return this._data[key];
 			}
 		};
 
