@@ -561,7 +561,7 @@ var IgeTexture = IgeEventingClass.extend({
 		delete this._textureCtx;
 		delete this._textureCanvas;
 		
-		texture._filterImageDrawn = false;
+		this._filterImageDrawn = false;
 	},
 
 	smoothing: function (val) {
