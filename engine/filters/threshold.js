@@ -1,5 +1,5 @@
 IgeFilters.threshold = function (canvas, ctx, originalImage, texture, data) {
-	if (!data.cumulative) {
+	if (!data || !data.cumulative) {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		ctx.drawImage(originalImage, 0, 0);
 	}
