@@ -560,6 +560,8 @@ var IgeTexture = IgeEventingClass.extend({
 		this.image = this._originalImage;
 		delete this._textureCtx;
 		delete this._textureCanvas;
+		
+		texture._filterImageDrawn = false;
 	},
 
 	smoothing: function (val) {

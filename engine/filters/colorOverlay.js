@@ -1,7 +1,8 @@
 IgeFilters.colorOverlay = function (canvas, ctx, originalImage, texture, data) {
-	if (!data || !data.cumulative) {
+	if (!texture._filterImageDrawn || !data || !data.cumulative) {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		ctx.drawImage(originalImage, 0, 0);
+		texture._filterImageDrawn = true;
 	}
 
 	// Set the composite operation and draw the colour over the top
