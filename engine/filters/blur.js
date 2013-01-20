@@ -1,6 +1,8 @@
 IgeFilters.blur = function (canvas, ctx, originalImage, texture, data) {
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.drawImage(originalImage, 0, 0);
+	if (!data.cumulative) {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.drawImage(originalImage, 0, 0);
+	}
 
 	var strength = 1,
 		loop,
