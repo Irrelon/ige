@@ -1,10 +1,4 @@
-IgeFilters.sharpen = function (canvas, ctx, originalImage, texture, data) {
-	if (!texture._filterImageDrawn || !data || !data.cumulative) {
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		ctx.drawImage(originalImage, 0, 0);
-		texture._filterImageDrawn = true;
-	}
-		
+IgeFilters.sharpen = function (canvas, ctx, originalImage, texture, data) {		
 	var strength = 1,
 		loop;
 
