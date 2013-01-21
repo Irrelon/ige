@@ -11,7 +11,7 @@ var IgeViewport = IgeEntity.extend([
 
 	init: function (options) {
 		this._alwaysInView = true;
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		this._mouseAlwaysInside = true;
 		this._mousePos = new IgePoint(0, 0, 0);
@@ -104,7 +104,7 @@ var IgeViewport = IgeEntity.extend([
 			this._scene._parent = this;
 
 			this.camera.update(ctx);
-			this._super(ctx);
+			IgeEntity.prototype.update.call(this, ctx);
 			
 			if (this._scene.newFrame()) {
 				this._scene.update(ctx);
@@ -128,7 +128,7 @@ var IgeViewport = IgeEntity.extend([
 
 			// Render our scene data
 			//ctx.globalAlpha = ctx.globalAlpha * this._parent._opacity * this._opacity;
-			this._super(ctx);
+			IgeEntity.prototype.tick.call(this, ctx);
 
 			// Translate to the top-left of the viewport
 			ctx.translate(
@@ -214,6 +214,15 @@ var IgeViewport = IgeEntity.extend([
 
 		return this._drawBoundsLimitCategory;
 	},
+	
+	drawCompositeBounds: function (val) {
+		if (val !== undefined) {
+			this._drawCompositeBounds = val;
+			return this;
+		}
+		
+		return this._drawCompositeBounds;
+	},
 
 	/**
 	 * Draws the bounding data for each entity in the scenegraph.
@@ -247,12 +256,14 @@ var IgeViewport = IgeEntity.extend([
 							aabb = obj.aabb();
 							aabbC = obj.compositeAabb();
 
+							if (this._drawCompositeBounds && aabbC) {
+								// Draw composite bounds
+								ctx.strokeStyle = '#ff0000';
+								ctx.strokeRect(aabbC.x, aabbC.y, aabbC.width, aabbC.height);
+							}
+							
 							if (aabb) {
 								if (obj._drawBounds || obj._drawBounds === undefined) {
-									// Draw composite bounds
-									ctx.strokeStyle = '#ff0000';
-									ctx.strokeRect(aabbC.x, aabbC.y, aabbC.width, aabbC.height);
-
 									// Draw individual bounds
 									ctx.strokeStyle = '#00deff';
 									ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
@@ -389,7 +400,7 @@ var IgeViewport = IgeEntity.extend([
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = IgeEntity.prototype._stringify.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {

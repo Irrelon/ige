@@ -8,7 +8,7 @@ var IgePoint = IgeClass.extend({
 		if (floor === undefined) {
 			this._floor = true;
 		} else {
-			this.floor(floor);
+			this._floor = floor;
 		}
 
 		// Set values to the passed parameters or
@@ -248,6 +248,38 @@ var IgePoint = IgeClass.extend({
 			timeRatio = deltaTime / totalTime;
 
 		return new IgePoint(endPoint.x - (totalX * timeRatio), endPoint.y - (totalY * timeRatio), endPoint.z - (totalZ * timeRatio));
+	},
+
+	/**
+	 * Rotates the point by the given radians.
+	 * @param {Number} radians Radians to rotate by.
+	 * @return {IgePoint} A new point with the rotated x, y.
+	 */
+	rotate: function (radians) {
+		var s = Math.sin(radians),
+			c = Math.cos(radians),
+			x = c * this.x - s * this.y,
+			y = s * this.x - c * this.y;
+		
+		return new IgePoint(x, y, this.z);
+	},
+	
+	/**
+	 * Rotates the point by the given radians and updates this point
+	 * to the new x, y values.
+	 * @param {Number} radians Radians to rotate by.
+	 * @return {IgePoint} This point.
+	 */
+	thisRotate: function (radians) {
+		var s = Math.sin(radians),
+			c = Math.cos(radians),
+			x = this.x,
+			y = this.y;
+		
+		this.x = c * x - s * y;
+		this.y = s * x - c * y;
+		
+		return this;
 	},
 
 	/**

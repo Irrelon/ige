@@ -2,7 +2,7 @@ var IgeUiAutoFlow = IgeUiEntity.extend({
 	classId: 'IgeUiAutoFlow',
 
 	init: function () {
-		this._super();
+		IgeUiEntity.prototype.init.call(this);
 
 		this._currentHeight = 0;
 	},
@@ -23,6 +23,6 @@ var IgeUiAutoFlow = IgeUiEntity.extend({
 		}
 
 		// Now do the super-class tick
-		this._super(ctx);
+		IgeUiEntity.prototype.tick.call(this, ctx);
 	}
 });

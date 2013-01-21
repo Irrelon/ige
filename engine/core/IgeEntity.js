@@ -6,7 +6,7 @@ var IgeEntity = IgeObject.extend({
 	classId: 'IgeEntity',
 
 	init: function () {
-		this._super();
+		IgeObject.prototype.init.call(this);
 
 		this._width = undefined;
 		this._height = undefined;
@@ -76,7 +76,9 @@ var IgeEntity = IgeObject.extend({
 	 * texture rendering output should be stored on an off-screen
 	 * canvas instead of calling the texture.render() method each
 	 * tick. Useful for expensive texture calls such as rendering
-	 * fonts etc.
+	 * fonts etc. If enabled, this will automatically disable advanced
+	 * composite caching on this entity with a call to
+	 * compositeCache(false).
 	 * @param {Boolean=} val True to enable caching, false to
 	 * disable caching.
 	 * @example #Enable entity caching
@@ -96,6 +98,9 @@ var IgeEntity = IgeObject.extend({
 				this._cacheCanvas = document.createElement('canvas');
 				this._cacheCtx = this._cacheCanvas.getContext('2d');
 				this._cacheDirty = true;
+				
+				// Switch off composite caching
+				this.compositeCache(false);
 			} else {
 				// Remove the off-screen canvas
 				delete this._cacheCanvas;
@@ -105,6 +110,38 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._cache;
+	},
+
+	/**
+	 * Gets / sets composite caching. Composite caching draws this entity
+	 * and all of it's children (and their children etc) to a single off
+	 * screen canvas so that the entity does not need to be redrawn with
+	 * all it's children every tick. For composite entities where little
+	 * change occurs this will massively increase rendering performance.
+	 * If enabled, this will automatically disable simple caching on this
+	 * entity with a call to cache(false).
+	 * compositeCache(false).
+	 * @param {Boolean=} val
+	 * @example #Enable entity composite caching
+	 *     entity.compositeCache(true);
+	 * @example #Disable entity composite caching
+	 *     entity.compositeCache(false);
+	 * @example #Get composite caching flag value
+	 *     var val = entity.cache();
+	 * @return {*}
+	 */
+	compositeCache: function (val) {
+		if (val !== undefined) {
+			this._compositeCache = val;
+			
+			if (val) {
+				// Switch off normal caching
+				this.cache(false);
+			}
+			return this;
+		}
+		
+		return this._compositeCache;
 	},
 
 	/**
@@ -373,23 +410,91 @@ var IgeEntity = IgeObject.extend({
 
 		return this;
 	},
-
+	
 	/**
-	 * Dummy method to help debug when programmer expects to be
-	 * able to access tile-based methods but cannot. This method
-	 * is overwritten when the entity is mounted to a tile map.
+	 * Adds the object to the tile map at the passed tile co-ordinates. If
+	 * no tile co-ordinates are passed, will use the current tile position
+	 * and the tileWidth() and tileHeight() values.
+	 * @param {Number=} x X co-ordinate of the tile to occupy.
+	 * @param {Number=} y Y co-ordinate of the tile to occupy.
+	 * @param {Number=} width Number of tiles along the x-axis to occupy.
+	 * @param {Number=} height Number of tiles along the y-axis to occupy.
 	 */
-	occupyTile: function () {
-		this.log('Cannot occupy a tile because the entity is not currently mounted to a tile map.', 'warning');
+	occupyTile: function (x, y, width, height) {
+		// Check that the entity is mounted to a tile map
+		if (this._parent && this._parent.IgeTileMap2d) {
+			if (x !== undefined && y !== undefined) {
+				this._parent.occupyTile(x, y, width, height, this);
+			} else {
+				// Occupy tiles based upon tile point and tile width/height
+				var trPoint = new IgePoint(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
+					tilePoint = this._parent.pointToTile(trPoint);
+	
+				if (this._parent._mountMode === 1) {
+					tilePoint.thisToIso();
+				}
+	
+				this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
+			}
+		}
+		return this;
 	},
-
+	
 	/**
-	 * Dummy method to help debug when programmer expects to be
-	 * able to access tile-based methods but cannot. This method
-	 * is overwritten when the entity is mounted to a tile map.
+	 * Removes the object from the tile map at the passed tile co-ordinates.
+	 * If no tile co-ordinates are passed, will use the current tile position
+	 * and the tileWidth() and tileHeight() values.
+	 * @param {Number=} x X co-ordinate of the tile to un-occupy.
+	 * @param {Number=} y Y co-ordinate of the tile to un-occupy.
+	 * @param {Number=} width Number of tiles along the x-axis to un-occupy.
+	 * @param {Number=} height Number of tiles along the y-axis to un-occupy.
+	 * @private
+	 */
+	unOccupyTile: function (x, y, width, height) {
+		// Check that the entity is mounted to a tile map
+		if (this._parent && this._parent.IgeTileMap2d) {
+			if (x !== undefined && y !== undefined) {
+				this._parent.unOccupyTile(x, y, width, height);
+			} else {
+				// Un-occupy tiles based upon tile point and tile width/height
+				var trPoint = new IgePoint(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
+					tilePoint = this._parent.pointToTile(trPoint);
+	
+				if (this._parent._mountMode === 1) {
+					tilePoint.thisToIso();
+				}
+	
+				this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
+			}
+		}
+		return this;
+	},
+	
+	/**
+	 * Returns an array of tile co-ordinates that the object is currently
+	 * over, calculated using the current world co-ordinates of the object
+	 * as well as it's 3d geometry.
+	 * @private
+	 * @return {Array} The array of tile co-ordinates as IgePoint instances.
 	 */
 	overTiles: function () {
-		this.log('Cannot determine which tiles this entity lies over because the entity is not currently mounted to a tile map.', 'warning');
+		// Check that the entity is mounted to a tile map
+		if (this._parent && this._parent.IgeTileMap2d) {
+			var x,
+				y,
+				tileWidth = this._tileWidth || 1,
+				tileHeight = this._tileHeight || 1,
+				tile = this._parent.pointToTile(this._translate),
+				tileArr = [];
+	
+			for (x = 0; x < tileWidth; x++) {
+				for (y = 0; y < tileHeight; y++) {
+					tileArr.push(new IgePoint(tile.x + x, tile.y + y, 0));
+				}
+			}
+	
+			return tileArr;
+		}
 	},
 
 	/**
@@ -1226,7 +1331,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		// Process super class
-		this._super(ctx);
+		IgeObject.prototype.update.call(this,ctx);
 	},
 
 	/**
@@ -1317,7 +1422,7 @@ var IgeEntity = IgeObject.extend({
 			}
 
 			// Process children
-			this._super(ctx);
+			IgeObject.prototype.tick.call(this,ctx);
 		}
 	},
 
@@ -1481,7 +1586,7 @@ var IgeEntity = IgeObject.extend({
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = IgeObject.prototype._stringify.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
@@ -1563,7 +1668,7 @@ var IgeEntity = IgeObject.extend({
 		/* CEXCLUDE */
 
 		// Call IgeObject.destroy()
-		this._super();
+		IgeObject.prototype.destroy.call(this);
 	},
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2722,6 +2827,8 @@ var IgeEntity = IgeObject.extend({
 				this._parent.id(),
 				this.streamCreateData()
 			], clientId);
+			
+			ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
 
 			if (clientId) {
 				// Mark the client as having received a create
@@ -2766,6 +2873,8 @@ var IgeEntity = IgeObject.extend({
 
 		// Send the client an entity create command first
 		ige.network.send('_igeStreamDestroy', thisId, clientId);
+		
+		ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
 
 		if (clientId) {
 			// Mark the client as having received a destroy

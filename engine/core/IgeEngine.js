@@ -6,16 +6,15 @@ var IgeEngine = IgeEntity.extend({
 
 	init: function () {
 		// Deal with some debug settings first
-		if (igeDebug) {
-			if (!igeDebug._enabled) {
+		if (igeConfig.debug) {
+			if (!igeConfig.debug._enabled) {
 				// Debug is not enabled so ensure that
 				// timing debugs are disabled
-				igeDebug._timing = false;
+				igeConfig.debug._timing = false;
 			}
 		}
 
 		this._alwaysInView = true;
-		this._super();
 
 		this._id = 'ige';
 		this.basePath = '';
@@ -32,9 +31,8 @@ var IgeEngine = IgeEntity.extend({
 		console.log('* (C)opyright 2012 Irrelon Software Limited                                  *');
 		console.log('* http://www.isogenicengine.com                                              *');
 		console.log('------------------------------------------------------------------------------');
-
-		// Call super-class method
-		this._super();
+		
+		IgeEntity.prototype.init.call(this);
 
 		// Check if we should add the CocoonJS support component
 		if (!this.isServer) {
@@ -338,24 +336,24 @@ var IgeEngine = IgeEntity.extend({
 	
 	debugEnabled: function (val) {
 		if (val !== undefined) {
-			if (igeDebug) {
-				igeDebug._enabled = val;
+			if (igeConfig.debug) {
+				igeConfig.debug._enabled = val;
 			}
 			return this;
 		}
 
-		return igeDebug._enabled;
+		return igeConfig.debug._enabled;
 	},
 	
 	debugTiming: function (val) {
 		if (val !== undefined) {
-			if (igeDebug) {
-				igeDebug._timing = val;
+			if (igeConfig.debug) {
+				igeConfig.debug._timing = val;
 			}
 			return this;
 		}
 
-		return igeDebug._timing;
+		return igeConfig.debug._timing;
 	},
 
 	debug: function (eventName) {
@@ -397,7 +395,7 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
-	 * Sets the frame rate at which new engine ticks are fired.
+	 * Sets the frame rate at which new engine steps are fired.
 	 * Setting this rate will override the default requestAnimFrame()
 	 * method as defined in IgeBase.js and on the client-side, will
 	 * stop usage of any available requestAnimationFrame() method
@@ -790,7 +788,7 @@ var IgeEngine = IgeEntity.extend({
 					}
 				}
 
-				requestAnimFrame(ige.tick);
+				requestAnimFrame(ige.engineStep);
 
 				ige.log('Engine started');
 
@@ -1383,7 +1381,7 @@ var IgeEngine = IgeEntity.extend({
 			elem.className += ' selected';
 		}
 
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 			if (ige._timeSpentInTick[item.id]) {
 				timingString = '<span>' + ige._timeSpentInTick[item.id] + 'ms</span>';
 				/*if (ige._timeSpentLastTick[item.id]) {
@@ -1593,7 +1591,7 @@ var IgeEngine = IgeEntity.extend({
 	manualTick: function () {
 		if (this._manualFrameAlternator !== this._frameAlternator) {
 			this._manualFrameAlternator = this._frameAlternator;
-			requestAnimFrame(this.tick);
+			requestAnimFrame(this.engineStep);
 		}
 	},
 
@@ -1619,7 +1617,7 @@ var IgeEngine = IgeEntity.extend({
 	/**
 	 * Called each frame to traverse and render the scenegraph.
 	 */
-	tick: function (timeStamp, ctx) {
+	engineStep: function (timeStamp, ctx) {
 		/* TODO:
 			Make the scenegraph process simplified. Walk the scenegraph once and grab the order in a flat array
 			then process updates and ticks. This will also allow a layered rendering system that can render the
@@ -1641,7 +1639,7 @@ var IgeEngine = IgeEntity.extend({
 		self._timeScaleLastTimestamp = timeStamp;
 		timeStamp = Math.floor(self._currentTime);
 
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 			st = new Date().getTime();
 		}
 
@@ -1657,7 +1655,7 @@ var IgeEngine = IgeEntity.extend({
 			// If the engine is not in manual tick mode...
 			if (!ige._useManualTicks) {
 				// Schedule a new frame
-				requestAnimFrame(self.tick);
+				requestAnimFrame(self.engineStep);
 			} else {
 				self._manualFrameAlternator = !self._frameAlternator;
 			}
@@ -1683,33 +1681,33 @@ var IgeEngine = IgeEntity.extend({
 
 			// Update the scenegraph
 			if (self._enableUpdates) {
-				if (igeDebug._timing) {
+				if (igeConfig.debug._timing) {
 					updateStart = new Date().getTime();
-					self.update(ctx);
+					self.updateSceneGraph(ctx);
 					ige._updateTime = new Date().getTime() - updateStart;
 				} else {
-					self.update(ctx);
+					self.updateSceneGraph(ctx);
 				}
 			}
 			
 			// Render the scenegraph
 			if (self._enableRenders) {
 				if (!self._useManualRender) {
-					if (igeDebug._timing) {
+					if (igeConfig.debug._timing) {
 						renderStart = new Date().getTime();
-						self.render(ctx);
+						self.renderSceneGraph(ctx);
 						ige._renderTime = new Date().getTime() - renderStart;
 					} else {
-						self.render(ctx);
+						self.renderSceneGraph(ctx);
 					}
 				} else {
 					if (self._manualRender) {
-						if (igeDebug._timing) {
+						if (igeConfig.debug._timing) {
 							renderStart = new Date().getTime();
-							self.render(ctx);
+							self.renderSceneGraph(ctx);
 							ige._renderTime = new Date().getTime() - renderStart;
 						} else {
-							self.render(ctx);
+							self.renderSceneGraph(ctx);
 						}
 						self._manualRender = false;
 					}
@@ -1734,13 +1732,13 @@ var IgeEngine = IgeEntity.extend({
 
 		self._resized = false;
 
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 			et = new Date().getTime();
 			ige._tickTime = et - st;
 		}
 	},
 	
-	update: function (ctx) {
+	updateSceneGraph: function (ctx) {
 		var arr = this._children,
 			arrCount, us, ud;
 
@@ -1751,7 +1749,7 @@ var IgeEngine = IgeEntity.extend({
 			arrCount = arr.length;
 
 			// Loop our viewports and call their update methods
-			if (igeDebug._timing) {
+			if (igeConfig.debug._timing) {
 				while (arrCount--) {
 					us = new Date().getTime();
 					arr[arrCount].update(ctx);
@@ -1778,7 +1776,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 
-	render: function (ctx) {
+	renderSceneGraph: function (ctx) {
 		var ts, td;
 
 		// Process any behaviours assigned to the engine
@@ -1786,7 +1784,7 @@ var IgeEngine = IgeEntity.extend({
 
 		// Depth-sort the viewports
 		if (this._viewportDepth) {
-			if (igeDebug._timing) {
+			if (igeConfig.debug._timing) {
 				ts = new Date().getTime();
 				this.depthSortChildren();
 				td = new Date().getTime() - ts;
@@ -1812,7 +1810,7 @@ var IgeEngine = IgeEntity.extend({
 			arrCount = arr.length;
 
 			// Loop our viewports and call their tick methods
-			if (igeDebug._timing) {
+			if (igeConfig.debug._timing) {
 				while (arrCount--) {
 					ctx.save();
 					ts = new Date().getTime();
@@ -1857,10 +1855,10 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	analyseTiming: function () {
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 
 		} else {
-			this.log('Cannot analyse timing because the igeDebug._timing flag is not enabled so no timing data has been recorded!', 'warning');
+			this.log('Cannot analyse timing because the igeConfig.debug._timing flag is not enabled so no timing data has been recorded!', 'warning');
 		}
 	},
 
@@ -1910,7 +1908,7 @@ var IgeEngine = IgeEntity.extend({
 			depthSpace += '----';
 		}
 
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 			timingString = '';
 
 			timingString += 'T: ' + ige._timeSpentInTick[obj.id()];
@@ -1941,7 +1939,7 @@ var IgeEngine = IgeEntity.extend({
 				// Loop our children
 				while (arrCount--) {
 					if (arr[arrCount]._scene._shouldRender) {
-						if (igeDebug._timing) {
+						if (igeConfig.debug._timing) {
 							timingString = '';
 
 							timingString += 'T: ' + ige._timeSpentInTick[arr[arrCount].id()];
@@ -2069,7 +2067,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		// Call class destroy() super method
-		this._super();
+		IgeEntity.prototype.destroy.call(this);
 
 		this.log('Engine destroy complete.');
 	}

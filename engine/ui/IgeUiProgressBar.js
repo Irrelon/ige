@@ -3,7 +3,7 @@ var IgeUiProgressBar = IgeUiEntity.extend({
 	classId: 'IgeUiProgressBar',
 
 	init: function () {
-		this._super();
+		IgeUiEntity.prototype.init.call(this);
 
 		// Set some defaults
 		this._min = 0;
@@ -163,6 +163,6 @@ var IgeUiProgressBar = IgeUiEntity.extend({
 	tick: function (ctx) {
 		this._transformContext(ctx);
 		this.render(ctx);
-		this._super(ctx, true);
+		IgeUiEntity.prototype.tick.call(this, ctx, true);
 	}
 });

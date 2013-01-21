@@ -6,7 +6,7 @@ var CharacterAi = Character.extend({
 		var self = this,
 			newPathMethod;
 
-		this._super();
+		Character.prototype.init.call(this);
 
 		// Choose a random character type
 		this.setType(Math.random() * 8 | 0);
@@ -83,7 +83,7 @@ var CharacterAi = Character.extend({
 			this.newPath();
 		}
 
-		this._super(ctx);
+		Character.prototype.tick.call(this, ctx);
 	}
 });
 

@@ -2,7 +2,7 @@ var Rotator2 = Rotator.extend({
 	classId: 'Rotator2',
 
 	init: function (speed) {
-		this._super(speed);
+		Rotator.prototype.init.call(this, speed);
 		var self = this;
 
 		if (!ige.isServer) {

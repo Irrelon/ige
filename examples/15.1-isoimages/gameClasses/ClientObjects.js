@@ -3,7 +3,7 @@ var ClientObjects = {
 		classId: 'Bank',
 
 		init: function (parent, tileX, tileY) {
-			this._super();
+			IgeEntity.prototype.init.call(this);
 			var self = this;
 
 			// Setup the 3d bounds container (this)
@@ -39,7 +39,7 @@ var ClientObjects = {
 		classId: 'Electricals',
 
 		init: function (parent, tileX, tileY) {
-			this._super();
+			IgeEntity.prototype.init.call(this);
 			var self = this;
 
 			// Setup the 3d bounds container (this)
@@ -68,7 +68,7 @@ var ClientObjects = {
 		classId: 'Burgers',
 
 		init: function (parent, tileX, tileY) {
-			this._super();
+			IgeEntity.prototype.init.call(this);
 			var self = this;
 
 			// Setup the 3d bounds container (this)
@@ -99,7 +99,7 @@ var ClientObjects = {
 		classId: 'SkyScraper',
 
 		init: function (parent, tileX, tileY) {
-			this._super();
+			IgeEntity.prototype.init.call(this);
 			var self = this;
 
 			// Setup some initial internal data

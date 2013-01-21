@@ -105,7 +105,7 @@ var ClientTerrain = {
 		var TerrainEntity = IgeEntity.extend({
 			classId: 'TerrainEntity',
 			tick: function (ctx) {
-				this._super(ctx);
+				IgeEntity.prototype.tick.call(this, ctx);
 				ctx.strokeStyle = '#ffffff';
 				ige.client.terrainPoly.render(ctx);
 			}

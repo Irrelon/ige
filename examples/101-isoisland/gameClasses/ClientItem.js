@@ -2,7 +2,7 @@ var ClientItem = IgeEntity.extend({
 	classId: 'ClientItem',
 
 	init: function (tileX, tileY, tileWidth, tileHeight) {
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		// Store the tile details for this item in
 		// it's internal data object
@@ -91,7 +91,7 @@ var ClientItem = IgeEntity.extend({
 		}
 
 		// Call the parent class destroy method
-		this._super();
+		IgeEntity.prototype.destroy.call(this);
 	}
 });
 

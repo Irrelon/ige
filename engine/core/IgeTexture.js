@@ -560,6 +560,8 @@ var IgeTexture = IgeEventingClass.extend({
 		this.image = this._originalImage;
 		delete this._textureCtx;
 		delete this._textureCanvas;
+		
+		this._filterImageDrawn = false;
 	},
 
 	smoothing: function (val) {
@@ -729,6 +731,15 @@ var IgeTexture = IgeEventingClass.extend({
 		}
 
 		return this;
+	},
+
+	/**
+	 * Creates a clone of the texture.
+	 * @return {IgeTexture} A new, distinct texture with the same attributes
+	 * as the one being cloned.
+	 */
+	clone: function () {
+		return this.textureFromCell(1);
 	},
 
 	/**

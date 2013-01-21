@@ -4,7 +4,7 @@ var Character = IgeEntityBox2d.extend({
 
 	init: function () {
 		var self = this;
-		this._super();
+		IgeEntityBox2d.prototype.init.call(this);
 
 		// Setup the entity
 		self.addComponent(IgeAnimationComponent)
@@ -179,7 +179,7 @@ var Character = IgeEntityBox2d.extend({
 		// makes the entity appear further in the foreground
 		// the closer they become to the bottom of the screen
 		this.depth(this._translate.y);
-		this._super(ctx);
+		IgeEntityBox2d.prototype.tick.call(this, ctx);
 	},
 
 	destroy: function () {
@@ -189,7 +189,7 @@ var Character = IgeEntityBox2d.extend({
 		}
 
 		// Call the super class
-		this._super();
+		IgeEntityBox2d.prototype.destroy.call(this);
 	}
 });
 

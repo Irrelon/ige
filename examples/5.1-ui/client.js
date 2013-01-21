@@ -26,24 +26,26 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Create the main parent scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1');
+					self.mainScene = new IgeScene2d()
+						.id('mainScene');
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
 						.id('vp1')
 						.autoSize(true)
 						.drawBounds(true)
-						//.drawBoundsData(true)
-						.scene(self.scene1)
+						.drawBoundsData(true)
+						.scene(self.mainScene)
 						.camera.translateTo(200, 0, 0)
+						//.camera.scaleTo(0.2, 0.2, 0.2)
+						//.camera.rotateTo(0, 0, Math.radians(10))
 						.mount(ige);
 
 					// Create the sprite scene
-					self.scene2 = new IgeScene2d()
+					self.spriteScene = new IgeScene2d()
 						.id('spriteScene')
 						.depth(0)
-						.mount(self.scene1);
+						.mount(self.mainScene);
 
 					// Create an entity
 					self.obj[0] = new IgeEntity()
@@ -56,14 +58,14 @@ var Client = IgeClass.extend({
 						.mouseOver(function () { this.highlight(true); this.drawBoundsData(true); })
 						.mouseOut(function () { this.highlight(false); this.drawBoundsData(false); })
 						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
-						.mount(self.scene2);
+						.mount(self.spriteScene);
 
 					// Create the UI scene
-					self.scene3 = new IgeScene2d()
+					self.uiScene = new IgeScene2d()
 						.id('uiScene')
 						.depth(1)
 						.ignoreCamera(true)
-						.mount(self.scene1);
+						.mount(self.mainScene);
 
 					// Create a new UI entity
 					self.obj[1] = new IgeUiEntity()
@@ -78,7 +80,7 @@ var Client = IgeClass.extend({
 						.borderBottomWidth(1)
 						.backgroundPosition(0, 0)
 						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
-						.mount(self.scene3);
+						.mount(self.uiScene);
 
 					self.obj[2] = new IgeUiEntity()
 						.id('leftBar')
@@ -93,7 +95,7 @@ var Client = IgeClass.extend({
 						.mouseOver(function () { this.backgroundColor('#49ceff'); ige.input.stopPropagation(); })
 						.mouseOut(function () { this.backgroundColor('#282828'); ige.input.stopPropagation(); })
 						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
-						.mount(self.scene3);
+						.mount(self.uiScene);
 
 					self.obj[3] = new IgeUiEntity()
 						.id('rightBar')
@@ -108,7 +110,7 @@ var Client = IgeClass.extend({
 						.mouseOver(function () {this.backgroundColor('#49ceff'); ige.input.stopPropagation(); })
 						.mouseOut(function () {this.backgroundColor('#282828'); ige.input.stopPropagation(); })
 						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
-						.mount(self.scene3);
+						.mount(self.uiScene);
 
 					self.obj[4] = new IgeUiEntity()
 						.id('entityButton')
@@ -138,7 +140,7 @@ var Client = IgeClass.extend({
 						.mouseOver(function () {this.backgroundColor('#49ceff'); ige.input.stopPropagation(); })
 						.mouseOut(function () {this.backgroundColor('#474747'); ige.input.stopPropagation(); })
 						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
-						.mount(self.scene3);
+						.mount(self.uiScene);
 
 					var i, txBox;
 
@@ -156,7 +158,7 @@ var Client = IgeClass.extend({
 							.height(24)
 							//.cache(true)
 							.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
-							.mount(self.scene3)
+							.mount(self.uiScene)
 							.value('Type text to see text input!');
 
 						if (i === 0) {
@@ -181,7 +183,7 @@ var Client = IgeClass.extend({
 						};
 
 					// Create a menu - menus are still in alpha and don't work yet
-					self.obj[7] = new IgeUiMenu()
+					/*self.obj[7] = new IgeUiMenu()
 						.id('menu1')
 						.depth(100)
 						.fontSheet(gameTexture[3])
@@ -235,7 +237,7 @@ var Client = IgeClass.extend({
 								}]
 							}]
 						}])
-						.mount(self.scene3);
+						.mount(self.uiScene);*/
 				}
 			});
 		});

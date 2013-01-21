@@ -2,7 +2,7 @@ var Floor = IgeEntityBox2d.extend({
 	classId: 'Floor',
 
 	init: function () {
-		this._super();
+		IgeEntityBox2d.prototype.init.call(this);
 
 		var self = this;
 
@@ -21,7 +21,7 @@ var Floor = IgeEntityBox2d.extend({
 	},
 
 	tick: function (ctx) {
-		this._super(ctx);
+		IgeEntityBox2d.prototype.tick.call(this, ctx);
 	}
 });
 

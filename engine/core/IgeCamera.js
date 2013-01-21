@@ -5,7 +5,7 @@ var IgeCamera = IgeEntity.extend({
 	classId: 'IgeCamera',
 
 	init: function (entity) {
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		this._trackRotateTarget = undefined;
 		this._trackTranslateTarget = undefined;
@@ -335,7 +335,7 @@ var IgeCamera = IgeEntity.extend({
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = IgeEntity.prototype._stringify.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {

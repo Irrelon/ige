@@ -51,7 +51,7 @@ var IgeClass = (function () {
 		 *     entity.log('An error message', 'error');
 		 */
 		log = function (text, type, obj) {
-			if (igeDebug._enabled) {
+			if (igeConfig.debug._enabled) {
 				var indent = '',
 					stack;
 
@@ -62,8 +62,8 @@ var IgeClass = (function () {
 				}
 
 				if (type === 'warning' || type === 'error') {
-					if (igeDebug._stacks) {
-						if (igeDebug._node) {
+					if (igeConfig.debug._stacks) {
+						if (igeConfig.debug._node) {
 							stack = new Error().stack;
 							//console.log(color.magenta('Stack:'), color.red(stack));
 							console.log('Stack:', stack);
@@ -76,7 +76,7 @@ var IgeClass = (function () {
 				}
 
 				if (type === 'error') {
-					if (igeDebug._throwErrors) {
+					if (igeConfig.debug._throwErrors) {
 						throw(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
 					} else {
 						console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
@@ -127,6 +127,7 @@ var IgeClass = (function () {
 			this[newComponent.componentId] = newComponent;
 
 			// Add the component reference to the class component array
+			this._components = this._components || [];
 			this._components.push(newComponent);
 
 			return this;
@@ -235,12 +236,17 @@ var IgeClass = (function () {
 		data = function (key, value) {
 			if (key !== undefined) {
 				if (value !== undefined) {
+					this._data = this._data || {};
 					this._data[key] = value;
 
 					return this;
 				}
-
-				return this._data[key];
+				
+				if (this._data) {
+					return this._data[key];
+				} else {
+					return null;
+				}
 			}
 		};
 
@@ -259,8 +265,7 @@ var IgeClass = (function () {
 	 * @return {Function}
 	 */
 	IgeClass.extend = function () {
-		var _super = this.prototype,
-			name,
+		var name,
 			prototype,
 			// Set prop to the last argument passed
 			prop = arguments[arguments.length - 1],
@@ -291,35 +296,8 @@ var IgeClass = (function () {
 
 		// Copy the properties over onto the new prototype
 		for (name in prop) {
-			// Check if we're overwriting an existing function
-			if (typeof(prop[name]) === "function" && typeof(_super[name]) === "function" && fnTest.test(prop[name])) {
-				// Allow access to original source code
-				// so we can edit the engine live
-				prototype['__' + name] = prop[name];
-
-				// Assign a new method to allow access to the
-				// super-class method via this._super() in the
-				// new method
-				prototype[name] = (function (name, fn) {
-					return function () {
-						var tmp = this._super,
-							ret;
-
-						// Add a new ._super() method that is the same method
-						// but on the super-class
-						this._super = _super[name];
-
-						// The method only need to be bound temporarily, so we
-						// remove it when we're done executing
-						ret = fn['__' + name].apply(this, arguments);
-						//ret = fn.apply(this, arguments);
-						this._super = tmp;
-
-						return ret;
-					};
-				}(name, prototype));
-			} else {
-				// The prop is not a method
+			if (prop.hasOwnProperty(name)) {
+				// Copy the property
 				prototype[name] = prop[name];
 			}
 		}
@@ -343,19 +321,13 @@ var IgeClass = (function () {
 				}
 			}
 		}
+		
+		//prototype._superClass = this.prototype;
+		//console.log(prop.classId, 'extends', this.prototype._classId);
 
 		// The dummy class constructor
 		function IgeClass() {
-			this._data = {};
 			if (!initializing && this.init) {
-				// Create an array to hold components
-				this._components = [];
-
-				// Store a reference to the global ige object
-				if (typeof(ige) !== 'undefined') {
-					this.ige = ige;
-				}
-
 				// Call the class init method
 				this.init.apply(this, arguments);
 			}
@@ -367,7 +339,7 @@ var IgeClass = (function () {
 		// Enforce the constructor to be what we expect
 		IgeClass.prototype.constructor = IgeClass;
 
-		// And make this class extendable
+		// And make this class extensible
 		IgeClass.extend = arguments.callee;
 
 		// Add log capability
@@ -377,7 +349,7 @@ var IgeClass = (function () {
 		IgeClass.prototype.data = data;
 
 		// Add class name capability
-		IgeClass.prototype.classId = classId;
+		IgeClass.prototype.classId = classId; // This is a method that returns _classId
 		IgeClass.prototype._classId = prop.classId || 'IgeClass';
 
 		// Add the addComponent method
@@ -392,6 +364,57 @@ var IgeClass = (function () {
 		// Register the class with the class store
 		igeClassStore[prop.classId] = IgeClass;
 
+		return IgeClass;
+	};
+
+	/**
+	 * Test method
+	 * @param prop
+	 * @return {Function}
+	 */
+	IgeClass.vanilla = function (prop) {
+		var IgeClass = prop.init || function () {},
+			prototype = new this();
+		
+		// Copy the properties over onto the new prototype
+		for (name in prop) {
+			if (prop.hasOwnProperty(name) && name !== 'init') {
+				// Copy the property
+				prototype[name] = prop[name];
+			}
+		}
+		
+		// Populate our constructed prototype object
+		IgeClass.prototype = prototype;
+
+		// Enforce the constructor to be what we expect
+		IgeClass.prototype.constructor = IgeClass;
+		
+		// And make this class extensible
+		IgeClass.extend = this.extend;
+		
+		// Add log capability
+		IgeClass.prototype.log = log;
+
+		// Add data capability
+		IgeClass.prototype.data = data;
+
+		// Add class name capability
+		IgeClass.prototype.classId = classId; // This is a method that returns _classId
+		IgeClass.prototype._classId = prop.classId || 'IgeClass';
+
+		// Add the addComponent method
+		IgeClass.prototype.addComponent = addComponent;
+
+		// Add the removeComponent method
+		IgeClass.prototype.removeComponent = removeComponent;
+
+		// Add the implement method
+		IgeClass.prototype.implement = implement;
+
+		// Register the class with the class store
+		igeClassStore[prop.classId] = IgeClass;
+		
 		return IgeClass;
 	};
 

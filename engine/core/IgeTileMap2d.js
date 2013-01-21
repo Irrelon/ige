@@ -7,10 +7,11 @@
  */
 var IgeTileMap2d = IgeEntity.extend({
 	classId: 'IgeTileMap2d',
+	IgeTileMap2d: true,
 
 	init: function (tileWidth, tileHeight) {
 		this._alwaysInView = true;
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		var self = this;
 
@@ -106,109 +107,28 @@ var IgeTileMap2d = IgeEntity.extend({
 
 	_childMounted: function (obj) {
 		// Augment the child with tile powers!
-		obj.occupyTile = this._objectOccupyTile;
-		obj.unOccupyTile = this._objectUnOccupyTile;
-		obj.overTiles = this._objectOverTiles;
+		/*obj.occupyTile = obj.occupyTile || this._objectOccupyTile;
+		obj.unOccupyTile = obj.unOccupyTile || this._objectUnOccupyTile;
+		obj.overTiles = obj.overTiles || this._objectOverTiles;*/
 
 		// We can also re-use the tile size methods since
 		// they alter the same properties on the calling
 		// entity anyway.
-		obj.tileWidth = this.tileWidth;
-		obj.tileHeight = this.tileHeight;
+		obj.tileWidth = obj.tileWidth || this.tileWidth;
+		obj.tileHeight = obj.tileHeight || this.tileHeight;
 
 		// Set default values
 		obj._tileWidth = obj._tileWidth || 1;
 		obj._tileHeight = obj._tileHeight || 1;
 
-		this._super(obj);
-	},
-
-	/**
-	 * This method is attached to objects that are mounted to the tile map.
-	 * Adds the object to the tile map at the passed tile co-ordinates. If
-	 * no tile co-ordinates are passed, will use the current tile position
-	 * and the tileWidth() and tileHeight() values.
-	 * @param {Number=} x X co-ordinate of the tile to occupy.
-	 * @param {Number=} y Y co-ordinate of the tile to occupy.
-	 * @param {Number=} width Number of tiles along the x-axis to occupy.
-	 * @param {Number=} height Number of tiles along the y-axis to occupy.
-	 * @private
-	 */
-	_objectOccupyTile: function (x, y, width, height) {
-		if (x !== undefined && y !== undefined) {
-			this._parent.occupyTile(x, y, width, height, this);
-		} else {
-			// Occupy tiles based upon tile point and tile width/height
-			var trPoint = new IgePoint(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
-				tilePoint = this._parent.pointToTile(trPoint);
-
-			if (this._parent._mountMode === 1) {
-				tilePoint.thisToIso();
-			}
-
-			this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
-		}
-		return this;
-	},
-
-	/**
-	 * This method is attached to objects that are mounted to the tile map.
-	 * Removes the object from the tile map at the passed tile co-ordinates.
-	 * If no tile co-ordinates are passed, will use the current tile position
-	 * and the tileWidth() and tileHeight() values.
-	 * @param {Number=} x X co-ordinate of the tile to un-occupy.
-	 * @param {Number=} y Y co-ordinate of the tile to un-occupy.
-	 * @param {Number=} width Number of tiles along the x-axis to un-occupy.
-	 * @param {Number=} height Number of tiles along the y-axis to un-occupy.
-	 * @private
-	 */
-	_objectUnOccupyTile: function (x, y, width, height) {
-		if (x !== undefined && y !== undefined) {
-			this._parent.unOccupyTile(x, y, width, height);
-		} else {
-			// Un-occupy tiles based upon tile point and tile width/height
-			var trPoint = new IgePoint(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
-				tilePoint = this._parent.pointToTile(trPoint);
-
-			if (this._parent._mountMode === 1) {
-				tilePoint.thisToIso();
-			}
-
-			this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
-		}
-		return this;
-	},
-
-	/**
-	 * This method is attached to objects that are mounted to the tile map.
-	 * Returns an array of tile co-ordinates that the object is currently
-	 * over, calculated using the current world co-ordinates of the object
-	 * as well as it's 3d geometry.
-	 * @private
-	 * @return {Array} The array of tile co-ordinates as IgePoint instances.
-	 */
-	_objectOverTiles: function () {
-		var x,
-			y,
-			tileWidth = this._tileWidth || 1,
-			tileHeight = this._tileHeight || 1,
-			tile = this._parent.pointToTile(this._translate),
-			tileArr = [];
-
-		for (x = 0; x < tileWidth; x++) {
-			for (y = 0; y < tileHeight; y++) {
-				tileArr.push(new IgePoint(tile.x + x, tile.y + y, 0));
-			}
-		}
-
-		return tileArr;
+		IgeEntity.prototype._childMounted.call(this, obj);
 	},
 
 	_resizeEvent: function (event) {
 		if (this._parent) {
 			this._geometry = this._parent._geometry.clone();
 		}
-		this._super(event);
+		IgeEntity.prototype._resizeEvent.call(this, event);
 	},
 
 	/**
@@ -666,7 +586,7 @@ var IgeTileMap2d = IgeEntity.extend({
 			}
 		}
 
-		this._super(ctx, true);
+		IgeEntity.prototype.tick.call(this, ctx, true);
 	}
 });
 

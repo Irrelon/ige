@@ -1,6 +1,9 @@
 IgeFilters.sobel = function (canvas, ctx, originalImage, texture, data) {
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.drawImage(originalImage, 0, 0);
+	if (!texture._filterImageDrawn || !data || !data.cumulative) {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.drawImage(originalImage, 0, 0);
+		texture._filterImageDrawn = true;
+	}
 
 	var strength = 1,
 		loop;

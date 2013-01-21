@@ -12,7 +12,7 @@ var Rotator = IgeEntity.extend({
 		}
 
 		// Call the IgeEntity (super-class) tick() method
-		this._super(ctx);
+		IgeEntity.prototype.tick.call(this, ctx);
 	}
 });
 

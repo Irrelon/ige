@@ -342,7 +342,7 @@ ige = null;
 igeVersion = '1.1.0';
 igeClassStore = {};
 
-igeDebug = {
+igeConfig.debug = {
 	_enabled: true,
 	_node: typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined',
 	_level: ['log', 'warning', 'error'],
@@ -370,8 +370,8 @@ igeDebug = {
 	}
 };
 
-if (igeDebug._node) {
-	igeDebug._util = require('util');
+if (igeConfig.debug._node) {
+	igeConfig.debug._util = require('util');
 }
 
 /**
@@ -1121,7 +1121,7 @@ var IgeClass = (function () {
 		 *     entity.log('An error message', 'error');
 		 */
 		log = function (text, type, obj) {
-			if (igeDebug._enabled) {
+			if (igeConfig.debug._enabled) {
 				var indent = '',
 					stack;
 
@@ -1132,8 +1132,8 @@ var IgeClass = (function () {
 				}
 
 				if (type === 'warning' || type === 'error') {
-					if (igeDebug._stacks) {
-						if (igeDebug._node) {
+					if (igeConfig.debug._stacks) {
+						if (igeConfig.debug._node) {
 							stack = new Error().stack;
 							//console.log(color.magenta('Stack:'), color.red(stack));
 							console.log('Stack:', stack);
@@ -1146,7 +1146,7 @@ var IgeClass = (function () {
 				}
 
 				if (type === 'error') {
-					if (igeDebug._throwErrors) {
+					if (igeConfig.debug._throwErrors) {
 						throw(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
 					} else {
 						console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
@@ -1368,14 +1368,14 @@ var IgeClass = (function () {
 				prototype['__' + name] = prop[name];
 
 				// Assign a new method to allow access to the
-				// super-class method via this._super() in the
+				// super-class method via CLASSNAME.prototype._editNAME_.call(this) in the
 				// new method
 				prototype[name] = (function (name, fn) {
 					return function () {
 						var tmp = this._super,
 							ret;
 
-						// Add a new ._super() method that is the same method
+						// Add a new .CLASSNAME.prototype._editNAME_.call(this) method that is the same method
 						// but on the super-class
 						this._super = _super[name];
 
@@ -6120,7 +6120,7 @@ var IgeCellSheet = IgeTexture.extend({
 			}
 		});
 
-		this._super(url);
+		CLASSNAME.prototype._editNAME_.call(this, url);
 	},
 
 	/**
@@ -6268,7 +6268,7 @@ var IgeSpriteSheet = IgeTexture.extend({
 			}
 		});
 
-		this._super(url);
+		CLASSNAME.prototype._editNAME_.call(this, url);
 	},
 
 	/**
@@ -7786,7 +7786,7 @@ var IgeObject = IgeEventingClass.extend({
 				
 				// Depth sort all child objects
 				if (arrCount && !ige._headless) {
-					if (igeDebug._timing) {
+					if (igeConfig.debug._timing) {
 						if (!ige._timeSpentLastTick[this.id()]) {
 							ige._timeSpentLastTick[this.id()] = {};
 						}
@@ -7801,7 +7801,7 @@ var IgeObject = IgeEventingClass.extend({
 				}
 
 				// Loop our children and call their update methods
-				if (igeDebug._timing) {
+				if (igeConfig.debug._timing) {
 					while (arrCount--) {
 						ts = new Date().getTime();
 						arr[arrCount].update(ctx);
@@ -7849,7 +7849,7 @@ var IgeObject = IgeEventingClass.extend({
 				arrCount = arr.length;
 				
 				// Loop our children and call their tick methods
-				if (igeDebug._timing) {
+				if (igeConfig.debug._timing) {
 					while (arrCount--) {
 						if (!arr[arrCount]._newBorn) {
 							ctx.save();
@@ -8090,7 +8090,7 @@ var IgeEntity = IgeObject.extend({
 	classId: 'IgeEntity',
 
 	init: function () {
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		this._width = undefined;
 		this._height = undefined;
@@ -9271,7 +9271,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		// Process super class
-		this._super(ctx);
+		CLASSNAME.prototype._editNAME_.call(this, ctx);
 	},
 
 	/**
@@ -9362,7 +9362,7 @@ var IgeEntity = IgeObject.extend({
 			}
 
 			// Process children
-			this._super(ctx);
+			CLASSNAME.prototype._editNAME_.call(this, ctx);
 		}
 	},
 
@@ -9526,7 +9526,7 @@ var IgeEntity = IgeObject.extend({
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = CLASSNAME.prototype._editNAME_.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
@@ -9602,7 +9602,7 @@ var IgeEntity = IgeObject.extend({
 		
 
 		// Call IgeObject.destroy()
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 	},
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -10793,7 +10793,7 @@ var IgeTileMap2d = IgeEntity.extend({
 
 	init: function (tileWidth, tileHeight) {
 		this._alwaysInView = true;
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		var self = this;
 
@@ -10903,7 +10903,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		obj._tileWidth = obj._tileWidth || 1;
 		obj._tileHeight = obj._tileHeight || 1;
 
-		this._super(obj);
+		CLASSNAME.prototype._editNAME_.call(this, obj);
 	},
 
 	/**
@@ -10991,7 +10991,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		if (this._parent) {
 			this._geometry = this._parent._geometry.clone();
 		}
-		this._super(event);
+		CLASSNAME.prototype._editNAME_.call(this, event);
 	},
 
 	/**
@@ -11449,7 +11449,7 @@ var IgeTileMap2d = IgeEntity.extend({
 			}
 		}
 
-		this._super(ctx, true);
+		CLASSNAME.prototype._editNAME_.call(this, ctx, true);
 	}
 });
 
@@ -11462,7 +11462,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	classId: 'IgeTextureMap',
 
 	init: function (tileWidth, tileHeight) {
-		this._super(tileWidth, tileHeight);
+		CLASSNAME.prototype._editNAME_.call(this, tileWidth, tileHeight);
 		this.map = new IgeMap2d();
 		this._textureList = [];
 		this._renderCenter = new IgePoint(0, 0, 0);
@@ -11729,7 +11729,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	tick: function (ctx) {
 		// TODO: This is being called at the wrong time, drawing children before this parent! FIX THIS
 		// Run the IgeTileMap2d tick method
-		this._super(ctx);
+		CLASSNAME.prototype._editNAME_.call(this, ctx);
 
 		// Draw each image that has been defined on the map
 		var mapData = this.map._mapData,
@@ -12131,7 +12131,7 @@ var IgeCamera = IgeEntity.extend({
 	classId: 'IgeCamera',
 
 	init: function (entity) {
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		this._trackRotateTarget = undefined;
 		this._trackTranslateTarget = undefined;
@@ -12461,7 +12461,7 @@ var IgeCamera = IgeEntity.extend({
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = CLASSNAME.prototype._editNAME_.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
@@ -12494,7 +12494,7 @@ var IgeViewport = IgeEntity.extend([
 
 	init: function (options) {
 		this._alwaysInView = true;
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		this._mouseAlwaysInside = true;
 		this._mousePos = new IgePoint(0, 0, 0);
@@ -12587,7 +12587,7 @@ var IgeViewport = IgeEntity.extend([
 			this._scene._parent = this;
 
 			this.camera.update(ctx);
-			this._super(ctx);
+			CLASSNAME.prototype._editNAME_.call(this, ctx);
 			
 			if (this._scene.newFrame()) {
 				this._scene.update(ctx);
@@ -12611,7 +12611,7 @@ var IgeViewport = IgeEntity.extend([
 
 			// Render our scene data
 			//ctx.globalAlpha = ctx.globalAlpha * this._parent._opacity * this._opacity;
-			this._super(ctx);
+			CLASSNAME.prototype._editNAME_.call(this, ctx);
 
 			// Translate to the top-left of the viewport
 			ctx.translate(
@@ -12868,7 +12868,7 @@ var IgeViewport = IgeEntity.extend([
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = CLASSNAME.prototype._editNAME_.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
@@ -12897,7 +12897,7 @@ var IgeScene2d = IgeEntity.extend({
 	init: function () {
 		this._mouseAlwaysInside = true;
 		this._alwaysInView = true;
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		this._shouldRender = true;
 		this._autoSize = true;
@@ -12966,7 +12966,7 @@ var IgeScene2d = IgeEntity.extend({
 			//this._localMatrix.multiply(ige._currentCamera._worldMatrix.getInverse());
 		}
 		
-		this._super(ctx);
+		CLASSNAME.prototype._editNAME_.call(this, ctx);
 	},
 
 	/**
@@ -12975,7 +12975,7 @@ var IgeScene2d = IgeEntity.extend({
 	 */
 	tick: function (ctx) {
 		if (this._shouldRender) {
-			this._super(ctx);
+			CLASSNAME.prototype._editNAME_.call(this, ctx);
 		}
 	},
 
@@ -13009,7 +13009,7 @@ var IgeScene2d = IgeEntity.extend({
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = CLASSNAME.prototype._editNAME_.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
@@ -13037,16 +13037,16 @@ var IgeEngine = IgeEntity.extend({
 
 	init: function () {
 		// Deal with some debug settings first
-		if (igeDebug) {
-			if (!igeDebug._enabled) {
+		if (igeConfig.debug) {
+			if (!igeConfig.debug._enabled) {
 				// Debug is not enabled so ensure that
 				// timing debugs are disabled
-				igeDebug._timing = false;
+				igeConfig.debug._timing = false;
 			}
 		}
 
 		this._alwaysInView = true;
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		this._id = 'ige';
 		this.basePath = '';
@@ -13065,7 +13065,7 @@ var IgeEngine = IgeEntity.extend({
 		console.log('------------------------------------------------------------------------------');
 
 		// Call super-class method
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		// Check if we should add the CocoonJS support component
 		if (!this.isServer) {
@@ -13368,24 +13368,24 @@ var IgeEngine = IgeEntity.extend({
 	
 	debugEnabled: function (val) {
 		if (val !== undefined) {
-			if (igeDebug) {
-				igeDebug._enabled = val;
+			if (igeConfig.debug) {
+				igeConfig.debug._enabled = val;
 			}
 			return this;
 		}
 
-		return igeDebug._enabled;
+		return igeConfig.debug._enabled;
 	},
 	
 	debugTiming: function (val) {
 		if (val !== undefined) {
-			if (igeDebug) {
-				igeDebug._timing = val;
+			if (igeConfig.debug) {
+				igeConfig.debug._timing = val;
 			}
 			return this;
 		}
 
-		return igeDebug._timing;
+		return igeConfig.debug._timing;
 	},
 
 	debug: function (eventName) {
@@ -14413,7 +14413,7 @@ var IgeEngine = IgeEntity.extend({
 			elem.className += ' selected';
 		}
 
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 			if (ige._timeSpentInTick[item.id]) {
 				timingString = '<span>' + ige._timeSpentInTick[item.id] + 'ms</span>';
 				/*if (ige._timeSpentLastTick[item.id]) {
@@ -14671,7 +14671,7 @@ var IgeEngine = IgeEntity.extend({
 		self._timeScaleLastTimestamp = timeStamp;
 		timeStamp = Math.floor(self._currentTime);
 
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 			st = new Date().getTime();
 		}
 
@@ -14713,7 +14713,7 @@ var IgeEngine = IgeEntity.extend({
 
 			// Update the scenegraph
 			if (self._enableUpdates) {
-				if (igeDebug._timing) {
+				if (igeConfig.debug._timing) {
 					updateStart = new Date().getTime();
 					self.update(ctx);
 					ige._updateTime = new Date().getTime() - updateStart;
@@ -14725,7 +14725,7 @@ var IgeEngine = IgeEntity.extend({
 			// Render the scenegraph
 			if (self._enableRenders) {
 				if (!self._useManualRender) {
-					if (igeDebug._timing) {
+					if (igeConfig.debug._timing) {
 						renderStart = new Date().getTime();
 						self.render(ctx);
 						ige._renderTime = new Date().getTime() - renderStart;
@@ -14734,7 +14734,7 @@ var IgeEngine = IgeEntity.extend({
 					}
 				} else {
 					if (self._manualRender) {
-						if (igeDebug._timing) {
+						if (igeConfig.debug._timing) {
 							renderStart = new Date().getTime();
 							self.render(ctx);
 							ige._renderTime = new Date().getTime() - renderStart;
@@ -14764,7 +14764,7 @@ var IgeEngine = IgeEntity.extend({
 
 		self._resized = false;
 
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 			et = new Date().getTime();
 			ige._tickTime = et - st;
 		}
@@ -14781,7 +14781,7 @@ var IgeEngine = IgeEntity.extend({
 			arrCount = arr.length;
 
 			// Loop our viewports and call their update methods
-			if (igeDebug._timing) {
+			if (igeConfig.debug._timing) {
 				while (arrCount--) {
 					us = new Date().getTime();
 					arr[arrCount].update(ctx);
@@ -14816,7 +14816,7 @@ var IgeEngine = IgeEntity.extend({
 
 		// Depth-sort the viewports
 		if (this._viewportDepth) {
-			if (igeDebug._timing) {
+			if (igeConfig.debug._timing) {
 				ts = new Date().getTime();
 				this.depthSortChildren();
 				td = new Date().getTime() - ts;
@@ -14842,7 +14842,7 @@ var IgeEngine = IgeEntity.extend({
 			arrCount = arr.length;
 
 			// Loop our viewports and call their tick methods
-			if (igeDebug._timing) {
+			if (igeConfig.debug._timing) {
 				while (arrCount--) {
 					ctx.save();
 					ts = new Date().getTime();
@@ -14887,10 +14887,10 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	analyseTiming: function () {
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 
 		} else {
-			this.log('Cannot analyse timing because the igeDebug._timing flag is not enabled so no timing data has been recorded!', 'warning');
+			this.log('Cannot analyse timing because the igeConfig.debug._timing flag is not enabled so no timing data has been recorded!', 'warning');
 		}
 	},
 
@@ -14940,7 +14940,7 @@ var IgeEngine = IgeEntity.extend({
 			depthSpace += '----';
 		}
 
-		if (igeDebug._timing) {
+		if (igeConfig.debug._timing) {
 			timingString = '';
 
 			timingString += 'T: ' + ige._timeSpentInTick[obj.id()];
@@ -14971,7 +14971,7 @@ var IgeEngine = IgeEntity.extend({
 				// Loop our children
 				while (arrCount--) {
 					if (arr[arrCount]._scene._shouldRender) {
-						if (igeDebug._timing) {
+						if (igeConfig.debug._timing) {
 							timingString = '';
 
 							timingString += 'T: ' + ige._timeSpentInTick[arr[arrCount].id()];
@@ -15099,7 +15099,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		// Call class destroy() super method
-		this._super();
+		CLASSNAME.prototype._editNAME_.call(this);
 
 		this.log('Engine destroy complete.');
 	}

@@ -27,6 +27,22 @@ var IgePathNode = IgePoint.extend({
 		this.hash = x + ',' + y;
 		this.listType = 0;
 		this.direction = direction;
+		this.mode = 0;
+	},
+
+	/**
+	 * Gets / sets the path node mode. The mode determines if the co-ordinates
+	 * will be in tile or absolute co-ordinates.
+	 * @param {Number=} val 0 = tile based, 1 = absolute based.
+	 * @return {*}
+	 */
+	mode: function (val) {
+		if (val !== undefined) {
+			this.mode = val;
+			return this;
+		}
+		
+		return this.mode;
 	}
 });
 

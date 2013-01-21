@@ -2,7 +2,7 @@ var Mover = IgeEntity.extend({
 	classId: 'Mover',
 
 	init: function () {
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		var self = this;
 
@@ -50,7 +50,7 @@ var Mover = IgeEntity.extend({
 			// The section was not one that we handle here, so pass this
 			// to the super-class streamSectionData() method - it handles
 			// the "transform" section by itself
-			return this._super(sectionId, data);
+			return IgeEntity.prototype.streamSectionData.call(this, sectionId, data);
 		}
 	},
 
@@ -81,7 +81,7 @@ var Mover = IgeEntity.extend({
 		}
 
 		// Call the IgeEntity (super-class) tick() method
-		this._super(ctx);
+		IgeEntity.prototype.tick.call(this, ctx);
 	}
 });
 

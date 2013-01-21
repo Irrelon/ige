@@ -4,7 +4,7 @@ var CharacterContainer = IgeEntity.extend({
 
 	init: function () {
 		var self = this;
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		// Setup the entity 3d bounds
 		self.size3d(20, 20, 40);
@@ -109,7 +109,7 @@ var CharacterContainer = IgeEntity.extend({
 		// makes the entity appear further in the foreground
 		// the closer they become to the bottom of the screen
 		this.depth(this._translate.y);
-		this._super(ctx);
+		IgeEntity.prototype.tick.call(this, ctx);
 	}
 });
 

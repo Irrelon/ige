@@ -9,7 +9,7 @@ var IgeTileMapStack2d = IgeEntity.extend({
 	classId: 'IgeTileMapStack2d',
 
 	init: function (tileWidth, tileHeight) {
-		this._super();
+		IgeEntity.prototype.init.call(this);
 		var self = this;
 
 		this.map = new IgeMapStack2d();
@@ -84,7 +84,7 @@ var IgeTileMapStack2d = IgeEntity.extend({
 		obj.unOccupyTile = this._objectUnOccupyTile;
 		obj.overTiles = this._objectOverTiles;
 
-		this._super(obj);
+		IgeEntity.prototype._childMounted.call(this, obj);
 	},
 
 	/**
@@ -152,7 +152,7 @@ var IgeTileMapStack2d = IgeEntity.extend({
 
 	_resizeEvent: function (event) {
 		this._geometry = this._parent._geometry.clone();
-		this._super(event);
+		IgeEntity.prototype._resizeEvent.call(this, event);
 	},
 
 	/**
@@ -474,7 +474,7 @@ var IgeTileMapStack2d = IgeEntity.extend({
 			}
 		}
 
-		this._super(ctx, true);
+		IgeEntity.prototype.tick.call(this, ctx, true);
 	}
 });
 

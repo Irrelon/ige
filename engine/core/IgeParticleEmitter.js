@@ -7,7 +7,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 
 	init: function () {
 		// IgeBody.init()
-		this._super();
+		IgeEntity.prototype.init.call(this);
 
 		// Set some defaults
 		this._currentDelta = 0;
@@ -583,7 +583,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 							// entity definition because some components may already
 							// have initialised due to the particle template
 							tempParticle.translateTo(translateX, translateY, translateZ);
-							tempParticle.rotateTo(0, 0, rotate * Math.PI / 180);
+							tempParticle.rotateTo(0, 0, Math.radians(rotate));
 							tempParticle.scaleTo(scaleX, scaleY, scaleZ);
 							tempParticle.opacity(opacity);
 
@@ -602,7 +602,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 							if (typeof(deathRotate) !== 'undefined') {
 								tweens.push(new IgeTween()
 									.targetObj(tempParticle._rotate)
-									.properties({z: (deathRotate * Math.PI / 180)})
+									.properties({z: Math.radians(deathRotate)})
 									.duration(life));
 							}
 							if (typeof(deathOpacity) !== 'undefined') {
@@ -650,7 +650,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 			}
 		}
 
-		this._super(ctx);
+		IgeEntity.prototype.tick.call(this, ctx);
 	},
 
 	/**
@@ -672,7 +672,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 	 */
 	_stringify: function () {
 		// Get the properties for all the super-classes
-		var str = this._super(), i;
+		var str = IgeEntity.prototype._stringify.call(this), i;
 		return str;
 
 		// TODO: WRITE THIS FOR THIS CLASS - EPIC AMOUNT OF WORK HERE

@@ -9,7 +9,7 @@ var RandomMovingCharacter = Character.extend({
 			);
 		}
 
-		this._super(ctx);
+		Character.prototype.update.call(this, ctx);
 	}
 });
 

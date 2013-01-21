@@ -3,7 +3,7 @@ var ExplosionParticle = ThrustParticle.extend({
 
 	init: function (emitter) {
 		this._emitter = emitter;
-		this._super();
+		ThrustParticle.prototype.init.call(this);
 
 		// Set the rectangle colour (this is read in the Rectangle.js smart texture)
 		var pC = Math.floor(Math.random() * 3);
@@ -54,6 +54,6 @@ var ExplosionParticle = ThrustParticle.extend({
 		if (this._emitter !== undefined) {
 			this._emitter._particles.pull(this);
 		}
-		this._super();
+		ThrustParticle.prototype.destroy.call(this);
 	}
 });

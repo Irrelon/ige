@@ -13,7 +13,7 @@ var IgeFontSheet = IgeTexture.extend({
 	classId: 'IgeFontSheet',
 
 	init: function (url) {
-		this._super(url);
+		IgeTexture.prototype.init.call(this, url);
 
 		if (arguments[1]) {
 			this.log('Font sheets no longer accept a caching limit value. All font output is now cached by default via the actual font entity - fontEntity.cache(true);', 'warning');
