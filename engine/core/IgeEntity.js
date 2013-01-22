@@ -1730,10 +1730,11 @@ var IgeEntity = IgeObject.extend({
 	 *     });
 	 * @return {*}
 	 */
-	mouseOver: function (callback) {
+	mouseOver: function (callback, pixelPerfect) {
 		if (callback) {
 			this._mouseOver = callback;
 			this._mouseEventsActive = true;
+			this._mouseOverPP = pixelPerfect;
 			return this;
 		}
 
@@ -1874,7 +1875,16 @@ var IgeEntity = IgeObject.extend({
 		// Check if the mouse move is a mouse over
 		if (!this._mouseStateOver) {
 			this._mouseStateOver = true;
-			if (this._mouseOver) { this._mouseOver(event, evc, data); }
+			if (this._mouseOver) {
+				// Check if we want pixel-perfect mouse-over
+				if (this._mouseOverPP) {
+					// Check that the mouse-over occurred on a pixel of our
+					// test entity texture
+					
+				} else {
+					this._mouseOver(event, evc, data);
+				}
+			}
 			
 			this.emit('mouseMove', [event, evc, data]);
 		}
