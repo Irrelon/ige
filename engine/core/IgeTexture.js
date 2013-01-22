@@ -732,6 +732,45 @@ var IgeTexture = IgeEventingClass.extend({
 
 		return this;
 	},
+	
+	pixelData: function (x, y) {
+		if (this._loaded) {
+			if (this.image) {
+				var textureCanvas,
+					textureCtx;
+				
+				// Check if the texture is already using a canvas
+				if (!this._textureCtx) {
+					// Create a new canvas
+					textureCanvas = document.createElement('canvas');
+
+					textureCanvas.width = this.image.width;
+					textureCanvas.height = this.image.height;
+					textureCtx = textureCanvas.getContext('2d');
+
+					// Set smoothing mode
+					if (!this._smoothing) {
+						textureCtx.imageSmoothingEnabled = false;
+						textureCtx.webkitImageSmoothingEnabled = false;
+						textureCtx.mozImageSmoothingEnabled = false;
+					} else {
+						textureCtx.imageSmoothingEnabled = true;
+						textureCtx.webkitImageSmoothingEnabled = true;
+						textureCtx.mozImageSmoothingEnabled = true;
+					}
+					
+					// Draw the image to the canvas
+					textureCtx.drawImage(this.image);
+				} else {
+					textureCtx = this._textureCtx;
+				}
+			}
+		} else {
+			this.log('Cannot read pixel data, the texture you are trying to read data from has not yet loaded!', 'error');
+		}
+
+		return this;
+	},
 
 	/**
 	 * Creates a clone of the texture.
