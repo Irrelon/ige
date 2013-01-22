@@ -79,13 +79,18 @@ var IgeUiStyleExtension = {
 				// from the percentage
 				y = this._geometry.y / 100 * parseInt(y, 10);
 			}
-			this._backgroundSize = {x: x, y: y};
-
-			// Reset the background image
-			if (this._patternTexture && this._patternRepeat) {
-				this.backgroundImage(this._patternTexture, this._patternRepeat);
+			
+			if (x !== 0 && y !== 0) {
+				this._backgroundSize = {x: x, y: y};
+	
+				// Reset the background image
+				if (this._patternTexture && this._patternRepeat) {
+					this.backgroundImage(this._patternTexture, this._patternRepeat);
+				}
+				this.dirty(true);
+			} else {
+				this.log('Cannot set background to zero-sized x or y!', 'error');
 			}
-			this.dirty(true);
 			return this;
 		}
 
