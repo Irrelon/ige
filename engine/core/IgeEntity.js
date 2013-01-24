@@ -1885,10 +1885,11 @@ var IgeEntity = IgeObject.extend({
 				}
 			}
 			
-			this.emit('mouseMove', [event, evc, data]);
+			this.emit('mouseOver', [event, evc, data]);
 		}
 
 		if (this._mouseMove) { this._mouseMove(event, evc, data); }
+		this.emit('mouseMove', [event, evc, data]);
 	},
 
 	/**
