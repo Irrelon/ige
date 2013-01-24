@@ -86,6 +86,7 @@ var igeCoreConfig = {
 		['csap', 'IgeUiRadioButton', 'ui/IgeUiRadioButton.js'],
 		['csap', 'IgeUiProgressBar', 'ui/IgeUiProgressBar.js'],
 		['csap', 'IgeUiTextBox', 'ui/IgeUiTextBox.js'],
+		['csap', 'IgeUiTooltip', 'ui/IgeUiTooltip.js'],
 		['csap', 'IgeUiMenu', 'ui/IgeUiMenu.js'],
 		['csap', 'IgeUiTimeStream', 'ui/IgeUiTimeStream.js'],
 		/* Image Filters */
