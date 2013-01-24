@@ -1871,7 +1871,6 @@ var IgeEntity = IgeObject.extend({
 	 * @private
 	 */
 	_handleMouseIn: function (event, evc, data) {
-		// TODO: Set local mouse point based on 0, 0 at top-left of entity rather than screen
 		// Check if the mouse move is a mouse over
 		if (!this._mouseStateOver) {
 			this._mouseStateOver = true;
@@ -1884,6 +1883,8 @@ var IgeEntity = IgeObject.extend({
 				} else {
 					this._mouseOver(event, evc, data);
 				}
+			} else {
+				
 			}
 			
 			this.emit('mouseMove', [event, evc, data]);
