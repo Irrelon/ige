@@ -100,7 +100,8 @@ var IgeTimeSyncExtension = {
 			// Send a response with out current clock time to the server
 			this._sendTimeSync([data, localTime]);
 		}
-
+		
+		/* CEXCLUDE */
 		if (ige.isServer) {
 			sendTime = parseInt(data[1], 10);
 			roundTrip = (localTime - parseInt(data[0], 10));
@@ -116,8 +117,8 @@ var IgeTimeSyncExtension = {
 			this.log('Time sync, server clock ' + (localTime - sendTime) + 'ms ' + direction + ' client, roundtrip: ' + roundTrip + 'ms, send timestamp: ' + parseInt(data[0], 10) + ', local timestamp: ' + localTime);*/
 
 			this._timeSyncLog[clientId] = localTime - sendTime;
-
 		}
+		/* CEXCLUDE */
 	}
 };
 
