@@ -264,6 +264,32 @@ var IgeUiPositionExtension = {
 	},
 
 	/**
+	 * Updates the UI postion of every child entity down the scenegraph
+	 * for this UI entity.
+	 * @return {*}
+	 */
+	updateUiChildren: function () {
+		var arr = this._children,
+			arrCount,
+			arrItem;
+		
+		if (arr) {
+			arrCount = arr.length;
+			
+			while (arrCount--) {
+				arrItem = arr[arrCount];
+				
+				arrItem._updateUiPosition();
+				if (typeof(arrItem.updateUiChildren) === 'function') {
+					arrItem.updateUiChildren();
+				}
+			}
+		}
+		
+		return this;
+	},
+
+	/**
 	 * Sets the correct translate x and y for the viewport's left, right
 	 * top and bottom co-ordinates.
 	 * @private

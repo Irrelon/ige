@@ -292,31 +292,33 @@ var IgeUiEntity = IgeEntity.extend([
 	},
 
 	tick: function (ctx, dontTransform) {
-		if (!dontTransform) {
-			this._transformContext(ctx);
+		if (!this._hidden && this._inView && (!this._parent || (this._parent._inView)) && !this._streamJustCreated) {
+			if (!dontTransform) {
+				this._transformContext(ctx);
+			}
+			// TODO: Investigate caching expensive background and border calls
+			//if (!this._cache || this._cacheDirty) {
+				this._renderBackground(ctx);
+				this._renderBorder(ctx);
+			//}
+	
+			if (this._overflow === 'hidden') {
+				// Limit drawing of child entities to within the bounds
+				// of this one
+				var geom = this._geometry,
+					left = -(geom.x / 2) + this._paddingLeft | 0,
+					top = -(geom.y / 2) + (this._paddingTop) | 0,
+					width = geom.x + this._paddingRight,
+					height = geom.y + this._paddingBottom;
+	
+				ctx.rect(left, top, width, height);
+				//ctx.stroke();
+				ctx.clip();
+			}
+	
+			ctx.translate(this._paddingLeft, this._paddingTop);
+			IgeEntity.prototype.tick.call(this, ctx, true);
 		}
-		// TODO: Investigate caching expensive background and border calls
-		//if (!this._cache || this._cacheDirty) {
-			this._renderBackground(ctx);
-			this._renderBorder(ctx);
-		//}
-
-		if (this._overflow === 'hidden') {
-			// Limit drawing of child entities to within the bounds
-			// of this one
-			var geom = this._geometry,
-				left = -(geom.x / 2) + this._paddingLeft | 0,
-				top = -(geom.y / 2) + (this._paddingTop) | 0,
-				width = geom.x + this._paddingRight,
-				height = geom.y + this._paddingBottom;
-
-			ctx.rect(left, top, width, height);
-			//ctx.stroke();
-			ctx.clip();
-		}
-
-		ctx.translate(this._paddingLeft, this._paddingTop);
-		IgeEntity.prototype.tick.call(this, ctx, true);
 	},
 
 	/**

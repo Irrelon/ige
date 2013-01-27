@@ -367,6 +367,10 @@ var IgeTweenComponent = IgeClass.extend({
 								item.oldDelta = currentDelta;
 							}
 						}
+						
+						if (typeof(tween._afterChange) === 'function') {
+							tween._afterChange(tween, stepIndex);
+						}
 					}
 				}
 			}

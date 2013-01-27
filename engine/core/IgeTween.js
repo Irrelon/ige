@@ -223,6 +223,28 @@ var IgeTween = IgeClass.extend({
 	},
 
 	/**
+	 * Sets the method to be called just after a tween has changed
+	 * the values of the target object every update tick.
+	 * @param callback
+	 * @return {*}
+	 */
+	afterChange: function (callback) {
+		if (callback !== undefined) {
+			this._afterChange = callback;
+		}
+
+		return this;
+	},
+
+	/**
+	 * Returns the object that this tween is modifying.
+	 * @return {*}
+	 */
+	targetObject: function () {
+		return this._targetObj;
+	},
+
+	/**
 	 * Sets the name of the easing method to use with the tween.
 	 * @param methodName
 	 * @return {*}

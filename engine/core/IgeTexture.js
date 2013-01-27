@@ -24,6 +24,12 @@ var IgeTexture = IgeEventingClass.extend({
 		// Create an array that is used to store cell dimensions
 		this._cells = [];
 		this._smoothing = ige._globalSmoothing;
+		
+		// Instantiate filter lists for filter combinations
+		this._applyFilters = [];
+		this._applyFiltersData = [];
+		this._preFilters = [];
+		this._preFiltersData = [];
 
 		var type = typeof(urlOrObject);
 
@@ -561,7 +567,7 @@ var IgeTexture = IgeEventingClass.extend({
 		delete this._textureCtx;
 		delete this._textureCanvas;
 		
-		this._filterImageDrawn = false;
+		this.removeFilters();
 	},
 
 	smoothing: function (val) {
@@ -601,11 +607,23 @@ var IgeTexture = IgeEventingClass.extend({
 					poly = entity._renderPos; // Render pos is calculated in the IgeEntity.aabb() method
 
 				if (cell) {
-					if (this._preFilter && this._textureCtx) {
-						// Call the preFilter method
-						this._textureCtx.save();
-						this._preFilter(this._textureCanvas, this._textureCtx, this._originalImage, this, this._preFilterData);
-						this._textureCtx.restore();
+					if (this._preFilters.length > 0 && this._textureCtx) {
+						// Call the drawing of the original image
+						this._textureCtx.clearRect(0, 0, this._textureCanvas.width, this._textureCanvas.height);
+						this._textureCtx.drawImage(this._originalImage, 0, 0);
+						
+						var self = this;
+						// Call the applyFilter and preFilter methods one by one
+						this._applyFilters.forEach(function(method, index) {
+							self._textureCtx.save();
+							method(self._textureCanvas, self._textureCtx, self._originalImage, self, self._applyFiltersData[index]);
+							self._textureCtx.restore();
+						});
+						this._preFilters.forEach(function(method, index) {
+							self._textureCtx.save();
+							method(self._textureCanvas, self._textureCtx, self._originalImage, self, self._preFiltersData[index]);
+							self._textureCtx.restore();
+						});
 					}
 
 					ctx.drawImage(
@@ -635,6 +653,60 @@ var IgeTexture = IgeEventingClass.extend({
 				ige._drawCount++;
 			}
 		}
+	},
+	
+	/**
+	 * Removes a certain filter from the texture
+	 * Useful if you want to keep resizings, etc. 
+	 */
+	removeFilter: function(method) {
+		var i;
+		while ((i = this._preFilters.indexOf(method)) > -1) {
+			this._preFilters[i] = undefined;
+			this._preFiltersData[i] = undefined;
+		}
+		while ((i = this._applyFilters.indexOf(method)) > -1) {
+			this._applyFilters[i] = undefined;
+			this._applyFiltersData[i] = undefined;
+		}
+		this._preFilters = this._preFilters.clean();
+		this._preFiltersData = this._preFiltersData.clean();
+		this._applyFilters = this._applyFilters.clean();
+		this._applyFiltersData = this._applyFiltersData.clean();
+		
+		this._rerenderFilters();
+	},
+	
+	/**
+	 * Removes all filters on the texture
+	 * Useful if you want to keep resizings, etc. 
+	 */
+	removeFilters: function() {
+		this._applyFilters = [];
+		this._applyFiltersData = [];
+		this._preFilters = [];
+		this._preFiltersData = [];
+		
+		this._rerenderFilters();
+	},
+	
+	/**
+	 * Rerenders image with filter list. Keeps sizings.
+	 * Useful if you have no preFilters
+	 */
+	_rerenderFilters: function() {
+		if (!this._textureCanvas) return;
+		// Rerender applyFilters from scratch:
+		// Draw the basic image
+		// resize it to the old boundaries
+		this.resize(this._textureCanvas.width, this._textureCanvas.height, false);
+		// Draw applyFilter layers upon it
+		var self = this;
+		this._applyFilters.forEach(function(method, index) {
+			self._textureCtx.save();
+			method(self._textureCanvas, self._textureCtx, self._originalImage, self, self._applyFiltersData[index]);
+			self._textureCtx.restore();
+		});
 	},
 
 	/**
@@ -670,16 +742,16 @@ var IgeTexture = IgeEventingClass.extend({
 				// Swap the current image for this new canvas
 				this.image = this._textureCanvas;
 
-				// Store the pre-filter method
-				this._preFilter = method;
-				this._preFilterData = data;
+				// Save filter in active preFilter list
+				this._preFilters[this._preFilters.length] = method;
+				this._preFiltersData[this._preFiltersData.length] = !data ? {} : data;
 			}
 			return this;
 		} else {
 			this.log('Cannot use pre-filter, no filter method was passed!', 'warning');
 		}
 
-		return this._preFilter;
+		return this._preFilters[this._preFilters.length - 1];
 	},
 
 	/**
@@ -702,6 +774,10 @@ var IgeTexture = IgeEventingClass.extend({
 						this._textureCanvas.width = this._originalImage.width;
 						this._textureCanvas.height = this._originalImage.height;
 						this._textureCtx = this._textureCanvas.getContext('2d');
+						
+						// Draw the basic image
+						this._textureCtx.clearRect(0, 0, this._textureCanvas.width, this._textureCanvas.height);
+						this._textureCtx.drawImage(this._originalImage, 0, 0);
 	
 						// Set smoothing mode
 						if (!this._smoothing) {
@@ -719,15 +795,60 @@ var IgeTexture = IgeEventingClass.extend({
 					this.image = this._textureCanvas;
 	
 					// Call the passed method
-					this._textureCtx.save();
-					method(this._textureCanvas, this._textureCtx, this._originalImage, this, data);
-					this._textureCtx.restore();
+					if (this._preFilters.length <= 0) {
+						this._textureCtx.save();
+						method(this._textureCanvas, this._textureCtx, this._originalImage, this, data);
+						this._textureCtx.restore();
+					}
+					
+					// Save filter in active applyFiler list
+					this._applyFilters[this._applyFilters.length] = method;
+					this._applyFiltersData[this._applyFiltersData.length] = !data ? {} : data;
 				}
 			} else {
 				this.log('Cannot apply filter, no filter method was passed!', 'warning');
 			}
 		} else {
 			this.log('Cannot apply filter, the texture you are trying to apply the filter to has not yet loaded!', 'error');
+		}
+
+		return this;
+	},
+	
+	pixelData: function (x, y) {
+		if (this._loaded) {
+			if (this.image) {
+				var textureCanvas,
+					textureCtx;
+				
+				// Check if the texture is already using a canvas
+				if (!this._textureCtx) {
+					// Create a new canvas
+					textureCanvas = document.createElement('canvas');
+
+					textureCanvas.width = this.image.width;
+					textureCanvas.height = this.image.height;
+					textureCtx = textureCanvas.getContext('2d');
+
+					// Set smoothing mode
+					if (!this._smoothing) {
+						textureCtx.imageSmoothingEnabled = false;
+						textureCtx.webkitImageSmoothingEnabled = false;
+						textureCtx.mozImageSmoothingEnabled = false;
+					} else {
+						textureCtx.imageSmoothingEnabled = true;
+						textureCtx.webkitImageSmoothingEnabled = true;
+						textureCtx.mozImageSmoothingEnabled = true;
+					}
+					
+					// Draw the image to the canvas
+					textureCtx.drawImage(this.image);
+				} else {
+					textureCtx = this._textureCtx;
+				}
+			}
+		} else {
+			this.log('Cannot read pixel data, the texture you are trying to read data from has not yet loaded!', 'error');
 		}
 
 		return this;

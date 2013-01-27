@@ -41,15 +41,6 @@ var IgeTimeSyncExtension = {
 		return this._entity;
 	},
 
-	_sendTimeSync: function (data, clientId) {
-		if (!data) {
-			data = ige._currentTime;
-		}
-
-		// Send the time sync command
-		this.send('_igeNetTimeSync', data, clientId);
-	},
-
 	timeSyncStop: function () {
 		this.log('Stopping client/server clock sync...');
 		clearInterval(this._timeSyncTimer);
@@ -58,6 +49,15 @@ var IgeTimeSyncExtension = {
 		return this._entity;
 	},
 	/* CEXCLUDE */
+	
+	_sendTimeSync: function (data, clientId) {
+		if (!data) {
+			data = ige._currentTime;
+		}
+
+		// Send the time sync command
+		this.send('_igeNetTimeSync', data, clientId);
+	},
 
 	/**
 	 * Converts a timestamp on the client to approx. time
