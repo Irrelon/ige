@@ -353,8 +353,9 @@ var Client = IgeClass.extend({
 			.top(0)
 			.width('100%')
 			.height(40)
-			.mouseDown(function () { ige.input.stopPropagation(); })
-			.mouseUp(function () { ige.input.stopPropagation(); })
+			.mouseDown(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			.mouseUp(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
 			.mount(this.uiScene);
 
 		// Create the menu bar buttons
@@ -385,6 +386,7 @@ var Client = IgeClass.extend({
 				this.select();
 				ige.input.stopPropagation();
 			})
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
 			// Define the callback when the radio button is selected
 			.select(function () {
 				ige.client.data('cursorMode', 'select');
@@ -464,6 +466,7 @@ var Client = IgeClass.extend({
 				this.select();
 				ige.input.stopPropagation();
 			})
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
 			// Define the callback when the radio button is selected
 			.select(function () {
 				ige.client.data('cursorMode', 'delete');
@@ -503,6 +506,7 @@ var Client = IgeClass.extend({
 				this.select();
 				ige.input.stopPropagation();
 			})
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
 			// Define the callback when the radio button is selected
 			.select(function () {
 				ige.client.data('cursorMode', 'build');
