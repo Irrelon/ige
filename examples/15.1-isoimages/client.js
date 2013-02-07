@@ -472,8 +472,11 @@ var Client = IgeClass.extend({
 				} else {
 					// We are already moving a building, place this building
 					// down now
-					var item = ige.client.data('moveItem');
-					item.moveTo(x, y);
+					var item = ige.client.data('moveItem'),
+						moveX = item.data('lastMoveX'),
+						moveY = item.data('lastMoveY');
+					
+					item.moveTo(moveX, moveY);
 					
 					// Ask the server to move the item
 					apiUrl = ''; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process.php
@@ -619,6 +622,10 @@ var Client = IgeClass.extend({
 						// We are currently moving an item so update it's
 						// translation
 						item.translateToTile(x, y);
+						
+						// Store the last position we accepted
+						item.data('lastMoveX', x);
+						item.data('lastMoveY', y);
 					}
 				}
 				break;
