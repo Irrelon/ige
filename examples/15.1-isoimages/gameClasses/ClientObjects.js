@@ -10,7 +10,7 @@ var ClientObjects = {
 			this.isometric(true)
 				.mount(parent)
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
-				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
+				.translateToTile(tileX, tileY, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
 				.drawBounds(false)
@@ -25,6 +25,10 @@ var ClientObjects = {
 				.drawBounds(false)
 				.drawBoundsData(false)
 				.mount(this);
+		},
+		
+		translateToTile: function (tileX, tileY) {
+			return ClientItem.prototype.translateToTile.call(this, (tileX) + 0.5, (tileY) + 0.5, 0);
 		}
 	}),
 
@@ -39,7 +43,7 @@ var ClientObjects = {
 			this.isometric(true)
 				.mount(parent)
 				.size3d(3 * parent._tileWidth, 4 * parent._tileHeight, parent._tileHeight * 0.8)
-				.translateToTile((tileX) + 1, (tileY) + 1.5, 0)
+				.translateToTile(tileX, tileY, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
 				.drawBounds(false)
@@ -54,6 +58,10 @@ var ClientObjects = {
 				.drawBounds(false)
 				.drawBoundsData(false)
 				.mount(this);
+		},
+		
+		translateToTile: function (tileX, tileY) {
+			return ClientItem.prototype.translateToTile.call(this, (tileX) + 1, (tileY) + 1.5, 0);
 		}
 	}),
 
@@ -68,7 +76,7 @@ var ClientObjects = {
 			this.isometric(true)
 				.mount(parent)
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
-				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
+				.translateToTile(tileX, tileY, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
 				.drawBounds(false)
@@ -85,6 +93,10 @@ var ClientObjects = {
 				.drawBounds(false)
 				.drawBoundsData(false)
 				.mount(this);
+		},
+		
+		translateToTile: function (tileX, tileY) {
+			return ClientItem.prototype.translateToTile.call(this, (tileX) + 0.5, (tileY) + 0.5, 0);
 		}
 	}),
 

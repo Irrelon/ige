@@ -618,7 +618,7 @@ var Client = IgeClass.extend({
 					if (!map.collision(x, y, item.data('tileWidth'), item.data('tileHeight')) || map.collisionWithOnly(x, y, item.data('tileWidth'), item.data('tileHeight'), item)) {
 						// We are currently moving an item so update it's
 						// translation
-						item.translateToTile(x + 0.5, y + 0.5);
+						item.translateToTile(x, y);
 					}
 				}
 				break;

@@ -66,8 +66,8 @@ var ClientItem = IgeEntity.extend({
 			);
 
 			this.translateToTile(
-				this.data('tileX') + 0.5,
-				this.data('tileY') + 0.5
+				this.data('tileX'),
+				this.data('tileY')
 			);
 		}
 
