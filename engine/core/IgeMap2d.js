@@ -78,6 +78,70 @@ var IgeMap2d = IgeClass.extend({
 
 		return false;
 	},
+	
+	/**
+	 * Checks if the tile area passed has data stored in it that matches
+	 * the passed data. If so, returns true, otherwise false.
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 * @param data
+	 */
+	collisionWith: function (x, y, width, height, data) {
+		var xi, yi;
+
+		if (width === undefined) { width = 1; }
+		if (height === undefined) { height = 1; }
+
+		if (x !== undefined && y !== undefined) {
+			for (yi = 0; yi < height; yi++) {
+				for (xi = 0; xi < width; xi++) {
+					if (this.tileData(x + xi, y + yi) === data) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	},
+	
+	/**
+	 * Checks if the tile area passed has data stored in it that matches
+	 * the passed data and does not collide with any other stored tile
+	 * data. If so, returns true, otherwise false.
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 * @param data
+	 */
+	collisionWithOnly: function (x, y, width, height, data) {
+		var xi, yi,
+			tileData,
+			withData = false;
+
+		if (width === undefined) { width = 1; }
+		if (height === undefined) { height = 1; }
+
+		if (x !== undefined && y !== undefined) {
+			for (yi = 0; yi < height; yi++) {
+				for (xi = 0; xi < width; xi++) {
+					tileData = this.tileData(x + xi, y + yi);
+					if (tileData) {
+						if (this.tileData(x + xi, y + yi) === data) {
+							withData = true;
+						} else {
+							return false;
+						}
+					}
+				}
+			}
+		}
+
+		return withData;
+	},
 
 	/**
 	 * Gets / sets the map's tile data.
