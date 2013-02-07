@@ -160,6 +160,7 @@ var IgeNetIoClient = {
 	 * respond by calling ige.network.response(). When the response
 	 * is received, the callback method that was passed in the
 	 * callback parameter will be fired with the response data.
+	 * @param {String} commandName
 	 * @param {Object} data
 	 * @param {Function} callback
 	 */
