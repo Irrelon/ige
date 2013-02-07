@@ -1,15 +1,15 @@
 var ClientObjects = {
-	Bank: IgeEntity.extend({
+	Bank: ClientItem.extend({
 		classId: 'Bank',
 
 		init: function (parent, tileX, tileY) {
-			IgeEntity.prototype.init.call(this);
+			ClientItem.prototype.init.call(this, tileX, tileY, 2, 2);
 			var self = this;
 
 			// Setup the 3d bounds container (this)
 			this.isometric(true)
 				.mount(parent)
-				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 30)
+				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
 				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
@@ -18,28 +18,21 @@ var ClientObjects = {
 				.occupyTile(tileX, tileY, 2, 2);
 
 			// Create the "image" entity
-			var texture = ige.client.gameTexture.bank,
-				halfImageHeight = texture.image.height / 2,
-				quarterImageWidth = texture.image.width / 4,
-				imageScale = 0.3,
-				yPos = ((-halfImageHeight + quarterImageWidth) * imageScale) + (this._geometry.z2 + (this._geometry.z2 / 4));
-
 			this.imageEntity = new IgeEntity()
-				.texture(texture)
+				.texture(ige.client.gameTexture.bank)
 				.dimensionsFromCell()
-				.scaleTo(imageScale, imageScale, 1)
+				.scaleTo(0.3, 0.3, 1)
 				.drawBounds(false)
 				.drawBoundsData(false)
-				.translateTo(0, yPos, 0)
 				.mount(this);
 		}
 	}),
 
-	Electricals: IgeEntity.extend({
+	Electricals: ClientItem.extend({
 		classId: 'Electricals',
 
 		init: function (parent, tileX, tileY) {
-			IgeEntity.prototype.init.call(this);
+			ClientItem.prototype.init.call(this, tileX, tileY, 3, 4);
 			var self = this;
 
 			// Setup the 3d bounds container (this)
@@ -64,11 +57,11 @@ var ClientObjects = {
 		}
 	}),
 
-	Burgers: IgeEntity.extend({
+	Burgers: ClientItem.extend({
 		classId: 'Burgers',
 
 		init: function (parent, tileX, tileY) {
-			IgeEntity.prototype.init.call(this);
+			ClientItem.prototype.init.call(this, tileX, tileY, 2, 2);
 			var self = this;
 
 			// Setup the 3d bounds container (this)
@@ -95,11 +88,11 @@ var ClientObjects = {
 		}
 	}),
 
-	SkyScraper: IgeEntity.extend({
+	SkyScraper: ClientItem.extend({
 		classId: 'SkyScraper',
 
 		init: function (parent, tileX, tileY) {
-			IgeEntity.prototype.init.call(this);
+			ClientItem.prototype.init.call(this, tileX, tileY, 2, 2);
 			var self = this;
 
 			// Setup some initial internal data
