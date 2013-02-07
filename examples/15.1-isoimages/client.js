@@ -479,6 +479,7 @@ var Client = IgeClass.extend({
 					item.moveTo(moveX, moveY);
 					
 					// Ask the server to move the item
+					// **SERVER-CALL**
 					apiUrl = ''; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process.php
 					if (apiUrl) {
 						$.ajax(apiUrl, {
@@ -508,6 +509,7 @@ var Client = IgeClass.extend({
 
 				if (item) {
 					// Ask the server to remove the item
+					// **SERVER-CALL**
 					apiUrl = ''; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process.php
 					if (apiUrl) {
 						$.ajax(apiUrl, {
@@ -549,6 +551,7 @@ var Client = IgeClass.extend({
 						// Now that we've placed a building, ask the server
 						// to ok / save the request. If the server doesn't
 						// tell us anything then the building is obviously ok!
+						// **SERVER-CALL**
 						apiUrl = ''; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process.php
 						if (apiUrl) {
 							$.ajax(apiUrl, {
