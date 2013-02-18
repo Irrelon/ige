@@ -644,7 +644,7 @@ var Client = IgeClass.extend({
 						// The tile is not occupied so move to it!
 						item.data('tileX', x)
 							.data('tileY', y)
-							.translateToTile(x + 0.5, y + 0.5, 0);
+							.translateToTile(x, y, 0);
 					}
 				}
 			break;
