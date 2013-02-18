@@ -328,6 +328,113 @@ var Client = IgeClass.extend({
 			})
 			.mount(this.menuBar);
 
+		this.setupUi_BuildingsMenu();
+	},
+	
+	setupUi_BuildingsMenu: function () {
+		// First, create an entity that will act as a drop-down menu
+		this.uiMenuBuildings = new IgeUiEntity()
+			.id('uiMenuBuildings')
+			.left(120)
+			.top(40)
+			.width(200)
+			.height(200)
+			.backgroundColor('#222')
+			.mount(this.uiScene)
+			.mouseDown(function () {
+				ige.input.stopPropagation();
+			})
+			.mouseOver(function () {
+				ige.input.stopPropagation();
+			})
+			.mouseOut(function () {
+				ige.input.stopPropagation();
+			})
+			.mouseUp(function () {
+				ige.input.stopPropagation();
+			})
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } });
+		
+		// Now add the building "buttons" that will allow the user to select
+		// the type of building they want to build
+		new IgeUiRadioButton()
+			.id('uiMenuBuildings_bank')
+			.data('buildingType', 'Bank') // Set the class to instantiate from this button
+			.top(0)
+			.left(0)
+			.texture(this.gameTexture.bank)
+			.width(50, true)
+			.mount(this.uiMenuBuildings)
+			// Set the radio group so the controls will receive group events
+			.radioGroup('menuBuildings')
+			// Define the button's mouse events
+			.mouseOver(function () {
+				if (!this._uiSelected) {
+					this.backgroundColor('#6b6b6b');
+				}
+				ige.input.stopPropagation();
+			})
+			.mouseOut(function () {
+				if (!this._uiSelected) {
+					this.backgroundColor('');
+				}
+				ige.input.stopPropagation();
+			})
+			.mouseUp(function () {
+				// Check if this item is already selected
+				//if (!this._uiSelected) {
+					// The item is NOT already selected so select it!
+					this.select();
+				//}
+				ige.input.stopPropagation();
+			})
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			// Define the callback when the radio button is selected
+			.select(function () {
+				ige.client.data('cursorMode', 'build');
+				this.backgroundColor('#00baff');
+				
+				var tempItem = ige.client.createTemporaryItem(this.data('buildingType'))
+					.opacity(0.7);
+
+				ige.client.data('ghostItem', tempItem);
+				
+				ige.input.stopPropagation();
+			})
+			// Define the callback when the radio button is de-selected
+			.deSelect(function () {
+				this.backgroundColor('');
+				
+				// If we had a temporary building, kill it
+				var item = ige.client.data('ghostItem');
+				if (item) {
+					item.destroy();
+					ige.client.data('ghostItem', false);
+				}
+			});
+		
+		new IgeUiRadioButton()
+			.id('uiMenuBuildings_burgers')
+			.data('buildingType', 'Burgers') // Set the class to instantiate from this button
+			.top(0)
+			.left(50)
+			.texture(this.gameTexture.burgers)
+			.width(50, true)
+			.mount(this.uiMenuBuildings)
+			// Set the radio group so the controls will receive group events
+			.radioGroup('menuBuildings');
+		
+		new IgeUiRadioButton()
+			.id('uiMenuBuildings_electricals')
+			.data('buildingType', 'Electricals') // Set the class to instantiate from this button
+			.top(0)
+			.left(100)
+			.texture(this.gameTexture.electricals)
+			.width(50, true)
+			.mount(this.uiMenuBuildings)
+			// Set the radio group so the controls will receive group events
+			.radioGroup('menuBuildings');
+		
 		this.uiButtonBuildings = new IgeUiRadioButton()
 			.id('uiButtonBuildings')
 			.left(124)
@@ -361,17 +468,14 @@ var Client = IgeClass.extend({
 				ige.client.data('cursorMode', 'build');
 				this.backgroundColor('#00baff');
 
-				// Because this is just a demo we are going to assume the user
-				// wants to build a bank but actually we should probably
-				// fire up a menu here and let them pick from available buildings
-				// TODO: Make this show a menu of buildings and let the user pick
-				var tempItem = ige.client.createTemporaryItem('Bank')
-					.opacity(0.7);
-
-				ige.client.data('ghostItem', tempItem);
+				// Show the buildings drop-down
+				ige.$('uiMenuBuildings').show();
 			})
 			// Define the callback when the radio button is de-selected
 			.deSelect(function () {
+				// Hide the buildings drop-down
+				ige.$('uiMenuBuildings').hide();
+				
 				ige.client.data('currentlyHighlighted', false);
 				this.backgroundColor('');
 
