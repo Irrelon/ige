@@ -1,6 +1,6 @@
 // TODO: Implement the _stringify() method for this class
 /**
- * Texture maps provide a way to display textures across a tile map.
+ * Texture maps provide a way to display textures / cells across a tile map.
  */
 var IgeTextureMap = IgeTileMap2d.extend({
 	classId: 'IgeTextureMap',
@@ -53,6 +53,12 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		this._cacheDirty = true;
 	},
 
+	/**
+	 * Takes another map and removes any data from this map where data already
+	 * exists in the other.
+	 * @param {IgeTileMap2d} entity The other map to read map data from.
+	 * @return {*}
+	 */
 	negate: function (entity) {
 		if (entity !== undefined) {
 			var x, y,
@@ -247,7 +253,13 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		}
 	},
 
-	convertOldData: function (mapData) {
+	/**
+	 * Converts data that is saved in the format [x][y] to the IGE standard
+	 * of [y][x] and then returns the data.
+	 * @param {Array} mapData The map data array.
+	 * @return {Object} The new map data.
+	 */
+	convertHorizontalData: function (mapData) {
 		var newData = [],
 			x, y;
 
@@ -255,7 +267,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			if (mapData.hasOwnProperty(x)) {
 				for (y in mapData[x]) {
 					if (mapData[x].hasOwnProperty(y)) {
-						// Grab the tile data to paint
+						// Displace the data from the x axis to the y axis
 						newData[y] = newData[y] || [];
 						newData[y][x] = mapData[x][y];
 					}
@@ -263,7 +275,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			}
 		}
 
-		console.log(JSON.stringify(newData));
+		return newData;
 	},
 
 	/**
@@ -299,7 +311,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
                     this._sections = []; //this._sections || [];
                     this._sectionCtx = []; //this._sectionCtx || [];
                     // TODO: This isn't ideal because we are almost certainly dropping sections that are still relevant,
-                    // TODO: so we should scan and garbabe collect I think, instead.
+                    // TODO: so we should scan and garbage collect I think, instead.
 
 					// Loop the map data
 					for (y in mapData) {
