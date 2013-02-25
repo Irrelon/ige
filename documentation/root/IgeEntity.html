@@ -55,7 +55,7 @@
 </div><h3 class="methodTitle">cache</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Gets / sets the cache flag that determines if the entity's texture rendering output should be stored on an off-screen canvas instead of calling the texture.render() method each tick. Useful for expensive texture calls such as rendering fonts etc.</div>
+    <div class="methodDesc">Gets / sets the cache flag that determines if the entity's texture rendering output should be stored on an off-screen canvas instead of calling the texture.render() method each tick. Useful for expensive texture calls such as rendering fonts etc. If enabled, this will automatically disable advanced composite caching on this entity with a call to compositeCache(false).</div>
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">cache</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> True to enable caching, false to disable caching.</li></ul></div>
@@ -79,6 +79,39 @@
 				
 					<div class="methodExample">
 						<div class="content"><h1>Get caching flag value</h1>
+
+<pre><code>var val = entity.cache();
+</code></pre>
+</div>
+					</div>
+				
+</div><h3 class="methodTitle">compositeCache</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets composite caching. Composite caching draws this entity and all of it's children (and their children etc) to a single off screen canvas so that the entity does not need to be redrawn with all it's children every tick. For composite entities where little change occurs this will massively increase rendering performance. If enabled, this will automatically disable simple caching on this entity with a call to cache(false). compositeCache(false).</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">compositeCache</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Enable entity composite caching</h1>
+
+<pre><code>entity.compositeCache(true);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Disable entity composite caching</h1>
+
+<pre><code>entity.compositeCache(false);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get composite caching flag value</h1>
 
 <pre><code>var val = entity.cache();
 </code></pre>
@@ -295,20 +328,29 @@ entity.heightByTile(1, true);
 </div><h3 class="methodTitle">occupyTile</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Dummy method to help debug when programmer expects to be able to access tile-based methods but cannot. This method is overwritten when the entity is mounted to a tile map.</div>
+    <div class="methodDesc">Adds the object to the tile map at the passed tile co-ordinates. If no tile co-ordinates are passed, will use the current tile position and the tileWidth() and tileHeight() values.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">occupyTile</span>()</div>
-    <div class="methodArgs"></div>
+    <div class="methodDefinition"><span class="methodName">occupyTile</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>, {<span class="argType">Number</span>} <span class="argName">width</span>, {<span class="argType">Number</span>} <span class="argName">height</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> X co-ordinate of the tile to occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> Y co-ordinate of the tile to occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">width</span> Number of tiles along the x-axis to occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">height</span> Number of tiles along the y-axis to occupy.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">unOccupyTile</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes the object from the tile map at the passed tile co-ordinates. If no tile co-ordinates are passed, will use the current tile position and the tileWidth() and tileHeight() values.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">unOccupyTile</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>, {<span class="argType">Number</span>} <span class="argName">width</span>, {<span class="argType">Number</span>} <span class="argName">height</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> X co-ordinate of the tile to un-occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> Y co-ordinate of the tile to un-occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">width</span> Number of tiles along the x-axis to un-occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">height</span> Number of tiles along the y-axis to un-occupy.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
 </div><h3 class="methodTitle">overTiles</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Dummy method to help debug when programmer expects to be able to access tile-based methods but cannot. This method is overwritten when the entity is mounted to a tile map.</div>
+    <div class="methodDesc">Returns an array of tile co-ordinates that the object is currently over, calculated using the current world co-ordinates of the object as well as it's 3d geometry.</div>
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">overTiles</span>()</div>
     <div class="methodArgs"></div>
-    <div class="methodReturnDesc"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} The array of tile co-ordinates as IgePoint instances.</div>
     
 </div><h3 class="methodTitle">anchor</h3>
 <div class="methodSection">
@@ -682,6 +724,24 @@ console.log(aabb.x);
 console.log(aabb.y);
 console.log(aabb.width);
 console.log(aabb.height);
+</code></pre>
+</div>
+					</div>
+				
+</div><h3 class="methodTitle">compositeAabb</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Calculates the axis-aligned bounding box for this entity, including all child entity bounding boxes and returns the final composite bounds.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">compositeAabb</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgeRect</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Get the composite AABB</h1>
+
+<pre><code>var entity = new IgeEntity(),
+    aabb = entity.compositeAabb();
 </code></pre>
 </div>
 					</div>

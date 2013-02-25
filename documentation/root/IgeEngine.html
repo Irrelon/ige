@@ -102,7 +102,7 @@
 </div><h3 class="methodTitle">setFps</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Sets the frame rate at which new engine ticks are fired. Setting this rate will override the default requestAnimFrame() method as defined in IgeBase.js and on the client-side, will stop usage of any available requestAnimationFrame() method and will use a setTimeout()-based version instead.</div>
+    <div class="methodDesc">Sets the frame rate at which new engine steps are fired. Setting this rate will override the default requestAnimFrame() method as defined in IgeBase.js and on the client-side, will stop usage of any available requestAnimationFrame() method and will use a setTimeout()-based version instead.</div>
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">setFps</span>({<span class="argType">Number</span>} <span class="argName">fpsRate</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">fpsRate</span> </li></ul></div>
@@ -513,12 +513,12 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">tick</h3>
+</div><h3 class="methodTitle">engineStep</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Called each frame to traverse and render the scenegraph.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">tick</span>()</div>
+    <div class="methodDefinition"><span class="methodName">engineStep</span>()</div>
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     

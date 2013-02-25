@@ -18,7 +18,25 @@
 	<div class="content"><a href="IgeClass.html">IgeClass</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3 class="methodTitle">compare</h3>
+<h2>Methods</h2><h3 class="methodTitle">combineRect</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Combines the extents of the passed IgeRect with this rect to create a new rect whose bounds encapsulate both rects.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">combineRect</span>({<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>} <span class="argName">rect</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>}<span class="argName">rect</span> The rect to combine with this one.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgeRect</span>} The new rect encapsulating both rects.</div>
+    
+</div><h3 class="methodTitle">thisCombineRect</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Combines the extents of the passed IgeRect with this rect and replaces this rect with one whose bounds encapsulate both rects.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisCombineRect</span>({<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>} <span class="argName">rect</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>}<span class="argName">rect</span> The rect to combine with this one.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">compare</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Compares this rect's dimensions with the passed rect and returns true if they are the same and false if any is different.</div>
@@ -53,6 +71,15 @@
     <div class="methodDefinition"><span class="methodName">rectIntersect</span>({<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>} <span class="argName">rect</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>}<span class="argName">rect</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+    
+</div><h3 class="methodTitle">clone</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a clone of this object that is not a reference but retains the same values.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">clone</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgeRect</span>} </div>
     
 </div><h3 class="methodTitle">toString</h3>
 <div class="methodSection">

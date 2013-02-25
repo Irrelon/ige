@@ -153,6 +153,33 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2d</span>}<span class="argName">ctx</span> The canvas context to draw to.</li><li>{<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>}<span class="argName">entity</span> The entity that this texture is being drawn for.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
+</div><h3 class="methodTitle">removeFilter</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes a certain filter from the texture Useful if you want to keep resizings, etc.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">removeFilter</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">removeFilters</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes all filters on the texture Useful if you want to keep resizings, etc.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">removeFilters</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">_rerenderFilters</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Rerenders image with filter list. Keeps sizings. Useful if you have no preFilters</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_rerenderFilters</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
 </div><h3 class="methodTitle">preFilter</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
@@ -170,6 +197,15 @@
     <div class="methodDefinition"><span class="methodName">applyFilter</span>({<span class="argType">Function</span>} <span class="argName">method</span>, {<span class="argType">Object</span>} <span class="argName">data</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">method</span> </li><li>{<span class="argType">Object</span>}<span class="argName">data</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">clone</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Creates a clone of the texture.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">clone</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgeTexture</span>} A new, distinct texture with the same attributes as the one being cloned.</div>
     
 </div><h3 class="methodTitle">stringify</h3>
 <div class="methodSection">
