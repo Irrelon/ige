@@ -509,6 +509,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 						sectionAbsX = this._translate.x + sectionRenderX - ige._currentCamera._translate.x;
 						sectionAbsY = this._translate.y + sectionRenderY - ige._currentCamera._translate.y;
 
+						// Check if we are drawing isometrically and adjust
 						if (this._mountMode === 1) {
 							sectionAbsX -= (this._tileWidth / 2);
 							sectionAbsY -= (this._tileHeight / 2);
