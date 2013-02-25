@@ -88,7 +88,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * that it can be referenced via an index so that the texture map's
 	 * data will be something like [[textureId, textureCell]]
 	 * or a real world example: [[0, 1], [1, 1]].
-	 * @param texture
+	 * @param {IgeTexture} texture
 	 */
 	addTexture: function (texture) {
 		this._textureList.push(texture);
@@ -123,10 +123,10 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	/**
 	 * Sets the specified tile's texture index and cell that will be used
 	 * when rendering the texture map.
-	 * @param x
-	 * @param y
-	 * @param textureIndex
-	 * @param cell
+	 * @param {Number} x The tile x co-ordinate.
+	 * @param {Number} y The tile y co-ordinate.
+	 * @param {Number} textureIndex The texture index.
+	 * @param {Number} cell The cell index.
 	 */
 	paintTile: function (x, y, textureIndex, cell) {
 		if (x !== undefined && y !== undefined && textureIndex !== undefined) {
@@ -140,8 +140,8 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	/**
 	 * Clears any previous tile texture and cell data for the specified
 	 * tile co-ordinates.
-	 * @param x
-	 * @param y
+	 * @param {Number} x The tile x co-ordinate.
+	 * @param {Number} y The tile y co-ordinate.
 	 */
 	clearTile: function (x, y) {
 		this.map.clearData(x, y);
@@ -150,7 +150,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	/**
 	 * Reads the map data from a standard map object and fills the map
 	 * with the data found.
-	 * @param map
+	 * @param {Object} map The map data object.
 	 */
 	loadMap: function (map) {
 		if (map.textures) {
@@ -180,6 +180,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	/**
 	 * Returns a map JSON string that can be saved to a data file and loaded
 	 * with the loadMap() method.
+	 * @return {Object} The map data object.
 	 */
 	saveMap: function () {
 		// in URL format
@@ -219,9 +220,9 @@ var IgeTextureMap = IgeTileMap2d.extend({
 
 	/**
 	 * Gets / sets the specified tile's texture index.
-	 * @param x
-	 * @param y
-	 * @param textureIndex
+	 * @param {Number} x The tile x co-ordinate.
+	 * @param {Number} y The tile y co-ordinate.
+	 * @param {Number=} textureIndex The new texture index.
 	 */
 	tileTextureIndex: function (x, y, textureIndex) {
 		if (x !== undefined && y !== undefined) {
@@ -237,9 +238,9 @@ var IgeTextureMap = IgeTileMap2d.extend({
 
 	/**
 	 * Gets / sets the specified tile's texture cell.
-	 * @param x
-	 * @param y
-	 * @param cell
+	 * @param {Number} x The tile x co-ordinate.
+	 * @param {Number} y The tile y co-ordinate.
+	 * @param {Number} cell The new cell index.
 	 */
 	tileTextureCell: function (x, y, cell) {
 		if (x !== undefined && y !== undefined) {
@@ -280,7 +281,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 
 	/**
 	 * Handles rendering the texture map during engine tick events.
-	 * @param ctx
+	 * @param {CanvasRenderingContext2d} ctx
 	 */
 	tick: function (ctx) {
 		// TODO: This is being called at the wrong time, drawing children before this parent! FIX THIS
@@ -443,6 +444,13 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		}
 	},
 
+	/**
+	 * Private method, checks if the specified section currently exists in the cache
+	 * and if not, creates it.
+	 * @param {Number} sectionX The section's x co-ordinate.
+	 * @param {Number} sectionY The section's y co-ordinate.
+	 * @private
+	 */
 	_ensureSectionExists: function (sectionX, sectionY) {
 		var sectionCtx;
 
@@ -472,6 +480,11 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		}
 	},
 
+	/**
+	 * Private method, draws cached image sections to the canvas context.
+	 * @param {CanvasRenderingContext2d} ctx
+	 * @private
+	 */
 	_drawSectionsToCtx: function (ctx) {
 		var x, y, tileData,
 			sectionRenderX, sectionRenderY,
@@ -537,12 +550,17 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	},
 
 	/**
-	 * Renders a tile texture based on data from the texture map.
-	 * @param ctx
-	 * @param x
-	 * @param y
-	 * @param tileData
-	 * @param tileEntity
+	 * Private method, renders a tile texture based on data from the texture map,
+	 * to a cached section. 
+	 * @param {CanvasRenderingContext2d} ctx
+	 * @param {Number} x The tile x co-ordinate.
+	 * @param {Number} y The tile y co-ordinate.
+	 * @param {Object} tileData The tile's texture and cell data.
+	 * @param {Object} tileEntity The object that represents the tile.
+	 * @param {IgeRect=} rect The rectangular area to limit drawing to.
+	 * @param {Number} sectionX The x co-ordinate of the section to draw to.
+	 * @param {Number} sectionY The y co-ordinate of the section to draw to.
+	 * @return {*}
 	 * @private
 	 */
 	_renderTile: function (ctx, x, y, tileData, tileEntity, rect, sectionX, sectionY) {
@@ -642,11 +660,11 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	},
 
 	/**
-	 * Creates an entity object that a texture can use to render itself.
-	 * This is basically a dummy object that has the minimum amount of data
+	 * Private method, creates an entity object that a texture can use to render
+	 * itself. This is basically a dummy object that has the minimum amount of data
 	 * in it that a texture requires to render such as geometry, texture
 	 * cell and rendering position.
-	 * @return {Object}
+	 * @return {Object} The new tile entity object.
 	 * @private
 	 */
 	_newTileEntity: function () {
