@@ -43,8 +43,8 @@ var IgeTextureAtlas = IgeTextureMap.extend({
 	/**
 	 * Gets / sets the extra data to load around the main texture map size to
 	 * try to mitigate loading times on new data.
-	 * @param {Number} x The number of tiles along the x axis to load.
-	 * @param {Number} y The number of tiles along the y axis to load.
+	 * @param {Number} x The number of pixels along the x axis to load.
+	 * @param {Number} y The number of pixels along the y axis to load.
 	 * @return {*}
 	 */
 	bufferZone: function (x, y) {
