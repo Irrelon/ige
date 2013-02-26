@@ -815,6 +815,15 @@ var IgeTexture = IgeEventingClass.extend({
 		return this;
 	},
 	
+	/**
+	 * Retrieves pixel data from x,y texture coordinate (starts from top-left).
+	 * Important: If the texture has a cross-domain url, the image host must allow
+	 * cross-origin resource sharing or a security error will be thrown.
+	 * Reference: http://blog.chromium.org/2011/07/using-cross-domain-images-in-webgl-and.html
+	 * @param  {Number} x
+	 * @param  {Number} y
+	 * @return {Array} [r,g,b,a] Pixel data.
+	 */
 	pixelData: function (x, y) {
 		if (this._loaded) {
 			if (this.image) {
@@ -842,10 +851,12 @@ var IgeTexture = IgeEventingClass.extend({
 					}
 					
 					// Draw the image to the canvas
-					textureCtx.drawImage(this.image);
+					textureCtx.drawImage(this.image, 0, 0);
 				} else {
 					textureCtx = this._textureCtx;
 				}
+
+				return textureCtx.getImageData(x, y, 1, 1).data;
 			}
 		} else {
 			this.log('Cannot read pixel data, the texture you are trying to read data from has not yet loaded!', 'error');
