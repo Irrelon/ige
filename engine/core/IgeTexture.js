@@ -827,36 +827,33 @@ var IgeTexture = IgeEventingClass.extend({
 	pixelData: function (x, y) {
 		if (this._loaded) {
 			if (this.image) {
-				var textureCanvas,
-					textureCtx;
-				
 				// Check if the texture is already using a canvas
 				if (!this._textureCtx) {
 					// Create a new canvas
-					textureCanvas = document.createElement('canvas');
+					this._textureCanvas = document.createElement('canvas');
 
-					textureCanvas.width = this.image.width;
-					textureCanvas.height = this.image.height;
-					textureCtx = textureCanvas.getContext('2d');
+					this._textureCanvas.width = this.image.width;
+					this._textureCanvas.height = this.image.height;
+					this._textureCtx = this._textureCanvas.getContext('2d');
 
 					// Set smoothing mode
 					if (!this._smoothing) {
-						textureCtx.imageSmoothingEnabled = false;
-						textureCtx.webkitImageSmoothingEnabled = false;
-						textureCtx.mozImageSmoothingEnabled = false;
+						this._textureCtx.imageSmoothingEnabled = false;
+						this._textureCtx.webkitImageSmoothingEnabled = false;
+						this._textureCtx.mozImageSmoothingEnabled = false;
 					} else {
-						textureCtx.imageSmoothingEnabled = true;
-						textureCtx.webkitImageSmoothingEnabled = true;
-						textureCtx.mozImageSmoothingEnabled = true;
+						this._textureCtx.imageSmoothingEnabled = true;
+						this._textureCtx.webkitImageSmoothingEnabled = true;
+						this._textureCtx.mozImageSmoothingEnabled = true;
 					}
 					
 					// Draw the image to the canvas
-					textureCtx.drawImage(this.image, 0, 0);
+					this._textureCtx.drawImage(this.image, 0, 0);
 				} else {
-					textureCtx = this._textureCtx;
+					this._textureCtx = this._textureCtx;
 				}
 
-				return textureCtx.getImageData(x, y, 1, 1).data;
+				return this._textureCtx.getImageData(x, y, 1, 1).data;
 			}
 		} else {
 			this.log('Cannot read pixel data, the texture you are trying to read data from has not yet loaded!', 'error');
