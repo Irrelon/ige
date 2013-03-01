@@ -111,7 +111,8 @@ var IgeSocketIoServer = {
 
 	send: function (commandName, data, clientId) {
 		var commandIndex = this._networkCommandsLookup[commandName],
-			arrCount;
+			arrCount,
+			clientSocket;
 
 		if (commandIndex !== undefined) {
 			if (clientId) {
@@ -119,11 +120,21 @@ var IgeSocketIoServer = {
 					// The clientId is an array, loop it and send to each client
 					arrCount = clientId.length;
 					while (arrCount--) {
-						this._socketById[clientId[arrCount]].json.send([commandIndex, data]);
+						clientSocket = this._socketById[clientId[arrCount]];
+						if (clientSocket) {
+							clientSocket.json.send([commandIndex, data]);
+						} else {
+							this.log('Warning, client with ID ' + clientId[arrCount] + ' not found in socket list!')
+						}
 					}
 				} else {
 					// The clientId is a string, send to individual client
-					this._socketById[clientId].json.send([commandIndex, data]);
+					clientSocket = this._socketById[clientId];
+					if (clientSocket) {
+						clientSocket.json.send([commandIndex, data]);
+					} else {
+						this.log('Warning, client with ID ' + clientId + ' not found in socket list!')
+					}
 				}
 			} else {
 				this._io.sockets.json.send([commandIndex, data]);
