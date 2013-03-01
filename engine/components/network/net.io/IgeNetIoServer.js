@@ -244,6 +244,23 @@ var IgeNetIoServer = {
 		}
 	},
 
+	/**
+	 * Called when the server receives a network message from a client.
+	 * @param {Object} data The data sent by the client.
+	 * @param {String} clientId The client socket id.
+	 * @private
+	 */
+	_onClientMessage: function (data, clientId) {
+		var ciDecoded = data[0].charCodeAt(0),
+			commandName = this._networkCommandsIndex[ciDecoded];
+
+		if (this._networkCommands[commandName]) {
+			this._networkCommands[commandName](data[1], clientId);
+		}
+
+		this.emit(commandName, [data[1], clientId]);
+	},
+	
 	_onRequest: function (data, clientId) {
 		// The message is a network request so fire
 		// the command event with the request id and
@@ -285,23 +302,6 @@ var IgeNetIoServer = {
 			// Delete the request from memory
 			delete this._requests[id];
 		}
-	},
-
-	/**
-	 * Called when the server receives a network message from a client.
-	 * @param {Object} data The data sent by the client.
-	 * @param {String} clientId The client socket id.
-	 * @private
-	 */
-	_onClientMessage: function (data, clientId) {
-		var ciDecoded = data[0].charCodeAt(0),
-			commandName = this._networkCommandsIndex[ciDecoded];
-
-		if (this._networkCommands[commandName]) {
-			this._networkCommands[commandName](data[1], clientId);
-		}
-
-		this.emit(commandName, [data[1], clientId]);
 	},
 
 	/**

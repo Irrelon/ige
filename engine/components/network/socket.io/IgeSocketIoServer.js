@@ -1,4 +1,7 @@
 var IgeSocketIoServer = {
+	_idCounter: 0,
+	_requests: {},
+	
 	/**
 	 * Starts the network for the server.
 	 * @param {*} data The port to listen on.
@@ -31,6 +34,8 @@ var IgeSocketIoServer = {
 		}
 
 		// Set some default commands
+		this.define('_igeRequest', function () { self._onRequest.apply(self, arguments); });
+		this.define('_igeResponse', function () { self._onResponse.apply(self, arguments); });
 		this.define('_igeNetTimeSync', function () { self._onTimeSync.apply(self, arguments); });
 
 		// Start network sync
@@ -127,6 +132,77 @@ var IgeSocketIoServer = {
 			this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
 		}
 	},
+	
+		/**
+	 * Sends a network request. This is different from a standard
+	 * call to send() because the recipient code will be able to
+	 * respond by calling ige.network.response(). When the response
+	 * is received, the callback method that was passed in the
+	 * callback parameter will be fired with the response data.
+	 * @param {String} commandName
+	 * @param {Object} data
+	 * @param {Function} callback
+	 */
+	request: function (commandName, data, callback) {
+		// Build the request object
+		var req = {
+			id: this.newIdHex(),
+			cmd: commandName,
+			data: data,
+			callback: callback,
+			timestamp: new Date().getTime()
+		};
+
+		// Store the request object
+		this._requests[req.id] = req;
+
+		// Send the network request packet
+		this.send(
+			'_igeRequest',
+			{
+				id: req.id,
+				cmd: commandName,
+				data: req.data
+			}
+		);
+	},
+
+	/**
+	 * Sends a response to a network request.
+	 * @param {String} requestId
+	 * @param {Object} data
+	 */
+	response: function (requestId, data) {
+		// Grab the original request object
+		var req = this._requests[requestId];
+
+		if (req) {
+			// Send the network response packet
+			this.send(
+				'_igeResponse',
+				{
+					id: requestId,
+					cmd: req.commandName,
+					data: data
+				},
+				req.clientId
+			);
+
+			// Remove the request as we've now responded!
+			delete this._requests[requestId];
+		} else {
+			this.log('Cannot send response to unidentified request ID: ' + requestId, 'warning');
+		}
+	},
+	
+	/**
+	 * Generates a new 16-character hexadecimal unique ID
+	 * @return {String}
+	 */
+	newIdHex: function () {
+		this._idCounter++;
+		return (this._idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
+	},
 
 	/**
 	 * Called when the server receives a client connection request. Sets
@@ -170,15 +246,60 @@ var IgeSocketIoServer = {
 	/**
 	 * Called when the server receives a network message from a client.
 	 * @param {Object} data The data sent by the client.
-	 * @param {Object} socket The client socket object.
+	 * @param {Object} clientId The client socket object.
 	 * @private
 	 */
-	_onClientMessage: function (data, socket) {
+	_onClientMessage: function (data, clientId) {
 		var commandName = this._networkCommandsIndex[data[0]];
+		
 		if (this._networkCommands[commandName]) {
-			this._networkCommands[commandName](data[1], socket);
+			this._networkCommands[commandName](data[1], clientId);
 		}
-		this.emit(commandName, data[1], socket);
+		
+		this.emit(commandName, [data[1], clientId]);
+	},
+	
+	_onRequest: function (data, clientId) {
+		// The message is a network request so fire
+		// the command event with the request id and
+		// the request data
+		data.clientId = clientId;
+		this._requests[data.id] = data;
+
+		if (this.debug()) {
+			console.log('onRequest', data);
+			console.log('emitting', data.cmd, [data.id, data.data]);
+			this._debugCounter++;
+		}
+
+		if (this._networkCommands[data.cmd]) {
+			this._networkCommands[data.cmd](data.data, clientId, data.id);
+		}
+
+		this.emit(data.cmd, [data.id, data.data, clientId]);
+	},
+
+	_onResponse: function (data, clientId) {
+		// The message is a network response
+		// to a request we sent earlier
+		id = data.id;
+
+		// Get the original request object from
+		// the request id
+		req = this._requests[id];
+
+		if (this.debug()) {
+			console.log('onResponse', data);
+			this._debugCounter++;
+		}
+
+		if (req) {
+			// Fire the request callback!
+			req.callback(req.cmd, [data.data, clientId]);
+
+			// Delete the request from memory
+			delete this._requests[id];
+		}
 	},
 
 	/**

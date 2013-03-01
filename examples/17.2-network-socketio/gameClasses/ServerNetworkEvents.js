@@ -12,7 +12,7 @@ var ServerNetworkEvents = {
 		ige.network.send('test', {moo:'here\'s some data right back at ya!'}, clientId);
 	},
 
-	_onTestRequest: function (requestId, data, clientId) {
+	_onTestRequest: function (data, clientId, requestId) {
 		console.log('Client testRequest command received from client id "' + clientId + '" with data:', data);
 		ige.network.response(requestId, {serverSaid:'moo!'});
 	}
