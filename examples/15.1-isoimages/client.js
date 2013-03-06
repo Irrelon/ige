@@ -230,6 +230,9 @@ var Client = IgeClass.extend({
 
 				ige.input.stopPropagation();
 			})
+			.mouseDown(function () {
+				ige.input.stopPropagation();
+			})
 			.mouseUp(function () {
 				this.select();
 				ige.input.stopPropagation();
@@ -271,6 +274,9 @@ var Client = IgeClass.extend({
 
 				ige.input.stopPropagation();
 			})
+			.mouseDown(function () {
+				ige.input.stopPropagation();
+			})
 			.mouseUp(function () {
 				this.select();
 				ige.input.stopPropagation();
@@ -309,6 +315,9 @@ var Client = IgeClass.extend({
 					this.backgroundColor('');
 				}
 
+				ige.input.stopPropagation();
+			})
+			.mouseDown(function () {
 				ige.input.stopPropagation();
 			})
 			.mouseUp(function () {
@@ -380,6 +389,9 @@ var Client = IgeClass.extend({
 				}
 				ige.input.stopPropagation();
 			})
+			.mouseDown(function () {
+				ige.input.stopPropagation();
+			})
 			.mouseUp(function () {
 				// Check if this item is already selected
 				//if (!this._uiSelected) {
@@ -422,7 +434,55 @@ var Client = IgeClass.extend({
 			.width(50, true)
 			.mount(this.uiMenuBuildings)
 			// Set the radio group so the controls will receive group events
-			.radioGroup('menuBuildings');
+			.radioGroup('menuBuildings')
+			// Define the button's mouse events
+			.mouseOver(function () {
+				if (!this._uiSelected) {
+					this.backgroundColor('#6b6b6b');
+				}
+				ige.input.stopPropagation();
+			})
+			.mouseOut(function () {
+				if (!this._uiSelected) {
+					this.backgroundColor('');
+				}
+				ige.input.stopPropagation();
+			})
+			.mouseDown(function () {
+				ige.input.stopPropagation();
+			})
+			.mouseUp(function () {
+				// Check if this item is already selected
+				//if (!this._uiSelected) {
+					// The item is NOT already selected so select it!
+					this.select();
+				//}
+				ige.input.stopPropagation();
+			})
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			// Define the callback when the radio button is selected
+			.select(function () {
+				ige.client.data('cursorMode', 'build');
+				this.backgroundColor('#00baff');
+				
+				var tempItem = ige.client.createTemporaryItem(this.data('buildingType'))
+					.opacity(0.7);
+
+				ige.client.data('ghostItem', tempItem);
+				
+				ige.input.stopPropagation();
+			})
+			// Define the callback when the radio button is de-selected
+			.deSelect(function () {
+				this.backgroundColor('');
+				
+				// If we had a temporary building, kill it
+				var item = ige.client.data('ghostItem');
+				if (item) {
+					item.destroy();
+					ige.client.data('ghostItem', false);
+				}
+			});
 		
 		new IgeUiRadioButton()
 			.id('uiMenuBuildings_electricals')
@@ -433,7 +493,55 @@ var Client = IgeClass.extend({
 			.width(50, true)
 			.mount(this.uiMenuBuildings)
 			// Set the radio group so the controls will receive group events
-			.radioGroup('menuBuildings');
+			.radioGroup('menuBuildings')
+			// Define the button's mouse events
+			.mouseOver(function () {
+				if (!this._uiSelected) {
+					this.backgroundColor('#6b6b6b');
+				}
+				ige.input.stopPropagation();
+			})
+			.mouseOut(function () {
+				if (!this._uiSelected) {
+					this.backgroundColor('');
+				}
+				ige.input.stopPropagation();
+			})
+			.mouseDown(function () {
+				ige.input.stopPropagation();
+			})
+			.mouseUp(function () {
+				// Check if this item is already selected
+				//if (!this._uiSelected) {
+					// The item is NOT already selected so select it!
+					this.select();
+				//}
+				ige.input.stopPropagation();
+			})
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			// Define the callback when the radio button is selected
+			.select(function () {
+				ige.client.data('cursorMode', 'build');
+				this.backgroundColor('#00baff');
+				
+				var tempItem = ige.client.createTemporaryItem(this.data('buildingType'))
+					.opacity(0.7);
+
+				ige.client.data('ghostItem', tempItem);
+				
+				ige.input.stopPropagation();
+			})
+			// Define the callback when the radio button is de-selected
+			.deSelect(function () {
+				this.backgroundColor('');
+				
+				// If we had a temporary building, kill it
+				var item = ige.client.data('ghostItem');
+				if (item) {
+					item.destroy();
+					ige.client.data('ghostItem', false);
+				}
+			});
 		
 		this.uiButtonBuildings = new IgeUiRadioButton()
 			.id('uiButtonBuildings')
@@ -456,6 +564,9 @@ var Client = IgeClass.extend({
 					this.backgroundColor('');
 				}
 
+				ige.input.stopPropagation();
+			})
+			.mouseDown(function () {
 				ige.input.stopPropagation();
 			})
 			.mouseUp(function () {
