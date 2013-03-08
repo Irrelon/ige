@@ -863,6 +863,24 @@ var IgeEntity = IgeObject.extend({
 		viewport = viewport || ige._currentViewport;
 		this._worldMatrix.transform([point]);
 	},
+	
+	/**
+	 * Returns the screen position of the entity as an IgePoint where x is the
+	 * "left" and y is the "top", useful for positioning HTML elements at the
+	 * screen location of an IGE entity. This method assumes that the top-left
+	 * of the main canvas element is at 0, 0. If not you can adjust the values
+	 * yourself to allow for offset.
+	 * @example #Get the screen position of the entity
+	 *     var screenPos = entity.screenPosition();
+	 * @return {IgePoint} The screen position of the entity.
+	 */
+	screenPosition: function () {
+		return new IgePoint(
+			Math.floor(this._worldMatrix.matrix[2] - ige._currentCamera._translate.x + ige._geometry.x2),
+			Math.floor(this._worldMatrix.matrix[5] - ige._currentCamera._translate.y + ige._geometry.y2),
+			0
+		);
+	},
 
 	/**
 	 * Calculates and returns the current axis-aligned bounding box in
