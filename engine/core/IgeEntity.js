@@ -876,8 +876,8 @@ var IgeEntity = IgeObject.extend({
 	 */
 	screenPosition: function () {
 		return new IgePoint(
-			Math.floor((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x + ige._geometry.x2) * ige._currentCamera._scale.x),
-			Math.floor((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y + ige._geometry.y2) * ige._currentCamera._scale.y),
+			Math.floor(((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x) + ige._geometry.x2),
+			Math.floor(((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y) + ige._geometry.y2),
 			0
 		);
 	},
