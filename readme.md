@@ -17,9 +17,9 @@ included in the premium licensed version of the engine and is not part of the "p
 
 ## About This Version
 The engine is released under strict confidentiality and must not be shared with anyone who does not also have a
-license. Please remember that you should not place an unobfuscated / packaged copy of the engine or any part of it
-on an internet-accessible server. A packager system is included with the engine to allow you to deploy your project
-including the parts of the engine you are using into a single obfuscated / minified file.
+license. Please remember that you should not place an unobfuscated copy of the engine or any part of it on an
+internet-accessible server. A packager system is included with the engine to allow you to deploy your project including
+the parts of the engine you are using into a single obfuscated / minified file.
 
 ## Examples
 There are a lot of examples in the ./examples folder. Please see the ./examples/readme.md file for more information
