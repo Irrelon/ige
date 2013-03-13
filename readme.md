@@ -28,11 +28,8 @@ about running the examples.
 ## Documentation
 http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/
 
-## Feedback
-If you have any comments, questions, requests, concerns etc please don't hesitate to discuss them on the GitHub issue
-tracker for this project: https://github.com/coolbloke1324/ige/issues
-
-## Live Support
-You can get live support from the developer via Skype either instant message or voice: coolbloke1324
+## Feedback & Support
+If you have any comments, questions, requests etc please don't hesitate to discuss them on the GitHub issue tracker for
+this project: https://github.com/coolbloke1324/ige/issues
 
 (C)opyright 2012 Irrelon Software Limited
