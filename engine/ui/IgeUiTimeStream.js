@@ -64,8 +64,6 @@ var IgeUiTimeStream = IgeUiEntity.extend({
 			ige.client.custom2.value = this._entity._timeStreamDataDelta;
 			ige.client.custom3.value = this._entity._timeStreamOffsetDelta;
 			ige.client.custom4.value = this._entity._timeStreamCurrentInterpolateTime;
-
-			ctx.strokeRect()
 		}
 	}
 });
