@@ -100,7 +100,9 @@ var IgeEntity = IgeObject.extend({
 				this._cacheDirty = true;
 				
 				// Switch off composite caching
-				this.compositeCache(false);
+				if (this.compositeCache()) {
+					this.compositeCache(false);
+				}
 			} else {
 				// Remove the off-screen canvas
 				delete this._cacheCanvas;
@@ -120,7 +122,6 @@ var IgeEntity = IgeObject.extend({
 	 * change occurs this will massively increase rendering performance.
 	 * If enabled, this will automatically disable simple caching on this
 	 * entity with a call to cache(false).
-	 * compositeCache(false).
 	 * @param {Boolean=} val
 	 * @example #Enable entity composite caching
 	 *     entity.compositeCache(true);
@@ -132,12 +133,17 @@ var IgeEntity = IgeObject.extend({
 	 */
 	compositeCache: function (val) {
 		if (val !== undefined) {
-			this._compositeCache = val;
-			
 			if (val) {
 				// Switch off normal caching
 				this.cache(false);
+				
+				// Create the off-screen canvas
+				this._cacheCanvas = document.createElement('canvas');
+				this._cacheCtx = this._cacheCanvas.getContext('2d');
+				this._cacheDirty = true;
 			}
+			
+			this._compositeCache = val;
 			return this;
 		}
 		
@@ -148,7 +154,8 @@ var IgeEntity = IgeObject.extend({
 	 * Gets / sets the cache dirty flag. If set to true this will
 	 * instruct the entity to re-draw it's cached image from the
 	 * assigned texture. Once that occurs the flag will automatically
-	 * be set back to false.
+	 * be set back to false. This works in either standard cache mode
+	 * or composite cache mode.
 	 * @param {Boolean=} val True to force a cache update.
 	 * @example #Get cache dirty flag value
 	 *     var val = entity.cacheDirty();
@@ -171,10 +178,10 @@ var IgeEntity = IgeObject.extend({
 	 * base from which the mouse position is determined. If no
 	 * viewport is specified then the current viewport the engine
 	 * is rendering to is used instead.
-	 * @return {IgePoint} The mouse point relative to the entity
 	 * @example #Get the mouse position relative to the entity
 	 *     // The returned value is an object with properties x, y, z
 	 *     var mousePos = entity.mousePos();
+	 * @return {IgePoint} The mouse point relative to the entity
 	 * center.
 	 */
 	mousePos: function (viewport) {
@@ -1602,9 +1609,12 @@ var IgeEntity = IgeObject.extend({
 	 * @return {String} The string code fragment that will
 	 * reproduce this entity when evaluated.
 	 */
-	_stringify: function () {
+	_stringify: function (options) {
+		// Make sure we have an options object
+		if (options === undefined) { options = {}; }
+		
 		// Get the properties for all the super-classes
-		var str = IgeObject.prototype._stringify.call(this), i;
+		var str = IgeObject.prototype._stringify.call(this, options), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
@@ -1620,19 +1630,29 @@ var IgeEntity = IgeObject.extend({
 						str += ".cell(" + this.cell() + ")";
 						break;
 					case '_translate':
-						str += ".translateTo(" + this._translate.x + ", " + this._translate.y + ", " + this._translate.z + ")";
+						if (options.transform !== false && options.translate !== false) {
+							str += ".translateTo(" + this._translate.x + ", " + this._translate.y + ", " + this._translate.z + ")";
+						}
 						break;
 					case '_rotate':
-						str += ".rotateTo(" + this._rotate.x + ", " + this._rotate.y + ", " + this._rotate.z + ")";
+						if (options.transform !== false && options.rotate !== false) {
+							str += ".rotateTo(" + this._rotate.x + ", " + this._rotate.y + ", " + this._rotate.z + ")";
+						}
 						break;
 					case '_scale':
-						str += ".scaleTo(" + this._scale.x + ", " + this._scale.y + ", " + this._scale.z + ")";
+						if (options.transform !== false && options.scale !== false) {
+							str += ".scaleTo(" + this._scale.x + ", " + this._scale.y + ", " + this._scale.z + ")";
+						}
 						break;
 					case '_origin':
-						str += ".originTo(" + this._origin.x + ", " + this._origin.y + ", " + this._origin.z + ")";
+						if (options.origin !== false) {
+							str += ".originTo(" + this._origin.x + ", " + this._origin.y + ", " + this._origin.z + ")";
+						}
 						break;
 					case '_anchor':
-						str += ".anchor(" + this._anchor.x + ", " + this._anchor.y + ")";
+						if (options.anchor !== false) {
+							str += ".anchor(" + this._anchor.x + ", " + this._anchor.y + ")";
+						}
 						break;
 					case '_width':
 						if (typeof(this.width()) === 'string') {
@@ -1652,7 +1672,9 @@ var IgeEntity = IgeObject.extend({
 						str += ".size3d(" + this._geometry.x + ", " + this._geometry.y + ", " + this._geometry.z + ")";
 						break;
 					case '_deathTime':
-						str += ".deathTime(" + this.deathTime() + ")";
+						if (options.deathTime !== false && options.lifeSpan !== false) {
+							str += ".deathTime(" + this.deathTime() + ")";
+						}
 						break;
 					case '_highlight':
 						str += ".highlight(" + this.highlight() + ")";
