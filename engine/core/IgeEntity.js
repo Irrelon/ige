@@ -99,6 +99,17 @@ var IgeEntity = IgeObject.extend({
 				this._cacheCtx = this._cacheCanvas.getContext('2d');
 				this._cacheDirty = true;
 				
+				// Set smoothing mode
+				if (!ige._globalSmoothing) {
+					this._cacheCtx.imageSmoothingEnabled = false;
+					this._cacheCtx.webkitImageSmoothingEnabled = false;
+					this._cacheCtx.mozImageSmoothingEnabled = false;
+				} else {
+					this._cacheCtx.imageSmoothingEnabled = true;
+					this._cacheCtx.webkitImageSmoothingEnabled = true;
+					this._cacheCtx.mozImageSmoothingEnabled = true;
+				}
+				
 				// Switch off composite caching
 				if (this.compositeCache()) {
 					this.compositeCache(false);
@@ -142,7 +153,16 @@ var IgeEntity = IgeObject.extend({
 				this._cacheCtx = this._cacheCanvas.getContext('2d');
 				this._cacheDirty = true;
 				
-				
+				// Set smoothing mode
+				if (!ige._globalSmoothing) {
+					this._cacheCtx.imageSmoothingEnabled = false;
+					this._cacheCtx.webkitImageSmoothingEnabled = false;
+					this._cacheCtx.mozImageSmoothingEnabled = false;
+				} else {
+					this._cacheCtx.imageSmoothingEnabled = true;
+					this._cacheCtx.webkitImageSmoothingEnabled = true;
+					this._cacheCtx.mozImageSmoothingEnabled = true;
+				}
 			}
 			
 			// Loop children and set _compositeParent to the correct value
