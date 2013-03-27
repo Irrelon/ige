@@ -141,7 +141,18 @@ var IgeEntity = IgeObject.extend({
 				this._cacheCanvas = document.createElement('canvas');
 				this._cacheCtx = this._cacheCanvas.getContext('2d');
 				this._cacheDirty = true;
+				
+				
 			}
+			
+			// Loop children and set _compositeParent to the correct value
+			this._children.each(function () {
+				if (val) {
+					this._compositeParent = true;
+				} else {
+					delete this._compositeParent;
+				}
+			});
 			
 			this._compositeCache = val;
 			return this;
@@ -166,6 +177,18 @@ var IgeEntity = IgeObject.extend({
 	cacheDirty: function (val) {
 		if (val !== undefined) {
 			this._cacheDirty = val;
+			
+			// Check if the entity is a child of a composite or composite
+			// entity chain and propagate the dirty cache up the chain
+			if (val && this._compositeParent && this._parent) {
+				this._parent.cacheDirty(val);
+				
+				if (!this._cache && !this._compositeCache) {
+					// Set clean immediately as no caching is enabled on this child
+					this._cacheDirty = false;
+				}
+			}
+			
 			return this;
 		}
 
@@ -1408,7 +1431,7 @@ var IgeEntity = IgeObject.extend({
 
 			if (!this._dontRender) {
 				// Check for cached version
-				if (this._cache) {
+				if (this._cache || this._compositeCache) {
 					// Caching is enabled
 					if (!this._cacheDirty) {
 						this._renderCache(ctx);
@@ -1418,22 +1441,42 @@ var IgeEntity = IgeObject.extend({
 						var _canvas = this._cacheCanvas,
 							_ctx = this._cacheCtx;
 
-						if (this._geometry.x > 0 && this._geometry.y > 0) {
-							_canvas.width = this._geometry.x;
-							_canvas.height = this._geometry.y;
+						if (this._compositeCache) {
+							// Get the composite entity AABB and alter the internal canvas
+							// to the composite size so we can render the entire entity
+							var aabbC = this.compositeAabb();
+							
+							if (aabbC.width > 0 && aabbC.height > 0) {
+								_canvas.width = aabbC.width;
+								_canvas.height = aabbC.height;
+							} else {
+								// We cannot set a zero size for a canvas, it will
+								// cause the browser to freak out
+								_canvas.width = 1;
+								_canvas.height = 1;
+							}
+							
+							// Translate to the center of the canvas
+							_ctx.translate(-aabbC.x, -aabbC.y);
 						} else {
-							// We cannot set a zero size for a canvas, it will
-							// cause the browser to freak out
-							_canvas.width = 1;
-							_canvas.height = 1;
+							if (this._geometry.x > 0 && this._geometry.y > 0) {
+								_canvas.width = this._geometry.x;
+								_canvas.height = this._geometry.y;
+							} else {
+								// We cannot set a zero size for a canvas, it will
+								// cause the browser to freak out
+								_canvas.width = 1;
+								_canvas.height = 1;
+							}
+							
+							// Translate to the center of the canvas
+							_ctx.translate(this._geometry.x2, this._geometry.y2);
+							
+							this._cacheDirty = false;
 						}
-
-						// Translate to the center of the canvas
-						_ctx.translate(this._geometry.x2, this._geometry.y2);
 
 						this._renderEntity(_ctx, dontTransform);
 						this._renderCache(ctx);
-						this._cacheDirty = false;
 					}
 				} else {
 					// Render the entity
@@ -1446,8 +1489,16 @@ var IgeEntity = IgeObject.extend({
 				this.streamSync();
 			}
 
-			// Process children
-			IgeObject.prototype.tick.call(this,ctx);
+			if (this._compositeCache) {
+				if (this._cacheDirty) {
+					// Process children
+					IgeObject.prototype.tick.call(this, this._cacheCtx);
+					this._cacheDirty = false;
+				}
+			} else {
+				// Process children
+				IgeObject.prototype.tick.call(this, ctx);
+			}
 		}
 	},
 
@@ -1526,6 +1577,12 @@ var IgeEntity = IgeObject.extend({
 	 * @private
 	 */
 	_renderCache: function (ctx) {
+		ctx.save();
+		if (this._compositeCache) {
+			var aabbC = this.compositeAabb();
+			ctx.translate(-this._geometry.x2 / 2, -this._geometry.y2 / 2);
+		}
+		
 		// We have a clean cached version so output that
 		ctx.drawImage(
 			this._cacheCanvas,
@@ -1543,6 +1600,7 @@ var IgeEntity = IgeObject.extend({
 
 			ige._drawCount++;
 		}
+		ctx.restore();
 	},
 
 	/**

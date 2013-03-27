@@ -738,6 +738,12 @@ var IgeObject = IgeEventingClass.extend({
 					obj.updateTransform();
 					obj.aabb(true);
 				}
+				
+				if (obj._compositeCache) {
+					this._compositeParent = true;
+				} else {
+					delete this._compositeParent;
+				}
 
 				this.emit('mounted', this._parent);
 
