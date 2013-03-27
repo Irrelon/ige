@@ -1459,6 +1459,8 @@ var IgeEntity = IgeObject.extend({
 							
 							// Translate to the center of the canvas
 							_ctx.translate(-aabbC.x, -aabbC.y);
+							
+							this.emit('compositeReady');
 						} else {
 							if (this._geometry.x > 0 && this._geometry.y > 0) {
 								_canvas.width = this._geometry.x;
