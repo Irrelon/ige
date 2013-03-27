@@ -788,11 +788,21 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
-	 * NOT IMPLEMENTED - Clones the object and all it's children and returns a new object.
+	 * Clones the object and all it's children and returns a new object.
 	 */
-		// TODO: Write this function!
-	clone: function () {
+	clone: function (options) {
+		// Make sure we have an options object
+		if (options === undefined) { options = {}; }
+		
+		// Set some default option values
+		if (options.id === undefined) { options.id = false; }
+		if (options.mount === undefined) { options.mount = false; }
+		if (options.transform === undefined) { options.transform = true; }
+		
 		// Loop all children and clone them, then return cloned version of ourselves
+		var newObject = eval(this.stringify(options));
+		
+		return newObject;
 	},
 
 	/**
@@ -1535,19 +1545,24 @@ var IgeObject = IgeEventingClass.extend({
 	 * evaluated will reproduce this object.
 	 * @return {String}
 	 */
-	stringify: function () {
+	stringify: function (options) {
+		// Make sure we have an options object
+		if (options === undefined) { options = {}; }
+		
 		var str = "new " + this.classId() + "()";
 
 		// Every object has an ID, assign that first
-		str += ".id('" + this.id() + "')";
+		if (options.id !== false) {
+			str += ".id('" + this.id() + "')";
+		}
 
 		// Now check if there is a parent and mount that
-		if (this.parent()) {
+		if (options.mount !== false && this.parent()) {
 			str += ".mount(ige.$('" + this.parent().id() + "'))";
 		}
 
 		// Now get all other properties
-		str += this._stringify();
+		str += this._stringify(options);
 
 		return str;
 	},
@@ -1560,7 +1575,10 @@ var IgeObject = IgeEventingClass.extend({
 	 * Other properties are handled by their own class method.
 	 * @return {String}
 	 */
-	_stringify: function () {
+	_stringify: function (options) {
+		// Make sure we have an options object
+		if (options === undefined) { options = {}; }
+		
 		var str = '', i;
 
 		// Loop properties and add property assignment code to string
