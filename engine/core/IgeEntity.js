@@ -1580,7 +1580,7 @@ var IgeEntity = IgeObject.extend({
 		ctx.save();
 		if (this._compositeCache) {
 			var aabbC = this.compositeAabb();
-			ctx.translate(-this._geometry.x2 / 2, -this._geometry.y2 / 2);
+			ctx.translate(aabbC.x + this._geometry.x2, aabbC.y + this._geometry.y2);
 		}
 		
 		// We have a clean cached version so output that
