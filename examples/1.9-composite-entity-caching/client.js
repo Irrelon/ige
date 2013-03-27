@@ -47,6 +47,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(self.gameTexture.fairy)
 						.translateTo(0, 0, 0)
+						.compositeCache(true)
 						.mount(self.scene1);
 
 					self.obj[1] = new Rotator(0)
