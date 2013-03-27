@@ -1,6 +1,3 @@
-IgeFilters.tmpCanvas = document.createElement('canvas');
-IgeFilters.tmpCtx = IgeFilters.tmpCanvas.getContext('2d');
-
 IgeFilters.createImageData = function(w,h) {
 	return IgeFilters.tmpCtx.createImageData(w,h);
 };
