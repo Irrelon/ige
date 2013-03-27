@@ -1445,6 +1445,7 @@ var IgeEntity = IgeObject.extend({
 							// Get the composite entity AABB and alter the internal canvas
 							// to the composite size so we can render the entire entity
 							var aabbC = this.compositeAabb();
+							this._compositeAabbCache = aabbC;
 							
 							if (aabbC.width > 0 && aabbC.height > 0) {
 								_canvas.width = aabbC.width;
@@ -1579,7 +1580,7 @@ var IgeEntity = IgeObject.extend({
 	_renderCache: function (ctx) {
 		ctx.save();
 		if (this._compositeCache) {
-			var aabbC = this.compositeAabb();
+			var aabbC = this._compositeAabbCache;
 			ctx.translate(aabbC.x + this._geometry.x2, aabbC.y + this._geometry.y2);
 		}
 		
