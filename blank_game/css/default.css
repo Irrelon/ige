@@ -82,6 +82,21 @@ body {
     left: -85px;
 }
 
+#loadingProgress {
+    width: 200px;
+    height: 7px;
+    position: absolute;
+    top: 120px;
+    left: 50%;
+    margin-left: -100px;
+}
+
+#loadingProgressBar {
+    width: 0px;
+    height: 1px;
+    background: rgba(0, 183, 229, 0.9);
+}
+
 .loadingLink {
     position: absolute;
     right: 10px;
@@ -127,4 +142,104 @@ body {
 @-webkit-keyframes spinoffPulse {
 	0% { -webkit-transform:rotate(0deg); }
 	100% { -webkit-transform:rotate(360deg); }
+}
+
+.sgButton {
+    display: block;
+    float: left;
+    font-variant: small-caps;
+    background-color: #084861;
+    padding: 1px;
+    padding-left: 2px;
+    padding-right: 2px;
+    margin-right: 1px;
+    width: 60px;
+    font-size: 13px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.met {
+    display: block;
+    float: left;
+    text-align: right;
+    font-variant: small-caps;
+    font-size: 13px;
+    background-color: rgba(7, 20, 25, 0.9);
+    padding: 1px;
+    padding-left: 2px;
+    padding-right: 6px;
+    margin-right: 1px;
+    min-width: 75px;
+    white-space: nowrap;
+}
+
+#igeSgTree {
+    display: block;
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 400px;
+    height: 200px;
+    background-color: rgba(7, 20, 25, 0.9);
+    font-family: Verdana, Tahoma;
+    font-size: 11px;
+    color: #ffffff;
+    text-shadow: 1px 1px 3px #000000;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    cursor: default;
+    z-index: 200000;
+}
+
+#igeSgTree ul {
+    list-style: none;
+    margin: 0;
+    padding: 0px 0px 0px 14px;
+}
+
+#igeSgTree li {
+    cursor: pointer;
+    margin: 3px;
+}
+
+#igeSgTree li.selected {
+    font-weight: bold;
+}
+
+#igeSgTree li.selected ul {
+    font-weight: normal;
+}
+
+#igeSgConsoleHolder {
+    position: absolute;
+    left: 410px;
+    top: 4px;
+    padding: 5px;
+    background-color: rgba(66, 66, 66, 0.9);
+    font-family: Verdana, sans-serif;
+    font-size: 12px;
+    color: #ffffff;
+}
+
+#igeSgConsoleHolder a {
+    color: #ffffff;
+}
+
+#igeSgConsole {
+    width: 800px;
+}
+
+#igeSgDocPage {
+    width: 800px;
+    height: 400px;
+    display: none;
+    background-color: #ffffff;
+}
+
+#igeSgItemClassChain {
+    display: none;
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
