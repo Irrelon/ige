@@ -323,11 +323,12 @@ var IgeEngine = IgeEntity.extend({
 	 * @returns {*}
 	 */
 	loadGraph: function (className, options) {
-		if (graphName !== undefined) {
+		if (className !== undefined) {
 			var classObj = this.getClass(className),
 				classInstance;
 			
 			if (classObj) {
+				this.log('Loading SceneGraph data class: ' + className);
 				classInstance = this.newClassInstance(className);
 				
 				// Call the class's graph() method passing the options in
