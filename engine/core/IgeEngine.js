@@ -315,6 +315,30 @@ var IgeEngine = IgeEntity.extend({
 			this.emit('allRequireScriptsLoaded');
 		}
 	},
+
+	/**
+	 * Loads a scenegraph class into memory.
+	 * @param {String} className The name of the scenegraph class.
+	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
+	 * @returns {*}
+	 */
+	loadGraph: function (className, options) {
+		if (graphName !== undefined) {
+			var classObj = this.getClass(className),
+				classInstance;
+			
+			if (classObj) {
+				classInstance = this.newClassInstance(className);
+				
+				// Call the class's graph() method passing the options in
+				classInstance.graph(options);
+			} else {
+				this.log('Cannot load graph for class name "' + className + '" because the class could not be found. Have you included it in your server/clientConfig.js file?', 'error');
+			}
+		}
+		
+		return this;
+	},
 	
 	enableUpdates: function (val) {
 		if (val !== undefined) {
