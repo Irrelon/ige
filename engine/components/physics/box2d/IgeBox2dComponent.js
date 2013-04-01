@@ -297,77 +297,81 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 						break;
 
 					case 'fixtures':
-						for (i = 0; i < body.fixtures.length; i++) {
-							// Grab the fixture definition
-							fixtureDef = body.fixtures[i];
-
-							// Create the fixture
-							tempFixture = this.createFixture(fixtureDef);
-							tempFixture.igeId = fixtureDef.igeId;
-
-							// Check for a shape definition for the fixture
-							if (fixtureDef.shape) {
-								// Create based on the shape type
-								switch (fixtureDef.shape.type) {
-									case 'circle':
-										tempShape = new this.b2CircleShape();
-										if (fixtureDef.shape.data) {
-											tempShape.SetRadius(fixtureDef.shape.data.radius / this._scaleRatio);
-										} else {
-											tempShape.SetRadius((entity._geometry.x / this._scaleRatio) / 2);
-										}
-										break;
-
-									case 'polygon':
-										tempShape = new this.b2PolygonShape();
-										tempShape.SetAsArray(fixtureDef.shape.data._poly, fixtureDef.shape.data.length());
-										break;
-
-									case 'rectangle':
-										tempShape = new this.b2PolygonShape();
-
-										if (fixtureDef.shape.data) {
-											finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
-											finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
-											finalWidth = fixtureDef.shape.data.width !== undefined ? fixtureDef.shape.data.width : (entity._geometry.x / 2);
-											finalHeight = fixtureDef.shape.data.height !== undefined ? fixtureDef.shape.data.height : (entity._geometry.y / 2);
-										} else {
-											finalX = 0;
-											finalY = 0;
-											finalWidth = (entity._geometry.x / 2);
-											finalHeight = (entity._geometry.y / 2);
-										}
-
-										// Set the polygon as a box
-										tempShape.SetAsOrientedBox(
-											(finalWidth / this._scaleRatio),
-											(finalHeight / this._scaleRatio),
-											new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio),
-											0
-										);
-										break;
+						if (body.fixtures && body.fixtures.length) {
+							for (i = 0; i < body.fixtures.length; i++) {
+								// Grab the fixture definition
+								fixtureDef = body.fixtures[i];
+	
+								// Create the fixture
+								tempFixture = this.createFixture(fixtureDef);
+								tempFixture.igeId = fixtureDef.igeId;
+	
+								// Check for a shape definition for the fixture
+								if (fixtureDef.shape) {
+									// Create based on the shape type
+									switch (fixtureDef.shape.type) {
+										case 'circle':
+											tempShape = new this.b2CircleShape();
+											if (fixtureDef.shape.data) {
+												tempShape.SetRadius(fixtureDef.shape.data.radius / this._scaleRatio);
+											} else {
+												tempShape.SetRadius((entity._geometry.x / this._scaleRatio) / 2);
+											}
+											break;
+	
+										case 'polygon':
+											tempShape = new this.b2PolygonShape();
+											tempShape.SetAsArray(fixtureDef.shape.data._poly, fixtureDef.shape.data.length());
+											break;
+	
+										case 'rectangle':
+											tempShape = new this.b2PolygonShape();
+	
+											if (fixtureDef.shape.data) {
+												finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
+												finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
+												finalWidth = fixtureDef.shape.data.width !== undefined ? fixtureDef.shape.data.width : (entity._geometry.x / 2);
+												finalHeight = fixtureDef.shape.data.height !== undefined ? fixtureDef.shape.data.height : (entity._geometry.y / 2);
+											} else {
+												finalX = 0;
+												finalY = 0;
+												finalWidth = (entity._geometry.x / 2);
+												finalHeight = (entity._geometry.y / 2);
+											}
+	
+											// Set the polygon as a box
+											tempShape.SetAsOrientedBox(
+												(finalWidth / this._scaleRatio),
+												(finalHeight / this._scaleRatio),
+												new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio),
+												0
+											);
+											break;
+									}
+	
+									if (tempShape) {
+										tempFixture.shape = tempShape;
+										finalFixture = tempBod.CreateFixture(tempFixture);
+										finalFixture.igeId = tempFixture.igeId;
+									}
 								}
-
-								if (tempShape) {
-									tempFixture.shape = tempShape;
-									finalFixture = tempBod.CreateFixture(tempFixture);
-									finalFixture.igeId = tempFixture.igeId;
+	
+								if (fixtureDef.filter && finalFixture) {
+									tempFilterData = new ige.box2d.b2FilterData();
+	
+									if (fixtureDef.filter.categoryBits !== undefined) { tempFilterData.categoryBits = fixtureDef.filter.categoryBits; }
+									if (fixtureDef.filter.maskBits !== undefined) { tempFilterData.maskBits = fixtureDef.filter.maskBits; }
+									if (fixtureDef.filter.categoryIndex !== undefined) { tempFilterData.categoryIndex = fixtureDef.filter.categoryIndex; }
+	
+									finalFixture.SetFilterData(tempFilterData);
+								}
+	
+								if (fixtureDef.density !== undefined && finalFixture) {
+									finalFixture.SetDensity(fixtureDef.density);
 								}
 							}
-
-							if (fixtureDef.filter && finalFixture) {
-								tempFilterData = new ige.box2d.b2FilterData();
-
-								if (fixtureDef.filter.categoryBits !== undefined) { tempFilterData.categoryBits = fixtureDef.filter.categoryBits; }
-								if (fixtureDef.filter.maskBits !== undefined) { tempFilterData.maskBits = fixtureDef.filter.maskBits; }
-								if (fixtureDef.filter.categoryIndex !== undefined) { tempFilterData.categoryIndex = fixtureDef.filter.categoryIndex; }
-
-								finalFixture.SetFilterData(tempFilterData);
-							}
-
-							if (fixtureDef.density !== undefined && finalFixture) {
-								finalFixture.SetDensity(fixtureDef.density);
-							}
+						} else {
+							this.log('Box2D body has no fixtures, have you specified fixtures correctly? They are supposed to be an array of fixture objects.', 'warning');
 						}
 						break;
 				}
