@@ -6,20 +6,23 @@ var IgeEntityBox2d = IgeEntity.extend({
 
 	init: function () {
 		IgeEntity.prototype.init.call(this);
-
-		// Store the existing transform methods
-		this._translateToProto = this.translateTo;
-		this._translateByProto = this.translateBy;
-
-		this._rotateToProto = this.rotateTo;
-		this._rotateByProto = this.rotateBy;
-
-		// Take over the transform methods
-		this.translateTo = this._translateTo;
-		this.translateBy = this._translateBy;
-
-		this.rotateTo = this._rotateTo;
-		this.rotateBy = this._rotateBy;
+		
+		// Check if box2d is enabled in the engine
+		if (ige.box2d) {
+			// Store the existing transform methods
+			this._translateToProto = this.translateTo;
+			this._translateByProto = this.translateBy;
+	
+			this._rotateToProto = this.rotateTo;
+			this._rotateByProto = this.rotateBy;
+	
+			// Take over the transform methods
+			this.translateTo = this._translateTo;
+			this.translateBy = this._translateBy;
+	
+			this.rotateTo = this._rotateTo;
+			this.rotateBy = this._rotateBy;
+		}
 	},
 
 	/**
