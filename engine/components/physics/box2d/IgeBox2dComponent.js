@@ -459,6 +459,23 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		}
 		this._world.SetContactListener(contactListener);
 	},
+	
+	/**
+	 * If enabled, sets the physics world into network debug mode which
+	 * will stop the world from generating collisions but still allow us
+	 * to see shape outlines as they are attached to bodies. Useful when
+	 * your physics system is server-side but seeing client-side shape
+	 * data is useful for debugging collisions.
+	 * @param {Boolean} val
+	 */
+	networkDebugMode: function (val) {
+		if (val !== undefined) {
+			this._networkDebugMode = val;
+			return this;
+		}
+		
+		return this._networkDebugMode;
+	},
 
 	/**
 	 * Creates a debug entity that outputs the bounds of each box2d
