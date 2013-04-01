@@ -437,8 +437,8 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	 * callbacks are fired.
 	 * @param {Function} beginContactCallback The method to call when the contact listener detects contact has started.
 	 * @param {Function} endContactCallback The method to call when the contact listener detects contact has ended.
-	 * @param preSolve
-	 * @param postSolve
+	 * @param {Function} preSolve
+	 * @param {Function} postSolve
 	 */
 	contactListener: function (beginContactCallback, endContactCallback, preSolve, postSolve) {
 		var contactListener = new this.b2ContactListener();
@@ -471,6 +471,27 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	networkDebugMode: function (val) {
 		if (val !== undefined) {
 			this._networkDebugMode = val;
+			
+			if (val === true) {
+				// We are enabled so disable all physics contacts
+				this.contactListener(
+					// Begin contact
+					function (contact) {},
+					// End contact
+					function (contact) {},
+					// Pre-solve
+					function (contact) {
+						// Cancel the contact
+						contact.SetEnabled(false);
+					},
+					// Post-solve
+					function (contact) {}
+				);
+			} else {
+				// Re-enable contacts
+				this.contactListener();
+			}
+			
 			return this;
 		}
 		
