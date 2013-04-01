@@ -3191,22 +3191,9 @@ var IgeEntity = IgeObject.extend({
 
 		// If we have data to use
 		if (nextData && previousData) {
-			/*previousData = [
-				previousData[0],
-				[
-					this._translate.x,
-					this._translate.y,
-					this._translate.z,
-
-					this._scale.x,
-					this._scale.y,
-					this._scale.z,
-
-					this._rotate.x,
-					this._rotate.y,
-					this._rotate.z
-				]
-			];*/
+			// Check if the previous data has a timestamp and if not,
+			// use the next data's timestamp
+			if (isNaN(previousData[0])) { previousData[0] = nextData[0]; }
 
 			// Store the data so outside systems can access them
 			this._timeStreamPreviousData = previousData;
