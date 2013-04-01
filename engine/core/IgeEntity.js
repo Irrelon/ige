@@ -2956,6 +2956,7 @@ var IgeEntity = IgeObject.extend({
 				this.classId(),
 				thisId,
 				this._parent.id(),
+				this.streamSectionData('transform'),
 				this.streamCreateData()
 			], clientId);
 			

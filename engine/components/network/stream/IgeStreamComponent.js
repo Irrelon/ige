@@ -178,7 +178,8 @@ var IgeStreamComponent = IgeEventingClass.extend({
 		var classId = data[0],
 			entityId = data[1],
 			parentId = data[2],
-			createData = data[3],
+			transformData = data[3],
+			createData = data[4],
 			parent = ige.$(parentId),
 			classConstructor,
 			entity;
@@ -194,6 +195,8 @@ var IgeStreamComponent = IgeEventingClass.extend({
 					entity = new classConstructor(createData)
 						.id(entityId)
 						.mount(parent);
+					
+					entity.streamSectionData('transform', transformData, true);
 
 					// Set the just created flag which will stop the renderer
 					// from handling this entity until after the first stream
@@ -264,6 +267,8 @@ var IgeStreamComponent = IgeEventingClass.extend({
 			// Now that the entity has had it's first bit of data
 			// reset the just created flag
 			delete entity._streamJustCreated;
+		} else {
+			this.log('+++ Stream: Data received for unknown entity (' + entityId +')');
 		}
 	}
 });
