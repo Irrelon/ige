@@ -1032,6 +1032,7 @@ var IgeObject = IgeEventingClass.extend({
 		}
 
 		delete this._children;
+		this._children = [];
 
 		return this;
 	},
