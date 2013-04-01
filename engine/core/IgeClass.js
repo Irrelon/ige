@@ -64,9 +64,13 @@ var IgeClass = (function () {
 				if (type === 'warning' || type === 'error') {
 					if (igeConfig.debug._stacks) {
 						if (igeConfig.debug._node) {
-							stack = new Error().stack;
-							//console.log(color.magenta('Stack:'), color.red(stack));
-							console.log('Stack:', stack);
+							if (console.trace) {
+								console.trace();
+							} else {
+								stack = new Error().stack;
+								//console.log(color.magenta('Stack:'), color.red(stack));
+								console.log('Stack:', stack);
+							}
 						} else {
 							if (typeof(printStackTrace) === 'function') {
 								console.log('Stack:', printStackTrace().join('\n ---- '));
