@@ -9,19 +9,32 @@ var IgeEntityBox2d = IgeEntity.extend({
 		
 		// Check if box2d is enabled in the engine
 		if (ige.box2d) {
-			// Store the existing transform methods
-			this._translateToProto = this.translateTo;
-			this._translateByProto = this.translateBy;
-	
-			this._rotateToProto = this.rotateTo;
-			this._rotateByProto = this.rotateBy;
-	
-			// Take over the transform methods
-			this.translateTo = this._translateTo;
-			this.translateBy = this._translateBy;
-	
-			this.rotateTo = this._rotateTo;
-			this.rotateBy = this._rotateBy;
+			if (!ige.box2d._networkDebugMode) {
+				// Store the existing transform methods
+				this._translateToProto = this.translateTo;
+				this._translateByProto = this.translateBy;
+		
+				this._rotateToProto = this.rotateTo;
+				this._rotateByProto = this.rotateBy;
+		
+				// Take over the transform methods
+				this.translateTo = this._translateTo;
+				this.translateBy = this._translateBy;
+		
+				this.rotateTo = this._rotateTo;
+				this.rotateBy = this._rotateBy;
+			} else {
+				this._translateToProto = function () {};
+				this._translateByProto = function () {};
+		
+				this._rotateToProto = function () {};
+				this._rotateByProto = function () {};
+				
+				this._updateProto = this.update;
+				
+				// Make sure box2d is kept up to date by the engine
+				this.update = this._update;
+			}
 		}
 	},
 
@@ -149,6 +162,23 @@ var IgeEntityBox2d = IgeEntity.extend({
 	 */
 	_rotateBy: function (x, y, z) {
 		this._rotateTo(this._rotate.x + x, this._rotate.y + y, this._rotate.z + z);
+	},
+
+	/**
+	 * Purely for networkDebugMode handling, ensures that an entity's transform is
+	 * not taken over by the physics simulation and is instead handled by the engine.
+	 * @param ctx
+	 * @private
+	 */
+	_update: function (ctx) {
+		// Call the original method
+		this._updateProto(ctx);
+		
+		// Update the box2d body transform
+		this._translateTo(this._translate.x, this._translate.y, this._translate.z);
+		this._rotateTo(this._rotate.x, this._rotate.y, this._rotate.z);
+		
+		//IgeEntity.prototype.update.call(this, ctx);
 	},
 
 	/**

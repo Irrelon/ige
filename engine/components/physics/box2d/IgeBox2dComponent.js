@@ -566,12 +566,14 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	start: function () {
 		if (!this._active) {
 			this._active = true;
-
-			if (this._mode === 0) {
-				// Add the box2d behaviour to the ige
-				ige.addBehaviour('box2dStep', this._behaviour);
-			} else {
-				this._intervalTimer = setInterval(this._behaviour, 1000 / 60);
+			
+			if (!this._networkDebugMode) {
+				if (this._mode === 0) {
+					// Add the box2d behaviour to the ige
+					ige.addBehaviour('box2dStep', this._behaviour);
+				} else {
+					this._intervalTimer = setInterval(this._behaviour, 1000 / 60);
+				}
 			}
 		}
 	},
