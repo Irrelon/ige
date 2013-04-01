@@ -182,6 +182,19 @@ var IgeEntityBox2d = IgeEntity.extend({
 	},
 
 	/**
+	 * If true, disabled box2d debug shape drawing for this entity.
+	 * @param {Boolean} val
+	 */
+	box2dNoDebug: function (val) {
+		if (val !== undefined) {
+			this._box2dNoDebug = val;
+			return this;
+		}
+		
+		return this._box2dNoDebug;
+	},
+
+	/**
 	 * Destroys the physics entity and the box2d body that
 	 * is attached to it.
 	 */

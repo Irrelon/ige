@@ -6016,31 +6016,36 @@ Box2D.postDefs = [];
       if (flags & b2DebugDraw.e_shapeBit) {
          for (b = this.m_bodyList;
          b; b = b.m_next) {
-            xf = b.m_xf;
-            for (f = b.GetFixtureList();
-            f; f = f.m_next) {
-               s = f.GetShape();
-               if (b.IsActive() == false) {
-                  color.Set(0.5, 0.5, 0.3);
-                  this.DrawShape(s, xf, color);
-               }
-               else if (b.GetType() == b2Body.b2_staticBody) {
-                  color.Set(0.5, 0.9, 0.5);
-                  this.DrawShape(s, xf, color);
-               }
-               else if (b.GetType() == b2Body.b2_kinematicBody) {
-                  color.Set(0.5, 0.5, 0.9);
-                  this.DrawShape(s, xf, color);
-               }
-               else if (b.IsAwake() == false) {
-                  color.Set(0.6, 0.6, 0.6);
-                  this.DrawShape(s, xf, color);
-               }
-               else {
-                  color.Set(0.9, 0.7, 0.7);
-                  this.DrawShape(s, xf, color);
-               }
-            }
+			 // This is different from the original in that we check
+			 // if the box2dNoDebug has been set first before drawing
+			 // a debug shape for this body
+			 if (!b._entity || !b._entity._box2dNoDebug) {
+				xf = b.m_xf;
+				for (f = b.GetFixtureList();
+				f; f = f.m_next) {
+				   s = f.GetShape();
+				   if (b.IsActive() == false) {
+					  color.Set(0.5, 0.5, 0.3);
+					  this.DrawShape(s, xf, color);
+				   }
+				   else if (b.GetType() == b2Body.b2_staticBody) {
+					  color.Set(0.5, 0.9, 0.5);
+					  this.DrawShape(s, xf, color);
+				   }
+				   else if (b.GetType() == b2Body.b2_kinematicBody) {
+					  color.Set(0.5, 0.5, 0.9);
+					  this.DrawShape(s, xf, color);
+				   }
+				   else if (b.IsAwake() == false) {
+					  color.Set(0.6, 0.6, 0.6);
+					  this.DrawShape(s, xf, color);
+				   }
+				   else {
+					  color.Set(0.9, 0.7, 0.7);
+					  this.DrawShape(s, xf, color);
+				   }
+				}
+			 }
          }
       }
       if (flags & b2DebugDraw.e_jointBit) {
