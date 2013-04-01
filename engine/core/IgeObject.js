@@ -1016,8 +1016,8 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Loops through all child objects of this object and destroys them
-	 * by calling each child's destroy() method then deletes the reference
-	 * to the object's internal _children array.
+	 * by calling each child's destroy() method then clears the object's
+	 * internal _children array.
 	 */
 	destroyChildren: function () {
 		var arr = this._children,
