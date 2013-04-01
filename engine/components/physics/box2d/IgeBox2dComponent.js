@@ -492,7 +492,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 				this.contactListener();
 			}
 			
-			return this;
+			return this._entity;
 		}
 		
 		return this._networkDebugMode;
