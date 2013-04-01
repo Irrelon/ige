@@ -750,6 +750,7 @@ var IgeObject = IgeEventingClass.extend({
 				return this;
 			} else {
 				// The object has no _children array!
+				this.log('Cannot mount object because it has no _children array!', 'warning');
 				return false;
 			}
 		} else {
