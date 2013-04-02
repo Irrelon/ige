@@ -15,7 +15,7 @@
 		"mongodb": "1.0.2",
 		"mysql": "2.0.0-alpha3",
 		"node-arguments": "0.0.1",
-		"socket.io": "0.9.8",
+		"socket.io": "0.9.14",
 		"uglify-js2": "2.1.4",
 		"net.io-server": "https://github.com/coolbloke1324/net.io-server/tarball/master"
 	},
