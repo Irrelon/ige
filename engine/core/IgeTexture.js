@@ -880,12 +880,19 @@ var IgeTexture = IgeEventingClass.extend({
 		var str = "new " + this.classId() + "('" + this._url + "')";
 
 		// Every object has an ID, assign that first
-		str += ".id('" + this.id() + "')";
+		// We've commented this because ids for textures are actually generated
+		// from their asset so will ALWAYS produce the same ID as long as the asset
+		// is the same path.
+		//str += ".id('" + this.id() + "')";
 
 		// Now get all other properties
 		str += this._stringify();
 
 		return str;
+	},
+	
+	_stringify: function () {
+		return '';
 	},
 
 	/**
