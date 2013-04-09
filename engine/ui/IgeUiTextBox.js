@@ -43,8 +43,8 @@ var IgeUiTextBox = IgeUiEntity.extend({
 		// Call the main super class method
 		val = IgeUiEntity.prototype.width.call(this, px, lockAspect, modifier, noUpdate);
 
-		// Update the font entity width
-		this._fontEntity.width(px, lockAspect, modifier, noUpdate);
+		// Update the font entity width - 10px for margin
+		this._fontEntity.width(px - 10, lockAspect, modifier, noUpdate);
 
 		return val;
 	},
