@@ -163,7 +163,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			// Loop the texture list and create each texture object
 			for (i = 0; i < map.textures.length; i++) {
 				// Load each texture
-				eval('tex[' + i + '] = ' + map.textures[0]);
+				eval('tex[' + i + '] = ' + map.textures[i]);
 				self.addTexture(tex[i]);
 			}
 
@@ -213,9 +213,33 @@ var IgeTextureMap = IgeTileMap2d.extend({
 
 		return JSON.stringify({
 			textures: textures,
-			data: this.map.mapDataString(),
+			data: this.map.mapData(),
 			dataXY: [dataX, dataY]
 		});
+	},
+
+	/**
+	 * Clears the tile data from the map effectively wiping it clean. All
+	 * existing map data will be removed. The textures assigned to the texture
+	 * map will not be affected.
+	 * @returns {*}
+	 */
+	clearMap: function () {
+		this.map.mapData([]);
+		return this;
+	},
+
+	/**
+	 * Clears tile data from the map and also removes any textures from the
+	 * map that were previously assigned to it. This is useful for reverting
+	 * the texture map to it's virgin state as if it had just been created.
+	 * @returns {*}
+	 */
+	reset: function () {
+		this.clearMap();
+		this._textureList = [];
+		
+		return this;
 	},
 
 	/**
@@ -426,16 +450,19 @@ var IgeTextureMap = IgeTileMap2d.extend({
 
 			this._drawSectionsToCtx(ctx);
 		} else {
-			// Render the whole map
-			for (y in mapData) {
-				if (mapData.hasOwnProperty(y)) {
-					for (x in mapData[y]) {
-						if (mapData[y].hasOwnProperty(x)) {
-							// Grab the tile data to paint
-							tileData = mapData[y][x];
-
-							if (tileData) {
-								this._renderTile(ctx, x, y, tileData, tileEntity);
+			// Check that all the textures we need to use are loaded
+			if (this.allTexturesLoaded()) {
+				// Render the whole map
+				for (y in mapData) {
+					if (mapData.hasOwnProperty(y)) {
+						for (x in mapData[y]) {
+							if (mapData[y].hasOwnProperty(x)) {
+								// Grab the tile data to paint
+								tileData = mapData[y][x];
+	
+								if (tileData) {
+									this._renderTile(ctx, x, y, tileData, tileEntity);
+								}
 							}
 						}
 					}
@@ -572,7 +599,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			yAdjust = this._mountMode === 1 ? this._tileHeight / 2 : 0,
 			tx, ty, sx, sy,
 			texture;
-
+		
 		// Translate the canvas to the tile position
 		if (this._mountMode === 0) {
 			finalX = x * this._tileWidth;
@@ -648,13 +675,15 @@ var IgeTextureMap = IgeTileMap2d.extend({
 
 		ctx.save();
 		ctx.translate(finalX, finalY);
-
+		
 		// Set the correct texture data
 		texture = this._textureList[tileData[0]];
 		tileEntity._cell = tileData[1];
 
 		// Paint the texture
-		texture.render(ctx, tileEntity, ige._tickDelta);
+		if (texture) {
+			texture.render(ctx, tileEntity, ige._tickDelta);
+		}
 		ctx.restore();
 
 		return regions;
