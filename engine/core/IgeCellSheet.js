@@ -13,19 +13,21 @@ var IgeCellSheet = IgeTexture.extend({
 		self.horizontalCells(horizontalCells || 1);
 		self.verticalCells(verticalCells || 1);
 
-		this.on('loaded', function () {
-			if (self.image) {
-				// Store the cell sheet image
-				self._sheetImage = this.image;
-				self._applyCells();
-			} else {
-				// Unable to create cells from non-image texture
-				// TODO: Low-priority - Support cell sheets from smart-textures
-				self.log('Cannot create cell-sheet because texture has not loaded an image!', 'error');
-			}
-		});
-
 		IgeTexture.prototype.init.call(this, url);
+	},
+	
+	_textureLoaded: function () {
+		if (this.image) {
+			// Store the cell sheet image
+			this._sheetImage = this.image;
+			this._applyCells();
+		} else {
+			// Unable to create cells from non-image texture
+			// TODO: Low-priority - Support cell sheets from smart-textures
+			this.log('Cannot create cell-sheet because texture has not loaded an image!', 'error');
+		}
+		
+		IgeTexture.prototype._textureLoaded.call(this);
 	},
 
 	/**
@@ -122,7 +124,8 @@ var IgeCellSheet = IgeTexture.extend({
 		var str = "new " + this.classId() + "('" + this.url() + "', " + this.horizontalCells() + ", " + this.verticalCells() + ")";
 
 		// Every object has an ID, assign that first
-		str += ".id('" + this.id() + "');";
+		// IDs are automatically generated from texture urls
+		//str += ".id('" + this.id() + "');";
 
 		return str;
 	}

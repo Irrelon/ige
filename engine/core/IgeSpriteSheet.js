@@ -7,43 +7,46 @@ var IgeSpriteSheet = IgeTexture.extend({
 	IgeSpriteSheet: true,
 
 	init: function (url, cells) {
-		var self = this;
-		this.on('loaded', function () {
-			if (self.image) {
-				// Store the cell sheet image
-				self._sheetImage = this.image;
-				var i;
-
-				if (!cells) {
-					// Try to automatically determine cells
-					this.log('No cell data provided for sprite sheet, attempting to automatically detect sprite bounds...');
-					cells = this.detectCells(this._sheetImage);
-				}
-
-				// Cells in the sheets always start at index
-				// 1 so move all the cells one forward
-				for (i = 0; i < cells.length; i++) {
-					self._cells[i + 1] = cells[i];
-
-					if (this._checkModulus) {
-						// Check cell for division by 2 modulus warnings
-						if (cells[i][2] % 2) {
-							this.log('This texture\'s cell definition defines a cell width is not divisible by 2 which can cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning', cells[i]);
-						}
-
-						if (cells[i][3] % 2) {
-							this.log('This texture\'s cell definition defines a cell height is not divisible by 2 which can cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning', cells[i]);
-						}
-					}
-				}
-			} else {
-				// Unable to create cells from non-image texture
-				// TODO: Low-priority - Support cell sheets from smart-textures
-				self.log('Cannot create cell-sheet because texture has not loaded an image!', 'error');
-			}
-		});
+		this._spriteCells = cells;
 
 		IgeTexture.prototype.init.call(this, url);
+	},
+	
+	_textureLoaded: function () {
+		if (this.image) {
+			// Store the cell sheet image
+			this._sheetImage = this.image;
+			var i, cells = this._spriteCells;
+
+			if (!cells) {
+				// Try to automatically determine cells
+				this.log('No cell data provided for sprite sheet, attempting to automatically detect sprite bounds...');
+				cells = this.detectCells(this._sheetImage);
+			}
+
+			// Cells in the sheets always start at index
+			// 1 so move all the cells one forward
+			for (i = 0; i < cells.length; i++) {
+				this._cells[i + 1] = cells[i];
+
+				if (this._checkModulus) {
+					// Check cell for division by 2 modulus warnings
+					if (cells[i][2] % 2) {
+						this.log('This texture\'s cell definition defines a cell width is not divisible by 2 which can cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning', cells[i]);
+					}
+
+					if (cells[i][3] % 2) {
+						this.log('This texture\'s cell definition defines a cell height is not divisible by 2 which can cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning', cells[i]);
+					}
+				}
+			}
+		} else {
+			// Unable to create cells from non-image texture
+			// TODO: Low-priority - Support cell sheets from smart-textures
+			this.log('Cannot create cell-sheet because texture has not loaded an image!', 'error');
+		}
+		
+		IgeTexture.prototype._textureLoaded.call(this);
 	},
 
 	/**
@@ -249,7 +252,8 @@ var IgeSpriteSheet = IgeTexture.extend({
 		var str = "new " + this.classId() + "('" + this.url() + "', " + this._cells.toString() + ")";
 
 		// Every object has an ID, assign that first
-		str += ".id('" + this.id() + "');";
+		// IDs are automatically generated from texture urls
+		//str += ".id('" + this.id() + "');";
 
 		return str;
 	}

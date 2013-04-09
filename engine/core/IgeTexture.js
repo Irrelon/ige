@@ -13,6 +13,8 @@ var IgeTexture = IgeEventingClass.extend({
 	 * @return {*}
 	 */
 	init: function (urlOrObject) {
+		this._loaded = false;
+		
 		/* CEXCLUDE */
 		// If on a server, import the relevant libraries
 		if (ige.isServer) {
@@ -130,8 +132,9 @@ var IgeTexture = IgeEventingClass.extend({
 			// Increment the texture load count
 			ige.textureLoadStart(imageUrl, this);
 
+			// Check if the image url already exists in the image cache
 			if (!ige._textureImageStore[imageUrl]) {
-				// Create the image object
+				// Image not in cache, create the image object
 				image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new Image();
 				image._igeTextures = image._igeTextures || [];
 
@@ -167,12 +170,9 @@ var IgeTexture = IgeEventingClass.extend({
 						item.sizeY(image.height);
 
 						item._cells[1] = [0, 0, item._sizeX, item._sizeY];
-
-						item._loaded = true;
-						item.emit('loaded');
-
-						// Inform the engine that this image has loaded
-						ige.textureLoadEnd(imageUrl, self);
+						
+						// Mark texture as loaded
+						item._textureLoaded();
 					}
 				};
 
@@ -202,22 +202,28 @@ var IgeTexture = IgeEventingClass.extend({
 					}
 
 					self._cells[1] = [0, 0, self._sizeX, self._sizeY];
-
-					self._loaded = true;
-
-					// Set a timeout here so that when this event is emitted,
-					// the code creating the texture is given a chance to
-					// set a listener first, otherwise this will be emitted
-					// but nothing will have time to register a listener!
-					setTimeout(function () {
-						self.emit('loaded');
-
-						// Inform the engine that this image has loaded
-						ige.textureLoadEnd(imageUrl, self);
-					}, 1);
+					
+					// Mark texture as loaded
+					self._textureLoaded();
 				}
 			}
 		}
+	},
+	
+	_textureLoaded: function () {
+		var self = this;
+		
+		// Set a timeout here so that when this event is emitted,
+		// the code creating the texture is given a chance to
+		// set a listener first, otherwise this will be emitted
+		// but nothing will have time to register a listener!
+		setTimeout(function () {
+			self._loaded = true;
+			self.emit('loaded');
+
+			// Inform the engine that this image has loaded
+			ige.textureLoadEnd(self.image.src, self);
+		}, 5);
 	},
 
 	/**
