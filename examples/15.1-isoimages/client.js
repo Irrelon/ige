@@ -362,7 +362,8 @@ var Client = IgeClass.extend({
 			.mouseUp(function () {
 				ige.input.stopPropagation();
 			})
-			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } });
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			.hide();
 		
 		// Now add the building "buttons" that will allow the user to select
 		// the type of building they want to build
