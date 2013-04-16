@@ -13,7 +13,7 @@ collection:
 
 To run the server for this demo, use the command (replacing the paths
 depending on where your IGE installation is located):
-	node /ige/server/ige -g /ige/tests/19.2-database-mongodb/
+	node ./ige/server/ige -g ./ige/tests/19.2-database-mongodb/
 
 # Client-Side
 Nothing happens client-side, this is a server-only demo.

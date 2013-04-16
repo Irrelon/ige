@@ -7,7 +7,7 @@ index.html file is loaded from an HTTP server either on your local machine or a 
 The demo creates a network server that listens on port 2000 and also defines a new network command called "test" which
 will call the ClientNetworkEvents.js::_onTest() method when it is received. To run the server for this demo, use the
 command (replacing the paths depending on where your IGE installation is located):
-	node /ige/server/ige -g /ige/tests/17.2-network-socketio/
+	node ./ige/server/ige -g ./ige/tests/17.2-network-socketio/
 
 # Client-Side
 ## Open Your JS Console

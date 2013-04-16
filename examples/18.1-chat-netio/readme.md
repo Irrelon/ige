@@ -7,7 +7,7 @@ file is loaded from an HTTP server either on your local machine or a web server 
 The demo creates a new room called "The Lobby" with the room id "lobby" automatically. You can see this in server.js:23.
 You can change this if you prefer but it makes sense to have at least one chat room created by default. To run the
 server for this demo, use the command (replacing the paths depending on where your IGE installation is located):
-	node /ige/server/ige -g /ige/tests/18.1-chat-netio/
+	node ./ige/server/ige -g ./ige/tests/18.1-chat-netio/
 
 # Client-Side
 ## Open Your JS Console

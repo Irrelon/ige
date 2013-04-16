@@ -7,7 +7,7 @@ The server-side code will attempt to connect to a MySQL server located at localh
 blank password. It will try to select the "mysql" database (which comes with every mysql installation) and will try to
 dump the first row of data from the "user" table. To run the server for this demo, use the command (replacing the paths
 depending on where your IGE installation is located):
-	node /ige/server/ige -g /ige/tests/19.1-database-mysql/
+	node ./ige/server/ige -g ./ige/tests/19.1-database-mysql/
 
 # Client-Side
 Nothing happens client-side, this is a server-only demo.
