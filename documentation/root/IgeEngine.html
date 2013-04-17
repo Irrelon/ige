@@ -99,6 +99,69 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">obj</span> The object to un-register.</li><li>{<span class="argType">String</span>}<span class="argName">groupName</span> The name of the group to un-register the object from.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
+</div><h3 class="methodTitle">loadGraph</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">NOT YET ENABLED - Loads a scenegraph class into memory.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">loadGraph</span>({<span class="argType">String</span>} <span class="argName">className</span>, {<span class="argType">Object</span>} <span class="argName">options</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">className</span> The name of the scenegraph class.</li><li>{<span class="argType">Object</span>}<span class="argName">options</span> Optional object to pass to the scenegraph class graph() method.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">enableUpdates</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Allows the update() methods of the entire scenegraph to be temporarily enabled or disabled. Useful for debugging.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">enableUpdates</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> If false, will disable all update() calls.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">enableRenders</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Allows the tick() methods of the entire scenegraph to be temporarily enabled or disabled. Useful for debugging.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">enableRenders</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> If false, will disable all tick() calls.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">debugEnabled</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Enables or disables the engine's debug mode. Enabled by default.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">debugEnabled</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> If true, will enable debug mode.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">debugTiming</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Enables or disables the engine's debug timing system. The timing system will time all update and rendering code down the scenegraph and is useful for tracking long-running code but comes with a small performance penalty when enabled. Enabled by default.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">debugTiming</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> If true, will enable debug timing mode.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">hideAllExcept</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the opacity of every object on the scenegraph to zero *except* the one specified by the given id argument.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">hideAllExcept</span>({<span class="argType">String</span>} <span class="argName">id</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> The id of the object not to hide.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><h3 class="methodTitle">showAll</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Calls the show() method for every object on the scenegraph.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">showAll</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
 </div><h3 class="methodTitle">setFps</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
