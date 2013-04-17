@@ -317,7 +317,7 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
-	 * Loads a scenegraph class into memory.
+	 * NOT YET ENABLED - Loads a scenegraph class into memory.
 	 * @param {String} className The name of the scenegraph class.
 	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
 	 * @returns {*}
@@ -340,7 +340,13 @@ var IgeEngine = IgeEntity.extend({
 		
 		return this;
 	},
-	
+
+	/**
+	 * Allows the update() methods of the entire scenegraph to
+	 * be temporarily enabled or disabled. Useful for debugging.
+	 * @param {Boolean=} val If false, will disable all update() calls. 
+	 * @returns {*}
+	 */
 	enableUpdates: function (val) {
 		if (val !== undefined) {
 			this._enableUpdates = val;
@@ -350,6 +356,12 @@ var IgeEngine = IgeEntity.extend({
 		return this._enableUpdates;
 	},
 
+	/**
+	 * Allows the tick() methods of the entire scenegraph to
+	 * be temporarily enabled or disabled. Useful for debugging.
+	 * @param {Boolean=} val If false, will disable all tick() calls. 
+	 * @returns {*}
+	 */
 	enableRenders: function (val) {
 		if (val !== undefined) {
 			this._enableRenders = val;
@@ -358,7 +370,12 @@ var IgeEngine = IgeEntity.extend({
 
 		return this._enableRenders;
 	},
-	
+
+	/**
+	 * Enables or disables the engine's debug mode. Enabled by default.
+	 * @param {Boolean=} val If true, will enable debug mode. 
+	 * @returns {*}
+	 */
 	debugEnabled: function (val) {
 		if (val !== undefined) {
 			if (igeConfig.debug) {
@@ -370,6 +387,15 @@ var IgeEngine = IgeEntity.extend({
 		return igeConfig.debug._enabled;
 	},
 	
+	/**
+	 * Enables or disables the engine's debug timing system. The
+	 * timing system will time all update and rendering code down
+	 * the scenegraph and is useful for tracking long-running code
+	 * but comes with a small performance penalty when enabled.
+	 * Enabled by default.
+	 * @param {Boolean=} val If true, will enable debug timing mode. 
+	 * @returns {*}
+	 */
 	debugTiming: function (val) {
 		if (val !== undefined) {
 			if (igeConfig.debug) {
@@ -399,6 +425,11 @@ var IgeEngine = IgeEntity.extend({
 		this._debugEvents[eventName] = ige._frames;
 	},
 
+	/**
+	 * Sets the opacity of every object on the scenegraph to
+	 * zero *except* the one specified by the given id argument.
+	 * @param {String} id The id of the object not to hide.
+	 */
 	hideAllExcept: function (id) {
 		var i,
 			arr = this._register;
@@ -410,6 +441,9 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 
+	/**
+	 * Calls the show() method for every object on the scenegraph.
+	 */
 	showAll: function () {
 		var i,
 			arr = this._register;
