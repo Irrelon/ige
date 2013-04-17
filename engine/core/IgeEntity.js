@@ -1365,6 +1365,16 @@ var IgeEntity = IgeObject.extend({
 		this._localMatrix.transformRenderingContext(ctx);
 	},
 	
+	/**
+	 * Processes the updates required each render frame. Any code in the update()
+	 * method will be called ONCE for each render frame BEFORE the tick() method.
+	 * This differs from the tick() method in that the tick method can be called
+	 * multiple times during a render frame depending on how many viewports your
+	 * simulation is being rendered to, whereas the update() method is only called
+	 * once. It is therefore the perfect place to put code that will control your
+	 * entity's motion, AI etc.
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
+	 */
 	update: function (ctx) {
 		// Check if the entity should still exist
 		if (this._deathTime !== undefined && this._deathTime <= ige._tickStart) {
