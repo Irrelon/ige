@@ -89,6 +89,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * data will be something like [[textureId, textureCell]]
 	 * or a real world example: [[0, 1], [1, 1]].
 	 * @param {IgeTexture} texture
+	 * @return {Integer} The index of the texture you just added.
 	 */
 	addTexture: function (texture) {
 		this._textureList.push(texture);
