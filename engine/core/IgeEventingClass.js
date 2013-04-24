@@ -204,7 +204,7 @@ var IgeEventingClass = IgeClass.extend({
 					result = this.off(item[0], item[1]);
 
 					// Check if there is a callback
-					if (remArr[2]) {
+					if (typeof remArr[2] === 'function') {
 						// Call the callback with the removal result
 						remArr[2](result);
 					}
