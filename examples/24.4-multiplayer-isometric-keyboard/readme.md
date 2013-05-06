@@ -7,12 +7,12 @@ connects to the server it requests that a new player entity is created for it by
 The client receives the "playerEntity" network command and then tells it's main camera to track the translation of the
 new entity.
 
-The client controls are UP, LEFT and RIGHT. When control states of each key change the change is sent to the server
+The client controls are UP, DOWN, LEFT and RIGHT. When control states of each key change the change is sent to the server
 so for instance, when the LEFT key is pressed down, the network command "playerControlsLeftDown" is sent. When the LEFT
 key is released the network command "playerControlsLeftUp" is sent.
 
 Each tick in the Player class on the server it checks the current state of the controls that are set by the
-playerControls* network commands. When a control is pressed the entity is altered (rotated or the velocity set).
+playerControls* network commands. When a control is pressed the entity is altered.
 
 The server streams all the simulation updates to the connected clients and that is how this example works.
 
