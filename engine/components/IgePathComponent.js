@@ -268,34 +268,43 @@ var IgePathComponent = IgeEventingClass.extend({
 	start: function (startTime) {
 		// Check that we are not already active
 		if (!this._active) {
-			//this.log('Starting path traversal...');
-			// Check we have some paths to traverse!
-			if (this._paths.length) {
-				// If we don't have a current path index, set it to zero
-				if (this._currentPathIndex === -1) { this._currentPathIndex = 0; }
-				if (this._targetCellIndex === -1) { this._targetCellIndex = 0; }
-
-				// If we weren't passed a start time, assign it the current time
-				if (startTime === undefined) {
-					startTime = ige._currentTime;
-				}
-
-				if (this._paused) {
-					// Bring the arrival time of the target cell forward to take
-					// into account the time we were paused
-					this._targetCellArrivalTime += startTime - this._pauseTime;
-					this._paused = false;
-				}
-
-				this._startTime = startTime;
-				this._currentTime = this._startTime;
-
-				// Set pathing to active
-				this._active = true;
-				this.emit('started', this._entity);
-				//this.log('Traversal started (active: ' + this._active + ')');
+			// Check that the parent has tileWidth and height properties
+			if (this._entity._parent && (!this._entity._parent._tileWidth || !this._entity._parent._tileHeight)) {
+				this.log('Cannot start path traversal on entity because it is not mounted to a tile or texture map so it\'s parent does not have _tileWidth and _tileHeight property values. Either set these values or mount to a map.', 'error');
 			} else {
-				this.log('Cannot start path because no paths have been added!', 'warning');
+				/* DEXCLUDE */
+				this.log('Starting path traversal...');
+				/* DEXCLUDE */
+				// Check we have some paths to traverse!
+				if (this._paths.length) {
+					// If we don't have a current path index, set it to zero
+					if (this._currentPathIndex === -1) { this._currentPathIndex = 0; }
+					if (this._targetCellIndex === -1) { this._targetCellIndex = 0; }
+	
+					// If we weren't passed a start time, assign it the current time
+					if (startTime === undefined) {
+						startTime = ige._currentTime;
+					}
+	
+					if (this._paused) {
+						// Bring the arrival time of the target cell forward to take
+						// into account the time we were paused
+						this._targetCellArrivalTime += startTime - this._pauseTime;
+						this._paused = false;
+					}
+	
+					this._startTime = startTime;
+					this._currentTime = this._startTime;
+	
+					// Set pathing to active
+					this._active = true;
+					this.emit('started', this._entity);
+					/* DEXCLUDE */
+					this.log('Traversal started (active: ' + this._active + ')');
+					/* DEXCLUDE */
+				} else {
+					this.log('Cannot start path because no paths have been added!', 'warning');
+				}
 			}
 		}
 
