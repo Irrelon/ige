@@ -129,64 +129,67 @@ var Character = IgeEntity.extend({
 	},
 
 	update: function (ctx) {
-		// Set the current animation based on direction
-		var self = this,
-			oldX = this._lastTranslate.x,
-			oldY = this._lastTranslate.y * 2,
-			currX = this.translate().x(),
-			currY = this.translate().y() * 2,
-			distX = currX - oldX,
-			distY = currY - oldY,
-			distance = Math.distance(
-				oldX,
-				oldY,
-				currX,
-				currY
-			),
-			speed = 0.1,
-			time = (distance / speed);
-		
-		this._lastTranslate = this._translate.clone();
-
-		if (distX == 0 && distY == 0) {
-			this.animation.stop();
-		} else {
-			// Set the animation based on direction
-			if (Math.abs(distX) > Math.abs(distY)) {
-				// Moving horizontal
-				if (distX < 0) {
-					// Moving left
-					this.animation.select('walkLeft');
-				} else {
-					// Moving right
-					this.animation.select('walkRight');
-				}
+		if (!ige.isServer) {
+			// Set the current animation based on direction
+			var self = this,
+				oldX = this._lastTranslate.x,
+				oldY = this._lastTranslate.y * 2,
+				currX = this.translate().x(),
+				currY = this.translate().y() * 2,
+				distX = currX - oldX,
+				distY = currY - oldY,
+				distance = Math.distance(
+					oldX,
+					oldY,
+					currX,
+					currY
+				),
+				speed = 0.1,
+				time = (distance / speed);
+			
+			this._lastTranslate = this._translate.clone();
+	
+			if (distX == 0 && distY == 0) {
+				this.animation.stop();
 			} else {
-				// Moving vertical
-				if (distY < 0) {
+				// Set the animation based on direction
+				if (Math.abs(distX) > Math.abs(distY)) {
+					// Moving horizontal
 					if (distX < 0) {
-						// Moving up-left
-						this.animation.select('walkUp');
+						// Moving left
+						this.animation.select('walkLeft');
 					} else {
-						// Moving up
+						// Moving right
 						this.animation.select('walkRight');
 					}
 				} else {
-					if (distX > 0) {
-						// Moving down-right
-						this.animation.select('walkDown');					
+					// Moving vertical
+					if (distY < 0) {
+						if (distX < 0) {
+							// Moving up-left
+							this.animation.select('walkUp');
+						} else {
+							// Moving up
+							this.animation.select('walkRight');
+						}
 					} else {
-						// Moving down
-						this.animation.select('walkLeft');
+						if (distX > 0) {
+							// Moving down-right
+							this.animation.select('walkDown');					
+						} else {
+							// Moving down
+							this.animation.select('walkLeft');
+						}
 					}
 				}
 			}
+			
+			// Set the depth to the y co-ordinate which basically
+			// makes the entity appear further in the foreground
+			// the closer they become to the bottom of the screen
+			this.depth(this._translate.y);
 		}
 		
-		// Set the depth to the y co-ordinate which basically
-		// makes the entity appear further in the foreground
-		// the closer they become to the bottom of the screen
-		this.depth(this._translate.y);
 		IgeEntity.prototype.update.call(this, ctx);
 	},
 
