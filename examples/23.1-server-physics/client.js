@@ -32,7 +32,7 @@ var Client = IgeClass.extend({
 					// than before the scene etc are created... maybe you want
 					// a splash screen or a menu first? Then connect after you've
 					// got a username or something?
-					ige.network.start('http://192.168.0.199:2000', function () {
+					ige.network.start('http://localhost:2000', function () {
 						ige.network.addComponent(IgeStreamComponent)
 							.stream.renderLatency(60) // Render the simulation 160 milliseconds in the past
 							// Create a listener that will fire whenever an entity
