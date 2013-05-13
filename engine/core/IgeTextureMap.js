@@ -376,9 +376,12 @@ var IgeTextureMap = IgeTileMap2d.extend({
 									// Work out which section to paint to
 									sectionX = Math.floor(finalX / this._autoSection);
 									sectionY = Math.floor(finalY / this._autoSection);
-
+									
+									// Check if an off-screen canvas already exists for this section
+									// and if not, create one
 									this._ensureSectionExists(sectionX, sectionY);
-
+									
+									// Grab the drawing context for the section
 									_ctx = this._sectionCtx[sectionX][sectionY];
 
 									if (tileData) {
