@@ -29,6 +29,11 @@ var IgeViewport = IgeEntity.extend([
 				height: ige._geometry.y,
 				autoSize: true
 			};
+		} else {
+			if (options.scaleToWidth && options.scaleToHeight) {
+				// Store the w/h we want to lock to
+				this._lockDimension = new IgePoint(options.scaleToWidth, options.scaleToHeight, 0);
+			}
 		}
 
 		// Setup default objects
@@ -387,6 +392,28 @@ var IgeViewport = IgeEntity.extend([
 		// Resize the scene
 		if (this._scene) {
 			this._scene._resizeEvent(event);
+		}
+		
+		// Process locked dimension scaling
+		if (this._lockDimension) {
+			// Calculate the new camera scale
+			var ratio = 1;
+			if (this._geometry.x > this._lockDimension.x && this._geometry.y > this._lockDimension.y) {
+				// Scale using width
+				ratio = this._geometry.x / this._lockDimension.x;
+			} else {
+				if (this._geometry.x > this._lockDimension.x && this._geometry.y < this._lockDimension.y) {
+					// Scale out to show height
+					ratio = this._geometry.y / this._lockDimension.y;
+				}
+				
+				if (this._geometry.x < this._lockDimension.x && this._geometry.y > this._lockDimension.y) {
+					// Scale out to show width
+					ratio = this._geometry.x / this._lockDimension.x;
+				}
+			}
+			
+			this.camera.scaleTo(ratio, ratio, ratio);
 		}
 	},
 
