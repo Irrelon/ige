@@ -312,10 +312,17 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 									switch (fixtureDef.shape.type) {
 										case 'circle':
 											tempShape = new this.b2CircleShape();
-											if (fixtureDef.shape.data) {
+											if (fixtureDef.shape.data && typeof(fixtureDef.shape.data.radius) !== 'undefined') {
 												tempShape.SetRadius(fixtureDef.shape.data.radius / this._scaleRatio);
 											} else {
 												tempShape.SetRadius((entity._geometry.x / this._scaleRatio) / 2);
+											}
+											
+											if (fixtureDef.shape.data) {
+												finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
+												finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
+												
+												tempShape.SetLocalPosition(new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio));
 											}
 											break;
 	

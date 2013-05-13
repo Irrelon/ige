@@ -47,7 +47,12 @@ var Client = IgeClass.extend({
 							friction: 0.5,
 							restitution: 0.2,
 							shape: {
-								type: 'circle'
+								type: 'circle',
+								data: {
+									// The position of the fixture relative to the body
+									x: 0,
+									y: 0
+								}
 							}
 						}]
 					})
