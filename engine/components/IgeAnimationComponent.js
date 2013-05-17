@@ -179,7 +179,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 *     // In each animation callback...
 	 *     // this = the entity's animation component instance
 	 *     // anim = the animation component's _anim object
-	 *     // this._entity = the entity the animation component is attached to
+	 *     // this._entity = the entity the animation is attached to
 	 *     
 	 *     entity.animation.start('anim1', {
 	 *     		onLoop: function (anim) {
@@ -203,7 +203,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 *     // In each animation callback...
 	 *     // this = the entity's animation component instance
 	 *     // anim = the animation component's _anim object
-	 *     // this._entity = the entity the animation component is attached to
+	 *     // this._entity = the entity the animation is attached to
 	 *     
 	 *     entity.animation.on('started', function (anim) {
 	 *     		console.log('Animation started', this, anim);	
