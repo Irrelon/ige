@@ -3,7 +3,7 @@
  * frame-based animations based on cells from a texture.
  * @event started - The animation starts.
  * @event stopped - The animation ends or is stopped.
- * @event loopComplete - The animation has completed a full cycle (shown all frames). 
+ * @event loopComplete - The animation has completed a full cycle (shown all frames).
  * @event complete - The animation has completed all assigned loop cycles.
  */
 var IgeAnimationComponent = IgeEventingClass.extend({
@@ -176,6 +176,11 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 *         .addComponent(IgeAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 *         
+	 *     // In each animation callback...
+	 *     // this = the entity's animation component instance
+	 *     // anim = the animation component's _anim object
+	 *     // this._entity = the entity the animation component is attached to
+	 *     
 	 *     entity.animation.start('anim1', {
 	 *     		onLoop: function (anim) {
 	 *     			console.log('Animation looped', this, anim);	
@@ -194,6 +199,11 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 *     var entity = new IgeEntity()
 	 *         .addComponent(IgeAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
+	 *     
+	 *     // In each animation callback...
+	 *     // this = the entity's animation component instance
+	 *     // anim = the animation component's _anim object
+	 *     // this._entity = the entity the animation component is attached to
 	 *     
 	 *     entity.animation.on('started', function (anim) {
 	 *     		console.log('Animation started', this, anim);	
