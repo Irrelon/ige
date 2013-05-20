@@ -218,7 +218,9 @@ var IgeSocketIoClient = {
 
 		if (req) {
 			// Fire the request callback!
-			req.callback(req.cmd, data.data);
+			if (req.callback) {
+				req.callback(req.cmd, data.data);
+			}
 
 			// Delete the request from memory
 			delete this._requests[id];
