@@ -141,6 +141,8 @@ var Client = IgeClass.extend({
 									layerArray[i]
 										.tileWidth(40)
 										.tileHeight(40)
+										.drawMouse(true)
+										.hoverColor('#ffffff')
 										.autoSection(20)
 										//.isometricMounts(false)
 										.drawBounds(false)
@@ -188,7 +190,7 @@ var Client = IgeClass.extend({
 								destTileY = -1;
 							}
 						});
-
+					
 					// Add the box2d debug painter entity to the
 					// scene to show the box2d body outlines
 					//ige.box2d.enableDebug(self.objectLayer);
