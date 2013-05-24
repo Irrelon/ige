@@ -23,6 +23,10 @@ var IgeSocketIoServer = {
 
 		// Set the logging level to errors only
 		this._io.set('log level', 0);
+		
+		// Compress socket.io.js for faster serving
+		this._io.enable('browser client minification');
+		this._io.enable('gzip');
 
 		// Setup listeners
 		this._io.sockets.on('connection', function (socket) {
