@@ -1997,26 +1997,28 @@ var IgeEngine = IgeEntity.extend({
 
 				// Loop our children
 				while (arrCount--) {
-					if (arr[arrCount]._scene._shouldRender) {
-						if (igeConfig.debug._timing) {
-							timingString = '';
-
-							timingString += 'T: ' + ige._timeSpentInTick[arr[arrCount].id()];
-							if (ige._timeSpentLastTick[arr[arrCount].id()]) {
-								if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].ms) === 'number') {
-									timingString += ' | LastTick: ' + ige._timeSpentLastTick[arr[arrCount].id()].ms;
+					if (arr[arrCount]._scene) {
+						if (arr[arrCount]._scene._shouldRender) {
+							if (igeConfig.debug._timing) {
+								timingString = '';
+	
+								timingString += 'T: ' + ige._timeSpentInTick[arr[arrCount].id()];
+								if (ige._timeSpentLastTick[arr[arrCount].id()]) {
+									if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].ms) === 'number') {
+										timingString += ' | LastTick: ' + ige._timeSpentLastTick[arr[arrCount].id()].ms;
+									}
+	
+									if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren) === 'number') {
+										timingString += ' | ChildDepthSort: ' + ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren;
+									}
 								}
-
-								if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren) === 'number') {
-									timingString += ' | ChildDepthSort: ' + ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren;
-								}
+	
+								console.log(depthSpace + '----' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView + ' Timing(' + timingString + ')');
+							} else {
+								console.log(depthSpace + '----' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView);
 							}
-
-							console.log(depthSpace + '----' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView + ' Timing(' + timingString + ')');
-						} else {
-							console.log(depthSpace + '----' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView);
+							this.sceneGraph(arr[arrCount]._scene, currentDepth + 1);
 						}
-						this.sceneGraph(arr[arrCount]._scene, currentDepth + 1);
 					}
 				}
 			}
