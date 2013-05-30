@@ -1,3 +1,6 @@
+/**
+ * The engine's box2d component class.
+ */
 var IgeBox2dComponent = IgeEventingClass.extend({
 	classId: 'IgeBox2dComponent',
 	componentId: 'box2d',
