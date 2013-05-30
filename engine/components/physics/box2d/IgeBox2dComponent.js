@@ -130,6 +130,15 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 		}
 	},
 
+	/**
+	 * Gets / sets the world interval mode. In mode 0 (zero) the
+	 * box2d simulation is synced to the framerate of the engine's
+	 * renderer. In mode 1 the box2d simulation is stepped at a constant
+	 * speed regardless of the engine's renderer. This must be set *before*
+	 * calling the start() method in order for the setting to take effect.
+	 * @param {Integer} val The mode, either 0 or 1.
+	 * @returns {*}
+	 */
 	mode: function (val) {
 		if (val !== undefined) {
 			this._mode = val;
