@@ -699,6 +699,25 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * Gets / sets the noAabb flag that determines if the entity's axis
+	 * aligned bounding box should be calculated every tick or not. If
+	 * you don't need the AABB data (for instance if you don't need to
+	 * detect mouse events on this entity or you DO want the AABB to be
+	 * updated but want to control it manually by calling aabb(true) 
+	 * yourself as needed).
+	 * @param {Boolean=} val If set to true will turn off AABB calculation.
+	 * @returns {*}
+	 */
+	noAabb: function (val) {
+		if (val !== undefined) {
+			this._noAabb = val;
+			return this;
+		}
+
+		return this._noAabb;
+	},
+
+	/**
 	 * Gets / sets the texture to use when rendering the entity.
 	 * @param {IgeTexture=} texture The texture object.
 	 * @example #Set the entity texture (image)
@@ -1396,9 +1415,11 @@ var IgeEntity = IgeObject.extend({
 			// directly without calling the transform methods
 			this.updateTransform();
 
-			// Update the aabb
-			// TODO: This is wasteful, find a way to determine if a recalc is required rather than doing it every tick
-			this.aabb(true);
+			if (!this._noAabb) {
+				// Update the aabb
+				// TODO: This is wasteful, find a way to determine if a recalc is required rather than doing it every tick
+				this.aabb(true);
+			}
 
 			this._oldTranslate = this._translate.clone();
 

@@ -387,6 +387,8 @@ var IgeTexture = IgeEventingClass.extend({
 			ctx = canvas.getContext('2d');
 
 			// Set smoothing mode
+			// TODO: Does this cause a costly context change? If so maybe we set a global value to keep
+			// TODO: track of the value and evaluate first before changing?
 			if (!this._smoothing) {
 				ctx.imageSmoothingEnabled = false;
 				ctx.webkitImageSmoothingEnabled = false;
@@ -596,6 +598,8 @@ var IgeTexture = IgeEventingClass.extend({
 		// we don't render anything which effectively makes the
 		// entity "blank"
 		if (entity._cell !== null) {
+			// TODO: Does this cause a costly context change? If so maybe we set a global value to keep
+			// TODO: track of the value and evaluate first before changing?
 			if (!this._smoothing) {
 				ige._ctx.imageSmoothingEnabled = false;
 				ige._ctx.webkitImageSmoothingEnabled = false;
