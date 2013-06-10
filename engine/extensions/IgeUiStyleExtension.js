@@ -3,9 +3,9 @@ var IgeUiStyleExtension = {
 	/**
 	 * Sets the current background texture and the repeatType
 	 * to determine in which axis the image should be repeated.
-	 * Accepts "repeat", "repeat-x", "repeat-y" and "no-repeat".
 	 * @param {IgeTexture=} texture
-	 * @param {String=} repeatType
+	 * @param {String=} repeatType Accepts "repeat", "repeat-x",
+	 * "repeat-y" and "no-repeat".
 	 * @return {*} Returns this if any parameter is specified or
 	 * the current background image if no parameters are specified.
 	 */
