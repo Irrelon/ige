@@ -44,9 +44,19 @@ var Client = IgeClass.extend({
 						.width(30)
 						.height(30)
 						.texture(self.gameTexture.ship)
-						.translateTo(200, 200, 0)
+						.translateTo(400, 200, 0)
 						.addBehaviour('mouseAim', MouseAim)
 						.mount(self.scene1);
+					
+					self.obj[1] = new IgeEntity()
+						.id('ship2')
+						.depth(1)
+						.width(10)
+						.height(10)
+						.texture(self.gameTexture.ship)
+						.translateTo(0, 0, 0)
+						.addBehaviour('mouseAim', MouseAim)
+						.mount(self.obj[0]);
 				}
 			});
 		});
