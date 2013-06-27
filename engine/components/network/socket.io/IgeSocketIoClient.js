@@ -205,11 +205,11 @@ var IgeSocketIoClient = {
 	_onResponse: function (data) {
 		// The message is a network response
 		// to a request we sent earlier
-		id = data.id;
+		var id = data.id;
 
 		// Get the original request object from
 		// the request id
-		req = this._requests[id];
+		var req = this._requests[id];
 
 		if (this.debug()) {
 			console.log('onResponse', data);
