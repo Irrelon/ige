@@ -10,6 +10,9 @@ var igeClientConfig = {
 		'./gameClasses/BlackJackTable.js',
 		'./gameClasses/Casino.js',
 		
+		'./gameClasses/Button.js',
+		'./gameClasses/SceneLogon.js',
+		
 		/* Standard game scripts */
 		'./client.js',
 		'./index.js'

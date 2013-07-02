@@ -37,6 +37,11 @@ var IgeFontEntity = IgeUiEntity.extend({
 		return IgeUiEntity.prototype.height.call(this, val, lockAspect, modifier, noUpdate);
 	},
 
+	/**
+	 * Sets the text to render for this font entity.
+	 * @param {String} text The text string to render.
+	 * @returns {*}
+	 */
 	text: function (text) {
 		if (text !== undefined) {
 			if (this._text !== text) {

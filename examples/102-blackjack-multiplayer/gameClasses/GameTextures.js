@@ -6,8 +6,13 @@ var GameTextures = IgeEventingClass.extend({
 		
 		// Load all the textures we need to start the game
 		this._textures.ui = {
-			loginBackground: new IgeTexture('../assets/textures/backgrounds/teal.jpg'),
-			tableBackground: new IgeTexture('../assets/textures/backgrounds/tableExtended.png')
+			loginBackground: new IgeTexture('./assets/textures/backgrounds/teal.jpg'),
+			tableBackground: new IgeTexture('./assets/textures/backgrounds/tableExtended.png'),
+			buttons: new IgeCellSheet('./assets/textures/ui/buttons2.png', 2, 2)
 		}
+	},
+	
+	tex: function (type, name) {
+		return this._textures[type][name];
 	}
 });
