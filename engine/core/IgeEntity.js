@@ -2026,7 +2026,8 @@ var IgeEntity = IgeObject.extend({
 
 	/**
 	 * Removes the callback that is fired when a mouse
-	 * down event is triggered.
+	 * down event is triggered if the listener was registered
+	 * via the mouseDown() method.
 	 */
 	mouseDownOff: function () {
 		delete this._mouseDown;
