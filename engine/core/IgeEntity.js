@@ -72,6 +72,22 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * Checks if the entity is visible.
+	 * @returns {boolean} True if the entity is visible.
+	 */
+	isVisible: function () {
+		return this._hidden === false;
+	},
+	
+	/**
+	 * Checks if the entity is hidden.
+	 * @returns {boolean} True if the entity is hidden.
+	 */
+	isHidden: function () {
+		return this._hidden === true;
+	},
+
+	/**
 	 * Gets / sets the cache flag that determines if the entity's
 	 * texture rendering output should be stored on an off-screen
 	 * canvas instead of calling the texture.render() method each
