@@ -1,5 +1,5 @@
-var SceneLogon = IgeClass.extend({
-	classId: 'SceneLogon',
+var SceneTable = IgeClass.extend({
+	classId: 'SceneTable',
 	
 	init: function (client) {
 		var self = this;
@@ -36,24 +36,15 @@ var SceneLogon = IgeClass.extend({
 		
 		// Background image
 		new IgeEntity()
-			.texture(client.gameTextures.tex('ui', 'loginBackground'))
+			.texture(client.gameTextures.tex('ui', 'tableBackground'))
 			.dimensionsFromTexture()
 			.mount(self.backgroundScene);
 		
 		new Button(client.gameTextures.tex('ui', 'buttons'), 1)
 			.text('Logon')
-			.mount(self.uiScene)
+			//.mount(self.uiScene)
 			.on('mouseUp', function () {
-				// Remove the logon scene
-				self.destroy();
-				
-				// Show the table
-				new SceneTable(client);
+
 			});
-	},
-	
-	destroy: function () {
-		this.vp1.destroy();
-		this.rootScene.destroy();
 	}
 });

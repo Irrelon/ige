@@ -12,6 +12,7 @@ var igeClientConfig = {
 		
 		'./gameClasses/Button.js',
 		'./gameClasses/SceneLogon.js',
+		'./gameClasses/SceneTable.js',
 		
 		/* Standard game scripts */
 		'./client.js',
