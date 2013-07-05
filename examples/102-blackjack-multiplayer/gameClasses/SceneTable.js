@@ -55,26 +55,31 @@ var SceneTable = IgeClass.extend({
 		new IgeEntity()
 			.id('cardMount1')
 			.translateTo(480, 152, 0)
+			.rotateTo(0, 0, Math.radians(-26))
 			.mount(self.gameScene);
 		
 		new IgeEntity()
 			.id('cardMount2')
 			.translateTo(246, 232, 0)
+			.rotateTo(0, 0, Math.radians(-13))
 			.mount(self.gameScene);
 		
 		new IgeEntity()
 			.id('cardMount3')
 			.translateTo(0, 256, 0)
+			.rotateTo(0, 0, 0)
 			.mount(self.gameScene);
 		
 		new IgeEntity()
 			.id('cardMount4')
 			.translateTo(-246, 232, 0)
+			.rotateTo(0, 0, Math.radians(13))
 			.mount(self.gameScene);
 		
 		new IgeEntity()
 			.id('cardMount5')
 			.translateTo(-480, 152, 0)
+			.rotateTo(0, 0, Math.radians(26))
 			.mount(self.gameScene);
 	}
 });
