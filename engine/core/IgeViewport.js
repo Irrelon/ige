@@ -269,6 +269,13 @@ var IgeViewport = IgeEntity.extend([
 							
 							if (aabb) {
 								if (obj._drawBounds || obj._drawBounds === undefined) {
+									// Draw a rect around the bounds of the object transformed in world space
+									ctx.save();
+									obj._transformContext(ctx);
+									ctx.strokeStyle = '#9700ae';
+									ctx.strokeRect(-obj._geometry.x2, -obj._geometry.y2, obj._geometry.x, obj._geometry.y);
+									ctx.restore();
+									
 									// Draw individual bounds
 									ctx.strokeStyle = '#00deff';
 									ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
