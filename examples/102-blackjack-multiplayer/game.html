@@ -11,37 +11,26 @@
 
 	<!-- STYLES -->
 	<link href="../css/default.css" rel="stylesheet" type="text/css" />
-	<link href="./css/main.css" rel="stylesheet" type="text/css" />
-	
-	<!-- jQuery -->
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+
+	<!-- Isogenic Loader -->
+	<script type="text/javascript">var igeRoot = '../../engine/';</script>
+	<script type="text/javascript" src="../../engine/loader.js"></script>
 </head>
 <body>
-    <form class="loginForm">
-		<label>
-			Email:
-			<input type="email" name="email" value="" />
-		</label>
-		<label>
-			Password:
-			<input type="password" name="password" value="" />
-		</label>
-		<input type="submit" value="Login" />
-    </form>
+    <div class="igeLoading loadingFloat">
+        <div class="loadingLogo"></div>
+        <div class="loadingCircle"></div>
+        <div class="loadingCircleInner"></div>
+        <div class="loadingText" id="loadingText">
+            Loading
+        </div>
+        <div id="loadingProgress">
+            <div id="loadingProgressBar"></div>
+        </div>
+    </div>
     <div class="igeLoading loadingLink">
         Powered By Isogenic Game Engine
         <a href="http://www.isogenicengine.com" target="_blank">http://www.isogenicengine.com</a>
     </div>
-	<script type="text/javascript">
-		$(function () {
-			$('.loginForm').on('submit', function () {
-				// Handle the login request via an API call
-				window.location = './game.html';
-				
-				// Cancel the form submit
-				return false;
-			});
-		});
-	</script>
 </body>
 </html>

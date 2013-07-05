@@ -1,0 +1,18 @@
+.loginForm {
+	display: block;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 400px;
+	height: 120px;
+	margin-left: -200px;
+	margin-top: -60px;
+	color: #fff;
+	font-family: Verdana, Tahoma, sans-serif;
+	font-size: 12px;
+}
+
+.loginForm label {
+	display: block;
+	clear: both;
+}

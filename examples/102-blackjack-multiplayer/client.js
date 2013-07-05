@@ -4,6 +4,9 @@ var Client = IgeClass.extend({
 		var self = this;
 		ige.showStats(1);
 		ige.input.debug(true);
+		
+		// Enable networking
+		ige.addComponent(IgeSocketIoComponent);
 
 		// Load our textures
 		self.obj = [];
@@ -20,8 +23,10 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					// Show logon screen
-					new SceneLogon(self);
+					ige.network.start('http://localhost:8000', function () {
+						// Show logon screen
+						new SceneTable(self);
+					});
 				}
 			});
 		});

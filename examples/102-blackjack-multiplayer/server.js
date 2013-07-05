@@ -11,6 +11,9 @@ var Server = IgeClass.extend({
 		ige.start(function (success) {
 			// Check if the engine started successfully
 			if (success) {
+				// Start the casino class
+				new Casino();
+				
 				// Accept incoming connections
 				ige.network.acceptConnections(true);
 			}
