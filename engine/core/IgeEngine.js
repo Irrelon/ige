@@ -1355,6 +1355,187 @@ var IgeEngine = IgeEntity.extend({
 		self._drawCount = 0;
 	},
 
+	/**
+	 * Updates the stats HTML overlay with the latest data.
+	 * @private
+	 */
+	_statsTick: function () {
+		var self = ige,
+			i,
+			watchCount,
+			watchItem,
+			itemName,
+			res,
+			html = '';
+
+		// Check if the stats output is enabled
+		if (self._showStats && !self._statsPauseUpdate) {
+			switch (self._showStats) {
+				case 1:
+					if (self._watch && self._watch.length) {
+						watchCount = self._watch.length;
+
+						for (i = 0; i < watchCount; i++) {
+							watchItem = self._watch[i];
+
+							if (typeof(watchItem) === 'string') {
+								itemName = watchItem;
+								try {
+									eval('res = ' + watchItem);
+								} catch (err) {
+									res = '<span style="color:#ff0000;">' + err + '</span>';
+								}
+							} else {
+								itemName = watchItem.name;
+								res = watchItem.value;
+							}
+							html += i + ' (<a href="javascript:ige.watchStop(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">Remove</a>): <span style="color:#7aff80">' + itemName + '</span>: <span style="color:#00c6ff">' + res + '</span><br />';
+						}
+						html += '<br />';
+					}
+					html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowSceneGraph();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Tick">' + self._dpt + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
+
+					if (self.network) {
+						// Add the network latency too
+						html += ' <span class="met" title="Network Latency (Time From Server to This Client)">' + self.network._latency + ' ms\/net</span>';
+					}
+
+					self._statsDiv.innerHTML = html;
+					break;
+			}
+		}
+	},
+
+	toggleShowSceneGraph: function () {
+		this._showSgTree = !this._showSgTree;
+
+		if (this._showSgTree) {
+			// Create the scenegraph tree
+			var self = this,
+				elem1 = document.createElement('div'),
+				elem2;
+
+			elem1.id = 'igeSgTree';
+			elem1.style.height = (ige._geometry.y - 30) + 'px';
+			elem1.style.overflow = 'auto';
+			elem1.addEventListener('mousemove', function (event) {
+				event.stopPropagation();
+			});
+			elem1.addEventListener('mouseup', function (event) {
+				event.stopPropagation();
+			});
+			elem1.addEventListener('mousedown', function (event) {
+				event.stopPropagation();
+			});
+
+			elem2 = document.createElement('ul');
+			elem2.id = 'sceneGraph_items';
+			elem1.appendChild(elem2);
+
+			document.body.appendChild(elem1);
+			
+			// Create the IGE console
+			var consoleHolderElem = document.createElement('div'),
+				consoleElem = document.createElement('input'),
+				classChainElem = document.createElement('div'),
+				dociFrame = document.createElement('iframe');
+
+			consoleHolderElem.id = 'igeSgConsoleHolder';
+			consoleHolderElem.innerHTML = '<div><b>Console</b>: Double-Click a SceneGraph Object to Script it Here</div>';
+			
+			consoleElem.type = 'text';
+			consoleElem.id = 'igeSgConsole';
+			
+			classChainElem.id = 'igeSgItemClassChain';
+
+			dociFrame.id = 'igeSgDocPage';
+			dociFrame.name = 'igeSgDocPage';
+
+			consoleHolderElem.appendChild(consoleElem);
+			consoleHolderElem.appendChild(classChainElem);
+			consoleHolderElem.appendChild(dociFrame);
+			
+			document.body.appendChild(consoleHolderElem);
+
+			this.sgTreeUpdate();
+			
+			// Now add a refresh button to the scene button
+			var button = document.createElement('input');
+			button.type = 'button';
+			button.id = 'igeSgRefreshTree'
+			button.style.position = 'absolute';
+			button.style.top = '0px';
+			button.style.right = '0px'
+			button.value = 'Refresh';
+			
+			button.addEventListener('click', function () {
+				self.sgTreeUpdate();
+			}, false);
+			
+			document.getElementById('igeSgTree').appendChild(button);
+			
+			// Add basic editor controls
+			var editorRoot = document.createElement('div'),
+				editorModeTranslate = document.createElement('input'),
+				editorModeRotate = document.createElement('input'),
+				editorModeScale = document.createElement('input'),
+				editorStatus = document.createElement('span');
+			
+			editorRoot.id = 'igeSgEditorRoot';
+			editorStatus.id = 'igeSgEditorStatus';
+			
+			editorModeTranslate.type = 'button';
+			editorModeTranslate.id = 'igeSgEditorTranslate';
+			editorModeTranslate.value = 'Translate';
+			editorModeTranslate.addEventListener('click', function () {
+				if (ige.editorTranslate.enabled()) {
+					ige.editorTranslate.enabled(false);
+					self.log('Editor: Translate mode disabled');
+				} else {
+					ige.editorTranslate.enabled(true);
+					self.log('Editor: Translate mode enabled');
+				}
+			});
+			
+			editorModeRotate.type = 'button';
+			editorModeRotate.id = 'igeSgEditorRotate';
+			editorModeRotate.value = 'Rotate';
+			
+			editorModeScale.type = 'button';
+			editorModeScale.id = 'igeSgEditorScale';
+			editorModeScale.value = 'Scale';
+			
+			editorRoot.appendChild(editorModeTranslate);
+			editorRoot.appendChild(editorModeRotate);
+			editorRoot.appendChild(editorModeScale);
+			editorRoot.appendChild(editorStatus);
+			
+			document.body.appendChild(editorRoot);
+			
+			// Add the translate component to the ige instance
+			ige.addComponent(IgeEditorTranslateComponent);
+		} else {
+			var child = document.getElementById('igeSgTree');
+			child.parentNode.removeChild(child);
+
+			child = document.getElementById('igeSgConsoleHolder');
+			child.parentNode.removeChild(child);
+			
+			child = document.getElementById('igeSgEditorRoot');
+			child.parentNode.removeChild(child);
+			
+			ige.removeComponent('editorTranslate');
+		}
+	},
+	
+	sgTreeUpdate: function () {
+		// Update the scenegraph tree
+		document.getElementById('sceneGraph_items').innerHTML = '';
+
+		// Get the scenegraph data
+		this.addToSgTree(this.getSceneGraphData(this, true));
+	},
+	
 	addToSgTree: function (item) {
 		var elem = document.createElement('li'),
 			arr,
@@ -1468,141 +1649,6 @@ var IgeEngine = IgeEntity.extend({
 				ige.addToSgTree(arr[i]);
 			}
 		}
-	},
-
-	/**
-	 * Updates the stats HTML overlay with the latest data.
-	 * @private
-	 */
-	_statsTick: function () {
-		var self = ige,
-			i,
-			watchCount,
-			watchItem,
-			itemName,
-			res,
-			html = '';
-
-		// Check if the stats output is enabled
-		if (self._showStats && !self._statsPauseUpdate) {
-			switch (self._showStats) {
-				case 1:
-					if (self._watch && self._watch.length) {
-						watchCount = self._watch.length;
-
-						for (i = 0; i < watchCount; i++) {
-							watchItem = self._watch[i];
-
-							if (typeof(watchItem) === 'string') {
-								itemName = watchItem;
-								try {
-									eval('res = ' + watchItem);
-								} catch (err) {
-									res = '<span style="color:#ff0000;">' + err + '</span>';
-								}
-							} else {
-								itemName = watchItem.name;
-								res = watchItem.value;
-							}
-							html += i + ' (<a href="javascript:ige.watchStop(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">Remove</a>): <span style="color:#7aff80">' + itemName + '</span>: <span style="color:#00c6ff">' + res + '</span><br />';
-						}
-						html += '<br />';
-					}
-					html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowSceneGraph();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Tick">' + self._dpt + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
-
-					if (self.network) {
-						// Add the network latency too
-						html += ' <span class="met" title="Network Latency (Time From Server to This Client)">' + self.network._latency + ' ms\/net</span>';
-					}
-
-					self._statsDiv.innerHTML = html;
-					break;
-			}
-		}
-	},
-
-	toggleShowSceneGraph: function () {
-		this._showSgTree = !this._showSgTree;
-
-		if (this._showSgTree) {
-			// Create the scenegraph tree
-			var self = this,
-				elem1 = document.createElement('div'),
-				elem2;
-
-			elem1.id = 'igeSgTree';
-			elem1.style.height = (ige._geometry.y - 30) + 'px';
-			elem1.style.overflow = 'auto';
-			elem1.addEventListener('mousemove', function (event) {
-				event.stopPropagation();
-			});
-			elem1.addEventListener('mouseup', function (event) {
-				event.stopPropagation();
-			});
-			elem1.addEventListener('mousedown', function (event) {
-				event.stopPropagation();
-			});
-
-			elem2 = document.createElement('ul');
-			elem2.id = 'sceneGraph_items';
-			elem1.appendChild(elem2);
-
-			document.body.appendChild(elem1);
-			
-			// Create the IGE console
-			var consoleHolderElem = document.createElement('div'),
-				consoleElem = document.createElement('input'),
-				classChainElem = document.createElement('div'),
-				dociFrame = document.createElement('iframe');
-
-			consoleHolderElem.id = 'igeSgConsoleHolder';
-			consoleHolderElem.innerHTML = '<div><b>Console</b>: Double-Click a SceneGraph Object to Script it Here</div>';
-			
-			consoleElem.type = 'text';
-			consoleElem.id = 'igeSgConsole';
-			
-			classChainElem.id = 'igeSgItemClassChain';
-
-			dociFrame.id = 'igeSgDocPage';
-			dociFrame.name = 'igeSgDocPage';
-
-			consoleHolderElem.appendChild(consoleElem);
-			consoleHolderElem.appendChild(classChainElem);
-			consoleHolderElem.appendChild(dociFrame);
-			
-			document.body.appendChild(consoleHolderElem);
-
-			this.sgTreeUpdate();
-			
-			// Now finally, add a refresh button to the scene button
-			var button = document.createElement('input');
-			button.type = 'button';
-			button.id = 'igeSgRefreshTree'
-			button.style.position = 'absolute';
-			button.style.top = '0px';
-			button.style.right = '0px'
-			button.value = 'Refresh';
-			
-			button.addEventListener('click', function () {
-				self.sgTreeUpdate();
-			}, false);
-			
-			document.getElementById('igeSgTree').appendChild(button);
-		} else {
-			var child = document.getElementById('igeSgTree');
-			child.parentNode.removeChild(child);
-
-			child = document.getElementById('igeSgConsoleHolder');
-			child.parentNode.removeChild(child);
-		}
-	},
-	
-	sgTreeUpdate: function () {
-		// Update the scenegraph tree
-		document.getElementById('sceneGraph_items').innerHTML = '';
-
-		// Get the scenegraph data
-		this.addToSgTree(this.getSceneGraphData(this, true));
 	},
 
 	timeScale: function (val) {
@@ -2040,7 +2086,7 @@ var IgeEngine = IgeEntity.extend({
 	 * Walks the scenegraph and returns a data object of the graph.
 	 */
 	getSceneGraphData: function (obj, noRef) {
-		var item, items = [], tempItem, tempItem2, tempItems,
+		var item, items = [], tempItem, tempItem2, tempCam,
 			arr, arrCount;
 
 		if (!obj) {
@@ -2049,7 +2095,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		item = {
-			text: obj.id() + ' (' + obj._classId + ')',
+			text: '[' + obj._classId + '] ' + obj.id(),
 			id: obj.id(),
 			classId: obj.classId()
 		};
@@ -2075,7 +2121,7 @@ var IgeEngine = IgeEntity.extend({
 				// Loop our children
 				while (arrCount--) {
 					tempItem = {
-						text: arr[arrCount].id() + ' (' + arr[arrCount]._classId + ')',
+						text: '[' + arr[arrCount]._classId + '] ' + arr[arrCount].id(),
 						id: arr[arrCount].id(),
 						classId: arr[arrCount].classId()
 					};
@@ -2088,10 +2134,24 @@ var IgeEngine = IgeEntity.extend({
 							tempItem.parentId = arr[arrCount]._parent.id();
 						}
 					}
+					
+					// Add the viewport camera as an object on the scenegraph
+					tempCam = {
+						text: '[IgeCamera] ' + arr[arrCount].id(),
+						id: arr[arrCount].camera.id(),
+						classId: arr[arrCount].camera.classId()
+					};
+					
+					if (!noRef) {
+						tempCam.parent = arr[arrCount];
+						tempCam.obj = arr[arrCount].camera;
+					} else {
+						tempCam.parentId = arr[arrCount].id();
+					}
 
 					if (arr[arrCount]._scene) {
 						tempItem2 = this.getSceneGraphData(arr[arrCount]._scene, noRef);
-						tempItem.items = [tempItem2];
+						tempItem.items = [tempCam, tempItem2];
 					}
 
 					items.push(tempItem);
