@@ -11,7 +11,7 @@ var GameTextures = IgeEventingClass.extend({
 			},
 			ui: {
 				loginBackground: new IgeTexture('./assets/textures/backgrounds/teal.jpg'),
-				tableBackground: new IgeTexture('./assets/textures/backgrounds/tableExtended.png'),
+				blackJackTableBackground: new IgeTexture('./assets/textures/backgrounds/tableExtended.png'),
 				buttons: new IgeCellSheet('./assets/textures/ui/buttons2.png', 2, 2)
 			}
 		}

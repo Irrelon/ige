@@ -5,14 +5,15 @@ var igeClientConfig = {
 		/* Your custom game JS scripts */
 		'./gameClasses/ClientNetworkEvents.js',
 		'./gameClasses/GameTextures.js',
+		'./gameClasses/Card.js',
 		'./gameClasses/Player.js',
 		'./gameClasses/Seat.js',
+		'./gameClasses/BlackJackBackground.js',
 		'./gameClasses/BlackJackTable.js',
 		'./gameClasses/Casino.js',
 		
 		'./gameClasses/Button.js',
-		'./gameClasses/SceneLogon.js',
-		'./gameClasses/SceneTable.js',
+		'./gameClasses/Scene.js',
 		
 		/* Standard game scripts */
 		'./client.js',

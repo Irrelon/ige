@@ -3,7 +3,7 @@ var Client = IgeClass.extend({
 	init: function () {
 		var self = this;
 		ige.showStats(1);
-		ige.input.debug(true);
+		ige.globalSmoothing(true);
 		
 		// Enable networking
 		ige.addComponent(IgeSocketIoComponent);
@@ -24,8 +24,15 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					ige.network.start('http://localhost:8000', function () {
-						// Show logon screen
-						new SceneTable(self);
+						// Enable network stream handling
+						ige.network.addComponent(IgeStreamComponent)
+							.stream.renderLatency(400);
+						
+						// Create the base scene objects
+						new Scene();
+						
+						ige.network.debugMax(10);
+						ige.network.debug(true);
 					});
 				}
 			});

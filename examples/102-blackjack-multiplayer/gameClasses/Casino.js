@@ -4,13 +4,12 @@ var Casino = IgeEventingClass.extend({
 	init: function () {
 		this._tables = {};
 		
-		this.createTable('blackjack', '', 1, function (err, data) {
-			console.log('create table', err, data);
-		});
+		this.createTable('blackjack', '', 1, function (err, data) {});
 	},
 	
 	createTable: function (type, id, mode, callback) {
-		var self = this;
+		var self = this,
+			table;
 		
 		if (!id) {
 			id = ige.newIdHex();
@@ -18,15 +17,14 @@ var Casino = IgeEventingClass.extend({
 		
 		if (type == 'blackjack') {
 			self.log('Creating new blackjack table...');
-			new BlackJackTable(id, mode, function (err, data) {
-				if (!err) {
-					self.log('New blackjack table created');
-					callback(false, data);
-					self._tables[id] = data;
-				} else {
-					callback('Could not create new table.', {errCode: 1, errChain: [err, data]});
-				}
-			});
+			table = new BlackJackTable();
+			
+			self.log('New blackjack table created');
+			self._tables[id] = table;
+			
+			table.startRound();
+			
+			callback(false, table);
 		}
 	},
 	
