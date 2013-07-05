@@ -46,5 +46,35 @@ var SceneTable = IgeClass.extend({
 			.on('mouseUp', function () {
 
 			});
+		
+		new IgeEntity()
+			.id('cardMount0')
+			.translateTo(0, -96, 0)
+			.mount(self.gameScene);
+		
+		new IgeEntity()
+			.id('cardMount1')
+			.translateTo(480, 152, 0)
+			.mount(self.gameScene);
+		
+		new IgeEntity()
+			.id('cardMount2')
+			.translateTo(246, 232, 0)
+			.mount(self.gameScene);
+		
+		new IgeEntity()
+			.id('cardMount3')
+			.translateTo(0, 256, 0)
+			.mount(self.gameScene);
+		
+		new IgeEntity()
+			.id('cardMount4')
+			.translateTo(-246, 232, 0)
+			.mount(self.gameScene);
+		
+		new IgeEntity()
+			.id('cardMount5')
+			.translateTo(-480, 152, 0)
+			.mount(self.gameScene);
 	}
 });
