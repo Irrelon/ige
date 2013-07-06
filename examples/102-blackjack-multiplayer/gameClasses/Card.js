@@ -9,6 +9,9 @@ var Card = IgeEntity.extend({
 			this._val = val;
 		}
 		
+		// Scale the card
+		this.scaleTo(0.7, 0.7, 0.7);
+		
 		this.streamSections(['transform', 'card']);
 	},
 	

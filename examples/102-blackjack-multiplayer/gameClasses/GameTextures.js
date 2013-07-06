@@ -6,7 +6,7 @@ var GameTextures = IgeEventingClass.extend({
 		this._textures = {
 			game: {
 				cardBack: new IgeTexture('./assets/textures/sprites/cardBack2.png'),
-				cards: new IgeCellSheet('./assets/textures/sprites/cardSheet.png', 13, 4),
+				cards: new IgeCellSheet('./assets/textures/sprites/cardSheet_1950.png', 13, 4),
 				chips: new IgeCellSheet('./assets/textures/sprites/chipsSheet.png', 5, 2)
 			},
 			ui: {
