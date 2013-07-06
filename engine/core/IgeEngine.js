@@ -1166,7 +1166,7 @@ var IgeEngine = IgeEntity.extend({
 	 * @return {IgePoint}
 	 */
 	mousePos: function () {
-		return this._mousePos;
+		return this._mousePos.clone();
 	},
 
 	/**
