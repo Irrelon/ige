@@ -31,8 +31,8 @@ var Client = IgeClass.extend({
 						// Create the base scene objects
 						new Scene();
 						
-						ige.network.debugMax(10);
-						ige.network.debug(true);
+						// Ask the server to place us on a table
+						ige.network.send('findTable');
 					});
 				}
 			});

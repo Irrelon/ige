@@ -17,6 +17,9 @@ var Server = IgeClass.extend({
 					.stream.sendInterval(100) // Send a stream update once every 100 milliseconds
 					.stream.start(); // Start the stream
 				
+				// Define the network commands
+				ige.network.define('findTable');
+				
 				// Create the base scene objects
 				new Scene();
 				
@@ -25,6 +28,11 @@ var Server = IgeClass.extend({
 		
 				// Accept incoming connections
 				ige.network.acceptConnections(true);
+				
+				// Handle clients connecting and route them to a table
+				ige.network.on('findTable', function (data, socketId) {
+					console.log(arguments);
+				});
 			}
 		});
 	}
