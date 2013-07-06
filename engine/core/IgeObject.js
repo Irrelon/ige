@@ -793,6 +793,38 @@ var IgeObject = IgeEventingClass.extend({
 			return false;
 		}
 	},
+	
+	/**
+	 * Determines if the object has a parent up the scenegraph whose
+	 * id matches the one passed. Will traverse each parent object
+	 * checking if the id matches. This information will be cached when
+	 * first called and can be refreshed by setting the "fresh" parameter
+	 * to true.
+	 * @param {String} parentId The id of the parent to check for.
+	 * @param {Boolean=} fresh If true will force a full check instead of
+	 * using the cached value from an earlier check.
+	 */
+	hasParent: function (parentId, fresh) {
+		var bool = false;
+		
+		// Check for a cached value
+		if (!fresh && this._hasParent && this._hasParent[parentId] !== undefined) {
+			return this._hasParent[parentId];
+		}
+		
+		if (this._parent) {
+			if (this._parent.id() === parentId) {
+				bool = true;
+			} else {
+				bool = this._parent.hasParent(parentId, fresh);
+			}
+		}
+		
+		this._hasParent = this._hasParent || {};
+		this._hasParent[parentId] = bool;
+		
+		return bool;
+	},
 
 	/**
 	 * Clones the object and all it's children and returns a new object.
