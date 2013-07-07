@@ -727,9 +727,12 @@ var IgeObject = IgeEventingClass.extend({
 				}
 
 				this._parent = obj;
+				
+				// Check if we need to set the ignore camera flag
 				if (!this._ignoreCamera && this._parent._ignoreCamera) {
 					this._ignoreCamera = this._parent._ignoreCamera;
 				}
+				
 				obj._children.push(this);
 
 				this._parent._childMounted(this);
