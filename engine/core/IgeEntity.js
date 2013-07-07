@@ -1209,6 +1209,7 @@ var IgeEntity = IgeObject.extend({
 		if (this.compositeStream()) {
 			child.compositeStream(true);
 			child.streamMode(this.streamMode());
+			child.streamControl(this.streamControl());
 		}
 		
 		IgeObject.prototype._childMounted.call(this, child);
