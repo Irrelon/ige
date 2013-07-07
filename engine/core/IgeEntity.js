@@ -1182,6 +1182,39 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * Gets / sets the composite stream flag. If set to true, any objects
+	 * mounted to this one will have their streamMode() set to the same
+	 * value as this entity and will also have their compositeStream flag
+	 * set to true. This allows you to easily automatically stream any
+	 * objects mounted to a root object and stream them all.
+	 * @param val
+	 * @returns {*}
+	 */
+	compositeStream: function (val) {
+		if (val !== undefined) {
+			this._compositeStream = val;
+			return this;
+		}
+		
+		return this._compositeStream;
+	},
+
+	/**
+	 * Override the _childMounted method and apply entity-based flags.
+	 * @param {IgeEntity} child
+	 * @private
+	 */
+	_childMounted: function (child) {
+		// Check if we need to set the compositeStream and streamMode
+		if (this.compositeStream()) {
+			child.compositeStream(true);
+			child.streamMode(this.streamMode());
+		}
+		
+		IgeObject.prototype._childMounted.call(this, child);
+	},
+	
+	/**
 	 * Takes two values and returns them as an array where index [0]
 	 * is the y argument and index[1] is the x argument. This method
 	 * is used specifically in the 3d bounds intersection process to
