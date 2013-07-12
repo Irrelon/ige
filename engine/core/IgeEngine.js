@@ -1042,6 +1042,9 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 
+	/**
+	 * Removes the engine's canvas from the DOM.
+	 */
 	removeCanvas: function () {
 		// Stop listening for input events
 		if (this.input) {
