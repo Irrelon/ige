@@ -3014,6 +3014,28 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * Forces the stream to push this entity's full stream data on the
+	 * next stream sync regardless of what clients have received in the
+	 * past. This should only be used when required rather than every
+	 * tick as it will reduce the overall efficiency of the stream if
+	 * used every tick.
+	 * @returns {*}
+	 */
+	streamForceUpdate: function () {
+		if (ige.isServer) {
+			var thisId = this.id();
+			
+			// Invalidate the stream client data lookup to ensure
+			// the latest data will be pushed on the next stream sync
+			if (ige.network && ige.network.stream && ige.network.stream._streamClientData && ige.network.stream._streamClientData[thisId]) {
+				ige.network.stream._streamClientData[thisId] = {};
+			}
+		}
+		
+		return this;
+	},
+
+	/**
 	 * Issues a create entity command to the passed client id
 	 * or array of ids. If no id is passed it will issue the
 	 * command to all connected clients. If using streamMode(1)
@@ -3184,7 +3206,7 @@ var IgeEntity = IgeObject.extend({
 			}
 
 			// Store the data in cache in case we are asked for it again this tick
-			// the tick() method of the IgeEntity class clears this every tick
+			// the update() method of the IgeEntity class clears this every tick
 			this._streamDataCache = streamData;
 
 			return streamData;
