@@ -1530,16 +1530,16 @@ var IgeEntity = IgeObject.extend({
 				}
 			}
 
-			// Transform the context by the current transform settings
-			if (!dontTransform) {
-				this._transformContext(ctx);
-			}
-
 			if (!this._dontRender) {
 				// Check for cached version
 				if (this._cache || this._compositeCache) {
 					// Caching is enabled
 					if (!this._cacheDirty) {
+						// Transform the context by the current transform settings
+						if (!dontTransform) {
+							this._transformContext(ctx);
+						}
+						
 						this._renderCache(ctx);
 					} else {
 						// The cache is not clean so re-draw it
@@ -1554,8 +1554,8 @@ var IgeEntity = IgeObject.extend({
 							this._compositeAabbCache = aabbC;
 							
 							if (aabbC.width > 0 && aabbC.height > 0) {
-								_canvas.width = aabbC.width;
-								_canvas.height = aabbC.height;
+								_canvas.width = Math.ceil(aabbC.width);
+								_canvas.height = Math.ceil(aabbC.height);
 							} else {
 								// We cannot set a zero size for a canvas, it will
 								// cause the browser to freak out
@@ -1583,11 +1583,21 @@ var IgeEntity = IgeObject.extend({
 							
 							this._cacheDirty = false;
 						}
-
+						
+						// Transform the context by the current transform settings
+						if (!dontTransform) {
+							this._transformContext(_ctx);
+						}
+						
 						this._renderEntity(_ctx, dontTransform);
 						this._renderCache(ctx);
 					}
 				} else {
+					// Transform the context by the current transform settings
+					if (!dontTransform) {
+						this._transformContext(ctx);
+					}
+					
 					// Render the entity
 					this._renderEntity(ctx, dontTransform);
 				}
@@ -1689,7 +1699,7 @@ var IgeEntity = IgeObject.extend({
 		ctx.save();
 		if (this._compositeCache) {
 			var aabbC = this._compositeAabbCache;
-			ctx.translate(aabbC.x + this._geometry.x2, aabbC.y + this._geometry.y2);
+			ctx.translate(this._geometry.x2 + aabbC.x, this._geometry.y2 + aabbC.y);
 		}
 		
 		// We have a clean cached version so output that
@@ -1697,6 +1707,9 @@ var IgeEntity = IgeObject.extend({
 			this._cacheCanvas,
 			-this._geometry.x2, -this._geometry.y2
 		);
+		
+		/*ctx.strokeStyle = '#00ff00';
+		ctx.strokeRect(-this._geometry.x2, -this._geometry.y2, this._cacheCanvas.width,	this._cacheCanvas.height);*/
 
 		ige._drawCount++;
 
