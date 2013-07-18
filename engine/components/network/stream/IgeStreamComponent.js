@@ -15,6 +15,9 @@ var IgeStreamComponent = IgeEventingClass.extend({
 		this._options = options;
 
 		var self = this;
+		
+		// Set the stream data section designator character
+		this._sectionDesignator = '¬';
 
 		/* CEXCLUDE */
 		if (ige.isServer) {
@@ -238,7 +241,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 		var entityId,
 			entity,
 			sectionArr,
-			sectionDataArr = data.split('|'),
+			sectionDataArr = data.split(ige.network.stream._sectionDesignator),
 			sectionDataCount = sectionDataArr.length,
 			sectionIndex,
 			justCreated;
