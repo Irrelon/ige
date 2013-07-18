@@ -2099,25 +2099,32 @@ var IgeEngine = IgeEntity.extend({
 						}
 					}
 					
-					// Add the viewport camera as an object on the scenegraph
-					tempCam = {
-						text: '[IgeCamera] ' + arr[arrCount].id(),
-						id: arr[arrCount].camera.id(),
-						classId: arr[arrCount].camera.classId()
-					};
-					
-					if (!noRef) {
-						tempCam.parent = arr[arrCount];
-						tempCam.obj = arr[arrCount].camera;
+					if (arr[arrCount].camera) {
+						// Add the viewport camera as an object on the scenegraph
+						tempCam = {
+							text: '[IgeCamera] ' + arr[arrCount].id(),
+							id: arr[arrCount].camera.id(),
+							classId: arr[arrCount].camera.classId()
+						};
+						
+						if (!noRef) {
+							tempCam.parent = arr[arrCount];
+							tempCam.obj = arr[arrCount].camera;
+						} else {
+							tempCam.parentId = arr[arrCount].id();
+						}
+	
+						if (arr[arrCount]._scene) {
+							tempItem2 = this.getSceneGraphData(arr[arrCount]._scene, noRef);
+							tempItem.items = [tempCam, tempItem2];
+						}
 					} else {
-						tempCam.parentId = arr[arrCount].id();
+						if (arr[arrCount]._scene) {
+							tempItem2 = this.getSceneGraphData(arr[arrCount]._scene, noRef);
+							tempItem.items = [tempItem2];
+						}
 					}
-
-					if (arr[arrCount]._scene) {
-						tempItem2 = this.getSceneGraphData(arr[arrCount]._scene, noRef);
-						tempItem.items = [tempCam, tempItem2];
-					}
-
+					
 					items.push(tempItem);
 				}
 			}
