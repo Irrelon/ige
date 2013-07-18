@@ -2840,6 +2840,20 @@ var IgeEntity = IgeObject.extend({
 					return String(this.layer());
 				}
 				break;
+			
+			case 'hidden':
+				if (data !== undefined) {
+					if (!ige.isServer) {
+						if (data == 'true') {
+							this.hide();
+						} else {
+							this.show();
+						}
+					}
+				} else {
+					return String(this.isHidden());
+				}
+				break;
 		}
 	},
 
