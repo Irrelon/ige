@@ -159,42 +159,46 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 */
 	compositeCache: function (val) {
-		if (val !== undefined) {
-			if (val) {
-				// Switch off normal caching
-				this.cache(false);
-				
-				// Create the off-screen canvas
-				this._cacheCanvas = document.createElement('canvas');
-				this._cacheCtx = this._cacheCanvas.getContext('2d');
-				this._cacheDirty = true;
-				
-				// Set smoothing mode
-				if (!ige._globalSmoothing) {
-					this._cacheCtx.imageSmoothingEnabled = false;
-					this._cacheCtx.webkitImageSmoothingEnabled = false;
-					this._cacheCtx.mozImageSmoothingEnabled = false;
-				} else {
-					this._cacheCtx.imageSmoothingEnabled = true;
-					this._cacheCtx.webkitImageSmoothingEnabled = true;
-					this._cacheCtx.mozImageSmoothingEnabled = true;
+		if (!ige.isServer) {
+			if (val !== undefined) {
+				if (val) {
+					// Switch off normal caching
+					this.cache(false);
+					
+					// Create the off-screen canvas
+					this._cacheCanvas = document.createElement('canvas');
+					this._cacheCtx = this._cacheCanvas.getContext('2d');
+					this._cacheDirty = true;
+					
+					// Set smoothing mode
+					if (!ige._globalSmoothing) {
+						this._cacheCtx.imageSmoothingEnabled = false;
+						this._cacheCtx.webkitImageSmoothingEnabled = false;
+						this._cacheCtx.mozImageSmoothingEnabled = false;
+					} else {
+						this._cacheCtx.imageSmoothingEnabled = true;
+						this._cacheCtx.webkitImageSmoothingEnabled = true;
+						this._cacheCtx.mozImageSmoothingEnabled = true;
+					}
 				}
+				
+				// Loop children and set _compositeParent to the correct value
+				this._children.each(function () {
+					if (val) {
+						this._compositeParent = true;
+					} else {
+						delete this._compositeParent;
+					}
+				});
+				
+				this._compositeCache = val;
+				return this;
 			}
 			
-			// Loop children and set _compositeParent to the correct value
-			this._children.each(function () {
-				if (val) {
-					this._compositeParent = true;
-				} else {
-					delete this._compositeParent;
-				}
-			});
-			
-			this._compositeCache = val;
+			return this._compositeCache;
+		} else {
 			return this;
 		}
-		
-		return this._compositeCache;
 	},
 
 	/**
