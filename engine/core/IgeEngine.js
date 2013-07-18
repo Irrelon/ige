@@ -1491,6 +1491,9 @@ var IgeEngine = IgeEntity.extend({
 			editorModeTranslate.id = 'igeSgEditorTranslate';
 			editorModeTranslate.value = 'Translate';
 			editorModeTranslate.addEventListener('click', function () {
+				// Disable other modes
+				ige.editorRotate.enabled(false);
+				
 				if (ige.editorTranslate.enabled()) {
 					ige.editorTranslate.enabled(false);
 					self.log('Editor: Translate mode disabled');
@@ -1503,6 +1506,18 @@ var IgeEngine = IgeEntity.extend({
 			editorModeRotate.type = 'button';
 			editorModeRotate.id = 'igeSgEditorRotate';
 			editorModeRotate.value = 'Rotate';
+			editorModeRotate.addEventListener('click', function () {
+				// Disable other modes
+				ige.editorTranslate.enabled(false);
+				
+				if (ige.editorRotate.enabled()) {
+					ige.editorRotate.enabled(false);
+					self.log('Editor: Rotate mode disabled');
+				} else {
+					ige.editorRotate.enabled(true);
+					self.log('Editor: Rotate mode enabled');
+				}
+			});
 			
 			editorModeScale.type = 'button';
 			editorModeScale.id = 'igeSgEditorScale';
@@ -1517,6 +1532,7 @@ var IgeEngine = IgeEntity.extend({
 			
 			// Add the translate component to the ige instance
 			ige.addComponent(IgeEditorTranslateComponent);
+			ige.addComponent(IgeEditorRotateComponent);
 		} else {
 			var child = document.getElementById('igeSgTree');
 			child.parentNode.removeChild(child);
@@ -1528,6 +1544,7 @@ var IgeEngine = IgeEntity.extend({
 			child.parentNode.removeChild(child);
 			
 			ige.removeComponent('editorTranslate');
+			ige.removeComponent('editorRotate');
 		}
 	},
 	
