@@ -26,16 +26,20 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1');
+					self.rootScene = new IgeScene2d()
+						.id('rootScene');
+					
+					self.mainScene = new IgeScene2d()
+						.id('mainScene')
+						.mount(self.rootScene);
 
 					// Create the main viewport and set the scene
-					// it will "look" at as the new scene1 we just
+					// it will "look" at as the new mainScene we just
 					// created above
 					self.vp1 = new IgeViewport()
 						.id('vp1')
 						.autoSize(true)
-						.scene(self.scene1)
+						.scene(self.rootScene)
 						.drawBounds(true)
 						.drawCompositeBounds(true)
 						.mount(ige);
@@ -49,7 +53,7 @@ var Client = IgeClass.extend({
 						.texture(self.gameTexture.fairy)
 						.translateTo(0, 0, 0)
 						.compositeCache(true)
-						.mount(self.scene1);
+						.mount(self.mainScene);
 
 					self.obj[1] = new Rotator(0)
 						.id('fairy2')
@@ -86,6 +90,18 @@ var Client = IgeClass.extend({
 						.texture(self.gameTexture.fairy)
 						.translateTo(150, 0, 0)
 						.mount(self.obj[0]);
+					
+					self.obj[5] = new Rotator(0)
+						.id('fairy5')
+						.depth(1)
+						.width(50)
+						.height(50)
+						.texture(self.gameTexture.fairy)
+						.translateTo(150, 0, 0)
+						.rotateTo(0, 0, Math.radians(45))
+						.mount(self.obj[4]);
+					
+					ige.$('fairy1')._rotate.z = Math.radians(45)
 				}
 			});
 		});
