@@ -31,6 +31,7 @@ var Client = IgeClass.extend({
 					
 					self.mainScene = new IgeScene2d()
 						.id('mainScene')
+						.ignoreCamera(true)
 						.mount(self.rootScene);
 
 					// Create the main viewport and set the scene
@@ -43,9 +44,11 @@ var Client = IgeClass.extend({
 						.drawBounds(true)
 						.drawCompositeBounds(true)
 						.mount(ige);
+					
+					self.vp1.camera.translateTo(100, 100, 0);
 
 					// Create a composite entity
-					self.obj[0] = new Rotator(0.1)
+					self.obj[0] = new Rotator(0)
 						.id('fairy1')
 						.depth(1)
 						.width(100)
