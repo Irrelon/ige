@@ -2665,6 +2665,23 @@ var IgeEntity = IgeObject.extend({
 		}
 	},
 
+	/**
+	 * Gets / sets the disable interpolation flag. If set to true then
+	 * stream data being received by the client will not be interpolated
+	 * and will be instantly assigned instead. Useful if your entity's
+	 * transformations should not be interpolated over time.
+	 * @param val
+	 * @returns {*}
+	 */
+	disableInterpolation: function (val) {
+		if (val !== undefined) {
+			this._disableInterpolation = val;
+			return this;
+		}
+		
+		return this._disableInterpolation;
+	},
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// STREAM
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2702,57 +2719,79 @@ var IgeEntity = IgeObject.extend({
 	 * chaining or the current value if no data argument is specified.
 	 */
 	streamSectionData: function (sectionId, data, bypassTimeStream) {
-		if (sectionId === 'transform') {
-			if (data) {
-				// We have received updated data
-				var dataArr = data.split(',');
-
-				if (!bypassTimeStream && !this._streamJustCreated) {
-					// Translate
-					if (dataArr[0]) { dataArr[0] = parseFloat(dataArr[0]); }
-					if (dataArr[1]) { dataArr[1] = parseFloat(dataArr[1]); }
-					if (dataArr[2]) { dataArr[2] = parseFloat(dataArr[2]); }
-
-					// Scale
-					if (dataArr[3]) { dataArr[3] = parseFloat(dataArr[3]); }
-					if (dataArr[4]) { dataArr[4] = parseFloat(dataArr[4]); }
-					if (dataArr[5]) { dataArr[5] = parseFloat(dataArr[5]); }
-
-					// Rotate
-					if (dataArr[6]) { dataArr[6] = parseFloat(dataArr[6]); }
-					if (dataArr[7]) { dataArr[7] = parseFloat(dataArr[7]); }
-					if (dataArr[8]) { dataArr[8] = parseFloat(dataArr[8]); }
-
-					// Add it to the time stream
-					this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
-
-					// Check stream length, don't allow higher than 10 items
-					if (this._timeStream.length > 10) {
-						// Remove the first item
-						this._timeStream.shift();
+		switch (sectionId) {
+			case 'transform':
+				if (data) {
+					// We have received updated data
+					var dataArr = data.split(',');
+	
+					if (!this._disableInterpolation && !bypassTimeStream && !this._streamJustCreated) {
+						// Translate
+						if (dataArr[0]) { dataArr[0] = parseFloat(dataArr[0]); }
+						if (dataArr[1]) { dataArr[1] = parseFloat(dataArr[1]); }
+						if (dataArr[2]) { dataArr[2] = parseFloat(dataArr[2]); }
+	
+						// Scale
+						if (dataArr[3]) { dataArr[3] = parseFloat(dataArr[3]); }
+						if (dataArr[4]) { dataArr[4] = parseFloat(dataArr[4]); }
+						if (dataArr[5]) { dataArr[5] = parseFloat(dataArr[5]); }
+	
+						// Rotate
+						if (dataArr[6]) { dataArr[6] = parseFloat(dataArr[6]); }
+						if (dataArr[7]) { dataArr[7] = parseFloat(dataArr[7]); }
+						if (dataArr[8]) { dataArr[8] = parseFloat(dataArr[8]); }
+	
+						// Add it to the time stream
+						this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
+	
+						// Check stream length, don't allow higher than 10 items
+						if (this._timeStream.length > 10) {
+							// Remove the first item
+							this._timeStream.shift();
+						}
+					} else {
+						// Assign all the transform values immediately
+						if (dataArr[0]) { this._translate.x = parseFloat(dataArr[0]); }
+						if (dataArr[1]) { this._translate.y = parseFloat(dataArr[1]); }
+						if (dataArr[2]) { this._translate.z = parseFloat(dataArr[2]); }
+	
+						// Scale
+						if (dataArr[3]) { this._scale.x = parseFloat(dataArr[3]); }
+						if (dataArr[4]) { this._scale.y = parseFloat(dataArr[4]); }
+						if (dataArr[5]) { this._scale.z = parseFloat(dataArr[5]); }
+	
+						// Rotate
+						if (dataArr[6]) { this._rotate.x = parseFloat(dataArr[6]); }
+						if (dataArr[7]) { this._rotate.y = parseFloat(dataArr[7]); }
+						if (dataArr[8]) { this._rotate.z = parseFloat(dataArr[8]); }
 					}
 				} else {
-					// Assign all the transform values immediately
-					if (dataArr[0]) { this._translate.x = parseFloat(dataArr[0]); }
-					if (dataArr[1]) { this._translate.y = parseFloat(dataArr[1]); }
-					if (dataArr[2]) { this._translate.z = parseFloat(dataArr[2]); }
-
-					// Scale
-					if (dataArr[3]) { this._scale.x = parseFloat(dataArr[3]); }
-					if (dataArr[4]) { this._scale.y = parseFloat(dataArr[4]); }
-					if (dataArr[5]) { this._scale.z = parseFloat(dataArr[5]); }
-
-					// Rotate
-					if (dataArr[6]) { this._rotate.x = parseFloat(dataArr[6]); }
-					if (dataArr[7]) { this._rotate.y = parseFloat(dataArr[7]); }
-					if (dataArr[8]) { this._rotate.z = parseFloat(dataArr[8]); }
+					// We should return stringified data
+					return this._translate.toString(this._streamFloatPrecision) + ',' + // translate
+						this._scale.toString(this._streamFloatPrecision) + ',' + // scale
+						this._rotate.toString(this._streamFloatPrecision) + ','; // rotate
 				}
-			} else {
-				// We should return stringified data
-				return this._translate.toString(this._streamFloatPrecision) + ',' + // translate
-					this._scale.toString(this._streamFloatPrecision) + ',' + // scale
-					this._rotate.toString(this._streamFloatPrecision) + ','; // rotate
-			}
+				break;
+			
+			case 'depth':
+					if (data !== undefined) {
+						if (!ige.isServer) {
+							this.depth(parseInt(data));
+						}
+					} else {
+						return String(this.depth());
+					}
+					break;
+				
+			case 'layer':
+				if (data !== undefined) {
+					if (!ige.isServer) {
+						this.layer(parseInt(data));
+					}
+				} else {
+					return String(this.layer());
+				}
+				break;
 		}
 	},
 
@@ -2999,7 +3038,8 @@ var IgeEntity = IgeObject.extend({
 				// Is the data different from the last data we sent
 				// this client?
 				stream._streamClientData[thisId] = stream._streamClientData[thisId] || {};
-				if (stream._streamClientData[thisId][clientId] !== data) {
+				
+				if (stream._streamClientData[thisId][clientId] != data) {
 					filteredArr.push(clientId);
 
 					// Store the new data for later comparison
@@ -3007,7 +3047,7 @@ var IgeEntity = IgeObject.extend({
 				}
 			}
 		}
-
+		
 		if (filteredArr.length) {
 			stream.queue(thisId, data, filteredArr);
 		}
@@ -3186,7 +3226,7 @@ var IgeEntity = IgeObject.extend({
 					// regardless of if there is actually any section data because
 					// we want to be able to identify sections in a serial fashion
 					// on receipt of the data string on the client
-					sectionDataString += '|';
+					sectionDataString += ige.network.stream._sectionDesignator;
 
 					// Check if we were returned any data
 					if (sectionData) {
