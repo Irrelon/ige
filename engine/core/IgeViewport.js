@@ -245,7 +245,9 @@ var IgeViewport = IgeEntity.extend([
 			r3d,
 			xl1, xl2, xl3, xl4, xl5, xl6,
 			bf1, bf2, bf3, bf4,
-			tf1, tf2, tf3, tf4;
+			tf1, tf2, tf3, tf4,
+			worldPos,
+			worldRot;
 
 		if (arr) {
 			arrCount = arr.length;
@@ -271,9 +273,12 @@ var IgeViewport = IgeEntity.extend([
 								if (obj._drawBounds || obj._drawBounds === undefined) {
 									// Draw a rect around the bounds of the object transformed in world space
 									ctx.save();
-									obj._transformContext(ctx);
-									ctx.strokeStyle = '#9700ae';
-									ctx.strokeRect(-obj._geometry.x2, -obj._geometry.y2, obj._geometry.x, obj._geometry.y);
+										worldPos = obj.worldPosition();
+										worldRot = obj.worldRotationZ();
+										ctx.translate(worldPos.x, worldPos.y);
+										ctx.rotate(worldRot);
+										ctx.strokeStyle = '#9700ae';
+										ctx.strokeRect(-obj._geometry.x2, -obj._geometry.y2, obj._geometry.x, obj._geometry.y);
 									ctx.restore();
 									
 									// Draw individual bounds
