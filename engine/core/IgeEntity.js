@@ -2781,6 +2781,11 @@ var IgeEntity = IgeObject.extend({
 						if (dataArr[6]) { this._rotate.x = parseFloat(dataArr[6]); }
 						if (dataArr[7]) { this._rotate.y = parseFloat(dataArr[7]); }
 						if (dataArr[8]) { this._rotate.z = parseFloat(dataArr[8]); }
+						
+						// If we are using composite caching ensure we update the cache
+						if (this._compositeCache) {
+							this.cacheDirty(true);
+						}
 					}
 				} else {
 					// We should return stringified data
