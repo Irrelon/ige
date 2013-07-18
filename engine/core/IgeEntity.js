@@ -1535,11 +1535,6 @@ var IgeEntity = IgeObject.extend({
 				if (this._cache || this._compositeCache) {
 					// Caching is enabled
 					if (!this._cacheDirty) {
-						// Transform the context by the current transform settings
-						if (!dontTransform) {
-							this._transformContext(ctx);
-						}
-						
 						this._renderCache(ctx);
 					} else {
 						// The cache is not clean so re-draw it
