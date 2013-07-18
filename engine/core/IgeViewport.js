@@ -273,10 +273,7 @@ var IgeViewport = IgeEntity.extend([
 								if (obj._drawBounds || obj._drawBounds === undefined) {
 									// Draw a rect around the bounds of the object transformed in world space
 									ctx.save();
-										worldPos = obj.worldPosition();
-										worldRot = obj.worldRotationZ();
-										ctx.translate(worldPos.x, worldPos.y);
-										ctx.rotate(worldRot);
+										obj._worldMatrix.transformRenderingContext(ctx);
 										ctx.strokeStyle = '#9700ae';
 										ctx.strokeRect(-obj._geometry.x2, -obj._geometry.y2, obj._geometry.x, obj._geometry.y);
 									ctx.restore();
