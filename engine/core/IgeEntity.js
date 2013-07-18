@@ -1217,6 +1217,11 @@ var IgeEntity = IgeObject.extend({
 		}
 		
 		IgeObject.prototype._childMounted.call(this, child);
+				
+		// Check if we are compositeCached and update the cache
+		if (this.compositeCache()) {
+			this.cacheDirty(true);
+		}
 	},
 	
 	/**
@@ -1585,7 +1590,6 @@ var IgeEntity = IgeObject.extend({
 						}
 						
 						this._renderEntity(_ctx, dontTransform);
-						this._renderCache(ctx);
 					}
 				} else {
 					// Transform the context by the current transform settings
@@ -1607,6 +1611,7 @@ var IgeEntity = IgeObject.extend({
 				if (this._cacheDirty) {
 					// Process children
 					IgeObject.prototype.tick.call(this, this._cacheCtx);
+					this._renderCache(ctx);
 					this._cacheDirty = false;
 				}
 			} else {
