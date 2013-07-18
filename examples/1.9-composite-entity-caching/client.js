@@ -45,18 +45,27 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					// Create a composite entity
-					self.obj[0] = new Rotator(0)
+					self.obj[0] = new Rotator(0.1)
 						.id('fairy1')
 						.depth(1)
 						.width(100)
 						.height(100)
 						.texture(self.gameTexture.fairy)
-						.translateTo(0, 0, 0)
+						.translateTo(20, 30, 0)
 						.compositeCache(true)
 						.mount(self.mainScene);
-
+					
 					self.obj[1] = new Rotator(0)
 						.id('fairy2')
+						.depth(1)
+						.width(50)
+						.height(50)
+						.texture(self.gameTexture.fairy)
+						.translateTo(-180, -60, 0)
+						.mount(self.obj[0]);
+
+					self.obj[2] = new Rotator(0)
+						.id('fairy3')
 						.depth(1)
 						.width(50)
 						.height(50)
@@ -64,7 +73,7 @@ var Client = IgeClass.extend({
 						.translateTo(0, 50, 0)
 						.mount(self.obj[0]);
 
-					self.obj[2] = new Rotator(0)
+					self.obj[3] = new Rotator(0)
 						.id('simpleBox1')
 						.depth(1)
 						.width(50)
@@ -73,22 +82,13 @@ var Client = IgeClass.extend({
 						.translateTo(0, -50, 0)
 						.mount(self.obj[0]);
 					
-					self.obj[3] = new Rotator(0)
-						.id('fairy3')
-						.depth(1)
-						.width(50)
-						.height(50)
-						.texture(self.gameTexture.fairy)
-						.translateTo(-50, 0, 0)
-						.mount(self.obj[0]);
-					
 					self.obj[4] = new Rotator(0)
 						.id('fairy4')
 						.depth(1)
 						.width(50)
 						.height(50)
 						.texture(self.gameTexture.fairy)
-						.translateTo(150, 0, 0)
+						.translateTo(-50, 0, 0)
 						.mount(self.obj[0]);
 					
 					self.obj[5] = new Rotator(0)
@@ -98,8 +98,17 @@ var Client = IgeClass.extend({
 						.height(50)
 						.texture(self.gameTexture.fairy)
 						.translateTo(150, 0, 0)
+						.mount(self.obj[0]);
+					
+					self.obj[6] = new Rotator(0)
+						.id('fairy6')
+						.depth(1)
+						.width(50)
+						.height(50)
+						.texture(self.gameTexture.fairy)
+						.translateTo(150, 0, 0)
 						.rotateTo(0, 0, Math.radians(45))
-						.mount(self.obj[4]);
+						.mount(self.obj[5]);
 					
 					ige.$('fairy1')._rotate.z = Math.radians(45)
 				}

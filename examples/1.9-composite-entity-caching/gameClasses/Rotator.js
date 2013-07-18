@@ -18,7 +18,10 @@ var Rotator = IgeEntity.extend({
 	update: function (ctx) {
 		// Rotate this entity by 0.1 degrees.
 		//this.rotateBy(0, 0, (this._rSpeed * ige._tickDelta) * Math.PI / 180);
-		this._rotate.z += this._rSpeed * Math.PI / 180;
+		if (this._rSpeed) {
+			this._rotate.z += (this._rSpeed * ige._tickDelta) * Math.PI / 180;
+			this.cacheDirty(true);
+		}
 		
 		// Call the IgeEntity (super-class) tick() method
 		IgeEntity.prototype.update.call(this, ctx);
