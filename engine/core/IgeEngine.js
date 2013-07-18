@@ -1570,46 +1570,6 @@ var IgeEngine = IgeEntity.extend({
 		dblClick = function (event) {
 			event.stopPropagation();
 			console.log("ige.$('" + this.id + "')");
-			/*var console = document.getElementById('igeSgConsole'),
-				obj = ige.$(this.id),
-				classId = ige.findBaseClass(obj),
-				derivedArr,
-				classList = '',
-				i;
-
-			console.value += "ige.$('" + this.id + "')";
-			
-			if (classId) {
-				// The class is a native engine class so show the doc manual page for it
-				document.getElementById('igeSgDocPage').style.display = 'block';
-				document.getElementById('igeSgDocPage').src = 'http://www.isogenicengine.com/engine/documentation/root/' + classId + '.html';
-				
-				derivedArr = ige.getClassDerivedList(obj);
-				derivedArr.reverse();
-				
-				// Build a class breadcrumb
-				for (i in derivedArr) {
-					if (derivedArr.hasOwnProperty(i)) {
-						if (classList) {
-							classList += ' &gt ';
-						}
-						
-						if (derivedArr[i].substr(0, 3) === 'Ige') {
-							classList += '<a href="' + 'http://www.isogenicengine.com/engine/documentation/root/' + derivedArr[i] + '.html" target="igeSgDocPage">' + derivedArr[i] + '</a>';
-						} else {
-							classList += derivedArr[i];
-						}
-					}
-				}
-				
-				// Show the derived class list
-				document.getElementById('igeSgItemClassChain').innerHTML = '<B>Inheritance</B>: ' + classList;
-				document.getElementById('igeSgItemClassChain').style.display = 'block';
-			} else {
-				// Not a native class, hide the doc page
-				document.getElementById('igeSgItemClassChain').style.display = 'none';
-				document.getElementById('igeSgDocPage').style.display = 'none';
-			}*/
 		};
 
 		//elem.addEventListener('mouseover', mouseOver, false);
