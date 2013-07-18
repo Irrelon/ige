@@ -1569,7 +1569,8 @@ var IgeEngine = IgeEntity.extend({
 
 		dblClick = function (event) {
 			event.stopPropagation();
-			var console = document.getElementById('igeSgConsole'),
+			console.log("ige.$('" + this.id + "')");
+			/*var console = document.getElementById('igeSgConsole'),
 				obj = ige.$(this.id),
 				classId = ige.findBaseClass(obj),
 				derivedArr,
@@ -1608,7 +1609,7 @@ var IgeEngine = IgeEntity.extend({
 				// Not a native class, hide the doc page
 				document.getElementById('igeSgItemClassChain').style.display = 'none';
 				document.getElementById('igeSgDocPage').style.display = 'none';
-			}
+			}*/
 		};
 
 		//elem.addEventListener('mouseover', mouseOver, false);
