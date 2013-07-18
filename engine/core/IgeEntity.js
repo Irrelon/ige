@@ -1540,6 +1540,14 @@ var IgeEntity = IgeObject.extend({
 				if (this._cache || this._compositeCache) {
 					// Caching is enabled
 					if (!this._cacheDirty) {
+						if (this._parent && this._parent._ignoreCamera) {
+							// Translate the entity back to negate the scene translate
+							var cam = ige._currentCamera;
+							//ctx.translate(-cam._translate.x, -cam._translate.y);
+							//this.translateTo(-cam._translate.x, -cam._translate.y, -cam._translate.z);
+							/*this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
+							this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
+						}
 						this._renderCache(ctx);
 					} else {
 						// The cache is not clean so re-draw it
@@ -1565,6 +1573,14 @@ var IgeEntity = IgeObject.extend({
 							
 							// Translate to the center of the canvas
 							_ctx.translate(-aabbC.x, -aabbC.y);
+							
+							if (this._parent && this._parent._ignoreCamera) {
+								// Translate the entity back to negate the scene translate
+								var cam = ige._currentCamera;
+								_ctx.translate(cam._translate.x, cam._translate.y);
+								/*this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
+								this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
+							}
 							
 							this.emit('compositeReady');
 						} else {
@@ -1700,6 +1716,14 @@ var IgeEntity = IgeObject.extend({
 		if (this._compositeCache) {
 			var aabbC = this._compositeAabbCache;
 			ctx.translate(this._geometry.x2 + aabbC.x, this._geometry.y2 + aabbC.y);
+			
+			if (this._parent && this._parent._ignoreCamera) {
+				// Translate the entity back to negate the scene translate
+				var cam = ige._currentCamera;
+				ctx.translate(-cam._translate.x, -cam._translate.y);
+				/*this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
+				this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
+			}
 		}
 		
 		// We have a clean cached version so output that
@@ -1708,8 +1732,10 @@ var IgeEntity = IgeObject.extend({
 			-this._geometry.x2, -this._geometry.y2
 		);
 		
-		/*ctx.strokeStyle = '#00ff00';
-		ctx.strokeRect(-this._geometry.x2, -this._geometry.y2, this._cacheCanvas.width,	this._cacheCanvas.height);*/
+		if (ige._currentViewport._drawCompositeBounds) {
+			ctx.strokeStyle = '#00ff00';
+			ctx.strokeRect(-this._geometry.x2, -this._geometry.y2, this._cacheCanvas.width,	this._cacheCanvas.height);
+		}
 
 		ige._drawCount++;
 
