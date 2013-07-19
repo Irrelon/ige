@@ -108,10 +108,17 @@ var IgeEntity = IgeObject.extend({
 	cache: function (val) {
 		if (val !== undefined) {
 			this._cache = val;
-
+			
 			if (val) {
 				// Create the off-screen canvas
-				this._cacheCanvas = document.createElement('canvas');
+				if (!ige.isServer) {
+					// Use a real canvas
+					this._cacheCanvas = document.createElement('canvas');
+				} else {
+					// Use dummy objects for canvas and context
+					this._cacheCanvas = new IgeDummyCanvas();
+				}
+				
 				this._cacheCtx = this._cacheCanvas.getContext('2d');
 				this._cacheDirty = true;
 				
@@ -2841,6 +2848,17 @@ var IgeEntity = IgeObject.extend({
 				}
 				break;
 			
+			case 'geometry':
+				if (data !== undefined) {
+					if (!ige.isServer) {
+						var geom = data.split(',');
+						this.size3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
+					}
+				} else {
+					return String(this._geometry.x + ',' + this._geometry.y + ',' + this._geometry.z);
+				}
+				break;
+			
 			case 'hidden':
 				if (data !== undefined) {
 					if (!ige.isServer) {
@@ -2873,7 +2891,9 @@ var IgeEntity = IgeObject.extend({
 	 */
 	streamMode: function (val) {
 		if (val !== undefined) {
-			this._streamMode = val;
+			if (ige.isServer) {
+				this._streamMode = val;
+			}
 			return this;
 		}
 
