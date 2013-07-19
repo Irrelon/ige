@@ -205,7 +205,10 @@ var IgeStreamComponent = IgeEventingClass.extend({
 					// from handling this entity until after the first stream
 					// data has been received for it
 					entity._streamJustCreated = true;
-					entity.emit('streamCreated');
+					
+					if (entity._streamEmitCreated) {
+						entity.emit('streamCreated');
+					}
 
 					// Since we just created an entity through receiving stream
 					// data, inform any interested listeners
