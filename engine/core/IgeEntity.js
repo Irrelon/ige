@@ -3063,6 +3063,22 @@ var IgeEntity = IgeObject.extend({
 	streamCreateData: function () {},
 
 	/**
+	 * Gets / sets the stream emit created flag. If set to true this entity
+	 * emit a "streamCreated" event when it is created by the stream, but
+	 * after the id and initial transform are set.
+	 * @param val
+	 * @returns {*}
+	 */
+	streamEmitCreated: function (val) {
+		if (val !== undefined) {
+			this._streamEmitCreated = val;
+			return this;
+		}
+		
+		return this._streamEmitCreated;
+	},
+	
+	/**
 	 * Asks the stream system to queue the stream data to
 	 * the specified client id or array of ids.
 	 * @param {Array} recipientArr The array of ids of the
