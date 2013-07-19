@@ -1225,6 +1225,22 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
+	 * Toggles full-screen output of the main ige canvas. Only works
+	 * if called from within a user-generated HTML event listener.
+	 */
+	toggleFullScreen: function () {
+		var elem = this._canvas;
+		
+		if (elem.requestFullscreen) {
+			elem.requestFullscreen();
+		} else if (elem.mozRequestFullScreen) {
+			elem.mozRequestFullScreen();
+		} else if (elem.webkitRequestFullscreen) {
+			elem.webkitRequestFullscreen();
+		}
+	},
+
+	/**
 	 * Adds a new watch expression to the watch list which will be
 	 * displayed in the stats overlay during a call to _statsTick().
 	 * @param {*} evalStringOrObject The expression to evaluate and
