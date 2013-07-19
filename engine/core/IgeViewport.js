@@ -44,6 +44,25 @@ var IgeViewport = IgeEntity.extend([
 	},
 
 	/**
+	 * Sets the minimum amount of world in pixels to display in width and height.
+	 * When set, if the viewport's geometry is reduced below the minimum width or
+	 * height, the viewport's camera is automatically scaled to ensure that the
+	 * minimum area remains visible in the viewport.
+	 * @param {Integer} width Width in pixels.
+	 * @param {Integer} height Height in pixels.
+	 * @returns {*}
+	 */
+	minimumVisibleArea: function (width, height) {
+		// Store the w/h we want to lock to
+		this._lockDimension = new IgePoint(width, height, 0);
+		if (!ige.isServer) {
+			this._resizeEvent({});
+		}
+		
+		return this;
+	},
+
+	/**
 	 * Gets / sets the auto-size property. If set to true, the viewport will
 	 * automatically resize to fill the entire scene.
 	 * @param val
@@ -406,10 +425,16 @@ var IgeViewport = IgeEntity.extend([
 		// Process locked dimension scaling
 		if (this._lockDimension) {
 			// Calculate the new camera scale
-			var ratio = 1;
+			var ratio = 1,
+				tmpX,
+				tmpY;
+			
 			if (this._geometry.x > this._lockDimension.x && this._geometry.y > this._lockDimension.y) {
-				// Scale using width
-				ratio = this._geometry.x / this._lockDimension.x;
+				// Scale using lowest ratio
+				tmpX = this._geometry.x / this._lockDimension.x;
+				tmpY = this._geometry.y / this._lockDimension.y;
+				
+				ratio = tmpX < tmpY ? tmpX : tmpY;
 			} else {
 				if (this._geometry.x > this._lockDimension.x && this._geometry.y < this._lockDimension.y) {
 					// Scale out to show height
@@ -419,6 +444,14 @@ var IgeViewport = IgeEntity.extend([
 				if (this._geometry.x < this._lockDimension.x && this._geometry.y > this._lockDimension.y) {
 					// Scale out to show width
 					ratio = this._geometry.x / this._lockDimension.x;
+				}
+				
+				if (this._geometry.x < this._lockDimension.x && this._geometry.y < this._lockDimension.y) {
+					// Scale using lowest ratio
+					tmpX = this._geometry.x / this._lockDimension.x;
+					tmpY = this._geometry.y / this._lockDimension.y;
+					
+					ratio = tmpX < tmpY ? tmpX : tmpY;
 				}
 			}
 			
