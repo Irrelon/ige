@@ -70,7 +70,7 @@ var IgeEditorTranslateComponent = IgeEventingClass.extend({
 			this._opStarted  = false;
 
 			if (this._enabled) {
-				if (ige._sgTreeSelected && ige._sgTreeSelected !== 'ige') {
+				if (ige._sgTreeSelected) {
 					this._targetEntity = ige.$(ige._sgTreeSelected);
 					
 					if (this._targetEntity.classId() == 'IgeViewport') {
