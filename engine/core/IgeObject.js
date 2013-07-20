@@ -656,8 +656,64 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Finds a child entity that matches the id mounted to this
+	 * or any other child entity down the scenegraph chain. Will
+	 * only return an object if the entity found has this entity
+	 * as an ancestor (parent or parent of parent etc).
+	 * @param {String} id The id of the entity to find.
+	 * @returns {*} The entity or undefined.
+	 */
+	$: function (id) {
+		var obj = ige.$(id);
+		
+		if (obj._parent === this) {
+			// We found a child and it's parent is this object so return it
+			return obj;
+		} else {
+			// Scan up the object's parent chain to see if this object is
+			// an ancestor at some point
+			var ancestor = obj.parent(this.id());
+			
+			if (ancestor) {
+				return obj;
+			} else {
+				return undefined;
+			}
+		}
+	},
+
+	/**
+	 * Finds all child entities of this or any child of this entity
+	 * down the scenegraph who's category matches the category name
+	 * passed.
+	 * @param {String} categoryName The category name to scan for.
+	 * @returns {Array}
+	 */
+	$$: function (categoryName) {
+		var objArr = ige.$$(categoryName),
+			arrCount = objArr.length,
+			obj,
+			finalArr = [],
+			thisId = this.id();
+			
+		// Scan all objects that have the specified category
+		// and see if we are it's parent or an ancestor
+		while (arrCount--) {
+			obj = objArr[arrCount];
+			if (obj._parent === this || obj.parent(thisId)) {
+				finalArr.push(obj);
+			}
+		}
+		
+		return finalArr;
+	},
+
+	/**
 	 * Returns the object's parent object (the object that
 	 * it is mounted to).
+	 * @param {String=} id Optional, if present will scan up
+	 * the parent chain until a parent with the matching id is
+	 * found. If none is found, returns undefined.
 	 * @example #Get the object parent
 	 *     // Create a couple of entities and give them ids
 	 *     var entity1 = new IgeEntity().id('entity1'),
@@ -673,8 +729,20 @@ var IgeObject = IgeEventingClass.extend({
 	 *     console.log(parent.id());
 	 * @return {*}
 	 */
-	parent: function () {
-		return this._parent;
+	parent: function (id) {
+		if (!id) {
+			return this._parent;
+		}
+		
+		if (this._parent) {
+			if (this._parent.id() === id) {
+				return this._parent;
+			} else {
+				return this._parent.parent(id);
+			}
+		}
+		
+		return undefined;
 	},
 
 	/**
