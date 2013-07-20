@@ -2183,6 +2183,19 @@ var IgeEngine = IgeEntity.extend({
 
 		return item;
 	},
+	
+	_childMounted: function (child) {
+		if (child.IgeViewport) {
+			// The first mounted viewport gets set as the current
+			// one before any rendering is done
+			if (!ige._currentViewport) {
+				ige._currentViewport = child;
+				ige._currentCamera = child.camera;
+			}
+		}
+		
+		IgeEntity.prototype._childMounted.call(this, child);
+	},
 
 	destroy: function () {
 		// Stop the engine and kill any timers
