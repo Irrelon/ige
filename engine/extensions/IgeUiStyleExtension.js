@@ -59,7 +59,7 @@ var IgeUiStyleExtension = {
 			}
 
 			texture.restoreOriginal();
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -87,7 +87,7 @@ var IgeUiStyleExtension = {
 				if (this._patternTexture && this._patternRepeat) {
 					this.backgroundImage(this._patternTexture, this._patternRepeat);
 				}
-				this.dirty(true);
+				this.cacheDirty(true);
 			} else {
 				this.log('Cannot set background to zero-sized x or y!', 'error');
 			}
@@ -106,7 +106,7 @@ var IgeUiStyleExtension = {
 	backgroundColor: function (color) {
 		if (color !== undefined) {
 			this._backgroundColor = color;
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -122,7 +122,7 @@ var IgeUiStyleExtension = {
 	backgroundPosition: function (x, y) {
 		if (x !== undefined && y !== undefined) {
 			this._backgroundPosition = {x: x, y: y};
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -136,7 +136,7 @@ var IgeUiStyleExtension = {
 			this._borderTopColor = color;
 			this._borderRightColor = color;
 			this._borderBottomColor = color;
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -146,7 +146,7 @@ var IgeUiStyleExtension = {
 	borderLeftColor: function (color) {
 		if (color !== undefined) {
 			this._borderLeftColor = color;
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -156,7 +156,7 @@ var IgeUiStyleExtension = {
 	borderTopColor: function (color) {
 		if (color !== undefined) {
 			this._borderTopColor = color;
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -166,7 +166,7 @@ var IgeUiStyleExtension = {
 	borderRightColor: function (color) {
 		if (color !== undefined) {
 			this._borderRightColor = color;
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -176,7 +176,7 @@ var IgeUiStyleExtension = {
 	borderBottomColor: function (color) {
 		if (color !== undefined) {
 			this._borderBottomColor = color;
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -190,7 +190,7 @@ var IgeUiStyleExtension = {
 			this._borderTopWidth = px;
 			this._borderRightWidth = px;
 			this._borderBottomWidth = px;
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -200,7 +200,7 @@ var IgeUiStyleExtension = {
 	borderLeftWidth: function (px) {
 		if (px !== undefined) {
 			this._borderLeftWidth = px;
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -210,7 +210,7 @@ var IgeUiStyleExtension = {
 	borderTopWidth: function (px) {
 		if (px !== undefined) {
 			this._borderTopWidth = px;
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -221,7 +221,7 @@ var IgeUiStyleExtension = {
 		if (px !== undefined) {
 			this._borderRightWidth = px;
 
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -232,7 +232,7 @@ var IgeUiStyleExtension = {
 		if (px !== undefined) {
 			this._borderBottomWidth = px;
 
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -247,7 +247,7 @@ var IgeUiStyleExtension = {
 			this._borderBottomRightRadius = px;
 			this._borderBottomLeftRadius = px;
 
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -260,7 +260,7 @@ var IgeUiStyleExtension = {
 		this._paddingRight = right;
 		this._paddingBottom = bottom;
 
-		this.dirty(true);
+		this.cacheDirty(true);
 		return this;
 	},
 
@@ -268,7 +268,7 @@ var IgeUiStyleExtension = {
 		if (px !== undefined) {
 			this._paddingLeft = px;
 
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -279,7 +279,7 @@ var IgeUiStyleExtension = {
 		if (px !== undefined) {
 			this._paddingTop = px;
 
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -290,7 +290,7 @@ var IgeUiStyleExtension = {
 		if (px !== undefined) {
 			this._paddingRight = px;
 
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
@@ -301,7 +301,7 @@ var IgeUiStyleExtension = {
 		if (px !== undefined) {
 			this._paddingBottom = px;
 
-			this.dirty(true);
+			this.cacheDirty(true);
 			return this;
 		}
 
