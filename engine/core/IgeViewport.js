@@ -165,7 +165,7 @@ var IgeViewport = IgeEntity.extend([
 
 			// Clip the context so we only draw "inside" the viewport area
 			ctx.beginPath();
-				ctx.rect(0, 0, this._geometry.x, this._geometry.y);
+				ctx.rect(0, 0, this._geometry.x / ige._scale.x, this._geometry.y / ige._scale.x);
 
 				// Paint a border if required
 				if (this._borderColor) {
@@ -176,6 +176,8 @@ var IgeViewport = IgeEntity.extend([
 
 			// Translate back to the center of the viewport
 			ctx.translate((this._geometry.x / 2) | 0, (this._geometry.y / 2) | 0);
+			ctx.translate(ige._translate.x, ige._translate.y);
+			ctx.scale(ige._scale.x, ige._scale.y);
 
 			// Transform the context to the center of the viewport
 			// by processing the viewport's camera tick method
