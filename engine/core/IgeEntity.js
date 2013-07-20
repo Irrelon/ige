@@ -123,7 +123,8 @@ var IgeEntity = IgeObject.extend({
 				this._cacheDirty = true;
 				
 				// Set smoothing mode
-				if (!ige._globalSmoothing) {
+				var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
+				if (!smoothing) {
 					this._cacheCtx.imageSmoothingEnabled = false;
 					this._cacheCtx.webkitImageSmoothingEnabled = false;
 					this._cacheCtx.mozImageSmoothingEnabled = false;
@@ -146,6 +147,22 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._cache;
+	},
+
+	/**
+	 * When using the caching system, this boolean determines if the
+	 * cache canvas should have image smoothing enabled or not. If
+	 * not set, the ige global smoothing setting will be used instead.
+	 * @param {Boolean=} val True to enable smoothing, false to disable.
+	 * @returns {*}
+	 */
+	cacheSmoothing: function (val) {
+		if (val !== undefined) {
+			this._cacheSmoothing = val;
+			return this;
+		}
+		
+		return this._cacheSmoothing;
 	},
 
 	/**
@@ -178,7 +195,8 @@ var IgeEntity = IgeObject.extend({
 					this._cacheDirty = true;
 					
 					// Set smoothing mode
-					if (!ige._globalSmoothing) {
+					var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
+					if (!smoothing) {
 						this._cacheCtx.imageSmoothingEnabled = false;
 						this._cacheCtx.webkitImageSmoothingEnabled = false;
 						this._cacheCtx.mozImageSmoothingEnabled = false;
@@ -2870,6 +2888,31 @@ var IgeEntity = IgeObject.extend({
 					}
 				} else {
 					return String(this.isHidden());
+				}
+				break;
+			
+			case 'mount':
+				if (data !== undefined) {
+					if (!ige.isServer) {
+						if (data) {
+							var newParent = ige.$(data);
+							
+							if (newParent) {
+								this.mount(newParent);
+							}
+						} else {
+							// Unmount
+							this.unMount();
+						}
+					}
+				} else {
+					var parent = this.parent();
+					
+					if (parent) {
+						return this.parent().id();
+					} else {
+						return '';
+					}
 				}
 				break;
 		}
