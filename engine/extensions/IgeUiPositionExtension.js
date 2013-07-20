@@ -303,6 +303,11 @@ var IgeUiPositionExtension = {
 				newVal,
 				ratio;
 			
+			if (this._ignoreCamera) {
+				// Handle cam ignore when calculating 
+				parentGeom = parentGeom.dividePoint(ige._currentCamera._scale);
+			}
+			
 			if (this._autoScaleX) {
 				// Get the percentage as an integer
 				percent = parseInt(this._autoScaleX, 10);
@@ -357,8 +362,8 @@ var IgeUiPositionExtension = {
 			} else if (this._uiYAlign === 'top') {
 				this._translate.y = Math.floor(this._uiY + geomScaled.y2 - (parentGeom.y2));
 			}
-
-			this.dirty(true);
+			
+			this.cacheDirty(true);
 		}
 	}
 };
