@@ -101,6 +101,7 @@ var IgeEngine = IgeEntity.extend({
 		this._timeSpentInTick = {}; // An object holding time-spent-in-tick (total time spent in this object's tick method)
 		this._timeSpentLastTick = {}; // An object holding time-spent-last-tick (time spent in this object's tick method last tick)
 		this._timeScale = 1; // The default time scaling factor to speed up or slow down engine time
+		this._globalScale = new IgePoint(1, 1, 1);
 
 		// Set the context to a dummy context to start
 		// with in case we are in "headless" mode and
@@ -1903,6 +1904,7 @@ var IgeEngine = IgeEntity.extend({
 
 		ctx.save();
 		ctx.translate(this._geometry.x2, this._geometry.y2);
+		//ctx.scale(this._globalScale.x, this._globalScale.y);
 
 		// Process the current engine tick for all child objects
 		var arr = this._children,
