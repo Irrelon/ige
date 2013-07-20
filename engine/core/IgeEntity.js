@@ -961,10 +961,10 @@ var IgeEntity = IgeObject.extend({
 	 */
 	localToWorld: function (points, viewport) {
 		viewport = viewport || ige._currentViewport;
-		this._worldMatrix.transform(points);
+		this._worldMatrix.transform(points, this);
 
 		if (this._ignoreCamera) {
-			//viewport.camera._worldMatrix.transform(points);
+			//viewport.camera._worldMatrix.transform(points, this);
 		}
 	},
 
@@ -976,7 +976,7 @@ var IgeEntity = IgeObject.extend({
 	 */
 	localToWorldPoint: function (point, viewport) {
 		viewport = viewport || ige._currentViewport;
-		this._worldMatrix.transform([point]);
+		this._worldMatrix.transform([point], this);
 	},
 	
 	/**
@@ -1797,9 +1797,9 @@ var IgeEntity = IgeObject.extend({
 			// Apply any local transforms
 			tempMat.multiply(this._localMatrix);
 			// Now transform the point
-			tempMat.getInverse().transformCoord(point);
+			tempMat.getInverse().transformCoord(point, this);
 		} else {
-			this._localMatrix.transformCoord(point);
+			this._localMatrix.transformCoord(point, this);
 		}
 
 		return point;
