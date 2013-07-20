@@ -13,7 +13,6 @@ var IgeObject = IgeEventingClass.extend({
 		this._children = [];
 		this._layer = 0;
 		this._depth = 0;
-		this._dirty = true;
 		this._depthSortMode = 0;
 		this._timeStream = [];
 		this._inView = true;
@@ -1170,28 +1169,6 @@ var IgeObject = IgeEventingClass.extend({
 		delete this._components;
 
 		return this;
-	},
-
-	/**
-	 * Gets / sets the dirty flag for this object. If you specify a val parameter
-	 * the parent of this object will also have it's dirty method called with the
-	 * same parameter. This means that dirty flags bubble down the child / parent
-	 * chain.
-	 * @param {Boolean} val
-	 */
-	dirty: function (val) {
-		if (val !== undefined) {
-			this._dirty = val;
-
-			// Bubble the dirty up the parent chain
-			if (this._parent) {
-				this._parent.dirty(val);
-			}
-
-			return this;
-		}
-
-		return this._dirty;
 	},
 
 	/**
