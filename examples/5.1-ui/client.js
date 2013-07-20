@@ -121,8 +121,8 @@ var Client = IgeClass.extend({
 						.height(40)
 						.cell(1)
 						.backgroundImage(gameTexture[1], 'no-repeat')
-						.mouseOver(function () { this.cell(2); this.dirty(true); ige.input.stopPropagation(); })
-						.mouseOut(function () { this.cell(1); this.dirty(true); ige.input.stopPropagation(); })
+						.mouseOver(function () { this.cell(2); ige.input.stopPropagation(); })
+						.mouseOut(function () { this.cell(1); ige.input.stopPropagation(); })
 						.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
 						.mount(self.obj[2]);
 
