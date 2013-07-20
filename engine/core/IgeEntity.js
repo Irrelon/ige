@@ -1726,6 +1726,14 @@ var IgeEntity = IgeObject.extend({
 					texture.render(ctx, this);
 				}
 			}
+			
+			if (this._compositeCache && ige._currentViewport._drawCompositeBounds) {
+				ctx.fillStyle = 'rgba(0, 128, 255, 0.5)';
+				ctx.fillRect(-this._geometry.x2, -this._geometry.y2, this._geometry.x,	this._geometry.y);
+				ctx.fillStyle = '#ffffff';
+				ctx.fillText('Composite Entity', -this._geometry.x2, -this._geometry.y2 - 15);
+				ctx.fillText(this.id(), -this._geometry.x2, -this._geometry.y2 - 5);
+			}
 		}
 	},
 
@@ -1758,8 +1766,11 @@ var IgeEntity = IgeObject.extend({
 		);
 		
 		if (ige._currentViewport._drawCompositeBounds) {
-			ctx.strokeStyle = '#00ff00';
-			ctx.strokeRect(-this._geometry.x2, -this._geometry.y2, this._cacheCanvas.width,	this._cacheCanvas.height);
+			ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
+			ctx.fillRect(-this._geometry.x2, -this._geometry.y2, this._cacheCanvas.width,	this._cacheCanvas.height);
+			ctx.fillStyle = '#ffffff';
+			ctx.fillText('Composite Cache', -this._geometry.x2, -this._geometry.y2 - 15);
+			ctx.fillText(this.id(), -this._geometry.x2, -this._geometry.y2 - 5);
 		}
 
 		ige._drawCount++;
