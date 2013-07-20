@@ -21,7 +21,7 @@ IgeMatrix2d.prototype = {
 	 * @param {IgePoint} point
 	 * @return {IgePoint} The passed point.
 	 */
-	transformCoord: function(point) {
+	transformCoord: function(point, obj) {
 		var x = point.x,
 			y = point.y,
 			tm = this.matrix;
@@ -31,7 +31,7 @@ IgeMatrix2d.prototype = {
 		
 		/* DEXCLUDE */
 		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
-			ige.log('The matrix operation produced a NaN value!', 'error');
+			obj.log('The matrix operation produced a NaN value!', 'error');
 		}
 		/* DEXCLUDE */
 
@@ -43,7 +43,7 @@ IgeMatrix2d.prototype = {
 	 * @param {IgePoint} point.
 	 * @return {IgePoint} The passed point.
 	 */
-	transformCoordInverse: function(point) {
+	transformCoordInverse: function(point, obj) {
 		var x = point.x,
 			y = point.y,
 			tm = this.matrix;
@@ -53,19 +53,19 @@ IgeMatrix2d.prototype = {
 		
 		/* DEXCLUDE */
 		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
-			this.log('The matrix operation produced a NaN value!', 'error');
+			obj.log('The matrix operation produced a NaN value!', 'error');
 		}
 		/* DEXCLUDE */
 
 		return point;
 	},
 
-	transform: function (points) {
+	transform: function (points, obj) {
 		var pointIndex,
 			pointCount = points.length;
 
 		for (pointIndex = 0; pointIndex < pointCount; pointIndex++) {
-			this.transformCoord(points[pointIndex]);
+			this.transformCoord(points[pointIndex], obj);
 		}
 
 		return points;
