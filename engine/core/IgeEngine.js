@@ -1166,7 +1166,8 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
-	 * Returns the mouse position relative to the main front buffer.
+	 * Returns the mouse position relative to the main front buffer. Mouse
+	 * position is set by the ige.input component (IgeInputComponent)
 	 * @return {IgePoint}
 	 */
 	mousePos: function () {
