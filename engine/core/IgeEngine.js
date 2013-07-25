@@ -1009,10 +1009,10 @@ var IgeEngine = IgeEntity.extend({
 
 				if (autoSize) {
 					this._autoSize = autoSize;
-
-					// Add some event listeners
-					window.addEventListener('resize', this._resizeEvent);
 				}
+				
+				// Add some event listeners even if autosize is off
+				window.addEventListener('resize', this._resizeEvent);
 
 				// Fire the resize event for the first time
 				// which sets up initial canvas dimensions
@@ -1052,10 +1052,8 @@ var IgeEngine = IgeEntity.extend({
 			this.input.destroyListeners();
 		}
 
-		// If we were auto-sizing, remove event listener
-		if (this._autoSize) {
-			window.removeEventListener('resize', this._resizeEvent);
-		}
+		// Remove event listener
+		window.removeEventListener('resize', this._resizeEvent);
 
 		if (this._createdFrontBuffer) {
 			// Remove the canvas from the DOM
@@ -1180,6 +1178,8 @@ var IgeEngine = IgeEntity.extend({
 	 * @private
 	 */
 	_resizeEvent: function (event) {
+		var canvasBoundingRect;
+		
 		if (ige._autoSize) {
 			var newWidth = window.innerWidth,
 				newHeight = window.innerHeight,
@@ -1188,6 +1188,13 @@ var IgeEngine = IgeEntity.extend({
 
 			// Only update canvas dimensions if it exists
 			if (ige._canvas) {
+				// Check if we can get the position of the canvas
+				canvasBoundingRect = ige._canvasPosition();
+				
+				// Adjust the newWidth and newHeight by the canvas offset
+				newWidth -= parseInt(canvasBoundingRect.left);
+				newHeight -= parseInt(canvasBoundingRect.top);
+				
 				// Make sure we can divide the new width and height by 2...
 				// otherwise minus 1 so we get an even number so that we
 				// negate the blur effect of sub-pixel rendering
@@ -1220,10 +1227,26 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		if (ige._showSgTree) {
-			document.getElementById('igeSgTree').style.height = (ige._geometry.y - 30) + 'px';
+			var sgTreeElem = document.getElementById('igeSgTree');
+							
+			canvasBoundingRect = ige._canvasPosition();
+			
+			sgTreeElem.style.top = (parseInt(canvasBoundingRect.top) + 5) + 'px';
+			sgTreeElem.style.left = (parseInt(canvasBoundingRect.left) + 5) + 'px';
+			sgTreeElem.style.height = (ige._geometry.y - 30) + 'px';
 		}
 
 		ige._resized = true;
+	},
+
+	/**
+	 * Gets the bounding rectangle for the HTML canvas element being
+	 * used as the front buffer for the engine. Uses DOM methods.
+	 * @returns {ClientRect}
+	 * @private
+	 */
+	_canvasPosition: function () {
+		return ige._canvas.getBoundingClientRect();
 	},
 
 	/**
@@ -1434,9 +1457,14 @@ var IgeEngine = IgeEntity.extend({
 			// Create the scenegraph tree
 			var self = this,
 				elem1 = document.createElement('div'),
-				elem2;
+				elem2,
+				canvasBoundingRect;
+			
+			canvasBoundingRect = ige._canvasPosition();
 
 			elem1.id = 'igeSgTree';
+			elem1.style.top = (parseInt(canvasBoundingRect.top) + 5) + 'px';
+			elem1.style.left = (parseInt(canvasBoundingRect.left) + 5) + 'px';
 			elem1.style.height = (ige._geometry.y - 30) + 'px';
 			elem1.style.overflow = 'auto';
 			elem1.addEventListener('mousemove', function (event) {
