@@ -21,7 +21,7 @@ var Client = IgeClass.extend({
 			//ige.createFrontBuffer(true);
 
 			// Provide our own canvas to the engine
-			ige.canvas(document.getElementById('myOwnCanvas'), false);
+			ige.canvas(document.getElementById('myOwnCanvas'), true);
 
 			// Start the engine
 			ige.start(function (success) {

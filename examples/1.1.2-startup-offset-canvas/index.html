@@ -18,9 +18,12 @@
 </head>
 <body>
 	<div style="background: #FFF0F0;">Some Top Bar in HTML</div>
-	<div style="float: left; width: 250px; height: 100%; background: #8DA6CE;">Some Left Bar in HTML</div>
+	<div style="float: left; width: 250px; height: 100px; background: #8DA6CE;">Some Left Bar in HTML</div>
     <div style="">
-		<canvas style="float: left; border: 1px solid #666666;" id="myOwnCanvas" width="800" height="500"></canvas>
+		<!-- Applying a border to the canvas element WILL cause it to display incorrectly
+			because the border takes up an extra load of pixels on each side of the bounding
+			rectangle of the element. -->
+		<canvas id="myOwnCanvas" width="600" height="500"></canvas>
 	</div>
     <div class="igeLoading loadingFloat">
         <div class="loadingLogo"></div>
