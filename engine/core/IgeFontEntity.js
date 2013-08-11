@@ -33,14 +33,16 @@ var IgeFontEntity = IgeUiEntity.extend({
 		if (val !== undefined) {
 			if (this._geometry.x !== val) {
 				this.clearCache();
-				
-				if (this._autoWrap) {
-					this._applyAutoWrap();
-				}
 			}
 		}
 
-		return IgeUiEntity.prototype.width.call(this, val, lockAspect, modifier, noUpdate);
+		var retVal = IgeUiEntity.prototype.width.call(this, val, lockAspect, modifier, noUpdate);
+		
+		if (this._autoWrap) {
+			this._applyAutoWrap();
+		}
+		
+		return retVal;
 	},
 
 	/**
@@ -200,11 +202,11 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	clearCache: function () {
 		if (this._cache) {
-			this._cacheDirty = true;
+			this.cacheDirty(true);
 		}
 
-		if (this._texture && this._texture._caching && this._texture._cacheText[this._text]) {
-			delete this._texture._cacheText[this._text];
+		if (this._texture && this._texture._caching && this._texture._cacheText[this._renderText]) {
+			delete this._texture._cacheText[this._renderText];
 		}
 	},
 
@@ -289,6 +291,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 			// Execute an auto-wrap modification of the text
 			if (this._text) {
 				this._applyAutoWrap();
+				this.clearCache();
 			}
 			return this;
 		}
@@ -325,10 +328,10 @@ var IgeFontEntity = IgeUiEntity.extend({
 				// add a line break before the word
 				lineWidth = this.measureTextWidth(currentTextLine);
 				
-				if (lineWidth > this._geometry.x) {
+				if (lineWidth >= this._geometry.x) {
 					// Add a line break
 					textArray.push('\n');
-					currentTextLine = '';
+					currentTextLine = words[wordIndex];
 				}
 				
 				textArray.push(words[wordIndex]);
