@@ -246,18 +246,6 @@ var IgeFontSheet = IgeTexture.extend({
 
 				renderX = 0;
 			}
-
-			// If the entity should get dimension data from the
-			// texture, we are now in a position to give it so
-			// set the width and height based on the rendered text
-			// TODO: This is a throw-back from 1.0.0, is it still valid?
-			/*if (entity._dimensionsFromTexture) {
-				entity.sizeX(totalWidth);
-				entity.sizeY(totalHeight);
-
-				entity._dimensionsFromTexture = true;
-				entity.aabb(true);
-			}*/
 		}
 	},
 
