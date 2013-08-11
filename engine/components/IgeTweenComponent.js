@@ -350,6 +350,10 @@ var IgeTweenComponent = IgeClass.extend({
 
 							thisTween._setupStep(tween, true);
 						}
+						
+						if (typeof(tween._afterChange) === 'function') {
+							tween._afterChange(tween, stepIndex);
+						}
 					} else {
 						// The tween is still active, process the tween by passing it's details
 						// to the selected easing method
