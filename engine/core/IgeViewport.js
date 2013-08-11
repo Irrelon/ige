@@ -262,6 +262,7 @@ var IgeViewport = IgeEntity.extend([
 			obj,
 			aabb,
 			aabbC,
+			aabbNT,
 			ga,
 			r3d,
 			xl1, xl2, xl3, xl4, xl5, xl6,
@@ -282,9 +283,10 @@ var IgeViewport = IgeEntity.extend([
 						if (typeof(obj.aabb) === 'function') {
 							// Grab the AABB and then draw it
 							aabb = obj.aabb();
-							aabbC = obj.compositeAabb();
 
-							if (this._drawCompositeBounds && aabbC) {
+							if (this._drawCompositeBounds && obj._compositeCache) {
+								aabbC = obj.compositeAabb();
+								
 								// Draw composite bounds
 								ctx.strokeStyle = '#ff0000';
 								ctx.strokeRect(aabbC.x, aabbC.y, aabbC.width, aabbC.height);
