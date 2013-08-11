@@ -50,8 +50,8 @@ var IgeFontSmartTexture = {
 	},
 	
 	render: function (ctx, entity) {
-		if (entity._nativeFont && entity._text) {
-			var text = entity._text,
+		if (entity._nativeFont && entity._renderText) {
+			var text = entity._renderText,
 				lineArr = [],
 				textSize,
 				renderStartY,

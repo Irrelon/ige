@@ -148,9 +148,9 @@ var IgeFontSheet = IgeTexture.extend({
 	},
 
 	render: function (ctx, entity) {
-		if (entity._text && this._loaded) {
+		if (entity._renderText && this._loaded) {
 			var _ctx = ctx,
-				text = entity._text,
+				text = entity._renderText,
 				lineText,
 				lineArr = [],
 				lineIndex,

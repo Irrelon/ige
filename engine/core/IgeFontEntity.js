@@ -8,6 +8,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 	init: function () {
 		IgeUiEntity.prototype.init.call(this);
 
+		this._renderText = undefined;
 		this._text = undefined;
 		this._textAlignX = 1;
 		this._textAlignY = 1;
@@ -59,16 +60,36 @@ var IgeFontEntity = IgeUiEntity.extend({
 	},
 
 	/**
-	 * Sets the text to render for this font entity.
+	 * Sets the text to render for this font entity. This sets both
+	 * the private properties "_text" and "_renderText". If auto-wrapping
+	 * has been enabled then the "_text" remains equal to whatever
+	 * text you pass into this method but "_renderText" becomes the
+	 * line-broken text that the auto-wrapper method creates. When the
+	 * entity renders it's text string it ALWAYS renders from "_renderText"
+	 * and not the value of "_text". Effectively this means that "_text"
+	 * contains the unaltered version of your original text and 
+	 * "_renderText" will be either the same as "_text" if auto-wrapping
+	 * is disable or a wrapped version otherwise.
 	 * @param {String} text The text string to render.
 	 * @returns {*}
 	 */
 	text: function (text) {
 		if (text !== undefined) {
+			var wasDifferent = false;
+			
 			if (this._text !== text) {
 				this.clearCache();
+				wasDifferent = true;
 			}
+			
 			this._text = text;
+			
+			if (this._autoWrap && wasDifferent) {
+				this._applyAutoWrap();
+			} else {
+				this._renderText = text;
+			}
+			
 			return this;
 		}
 
@@ -248,6 +269,69 @@ var IgeFontEntity = IgeUiEntity.extend({
 		}
 
 		return this._nativeStrokeColor;
+	},
+
+	/**
+	 * Gets / sets the auto-wrapping mode. If set to true then the
+	 * text this font entity renders will be automatically line-broken
+	 * when a line reaches the width of the entity.
+	 * @param val
+	 * @returns {*}
+	 */
+	autoWrap: function (val) {
+		if (val !== undefined) {
+			this._autoWrap = val;
+			
+			// Execute an auto-wrap modification of the text
+			if (this._text) {
+				this._applyAutoWrap();
+			}
+			return this;
+		}
+		
+		return this._autoWrap;
+	},
+
+	/**
+	 * Automatically detects where line-breaks need to occur in the text
+	 * assigned to the entity and adds them.
+	 * @private
+	 */
+	_applyAutoWrap: function () {
+		if (this._text) {
+			// Un-wrap the text so it is all on one line
+			var oneLineText = this._text.replace(/\n/g, ' '),
+				words,
+				wordIndex,
+				textArray = [],
+				currentTextLine = '',
+				lineWidth;
+			
+			// Break the text into words
+			words = oneLineText.split(' ');
+			
+			// There are multiple words - loop the words
+			for (wordIndex = 0; wordIndex < words.length; wordIndex++) {
+				if (currentTextLine) {
+					currentTextLine += ' ';
+				}
+				currentTextLine += words[wordIndex];
+				
+				// Check the width and if greater than the width of the entity,
+				// add a line break before the word
+				lineWidth = this.measureTextWidth(currentTextLine);
+				
+				if (lineWidth > this._geometry.x) {
+					// Add a line break
+					textArray.push('\n');
+					currentTextLine = '';
+				}
+				
+				textArray.push(words[wordIndex]);
+			}
+			
+			this._renderText = textArray.join(' ');
+		}
 	},
 
 	/**
