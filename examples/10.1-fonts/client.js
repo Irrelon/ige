@@ -92,7 +92,7 @@ var Client = IgeClass.extend({
 						.id('font4')
 						.depth(1)
 						.width(100)
-						.height(30)
+						.height(50)
 						.texture(gameTexture[1])
 						.textAlignX(1)
 						//.textAlignY(1)
