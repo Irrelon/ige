@@ -17,6 +17,16 @@ var IgeFontEntity = IgeUiEntity.extend({
 		this.cache(true);
 	},
 
+	/**
+	 * Extends the IgeUiEntity.width() method and if the value being
+	 * set is different from the current width value then the font's
+	 * cache is invalidated so it gets redrawn.
+	 * @param val
+	 * @param lockAspect
+	 * @param modifier
+	 * @param noUpdate
+	 * @returns {*}
+	 */
 	width: function (val, lockAspect, modifier, noUpdate) {
 		if (val !== undefined) {
 			if (this._geometry.x !== val) {
@@ -27,6 +37,16 @@ var IgeFontEntity = IgeUiEntity.extend({
 		return IgeUiEntity.prototype.width.call(this, val, lockAspect, modifier, noUpdate);
 	},
 
+	/**
+	 * Extends the IgeUiEntity.height() method and if the value being
+	 * set is different from the current height value then the font's
+	 * cache is invalidated so it gets redrawn.
+	 * @param val
+	 * @param lockAspect
+	 * @param modifier
+	 * @param noUpdate
+	 * @returns {*|number}
+	 */
 	height: function (val, lockAspect, modifier, noUpdate) {
 		if (val !== undefined) {
 			if (this._geometry.y !== val) {
@@ -65,6 +85,12 @@ var IgeFontEntity = IgeUiEntity.extend({
 		return this;
 	},
 
+	/**
+	 * Gets / sets the current horizontal text alignment. Accepts
+	 * a value of 0, 1 or 2 (left, centre, right) respectively.
+	 * @param {Number=} val
+	 * @returns {*}
+	 */
 	textAlignX: function (val) {
 		if (val !== undefined) {
 			if (this._textAlignX !== val) {
@@ -76,6 +102,12 @@ var IgeFontEntity = IgeUiEntity.extend({
 		return this._textAlignX;
 	},
 
+	/**
+	 * Gets / sets the current vertical text alignment. Accepts
+	 * a value of 0, 1 or 2 (top, middle, bottom) respectively.
+	 * @param {Number=} val
+	 * @returns {*}
+	 */
 	textAlignY: function (val) {
 		if (val !== undefined) {
 			if (this._textAlignY !== val) {
@@ -87,6 +119,12 @@ var IgeFontEntity = IgeUiEntity.extend({
 		return this._textAlignY;
 	},
 
+	/**
+	 * Gets / sets the amount of spacing between the lines of text being
+	 * rendered. Accepts negative values as well as positive ones.
+	 * @param {Number=} val
+	 * @returns {*}
+	 */
 	textLineSpacing: function (val) {
 		if (val !== undefined) {
 			if (this._textLineSpacing !== val) {
