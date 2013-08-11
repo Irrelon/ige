@@ -101,6 +101,33 @@ var IgeFontSheet = IgeTexture.extend({
 		}
 	},
 
+	/**
+	 * Returns the width in pixels of the text passed in the
+	 * argument. Does not support multi-line text.
+	 * @param {String} text The text to measure.
+	 * @returns {number}
+	 */
+	measureTextWidth: function (text) {
+		if (this._loaded) {
+			var characterIndex,
+				charCodeMap = this._charCodeMap,
+				measuredWidthMap = this._measuredWidthMap,
+				singleLineWidth = 0,
+				charIndex;
+
+			// Calculate the total width of the line of text
+			for (characterIndex = 0; characterIndex < text.length; characterIndex++) {
+				charIndex = charCodeMap[text.charCodeAt(characterIndex)];
+				singleLineWidth += measuredWidthMap[charIndex] || 0;
+			}
+
+			// Store the width of this line so we can align it correctly
+			return singleLineWidth;
+		}
+		
+		return -1;
+	},
+
 	render: function (ctx, entity) {
 		if (entity._text && this._loaded) {
 			var _ctx = ctx,
