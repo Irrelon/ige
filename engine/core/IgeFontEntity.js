@@ -33,6 +33,10 @@ var IgeFontEntity = IgeUiEntity.extend({
 		if (val !== undefined) {
 			if (this._geometry.x !== val) {
 				this.clearCache();
+				
+				if (this._autoWrap) {
+					this._applyAutoWrap();
+				}
 			}
 		}
 
