@@ -12,6 +12,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 		this._textAlignX = 1;
 		this._textAlignY = 1;
 		this._textLineSpacing = 0;
+		this._nativeMode = false;
 
 		// Enable caching by default for font entities!
 		this.cache(true);
@@ -192,7 +193,10 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	nativeFont: function (val) {
 		if (val !== undefined) {
+			// Check if this font is different from the current
+			// assigned font
 			if (this._nativeFont !== val) {
+				// The fonts are different, clear existing cache
 				this.clearCache();
 			}
 			this._nativeFont = val;
@@ -200,6 +204,9 @@ var IgeFontEntity = IgeUiEntity.extend({
 			// Assign the native font smart texture
 			var tex = new IgeTexture(IgeFontSmartTexture);
 			this.texture(tex);
+			
+			// Set the flag indicating we are using a native font
+			this._nativeMode = true;
 
 			return this;
 		}
@@ -241,6 +248,19 @@ var IgeFontEntity = IgeUiEntity.extend({
 		}
 
 		return this._nativeStrokeColor;
+	},
+	
+	measureTextWidth: function (text) {
+		text = text || this._text;
+		
+		// Both IgeFontSheet and the IgeFontSmartTexture have a method
+		// called measureTextWidth() so we can just asks the current
+		// texture for the width :)
+		if (this._texture._mode === 0) {
+			return this._texture.measureTextWidth(text);
+		} else {
+			return this._texture.script.measureTextWidth(text, this);
+		}
 	},
 
 	tick: function (ctx) {

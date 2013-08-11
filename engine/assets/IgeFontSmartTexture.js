@@ -3,6 +3,52 @@
  * text and alignment options.
  */
 var IgeFontSmartTexture = {
+	measureTextWidth: function (text, entity) {
+		if (entity._nativeFont) {
+			var lineArr = [],
+				lineIndex,
+				measuredWidth,
+				maxWidth = 0,
+				canvas = document.createElement('canvas'),
+				ctx = canvas.getContext('2d');
+			
+			// Handle multi-line text
+			if (text.indexOf('\n') > -1) {
+				// Split each line into an array item
+				lineArr = text.split('\n');
+			} else {
+				// Store the text as a single line
+				lineArr.push(text);
+			}
+
+			ctx.font = entity._nativeFont;
+			ctx.textBaseline = 'middle';
+
+			if (entity._nativeStroke) {
+				ctx.lineWidth = entity._nativeStroke;
+
+				if (entity._nativeStrokeColor) {
+					ctx.strokeStyle = entity._nativeStrokeColor;
+				} else {
+					ctx.strokeStyle = entity._colorOverlay;
+				}
+			}
+			
+			for (lineIndex = 0; lineIndex < lineArr.length; lineIndex++) {
+				// Measure text
+				measuredWidth = ctx.measureText(lineArr[lineIndex]).width;
+				
+				if (measuredWidth > maxWidth) {
+					maxWidth = measuredWidth;
+				}
+			}
+			
+			return maxWidth;
+		}
+		
+		return -1;
+	},
+	
 	render: function (ctx, entity) {
 		if (entity._nativeFont && entity._text) {
 			var text = entity._text,

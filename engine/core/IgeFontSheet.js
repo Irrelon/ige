@@ -103,7 +103,7 @@ var IgeFontSheet = IgeTexture.extend({
 
 	/**
 	 * Returns the width in pixels of the text passed in the
-	 * argument. Does not support multi-line text.
+	 * argument.
 	 * @param {String} text The text to measure.
 	 * @returns {number}
 	 */
@@ -112,17 +112,36 @@ var IgeFontSheet = IgeTexture.extend({
 			var characterIndex,
 				charCodeMap = this._charCodeMap,
 				measuredWidthMap = this._measuredWidthMap,
-				singleLineWidth = 0,
-				charIndex;
+				charIndex,
+				lineArr = [],
+				lineIndex,
+				measuredWidth,
+				maxWidth = 0;
+			
+			// Handle multi-line text
+			if (text.indexOf('\n') > -1) {
+				// Split each line into an array item
+				lineArr = text.split('\n');
+			} else {
+				// Store the text as a single line
+				lineArr.push(text);
+			}
 
-			// Calculate the total width of the line of text
-			for (characterIndex = 0; characterIndex < text.length; characterIndex++) {
-				charIndex = charCodeMap[text.charCodeAt(characterIndex)];
-				singleLineWidth += measuredWidthMap[charIndex] || 0;
+			for (lineIndex = 0; lineIndex < lineArr.length; lineIndex++) {
+				// Calculate the total width of the line of text
+				measuredWidth = 0;
+				for (characterIndex = 0; characterIndex < lineArr[lineIndex].length; characterIndex++) {
+					charIndex = charCodeMap[lineArr[lineIndex].charCodeAt(characterIndex)];
+					measuredWidth += measuredWidthMap[charIndex] || 0;
+				}
+				
+				if (measuredWidth > maxWidth) {
+					maxWidth = measuredWidth;
+				}
 			}
 
 			// Store the width of this line so we can align it correctly
-			return singleLineWidth;
+			return measuredWidth;
 		}
 		
 		return -1;
