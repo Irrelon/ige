@@ -46,7 +46,7 @@ var Client = IgeClass.extend({
 					self.obj[0] = new IgeFontEntity()
 						.id('font1')
 						.depth(1)
-						.width(480)
+						.width(213)
 						.height(110)
 						.textAlignX(0)
 						.colorOverlay('#ffffff')
@@ -96,11 +96,14 @@ var Client = IgeClass.extend({
 						.texture(gameTexture[1])
 						.textAlignX(1)
 						//.textAlignY(1)
-						.textLineSpacing(0)
-						.text('Verdana 10px')
+						.textLineSpacing(-10)
+						.text('Verdana 10px\nAnd this is not a native font :)')
 						.center(0)
 						.top(0)
 						.mount(self.scene1);
+					
+					console.log(self.obj[0].measureTextWidth());
+					console.log(self.obj[3].measureTextWidth());
 				}
 			});
 		});
