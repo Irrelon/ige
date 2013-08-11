@@ -74,6 +74,18 @@ var IgeFontEntity = IgeUiEntity.extend({
 		return this._text;
 	},
 
+	/**
+	 * Allows you to bind the text output of this font entity to match
+	 * the value of an object's property so that when it is updated the
+	 * text will automatically update on this entity. Useful for score,
+	 * position etc output where data is stored in an object and changes
+	 * frequently.
+	 * @param {Object} obj The object to read the property from.
+	 * @param {String} propName The name of the property to read value from.
+	 * @param {String} preText Text to place before the output.
+	 * @param {String} postText Text to place after the output.
+	 * @returns {*}
+	 */
 	bindData: function (obj, propName, preText, postText) {
 		if (obj !== undefined && propName !== undefined) {
 			this._bindDataObject = obj;
