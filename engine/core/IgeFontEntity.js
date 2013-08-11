@@ -249,7 +249,15 @@ var IgeFontEntity = IgeUiEntity.extend({
 
 		return this._nativeStrokeColor;
 	},
-	
+
+	/**
+	 * Will measure and return the width in pixels of a line or multiple
+	 * lines of text. If no text parameter is passed, will use the current
+	 * text assigned to the font entity.
+	 * @param {String=} text Optional text to measure, used existing entity
+	 * text value if none is provided.
+	 * @returns {Number} The width of the text in pixels.
+	 */
 	measureTextWidth: function (text) {
 		text = text || this._text;
 		
