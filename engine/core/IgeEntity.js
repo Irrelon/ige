@@ -959,9 +959,15 @@ var IgeEntity = IgeObject.extend({
 	 * the points passed in the array directly.
 	 * @param {Array} points The array of IgePoints to convert.
 	 */
-	localToWorld: function (points, viewport) {
+	localToWorld: function (points, viewport, inverse) {
 		viewport = viewport || ige._currentViewport;
-		this._worldMatrix.transform(points, this);
+		
+		if (!inverse) {
+			this._worldMatrix.transform(points, this);
+		} else {
+			this._localMatrix.transform(points, this);
+			//this._worldMatrix.getInverse().transform(points, this);
+		}
 
 		if (this._ignoreCamera) {
 			//viewport.camera._worldMatrix.transform(points, this);
@@ -1019,7 +1025,7 @@ var IgeEntity = IgeObject.extend({
 	 *     console.log(aabb.height);
 	 * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
 	 */
-	aabb: function (recalculate) {
+	aabb: function (recalculate, inverse) {
 		if (!this._aabb || recalculate) { //  && this.newFrame()
 			var poly = new IgePoly2d(),
 				minX, minY,
@@ -1056,7 +1062,7 @@ var IgeEntity = IgeObject.extend({
 				this._renderPos = {x: -x + ox, y: -y + oy};
 
 				// Convert the poly's points from local space to world space
-				this.localToWorld(poly._poly);
+				this.localToWorld(poly._poly, null, inverse);
 
 				// Get the extents of the newly transformed poly
 				minX = Math.min(
@@ -1108,7 +1114,7 @@ var IgeEntity = IgeObject.extend({
 				this._renderPos = {x: -x + ox, y: -y + oy};
 
 				// Convert the poly's points from local space to world space
-				this.localToWorld(poly._poly);
+				this.localToWorld(poly._poly, null, inverse);
 
 				// Get the extents of the newly transformed poly
 				minX = Math.min(
@@ -1189,13 +1195,16 @@ var IgeEntity = IgeObject.extend({
 	 *         aabb = entity.compositeAabb();
 	 * @return {IgeRect}
 	 */
-	compositeAabb: function (rect) {
-		if (rect === undefined) {
-			rect = this.aabb().clone();
-		}
-
+	compositeAabb: function (inverse) {
 		var arr = this._children,
-			arrCount;
+			arrCount,
+			rect;
+	
+		if (inverse) {
+			rect = this.aabb(true, inverse).clone();
+		} else {
+			rect = this.aabb().clone();	
+		}
 
 		// Now loop all children and get the aabb for each of them
 		// them add those bounds to the current rect
@@ -1203,7 +1212,7 @@ var IgeEntity = IgeObject.extend({
 			arrCount = arr.length;
 
 			while (arrCount--) {
-				rect.thisCombineRect(arr[arrCount].compositeAabb());
+				rect.thisCombineRect(arr[arrCount].compositeAabb(inverse));
 			}
 		}
 
@@ -1423,6 +1432,25 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * Sets the _ignoreCamera internal flag to the value passed for this
+	 * and all child entities down the scenegraph.
+	 * @param val
+	 */
+	ignoreCameraComposite: function (val) {
+		var i,
+			arr = this._children,
+			arrCount = arr.length;
+		
+		this._ignoreCamera = val;
+		
+		for (i = 0; i < arrCount; i++) {
+			if (arr[i].ignoreCameraComposite) {
+				arr[i].ignoreCameraComposite(val);
+			}
+		}
+	},
+
+	/**
 	 * Determines if the frame alternator value for this entity
 	 * matches the engine's frame alternator value. The entity's
 	 * frame alternator value will be set to match the engine's
@@ -1458,7 +1486,7 @@ var IgeEntity = IgeObject.extend({
 	 *     entity._transformContext(ctx);
 	 * @private
 	 */
-	_transformContext: function (ctx) {
+	_transformContext: function (ctx, inverse) {
 		if (this._parent) {
 			// TODO: Does this only work one level deep? we need to alter a _worldOpacity property down the chain
 			ctx.globalAlpha = this._parent._opacity * this._opacity;
@@ -1466,7 +1494,11 @@ var IgeEntity = IgeObject.extend({
 			ctx.globalAlpha = this._opacity;
 		}
 
-		this._localMatrix.transformRenderingContext(ctx);
+		if (!inverse) {
+			this._localMatrix.transformRenderingContext(ctx);
+		} else {
+			this._localMatrix.getInverse().transformRenderingContext(ctx);
+		}
 	},
 	
 	/**
@@ -1564,15 +1596,16 @@ var IgeEntity = IgeObject.extend({
 				// Check for cached version
 				if (this._cache || this._compositeCache) {
 					// Caching is enabled
+					var currentCam = ige._currentCamera;
+					
 					if (!this._cacheDirty) {
-						if (this._parent && this._parent._ignoreCamera) {
-							// Translate the entity back to negate the scene translate
-							var cam = ige._currentCamera;
-							//ctx.translate(-cam._translate.x, -cam._translate.y);
-							//this.translateTo(-cam._translate.x, -cam._translate.y, -cam._translate.z);
-							/*this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
-							this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
+						if (this._ignoreCamera) {
+							
+							/*ctx.scale(currentCam._scale.x, currentCam._scale.y);
+							ctx.translate(currentCam._translate.x, currentCam._translate.y);
+							ctx.scale(1 / currentCam._scale.x, 1/ currentCam._scale.y);*/
 						}
+						
 						this._renderCache(ctx);
 					} else {
 						// The cache is not clean so re-draw it
@@ -1583,7 +1616,23 @@ var IgeEntity = IgeObject.extend({
 						if (this._compositeCache) {
 							// Get the composite entity AABB and alter the internal canvas
 							// to the composite size so we can render the entire entity
-							var aabbC = this.compositeAabb();
+							var aabbC = this.compositeAabb(true);
+							
+							if (this._parent) {
+								//aabbC.x -= this._parent._translate.x;
+								//aabbC.y -= this._parent._translate.y;
+							}
+							
+							if (this._ignoreCamera) {
+								//aabbC.x -= currentCam._translate.x;
+								//aabbC.y -= currentCam._translate.y;
+								
+								//aabbC.x *= currentCam._scale.x;
+								//aabbC.y *= currentCam._scale.y;
+								//aabbC.width *= currentCam._scale.x;
+								//aabbC.height *= currentCam._scale.y;
+							}
+							
 							this._compositeAabbCache = aabbC;
 							
 							if (aabbC.width > 0 && aabbC.height > 0) {
@@ -1592,20 +1641,12 @@ var IgeEntity = IgeObject.extend({
 							} else {
 								// We cannot set a zero size for a canvas, it will
 								// cause the browser to freak out
-								_canvas.width = 1;
-								_canvas.height = 1;
+								_canvas.width = 2;
+								_canvas.height = 2;
 							}
 							
 							// Translate to the center of the canvas
 							_ctx.translate(-aabbC.x, -aabbC.y);
-							
-							if (this._parent && this._parent._ignoreCamera) {
-								// Translate the entity back to negate the scene translate
-								var cam = ige._currentCamera;
-								_ctx.translate(cam._translate.x, cam._translate.y);
-								/*this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
-								this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
-							}
 							
 							this.emit('compositeReady');
 						} else {
@@ -1629,10 +1670,11 @@ var IgeEntity = IgeObject.extend({
 						if (!dontTransform) {
 							this._transformContext(_ctx);
 						}
-						
+						//_ctx.translate(this._translate.x, this._translate.y);
 						this._renderEntity(_ctx, dontTransform);
 					}
 				} else {
+					// Non-cached output
 					// Transform the context by the current transform settings
 					if (!dontTransform) {
 						this._transformContext(ctx);
@@ -1728,7 +1770,8 @@ var IgeEntity = IgeObject.extend({
 			}
 			
 			if (this._compositeCache && ige._currentViewport._drawCompositeBounds) {
-				ctx.fillStyle = 'rgba(0, 128, 255, 0.5)';
+				//console.log('moo');
+				ctx.fillStyle = 'rgba(0, 0, 255, 0.3)';
 				ctx.fillRect(-this._geometry.x2, -this._geometry.y2, this._geometry.x,	this._geometry.y);
 				ctx.fillStyle = '#ffffff';
 				ctx.fillText('Composite Entity', -this._geometry.x2, -this._geometry.y2 - 15);
@@ -1753,7 +1796,7 @@ var IgeEntity = IgeObject.extend({
 			if (this._parent && this._parent._ignoreCamera) {
 				// Translate the entity back to negate the scene translate
 				var cam = ige._currentCamera;
-				ctx.translate(-cam._translate.x, -cam._translate.y);
+				//ctx.translate(-cam._translate.x, -cam._translate.y);
 				/*this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
 				this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
 			}
