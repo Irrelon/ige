@@ -303,7 +303,7 @@ var IgeUiPositionExtension = {
 				newVal,
 				ratio;
 			
-			if (this._ignoreCamera) {
+			if (this._ignoreCamera && ige._currentCamera) {
 				// Handle cam ignore when calculating 
 				parentGeom = parentGeom.dividePoint(ige._currentCamera._scale);
 			}
