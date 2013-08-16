@@ -102,6 +102,7 @@ var IgeEngine = IgeEntity.extend({
 		this._timeSpentLastTick = {}; // An object holding time-spent-last-tick (time spent in this object's tick method last tick)
 		this._timeScale = 1; // The default time scaling factor to speed up or slow down engine time
 		this._globalScale = new IgePoint(1, 1, 1);
+		this._graphInstances = []; // Holds an array of instances of graph classes
 
 		// Set the context to a dummy context to start
 		// with in case we are in "headless" mode and
@@ -281,7 +282,11 @@ var IgeEngine = IgeEntity.extend({
 
 		return this;
 	},
-	
+
+	/**
+	 * Load a js script file into memory via a path or url. 
+	 * @param {String} url The file's path or url.
+	 */
 	requireScript: function (url) {
 		if (url !== undefined) {
 			var self = this;
@@ -305,7 +310,13 @@ var IgeEngine = IgeEntity.extend({
 			this.emit('requireScriptLoading', url);
 		}
 	},
-	
+
+	/**
+	 * Called when a js script has been loaded via the requireScript
+	 * method.
+	 * @param {Element} elem The script element added to the DOM.
+	 * @private
+	 */
 	_requireScriptLoaded: function (elem) {
 		this._requireScriptLoading--;
 		
@@ -318,12 +329,12 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
-	 * NOT YET ENABLED - Loads a scenegraph class into memory.
+	 * Adds a scenegraph class into memory.
 	 * @param {String} className The name of the scenegraph class.
 	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
 	 * @returns {*}
 	 */
-	loadGraph: function (className, options) {
+	addGraph: function (className, options) {
 		if (className !== undefined) {
 			var classObj = this.getClass(className),
 				classInstance;
@@ -333,9 +344,38 @@ var IgeEngine = IgeEntity.extend({
 				classInstance = this.newClassInstance(className);
 				
 				// Call the class's graph() method passing the options in
-				classInstance.graph(options);
+				classInstance.addGraph(options);
+				
+				// Add the graph instance to the holding array
+				this._graphInstances[className] = classInstance;
 			} else {
 				this.log('Cannot load graph for class name "' + className + '" because the class could not be found. Have you included it in your server/clientConfig.js file?', 'error');
+			}
+		}
+		
+		return this;
+	},
+	
+	/**
+	 * Removes a scenegraph class into memory.
+	 * @param {String} className The name of the scenegraph class.
+	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
+	 * @returns {*}
+	 */
+	removeGraph: function (className, options) {
+		if (className !== undefined) {
+			var classInstance = this._graphInstances[className];
+			
+			if (classInstance) {
+				this.log('Removing SceneGraph data class: ' + className);
+				
+				// Call the class's graph() method passing the options in
+				classInstance.removeGraph(options);
+				
+				// Now remove the graph instance from the graph instance array
+				delete this._graphInstances[className];
+			} else {
+				this.log('Cannot remove graph for class name "' + className + '" because the class instance could not be found. Did you add it via ige.addGraph() ?', 'error');
 			}
 		}
 		
