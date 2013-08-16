@@ -1,6 +1,5 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
-	
 	init: function () {
 		var self = this;
 		ige.showStats(1);
@@ -25,26 +24,53 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					// Create a base the scene to add further scenegraph
-					// items to
-					self.baseScene = new IgeScene2d()
-						.id('baseScene');
-			
+					// Create the scene
+					self.scene1 = new IgeScene2d()
+						.id('scene1');
+
 					// Create the main viewport and set the scene
 					// it will "look" at as the new scene1 we just
 					// created above
 					self.vp1 = new IgeViewport()
 						.id('vp1')
 						.autoSize(true)
-						.scene(self.baseScene)
+						.scene(self.scene1)
 						.drawBounds(true)
 						.mount(ige);
-					
-					// Add all the items in Scene1 to the scenegraph
-					// (see gameClasses/Scene1.js :: addGraph() to see
-					// the method being called by the engine and how
-					// the items are added to the scenegraph)
-					ige.addGraph('Scene1');
+
+					// Create an entity and mount it to the scene
+					self.obj[0] = new Rotator(0.1)
+						.id('fairy1')
+						.depth(1)
+						.width(100)
+						.height(100)
+						.texture(self.gameTexture.fairy)
+						.translateTo(0, 0, 0)
+						.mount(self.scene1);
+
+					// Create a second rotator entity and mount
+					// it to the first one at 0, 50 relative to the
+					// parent
+					self.obj[1] = new Rotator(0.1)
+						.id('fairy2')
+						.depth(1)
+						.width(50)
+						.height(50)
+						.texture(self.gameTexture.fairy)
+						.translateTo(0, 50, 0)
+						.mount(self.obj[0]);
+
+					// Create a third rotator entity and mount
+					// it to the first on at 0, -50 relative to the
+					// parent, but assign it a smart texture!
+					self.obj[2] = new Rotator(0.1)
+						.id('simpleBox')
+						.depth(1)
+						.width(50)
+						.height(50)
+						.texture(self.gameTexture.simpleBox)
+						.translateTo(0, -50, 0)
+						.mount(self.obj[0]);
 				}
 			});
 		});

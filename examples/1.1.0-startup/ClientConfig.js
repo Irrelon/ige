@@ -5,8 +5,6 @@ var igeClientConfig = {
 		/* Your custom game JS scripts */
 		'./gameClasses/ClientNetworkEvents.js',
 		'./gameClasses/Rotator.js',
-		'./gameClasses/Scene1.js',
-		
 		/* Standard game scripts */
 		'./client.js',
 		'./index.js'
