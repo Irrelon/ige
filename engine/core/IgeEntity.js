@@ -1680,12 +1680,12 @@ var IgeEntity = IgeObject.extend({
 			this._handleMouseIn(ige.input.mouseMove, evc, data);
 		}
 
-		if (ige.input.mouseDown) {
+		if (ige.input.mouseDown && this._mouseStateOver) {
 			// There is a mouse down event
 			this._handleMouseDown(ige.input.mouseDown, evc, data);
 		}
 
-		if (ige.input.mouseUp) {
+		if (ige.input.mouseUp && this._mouseStateOver) {
 			// There is a mouse up event
 			this._handleMouseUp(ige.input.mouseUp, evc, data);
 		}
