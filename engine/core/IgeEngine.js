@@ -1246,7 +1246,14 @@ var IgeEngine = IgeEntity.extend({
 	 * @private
 	 */
 	_canvasPosition: function () {
-		return ige._canvas.getBoundingClientRect();
+		try {
+			return ige._canvas.getBoundingClientRect();
+		} catch (e) {
+			return {
+				top: ige._canvas.offsetTop,
+				left: ige._canvas.offsetLeft
+			};
+		}
 	},
 
 	/**
