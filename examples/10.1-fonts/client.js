@@ -46,7 +46,7 @@ var Client = IgeClass.extend({
 					self.obj[0] = new IgeFontEntity()
 						.id('font1')
 						.depth(1)
-						.width(480)
+						.width(213)
 						.height(110)
 						.textAlignX(0)
 						.colorOverlay('#ffffff')
@@ -89,18 +89,36 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					self.obj[3] = new IgeFontEntity()
+						.cache(false)
 						.id('font4')
 						.depth(1)
-						.width(200)
-						.height(30)
+						.width(110)
+						.height(50)
 						.texture(gameTexture[1])
 						.textAlignX(1)
 						//.textAlignY(1)
-						.textLineSpacing(0)
-						.text('Verdana 10px')
+						.textLineSpacing(-10)
+						.autoWrap(true)
+						.text('Verdana 10px and this is not a native font :)')
 						.center(0)
 						.top(0)
 						.mount(self.scene1);
+					
+					console.log(self.obj[0].measureTextWidth());
+					console.log(self.obj[3].measureTextWidth('hello'));
+					
+					var myTween = {
+						x: 100
+					};
+					
+					myTween.tween()
+						.stepTo({x: 300}, 1000)
+						.stepTo({x: 100}, 1000)
+						.afterChange(function () {
+							self.obj[3].width(myTween.x);
+							console.log('width', myTween.x);
+						})
+						.start();
 				}
 			});
 		});

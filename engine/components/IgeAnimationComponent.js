@@ -1,6 +1,10 @@
 /**
  * The animation component class. Handles defining and controlling
  * frame-based animations based on cells from a texture.
+ * @event started - The animation starts.
+ * @event stopped - The animation ends or is stopped.
+ * @event loopComplete - The animation has completed a full cycle (shown all frames).
+ * @event complete - The animation has completed all assigned loop cycles.
  */
 var IgeAnimationComponent = IgeEventingClass.extend({
 	classId: 'IgeAnimationComponent',
@@ -164,6 +168,60 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 *         
 	 *     entity.animation.start('anim1');
+	 *     
+	 * @example #Start an animation with callbacks for animation events
+	 *     // Create an entity, add the animation component, define
+	 *     // an animation and then start it
+	 *     var entity = new IgeEntity()
+	 *         .addComponent(IgeAnimationComponent)
+	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
+	 *         
+	 *     // In each animation callback...
+	 *     // this = the entity's animation component instance
+	 *     // anim = the animation component's _anim object
+	 *     // this._entity = the entity the animation is attached to
+	 *     
+	 *     entity.animation.start('anim1', {
+	 *     		onLoop: function (anim) {
+	 *     			console.log('Animation looped', this, anim);	
+	 *     		},
+	 *     		onStopped: function (anim) {
+	 *     			console.log('Animation stopped', this, anim);	
+	 *     		},
+	 *     		onComplete: function (anim) {
+	 *     			console.log('Animation completed', this, anim);	
+	 *     		}
+	 *     });
+	 *     
+	 * @example #Start an animation with callbacks for animation events via event listeners
+	 *     // Create an entity, add the animation component, define
+	 *     // an animation and then start it
+	 *     var entity = new IgeEntity()
+	 *         .addComponent(IgeAnimationComponent)
+	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
+	 *     
+	 *     // In each animation callback...
+	 *     // this = the entity's animation component instance
+	 *     // anim = the animation component's _anim object
+	 *     // this._entity = the entity the animation is attached to
+	 *     
+	 *     entity.animation.on('started', function (anim) {
+	 *     		console.log('Animation started', this, anim);	
+	 *     });
+	 *     
+	 *     entity.animation.on('loopComplete', function (anim) {
+	 *     		console.log('Animation looped', this, anim);	
+	 *     });
+	 *     
+	 *     entity.animation.on('stopped', function (anim) {
+	 *     		console.log('Animation stopped', this, anim);	
+	 *     });
+	 *     
+	 *     entity.animation.on('complete', function (anim) {
+	 *     		console.log('Animation complete', this, anim);	
+	 *     });
+	 *     
+	 *     entity.animation.start('anim1');
 	 * @return {*}
 	 */
 	start: function (animId, options) {
@@ -234,7 +292,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 */
 	stop: function () {
 		if (this._stoppedCallback) {
-			this._stoppedCallback.call(this);
+			this._stoppedCallback.call(this, this._anim);
 		}
 		
 		this.emit('stopped', this._anim);
@@ -273,7 +331,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 				// Check if we have a single loop animation
 				if (!anim.loop) {
 					if (self._completeCallback) {
-						self._completeCallback.call(self);
+						self._completeCallback.call(self, anim);
 					}
 					self.emit('complete', anim);
 					self.stop();
@@ -287,7 +345,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 						}
 
 						if (self._loopCallback) {
-							self._loopCallback.call(self);
+							self._loopCallback.call(self, anim);
 						}
 						self.emit('loopComplete', anim);
 					} else {
@@ -300,13 +358,13 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 							}
 
 							if (self._loopCallback) {
-								self._loopCallback.call(self);
+								self._loopCallback.call(self, anim);
 							}
 							self.emit('loopComplete', anim);
 						} else {
 							// The animation has ended
 							if (self._completeCallback) {
-								self._completeCallback.call(self, []);
+								self._completeCallback.call(self, anim);
 							}
 							self.emit('complete', anim);
 							self.stop();

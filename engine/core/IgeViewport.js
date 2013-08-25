@@ -29,6 +29,11 @@ var IgeViewport = IgeEntity.extend([
 				height: ige._geometry.y,
 				autoSize: true
 			};
+		} else {
+			if (options.scaleToWidth && options.scaleToHeight) {
+				// Store the w/h we want to lock to
+				this._lockDimension = new IgePoint(options.scaleToWidth, options.scaleToHeight, 0);
+			}
 		}
 
 		// Setup default objects
@@ -36,6 +41,25 @@ var IgeViewport = IgeEntity.extend([
 		this.camera = new IgeCamera(this);
 		this.camera._entity = this;
 		//this._drawMouse = true;
+	},
+
+	/**
+	 * Sets the minimum amount of world in pixels to display in width and height.
+	 * When set, if the viewport's geometry is reduced below the minimum width or
+	 * height, the viewport's camera is automatically scaled to ensure that the
+	 * minimum area remains visible in the viewport.
+	 * @param {Integer} width Width in pixels.
+	 * @param {Integer} height Height in pixels.
+	 * @returns {*}
+	 */
+	minimumVisibleArea: function (width, height) {
+		// Store the w/h we want to lock to
+		this._lockDimension = new IgePoint(width, height, 0);
+		if (!ige.isServer) {
+			this._resizeEvent({});
+		}
+		
+		return this;
 	},
 
 	/**
@@ -141,7 +165,7 @@ var IgeViewport = IgeEntity.extend([
 
 			// Clip the context so we only draw "inside" the viewport area
 			ctx.beginPath();
-				ctx.rect(0, 0, this._geometry.x, this._geometry.y);
+				ctx.rect(0, 0, this._geometry.x / ige._scale.x, this._geometry.y / ige._scale.x);
 
 				// Paint a border if required
 				if (this._borderColor) {
@@ -152,6 +176,8 @@ var IgeViewport = IgeEntity.extend([
 
 			// Translate back to the center of the viewport
 			ctx.translate((this._geometry.x / 2) | 0, (this._geometry.y / 2) | 0);
+			ctx.translate(ige._translate.x, ige._translate.y);
+			ctx.scale(ige._scale.x, ige._scale.y);
 
 			// Transform the context to the center of the viewport
 			// by processing the viewport's camera tick method
@@ -236,11 +262,14 @@ var IgeViewport = IgeEntity.extend([
 			obj,
 			aabb,
 			aabbC,
+			aabbNT,
 			ga,
 			r3d,
 			xl1, xl2, xl3, xl4, xl5, xl6,
 			bf1, bf2, bf3, bf4,
-			tf1, tf2, tf3, tf4;
+			tf1, tf2, tf3, tf4,
+			worldPos,
+			worldRot;
 
 		if (arr) {
 			arrCount = arr.length;
@@ -254,9 +283,10 @@ var IgeViewport = IgeEntity.extend([
 						if (typeof(obj.aabb) === 'function') {
 							// Grab the AABB and then draw it
 							aabb = obj.aabb();
-							aabbC = obj.compositeAabb();
 
-							if (this._drawCompositeBounds && aabbC) {
+							if (this._drawCompositeBounds && obj._compositeCache) {
+								aabbC = obj.compositeAabb();
+								
 								// Draw composite bounds
 								ctx.strokeStyle = '#ff0000';
 								ctx.strokeRect(aabbC.x, aabbC.y, aabbC.width, aabbC.height);
@@ -264,6 +294,13 @@ var IgeViewport = IgeEntity.extend([
 							
 							if (aabb) {
 								if (obj._drawBounds || obj._drawBounds === undefined) {
+									// Draw a rect around the bounds of the object transformed in world space
+									ctx.save();
+										obj._worldMatrix.transformRenderingContext(ctx);
+										ctx.strokeStyle = '#9700ae';
+										ctx.strokeRect(-obj._geometry.x2, -obj._geometry.y2, obj._geometry.x, obj._geometry.y);
+									ctx.restore();
+									
 									// Draw individual bounds
 									ctx.strokeStyle = '#00deff';
 									ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
@@ -387,6 +424,42 @@ var IgeViewport = IgeEntity.extend([
 		// Resize the scene
 		if (this._scene) {
 			this._scene._resizeEvent(event);
+		}
+		
+		// Process locked dimension scaling
+		if (this._lockDimension) {
+			// Calculate the new camera scale
+			var ratio = 1,
+				tmpX,
+				tmpY;
+			
+			if (this._geometry.x > this._lockDimension.x && this._geometry.y > this._lockDimension.y) {
+				// Scale using lowest ratio
+				tmpX = this._geometry.x / this._lockDimension.x;
+				tmpY = this._geometry.y / this._lockDimension.y;
+				
+				ratio = tmpX < tmpY ? tmpX : tmpY;
+			} else {
+				if (this._geometry.x > this._lockDimension.x && this._geometry.y < this._lockDimension.y) {
+					// Scale out to show height
+					ratio = this._geometry.y / this._lockDimension.y;
+				}
+				
+				if (this._geometry.x < this._lockDimension.x && this._geometry.y > this._lockDimension.y) {
+					// Scale out to show width
+					ratio = this._geometry.x / this._lockDimension.x;
+				}
+				
+				if (this._geometry.x < this._lockDimension.x && this._geometry.y < this._lockDimension.y) {
+					// Scale using lowest ratio
+					tmpX = this._geometry.x / this._lockDimension.x;
+					tmpY = this._geometry.y / this._lockDimension.y;
+					
+					ratio = tmpX < tmpY ? tmpX : tmpY;
+				}
+			}
+			
+			this.camera.scaleTo(ratio, ratio, ratio);
 		}
 	},
 

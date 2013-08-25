@@ -13,7 +13,6 @@ var IgeObject = IgeEventingClass.extend({
 		this._children = [];
 		this._layer = 0;
 		this._depth = 0;
-		this._dirty = true;
 		this._depthSortMode = 0;
 		this._timeStream = [];
 		this._inView = true;
@@ -656,8 +655,64 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Finds a child entity that matches the id mounted to this
+	 * or any other child entity down the scenegraph chain. Will
+	 * only return an object if the entity found has this entity
+	 * as an ancestor (parent or parent of parent etc).
+	 * @param {String} id The id of the entity to find.
+	 * @returns {*} The entity or undefined.
+	 */
+	$: function (id) {
+		var obj = ige.$(id);
+		
+		if (obj._parent === this) {
+			// We found a child and it's parent is this object so return it
+			return obj;
+		} else {
+			// Scan up the object's parent chain to see if this object is
+			// an ancestor at some point
+			var ancestor = obj.parent(this.id());
+			
+			if (ancestor) {
+				return obj;
+			} else {
+				return undefined;
+			}
+		}
+	},
+
+	/**
+	 * Finds all child entities of this or any child of this entity
+	 * down the scenegraph who's category matches the category name
+	 * passed.
+	 * @param {String} categoryName The category name to scan for.
+	 * @returns {Array}
+	 */
+	$$: function (categoryName) {
+		var objArr = ige.$$(categoryName),
+			arrCount = objArr.length,
+			obj,
+			finalArr = [],
+			thisId = this.id();
+			
+		// Scan all objects that have the specified category
+		// and see if we are it's parent or an ancestor
+		while (arrCount--) {
+			obj = objArr[arrCount];
+			if (obj._parent === this || obj.parent(thisId)) {
+				finalArr.push(obj);
+			}
+		}
+		
+		return finalArr;
+	},
+
+	/**
 	 * Returns the object's parent object (the object that
 	 * it is mounted to).
+	 * @param {String=} id Optional, if present will scan up
+	 * the parent chain until a parent with the matching id is
+	 * found. If none is found, returns undefined.
 	 * @example #Get the object parent
 	 *     // Create a couple of entities and give them ids
 	 *     var entity1 = new IgeEntity().id('entity1'),
@@ -673,8 +728,20 @@ var IgeObject = IgeEventingClass.extend({
 	 *     console.log(parent.id());
 	 * @return {*}
 	 */
-	parent: function () {
-		return this._parent;
+	parent: function (id) {
+		if (!id) {
+			return this._parent;
+		}
+		
+		if (this._parent) {
+			if (this._parent.id() === id) {
+				return this._parent;
+			} else {
+				return this._parent.parent(id);
+			}
+		}
+		
+		return undefined;
 	},
 
 	/**
@@ -727,9 +794,16 @@ var IgeObject = IgeEventingClass.extend({
 				}
 
 				this._parent = obj;
+				
+				// Check if we need to set the ignore camera flag
 				if (!this._ignoreCamera && this._parent._ignoreCamera) {
 					this._ignoreCamera = this._parent._ignoreCamera;
+					
+					/*if (this.ignoreCameraComposite) {
+						this.ignoreCameraComposite(this._parent._ignoreCamera);
+					}*/
 				}
+				
 				obj._children.push(this);
 
 				this._parent._childMounted(this);
@@ -792,6 +866,38 @@ var IgeObject = IgeEventingClass.extend({
 		} else {
 			return false;
 		}
+	},
+	
+	/**
+	 * Determines if the object has a parent up the scenegraph whose
+	 * id matches the one passed. Will traverse each parent object
+	 * checking if the id matches. This information will be cached when
+	 * first called and can be refreshed by setting the "fresh" parameter
+	 * to true.
+	 * @param {String} parentId The id of the parent to check for.
+	 * @param {Boolean=} fresh If true will force a full check instead of
+	 * using the cached value from an earlier check.
+	 */
+	hasParent: function (parentId, fresh) {
+		var bool = false;
+		
+		// Check for a cached value
+		if (!fresh && this._hasParent && this._hasParent[parentId] !== undefined) {
+			return this._hasParent[parentId];
+		}
+		
+		if (this._parent) {
+			if (this._parent.id() === parentId) {
+				bool = true;
+			} else {
+				bool = this._parent.hasParent(parentId, fresh);
+			}
+		}
+		
+		this._hasParent = this._hasParent || {};
+		this._hasParent[parentId] = bool;
+		
+		return bool;
 	},
 
 	/**
@@ -1067,28 +1173,6 @@ var IgeObject = IgeEventingClass.extend({
 		delete this._components;
 
 		return this;
-	},
-
-	/**
-	 * Gets / sets the dirty flag for this object. If you specify a val parameter
-	 * the parent of this object will also have it's dirty method called with the
-	 * same parameter. This means that dirty flags bubble down the child / parent
-	 * chain.
-	 * @param {Boolean} val
-	 */
-	dirty: function (val) {
-		if (val !== undefined) {
-			this._dirty = val;
-
-			// Bubble the dirty up the parent chain
-			if (this._parent) {
-				this._parent.dirty(val);
-			}
-
-			return this;
-		}
-
-		return this._dirty;
 	},
 
 	/**

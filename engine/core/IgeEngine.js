@@ -101,6 +101,8 @@ var IgeEngine = IgeEntity.extend({
 		this._timeSpentInTick = {}; // An object holding time-spent-in-tick (total time spent in this object's tick method)
 		this._timeSpentLastTick = {}; // An object holding time-spent-last-tick (time spent in this object's tick method last tick)
 		this._timeScale = 1; // The default time scaling factor to speed up or slow down engine time
+		this._globalScale = new IgePoint(1, 1, 1);
+		this._graphInstances = []; // Holds an array of instances of graph classes
 
 		// Set the context to a dummy context to start
 		// with in case we are in "headless" mode and
@@ -280,7 +282,11 @@ var IgeEngine = IgeEntity.extend({
 
 		return this;
 	},
-	
+
+	/**
+	 * Load a js script file into memory via a path or url. 
+	 * @param {String} url The file's path or url.
+	 */
 	requireScript: function (url) {
 		if (url !== undefined) {
 			var self = this;
@@ -304,7 +310,13 @@ var IgeEngine = IgeEntity.extend({
 			this.emit('requireScriptLoading', url);
 		}
 	},
-	
+
+	/**
+	 * Called when a js script has been loaded via the requireScript
+	 * method.
+	 * @param {Element} elem The script element added to the DOM.
+	 * @private
+	 */
 	_requireScriptLoaded: function (elem) {
 		this._requireScriptLoading--;
 		
@@ -317,12 +329,12 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
-	 * NOT YET ENABLED - Loads a scenegraph class into memory.
+	 * Adds a scenegraph class into memory.
 	 * @param {String} className The name of the scenegraph class.
 	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
 	 * @returns {*}
 	 */
-	loadGraph: function (className, options) {
+	addGraph: function (className, options) {
 		if (className !== undefined) {
 			var classObj = this.getClass(className),
 				classInstance;
@@ -332,9 +344,38 @@ var IgeEngine = IgeEntity.extend({
 				classInstance = this.newClassInstance(className);
 				
 				// Call the class's graph() method passing the options in
-				classInstance.graph(options);
+				classInstance.addGraph(options);
+				
+				// Add the graph instance to the holding array
+				this._graphInstances[className] = classInstance;
 			} else {
 				this.log('Cannot load graph for class name "' + className + '" because the class could not be found. Have you included it in your server/clientConfig.js file?', 'error');
+			}
+		}
+		
+		return this;
+	},
+	
+	/**
+	 * Removes a scenegraph class into memory.
+	 * @param {String} className The name of the scenegraph class.
+	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
+	 * @returns {*}
+	 */
+	removeGraph: function (className, options) {
+		if (className !== undefined) {
+			var classInstance = this._graphInstances[className];
+			
+			if (classInstance) {
+				this.log('Removing SceneGraph data class: ' + className);
+				
+				// Call the class's graph() method passing the options in
+				classInstance.removeGraph(options);
+				
+				// Now remove the graph instance from the graph instance array
+				delete this._graphInstances[className];
+			} else {
+				this.log('Cannot remove graph for class name "' + className + '" because the class instance could not be found. Did you add it via ige.addGraph() ?', 'error');
 			}
 		}
 		
@@ -1008,10 +1049,10 @@ var IgeEngine = IgeEntity.extend({
 
 				if (autoSize) {
 					this._autoSize = autoSize;
-
-					// Add some event listeners
-					window.addEventListener('resize', this._resizeEvent);
 				}
+				
+				// Add some event listeners even if autosize is off
+				window.addEventListener('resize', this._resizeEvent);
 
 				// Fire the resize event for the first time
 				// which sets up initial canvas dimensions
@@ -1042,16 +1083,17 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 
+	/**
+	 * Removes the engine's canvas from the DOM.
+	 */
 	removeCanvas: function () {
 		// Stop listening for input events
 		if (this.input) {
 			this.input.destroyListeners();
 		}
 
-		// If we were auto-sizing, remove event listener
-		if (this._autoSize) {
-			window.removeEventListener('resize', this._resizeEvent);
-		}
+		// Remove event listener
+		window.removeEventListener('resize', this._resizeEvent);
 
 		if (this._createdFrontBuffer) {
 			// Remove the canvas from the DOM
@@ -1162,11 +1204,12 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
-	 * Returns the mouse position relative to the main front buffer.
+	 * Returns the mouse position relative to the main front buffer. Mouse
+	 * position is set by the ige.input component (IgeInputComponent)
 	 * @return {IgePoint}
 	 */
 	mousePos: function () {
-		return this._mousePos;
+		return this._mousePos.clone();
 	},
 
 	/**
@@ -1175,6 +1218,8 @@ var IgeEngine = IgeEntity.extend({
 	 * @private
 	 */
 	_resizeEvent: function (event) {
+		var canvasBoundingRect;
+		
 		if (ige._autoSize) {
 			var newWidth = window.innerWidth,
 				newHeight = window.innerHeight,
@@ -1183,6 +1228,13 @@ var IgeEngine = IgeEntity.extend({
 
 			// Only update canvas dimensions if it exists
 			if (ige._canvas) {
+				// Check if we can get the position of the canvas
+				canvasBoundingRect = ige._canvasPosition();
+				
+				// Adjust the newWidth and newHeight by the canvas offset
+				newWidth -= parseInt(canvasBoundingRect.left);
+				newHeight -= parseInt(canvasBoundingRect.top);
+				
 				// Make sure we can divide the new width and height by 2...
 				// otherwise minus 1 so we get an even number so that we
 				// negate the blur effect of sub-pixel rendering
@@ -1215,10 +1267,49 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		if (ige._showSgTree) {
-			document.getElementById('igeSgTree').style.height = (ige._geometry.y - 30) + 'px';
+			var sgTreeElem = document.getElementById('igeSgTree');
+							
+			canvasBoundingRect = ige._canvasPosition();
+			
+			sgTreeElem.style.top = (parseInt(canvasBoundingRect.top) + 5) + 'px';
+			sgTreeElem.style.left = (parseInt(canvasBoundingRect.left) + 5) + 'px';
+			sgTreeElem.style.height = (ige._geometry.y - 30) + 'px';
 		}
 
 		ige._resized = true;
+	},
+
+	/**
+	 * Gets the bounding rectangle for the HTML canvas element being
+	 * used as the front buffer for the engine. Uses DOM methods.
+	 * @returns {ClientRect}
+	 * @private
+	 */
+	_canvasPosition: function () {
+		try {
+			return ige._canvas.getBoundingClientRect();
+		} catch (e) {
+			return {
+				top: ige._canvas.offsetTop,
+				left: ige._canvas.offsetLeft
+			};
+		}
+	},
+
+	/**
+	 * Toggles full-screen output of the main ige canvas. Only works
+	 * if called from within a user-generated HTML event listener.
+	 */
+	toggleFullScreen: function () {
+		var elem = this._canvas;
+		
+		if (elem.requestFullscreen) {
+			elem.requestFullscreen();
+		} else if (elem.mozRequestFullScreen) {
+			elem.mozRequestFullScreen();
+		} else if (elem.webkitRequestFullscreen) {
+			elem.webkitRequestFullscreen();
+		}
 	},
 
 	/**
@@ -1355,121 +1446,6 @@ var IgeEngine = IgeEntity.extend({
 		self._drawCount = 0;
 	},
 
-	addToSgTree: function (item) {
-		var elem = document.createElement('li'),
-			arr,
-			arrCount,
-			i,
-			mouseUp,
-			dblClick,
-			timingString;
-
-		mouseUp = function (event) {
-			event.stopPropagation();
-
-			var elems = document.getElementsByClassName('sgItem selected');
-			for (i = 0; i < elems.length; i++) {
-				elems[i].className = 'sgItem';
-			}
-
-			this.className += ' selected';
-			ige._sgTreeSelected = this.id;
-
-			ige._currentViewport.drawBounds(true);
-			if (this.id !== 'ige') {
-				ige._currentViewport.drawBoundsLimitId(this.id);
-			} else {
-				ige._currentViewport.drawBoundsLimitId('');
-			}
-		};
-
-		dblClick = function (event) {
-			event.stopPropagation();
-			var console = document.getElementById('igeSgConsole'),
-				obj = ige.$(this.id),
-				classId = ige.findBaseClass(obj),
-				derivedArr,
-				classList = '',
-				i;
-
-			console.value += "ige.$('" + this.id + "')";
-			
-			if (classId) {
-				// The class is a native engine class so show the doc manual page for it
-				document.getElementById('igeSgDocPage').style.display = 'block';
-				document.getElementById('igeSgDocPage').src = 'http://www.isogenicengine.com/engine/documentation/root/' + classId + '.html';
-				
-				derivedArr = ige.getClassDerivedList(obj);
-				derivedArr.reverse();
-				
-				// Build a class breadcrumb
-				for (i in derivedArr) {
-					if (derivedArr.hasOwnProperty(i)) {
-						if (classList) {
-							classList += ' &gt ';
-						}
-						
-						if (derivedArr[i].substr(0, 3) === 'Ige') {
-							classList += '<a href="' + 'http://www.isogenicengine.com/engine/documentation/root/' + derivedArr[i] + '.html" target="igeSgDocPage">' + derivedArr[i] + '</a>';
-						} else {
-							classList += derivedArr[i];
-						}
-					}
-				}
-				
-				// Show the derived class list
-				document.getElementById('igeSgItemClassChain').innerHTML = '<B>Inheritance</B>: ' + classList;
-				document.getElementById('igeSgItemClassChain').style.display = 'block';
-			} else {
-				// Not a native class, hide the doc page
-				document.getElementById('igeSgItemClassChain').style.display = 'none';
-				document.getElementById('igeSgDocPage').style.display = 'none';
-			}
-		};
-
-		//elem.addEventListener('mouseover', mouseOver, false);
-		//elem.addEventListener('mouseout', mouseOut, false);
-		elem.addEventListener('mouseup', mouseUp, false);
-		elem.addEventListener('dblclick', dblClick, false);
-
-		elem.id = item.id;
-		elem.innerHTML = item.text;
-		elem.className = 'sgItem';
-
-		if (ige._sgTreeSelected === item.id) {
-			elem.className += ' selected';
-		}
-
-		if (igeConfig.debug._timing) {
-			if (ige._timeSpentInTick[item.id]) {
-				timingString = '<span>' + ige._timeSpentInTick[item.id] + 'ms</span>';
-				/*if (ige._timeSpentLastTick[item.id]) {
-					if (typeof(ige._timeSpentLastTick[item.id].ms) === 'number') {
-						timingString += ' | LastTick: ' + ige._timeSpentLastTick[item.id].ms;
-					}
-				}*/
-
-				elem.innerHTML += ' ' + timingString;
-			}
-		}
-
-		document.getElementById(item.parentId + '_items').appendChild(elem);
-
-		if (item.items) {
-			// Create a ul inside the li
-			elem = document.createElement('ul');
-			elem.id = item.id + '_items';
-			document.getElementById(item.id).appendChild(elem);
-
-			arr = item.items;
-			arrCount = arr.length;
-
-			for (i = 0; i < arrCount; i++) {
-				ige.addToSgTree(arr[i]);
-			}
-		}
-	},
-
 	/**
 	 * Updates the stats HTML overlay with the latest data.
 	 * @private
@@ -1528,9 +1504,14 @@ var IgeEngine = IgeEntity.extend({
 			// Create the scenegraph tree
 			var self = this,
 				elem1 = document.createElement('div'),
-				elem2;
+				elem2,
+				canvasBoundingRect;
+			
+			canvasBoundingRect = ige._canvasPosition();
 
 			elem1.id = 'igeSgTree';
+			elem1.style.top = (parseInt(canvasBoundingRect.top) + 5) + 'px';
+			elem1.style.left = (parseInt(canvasBoundingRect.left) + 5) + 'px';
 			elem1.style.height = (ige._geometry.y - 30) + 'px';
 			elem1.style.overflow = 'auto';
 			elem1.addEventListener('mousemove', function (event) {
@@ -1574,7 +1555,7 @@ var IgeEngine = IgeEntity.extend({
 
 			this.sgTreeUpdate();
 			
-			// Now finally, add a refresh button to the scene button
+			// Now add a refresh button to the scene button
 			var button = document.createElement('input');
 			button.type = 'button';
 			button.id = 'igeSgRefreshTree'
@@ -1588,12 +1569,75 @@ var IgeEngine = IgeEntity.extend({
 			}, false);
 			
 			document.getElementById('igeSgTree').appendChild(button);
+			
+			// Add basic editor controls
+			var editorRoot = document.createElement('div'),
+				editorModeTranslate = document.createElement('input'),
+				editorModeRotate = document.createElement('input'),
+				editorModeScale = document.createElement('input'),
+				editorStatus = document.createElement('span');
+			
+			editorRoot.id = 'igeSgEditorRoot';
+			editorStatus.id = 'igeSgEditorStatus';
+			
+			editorModeTranslate.type = 'button';
+			editorModeTranslate.id = 'igeSgEditorTranslate';
+			editorModeTranslate.value = 'Translate';
+			editorModeTranslate.addEventListener('click', function () {
+				// Disable other modes
+				ige.editorRotate.enabled(false);
+				
+				if (ige.editorTranslate.enabled()) {
+					ige.editorTranslate.enabled(false);
+					self.log('Editor: Translate mode disabled');
+				} else {
+					ige.editorTranslate.enabled(true);
+					self.log('Editor: Translate mode enabled');
+				}
+			});
+			
+			editorModeRotate.type = 'button';
+			editorModeRotate.id = 'igeSgEditorRotate';
+			editorModeRotate.value = 'Rotate';
+			editorModeRotate.addEventListener('click', function () {
+				// Disable other modes
+				ige.editorTranslate.enabled(false);
+				
+				if (ige.editorRotate.enabled()) {
+					ige.editorRotate.enabled(false);
+					self.log('Editor: Rotate mode disabled');
+				} else {
+					ige.editorRotate.enabled(true);
+					self.log('Editor: Rotate mode enabled');
+				}
+			});
+			
+			editorModeScale.type = 'button';
+			editorModeScale.id = 'igeSgEditorScale';
+			editorModeScale.value = 'Scale';
+			
+			editorRoot.appendChild(editorModeTranslate);
+			editorRoot.appendChild(editorModeRotate);
+			editorRoot.appendChild(editorModeScale);
+			editorRoot.appendChild(editorStatus);
+			
+			document.body.appendChild(editorRoot);
+			
+			// Add the translate component to the ige instance
+			ige.addComponent(IgeEditorTranslateComponent);
+			ige.addComponent(IgeEditorRotateComponent);
 		} else {
 			var child = document.getElementById('igeSgTree');
 			child.parentNode.removeChild(child);
 
 			child = document.getElementById('igeSgConsoleHolder');
 			child.parentNode.removeChild(child);
+			
+			child = document.getElementById('igeSgEditorRoot');
+			child.parentNode.removeChild(child);
+			
+			ige.removeComponent('editorTranslate');
+			ige.removeComponent('editorRotate');
 		}
 	},
 	
@@ -1603,6 +1647,82 @@ var IgeEngine = IgeEntity.extend({
 
 		// Get the scenegraph data
 		this.addToSgTree(this.getSceneGraphData(this, true));
+	},
+	
+	addToSgTree: function (item) {
+		var elem = document.createElement('li'),
+			arr,
+			arrCount,
+			i,
+			mouseUp,
+			dblClick,
+			timingString;
+
+		mouseUp = function (event) {
+			event.stopPropagation();
+
+			var elems = document.getElementsByClassName('sgItem selected');
+			for (i = 0; i < elems.length; i++) {
+				elems[i].className = 'sgItem';
+			}
+
+			this.className += ' selected';
+			ige._sgTreeSelected = this.id;
+
+			ige._currentViewport.drawBounds(true);
+			if (this.id !== 'ige') {
+				ige._currentViewport.drawBoundsLimitId(this.id);
+			} else {
+				ige._currentViewport.drawBoundsLimitId('');
+			}
+		};
+
+		dblClick = function (event) {
+			event.stopPropagation();
+			console.log("ige.$('" + this.id + "')");
+		};
+
+		//elem.addEventListener('mouseover', mouseOver, false);
+		//elem.addEventListener('mouseout', mouseOut, false);
+		elem.addEventListener('mouseup', mouseUp, false);
+		elem.addEventListener('dblclick', dblClick, false);
+
+		elem.id = item.id;
+		elem.innerHTML = item.text;
+		elem.className = 'sgItem';
+
+		if (ige._sgTreeSelected === item.id) {
+			elem.className += ' selected';
+		}
+
+		if (igeConfig.debug._timing) {
+			if (ige._timeSpentInTick[item.id]) {
+				timingString = '<span>' + ige._timeSpentInTick[item.id] + 'ms</span>';
+				/*if (ige._timeSpentLastTick[item.id]) {
+					if (typeof(ige._timeSpentLastTick[item.id].ms) === 'number') {
+						timingString += ' | LastTick: ' + ige._timeSpentLastTick[item.id].ms;
+					}
+				}*/
+
+				elem.innerHTML += ' ' + timingString;
+			}
+		}
+
+		document.getElementById(item.parentId + '_items').appendChild(elem);
+
+		if (item.items) {
+			// Create a ul inside the li
+			elem = document.createElement('ul');
+			elem.id = item.id + '_items';
+			document.getElementById(item.id).appendChild(elem);
+
+			arr = item.items;
+			arrCount = arr.length;
+
+			for (i = 0; i < arrCount; i++) {
+				ige.addToSgTree(arr[i]);
+			}
+		}
 	},
 
 	timeScale: function (val) {
@@ -1860,6 +1980,7 @@ var IgeEngine = IgeEntity.extend({
 
 		ctx.save();
 		ctx.translate(this._geometry.x2, this._geometry.y2);
+		//ctx.scale(this._globalScale.x, this._globalScale.y);
 
 		// Process the current engine tick for all child objects
 		var arr = this._children,
@@ -1997,26 +2118,28 @@ var IgeEngine = IgeEntity.extend({
 
 				// Loop our children
 				while (arrCount--) {
-					if (arr[arrCount]._scene._shouldRender) {
-						if (igeConfig.debug._timing) {
-							timingString = '';
-
-							timingString += 'T: ' + ige._timeSpentInTick[arr[arrCount].id()];
-							if (ige._timeSpentLastTick[arr[arrCount].id()]) {
-								if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].ms) === 'number') {
-									timingString += ' | LastTick: ' + ige._timeSpentLastTick[arr[arrCount].id()].ms;
+					if (arr[arrCount]._scene) {
+						if (arr[arrCount]._scene._shouldRender) {
+							if (igeConfig.debug._timing) {
+								timingString = '';
+	
+								timingString += 'T: ' + ige._timeSpentInTick[arr[arrCount].id()];
+								if (ige._timeSpentLastTick[arr[arrCount].id()]) {
+									if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].ms) === 'number') {
+										timingString += ' | LastTick: ' + ige._timeSpentLastTick[arr[arrCount].id()].ms;
+									}
+	
+									if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren) === 'number') {
+										timingString += ' | ChildDepthSort: ' + ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren;
+									}
 								}
-
-								if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren) === 'number') {
-									timingString += ' | ChildDepthSort: ' + ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren;
-								}
+	
+								console.log(depthSpace + '----' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView + ' Timing(' + timingString + ')');
+							} else {
+								console.log(depthSpace + '----' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView);
 							}
-
-							console.log(depthSpace + '----' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView + ' Timing(' + timingString + ')');
-						} else {
-							console.log(depthSpace + '----' + arr[arrCount].id() + ' (' + arr[arrCount]._classId + ') : ' + arr[arrCount]._inView);
+							this.sceneGraph(arr[arrCount]._scene, currentDepth + 1);
 						}
-						this.sceneGraph(arr[arrCount]._scene, currentDepth + 1);
 					}
 				}
 			}
@@ -2038,7 +2161,7 @@ var IgeEngine = IgeEntity.extend({
 	 * Walks the scenegraph and returns a data object of the graph.
 	 */
 	getSceneGraphData: function (obj, noRef) {
-		var item, items = [], tempItem, tempItem2, tempItems,
+		var item, items = [], tempItem, tempItem2, tempCam,
 			arr, arrCount;
 
 		if (!obj) {
@@ -2047,7 +2170,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		item = {
-			text: obj.id() + ' (' + obj._classId + ')',
+			text: '[' + obj._classId + '] ' + obj.id(),
 			id: obj.id(),
 			classId: obj.classId()
 		};
@@ -2073,7 +2196,7 @@ var IgeEngine = IgeEntity.extend({
 				// Loop our children
 				while (arrCount--) {
 					tempItem = {
-						text: arr[arrCount].id() + ' (' + arr[arrCount]._classId + ')',
+						text: '[' + arr[arrCount]._classId + '] ' + arr[arrCount].id(),
 						id: arr[arrCount].id(),
 						classId: arr[arrCount].classId()
 					};
@@ -2086,12 +2209,33 @@ var IgeEngine = IgeEntity.extend({
 							tempItem.parentId = arr[arrCount]._parent.id();
 						}
 					}
-
-					if (arr[arrCount]._scene) {
-						tempItem2 = this.getSceneGraphData(arr[arrCount]._scene, noRef);
-						tempItem.items = [tempItem2];
+					
+					if (arr[arrCount].camera) {
+						// Add the viewport camera as an object on the scenegraph
+						tempCam = {
+							text: '[IgeCamera] ' + arr[arrCount].id(),
+							id: arr[arrCount].camera.id(),
+							classId: arr[arrCount].camera.classId()
+						};
+						
+						if (!noRef) {
+							tempCam.parent = arr[arrCount];
+							tempCam.obj = arr[arrCount].camera;
+						} else {
+							tempCam.parentId = arr[arrCount].id();
+						}
+	
+						if (arr[arrCount]._scene) {
+							tempItem2 = this.getSceneGraphData(arr[arrCount]._scene, noRef);
+							tempItem.items = [tempCam, tempItem2];
+						}
+					} else {
+						if (arr[arrCount]._scene) {
+							tempItem2 = this.getSceneGraphData(arr[arrCount]._scene, noRef);
+							tempItem.items = [tempItem2];
+						}
 					}
-
+					
 					items.push(tempItem);
 				}
 			}
@@ -2114,6 +2258,19 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		return item;
+	},
+	
+	_childMounted: function (child) {
+		if (child.IgeViewport) {
+			// The first mounted viewport gets set as the current
+			// one before any rendering is done
+			if (!ige._currentViewport) {
+				ige._currentViewport = child;
+				ige._currentCamera = child.camera;
+			}
+		}
+		
+		IgeEntity.prototype._childMounted.call(this, child);
 	},
 
 	destroy: function () {

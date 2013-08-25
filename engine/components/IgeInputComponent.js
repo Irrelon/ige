@@ -251,6 +251,27 @@ var IgeInputComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Fires an input event that didn't occur on the main canvas, as if it had
+	 * occurred on the main canvas, allowing you to pass through events like
+	 * mousedown and mouseup that occurred elsewhere on the DOM but might be
+	 * useful for the engine to be aware of, such as if you are dragging an entity
+	 * and then the mouse goes off-cavnas and the button is released.
+	 * @param {String} eventName The lowercase name of the event to fire e.g. mousedown.
+	 * @param {Object} eventObj The event object that was passed by the DOM.
+	 */
+	fireManualEvent: function (eventName, eventObj) {
+		if (eventName && eventObj) {
+			if (this._evRef[eventName]) {
+				this._evRef[eventName](eventObj);
+			} else {
+				this.log('Cannot fire manual event "' + eventName + '" because no listener exists in the engine for this event type!', 'warning');
+			}
+		} else {
+			this.log('Cannot fire manual event because both eventName and eventObj params are required.', 'warning');
+		}
+	},
+
+	/**
 	 * Sets igeX and igeY properties in the event object that
 	 * can be relied on to provide the x, y co-ordinates of the
 	 * mouse event including the canvas offset.

@@ -72,6 +72,22 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * Checks if the entity is visible.
+	 * @returns {boolean} True if the entity is visible.
+	 */
+	isVisible: function () {
+		return this._hidden === false;
+	},
+	
+	/**
+	 * Checks if the entity is hidden.
+	 * @returns {boolean} True if the entity is hidden.
+	 */
+	isHidden: function () {
+		return this._hidden === true;
+	},
+
+	/**
 	 * Gets / sets the cache flag that determines if the entity's
 	 * texture rendering output should be stored on an off-screen
 	 * canvas instead of calling the texture.render() method each
@@ -92,15 +108,23 @@ var IgeEntity = IgeObject.extend({
 	cache: function (val) {
 		if (val !== undefined) {
 			this._cache = val;
-
+			
 			if (val) {
 				// Create the off-screen canvas
-				this._cacheCanvas = document.createElement('canvas');
+				if (!ige.isServer) {
+					// Use a real canvas
+					this._cacheCanvas = document.createElement('canvas');
+				} else {
+					// Use dummy objects for canvas and context
+					this._cacheCanvas = new IgeDummyCanvas();
+				}
+				
 				this._cacheCtx = this._cacheCanvas.getContext('2d');
 				this._cacheDirty = true;
 				
 				// Set smoothing mode
-				if (!ige._globalSmoothing) {
+				var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
+				if (!smoothing) {
 					this._cacheCtx.imageSmoothingEnabled = false;
 					this._cacheCtx.webkitImageSmoothingEnabled = false;
 					this._cacheCtx.mozImageSmoothingEnabled = false;
@@ -126,6 +150,22 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * When using the caching system, this boolean determines if the
+	 * cache canvas should have image smoothing enabled or not. If
+	 * not set, the ige global smoothing setting will be used instead.
+	 * @param {Boolean=} val True to enable smoothing, false to disable.
+	 * @returns {*}
+	 */
+	cacheSmoothing: function (val) {
+		if (val !== undefined) {
+			this._cacheSmoothing = val;
+			return this;
+		}
+		
+		return this._cacheSmoothing;
+	},
+
+	/**
 	 * Gets / sets composite caching. Composite caching draws this entity
 	 * and all of it's children (and their children etc) to a single off
 	 * screen canvas so that the entity does not need to be redrawn with
@@ -143,42 +183,47 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 */
 	compositeCache: function (val) {
-		if (val !== undefined) {
-			if (val) {
-				// Switch off normal caching
-				this.cache(false);
-				
-				// Create the off-screen canvas
-				this._cacheCanvas = document.createElement('canvas');
-				this._cacheCtx = this._cacheCanvas.getContext('2d');
-				this._cacheDirty = true;
-				
-				// Set smoothing mode
-				if (!ige._globalSmoothing) {
-					this._cacheCtx.imageSmoothingEnabled = false;
-					this._cacheCtx.webkitImageSmoothingEnabled = false;
-					this._cacheCtx.mozImageSmoothingEnabled = false;
-				} else {
-					this._cacheCtx.imageSmoothingEnabled = true;
-					this._cacheCtx.webkitImageSmoothingEnabled = true;
-					this._cacheCtx.mozImageSmoothingEnabled = true;
+		if (!ige.isServer) {
+			if (val !== undefined) {
+				if (val) {
+					// Switch off normal caching
+					this.cache(false);
+					
+					// Create the off-screen canvas
+					this._cacheCanvas = document.createElement('canvas');
+					this._cacheCtx = this._cacheCanvas.getContext('2d');
+					this._cacheDirty = true;
+					
+					// Set smoothing mode
+					var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
+					if (!smoothing) {
+						this._cacheCtx.imageSmoothingEnabled = false;
+						this._cacheCtx.webkitImageSmoothingEnabled = false;
+						this._cacheCtx.mozImageSmoothingEnabled = false;
+					} else {
+						this._cacheCtx.imageSmoothingEnabled = true;
+						this._cacheCtx.webkitImageSmoothingEnabled = true;
+						this._cacheCtx.mozImageSmoothingEnabled = true;
+					}
 				}
+				
+				// Loop children and set _compositeParent to the correct value
+				this._children.each(function () {
+					if (val) {
+						this._compositeParent = true;
+					} else {
+						delete this._compositeParent;
+					}
+				});
+				
+				this._compositeCache = val;
+				return this;
 			}
 			
-			// Loop children and set _compositeParent to the correct value
-			this._children.each(function () {
-				if (val) {
-					this._compositeParent = true;
-				} else {
-					delete this._compositeParent;
-				}
-			});
-			
-			this._compositeCache = val;
+			return this._compositeCache;
+		} else {
 			return this;
 		}
-		
-		return this._compositeCache;
 	},
 
 	/**
@@ -308,10 +353,11 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 */
 	rotateToPoint: function (point) {
+		var worldPos = this.worldPosition();
 		this.rotateTo(
 			this._rotate.x,
 			this._rotate.y,
-			(Math.atan2(this._translate.y - point.y, this._translate.x - point.x) - this._parent._rotate.z) + Math.radians(270)
+			(Math.atan2(worldPos.y - point.y, worldPos.x - point.x) - this._parent._rotate.z) + Math.radians(270)
 		);
 
 		return this;
@@ -699,6 +745,25 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * Gets / sets the noAabb flag that determines if the entity's axis
+	 * aligned bounding box should be calculated every tick or not. If
+	 * you don't need the AABB data (for instance if you don't need to
+	 * detect mouse events on this entity or you DO want the AABB to be
+	 * updated but want to control it manually by calling aabb(true) 
+	 * yourself as needed).
+	 * @param {Boolean=} val If set to true will turn off AABB calculation.
+	 * @returns {*}
+	 */
+	noAabb: function (val) {
+		if (val !== undefined) {
+			this._noAabb = val;
+			return this;
+		}
+
+		return this._noAabb;
+	},
+
+	/**
 	 * Gets / sets the texture to use when rendering the entity.
 	 * @param {IgeTexture=} texture The texture object.
 	 * @example #Set the entity texture (image)
@@ -894,12 +959,18 @@ var IgeEntity = IgeObject.extend({
 	 * the points passed in the array directly.
 	 * @param {Array} points The array of IgePoints to convert.
 	 */
-	localToWorld: function (points, viewport) {
+	localToWorld: function (points, viewport, inverse) {
 		viewport = viewport || ige._currentViewport;
-		this._worldMatrix.transform(points);
+		
+		if (!inverse) {
+			this._worldMatrix.transform(points, this);
+		} else {
+			this._localMatrix.transform(points, this);
+			//this._worldMatrix.getInverse().transform(points, this);
+		}
 
 		if (this._ignoreCamera) {
-			//viewport.camera._worldMatrix.transform(points);
+			//viewport.camera._worldMatrix.transform(points, this);
 		}
 	},
 
@@ -911,7 +982,7 @@ var IgeEntity = IgeObject.extend({
 	 */
 	localToWorldPoint: function (point, viewport) {
 		viewport = viewport || ige._currentViewport;
-		this._worldMatrix.transform([point]);
+		this._worldMatrix.transform([point], this);
 	},
 	
 	/**
@@ -954,7 +1025,7 @@ var IgeEntity = IgeObject.extend({
 	 *     console.log(aabb.height);
 	 * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
 	 */
-	aabb: function (recalculate) {
+	aabb: function (recalculate, inverse) {
 		if (!this._aabb || recalculate) { //  && this.newFrame()
 			var poly = new IgePoly2d(),
 				minX, minY,
@@ -991,7 +1062,7 @@ var IgeEntity = IgeObject.extend({
 				this._renderPos = {x: -x + ox, y: -y + oy};
 
 				// Convert the poly's points from local space to world space
-				this.localToWorld(poly._poly);
+				this.localToWorld(poly._poly, null, inverse);
 
 				// Get the extents of the newly transformed poly
 				minX = Math.min(
@@ -1043,7 +1114,7 @@ var IgeEntity = IgeObject.extend({
 				this._renderPos = {x: -x + ox, y: -y + oy};
 
 				// Convert the poly's points from local space to world space
-				this.localToWorld(poly._poly);
+				this.localToWorld(poly._poly, null, inverse);
 
 				// Get the extents of the newly transformed poly
 				minX = Math.min(
@@ -1124,13 +1195,16 @@ var IgeEntity = IgeObject.extend({
 	 *         aabb = entity.compositeAabb();
 	 * @return {IgeRect}
 	 */
-	compositeAabb: function (rect) {
-		if (rect === undefined) {
-			rect = this.aabb().clone();
-		}
-
+	compositeAabb: function (inverse) {
 		var arr = this._children,
-			arrCount;
+			arrCount,
+			rect;
+	
+		if (inverse) {
+			rect = this.aabb(true, inverse).clone();
+		} else {
+			rect = this.aabb().clone();	
+		}
 
 		// Now loop all children and get the aabb for each of them
 		// them add those bounds to the current rect
@@ -1138,13 +1212,52 @@ var IgeEntity = IgeObject.extend({
 			arrCount = arr.length;
 
 			while (arrCount--) {
-				rect.thisCombineRect(arr[arrCount].compositeAabb());
+				rect.thisCombineRect(arr[arrCount].compositeAabb(inverse));
 			}
 		}
 
 		return rect;
 	},
 
+	/**
+	 * Gets / sets the composite stream flag. If set to true, any objects
+	 * mounted to this one will have their streamMode() set to the same
+	 * value as this entity and will also have their compositeStream flag
+	 * set to true. This allows you to easily automatically stream any
+	 * objects mounted to a root object and stream them all.
+	 * @param val
+	 * @returns {*}
+	 */
+	compositeStream: function (val) {
+		if (val !== undefined) {
+			this._compositeStream = val;
+			return this;
+		}
+		
+		return this._compositeStream;
+	},
+
+	/**
+	 * Override the _childMounted method and apply entity-based flags.
+	 * @param {IgeEntity} child
+	 * @private
+	 */
+	_childMounted: function (child) {
+		// Check if we need to set the compositeStream and streamMode
+		if (this.compositeStream()) {
+			child.compositeStream(true);
+			child.streamMode(this.streamMode());
+			child.streamControl(this.streamControl());
+		}
+		
+		IgeObject.prototype._childMounted.call(this, child);
+				
+		// Check if we are compositeCached and update the cache
+		if (this.compositeCache()) {
+			this.cacheDirty(true);
+		}
+	},
+	
 	/**
 	 * Takes two values and returns them as an array where index [0]
 	 * is the y argument and index[1] is the x argument. This method
@@ -1319,6 +1432,25 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * Sets the _ignoreCamera internal flag to the value passed for this
+	 * and all child entities down the scenegraph.
+	 * @param val
+	 */
+	ignoreCameraComposite: function (val) {
+		var i,
+			arr = this._children,
+			arrCount = arr.length;
+		
+		this._ignoreCamera = val;
+		
+		for (i = 0; i < arrCount; i++) {
+			if (arr[i].ignoreCameraComposite) {
+				arr[i].ignoreCameraComposite(val);
+			}
+		}
+	},
+
+	/**
 	 * Determines if the frame alternator value for this entity
 	 * matches the engine's frame alternator value. The entity's
 	 * frame alternator value will be set to match the engine's
@@ -1354,7 +1486,7 @@ var IgeEntity = IgeObject.extend({
 	 *     entity._transformContext(ctx);
 	 * @private
 	 */
-	_transformContext: function (ctx) {
+	_transformContext: function (ctx, inverse) {
 		if (this._parent) {
 			// TODO: Does this only work one level deep? we need to alter a _worldOpacity property down the chain
 			ctx.globalAlpha = this._parent._opacity * this._opacity;
@@ -1362,7 +1494,11 @@ var IgeEntity = IgeObject.extend({
 			ctx.globalAlpha = this._opacity;
 		}
 
-		this._localMatrix.transformRenderingContext(ctx);
+		if (!inverse) {
+			this._localMatrix.transformRenderingContext(ctx);
+		} else {
+			this._localMatrix.getInverse().transformRenderingContext(ctx);
+		}
 	},
 	
 	/**
@@ -1396,9 +1532,11 @@ var IgeEntity = IgeObject.extend({
 			// directly without calling the transform methods
 			this.updateTransform();
 
-			// Update the aabb
-			// TODO: This is wasteful, find a way to determine if a recalc is required rather than doing it every tick
-			this.aabb(true);
+			if (!this._noAabb) {
+				// Update the aabb
+				// TODO: This is wasteful, find a way to determine if a recalc is required rather than doing it every tick
+				this.aabb(true);
+			}
 
 			this._oldTranslate = this._translate.clone();
 
@@ -1454,16 +1592,20 @@ var IgeEntity = IgeObject.extend({
 				}
 			}
 
-			// Transform the context by the current transform settings
-			if (!dontTransform) {
-				this._transformContext(ctx);
-			}
-
 			if (!this._dontRender) {
 				// Check for cached version
 				if (this._cache || this._compositeCache) {
 					// Caching is enabled
+					var currentCam = ige._currentCamera;
+					
 					if (!this._cacheDirty) {
+						if (this._ignoreCamera) {
+							
+							/*ctx.scale(currentCam._scale.x, currentCam._scale.y);
+							ctx.translate(currentCam._translate.x, currentCam._translate.y);
+							ctx.scale(1 / currentCam._scale.x, 1/ currentCam._scale.y);*/
+						}
+						
 						this._renderCache(ctx);
 					} else {
 						// The cache is not clean so re-draw it
@@ -1474,17 +1616,33 @@ var IgeEntity = IgeObject.extend({
 						if (this._compositeCache) {
 							// Get the composite entity AABB and alter the internal canvas
 							// to the composite size so we can render the entire entity
-							var aabbC = this.compositeAabb();
+							var aabbC = this.compositeAabb(true);
+							
+							if (this._parent) {
+								//aabbC.x -= this._parent._translate.x;
+								//aabbC.y -= this._parent._translate.y;
+							}
+							
+							if (this._ignoreCamera) {
+								//aabbC.x -= currentCam._translate.x;
+								//aabbC.y -= currentCam._translate.y;
+								
+								//aabbC.x *= currentCam._scale.x;
+								//aabbC.y *= currentCam._scale.y;
+								//aabbC.width *= currentCam._scale.x;
+								//aabbC.height *= currentCam._scale.y;
+							}
+							
 							this._compositeAabbCache = aabbC;
 							
 							if (aabbC.width > 0 && aabbC.height > 0) {
-								_canvas.width = aabbC.width;
-								_canvas.height = aabbC.height;
+								_canvas.width = Math.ceil(aabbC.width);
+								_canvas.height = Math.ceil(aabbC.height);
 							} else {
 								// We cannot set a zero size for a canvas, it will
 								// cause the browser to freak out
-								_canvas.width = 1;
-								_canvas.height = 1;
+								_canvas.width = 2;
+								_canvas.height = 2;
 							}
 							
 							// Translate to the center of the canvas
@@ -1507,11 +1665,21 @@ var IgeEntity = IgeObject.extend({
 							
 							this._cacheDirty = false;
 						}
-
+						
+						// Transform the context by the current transform settings
+						if (!dontTransform) {
+							this._transformContext(_ctx);
+						}
+						//_ctx.translate(this._translate.x, this._translate.y);
 						this._renderEntity(_ctx, dontTransform);
-						this._renderCache(ctx);
 					}
 				} else {
+					// Non-cached output
+					// Transform the context by the current transform settings
+					if (!dontTransform) {
+						this._transformContext(ctx);
+					}
+					
 					// Render the entity
 					this._renderEntity(ctx, dontTransform);
 				}
@@ -1526,6 +1694,7 @@ var IgeEntity = IgeObject.extend({
 				if (this._cacheDirty) {
 					// Process children
 					IgeObject.prototype.tick.call(this, this._cacheCtx);
+					this._renderCache(ctx);
 					this._cacheDirty = false;
 				}
 			} else {
@@ -1599,6 +1768,15 @@ var IgeEntity = IgeObject.extend({
 					texture.render(ctx, this);
 				}
 			}
+			
+			if (this._compositeCache && ige._currentViewport._drawCompositeBounds) {
+				//console.log('moo');
+				ctx.fillStyle = 'rgba(0, 0, 255, 0.3)';
+				ctx.fillRect(-this._geometry.x2, -this._geometry.y2, this._geometry.x,	this._geometry.y);
+				ctx.fillStyle = '#ffffff';
+				ctx.fillText('Composite Entity', -this._geometry.x2, -this._geometry.y2 - 15);
+				ctx.fillText(this.id(), -this._geometry.x2, -this._geometry.y2 - 5);
+			}
 		}
 	},
 
@@ -1613,7 +1791,15 @@ var IgeEntity = IgeObject.extend({
 		ctx.save();
 		if (this._compositeCache) {
 			var aabbC = this._compositeAabbCache;
-			ctx.translate(aabbC.x + this._geometry.x2, aabbC.y + this._geometry.y2);
+			ctx.translate(this._geometry.x2 + aabbC.x, this._geometry.y2 + aabbC.y);
+			
+			if (this._parent && this._parent._ignoreCamera) {
+				// Translate the entity back to negate the scene translate
+				var cam = ige._currentCamera;
+				//ctx.translate(-cam._translate.x, -cam._translate.y);
+				/*this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
+				this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
+			}
 		}
 		
 		// We have a clean cached version so output that
@@ -1621,6 +1807,14 @@ var IgeEntity = IgeObject.extend({
 			this._cacheCanvas,
 			-this._geometry.x2, -this._geometry.y2
 		);
+		
+		if (ige._currentViewport._drawCompositeBounds) {
+			ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
+			ctx.fillRect(-this._geometry.x2, -this._geometry.y2, this._cacheCanvas.width,	this._cacheCanvas.height);
+			ctx.fillStyle = '#ffffff';
+			ctx.fillText('Composite Cache', -this._geometry.x2, -this._geometry.y2 - 15);
+			ctx.fillText(this.id(), -this._geometry.x2, -this._geometry.y2 - 5);
+		}
 
 		ige._drawCount++;
 
@@ -1657,9 +1851,9 @@ var IgeEntity = IgeObject.extend({
 			// Apply any local transforms
 			tempMat.multiply(this._localMatrix);
 			// Now transform the point
-			tempMat.getInverse().transformCoord(point);
+			tempMat.getInverse().transformCoord(point, this);
 		} else {
-			this._localMatrix.transformCoord(point);
+			this._localMatrix.transformCoord(point, this);
 		}
 
 		return point;
@@ -1988,7 +2182,8 @@ var IgeEntity = IgeObject.extend({
 
 	/**
 	 * Removes the callback that is fired when a mouse
-	 * down event is triggered.
+	 * down event is triggered if the listener was registered
+	 * via the mouseDown() method.
 	 */
 	mouseDownOff: function () {
 		delete this._mouseDown;
@@ -2592,6 +2787,23 @@ var IgeEntity = IgeObject.extend({
 		}
 	},
 
+	/**
+	 * Gets / sets the disable interpolation flag. If set to true then
+	 * stream data being received by the client will not be interpolated
+	 * and will be instantly assigned instead. Useful if your entity's
+	 * transformations should not be interpolated over time.
+	 * @param val
+	 * @returns {*}
+	 */
+	disableInterpolation: function (val) {
+		if (val !== undefined) {
+			this._disableInterpolation = val;
+			return this;
+		}
+		
+		return this._disableInterpolation;
+	},
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// STREAM
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2629,57 +2841,134 @@ var IgeEntity = IgeObject.extend({
 	 * chaining or the current value if no data argument is specified.
 	 */
 	streamSectionData: function (sectionId, data, bypassTimeStream) {
-		if (sectionId === 'transform') {
-			if (data) {
-				// We have received updated data
-				var dataArr = data.split(',');
-
-				if (!bypassTimeStream && !this._streamJustCreated) {
-					// Translate
-					if (dataArr[0]) { dataArr[0] = parseFloat(dataArr[0]); }
-					if (dataArr[1]) { dataArr[1] = parseFloat(dataArr[1]); }
-					if (dataArr[2]) { dataArr[2] = parseFloat(dataArr[2]); }
-
-					// Scale
-					if (dataArr[3]) { dataArr[3] = parseFloat(dataArr[3]); }
-					if (dataArr[4]) { dataArr[4] = parseFloat(dataArr[4]); }
-					if (dataArr[5]) { dataArr[5] = parseFloat(dataArr[5]); }
-
-					// Rotate
-					if (dataArr[6]) { dataArr[6] = parseFloat(dataArr[6]); }
-					if (dataArr[7]) { dataArr[7] = parseFloat(dataArr[7]); }
-					if (dataArr[8]) { dataArr[8] = parseFloat(dataArr[8]); }
-
-					// Add it to the time stream
-					this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
-
-					// Check stream length, don't allow higher than 10 items
-					if (this._timeStream.length > 10) {
-						// Remove the first item
-						this._timeStream.shift();
+		switch (sectionId) {
+			case 'transform':
+				if (data) {
+					// We have received updated data
+					var dataArr = data.split(',');
+	
+					if (!this._disableInterpolation && !bypassTimeStream && !this._streamJustCreated) {
+						// Translate
+						if (dataArr[0]) { dataArr[0] = parseFloat(dataArr[0]); }
+						if (dataArr[1]) { dataArr[1] = parseFloat(dataArr[1]); }
+						if (dataArr[2]) { dataArr[2] = parseFloat(dataArr[2]); }
+	
+						// Scale
+						if (dataArr[3]) { dataArr[3] = parseFloat(dataArr[3]); }
+						if (dataArr[4]) { dataArr[4] = parseFloat(dataArr[4]); }
+						if (dataArr[5]) { dataArr[5] = parseFloat(dataArr[5]); }
+	
+						// Rotate
+						if (dataArr[6]) { dataArr[6] = parseFloat(dataArr[6]); }
+						if (dataArr[7]) { dataArr[7] = parseFloat(dataArr[7]); }
+						if (dataArr[8]) { dataArr[8] = parseFloat(dataArr[8]); }
+	
+						// Add it to the time stream
+						this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
+	
+						// Check stream length, don't allow higher than 10 items
+						if (this._timeStream.length > 10) {
+							// Remove the first item
+							this._timeStream.shift();
+						}
+					} else {
+						// Assign all the transform values immediately
+						if (dataArr[0]) { this._translate.x = parseFloat(dataArr[0]); }
+						if (dataArr[1]) { this._translate.y = parseFloat(dataArr[1]); }
+						if (dataArr[2]) { this._translate.z = parseFloat(dataArr[2]); }
+	
+						// Scale
+						if (dataArr[3]) { this._scale.x = parseFloat(dataArr[3]); }
+						if (dataArr[4]) { this._scale.y = parseFloat(dataArr[4]); }
+						if (dataArr[5]) { this._scale.z = parseFloat(dataArr[5]); }
+	
+						// Rotate
+						if (dataArr[6]) { this._rotate.x = parseFloat(dataArr[6]); }
+						if (dataArr[7]) { this._rotate.y = parseFloat(dataArr[7]); }
+						if (dataArr[8]) { this._rotate.z = parseFloat(dataArr[8]); }
+						
+						// If we are using composite caching ensure we update the cache
+						if (this._compositeCache) {
+							this.cacheDirty(true);
+						}
 					}
 				} else {
-					// Assign all the transform values immediately
-					if (dataArr[0]) { this._translate.x = parseFloat(dataArr[0]); }
-					if (dataArr[1]) { this._translate.y = parseFloat(dataArr[1]); }
-					if (dataArr[2]) { this._translate.z = parseFloat(dataArr[2]); }
-
-					// Scale
-					if (dataArr[3]) { this._scale.x = parseFloat(dataArr[3]); }
-					if (dataArr[4]) { this._scale.y = parseFloat(dataArr[4]); }
-					if (dataArr[5]) { this._scale.z = parseFloat(dataArr[5]); }
-
-					// Rotate
-					if (dataArr[6]) { this._rotate.x = parseFloat(dataArr[6]); }
-					if (dataArr[7]) { this._rotate.y = parseFloat(dataArr[7]); }
-					if (dataArr[8]) { this._rotate.z = parseFloat(dataArr[8]); }
+					// We should return stringified data
+					return this._translate.toString(this._streamFloatPrecision) + ',' + // translate
+						this._scale.toString(this._streamFloatPrecision) + ',' + // scale
+						this._rotate.toString(this._streamFloatPrecision) + ','; // rotate
 				}
-			} else {
-				// We should return stringified data
-				return this._translate.toString(this._streamFloatPrecision) + ',' + // translate
-					this._scale.toString(this._streamFloatPrecision) + ',' + // scale
-					this._rotate.toString(this._streamFloatPrecision) + ','; // rotate
-			}
+				break;
+			
+			case 'depth':
+					if (data !== undefined) {
+						if (!ige.isServer) {
+							this.depth(parseInt(data));
+						}
+					} else {
+						return String(this.depth());
+					}
+					break;
+				
+			case 'layer':
+				if (data !== undefined) {
+					if (!ige.isServer) {
+						this.layer(parseInt(data));
+					}
+				} else {
+					return String(this.layer());
+				}
+				break;
+			
+			case 'geometry':
+				if (data !== undefined) {
+					if (!ige.isServer) {
+						var geom = data.split(',');
+						this.size3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
+					}
+				} else {
+					return String(this._geometry.x + ',' + this._geometry.y + ',' + this._geometry.z);
+				}
+				break;
+			
+			case 'hidden':
+				if (data !== undefined) {
+					if (!ige.isServer) {
+						if (data == 'true') {
+							this.hide();
+						} else {
+							this.show();
+						}
+					}
+				} else {
+					return String(this.isHidden());
+				}
+				break;
+			
+			case 'mount':
+				if (data !== undefined) {
+					if (!ige.isServer) {
+						if (data) {
+							var newParent = ige.$(data);
+							
+							if (newParent) {
+								this.mount(newParent);
+							}
+						} else {
+							// Unmount
+							this.unMount();
+						}
+					}
+				} else {
+					var parent = this.parent();
+					
+					if (parent) {
+						return this.parent().id();
+					} else {
+						return '';
+					}
+				}
+				break;
 		}
 	},
 
@@ -2699,7 +2988,9 @@ var IgeEntity = IgeObject.extend({
 	 */
 	streamMode: function (val) {
 		if (val !== undefined) {
-			this._streamMode = val;
+			if (ige.isServer) {
+				this._streamMode = val;
+			}
 			return this;
 		}
 
@@ -2883,11 +3174,38 @@ var IgeEntity = IgeObject.extend({
 	/**
 	 * Override this method if your entity should send data through to
 	 * the client when it is being created on the client for the first
-	 * time through the network stream. Valid return values must not
-	 * include circular references!
+	 * time through the network stream. The data will be provided as the
+	 * first argument in the constructor call to the entity class so
+	 * you should expect to recieve it as such e.g.
+	 *     var MyNewClass = IgeEntity.extend({
+	 *         classId: 'MyNewClass',
+	 *         
+	 *         // Define the init with the parameter to receive the
+	 *         // data you return in the streamCreateData() method
+	 *         init: function (myCreateData) {
+	 *         }
+	 *     });
+	 * 
+	 * Valid return values must not include circular references!
 	 */
 	streamCreateData: function () {},
 
+	/**
+	 * Gets / sets the stream emit created flag. If set to true this entity
+	 * emit a "streamCreated" event when it is created by the stream, but
+	 * after the id and initial transform are set.
+	 * @param val
+	 * @returns {*}
+	 */
+	streamEmitCreated: function (val) {
+		if (val !== undefined) {
+			this._streamEmitCreated = val;
+			return this;
+		}
+		
+		return this._streamEmitCreated;
+	},
+	
 	/**
 	 * Asks the stream system to queue the stream data to
 	 * the specified client id or array of ids.
@@ -2926,7 +3244,8 @@ var IgeEntity = IgeObject.extend({
 				// Is the data different from the last data we sent
 				// this client?
 				stream._streamClientData[thisId] = stream._streamClientData[thisId] || {};
-				if (stream._streamClientData[thisId][clientId] !== data) {
+				
+				if (stream._streamClientData[thisId][clientId] != data) {
 					filteredArr.push(clientId);
 
 					// Store the new data for later comparison
@@ -2934,10 +3253,32 @@ var IgeEntity = IgeObject.extend({
 				}
 			}
 		}
-
+		
 		if (filteredArr.length) {
 			stream.queue(thisId, data, filteredArr);
 		}
+	},
+
+	/**
+	 * Forces the stream to push this entity's full stream data on the
+	 * next stream sync regardless of what clients have received in the
+	 * past. This should only be used when required rather than every
+	 * tick as it will reduce the overall efficiency of the stream if
+	 * used every tick.
+	 * @returns {*}
+	 */
+	streamForceUpdate: function () {
+		if (ige.isServer) {
+			var thisId = this.id();
+			
+			// Invalidate the stream client data lookup to ensure
+			// the latest data will be pushed on the next stream sync
+			if (ige.network && ige.network.stream && ige.network.stream._streamClientData && ige.network.stream._streamClientData[thisId]) {
+				ige.network.stream._streamClientData[thisId] = {};
+			}
+		}
+		
+		return this;
 	},
 
 	/**
@@ -3091,7 +3432,7 @@ var IgeEntity = IgeObject.extend({
 					// regardless of if there is actually any section data because
 					// we want to be able to identify sections in a serial fashion
 					// on receipt of the data string on the client
-					sectionDataString += '|';
+					sectionDataString += ige.network.stream._sectionDesignator;
 
 					// Check if we were returned any data
 					if (sectionData) {
@@ -3111,7 +3452,7 @@ var IgeEntity = IgeObject.extend({
 			}
 
 			// Store the data in cache in case we are asked for it again this tick
-			// the tick() method of the IgeEntity class clears this every tick
+			// the update() method of the IgeEntity class clears this every tick
 			this._streamDataCache = streamData;
 
 			return streamData;

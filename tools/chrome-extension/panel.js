@@ -13,7 +13,7 @@ function addToSG(item) {
 		if (!selectedItem) {
 			event.stopPropagation();
 			//document.getElementById('igeConsole').innerHTML += "ige.$('vp1').drawBoundsLimitId('" + this.id + "');" + '<br />';
-			chrome.devtools.inspectedWindow.eval("ige.$('vp1').drawBoundsLimitId('" + this.id + "');", function (result, isException) {
+			chrome.devtools.inspectedWindow.eval("ige._children.each(function (item) { if (item.drawBoundsLimitId) { item.drawBoundsLimitId('" + this.id + "'); } });", function (result, isException) {
 
 			});
 		}
@@ -23,7 +23,7 @@ function addToSG(item) {
 		if (!selectedItem) {
 			event.stopPropagation();
 			//document.getElementById('igeConsole').innerHTML += "ige.$('vp1').drawBoundsLimitId('');" + '<br />';
-			chrome.devtools.inspectedWindow.eval("ige.$('vp1').drawBoundsLimitId('');", function (result, isException) {
+			chrome.devtools.inspectedWindow.eval("ige._children.each(function (item) { if (item.drawBoundsLimitId) { item.drawBoundsLimitId(''); } });", function (result, isException) {
 
 			});
 		}
@@ -38,7 +38,7 @@ function addToSG(item) {
 		selectedItem = this.id;
 		$('#id').html(this.id);
 
-		chrome.devtools.inspectedWindow.eval("ige.$('vp1').drawBoundsLimitId('" + this.id + "');", function (result, isException) {
+		chrome.devtools.inspectedWindow.eval("ige._children.each(function (item) { if (item.drawBoundsLimitId) { item.drawBoundsLimitId('" + this.id + "'); } });", function (result, isException) {
 
 		});
 

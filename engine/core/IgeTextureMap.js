@@ -523,10 +523,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			sectionWidth, sectionHeight;
 
 		// Render the map sections
-		if (this._mountMode === 1) {
-			// Translate the canvas for iso
-			ctx.translate(-(this._tileWidth / 2), -(this._tileHeight / 2));
-		}
+		ctx.translate(-(this._tileWidth / 2), -(this._tileHeight / 2));
 
 		sectionWidth = (this._tileWidth * this._autoSection);
 		sectionHeight = (this._tileHeight * this._autoSection);

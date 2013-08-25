@@ -58,6 +58,50 @@ var Client = IgeClass.extend({
 						)
 						.mount(self.scene1);
 				}
+				
+				// Create a single animating entity with some event listeners to
+				// receive updates during the animation cycle
+				self.singleAnim = new RandomMovingCharacter()
+						.setType(Math.random() * 8 | 0)
+						.drawBounds(false)
+						.drawBoundsData(false)
+						.mouseOver(overFunc)
+						.mouseOut(outFunc)
+						.walkTo(
+							(Math.random() * ige._geometry.x) - ige._geometry.x2,
+							(Math.random() * ige._geometry.y) - ige._geometry.y2
+						)
+						.mount(self.scene1);
+				
+				// In each animation callback / event...
+				// this = the entity's animation component instance
+				// anim = the animation component's _anim object
+				// this._entity = the entity the animation component is attached to
+				self.singleAnim.animation.on('started', function (anim) {
+					// The animation starts.
+					console.log('started', this, anim);
+				});
+				
+				self.singleAnim.animation.on('loopComplete', function (anim) {
+					// The animation has completed a full cycle (shown all frames).
+					console.log('loopComplete', this, anim);
+					
+					// Now we've completed a single loop, stop the animation
+					this.stop();
+					
+					// And stop the entity from walking around
+					this._entity.unMount();
+				});
+				
+				self.singleAnim.animation.on('complete', function (anim) {
+					// The animation has completed all assigned loop cycles.
+					console.log('complete', this, anim);
+				});				
+				
+				self.singleAnim.animation.on('stopped', function (anim) {
+					// The animation ends or is stopped.
+					console.log('stopped', this, anim);
+				});
 			}
 		});
 	}

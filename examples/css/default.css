@@ -31,7 +31,7 @@ body {
 	height: 60px;
 	left: 10px;
 	top: 10px;
-	background-image: url(http://www.isogenicengine.com/logo/irrelon.png);
+	background-image: url(../assets/textures/ui/irrelon.png);
 }
 
 .loadingCircle {
@@ -179,7 +179,7 @@ body {
     position: absolute;
     top: 4px;
     left: 4px;
-    width: 400px;
+    width: 300px;
     height: 200px;
     background-color: rgba(7, 20, 25, 0.9);
     font-family: Verdana, Tahoma;
@@ -191,17 +191,21 @@ body {
     -moz-user-select: none;
     cursor: default;
     z-index: 200000;
+	overflow: auto;
 }
 
 #igeSgTree ul {
     list-style: none;
     margin: 0;
     padding: 0px 0px 0px 14px;
+	white-space: nowrap;
 }
 
 #igeSgTree li {
     cursor: pointer;
     margin: 3px;
+	white-space: nowrap;
+	padding-right: 10px;
 }
 
 #igeSgTree li.selected {
@@ -213,6 +217,7 @@ body {
 }
 
 #igeSgConsoleHolder {
+	display: none;
     position: absolute;
     left: 410px;
     top: 4px;
@@ -242,4 +247,23 @@ body {
     display: none;
     margin-top: 4px;
     margin-bottom: 4px;
+}
+
+#igeSgEditorRoot {
+	display: block;
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 400px;
+    height: 24px;
+    background-color: rgba(7, 20, 25, 0.9);
+    font-family: Verdana, Tahoma;
+    font-size: 11px;
+    color: #ffffff;
+    text-shadow: 1px 1px 3px #000000;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    cursor: default;
+    z-index: 200000;
 }

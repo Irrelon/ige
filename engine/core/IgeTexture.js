@@ -148,13 +148,13 @@ var IgeTexture = IgeEventingClass.extend({
 					// Log success
 					ige.log('Texture image (' + imageUrl + ') loaded successfully');
 
-					if (image.width % 2) {
+					/*if (image.width % 2) {
 						self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
 					}
 
 					if (image.height % 2) {
 						self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
-					}
+					}*/
 
 					// Loop textures that are using this image
 					var arr = image._igeTextures,
@@ -387,6 +387,8 @@ var IgeTexture = IgeEventingClass.extend({
 			ctx = canvas.getContext('2d');
 
 			// Set smoothing mode
+			// TODO: Does this cause a costly context change? If so maybe we set a global value to keep
+			// TODO: track of the value and evaluate first before changing?
 			if (!this._smoothing) {
 				ctx.imageSmoothingEnabled = false;
 				ctx.webkitImageSmoothingEnabled = false;
@@ -596,6 +598,8 @@ var IgeTexture = IgeEventingClass.extend({
 		// we don't render anything which effectively makes the
 		// entity "blank"
 		if (entity._cell !== null) {
+			// TODO: Does this cause a costly context change? If so maybe we set a global value to keep
+			// TODO: track of the value and evaluate first before changing?
 			if (!this._smoothing) {
 				ige._ctx.imageSmoothingEnabled = false;
 				ige._ctx.webkitImageSmoothingEnabled = false;

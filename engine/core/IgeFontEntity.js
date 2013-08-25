@@ -8,15 +8,27 @@ var IgeFontEntity = IgeUiEntity.extend({
 	init: function () {
 		IgeUiEntity.prototype.init.call(this);
 
+		this._renderText = undefined;
 		this._text = undefined;
 		this._textAlignX = 1;
 		this._textAlignY = 1;
 		this._textLineSpacing = 0;
+		this._nativeMode = false;
 
 		// Enable caching by default for font entities!
 		this.cache(true);
 	},
 
+	/**
+	 * Extends the IgeUiEntity.width() method and if the value being
+	 * set is different from the current width value then the font's
+	 * cache is invalidated so it gets redrawn.
+	 * @param val
+	 * @param lockAspect
+	 * @param modifier
+	 * @param noUpdate
+	 * @returns {*}
+	 */
 	width: function (val, lockAspect, modifier, noUpdate) {
 		if (val !== undefined) {
 			if (this._geometry.x !== val) {
@@ -24,9 +36,25 @@ var IgeFontEntity = IgeUiEntity.extend({
 			}
 		}
 
-		return IgeUiEntity.prototype.width.call(this, val, lockAspect, modifier, noUpdate);
+		var retVal = IgeUiEntity.prototype.width.call(this, val, lockAspect, modifier, noUpdate);
+		
+		if (this._autoWrap) {
+			this._applyAutoWrap();
+		}
+		
+		return retVal;
 	},
 
+	/**
+	 * Extends the IgeUiEntity.height() method and if the value being
+	 * set is different from the current height value then the font's
+	 * cache is invalidated so it gets redrawn.
+	 * @param val
+	 * @param lockAspect
+	 * @param modifier
+	 * @param noUpdate
+	 * @returns {*|number}
+	 */
 	height: function (val, lockAspect, modifier, noUpdate) {
 		if (val !== undefined) {
 			if (this._geometry.y !== val) {
@@ -37,18 +65,55 @@ var IgeFontEntity = IgeUiEntity.extend({
 		return IgeUiEntity.prototype.height.call(this, val, lockAspect, modifier, noUpdate);
 	},
 
+	/**
+	 * Sets the text to render for this font entity. This sets both
+	 * the private properties "_text" and "_renderText". If auto-wrapping
+	 * has been enabled then the "_text" remains equal to whatever
+	 * text you pass into this method but "_renderText" becomes the
+	 * line-broken text that the auto-wrapper method creates. When the
+	 * entity renders it's text string it ALWAYS renders from "_renderText"
+	 * and not the value of "_text". Effectively this means that "_text"
+	 * contains the unaltered version of your original text and 
+	 * "_renderText" will be either the same as "_text" if auto-wrapping
+	 * is disable or a wrapped version otherwise.
+	 * @param {String} text The text string to render.
+	 * @returns {*}
+	 */
 	text: function (text) {
 		if (text !== undefined) {
+			var wasDifferent = false;
+			
 			if (this._text !== text) {
 				this.clearCache();
+				wasDifferent = true;
 			}
+			
 			this._text = text;
+			
+			if (this._autoWrap && wasDifferent) {
+				this._applyAutoWrap();
+			} else {
+				this._renderText = text;
+			}
+			
 			return this;
 		}
 
 		return this._text;
 	},
 
+	/**
+	 * Allows you to bind the text output of this font entity to match
+	 * the value of an object's property so that when it is updated the
+	 * text will automatically update on this entity. Useful for score,
+	 * position etc output where data is stored in an object and changes
+	 * frequently.
+	 * @param {Object} obj The object to read the property from.
+	 * @param {String} propName The name of the property to read value from.
+	 * @param {String} preText Text to place before the output.
+	 * @param {String} postText Text to place after the output.
+	 * @returns {*}
+	 */
 	bindData: function (obj, propName, preText, postText) {
 		if (obj !== undefined && propName !== undefined) {
 			this._bindDataObject = obj;
@@ -60,6 +125,12 @@ var IgeFontEntity = IgeUiEntity.extend({
 		return this;
 	},
 
+	/**
+	 * Gets / sets the current horizontal text alignment. Accepts
+	 * a value of 0, 1 or 2 (left, centre, right) respectively.
+	 * @param {Number=} val
+	 * @returns {*}
+	 */
 	textAlignX: function (val) {
 		if (val !== undefined) {
 			if (this._textAlignX !== val) {
@@ -71,6 +142,12 @@ var IgeFontEntity = IgeUiEntity.extend({
 		return this._textAlignX;
 	},
 
+	/**
+	 * Gets / sets the current vertical text alignment. Accepts
+	 * a value of 0, 1 or 2 (top, middle, bottom) respectively.
+	 * @param {Number=} val
+	 * @returns {*}
+	 */
 	textAlignY: function (val) {
 		if (val !== undefined) {
 			if (this._textAlignY !== val) {
@@ -82,6 +159,12 @@ var IgeFontEntity = IgeUiEntity.extend({
 		return this._textAlignY;
 	},
 
+	/**
+	 * Gets / sets the amount of spacing between the lines of text being
+	 * rendered. Accepts negative values as well as positive ones.
+	 * @param {Number=} val
+	 * @returns {*}
+	 */
 	textLineSpacing: function (val) {
 		if (val !== undefined) {
 			if (this._textLineSpacing !== val) {
@@ -119,11 +202,11 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	clearCache: function () {
 		if (this._cache) {
-			this._cacheDirty = true;
+			this.cacheDirty(true);
 		}
 
-		if (this._texture && this._texture._caching && this._texture._cacheText[this._text]) {
-			delete this._texture._cacheText[this._text];
+		if (this._texture && this._texture._caching && this._texture._cacheText[this._renderText]) {
+			delete this._texture._cacheText[this._renderText];
 		}
 	},
 
@@ -137,7 +220,10 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	nativeFont: function (val) {
 		if (val !== undefined) {
+			// Check if this font is different from the current
+			// assigned font
 			if (this._nativeFont !== val) {
+				// The fonts are different, clear existing cache
 				this.clearCache();
 			}
 			this._nativeFont = val;
@@ -145,6 +231,9 @@ var IgeFontEntity = IgeUiEntity.extend({
 			// Assign the native font smart texture
 			var tex = new IgeTexture(IgeFontSmartTexture);
 			this.texture(tex);
+			
+			// Set the flag indicating we are using a native font
+			this._nativeMode = true;
 
 			return this;
 		}
@@ -186,6 +275,91 @@ var IgeFontEntity = IgeUiEntity.extend({
 		}
 
 		return this._nativeStrokeColor;
+	},
+
+	/**
+	 * Gets / sets the auto-wrapping mode. If set to true then the
+	 * text this font entity renders will be automatically line-broken
+	 * when a line reaches the width of the entity.
+	 * @param val
+	 * @returns {*}
+	 */
+	autoWrap: function (val) {
+		if (val !== undefined) {
+			this._autoWrap = val;
+			
+			// Execute an auto-wrap modification of the text
+			if (this._text) {
+				this._applyAutoWrap();
+				this.clearCache();
+			}
+			return this;
+		}
+		
+		return this._autoWrap;
+	},
+
+	/**
+	 * Automatically detects where line-breaks need to occur in the text
+	 * assigned to the entity and adds them.
+	 * @private
+	 */
+	_applyAutoWrap: function () {
+		if (this._text) {
+			// Un-wrap the text so it is all on one line
+			var oneLineText = this._text.replace(/\n/g, ' '),
+				words,
+				wordIndex,
+				textArray = [],
+				currentTextLine = '',
+				lineWidth;
+			
+			// Break the text into words
+			words = oneLineText.split(' ');
+			
+			// There are multiple words - loop the words
+			for (wordIndex = 0; wordIndex < words.length; wordIndex++) {
+				if (currentTextLine) {
+					currentTextLine += ' ';
+				}
+				currentTextLine += words[wordIndex];
+				
+				// Check the width and if greater than the width of the entity,
+				// add a line break before the word
+				lineWidth = this.measureTextWidth(currentTextLine);
+				
+				if (lineWidth >= this._geometry.x) {
+					// Add a line break
+					textArray.push('\n');
+					currentTextLine = words[wordIndex];
+				}
+				
+				textArray.push(words[wordIndex]);
+			}
+			
+			this._renderText = textArray.join(' ');
+		}
+	},
+
+	/**
+	 * Will measure and return the width in pixels of a line or multiple
+	 * lines of text. If no text parameter is passed, will use the current
+	 * text assigned to the font entity.
+	 * @param {String=} text Optional text to measure, used existing entity
+	 * text value if none is provided.
+	 * @returns {Number} The width of the text in pixels.
+	 */
+	measureTextWidth: function (text) {
+		text = text || this._text;
+		
+		// Both IgeFontSheet and the IgeFontSmartTexture have a method
+		// called measureTextWidth() so we can just asks the current
+		// texture for the width :)
+		if (this._texture._mode === 0) {
+			return this._texture.measureTextWidth(text);
+		} else {
+			return this._texture.script.measureTextWidth(text, this);
+		}
 	},
 
 	tick: function (ctx) {

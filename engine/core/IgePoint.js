@@ -204,6 +204,24 @@ var IgePoint = IgeClass.extend({
 	divide: function (x, y, z) {
 		return new IgePoint(this.x / x, this.y / y, this.z / z);
 	},
+	
+	/**
+	 * Divides this point's data by the point specified
+	 * and returns a new IgePoint whose values are the result.
+	 * @param {IgePoint} point
+	 * @return {*}
+	 */
+	dividePoint: function (point) {
+		var newX = this.x,
+			newY = this.y,
+			newZ = this.z;
+		
+		if (point.x) { newX = this.x / point.x; }
+		if (point.y) { newY = this.y / point.y; }
+		if (point.z) { newZ = this.z / point.z; }
+		
+		return new IgePoint(newX, newY, newZ);
+	},
 
 	/**
 	 * Divides this point's data by the x, y, z values specified and

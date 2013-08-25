@@ -15,6 +15,9 @@ var IgeStreamComponent = IgeEventingClass.extend({
 		this._options = options;
 
 		var self = this;
+		
+		// Set the stream data section designator character
+		this._sectionDesignator = '¬';
 
 		/* CEXCLUDE */
 		if (ige.isServer) {
@@ -202,6 +205,10 @@ var IgeStreamComponent = IgeEventingClass.extend({
 					// from handling this entity until after the first stream
 					// data has been received for it
 					entity._streamJustCreated = true;
+					
+					if (entity._streamEmitCreated) {
+						entity.emit('streamCreated');
+					}
 
 					// Since we just created an entity through receiving stream
 					// data, inform any interested listeners
@@ -238,7 +245,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 		var entityId,
 			entity,
 			sectionArr,
-			sectionDataArr = data.split('|'),
+			sectionDataArr = data.split(ige.network.stream._sectionDesignator),
 			sectionDataCount = sectionDataArr.length,
 			sectionIndex,
 			justCreated;

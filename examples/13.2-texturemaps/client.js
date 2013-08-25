@@ -44,9 +44,11 @@ var Client = IgeClass.extend({
 						.tileWidth(40)
 						.tileHeight(40)
 						//.drawGrid(3)
-						//.drawMouse(true)
+						.drawMouse(true)
 						.translateTo(-200, 0, 0)
 						.drawBounds(false)
+						.autoSection(10)
+						.drawSectionBounds(true)
 						.mount(self.scene1);
 
 					self.textureMap2 = new IgeTextureMap()
@@ -58,6 +60,7 @@ var Client = IgeClass.extend({
 						//.drawMouse(true)
 						.drawBounds(false)
 						.isometricMounts(true)
+						.autoSection(10)
 						.mount(self.scene1);
 
 					// Before a texture map can render a texture, the texture

@@ -16,6 +16,37 @@ var IgeScene2d = IgeEntity.extend({
 		// width / height - used when positioning UI elements
 		this._geometry.x = ige._geometry.x;
 		this._geometry.y = ige._geometry.y;
+		
+		this.streamSections(['transform', 'ignoreCamera']);
+	},
+
+	/**
+	 * Overrides the default entity stream sections to also stream important
+	 * data about scenes to the client.
+	 * @param sectionId
+	 * @param data
+	 * @returns {*}
+	 */
+	streamSectionData: function (sectionId, data) {
+		switch (sectionId) {
+			case 'ignoreCamera':
+				if (data !== undefined) {
+					// Setter
+					if (data === 'false') {
+						this.ignoreCamera(false);
+					} else {
+						this.ignoreCamera(true);
+					}
+				} else {
+					// Getter
+					return String(this._ignoreCamera);
+				}
+				break;
+			
+			default:
+				IgeEntity.prototype.streamSectionData.call(this, sectionId, data);
+				break;
+		}
 	},
 
 	/**

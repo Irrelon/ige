@@ -80,13 +80,18 @@ var IgeClass = (function () {
 				}
 
 				if (type === 'error') {
+					if (typeof(ige) !== 'undefined') {
+						console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + ':' + this._id + '] : ' + 'Error encountered, stopping engine to prevent console spamming...');
+						ige.stop();
+					}
+					
 					if (igeConfig.debug._throwErrors) {
-						throw(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
+						throw(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + ':' + this._id + '] : ' + text);
 					} else {
-						console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
+						console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + ':' + this._id + '] : ' + text);
 					}
 				} else {
-					console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + '] : ' + text);
+					console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + ':' + this._id + '] : ' + text);
 				}
 			}
 

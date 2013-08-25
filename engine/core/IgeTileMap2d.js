@@ -414,6 +414,21 @@ var IgeTileMap2d = IgeEntity.extend({
 		this._mouseTilePos = this.pointToTile(this.mousePos());
 	},
 
+	/**
+	 * Gets / sets the mouse tile hover color used in conjunction with the
+	 * drawMouse() method.
+	 * @param {String=} val The hex or rbg string color definition e.g. #ff0099.
+	 * @returns {*}
+	 */
+	hoverColor: function (val) {
+		if (val !== undefined) {
+			this._hoverColor = val;
+			return this;
+		}
+		
+		return this._hoverColor;
+	},
+
 	tick: function (ctx) {
 		var tileWidth = this._tileWidth,
 			tileHeight = this._tileHeight,
@@ -558,7 +573,7 @@ var IgeTileMap2d = IgeEntity.extend({
 
 		if (this._drawMouse) {
 			// Paint the tile the mouse is currently intersecting
-			ctx.fillStyle = '#6000ff';
+			ctx.fillStyle = this._hoverColor || '#6000ff';
 			if (this._mountMode === 0) {
 				// 2d
 				ctx.fillRect(

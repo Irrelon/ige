@@ -21,6 +21,8 @@ var igeCoreConfig = {
 		['csap', 'IgeMouseZoomComponent', 'components/IgeMouseZoomComponent.js'],
 		['csap', 'IgeTiledComponent', 'components/IgeTiledComponent.js'],
 		['csap', 'IgeEntityManagerComponent', 'components/IgeEntityManagerComponent.js'],
+		['csap', 'IgeEditorTranslateComponent', 'components/editor/IgeEditorTranslateComponent.js'],
+		['csap', 'IgeEditorRotateComponent', 'components/editor/IgeEditorRotateComponent.js'],
 		/* Physics Libraries */
 		['csap', 'Box2D', 'components/physics/box2d/lib_box2d.js', 'Box2D'],
 		['csa', 'Cannon', 'components/physics/cannon/lib_cannon.js'],
@@ -54,6 +56,7 @@ var igeCoreConfig = {
 		['csap', 'IgeUiPositionExtension', 'extensions/IgeUiPositionExtension.js'],
 		['csap', 'IgeUiStyleExtension', 'extensions/IgeUiStyleExtension.js'],
 		/* Main Engine Classes */
+		['csap', 'IgeDummyCanvas', 'core/IgeDummyCanvas.js'],
 		['csap', 'IgeDummyContext', 'core/IgeDummyContext.js'],
 		['csap', 'IgePathNode', 'core/IgePathNode.js'],
 		['csap', 'IgePathFinder', 'core/IgePathFinder.js'],

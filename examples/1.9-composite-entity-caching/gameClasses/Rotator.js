@@ -10,15 +10,28 @@ var Rotator = IgeEntity.extend({
 			this._rSpeed = 0;
 		}
 	},
-
+	
 	/**
 	 * Called every frame by the engine when this entity is mounted to the scenegraph.
+	 * @param ctx The canvas context.
+	 */
+	update: function (ctx) {
+		// Rotate this entity by 0.1 degrees.
+		//this.rotateBy(0, 0, (this._rSpeed * ige._tickDelta) * Math.PI / 180);
+		if (this._rSpeed) {
+			this._rotate.z += (this._rSpeed * ige._tickDelta) * Math.PI / 180;
+			this.cacheDirty(true);
+		}
+		
+		// Call the IgeEntity (super-class) tick() method
+		IgeEntity.prototype.update.call(this, ctx);
+	},
+
+	/**
+	 * Called every time the entity requires rendering to a viewport.
 	 * @param ctx The canvas context to render to.
 	 */
 	tick: function (ctx) {
-		// Rotate this entity by 0.1 degrees.
-		this.rotateBy(0, 0, (this._rSpeed * ige._tickDelta) * Math.PI / 180);
-
 		// Call the IgeEntity (super-class) tick() method
 		IgeEntity.prototype.tick.call(this, ctx);
 	}

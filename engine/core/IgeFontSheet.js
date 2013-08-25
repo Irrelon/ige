@@ -101,10 +101,56 @@ var IgeFontSheet = IgeTexture.extend({
 		}
 	},
 
+	/**
+	 * Returns the width in pixels of the text passed in the
+	 * argument.
+	 * @param {String} text The text to measure.
+	 * @returns {number}
+	 */
+	measureTextWidth: function (text) {
+		if (this._loaded) {
+			var characterIndex,
+				charCodeMap = this._charCodeMap,
+				measuredWidthMap = this._measuredWidthMap,
+				charIndex,
+				lineArr = [],
+				lineIndex,
+				measuredWidth,
+				maxWidth = 0;
+			
+			// Handle multi-line text
+			if (text.indexOf('\n') > -1) {
+				// Split each line into an array item
+				lineArr = text.split('\n');
+			} else {
+				// Store the text as a single line
+				lineArr.push(text);
+			}
+
+			for (lineIndex = 0; lineIndex < lineArr.length; lineIndex++) {
+				// Calculate the total width of the line of text
+				measuredWidth = 0;
+				for (characterIndex = 0; characterIndex < lineArr[lineIndex].length; characterIndex++) {
+					charIndex = charCodeMap[lineArr[lineIndex].charCodeAt(characterIndex)];
+					measuredWidth += measuredWidthMap[charIndex] || 0;
+				}
+				
+				if (measuredWidth > maxWidth) {
+					maxWidth = measuredWidth;
+				}
+			}
+
+			// Store the width of this line so we can align it correctly
+			return measuredWidth;
+		}
+		
+		return -1;
+	},
+
 	render: function (ctx, entity) {
-		if (entity._text && this._loaded) {
+		if (entity._renderText && this._loaded) {
 			var _ctx = ctx,
-				text = entity._text,
+				text = entity._renderText,
 				lineText,
 				lineArr = [],
 				lineIndex,
@@ -246,18 +292,6 @@ var IgeFontSheet = IgeTexture.extend({
 
 				renderX = 0;
 			}
-
-			// If the entity should get dimension data from the
-			// texture, we are now in a position to give it so
-			// set the width and height based on the rendered text
-			// TODO: This is a throw-back from 1.0.0, is it still valid?
-			/*if (entity._dimensionsFromTexture) {
-				entity.sizeX(totalWidth);
-				entity.sizeY(totalHeight);
-
-				entity._dimensionsFromTexture = true;
-				entity.aabb(true);
-			}*/
 		}
 	},
 
