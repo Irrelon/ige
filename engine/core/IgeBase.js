@@ -2,7 +2,7 @@
 /* Isogenic Game Engine */
 /************************/
 ige = null;
-igeVersion = '1.1.130825.000';
+igeVersion = '1.1.130825.001';
 igeClassStore = {};
 
 igeConfig = {
