@@ -98,7 +98,7 @@ var IgeEntity = IgeObject.extend({
 				this._cacheCanvas = document.createElement('canvas');
 				this._cacheCtx = this._cacheCanvas.getContext('2d');
 				this._cacheDirty = true;
-
+				
 				// Set smoothing mode
 				if (!ige._globalSmoothing) {
 					this._cacheCtx.imageSmoothingEnabled = false;
@@ -109,7 +109,7 @@ var IgeEntity = IgeObject.extend({
 					this._cacheCtx.webkitImageSmoothingEnabled = true;
 					this._cacheCtx.mozImageSmoothingEnabled = true;
 				}
-
+				
 				// Switch off composite caching
 				if (this.compositeCache()) {
 					this.compositeCache(false);
@@ -147,12 +147,12 @@ var IgeEntity = IgeObject.extend({
 			if (val) {
 				// Switch off normal caching
 				this.cache(false);
-
+				
 				// Create the off-screen canvas
 				this._cacheCanvas = document.createElement('canvas');
 				this._cacheCtx = this._cacheCanvas.getContext('2d');
 				this._cacheDirty = true;
-
+				
 				// Set smoothing mode
 				if (!ige._globalSmoothing) {
 					this._cacheCtx.imageSmoothingEnabled = false;
@@ -164,7 +164,7 @@ var IgeEntity = IgeObject.extend({
 					this._cacheCtx.mozImageSmoothingEnabled = true;
 				}
 			}
-
+			
 			// Loop children and set _compositeParent to the correct value
 			this._children.each(function () {
 				if (val) {
@@ -173,11 +173,11 @@ var IgeEntity = IgeObject.extend({
 					delete this._compositeParent;
 				}
 			});
-
+			
 			this._compositeCache = val;
 			return this;
 		}
-
+		
 		return this._compositeCache;
 	},
 
@@ -197,18 +197,18 @@ var IgeEntity = IgeObject.extend({
 	cacheDirty: function (val) {
 		if (val !== undefined) {
 			this._cacheDirty = val;
-
+			
 			// Check if the entity is a child of a composite or composite
 			// entity chain and propagate the dirty cache up the chain
 			if (val && this._compositeParent && this._parent) {
 				this._parent.cacheDirty(val);
-
+				
 				if (!this._cache && !this._compositeCache) {
 					// Set clean immediately as no caching is enabled on this child
 					this._cacheDirty = false;
 				}
 			}
-
+			
 			return this;
 		}
 
@@ -239,7 +239,7 @@ var IgeEntity = IgeObject.extend({
 				//mp.thisRotate(-cam._rotate.z);
 				mp.thisAddPoint(cam._translate);*/
 			}
-
+			
 			mp.x += viewport._translate.x;
 			mp.y += viewport._translate.y;
 			this._transformPoint(mp);
@@ -327,10 +327,10 @@ var IgeEntity = IgeObject.extend({
 	 *     var tileMap = new IgeTileMap2d()
 	 *         .tileWidth(40)
 	 *         .tileHeight(40);
-	 *
+	 *     
 	 *     // Mount our entity to the tile map
 	 *     entity.mount(tileMap);
-	 *
+	 *     
 	 *     // Translate the entity to the tile x:10, y:12
 	 *     entity.translateToTile(10, 12, 0);
 	 * @return {*} The object this method was called from to allow
@@ -460,7 +460,7 @@ var IgeEntity = IgeObject.extend({
 
 		return this;
 	},
-
+	
 	/**
 	 * Adds the object to the tile map at the passed tile co-ordinates. If
 	 * no tile co-ordinates are passed, will use the current tile position
@@ -479,17 +479,17 @@ var IgeEntity = IgeObject.extend({
 				// Occupy tiles based upon tile point and tile width/height
 				var trPoint = new IgePoint(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
 					tilePoint = this._parent.pointToTile(trPoint);
-
+	
 				if (this._parent._mountMode === 1) {
 					tilePoint.thisToIso();
 				}
-
+	
 				this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
 			}
 		}
 		return this;
 	},
-
+	
 	/**
 	 * Removes the object from the tile map at the passed tile co-ordinates.
 	 * If no tile co-ordinates are passed, will use the current tile position
@@ -509,17 +509,17 @@ var IgeEntity = IgeObject.extend({
 				// Un-occupy tiles based upon tile point and tile width/height
 				var trPoint = new IgePoint(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
 					tilePoint = this._parent.pointToTile(trPoint);
-
+	
 				if (this._parent._mountMode === 1) {
 					tilePoint.thisToIso();
 				}
-
+	
 				this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
 			}
 		}
 		return this;
 	},
-
+	
 	/**
 	 * Returns an array of tile co-ordinates that the object is currently
 	 * over, calculated using the current world co-ordinates of the object
@@ -536,13 +536,13 @@ var IgeEntity = IgeObject.extend({
 				tileHeight = this._tileHeight || 1,
 				tile = this._parent.pointToTile(this._translate),
 				tileArr = [];
-
+	
 			for (x = 0; x < tileWidth; x++) {
 				for (y = 0; y < tileHeight; y++) {
 					tileArr.push(new IgePoint(tile.x + x, tile.y + y, 0));
 				}
 			}
-
+	
 			return tileArr;
 		}
 	},
@@ -748,7 +748,7 @@ var IgeEntity = IgeObject.extend({
 	 *         [0, 0, 40, 40, 'robotHead'],
 	 *         [40, 0, 40, 40, 'humanHead'],
 	 *     ]);
-	 *
+	 *     
 	 *     // Assign the texture, set the cell to use and then
 	 *     // set the entity to the size of the cell automatically!
 	 *     entity.texture(texture)
@@ -790,7 +790,7 @@ var IgeEntity = IgeObject.extend({
 	 * @param {Number=} percent The percentage size to resize to.
 	 * @example #Set the entity dimensions based on the assigned texture
 	 *     var texture = new IgeTexture('path/to/some/texture.png');
-	 *
+	 *	
 	 *     // Assign the texture, and then set the entity to the
 	 *     // size of the texture automatically!
 	 *     entity.texture(texture)
@@ -913,7 +913,7 @@ var IgeEntity = IgeObject.extend({
 		viewport = viewport || ige._currentViewport;
 		this._worldMatrix.transform([point]);
 	},
-
+	
 	/**
 	 * Returns the screen position of the entity as an IgePoint where x is the
 	 * "left" and y is the "top", useful for positioning HTML elements at the
@@ -940,14 +940,14 @@ var IgeEntity = IgeObject.extend({
 	 * value.
 	 * @example #Get the entity axis-aligned bounding box dimensions
 	 *     var aabb = entity.aabb();
-	 *
+	 *     
 	 *     console.log(aabb.x);
 	 *     console.log(aabb.y);
 	 *     console.log(aabb.width);
 	 *     console.log(aabb.height);
 	 * @example #Get the entity axis-aligned bounding box dimensions forcing the engine to update the values first
 	 *     var aabb = entity.aabb(true); // Call with true to force update
-	 *
+	 *     
 	 *     console.log(aabb.x);
 	 *     console.log(aabb.y);
 	 *     console.log(aabb.width);
@@ -1092,14 +1092,14 @@ var IgeEntity = IgeObject.extend({
 	 * value.
 	 * @example #Get the entity local axis-aligned bounding box dimensions
 	 *     var aabb = entity.localAabb();
-	 *
+	 *	
 	 *     console.log(aabb.x);
 	 *     console.log(aabb.y);
 	 *     console.log(aabb.width);
 	 *     console.log(aabb.height);
 	 * @example #Get the entity local axis-aligned bounding box dimensions forcing the engine to update the values first
 	 *     var aabb = entity.localAabb(true); // Call with true to force update
-	 *
+	 *	
 	 *     console.log(aabb.x);
 	 *     console.log(aabb.y);
 	 *     console.log(aabb.width);
@@ -1237,7 +1237,7 @@ var IgeEntity = IgeObject.extend({
 	 * render phase.
 	 * @param {IgeEntity} otherObject The other entity to check this
 	 * entity's 3d bounds against.
-	 * @example #Determine if this entity is "behind" another entity based on the current depth-sort
+	 * @example #Determine if this entity is "behind" another entity based on the current depth-sort 
 	 *     var behind = entity.isBehind(otherEntity);
 	 * @return {Boolean} If true this entity is "behind" the passed entity
 	 * or false if not.
@@ -1330,7 +1330,7 @@ var IgeEntity = IgeObject.extend({
 	 * cause the entity tick() method to fire once for each viewport
 	 * but you only want to execute update code such as movement etc
 	 * on the first time the tick() method is called.
-	 *
+	 * 
 	 * @example #Determine if the entity has already had it's tick method called
 	 *     var tickAlreadyCalled = entity.newFrame();
 	 * @return {Boolean} If false, the entity's tick method has
@@ -1364,7 +1364,7 @@ var IgeEntity = IgeObject.extend({
 
 		this._localMatrix.transformRenderingContext(ctx);
 	},
-
+	
 	/**
 	 * Processes the updates required each render frame. Any code in the update()
 	 * method will be called ONCE for each render frame BEFORE the tick() method.
@@ -1425,7 +1425,7 @@ var IgeEntity = IgeObject.extend({
 		if (!this._hidden && this._inView && (!this._parent || (this._parent._inView)) && !this._streamJustCreated) {
 			// Process any behaviours assigned to the entity
 			this._processTickBehaviours(ctx);
-
+			
 			// Process any mouse events we need to do
 			var mp, aabb, mouseX, mouseY,
 				self = this;
@@ -1476,7 +1476,7 @@ var IgeEntity = IgeObject.extend({
 							// to the composite size so we can render the entire entity
 							var aabbC = this.compositeAabb();
 							this._compositeAabbCache = aabbC;
-
+							
 							if (aabbC.width > 0 && aabbC.height > 0) {
 								_canvas.width = aabbC.width;
 								_canvas.height = aabbC.height;
@@ -1486,10 +1486,10 @@ var IgeEntity = IgeObject.extend({
 								_canvas.width = 1;
 								_canvas.height = 1;
 							}
-
+							
 							// Translate to the center of the canvas
 							_ctx.translate(-aabbC.x, -aabbC.y);
-
+							
 							this.emit('compositeReady');
 						} else {
 							if (this._geometry.x > 0 && this._geometry.y > 0) {
@@ -1501,10 +1501,10 @@ var IgeEntity = IgeObject.extend({
 								_canvas.width = 1;
 								_canvas.height = 1;
 							}
-
+							
 							// Translate to the center of the canvas
 							_ctx.translate(this._geometry.x2, this._geometry.y2);
-
+							
 							this._cacheDirty = false;
 						}
 
@@ -1615,7 +1615,7 @@ var IgeEntity = IgeObject.extend({
 			var aabbC = this._compositeAabbCache;
 			ctx.translate(aabbC.x + this._geometry.x2, aabbC.y + this._geometry.y2);
 		}
-
+		
 		// We have a clean cached version so output that
 		ctx.drawImage(
 			this._cacheCanvas,
@@ -1644,7 +1644,7 @@ var IgeEntity = IgeObject.extend({
 	 * @example #Transform a point by the entity's world matrix values
 	 *     var point = new IgePoint(0, 0, 0);
 	 *     entity._transformPoint(point);
-	 *
+	 *     
 	 *     console.log(point);
 	 * @return {IgePoint} The transformed point.
 	 * @private
@@ -1703,7 +1703,7 @@ var IgeEntity = IgeObject.extend({
 	_stringify: function (options) {
 		// Make sure we have an options object
 		if (options === undefined) { options = {}; }
-
+		
 		// Get the properties for all the super-classes
 		var str = IgeObject.prototype._stringify.call(this, options), i;
 
@@ -1813,10 +1813,10 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.mouseMove(function (event, control) {
 	 *         // Mouse moved with button
 	 *         console.log('Mouse move button: ' + event.button);
-	 *
+	 *         
 	 *         // Stop the event propagating further down the scenegraph
 	 *         control.stopPropagation();
-	 *
+	 *         
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
 	 *         ige.input.stopPropagation();
@@ -1851,10 +1851,10 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.mouseOver(function (event, control) {
 	 *         // Mouse over with button
 	 *         console.log('Mouse over button: ' + event.button);
-	 *
+	 *         
 	 *         // Stop the event propagating further down the scenegraph
 	 *         control.stopPropagation();
-	 *
+	 *         
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
 	 *         ige.input.stopPropagation();
@@ -1890,10 +1890,10 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.mouseOut(function (event, control) {
 	 *         // Mouse out with button
 	 *         console.log('Mouse out button: ' + event.button);
-	 *
+	 *         
 	 *         // Stop the event propagating further down the scenegraph
 	 *         control.stopPropagation();
-	 *
+	 *         
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
 	 *         ige.input.stopPropagation();
@@ -1928,10 +1928,10 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.mouseUp(function (event, control) {
 	 *         // Mouse up with button
 	 *         console.log('Mouse up button: ' + event.button);
-	 *
+	 *         
 	 *         // Stop the event propagating further down the scenegraph
 	 *         control.stopPropagation();
-	 *
+	 *         
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
 	 *         ige.input.stopPropagation();
@@ -1966,10 +1966,10 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.mouseDown(function (event, control) {
 	 *         // Mouse down with button
 	 *         console.log('Mouse down button: ' + event.button);
-	 *
+	 *         
 	 *         // Stop the event propagating further down the scenegraph
 	 *         control.stopPropagation();
-	 *
+	 *         
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
 	 *         ige.input.stopPropagation();
@@ -1997,28 +1997,6 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
-	 * Determines whether or not the current mouse position is
-	 * over a non-transparent pixel of the texture
-	 * @return {Boolean} Boolean value
-	 * @private
-	 */
-	_mouseOnTexturePixel: function(){
-		var   mp = this.mousePosAbsolute(),
-				    xPos = 0|mp.x + this._width  / 2,
-				    yPos = 0|mp.y + this._height / 2;
-
-		if( this._texture && ( xPos > 0 ) && ( yPos > 0 ) && ( xPos < this._width ) && ( yPos < this._height ) ){
-			var cellPos = this._texture._cells[ this._cell ];
-
-			if( this._texture.pixelData( cellPos[0] + xPos, cellPos[1] + yPos )[ 3 ] ){
-				return true;
-			}
-		}
-
-		return false;
-	},
-
-	/**
 	 * Handler method that determines which mouse-move event
 	 * to fire, a mouse-over or a mouse-move.
 	 * @private
@@ -2030,27 +2008,19 @@ var IgeEntity = IgeObject.extend({
 			if (this._mouseOver) {
 				// Check if we want pixel-perfect mouse-over
 				if (this._mouseOverPP) {
-					if( this._mouseOnTexturePixel() ){
-						this._mouseOver( event, evc, data );
-					}else{
-						this._mouseStateOver = false;
-					}
-
+					// Check that the mouse-over occurred on a pixel of our
+					// test entity texture
+					
 				} else {
 					this._mouseOver(event, evc, data);
 				}
 			}
-
+			
 			this.emit('mouseOver', [event, evc, data]);
 		}
 
 		if (this._mouseMove) { this._mouseMove(event, evc, data); }
-		if( this._mouseOverPP && this._mouseStateOver && this._mouseOut && !this._mouseOnTexturePixel() ){
-			this._handleMouseOut( event, evc, data );
-		}
-		if( this._mouseStateOver ){
-			this.emit('mouseMove', [event, evc, data]);
-		}
+		this.emit('mouseMove', [event, evc, data]);
 	},
 
 	/**
@@ -2067,7 +2037,7 @@ var IgeEntity = IgeObject.extend({
 		if (this._mouseStateOver) {
 			this._mouseStateOver = false;
 			if (this._mouseOut) { this._mouseOut(event, evc, data); }
-
+			
 			this.emit('mouseOut', [event, evc, data]);
 		}
 	},
@@ -2081,7 +2051,7 @@ var IgeEntity = IgeObject.extend({
 		// Reset the mouse-down flag
 		this._mouseStateDown = false;
 		if (this._mouseUp) { this._mouseUp(event, evc, data); }
-
+		
 		this.emit('mouseUp', [event, evc, data]);
 	},
 
@@ -2094,11 +2064,11 @@ var IgeEntity = IgeObject.extend({
 		if (!this._mouseStateDown) {
 			this._mouseStateDown = true;
 			if (this._mouseDown) { this._mouseDown(event, evc, data); }
-
+			
 			this.emit('mouseDown', [event, evc, data]);
 		}
 	},
-
+	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// TRANSFORM
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2151,7 +2121,7 @@ var IgeEntity = IgeObject.extend({
 	 * @example #Translate the entity to 10, 0, 0
 	 *     var point = new IgePoint(10, 0, 0),
 	 *         entity = new IgeEntity();
-	 *
+	 *     
 	 *     entity.translateToPoint(point);
 	 * @return {*}
 	 */
@@ -2291,7 +2261,7 @@ var IgeEntity = IgeObject.extend({
 		if (arguments.length) {
 			this.log('You called rotate with arguments, did you mean rotateTo or rotateBy instead of rotate?', 'warning');
 		}
-
+		
 		this.x = this._rotateAccessorX;
 		this.y = this._rotateAccessorY;
 		this.z = this._rotateAccessorZ;
@@ -2403,7 +2373,7 @@ var IgeEntity = IgeObject.extend({
 		if (arguments.length) {
 			this.log('You called scale with arguments, did you mean scaleTo or scaleBy instead of scale?', 'warning');
 		}
-
+		
 		this.x = this._scaleAccessorX;
 		this.y = this._scaleAccessorY;
 		this.z = this._scaleAccessorZ;
@@ -2755,7 +2725,7 @@ var IgeEntity = IgeObject.extend({
 	 *             return false;
 	 *         }
 	 *     });
-	 *
+	 * 
 	 * Further reading: [Controlling Streaming](http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/manual/networking-multiplayer/realtime-network-streaming/stream-modes-and-controlling-streaming/)
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
@@ -2999,7 +2969,7 @@ var IgeEntity = IgeObject.extend({
 				this.streamSectionData('transform'),
 				this.streamCreateData()
 			], clientId);
-
+			
 			ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
 
 			if (clientId) {
@@ -3045,7 +3015,7 @@ var IgeEntity = IgeObject.extend({
 
 		// Send the client an entity create command first
 		ige.network.send('_igeStreamDestroy', thisId, clientId);
-
+		
 		ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
 
 		if (clientId) {
@@ -3062,7 +3032,7 @@ var IgeEntity = IgeObject.extend({
 				}
 			}
 		}
-
+		
 		return true;
 	},
 
