@@ -18,7 +18,16 @@
 	<div class="content"><a href="IgeEntity.html">IgeEntity</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3 class="methodTitle">autoSize</h3>
+<h2>Methods</h2><h3 class="methodTitle">minimumVisibleArea</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the minimum amount of world in pixels to display in width and height. When set, if the viewport's geometry is reduced below the minimum width or height, the viewport's camera is automatically scaled to ensure that the minimum area remains visible in the viewport.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">minimumVisibleArea</span>({<span class="argType">Integer</span>} <span class="argName">width</span>, {<span class="argType">Integer</span>} <span class="argName">height</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Integer</span>}<span class="argName">width</span> Width in pixels.</li><li>{<span class="argType">Integer</span>}<span class="argName">height</span> Height in pixels.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">autoSize</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the auto-size property. If set to true, the viewport will automatically resize to fill the entire scene.</div>
