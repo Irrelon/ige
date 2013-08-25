@@ -133,7 +133,7 @@ var IgeEntity = IgeObject.extend({
 					this._cacheCtx.webkitImageSmoothingEnabled = true;
 					this._cacheCtx.mozImageSmoothingEnabled = true;
 				}
-				
+
 				// Switch off composite caching
 				if (this.compositeCache()) {
 					this.compositeCache(false);
@@ -353,11 +353,10 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 */
 	rotateToPoint: function (point) {
-		var worldPos = this.worldPosition();
 		this.rotateTo(
 			this._rotate.x,
 			this._rotate.y,
-			(Math.atan2(worldPos.y - point.y, worldPos.x - point.x) - this._parent._rotate.z) + Math.radians(270)
+			(Math.atan2(this._translate.y - point.y, this._translate.x - point.x) - this._parent._rotate.z) + Math.radians(270)
 		);
 
 		return this;
@@ -2055,11 +2054,10 @@ var IgeEntity = IgeObject.extend({
 	 *     });
 	 * @return {*}
 	 */
-	mouseOver: function (callback, pixelPerfect) {
+	mouseOver: function (callback) {
 		if (callback) {
 			this._mouseOver = callback;
 			this._mouseEventsActive = true;
-			this._mouseOverPP = pixelPerfect;
 			return this;
 		}
 
@@ -2200,16 +2198,7 @@ var IgeEntity = IgeObject.extend({
 		// Check if the mouse move is a mouse over
 		if (!this._mouseStateOver) {
 			this._mouseStateOver = true;
-			if (this._mouseOver) {
-				// Check if we want pixel-perfect mouse-over
-				if (this._mouseOverPP) {
-					// Check that the mouse-over occurred on a pixel of our
-					// test entity texture
-					
-				} else {
-					this._mouseOver(event, evc, data);
-				}
-			}
+			if (this._mouseOver) { this._mouseOver(event, evc, data); }
 			
 			this.emit('mouseOver', [event, evc, data]);
 		}
