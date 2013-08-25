@@ -2,7 +2,16 @@
 /* Isogenic Game Engine */
 /************************/
 ige = null;
-igeVersion = '1.1.130825.001';
+
+// When setting a new version please use this format:
+// v{MAJOR}.{MINOR}.{SUB}@{YYYY-MM-DD}.{REVISION}
+//
+// For example, to tag version 1.1.2 on 25th April 2013
+// as the third revision of the day:
+// v1.1.2@2013-04-25.003
+igeVersion = 'v1.1.1@13-08-25.002';
+
+// Define the global storage object for classes
 igeClassStore = {};
 
 igeConfig = {
