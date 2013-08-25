@@ -363,11 +363,6 @@ var IgeTextureMap = IgeTileMap2d.extend({
 										ty = yInt * this._tileHeight;
 										finalX = (tx - ty) / this._tileWidth;
 										finalY = ((tx + ty) * 0.5) / this._tileHeight;
-										finalPoint = new IgePoint(finalX, finalY, 0);
-										//finalPoint.thisTo2d();
-
-										finalX = finalPoint.x;
-										finalY = finalPoint.y;
 									}
 
 									// Grab the tile data to paint
