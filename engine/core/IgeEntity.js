@@ -2191,6 +2191,58 @@ var IgeEntity = IgeObject.extend({
 		return this;
 	},
 
+    /**
+     * Determines whether or not the current mouse position is
+     * over a non-transparent pixel of the texture
+     * @return {Boolean} Boolean value
+     * @private
+    */
+    _mouseOnTexturePixel: function(){
+        //Sometimes you wanna mount an animation
+        var textureEntity = this._getMountedTextureEntity();
+
+        var mp = textureEntity.mousePosAbsolute();
+
+
+        xPos = 0|mp.x + textureEntity._width  / 2,
+        yPos = 0|mp.y + textureEntity._height / 2;
+
+        if( xPos <= 0  ||  yPos <= 0 ) {
+            return false;
+        }
+
+        //UI entities with BG (UI)
+        if(textureEntity._patternTexture != undefined ) {
+            var cellPos = this._patternTexture._cells[ textureEntity._cell ];
+            if(  ( xPos < textureEntity._width ) && ( yPos < textureEntity._height ) ) {
+                if( textureEntity._patternTexture.pixelData( cellPos[0] + xPos, cellPos[1] + yPos )[ 3 ] ){
+                    return true;
+                }
+            }
+        //Entities
+        } else if(textureEntity._texture != undefined) {
+            if(  ( xPos < textureEntity._width ) && ( yPos < textureEntity._height ) ) {
+                var cellPos = textureEntity._texture._cells[ textureEntity._cell ];
+
+                if( textureEntity._texture.pixelData( cellPos[0] + xPos, cellPos[1] + yPos )[ 3 ] ){
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    },
+
+    /**
+     * Return the current texture-entity
+     *  In some-cases, you'll mount an entity - just for texture, this method should return it.
+     * @returns {*}
+     * @private
+     */
+    _getMountedTextureEntity: function() {
+        return this;
+    },
+
 	/**
 	 * Handler method that determines which mouse-move event
 	 * to fire, a mouse-over or a mouse-move.
@@ -2205,7 +2257,12 @@ var IgeEntity = IgeObject.extend({
 				if (this._mouseOverPP) {
 					// Check that the mouse-over occurred on a pixel of our
 					// test entity texture
-					
+
+                    if( this._mouseOnTexturePixel() ){
+                        this._mouseOver( event, evc, data );
+                    } else {
+                        this._mouseStateOver = false;
+                    }
 				} else {
 					this._mouseOver(event, evc, data);
 				}
@@ -2215,7 +2272,12 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		if (this._mouseMove) { this._mouseMove(event, evc, data); }
-		this.emit('mouseMove', [event, evc, data]);
+        if( this._mouseOverPP && this._mouseStateOver && this._mouseOut && !this._mouseOnTexturePixel() ){
+            this._handleMouseOut( event, evc, data );
+        }
+        if( this._mouseStateOver ){
+            this.emit('mouseMove', [event, evc, data]);
+        }
 	},
 
 	/**

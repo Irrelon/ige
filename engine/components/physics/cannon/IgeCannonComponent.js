@@ -313,3 +313,4 @@ var IgeCannonComponent = IgeEventingClass.extend({
 		}
 	}
 });
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeCannonComponent; }
