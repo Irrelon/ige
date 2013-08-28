@@ -1,5 +1,5 @@
 # Isogenic Game Engine
-HTML5 2D and isometric game engine version 1.1.0.
+HTML5 2D and isometric game engine.
 
 ## Installation
 If you have the premium (paid for) version of the engine please read this:
