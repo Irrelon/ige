@@ -1777,7 +1777,8 @@ var IgeEngine = IgeEntity.extend({
 	/**
 	 * Gets / sets the option to determine if the engine should
 	 * render on every tick or wait for a manualRender() call.
-	 * @param {Boolean=} val
+	 * @param {Boolean=} val True to enable manual rendering, false
+	 * to disable.
 	 * @return {*}
 	 */
 	useManualRender: function (val) {
@@ -1789,6 +1790,18 @@ var IgeEngine = IgeEntity.extend({
 		return this._useManualRender;
 	},
 
+	/**
+	 * Manually render a frame on demand. This is used in conjunction
+	 * with the ige.useManualRender(true) call which will cause the
+	 * engine to only render new graphics frames from the scenegraph
+	 * once this method is called. You must call this method every time
+	 * you wish to update the graphical output on screen.
+	 * 
+	 * Calling this method multiple times during a single engine tick
+	 * will NOT make it draw more than one frame, therefore it is safe
+	 * to call multiple times if required by different sections of game
+	 * logic without incurring extra rendering cost.
+	 */
 	manualRender: function () {
 		this._manualRender = true;
 	},
