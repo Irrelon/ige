@@ -884,6 +884,7 @@ var IgeEntity = IgeObject.extend({
 	 * Sets the geometry of the entity to match the width and height
 	 * of the assigned texture cell. If the texture is not cell-based
 	 * the entire texture width / height will be used.
+	 * @param {Number=} percent The percentage size to resize to.
 	 * @example #Set the entity dimensions based on the assigned texture and cell
 	 *     var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
 	 *         [0, 0, 40, 40, 'robotHead'],
@@ -898,11 +899,15 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} The object this method was called from to allow
 	 * method chaining
 	 */
-	dimensionsFromCell: function () {
+	dimensionsFromCell: function (percent) {
 		if (this._texture) {
-			this.width(this._texture._cells[this._cell][2]);
-			this.height(this._texture._cells[this._cell][3]);
-
+			if (percent === undefined) {
+				this.width(this._texture._cells[this._cell][2]);
+				this.height(this._texture._cells[this._cell][3]);
+			} else {
+				this.width(Math.floor(this._texture._cells[this._cell][2] / 100 * percent));
+				this.height(Math.floor(this._texture._cells[this._cell][3] / 100 * percent));
+			}
 			// Recalculate localAabb
 			this.localAabb(true);
 		}
