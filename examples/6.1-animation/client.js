@@ -44,7 +44,7 @@ var Client = IgeClass.extend({
 					this.drawBoundsData(false);
 				};
 
-				for (i = 0; i < 1000; i++) {
+				for (i = 0; i < 200; i++) {
 					// Create a new character
 					self.obj[i] = new RandomMovingCharacter()
 						.setType(Math.random() * 8 | 0)
