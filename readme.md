@@ -39,10 +39,12 @@ Head over to the indie-resource.com forum just for Isogenic Engine here: http://
 If you have any comments, questions, requests etc please don't hesitate to discuss them on the forum!
 
 ## License
-You may use the IGE for non-commercial, educational or hobbyist purposes only unless you have purchased a premium license.
+You may use the IGE for non-commercial, educational or hobbyist purposes for free subject to the terms and conditions
+set forth below.
 
 Premium licenses can be obtained from the official website: http://www.isogenicengine.com from only ~$20 (£13.99)
 
+### Terms & Conditions
 If you wish to create a game that utilises the IGE and generates income from any source connected to the game via online
 means (this includes in-game purchases, banner adverts in the game or on the page the game runs on, bank transfers that
 were originated offline but were meant for in-game purchases etc) then you need to purchase a license for the engine.
@@ -50,6 +52,13 @@ Examples of income that is not counted as requiring a license are t-shirts featu
 or other real-world items that are not part of the "digital" game etc. You can purchase a license from our website listed
 below.
 
+You also require a license if you are using the engine as a registered / limited company for any reason.
+
+## Intellectual Property, Ownership & Copyright
 (C)opyright 2012 Irrelon Software Limited
 Website: http://www.isogenicengine.com
 Store: http://store.isogenicengine.com
+
+### Prototype Version
+Some of the art and assets that are included in the premium version are not included in the free (prototype) version because
+of licensing issues.
