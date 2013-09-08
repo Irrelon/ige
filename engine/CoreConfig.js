@@ -21,35 +21,35 @@ var igeCoreConfig = {
 		['csap', 'IgeMouseZoomComponent', 'components/IgeMouseZoomComponent.js'],
 		['csap', 'IgeTiledComponent', 'components/IgeTiledComponent.js'],
 		['csap', 'IgeEntityManagerComponent', 'components/IgeEntityManagerComponent.js'],
-		['csa', 'IgeEditorTranslateComponent', 'components/editor/IgeEditorTranslateComponent.js'],
-		['csa', 'IgeEditorRotateComponent', 'components/editor/IgeEditorRotateComponent.js'],
+		['csap', 'IgeEditorTranslateComponent', 'components/editor/IgeEditorTranslateComponent.js'],
+		['csap', 'IgeEditorRotateComponent', 'components/editor/IgeEditorRotateComponent.js'],
 		/* Physics Libraries */
 		['csap', 'Box2D', 'components/physics/box2d/lib_box2d.js', 'Box2D'],
-		['csa', 'Cannon', 'components/physics/cannon/lib_cannon.js'],
-		['csa', 'IgeCannonComponent', 'components/physics/cannon/IgeCannonComponent.js'],
+		['csap', 'Cannon', 'components/physics/cannon/lib_cannon.js'],
+		['csap', 'IgeCannonComponent', 'components/physics/cannon/IgeCannonComponent.js'],
 		/* Network Stream */
-		['csa', 'IgeTimeSyncExtension', 'components/network/IgeTimeSyncExtension.js'],
-		['csa', 'IgeStreamComponent', 'components/network/stream/IgeStreamComponent.js'],
+		['csap', 'IgeTimeSyncExtension', 'components/network/IgeTimeSyncExtension.js'],
+		['csap', 'IgeStreamComponent', 'components/network/stream/IgeStreamComponent.js'],
 		/* Socket.io */
-		['ca', 'SocketIo', 'components/network/socket.io/client/socket.io.min.js'],
-		['ca', 'IgeSocketIoClient', 'components/network/socket.io/IgeSocketIoClient.js'],
-		['sa', 'IgeSocketIoServer', 'components/network/socket.io/IgeSocketIoServer.js'],
-		['csa', 'IgeSocketIoComponent', 'components/network/socket.io/IgeSocketIoComponent.js'],
+		['cap', 'SocketIo', 'components/network/socket.io/client/socket.io.min.js'],
+		['cap', 'IgeSocketIoClient', 'components/network/socket.io/IgeSocketIoClient.js'],
+		['sap', 'IgeSocketIoServer', 'components/network/socket.io/IgeSocketIoServer.js'],
+		['csap', 'IgeSocketIoComponent', 'components/network/socket.io/IgeSocketIoComponent.js'],
 		/* Net.io */
-		['ca', 'NetIo', 'components/network/net.io/net.io-client/index.js'],
-		['ca', 'IgeNetIoClient', 'components/network/net.io/IgeNetIoClient.js'],
-		['sa', 'IgeNetIoServer', 'components/network/net.io/IgeNetIoServer.js'],
-		['csa', 'IgeNetIoComponent', 'components/network/net.io/IgeNetIoComponent.js'],
+		['cap', 'NetIo', 'components/network/net.io/net.io-client/index.js'],
+		['cap', 'IgeNetIoClient', 'components/network/net.io/IgeNetIoClient.js'],
+		['sap', 'IgeNetIoServer', 'components/network/net.io/IgeNetIoServer.js'],
+		['csap', 'IgeNetIoComponent', 'components/network/net.io/IgeNetIoComponent.js'],
 		/* Chat System */
-		['ca', 'IgeChatClient', 'components/chat/IgeChatClient.js'],
-		['sa', 'IgeChatServer', 'components/chat/IgeChatServer.js'],
-		['csa', 'IgeChatComponent', 'components/chat/IgeChatComponent.js'],
+		['cap', 'IgeChatClient', 'components/chat/IgeChatClient.js'],
+		['sap', 'IgeChatServer', 'components/chat/IgeChatServer.js'],
+		['csap', 'IgeChatComponent', 'components/chat/IgeChatComponent.js'],
 		/* MySQL Support */
-		['sa', 'IgeMySql', 'components/database/mysql/IgeMySql.js'],
-		['sa', 'IgeMySqlComponent', 'components/database/mysql/IgeMySqlComponent.js'],
+		['sap', 'IgeMySql', 'components/database/mysql/IgeMySql.js'],
+		['sap', 'IgeMySqlComponent', 'components/database/mysql/IgeMySqlComponent.js'],
 		/* MongoDB Support */
-		['sa', 'IgeMongoDb', 'components/database/mongodb/IgeMongoDb.js'],
-		['sa', 'IgeMongoDbComponent', 'components/database/mongodb/IgeMongoDbComponent.js'],
+		['sap', 'IgeMongoDb', 'components/database/mongodb/IgeMongoDb.js'],
+		['sap', 'IgeMongoDbComponent', 'components/database/mongodb/IgeMongoDbComponent.js'],
 		/* CocoonJS Support */
 		['csap', 'IgeCocoonJsComponent', 'components/cocoonjs/IgeCocoonJsComponent.js'],
 		/* General Extensions */
@@ -83,7 +83,7 @@ var igeCoreConfig = {
 		/* Physics to Entity Components */
 		['csap', 'IgeBox2dComponent', 'components/physics/box2d/IgeBox2dComponent.js'],
 		['csap', 'IgeEntityBox2d', 'components/physics/box2d/IgeEntityBox2d.js'],
-		['csa', 'IgeEntityCannon', 'components/physics/cannon/IgeEntityCannon.js'],
+		['csap', 'IgeEntityCannon', 'components/physics/cannon/IgeEntityCannon.js'],
 		/* UI Classes */
 		['csap', 'IgeUiButton', 'ui/IgeUiButton.js'],
 		['csap', 'IgeUiRadioButton', 'ui/IgeUiRadioButton.js'],
@@ -109,8 +109,8 @@ var igeCoreConfig = {
 		['cap', 'IgeFilters.invert', 'filters/invert.js'],
 		['cap', 'IgeFilters.glowMask', 'filters/glowMask.js'],
 		/* WebGL */
-		['ca', 'THREE', 'components/three/three.min.js'],
-		['ca', 'IgeThree', 'components/three/IgeThree.js'],
+		['cap', 'THREE', 'components/three/three.min.js'],
+		['cap', 'IgeThree', 'components/three/IgeThree.js'],
 		/* Engine Actual */
 		['csap', 'IgeEngine', 'core/IgeEngine.js']
 	]
