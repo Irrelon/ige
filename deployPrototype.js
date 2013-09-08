@@ -3,7 +3,7 @@ var fs = require('fs'),
 	dir = '../ige_prototype/examples/',
 	data = {};
 
-/*fs.readdir(dir, function(err, files){
+fs.readdir(dir, function(err, files){
 	if (err) { throw(err); }
 
 	files.forEach(function(file){
@@ -27,7 +27,7 @@ var fs = require('fs'),
 
 		});
 	});
-});*/
+});
 
 // TODO: Scan code in blank_game and update paths to change /ige to /ige_prototype
 
