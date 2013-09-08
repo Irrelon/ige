@@ -56,8 +56,9 @@ You also require a license if you are using the engine as a registered / limited
 
 ## Intellectual Property, Ownership & Copyright
 (C)opyright 2012 Irrelon Software Limited
-Website: http://www.isogenicengine.com
-Store: http://store.isogenicengine.com
+
+* Website: http://www.isogenicengine.com
+* Store: http://store.isogenicengine.com
 
 ### Prototype Version
 Some of the art and assets that are included in the premium version are not included in the free (prototype) version because
