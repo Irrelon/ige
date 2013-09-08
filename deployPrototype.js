@@ -18,7 +18,7 @@ fs.readdir(dir, function(err, files){
 					if (!err) {
 						// Folder is a game folder
 						console.log('Processing ' + file + '...');
-						var child = exec('node ./server/ige -fixPaths true -index true -deploy ' + dir + file, {cwd: process.cwd()}, function (error, stdout, stderr) {
+						var child = exec('node ./server/ige -fixPaths true -index true -deploy -proto ' + dir + file, {cwd: process.cwd()}, function (error, stdout, stderr) {
 							console.log('Deploy to ' + file + ' complete');
 						});
 					}
