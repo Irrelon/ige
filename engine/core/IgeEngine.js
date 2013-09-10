@@ -602,7 +602,10 @@ var IgeEngine = IgeEntity.extend({
 	 * @private
 	 */
 	_removeStatsDiv: function () {
-		document.body.removeChild(this._statsDiv);
+		if (this._statsDiv) {
+			document.body.removeChild(this._statsDiv);
+		}
+		
 		delete this._statsDiv;
 	},
 
