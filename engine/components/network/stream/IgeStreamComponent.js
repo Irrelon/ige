@@ -226,10 +226,25 @@ var IgeStreamComponent = IgeEventingClass.extend({
 	},
 
 	_onStreamDestroy: function (data) {
-		var entity = ige.$(data);
+		var entity = ige.$(data[1]),
+			self = this;
+		
 		if (entity) {
-			entity.destroy();
-			this.emit('entityDestroyed', entity);
+			// Calculate how much time we have left before the entity
+			// should be removed from the simulation given the render
+			// latency setting and the current time
+			var destroyDelta = ige.network.stream._renderLatency + (ige._currentTime - data[0]);
+			
+			if (destroyDelta > 0) {
+				// Give the entity a lifespan to destroy it in x ms
+				entity.lifeSpan(destroyDelta, function () {
+					self.emit('entityDestroyed', entity);
+				});
+			} else {
+				// Destroy immediately
+				self.emit('entityDestroyed', entity);
+				entity.destroy();
+			}
 		}
 	},
 

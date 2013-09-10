@@ -688,14 +688,16 @@ var IgeEntity = IgeObject.extend({
 	 * destroyed.
 	 * @param {Number=} milliseconds The number of milliseconds the entity
 	 * will live for from the current time.
+	 * @param {Function=} deathCallback Optional callback method to call when
+	 * the entity is destroyed from end of lifespan.
 	 * @example #Set the lifespan of the entity to 2 seconds after which it will automatically be destroyed
 	 *     entity.lifeSpan(2000);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	lifeSpan: function (milliseconds) {
+	lifeSpan: function (milliseconds, deathCallback) {
 		if (milliseconds !== undefined) {
-			this.deathTime(ige._currentTime + milliseconds);
+			this.deathTime(ige._currentTime + milliseconds, deathCallback);
 			return this;
 		}
 
@@ -711,14 +713,20 @@ var IgeEntity = IgeObject.extend({
 	 * to the engine's start time of zero rather than the current time that
 	 * would be retrieved from new Date().getTime(). It is usually easier
 	 * to call lifeSpan() rather than setting the deathTime directly.
+	 * @param {Function=} deathCallback Optional callback method to call when
+	 * the entity is destroyed from end of lifespan.
 	 * @example #Set the death time of the entity to 60 seconds after engine start
 	 *     entity.deathTime(60000);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	deathTime: function (val) {
+	deathTime: function (val, deathCallback) {
 		if (val !== undefined) {
 			this._deathTime = val;
+			
+			if (deathCallback !== undefined) {
+				this._deathCallBack = deathCallback;
+			}
 			return this;
 		}
 
@@ -1519,6 +1527,12 @@ var IgeEntity = IgeObject.extend({
 	update: function (ctx) {
 		// Check if the entity should still exist
 		if (this._deathTime !== undefined && this._deathTime <= ige._tickStart) {
+			// Check if the deathCallBack was set
+			if (this._deathCallBack) {
+				this._deathCallBack.apply(this);
+				delete this._deathCallback;
+			}
+			
 			// The entity should be removed because it has died
 			this.destroy();
 		} else {
@@ -3350,7 +3364,7 @@ var IgeEntity = IgeObject.extend({
 			i;
 
 		// Send clients the stream destroy command for this entity
-		ige.network.send('_igeStreamDestroy', thisId, clientId);
+		ige.network.send('_igeStreamDestroy', [ige._currentTime, thisId], clientId);
 		
 		ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
 
@@ -3488,7 +3502,7 @@ var IgeEntity = IgeObject.extend({
 	/**
 	 * Processes the time stream for the entity.
 	 * @param {Number} renderTime The time that the time stream is
-	 * targetting to render the entity at.
+	 * targeting to render the entity at.
 	 * @param {Number} maxLerp The maximum lerp before the value
 	 * is assigned directly instead of being interpolated.
 	 * @private

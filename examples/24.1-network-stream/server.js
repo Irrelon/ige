@@ -72,7 +72,7 @@ var Server = IgeClass.extend({
 							.depth(1)
 							.translateTo(0, 150, 0)
 							.streamMode(1)
-							.lifeSpan(10000)
+							.lifeSpan(8000) // NOTE THIS ENTITY LIFESPAN MEANS IT WILL BE DESTROYED IN 10 SECONDS :)
 							.mount(self.scene1);
 
 						// Create an entity and mount it to the scene
