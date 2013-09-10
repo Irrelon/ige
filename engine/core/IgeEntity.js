@@ -3349,7 +3349,7 @@ var IgeEntity = IgeObject.extend({
 			arr,
 			i;
 
-		// Send the client an entity create command first
+		// Send clients the stream destroy command for this entity
 		ige.network.send('_igeStreamDestroy', thisId, clientId);
 		
 		ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
@@ -3406,7 +3406,12 @@ var IgeEntity = IgeObject.extend({
 				for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
 					sectionData = '';
 					sectionId = sectionArr[sectionIndex];
-
+					
+					// Stream section sync intervals allow individual stream sections
+					// to be streamed at different (usually longer) intervals than other
+					// sections so you could for instance reduce the number of updates
+					// a particular section sends out in a second because the data is
+					// not that important compared to updated transformation data
 					if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
 						// Check if the section interval has been reached
 						this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
