@@ -1314,29 +1314,28 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	_projectionOverlap: function (otherObject) {
-		// TODO: Potentially caching the IgePoints here unless this._geometry has changed may speed things up somewhat
 		var thisG3d = this._geometry,
-			thisMin = new IgePoint(
-				this._translate.x - thisG3d.x / 2,
-				this._translate.y - thisG3d.y / 2,
-				this._translate.z - thisG3d.z
-			),
-			thisMax = new IgePoint(
-				this._translate.x + thisG3d.x / 2,
-				this._translate.y + thisG3d.y / 2,
-				this._translate.z + thisG3d.z
-			),
+			thisMin = {
+				x: this._translate.x - thisG3d.x / 2,
+				y: this._translate.y - thisG3d.y / 2,
+				z: this._translate.z - thisG3d.z
+			},
+			thisMax = {
+				x: this._translate.x + thisG3d.x / 2,
+				y: this._translate.y + thisG3d.y / 2,
+				z: this._translate.z + thisG3d.z
+			},
 			otherG3d = otherObject._geometry,
-			otherMin = new IgePoint(
-				otherObject._translate.x - otherG3d.x / 2,
-				otherObject._translate.y - otherG3d.y / 2,
-				otherObject._translate.z - otherG3d.z
-			),
-			otherMax = new IgePoint(
-				otherObject._translate.x + otherG3d.x / 2,
-				otherObject._translate.y + otherG3d.y / 2,
-				otherObject._translate.z + otherG3d.z
-			);
+			otherMin = {
+				x: otherObject._translate.x - otherG3d.x / 2,
+				y: otherObject._translate.y - otherG3d.y / 2,
+				z: otherObject._translate.z - otherG3d.z
+			},
+			otherMax = {
+				x: otherObject._translate.x + otherG3d.x / 2,
+				y: otherObject._translate.y + otherG3d.y / 2,
+				z: otherObject._translate.z + otherG3d.z
+			};
 
 		return this._internalsOverlap(
 			thisMin.x - thisMax.y,
