@@ -211,7 +211,7 @@ var Client = IgeClass.extend({
 						count: 1,
 						emitter: self.player,
 						eventName: 'overTile',
-						eventEvaluate: function (tile) { if (tile.x === 0 && tile.y === 0) { return true; } },
+						eventEvaluate: function (tile) { if (tile.x === 0 && tile.y === -1) { return true; } },
 						eventCallback: function (item) { console.log('overTile event'); },
 						itemCallback: function (item) {	console.log('Item completed! Quest percent: ' + this.percentComplete() + '%'); }
 					}])

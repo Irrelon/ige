@@ -56,6 +56,29 @@ var CharacterContainer = IgeEntity.extend({
 		}
 		
 		IgeEntity.prototype.update.call(this, ctx);
+	},
+	
+	tick: function (ctx) {
+		// Work out which tile we're over and if it's different from
+		// the last one we were over, emit an overTile event
+		var currentPosition = this._translate,
+			curTile;
+
+		// Calculate which tile our character is currently "over"
+		if (this._parent.isometricMounts()) {
+			curTile = this._parent.pointToTile(currentPosition.toIso());
+		} else {
+			curTile = this._parent.pointToTile(currentPosition);
+		}
+
+		// Compare the last tile to the current one
+		if (!curTile.compare(this._overTile)) {
+			// Different over tile
+			this._overTile = curTile;
+			this.emit('overTile', this._overTile);
+		}
+
+		IgeEntity.prototype.tick.call(this, ctx);
 	}
 });
 
