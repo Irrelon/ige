@@ -27,7 +27,7 @@ var IgeEngine = IgeEntity.extend({
 
 		// Output our header
 		console.log('------------------------------------------------------------------------------');
-		console.log('* Powered by the Isogenic Game Engine ' + igeVersion + '                                  *');
+		console.log('* Powered by the Isogenic Game Engine ' + igeVersion + '                    *');
 		console.log('* (C)opyright 2012 Irrelon Software Limited                                  *');
 		console.log('* http://www.isogenicengine.com                                              *');
 		console.log('------------------------------------------------------------------------------');
