@@ -10,14 +10,14 @@ var IgePoint = IgeClass.extend({
 		// Commented for increase performance over stability checks
 		/*if (x === undefined) { debugger; }
 		if (y === undefined) { debugger; }
-		if (z === undefined) { debugger; }
+		if (z === undefined) { debugger; }*/
 		this.x = x = x !== undefined ? x : 0;
 		this.y = y = y !== undefined ? y : 0;
-		this.z = z = z !== undefined ? z : 0;*/
+		this.z = z = z !== undefined ? z : 0;
 		
-		this.x = x;
+		/*this.x = x;
 		this.y = y;
-		this.z = z;
+		this.z = z;*/
 		
 		this._floor = floor !== undefined;
 		
