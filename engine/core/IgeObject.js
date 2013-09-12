@@ -44,6 +44,30 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Gets / set the managed flag. If set to true, if an entity manager is active
+	 * on the entity's parent then this entity will be managed by it. Using the
+	 * built-in IgeEntityManager, managed entities are automatically unmounted from
+	 * the scenegraph when they go outside the bounds of the active viewports. When
+	 * the viewport camera moves the view space so that the entity comes back into
+	 * view the manager will auto-mount the entity back to it's parent.
+	 * 
+	 * Keep in mind that managed entities will NOT have their update() method called
+	 * when they are unmounted. Only enabled managed mode on entities that do not
+	 * require any update processing when they are off-screen (e.g. static objects).
+	 * @param {Boolean=} val Set to true to enable managed mode, false to disable.
+	 * The default value is true.
+	 * @returns {*}
+	 */
+	managed: function (val) {
+		if (val !== undefined) {
+			this._managed = val;
+			return this;
+		}
+		
+		return this._managed;
+	},
+
+	/**
 	 * Gets / sets the current object id. If no id is currently assigned and no
 	 * id is passed to the method, it will automatically generate and assign a
 	 * new id as a 16 character hexadecimal value typed as a string.
