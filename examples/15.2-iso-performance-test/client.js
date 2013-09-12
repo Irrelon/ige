@@ -9,6 +9,9 @@ var Client = IgeClass.extend({
 
 		// Load our textures
 		var self = this;
+		
+		//ige.debugEnabled(false);
+		//ige.debugTiming(false);
 
 		this.obj = [];
 		this.gameTexture = {};
@@ -163,11 +166,13 @@ var Client = IgeClass.extend({
 			.isometricMounts(true)
 			.tileWidth(20)
 			.tileHeight(20)
-			.drawGrid(40)
-			.drawMouse(true)
-			.highlightOccupied(true)
+			//.drawGrid(40)
+			//.drawMouse(true)
+			.highlightOccupied(false)
 			.mouseOver(this._mapOnMouseOver)
 			.mouseUp(this._mapOnMouseUp)
+			.depthSortMode(2)
+			.viewChecking(true)
 			.mount(this.gameScene);
 
 		/*
@@ -603,12 +608,29 @@ var Client = IgeClass.extend({
 
 	setupEntities: function () {
 		// Create an entity
-		this.placeItem('Bank', 0, 6);
-		this.placeItem('Electricals', 2, 6);
-		this.placeItem('Burgers', 5, 6);
+		var i, type, x, y;
+		for (i = 0; i < 3000; i++) {
+			type = Math.floor(Math.random() * 3);
+			x = Math.floor(Math.random() * 500);
+			y = Math.floor(Math.random() * 500);
+			
+			switch (type) {
+				case 0:
+					this.placeItem('Bank', x, y);
+					break;
+				
+				case 1:
+					this.placeItem('Electricals', x, y);
+					break;
+				
+				case 2:
+					this.placeItem('Burgers', x, y);
+					break;
+			}
+		}
 	},
 	
-		/**
+	/**
 	 * Place a building on the map.
 	 * @param type
 	 * @param tileX
