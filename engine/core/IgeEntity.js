@@ -33,6 +33,7 @@ var IgeEntity = IgeObject.extend({
         this._localMatrix = new IgeMatrix2d(this);
         this._worldMatrix = new IgeMatrix2d(this);
 
+		this._managed = true;
 		this._inView = true;
 		this._hidden = false;
 

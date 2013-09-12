@@ -171,9 +171,11 @@ var Client = IgeClass.extend({
 			.highlightOccupied(false)
 			.mouseOver(this._mapOnMouseOver)
 			.mouseUp(this._mapOnMouseUp)
-			.depthSortMode(2)
-			.viewChecking(true)
+			.depthSortMode(0)
+			//.viewChecking(false)
 			.mount(this.gameScene);
+		
+		this.tileMap1.addComponent(IgeEntityManager);
 
 		/*
 			Just so we're all clear about what just happened, we have
