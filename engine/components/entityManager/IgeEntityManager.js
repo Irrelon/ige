@@ -38,28 +38,39 @@ var IgeEntityManager = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Checks all the mounted entities to our component parent are still supposed
-	 * to be in the scenegraph and if not, adds them to the unmount queue. Also
+	 * Checks all the mounted entities of our component parent are still supposed
+	 * to be in the scenegraph and if not, adds them to the un-mount queue. Also
 	 * marks any entities that are non-managed but also off-screen as inView = false.
 	 * @private
 	 */
 	_updateOrphans: function () {
-		// Loop our child entities and check for new orphans (entities that are
-		// set to managed and are not intersecting the bounds of any active viewport
 		var arr = this._entity._children,
 			arrCount = arr.length,
-			// TODO: This does not currently support multiple viewports
-			vpViewArea = ige._currentViewport.viewArea(),
-			item;
+			viewportArr = ige._children,
+			vpCount = viewportArr.length,
+			item,
+			itemAabb,
+			vpIndex,
+			inVisibleArea;
 		
 		while (arrCount--) {
 			item = arr[arrCount];
 
 			if (item._managed) {
 				if (item.aabb) {
-					// Check the entity to see if its bounds are "inside" the
+					itemAabb = item.aabb();
+					inVisibleArea = false;
+					
+					// Check the entity to see if its bounds are "inside" any
 					// viewport's visible area
-					if (!vpViewArea.rectIntersect(item.aabb())) {
+					for (vpIndex = 0; vpIndex < vpCount; vpIndex++) {
+						if (viewportArr[vpIndex].viewArea().rectIntersect(itemAabb)) {
+							inVisibleArea = true;
+							break;
+						}
+					}
+					
+					if (!inVisibleArea) {
 						// Check for managed mode 1 (static entities that can be unmounted)
 						// or managed mode 2 (dynamic and should just be marked as inView = false)
 						if (item._managed === 1) {
@@ -82,33 +93,51 @@ var IgeEntityManager = IgeEventingClass.extend({
 	},
 	
 	/**
-	 * Checks all the un-mounted entities for our component parent to see if they are
+	 * Checks all the un-mounted entities of our component parent to see if they are
 	 * now inside the visible area of a viewport and if so, queues them for re-mounting.
 	 * @private
 	 */
-	_updateChildren: function () {
-		// Loop our child entities and check for new orphans (entities that are
-		// set to managed and are not intersecting the bounds of any active viewport
+	_updateChildren: function (viewport) {
 		var arr = this._entity._orphans,
 			arrCount = arr.length,
-			// TODO: This does not currently support multiple viewports
-			vpViewArea = ige._currentViewport.viewArea(),
-			item;
+			viewportArr = ige._children,
+			vpCount = viewportArr.length,
+			item,
+			itemAabb,
+			vpIndex,
+			inVisibleArea;
 		
 		while (arrCount--) {
 			item = arr[arrCount];
 
 			if (item._managed) {
 				if (item.aabb) {
-					// Check the entity to see if its bounds are "inside" the
+					itemAabb = item.aabb();
+					inVisibleArea = false;
+					
+					// Check the entity to see if its bounds are "inside" any
 					// viewport's visible area
-					if (vpViewArea.rectIntersect(item.aabb())) {
-						// The entity is inside the viewport visible area
-						this._mountQueue.push(item);
-						
-						// Mark the entity as inView = true
-						item._inView = true;
+					for (vpIndex = 0; vpIndex < vpCount; vpIndex++) {
+						if (viewportArr[vpIndex].viewArea().rectIntersect(itemAabb)) {
+							inVisibleArea = true;
+							break;
+						}
 					}
+					
+					if (inVisibleArea) {
+						// Check for managed mode 1 (static entities that can be mounted)
+						// or managed mode 2 (dynamic and should just be marked as inView = true)
+						if (item._managed === 1) {
+							// The entity is inside the viewport visible area
+							// and is managed mode 1 (static) so mount it
+							this._mountQueue.push(item);
+						} else if (item._managed === 2) {
+							// The entity is dynamic so mark is as inView = true
+							item._inView = true;
+						}
+					}
+				} else {
+					this._mountQueue.push(item);
 				}
 			}
 		}
