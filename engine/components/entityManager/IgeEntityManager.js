@@ -97,7 +97,7 @@ var IgeEntityManager = IgeEventingClass.extend({
 	 * now inside the visible area of a viewport and if so, queues them for re-mounting.
 	 * @private
 	 */
-	_updateChildren: function (viewport) {
+	_updateChildren: function () {
 		var arr = this._entity._orphans,
 			arrCount = arr.length,
 			viewportArr = ige._children,
