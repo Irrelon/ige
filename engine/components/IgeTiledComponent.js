@@ -132,6 +132,7 @@ var IgeTiledComponent = IgeClass.extend({
 
 				if (layerType === 'objectgroup') {
 					maps[i] = layer;
+					layersById[layer.name] = maps[i];
 				}
 			}
 
