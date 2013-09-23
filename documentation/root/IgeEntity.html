@@ -442,8 +442,8 @@ entity.heightByTile(1, true);
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the life span of the object in milliseconds. The life span is how long the object will exist for before being automatically destroyed.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">lifeSpan</span>({<span class="argType">Number</span>} <span class="argName">milliseconds</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">milliseconds</span> The number of milliseconds the entity will live for from the current time.</li></ul></div>
+    <div class="methodDefinition"><span class="methodName">lifeSpan</span>({<span class="argType">Number</span>} <span class="argName">milliseconds</span>, {<span class="argType">Function</span>} <span class="argName">deathCallback</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">milliseconds</span> The number of milliseconds the entity will live for from the current time.</li><li>{<span class="argType">Function</span>}<span class="argName">deathCallback</span> Optional callback method to call when the entity is destroyed from end of lifespan.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
     
 					<div class="methodExample">
@@ -459,8 +459,8 @@ entity.heightByTile(1, true);
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the timestamp in milliseconds that denotes the time that the entity will be destroyed. The object checks it's own death time during each tick and if the current time is greater than the death time, the object will be destroyed.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">deathTime</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The death time timestamp. This is a time relative to the engine's start time of zero rather than the current time that would be retrieved from new Date().getTime(). It is usually easier to call lifeSpan() rather than setting the deathTime directly.</li></ul></div>
+    <div class="methodDefinition"><span class="methodName">deathTime</span>({<span class="argType">Number</span>} <span class="argName">val</span>, {<span class="argType">Function</span>} <span class="argName">deathCallback</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The death time timestamp. This is a time relative to the engine's start time of zero rather than the current time that would be retrieved from new Date().getTime(). It is usually easier to call lifeSpan() rather than setting the deathTime directly.</li><li>{<span class="argType">Function</span>}<span class="argName">deathCallback</span> Optional callback method to call when the entity is destroyed from end of lifespan.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
     
 					<div class="methodExample">
@@ -595,8 +595,8 @@ entity.texture(texture)
     <!--=if{desc}[-->
     <div class="methodDesc">Sets the geometry of the entity to match the width and height of the assigned texture cell. If the texture is not cell-based the entire texture width / height will be used.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">dimensionsFromCell</span>()</div>
-    <div class="methodArgs"></div>
+    <div class="methodDefinition"><span class="methodName">dimensionsFromCell</span>({<span class="argType">Number</span>} <span class="argName">percent</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">percent</span> The percentage size to resize to.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining</div>
     
 					<div class="methodExample">
@@ -1851,7 +1851,7 @@ entity.streamFloatPrecision(2);
     <div class="methodDesc">Processes the time stream for the entity.</div>
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">_processInterpolate</span>({<span class="argType">Number</span>} <span class="argName">renderTime</span>, {<span class="argType">Number</span>} <span class="argName">maxLerp</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">renderTime</span> The time that the time stream is targetting to render the entity at.</li><li>{<span class="argType">Number</span>}<span class="argName">maxLerp</span> The maximum lerp before the value is assigned directly instead of being interpolated.</li></ul></div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">renderTime</span> The time that the time stream is targeting to render the entity at.</li><li>{<span class="argType">Number</span>}<span class="argName">maxLerp</span> The maximum lerp before the value is assigned directly instead of being interpolated.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
 </div>	</div>
