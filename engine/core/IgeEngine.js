@@ -34,9 +34,9 @@ var IgeEngine = IgeEntity.extend({
 		
 		IgeEntity.prototype.init.call(this);
 
-		// Check if we should add the CocoonJS support component
+		// Check if we are running client-side
 		if (!this.isServer) {
-			// Enable cocoonJS support because we are running native
+			// Enable cocoonJS support because we are running client-side
 			this.addComponent(IgeCocoonJsComponent);
 		}
 
@@ -103,6 +103,7 @@ var IgeEngine = IgeEntity.extend({
 		this._timeScale = 1; // The default time scaling factor to speed up or slow down engine time
 		this._globalScale = new IgePoint(1, 1, 1);
 		this._graphInstances = []; // Holds an array of instances of graph classes
+		this._sceneGrid = {}; // Hold the entity grid intersection lookup data
 
 		// Set the context to a dummy context to start
 		// with in case we are in "headless" mode and

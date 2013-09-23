@@ -16,6 +16,7 @@ var IgeObject = IgeEventingClass.extend({
 		this._depthSortMode = 0;
 		this._timeStream = [];
 		this._inView = true;
+		this._managed = 1;
 	},
 
 	/**
@@ -41,6 +42,30 @@ var IgeObject = IgeEventingClass.extend({
 		}
 
 		return this._alive;
+	},
+
+	/**
+	 * Gets / set the managed mode from 0 to 2. 0 = off, 1 = static, 2 = dynamic.
+	 * 
+	 * @param {Number=} val Set to 0 to switch off managed mode, 1 to set to static
+	 * managed mode or 2 to dynamic managed mode. When in a managed mode and when
+	 * the parent of this entity has an entity manager component enabled, the entity
+	 * will be checked to see if it is inside the visible area of a viewport. If it
+	 * is deemed not to be in a visible area (via it's AABB non-intersection with
+	 * viewport view area) then it will either be un-mounted from the parent (mode 1)
+	 * or marked as no longer in view (mode 2). Mode 2 in view = false will cause the
+	 * entity to no longer be depth-sorted or rendered but will still have it's
+	 * update() method called each frame allowing logic processing to occur as normal.
+	 * The default managed mode is 1.
+	 * @returns {*}
+	 */
+	managed: function (val) {
+		if (val !== undefined) {
+			this._managed = val;
+			return this;
+		}
+		
+		return this._managed;
 	},
 
 	/**
