@@ -11,7 +11,22 @@ var IgeEventingClass = IgeClass.extend({
 	 * @param {Object=} context The context in which the call to the listening method will be made (sets the 'this' variable in the method to the object passed as this parameter).
 	 * @param {Boolean=} oneShot If set, will instruct the listener to only listen to the event being fired once and will not fire again.
 	 * @param {Boolean=} sendEventName If set, will instruct the emitter to send the event name as the argument instead of any emitted arguments.
-	 * @return {Object}
+	 * @return {Object} The event listener object. Hold this value if you later want to turn off the event listener.
+	 * @example #Add an Event Listener
+	 *     // Register event lister and store in "evt"
+	 *     var evt = myEntity.on('mouseDown', function () { console.log('down'); });
+	 * @example #Listen for Event Data
+	 *     // Set a listener to listen for the data (multiple values emitted
+	 *     // from an event are passed as function arguments)
+	 *     myEntity.on('hello', function (arg1, arg2) {
+	 *         console.log(arg1, arg2);
+	 *     }
+	 *     
+	 *     // Emit the event named "hello"
+	 *     myEntity.emit('hello', ['data1', 'data2']);
+	 *     
+	 *     // The console output is:
+	 *     //    data1, data2
 	 */
 	on: function (eventName, call, context, oneShot, sendEventName) {
 		var self = this,
@@ -98,6 +113,59 @@ var IgeEventingClass = IgeClass.extend({
 			this.log('Cannot register event listener for event "' + eventName + '" because the passed callback is not a function!', 'error');
 		}
 	},
+	
+	/**
+	 * Remove an event listener. If the _processing flag is true
+	 * then the removal will be placed in the removals array to be
+	 * processed after the event loop has completed in the emit()
+	 * method.
+	 * @param {Boolean} eventName The name of the event you originally registered to listen for.
+	 * @param {Object} evtListener The event listener object to cancel. This object is the one
+	 * returned when calling the on() method. It is NOT the method you passed as the second argument
+	 * to the on() method.
+	 * @example #Switch off an Event Listener
+	 *     // Register event lister and store in "evt"
+	 *     var evt = myEntity.on('mouseDown', function () { console.log('down'); });
+	 *     
+	 *     // Switch off event listener
+	 *     myEntity.off('mouseDown', evt);
+	 * @return {Boolean}
+	 */
+	off: function (eventName, evtListener, callback) {
+		if (this._eventListeners) {
+			if (!this._eventListeners._processing) {
+				if (this._eventListeners[eventName]) {
+					// Find this listener in the list
+					var evtListIndex = this._eventListeners[eventName].indexOf(evtListener);
+					if (evtListIndex > -1) {
+						// Remove the listener from the event listener list
+						this._eventListeners[eventName].splice(evtListIndex, 1);
+						if (callback) {
+							callback(true);
+						}
+						return true;
+					} else {
+						this.log('Failed to cancel event listener for event named "' + eventName + '" !', 'warning', evtListener);
+					}
+				} else {
+					this.log('Failed to cancel event listener!');
+				}
+			} else {
+				// Add the removal to a remove queue since we are processing
+				// listeners at the moment and removing one would mess up the
+				// loop!
+				this._eventListeners._removeQueue = this._eventListeners._removeQueue || [];
+				this._eventListeners._removeQueue.push([eventName, evtListener, callback]);
+
+				return -1;
+			}
+		}
+
+		if (callback) {
+			callback(false);
+		}
+		return false;
+	},
 
 	/**
 	 * Emit an event by name.
@@ -105,6 +173,27 @@ var IgeEventingClass = IgeClass.extend({
 	 * @param {Object || Array} args The arguments to send to any listening methods.
 	 * If you are sending multiple arguments, use an array containing each argument.
 	 * @return {Number}
+	 * @example #Emit an Event
+	 *     // Emit the event named "hello"
+	 *     myEntity.emit('hello');
+	 * @example #Emit an Event With Data Object
+	 *     // Emit the event named "hello"
+	 *     myEntity.emit('hello', {moo: true});
+	 * @example #Emit an Event With Multiple Data Values
+	 *     // Emit the event named "hello"
+	 *     myEntity.emit('hello', [{moo: true}, 'someString']);
+	 * @example #Listen for Event Data
+	 *     // Set a listener to listen for the data (multiple values emitted
+	 *     // from an event are passed as function arguments)
+	 *     myEntity.on('hello', function (arg1, arg2) {
+	 *         console.log(arg1, arg2);
+	 *     }
+	 *     
+	 *     // Emit the event named "hello"
+	 *     myEntity.emit('hello', ['data1', 'data2']);
+	 *     
+	 *     // The console output is:
+	 *     //    data1, data2
 	 */
 	emit: function (eventName, args) {
 		if (this._eventListeners) {
@@ -181,6 +270,14 @@ var IgeEventingClass = IgeClass.extend({
 	},
 
 	/**
+	 * Returns an object containing the current event listeners.
+	 * @return {Object}
+	 */
+	eventList: function () {
+		return this._eventListeners;
+	},
+	
+	/**
 	 * Loops the removals array and processes off() calls for
 	 * each array item.
 	 * @private
@@ -215,59 +312,6 @@ var IgeEventingClass = IgeClass.extend({
 			// Remove the removal array
 			delete this._eventListeners._removeQueue;
 		}
-	},
-
-	/**
-	 * Remove an event listener. If the _processing flag is true
-	 * then the removal will be placed in the removals array to be
-	 * processed after the event loop has completed in the emit()
-	 * method.
-	 * @param {Boolean} eventName The name of the event you originally registered to listen for.
-	 * @param {Object} evtListener The event listener object to cancel.
-	 * @return {Boolean}
-	 */
-	off: function (eventName, evtListener, callback) {
-		if (this._eventListeners) {
-			if (!this._eventListeners._processing) {
-				if (this._eventListeners[eventName]) {
-					// Find this listener in the list
-					var evtListIndex = this._eventListeners[eventName].indexOf(evtListener);
-					if (evtListIndex > -1) {
-						// Remove the listener from the event listener list
-						this._eventListeners[eventName].splice(evtListIndex, 1);
-						if (callback) {
-							callback(true);
-						}
-						return true;
-					} else {
-						this.log('Failed to cancel event listener for event named "' + eventName + '" !', 'warning', evtListener);
-					}
-				} else {
-					this.log('Failed to cancel event listener!');
-				}
-			} else {
-				// Add the removal to a remove queue since we are processing
-				// listeners at the moment and removing one would mess up the
-				// loop!
-				this._eventListeners._removeQueue = this._eventListeners._removeQueue || [];
-				this._eventListeners._removeQueue.push([eventName, evtListener, callback]);
-
-				return -1;
-			}
-		}
-
-		if (callback) {
-			callback(false);
-		}
-		return false;
-	},
-
-	/**
-	 * Returns an object containing the current event listeners.
-	 * @return {Object}
-	 */
-	eventList: function () {
-		return this._eventListeners;
 	}
 });
 
