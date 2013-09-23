@@ -1,4 +1,3 @@
-// TODO: Implement the _stringify() method for this class
 /**
  * Texture maps provide a way to display textures across a tile map.
  */
