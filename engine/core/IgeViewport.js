@@ -1,4 +1,3 @@
-// TODO: Implement the _stringify() method for this class
 /**
  * Creates a new viewport.
  */
@@ -10,6 +9,8 @@ var IgeViewport = IgeEntity.extend([
 	IgeViewport: true,
 
 	init: function (options) {
+		var width, height;
+		
 		this._alwaysInView = true;
 		IgeEntity.prototype.init.call(this);
 
@@ -18,26 +19,22 @@ var IgeViewport = IgeEntity.extend([
 		this._overflow = '';
 		this._uiX = 0;
 		this._uiY = 0;
+		this._clipping = true;
 
 		// Set default options if not specified
 		// TODO: Is this required or even used?
-		if (options === undefined) {
-			options = {
-				left: 0,
-				top: 0,
-				width: ige._geometry.x,
-				height: ige._geometry.y,
-				autoSize: true
-			};
-		} else {
-			if (options.scaleToWidth && options.scaleToHeight) {
+		if (options) {
+			width = options.width;
+			height = options.height;
+			
+			if (options && options.scaleToWidth && options.scaleToHeight) {
 				// Store the w/h we want to lock to
 				this._lockDimension = new IgePoint(options.scaleToWidth, options.scaleToHeight, 0);
 			}
 		}
 
 		// Setup default objects
-		this._geometry = new IgePoint(options.width || 250, options.height || 150, 0);
+		this._geometry = new IgePoint(width || ige._geometry.x, height || ige._geometry.y, 0);
 		this.camera = new IgeCamera(this);
 		this.camera._entity = this;
 		//this._drawMouse = true;
@@ -164,7 +161,8 @@ var IgeViewport = IgeEntity.extend([
 			ctx.clearRect(0, 0, this._geometry.x, this._geometry.y);
 
 			// Clip the context so we only draw "inside" the viewport area
-			ctx.beginPath();
+			if (this._clipping || this._borderColor) {
+				ctx.beginPath();
 				ctx.rect(0, 0, this._geometry.x / ige._scale.x, this._geometry.y / ige._scale.x);
 
 				// Paint a border if required
@@ -172,12 +170,18 @@ var IgeViewport = IgeEntity.extend([
 					ctx.strokeStyle = this._borderColor;
 					ctx.stroke();
 				}
-			ctx.clip();
+				
+				if (this._clipping) {
+					ctx.clip();
+				}
+			}
 
 			// Translate back to the center of the viewport
-			ctx.translate((this._geometry.x / 2) | 0, (this._geometry.y / 2) | 0);
-			ctx.translate(ige._translate.x, ige._translate.y);
-			ctx.scale(ige._scale.x, ige._scale.y);
+			ctx.translate(((this._geometry.x / 2) | 0) + ige._translate.x, ((this._geometry.y / 2) | 0) + ige._translate.y);
+			/*ctx.translate(ige._translate.x, ige._translate.y);*/
+			if (ige._scale.x !== 1 || ige._scale.y !== 1) {
+				ctx.scale(ige._scale.x, ige._scale.y);
+			}
 
 			// Transform the context to the center of the viewport
 			// by processing the viewport's camera tick method

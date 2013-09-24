@@ -5,18 +5,22 @@ var IgePoint = IgeClass.extend({
 	classId: 'IgePoint',
 
 	init: function (x, y, z, floor) {
-		if (floor === undefined) {
-			this._floor = true;
-		} else {
-			this._floor = floor;
-		}
-
 		// Set values to the passed parameters or
 		// zero if they are undefined
+		// Commented for increase performance over stability checks
+		/*if (x === undefined) { debugger; }
+		if (y === undefined) { debugger; }
+		if (z === undefined) { debugger; }*/
 		this.x = x = x !== undefined ? x : 0;
 		this.y = y = y !== undefined ? y : 0;
 		this.z = z = z !== undefined ? z : 0;
-
+		
+		/*this.x = x;
+		this.y = y;
+		this.z = z;*/
+		
+		this._floor = floor !== undefined;
+		
 		if (this._floor) {
 			this.x2 = Math.floor(x / 2);
 			this.y2 = Math.floor(y / 2);

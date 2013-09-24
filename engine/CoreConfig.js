@@ -20,6 +20,7 @@ var igeCoreConfig = {
 		['csap', 'IgeMousePanComponent', 'components/IgeMousePanComponent.js'],
 		['csap', 'IgeMouseZoomComponent', 'components/IgeMouseZoomComponent.js'],
 		['csap', 'IgeTiledComponent', 'components/IgeTiledComponent.js'],
+		['csap', 'IgeEntityManager', 'components/entityManager/IgeEntityManager.js'],
 		['csap', 'IgeEntityManagerComponent', 'components/IgeEntityManagerComponent.js'],
 		['csap', 'IgeEditorTranslateComponent', 'components/editor/IgeEditorTranslateComponent.js'],
 		['csap', 'IgeEditorRotateComponent', 'components/editor/IgeEditorRotateComponent.js'],
