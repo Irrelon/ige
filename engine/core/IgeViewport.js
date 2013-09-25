@@ -104,9 +104,17 @@ var IgeViewport = IgeEntity.extend([
 
 	viewArea: function () {
 		var aabb = this.aabb(),
-			camTrans = this.camera._translate;
-
-		return new IgeRect(aabb.x + camTrans.x, aabb.y + camTrans.y, aabb.width, aabb.height);
+			camTrans = this.camera._translate,
+			camScale = this.camera._scale,
+			xRatio = 1 / camScale.x,
+			yRatio = 1 / camScale.y;
+		
+		return new IgeRect(
+			((aabb.x + camTrans.x) * xRatio),
+			((aabb.y + camTrans.y) * yRatio),
+			(aabb.width * xRatio),
+			(aabb.height * yRatio)
+		);
 	},
 
 	/**

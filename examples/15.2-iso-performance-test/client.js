@@ -74,6 +74,8 @@ var Client = IgeClass.extend({
 		this.gameTexture.uiButtonMove = new IgeTexture('../assets/textures/ui/uiButton_move.png');
 		this.gameTexture.uiButtonDelete = new IgeTexture('../assets/textures/ui/uiButton_delete.png');
 		this.gameTexture.uiButtonHouse = new IgeTexture('../assets/textures/ui/uiButton_house.png');
+		
+		this.gameTexture.simpleBox = new IgeTexture('./assets/textures/smartTextures/simpleBox.js');
 	},
 
 	setupScene: function () {
@@ -101,13 +103,33 @@ var Client = IgeClass.extend({
 			.id('vp1')
 			.addComponent(IgeMousePanComponent)
 			.addComponent(IgeMouseZoomComponent)
-			.mousePan.enabled(true)
-			.mouseZoom.enabled(false)
+			.mousePan.enabled(false)
+			.mouseZoom.enabled(true)
 			.autoSize(true)
 			.scene(this.mainScene)
 			.drawBounds(false)
 			.drawBoundsData(false)
 			.mount(ige);
+		
+		/*// Create the second viewport
+		this.vp2 = new IgeViewport()
+			.id('vp2')
+			.addComponent(IgeMousePanComponent)
+			.addComponent(IgeMouseZoomComponent)
+			.mousePan.enabled(false)
+			.mouseZoom.enabled(true)
+			.autoSize(false)
+			.left(30)
+			.bottom(30)
+			.borderColor('#ffffff')
+			//.originTo(0, 0, 0)
+			.width(300)
+			.height(200)
+			.layer(2)
+			.scene(this.mainScene)
+			.drawBounds(false)
+			.drawBoundsData(false)
+			.mount(ige);*/
 
 		// Create some listeners for when the viewport is being panned
 		// so that we don't create an entity accidentally after a mouseUp
@@ -611,7 +633,7 @@ var Client = IgeClass.extend({
 	setupEntities: function () {
 		// Create an entity
 		var i, type, x, y;
-		for (i = 0; i < 3000; i++) {
+		for (i = 0; i < 1000; i++) {
 			type = Math.floor(Math.random() * 3);
 			x = Math.floor(Math.random() * 500);
 			y = Math.floor(Math.random() * 500);

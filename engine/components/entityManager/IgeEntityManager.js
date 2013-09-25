@@ -17,7 +17,7 @@ var IgeEntityManager = IgeEventingClass.extend({
 		entity._orphans = [];
 		
 		// Set a method (behaviour) that will be called on every update
-		entity.addBehaviour('path', this._updateBehaviour, false);
+		entity.addBehaviour('entManager', this._updateBehaviour, false);
 	},
 
 	/**
@@ -26,7 +26,21 @@ var IgeEntityManager = IgeEventingClass.extend({
 	 * that are to be unmounted are unmounted.
 	 * @private
 	 */
-	_updateBehaviour: function () {
+	_updateBehaviour: function (ctx) {
+		// Draw visible area rect
+		var rect = ige._currentViewport.viewArea();
+		
+		/*new IgeEntity()
+			.id('visArea')
+			.texture(this.gameTexture.simpleBox)
+			.opacity(0.5)
+			.mount(ige.$('objectScene'));*/
+		
+		/*ige.$('visArea')
+			.translateTo(rect.x + (rect.width / 2), rect.y + (rect.height / 2), 0)
+			.height(rect.height)
+			.width(rect.width);*/
+		
 		// Get our instance back
 		var self = this.entityManager;
 		
