@@ -60,12 +60,16 @@ var Client = IgeClass.extend({
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
 						.id('vp1')
+						.addComponent(IgeMouseZoomComponent)
+						.mouseZoom.enabled(true)
 						.depth(1)
 						.autoSize(true)
 						.scene(self.mainScene)
 						.drawBounds(true)
 						.drawBoundsData(true)
 						.mount(ige);
+					
+					//self.vp1.camera.scaleTo(0.5, 0.5, 0.5);
 
 					// Let's create a character, then set the camera to follow him!
 					self.player1 = new Character()
