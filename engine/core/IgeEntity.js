@@ -449,9 +449,15 @@ var IgeEntity = IgeObject.extend({
 	 */
 	widthByTile: function (val, lockAspect) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
-			var tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2,
+			//var tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2,
+			//	ratio;
+			var tileSize = this._parent._tileWidth,
 				ratio;
-
+				
+			if (this._mode === 1) {
+				tileSize = this._parent._tileWidth * 2;
+			}
+			
 			this.width(val * tileSize);
 
 			if (lockAspect) {
@@ -486,8 +492,14 @@ var IgeEntity = IgeObject.extend({
 	 */
 	heightByTile: function (val, lockAspect) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
-			var tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2,
+			//var tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2,
+			//	ratio;
+			var tileSize = this._parent._tileHeight,
 				ratio;
+			
+			if (this._mode === 1) {
+				tileSize = this._parent._tileHeight * 2;
+			}
 
 			this.height(val * tileSize);
 
@@ -529,6 +541,10 @@ var IgeEntity = IgeObject.extend({
 				if (this._parent._mountMode === 1) {
 					tilePoint.thisToIso();
 				}
+				
+				if (this._parent._mountMode === 2) {
+					tilePoint.thisToIso2();
+				}
 	
 				this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
 			}
@@ -558,6 +574,10 @@ var IgeEntity = IgeObject.extend({
 	
 				if (this._parent._mountMode === 1) {
 					tilePoint.thisToIso();
+				}
+				
+				if (this._parent._mountMode === 2) {
+					tilePoint.thisToIso2();
 				}
 	
 				this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
@@ -1108,13 +1128,64 @@ var IgeEntity = IgeObject.extend({
 
 				box = new IgeRect(minX, minY, maxX - minX, maxY - minY);
 			}
-
+			
 			// Handle isometric entities
 			if (this._mode === 1) {
 				// Top face
 				tf1 = new IgePoint(-(geom.x / 2), -(geom.y / 2),  (geom.z / 2)).toIso();
 
 				x = (tf1.x + geom.x) + anc.x;
+				y = tf1.y + anc.y;
+				ox = geomX * originX;
+				oy = geomZ * originZ;
+
+				poly.addPoint(-x + ox, -y + oy);
+				poly.addPoint(x + ox, -y + oy);
+				poly.addPoint(x + ox, y + oy);
+				poly.addPoint(-x + ox, y + oy);
+
+				this._renderPos = {x: -x + ox, y: -y + oy};
+
+				// Convert the poly's points from local space to world space
+				this.localToWorld(poly._poly, null, inverse);
+
+				// Get the extents of the newly transformed poly
+				minX = Math.min(
+					poly._poly[0].x,
+					poly._poly[1].x,
+					poly._poly[2].x,
+					poly._poly[3].x
+				);
+
+				minY = Math.min(
+					poly._poly[0].y,
+					poly._poly[1].y,
+					poly._poly[2].y,
+					poly._poly[3].y
+				);
+
+				maxX = Math.max(
+					poly._poly[0].x,
+					poly._poly[1].x,
+					poly._poly[2].x,
+					poly._poly[3].x
+				);
+
+				maxY = Math.max(
+					poly._poly[0].y,
+					poly._poly[1].y,
+					poly._poly[2].y,
+					poly._poly[3].y
+				);
+
+				box = new IgeRect(Math.floor(minX), Math.floor(minY), Math.floor(maxX - minX), Math.floor(maxY - minY));
+			}
+			
+			if (this._mode === 2) {
+				// Top face
+				tf1 = new IgePoint(-(geom.x / 2), -(geom.y / 2), (geom.z / 2)).toIso2();
+
+				x = tf1.x + anc.x;
 				y = tf1.y + anc.y;
 				ox = geomX * originX;
 				oy = geomZ * originZ;
@@ -2778,6 +2849,23 @@ var IgeEntity = IgeObject.extend({
 				// This adjusts the child entity so that 0, 0, 0 inside the
 				// parent is the center of the base of the parent
 				isoPoint.y += this._parent._geometry.z / 1.6;
+			}
+
+			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
+		}
+		
+		if (this._mode === 2) {
+			// iso 1:1 translation
+			var isoPoint = this._translateIso = new IgePoint(
+				this._translate.x,
+				this._translate.y,
+				this._translate.z + this._geometry.z// / 2
+			).toIso2();
+
+			if (this._parent && this._parent._geometry.z) {
+				// This adjusts the child entity so that 0, 0, 0 inside the
+				// parent is the center of the base of the parent
+				//isoPoint.y += this._parent._geometry.z / 1.6;
 			}
 
 			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));

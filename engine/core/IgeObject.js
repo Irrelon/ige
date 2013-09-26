@@ -945,7 +945,7 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Gets / sets the positioning mode of the entity.
-	 * @param {Number=} val 0 = 2d, 1 = isometric
+	 * @param {Number=} val 0 = 2d, 1 = isometric, 2 = isometric 1:1
 	 * @example #Set the positioning mode to 2d
 	 *     var entity = new IgeEntity()
 	 *         .mode(0);
@@ -961,6 +961,27 @@ var IgeObject = IgeEventingClass.extend({
 		}
 
 		return this._mode;
+	},
+	
+	/**
+	 * Gets / sets if objects mounted to this object should be positioned
+	 * and depth-sorted in an isometric fashion or a 2d fashion.
+	 * @param @param {Number=} val 0 = 2d, 1 = isometric, 2 = isometric 1:1
+	 * @example #Set children to be positioned and depth sorted in 2d
+	 *     var entity = new IgeEntity()
+	 *         .mountMode(0);
+	 * @example #Set children to be positioned and depth sorted in isometric
+	 *     var entity = new IgeEntity()
+	 *         .mountMode(1);
+	 * @return {*}
+	 */
+	mountMode: function (val) {
+		if (val !== undefined) {
+			this._mountMode = val;
+			return this;
+		}
+
+		return this._mountMode;
 	},
 
 	/**
@@ -1245,7 +1266,7 @@ var IgeObject = IgeEventingClass.extend({
 				// See if we can bug-out early
 				if (arrCount > 1) {
 					// Check if the mount mode is isometric
-					if (this._mountMode === 1) {
+					if (this._mountMode === 1 || this._mountMode === 2) {
 						// Check the depth sort mode
 						if (this._depthSortMode === 0) { // Slowest, uses 3d bounds
 							// Calculate depths from 3d bounds

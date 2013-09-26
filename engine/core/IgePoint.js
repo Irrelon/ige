@@ -70,6 +70,18 @@ var IgePoint = IgeClass.extend({
 
 		return {x: sx, y: sy};
 	},
+	
+	/**
+	 * Converts the point's x, y, z to an isometric (1:1 ratio) x, y 2d co-ordinate
+	 * and returns an object whose x, y values are the result.
+	 * @return {Object}
+	 */
+	toIso2: function () {
+		var sx = (this.x - this.y) * 0.5,
+			sy = (-this.z) + (this.x + this.y) * 0.5;
+
+		return {x: sx, y: sy};
+	},
 
 	/**
 	 * Converts this point's x, y, z data into isometric co-ordinate space
@@ -78,6 +90,20 @@ var IgePoint = IgeClass.extend({
 	 */
 	thisToIso: function () {
 		var val = this.toIso();
+		this.x = val.x;
+		this.y = val.y;
+		this.z = 0;
+
+		return this;
+	},
+	
+	/**
+	 * Converts this point's x, y, z data into isometric (1:1) co-ordinate space
+	 * and overwrites the previous x, y, z values with the result.
+	 * @return {*}
+	 */
+	thisToIso2: function () {
+		var val = this.toIso2();
 		this.x = val.x;
 		this.y = val.y;
 		this.z = 0;

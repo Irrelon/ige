@@ -364,6 +364,15 @@ var IgeTextureMap = IgeTileMap2d.extend({
 										finalX = (tx - ty) / this._tileWidth;
 										finalY = ((tx + ty) * 0.5) / this._tileHeight;
 									}
+									
+									if (this._mountMode === 2) {
+										// We're rendering an iso 1:1 map
+										// Convert the tile x, y to isometric
+										tx = xInt * this._tileWidth;
+										ty = yInt * this._tileHeight;
+										finalX = ((tx - ty) * 0.5) / this._tileWidth;
+										finalY = ((tx + ty) * 0.5) / this._tileHeight;
+									}
 
 									// Grab the tile data to paint
 									tileData = mapData[y][x];
@@ -538,6 +547,11 @@ var IgeTextureMap = IgeTileMap2d.extend({
 							sectionAbsX -= (this._tileWidth / 2);
 							sectionAbsY -= (this._tileHeight / 2);
 						}
+						
+						if (this._mountMode === 2) {
+							sectionAbsX -= (this._tileWidth / 2);
+							sectionAbsY -= (this._tileHeight / 2);
+						}
 
 						// Check if the section is "on screen"
 						if ((sectionAbsX + sectionWidth + (this._tileHeight / 2) >= -(viewArea.width / 2) && sectionAbsX - (this._tileWidth / 2) <= (viewArea.width / 2)) && (sectionAbsY + sectionHeight + (this._tileHeight / 2) >= -(viewArea.height / 2) && sectionAbsY <= (viewArea.height / 2))) {
@@ -592,8 +606,8 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		// TODO: Handle scaling so tiles don't loose res on scaled cached sections
 		var finalX, finalY, regions,
 			xm1, xp1, ym1, yp1, regObj,
-			xAdjust = this._mountMode === 1 ? this._tileWidth / 2 : 0,
-			yAdjust = this._mountMode === 1 ? this._tileHeight / 2 : 0,
+			xAdjust = this._mountMode === 1 || this._mountMode === 2 ? this._tileWidth / 2 : 0,
+			yAdjust = this._mountMode === 1 || this._mountMode === 2 ? this._tileHeight / 2 : 0,
 			tx, ty, sx, sy,
 			texture;
 		
@@ -608,6 +622,17 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			tx = x * this._tileWidth;
 			ty = y * this._tileHeight;
 			sx = tx - ty;
+			sy = (tx + ty) * 0.5;
+
+			finalX = sx;
+			finalY = sy;
+		}
+		
+		if (this._mountMode === 2) {
+			// Convert the tile x, y to isometric 1:1
+			tx = x * this._tileWidth;
+			ty = y * this._tileHeight;
+			sx = (tx - ty) * 0.5;
 			sy = (tx + ty) * 0.5;
 
 			finalX = sx;
@@ -695,7 +720,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * @private
 	 */
 	_newTileEntity: function () {
-		if (this._mountMode === 0) {
+		if (this._mountMode === 0 || this._mountMode === 2) {
 			return {
 				_cell: 1,
 				_geometry: {

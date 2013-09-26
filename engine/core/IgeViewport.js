@@ -402,6 +402,91 @@ var IgeViewport = IgeEntity.extend([
 											ctx.globalAlpha = ga;
 										ctx.restore();
 									}
+									
+									if (obj._parent && obj._parent._mountMode === 2) {
+										ctx.save();
+											ctx.translate(aabb.x + aabb.width / 2, aabb.y + aabb.height / 2);
+											//obj._transformContext(ctx);
+
+											// Calculate the 3d bounds data
+											r3d = obj._geometry;
+											xl1 = new IgePoint(-(r3d.x / 2), 0, 0).toIso2();
+											xl2 = new IgePoint(+(r3d.x / 2), 0, 0).toIso2();
+											xl3 = new IgePoint(0, -(r3d.y / 2), 0).toIso2();
+											xl4 = new IgePoint(0, +(r3d.y / 2), 0).toIso2();
+											xl5 = new IgePoint(0, 0, -(r3d.z / 2)).toIso2();
+											xl6 = new IgePoint(0, 0, +(r3d.z / 2)).toIso2();
+											// Bottom face
+											bf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso2();
+											bf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso2();
+											bf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso2();
+											bf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso2();
+											// Top face
+											tf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso2();
+											tf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso2();
+											tf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso2();
+											tf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso2();
+
+											ga = ctx.globalAlpha;
+
+											// Axis lines
+											ctx.globalAlpha = 1;
+											ctx.strokeStyle = '#ff0000';
+											ctx.beginPath();
+											ctx.moveTo(xl1.x, xl1.y);
+											ctx.lineTo(xl2.x, xl2.y);
+											ctx.stroke();
+											ctx.strokeStyle = '#00ff00';
+											ctx.beginPath();
+											ctx.moveTo(xl3.x, xl3.y);
+											ctx.lineTo(xl4.x, xl4.y);
+											ctx.stroke();
+											ctx.strokeStyle = '#fffc00';
+											ctx.beginPath();
+											ctx.moveTo(xl5.x, xl5.y);
+											ctx.lineTo(xl6.x, xl6.y);
+											ctx.stroke();
+
+											ctx.strokeStyle = '#a200ff';
+
+											ctx.globalAlpha = 0.6;
+
+											// Left face
+											ctx.fillStyle = '#545454';
+											ctx.beginPath();
+											ctx.moveTo(bf3.x, bf3.y);
+											ctx.lineTo(bf4.x, bf4.y);
+											ctx.lineTo(tf4.x, tf4.y);
+											ctx.lineTo(tf3.x, tf3.y);
+											ctx.lineTo(bf3.x, bf3.y);
+											ctx.fill();
+											ctx.stroke();
+
+											// Right face
+											ctx.fillStyle = '#282828';
+											ctx.beginPath();
+											ctx.moveTo(bf3.x, bf3.y);
+											ctx.lineTo(bf2.x, bf2.y);
+											ctx.lineTo(tf2.x, tf2.y);
+											ctx.lineTo(tf3.x, tf3.y);
+											ctx.lineTo(bf3.x, bf3.y);
+											ctx.fill();
+											ctx.stroke();
+
+											// Top face
+											ctx.fillStyle = '#676767';
+											ctx.beginPath();
+											ctx.moveTo(tf1.x, tf1.y);
+											ctx.lineTo(tf2.x, tf2.y);
+											ctx.lineTo(tf3.x, tf3.y);
+											ctx.lineTo(tf4.x, tf4.y);
+											ctx.lineTo(tf1.x, tf1.y);
+											ctx.fill();
+											ctx.stroke();
+
+											ctx.globalAlpha = ga;
+										ctx.restore();
+									}
 								}
 
 								if (this._drawBoundsData  && (obj._drawBounds || obj._drawBoundsData === undefined)) {

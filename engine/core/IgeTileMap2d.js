@@ -293,6 +293,24 @@ var IgeTileMap2d = IgeEntity.extend({
 				0
 			);
 		}
+		
+		if (this._mountMode === 2) {
+			// iso 1:1
+			dx = mx - this._tileWidth / 2;
+			dy = my - this._tileHeight / 2;
+
+			tilePos = new IgePoint(
+				dx,
+				dy,
+				0
+			).to2d();
+
+			tilePos = new IgePoint(
+				Math.floor(tilePos.x / this._tileWidth) + 1,
+				Math.floor(tilePos.y / this._tileHeight) + 1,
+				0
+			);
+		}
 
 		return tilePos;
 	},
@@ -313,6 +331,13 @@ var IgeTileMap2d = IgeEntity.extend({
 				.clone()
 				.thisMultiply(this._tileWidth, this._tileHeight, 0)
 				.thisToIso();
+		}
+		
+		if (this._mountMode === 2) {
+			return this._mouseTilePos
+				.clone()
+				.thisMultiply(this._tileWidth, this._tileHeight, 0)
+				.thisToIso2();
 		}
 	},
 
@@ -476,6 +501,12 @@ var IgeTileMap2d = IgeEntity.extend({
 					gStart = gStart.toIso();
 					gEnd = gEnd.toIso();
 				}
+				
+				if (this._mountMode === 2) {
+					// Iso 1:1 grid
+					gStart = gStart.toIso2();
+					gEnd = gEnd.toIso2();
+				}
 
 				ctx.beginPath();
 				ctx.moveTo(gStart.x, gStart.y);
@@ -491,6 +522,12 @@ var IgeTileMap2d = IgeEntity.extend({
 					// Iso grid
 					gStart = gStart.toIso();
 					gEnd = gEnd.toIso();
+				}
+				
+				if (this._mountMode === 2) {
+					// Iso 1:1 grid
+					gStart = gStart.toIso2();
+					gEnd = gEnd.toIso2();
 				}
 
 				ctx.beginPath();
@@ -532,6 +569,19 @@ var IgeTileMap2d = IgeEntity.extend({
 								ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
 								ctx.fill();
 							}
+							
+							if (this._mountMode === 2) {
+								// iso 1:1
+								tilePoint.thisToIso2();
+
+								ctx.beginPath();
+								ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+								ctx.lineTo(tilePoint.x + tileWidth / 2, tilePoint.y);
+								ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
+								ctx.lineTo(tilePoint.x - tileWidth / 2, tilePoint.y);
+								ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+								ctx.fill();
+							}
 						}
 					}
 				}
@@ -568,6 +618,19 @@ var IgeTileMap2d = IgeEntity.extend({
 						ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
 						ctx.fill();
 					}
+					
+					if (this._mountMode === 2) {
+						// iso 1:1
+						tilePoint.thisToIso2();
+
+						ctx.beginPath();
+						ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+						ctx.lineTo(tilePoint.x + tileWidth / 2, tilePoint.y);
+						ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
+						ctx.lineTo(tilePoint.x - tileWidth / 2, tilePoint.y);
+						ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+						ctx.fill();
+					}
 				}
 			}
 		}
@@ -597,6 +660,22 @@ var IgeTileMap2d = IgeEntity.extend({
 				ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
 				ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
 				ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
+				ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+				ctx.fill();
+			}
+			
+			if (this._mountMode === 2) {
+				// iso 1:1
+				tilePoint = this._mouseTilePos
+					.clone()
+					.thisMultiply(tileWidth, tileHeight, 0)
+					.thisToIso2();
+
+				ctx.beginPath();
+				ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
+				ctx.lineTo(tilePoint.x + tileWidth / 2, tilePoint.y);
+				ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
+				ctx.lineTo(tilePoint.x - tileWidth / 2, tilePoint.y);
 				ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
 				ctx.fill();
 			}
