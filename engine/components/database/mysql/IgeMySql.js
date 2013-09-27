@@ -70,7 +70,7 @@ var IgeMySql = {
 	 */
 	disconnect: function (callback) {
 		this.log("Closing DB connection...");
-		this.connection.end(function () {
+		this.client.end(function () {
 			callback();
 		});
 	},
