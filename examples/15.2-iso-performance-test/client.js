@@ -79,6 +79,8 @@ var Client = IgeClass.extend({
 	},
 
 	setupScene: function () {
+		var self = this;
+		
 		// Create the scene
 		this.mainScene = new IgeScene2d()
 			.id('mainScene');
@@ -103,13 +105,24 @@ var Client = IgeClass.extend({
 			.id('vp1')
 			.addComponent(IgeMousePanComponent)
 			.addComponent(IgeMouseZoomComponent)
-			.mousePan.enabled(false)
-			.mouseZoom.enabled(true)
+			.mousePan.enabled(true)
+			.mouseZoom.enabled(false)
 			.autoSize(true)
 			.scene(this.mainScene)
+			.drawViewArea(true)
 			.drawBounds(false)
 			.drawBoundsData(false)
 			.mount(ige);
+		
+		window.addEventListener('keyup', function () {
+			if (self.vp1.mousePan.enabled()) {
+				self.vp1.mousePan.enabled(false);
+				self.vp1.mouseZoom.enabled(true);
+			} else {
+				self.vp1.mousePan.enabled(true);
+				self.vp1.mouseZoom.enabled(false);
+			}
+		});
 		
 		/*// Create the second viewport
 		this.vp2 = new IgeViewport()
