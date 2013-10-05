@@ -106,14 +106,14 @@ var IgeViewport = IgeEntity.extend([
 		var aabb = this.aabb(),
 			camTrans = this.camera._translate,
 			camScale = this.camera._scale,
-			xRatio = 1 / camScale.x,
-			yRatio = 1 / camScale.y;
+			width = aabb.width * (1 / camScale.x),
+			height = aabb.height * (1 / camScale.y);
 		
 		return new IgeRect(
-			((aabb.x + camTrans.x) * xRatio),
-			((aabb.y + camTrans.y) * yRatio),
-			(aabb.width * xRatio),
-			(aabb.height * yRatio)
+			(camTrans.x - width / 2),
+			(camTrans.y - height / 2),
+			width,
+			height
 		);
 	},
 
@@ -232,7 +232,24 @@ var IgeViewport = IgeEntity.extend([
 					ctx.fillText('Viewport ' + this.id() + ' :: ' + mx + ', ' + my, mx - textMeasurement.width / 2, my - 15);
 				ctx.restore();
 			}
+			
+			if (this._drawViewArea) {
+				ctx.save();
+					var va = this.viewArea();
+					ctx.rect(va.x, va.y, va.width, va.height);
+					ctx.stroke();
+				ctx.restore();
+			}
 		}
+	},
+	
+	drawViewArea: function (val) {
+		if (val !== undefined) {
+			this._drawViewArea = val;
+			return this;
+		}
+		
+		return this._drawViewArea;
 	},
 
 	drawBoundsLimitId: function (id) {
