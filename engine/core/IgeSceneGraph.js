@@ -22,3 +22,5 @@ var IgeSceneGraph = IgeClass.extend({
 		
 	}
 });
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeSceneGraph; }

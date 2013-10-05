@@ -8,22 +8,20 @@ var BaseScene = IgeSceneGraph.extend({
 	 * @param options
 	 */
 	addGraph: function (options) {
-		var self = ige.client;
-		
 		// Clear existing graph data
 		if (ige.$('baseScene')) {
 			this.destroyGraph();
 		}
 		
 		// Create the scene
-		self.baseScene = new IgeScene2d()
+		var baseScene = new IgeScene2d()
 			.id('baseScene');
 
 		// Create the main viewport to look at "baseScene"
-		self.vp1 = new IgeViewport()
+		new IgeViewport()
 			.id('vp1')
 			.autoSize(true)
-			.scene(self.baseScene)
+			.scene(baseScene)
 			.drawBounds(false)
 			.mount(ige);
 	},
