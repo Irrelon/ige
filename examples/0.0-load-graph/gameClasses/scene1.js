@@ -1,10 +1,8 @@
-var Scene1 = IgeEventingClass.extend({
+var Scene1 = IgeSceneGraph.extend({
 	classId: 'Scene1',
-	
-	init: function () {},
 
 	/**
-	 * Called when loading the graph data via ige.loadGraph().
+	 * Called when loading the graph data via ige.addGraph().
 	 * @param options
 	 */
 	addGraph: function (options) {
