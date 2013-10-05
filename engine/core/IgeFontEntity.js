@@ -370,7 +370,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 				// destroyed so release our reference to it!
 				delete this._bindDataObject;
 			} else {
-				this.text(this._bindDataPreText + this._bindDataObject[this._bindDataProperty] + this._bindDataPostText)
+				this.text(this._bindDataPreText + this._bindDataObject[this._bindDataProperty] + this._bindDataPostText);
 			}
 		}
 

@@ -36,10 +36,12 @@ var Client = IgeClass.extend({
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
+						.addComponent(IgeMousePanComponent)
 						.id('vp1')
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
+						.mousePan.enabled(true)
 						.mount(ige);
 
 					// Create an entity
@@ -119,6 +121,17 @@ var Client = IgeClass.extend({
 							console.log('width', myTween.x);
 						})
 						.start();
+					
+					var text = [],
+						textInt = true;
+					
+					text[0] = 'hello';
+					text[1] = 'goodbye';
+					
+					setInterval(function () {
+						textInt = !textInt;
+						self.obj[2].text(text[Number(textInt)]);
+					}, 100);
 				}
 			});
 		});

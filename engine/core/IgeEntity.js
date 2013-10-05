@@ -1614,83 +1614,13 @@ var IgeEntity = IgeObject.extend({
 				// Check for cached version
 				if (this._cache || this._compositeCache) {
 					// Caching is enabled
-					var currentCam = ige._currentCamera;
-					
-					if (!this._cacheDirty) {
-						if (this._ignoreCamera) {
-							
-							/*ctx.scale(currentCam._scale.x, currentCam._scale.y);
-							ctx.translate(currentCam._translate.x, currentCam._translate.y);
-							ctx.scale(1 / currentCam._scale.x, 1/ currentCam._scale.y);*/
-						}
-						
-						this._renderCache(ctx);
-					} else {
-						// The cache is not clean so re-draw it
-						// Render the entity to the cache
-						var _canvas = this._cacheCanvas,
-							_ctx = this._cacheCtx;
-
-						if (this._compositeCache) {
-							// Get the composite entity AABB and alter the internal canvas
-							// to the composite size so we can render the entire entity
-							var aabbC = this.compositeAabb(true);
-							
-							if (this._parent) {
-								//aabbC.x -= this._parent._translate.x;
-								//aabbC.y -= this._parent._translate.y;
-							}
-							
-							if (this._ignoreCamera) {
-								//aabbC.x -= currentCam._translate.x;
-								//aabbC.y -= currentCam._translate.y;
-								
-								//aabbC.x *= currentCam._scale.x;
-								//aabbC.y *= currentCam._scale.y;
-								//aabbC.width *= currentCam._scale.x;
-								//aabbC.height *= currentCam._scale.y;
-							}
-							
-							this._compositeAabbCache = aabbC;
-							
-							if (aabbC.width > 0 && aabbC.height > 0) {
-								_canvas.width = Math.ceil(aabbC.width);
-								_canvas.height = Math.ceil(aabbC.height);
-							} else {
-								// We cannot set a zero size for a canvas, it will
-								// cause the browser to freak out
-								_canvas.width = 2;
-								_canvas.height = 2;
-							}
-							
-							// Translate to the center of the canvas
-							_ctx.translate(-aabbC.x, -aabbC.y);
-							
-							this.emit('compositeReady');
-						} else {
-							if (this._geometry.x > 0 && this._geometry.y > 0) {
-								_canvas.width = this._geometry.x;
-								_canvas.height = this._geometry.y;
-							} else {
-								// We cannot set a zero size for a canvas, it will
-								// cause the browser to freak out
-								_canvas.width = 1;
-								_canvas.height = 1;
-							}
-							
-							// Translate to the center of the canvas
-							_ctx.translate(this._geometry.x2, this._geometry.y2);
-							
-							this._cacheDirty = false;
-						}
-						
-						// Transform the context by the current transform settings
-						if (!dontTransform) {
-							this._transformContext(_ctx);
-						}
-						//_ctx.translate(this._translate.x, this._translate.y);
-						this._renderEntity(_ctx, dontTransform);
+					if (this._cacheDirty) {
+						// The cache is dirty, redraw it
+						this._refreshCache(dontTransform);
 					}
+					
+					// Now render the cached image data to the main canvas
+					this._renderCache(ctx);
 				} else {
 					// Non-cached output
 					// Transform the context by the current transform settings
@@ -1720,6 +1650,58 @@ var IgeEntity = IgeObject.extend({
 				IgeObject.prototype.tick.call(this, ctx);
 			}
 		}
+	},
+	
+	_refreshCache: function (dontTransform) {
+		// The cache is not clean so re-draw it
+		// Render the entity to the cache
+		var _canvas = this._cacheCanvas,
+			_ctx = this._cacheCtx;
+
+		if (this._compositeCache) {
+			// Get the composite entity AABB and alter the internal canvas
+			// to the composite size so we can render the entire entity
+			var aabbC = this.compositeAabb(true);
+			
+			this._compositeAabbCache = aabbC;
+			
+			if (aabbC.width > 0 && aabbC.height > 0) {
+				_canvas.width = Math.ceil(aabbC.width);
+				_canvas.height = Math.ceil(aabbC.height);
+			} else {
+				// We cannot set a zero size for a canvas, it will
+				// cause the browser to freak out
+				_canvas.width = 2;
+				_canvas.height = 2;
+			}
+			
+			// Translate to the center of the canvas
+			_ctx.translate(-aabbC.x, -aabbC.y);
+			
+			this.emit('compositeReady');
+		} else {
+			if (this._geometry.x > 0 && this._geometry.y > 0) {
+				_canvas.width = this._geometry.x;
+				_canvas.height = this._geometry.y;
+			} else {
+				// We cannot set a zero size for a canvas, it will
+				// cause the browser to freak out
+				_canvas.width = 1;
+				_canvas.height = 1;
+			}
+			
+			// Translate to the center of the canvas
+			_ctx.translate(this._geometry.x2, this._geometry.y2);
+			
+			this._cacheDirty = false;
+		}
+		
+		// Transform the context by the current transform settings
+		if (!dontTransform) {
+			this._transformContext(_ctx);
+		}
+		
+		this._renderEntity(_ctx, dontTransform);
 	},
 
 	/**
