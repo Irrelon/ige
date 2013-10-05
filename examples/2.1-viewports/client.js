@@ -30,17 +30,8 @@ var Client = IgeClass.extend({
 					// Enable depth sorting for viewports
 					ige.viewportDepth(true);
 
-					// Create our main scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1');;
-
-					// Create the main viewport
-					self.vp1 = new IgeViewport()
-						.id('vp1')
-						.autoSize(true)
-						.drawBounds(true)
-						.scene(self.scene1)
-						.mount(ige);
+					// Load the base scene data
+					ige.addGraph('BaseScene');
 
 					// Make a load of viewports
 					for (i = 0; i < vpCount; i++) {
@@ -54,7 +45,7 @@ var Client = IgeClass.extend({
 							.originTo(0, 0, 0)
 							.camera.scaleTo(0.5, 0.5, 0.5)
 							.depth((18 - i))
-							.scene(self.scene1);
+							.scene(ige.$('baseScene'));
 
 						setTimeout((function () { var vr = vp[i]; return function () { vr.addBehaviour('rotator', RotatorBehaviour); }; }()), tt);
 						tt += timeInc;
@@ -73,7 +64,7 @@ var Client = IgeClass.extend({
 							.originTo(1, 1, 0)
 							.camera.scaleTo(0.5, 0.5, 0.5)
 							.depth((18 - i))
-							.scene(self.scene1);
+							.scene(ige.$('baseScene'));
 
 						setTimeout(function () { var vr = vp[i]; return function () { vr.addBehaviour('rotator', RotatorBehaviourAC); }}(), tt);
 						tt += timeInc;
@@ -91,7 +82,7 @@ var Client = IgeClass.extend({
 						.borderColor('#ffffff')
 						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
-						.scene(self.scene1)
+						.scene(ige.$('baseScene'))
 						.mount(ige);
 
 					new IgeViewport()
@@ -104,7 +95,7 @@ var Client = IgeClass.extend({
 						.borderColor('#ffffff')
 						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
-						.scene(self.scene1)
+						.scene(ige.$('baseScene'))
 						.mount(ige);
 
 					new IgeViewport()
@@ -117,7 +108,7 @@ var Client = IgeClass.extend({
 						.borderColor('#ffffff')
 						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
-						.scene(self.scene1)
+						.scene(ige.$('baseScene'))
 						.mount(ige);
 
 					new IgeViewport()
@@ -130,7 +121,7 @@ var Client = IgeClass.extend({
 						.borderColor('#ffffff')
 						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
-						.scene(self.scene1)
+						.scene(ige.$('baseScene'))
 						.mount(ige);
 
 					new IgeViewport()
@@ -143,7 +134,7 @@ var Client = IgeClass.extend({
 						.borderColor('#ffffff')
 						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
-						.scene(self.scene1)
+						.scene(ige.$('baseScene'))
 						.mount(ige);
 
 					new IgeViewport()
@@ -156,7 +147,7 @@ var Client = IgeClass.extend({
 						.borderColor('#ffffff')
 						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
-						.scene(self.scene1)
+						.scene(ige.$('baseScene'))
 						.mount(ige);
 
 					new IgeViewport()
@@ -169,7 +160,7 @@ var Client = IgeClass.extend({
 						.borderColor('#ffffff')
 						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
-						.scene(self.scene1)
+						.scene(ige.$('baseScene'))
 						.mount(ige);
 
 					new IgeViewport()
@@ -182,7 +173,7 @@ var Client = IgeClass.extend({
 						.borderColor('#ffffff')
 						.camera.scaleTo(0.5, 0.5, 0.5)
 						.depth(1)
-						.scene(self.scene1)
+						.scene(ige.$('baseScene'))
 						.mount(ige);
 
 					// Make a couple of rotating entities to add to
@@ -193,7 +184,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[0])
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[1] = tempObj = new IgeEntity()
 						.addBehaviour('scaler', ScalerBehaviour, false)
@@ -202,7 +193,7 @@ var Client = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.texture(gameTexture[0])
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 				}
 			});
 		});

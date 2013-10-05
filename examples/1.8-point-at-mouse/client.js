@@ -21,19 +21,8 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1');
-
-					// Create the main viewport and set the scene
-					// it will "look" at as the new scene1 we just
-					// created above
-					self.vp1 = new IgeViewport()
-						.id('vp1')
-						.autoSize(true)
-						.scene(self.scene1)
-						.drawBounds(true)
-						.mount(ige);
+					// Load the base scene data
+					ige.addGraph('BaseScene');
 
 					self.vp1.camera.translateTo(200, 200, 0);
 
@@ -46,7 +35,7 @@ var Client = IgeClass.extend({
 						.texture(self.gameTexture.ship)
 						.translateTo(400, 200, 0)
 						.addBehaviour('mouseAim', MouseAim)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 					
 					self.obj[1] = new IgeEntity()
 						.id('ship2')

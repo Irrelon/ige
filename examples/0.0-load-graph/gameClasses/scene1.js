@@ -6,7 +6,8 @@ var Scene1 = IgeSceneGraph.extend({
 	 * @param options
 	 */
 	addGraph: function (options) {
-		var self = ige.client;
+		var self = ige.client,
+			baseScene = ige.$('baseScene');
 		
 		// Clear existing graph data
 		if (ige.$('scene1')) {
@@ -16,7 +17,7 @@ var Scene1 = IgeSceneGraph.extend({
 		// Create the scene
 		self.scene1 = new IgeScene2d()
 			.id('scene1')
-			.mount(self.baseScene);
+			.mount(baseScene);
 
 		// Create an entity and mount it to the scene
 		self.obj[0] = new Rotator(0.1)
