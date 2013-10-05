@@ -39,29 +39,9 @@ var Client = IgeClass.extend({
 								self.log('Stream entity created with ID: ' + entity.id());
 
 							});
-
-						self.mainScene = new IgeScene2d()
-							.id('mainScene');
-
-						// Create the scene
-						self.scene1 = new IgeScene2d()
-							.id('scene1')
-							.mount(self.mainScene);
-
-						self.uiScene = new IgeScene2d()
-							.id('uiScene')
-							.ignoreCamera(true)
-							.mount(self.mainScene);
-
-						// Create the main viewport and set the scene
-						// it will "look" at as the new scene1 we just
-						// created above
-						self.vp1 = new IgeViewport()
-							.id('vp1')
-							.autoSize(true)
-							.scene(self.mainScene)
-							.drawBounds(false)
-							.mount(ige);
+						
+						// Load the base scene data
+						ige.addGraph('BaseScene');
 					});
 				}
 			});

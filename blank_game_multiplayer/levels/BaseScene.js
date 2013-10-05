@@ -19,7 +19,13 @@ var BaseScene = IgeSceneGraph.extend({
 		self.baseScene = new IgeScene2d()
 			.id('baseScene');
 
-		
+		// Create the main viewport to look at "baseScene"
+		self.vp1 = new IgeViewport()
+			.id('vp1')
+			.autoSize(true)
+			.scene(self.baseScene)
+			.drawBounds(false)
+			.mount(ige);
 	},
 
 	/**

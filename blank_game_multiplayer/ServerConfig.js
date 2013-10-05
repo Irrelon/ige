@@ -1,6 +1,7 @@
 var config = {
 	include: [
 		//{name: 'MyClassName', path: './gameClasses/MyClassFileName'},
+		{name: 'BaseScene', path: './levels/BaseScene'}
 	]
 };
 
