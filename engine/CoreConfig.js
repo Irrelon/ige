@@ -58,6 +58,7 @@ var igeCoreConfig = {
 		['csap', 'IgeUiStyleExtension', 'extensions/IgeUiStyleExtension.js'],
 		/* Main Engine Classes */
 		['csap', 'IgeSceneGraph', 'core/IgeSceneGraph.js'],
+		['csap', 'IgeBaseScene', 'core/IgeBaseScene.js'],
 		['csap', 'IgeDummyCanvas', 'core/IgeDummyCanvas.js'],
 		['csap', 'IgeDummyContext', 'core/IgeDummyContext.js'],
 		['csap', 'IgePathNode', 'core/IgePathNode.js'],

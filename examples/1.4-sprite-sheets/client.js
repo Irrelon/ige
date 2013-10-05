@@ -38,7 +38,7 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Load the base scene data
-					ige.addGraph('BaseScene');
+					ige.addGraph('IgeBaseScene');
 
 					// Create an entity and mount it to the scene
 					self.obj[0] = new IgeEntity()

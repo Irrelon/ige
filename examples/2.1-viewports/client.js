@@ -31,7 +31,7 @@ var Client = IgeClass.extend({
 					ige.viewportDepth(true);
 
 					// Load the base scene data
-					ige.addGraph('BaseScene');
+					ige.addGraph('IgeBaseScene');
 
 					// Make a load of viewports
 					for (i = 0; i < vpCount; i++) {

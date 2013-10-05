@@ -28,7 +28,7 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Load the base scene data
-					ige.addGraph('BaseScene');
+					ige.addGraph('IgeBaseScene');
 					
 					// Create an entity that will follow the mouse
 					self.mouseEnt = new IgeEntity()

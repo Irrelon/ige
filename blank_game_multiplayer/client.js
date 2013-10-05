@@ -41,7 +41,7 @@ var Client = IgeClass.extend({
 							});
 						
 						// Load the base scene data
-						ige.addGraph('BaseScene');
+						ige.addGraph('IgeBaseScene');
 					});
 				}
 			});

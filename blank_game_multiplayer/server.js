@@ -25,7 +25,7 @@ var Server = IgeClass.extend({
 						ige.network.acceptConnections(true);
 
 						// Load the base scene data
-						ige.addGraph('BaseScene');
+						ige.addGraph('IgeBaseScene');
 					}
 				});
 			});

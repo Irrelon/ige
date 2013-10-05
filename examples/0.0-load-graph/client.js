@@ -26,7 +26,7 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Load the base scene data
-					ige.addGraph('BaseScene');
+					ige.addGraph('IgeBaseScene');
 					
 					// Add all the items in Scene1 to the scenegraph
 					// (see gameClasses/Scene1.js :: addGraph() to see

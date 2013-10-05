@@ -22,7 +22,7 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Load the base scene data
-					ige.addGraph('BaseScene');
+					ige.addGraph('IgeBaseScene');
 
 					self.vp1.camera.translateTo(200, 200, 0);
 
