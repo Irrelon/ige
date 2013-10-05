@@ -344,11 +344,16 @@ var IgeEngine = IgeEntity.extend({
 				this.log('Loading SceneGraph data class: ' + className);
 				classInstance = this.newClassInstance(className);
 				
-				// Call the class's graph() method passing the options in
-				classInstance.addGraph(options);
-				
-				// Add the graph instance to the holding array
-				this._graphInstances[className] = classInstance;
+				// Make sure the graph class implements the required methods "addGraph" and "removeGraph"
+				if (typeof(classInstance.addGraph) === 'function' && typeof(classInstance.removeGraph) === 'function') {
+					// Call the class's graph() method passing the options in
+					classInstance.addGraph(options);
+					
+					// Add the graph instance to the holding array
+					this._graphInstances[className] = classInstance;
+				} else {
+					this.log('Could not load graph for class name "' + className + '" because the class does not implement both the require methods "addGraph()" and "removeGraph()".', 'error');
+				}
 			} else {
 				this.log('Cannot load graph for class name "' + className + '" because the class could not be found. Have you included it in your server/clientConfig.js file?', 'error');
 			}
