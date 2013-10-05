@@ -5,3 +5,5 @@ var ExampleEntity = IgeEntity.extend({
 		IgeEntity.prototype.init.call(this);
 	}
 });
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = ExampleEntity; }
