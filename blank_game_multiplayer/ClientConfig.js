@@ -1,7 +1,7 @@
 var igeClientConfig = {
 	include: [
 		/* Your custom game JS scripts */
-		'./levels/BaseScene.js',
+		//'./gameClasses/MyClassFile.js',
 		
 		/* Standard game scripts */
 		'./client.js',
