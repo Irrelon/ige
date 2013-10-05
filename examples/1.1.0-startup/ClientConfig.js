@@ -3,7 +3,7 @@ var igeClientConfig = {
 		/* Some external libraries if you want */
 
 		/* Your custom game JS scripts */
-		'./levels/BaseScene.js',
+		
 		'./gameClasses/ClientNetworkEvents.js',
 		'./gameClasses/Rotator.js',
 		
