@@ -91,8 +91,6 @@ var Client = IgeClass.extend({
 						.allowActive(false)
 						.allowFocus(true)
 						.mount(self.uiScene);
-						//.fontSheet(gameTexture[3])
-						//.value('Type text to see text input!');
 					
 					new IgeUiTextBox()
 						.id('div2')
