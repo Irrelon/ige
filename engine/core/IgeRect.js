@@ -89,7 +89,7 @@ var IgeRect = IgeClass.extend({
 	 * @return {Boolean}
 	 */
 	pointInside: function (point) {
-		return x >= this.x && point.y > this.y && point.x <= this.x + this.width && point.y <= this.y + this.height;
+		return point.x >= this.x && point.y > this.y && point.x <= this.x + this.width && point.y <= this.y + this.height;
 	},
 
 	/**
