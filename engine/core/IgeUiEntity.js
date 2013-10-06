@@ -14,8 +14,6 @@ var IgeUiEntity = IgeEntity.extend([
 		IgeEntity.prototype.init.call(this);
 
 		// Set some defaults
-		this._uiX = 0;
-		this._uiY = 0;
 		this._width = 0;
 		this._height = 0;
 		this._borderLeftWidth = 0;
