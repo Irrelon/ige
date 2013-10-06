@@ -61,13 +61,35 @@ var Client = IgeClass.extend({
 						'bottom': null,
 						'right': null,
 						'width': 300,
-						'height': 30
-						
+						'height': 30,
+						'top': 10,
+						'left': 10
+					});
+					
+					ige.ui.style('#div3', {
+						'backgroundColor': '#333333',
+						'bottom': null,
+						'right': null,
+						'width': 300,
+						'height': 30,
+						'top': 50,
+						'left': 10
+					});
+					
+					ige.ui.style('#div2:focus', {
+						'borderColor': '#ffff00'
+					});
+					
+					ige.ui.style('#div3:focus', {
+						'borderColor': '#ffff00'
 					});
 
 					var div1 = new IgeUiElement()
 						.id('div1')
 						.styleClass('div')
+						.allowHover(false)
+						.allowActive(false)
+						.allowFocus(true)
 						.mount(self.uiScene);
 						//.fontSheet(gameTexture[3])
 						//.value('Type text to see text input!');
@@ -76,7 +98,14 @@ var Client = IgeClass.extend({
 						.id('div2')
 						.styleClass('div')
 						.fontSheet(gameTexture[3])
-						.value('Type text to see text input!')
+						.value('Text box 1')
+						.mount(div1);
+					
+					new IgeUiTextBox()
+						.id('div3')
+						.styleClass('div')
+						.fontSheet(gameTexture[3])
+						.value('Text box 2')
 						.mount(div1);
 				}
 			});

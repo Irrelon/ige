@@ -37,6 +37,7 @@ var IgeUiPositionExtension = {
 				} else {
 					// The value passed is not a percentage, directly assign it
 					this._uiLeft = px;
+					delete this._uiLeftPercent;
 				}
 			}
 			
@@ -87,6 +88,7 @@ var IgeUiPositionExtension = {
 				} else {
 					// The value passed is not a percentage, directly assign it
 					this._uiRight = px;
+					delete this._uiRightPercent;
 				}
 			}
 			
@@ -155,6 +157,7 @@ var IgeUiPositionExtension = {
 				} else {
 					// The value passed is not a percentage, directly assign it
 					this._uiTop = px;
+					delete this._uiTopPercent;
 				}
 			}
 			
@@ -223,6 +226,7 @@ var IgeUiPositionExtension = {
 				} else {
 					// The value passed is not a percentage, directly assign it
 					this._uiBottom = px;
+					delete this._uiBottomPercent;
 				}
 			}
 			

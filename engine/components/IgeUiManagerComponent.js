@@ -89,6 +89,11 @@ var IgeUiManagerComponent = IgeClass.extend({
 				
 				// Tell the current focused element that it is about to loose focus
 				if (!previousFocus || !previousFocus.emit('blur', elem)) {
+					if (previousFocus) {
+						previousFocus._focused = false;
+						previousFocus._updateStyle();
+					}
+					
 					// The blur was not cancelled
 					if (!elem.emit('focus', previousFocus)) {
 						// The focus was not cancelled
@@ -108,6 +113,7 @@ var IgeUiManagerComponent = IgeClass.extend({
 	},
 	
 	blur: function (elem) {
+		console.log('blur', elem._id, elem);
 		if (elem !== undefined) {
 			if (elem === this._focus) {
 				// The element is currently focused
@@ -116,6 +122,7 @@ var IgeUiManagerComponent = IgeClass.extend({
 					// The blur was not cancelled
 					this._focus = null;
 					elem._focused = false;
+					elem._updateStyle();
 					
 					return true;
 				}

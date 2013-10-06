@@ -11,15 +11,39 @@ var IgeUiElement = IgeUiEntity.extend({
 		ige.ui.registerElement(this);
 		
 		this._focused = false;
+		this._allowHover = true;
 		this._allowFocus = true;
+		this._allowActive = true;
 		
 		var updateStyleFunc = function () {
 			self._updateStyle();
 		};
 		
-		this.on('mouseOver', updateStyleFunc);
-		this.on('mouseOut', updateStyleFunc);
-		this.on('mouseDown', updateStyleFunc);
+		this.on('mouseOver', function () {
+			if (this._allowHover) {
+				updateStyleFunc();
+				ige.input.stopPropagation();
+				console.log('Hover on ' + self._id);
+			} else {
+				this._mouseStateOver = false;
+			}
+		});
+		this.on('mouseOut', function () {
+			if (this._allowHover) {
+				updateStyleFunc();
+				ige.input.stopPropagation();
+			} else {
+				this._mouseStateOver = false;
+			}
+		});
+		this.on('mouseDown', function () {
+			if (this._allowActive) {
+				updateStyleFunc();
+				ige.input.stopPropagation();
+			} else {
+				this._mouseStateDown = false;
+			}
+		});
 		this.on('mouseUp', function () {
 			if (this._allowFocus) {
 				// Try to focus the entity
@@ -28,13 +52,40 @@ var IgeUiElement = IgeUiEntity.extend({
 				} else {
 					ige.input.stopPropagation();
 				}
-			} else {
+			} else if (this._allowActive) {
 				updateStyleFunc();
 			}
 		});
 		
 		// Enable mouse events on this entity by default
 		this.mouseEventsActive(true);
+	},
+	
+	allowHover: function (val) {
+		if (val !== undefined) {
+			this._allowHover = val;
+			return this;
+		}
+		
+		return this._allowHover;
+	},
+	
+	allowFocus: function (val) {
+		if (val !== undefined) {
+			this._allowFocus = val;
+			return this;
+		}
+		
+		return this._allowFocus;
+	},
+	
+	allowActive: function (val) {
+		if (val !== undefined) {
+			this._allowActive = val;
+			return this;
+		}
+		
+		return this._allowActive;
 	},
 
 	/**

@@ -156,8 +156,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 			'w': 87,
 			'x': 88,
 			'y': 89,
-			'z': 90,
-			'.': 190
+			'z': 90
 		};
 
 		this._controlMap = [];
