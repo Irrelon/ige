@@ -27,8 +27,8 @@ var IgeEngine = IgeEntity.extend({
 
 		// Output our header
 		console.log('------------------------------------------------------------------------------');
-		console.log('* Powered by the Isogenic Game Engine ' + igeVersion + '                    *');
-		console.log('* (C)opyright 2012 Irrelon Software Limited                                  *');
+		console.log('* Powered by the Isogenic Game Engine ' + igeVersion + '                  *');
+		console.log('* (C)opyright 2013 Irrelon Software Limited                                  *');
 		console.log('* http://www.isogenicengine.com                                              *');
 		console.log('------------------------------------------------------------------------------');
 		
@@ -38,6 +38,9 @@ var IgeEngine = IgeEntity.extend({
 		if (!this.isServer) {
 			// Enable cocoonJS support because we are running client-side
 			this.addComponent(IgeCocoonJsComponent);
+			
+			// Enable UI element (virtual DOM) support
+			this.addComponent(IgeUiManagerComponent);
 		}
 
 		// Create storage
