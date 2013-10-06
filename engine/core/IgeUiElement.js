@@ -23,7 +23,6 @@ var IgeUiElement = IgeUiEntity.extend({
 			if (this._allowHover) {
 				updateStyleFunc();
 				ige.input.stopPropagation();
-				console.log('Hover on ' + self._id);
 			} else {
 				this._mouseStateOver = false;
 			}
