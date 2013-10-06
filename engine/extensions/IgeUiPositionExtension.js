@@ -7,31 +7,37 @@ var IgeUiPositionExtension = {
 	 */
 	left: function (px, noUpdate) {
 		if (px !== undefined) {
-			if (typeof(px) === 'string') {
-				// Store the percentage value
-				this._uiLeftPercent = px;
-				
-				// Check if we are already mounted
-				var parentWidth,
-					val = parseInt(px, 10),
-					newVal;
-				
-				if (this._parent) {
-					// We have a parent, use it's geometry
-					parentWidth = this._parent._geometry.x;
-				} else {
-					// We don't have a parent so use the main canvas
-					// as a reference
-					parentWidth = ige._geometry.x;
-				}
-					
-				// Calculate real width from percentage
-				newVal = (parentWidth / 100 * val) | 0;
-
-				this._uiLeft = newVal;
+			if (px === null) {
+				// Remove all data
+				delete this._uiLeft;
+				delete this._uiLeftPercent;
 			} else {
-				// The value passed is not a percentage, directly assign it
-				this._uiLeft = px;
+				if (typeof(px) === 'string') {
+					// Store the percentage value
+					this._uiLeftPercent = px;
+					
+					// Check if we are already mounted
+					var parentWidth,
+						val = parseInt(px, 10),
+						newVal;
+					
+					if (this._parent) {
+						// We have a parent, use it's geometry
+						parentWidth = this._parent._geometry.x;
+					} else {
+						// We don't have a parent so use the main canvas
+						// as a reference
+						parentWidth = ige._geometry.x;
+					}
+						
+					// Calculate real width from percentage
+					newVal = (parentWidth / 100 * val) | 0;
+	
+					this._uiLeft = newVal;
+				} else {
+					// The value passed is not a percentage, directly assign it
+					this._uiLeft = px;
+				}
 			}
 			
 			if (!noUpdate) {
@@ -51,31 +57,37 @@ var IgeUiPositionExtension = {
 	 */
 	right: function (px, noUpdate) {
 		if (px !== undefined) {
-			if (typeof(px) === 'string') {
-				// Store the percentage value
-				this._uiRightPercent = px;
-				
-				// Check if we are already mounted
-				var parentWidth,
-					val = parseInt(px, 10),
-					newVal;
-				
-				if (this._parent) {
-					// We have a parent, use it's geometry
-					parentWidth = this._parent._geometry.x;
-				} else {
-					// We don't have a parent so use the main canvas
-					// as a reference
-					parentWidth = ige._geometry.x;
-				}
-					
-				// Calculate real width from percentage
-				newVal = (parentWidth / 100 * val) | 0;
-
-				this._uiRight = newVal;
+			if (px === null) {
+				// Remove all data
+				delete this._uiRight;
+				delete this._uiRightPercent;
 			} else {
-				// The value passed is not a percentage, directly assign it
-				this._uiRight = px;
+				if (typeof(px) === 'string') {
+					// Store the percentage value
+					this._uiRightPercent = px;
+					
+					// Check if we are already mounted
+					var parentWidth,
+						val = parseInt(px, 10),
+						newVal;
+					
+					if (this._parent) {
+						// We have a parent, use it's geometry
+						parentWidth = this._parent._geometry.x;
+					} else {
+						// We don't have a parent so use the main canvas
+						// as a reference
+						parentWidth = ige._geometry.x;
+					}
+						
+					// Calculate real width from percentage
+					newVal = (parentWidth / 100 * val) | 0;
+	
+					this._uiRight = newVal;
+				} else {
+					// The value passed is not a percentage, directly assign it
+					this._uiRight = px;
+				}
 			}
 			
 			if (!noUpdate) {
@@ -113,31 +125,37 @@ var IgeUiPositionExtension = {
 	 */
 	top: function (px, noUpdate) {
 		if (px !== undefined) {
-			if (typeof(px) === 'string') {
-				// Store the percentage value
-				this._uiTopPercent = px;
-				
-				// Check if we are already mounted
-				var parentHeight,
-					val = parseInt(px, 10),
-					newVal;
-				
-				if (this._parent) {
-					// We have a parent, use it's geometry
-					parentHeight = this._parent._geometry.y;
-				} else {
-					// We don't have a parent so use the main canvas
-					// as a reference
-					parentHeight = ige._geometry.y;
-				}
-					
-				// Calculate real width from percentage
-				newVal = (parentHeight / 100 * val) | 0;
-
-				this._uiTop = newVal;
+			if (px === null) {
+				// Remove all data
+				delete this._uiTop;
+				delete this._uiTopPercent;
 			} else {
-				// The value passed is not a percentage, directly assign it
-				this._uiTop = px;
+				if (typeof(px) === 'string') {
+					// Store the percentage value
+					this._uiTopPercent = px;
+					
+					// Check if we are already mounted
+					var parentHeight,
+						val = parseInt(px, 10),
+						newVal;
+					
+					if (this._parent) {
+						// We have a parent, use it's geometry
+						parentHeight = this._parent._geometry.y;
+					} else {
+						// We don't have a parent so use the main canvas
+						// as a reference
+						parentHeight = ige._geometry.y;
+					}
+						
+					// Calculate real width from percentage
+					newVal = (parentHeight / 100 * val) | 0;
+	
+					this._uiTop = newVal;
+				} else {
+					// The value passed is not a percentage, directly assign it
+					this._uiTop = px;
+				}
 			}
 			
 			if (!noUpdate) {
@@ -175,31 +193,37 @@ var IgeUiPositionExtension = {
 	 */
 	bottom: function (px, noUpdate) {
 		if (px !== undefined) {
-			if (typeof(px) === 'string') {
-				// Store the percentage value
-				this._uiBottomPercent = px;
-				
-				// Check if we are already mounted
-				var parentHeight,
-					val = parseInt(px, 10),
-					newVal;
-				
-				if (this._parent) {
-					// We have a parent, use it's geometry
-					parentHeight = this._parent._geometry.y;
-				} else {
-					// We don't have a parent so use the main canvas
-					// as a reference
-					parentHeight = ige._geometry.y;
-				}
-					
-				// Calculate real width from percentage
-				newVal = (parentHeight / 100 * val) | 0;
-
-				this._uiBottom = newVal;
+			if (px === null) {
+				// Remove all data
+				delete this._uiBottom;
+				delete this._uiBottomPercent;
 			} else {
-				// The value passed is not a percentage, directly assign it
-				this._uiBottom = px;
+				if (typeof(px) === 'string') {
+					// Store the percentage value
+					this._uiBottomPercent = px;
+					
+					// Check if we are already mounted
+					var parentHeight,
+						val = parseInt(px, 10),
+						newVal;
+					
+					if (this._parent) {
+						// We have a parent, use it's geometry
+						parentHeight = this._parent._geometry.y;
+					} else {
+						// We don't have a parent so use the main canvas
+						// as a reference
+						parentHeight = ige._geometry.y;
+					}
+						
+					// Calculate real width from percentage
+					newVal = (parentHeight / 100 * val) | 0;
+	
+					this._uiBottom = newVal;
+				} else {
+					// The value passed is not a percentage, directly assign it
+					this._uiBottom = px;
+				}
 			}
 			
 			if (!noUpdate) {
@@ -221,51 +245,59 @@ var IgeUiPositionExtension = {
 	 */
 	width: function (px, lockAspect, modifier, noUpdate) {
 		if (px !== undefined) {
-			this._uiWidth = px;
-			this._widthModifier = modifier !== undefined ? modifier : 0;
-
-			if (typeof(px) === 'string') {
-				if (this._parent) {
-					// Percentage
-					var parentWidth = this._parent._geometry.x,
-						val = parseInt(px, 10),
-						newVal,
-						ratio;
-
-					// Calculate real width from percentage
-					newVal = (parentWidth / 100 * val) + this._widthModifier | 0;
-
+			if (px === null) {
+				// Remove all data
+				delete this._uiWidth;
+				this._width = 0;
+				this._geometry.x = 0;
+				this._geometry.x2 = 0;
+			} else {
+				this._uiWidth = px;
+				this._widthModifier = modifier !== undefined ? modifier : 0;
+	
+				if (typeof(px) === 'string') {
+					if (this._parent) {
+						// Percentage
+						var parentWidth = this._parent._geometry.x,
+							val = parseInt(px, 10),
+							newVal,
+							ratio;
+	
+						// Calculate real width from percentage
+						newVal = (parentWidth / 100 * val) + this._widthModifier | 0;
+	
+						if (lockAspect) {
+							// Calculate the height from the change in width
+							ratio = newVal / this._geometry.x;
+							this.height(this._geometry.y / ratio, false, 0, noUpdate);
+						}
+	
+						this._width = newVal;
+						this._geometry.x = newVal;
+						this._geometry.x2 = Math.floor(this._geometry.x / 2);
+					} else {
+						// We don't have a parent so use the main canvas
+						// as a reference
+						var parentWidth = ige._geometry.x,
+							val = parseInt(px, 10);
+	
+						// Calculate real height from percentage
+						this._geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
+						this._geometry.x2 = Math.floor(this._geometry.x / 2);
+	
+						this._width = this._geometry.x;
+					}
+				} else {
 					if (lockAspect) {
 						// Calculate the height from the change in width
-						ratio = newVal / this._geometry.x;
-						this.height(this._geometry.y / ratio, false, 0, noUpdate);
+						var ratio = px / this._geometry.x;
+						this.height(this._geometry.y * ratio, false, 0, noUpdate);
 					}
-
-					this._width = newVal;
-					this._geometry.x = newVal;
+	
+					this._width = px;
+					this._geometry.x = px;
 					this._geometry.x2 = Math.floor(this._geometry.x / 2);
-				} else {
-					// We don't have a parent so use the main canvas
-					// as a reference
-					var parentWidth = ige._geometry.x,
-						val = parseInt(px, 10);
-
-					// Calculate real height from percentage
-					this._geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
-					this._geometry.x2 = Math.floor(this._geometry.x / 2);
-
-					this._width = this._geometry.x;
 				}
-			} else {
-				if (lockAspect) {
-					// Calculate the height from the change in width
-					var ratio = px / this._geometry.x;
-					this.height(this._geometry.y * ratio, false, 0, noUpdate);
-				}
-
-				this._width = px;
-				this._geometry.x = px;
-				this._geometry.x2 = Math.floor(this._geometry.x / 2);
 			}
 
 			if (!noUpdate) {
@@ -287,53 +319,61 @@ var IgeUiPositionExtension = {
 	 */
 	height: function (px, lockAspect, modifier, noUpdate) {
 		if (px !== undefined) {
-			this._uiHeight = px;
-			this._heightModifier = modifier !== undefined ? modifier : 0;
-
-			if (typeof(px) === 'string') {
-				if (this._parent) {
-					// Percentage
-					var parentHeight = this._parent._geometry.y,
-						val = parseInt(px, 10),
-						newVal,
-						ratio;
-
-					// Calculate real height from percentage
-					// Calculate real width from percentage
-					newVal = (parentHeight / 100 * val) + this._heightModifier | 0;
-
+			if (px === null) {
+				// Remove all data
+				delete this._uiHeight;
+				this._height = 0;
+				this._geometry.y = 0;
+				this._geometry.y2 = 0;
+			} else {
+				this._uiHeight = px;
+				this._heightModifier = modifier !== undefined ? modifier : 0;
+	
+				if (typeof(px) === 'string') {
+					if (this._parent) {
+						// Percentage
+						var parentHeight = this._parent._geometry.y,
+							val = parseInt(px, 10),
+							newVal,
+							ratio;
+	
+						// Calculate real height from percentage
+						// Calculate real width from percentage
+						newVal = (parentHeight / 100 * val) + this._heightModifier | 0;
+	
+						if (lockAspect) {
+							// Calculate the height from the change in width
+							ratio = newVal / this._geometry.y;
+							this.width(this._geometry.x / ratio, false, 0, noUpdate);
+						}
+	
+						this._height = newVal;
+						this._geometry.y = newVal;
+						this._geometry.y2 = Math.floor(this._geometry.y / 2);
+					} else {
+						// We don't have a parent so use the main canvas
+						// as a reference
+						var parentHeight = ige._geometry.y,
+							val = parseInt(px, 10);
+	
+						// Calculate real height from percentage
+						this._geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
+						this._geometry.y2 = Math.floor(this._geometry.y / 2);
+						this._height = this._geometry.y;
+					}
+				} else {
 					if (lockAspect) {
 						// Calculate the height from the change in width
-						ratio = newVal / this._geometry.y;
-						this.width(this._geometry.x / ratio, false, 0, noUpdate);
+						var ratio = px / this._geometry.y;
+						this.width(this._geometry.x * ratio, false, 0, noUpdate);
 					}
-
-					this._height = newVal;
-					this._geometry.y = newVal;
+	
+					this._height = px;
+					this._geometry.y = px;
 					this._geometry.y2 = Math.floor(this._geometry.y / 2);
-				} else {
-					// We don't have a parent so use the main canvas
-					// as a reference
-					var parentHeight = ige._geometry.y,
-						val = parseInt(px, 10);
-
-					// Calculate real height from percentage
-					this._geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
-					this._geometry.y2 = Math.floor(this._geometry.y / 2);
-					this._height = this._geometry.y;
 				}
-			} else {
-				if (lockAspect) {
-					// Calculate the height from the change in width
-					var ratio = px / this._geometry.y;
-					this.width(this._geometry.x * ratio, false, 0, noUpdate);
-				}
-
-				this._height = px;
-				this._geometry.y = px;
-				this._geometry.y2 = Math.floor(this._geometry.y / 2);
 			}
-
+			
 			if (!noUpdate) {
 				this._updateUiPosition();
 			}
@@ -502,6 +542,8 @@ var IgeUiPositionExtension = {
 					}
 				}
 			}
+			
+			this.emit('uiUpdate');
 			
 			this.cacheDirty(true);
 		}

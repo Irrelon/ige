@@ -3,6 +3,8 @@ var IgeUiManagerComponent = IgeClass.extend({
 	componentId: 'ui',
 	
 	init: function (entity, options) {
+		var self = this;
+		
 		this._entity = entity;
 		this._options = options;
 		
@@ -11,6 +13,8 @@ var IgeUiManagerComponent = IgeClass.extend({
 		this._register = [];
 		this._styles = {};
 		this._elementsByStyle = {};
+		
+		ige.input.on('keyDown', function (event) { self._keyDown(event); });
 	},
 
 	/**
@@ -74,7 +78,7 @@ var IgeUiManagerComponent = IgeClass.extend({
 	},
 	
 	canFocus: function (elem) {
-		return true;
+		return elem._allowFocus;
 	},
 	
 	focus: function (elem) {
@@ -84,7 +88,7 @@ var IgeUiManagerComponent = IgeClass.extend({
 				var previousFocus = this._focus;
 				
 				// Tell the current focused element that it is about to loose focus
-				if (!previousFocus.emit('blur', elem)) {
+				if (!previousFocus || !previousFocus.emit('blur', elem)) {
 					// The blur was not cancelled
 					if (!elem.emit('focus', previousFocus)) {
 						// The focus was not cancelled
@@ -94,6 +98,9 @@ var IgeUiManagerComponent = IgeClass.extend({
 						return true;
 					}
 				}
+			} else {
+				// We are already focused
+				return true;
 			}
 		}
 		
@@ -116,5 +123,21 @@ var IgeUiManagerComponent = IgeClass.extend({
 		}
 		
 		return false;
+	},
+	
+	_keyUp: function (event) {
+		// Direct the key event to the focused element
+		if (this._focus) {
+			this._focus.emit('keyUp', event);
+			ige.input.stopPropagation();
+		}
+	},
+	
+	_keyDown: function (event) {
+		// Direct the key event to the focused element
+		if (this._focus) {
+			this._focus.emit('keyDown', event);
+			ige.input.stopPropagation();
+		}
 	}
 });

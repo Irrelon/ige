@@ -11,6 +11,7 @@ var IgeUiElement = IgeUiEntity.extend({
 		ige.ui.registerElement(this);
 		
 		this._focused = false;
+		this._allowFocus = true;
 		
 		var updateStyleFunc = function () {
 			self._updateStyle();
@@ -19,7 +20,18 @@ var IgeUiElement = IgeUiEntity.extend({
 		this.on('mouseOver', updateStyleFunc);
 		this.on('mouseOut', updateStyleFunc);
 		this.on('mouseDown', updateStyleFunc);
-		this.on('mouseUp', updateStyleFunc);
+		this.on('mouseUp', function () {
+			if (this._allowFocus) {
+				// Try to focus the entity
+				if (!self.focus()) {
+					updateStyleFunc();
+				} else {
+					ige.input.stopPropagation();
+				}
+			} else {
+				updateStyleFunc();
+			}
+		});
 		
 		// Enable mouse events on this entity by default
 		this.mouseEventsActive(true);
@@ -169,14 +181,20 @@ var IgeUiElement = IgeUiEntity.extend({
 		if (ige.ui.focus(this)) {
 			// Re-apply styles since the change
 			this._updateStyle();
+			return true;
 		}
+		
+		return false;
 	},
 	
 	blur: function () {
 		if (ige.ui.blur(this)) {
 			// Re-apply styles since the change
 			this._updateStyle();
+			return true;
 		}
+		
+		return false;
 	},
 	
 	focused: function () {

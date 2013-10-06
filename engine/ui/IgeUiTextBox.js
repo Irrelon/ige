@@ -3,19 +3,20 @@
  * capture keyboard input and display it, similar in usage to the HTML input
  * text element.
  */
-var IgeUiTextBox = IgeUiEntity.extend({
+var IgeUiTextBox = IgeUiElement.extend({
 	classId: 'IgeUiTextBox',
 
 	/**
 	 * @constructor
 	 */
 	init: function () {
-		IgeUiEntity.prototype.init.call(this);
+		IgeUiElement.prototype.init.call(this);
 
 		var self = this;
 
-		this._hasFocus = false;
 		this._value = '';
+		this._caretStart = 0;
+		this._caretEnd = 0;
 
 		this._fontEntity = new IgeFontEntity()
 			.left(5)
@@ -23,9 +24,92 @@ var IgeUiTextBox = IgeUiEntity.extend({
 			.textAlignX(0)
 			.textAlignY(0)
 			.mount(this);
-
-		// Listen for keyboard events to capture text input
-		ige.input.on('keyDown', function (event) { self._keyDown(event); });
+		
+		var blurFunc = function () {
+			if (self._domElement) {
+				self._domElement.parentNode.removeChild(self._domElement);
+				delete self._domElement;
+			}
+		};
+		
+		var focusFunc = function () {
+			blurFunc();
+			
+			var input,
+				body,
+				entScreenPos = self.screenPosition();
+			
+			input = document.createElement('input');
+			input.setAttribute('type', 'text');
+			
+			// Position the infobox and set content
+			input.style.position = 'absolute';
+			input.style.top = (entScreenPos.y - self._geometry.y2) + 'px';
+			input.style.left = (entScreenPos.x - self._geometry.x2) + 'px';
+			input.style.width = self._geometry.x + 'px';
+			input.style.zIndex = -1;
+			input.style.opacity = '0';
+			
+			body = document.getElementsByTagName('body')[0];
+			
+			body.appendChild(input);
+			input.focus();
+			
+			// Now add the existing text to the box
+			input.setAttribute('value', self._value);
+			
+			// Set the caret position
+			input.selectionStart = self._value.length;
+			input.selectionEnd = self._value.length;
+			
+			self._caretStart = self._value.length;
+			self._caretEnd = self._value.length;
+			
+			// Listen for events from the temp input element
+			input.addEventListener('keyup', function (event) {
+				self.value(this.value);
+				
+				if (event.keyCode === 13) {
+					// Enter pressed
+					self.emit('enter', self._value);
+				}
+			});
+			
+			input.addEventListener('keydown', function (event) {
+				self.value(this.value);
+			});
+			
+			input.addEventListener('mouseup', function (event) {
+				self._caretStart = this.selectionStart;
+				self._caretEnd = this.selectionEnd;
+			});
+			
+			input.addEventListener('blur', function (event) {
+				this.focus();
+			});
+			
+			self._domElement = input;
+		};
+		
+		// On focus, create a temp input element in the DOM and focus to it
+		this.on('focus', focusFunc);
+		this.on('mouseUp', focusFunc);
+		
+		this.on('uiUpdate', function () {
+			if (self._domElement) {
+				// Update the transformation matrix
+				self.updateTransform();
+				
+				var input = self._domElement,
+					entScreenPos = self.screenPosition();
+				
+				// Reposition the dom element
+				input.style.top = (entScreenPos.y - self._geometry.y2) + 'px';
+				input.style.left = (entScreenPos.x - self._geometry.x2) + 'px';
+			}
+		});
+		
+		this.on('blur', blurFunc);
 	},
 
 	/**
@@ -41,7 +125,7 @@ var IgeUiTextBox = IgeUiEntity.extend({
 		var val;
 
 		// Call the main super class method
-		val = IgeUiEntity.prototype.width.call(this, px, lockAspect, modifier, noUpdate);
+		val = IgeUiElement.prototype.width.call(this, px, lockAspect, modifier, noUpdate);
 
 		// Update the font entity width - 10px for margin
 		this._fontEntity.width(px - 10, lockAspect, modifier, noUpdate);
@@ -62,7 +146,7 @@ var IgeUiTextBox = IgeUiEntity.extend({
 		var val;
 
 		// Call the main super class method
-		val = IgeUiEntity.prototype.height.call(this, px, lockAspect, modifier, noUpdate);
+		val = IgeUiElement.prototype.height.call(this, px, lockAspect, modifier, noUpdate);
 
 		// Update the font entity height
 		this._fontEntity.height(px, lockAspect, modifier, noUpdate);
@@ -77,29 +161,17 @@ var IgeUiTextBox = IgeUiEntity.extend({
 	 */
 	value: function (val) {
 		if (val !== undefined) {
-			this._value = val;
-
-			// Set the text of the font entity to the value
-			this._fontEntity.text(this._value);
+			if (this._value !== val) {
+				this._value = val;
+	
+				// Set the text of the font entity to the value
+				this._fontEntity.text(this._value);
+				this.emit('change', this._value);
+			}
 			return this;
 		}
 
 		return this._value;
-	},
-
-	/**
-	 * Gets / sets if this input box should have focus. When the
-	 * input box has focus it will respond to keyboard input.
-	 * @param val
-	 * @return {*}
-	 */
-	focus: function (val) {
-		if (val !== undefined) {
-			this._hasFocus = val;
-			return this;
-		}
-
-		return this._hasFocus;
 	},
 
 	/**
@@ -118,36 +190,5 @@ var IgeUiTextBox = IgeUiEntity.extend({
 		}
 
 		return this._fontSheet;
-	},
-
-	/**
-	 * Handles key down events. Will examine the key data and determine
-	 * what to do with it for the text box.
-	 * @param event
-	 * @private
-	 */
-	_keyDown: function (event) {
-		if (this._hasFocus) {
-			// We have focus so handle the key input
-			event.preventDefault();
-			event.stopPropagation();
-			event.returnValue = false;
-
-			switch (event.keyCode) {
-				case 8: // backspace
-					// Remove the last character from the current value
-					if (this._value.length > 0) {
-						this.value(this._value.substr(0, this._value.length - 1));
-					}
-					break;
-
-				case 13: // return
-					break;
-
-				default:
-					this.value(this._value + String.fromCharCode(event.keyCode));
-			}
-
-		}
 	}
 });

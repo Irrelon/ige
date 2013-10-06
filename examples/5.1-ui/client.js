@@ -57,7 +57,12 @@ var Client = IgeClass.extend({
 					});
 					
 					ige.ui.style('#div2', {
-						'backgroundColor': '#333333'
+						'backgroundColor': '#333333',
+						'bottom': null,
+						'right': null,
+						'width': 300,
+						'height': 30
+						
 					});
 
 					var div1 = new IgeUiElement()
@@ -67,9 +72,11 @@ var Client = IgeClass.extend({
 						//.fontSheet(gameTexture[3])
 						//.value('Type text to see text input!');
 					
-					new IgeUiElement()
+					new IgeUiTextBox()
 						.id('div2')
 						.styleClass('div')
+						.fontSheet(gameTexture[3])
+						.value('Type text to see text input!')
 						.mount(div1);
 				}
 			});

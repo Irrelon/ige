@@ -38,9 +38,6 @@ var IgeEngine = IgeEntity.extend({
 		if (!this.isServer) {
 			// Enable cocoonJS support because we are running client-side
 			this.addComponent(IgeCocoonJsComponent);
-			
-			// Enable UI element (virtual DOM) support
-			this.addComponent(IgeUiManagerComponent);
 		}
 
 		// Create storage
@@ -54,6 +51,11 @@ var IgeEngine = IgeEntity.extend({
 		// Setup components
 		this.addComponent(IgeInputComponent);
 		this.addComponent(IgeTweenComponent);
+		
+		if (!this.isServer) {
+			// Enable UI element (virtual DOM) support
+			this.addComponent(IgeUiManagerComponent);
+		}
 
 		// Set some defaults
 		this._renderModes = [
