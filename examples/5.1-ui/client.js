@@ -49,7 +49,7 @@ var Client = IgeClass.extend({
 					});
 					
 					ige.ui.style('.div:hover', {
-						'borderColor': '#00ff00'
+						'borderColor': '#ffff00'
 					});
 					
 					ige.ui.style('.div:active', {
@@ -77,11 +77,11 @@ var Client = IgeClass.extend({
 					});
 					
 					ige.ui.style('#div2:focus', {
-						'borderColor': '#ffff00'
+						'borderColor': '#00ff00'
 					});
 					
 					ige.ui.style('#div3:focus', {
-						'borderColor': '#ffff00'
+						'borderColor': '#00ff00'
 					});
 
 					var div1 = new IgeUiElement()
