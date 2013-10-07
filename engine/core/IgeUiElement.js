@@ -259,3 +259,5 @@ var IgeUiElement = IgeUiEntity.extend({
 		IgeUiEntity.prototype.destroy.call(this);
 	}
 });
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeUiElement; }
