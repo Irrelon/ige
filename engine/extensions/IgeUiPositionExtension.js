@@ -3,6 +3,7 @@ var IgeUiPositionExtension = {
 	 * Gets / sets the entity's x position relative to the left of
 	 * the canvas.
 	 * @param {Number} px
+	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
 	left: function (px, noUpdate) {
@@ -12,6 +13,9 @@ var IgeUiPositionExtension = {
 				delete this._uiLeft;
 				delete this._uiLeftPercent;
 			} else {
+				delete this._uiCenter;
+				delete this._uiCenterPercent;
+				
 				if (typeof(px) === 'string') {
 					// Store the percentage value
 					this._uiLeftPercent = px;
@@ -54,6 +58,7 @@ var IgeUiPositionExtension = {
 	 * Gets / sets the entity's x position relative to the right of
 	 * the canvas.
 	 * @param {Number} px
+	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
 	right: function (px, noUpdate) {
@@ -63,6 +68,9 @@ var IgeUiPositionExtension = {
 				delete this._uiRight;
 				delete this._uiRightPercent;
 			} else {
+				delete this._uiCenter;
+				delete this._uiCenterPercent;
+				
 				if (typeof(px) === 'string') {
 					// Store the percentage value
 					this._uiRightPercent = px;
@@ -103,26 +111,66 @@ var IgeUiPositionExtension = {
 
 	/**
 	 * Gets / sets the viewport's x position relative to the center of
-	 * the canvas.
-	 * @param {Number} val
+	 * the entity parent.
+	 * @param {Number} px
+	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
-	center: function (val) {
-		if (val !== undefined) {
-			this._uiX = val;
-			this._uiXAlign = 'center';
-
-			this._updateUiPosition();
+	center: function (px, noUpdate) {
+		if (px !== undefined) {
+			if (px === null) {
+				// Remove all data
+				delete this._uiCenter;
+				delete this._uiCenterPercent;
+			} else {
+				delete this._uiLeft;
+				delete this._uiLeftPercent;
+				delete this._uiRight;
+				delete this._uiRightPercent;
+				
+				if (typeof(px) === 'string') {
+					// Store the percentage value
+					this._uiCenterPercent = px;
+					
+					// Check if we are already mounted
+					var parentWidth,
+						val = parseInt(px, 10),
+						newVal;
+					
+					if (this._parent) {
+						// We have a parent, use it's geometry
+						parentWidth = this._parent._geometry.x2;
+					} else {
+						// We don't have a parent so use the main canvas
+						// as a reference
+						parentWidth = ige._geometry.x2;
+					}
+						
+					// Calculate real width from percentage
+					newVal = (parentWidth / 100 * val) | 0;
+	
+					this._uiCenter = newVal;
+				} else {
+					// The value passed is not a percentage, directly assign it
+					this._uiCenter = px;
+					delete this._uiCenterPercent;
+				}
+			}
+			
+			if (!noUpdate) {
+				this._updateUiPosition();
+			}
 			return this;
 		}
 
-		return this._uiX;
+		return this._uiCenter;
 	},
 
 	/**
 	 * Gets / sets the entity's y position relative to the top of
 	 * the canvas.
 	 * @param {Number} px
+	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
 	top: function (px, noUpdate) {
@@ -132,6 +180,9 @@ var IgeUiPositionExtension = {
 				delete this._uiTop;
 				delete this._uiTopPercent;
 			} else {
+				delete this._uiMiddle;
+				delete this._uiMiddlePercent;
+				
 				if (typeof(px) === 'string') {
 					// Store the percentage value
 					this._uiTopPercent = px;
@@ -171,27 +222,10 @@ var IgeUiPositionExtension = {
 	},
 
 	/**
-	 * Gets / sets the viewport's y position relative to the middle of
-	 * the canvas.
-	 * @param {Number} val
-	 * @return {Number}
-	 */
-	middle: function (val) {
-		if (val !== undefined) {
-			this._uiY = val;
-			this._uiYAlign = 'middle';
-
-			this._updateUiPosition();
-			return this;
-		}
-
-		return this._uiY;
-	},
-
-	/**
 	 * Gets / sets the entity's y position relative to the bottom of
 	 * the canvas.
 	 * @param {Number} px
+	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
 	bottom: function (px, noUpdate) {
@@ -201,6 +235,9 @@ var IgeUiPositionExtension = {
 				delete this._uiBottom;
 				delete this._uiBottomPercent;
 			} else {
+				delete this._uiMiddle;
+				delete this._uiMiddlePercent;
+				
 				if (typeof(px) === 'string') {
 					// Store the percentage value
 					this._uiBottomPercent = px;
@@ -238,13 +275,72 @@ var IgeUiPositionExtension = {
 
 		return this._uiBottom;
 	},
+	
+	/**
+	 * Gets / sets the viewport's y position relative to the middle of
+	 * the canvas.
+	 * @param {Number} px
+	 * @param {Boolean=} noUpdate
+	 * @return {Number}
+	 */
+	middle: function (px, noUpdate) {
+		if (px !== undefined) {
+			if (px === null) {
+				// Remove all data
+				delete this._uiMiddle;
+				delete this._uiMiddlePercent;
+			} else {
+				delete this._uiTop;
+				delete this._uiTopPercent;
+				delete this._uiBottom;
+				delete this._uiBottomPercent;
+				
+				if (typeof(px) === 'string') {
+					// Store the percentage value
+					this._uiMiddlePercent = px;
+					
+					// Check if we are already mounted
+					var parentWidth,
+						val = parseInt(px, 10),
+						newVal;
+					
+					if (this._parent) {
+						// We have a parent, use it's geometry
+						parentWidth = this._parent._geometry.y2;
+					} else {
+						// We don't have a parent so use the main canvas
+						// as a reference
+						parentWidth = ige._geometry.y2;
+					}
+						
+					// Calculate real width from percentage
+					newVal = (parentWidth / 100 * val) | 0;
+	
+					this._uiMiddle = newVal;
+				} else {
+					// The value passed is not a percentage, directly assign it
+					this._uiMiddle = px;
+					delete this._uiMiddlePercent;
+				}
+			}
+			
+			if (!noUpdate) {
+				this._updateUiPosition();
+			}
+			return this;
+		}
+
+		return this._uiMiddle;
+	},
 
 	/**
 	 * Gets / sets the geometry.x in pixels.
 	 * @param {Number, String=} px Either the width in pixels or a percentage
+	 * @param {Boolean=} lockAspect
 	 * @param {Number=} modifier A value to add to the final width. Useful when
 	 * you want to alter a percentage value by a certain number of pixels after
 	 * it has been calculated.
+	 * @param {Boolean=} noUpdate
 	 * @return {*}
 	 */
 	width: function (px, lockAspect, modifier, noUpdate) {
@@ -316,9 +412,11 @@ var IgeUiPositionExtension = {
 	/**
 	 * Gets / sets the geometry.y in pixels.
 	 * @param {Number=} px
+	 * @param {Boolean=} lockAspect
 	 * @param {Number=} modifier A value to add to the final height. Useful when
 	 * you want to alter a percentage value by a certain number of pixels after
 	 * it has been calculated.
+	 * @param {Boolean=} noUpdate
 	 * @return {*}
 	 */
 	height: function (px, lockAspect, modifier, noUpdate) {
@@ -494,6 +592,8 @@ var IgeUiPositionExtension = {
 			if (this._uiWidth) { this.width(this._uiWidth, false, this._widthModifier, true); }
 			if (this._uiHeight) { this.height(this._uiHeight, false, this._heightModifier, true); }
 			
+			if (this._uiCenterPercent) { this.center(this._uiCenterPercent, true); }
+			if (this._uiMiddlePercent) { this.middle(this._uiMiddlePercent, true); }
 			if (this._uiLeftPercent) { this.left(this._uiLeftPercent, true); }
 			if (this._uiRightPercent) { this.right(this._uiRightPercent, true); }
 			if (this._uiTopPercent) { this.top(this._uiTopPercent, true); }
