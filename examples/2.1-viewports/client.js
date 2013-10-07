@@ -36,8 +36,8 @@ var Client = IgeClass.extend({
 					// Make a load of viewports
 					for (i = 0; i < vpCount; i++) {
 						vp[i] = new IgeViewport()
-							.center(-300)
-							.middle(0)
+							.center('-50%')
+							.middle('-50%')
 							.width(150)
 							.height(75)
 							.autoSize(false)
@@ -55,8 +55,8 @@ var Client = IgeClass.extend({
 					tt = 0;
 					for (var i = 0; i < vpCount; i++) {
 						vp[i] = new IgeViewport()
-							.center(300)
-							.middle(0)
+							.center('50%')
+							.middle('50%')
 							.width(150)
 							.height(75)
 							.autoSize(false)
