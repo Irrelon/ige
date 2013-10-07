@@ -24,7 +24,7 @@ var Client = IgeClass.extend({
 					// Load the base scene data
 					ige.addGraph('IgeBaseScene');
 
-					self.vp1.camera.translateTo(200, 200, 0);
+					ige.$('vp1').camera.translateTo(200, 200, 0);
 
 					// Create an entity and mount it to the scene
 					self.obj[0] = new IgeEntity()
