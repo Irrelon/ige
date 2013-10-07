@@ -849,7 +849,7 @@ var IgeObject = IgeEventingClass.extend({
 				return this;
 			} else {
 				// The object has no _children array!
-				this.log('Cannot mount object because it has no _children array!', 'warning');
+				this.log('Cannot mount object because it has no _children array! If you are mounting to a custom class, ensure that you have called the prototype.init() method of your super-class during the init of your custom class.', 'warning');
 				return false;
 			}
 		} else {
