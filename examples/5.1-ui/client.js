@@ -27,6 +27,9 @@ var Client = IgeClass.extend({
 				if (success) {
 					// Add base scene data to graph
 					ige.addGraph('IgeBaseScene');
+					
+					ige.$('vp1').addComponent(IgeMouseZoomComponent)
+						.mouseZoom.enabled(true);
 
 					// Create the UI scene
 					self.uiScene = new IgeScene2d()
