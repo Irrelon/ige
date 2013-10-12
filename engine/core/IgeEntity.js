@@ -1513,6 +1513,15 @@ var IgeEntity = IgeObject.extend({
 		}
 	},
 	
+	mouseAlwaysInside: function (val) {
+		if (val !== undefined) {
+			this._mouseAlwaysInside = val;
+			return this;
+		}
+		
+		return this._mouseAlwaysInside;
+	},
+	
 	/**
 	 * Processes the updates required each render frame. Any code in the update()
 	 * method will be called ONCE for each render frame BEFORE the tick() method.
@@ -1595,7 +1604,6 @@ var IgeEntity = IgeObject.extend({
 					mouseY = mp.y;
 
 					// Check if the current mouse position is inside this aabb
-					//if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
 					if (aabb.xyInside(mouseX, mouseY) || this._mouseAlwaysInside) {
 						// Point is inside the aabb
 						ige.input.queueEvent(this, this._mouseInAabb);
