@@ -198,6 +198,13 @@ var IgeFontEntity = IgeUiEntity.extend({
 	},
 
 	/**
+	 * A proxy for colorOverlay().
+	 */
+	color: function (val) {
+		return this.colorOverlay(val);
+	},
+
+	/**
 	 * Clears the texture cache for this entity's text string.
 	 */
 	clearCache: function () {
