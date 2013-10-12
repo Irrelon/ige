@@ -121,35 +121,13 @@ var IgeUiElement = IgeUiEntity.extend({
 	_updateStyle: function () {
 		// Apply styles in order of class, class:focus, class:hover, class:active,
 		// id, id:focus, id:hover, id:active
-		var styleName = this._styleClass,
-			baseStyle;
-		
-		if (styleName) {
-			baseStyle = ige.ui.style(styleName);
-			
-			if (baseStyle) {
-				// Basic
-				this.applyStyle(baseStyle);
-				
-				// Focus
-				if (this._focused) {
-					this.applyStyle(ige.ui.style(styleName + ':focus'));
-				}
-				
-				// Hover
-				if (this._mouseStateOver) {
-					this.applyStyle(ige.ui.style(styleName + ':hover'));
-				}
-				
-				// Active
-				if (this._mouseStateDown) {
-					this.applyStyle(ige.ui.style(styleName + ':active'));
-				}
-			}
-		}
-		
-		styleName = '#' + this._id;
-		baseStyle = ige.ui.style(styleName);
+		this._processStyle(this._classId);
+		this._processStyle(this._styleClass);
+		this._processStyle('#' + this._id);
+	},
+	
+	_processStyle: function (styleName) {
+		var baseStyle = ige.ui.style(styleName);
 		
 		if (baseStyle && styleName) {
 			// Basic
