@@ -843,6 +843,8 @@ var IgeObject = IgeEventingClass.extend({
 				} else {
 					delete this._compositeParent;
 				}
+				
+				this._mounted(this._parent);
 
 				this.emit('mounted', this._parent);
 
@@ -874,7 +876,8 @@ var IgeObject = IgeEventingClass.extend({
 	unMount: function () {
 		if (this._parent) {
 			var childArr = this._parent._children,
-				index = childArr.indexOf(this);
+				index = childArr.indexOf(this),
+				oldParent = this._parent;
 
 			if (index > -1) {
 				// Found this in the parent._children array so remove it
@@ -882,6 +885,8 @@ var IgeObject = IgeEventingClass.extend({
 
 				this._parent._childUnMounted(this);
 				this._parent = null;
+				
+				this._unMounted(oldParent);
 
 				return this;
 			} else {
@@ -1619,6 +1624,24 @@ var IgeObject = IgeEventingClass.extend({
 	 * @private
 	 */
 	_childUnMounted: function (obj) {},
+	
+	/**
+	 * Called when this object is mounted to another object.
+	 * @param obj
+	 * @private
+	 */
+	_mounted: function (obj) {
+		
+	},
+	
+	/**
+	 * Called when this object is un-mounted from it's parent.
+	 * @param obj
+	 * @private
+	 */
+	_unMounted: function (obj) {
+		
+	},
 
 	/**
 	 * Destroys the object and all it's child objects, removing them from the
