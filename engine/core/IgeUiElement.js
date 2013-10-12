@@ -121,31 +121,51 @@ var IgeUiElement = IgeUiEntity.extend({
 	_updateStyle: function () {
 		// Apply styles in order of class, class:focus, class:hover, class:active,
 		// id, id:focus, id:hover, id:active
+		//this.log('Processing styles for ' + this._id);
 		this._processStyle(this._classId);
 		this._processStyle(this._styleClass);
 		this._processStyle('#' + this._id);
 	},
 	
 	_processStyle: function (styleName) {
-		var baseStyle = ige.ui.style(styleName);
-		
-		if (baseStyle && styleName) {
+		if (styleName) {
+			//this.log('Checking for styles with selector: ' + styleName);
+			
 			// Basic
-			this.applyStyle(baseStyle);
+			var styleData = ige.ui.style(styleName);
+			if (styleData) {
+				//this.log('Applying styles with selector "' + styleName + '"');
+				this.applyStyle(styleData);
+			}
 			
 			// Focus
 			if (this._focused) {
-				this.applyStyle(ige.ui.style(styleName + ':focus'));
+				//this.log('Checking for styles with selector: ' + styleName + ':focus');
+				styleData = ige.ui.style(styleName + ':focus');
+				if (styleData) {
+					//this.log('Applying styles with selector "' + styleName + ':focus' + '"');
+					this.applyStyle(styleData);
+				}
 			}
 			
 			// Hover
 			if (this._mouseStateOver) {
-				this.applyStyle(ige.ui.style(styleName + ':hover'));
+				//this.log('Checking for styles with selector: ' + styleName + ':hover');
+				styleData = ige.ui.style(styleName + ':hover');
+				if (styleData) {
+					//this.log('Applying styles with selector "' + styleName + ':hover' + '"');
+					this.applyStyle(styleData);
+				}
 			}
 			
 			// Active
 			if (this._mouseStateDown) {
-				this.applyStyle(ige.ui.style(styleName + ':active'));
+				//this.log('Checking for styles with selector: ' + styleName + ':active');
+				styleData = ige.ui.style(styleName + ':active');
+				if (styleData) {
+					//this.log('Applying styles with selector "' + styleName + ':active' + '"');
+					this.applyStyle(styleData);
+				}
 			}
 		}
 	},
