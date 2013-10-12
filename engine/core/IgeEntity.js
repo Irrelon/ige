@@ -2775,6 +2775,8 @@ var IgeEntity = IgeObject.extend({
 		} else {
 			this._worldMatrix.copy(this._localMatrix);
 		}
+		
+		return this;
 	},
 
 	/**
