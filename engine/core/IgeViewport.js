@@ -17,8 +17,6 @@ var IgeViewport = IgeEntity.extend([
 		this._mouseAlwaysInside = true;
 		this._mousePos = new IgePoint(0, 0, 0);
 		this._overflow = '';
-		this._uiX = 0;
-		this._uiY = 0;
 		this._clipping = true;
 
 		// Set default options if not specified
