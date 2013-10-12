@@ -147,10 +147,10 @@ var IgeUiEntity = IgeEntity.extend([
 	_renderBorder: function (ctx) {
 		var rad,
 			geom = this._geometry,
-			left = -(geom.x2) | 0,
-			top = -(geom.y2) | 0,
-			width = geom.x,
-			height = geom.y;
+			left = (-(geom.x2) | 0) + 0.5,
+			top = (-(geom.y2) | 0) + 0.5,
+			width = geom.x - 1,
+			height = geom.y - 1;
 
 		// Check for early exit if we are rendering a rectangle
 		if (!this._borderTopRightRadius && !this._borderBottomRightRadius && !this._borderBottomLeftRadius && !this._borderTopLeftRadius
