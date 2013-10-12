@@ -4,18 +4,19 @@ var Client = IgeClass.extend({
 		ige.showStats(1);
 
 		// Load our textures
-		var self = this,
-			gameTexture = [];
-
+		var self = this;
+		
+		this.gameTexture = {};
 		this.obj = [];
 
 		// Setup the tweening component on the engine
 		ige.addComponent(IgeTweenComponent);
 
-		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
-		gameTexture[1] = new IgeCellSheet('../assets/textures/ui/icon_entity.png', 2, 1);
-		gameTexture[2] = new IgeFontSheet('../assets/textures/fonts/verdana_12pt.png', 0);
-		gameTexture[3] = new IgeFontSheet('../assets/textures/fonts/verdana_10pt.png', 0);
+		this.gameTexture.fairy = new IgeTexture('../assets/textures/sprites/fairy.png');
+		this.gameTexture.icon = new IgeCellSheet('../assets/textures/ui/icon_entity.png', 2, 1);
+		this.gameTexture.verdana_10pt = new IgeFontSheet('../assets/textures/fonts/verdana_10pt.png', 0);
+		this.gameTexture.verdana_12pt = new IgeFontSheet('../assets/textures/fonts/verdana_12pt.png', 0);
+		this.gameTexture.metronic = new IgeTexture('../assets/textures/ui/metronic.png');
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -38,76 +39,157 @@ var Client = IgeClass.extend({
 						.ignoreCamera(true)
 						.mount(ige.$('baseScene'));
 					
-					ige.ui.style('.div', {
-						'backgroundColor': '#000000',
-						'borderColor': '#ffffff',
-						'borderWidth': 1,
-						'borderRadius': 5,
-						'width': 300,
-						'height': 24,
-						'left': '10%',
-						'top': '10%',
-						'bottom': '10%',
-						'right': '10%'
+					ige.ui.style('#topNav', {
+						'backgroundColor': '#212121',
+						'top': 0,
+						'left': 0,
+						'right': 0,
+						'height': 42
 					});
 					
-					ige.ui.style('.div:hover', {
-						'borderColor': '#ffff00'
+					ige.ui.style('#leftNav', {
+						'backgroundColor': '#3d3d3d',
+						'top': 42,
+						'left': 0,
+						'width': 225,
+						'bottom': 0
 					});
 					
-					ige.ui.style('.div:active', {
-						'borderColor': '#ff0000'
+					ige.ui.style('#main', {
+						'backgroundColor': '#ffffff',
+						'left': 225,
+						'right': 0,
+						'top': 42,
+						'bottom': 0
 					});
 					
-					ige.ui.style('#div2', {
-						'backgroundColor': '#333333',
-						'bottom': null,
-						'right': null,
-						'width': 300,
-						'height': 30,
+					ige.ui.style('#logo', {
+						'backgroundImage': self.gameTexture.metronic,
+						'backgroundRepeat': 'no-repeat',
+						'middle': 0,
+						'left': 20,
+						'width': 86,
+						'height': 14
+					});
+					
+					ige.ui.style('.title', {
+						'font': '3em Open Sans',
+						'color': '#666666',
+						'width': 200,
+						'height': 40,
 						'top': 10,
 						'left': 10
 					});
 					
-					ige.ui.style('#div3', {
-						'backgroundColor': '#333333',
+					ige.ui.style('.subTitle', {
+						'font': 'lighter 16px Open Sans',
+						'color': '#666666',
+						'width': 400,
+						'height': 40,
+						'top': 40,
+						'left': 11
+					});
+					
+					ige.ui.style('IgeUiTextBox', {
+						'backgroundColor': '#ffffff',
+						'borderColor': '#212121',
+						'borderWidth': 1,
 						'bottom': null,
 						'right': null,
 						'width': 300,
 						'height': 30,
-						'top': 50,
-						'left': 10
+						'left': 15,
+						'font': '12px Open Sans',
+						'color': '#000000'
 					});
 					
-					ige.ui.style('#div2:focus', {
+					ige.ui.style('#textBox1', {
+						'top': 140
+					});
+					
+					ige.ui.style('#textBox2', {
+						'top': 180
+					});
+					
+					ige.ui.style('#textBox1:focus', {
 						'borderColor': '#00ff00'
 					});
 					
-					ige.ui.style('#div3:focus', {
+					ige.ui.style('#textBox2:focus', {
 						'borderColor': '#00ff00'
 					});
-
-					var div1 = new IgeUiElement()
-						.id('div1')
-						.styleClass('div')
-						.allowHover(false)
-						.allowActive(false)
-						.allowFocus(true)
+					
+					ige.ui.style('#dashBar', {
+						'backgroundColor': '#eeeeee',
+						'top': 80,
+						'left': 15,
+						'right': 15,
+						'height': 40
+					});
+					
+					ige.ui.style('IgeUiLabel', {
+						'font': '12px Open Sans',
+						'color': '#000000'
+					});
+					
+					ige.ui.style('#homeLabel', {
+						'font': '14px Open Sans',
+						'color': '#333333'
+					});
+					
+					var topNav = new IgeUiElement()
+						.id('topNav')
 						.mount(self.uiScene);
 					
-					new IgeUiTextBox()
-						.id('div2')
-						.styleClass('div')
-						.fontSheet(gameTexture[3])
-						.value('Text box 1')
-						.mount(div1);
+					new IgeUiElement()
+						.id('logo')
+						.mount(topNav);
+					
+					var leftNav = new IgeUiElement()
+						.id('leftNav')
+						.mount(self.uiScene);
+					
+					var main = new IgeUiElement()
+						.id('main')
+						.mount(self.uiScene);
+					
+					new IgeUiLabel()
+						.value('Dashboard')
+						.styleClass('title')
+						.mount(main);
+					
+					new IgeUiLabel()
+						.value('Login with your username and password')
+						.styleClass('subTitle')
+						.mount(main);
+					
+					var dashBar = new IgeUiElement()
+						.id('dashBar')
+						.mount(main);
+					
+					new IgeUiLabel()
+						.id('homeLabel')
+						.value('Home')
+						.width(100)
+						.height(40)
+						.left(0)
+						.top(0)
+						.mount(dashBar);
 					
 					new IgeUiTextBox()
-						.id('div3')
-						.styleClass('div')
-						.fontSheet(gameTexture[3])
-						.value('Text box 2')
-						.mount(div1);
+						.id('textBox1')
+						.value('')
+						.placeHolder('Username')
+						.placeHolderColor('#989898')
+						.mount(main);
+					
+					new IgeUiTextBox()
+						.id('textBox2')
+						.value('')
+						.mask('*')
+						.placeHolder('Password')
+						.placeHolderColor('#989898')
+						.mount(main);
 				}
 			});
 		});

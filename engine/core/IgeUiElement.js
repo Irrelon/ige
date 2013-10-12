@@ -220,6 +220,8 @@ var IgeUiElement = IgeUiEntity.extend({
 				}
 			}
 		}
+		
+		return this;
 	},
 
 	/**
