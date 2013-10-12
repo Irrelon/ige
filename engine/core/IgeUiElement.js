@@ -250,6 +250,10 @@ var IgeUiElement = IgeUiEntity.extend({
 	focused: function () {
 		return this._focused;
 	},
+	
+	_mounted: function () {
+		this._updateStyle();
+	},
 
 	/**
 	 * Destructor
