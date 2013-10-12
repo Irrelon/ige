@@ -100,6 +100,11 @@ var IgeViewport = IgeEntity.extend([
 		return this._transformPoint(this._mousePos.clone());
 	},
 
+	/**
+	 * Gets the current rectangular area that the viewport is "looking at"
+	 * in the world. The co-ordinates are in world space.
+	 * @returns {IgeRect}
+	 */
 	viewArea: function () {
 		var aabb = this.aabb(),
 			camTrans = this.camera._translate,
@@ -239,6 +244,27 @@ var IgeViewport = IgeEntity.extend([
 				ctx.restore();
 			}
 		}
+	},
+
+	/**
+	 * Returns the screen position of the viewport as an IgePoint where x is the
+	 * "left" and y is the "top", useful for positioning HTML elements at the
+	 * screen location of an IGE entity. The returned values indicate the center
+	 * of the viewport on the screen.
+	 * 
+	 * This method assumes that the top-left
+	 * of the main canvas element is at 0, 0. If not you can adjust the values
+	 * yourself to allow for offset.
+	 * @example #Get the screen position of the entity
+	 *     var screenPos = entity.screenPosition();
+	 * @return {IgePoint} The screen position of the entity.
+	 */
+	screenPosition: function () {
+		return new IgePoint(
+			Math.floor(this._worldMatrix.matrix[2] + ige._geometry.x2),
+			Math.floor(this._worldMatrix.matrix[5] + ige._geometry.y2),
+			0
+		);
 	},
 	
 	drawViewArea: function (val) {
