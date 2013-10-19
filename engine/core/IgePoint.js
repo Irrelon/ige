@@ -35,6 +35,48 @@ var IgePoint = IgeClass.extend({
 	},
 
 	/**
+	 * Gets / sets the x value for the point.
+	 * @param {Number=} val The value to set.
+	 * @returns {*}
+	 */
+	x: function (val) {
+		if (val !== undefined) {
+			this.x = val;
+			return this;
+		}
+		
+		return this.x;
+	},
+	
+	/**
+	 * Gets / sets the y value for the point.
+	 * @param {Number=} val The value to set.
+	 * @returns {*}
+	 */
+	y: function (val) {
+		if (val !== undefined) {
+			this.y = val;
+			return this;
+		}
+		
+		return this.y;
+	},
+	
+	/**
+	 * Gets / sets the z value for the point.
+	 * @param {Number=} val The value to set.
+	 * @returns {*}
+	 */
+	z: function (val) {
+		if (val !== undefined) {
+			this.z = val;
+			return this;
+		}
+		
+		return this.z;
+	},
+
+	/**
 	 * Gets / sets the floor mode of this point. If set to true the point's
 	 * data will be mathematically floored when they are assigned.
 	 * @param val
