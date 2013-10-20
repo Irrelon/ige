@@ -312,6 +312,8 @@ var IgeEngine = IgeEntity.extend({
 			// Set the source to load the url
 			elem.src = url;
 			
+			this.log('Loading script from: ' + url);
+			
 			this.emit('requireScriptLoading', url);
 		}
 	},
@@ -1407,14 +1409,18 @@ var IgeEngine = IgeEntity.extend({
 	 * @return {*}
 	 */
 	findBaseClass: function (obj) {
-		if (obj._classId.substr(0, 3) === 'Ige') {
-			return obj._classId;
-		} else {
-			if (obj.__proto__._classId) { 
-				return this.findBaseClass(obj.__proto__);
+		if (obj && obj._classId) {
+			if (obj._classId.substr(0, 3) === 'Ige') {
+				return obj._classId;
 			} else {
-				return '';
+				if (obj.__proto__._classId) { 
+					return this.findBaseClass(obj.__proto__);
+				} else {
+					return '';
+				}
 			}
+		} else {
+			return '';
 		}
 	},
 
