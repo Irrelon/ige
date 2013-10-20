@@ -1746,18 +1746,35 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 
+	/**
+	 * Gets / sets the current time scalar value. The engine's internal
+	 * time is multiplied by this value and it's default is 1. You can set it to
+	 * 0.5 to slow down time by half or 1.5 to speed up time by half. Currently
+	 * will not accept a negative value.
+	 * @param {Number=} val The time scale value.
+	 * @returns {*}
+	 */
 	timeScale: function (val) {
 		if (val !== undefined) {
-			this._timeScale = val;
+			this._timeScale = Math.abs(val);
 			return this;
 		}
 
 		return this._timeScale;
 	},
 
+	/**
+	 * Increments the engine's interal time by the passed number of milliseconds.
+	 * @param {Number} val The number of milliseconds to increment time by.
+	 * @param {Number=} lastVal The last internal time value, used to calculate
+	 * delta internally in the method.
+	 * @returns {Number}
+	 */
 	incrementTime: function (val, lastVal) {
-		if (!lastVal) { lastVal = val; }
-		this._currentTime += ((val - lastVal) * this._timeScale);
+		if (!this._pause) {
+			if (!lastVal) { lastVal = val; }
+			this._currentTime += ((val - lastVal) * this._timeScale);
+		}
 		return this._currentTime;
 	},
 
@@ -1767,6 +1784,21 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	currentTime: function () {
 		return this._currentTime;
+	},
+
+	/**
+	 * Gets / sets the pause flag. If set to true then the engine's
+	 * internal time will no longer increment and will instead stay static.
+	 * @param val
+	 * @returns {*}
+	 */
+	pause: function (val) {
+		if (val !== undefined) {
+			this._pause = val;
+			return this;
+		}
+		
+		return this._pause;
 	},
 
 	/**
@@ -1834,7 +1866,7 @@ var IgeEngine = IgeEntity.extend({
 		/* TODO:
 			Make the scenegraph process simplified. Walk the scenegraph once and grab the order in a flat array
 			then process updates and ticks. This will also allow a layered rendering system that can render the
-			first x number of entities then stop, allowing a step through of the renderer in realtime
+			first x number of entities then stop, allowing a step through of the renderer in realtime.
 		 */
 		var st,
 			et,
