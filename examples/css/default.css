@@ -252,10 +252,10 @@ body {
 #igeSgEditorRoot {
 	display: block;
     position: absolute;
-    bottom: 4px;
+    top: 4px;
     right: 4px;
+	bottom: 30px;
     width: 400px;
-    height: 24px;
     background-color: rgba(7, 20, 25, 0.9);
     font-family: Verdana, Tahoma;
     font-size: 11px;
@@ -266,4 +266,100 @@ body {
     -moz-user-select: none;
     cursor: default;
     z-index: 200000;
+	overflow: auto;
+}
+
+#igeSgEditorRoot .content {
+	width: 100%;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+#igeSgEditorRoot .content .span1 {
+	width: 11.11%;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+#igeSgEditorRoot .content .span2 {
+	width: 22.22%;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+#igeSgEditorRoot .content .span3 {
+	width: 33.33%;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+#igeSgEditorRoot .content .span4 {
+	width: 44.44%;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+#igeSgEditorRoot .content .span5 {
+	width: 55.55%;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+#igeSgEditorRoot .content .span6 {
+	width: 66.66%;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+#igeSgEditorRoot .content .span7 {
+	width: 77.77%;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+#igeSgEditorRoot .content .span8 {
+	width: 88.88%;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+#igeSgEditorRoot .content .span9 {
+	width: 99.99%;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+#igeSgEditorRoot .label {
+	font-weight: bold;
+}
+
+.igeEditorGroup {
+	font-family: "Open Sans", sans-serif;
+	font-size: 12px;
+	color: #ffffff;
+	position: relative;
+	background-color: #333;
+	padding: 5px;
+	border-radius: 5px;
+	margin: 5px;
+}
+
+.igeEditorGroup .label {
+	font-weight: bold;
+	font-size: 14px;
+}
+
+.igeEditorProperty .label {
+	font-weight: bold;
+	font-size: 12px;
 }
