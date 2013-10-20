@@ -23,6 +23,8 @@ var igeCoreConfig = {
 		['csap', 'IgeUiManagerComponent', 'components/IgeUiManagerComponent.js'],
 		['csap', 'IgeEntityManager', 'components/entityManager/IgeEntityManager.js'],
 		['csap', 'IgeEntityManagerComponent', 'components/IgeEntityManagerComponent.js'],
+		['csap', 'IgeEditorComponent', 'components/editor/IgeEditorComponent.js'],
+		['csap', 'IgeEditorPanelsComponent', 'components/editor/panels/IgeEditorPanelsComponent.js'],
 		['csap', 'IgeEditorTranslateComponent', 'components/editor/IgeEditorTranslateComponent.js'],
 		['csap', 'IgeEditorRotateComponent', 'components/editor/IgeEditorRotateComponent.js'],
 		/* Physics Libraries */
