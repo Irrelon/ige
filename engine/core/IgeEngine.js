@@ -1420,7 +1420,7 @@ var IgeEngine = IgeEntity.extend({
 
 	/**
 	 * Returns an array of all classes the passed object derives from
-	 * in order from base to current.
+	 * in order from current to base.
 	 * @param obj
 	 * @param arr
 	 * @return {*}
@@ -1688,6 +1688,8 @@ var IgeEngine = IgeEntity.extend({
 			} else {
 				ige._currentViewport.drawBoundsLimitId('');
 			}
+			
+			ige.emit('sgTreeSelectionChanged', ige._sgTreeSelected);
 		};
 
 		dblClick = function (event) {
