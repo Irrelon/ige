@@ -87,6 +87,8 @@ var igeCoreConfig = {
 		['csap', 'IgeViewport', 'core/IgeViewport.js'],
 		['csap', 'IgeScene2d', 'core/IgeScene2d.js'],
 		['csap', 'IgeQuest', 'core/IgeQuest.js'],
+		['csap', 'IgeCuboidSmartTexture', 'assets/IgeCuboidSmartTexture.js'],
+		['csap', 'IgeCuboid', 'primitives/IgeCuboid.js'],
 		/* Physics to Entity Components */
 		['csap', 'IgeBox2dComponent', 'components/physics/box2d/IgeBox2dComponent.js'],
 		['csap', 'IgeEntityBox2d', 'components/physics/box2d/IgeEntityBox2d.js'],
