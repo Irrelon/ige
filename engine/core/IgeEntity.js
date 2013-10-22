@@ -32,6 +32,7 @@ var IgeEntity = IgeObject.extend({
 
         this._localMatrix = new IgeMatrix2d(this);
         this._worldMatrix = new IgeMatrix2d(this);
+		this._oldWorldMatrix = new IgeMatrix2d(this);
 
 		this._inView = true;
 		this._hidden = false;
@@ -1020,7 +1021,7 @@ var IgeEntity = IgeObject.extend({
 	},
 	
 	localIsoBoundsPoly: function (recalculate) {
-		if (!this._localIsoBoundsPoly || recalculate) {
+		if (this._isoBoundsPolyDirty || !this._localIsoBoundsPoly || recalculate) {
 			var geom = this._geometry,
 				poly = new IgePoly2d(),
 				// Bottom face
@@ -1041,13 +1042,14 @@ var IgeEntity = IgeObject.extend({
 				.addPoint(tf1.x, tf1.y);
 			
 			this._localIsoBoundsPoly = poly;
+			this._isoBoundsPolyDirty = false;
 		}
 		
 		return this._localIsoBoundsPoly;
 	},
 	
 	isoBoundsPoly: function (recalculate) {
-		if (!this._isoBoundsPoly || recalculate) {
+		if (this._isoBoundsPolyDirty || !this._isoBoundsPoly || recalculate) {
 			var poly = this.localIsoBoundsPoly(recalculate).clone();
 			
 			// Convert local co-ordinates to world based on entities world matrix
@@ -1060,8 +1062,10 @@ var IgeEntity = IgeObject.extend({
 	},
 	
 	mouseInIsoBounds: function (recalculate) {
-		var poly = this.isoBoundsPoly(recalculate);
+		var poly = this.localIsoBoundsPoly(recalculate),
+			mp = this.mousePos();
 		
+		return poly.pointInside(mp);
 	},
 
 	/**
@@ -1087,7 +1091,7 @@ var IgeEntity = IgeObject.extend({
 	 * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
 	 */
 	aabb: function (recalculate, inverse) {
-		if (!this._aabb || recalculate) { //  && this.newFrame()
+		if (this._aabbDirty || !this._aabb || recalculate) { //  && this.newFrame()
 			var poly = new IgePoly2d(),
 				minX, minY,
 				maxX, maxY,
@@ -1210,6 +1214,7 @@ var IgeEntity = IgeObject.extend({
 			}
 
 			this._aabb = box;
+			this._aabbDirty = false;
 		}
 
 		return this._aabb;
@@ -1607,10 +1612,9 @@ var IgeEntity = IgeObject.extend({
 			// directly without calling the transform methods
 			this.updateTransform();
 
-			if (!this._noAabb) {
+			if (!this._noAabb && this._aabbDirty) {
 				// Update the aabb
-				// TODO: This is wasteful, find a way to determine if a recalc is required rather than doing it every tick
-				this.aabb(true);
+				this.aabb();
 			}
 
 			this._oldTranslate = this._translate.clone();
@@ -1655,7 +1659,7 @@ var IgeEntity = IgeObject.extend({
 						mouseTriggerPoly = this.aabb(); //this.localAabb();
 					} else {
 						// Trigger mode is against the iso bounds polygon
-						mouseTriggerPoly = this.isoBoundsPoly(false);
+						mouseTriggerPoly = this.isoBoundsPoly();
 					}
 					
 					// Check if the current mouse position is inside this aabb
@@ -2844,7 +2848,6 @@ var IgeEntity = IgeObject.extend({
 	 * update the transformation matrix accordingly.
 	 */
 	updateTransform: function () {
-		// TODO: Do we need to calc this if the entity transform hasn't changed?
 		this._localMatrix.identity();
 		if (this._mode === 0) {
 			// 2d translation
@@ -2877,6 +2880,15 @@ var IgeEntity = IgeObject.extend({
 			this._worldMatrix.multiply(this._localMatrix);
 		} else {
 			this._worldMatrix.copy(this._localMatrix);
+		}
+		
+		if (!this._worldMatrix.compare(this._oldWorldMatrix)) {
+			this._oldWorldMatrix.copy(this._worldMatrix);
+			this._transformChanged = true;
+			this._aabbDirty = true;
+			this._isoBoundsPolyDirty = true;
+		} else {
+			this._transformChanged = false;
 		}
 		
 		return this;
