@@ -104,6 +104,13 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 								// Setup an array for the textures
 								propItem.availableTextures = [];
 								
+								// Setup a "no texture" entry
+								propItem.availableTextures.push({
+									id: '',
+									url: 'No Texture',
+									selected: null
+								});
+								
 								for (textureIndex = 0; textureIndex < textureArr.length; textureIndex++) {
 									tex = textureArr[textureIndex];
 									
@@ -122,6 +129,9 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 									if (textureId && ige.$(textureId)) {
 										// Set the object's texture to the newly selected one
 										obj.texture(ige.$(textureId));
+									} else {
+										// Set texture to none
+										delete obj._texture;
 									}
 								});
 							}
