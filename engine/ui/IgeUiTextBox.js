@@ -3,6 +3,7 @@
  * capture keyboard input and display it, similar in usage to the HTML input
  * text element.
  */
+//TODO: Make cursor a text entry cursor on hover
 var IgeUiTextBox = IgeUiElement.extend({
 	classId: 'IgeUiTextBox',
 
