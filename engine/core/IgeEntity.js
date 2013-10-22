@@ -35,6 +35,8 @@ var IgeEntity = IgeObject.extend({
 
 		this._inView = true;
 		this._hidden = false;
+		
+		this._mouseEventTrigger = 0;
 
 		/* CEXCLUDE */
 		if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') {
@@ -261,7 +263,8 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
-	 * Gets the position of the mouse relative to this entity.
+	 * Gets the position of the mouse relative to this entity's
+	 * center point.
 	 * @param {IgeViewport=} viewport The viewport to use as the
 	 * base from which the mouse position is determined. If no
 	 * viewport is specified then the current viewport the engine
@@ -1015,6 +1018,51 @@ var IgeEntity = IgeObject.extend({
 			0
 		);
 	},
+	
+	localIsoBoundsPoly: function (recalculate) {
+		if (!this._localIsoBoundsPoly || recalculate) {
+			var geom = this._geometry,
+				poly = new IgePoly2d(),
+				// Bottom face
+				bf2 = Math.toIso(+(geom.x2), -(geom.y2),  -(geom.z2)),
+				bf3 = Math.toIso(+(geom.x2), +(geom.y2),  -(geom.z2)),
+				bf4 = Math.toIso(-(geom.x2), +(geom.y2),  -(geom.z2)),
+				// Top face
+				tf1 = Math.toIso(-(geom.x2), -(geom.y2),  (geom.z2)),
+				tf2 = Math.toIso(+(geom.x2), -(geom.y2),  (geom.z2)),
+				tf4 = Math.toIso(-(geom.x2), +(geom.y2),  (geom.z2));
+			
+			poly.addPoint(tf1.x, tf1.y)
+				.addPoint(tf2.x, tf2.y)
+				.addPoint(bf2.x, bf2.y)
+				.addPoint(bf3.x, bf3.y)
+				.addPoint(bf4.x, bf4.y)
+				.addPoint(tf4.x, tf4.y)
+				.addPoint(tf1.x, tf1.y);
+			
+			this._localIsoBoundsPoly = poly;
+		}
+		
+		return this._localIsoBoundsPoly;
+	},
+	
+	isoBoundsPoly: function (recalculate) {
+		if (!this._isoBoundsPoly || recalculate) {
+			var poly = this.localIsoBoundsPoly(recalculate).clone();
+			
+			// Convert local co-ordinates to world based on entities world matrix
+			this.localToWorld(poly._poly);
+			
+			this._isoBoundsPoly = poly;
+		}
+		
+		return this._isoBoundsPoly;
+	},
+	
+	mouseInIsoBounds: function (recalculate) {
+		var poly = this.isoBoundsPoly(recalculate);
+		
+	},
 
 	/**
 	 * Calculates and returns the current axis-aligned bounding box in
@@ -1592,21 +1640,28 @@ var IgeEntity = IgeObject.extend({
 			this._processTickBehaviours(ctx);
 			
 			// Process any mouse events we need to do
-			var mp, aabb, mouseX, mouseY,
+			var mp, mouseTriggerPoly, mouseX, mouseY,
 				self = this;
 
 			if (this._mouseEventsActive && ige._currentViewport) {
 				mp = this.mousePosWorld();
 
 				if (mp) {
-					aabb = this.aabb(); //this.localAabb();
 					mouseX = mp.x;
 					mouseY = mp.y;
-
+					
+					if (this._mouseEventTrigger === 0) {
+						// Trigger mode is against the AABB
+						mouseTriggerPoly = this.aabb(); //this.localAabb();
+					} else {
+						// Trigger mode is against the iso bounds polygon
+						mouseTriggerPoly = this.isoBoundsPoly(false);
+					}
+					
 					// Check if the current mouse position is inside this aabb
-					if (aabb.xyInside(mouseX, mouseY) || this._mouseAlwaysInside) {
+					if (mouseTriggerPoly.xyInside(mouseX, mouseY) || this._mouseAlwaysInside) {
 						// Point is inside the aabb
-						ige.input.queueEvent(this, this._mouseInAabb);
+						ige.input.queueEvent(this, this._mouseInTrigger);
 					} else {
 						if (ige.input.mouseMove) {
 							// There is a mouse move event but we are not inside the entity
@@ -1866,6 +1921,30 @@ var IgeEntity = IgeObject.extend({
 
 		return point;
 	},
+	
+	/**
+	 * Helper method to transform an array of points using _transformPoint.
+	 * @param {Array} points The points array to transform.
+	 * @private
+	 */
+	_transformPoints: function (points) {
+		var point, pointCount = points.length;
+		
+		while (pointCount--) {
+			point = points[pointCount];
+			if (this._parent) {
+				var tempMat = new IgeMatrix2d();
+				// Copy the parent world matrix
+				tempMat.copy(this._parent._worldMatrix);
+				// Apply any local transforms
+				tempMat.multiply(this._localMatrix);
+				// Now transform the point
+				tempMat.getInverse().transformCoord(point, this);
+			} else {
+				this._localMatrix.transformCoord(point, this);
+			}
+		}
+	},
 
 	/**
 	 * Checks mouse input types and fires the correct mouse event
@@ -1876,7 +1955,7 @@ var IgeEntity = IgeObject.extend({
 	 * the new event.
 	 * @private
 	 */
-	_mouseInAabb: function (evc, data) {
+	_mouseInTrigger: function (evc, data) {
 		if (ige.input.mouseMove) {
 			// There is a mouse move event
 			this._handleMouseIn(ige.input.mouseMove, evc, data);
@@ -2196,6 +2275,22 @@ var IgeEntity = IgeObject.extend({
 		delete this._mouseDown;
 
 		return this;
+	},
+
+	/**
+	 * Gets / sets the shape / polygon that the mouse events
+	 * are triggered against. There are two options, 'aabb' and
+	 * 'isoBounds'. The default is 'aabb'.
+	 * @param val
+	 * @returns {*}
+	 */
+	mouseEventTrigger: function (val) {
+		if (val !== undefined) {
+			this._mouseEventTrigger = val === 'aabb' ? 0 : 1;
+			return this;
+		}
+		
+		return this._mouseEventTrigger === 0 ? 'aabb' : 'isoBounds';
 	},
 
 	/**
