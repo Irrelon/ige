@@ -347,16 +347,18 @@ var IgeViewport = IgeEntity.extend([
 							
 							if (aabb) {
 								if (obj._drawBounds || obj._drawBounds === undefined) {
-									// Draw a rect around the bounds of the object transformed in world space
-									ctx.save();
-										obj._worldMatrix.transformRenderingContext(ctx);
-										ctx.strokeStyle = '#9700ae';
-										ctx.strokeRect(-obj._geometry.x2, -obj._geometry.y2, obj._geometry.x, obj._geometry.y);
-									ctx.restore();
-									
-									// Draw individual bounds
-									ctx.strokeStyle = '#00deff';
-									ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
+									if (!obj._parent || (obj._parent && obj._parent._mountMode !== 1)) {
+										// Draw a rect around the bounds of the object transformed in world space
+										ctx.save();
+											obj._worldMatrix.transformRenderingContext(ctx);
+											ctx.strokeStyle = '#9700ae';
+											ctx.strokeRect(-obj._geometry.x2, -obj._geometry.y2, obj._geometry.x, obj._geometry.y);
+										ctx.restore();
+										
+										// Draw individual bounds
+										ctx.strokeStyle = '#00deff';
+										ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
+									}
 
 									// Check if the object is mounted to an isometric mount
 									if (obj._parent && obj._parent._mountMode === 1) {
@@ -405,7 +407,11 @@ var IgeViewport = IgeEntity.extend([
 
 											ctx.strokeStyle = '#a200ff';
 
-											ctx.globalAlpha = 0.6;
+											if (obj._highlight) {
+												ctx.globalAlpha = 0.9;
+											} else {
+												ctx.globalAlpha = 0.6;
+											}
 
 											// Left face
 											ctx.fillStyle = '#545454';
