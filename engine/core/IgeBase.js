@@ -9,7 +9,7 @@ ige = null;
 // For example, to tag version 1.1.2 on 25th April 2013
 // as the third revision of the day:
 // v1.1.2@2013-04-25.003
-igeVersion = 'v1.2.7@2013-10-20.001';
+igeVersion = 'v1.2.8@2013-10-22.001';
 
 // Define the global storage object for classes
 igeClassStore = {};
