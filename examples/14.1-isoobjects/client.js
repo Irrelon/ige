@@ -11,6 +11,8 @@ var Client = IgeClass.extend({
 		this.obj = [];
 
 		gameTexture[0] = new IgeTexture('../assets/textures/buildings/bank1.png');
+		
+		ige.addComponent(IgeEditorComponent);
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -31,8 +33,8 @@ var Client = IgeClass.extend({
 						.scene(self.scene1)
 						.drawBounds(true)
 						.drawBoundsData(true)
-						.mount(ige)
-						.camera.translateTo(-50, 30, 0);
+						.mount(ige);
+						//.camera.translateTo(-50, 30, 0);
 
 					// Create the tile map
 					self.tileMap1 = new IgeTileMap2d()
@@ -43,151 +45,213 @@ var Client = IgeClass.extend({
 						.drawBoundsData(false)
 						.isometricMounts(true)
 						.mount(self.scene1);
+					
+					var overArr = [];
+					
+					var mouseOverFunc = function () {
+						overArr.pushUnique(this);
+					};
+					
+					var mouseOutFunc = function () {
+						overArr.pull(this);
+						
+						// Turn off highlight since we've moved off the entity
+						this.highlight(false);
+					};
+					
+					var cuboidHighlighterByDistance = function () {
+						// Loop each item the mouse is over and determine distance from center
+						var count = overArr.length,
+							item,
+							mousePos,
+							dist,
+							lowestDist,
+							closestEntity;
+						
+						while (count--) {
+							item = overArr[count];
+							
+							// Turn off highlight for the entity
+							item.highlight(false);
+							
+							// Get the local entity mouse position
+							mousePos = item.mousePos();
+							
+							// Calculate distance
+							dist = Math.distance(0, 0, mousePos.x, mousePos.y);
+							
+							// Check if this is the lowest distance
+							if (lowestDist === undefined || dist < lowestDist) {
+								// Record the new lowest distance
+								lowestDist = dist;
+								
+								// Record the closest entity to the mouse so far
+								closestEntity = item;
+							}
+						}
+						
+						if (closestEntity) {
+							// We have a closest entity!
+							closestEntity.highlight(true);
+						}
+					};
+					
+					var cuboidHighlighterByDepth = function () {
+						// Loop each item the mouse is over and determine depth
+						var count = overArr.length,
+							item,
+							depth,
+							highestDepth = 0,
+							closestEntity;
+						
+						while (count--) {
+							item = overArr[count];
+							
+							// Turn off highlight for the entity
+							item.highlight(false);
+							
+							// Get the entity depth
+							depth = item.depth();
+							
+							// Check if this is the highest depth so far
+							if (depth >= highestDepth) {
+								// Record the new lowest distance
+								highestDepth = depth;
+								
+								// Record the closest entity to the mouse so far
+								closestEntity = item;
+							}
+						}
+						
+						if (closestEntity) {
+							// We have a closest entity!
+							closestEntity.highlight(true);
+						}
+					};
+					
+					// We are going to use the cuboidHighlighterByDepth but you can swap
+					// that out for cuboidHighlighterByDistance to see picking by distance
+					// from the entity center to the mouse pointer
+					ige.addBehaviour('cuboidHighlighter', cuboidHighlighterByDepth, false);
 
 					// Create an entity
 					// Plinth 1
 					x = -140;
-					self.obj[0] = new IgeEntity()
+					self.obj[0] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(1)
-						.isometric(true)
 						.depth(0)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 0, 0)
-						.size3d(160, 240, 40)
-						.opacity(0.95);
+						.size3d(160, 240, 40);
 
-					self.obj[1] = new IgeEntity()
+					self.obj[1] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(2)
-						.isometric(true)
 						.depth(1)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, -60, 40)
-						.size3d(40, 40, 40)
-						.opacity(0.95);
+						.size3d(40, 40, 40);
 
-					self.obj[2] = new IgeEntity()
+					self.obj[2] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(3)
-						.isometric(true)
 						.depth(2)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 60, 40)
-						.size3d(40, 40, 40)
-						.opacity(0.95);
+						.size3d(40, 40, 40);
 
-					self.obj[3] = new IgeEntity()
+					self.obj[3] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(4)
-						.isometric(true)
 						.depth(4)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 0, 80)
-						.size3d(40, 160, 40)
-						.opacity(0.95);
+						.size3d(40, 160, 40);
 
 					// Center column
-					self.obj[4] = new IgeEntity()
+					self.obj[4] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(5)
-						.isometric(true)
 						.depth(5)
 						.mount(self.tileMap1)
 						.translateTo(0, 0, 0)
-						.size3d(40, 380, 120)
-						.opacity(0.95);
+						.size3d(40, 380, 120);
 
 					// Plinth 2
 					x = 140;
-					self.obj[5] = new IgeEntity()
+					self.obj[5] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(6)
-						.isometric(true)
 						.depth(6)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 0, 0)
-						.size3d(160, 240, 40)
-						.opacity(0.95);
+						.size3d(160, 240, 40);
 
-					self.obj[6] = new IgeEntity()
+					self.obj[6] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(7)
-						.isometric(true)
 						.depth(7)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, -60, 40)
-						.size3d(40, 40, 40)
-						.opacity(0.95);
+						.size3d(40, 40, 40);
 
-					self.obj[7] = new IgeEntity()
+					self.obj[7] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(8)
-						.isometric(true)
 						.depth(8)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 60, 40)
-						.size3d(40, 40, 40)
-						.opacity(0.95);
+						.size3d(40, 40, 40);
 
-					self.obj[8] = new IgeEntity()
+					self.obj[8] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(9)
-						.isometric(true)
 						.depth(9)
 						.mount(self.tileMap1)
 						.translateTo(x + 0, 0, 80)
-						.size3d(40, 160, 40)
-						.opacity(0.95);
+						.size3d(40, 160, 40);
 
 					// Big slab on top
-					self.obj[9] = new IgeEntity()
+					self.obj[9] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(10)
-						.isometric(true)
 						.depth(10)
 						.mount(self.tileMap1)
 						.size3d(360, 10, 20)
-						.translateTo(0, 0, 120)
-						.opacity(0.95);
+						.translateTo(0, 0, 120);
 
 					// Building
-					self.obj[10] = new IgeEntity()
+					self.obj[10] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(11)
-						.isometric(true)
 						.depth(11)
 						.mount(self.tileMap1)
 						.translateTo(0, 300, 0)
-						.size3d(80, 80, 40)
-						.opacity(0.95);
+						.size3d(80, 80, 40);
 
-					self.obj[11] = new IgeEntity()
+					self.obj[11] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(12)
-						.isometric(true)
 						.depth(12)
 						.mount(self.tileMap1)
 						.translateTo(0, 300, 40)
-						.size3d(70, 70, 40)
-						.opacity(0.95);
+						.size3d(70, 70, 40);
 
-					self.obj[12] = new IgeEntity()
+					self.obj[12] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(13)
-						.isometric(true)
 						.depth(13)
 						.mount(self.tileMap1)
 						.translateTo(0, 300, 80)
-						.size3d(10, 10, 120)
-						.opacity(0.95);
+						.size3d(10, 10, 120);
 
-					self.obj[13] = new IgeEntity()
+					self.obj[13] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(14)
-						.isometric(true)
 						.depth(14)
 						.mount(self.tileMap1)
 						.translateTo(0, 300, 200)
 						.size3d(200, 200, 10)
-						.opacity(0.95);
+						.mouseOver(mouseOverFunc)
+						.mouseOut(mouseOutFunc)
+						.mouseEventsActive(true)
+						.mouseEventTrigger('isoBounds');
 
-					self.obj[14] = new IgeEntity()
+					self.obj[14] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.addComponent(IgeVelocityComponent)
 						.addComponent(PlayerComponent)
 						.id(15)
-						.isometric(true)
 						.depth(15)
 						.mount(self.tileMap1)
 						.translateTo(300, 300, 0)
-						.size3d(20, 20, 80)
-						.opacity(0.95);
+						.size3d(20, 20, 80);
 				}
 			});
 		});
