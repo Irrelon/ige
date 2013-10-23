@@ -203,6 +203,14 @@ var IgeViewport = IgeEntity.extend([
 				this._scene.tick(ctx);
 			ctx.restore();
 
+			// Check if we should draw guides
+			if (this._drawGuides && ctx === ige._ctx) {
+				ctx.save();
+				ctx.translate(-this._translate.x, -this._translate.y);
+				this.paintGuides(ctx);
+				ctx.restore();
+			}
+			
 			// Check if we should draw bounds on this viewport
 			// (usually for debug purposes)
 			if (this._drawBounds && ctx === ige._ctx) {
@@ -210,7 +218,7 @@ var IgeViewport = IgeEntity.extend([
 				// bounding boxes for every object
 				ctx.save();
 				ctx.translate(-this._translate.x, -this._translate.y);
-				this.drawAABBs(ctx, this._scene, 0);
+				this.paintAabbs(ctx, this._scene, 0);
 				ctx.restore();
 			}
 
@@ -302,6 +310,37 @@ var IgeViewport = IgeEntity.extend([
 		
 		return this._drawCompositeBounds;
 	},
+	
+	drawGuides: function (val) {
+		if (val !== undefined) {
+			this._drawGuides = val;
+			return this;
+		}
+		
+		return this._drawGuides;
+	},
+	
+	paintGuides: function (ctx) {
+		var geom = ige._geometry;
+		
+		// Check draw-guides setting
+		if (this._drawGuides) {
+			ctx.strokeStyle = '#ffffff';
+			
+			ctx.translate(0.5, 0.5);
+			
+			// Draw guide lines in the center
+			ctx.beginPath();
+			ctx.moveTo(0, -geom.y2);
+			ctx.lineTo(0, geom.y);
+			ctx.stroke();
+			
+			ctx.beginPath();
+			ctx.moveTo(-geom.x2, 0);
+			ctx.lineTo(geom.x, 0);
+			ctx.stroke();
+		}
+	},
 
 	/**
 	 * Draws the bounding data for each entity in the scenegraph.
@@ -309,20 +348,17 @@ var IgeViewport = IgeEntity.extend([
 	 * @param rootObject
 	 * @param index
 	 */
-	drawAABBs: function (ctx, rootObject, index) {
+	paintAabbs: function (ctx, rootObject, index) {
 		var arr = rootObject._children,
 			arrCount,
 			obj,
 			aabb,
 			aabbC,
-			aabbNT,
 			ga,
 			r3d,
 			xl1, xl2, xl3, xl4, xl5, xl6,
 			bf1, bf2, bf3, bf4,
-			tf1, tf2, tf3, tf4,
-			worldPos,
-			worldRot;
+			tf1, tf2, tf3, tf4;
 
 		if (arr) {
 			arrCount = arr.length;
@@ -462,7 +498,7 @@ var IgeViewport = IgeEntity.extend([
 						}
 					}
 
-					this.drawAABBs(ctx, obj, index);
+					this.paintAabbs(ctx, obj, index);
 				}
 			}
 		}
