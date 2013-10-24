@@ -496,8 +496,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		var arr = ige._children,
 			arrCount = arr.length,
 			vp, vpUpdated,
-			mx = event.igeX - ige._geometry.x / 2,
-			my = event.igeY - ige._geometry.y / 2;
+			mx = (event.igeX - ige._geometry.x2) - ige._translate.x,
+			my = (event.igeY - ige._geometry.y2) - ige._translate.y;
 
 		ige._mousePos.x = mx;
 		ige._mousePos.y = my;
