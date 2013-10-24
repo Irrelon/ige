@@ -26,6 +26,7 @@ var IgeEntity = IgeObject.extend({
 		this._origin = new IgePoint(0.5, 0.5, 0.5);
 
 		this._geometry = new IgePoint(40, 40, 40);
+		this._oldGeometry = new IgePoint(40, 40, 40);
 
 		this._highlight = false;
 		this._mouseEventsActive = false;
@@ -2878,6 +2879,8 @@ var IgeEntity = IgeObject.extend({
 			this._worldMatrix.copy(this._localMatrix);
 		}
 		
+		// Check if the world matrix has changed and if so, set a few flags
+		// to allow other methods to know that a matrix change has occurred
 		if (!this._worldMatrix.compare(this._oldWorldMatrix)) {
 			this._oldWorldMatrix.copy(this._worldMatrix);
 			this._transformChanged = true;
@@ -2885,6 +2888,15 @@ var IgeEntity = IgeObject.extend({
 			this._isoBoundsPolyDirty = true;
 		} else {
 			this._transformChanged = false;
+		}
+		
+		// Check if the geometry has changed and if so, update the aabb dirty
+		if (!this._oldGeometry.compare(this._geometry)) {
+			this._aabbDirty = true;
+			this._isoBoundsPolyDirty = true;
+			
+			// Record the new geometry to the oldGeometry data
+			this._oldGeometry.copy(this._geometry);
 		}
 		
 		return this;
