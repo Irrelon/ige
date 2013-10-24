@@ -1098,33 +1098,22 @@ var IgeEntity = IgeObject.extend({
 				box,
 				anc = this._anchor,
 				geom = this._geometry,
-				geomX = geom.x,
-				geomY = geom.y,
-				geomZ = geom.z,
 				geomX2 = geom.x2,
 				geomY2 = geom.y2,
-				geomZ2 = geom.z2,
-				origin = this._origin,
-				originX = origin.x - 0.5,
-				originY = origin.y - 0.5,
-				originZ = origin.z - 0.5,
 				x, y,
-				ox,	oy,
 				tf1;
 
 			// Handle 2d entities
 			if (this._mode === 0) {
 				x = geomX2 + anc.x;
 				y = geomY2 + anc.y;
-				ox = geomX * originX;
-				oy = geomY * originY;
 
-				poly.addPoint(-x + ox, -y + oy);
-				poly.addPoint(x + ox, -y + oy);
-				poly.addPoint(x + ox, y + oy);
-				poly.addPoint(-x + ox, y + oy);
+				poly.addPoint(-x, -y);
+				poly.addPoint(x, -y);
+				poly.addPoint(x, y);
+				poly.addPoint(-x, y);
 
-				this._renderPos = {x: -x + ox, y: -y + oy};
+				this._renderPos = {x: -x, y: -y};
 
 				// Convert the poly's points from local space to world space
 				this.localToWorld(poly._poly, null, inverse);
@@ -1168,15 +1157,13 @@ var IgeEntity = IgeObject.extend({
 
 				x = (tf1.x + geom.x) + anc.x;
 				y = tf1.y + anc.y;
-				ox = geomX * originX;
-				oy = geomZ * originZ;
 
-				poly.addPoint(-x + ox, -y + oy);
-				poly.addPoint(x + ox, -y + oy);
-				poly.addPoint(x + ox, y + oy);
-				poly.addPoint(-x + ox, y + oy);
+				poly.addPoint(-x, -y);
+				poly.addPoint(x, -y);
+				poly.addPoint(x, y);
+				poly.addPoint(-x, y);
 
-				this._renderPos = {x: -x + ox, y: -y + oy};
+				this._renderPos = {x: -x, y: -y};
 
 				// Convert the poly's points from local space to world space
 				this.localToWorld(poly._poly, null, inverse);
@@ -2849,6 +2836,7 @@ var IgeEntity = IgeObject.extend({
 	 */
 	updateTransform: function () {
 		this._localMatrix.identity();
+		
 		if (this._mode === 0) {
 			// 2d translation
 			this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
@@ -2870,10 +2858,18 @@ var IgeEntity = IgeObject.extend({
 
 			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
 		}
-
-		this._localMatrix.multiply(this._localMatrix._newRotate(this._rotate.z));
-		this._localMatrix.multiply(this._localMatrix._newScale(this._scale.x, this._scale.y));
-
+		
+		this._localMatrix.rotateBy(this._rotate.z);
+		this._localMatrix.scaleBy(this._scale.x, this._scale.y);
+		
+		// Adjust local matrix for origin values if not at center
+		if (this._origin.x !== 0.5 || this._origin.y !== 0.5) {
+			this._localMatrix.translateBy(
+				(this._geometry.x * (0.5 - this._origin.x)),
+				(this._geometry.y * (0.5 - this._origin.y))
+			);
+		}
+		
 		// TODO: If the parent and local transforms are unchanged, we should used cached values
 		if (this._parent) {
 			this._worldMatrix.copy(this._parent._worldMatrix);
