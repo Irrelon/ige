@@ -461,14 +461,10 @@ var IgeTileMap2d = IgeEntity.extend({
 
 		// Check if we need to draw the tile grid (usually for debug)
 		if (this._drawGrid > 0) {
-			ctx.save();
-			ctx.translate(0.5, 0.5);
 			ctx.strokeStyle = this._gridColor;
 			gridCount = this._drawGrid;
-			
 			x = -(tileWidth / 2);
 			y = -(tileHeight / 2);
-			
 			gridMaxX = x + tileWidth * gridCount;
 			gridMaxY = y + tileHeight * gridCount;
 
@@ -503,7 +499,6 @@ var IgeTileMap2d = IgeEntity.extend({
 				ctx.lineTo(gEnd.x, gEnd.y);
 				ctx.stroke();
 			}
-			ctx.restore();
 		}
 
 		if (this._highlightOccupied) {
