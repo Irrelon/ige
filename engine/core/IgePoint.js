@@ -94,11 +94,25 @@ var IgePoint = IgeClass.extend({
 	/**
 	 * Compares this point's x, y, z data with the passed point and returns
 	 * true if they are the same and false if any is different.
-	 * @param point
+	 * @param {IgePoint} point The point to compare data with.
 	 * @return {Boolean}
 	 */
 	compare: function (point) {
 		return point && this.x === point.x && this.y === point.y && this.z === point.z;
+	},
+
+	/**
+	 * Copies the x, y, z data from the passed point and overwrites this
+	 * point's data with those values.
+	 * @param {IgePoint} point The point to copy values from.
+	 * @returns {*}
+	 */
+	copy: function (point) {
+		this.x = point.x;
+		this.y = point.y;
+		this.z = point.z;
+		
+		return this;
 	},
 
 	/**
