@@ -3291,13 +3291,19 @@ var IgeEntity = IgeObject.extend({
 	 * the client when it is being created on the client for the first
 	 * time through the network stream. The data will be provided as the
 	 * first argument in the constructor call to the entity class so
-	 * you should expect to recieve it as such e.g.
+	 * you should expect to receive it as per this example:
+	 * @example #Using and Receiving Stream Create Data
 	 *     var MyNewClass = IgeEntity.extend({
 	 *         classId: 'MyNewClass',
 	 *         
 	 *         // Define the init with the parameter to receive the
 	 *         // data you return in the streamCreateData() method
 	 *         init: function (myCreateData) {
+	 *             this._myData = myCreateData;
+	 *         },
+	 *         
+	 *         streamCreateData: function () {
+	 *             return this._myData;
 	 *         }
 	 *     });
 	 * 
