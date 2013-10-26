@@ -18,7 +18,8 @@
 	<div class="content"><a href="IgeTileMap2d.html">IgeTileMap2d</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3 class="methodTitle">autoSection</h3>
+<h2>Methods</h2><a name="autoSection"></a>
+<h3 class="methodTitle">autoSection</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the auto sectioning mode. If enabled the texture map will render to off-screen canvases in sections denoted by the number passed. For instance if you pass 10, the canvas sections will be 10x10 tiles in size.</div>
@@ -27,7 +28,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The size in tiles of each section.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">drawSectionBounds</h3>
+</div><a name="drawSectionBounds"></a>
+<h3 class="methodTitle">drawSectionBounds</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the draw sections flag. If true the texture map will output debug lines between each section of the map when using the auto section system.</div>
@@ -36,7 +38,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The boolean flag value.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">cacheForceFrame</h3>
+</div><a name="cacheForceFrame"></a>
+<h3 class="methodTitle">cacheForceFrame</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Forces a cache redraw on the next tick.</div>
@@ -45,7 +48,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">negate</h3>
+</div><a name="negate"></a>
+<h3 class="methodTitle">negate</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Takes another map and removes any data from this map where data already exists in the other.</div>
@@ -54,7 +58,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeTileMap2d.html">IgeTileMap2d</a></span>}<span class="argName">entity</span> The other map to read map data from.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">addTexture</h3>
+</div><a name="addTexture"></a>
+<h3 class="methodTitle">addTexture</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Adds a texture to the texture map's internal texture list so that it can be referenced via an index so that the texture map's data will be something like [[textureId, textureCell]] or a real world example: [[0, 1], [1, 1]].</div>
@@ -63,7 +68,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeTexture.html">IgeTexture</a></span>}<span class="argName">texture</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Integer</span>} The index of the texture you just added.</div>
     
-</div><h3 class="methodTitle">allTexturesLoaded</h3>
+</div><a name="allTexturesLoaded"></a>
+<h3 class="methodTitle">allTexturesLoaded</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Checks the status of all the textures that have been added to this texture map and returns true if they are all loaded.</div>
@@ -72,7 +78,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} True if all textures are loaded, false if not.</div>
     
-</div><h3 class="methodTitle">paintTile</h3>
+</div><a name="paintTile"></a>
+<h3 class="methodTitle">paintTile</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Sets the specified tile's texture index and cell that will be used when rendering the texture map.</div>
@@ -81,7 +88,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The tile x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The tile y co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">textureIndex</span> The texture index.</li><li>{<span class="argType">Number</span>}<span class="argName">cell</span> The cell index.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">clearTile</h3>
+</div><a name="clearTile"></a>
+<h3 class="methodTitle">clearTile</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Clears any previous tile texture and cell data for the specified tile co-ordinates.</div>
@@ -90,7 +98,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The tile x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The tile y co-ordinate.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">loadMap</h3>
+</div><a name="loadMap"></a>
+<h3 class="methodTitle">loadMap</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Reads the map data from a standard map object and fills the map with the data found.</div>
@@ -99,7 +108,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">map</span> The map data object.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">saveMap</h3>
+</div><a name="saveMap"></a>
+<h3 class="methodTitle">saveMap</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns a map JSON string that can be saved to a data file and loaded with the loadMap() method.</div>
@@ -108,7 +118,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Object</span>} The map data object.</div>
     
-</div><h3 class="methodTitle">clearMap</h3>
+</div><a name="clearMap"></a>
+<h3 class="methodTitle">clearMap</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Clears the tile data from the map effectively wiping it clean. All existing map data will be removed. The textures assigned to the texture map will not be affected.</div>
@@ -117,7 +128,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">reset</h3>
+</div><a name="reset"></a>
+<h3 class="methodTitle">reset</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Clears tile data from the map and also removes any textures from the map that were previously assigned to it. This is useful for reverting the texture map to it's virgin state as if it had just been created.</div>
@@ -126,7 +138,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">tileTextureIndex</h3>
+</div><a name="tileTextureIndex"></a>
+<h3 class="methodTitle">tileTextureIndex</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the specified tile's texture index.</div>
@@ -135,7 +148,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The tile x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The tile y co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">textureIndex</span> The new texture index.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">tileTextureCell</h3>
+</div><a name="tileTextureCell"></a>
+<h3 class="methodTitle">tileTextureCell</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the specified tile's texture cell.</div>
@@ -144,7 +158,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The tile x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The tile y co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">cell</span> The new cell index.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">convertHorizontalData</h3>
+</div><a name="convertHorizontalData"></a>
+<h3 class="methodTitle">convertHorizontalData</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Converts data that is saved in the format [x][y] to the IGE standard of [y][x] and then returns the data.</div>
@@ -153,7 +168,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">mapData</span> The map data array.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Object</span>} The new map data.</div>
     
-</div><h3 class="methodTitle">tick</h3>
+</div><a name="tick"></a>
+<h3 class="methodTitle">tick</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Handles rendering the texture map during engine tick events.</div>
@@ -162,7 +178,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2d</span>}<span class="argName">ctx</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_ensureSectionExists</h3>
+</div><a name="_ensureSectionExists"></a>
+<h3 class="methodTitle">_ensureSectionExists</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Private method, checks if the specified section currently exists in the cache and if not, creates it.</div>
@@ -171,7 +188,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">sectionX</span> The section's x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">sectionY</span> The section's y co-ordinate.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_drawSectionsToCtx</h3>
+</div><a name="_drawSectionsToCtx"></a>
+<h3 class="methodTitle">_drawSectionsToCtx</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Private method, draws cached image sections to the canvas context.</div>
@@ -180,7 +198,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2d</span>}<span class="argName">ctx</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_renderTile</h3>
+</div><a name="_renderTile"></a>
+<h3 class="methodTitle">_renderTile</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Private method, renders a tile texture based on data from the texture map, to a cached section.</div>
@@ -189,7 +208,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2d</span>}<span class="argName">ctx</span> </li><li>{<span class="argType">Number</span>}<span class="argName">x</span> The tile x co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The tile y co-ordinate.</li><li>{<span class="argType">Object</span>}<span class="argName">tileData</span> The tile's texture and cell data.</li><li>{<span class="argType">Object</span>}<span class="argName">tileEntity</span> The object that represents the tile.</li><li>{<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>}<span class="argName">rect</span> The rectangular area to limit drawing to.</li><li>{<span class="argType">Number</span>}<span class="argName">sectionX</span> The x co-ordinate of the section to draw to.</li><li>{<span class="argType">Number</span>}<span class="argName">sectionY</span> The y co-ordinate of the section to draw to.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">_newTileEntity</h3>
+</div><a name="_newTileEntity"></a>
+<h3 class="methodTitle">_newTileEntity</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Private method, creates an entity object that a texture can use to render itself. This is basically a dummy object that has the minimum amount of data in it that a texture requires to render such as geometry, texture cell and rendering position.</div>

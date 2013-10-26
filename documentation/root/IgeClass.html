@@ -13,7 +13,8 @@
 	<div class="content">The base class system.</div>
 </div>
 <!---->
-<h2>Methods</h2><h3 class="methodTitle">log</h3>
+<h2>Methods</h2><a name="log"></a>
+<h3 class="methodTitle">log</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Provides logging capabilities to all IgeClass instances.</div>
@@ -80,7 +81,8 @@ entity.log('An error message', 'error');
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">classId</h3>
+</div><a name="classId"></a>
+<h3 class="methodTitle">classId</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns the class id. Primarily used to help identify what class an instance was instantiated with and is also output during the ige.scenegraph() method's console logging to show what class an object belongs to.</div>
@@ -100,7 +102,8 @@ console.log(entity.classId());
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">addComponent</h3>
+</div><a name="addComponent"></a>
+<h3 class="methodTitle">addComponent</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Creates a new instance of the component argument passing the options argument to the component as it is initialised. The new component instance is then added to "this" via a property name that is defined in the component class as "componentId".</div>
@@ -123,7 +126,8 @@ entity.velocity.byAngleAndPower(Math.radians(20), 0.1);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">removeComponent</h3>
+</div><a name="removeComponent"></a>
+<h3 class="methodTitle">removeComponent</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Removes a component by it's id.</div>
@@ -147,7 +151,8 @@ entity.removeComponent('velocity');
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">implement</h3>
+</div><a name="implement"></a>
+<h3 class="methodTitle">implement</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Copies all properties and methods from the classObj object to "this". If the overwrite flag is not set or set to false, only properties and methods that don't already exists in "this" will be copied. If overwrite is true, they will be copied regardless.</div>
@@ -197,7 +202,8 @@ entity2.newMethod2();
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">data</h3>
+</div><a name="data"></a>
+<h3 class="methodTitle">data</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets a key / value pair in the object's data object. Useful for storing arbitrary game data in the object.</div>
@@ -225,7 +231,8 @@ console.log(entity.data('playerName'));
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">IgeClass.extend</h3>
+</div><a name="IgeClass.extend"></a>
+<h3 class="methodTitle">IgeClass.extend</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Create a new IgeClass that inherits from this class</div>
@@ -249,7 +256,8 @@ console.log(entity.data('playerName'));
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">IgeClass.vanilla</h3>
+</div><a name="IgeClass.vanilla"></a>
+<h3 class="methodTitle">IgeClass.vanilla</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Test method</div>

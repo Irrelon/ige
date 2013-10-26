@@ -18,7 +18,8 @@
 	<div class="content"><a href="IgeEntity.html">IgeEntity</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3 class="methodTitle">limit</h3>
+<h2>Methods</h2><a name="limit"></a>
+<h3 class="methodTitle">limit</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the rectangle that the camera translate will be limited to using an IgeRect instance.</div>
@@ -27,7 +28,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>}<span class="argName">rect</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">panTo</h3>
+</div><a name="panTo"></a>
+<h3 class="methodTitle">panTo</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Pan (tween) the camera to the new specified point in the specified time.</div>
@@ -36,7 +38,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">point</span> The point describing the co-ordinates to pan to.</li><li>{<span class="argType">Number</span>}<span class="argName">durationMs</span> The number of milliseconds to span the pan operation over.</li><li>{<span class="argType">String</span>}<span class="argName">easing</span> Optional easing method name.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">panBy</h3>
+</div><a name="panBy"></a>
+<h3 class="methodTitle">panBy</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Pan (tween) the camera by the new specified point in the specified time.</div>
@@ -45,7 +48,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">point</span> The point describing the co-ordinates to pan by.</li><li>{<span class="argType">Number</span>}<span class="argName">durationMs</span> The number of milliseconds to span the pan operation over.</li><li>{<span class="argType">String</span>}<span class="argName">easing</span> Optional easing method name.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">trackTranslate</h3>
+</div><a name="trackTranslate"></a>
+<h3 class="methodTitle">trackTranslate</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Tells the camera to track the movement of the specified target entity. The camera will center on the entity.</div>
@@ -54,7 +58,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>}<span class="argName">entity</span> </li><li>{<span class="argType">Number</span>}<span class="argName">smoothing</span> Determines how quickly the camera will track the target, the higher the number, the slower the tracking will be.</li><li>{<span class="argType">Boolean</span>}<span class="argName">rounding</span> Sets if the smoothing system is allowed to use floating point values or not. If enabled then it will not use floating point values.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">trackTranslateSmoothing</h3>
+</div><a name="trackTranslateSmoothing"></a>
+<h3 class="methodTitle">trackTranslateSmoothing</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the translate tracking smoothing value.</div>
@@ -63,7 +68,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">trackTranslateRounding</h3>
+</div><a name="trackTranslateRounding"></a>
+<h3 class="methodTitle">trackTranslateRounding</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the translate tracking smoothing rounding either enabled or disabled. When enabled the translate smoothing value will be rounded so that floating point values are not used which can help when smoothing on a scene that has texture smoothing disabled so sub-pixel rendering doesn't work and objects appear to "snap" into position as the smoothing interpolates.</div>
@@ -72,7 +78,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">unTrackTranslate</h3>
+</div><a name="unTrackTranslate"></a>
+<h3 class="methodTitle">unTrackTranslate</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Stops tracking the current tracking target's translation.</div>
@@ -81,7 +88,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">trackRotate</h3>
+</div><a name="trackRotate"></a>
+<h3 class="methodTitle">trackRotate</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Tells the camera to track the rotation of the specified target entity.</div>
@@ -90,7 +98,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>}<span class="argName">entity</span> </li><li>{<span class="argType">Number</span>}<span class="argName">smoothing</span> Determines how quickly the camera will track the target, the higher the number, the slower the tracking will be.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">trackRotateSmoothing</h3>
+</div><a name="trackRotateSmoothing"></a>
+<h3 class="methodTitle">trackRotateSmoothing</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the rotate tracking smoothing value.</div>
@@ -99,7 +108,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">unTrackRotate</h3>
+</div><a name="unTrackRotate"></a>
+<h3 class="methodTitle">unTrackRotate</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Stops tracking the current tracking target.</div>
@@ -108,7 +118,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">lookAt</h3>
+</div><a name="lookAt"></a>
+<h3 class="methodTitle">lookAt</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Translates the camera to the center of the specified entity so that the camera is "looking at" the entity.</div>
@@ -117,7 +128,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>}<span class="argName">entity</span> The entity to look at.</li><li>{<span class="argType">Number</span>}<span class="argName">durationMs</span> If specified, will cause the camera to tween to the location of the entity rather than snapping to it instantly.</li><li>{<span class="argType">String</span>}<span class="argName">easing</span> The easing method name to use if tweening by duration.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">tick</h3>
+</div><a name="tick"></a>
+<h3 class="methodTitle">tick</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Process operations during the engine tick.</div>
@@ -126,7 +138,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">updateTransform</h3>
+</div><a name="updateTransform"></a>
+<h3 class="methodTitle">updateTransform</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Checks the current transform values against the previous ones. If any value is different, the appropriate method is called which will update the transformation matrix accordingly. This version of the method is specifically designed for cameras!</div>
@@ -135,7 +148,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_stringify</h3>
+</div><a name="_stringify"></a>
+<h3 class="methodTitle">_stringify</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>

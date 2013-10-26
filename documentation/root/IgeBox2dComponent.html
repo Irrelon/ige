@@ -18,7 +18,8 @@
 	<div class="content"><a href="IgeEventingClass.html">IgeEventingClass</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3 class="methodTitle">mode</h3>
+<h2>Methods</h2><a name="mode"></a>
+<h3 class="methodTitle">mode</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the world interval mode. In mode 0 (zero) the box2d simulation is synced to the framerate of the engine's renderer. In mode 1 the box2d simulation is stepped at a constant speed regardless of the engine's renderer. This must be set *before* calling the start() method in order for the setting to take effect.</div>
@@ -27,7 +28,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Integer</span>}<span class="argName">val</span> The mode, either 0 or 1.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">sleep</h3>
+</div><a name="sleep"></a>
+<h3 class="methodTitle">sleep</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets if the world should allow sleep or not.</div>
@@ -36,7 +38,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">scaleRatio</h3>
+</div><a name="scaleRatio"></a>
+<h3 class="methodTitle">scaleRatio</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the current engine to box2d scaling ratio.</div>
@@ -45,7 +48,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">gravity</h3>
+</div><a name="gravity"></a>
+<h3 class="methodTitle">gravity</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the gravity vector.</div>
@@ -54,7 +58,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">world</h3>
+</div><a name="world"></a>
+<h3 class="methodTitle">world</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets the current Box2d world object.</div>
@@ -63,7 +68,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">b2World</span>} </div>
     
-</div><h3 class="methodTitle">createWorld</h3>
+</div><a name="createWorld"></a>
+<h3 class="methodTitle">createWorld</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Creates the Box2d world.</div>
@@ -72,7 +78,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">createFixture</h3>
+</div><a name="createFixture"></a>
+<h3 class="methodTitle">createFixture</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Creates a Box2d fixture and returns it.</div>
@@ -81,7 +88,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">params</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">b2FixtureDef</span>} </div>
     
-</div><h3 class="methodTitle">createBody</h3>
+</div><a name="createBody"></a>
+<h3 class="methodTitle">createBody</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Creates a Box2d body and attaches it to an IGE entity based on the supplied body definition.</div>
@@ -90,7 +98,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>}<span class="argName">entity</span> </li><li>{<span class="argType">Object</span>}<span class="argName">body</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">b2Body</span>} </div>
     
-</div><h3 class="methodTitle">staticsFromMap</h3>
+</div><a name="staticsFromMap"></a>
+<h3 class="methodTitle">staticsFromMap</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Produces static box2d bodies from passed map data.</div>
@@ -99,7 +108,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeTileMap2d.html">IgeTileMap2d</a></span>}<span class="argName">mapLayer</span> </li><li>{<span class="argType">Function</span>}<span class="argName">callback</span> Returns true or false depending on if the passed map data should be included as part of the box2d static object data. This allows you to control what parts of the map data are to be considered for box2d static objects and which parts are to be ignored. If not passed then any tile with any map data is considered part of the static object data.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">contactListener</h3>
+</div><a name="contactListener"></a>
+<h3 class="methodTitle">contactListener</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Creates a contact listener with the specified callbacks. When contacts begin and end inside the box2d simulation the specified callbacks are fired.</div>
@@ -108,7 +118,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">beginContactCallback</span> The method to call when the contact listener detects contact has started.</li><li>{<span class="argType">Function</span>}<span class="argName">endContactCallback</span> The method to call when the contact listener detects contact has ended.</li><li>{<span class="argType">Function</span>}<span class="argName">preSolve</span> </li><li>{<span class="argType">Function</span>}<span class="argName">postSolve</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">networkDebugMode</h3>
+</div><a name="networkDebugMode"></a>
+<h3 class="methodTitle">networkDebugMode</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">If enabled, sets the physics world into network debug mode which will stop the world from generating collisions but still allow us to see shape outlines as they are attached to bodies. Useful when your physics system is server-side but seeing client-side shape data is useful for debugging collisions.</div>
@@ -117,7 +128,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">enableDebug</h3>
+</div><a name="enableDebug"></a>
+<h3 class="methodTitle">enableDebug</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Creates a debug entity that outputs the bounds of each box2d body during standard engine ticks.</div>
@@ -126,7 +138,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>}<span class="argName">mountScene</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">destroyBody</h3>
+</div><a name="destroyBody"></a>
+<h3 class="methodTitle">destroyBody</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Queues a body for removal from the physics world.</div>
@@ -135,7 +148,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">body</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">updateCallback</h3>
+</div><a name="updateCallback"></a>
+<h3 class="methodTitle">updateCallback</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the callback method that will be called after every physics world step.</div>
@@ -144,7 +158,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">method</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">_behaviour</h3>
+</div><a name="_behaviour"></a>
+<h3 class="methodTitle">_behaviour</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Steps the physics simulation forward.</div>
