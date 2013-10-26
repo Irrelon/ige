@@ -570,7 +570,7 @@
 </div><h3 class="methodTitle">getClassDerivedList</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Returns an array of all classes the passed object derives from in order from base to current.</div>
+    <div class="methodDesc">Returns an array of all classes the passed object derives from in order from current to base.</div>
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">getClassDerivedList</span>({<span class="argType"></span>} <span class="argName">obj</span>, {<span class="argType"></span>} <span class="argName">arr</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">obj</span> </li><li>{<span class="argType"></span>}<span class="argName">arr</span> </li></ul></div>
@@ -594,6 +594,24 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
+</div><h3 class="methodTitle">timeScale</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the current time scalar value. The engine's internal time is multiplied by this value and it's default is 1. You can set it to 0.5 to slow down time by half or 1.5 to speed up time by half. Currently will not accept a negative value.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">timeScale</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The time scale value.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><h3 class="methodTitle">incrementTime</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Increments the engine's interal time by the passed number of milliseconds.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">incrementTime</span>({<span class="argType">Number</span>} <span class="argName">val</span>, {<span class="argType">Number</span>} <span class="argName">lastVal</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The number of milliseconds to increment time by.</li><li>{<span class="argType">Number</span>}<span class="argName">lastVal</span> The last internal time value, used to calculate delta internally in the method.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Number</span>} </div>
+    
 </div><h3 class="methodTitle">currentTime</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
@@ -602,6 +620,15 @@
     <div class="methodDefinition"><span class="methodName">currentTime</span>()</div>
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Number</span>} The current time.</div>
+    
+</div><h3 class="methodTitle">pause</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the pause flag. If set to true then the engine's internal time will no longer increment and will instead stay static.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">pause</span>({<span class="argType"></span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
 </div><h3 class="methodTitle">useManualTicks</h3>
 <div class="methodSection">
