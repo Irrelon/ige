@@ -3084,6 +3084,17 @@ var IgeEntity = IgeObject.extend({
 					}
 				}
 				break;
+			
+			case 'origin':
+				if (data !== undefined) {
+					if (!ige.isServer) {
+						var geom = data.split(',');
+						this.origin(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
+					}
+				} else {
+					return String(this._origin.x + ',' + this._origin.y + ',' + this._origin.z);
+				}
+				break;
 		}
 	},
 
