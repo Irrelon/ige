@@ -233,7 +233,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 			// Calculate how much time we have left before the entity
 			// should be removed from the simulation given the render
 			// latency setting and the current time
-			var destroyDelta = ige.network.stream._renderLatency + (ige._currentTime - data[0]);
+			var destroyDelta = ige.network.stream._renderLatency + (data[0] - ige._currentTime);
 			
 			if (destroyDelta > 0) {
 				// Give the entity a lifespan to destroy it in x ms
