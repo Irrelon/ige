@@ -1,6 +1,9 @@
 # Isogenic Game Engine
 HTML5 2D and isometric scenegraph-based game engine written entirely in JavaScript.
 
+## Latest Updates & Changelog
+http://www.isogenicengine.com/forum/viewforum.php?f=8
+
 ## Main Features
 * Full un-obfuscated source code
 * Advanced networking system with built-in server
@@ -33,7 +36,7 @@ about running the examples.
 http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/
 
 ## Forum
-Head over to the indie-resource.com forum just for Isogenic Engine here: http://indie-resource.com/forums/viewforum.php?f=128
+Head over to the official help & support forum: http://www.isogenicengine.com/forum
 
 ## Feedback & Support
 If you have any comments, questions, requests etc please don't hesitate to discuss them on the forum!
@@ -42,7 +45,7 @@ If you have any comments, questions, requests etc please don't hesitate to discu
 You may use the IGE for non-commercial, educational or hobbyist purposes for free subject to the terms and conditions
 set forth below.
 
-Premium licenses can be obtained from the official website: http://www.isogenicengine.com from only ~$20 (£13.99)
+Premium licenses can be obtained from the official website: http://www.isogenicengine.com
 
 ### Terms & Conditions
 If you wish to create a game that utilises the IGE and generates income from any source connected to the game via online
@@ -55,10 +58,16 @@ below.
 You also require a license if you are using the engine as a registered / limited company for any reason.
 
 ## Intellectual Property, Ownership & Copyright
-(C)opyright 2012 Irrelon Software Limited
+(C)opyright 2013 Irrelon Software Limited
 
 * Website: http://www.isogenicengine.com
 * Store: http://store.isogenicengine.com
+* Forum: http://store.isogenicengine.com/forum
+* API Docs: http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/
+* Video Tutorials: http://www.youtube.com/playlist?list=PL3bbQ5EMaCKgch0gzt8_7D3MQVAOA7zXF
+* Updates, News & Changelog: http://www.isogenicengine.com/forum/viewforum.php?f=8
+* Twitter: @IsogenicEngine https://twitter.com/IsogenicEngine
+* Youtube: http://www.youtube.com/user/coolbloke1324
 
 ### Prototype Version
 Some of the art and assets that are included in the premium version are not included in the free (prototype) version because
