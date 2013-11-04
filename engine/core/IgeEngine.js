@@ -51,6 +51,7 @@ var IgeEngine = IgeEntity.extend({
 		// Setup components
 		this.addComponent(IgeInputComponent);
 		this.addComponent(IgeTweenComponent);
+		this.addComponent(IgeTimeComponent);
 		
 		if (!this.isServer) {
 			// Enable UI element (virtual DOM) support

@@ -12,6 +12,7 @@ var igeCoreConfig = {
 		['csap', 'IgeRect', 'core/IgeRect.js'],
 		['csap', 'IgeMatrix2d', 'core/IgeMatrix2d.js'],
 		/* Components */
+		['csap', 'IgeTimeComponent', 'components/IgeTimeComponent.js'],
 		['csap', 'IgeAnimationComponent', 'components/IgeAnimationComponent.js'],
 		['csap', 'IgeVelocityComponent', 'components/IgeVelocityComponent.js'],
 		['csap', 'IgeTweenComponent', 'components/IgeTweenComponent.js'],
@@ -87,6 +88,8 @@ var igeCoreConfig = {
 		['csap', 'IgeViewport', 'core/IgeViewport.js'],
 		['csap', 'IgeScene2d', 'core/IgeScene2d.js'],
 		['csap', 'IgeQuest', 'core/IgeQuest.js'],
+		['csap', 'IgeInterval', 'core/IgeInterval.js'],
+		['csap', 'IgeTimeout', 'core/IgeTimeout.js'],
 		['csap', 'IgeCuboidSmartTexture', 'assets/IgeCuboidSmartTexture.js'],
 		['csap', 'IgeCuboid', 'primitives/IgeCuboid.js'],
 		/* Physics to Entity Components */
