@@ -99,7 +99,32 @@ var IgePoly2d = IgeClass.extend({
 			}
 		}
 
-		return c;
+		return Boolean(c);
+	},
+	
+	/**
+	 * Check if the passed x and y are inside this polygon.
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @return {Boolean}
+	 */
+	xyInside: function (x, y) {
+		var polyPoints = this._poly,
+			pointCount = polyPoints.length,
+			pointIndex,
+			oldPointIndex = pointCount - 1,
+			c = 0;
+
+		for (pointIndex = 0; pointIndex < pointCount; oldPointIndex = pointIndex++) {
+			if (((polyPoints[pointIndex].y > y) !== (polyPoints[oldPointIndex].y > y)) &&
+				(x < (polyPoints[oldPointIndex].x - polyPoints[pointIndex].x) *
+					(y - polyPoints[pointIndex].y) / (polyPoints[oldPointIndex].y - polyPoints[pointIndex].y) +
+					polyPoints[pointIndex].x)) {
+				c = !c;
+			}
+		}
+
+		return Boolean(c);
 	},
 
 	/**

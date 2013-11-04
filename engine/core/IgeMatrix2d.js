@@ -242,6 +242,19 @@ IgeMatrix2d.prototype = {
 
 		return this;
 	},
+	
+	compare: function (matrix) {
+		var thisMatrix = this.matrix,
+			thatMatrix = matrix.matrix;
+		
+		for (var i = 0; i < 9; i++) {
+			if (thisMatrix[i] !== thatMatrix[i]) {
+				return false;
+			}
+		}
+		
+		return true;
+	},
 
 	/**
 	 * Set this matrix to the identity matrix.

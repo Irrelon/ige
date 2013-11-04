@@ -272,7 +272,8 @@ var IgeTileMap2d = IgeEntity.extend({
 
 			tilePos = new IgePoint(
 				Math.floor(dx / this._tileWidth),
-				Math.floor(dy / this._tileWidth)
+				Math.floor(dy / this._tileWidth),
+				0
 			);
 		}
 

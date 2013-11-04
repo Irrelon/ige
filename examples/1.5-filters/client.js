@@ -40,19 +40,8 @@ var Client = IgeClass.extend({
 				if (success) {
 					var yStart = -300;
 
-					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1');
-
-					// Create the main viewport and set the scene
-					// it will "look" at as the new scene1 we just
-					// created above
-					self.vp1 = new IgeViewport()
-						.id('vp1')
-						.autoSize(true)
-						.scene(self.scene1)
-						.drawBounds(true)
-						.mount(ige);
+					// Load the base scene data
+					ige.addGraph('IgeBaseScene');
 
 					// Create an entity and mount it to the scene
 					self.obj[0] = new IgeEntity()
@@ -62,7 +51,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[0])
 						.translateTo(0, yStart + 70, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title0')
@@ -73,7 +62,7 @@ var Client = IgeClass.extend({
 						.text('Original Image')
 						.translateTo(0, yStart, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					// Create a second IgeEntity entity and mount
 					// it to the first one at 0, 50 relative to the
@@ -85,7 +74,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[1])
 						.translateTo(-300, yStart + 220, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title1')
@@ -96,7 +85,7 @@ var Client = IgeClass.extend({
 						.text('Greyscale')
 						.translateTo(-300, yStart + 150, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					// Create some more fairies and mount them to the scene
 					self.obj[2] = new IgeEntity()
@@ -106,7 +95,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[2])
 						.translateTo(-150, yStart + 220, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title2')
@@ -117,7 +106,7 @@ var Client = IgeClass.extend({
 						.text('Brighten')
 						.translateTo(-150, yStart + 150, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[3] = new IgeEntity()
 						.id('fairy3')
@@ -126,7 +115,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[3])
 						.translateTo(0, yStart + 220, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title3')
@@ -137,7 +126,7 @@ var Client = IgeClass.extend({
 						.text('Threshold')
 						.translateTo(0, yStart + 150, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[4] = new IgeEntity()
 						.id('fairy4')
@@ -146,7 +135,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[4])
 						.translateTo(150, yStart + 220, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title4')
@@ -157,7 +146,7 @@ var Client = IgeClass.extend({
 						.text('Sharpen')
 						.translateTo(150, yStart + 150, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[5] = new IgeEntity()
 						.id('fairy5')
@@ -166,7 +155,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[5])
 						.translateTo(300, yStart + 220, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title5')
@@ -177,7 +166,7 @@ var Client = IgeClass.extend({
 						.text('Blur')
 						.translateTo(300, yStart + 150, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[6] = new IgeEntity()
 						.id('fairy6')
@@ -186,7 +175,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[6])
 						.translateTo(-300, yStart + 370, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title6')
@@ -197,7 +186,7 @@ var Client = IgeClass.extend({
 						.text('Emboss')
 						.translateTo(-300, yStart + 300, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[7] = new IgeEntity()
 						.id('fairy7')
@@ -206,7 +195,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[7])
 						.translateTo(-150, yStart + 370, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title7')
@@ -217,7 +206,7 @@ var Client = IgeClass.extend({
 						.text('Edge Detect')
 						.translateTo(-150, yStart + 300, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[8] = new IgeEntity()
 						.id('fairy8')
@@ -226,7 +215,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[8])
 						.translateTo(0, yStart + 370, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title8')
@@ -237,7 +226,7 @@ var Client = IgeClass.extend({
 						.text('Edge Enhance')
 						.translateTo(0, yStart + 300, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[9] = new IgeEntity()
 						.id('fairy9')
@@ -246,7 +235,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[9])
 						.translateTo(150, yStart + 370, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title9')
@@ -257,7 +246,7 @@ var Client = IgeClass.extend({
 						.text('Color Overlay')
 						.translateTo(150, yStart + 300, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[10] = new IgeEntity()
 						.id('fairy10')
@@ -266,7 +255,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[10])
 						.translateTo(300, yStart + 370, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title10')
@@ -277,7 +266,7 @@ var Client = IgeClass.extend({
 						.text('Sobel')
 						.translateTo(300, yStart + 300, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[11] = new IgeEntity()
 						.id('fairy11')
@@ -286,7 +275,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[11])
 						.translateTo(-300, yStart + 520, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title11')
@@ -297,7 +286,7 @@ var Client = IgeClass.extend({
 						.text('Glow: Original')
 						.translateTo(-300, yStart + 450, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[12] = new IgeEntity()
 						.id('fairy12')
@@ -306,7 +295,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[12])
 						.translateTo(-150, yStart + 520, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title12')
@@ -317,7 +306,7 @@ var Client = IgeClass.extend({
 						.text('Glow: Mask Image')
 						.translateTo(-150, yStart + 450, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[13] = new IgeEntity()
 						.id('fairy13')
@@ -326,7 +315,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[13])
 						.translateTo(0, yStart + 520, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title13')
@@ -337,7 +326,7 @@ var Client = IgeClass.extend({
 						.text('Glow: Result')
 						.translateTo(0, yStart + 450, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[14] = new IgeEntity()
 						.id('fairy14')
@@ -346,7 +335,7 @@ var Client = IgeClass.extend({
 						.height(100)
 						.texture(gameTexture[14])
 						.translateTo(150, yStart + 520, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					new IgeFontEntity()
 						.id('title14')
@@ -357,7 +346,7 @@ var Client = IgeClass.extend({
 						.text('Glow: Dynamic')
 						.translateTo(150, yStart + 450, 0)
 						.drawBounds(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					// Apply a greyscale filter to JUST the first fairy texture
 					gameTexture[1].applyFilter(IgeFilters.greyScale);

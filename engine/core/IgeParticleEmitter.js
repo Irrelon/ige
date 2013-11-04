@@ -14,10 +14,10 @@ var IgeParticleEmitter = IgeEntity.extend({
 		this._started = false;
 		this._particles = [];
 
-		this.quantityTimespan(1000);
-		this.quantityBase(10);
 		this.applyDepthToParticles(true);
 		this.applyLayerToParticles(true);
+		this.quantityTimespan(1000);
+		this.quantityBase(10);
 		this.quantityVariance(0, 0);
 		this.translateBaseX(0);
 		this.translateBaseY(0);
@@ -288,7 +288,7 @@ var IgeParticleEmitter = IgeEntity.extend({
 			// matrix values if the start method was chained!
 			this.updateTransform();
 
-			this._quantityTimespan = this._quantityTimespan || 1000;
+			this._quantityTimespan = this._quantityTimespan !== undefined ? this._quantityTimespan : 1000;
 			this._maxParticles = this.baseAndVarianceValue(this._quantityBase, this._quantityVariance, true);
 			this._particlesPerTimeVector = this._quantityTimespan / this._maxParticles; // 1 Particle every x milliseconds (x stored in this._particlesPerTimeVector)
 			this._currentDelta = 0;
@@ -301,6 +301,11 @@ var IgeParticleEmitter = IgeEntity.extend({
 		}
 
 		return this;
+	},
+	
+	updateSettings: function () {
+		this._maxParticles = this.baseAndVarianceValue(this._quantityBase, this._quantityVariance, true);
+		this._particlesPerTimeVector = this._quantityTimespan / this._maxParticles; // 1 Particle every x milliseconds (x stored in this._particlesPerTimeVector)
 	},
 
 	/**

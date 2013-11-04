@@ -17,8 +17,6 @@ var IgeViewport = IgeEntity.extend([
 		this._mouseAlwaysInside = true;
 		this._mousePos = new IgePoint(0, 0, 0);
 		this._overflow = '';
-		this._uiX = 0;
-		this._uiY = 0;
 		this._clipping = true;
 
 		// Set default options if not specified
@@ -102,18 +100,23 @@ var IgeViewport = IgeEntity.extend([
 		return this._transformPoint(this._mousePos.clone());
 	},
 
+	/**
+	 * Gets the current rectangular area that the viewport is "looking at"
+	 * in the world. The co-ordinates are in world space.
+	 * @returns {IgeRect}
+	 */
 	viewArea: function () {
 		var aabb = this.aabb(),
 			camTrans = this.camera._translate,
 			camScale = this.camera._scale,
-			xRatio = 1 / camScale.x,
-			yRatio = 1 / camScale.y;
+			width = aabb.width * (1 / camScale.x),
+			height = aabb.height * (1 / camScale.y);
 		
 		return new IgeRect(
-			((aabb.x + camTrans.x) * xRatio),
-			((aabb.y + camTrans.y) * yRatio),
-			(aabb.width * xRatio),
-			(aabb.height * yRatio)
+			(camTrans.x - width / 2),
+			(camTrans.y - height / 2),
+			width,
+			height
 		);
 	},
 
@@ -200,6 +203,14 @@ var IgeViewport = IgeEntity.extend([
 				this._scene.tick(ctx);
 			ctx.restore();
 
+			// Check if we should draw guides
+			if (this._drawGuides && ctx === ige._ctx) {
+				ctx.save();
+				ctx.translate(-this._translate.x, -this._translate.y);
+				this.paintGuides(ctx);
+				ctx.restore();
+			}
+			
 			// Check if we should draw bounds on this viewport
 			// (usually for debug purposes)
 			if (this._drawBounds && ctx === ige._ctx) {
@@ -207,7 +218,7 @@ var IgeViewport = IgeEntity.extend([
 				// bounding boxes for every object
 				ctx.save();
 				ctx.translate(-this._translate.x, -this._translate.y);
-				this.drawAABBs(ctx, this._scene, 0);
+				this.paintAabbs(ctx, this._scene, 0);
 				ctx.restore();
 			}
 
@@ -232,7 +243,45 @@ var IgeViewport = IgeEntity.extend([
 					ctx.fillText('Viewport ' + this.id() + ' :: ' + mx + ', ' + my, mx - textMeasurement.width / 2, my - 15);
 				ctx.restore();
 			}
+			
+			if (this._drawViewArea) {
+				ctx.save();
+					var va = this.viewArea();
+					ctx.rect(va.x, va.y, va.width, va.height);
+					ctx.stroke();
+				ctx.restore();
+			}
 		}
+	},
+
+	/**
+	 * Returns the screen position of the viewport as an IgePoint where x is the
+	 * "left" and y is the "top", useful for positioning HTML elements at the
+	 * screen location of an IGE entity. The returned values indicate the center
+	 * of the viewport on the screen.
+	 * 
+	 * This method assumes that the top-left
+	 * of the main canvas element is at 0, 0. If not you can adjust the values
+	 * yourself to allow for offset.
+	 * @example #Get the screen position of the entity
+	 *     var screenPos = entity.screenPosition();
+	 * @return {IgePoint} The screen position of the entity.
+	 */
+	screenPosition: function () {
+		return new IgePoint(
+			Math.floor(this._worldMatrix.matrix[2] + ige._geometry.x2),
+			Math.floor(this._worldMatrix.matrix[5] + ige._geometry.y2),
+			0
+		);
+	},
+	
+	drawViewArea: function (val) {
+		if (val !== undefined) {
+			this._drawViewArea = val;
+			return this;
+		}
+		
+		return this._drawViewArea;
 	},
 
 	drawBoundsLimitId: function (id) {
@@ -261,6 +310,37 @@ var IgeViewport = IgeEntity.extend([
 		
 		return this._drawCompositeBounds;
 	},
+	
+	drawGuides: function (val) {
+		if (val !== undefined) {
+			this._drawGuides = val;
+			return this;
+		}
+		
+		return this._drawGuides;
+	},
+	
+	paintGuides: function (ctx) {
+		var geom = ige._geometry;
+		
+		// Check draw-guides setting
+		if (this._drawGuides) {
+			ctx.strokeStyle = '#ffffff';
+			
+			ctx.translate(0.5, 0.5);
+			
+			// Draw guide lines in the center
+			ctx.beginPath();
+			ctx.moveTo(0, -geom.y2);
+			ctx.lineTo(0, geom.y);
+			ctx.stroke();
+			
+			ctx.beginPath();
+			ctx.moveTo(-geom.x2, 0);
+			ctx.lineTo(geom.x, 0);
+			ctx.stroke();
+		}
+	},
 
 	/**
 	 * Draws the bounding data for each entity in the scenegraph.
@@ -268,20 +348,17 @@ var IgeViewport = IgeEntity.extend([
 	 * @param rootObject
 	 * @param index
 	 */
-	drawAABBs: function (ctx, rootObject, index) {
+	paintAabbs: function (ctx, rootObject, index) {
 		var arr = rootObject._children,
 			arrCount,
 			obj,
 			aabb,
 			aabbC,
-			aabbNT,
 			ga,
 			r3d,
 			xl1, xl2, xl3, xl4, xl5, xl6,
 			bf1, bf2, bf3, bf4,
-			tf1, tf2, tf3, tf4,
-			worldPos,
-			worldRot;
+			tf1, tf2, tf3, tf4;
 
 		if (arr) {
 			arrCount = arr.length;
@@ -306,16 +383,18 @@ var IgeViewport = IgeEntity.extend([
 							
 							if (aabb) {
 								if (obj._drawBounds || obj._drawBounds === undefined) {
-									// Draw a rect around the bounds of the object transformed in world space
-									ctx.save();
-										obj._worldMatrix.transformRenderingContext(ctx);
-										ctx.strokeStyle = '#9700ae';
-										ctx.strokeRect(-obj._geometry.x2, -obj._geometry.y2, obj._geometry.x, obj._geometry.y);
-									ctx.restore();
-									
-									// Draw individual bounds
-									ctx.strokeStyle = '#00deff';
-									ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
+									if (!obj._parent || (obj._parent && obj._parent._mountMode !== 1)) {
+										// Draw a rect around the bounds of the object transformed in world space
+										ctx.save();
+											obj._worldMatrix.transformRenderingContext(ctx);
+											ctx.strokeStyle = '#9700ae';
+											ctx.strokeRect(-obj._geometry.x2, -obj._geometry.y2, obj._geometry.x, obj._geometry.y);
+										ctx.restore();
+										
+										// Draw individual bounds
+										ctx.strokeStyle = '#00deff';
+										ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
+									}
 
 									// Check if the object is mounted to an isometric mount
 									if (obj._parent && obj._parent._mountMode === 1) {
@@ -364,7 +443,11 @@ var IgeViewport = IgeEntity.extend([
 
 											ctx.strokeStyle = '#a200ff';
 
-											ctx.globalAlpha = 0.6;
+											if (obj._highlight) {
+												ctx.globalAlpha = 0.9;
+											} else {
+												ctx.globalAlpha = 0.6;
+											}
 
 											// Left face
 											ctx.fillStyle = '#545454';
@@ -415,7 +498,7 @@ var IgeViewport = IgeEntity.extend([
 						}
 					}
 
-					this.drawAABBs(ctx, obj, index);
+					this.paintAabbs(ctx, obj, index);
 				}
 			}
 		}

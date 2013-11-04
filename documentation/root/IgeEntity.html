@@ -18,7 +18,8 @@
 	<div class="content"><a href="IgeObject.html">IgeObject</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3 class="methodTitle">show</h3>
+<h2>Methods</h2><a name="show"></a>
+<h3 class="methodTitle">show</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Sets the entity as visible and able to be interacted with.</div>
@@ -35,7 +36,8 @@
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">hide</h3>
+</div><a name="hide"></a>
+<h3 class="methodTitle">hide</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Sets the entity as hidden and cannot be interacted with.</div>
@@ -52,7 +54,8 @@
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">isVisible</h3>
+</div><a name="isVisible"></a>
+<h3 class="methodTitle">isVisible</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Checks if the entity is visible.</div>
@@ -61,7 +64,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">boolean</span>} True if the entity is visible.</div>
     
-</div><h3 class="methodTitle">isHidden</h3>
+</div><a name="isHidden"></a>
+<h3 class="methodTitle">isHidden</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Checks if the entity is hidden.</div>
@@ -70,7 +74,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">boolean</span>} True if the entity is hidden.</div>
     
-</div><h3 class="methodTitle">cache</h3>
+</div><a name="cache"></a>
+<h3 class="methodTitle">cache</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the cache flag that determines if the entity's texture rendering output should be stored on an off-screen canvas instead of calling the texture.render() method each tick. Useful for expensive texture calls such as rendering fonts etc. If enabled, this will automatically disable advanced composite caching on this entity with a call to compositeCache(false).</div>
@@ -103,7 +108,8 @@
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">cacheSmoothing</h3>
+</div><a name="cacheSmoothing"></a>
+<h3 class="methodTitle">cacheSmoothing</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">When using the caching system, this boolean determines if the cache canvas should have image smoothing enabled or not. If not set, the ige global smoothing setting will be used instead.</div>
@@ -112,7 +118,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> True to enable smoothing, false to disable.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">compositeCache</h3>
+</div><a name="compositeCache"></a>
+<h3 class="methodTitle">compositeCache</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets composite caching. Composite caching draws this entity and all of it's children (and their children etc) to a single off screen canvas so that the entity does not need to be redrawn with all it's children every tick. For composite entities where little change occurs this will massively increase rendering performance. If enabled, this will automatically disable simple caching on this entity with a call to cache(false).</div>
@@ -145,7 +152,8 @@
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">cacheDirty</h3>
+</div><a name="cacheDirty"></a>
+<h3 class="methodTitle">cacheDirty</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the cache dirty flag. If set to true this will instruct the entity to re-draw it's cached image from the assigned texture. Once that occurs the flag will automatically be set back to false. This works in either standard cache mode or composite cache mode.</div>
@@ -170,10 +178,11 @@
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">mousePos</h3>
+</div><a name="mousePos"></a>
+<h3 class="methodTitle">mousePos</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Gets the position of the mouse relative to this entity.</div>
+    <div class="methodDesc">Gets the position of the mouse relative to this entity's center point.</div>
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">mousePos</span>({<span class="argType"><a href="./IgeViewport.html">IgeViewport</a></span>} <span class="argName">viewport</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeViewport.html">IgeViewport</a></span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
@@ -188,7 +197,8 @@ var mousePos = entity.mousePos();
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">mousePosAbsolute</h3>
+</div><a name="mousePosAbsolute"></a>
+<h3 class="methodTitle">mousePosAbsolute</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets the position of the mouse relative to this entity not taking into account viewport translation.</div>
@@ -205,7 +215,8 @@ var mousePos = entity.mousePos();
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">mousePosWorld</h3>
+</div><a name="mousePosWorld"></a>
+<h3 class="methodTitle">mousePosWorld</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets the position of the mouse in world co-ordinates.</div>
@@ -222,7 +233,8 @@ var mousePos = entity.mousePos();
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">rotateToPoint</h3>
+</div><a name="rotateToPoint"></a>
+<h3 class="methodTitle">rotateToPoint</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Rotates the entity to point at the target point around the z axis.</div>
@@ -255,7 +267,8 @@ var mousePos = entity.mousePos();
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">translateToTile</h3>
+</div><a name="translateToTile"></a>
+<h3 class="methodTitle">translateToTile</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Translates the object to the tile co-ordinates passed.</div>
@@ -281,7 +294,8 @@ entity.translateToTile(10, 12, 0);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">backgroundPattern</h3>
+</div><a name="backgroundPattern"></a>
+<h3 class="methodTitle">backgroundPattern</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the texture to use as the background pattern for this entity.</div>
@@ -308,7 +322,8 @@ entity.backgroundPattern(texture, 'repeat', true, true);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">widthByTile</h3>
+</div><a name="widthByTile"></a>
+<h3 class="methodTitle">widthByTile</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Set the object's width to the number of tile width's specified.</div>
@@ -329,7 +344,8 @@ entity.widthByTile(1, true);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">heightByTile</h3>
+</div><a name="heightByTile"></a>
+<h3 class="methodTitle">heightByTile</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Set the object's height to the number of tile height's specified.</div>
@@ -350,7 +366,8 @@ entity.heightByTile(1, true);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">occupyTile</h3>
+</div><a name="occupyTile"></a>
+<h3 class="methodTitle">occupyTile</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Adds the object to the tile map at the passed tile co-ordinates. If no tile co-ordinates are passed, will use the current tile position and the tileWidth() and tileHeight() values.</div>
@@ -359,7 +376,8 @@ entity.heightByTile(1, true);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> X co-ordinate of the tile to occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> Y co-ordinate of the tile to occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">width</span> Number of tiles along the x-axis to occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">height</span> Number of tiles along the y-axis to occupy.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">unOccupyTile</h3>
+</div><a name="unOccupyTile"></a>
+<h3 class="methodTitle">unOccupyTile</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Removes the object from the tile map at the passed tile co-ordinates. If no tile co-ordinates are passed, will use the current tile position and the tileWidth() and tileHeight() values.</div>
@@ -368,7 +386,8 @@ entity.heightByTile(1, true);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> X co-ordinate of the tile to un-occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> Y co-ordinate of the tile to un-occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">width</span> Number of tiles along the x-axis to un-occupy.</li><li>{<span class="argType">Number</span>}<span class="argName">height</span> Number of tiles along the y-axis to un-occupy.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">overTiles</h3>
+</div><a name="overTiles"></a>
+<h3 class="methodTitle">overTiles</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns an array of tile co-ordinates that the object is currently over, calculated using the current world co-ordinates of the object as well as it's 3d geometry.</div>
@@ -377,7 +396,8 @@ entity.heightByTile(1, true);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} The array of tile co-ordinates as IgePoint instances.</div>
     
-</div><h3 class="methodTitle">anchor</h3>
+</div><a name="anchor"></a>
+<h3 class="methodTitle">anchor</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the anchor position that this entity's texture will be adjusted by.</div>
@@ -386,7 +406,8 @@ entity.heightByTile(1, true);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x anchor value.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y anchor value.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
     
-</div><h3 class="methodTitle">width</h3>
+</div><a name="width"></a>
+<h3 class="methodTitle">width</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the geometry x value.</div>
@@ -403,7 +424,8 @@ entity.heightByTile(1, true);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">height</h3>
+</div><a name="height"></a>
+<h3 class="methodTitle">height</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the geometry y value.</div>
@@ -420,7 +442,8 @@ entity.heightByTile(1, true);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">size3d</h3>
+</div><a name="size3d"></a>
+<h3 class="methodTitle">size3d</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the 3d geometry of the entity. The x and y values are relative to the center of the entity and the z value is wholly positive from the "floor". Primarily used when creating isometric container entities.</div>
@@ -437,7 +460,8 @@ entity.heightByTile(1, true);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">lifeSpan</h3>
+</div><a name="lifeSpan"></a>
+<h3 class="methodTitle">lifeSpan</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the life span of the object in milliseconds. The life span is how long the object will exist for before being automatically destroyed.</div>
@@ -454,7 +478,8 @@ entity.heightByTile(1, true);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">deathTime</h3>
+</div><a name="deathTime"></a>
+<h3 class="methodTitle">deathTime</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the timestamp in milliseconds that denotes the time that the entity will be destroyed. The object checks it's own death time during each tick and if the current time is greater than the death time, the object will be destroyed.</div>
@@ -471,7 +496,8 @@ entity.heightByTile(1, true);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">opacity</h3>
+</div><a name="opacity"></a>
+<h3 class="methodTitle">opacity</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the entity opacity from 0.0 to 1.0.</div>
@@ -496,7 +522,8 @@ entity.heightByTile(1, true);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">noAabb</h3>
+</div><a name="noAabb"></a>
+<h3 class="methodTitle">noAabb</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the noAabb flag that determines if the entity's axis aligned bounding box should be calculated every tick or not. If you don't need the AABB data (for instance if you don't need to detect mouse events on this entity or you DO want the AABB to be updated but want to control it manually by calling aabb(true) yourself as needed).</div>
@@ -505,7 +532,8 @@ entity.heightByTile(1, true);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> If set to true will turn off AABB calculation.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">texture</h3>
+</div><a name="texture"></a>
+<h3 class="methodTitle">texture</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the texture to use when rendering the entity.</div>
@@ -523,7 +551,8 @@ entity.texture(texture);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">cell</h3>
+</div><a name="cell"></a>
+<h3 class="methodTitle">cell</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the current texture cell used when rendering the game object's texture. If the texture is not cell-based, this value is ignored.</div>
@@ -542,7 +571,8 @@ entity.texture(texture)
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">cellById</h3>
+</div><a name="cellById"></a>
+<h3 class="methodTitle">cellById</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the current texture cell used when rendering the game object's texture. If the texture is not cell-based, this value is ignored. This differs from cell() in that it accepts a string id as the cell</div>
@@ -568,7 +598,8 @@ entity.texture(texture)
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">dimensionsFromTexture</h3>
+</div><a name="dimensionsFromTexture"></a>
+<h3 class="methodTitle">dimensionsFromTexture</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Sets the geometry of the entity to match the width and height of the assigned texture.</div>
@@ -590,7 +621,8 @@ entity.texture(texture)
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">dimensionsFromCell</h3>
+</div><a name="dimensionsFromCell"></a>
+<h3 class="methodTitle">dimensionsFromCell</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Sets the geometry of the entity to match the width and height of the assigned texture cell. If the texture is not cell-based the entire texture width / height will be used.</div>
@@ -615,7 +647,8 @@ entity.texture(texture)
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">highlight</h3>
+</div><a name="highlight"></a>
+<h3 class="methodTitle">highlight</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the highlight mode. True is on false is off.</div>
@@ -640,7 +673,8 @@ entity.texture(texture)
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">worldPosition</h3>
+</div><a name="worldPosition"></a>
+<h3 class="methodTitle">worldPosition</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns the absolute world position of the entity as an IgePoint.</div>
@@ -657,7 +691,8 @@ entity.texture(texture)
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">worldRotationZ</h3>
+</div><a name="worldRotationZ"></a>
+<h3 class="methodTitle">worldRotationZ</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns the absolute world rotation z of the entity as a value in radians.</div>
@@ -674,7 +709,8 @@ entity.texture(texture)
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">localToWorld</h3>
+</div><a name="localToWorld"></a>
+<h3 class="methodTitle">localToWorld</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Converts an array of points from local space to this entity's world space using it's world transform matrix. This will alter the points passed in the array directly.</div>
@@ -683,7 +719,8 @@ entity.texture(texture)
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">points</span> The array of IgePoints to convert.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">localToWorldPoint</h3>
+</div><a name="localToWorldPoint"></a>
+<h3 class="methodTitle">localToWorldPoint</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Converts a point from local space to this entity's world space using it's world transform matrix. This will alter the point's data directly.</div>
@@ -692,7 +729,8 @@ entity.texture(texture)
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">point</span> The IgePoint to convert.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">screenPosition</h3>
+</div><a name="screenPosition"></a>
+<h3 class="methodTitle">screenPosition</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns the screen position of the entity as an IgePoint where x is the "left" and y is the "top", useful for positioning HTML elements at the screen location of an IGE entity. This method assumes that the top-left of the main canvas element is at 0, 0. If not you can adjust the values yourself to allow for offset.</div>
@@ -709,7 +747,8 @@ entity.texture(texture)
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">aabb</h3>
+</div><a name="aabb"></a>
+<h3 class="methodTitle">aabb</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Calculates and returns the current axis-aligned bounding box in world co-ordinates.</div>
@@ -744,7 +783,8 @@ console.log(aabb.height);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">localAabb</h3>
+</div><a name="localAabb"></a>
+<h3 class="methodTitle">localAabb</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Calculates and returns the local axis-aligned bounding box for the entity. This is the AABB relative to the entity's center point.</div>
@@ -779,7 +819,8 @@ console.log(aabb.height);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">compositeAabb</h3>
+</div><a name="compositeAabb"></a>
+<h3 class="methodTitle">compositeAabb</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Calculates the axis-aligned bounding box for this entity, including all child entity bounding boxes and returns the final composite bounds.</div>
@@ -797,7 +838,8 @@ console.log(aabb.height);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">compositeStream</h3>
+</div><a name="compositeStream"></a>
+<h3 class="methodTitle">compositeStream</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the composite stream flag. If set to true, any objects mounted to this one will have their streamMode() set to the same value as this entity and will also have their compositeStream flag set to true. This allows you to easily automatically stream any objects mounted to a root object and stream them all.</div>
@@ -806,7 +848,8 @@ console.log(aabb.height);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">_childMounted</h3>
+</div><a name="_childMounted"></a>
+<h3 class="methodTitle">_childMounted</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Override the _childMounted method and apply entity-based flags.</div>
@@ -815,7 +858,8 @@ console.log(aabb.height);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>}<span class="argName">child</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_swapVars</h3>
+</div><a name="_swapVars"></a>
+<h3 class="methodTitle">_swapVars</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Takes two values and returns them as an array where index [0] is the y argument and index[1] is the x argument. This method is used specifically in the 3d bounds intersection process to determine entity depth sorting.</div>
@@ -824,7 +868,8 @@ console.log(aabb.height);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The first value.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The second value.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} The swapped arguments.</div>
     
-</div><h3 class="methodTitle">isBehind</h3>
+</div><a name="isBehind"></a>
+<h3 class="methodTitle">isBehind</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Compares the current entity's 3d bounds to the passed entity and determines if the current entity is "behind" the passed one. If an entity is behind another, it is drawn first during the scenegraph render phase.</div>
@@ -841,7 +886,8 @@ console.log(aabb.height);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">mouseEventsActive</h3>
+</div><a name="mouseEventsActive"></a>
+<h3 class="methodTitle">mouseEventsActive</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Get / set the flag determining if this entity will respond to mouse interaction or not. When you set a mouse* event e.g. mouseUp, mouseOver etc this flag will automatically be reset to true.</div>
@@ -874,7 +920,8 @@ console.log(aabb.height);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">ignoreCameraComposite</h3>
+</div><a name="ignoreCameraComposite"></a>
+<h3 class="methodTitle">ignoreCameraComposite</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Sets the _ignoreCamera internal flag to the value passed for this and all child entities down the scenegraph.</div>
@@ -883,7 +930,8 @@ console.log(aabb.height);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">newFrame</h3>
+</div><a name="newFrame"></a>
+<h3 class="methodTitle">newFrame</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Determines if the frame alternator value for this entity matches the engine's frame alternator value. The entity's frame alternator value will be set to match the engine's after each call to the entity.tick() method so the return value of this method can be used to determine if the tick() method has already been run for this entity.  This is useful if you have multiple viewports which will cause the entity tick() method to fire once for each viewport but you only want to execute update code such as movement etc on the first time the tick() method is called.</div>
@@ -900,7 +948,8 @@ console.log(aabb.height);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">_transformContext</h3>
+</div><a name="_transformContext"></a>
+<h3 class="methodTitle">_transformContext</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Sets the canvas context transform properties to match the the game object's current transform values.</div>
@@ -921,7 +970,8 @@ entity._transformContext(ctx);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">update</h3>
+</div><a name="update"></a>
+<h3 class="methodTitle">update</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Processes the updates required each render frame. Any code in the update() method will be called ONCE for each render frame BEFORE the tick() method. This differs from the tick() method in that the tick method can be called multiple times during a render frame depending on how many viewports your simulation is being rendered to, whereas the update() method is only called once. It is therefore the perfect place to put code that will control your entity's motion, AI etc.</div>
@@ -930,7 +980,8 @@ entity._transformContext(ctx);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to render to.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">tick</h3>
+</div><a name="tick"></a>
+<h3 class="methodTitle">tick</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Processes the actions required each render frame.</div>
@@ -939,7 +990,8 @@ entity._transformContext(ctx);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to render to.</li><li>{<span class="argType">Boolean</span>}<span class="argName">dontTransform</span> If set to true, the tick method will not transform the context based on the entity's matrices. This is useful if you have extended the class and want to process down the inheritance chain but have already transformed the entity in a previous overloaded method.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_renderEntity</h3>
+</div><a name="_renderEntity"></a>
+<h3 class="methodTitle">_renderEntity</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Handles calling the texture.render() method if a texture is applied to the entity. This part of the tick process has been abstracted to allow it to be overridden by an extending class.</div>
@@ -948,7 +1000,8 @@ entity._transformContext(ctx);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to render the entity to.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_renderCache</h3>
+</div><a name="_renderCache"></a>
+<h3 class="methodTitle">_renderCache</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Draws the cached off-screen canvas image data to the passed canvas context.</div>
@@ -957,7 +1010,8 @@ entity._transformContext(ctx);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2D</span>}<span class="argName">ctx</span> The canvas context to render the entity to.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_transformPoint</h3>
+</div><a name="_transformPoint"></a>
+<h3 class="methodTitle">_transformPoint</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Transforms a point by the entity's parent world matrix and it's own local matrix transforming the point to this entity's world space.</div>
@@ -977,16 +1031,28 @@ console.log(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">_mouseInAabb</h3>
+</div><a name="_transformPoints"></a>
+<h3 class="methodTitle">_transformPoints</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Helper method to transform an array of points using _transformPoint.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_transformPoints</span>({<span class="argType">Array</span>} <span class="argName">points</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">points</span> The points array to transform.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_mouseInTrigger"></a>
+<h3 class="methodTitle">_mouseInTrigger</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Checks mouse input types and fires the correct mouse event handler. This is an internal method that should never be called externally.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">_mouseInAabb</span>({<span class="argType">Object</span>} <span class="argName">evc</span>, {<span class="argType">Object</span>} <span class="argName">data</span>)</div>
+    <div class="methodDefinition"><span class="methodName">_mouseInTrigger</span>({<span class="argType">Object</span>} <span class="argName">evc</span>, {<span class="argType">Object</span>} <span class="argName">data</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">evc</span> The input component event control object.</li><li>{<span class="argType">Object</span>}<span class="argName">data</span> Data passed by the input component into the new event.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_stringify</h3>
+</div><a name="_stringify"></a>
+<h3 class="methodTitle">_stringify</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Generates a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>
@@ -995,7 +1061,8 @@ console.log(point);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">String</span>} The string code fragment that will reproduce this entity when evaluated.</div>
     
-</div><h3 class="methodTitle">destroy</h3>
+</div><a name="destroy"></a>
+<h3 class="methodTitle">destroy</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Destroys the entity by removing it from the scenegraph, calling destroy() on any child entities and removing any active event listeners for the entity. Once an entity has been destroyed it's this._alive flag is also set to false.</div>
@@ -1012,7 +1079,8 @@ console.log(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">mouseMove</h3>
+</div><a name="mouseMove"></a>
+<h3 class="methodTitle">mouseMove</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the callback that is fired when a mouse move event is triggered.</div>
@@ -1039,7 +1107,8 @@ console.log(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">mouseMoveOff</h3>
+</div><a name="mouseMoveOff"></a>
+<h3 class="methodTitle">mouseMoveOff</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Removes the callback that is fired when a mouse move event is triggered.</div>
@@ -1048,7 +1117,8 @@ console.log(point);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">mouseOver</h3>
+</div><a name="mouseOver"></a>
+<h3 class="methodTitle">mouseOver</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the callback that is fired when a mouse over event is triggered.</div>
@@ -1075,7 +1145,8 @@ console.log(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">mouseOverOff</h3>
+</div><a name="mouseOverOff"></a>
+<h3 class="methodTitle">mouseOverOff</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Removes the callback that is fired when a mouse over event is triggered.</div>
@@ -1084,7 +1155,8 @@ console.log(point);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">mouseOut</h3>
+</div><a name="mouseOut"></a>
+<h3 class="methodTitle">mouseOut</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the callback that is fired when a mouse out event is triggered.</div>
@@ -1111,7 +1183,8 @@ console.log(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">mouseOutOff</h3>
+</div><a name="mouseOutOff"></a>
+<h3 class="methodTitle">mouseOutOff</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Removes the callback that is fired when a mouse out event is triggered.</div>
@@ -1120,7 +1193,8 @@ console.log(point);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">mouseUp</h3>
+</div><a name="mouseUp"></a>
+<h3 class="methodTitle">mouseUp</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the callback that is fired when a mouse up event is triggered.</div>
@@ -1147,7 +1221,8 @@ console.log(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">mouseUpOff</h3>
+</div><a name="mouseUpOff"></a>
+<h3 class="methodTitle">mouseUpOff</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Removes the callback that is fired when a mouse up event is triggered.</div>
@@ -1156,7 +1231,8 @@ console.log(point);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">mouseDown</h3>
+</div><a name="mouseDown"></a>
+<h3 class="methodTitle">mouseDown</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the callback that is fired when a mouse down event is triggered.</div>
@@ -1183,7 +1259,8 @@ console.log(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">mouseDownOff</h3>
+</div><a name="mouseDownOff"></a>
+<h3 class="methodTitle">mouseDownOff</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Removes the callback that is fired when a mouse down event is triggered if the listener was registered via the mouseDown() method.</div>
@@ -1192,7 +1269,18 @@ console.log(point);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_handleMouseIn</h3>
+</div><a name="mouseEventTrigger"></a>
+<h3 class="methodTitle">mouseEventTrigger</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the shape / polygon that the mouse events are triggered against. There are two options, 'aabb' and 'isoBounds'. The default is 'aabb'.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">mouseEventTrigger</span>({<span class="argType"></span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="_handleMouseIn"></a>
+<h3 class="methodTitle">_handleMouseIn</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Handler method that determines which mouse-move event to fire, a mouse-over or a mouse-move.</div>
@@ -1201,7 +1289,8 @@ console.log(point);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_handleMouseOut</h3>
+</div><a name="_handleMouseOut"></a>
+<h3 class="methodTitle">_handleMouseOut</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Handler method that determines if a mouse-out event should be fired.</div>
@@ -1210,7 +1299,8 @@ console.log(point);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_handleMouseUp</h3>
+</div><a name="_handleMouseUp"></a>
+<h3 class="methodTitle">_handleMouseUp</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Handler method that determines if a mouse-up event should be fired.</div>
@@ -1219,7 +1309,8 @@ console.log(point);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_handleMouseDown</h3>
+</div><a name="_handleMouseDown"></a>
+<h3 class="methodTitle">_handleMouseDown</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Handler method that determines if a mouse-down event should be fired.</div>
@@ -1228,7 +1319,8 @@ console.log(point);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">translateBy</h3>
+</div><a name="translateBy"></a>
+<h3 class="methodTitle">translateBy</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Translates the entity by adding the passed values to the current translation values.</div>
@@ -1245,7 +1337,8 @@ console.log(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">translateTo</h3>
+</div><a name="translateTo"></a>
+<h3 class="methodTitle">translateTo</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Translates the entity to the passed values.</div>
@@ -1262,7 +1355,8 @@ console.log(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">translateToPoint</h3>
+</div><a name="translateToPoint"></a>
+<h3 class="methodTitle">translateToPoint</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Translates the entity to the passed point.</div>
@@ -1282,7 +1376,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">translate</h3>
+</div><a name="translate"></a>
+<h3 class="methodTitle">translate</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets the translate accessor object.</div>
@@ -1299,7 +1394,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">_translateAccessorX</h3>
+</div><a name="_translateAccessorX"></a>
+<h3 class="methodTitle">_translateAccessorX</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">The translate accessor method for the x axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.translate().</div>
@@ -1308,7 +1404,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">_translateAccessorY</h3>
+</div><a name="_translateAccessorY"></a>
+<h3 class="methodTitle">_translateAccessorY</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">The translate accessor method for the y axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.translate().</div>
@@ -1317,7 +1414,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">_translateAccessorZ</h3>
+</div><a name="_translateAccessorZ"></a>
+<h3 class="methodTitle">_translateAccessorZ</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">The translate accessor method for the z axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.translate().</div>
@@ -1326,7 +1424,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">rotateBy</h3>
+</div><a name="rotateBy"></a>
+<h3 class="methodTitle">rotateBy</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Rotates the entity by adding the passed values to the current rotation values.</div>
@@ -1343,7 +1442,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">rotateTo</h3>
+</div><a name="rotateTo"></a>
+<h3 class="methodTitle">rotateTo</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Rotates the entity to the passed values.</div>
@@ -1360,7 +1460,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">rotate</h3>
+</div><a name="rotate"></a>
+<h3 class="methodTitle">rotate</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets the translate accessor object.</div>
@@ -1377,7 +1478,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">_rotateAccessorX</h3>
+</div><a name="_rotateAccessorX"></a>
+<h3 class="methodTitle">_rotateAccessorX</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">The rotate accessor method for the x axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.rotate().</div>
@@ -1386,7 +1488,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">_rotateAccessorY</h3>
+</div><a name="_rotateAccessorY"></a>
+<h3 class="methodTitle">_rotateAccessorY</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">The rotate accessor method for the y axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.rotate().</div>
@@ -1395,7 +1498,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">_rotateAccessorZ</h3>
+</div><a name="_rotateAccessorZ"></a>
+<h3 class="methodTitle">_rotateAccessorZ</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">The rotate accessor method for the z axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.rotate().</div>
@@ -1404,7 +1508,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">scaleBy</h3>
+</div><a name="scaleBy"></a>
+<h3 class="methodTitle">scaleBy</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Scales the entity by adding the passed values to the current scale values.</div>
@@ -1421,7 +1526,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">scaleTo</h3>
+</div><a name="scaleTo"></a>
+<h3 class="methodTitle">scaleTo</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Scale the entity to the passed values.</div>
@@ -1438,7 +1544,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">scale</h3>
+</div><a name="scale"></a>
+<h3 class="methodTitle">scale</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets the scale accessor object.</div>
@@ -1455,7 +1562,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">_scaleAccessorX</h3>
+</div><a name="_scaleAccessorX"></a>
+<h3 class="methodTitle">_scaleAccessorX</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">The scale accessor method for the x axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.scale().</div>
@@ -1464,7 +1572,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">_scaleAccessorY</h3>
+</div><a name="_scaleAccessorY"></a>
+<h3 class="methodTitle">_scaleAccessorY</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">The scale accessor method for the y axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.scale().</div>
@@ -1473,7 +1582,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">_scaleAccessorZ</h3>
+</div><a name="_scaleAccessorZ"></a>
+<h3 class="methodTitle">_scaleAccessorZ</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">The scale accessor method for the z axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.scale().</div>
@@ -1482,7 +1592,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">originBy</h3>
+</div><a name="originBy"></a>
+<h3 class="methodTitle">originBy</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Sets the origin of the entity by adding the passed values to the current origin values.</div>
@@ -1499,7 +1610,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">originTo</h3>
+</div><a name="originTo"></a>
+<h3 class="methodTitle">originTo</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Set the origin of the entity to the passed values.</div>
@@ -1516,7 +1628,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">origin</h3>
+</div><a name="origin"></a>
+<h3 class="methodTitle">origin</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets the origin accessor object.</div>
@@ -1533,7 +1646,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">_originAccessorX</h3>
+</div><a name="_originAccessorX"></a>
+<h3 class="methodTitle">_originAccessorX</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">The origin accessor method for the x axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.origin().</div>
@@ -1542,7 +1656,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">_originAccessorY</h3>
+</div><a name="_originAccessorY"></a>
+<h3 class="methodTitle">_originAccessorY</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">The origin accessor method for the y axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.origin().</div>
@@ -1551,7 +1666,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">_originAccessorZ</h3>
+</div><a name="_originAccessorZ"></a>
+<h3 class="methodTitle">_originAccessorZ</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">The origin accessor method for the z axis. This method is not called directly but is accessed through the accessor object obtained by calling entity.origin().</div>
@@ -1560,7 +1676,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The new value to apply to the co-ordinate.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">updateTransform</h3>
+</div><a name="updateTransform"></a>
+<h3 class="methodTitle">updateTransform</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Checks the current transform values against the previous ones. If any value is different, the appropriate method is called which will update the transformation matrix accordingly.</div>
@@ -1569,7 +1686,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">disableInterpolation</h3>
+</div><a name="disableInterpolation"></a>
+<h3 class="methodTitle">disableInterpolation</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the disable interpolation flag. If set to true then stream data being received by the client will not be interpolated and will be instantly assigned instead. Useful if your entity's transformations should not be interpolated over time.</div>
@@ -1578,7 +1696,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">streamSections</h3>
+</div><a name="streamSections"></a>
+<h3 class="methodTitle">streamSections</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the array of sections that this entity will encode into its stream data.</div>
@@ -1595,7 +1714,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">streamSectionData</h3>
+</div><a name="streamSectionData"></a>
+<h3 class="methodTitle">streamSectionData</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the data for the specified data section id. This method is usually not called directly and instead is part of the network stream system. General use case is to write your own custom streamSectionData method in a class that extends IgeEntity so that you can control the data that the entity will send and receive over the network stream.</div>
@@ -1604,7 +1724,8 @@ entity.translateToPoint(point);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">sectionId</span> A string identifying the section to handle data get / set for.</li><li>{<span class="argType">*</span>}<span class="argName">data</span> If present, this is the data that has been sent from the server to the client for this entity.</li><li>{<span class="argType">Boolean</span>}<span class="argName">bypassTimeStream</span> If true, will assign transform directly to entity instead of adding the values to the time stream.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when a data argument is passed to allow method chaining or the current value if no data argument is specified.</div>
     
-</div><h3 class="methodTitle">streamMode</h3>
+</div><a name="streamMode"></a>
+<h3 class="methodTitle">streamMode</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the stream mode that the stream system will use when handling pushing data updates to connected clients.</div>
@@ -1637,7 +1758,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">streamControl</h3>
+</div><a name="streamControl"></a>
+<h3 class="methodTitle">streamControl</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the stream control callback function that will be called each time the entity tick method is called and stream-able data is updated.</div>
@@ -1668,7 +1790,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">streamSyncInterval</h3>
+</div><a name="streamSyncInterval"></a>
+<h3 class="methodTitle">streamSyncInterval</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the stream sync interval. This value is in milliseconds and cannot be lower than 16. It will determine how often data from this entity is added to the stream queue.</div>
@@ -1693,7 +1816,8 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">streamFloatPrecision</h3>
+</div><a name="streamFloatPrecision"></a>
+<h3 class="methodTitle">streamFloatPrecision</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the precision by which floating-point values will be encoded and sent when packaged into stream data.</div>
@@ -1716,7 +1840,8 @@ entity.streamFloatPrecision(2);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">streamSync</h3>
+</div><a name="streamSync"></a>
+<h3 class="methodTitle">streamSync</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Queues stream data for this entity to be sent to the specified client id or array of client ids.</div>
@@ -1725,16 +1850,40 @@ entity.streamFloatPrecision(2);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">clientId</span> An array of string IDs of each client to send the stream data to.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">IgeEntity</span>} "this".</div>
     
-</div><h3 class="methodTitle">streamCreateData</h3>
+</div><a name="streamCreateData"></a>
+<h3 class="methodTitle">streamCreateData</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Override this method if your entity should send data through to the client when it is being created on the client for the first time through the network stream. The data will be provided as the first argument in the constructor call to the entity class so you should expect to recieve it as such e.g. var MyNewClass = IgeEntity.extend({ classId: 'MyNewClass',  // Define the init with the parameter to receive the // data you return in the streamCreateData() method init: function (myCreateData) { } });  Valid return values must not include circular references!</div>
+    <div class="methodDesc">Override this method if your entity should send data through to the client when it is being created on the client for the first time through the network stream. The data will be provided as the first argument in the constructor call to the entity class so you should expect to receive it as per this example:</div>
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">streamCreateData</span>()</div>
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">streamEmitCreated</h3>
+					<div class="methodExample">
+						<div class="content"><h1>Using and Receiving Stream Create Data</h1>
+
+<pre><code>var MyNewClass = IgeEntity.extend({
+    classId: 'MyNewClass',
+
+    // Define the init with the parameter to receive the
+    // data you return in the streamCreateData() method
+    init: function (myCreateData) {
+        this._myData = myCreateData;
+    },
+
+    streamCreateData: function () {
+        return this._myData;
+    }
+});
+</code></pre>
+
+<p>Valid return values must not include circular references!</p>
+</div>
+					</div>
+				
+</div><a name="streamEmitCreated"></a>
+<h3 class="methodTitle">streamEmitCreated</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the stream emit created flag. If set to true this entity emit a "streamCreated" event when it is created by the stream, but after the id and initial transform are set.</div>
@@ -1743,7 +1892,8 @@ entity.streamFloatPrecision(2);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">_streamSync</h3>
+</div><a name="_streamSync"></a>
+<h3 class="methodTitle">_streamSync</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Asks the stream system to queue the stream data to the specified client id or array of ids.</div>
@@ -1752,7 +1902,8 @@ entity.streamFloatPrecision(2);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">recipientArr</span> The array of ids of the client(s) to queue stream data for. The stream data being queued is returned by a call to this._streamData().</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">streamForceUpdate</h3>
+</div><a name="streamForceUpdate"></a>
+<h3 class="methodTitle">streamForceUpdate</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Forces the stream to push this entity's full stream data on the next stream sync regardless of what clients have received in the past. This should only be used when required rather than every tick as it will reduce the overall efficiency of the stream if used every tick.</div>
@@ -1761,7 +1912,8 @@ entity.streamFloatPrecision(2);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">streamCreate</h3>
+</div><a name="streamCreate"></a>
+<h3 class="methodTitle">streamCreate</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Issues a create entity command to the passed client id or array of ids. If no id is passed it will issue the command to all connected clients. If using streamMode(1) this method is called automatically.</div>
@@ -1794,7 +1946,8 @@ entity.streamFloatPrecision(2);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">streamDestroy</h3>
+</div><a name="streamDestroy"></a>
+<h3 class="methodTitle">streamDestroy</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Issues a destroy entity command to the passed client id or array of ids. If no id is passed it will issue the command to all connected clients. If using streamMode(1) this method is called automatically.</div>
@@ -1827,7 +1980,8 @@ entity.streamFloatPrecision(2);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">_streamData</h3>
+</div><a name="_streamData"></a>
+<h3 class="methodTitle">_streamData</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Generates and returns the current stream data for this entity. The data will usually include only properties that have changed since the last time the stream data was generated. The returned data is a string that has been compressed in various ways to reduce network overhead during transmission.</div>
@@ -1836,7 +1990,8 @@ entity.streamFloatPrecision(2);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">String</span>} The string representation of the stream data for this entity.</div>
     
-</div><h3 class="methodTitle">interpolateValue</h3>
+</div><a name="interpolateValue"></a>
+<h3 class="methodTitle">interpolateValue</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Calculates the current value based on the time along the value range.</div>
@@ -1845,7 +2000,8 @@ entity.streamFloatPrecision(2);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">startValue</span> The value that the interpolation started from.</li><li>{<span class="argType">Number</span>}<span class="argName">endValue</span> The target value to be interpolated to.</li><li>{<span class="argType">Number</span>}<span class="argName">startTime</span> The time the interpolation started.</li><li>{<span class="argType">Number</span>}<span class="argName">currentTime</span> The current time.</li><li>{<span class="argType">Number</span>}<span class="argName">endTime</span> The time the interpolation will end.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Number</span>} The interpolated value.</div>
     
-</div><h3 class="methodTitle">_processInterpolate</h3>
+</div><a name="_processInterpolate"></a>
+<h3 class="methodTitle">_processInterpolate</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Processes the time stream for the entity.</div>

@@ -89,7 +89,7 @@ var IgeRect = IgeClass.extend({
 	 * @return {Boolean}
 	 */
 	pointInside: function (point) {
-		return x >= this.x && point.y > this.y && point.x <= this.x + this.width && point.y <= this.y + this.height;
+		return point.x >= this.x && point.y > this.y && point.x <= this.x + this.width && point.y <= this.y + this.height;
 	},
 
 	/**
@@ -121,6 +121,37 @@ var IgeRect = IgeClass.extend({
 		}
 
 		return false;
+	},
+	
+	/**
+	 * Multiplies this rect's data by the values specified
+	 * and returns a new IgeRect whose values are the result.
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
+	 * @return {*}
+	 */
+	multiply: function (x1, y1, x2, y2) {
+		return new IgeRect(this.x * x1, this.y * y1, this.width * x2, this.height * y2);
+	},
+	
+	/**
+	 * Multiplies this rects's data by the values specified and
+	 * overwrites the previous values with the result.
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
+	 * @return {*}
+	 */
+	thisMultiply: function (x1, y1, x2, y2) {
+		this.x *= x1;
+		this.y *= y1;
+		this.width *= x2;
+		this.height *= y2;
+
+		return this;
 	},
 
 	/**

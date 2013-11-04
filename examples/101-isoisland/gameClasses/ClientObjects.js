@@ -8,6 +8,7 @@ var ClientObjects = {
 
 			// Setup the 3d bounds container (this)
 			this.isometric(true)
+				.mouseEventTrigger('isoBounds')
 				.mount(parent)
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
 				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
@@ -37,6 +38,7 @@ var ClientObjects = {
 
 			// Setup the 3d bounds container (this)
 			this.isometric(true)
+				.mouseEventTrigger('isoBounds')
 				.mount(parent)
 				.size3d(3 * parent._tileWidth, 4 * parent._tileHeight, parent._tileHeight * 0.8)
 				.translateToTile((tileX) + 1, (tileY) + 1.5, 0)
@@ -66,6 +68,7 @@ var ClientObjects = {
 
 			// Setup the 3d bounds container (this)
 			this.isometric(true)
+				.mouseEventTrigger('isoBounds')
 				.mount(parent)
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
 				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
@@ -105,6 +108,7 @@ var ClientObjects = {
 
 			// Set the skyscraper entity details
 			this.isometric(true)
+				.mouseEventTrigger('isoBounds')
 				.isometricMounts(true)
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
 				.mouseOver(function () { this.highlight(true); this.drawBounds(true); this.drawBoundsData(true); })
@@ -119,6 +123,7 @@ var ClientObjects = {
 			// Create the base container
 			this.data('baseRef', new IgeEntity()
 				.isometric(true)
+				.mouseEventTrigger('isoBounds')
 				.mount(this)
 				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
 				.translateTo(0, 0, 0)
@@ -200,6 +205,7 @@ var ClientObjects = {
 				// Create the floor container
 				this.data('floorRef')[floor] = new IgeEntity()
 					.isometric(true)
+					.mouseEventTrigger('isoBounds')
 					.layer(floor)
 					.mount(this)
 					.size3d(2 * this._parent._tileWidth, 2 * this._parent._tileHeight, 25 * (this._parent._tileWidth / 40))
@@ -330,6 +336,7 @@ var ClientObjects = {
 				// Create the crane
 				this.data('craneRef', new IgeEntity()
 					.isometric(true)
+					.mouseEventTrigger('isoBounds')
 					.layer(this.data('floors') + 1)
 					.mount(this)
 					.size3d(20, 20, 55)

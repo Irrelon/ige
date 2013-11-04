@@ -15,6 +15,8 @@ var Client = IgeClass.extend({
 		gameTexture[1] = new IgeTexture('../assets/textures/particles/star2.png');
 		gameTexture[2] = new IgeTexture('../assets/textures/particles/star3.png');
 		gameTexture[3] = new IgeTexture('../assets/textures/particles/star4.png');
+		
+		ige.addComponent(IgeEditorComponent);
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {

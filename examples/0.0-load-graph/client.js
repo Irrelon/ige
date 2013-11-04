@@ -25,20 +25,8 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					// Create a base the scene to add further scenegraph
-					// items to
-					self.baseScene = new IgeScene2d()
-						.id('baseScene');
-			
-					// Create the main viewport and set the scene
-					// it will "look" at as the new scene1 we just
-					// created above
-					self.vp1 = new IgeViewport()
-						.id('vp1')
-						.autoSize(true)
-						.scene(self.baseScene)
-						.drawBounds(true)
-						.mount(ige);
+					// Load the base scene data
+					ige.addGraph('IgeBaseScene');
 					
 					// Add all the items in Scene1 to the scenegraph
 					// (see gameClasses/Scene1.js :: addGraph() to see

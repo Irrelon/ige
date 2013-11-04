@@ -4,18 +4,22 @@ var Client = IgeClass.extend({
 		ige.showStats(1);
 
 		// Load our textures
-		var self = this,
-			gameTexture = [];
-
-		this.obj = [];
-
-		ige.input.debug(true);
-
-		// Load the fairy texture and store it in the gameTexture array
-		gameTexture[0] = new IgeTexture('../ige/examples/assets/textures/sprites/fairy.png');
-
-		// Load a smart texture
-		gameTexture[1] = new IgeTexture('../ige/examples/assets/textures/smartTextures/simpleBox.js');
+		var self = this;
+		this.gameTextures = {};
+		
+		// Load a game texture here
+		//this.gameTextures.myTexture = new IgeTexture('./assets/somePathToImage.png');
+		
+		///////////////////////////////////////////////////////////////////////////////
+		// *** PLEASE READ - BLANK PROJECT RUNNING DETAILS ***
+		///////////////////////////////////////////////////////////////////////////////
+		// The engine will wait for your textures to load before it starts because
+		// of the code below waiting for an "on('texturesLoaded')" before executing.
+		// The problem is there are no textures loaded because this is a blank project
+		// so if you run this from the index.html the loading symbol will spin forever.
+		// I've added an example line (line 11) to show how to load at least one
+		// texture into memory but you'll have to provide an image file for it :)
+		///////////////////////////////////////////////////////////////////////////////
 
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
@@ -26,54 +30,10 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1');
-
-					// Create the main viewport and set the scene
-					// it will "look" at as the new scene1 we just
-					// created above
-					self.vp1 = new IgeViewport()
-						.id('vp1')
-						.autoSize(true)
-						.scene(self.scene1)
-						.drawBounds(true)
-						.mount(ige);
-
-					// Create an entity and mount it to the scene
-					// (the class Rotator is declared in ./gameClasses/Rotator.js)
-					self.obj[0] = new Rotator()
-						.id('fairy1')
-						.depth(1)
-						.width(100)
-						.height(100)
-						.texture(gameTexture[0])
-						.translateTo(0, 0, 0)
-						.mount(self.scene1);
-
-					// Create a second rotator entity and mount
-					// it to the first one at 0, 50 relative to the
-					// parent
-					self.obj[1] = new Rotator()
-						.id('fairy2')
-						.depth(1)
-						.width(50)
-						.height(50)
-						.texture(gameTexture[0])
-						.translateTo(0, 50, 0)
-						.mount(self.obj[0]);
-
-					// Create a third rotator entity and mount
-					// it to the first on at 0, -50 relative to the
-					// parent, but assign it a smart texture!
-					self.obj[2] = new Rotator()
-						.id('simpleBox')
-						.depth(1)
-						.width(50)
-						.height(50)
-						.texture(gameTexture[1])
-						.translateTo(0, -50, 0)
-						.mount(self.obj[0]);
+					// Add base scene data
+					ige.addGraph('IgeBaseScene');
+					
+					// CREATE SOME ENTITIES AND WHOTNOT HERE
 				}
 			});
 		});

@@ -35,6 +35,48 @@ var IgePoint = IgeClass.extend({
 	},
 
 	/**
+	 * Gets / sets the x value for the point.
+	 * @param {Number=} val The value to set.
+	 * @returns {*}
+	 */
+	x: function (val) {
+		if (val !== undefined) {
+			this.x = val;
+			return this;
+		}
+		
+		return this.x;
+	},
+	
+	/**
+	 * Gets / sets the y value for the point.
+	 * @param {Number=} val The value to set.
+	 * @returns {*}
+	 */
+	y: function (val) {
+		if (val !== undefined) {
+			this.y = val;
+			return this;
+		}
+		
+		return this.y;
+	},
+	
+	/**
+	 * Gets / sets the z value for the point.
+	 * @param {Number=} val The value to set.
+	 * @returns {*}
+	 */
+	z: function (val) {
+		if (val !== undefined) {
+			this.z = val;
+			return this;
+		}
+		
+		return this.z;
+	},
+
+	/**
 	 * Gets / sets the floor mode of this point. If set to true the point's
 	 * data will be mathematically floored when they are assigned.
 	 * @param val
@@ -52,11 +94,25 @@ var IgePoint = IgeClass.extend({
 	/**
 	 * Compares this point's x, y, z data with the passed point and returns
 	 * true if they are the same and false if any is different.
-	 * @param point
+	 * @param {IgePoint} point The point to compare data with.
 	 * @return {Boolean}
 	 */
 	compare: function (point) {
 		return point && this.x === point.x && this.y === point.y && this.z === point.z;
+	},
+
+	/**
+	 * Copies the x, y, z data from the passed point and overwrites this
+	 * point's data with those values.
+	 * @param {IgePoint} point The point to copy values from.
+	 * @returns {*}
+	 */
+	copy: function (point) {
+		this.x = point.x;
+		this.y = point.y;
+		this.z = point.z;
+		
+		return this;
 	},
 
 	/**

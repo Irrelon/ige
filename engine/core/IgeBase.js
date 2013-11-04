@@ -9,7 +9,7 @@ ige = null;
 // For example, to tag version 1.1.2 on 25th April 2013
 // as the third revision of the day:
 // v1.1.2@2013-04-25.003
-igeVersion = 'v1.2.1@13-09-25.001';
+igeVersion = 'v1.3.0@2013-10-31.001';
 
 // Define the global storage object for classes
 igeClassStore = {};
@@ -160,6 +160,30 @@ Array.prototype.pull = function (item) {
 /**
  * Make property non-enumerable.
  */
+Object.defineProperty(Array.prototype, 'pushUnique', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
+
+/**
+ * Adds an item to an array, only if it does not already exist in the array.
+ * @param item
+ * @return {Boolean} True if the item was added, false if it already exists.
+ */
+Array.prototype.pushUnique = function (item) {
+	var index = this.indexOf(item);
+	if (index === -1) {
+		this.push(item);
+		return true;
+	}
+	
+	return false;
+};
+
+/**
+ * Make property non-enumerable.
+ */
 Object.defineProperty(Array.prototype, 'each', {
 	enumerable:false,
 	writable:true,
@@ -292,6 +316,22 @@ Object.defineProperty(Math, 'PI180R', {
  * @type {Number}
  */
 Math.PI180R = 180 / Math.PI;
+
+/**
+ * Make property non-enumerable.
+ */
+Object.defineProperty(Math, 'toIso', {
+	enumerable:false,
+	writable:true,
+	configurable:true
+});
+
+Math.toIso = function (x, y, z) {
+	var sx = x - y,
+		sy = (-z) * 1.2247 + (x + y) * 0.5;
+
+	return {x: sx, y: sy};
+};
 
 /**
  * Make property non-enumerable.

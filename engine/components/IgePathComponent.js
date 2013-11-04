@@ -273,7 +273,7 @@ var IgePathComponent = IgeEventingClass.extend({
 				this.log('Cannot start path traversal on entity because it is not mounted to a tile or texture map so it\'s parent does not have _tileWidth and _tileHeight property values. Either set these values or mount to a map.', 'error');
 			} else {
 				/* DEXCLUDE */
-				this.log('Starting path traversal...');
+				//this.log('Starting path traversal...');
 				/* DEXCLUDE */
 				// Check we have some paths to traverse!
 				if (this._paths.length) {
@@ -300,7 +300,7 @@ var IgePathComponent = IgeEventingClass.extend({
 					this._active = true;
 					this.emit('started', this._entity);
 					/* DEXCLUDE */
-					this.log('Traversal started (active: ' + this._active + ')');
+					//this.log('Traversal started (active: ' + this._active + ')');
 					/* DEXCLUDE */
 				} else {
 					this.log('Cannot start path because no paths have been added!', 'warning');

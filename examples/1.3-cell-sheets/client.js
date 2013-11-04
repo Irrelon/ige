@@ -25,19 +25,8 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1');
-
-					// Create the main viewport and set the scene
-					// it will "look" at as the new scene1 we just
-					// created above
-					self.vp1 = new IgeViewport()
-						.id('vp1')
-						.autoSize(true)
-						.scene(self.scene1)
-						.drawBounds(true)
-						.mount(ige);
+					// Load the base scene data
+					ige.addGraph('IgeBaseScene');
 
 					// Create an entity and mount it to the scene
 					self.obj[0] = new IgeEntity()
@@ -50,7 +39,7 @@ var Client = IgeClass.extend({
 						// Set the entity's width and height to match the cell we are using
 						.dimensionsFromCell()
 						.translateTo(0, 0, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[1] = new IgeEntity()
 						.id('entity2')

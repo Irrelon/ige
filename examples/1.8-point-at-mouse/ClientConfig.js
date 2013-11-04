@@ -1,6 +1,7 @@
 var igeClientConfig = {
 	include: [
 		/* Your custom game JS scripts */
+		
 		'./gameClasses/ClientNetworkEvents.js',
 		'./gameClasses/MouseAim.js',
 

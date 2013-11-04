@@ -18,7 +18,8 @@
 	<div class="content"><a href="IgeEventingClass.html">IgeEventingClass</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3 class="methodTitle">alive</h3>
+<h2>Methods</h2><a name="alive"></a>
+<h3 class="methodTitle">alive</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Determines if the object is alive or not. The alive value is automatically set to false when the object's destroy() method is called. Useful for checking if an object that you are holding a reference to has been destroyed.</div>
@@ -45,7 +46,8 @@ entity.alive(true);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">managed</h3>
+</div><a name="managed"></a>
+<h3 class="methodTitle">managed</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / set the managed mode from 0 to 2. 0 = off, 1 = static, 2 = dynamic.</div>
@@ -54,7 +56,8 @@ entity.alive(true);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> Set to 0 to switch off managed mode, 1 to set to static managed mode or 2 to dynamic managed mode. When in a managed mode and when the parent of this entity has an entity manager component enabled, the entity will be checked to see if it is inside the visible area of a viewport. If it is deemed not to be in a visible area (via it's AABB non-intersection with viewport view area) then it will either be un-mounted from the parent (mode 1) or marked as no longer in view (mode 2). Mode 2 in view = false will cause the entity to no longer be depth-sorted or rendered but will still have it's update() method called each frame allowing logic processing to occur as normal. The default managed mode is 1.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">id</h3>
+</div><a name="id"></a>
+<h3 class="methodTitle">id</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the current object id. If no id is currently assigned and no id is passed to the method, it will automatically generate and assign a new id as a 16 character hexadecimal value typed as a string.</div>
@@ -90,7 +93,8 @@ entity.id('myNewId');
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">category</h3>
+</div><a name="category"></a>
+<h3 class="methodTitle">category</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the arbitrary category name that the object belongs to.</div>
@@ -153,7 +157,8 @@ console.log(entity.category());
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">group</h3>
+</div><a name="group"></a>
+<h3 class="methodTitle">group</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">DEPRECIATED - Use category() instead. A warning method to help developers move to the new groups system.</div>
@@ -162,7 +167,8 @@ console.log(entity.category());
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">addGroup</h3>
+</div><a name="addGroup"></a>
+<h3 class="methodTitle">addGroup</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Adds this entity to a group or groups passed as arguments.</div>
@@ -207,7 +213,8 @@ entity.addGroup(['g1', 'g2', 'g3'], ['g4', 'g5']);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">inGroup</h3>
+</div><a name="inGroup"></a>
+<h3 class="methodTitle">inGroup</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Checks if the entity is in the group or array of group names passed.</div>
@@ -246,7 +253,8 @@ console.log(entity.inGroup(['g1, 'g3'], true);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">inAllGroups</h3>
+</div><a name="inAllGroups"></a>
+<h3 class="methodTitle">inAllGroups</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Checks if the entity is in the specified group or array of groups. If multiple group names are passed, as an array the method will only return true if the entity is in ALL the passed groups.</div>
@@ -274,7 +282,8 @@ console.log(entity.inAllGroups(['g1', 'g2']));
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">inAnyGroup</h3>
+</div><a name="inAnyGroup"></a>
+<h3 class="methodTitle">inAnyGroup</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Checks if the entity is in the specified group or array of group names. If multiple group names are passed as an array, the method will return true if the entity is in ANY of the the passed groups.</div>
@@ -299,7 +308,8 @@ console.log(entity.inAnyGroup(['g3', 'g1']));
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">groups</h3>
+</div><a name="groups"></a>
+<h3 class="methodTitle">groups</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets an array of all groups this entity belongs to.</div>
@@ -320,7 +330,8 @@ console.log(entity.groups());
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">groupCount</h3>
+</div><a name="groupCount"></a>
+<h3 class="methodTitle">groupCount</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets the number of groups this entity belongs to.</div>
@@ -341,7 +352,8 @@ console.log(entity.groupCount());
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">removeGroup</h3>
+</div><a name="removeGroup"></a>
+<h3 class="methodTitle">removeGroup</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Removes the entity from the group or groups passed. This method accepts multiple arguments and will remove the entity from all groups passed as arguments.</div>
@@ -422,7 +434,8 @@ console.log(entity.groups());
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">removeAllGroups</h3>
+</div><a name="removeAllGroups"></a>
+<h3 class="methodTitle">removeAllGroups</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Removes the entity from all groups it is a member of.</div>
@@ -449,7 +462,8 @@ console.log(entity.groups());
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">addBehaviour</h3>
+</div><a name="addBehaviour"></a>
+<h3 class="methodTitle">addBehaviour</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Adds a behaviour to the object's active behaviour list.</div>
@@ -477,7 +491,8 @@ console.log(entity._somePropertyOfTheEntity);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">removeBehaviour</h3>
+</div><a name="removeBehaviour"></a>
+<h3 class="methodTitle">removeBehaviour</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Removes a behaviour to the object's active behaviour list by it's id.</div>
@@ -503,7 +518,8 @@ entity.removeBehaviour('myBehaviour');
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">drawBounds</h3>
+</div><a name="drawBounds"></a>
+<h3 class="methodTitle">drawBounds</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the boolean flag determining if this object should have it's bounds drawn when the bounds for all objects are being drawn. In order for bounds to be drawn the viewport the object is being drawn to must also have draw bounds enabled.</div>
@@ -538,7 +554,8 @@ entity.drawBounds(false);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">drawBoundsData</h3>
+</div><a name="drawBoundsData"></a>
+<h3 class="methodTitle">drawBoundsData</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the boolean flag determining if this object should have it's bounds data drawn when the bounds for all objects are being drawn. Bounds data includes the object ID and it's current depth etc.</div>
@@ -573,7 +590,8 @@ entity.drawBoundsData(false);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">drawMouse</h3>
+</div><a name="drawMouse"></a>
+<h3 class="methodTitle">drawMouse</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the boolean flag determining if this object should have it's mouse position data drawn when the bounds for all objects are being drawn.</div>
@@ -608,7 +626,8 @@ entity.drawMouse(false);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">$</h3>
+</div><a name="$"></a>
+<h3 class="methodTitle">$</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Finds a child entity that matches the id mounted to this or any other child entity down the scenegraph chain. Will only return an object if the entity found has this entity as an ancestor (parent or parent of parent etc).</div>
@@ -617,7 +636,8 @@ entity.drawMouse(false);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> The id of the entity to find.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The entity or undefined.</div>
     
-</div><h3 class="methodTitle">$$</h3>
+</div><a name="$$"></a>
+<h3 class="methodTitle">$$</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Finds all child entities of this or any child of this entity down the scenegraph who's category matches the category name passed.</div>
@@ -626,7 +646,8 @@ entity.drawMouse(false);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">categoryName</span> The category name to scan for.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} </div>
     
-</div><h3 class="methodTitle">parent</h3>
+</div><a name="parent"></a>
+<h3 class="methodTitle">parent</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns the object's parent object (the object that it is mounted to).</div>
@@ -654,7 +675,8 @@ console.log(parent.id());
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">children</h3>
+</div><a name="children"></a>
+<h3 class="methodTitle">children</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns the object's children as an array of objects.</div>
@@ -682,7 +704,8 @@ console.log(childArray);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">mount</h3>
+</div><a name="mount"></a>
+<h3 class="methodTitle">mount</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Mounts this object to the passed object in the scenegraph.</div>
@@ -704,7 +727,8 @@ entity2.mount(entity1);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">unMount</h3>
+</div><a name="unMount"></a>
+<h3 class="methodTitle">unMount</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Unmounts this object from it's parent object in the scenegraph.</div>
@@ -729,7 +753,8 @@ entity2.unMount();
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">hasParent</h3>
+</div><a name="hasParent"></a>
+<h3 class="methodTitle">hasParent</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Determines if the object has a parent up the scenegraph whose id matches the one passed. Will traverse each parent object checking if the id matches. This information will be cached when first called and can be refreshed by setting the "fresh" parameter to true.</div>
@@ -738,7 +763,8 @@ entity2.unMount();
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">parentId</span> The id of the parent to check for.</li><li>{<span class="argType">Boolean</span>}<span class="argName">fresh</span> If true will force a full check instead of using the cached value from an earlier check.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">clone</h3>
+</div><a name="clone"></a>
+<h3 class="methodTitle">clone</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Clones the object and all it's children and returns a new object.</div>
@@ -747,7 +773,8 @@ entity2.unMount();
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">mode</h3>
+</div><a name="mode"></a>
+<h3 class="methodTitle">mode</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the positioning mode of the entity.</div>
@@ -774,7 +801,8 @@ entity2.unMount();
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">isometric</h3>
+</div><a name="isometric"></a>
+<h3 class="methodTitle">isometric</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets if this object should be positioned isometrically or in 2d.</div>
@@ -801,7 +829,8 @@ entity2.unMount();
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">isometricMounts</h3>
+</div><a name="isometricMounts"></a>
+<h3 class="methodTitle">isometricMounts</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets if objects mounted to this object should be positioned and depth-sorted in an isometric fashion or a 2d fashion.</div>
@@ -828,7 +857,8 @@ entity2.unMount();
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">indestructible</h3>
+</div><a name="indestructible"></a>
+<h3 class="methodTitle">indestructible</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the indestructible flag. If set to true, the object will not be destroyed even if a call to the destroy() method is made.</div>
@@ -864,7 +894,8 @@ console.log(entity.indestructible());
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">layer</h3>
+</div><a name="layer"></a>
+<h3 class="methodTitle">layer</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the current entity layer. This affects how the entity is depth-sorted against other entities of the same parent. Please note that entities are first sorted by their layer and then by their depth, and only entities of the same layer will be sorted against each other by their depth values.</div>
@@ -925,7 +956,8 @@ entity3.depth(1);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">depth</h3>
+</div><a name="depth"></a>
+<h3 class="methodTitle">depth</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the current render depth of the object (higher depths are drawn over lower depths). Please note that entities are first sorted by their layer and then by their depth, and only entities of the same layer will be sorted against each other by their depth values.</div>
@@ -981,7 +1013,8 @@ entity3.depth(1);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">destroyChildren</h3>
+</div><a name="destroyChildren"></a>
+<h3 class="methodTitle">destroyChildren</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Loops through all child objects of this object and destroys them by calling each child's destroy() method then clears the object's internal _children array.</div>
@@ -990,7 +1023,8 @@ entity3.depth(1);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">destroyBehaviours</h3>
+</div><a name="destroyBehaviours"></a>
+<h3 class="methodTitle">destroyBehaviours</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Removes all references to any behaviour methods that were added to this object.</div>
@@ -999,7 +1033,8 @@ entity3.depth(1);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">destroyComponents</h3>
+</div><a name="destroyComponents"></a>
+<h3 class="methodTitle">destroyComponents</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Loops through all components added to this object and calls their destroy() method, then removes any references to the components.</div>
@@ -1008,7 +1043,8 @@ entity3.depth(1);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">depthSortMode</h3>
+</div><a name="depthSortMode"></a>
+<h3 class="methodTitle">depthSortMode</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the depth sort mode that is used when depth sorting this object's children against each other. This mode only applies if this object's mount mode is isometric, as set by calling isometricMounts(true). If the mount mode is 2d, the depth sorter will use a very fast 2d depth sort that does not use 3d bounds at all.</div>
@@ -1049,7 +1085,8 @@ entity3.depth(1);
 </div>
 					</div>
 				
-</div><h3 class="methodTitle">depthSortChildren</h3>
+</div><a name="depthSortChildren"></a>
+<h3 class="methodTitle">depthSortChildren</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Sorts the _children array by the layer and then depth of each object.</div>
@@ -1058,7 +1095,8 @@ entity3.depth(1);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">viewChecking</h3>
+</div><a name="viewChecking"></a>
+<h3 class="methodTitle">viewChecking</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the view checking flag that if set to true will ask the engine to check during each tick if this object is actually "on screen" or not, and bypass it if it is not. The default is this flag set to false.</div>
@@ -1067,7 +1105,8 @@ entity3.depth(1);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> The boolean flag value.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">viewCheckChildren</h3>
+</div><a name="viewCheckChildren"></a>
+<h3 class="methodTitle">viewCheckChildren</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">ALPHA CODE DO NOT USE YET. When view checking is enabled, this method is called to determine if this object is within the bounds of an active viewport, essentially determining if the object is "on screen" or not.</div>
@@ -1076,7 +1115,8 @@ entity3.depth(1);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">tick</h3>
+</div><a name="tick"></a>
+<h3 class="methodTitle">tick</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Processes the actions required each render frame.</div>
@@ -1085,7 +1125,8 @@ entity3.depth(1);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_resizeEvent</h3>
+</div><a name="_resizeEvent"></a>
+<h3 class="methodTitle">_resizeEvent</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Handles screen resize events. Calls the _resizeEvent method of every child object mounted to this object.</div>
@@ -1094,7 +1135,8 @@ entity3.depth(1);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_processUpdateBehaviours</h3>
+</div><a name="_processUpdateBehaviours"></a>
+<h3 class="methodTitle">_processUpdateBehaviours</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Calls each behaviour method for the object.</div>
@@ -1103,7 +1145,8 @@ entity3.depth(1);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_processTickBehaviours</h3>
+</div><a name="_processTickBehaviours"></a>
+<h3 class="methodTitle">_processTickBehaviours</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Calls each behaviour method for the object.</div>
@@ -1112,7 +1155,8 @@ entity3.depth(1);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_childMounted</h3>
+</div><a name="_childMounted"></a>
+<h3 class="methodTitle">_childMounted</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Called when a child object is mounted to this object.</div>
@@ -1121,7 +1165,8 @@ entity3.depth(1);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">obj</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">_childUnMounted</h3>
+</div><a name="_childUnMounted"></a>
+<h3 class="methodTitle">_childUnMounted</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Called when a child object is un-mounted to this object.</div>
@@ -1130,7 +1175,28 @@ entity3.depth(1);
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">obj</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">destroy</h3>
+</div><a name="_mounted"></a>
+<h3 class="methodTitle">_mounted</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Called when this object is mounted to another object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_mounted</span>({<span class="argType"></span>} <span class="argName">obj</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">obj</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_unMounted"></a>
+<h3 class="methodTitle">_unMounted</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Called when this object is un-mounted from it's parent.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_unMounted</span>({<span class="argType"></span>} <span class="argName">obj</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">obj</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="destroy"></a>
+<h3 class="methodTitle">destroy</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Destroys the object and all it's child objects, removing them from the scenegraph and from memory.</div>
@@ -1139,7 +1205,8 @@ entity3.depth(1);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">stringify</h3>
+</div><a name="stringify"></a>
+<h3 class="methodTitle">stringify</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object.</div>
@@ -1148,7 +1215,8 @@ entity3.depth(1);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
     
-</div><h3 class="methodTitle">_stringify</h3>
+</div><a name="_stringify"></a>
+<h3 class="methodTitle">_stringify</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>

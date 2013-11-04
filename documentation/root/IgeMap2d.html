@@ -18,7 +18,8 @@
 	<div class="content"><a href="IgeClass.html">IgeClass</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3 class="methodTitle">tileData</h3>
+<h2>Methods</h2><a name="tileData"></a>
+<h3 class="methodTitle">tileData</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets a value on the specified map tile co-ordinates.</div>
@@ -27,7 +28,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">*</span>}<span class="argName">val</span> The data to set on the map tile co-ordinate.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">clearData</h3>
+</div><a name="clearData"></a>
+<h3 class="methodTitle">clearData</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Clears any data set at the specified map tile co-ordinates.</div>
@@ -36,7 +38,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} True if data was cleared or false if no data existed.</div>
     
-</div><h3 class="methodTitle">collision</h3>
+</div><a name="collision"></a>
+<h3 class="methodTitle">collision</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Checks if the tile area passed has any data stored in it. If so, returns true, otherwise false.</div>
@@ -45,7 +48,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">width</span> </li><li>{<span class="argType"></span>}<span class="argName">height</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">collisionWith</h3>
+</div><a name="collisionWith"></a>
+<h3 class="methodTitle">collisionWith</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Checks if the tile area passed has data stored in it that matches the passed data. If so, returns true, otherwise false.</div>
@@ -54,7 +58,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">width</span> </li><li>{<span class="argType"></span>}<span class="argName">height</span> </li><li>{<span class="argType"></span>}<span class="argName">data</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">collisionWithOnly</h3>
+</div><a name="collisionWithOnly"></a>
+<h3 class="methodTitle">collisionWithOnly</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Checks if the tile area passed has data stored in it that matches the passed data and does not collide with any other stored tile data. If so, returns true, otherwise false.</div>
@@ -63,7 +68,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">width</span> </li><li>{<span class="argType"></span>}<span class="argName">height</span> </li><li>{<span class="argType"></span>}<span class="argName">data</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">mapData</h3>
+</div><a name="mapData"></a>
+<h3 class="methodTitle">mapData</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the map's tile data.</div>
@@ -72,7 +78,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">val</span> The map data array.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">mapDataString</h3>
+</div><a name="mapDataString"></a>
+<h3 class="methodTitle">mapDataString</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns a string of the map's data in JSON format.</div>
@@ -81,7 +88,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
     
-</div><h3 class="methodTitle">insertMapData</h3>
+</div><a name="insertMapData"></a>
+<h3 class="methodTitle">insertMapData</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Inserts map data into the map at the given co-ordinates. Please note this is not used for setting a tile's value. This is used to add large sections of map data at the specified co-ordinates. To set an individual tile value, please use tile(x, y, val).</div>
@@ -90,7 +98,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Array</span>}<span class="argName">val</span> The map data array.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">rotateData</h3>
+</div><a name="rotateData"></a>
+<h3 class="methodTitle">rotateData</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Rotates map data either -90 degrees (anti-clockwise), 90 degrees (clockwise) or 180 degrees. Useful when you want to define one section of a map and then re-use it in slightly different layouts.</div>

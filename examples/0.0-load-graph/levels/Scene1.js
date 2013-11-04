@@ -1,14 +1,13 @@
-var Scene1 = IgeEventingClass.extend({
+var Scene1 = IgeSceneGraph.extend({
 	classId: 'Scene1',
-	
-	init: function () {},
 
 	/**
-	 * Called when loading the graph data via ige.loadGraph().
+	 * Called when loading the graph data via ige.addGraph().
 	 * @param options
 	 */
 	addGraph: function (options) {
-		var self = ige.client;
+		var self = ige.client,
+			baseScene = ige.$('baseScene');
 		
 		// Clear existing graph data
 		if (ige.$('scene1')) {
@@ -18,7 +17,7 @@ var Scene1 = IgeEventingClass.extend({
 		// Create the scene
 		self.scene1 = new IgeScene2d()
 			.id('scene1')
-			.mount(self.baseScene);
+			.mount(baseScene);
 
 		// Create an entity and mount it to the scene
 		self.obj[0] = new Rotator(0.1)

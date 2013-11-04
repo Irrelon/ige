@@ -26,15 +26,19 @@ var IgeEntity = IgeObject.extend({
 		this._origin = new IgePoint(0.5, 0.5, 0.5);
 
 		this._geometry = new IgePoint(40, 40, 40);
+		this._oldGeometry = new IgePoint(40, 40, 40);
 
 		this._highlight = false;
 		this._mouseEventsActive = false;
 
         this._localMatrix = new IgeMatrix2d(this);
         this._worldMatrix = new IgeMatrix2d(this);
+		this._oldWorldMatrix = new IgeMatrix2d(this);
 
 		this._inView = true;
 		this._hidden = false;
+		
+		this._mouseEventTrigger = 0;
 
 		/* CEXCLUDE */
 		if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') {
@@ -261,7 +265,8 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
-	 * Gets the position of the mouse relative to this entity.
+	 * Gets the position of the mouse relative to this entity's
+	 * center point.
 	 * @param {IgeViewport=} viewport The viewport to use as the
 	 * base from which the mouse position is determined. If no
 	 * viewport is specified then the current viewport the engine
@@ -1015,6 +1020,54 @@ var IgeEntity = IgeObject.extend({
 			0
 		);
 	},
+	
+	localIsoBoundsPoly: function (recalculate) {
+		if (this._isoBoundsPolyDirty || !this._localIsoBoundsPoly || recalculate) {
+			var geom = this._geometry,
+				poly = new IgePoly2d(),
+				// Bottom face
+				bf2 = Math.toIso(+(geom.x2), -(geom.y2),  -(geom.z2)),
+				bf3 = Math.toIso(+(geom.x2), +(geom.y2),  -(geom.z2)),
+				bf4 = Math.toIso(-(geom.x2), +(geom.y2),  -(geom.z2)),
+				// Top face
+				tf1 = Math.toIso(-(geom.x2), -(geom.y2),  (geom.z2)),
+				tf2 = Math.toIso(+(geom.x2), -(geom.y2),  (geom.z2)),
+				tf4 = Math.toIso(-(geom.x2), +(geom.y2),  (geom.z2));
+			
+			poly.addPoint(tf1.x, tf1.y)
+				.addPoint(tf2.x, tf2.y)
+				.addPoint(bf2.x, bf2.y)
+				.addPoint(bf3.x, bf3.y)
+				.addPoint(bf4.x, bf4.y)
+				.addPoint(tf4.x, tf4.y)
+				.addPoint(tf1.x, tf1.y);
+			
+			this._localIsoBoundsPoly = poly;
+			this._isoBoundsPolyDirty = false;
+		}
+		
+		return this._localIsoBoundsPoly;
+	},
+	
+	isoBoundsPoly: function (recalculate) {
+		if (this._isoBoundsPolyDirty || !this._isoBoundsPoly || recalculate) {
+			var poly = this.localIsoBoundsPoly(recalculate).clone();
+			
+			// Convert local co-ordinates to world based on entities world matrix
+			this.localToWorld(poly._poly);
+			
+			this._isoBoundsPoly = poly;
+		}
+		
+		return this._isoBoundsPoly;
+	},
+	
+	mouseInIsoBounds: function (recalculate) {
+		var poly = this.localIsoBoundsPoly(recalculate),
+			mp = this.mousePos();
+		
+		return poly.pointInside(mp);
+	},
 
 	/**
 	 * Calculates and returns the current axis-aligned bounding box in
@@ -1039,40 +1092,29 @@ var IgeEntity = IgeObject.extend({
 	 * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
 	 */
 	aabb: function (recalculate, inverse) {
-		if (!this._aabb || recalculate) { //  && this.newFrame()
+		if (this._aabbDirty || !this._aabb || recalculate) { //  && this.newFrame()
 			var poly = new IgePoly2d(),
 				minX, minY,
 				maxX, maxY,
 				box,
 				anc = this._anchor,
 				geom = this._geometry,
-				geomX = geom.x,
-				geomY = geom.y,
-				geomZ = geom.z,
 				geomX2 = geom.x2,
 				geomY2 = geom.y2,
-				geomZ2 = geom.z2,
-				origin = this._origin,
-				originX = origin.x - 0.5,
-				originY = origin.y - 0.5,
-				originZ = origin.z - 0.5,
 				x, y,
-				ox,	oy,
 				tf1;
 
 			// Handle 2d entities
 			if (this._mode === 0) {
 				x = geomX2 + anc.x;
 				y = geomY2 + anc.y;
-				ox = geomX * originX;
-				oy = geomY * originY;
 
-				poly.addPoint(-x + ox, -y + oy);
-				poly.addPoint(x + ox, -y + oy);
-				poly.addPoint(x + ox, y + oy);
-				poly.addPoint(-x + ox, y + oy);
+				poly.addPoint(-x, -y);
+				poly.addPoint(x, -y);
+				poly.addPoint(x, y);
+				poly.addPoint(-x, y);
 
-				this._renderPos = {x: -x + ox, y: -y + oy};
+				this._renderPos = {x: -x, y: -y};
 
 				// Convert the poly's points from local space to world space
 				this.localToWorld(poly._poly, null, inverse);
@@ -1116,15 +1158,13 @@ var IgeEntity = IgeObject.extend({
 
 				x = (tf1.x + geom.x) + anc.x;
 				y = tf1.y + anc.y;
-				ox = geomX * originX;
-				oy = geomZ * originZ;
 
-				poly.addPoint(-x + ox, -y + oy);
-				poly.addPoint(x + ox, -y + oy);
-				poly.addPoint(x + ox, y + oy);
-				poly.addPoint(-x + ox, y + oy);
+				poly.addPoint(-x, -y);
+				poly.addPoint(x, -y);
+				poly.addPoint(x, y);
+				poly.addPoint(-x, y);
 
-				this._renderPos = {x: -x + ox, y: -y + oy};
+				this._renderPos = {x: -x, y: -y};
 
 				// Convert the poly's points from local space to world space
 				this.localToWorld(poly._poly, null, inverse);
@@ -1162,6 +1202,7 @@ var IgeEntity = IgeObject.extend({
 			}
 
 			this._aabb = box;
+			this._aabbDirty = false;
 		}
 
 		return this._aabb;
@@ -1513,6 +1554,15 @@ var IgeEntity = IgeObject.extend({
 		}
 	},
 	
+	mouseAlwaysInside: function (val) {
+		if (val !== undefined) {
+			this._mouseAlwaysInside = val;
+			return this;
+		}
+		
+		return this._mouseAlwaysInside;
+	},
+	
 	/**
 	 * Processes the updates required each render frame. Any code in the update()
 	 * method will be called ONCE for each render frame BEFORE the tick() method.
@@ -1550,10 +1600,9 @@ var IgeEntity = IgeObject.extend({
 			// directly without calling the transform methods
 			this.updateTransform();
 
-			if (!this._noAabb) {
+			if (!this._noAabb && this._aabbDirty) {
 				// Update the aabb
-				// TODO: This is wasteful, find a way to determine if a recalc is required rather than doing it every tick
-				this.aabb(true);
+				this.aabb();
 			}
 
 			this._oldTranslate = this._translate.clone();
@@ -1583,22 +1632,28 @@ var IgeEntity = IgeObject.extend({
 			this._processTickBehaviours(ctx);
 			
 			// Process any mouse events we need to do
-			var mp, aabb, mouseX, mouseY,
+			var mp, mouseTriggerPoly, mouseX, mouseY,
 				self = this;
 
 			if (this._mouseEventsActive && ige._currentViewport) {
 				mp = this.mousePosWorld();
 
 				if (mp) {
-					aabb = this.aabb(); //this.localAabb();
 					mouseX = mp.x;
 					mouseY = mp.y;
-
+					
+					if (this._mouseEventTrigger === 0) {
+						// Trigger mode is against the AABB
+						mouseTriggerPoly = this.aabb(); //this.localAabb();
+					} else {
+						// Trigger mode is against the iso bounds polygon
+						mouseTriggerPoly = this.isoBoundsPoly();
+					}
+					
 					// Check if the current mouse position is inside this aabb
-					//if (aabb && (aabb.x <= mouseX && aabb.y <= mouseY && aabb.x + aabb.width > mouseX && aabb.y + aabb.height > mouseY)) {
-					if (aabb.xyInside(mouseX, mouseY) || this._mouseAlwaysInside) {
+					if (mouseTriggerPoly.xyInside(mouseX, mouseY) || this._mouseAlwaysInside) {
 						// Point is inside the aabb
-						ige.input.queueEvent(this, this._mouseInAabb);
+						ige.input.queueEvent(this, this._mouseInTrigger);
 					} else {
 						if (ige.input.mouseMove) {
 							// There is a mouse move event but we are not inside the entity
@@ -1614,83 +1669,13 @@ var IgeEntity = IgeObject.extend({
 				// Check for cached version
 				if (this._cache || this._compositeCache) {
 					// Caching is enabled
-					var currentCam = ige._currentCamera;
-					
-					if (!this._cacheDirty) {
-						if (this._ignoreCamera) {
-							
-							/*ctx.scale(currentCam._scale.x, currentCam._scale.y);
-							ctx.translate(currentCam._translate.x, currentCam._translate.y);
-							ctx.scale(1 / currentCam._scale.x, 1/ currentCam._scale.y);*/
-						}
-						
-						this._renderCache(ctx);
-					} else {
-						// The cache is not clean so re-draw it
-						// Render the entity to the cache
-						var _canvas = this._cacheCanvas,
-							_ctx = this._cacheCtx;
-
-						if (this._compositeCache) {
-							// Get the composite entity AABB and alter the internal canvas
-							// to the composite size so we can render the entire entity
-							var aabbC = this.compositeAabb(true);
-							
-							if (this._parent) {
-								//aabbC.x -= this._parent._translate.x;
-								//aabbC.y -= this._parent._translate.y;
-							}
-							
-							if (this._ignoreCamera) {
-								//aabbC.x -= currentCam._translate.x;
-								//aabbC.y -= currentCam._translate.y;
-								
-								//aabbC.x *= currentCam._scale.x;
-								//aabbC.y *= currentCam._scale.y;
-								//aabbC.width *= currentCam._scale.x;
-								//aabbC.height *= currentCam._scale.y;
-							}
-							
-							this._compositeAabbCache = aabbC;
-							
-							if (aabbC.width > 0 && aabbC.height > 0) {
-								_canvas.width = Math.ceil(aabbC.width);
-								_canvas.height = Math.ceil(aabbC.height);
-							} else {
-								// We cannot set a zero size for a canvas, it will
-								// cause the browser to freak out
-								_canvas.width = 2;
-								_canvas.height = 2;
-							}
-							
-							// Translate to the center of the canvas
-							_ctx.translate(-aabbC.x, -aabbC.y);
-							
-							this.emit('compositeReady');
-						} else {
-							if (this._geometry.x > 0 && this._geometry.y > 0) {
-								_canvas.width = this._geometry.x;
-								_canvas.height = this._geometry.y;
-							} else {
-								// We cannot set a zero size for a canvas, it will
-								// cause the browser to freak out
-								_canvas.width = 1;
-								_canvas.height = 1;
-							}
-							
-							// Translate to the center of the canvas
-							_ctx.translate(this._geometry.x2, this._geometry.y2);
-							
-							this._cacheDirty = false;
-						}
-						
-						// Transform the context by the current transform settings
-						if (!dontTransform) {
-							this._transformContext(_ctx);
-						}
-						//_ctx.translate(this._translate.x, this._translate.y);
-						this._renderEntity(_ctx, dontTransform);
+					if (this._cacheDirty) {
+						// The cache is dirty, redraw it
+						this._refreshCache(dontTransform);
 					}
+					
+					// Now render the cached image data to the main canvas
+					this._renderCache(ctx);
 				} else {
 					// Non-cached output
 					// Transform the context by the current transform settings
@@ -1720,6 +1705,58 @@ var IgeEntity = IgeObject.extend({
 				IgeObject.prototype.tick.call(this, ctx);
 			}
 		}
+	},
+	
+	_refreshCache: function (dontTransform) {
+		// The cache is not clean so re-draw it
+		// Render the entity to the cache
+		var _canvas = this._cacheCanvas,
+			_ctx = this._cacheCtx;
+
+		if (this._compositeCache) {
+			// Get the composite entity AABB and alter the internal canvas
+			// to the composite size so we can render the entire entity
+			var aabbC = this.compositeAabb(true);
+			
+			this._compositeAabbCache = aabbC;
+			
+			if (aabbC.width > 0 && aabbC.height > 0) {
+				_canvas.width = Math.ceil(aabbC.width);
+				_canvas.height = Math.ceil(aabbC.height);
+			} else {
+				// We cannot set a zero size for a canvas, it will
+				// cause the browser to freak out
+				_canvas.width = 2;
+				_canvas.height = 2;
+			}
+			
+			// Translate to the center of the canvas
+			_ctx.translate(-aabbC.x, -aabbC.y);
+			
+			this.emit('compositeReady');
+		} else {
+			if (this._geometry.x > 0 && this._geometry.y > 0) {
+				_canvas.width = this._geometry.x;
+				_canvas.height = this._geometry.y;
+			} else {
+				// We cannot set a zero size for a canvas, it will
+				// cause the browser to freak out
+				_canvas.width = 1;
+				_canvas.height = 1;
+			}
+			
+			// Translate to the center of the canvas
+			_ctx.translate(this._geometry.x2, this._geometry.y2);
+			
+			this._cacheDirty = false;
+		}
+		
+		// Transform the context by the current transform settings
+		if (!dontTransform) {
+			this._transformContext(_ctx);
+		}
+		
+		this._renderEntity(_ctx, dontTransform);
 	},
 
 	/**
@@ -1876,6 +1913,30 @@ var IgeEntity = IgeObject.extend({
 
 		return point;
 	},
+	
+	/**
+	 * Helper method to transform an array of points using _transformPoint.
+	 * @param {Array} points The points array to transform.
+	 * @private
+	 */
+	_transformPoints: function (points) {
+		var point, pointCount = points.length;
+		
+		while (pointCount--) {
+			point = points[pointCount];
+			if (this._parent) {
+				var tempMat = new IgeMatrix2d();
+				// Copy the parent world matrix
+				tempMat.copy(this._parent._worldMatrix);
+				// Apply any local transforms
+				tempMat.multiply(this._localMatrix);
+				// Now transform the point
+				tempMat.getInverse().transformCoord(point, this);
+			} else {
+				this._localMatrix.transformCoord(point, this);
+			}
+		}
+	},
 
 	/**
 	 * Checks mouse input types and fires the correct mouse event
@@ -1886,7 +1947,7 @@ var IgeEntity = IgeObject.extend({
 	 * the new event.
 	 * @private
 	 */
-	_mouseInAabb: function (evc, data) {
+	_mouseInTrigger: function (evc, data) {
 		if (ige.input.mouseMove) {
 			// There is a mouse move event
 			this._handleMouseIn(ige.input.mouseMove, evc, data);
@@ -2206,6 +2267,22 @@ var IgeEntity = IgeObject.extend({
 		delete this._mouseDown;
 
 		return this;
+	},
+
+	/**
+	 * Gets / sets the shape / polygon that the mouse events
+	 * are triggered against. There are two options, 'aabb' and
+	 * 'isoBounds'. The default is 'aabb'.
+	 * @param val
+	 * @returns {*}
+	 */
+	mouseEventTrigger: function (val) {
+		if (val !== undefined) {
+			this._mouseEventTrigger = val === 'aabb' ? 0 : 1;
+			return this;
+		}
+		
+		return this._mouseEventTrigger === 0 ? 'aabb' : 'isoBounds';
 	},
 
 	/**
@@ -2759,8 +2836,8 @@ var IgeEntity = IgeObject.extend({
 	 * update the transformation matrix accordingly.
 	 */
 	updateTransform: function () {
-		// TODO: Do we need to calc this if the entity transform hasn't changed?
 		this._localMatrix.identity();
+		
 		if (this._mode === 0) {
 			// 2d translation
 			this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
@@ -2782,10 +2859,18 @@ var IgeEntity = IgeObject.extend({
 
 			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
 		}
-
-		this._localMatrix.multiply(this._localMatrix._newRotate(this._rotate.z));
-		this._localMatrix.multiply(this._localMatrix._newScale(this._scale.x, this._scale.y));
-
+		
+		this._localMatrix.rotateBy(this._rotate.z);
+		this._localMatrix.scaleBy(this._scale.x, this._scale.y);
+		
+		// Adjust local matrix for origin values if not at center
+		if (this._origin.x !== 0.5 || this._origin.y !== 0.5) {
+			this._localMatrix.translateBy(
+				(this._geometry.x * (0.5 - this._origin.x)),
+				(this._geometry.y * (0.5 - this._origin.y))
+			);
+		}
+		
 		// TODO: If the parent and local transforms are unchanged, we should used cached values
 		if (this._parent) {
 			this._worldMatrix.copy(this._parent._worldMatrix);
@@ -2793,6 +2878,28 @@ var IgeEntity = IgeObject.extend({
 		} else {
 			this._worldMatrix.copy(this._localMatrix);
 		}
+		
+		// Check if the world matrix has changed and if so, set a few flags
+		// to allow other methods to know that a matrix change has occurred
+		if (!this._worldMatrix.compare(this._oldWorldMatrix)) {
+			this._oldWorldMatrix.copy(this._worldMatrix);
+			this._transformChanged = true;
+			this._aabbDirty = true;
+			this._isoBoundsPolyDirty = true;
+		} else {
+			this._transformChanged = false;
+		}
+		
+		// Check if the geometry has changed and if so, update the aabb dirty
+		if (!this._oldGeometry.compare(this._geometry)) {
+			this._aabbDirty = true;
+			this._isoBoundsPolyDirty = true;
+			
+			// Record the new geometry to the oldGeometry data
+			this._oldGeometry.copy(this._geometry);
+		}
+		
+		return this;
 	},
 
 	/**
@@ -2975,6 +3082,17 @@ var IgeEntity = IgeObject.extend({
 					} else {
 						return '';
 					}
+				}
+				break;
+			
+			case 'origin':
+				if (data !== undefined) {
+					if (!ige.isServer) {
+						var geom = data.split(',');
+						this.origin(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
+					}
+				} else {
+					return String(this._origin.x + ',' + this._origin.y + ',' + this._origin.z);
 				}
 				break;
 		}
@@ -3184,13 +3302,19 @@ var IgeEntity = IgeObject.extend({
 	 * the client when it is being created on the client for the first
 	 * time through the network stream. The data will be provided as the
 	 * first argument in the constructor call to the entity class so
-	 * you should expect to recieve it as such e.g.
+	 * you should expect to receive it as per this example:
+	 * @example #Using and Receiving Stream Create Data
 	 *     var MyNewClass = IgeEntity.extend({
 	 *         classId: 'MyNewClass',
 	 *         
 	 *         // Define the init with the parameter to receive the
 	 *         // data you return in the streamCreateData() method
 	 *         init: function (myCreateData) {
+	 *             this._myData = myCreateData;
+	 *         },
+	 *         
+	 *         streamCreateData: function () {
+	 *             return this._myData;
 	 *         }
 	 *     });
 	 * 

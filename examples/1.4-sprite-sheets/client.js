@@ -37,19 +37,8 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1');
-
-					// Create the main viewport and set the scene
-					// it will "look" at as the new scene1 we just
-					// created above
-					self.vp1 = new IgeViewport()
-						.id('vp1')
-						.autoSize(true)
-						.scene(self.scene1)
-						.drawBounds(true)
-						.mount(ige);
+					// Load the base scene data
+					ige.addGraph('IgeBaseScene');
 
 					// Create an entity and mount it to the scene
 					self.obj[0] = new IgeEntity()
@@ -64,7 +53,7 @@ var Client = IgeClass.extend({
 						// of the cell being used
 						.dimensionsFromCell()
 						.translateTo(0, -100, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					self.obj[1] = new IgeEntity()
 						.id('sprite2')
@@ -86,7 +75,7 @@ var Client = IgeClass.extend({
 						// of the cell being used
 						.dimensionsFromCell()
 						.translateTo(100, -100, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					// Create one more entity and animate between the table and
 					// panel cells using cell ids in the animation, this tests
@@ -114,7 +103,7 @@ var Client = IgeClass.extend({
 						.translateTo(100, 0, 0)
 						.animation.define('test', ['panel', 'table', null], 1, -1, true)
 						.animation.select('test')
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					// Create a new separate texture from the cell of one of the sprite sheets!
 					self.gameTexture[2] = self.gameTexture[1].textureFromCell('panel');
@@ -125,7 +114,7 @@ var Client = IgeClass.extend({
 						.texture(self.gameTexture[2])
 						.dimensionsFromTexture()
 						.translateTo(-100, 0, 0)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 
 					var xAdj = 0,
 						xAdj2 = 0;
@@ -139,7 +128,7 @@ var Client = IgeClass.extend({
 							.cell(i)
 							.dimensionsFromCell()
 							.translateTo(-450 + xAdj + xAdj2, 130, 0)
-							.mount(self.scene1);
+							.mount(ige.$('baseScene'));
 
 						xAdj += (self.gameTexture[3]._cells[i][2] / 2) + 5;
 					}

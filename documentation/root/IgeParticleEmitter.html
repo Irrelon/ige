@@ -18,7 +18,8 @@
 	<div class="content"><a href="IgeEntity.html">IgeEntity</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3 class="methodTitle">particle</h3>
+<h2>Methods</h2><a name="particle"></a>
+<h3 class="methodTitle">particle</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Sets the class that all particles emitted from this emitter will be created from.</div>
@@ -27,7 +28,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>}<span class="argName">obj</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">velocityVector</h3>
+</div><a name="velocityVector"></a>
+<h3 class="methodTitle">velocityVector</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Sets the base velocity vector of each emitted particle and optionally the min and max vectors that are used to randomize the resulting particle velocity vector.</div>
@@ -36,7 +38,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">baseVector</span> </li><li>{<span class="argType"></span>}<span class="argName">minVector</span> </li><li>{<span class="argType"></span>}<span class="argName">maxVector</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">start</h3>
+</div><a name="start"></a>
+<h3 class="methodTitle">start</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Starts the particle emitter which will begin spawning particle entities based upon the emitter's current settings.</div>
@@ -45,7 +48,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">stop</h3>
+</div><a name="stop"></a>
+<h3 class="methodTitle">stop</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Stops the particle emitter. The current particles will continue to process until they reach their natural lifespan.</div>
@@ -54,7 +58,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">stopAndKill</h3>
+</div><a name="stopAndKill"></a>
+<h3 class="methodTitle">stopAndKill</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Stops the particle emitter. The current particles will be destroyed immediately.</div>
@@ -63,7 +68,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">baseAndVarianceValue</h3>
+</div><a name="baseAndVarianceValue"></a>
+<h3 class="methodTitle">baseAndVarianceValue</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Takes a base value and a variance range and returns a random value between the range, added to the base.</div>
@@ -72,7 +78,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">base</span> The base value.</li><li>{<span class="argType">Array</span>}<span class="argName">variance</span> An array containing the two values of the variance range.</li><li>{<span class="argType">Boolean</span>}<span class="argName">floorIt</span> If set to true, will cause the returned value to be passed through Math.floor().</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Number</span>} Returns the final value based upon the base value and variance range.</div>
     
-</div><h3 class="methodTitle">tick</h3>
+</div><a name="tick"></a>
+<h3 class="methodTitle">tick</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Creates and maintains the particles that this emitter is responsible for spawning and controlling.</div>
@@ -81,7 +88,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">ctx</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><h3 class="methodTitle">particles</h3>
+</div><a name="particles"></a>
+<h3 class="methodTitle">particles</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns an array of the current particle entities that this emitter has spawned.</div>
@@ -90,7 +98,8 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} The array of particle entities the emitter spawned.</div>
     
-</div><h3 class="methodTitle">_stringify</h3>
+</div><a name="_stringify"></a>
+<h3 class="methodTitle">_stringify</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>

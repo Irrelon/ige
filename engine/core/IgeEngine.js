@@ -27,8 +27,8 @@ var IgeEngine = IgeEntity.extend({
 
 		// Output our header
 		console.log('------------------------------------------------------------------------------');
-		console.log('* Powered by the Isogenic Game Engine ' + igeVersion + '                    *');
-		console.log('* (C)opyright 2012 Irrelon Software Limited                                  *');
+		console.log('* Powered by the Isogenic Game Engine ' + igeVersion + '                  *');
+		console.log('* (C)opyright 2013 Irrelon Software Limited                                  *');
 		console.log('* http://www.isogenicengine.com                                              *');
 		console.log('------------------------------------------------------------------------------');
 		
@@ -51,6 +51,11 @@ var IgeEngine = IgeEntity.extend({
 		// Setup components
 		this.addComponent(IgeInputComponent);
 		this.addComponent(IgeTweenComponent);
+		
+		if (!this.isServer) {
+			// Enable UI element (virtual DOM) support
+			this.addComponent(IgeUiManagerComponent);
+		}
 
 		// Set some defaults
 		this._renderModes = [
@@ -103,7 +108,6 @@ var IgeEngine = IgeEntity.extend({
 		this._timeScale = 1; // The default time scaling factor to speed up or slow down engine time
 		this._globalScale = new IgePoint(1, 1, 1);
 		this._graphInstances = []; // Holds an array of instances of graph classes
-		this._sceneGrid = {}; // Hold the entity grid intersection lookup data
 
 		// Set the context to a dummy context to start
 		// with in case we are in "headless" mode and
@@ -308,6 +312,8 @@ var IgeEngine = IgeEntity.extend({
 			// Set the source to load the url
 			elem.src = url;
 			
+			this.log('Loading script from: ' + url);
+			
 			this.emit('requireScriptLoading', url);
 		}
 	},
@@ -344,11 +350,16 @@ var IgeEngine = IgeEntity.extend({
 				this.log('Loading SceneGraph data class: ' + className);
 				classInstance = this.newClassInstance(className);
 				
-				// Call the class's graph() method passing the options in
-				classInstance.addGraph(options);
-				
-				// Add the graph instance to the holding array
-				this._graphInstances[className] = classInstance;
+				// Make sure the graph class implements the required methods "addGraph" and "removeGraph"
+				if (typeof(classInstance.addGraph) === 'function' && typeof(classInstance.removeGraph) === 'function') {
+					// Call the class's graph() method passing the options in
+					classInstance.addGraph(options);
+					
+					// Add the graph instance to the holding array
+					this._graphInstances[className] = classInstance;
+				} else {
+					this.log('Could not load graph for class name "' + className + '" because the class does not implement both the require methods "addGraph()" and "removeGraph()".', 'error');
+				}
 			} else {
 				this.log('Cannot load graph for class name "' + className + '" because the class could not be found. Have you included it in your server/clientConfig.js file?', 'error');
 			}
@@ -1398,20 +1409,24 @@ var IgeEngine = IgeEntity.extend({
 	 * @return {*}
 	 */
 	findBaseClass: function (obj) {
-		if (obj._classId.substr(0, 3) === 'Ige') {
-			return obj._classId;
-		} else {
-			if (obj.__proto__._classId) { 
-				return this.findBaseClass(obj.__proto__);
+		if (obj && obj._classId) {
+			if (obj._classId.substr(0, 3) === 'Ige') {
+				return obj._classId;
 			} else {
-				return '';
+				if (obj.__proto__._classId) { 
+					return this.findBaseClass(obj.__proto__);
+				} else {
+					return '';
+				}
 			}
+		} else {
+			return '';
 		}
 	},
 
 	/**
 	 * Returns an array of all classes the passed object derives from
-	 * in order from base to current.
+	 * in order from current to base.
 	 * @param obj
 	 * @param arr
 	 * @return {*}
@@ -1488,7 +1503,7 @@ var IgeEngine = IgeEntity.extend({
 						}
 						html += '<br />';
 					}
-					html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowSceneGraph();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Tick">' + self._dpt + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
+					html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowEditor();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Tick">' + self._dpt + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
 
 					if (self.network) {
 						// Add the network latency too
@@ -1501,7 +1516,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 
-	toggleShowSceneGraph: function () {
+	toggleShowEditor: function () {
 		this._showSgTree = !this._showSgTree;
 
 		if (this._showSgTree) {
@@ -1679,6 +1694,8 @@ var IgeEngine = IgeEntity.extend({
 			} else {
 				ige._currentViewport.drawBoundsLimitId('');
 			}
+			
+			ige.emit('sgTreeSelectionChanged', ige._sgTreeSelected);
 		};
 
 		dblClick = function (event) {
@@ -1729,18 +1746,35 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 
+	/**
+	 * Gets / sets the current time scalar value. The engine's internal
+	 * time is multiplied by this value and it's default is 1. You can set it to
+	 * 0.5 to slow down time by half or 1.5 to speed up time by half. Currently
+	 * will not accept a negative value.
+	 * @param {Number=} val The time scale value.
+	 * @returns {*}
+	 */
 	timeScale: function (val) {
 		if (val !== undefined) {
-			this._timeScale = val;
+			this._timeScale = Math.abs(val);
 			return this;
 		}
 
 		return this._timeScale;
 	},
 
+	/**
+	 * Increments the engine's interal time by the passed number of milliseconds.
+	 * @param {Number} val The number of milliseconds to increment time by.
+	 * @param {Number=} lastVal The last internal time value, used to calculate
+	 * delta internally in the method.
+	 * @returns {Number}
+	 */
 	incrementTime: function (val, lastVal) {
-		if (!lastVal) { lastVal = val; }
-		this._currentTime += ((val - lastVal) * this._timeScale);
+		if (!this._pause) {
+			if (!lastVal) { lastVal = val; }
+			this._currentTime += ((val - lastVal) * this._timeScale);
+		}
 		return this._currentTime;
 	},
 
@@ -1750,6 +1784,21 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	currentTime: function () {
 		return this._currentTime;
+	},
+
+	/**
+	 * Gets / sets the pause flag. If set to true then the engine's
+	 * internal time will no longer increment and will instead stay static.
+	 * @param val
+	 * @returns {*}
+	 */
+	pause: function (val) {
+		if (val !== undefined) {
+			this._pause = val;
+			return this;
+		}
+		
+		return this._pause;
 	},
 
 	/**
@@ -1817,7 +1866,7 @@ var IgeEngine = IgeEntity.extend({
 		/* TODO:
 			Make the scenegraph process simplified. Walk the scenegraph once and grab the order in a flat array
 			then process updates and ticks. This will also allow a layered rendering system that can render the
-			first x number of entities then stop, allowing a step through of the renderer in realtime
+			first x number of entities then stop, allowing a step through of the renderer in realtime.
 		 */
 		var st,
 			et,

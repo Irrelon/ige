@@ -16,7 +16,7 @@ var CharacterAi = Character.extend({
 
 		// Add pathing capabilities
 		this.addComponent(IgePathComponent)
-			.path.drawPath(true); // Enable drawing the current path
+			.path.drawPath(false); // Enable drawing the current path
 
 		// Hook the path events
 		newPathMethod = function () {
@@ -28,7 +28,7 @@ var CharacterAi = Character.extend({
 		// Hook when we get mounted
 		this.on('mounted', function (parent) {
 			// Start the first path!
-			self.pathNextTick = true;
+			self.pathNextUpdate = true;
 		});
 	},
 
@@ -52,12 +52,12 @@ var CharacterAi = Character.extend({
 		destTileY = currentTile.y + ((Math.random() * 20 | 0) - 10);
 
 		if (destTileX < 0 || destTileY < 0) {
-			self.pathNextTick = true;
+			self.pathNextUpdate = true;
 			return;
 		}
 
 		if (!this.collisionMap.map._mapData[destTileY] || !tileChecker(this.collisionMap.map._mapData[destTileY][destTileX])) {
-			self.pathNextTick = true;
+			self.pathNextUpdate = true;
 			return;
 		}
 
@@ -70,18 +70,18 @@ var CharacterAi = Character.extend({
 				.path.add(path)
 				.path.start();
 
-			self.pathNextTick = false;
+			self.pathNextUpdate = false;
 		} else {
-			self.pathNextTick = true;
+			self.pathNextUpdate = true;
 		}
 	},
 
-	tick: function (ctx) {
-		if (this.pathNextTick) {
+	update: function (ctx) {
+		if (this.pathNextUpdate) {
 			this.newPath();
 		}
 
-		Character.prototype.tick.call(this, ctx);
+		Character.prototype.update.call(this, ctx);
 	}
 });
 

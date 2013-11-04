@@ -18,7 +18,8 @@
 	<div class="content"><a href="IgeEventingClass.html">IgeEventingClass</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><h3 class="methodTitle">squareCost</h3>
+<h2>Methods</h2><a name="squareCost"></a>
+<h3 class="methodTitle">squareCost</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the cost of movement over a square (left, right, up, down) adjacent tile.</div>
@@ -27,7 +28,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">diagonalCost</h3>
+</div><a name="diagonalCost"></a>
+<h3 class="methodTitle">diagonalCost</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the cost of movement over a diagonal (nw, ne, sw, se) adjacent tile.</div>
@@ -36,7 +38,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">neighbourLimit</h3>
+</div><a name="neighbourLimit"></a>
+<h3 class="methodTitle">neighbourLimit</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets / sets the limit on the number of neighbour nodes that the path-finder will analyse before reaching it's target tile. On large maps this limit should be increased to allow pathing where many neighbours need to be considered.</div>
@@ -45,7 +48,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><h3 class="methodTitle">aStar</h3>
+</div><a name="aStar"></a>
+<h3 class="methodTitle">aStar</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Uses the A* algorithm to generate path data between two points.</div>
@@ -54,7 +58,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeCollisionMap2d.html">IgeCollisionMap2d</a></span>}<span class="argName">tileMap</span> The tile map to use when generating the path.</li><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">startPoint</span> The point on the map to start path-finding from.</li><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">endPoint</span> The point on the map to try to path-find to.</li><li>{<span class="argType">Function</span>}<span class="argName">comparisonCallback</span> The callback function that will decide if each tile that is being considered for use in the path is allowed or not based on the tile map's data stored for that tile which is passed to this method as the first parameter. Must return a boolean value.</li><li>{<span class="argType">Boolean</span>}<span class="argName">allowSquare</span> Whether to allow neighboring tiles along a square axis. Defaults to true if undefined.</li><li>{<span class="argType">Boolean</span>}<span class="argName">allowDiagonal</span> Whether to allow neighboring tiles along a diagonal axis. Defaults to false if undefined.</li><li>{<span class="argType">Boolean</span>}<span class="argName">allowInvalidDestination</span> If the path finder cannot path to the destination tile, if this is true the closest path will be returned instead.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.</div>
     
-</div><h3 class="methodTitle">_getNeighbours</h3>
+</div><a name="_getNeighbours"></a>
+<h3 class="methodTitle">_getNeighbours</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Get all the neighbors of a node for the A* algorithm.</div>
@@ -63,7 +68,8 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePathNode.html">IgePathNode</a></span>}<span class="argName">currentNode</span> The current node along the path to evaluate neighbors for.</li><li>{<span class="argType"><a href="./IgePathNode.html">IgePathNode</a></span>}<span class="argName">endPoint</span> The end point of the path.</li><li>{<span class="argType"><a href="./IgeCollisionMap2d.html">IgeCollisionMap2d</a></span>}<span class="argName">tileMap</span> The tile map to use when evaluating neighbours.</li><li>{<span class="argType">Function</span>}<span class="argName">comparisonCallback</span> The callback function that will decide if the tile data at the neighbouring node is to be used or not. Must return a boolean value.</li><li>{<span class="argType">Boolean</span>}<span class="argName">allowSquare</span> Whether to allow neighboring tiles along a square axis.</li><li>{<span class="argType">Boolean</span>}<span class="argName">allowDiagonal</span> Whether to allow neighboring tiles along a diagonal axis.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} An array containing nodes describing the neighbouring tiles of the current node.</div>
     
-</div><h3 class="methodTitle">_heuristic</h3>
+</div><a name="_heuristic"></a>
+<h3 class="methodTitle">_heuristic</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">The heuristic to calculate the rough cost of pathing from the x1, y1 to x2, y2.</div>

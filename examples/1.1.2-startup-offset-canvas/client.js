@@ -27,19 +27,8 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1');
-
-					// Create the main viewport and set the scene
-					// it will "look" at as the new scene1 we just
-					// created above
-					self.vp1 = new IgeViewport()
-						.id('vp1')
-						.autoSize(true)
-						.scene(self.scene1)
-						.drawBounds(true)
-						.mount(ige);
+					// Load the base scene data
+					ige.addGraph('IgeBaseScene');
 					
 					// Create an entity that will follow the mouse
 					self.mouseEnt = new IgeEntity()
@@ -48,7 +37,7 @@ var Client = IgeClass.extend({
 						.width(20)
 						.height(20)
 						.texture(self.gameTexture.simpleBox)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 					
 					self.mousePosText = new IgeFontEntity()
 						.layer(6)
@@ -62,7 +51,7 @@ var Client = IgeClass.extend({
 						.height(40)
 						.translateTo(0, 100, 0)
 						.cache(false)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 					
 					ige.input.on('mouseMove', function () {
 						self.mouseEnt.translateToPoint(ige.mousePos());
@@ -78,7 +67,7 @@ var Client = IgeClass.extend({
 						.texture(self.gameTexture.fairy)
 						.translateTo(0, 0, 0)
 						.mouseEventsActive(true)
-						.mount(self.scene1);
+						.mount(ige.$('baseScene'));
 					
 					self.obj[0].on('mouseOver', function () {
 						this.highlight(true);
