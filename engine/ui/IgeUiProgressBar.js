@@ -1,9 +1,9 @@
 // TODO: Document this class
-var IgeUiProgressBar = IgeUiEntity.extend({
+var IgeUiProgressBar = IgeUiElement.extend({
 	classId: 'IgeUiProgressBar',
 
 	init: function () {
-		IgeUiEntity.prototype.init.call(this);
+		IgeUiElement.prototype.init.call(this);
 
 		// Set some defaults
 		this._min = 0;
@@ -163,6 +163,6 @@ var IgeUiProgressBar = IgeUiEntity.extend({
 	tick: function (ctx) {
 		this._transformContext(ctx);
 		this.render(ctx);
-		IgeUiEntity.prototype.tick.call(this, ctx, true);
+		IgeUiElement.prototype.tick.call(this, ctx, true);
 	}
 });

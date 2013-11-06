@@ -1,4 +1,4 @@
-var IgeUiTimeStream = IgeUiEntity.extend({
+var IgeUiTimeStream = IgeUiElement.extend({
 	classId: 'IgeUiTimeStream',
 
 	monitor: function (entity) {
@@ -12,7 +12,7 @@ var IgeUiTimeStream = IgeUiEntity.extend({
 			renderTime = ige._tickStart - ige.network.stream._renderLatency,
 			deltaTime;
 
-		IgeUiEntity.prototype.tick.call(this, ctx);
+		IgeUiElement.prototype.tick.call(this, ctx);
 
 		ctx.strokeStyle = '#fffc00';
 		ctx.beginPath();

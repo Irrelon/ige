@@ -137,6 +137,14 @@ var Client = IgeClass.extend({
 						'color': '#333333'
 					});
 					
+					ige.ui.style('#button1', {
+						'width': 80,
+						'height': 30,
+						'top': 220,
+						'left': 15,
+						'backgroundColor': '#ccc'
+					});
+					
 					var topNav = new IgeUiElement()
 						.id('topNav')
 						.mount(self.uiScene);
@@ -189,6 +197,11 @@ var Client = IgeClass.extend({
 						.mask('*')
 						.placeHolder('Password')
 						.placeHolderColor('#989898')
+						.mount(main);
+					
+					new IgeUiButton()
+						.id('button1')
+						.value('Submit')
 						.mount(main);
 				}
 			});
