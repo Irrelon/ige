@@ -283,7 +283,14 @@ var IgeUiEntity = IgeEntity.extend([
 		var ret = IgeEntity.prototype.mount.call(this, obj);
 
 		if (this._parent) {
+			// Now we're mounted update our ui calculations since we have a parent
+			// to calculate from
 			this._updateUiPosition();
+			
+			// Also update any children if we have any
+			if(this._children.length) {
+				this.updateUiChildren();
+			}
 		}
 
 		return ret;
