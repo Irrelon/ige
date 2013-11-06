@@ -251,6 +251,15 @@ var IgeUiElement = IgeUiEntity.extend({
 		return this._focused;
 	},
 	
+	value: function (val) {
+		if (val !== undefined) {
+			this._value = val;
+			return this;
+		}
+		
+		return this._value;
+	},
+	
 	_mounted: function () {
 		this._updateStyle();
 	},
