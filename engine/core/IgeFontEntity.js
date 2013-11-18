@@ -336,12 +336,15 @@ var IgeFontEntity = IgeUiEntity.extend({
 				lineWidth = this.measureTextWidth(currentTextLine);
 				
 				if (lineWidth >= this._geometry.x) {
-					// Add a line break
-					textArray.push('\n');
+					// Start a new line
 					currentTextLine = words[wordIndex];
+					
+					// Add a line break
+					textArray.push('\n' + words[wordIndex]);
+				} else {
+					textArray.push(words[wordIndex]);
 				}
 				
-				textArray.push(words[wordIndex]);
 			}
 			
 			this._renderText = textArray.join(' ');

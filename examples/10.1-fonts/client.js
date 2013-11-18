@@ -91,13 +91,13 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					self.obj[3] = new IgeFontEntity()
-						.cache(false)
+						.cache(true)
 						.id('font4')
 						.depth(1)
 						.width(110)
 						.height(50)
 						.texture(gameTexture[1])
-						.textAlignX(1)
+						.textAlignX(0)
 						//.textAlignY(1)
 						.textLineSpacing(-10)
 						.autoWrap(true)
@@ -118,7 +118,6 @@ var Client = IgeClass.extend({
 						.stepTo({x: 100}, 1000)
 						.afterChange(function () {
 							self.obj[3].width(myTween.x);
-							console.log('width', myTween.x);
 						})
 						.start();
 					
@@ -131,7 +130,7 @@ var Client = IgeClass.extend({
 					setInterval(function () {
 						textInt = !textInt;
 						self.obj[2].text(text[Number(textInt)]);
-					}, 100);
+					}, 500);
 				}
 			});
 		});
