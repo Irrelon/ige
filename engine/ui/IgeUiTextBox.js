@@ -34,6 +34,7 @@ var IgeUiTextBox = IgeUiElement.extend({
 		};
 		
 		var focusFunc = function () {
+			ige.input.stopPropagation();
 			blurFunc();
 			
 			var input,
@@ -95,6 +96,7 @@ var IgeUiTextBox = IgeUiElement.extend({
 		// On focus, create a temp input element in the DOM and focus to it
 		this.on('focus', focusFunc);
 		this.on('mouseUp', focusFunc);
+		this.on('mouseDown', function () { ige.input.stopPropagation(); });
 		
 		this.on('uiUpdate', function () {
 			if (self._domElement) {
