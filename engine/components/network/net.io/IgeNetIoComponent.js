@@ -32,7 +32,7 @@ var IgeNetIoComponent = IgeEventingClass.extend([
 		}
 		/* CEXCLUDE */
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			this._netio = IgeNetIoClient;
 			this.implement(IgeNetIoClient);
 		}

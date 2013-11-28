@@ -115,7 +115,7 @@ var IgeEntity = IgeObject.extend({
 			
 			if (val) {
 				// Create the off-screen canvas
-				if (!ige.isServer) {
+				if (ige.isClient) {
 					// Use a real canvas
 					this._cacheCanvas = document.createElement('canvas');
 				} else {
@@ -187,7 +187,7 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 */
 	compositeCache: function (val) {
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			if (val !== undefined) {
 				if (val) {
 					// Switch off normal caching
@@ -3017,7 +3017,7 @@ var IgeEntity = IgeObject.extend({
 			
 			case 'depth':
 					if (data !== undefined) {
-						if (!ige.isServer) {
+						if (ige.isClient) {
 							this.depth(parseInt(data));
 						}
 					} else {
@@ -3027,7 +3027,7 @@ var IgeEntity = IgeObject.extend({
 				
 			case 'layer':
 				if (data !== undefined) {
-					if (!ige.isServer) {
+					if (ige.isClient) {
 						this.layer(parseInt(data));
 					}
 				} else {
@@ -3037,7 +3037,7 @@ var IgeEntity = IgeObject.extend({
 			
 			case 'geometry':
 				if (data !== undefined) {
-					if (!ige.isServer) {
+					if (ige.isClient) {
 						var geom = data.split(',');
 						this.size3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 					}
@@ -3048,7 +3048,7 @@ var IgeEntity = IgeObject.extend({
 			
 			case 'hidden':
 				if (data !== undefined) {
-					if (!ige.isServer) {
+					if (ige.isClient) {
 						if (data == 'true') {
 							this.hide();
 						} else {
@@ -3062,7 +3062,7 @@ var IgeEntity = IgeObject.extend({
 			
 			case 'mount':
 				if (data !== undefined) {
-					if (!ige.isServer) {
+					if (ige.isClient) {
 						if (data) {
 							var newParent = ige.$(data);
 							
@@ -3087,7 +3087,7 @@ var IgeEntity = IgeObject.extend({
 			
 			case 'origin':
 				if (data !== undefined) {
-					if (!ige.isServer) {
+					if (ige.isClient) {
 						var geom = data.split(',');
 						this.origin(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 					}

@@ -36,7 +36,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 		}
 		/* CEXCLUDE */
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			// Define the network stream command
 			this._entity.define('_igeStreamCreate', function () { self._onStreamCreate.apply(self, arguments); });
 			this._entity.define('_igeStreamDestroy', function () { self._onStreamDestroy.apply(self, arguments); });

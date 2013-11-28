@@ -50,7 +50,7 @@ var IgeViewport = IgeEntity.extend([
 	minimumVisibleArea: function (width, height) {
 		// Store the w/h we want to lock to
 		this._lockDimension = new IgePoint(width, height, 0);
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			this._resizeEvent({});
 		}
 		

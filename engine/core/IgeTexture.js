@@ -18,7 +18,7 @@ var IgeTexture = IgeEventingClass.extend({
 		/* CEXCLUDE */
 		// If on a server, import the relevant libraries
 		if (ige.isServer) {
-			this.log('Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don\'t try to load a texture on the server-side using something like an if statement around your texture laoding such as "if (!ige.isServer) {}".', 'error');
+			this.log('Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don\'t try to load a texture on the server-side using something like an if statement around your texture laoding such as "if (ige.isClient) {}".', 'error');
 			return this;
 		}
 		/* CEXCLUDE */
@@ -128,7 +128,7 @@ var IgeTexture = IgeEventingClass.extend({
 		var image,
 			self = this;
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			// Increment the texture load count
 			ige.textureLoadStart(imageUrl, this);
 
@@ -241,7 +241,7 @@ var IgeTexture = IgeEventingClass.extend({
 
 		ige.textureLoadStart(scriptUrl, this);
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			scriptElem = document.createElement('script');
 			scriptElem.onload = function(data) {
 				self.log('Texture script "' + scriptUrl + '" loaded successfully');
@@ -319,7 +319,7 @@ var IgeTexture = IgeEventingClass.extend({
 		var image,
 			self = this;
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			// Create the image object
 			image = this.image = this._originalImage = imageElement;
 			image._igeTextures = image._igeTextures || [];

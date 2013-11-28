@@ -479,7 +479,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	},
 	
 	_tickBehaviour: function (ctx) {
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			this.path._drawPathToCtx(this, ctx);
 		}
 	},

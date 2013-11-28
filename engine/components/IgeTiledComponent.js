@@ -27,7 +27,7 @@ var IgeTiledComponent = IgeClass.extend({
 			scriptElem;
 
 		if (typeof(url) === 'string') {
-			if (!ige.isServer) {
+			if (ige.isClient) {
 				scriptElem = document.createElement('script');
 				scriptElem.src = url;
 				scriptElem.onload = function () {
@@ -97,7 +97,7 @@ var IgeTiledComponent = IgeClass.extend({
 					layersById[layer.name] = maps[i];
 					tileSetCount = tileSetArray.length;
 
-					if (!ige.isServer) {
+					if (ige.isClient) {
 						for (k = 0; k < tileSetCount; k++) {
 							maps[i].addTexture(textures[k]);
 						}
@@ -111,7 +111,7 @@ var IgeTiledComponent = IgeClass.extend({
 							z = x + (y * mapWidth);
 
 							if (layerData[z] > 0 && layerData[z] !== 2147483712) {
-								if (!ige.isServer) {
+								if (ige.isClient) {
 									// Paint the tile
 									currentTexture = textureCellLookup[layerData[z]];
 									if (currentTexture) {
@@ -139,7 +139,7 @@ var IgeTiledComponent = IgeClass.extend({
 			callback(maps, layersById);
 		};
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			onLoadFunc = function (textures, tileSetCount, tileSetItem) {
 				return function () {
 					var i, cc,

@@ -21,6 +21,7 @@ var IgeEngine = IgeEntity.extend({
 
 		// Determine the environment we are executing in
 		this.isServer = (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined');
+		this.isClient = !this.isServer;
 
 		// Assign ourselves to the global variable
 		ige = this;
@@ -35,7 +36,7 @@ var IgeEngine = IgeEntity.extend({
 		IgeEntity.prototype.init.call(this);
 
 		// Check if we are running client-side
-		if (!this.isServer) {
+		if (this.isClient) {
 			// Enable cocoonJS support because we are running client-side
 			this.addComponent(IgeCocoonJsComponent);
 		}
@@ -53,7 +54,7 @@ var IgeEngine = IgeEntity.extend({
 		this.addComponent(IgeTweenComponent);
 		this.addComponent(IgeTimeComponent);
 		
-		if (!this.isServer) {
+		if (this.isClient) {
 			// Enable UI element (virtual DOM) support
 			this.addComponent(IgeUiManagerComponent);
 		}
@@ -573,7 +574,7 @@ var IgeEngine = IgeEntity.extend({
 	 * @private
 	 */
 	_createStatsDiv: function () {
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			if (!document.getElementById('igeStats')) {
 				// Create the stats div
 				var div = document.createElement('div');
@@ -893,7 +894,7 @@ var IgeEngine = IgeEntity.extend({
 
 				// Check if we have a DOM, that there is an igeLoading element
 				// and if so, remove it from the DOM now
-				if (!this.isServer) {
+				if (this.isClient) {
 					if (document.getElementsByClassName && document.getElementsByClassName('igeLoading')) {
 						var arr = document.getElementsByClassName('igeLoading'),
 							arrCount = arr.length;
@@ -1009,7 +1010,7 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	createFrontBuffer: function (autoSize, dontScale) {
 		var self = this;
-		if (!this.isServer) {
+		if (this.isClient) {
 			if (!this._canvas) {
 				this._createdFrontBuffer = true;
 				this._pixelRatioScaling = !dontScale;
@@ -2345,7 +2346,7 @@ var IgeEngine = IgeEntity.extend({
 		this.stop();
 
 		// Remove the front buffer (canvas) if we created it
-		if (!this.isServer) {
+		if (this.isClient) {
 			this.removeCanvas();
 		}
 
