@@ -78,7 +78,7 @@ var IgeEntityManager = IgeEventingClass.extend({
 					// Check the entity to see if its bounds are "inside" any
 					// viewport's visible area
 					for (vpIndex = 0; vpIndex < vpCount; vpIndex++) {
-						if (viewportArr[vpIndex].viewArea().rectIntersect(itemAabb)) {
+						if (viewportArr[vpIndex].viewArea().intersects(itemAabb)) {
 							inVisibleArea = true;
 							break;
 						}
@@ -132,7 +132,7 @@ var IgeEntityManager = IgeEventingClass.extend({
 					// Check the entity to see if its bounds are "inside" any
 					// viewport's visible area
 					for (vpIndex = 0; vpIndex < vpCount; vpIndex++) {
-						if (viewportArr[vpIndex].viewArea().rectIntersect(itemAabb)) {
+						if (viewportArr[vpIndex].viewArea().intersects(itemAabb)) {
 							inVisibleArea = true;
 							break;
 						}

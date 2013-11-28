@@ -1408,7 +1408,7 @@ var IgeObject = IgeEventingClass.extend({
 					if (item.aabb) {
 						// Check the entity to see if its bounds are "inside" the
 						// viewport's visible area
-						if (vpViewArea.rectIntersect(item.aabb(true))) {
+						if (vpViewArea.intersects(item.aabb(true))) {
 							// The entity is inside the viewport visible area
 							item._inView = true;
 						} else {

@@ -336,7 +336,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 					if (item.aabb) {
 						// Check the entity to see if its bounds are "inside" the
 						// manager's visible area
-						if (!currentArea.rectIntersect(item.aabb())) {
+						if (!currentArea.intersects(item.aabb())) {
 							// The item is outside the manager's area so
 							// ask the removeCheck callback if we should
 							// remove the entity
@@ -401,7 +401,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 				item = arr[arrCount];
 
 				if (!self._removeCheck || self._removeCheck(item)) {
-					if (!currentAreaTiles.rectIntersect(item._occupiedRect)) {
+					if (!currentAreaTiles.intersects(item._occupiedRect)) {
 						// The item is outside the manager's area so
 						// ask the removeCheck callback if we should
 						// remove the entity
