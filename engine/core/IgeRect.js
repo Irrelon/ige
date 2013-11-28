@@ -99,6 +99,17 @@ var IgeRect = IgeClass.extend({
 	 * @return {Boolean}
 	 */
 	rectIntersect: function (rect) {
+		this.log('rectIntersect has been renamed to "intersects". Please update your code. rectIntersect will be removed in a later version of IGE.', 'warning');
+		return this.intersects(rect);
+	},
+
+	/**
+	 * Returns boolean indicating if the passed IgeRect is
+	 * intersecting the rectangle.
+	 * @param {IgeRect} rect
+	 * @return {Boolean}
+	 */
+	intersects: function (rect) {
 		if (rect) {
 			var sX1 = this.x,
 				sY1 = this.y,
