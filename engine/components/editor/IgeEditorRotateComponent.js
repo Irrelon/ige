@@ -138,7 +138,7 @@ var IgeEditorRotateComponent = IgeEventingClass.extend({
 
 				if (this._opPreStart) {
 					// Check if we've reached the start threshold
-					if (distX > this._startThreshold || distY > this._startThreshold) {
+					if (Math.abs(distX) > this._startThreshold) {
 						this._targetEntity.rotateTo(
 							this._targetEntity._rotate.x,
 							this._targetEntity._rotate.y,
