@@ -3572,7 +3572,7 @@ var IgeEntity = IgeObject.extend({
 					sectionDataString += ige.network.stream._sectionDesignator;
 
 					// Check if we were returned any data
-					if (sectionData) {
+					if (sectionData !== undefined) {
 						// Add the data to the section string
 						sectionDataString += sectionData;
 					}
