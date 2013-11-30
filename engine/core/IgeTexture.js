@@ -59,6 +59,11 @@ var IgeTexture = IgeEventingClass.extend({
 		if (id !== undefined) {
 			// Check if this ID already exists in the object register
 			if (ige._register[id]) {
+				if (ige._register[id] === this) {
+					// We are already registered as this id
+					return this;
+				}
+				
 				// Already an object with this ID!
 				this.log('Cannot set ID of object to "' + id + '" because that ID is already in use by another object!', 'error');
 			} else {
