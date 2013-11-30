@@ -180,7 +180,7 @@ var IgeUiTooltip = IgeUiElement.extend({
 		var tt = this._tooltip;
 		if (tt._hidden) tt.show();
 		var mountPos = tt._mountEntity.worldPosition();
-		tt.translateTo(event.igeBaseX - mountPos.x + tt._width / 2 + 10, event.igeBaseY - mountPos.y + tt._height / 2, 0);
+		tt.translateTo(event.igeX - mountPos.x + tt._width / 2 + 10, event.igeY - mountPos.y + tt._height / 2, 0);
 		tt.updateUiChildren();
 	},
 

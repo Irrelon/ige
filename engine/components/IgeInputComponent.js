@@ -337,9 +337,6 @@ var IgeInputComponent = IgeEventingClass.extend({
 			my = event.igeY - ige._geometry.y2,
 			self = this;
 
-		event.igeBaseX = mx;
-		event.igeBaseY = my;
-
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = true;
 		}
@@ -375,9 +372,6 @@ var IgeInputComponent = IgeEventingClass.extend({
 			my = event.igeY - ige._geometry.y2,
 			self = this;
 
-		event.igeBaseX = mx;
-		event.igeBaseY = my;
-
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = false;
 		}
@@ -410,9 +404,6 @@ var IgeInputComponent = IgeEventingClass.extend({
 			my = event.igeY - ige._geometry.y2,
 			self = this;
 
-		event.igeBaseX = mx;
-		event.igeBaseY = my;
-
 		this._state[this.mouse.x] = mx;
 		this._state[this.mouse.y] = my;
 
@@ -435,9 +426,6 @@ var IgeInputComponent = IgeEventingClass.extend({
 		var mx = event.igeX - ige._geometry.x2,
 			my = event.igeY - ige._geometry.y2,
 			self = this;
-
-		event.igeBaseX = mx;
-		event.igeBaseY = my;
 
 		this._state[this.mouse.wheel] = event.wheelDelta;
 
