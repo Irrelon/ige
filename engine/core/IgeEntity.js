@@ -1939,32 +1939,6 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
-	 * Checks mouse input types and fires the correct mouse event
-	 * handler. This is an internal method that should never be
-	 * called externally.
-	 * @param {Object} evc The input component event control object.
-	 * @param {Object} data Data passed by the input component into
-	 * the new event.
-	 * @private
-	 */
-	_mouseInTrigger: function (evc, data) {
-		if (ige.input.mouseMove) {
-			// There is a mouse move event
-			this._handleMouseIn(ige.input.mouseMove, evc, data);
-		}
-
-		if (ige.input.mouseDown) {
-			// There is a mouse down event
-			this._handleMouseDown(ige.input.mouseDown, evc, data);
-		}
-
-		if (ige.input.mouseUp) {
-			// There is a mouse up event
-			this._handleMouseUp(ige.input.mouseUp, evc, data);
-		}
-	},
-
-	/**
 	 * Generates a string containing a code fragment that when
 	 * evaluated will reproduce this object's properties via
 	 * chained commands. This method will only check for
@@ -2268,6 +2242,45 @@ var IgeEntity = IgeObject.extend({
 
 		return this;
 	},
+	
+	/**
+	 * Gets / sets the callback that is fired when a mouse
+	 * wheel event is triggered.
+	 * @param {Function=} callback
+	 * @example #Hook the mouse wheel event and stop it propagating further down the scenegraph
+	 *     entity.mouseWheel(function (event, control) {
+	 *         // Mouse wheel with button
+	 *         console.log('Mouse wheel button: ' + event.button);
+	 *         console.log('Mouse wheel delta: ' + event.wheelDelta);
+	 *         
+	 *         // Stop the event propagating further down the scenegraph
+	 *         control.stopPropagation();
+	 *         
+	 *         // You can ALSO stop propagation without the control object
+	 *         // reference via the global reference:
+	 *         ige.input.stopPropagation();
+	 *     });
+	 * @return {*}
+	 */
+	mouseWheel: function (callback) {
+		if (callback) {
+			this._mouseWheel = callback;
+			this._mouseEventsActive = true;
+			return this;
+		}
+
+		return this._mouseWheel;
+	},
+
+	/**
+	 * Removes the callback that is fired when a mouse
+	 * wheel event is triggered.
+	 */
+	mouseWheelOff: function () {
+		delete this._mouseWheel;
+
+		return this;
+	},
 
 	/**
 	 * Gets / sets the shape / polygon that the mouse events
@@ -2321,6 +2334,16 @@ var IgeEntity = IgeObject.extend({
 			this.emit('mouseOut', [event, evc, data]);
 		}
 	},
+	
+	/**
+	 * Handler method that determines if a mouse-wheel event
+	 * should be fired.
+	 * @private
+	 */
+	_handleMouseWheel: function (event, evc, data) {
+		if (this._mouseWheel) { this._mouseWheel(event, evc, data); }
+		this.emit('mouseWheel', [event, evc, data]);
+	},
 
 	/**
 	 * Handler method that determines if a mouse-up event
@@ -2346,6 +2369,37 @@ var IgeEntity = IgeObject.extend({
 			if (this._mouseDown) { this._mouseDown(event, evc, data); }
 			
 			this.emit('mouseDown', [event, evc, data]);
+		}
+	},
+	
+	/**
+	 * Checks mouse input types and fires the correct mouse event
+	 * handler. This is an internal method that should never be
+	 * called externally.
+	 * @param {Object} evc The input component event control object.
+	 * @param {Object} data Data passed by the input component into
+	 * the new event.
+	 * @private
+	 */
+	_mouseInTrigger: function (evc, data) {
+		if (ige.input.mouseMove) {
+			// There is a mouse move event
+			this._handleMouseIn(ige.input.mouseMove, evc, data);
+		}
+
+		if (ige.input.mouseDown) {
+			// There is a mouse down event
+			this._handleMouseDown(ige.input.mouseDown, evc, data);
+		}
+
+		if (ige.input.mouseUp) {
+			// There is a mouse up event
+			this._handleMouseUp(ige.input.mouseUp, evc, data);
+		}
+		
+		if (ige.input.mouseWheel) {
+			// There is a mouse wheel event
+			this._handleMouseWheel(ige.input.mouseWheel, evc, data);
 		}
 	},
 	
