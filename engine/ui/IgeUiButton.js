@@ -78,6 +78,7 @@ var IgeUiButton = IgeUiElement.extend({
 			// Draw text
 			ctx.textAlign = 'center';
 			ctx.textBaseline = 'middle';
+			ctx.fillStyle = this._color;
 			ctx.fillText(this._value, 0, 0);
 		}
 	}
