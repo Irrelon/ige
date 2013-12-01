@@ -241,6 +241,9 @@ var IgeNetIoClient = {
 	},
 
 	_onResponse: function (data) {
+		var id,
+			req;
+		
 		// The message is a network response
 		// to a request we sent earlier
 		id = data.id;
