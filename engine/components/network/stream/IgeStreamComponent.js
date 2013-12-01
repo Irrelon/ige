@@ -115,9 +115,9 @@ var IgeStreamComponent = IgeEventingClass.extend({
 
 	/**
 	 * Queues stream data to be sent during the next stream data interval.
-	 * @param id
-	 * @param data
-	 * @param clientId
+	 * @param {String} id The id of the entity that this data belongs to.
+	 * @param {String} data The data queued for delivery to the client.
+	 * @param {String} clientId The client id this data is queued for.
 	 * @return {*}
 	 */
 	queue: function (id, data, clientId) {

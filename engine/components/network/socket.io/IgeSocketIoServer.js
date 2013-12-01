@@ -11,7 +11,9 @@ var IgeSocketIoServer = {
 	start: function (data, callback) {
 		var self = this;
 
-		this._socketById = [];
+		this._socketById = {};
+		this._socketsByRoomId = {};
+		this._clientsByRoomId = {};
 
 		if (typeof(data) !== 'undefined') {
 			this._port = data;
@@ -83,8 +85,10 @@ var IgeSocketIoServer = {
 	clientJoinRoom: function (clientId, roomId) {
 		if (clientId !== undefined) {
 			if (roomId !== undefined) {
-				this._clientRoom[clientId] = this._clientRoom[clientId] || [];
-				this._clientRoom[clientId].push(roomId);
+				this._clientRooms[clientId] = this._clientRooms[clientId] || [];
+				this._clientRooms[clientId].push(roomId);
+				this._clientsByRoomId[roomId].push(clientId);
+				this._socketsByRoomId[roomId].push(this._socketById[clientId]);
 				
 				return this._entity;
 			}
@@ -108,8 +112,10 @@ var IgeSocketIoServer = {
 	clientLeaveRoom: function (clientId, roomId) {
 		if (clientId !== undefined) {
 			if (roomId !== undefined) {
-				if (this._clientRoom[clientId]) {
-					this._clientRoom[clientId].pull(roomId);
+				if (this._clientRooms[clientId]) {
+					this._clientRooms[clientId].pull(roomId);
+					this._clientsByRoomId[roomId].pull(clientId);
+					this._socketsByRoomId[roomId].pull(this._socketById[clientId]);
 				}
 				
 				return this._entity;
@@ -130,7 +136,14 @@ var IgeSocketIoServer = {
 	 */
 	clientLeaveAllRooms: function (clientId) {
 		if (clientId !== undefined) {
-			delete this._clientRoom[clientId];
+			var arr = this._clientRooms[clientId],
+				arrCount = arr.length;
+			
+			while (arrCount--) {
+				this.clientLeaveRoom(clientId, arr[arrCount]);
+			}
+			
+			delete this._clientRooms[clientId];
 			return this._entity;
 		}
 		
@@ -145,7 +158,7 @@ var IgeSocketIoServer = {
 	 */
 	clientRooms: function (clientId) {
 		if (clientId !== undefined) {
-			return this._clientRoom[clientId] || [];
+			return this._clientRooms[clientId] || [];
 		}
 		
 		this.log('Cannot get/set the clientRoom id because no clientId was provided!', 'warning');
@@ -155,9 +168,15 @@ var IgeSocketIoServer = {
 	/**
 	 * Returns an associative array of all connected clients
 	 * by their ID.
+	 * @param {String=} roomId Optional, if provided will only return clients
+	 * that have joined room specified by the passed roomId.
 	 * @return {Array}
 	 */
-	clients: function () {
+	clients: function (roomId) {
+		if (roomId !== undefined) {
+			return this._socketByRoomId;
+		}
+		
 		return this._socketById;
 	},
 

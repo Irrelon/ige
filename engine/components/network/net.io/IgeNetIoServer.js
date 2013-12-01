@@ -12,6 +12,8 @@ var IgeNetIoServer = {
 		var self = this;
 
 		this._socketById = {};
+		this._socketsByRoomId = {};
+		this._clientsByRoomId = {};
 
 		if (typeof(data) !== 'undefined') {
 			this._port = data;
@@ -70,8 +72,10 @@ var IgeNetIoServer = {
 	clientJoinRoom: function (clientId, roomId) {
 		if (clientId !== undefined) {
 			if (roomId !== undefined) {
-				this._clientRoom[clientId] = this._clientRoom[clientId] || [];
-				this._clientRoom[clientId].push(roomId);
+				this._clientRooms[clientId] = this._clientRooms[clientId] || [];
+				this._clientRooms[clientId].push(roomId);
+				this._clientsByRoomId[roomId].push(clientId);
+				this._socketsByRoomId[roomId].push(this._socketById[clientId]);
 				
 				return this._entity;
 			}
@@ -95,8 +99,10 @@ var IgeNetIoServer = {
 	clientLeaveRoom: function (clientId, roomId) {
 		if (clientId !== undefined) {
 			if (roomId !== undefined) {
-				if (this._clientRoom[clientId]) {
-					this._clientRoom[clientId].pull(roomId);
+				if (this._clientRooms[clientId]) {
+					this._clientRooms[clientId].pull(roomId);
+					this._clientsByRoomId[roomId].pull(clientId);
+					this._socketsByRoomId[roomId].pull(this._socketById[clientId]);
 				}
 				
 				return this._entity;
@@ -109,7 +115,7 @@ var IgeNetIoServer = {
 		this.log('Cannot remove client from room because no clientId was provided!', 'warning');
 		return this._entity;
 	},
-	
+
 	/**
 	 * Removes a client from all rooms that it is a member of.
 	 * @param {String} clientId The client id to remove from all rooms.
@@ -117,7 +123,14 @@ var IgeNetIoServer = {
 	 */
 	clientLeaveAllRooms: function (clientId) {
 		if (clientId !== undefined) {
-			delete this._clientRoom[clientId];
+			var arr = this._clientRooms[clientId],
+				arrCount = arr.length;
+			
+			while (arrCount--) {
+				this.clientLeaveRoom(clientId, arr[arrCount]);
+			}
+			
+			delete this._clientRooms[clientId];
 			return this._entity;
 		}
 		
@@ -132,21 +145,11 @@ var IgeNetIoServer = {
 	 */
 	clientRooms: function (clientId) {
 		if (clientId !== undefined) {
-			return this._clientRoom[clientId] || [];
+			return this._clientRooms[clientId] || [];
 		}
 		
 		this.log('Cannot get/set the clientRoom id because no clientId was provided!', 'warning');
 		return [];
-	},
-
-	/**
-	 * Returns an object with each key being the ID of
-	 * a connected client and each value being the socket
-	 * that is related to that client.
-	 * @return {Object}
-	 */
-	clients: function () {
-		return this._socketById;
 	},
 
 	/**
