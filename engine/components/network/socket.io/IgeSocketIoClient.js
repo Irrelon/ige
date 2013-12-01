@@ -45,7 +45,6 @@ var IgeSocketIoClient = {
 
 		// Define connect listener
 		this._io.on('connect', function () {
-			console.log('socket connect', arguments);
 			self._onConnectToServer.apply(self, arguments);
 		});
 
