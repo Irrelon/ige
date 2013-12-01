@@ -61,6 +61,85 @@ var IgeNetIoServer = {
 	},
 
 	/**
+	 * Adds a client to a room by id. All clients are added to room id
+	 * "ige" by default when they connect to the server. 
+	 * @param {String} clientId The id of the client to add to the room.
+	 * @param {String} roomId The id of the room to add the client to.
+	 * @returns {*}
+	 */
+	clientJoinRoom: function (clientId, roomId) {
+		if (clientId !== undefined) {
+			if (roomId !== undefined) {
+				this._clientRoom[clientId] = this._clientRoom[clientId] || [];
+				this._clientRoom[clientId].push(roomId);
+				
+				return this._entity;
+			}
+			
+			this.log('Cannot add client to room because no roomId was provided!', 'warning');
+			return this._entity;
+		}
+		
+		this.log('Cannot add client to room because no clientId was provided!', 'warning');
+		return this._entity;
+	},
+	
+	/**
+	 * Removes a client from a room by id. All clients are added to room id
+	 * "ige" by default when they connect to the server and you can remove
+	 * them from it if your game defines custom rooms etc.
+	 * @param {String} clientId The id of the client to remove from the room.
+	 * @param {String} roomId The id of the room to remove the client from.
+	 * @returns {*}
+	 */
+	clientLeaveRoom: function (clientId, roomId) {
+		if (clientId !== undefined) {
+			if (roomId !== undefined) {
+				if (this._clientRoom[clientId]) {
+					this._clientRoom[clientId].pull(roomId);
+				}
+				
+				return this._entity;
+			}
+			
+			this.log('Cannot remove client from room because no roomId was provided!', 'warning');
+			return this._entity;
+		}
+		
+		this.log('Cannot remove client from room because no clientId was provided!', 'warning');
+		return this._entity;
+	},
+	
+	/**
+	 * Removes a client from all rooms that it is a member of.
+	 * @param {String} clientId The client id to remove from all rooms.
+	 * @returns {*}
+	 */
+	clientLeaveAllRooms: function (clientId) {
+		if (clientId !== undefined) {
+			delete this._clientRoom[clientId];
+			return this._entity;
+		}
+		
+		this.log('Cannot remove client from room because no clientId was provided!', 'warning');
+		return this._entity;
+	},
+
+	/**
+	 * Gets the array of room ids that the client has joined.
+	 * @param clientId
+	 * @returns {Array} An array of string ids for each room the client has joined.
+	 */
+	clientRooms: function (clientId) {
+		if (clientId !== undefined) {
+			return this._clientRoom[clientId] || [];
+		}
+		
+		this.log('Cannot get/set the clientRoom id because no clientId was provided!', 'warning');
+		return [];
+	},
+
+	/**
 	 * Returns an object with each key being the ID of
 	 * a connected client and each value being the socket
 	 * that is related to that client.
@@ -215,6 +294,9 @@ var IgeNetIoServer = {
 			if (!this.emit('connect', socket)) {
 				this.log('Accepted connection with id ' + socket.id);
 				this._socketById[socket.id] = socket;
+				
+				// Add them to the default "ige" room
+				this.clientJoinRoom(socket.id, 'ige');
 
 				socket.on('message', function (data) {
 					self._onClientMessage.apply(self, [data, socket.id]);
@@ -313,6 +395,9 @@ var IgeNetIoServer = {
 	_onClientDisconnect: function (data, socket) {
 		this.log('Client disconnected with id ' + socket.id);
 		this.emit('disconnect', socket.id);
+		
+		// Remove them from all rooms
+		this.clientLeaveAllRooms(socket.id);
 
 		delete this._socketById[socket.id];
 	}

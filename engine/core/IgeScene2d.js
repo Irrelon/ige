@@ -21,6 +21,23 @@ var IgeScene2d = IgeEntity.extend({
 	},
 
 	/**
+	 * Gets / sets the stream room id. If set, any streaming entities that
+	 * are mounted to this scene will only sync with clients that have been
+	 * assigned to this room id.
+	 * 
+	 * @param {String} id The id of the room. 
+	 * @returns {*}
+	 */
+	streamRoomId: function (id) {
+		if (id !== undefined) {
+			this._streamRoomId = id;
+			return this;
+		}
+		
+		return this._streamRoomId;
+	},
+
+	/**
 	 * Overrides the default entity stream sections to also stream important
 	 * data about scenes to the client.
 	 * @param sectionId
