@@ -8,6 +8,18 @@ var IgeSocketIoClient = {
 	_requests: {},
 
 	/**
+	 * Gets the current socket id.
+	 * @returns {String} The id of the socket connection to the server.
+	 */
+	id: function () {
+		if (this._io && this._io.socket) {
+			return this._io.socket.sessionid;
+		} else {
+			return '';
+		}
+	},
+	
+	/**
 	 * Starts the network for the client.
 	 * @param {*} data The game server URL.
 	 * @param {Function=} callback A callback method to call once the
@@ -33,6 +45,7 @@ var IgeSocketIoClient = {
 
 		// Define connect listener
 		this._io.on('connect', function () {
+			console.log('socket connect', arguments);
 			self._onConnectToServer.apply(self, arguments);
 		});
 
