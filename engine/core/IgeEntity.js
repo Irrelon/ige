@@ -3318,7 +3318,7 @@ var IgeEntity = IgeObject.extend({
 			// Grab an array of connected clients from the network
 			// system
 			var recipientArr = [],
-				clientArr = ige.network.clients(),
+				clientArr = ige.network.clients(this._streamRoomId),
 				i;
 
 			for (i in clientArr) {

@@ -33,17 +33,7 @@ var Server = IgeClass.extend({
 						// Accept incoming network connections
 						ige.network.acceptConnections(true);
 
-						// Create the scene
-						self.scene1 = new IgeScene2d()
-							.id('scene1');
-
-						// Create the main viewport
-						self.vp1 = new IgeViewport()
-							.id('vp1')
-							.autoSize(true)
-							.scene(self.scene1)
-							.drawBounds(true)
-							.mount(ige);
+						ige.addGraph('IgeBaseScene');
 
 						// Create the room boundaries in box2d
 						new Floor()
@@ -62,7 +52,7 @@ var Server = IgeClass.extend({
 								}]
 							})
 							.streamMode(1)
-							.mount(self.scene1);
+							.mount(ige.$('baseScene'));
 
 						setInterval(self.newObject, 500);
 					}
@@ -98,7 +88,7 @@ var Server = IgeClass.extend({
 				})
 				.streamMode(1)
 				.lifeSpan(10000)
-				.mount(ige.$('scene1'));
+				.mount(ige.$('baseScene'));
 		}
 
 		if (objType === 1) {
@@ -124,7 +114,7 @@ var Server = IgeClass.extend({
 				})
 				.streamMode(1)
 				.lifeSpan(10000)
-				.mount(ige.$('scene1'));
+				.mount(ige.$('baseScene'));
 		}
 	}
 });

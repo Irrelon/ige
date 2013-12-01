@@ -20,8 +20,7 @@ var IgeBaseScene = IgeSceneGraph.extend({
 		
 		// Create the scene
 		var baseScene = new IgeScene2d()
-			.id('baseScene')
-			.streamRoomId('ige');
+			.id('baseScene');
 
 		// Create the main viewport to look at "baseScene"
 		new IgeViewport()

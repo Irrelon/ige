@@ -13,7 +13,6 @@ var IgeSocketIoServer = {
 
 		this._socketById = {};
 		this._socketsByRoomId = {};
-		this._clientsByRoomId = {};
 
 		if (typeof(data) !== 'undefined') {
 			this._port = data;
@@ -87,8 +86,9 @@ var IgeSocketIoServer = {
 			if (roomId !== undefined) {
 				this._clientRooms[clientId] = this._clientRooms[clientId] || [];
 				this._clientRooms[clientId].push(roomId);
-				this._clientsByRoomId[roomId].push(clientId);
-				this._socketsByRoomId[roomId].push(this._socketById[clientId]);
+				
+				this._socketsByRoomId[roomId] = this._socketsByRoomId[roomId] || {};
+				this._socketsByRoomId[roomId][clientId] = this._socketById[clientId];
 				
 				return this._entity;
 			}
@@ -114,8 +114,7 @@ var IgeSocketIoServer = {
 			if (roomId !== undefined) {
 				if (this._clientRooms[clientId]) {
 					this._clientRooms[clientId].pull(roomId);
-					this._clientsByRoomId[roomId].pull(clientId);
-					this._socketsByRoomId[roomId].pull(this._socketById[clientId]);
+					delete this._socketsByRoomId[roomId][clientId];
 				}
 				
 				return this._entity;
@@ -174,7 +173,7 @@ var IgeSocketIoServer = {
 	 */
 	clients: function (roomId) {
 		if (roomId !== undefined) {
-			return this._socketByRoomId;
+			return this._socketsByRoomId[roomId];
 		}
 		
 		return this._socketById;
@@ -332,10 +331,10 @@ var IgeSocketIoServer = {
 			if (!this.emit('connect', socket)) {
 				this.log('Accepted connection with id ' + socket.id);
 				this._socketById[socket.id] = socket;
-				
-				// Add them to the default "ige" room
-				this.clientJoinRoom(socket.id, 'ige');
 
+				// Store a rooms array for this client
+				this._clientRooms[socket.id] = this._clientRooms[socket.id] || [];
+				
 				socket.on('message', function (data) {
 					self._onClientMessage(data, socket.id);
 				});
