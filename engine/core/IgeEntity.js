@@ -1068,6 +1068,15 @@ var IgeEntity = IgeObject.extend({
 		
 		return poly.pointInside(mp);
 	},
+	
+	customTriggerPoly: function (poly) {
+		if (poly !== undefined) {
+			this._customTriggerPoly = poly;
+			return this;
+		}
+		
+		return this._customTriggerPoly;
+	},
 
 	/**
 	 * Calculates and returns the current axis-aligned bounding box in
@@ -1645,9 +1654,16 @@ var IgeEntity = IgeObject.extend({
 					if (this._mouseEventTrigger === 0) {
 						// Trigger mode is against the AABB
 						mouseTriggerPoly = this.aabb(); //this.localAabb();
-					} else {
+					}
+					
+					if (this._mouseEventTrigger === 1) {
 						// Trigger mode is against the iso bounds polygon
 						mouseTriggerPoly = this.isoBoundsPoly();
+					}
+					
+					if (this._mouseEventTrigger === 2) {
+						// Triger mode is against a custom polygon
+						mouseTriggerPoly = this.customTriggerPoly();
 					}
 					
 					// Check if the current mouse position is inside this aabb
@@ -2291,7 +2307,22 @@ var IgeEntity = IgeObject.extend({
 	 */
 	mouseEventTrigger: function (val) {
 		if (val !== undefined) {
-			this._mouseEventTrigger = val === 'aabb' ? 0 : 1;
+			// Set default value
+			this._mouseEventTrigger = 0;
+			
+			switch (val) {
+				case 'isoBounds':
+					this._mouseEventTrigger = 1;
+					break;
+				
+				case 'custom':
+					this._mouseEventTrigger = 2;
+					break;
+				
+				case 'aabb':
+					this._mouseEventTrigger = 0;
+					break;
+			}
 			return this;
 		}
 		
