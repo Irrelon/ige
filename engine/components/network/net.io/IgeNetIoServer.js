@@ -77,6 +77,10 @@ var IgeNetIoServer = {
 				this._socketsByRoomId[roomId] = this._socketsByRoomId[roomId] || {};
 				this._socketsByRoomId[roomId][clientId] = this._socketById[clientId];
 				
+				if (this.debug()) {
+					this.log('Client ' + clientId + ' joined room ' + roomId);
+				}
+				
 				return this._entity;
 			}
 			

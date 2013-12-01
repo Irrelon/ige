@@ -161,6 +161,23 @@ var Client = IgeClass.extend({
 						.id('main')
 						.mount(self.uiScene);
 					
+					new IgeUiDropDown()
+						.id('optionsDropDown')
+						.top(10)
+						.left(10)
+						.right(10)
+						.options([{
+							text: 'Test 1',
+							value: 'test1'
+						}, {
+							text: 'Test 2',
+							value: 'test2'
+						}, {
+							text: 'Test 3',
+							value: 'test3'
+						}])
+						.mount(leftNav);
+					
 					new IgeUiLabel()
 						.value('Dashboard')
 						.styleClass('title')

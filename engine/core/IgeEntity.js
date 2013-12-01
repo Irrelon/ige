@@ -3320,7 +3320,7 @@ var IgeEntity = IgeObject.extend({
 			var recipientArr = [],
 				clientArr = ige.network.clients(this._streamRoomId),
 				i;
-
+			
 			for (i in clientArr) {
 				if (clientArr.hasOwnProperty(i)) {
 					// Check for a stream control method

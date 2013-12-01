@@ -32,6 +32,15 @@ var IgeUiEntity = IgeEntity.extend([
 		this._paddingBottom = 0;
 	},
 	
+	disabled: function (val) {
+		if (val !== undefined) {
+			this._disabled = val;
+			return this;
+		}
+		
+		return this._disabled;
+	},
+	
 	overflow: function (val) {
 		if (val !== undefined) {
 			this._overflow = val;

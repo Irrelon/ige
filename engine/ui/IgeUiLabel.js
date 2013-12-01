@@ -15,11 +15,18 @@ var IgeUiLabel = IgeUiElement.extend({
 		this._value = '';
 
 		this._fontEntity = new IgeFontEntity()
-			.left(5)
+			.left(0)
 			.middle(0)
 			.textAlignX(0)
 			.textAlignY(0)
 			.mount(this);
+		
+		// Set defaults
+		this.font('10px Verdana');
+		this.paddingLeft(5);
+		this.allowActive(false);
+		this.allowFocus(false);
+		this.allowHover(false);
 	},
 
 	/**

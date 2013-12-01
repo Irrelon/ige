@@ -53,6 +53,13 @@ var IgeUiManagerComponent = IgeClass.extend({
 	 */
 	unRegisterElement: function (elem) {
 		this._register.pull(elem);
+		
+		// Kill any styles defined for this element id
+		delete this._styles['#' + elem._id];
+		
+		delete this._styles['#' + elem._id + ':active'];
+		delete this._styles['#' + elem._id + ':focus'];
+		delete this._styles['#' + elem._id + ':hover'];
 	},
 
 	/**
@@ -91,7 +98,7 @@ var IgeUiManagerComponent = IgeClass.extend({
 				if (!previousFocus || !previousFocus.emit('blur', elem)) {
 					if (previousFocus) {
 						previousFocus._focused = false;
-						previousFocus._updateStyle();
+						previousFocus.blur();
 					}
 					
 					// The blur was not cancelled
@@ -113,7 +120,7 @@ var IgeUiManagerComponent = IgeClass.extend({
 	},
 	
 	blur: function (elem) {
-		console.log('blur', elem._id, elem);
+		//console.log('blur', elem._id, elem);
 		if (elem !== undefined) {
 			if (elem === this._focus) {
 				// The element is currently focused

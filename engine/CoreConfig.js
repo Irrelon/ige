@@ -97,6 +97,7 @@ var igeCoreConfig = {
 		['csap', 'IgeEntityBox2d', 'components/physics/box2d/IgeEntityBox2d.js'],
 		['csap', 'IgeEntityCannon', 'components/physics/cannon/IgeEntityCannon.js'],
 		/* UI Classes */
+		['csap', 'IgeUiDropDown', 'ui/IgeUiDropDown.js'],
 		['csap', 'IgeUiButton', 'ui/IgeUiButton.js'],
 		['csap', 'IgeUiRadioButton', 'ui/IgeUiRadioButton.js'],
 		['csap', 'IgeUiProgressBar', 'ui/IgeUiProgressBar.js'],
