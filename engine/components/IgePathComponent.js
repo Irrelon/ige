@@ -220,9 +220,10 @@ var IgePathComponent = IgeEventingClass.extend({
 		}
 	},
 
-	previousTargetCell: function () {
+	previousTargetCell: function (delta) {
 		if (this._paths.length) {
-			var tpI = this._targetCellIndex > 0 ? this._targetCellIndex - 1 : this._targetCellIndex;
+			if (!delta) { delta = 1; }
+			var tpI = this._targetCellIndex > 0 ? this._targetCellIndex - delta : this._targetCellIndex;
 
 			return this._paths[this._currentPathIndex][tpI];
 		}
@@ -524,6 +525,7 @@ var IgePathComponent = IgeEventingClass.extend({
 				currentPosition = this._translate,
 				oldTargetCell = currentPath[self._targetCellIndex],
 				targetCell = currentPath[self._targetCellIndex],
+				newTargetCell,
 				targetPoint,
 				newPosition,
 				distanceBetweenP1AndP2,
@@ -559,9 +561,6 @@ var IgePathComponent = IgeEventingClass.extend({
 						
 						this.translateTo(newPosition.x, newPosition.y, currentPosition.z);
 					} else {
-						// Emit point complete
-						self.emit('pointComplete', this);
-						
 						// Move to the next cell
 						self._targetCellIndex++;
 
@@ -569,8 +568,10 @@ var IgePathComponent = IgeEventingClass.extend({
 						if (!currentPath[self._targetCellIndex]) {
 							// Make sure we're exactly on the target
 							this.translateTo(targetPoint.x, targetPoint.y, currentPosition.z);
-
-							self.emit('pathComplete', this);
+							
+							// Emit point complete
+							self.emit('pointComplete', [this, oldTargetCell.x, oldTargetCell.y]);
+							self.emit('pathComplete', [this, oldTargetCell.x, oldTargetCell.y]);
 
 							// No more cells, go to next path
 							self._targetCellIndex = 0;
@@ -590,6 +591,10 @@ var IgePathComponent = IgeEventingClass.extend({
 						// Set the new target cell's arrival time
 						currentPath = self._paths[self._currentPathIndex];
 						targetCell = currentPath[self._targetCellIndex];
+						
+						// Emit point complete
+						self.emit('pointComplete', [this, oldTargetCell.x, oldTargetCell.y, targetCell.x, targetCell.y]);
+						newTargetCell = targetCell;
 						
 						// Check if we are in dynamic mode
 						if (self._dynamic) {
@@ -619,7 +624,7 @@ var IgePathComponent = IgeEventingClass.extend({
 									self._targetCellIndex = 0;
 								} else {
 									// Cannot generate valid path, delete this path
-									self.emit('dynamicFail', this, new IgePoint(recalcStartPoint.x, recalcStartPoint.y, 0), new IgePoint(recalcEndPoint.x, recalcEndPoint.y, 0));
+									self.emit('dynamicFail', [this, new IgePoint(recalcStartPoint.x, recalcStartPoint.y, 0), new IgePoint(recalcEndPoint.x, recalcEndPoint.y, 0)]);
 									self.clear();
 									return;
 								}
