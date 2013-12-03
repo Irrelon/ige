@@ -53,6 +53,8 @@ var Client = IgeClass.extend({
 					.drawBounds(true)
 					.drawBoundsData(true)
 					.mount(ige);
+				
+				self.vp1.camera.translateTo(50, 100, 0);
 
 				// Create some listeners for when the viewport is being panned
 				// so that we don't create a new path accidentally after a mouseUp
@@ -125,7 +127,6 @@ var Client = IgeClass.extend({
 				// entity will be mounted to
 				self.player = new CharacterContainer()
 					.id('player')
-					.addComponent(PlayerComponent)
 					.addComponent(IgePathComponent)
 					.mouseOver(overFunc)
 					.mouseOut(outFunc)
@@ -162,7 +163,16 @@ var Client = IgeClass.extend({
 
 				// Set the camera to track the character with some
 				// tracking smoothing turned on (100)
-				self.vp1.camera.trackTranslate(self.player, 100);
+				//self.vp1.camera.trackTranslate(self.player, 100);
+				
+				// Listen for the mouse up event
+				ige.input.on('mouseUp', function (event, x, y, button) {
+					// Get the tile co-ordinates that the mouse is currently over
+					var tileMap = ige.$('tileMap1'),
+						clickedTile = tileMap.mouseToTile();
+					
+					tileMap.occupyTile(clickedTile.x, clickedTile.y, 1, 1, 1);
+				});
 
 				// Create a path finder and generate a path using
 				// the collision map data
