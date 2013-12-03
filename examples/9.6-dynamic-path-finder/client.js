@@ -184,8 +184,12 @@ var Client = IgeClass.extend({
 				self.player1
 					.path.finder(self.pathFinder)
 					.path.tileMap(self.tileMap1)
-					.path.tileChecker(function (tileData, tileX, tileY) {
+					.path.tileChecker(function (tileData, tileX, tileY, node, prevNodeX, prevNodeY, dynamic) {
 						// If the map tile data is set to 1, don't allow a path along it
+						if (typeof tileData === 'string') {
+							return tileData === this._id;
+						}
+						
 						return tileData !== 1;
 					})
 					.path.lookAheadSteps(3)
@@ -199,8 +203,12 @@ var Client = IgeClass.extend({
 				self.player2
 					.path.finder(self.pathFinder)
 					.path.tileMap(self.tileMap1)
-					.path.tileChecker(function (tileData, tileX, tileY) {
+					.path.tileChecker(function (tileData, tileX, tileY, node, prevNodeX, prevNodeY, dynamic) {
 						// If the map tile data is set to 1, don't allow a path along it
+						if (typeof tileData === 'string') {
+							return tileData === this._id;
+						}
+						
 						return tileData !== 1;
 					})
 					.path.lookAheadSteps(3)
@@ -216,13 +224,13 @@ var Client = IgeClass.extend({
 					console.log('Path point reached...');
 					
 					// Mark the previous point as un-blocked
-					var previousCell = entity.path.previousTargetCell(2);
+					var previousCell = entity.path.previousTargetCell(1);
 					if (previousCell !== undefined) {
 						self.tileMap1.unOccupyTile(previousCell.x, previousCell.y, 1, 1);
 					}
 					
 					// Mark the current point as blocked
-					self.tileMap1.occupyTile(currentCellX, currentCellY, 1, 1, 1);
+					self.tileMap1.occupyTile(currentCellX, currentCellY, 1, 1, entity._id);
 				});
 				self.player1.path.on('pathComplete', function (entity, currentCellX, currentCellY) {
 					console.log('Path completed...');
@@ -237,13 +245,13 @@ var Client = IgeClass.extend({
 					console.log('Path point reached...');
 					
 					// Mark the previous point as un-blocked
-					var previousCell = entity.path.previousTargetCell(2);
+					var previousCell = entity.path.previousTargetCell(1);
 					if (previousCell !== undefined) {
 						self.tileMap1.unOccupyTile(previousCell.x, previousCell.y, 1, 1);
 					}
 					
 					// Mark the current point as blocked
-					self.tileMap1.occupyTile(currentCellX, currentCellY, 1, 1, 1);
+					self.tileMap1.occupyTile(currentCellX, currentCellY, 1, 1, entity._id);
 				});
 				self.player2.path.on('pathComplete', function (entity, currentCellX, currentCellY) {
 					console.log('Path completed...');

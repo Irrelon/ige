@@ -107,7 +107,6 @@ var IgePathFinder = IgeEventingClass.extend({
 		}
 
 		// Starting point to open list
-
 		startNode = new IgePathNode(startPoint.x, startPoint.y, 0, 0, this._heuristic(startPoint.x, startPoint.y, endPoint.x, endPoint.y, 10));
 		startNode.link = 1;
 		openList.push(startNode);

@@ -81,7 +81,9 @@ var IgePathComponent = IgeEventingClass.extend({
 	
 	tileChecker: function (val) {
 		if (val !== undefined) {
-			this._tileChecker = val;
+			var self = this;
+			
+			this._tileChecker = function () { return val.apply(self._entity, arguments); };
 			return this._entity;
 		}
 		
@@ -222,7 +224,7 @@ var IgePathComponent = IgeEventingClass.extend({
 
 	previousTargetCell: function (delta) {
 		if (this._paths.length) {
-			if (!delta) { delta = 1; }
+			if (!delta) { delta = 1; } else { delta += 1; }
 			var tpI = this._targetCellIndex > 0 ? this._targetCellIndex - delta : this._targetCellIndex;
 
 			return this._paths[this._currentPathIndex][tpI];
@@ -603,7 +605,7 @@ var IgePathComponent = IgeEventingClass.extend({
 							tileMapData = self._tileMap.map._mapData;
 							tileCheckData = tileMapData[targetCell.y] && tileMapData[targetCell.y][targetCell.x] ? tileMapData[targetCell.y][targetCell.x] : null;
 							
-							if (!self._tileChecker(tileCheckData, targetCell.x, targetCell.y)) {
+							if (!self._tileChecker(tileCheckData, targetCell.x, targetCell.y, null, null, null, true)) {
 								// The new destination tile is blocked, recalculate path
 								// Create a new path
 								recalcStartPoint = oldTargetCell;
