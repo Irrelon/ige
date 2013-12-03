@@ -62,7 +62,7 @@ var CharacterAi = Character.extend({
 		}
 
 		destTile = new IgePoint(destTileX, destTileY, 0);
-		path = self.pathFinder.aStar(self.collisionMap, currentTile, destTile, tileChecker, true, false);
+		path = self.pathFinder.generate(self.collisionMap, currentTile, destTile, tileChecker, true, false);
 
 		if (path.length) {
 			// Assign the path to the player and start it

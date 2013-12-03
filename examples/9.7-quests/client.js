@@ -229,25 +229,25 @@ var Client = IgeClass.extend({
 				// Generate first path, diagonal enabled
 				var path1, path2, path3, path4;
 
-				path1 = self.pathFinder.aStar(self.tileMap1, new IgePoint(0, 0, 0), new IgePoint(3, 0, 0), function (tileData, tileX, tileY) {
+				path1 = self.pathFinder.generate(self.tileMap1, new IgePoint(0, 0, 0), new IgePoint(3, 0, 0), function (tileData, tileX, tileY) {
 					// If the map tile data is set to 1, don't allow a path along it
 					return tileData !== 1;
 				}, true, true);
 
 				// Generate first path, diagonal disabled
-				path2 = self.pathFinder.aStar(self.tileMap1, new IgePoint(3, 0, 0), new IgePoint(6, 4, 0), function (tileData, tileX, tileY) {
+				path2 = self.pathFinder.generate(self.tileMap1, new IgePoint(3, 0, 0), new IgePoint(6, 4, 0), function (tileData, tileX, tileY) {
 					// If the map tile data is set to 1, don't allow a path along it
 					return tileData !== 1;
 				}, true, false);
 
 				// Generate first path, diagonal enabled
-				path3 = self.pathFinder.aStar(self.tileMap1, new IgePoint(6, 4, 0), new IgePoint(7, 0, 0), function (tileData, tileX, tileY) {
+				path3 = self.pathFinder.generate(self.tileMap1, new IgePoint(6, 4, 0), new IgePoint(7, 0, 0), function (tileData, tileX, tileY) {
 					// If the map tile data is set to 1, don't allow a path along it
 					return tileData !== 1;
 				}, true, true);
 
 				// Generate first path, diagonal disabled
-				path4 = self.pathFinder.aStar(self.tileMap1, new IgePoint(7, 0, 0), new IgePoint(0, 0, 0), function (tileData, tileX, tileY) {
+				path4 = self.pathFinder.generate(self.tileMap1, new IgePoint(7, 0, 0), new IgePoint(0, 0, 0), function (tileData, tileX, tileY) {
 					// If the map tile data is set to 1, don't allow a path along it
 					return tileData !== 1;
 				}, true, false);
