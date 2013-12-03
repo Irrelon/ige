@@ -121,7 +121,7 @@ var IgePathComponent = IgeEventingClass.extend({
 		
 		// Create a new path
 		var path = this._finder.generate(
-			this._tileMap1,
+			this._tileMap,
 			new IgePoint(fromX, fromY, fromZ),
 			new IgePoint(toX, toY, toZ),
 			this._tileChecker,
@@ -138,7 +138,23 @@ var IgePathComponent = IgeEventingClass.extend({
 		// Get the endPoint of the current path
 		var endPoint = this.endPoint();
 		
+		// Create a new path
+		var path = this._finder.generate(
+			this._tileMap,
+			endPoint,
+			new IgePoint(x, y, z),
+			this._tileChecker,
+			this._allowSquare,
+			this._allowDiagonal
+		);
 		
+		this.add(path);
+		
+		return this._entity;
+	},
+	
+	replacePath: function (pathIndex, newPath) {
+		this._paths[pathIndex] = newPath;
 		return this._entity;
 	},
 
@@ -506,16 +522,16 @@ var IgePathComponent = IgeEventingClass.extend({
 			var self = this.path,
 				currentPath = self._paths[self._currentPathIndex],
 				currentPosition = this._translate,
+				oldTargetCell = currentPath[self._targetCellIndex],
 				targetCell = currentPath[self._targetCellIndex],
 				targetPoint,
 				newPosition,
 				distanceBetweenP1AndP2,
-				oldTracePathPoint,
-				tracePathPoint,
-				pathPointIndex,
-				tempCurrentPath,
-				tempCurrentPathIndex,
-				tempPathText;
+				tileMapData,
+				tileCheckData,
+				recalcStartPoint,
+				recalcEndPoint,
+				replacementPath;
 
 			self._currentTime = ige._currentTime;
 
@@ -543,13 +559,6 @@ var IgePathComponent = IgeEventingClass.extend({
 						
 						this.translateTo(newPosition.x, newPosition.y, currentPosition.z);
 					} else {
-						// We are at the target cell, check if we are in dynamic mode
-						if (self._dynamic) {
-							// We are in dynamic mode, check steps ahead to see if they
-							// have been blocked or not
-							//HERE
-						}
-						
 						// Emit point complete
 						self.emit('pointComplete', this);
 						
@@ -558,8 +567,6 @@ var IgePathComponent = IgeEventingClass.extend({
 
 						// Check we are being sane!
 						if (!currentPath[self._targetCellIndex]) {
-							//self.log('Path complete...');
-
 							// Make sure we're exactly on the target
 							this.translateTo(targetPoint.x, targetPoint.y, currentPosition.z);
 
@@ -583,11 +590,51 @@ var IgePathComponent = IgeEventingClass.extend({
 						// Set the new target cell's arrival time
 						currentPath = self._paths[self._currentPathIndex];
 						targetCell = currentPath[self._targetCellIndex];
-						if(targetCell.mode===0){
+						
+						// Check if we are in dynamic mode
+						if (self._dynamic) {
+							// We are in dynamic mode, check steps ahead to see if they
+							// have been blocked or not
+							tileMapData = self._tileMap.map._mapData;
+							tileCheckData = tileMapData[targetCell.y] && tileMapData[targetCell.y][targetCell.x] ? tileMapData[targetCell.y][targetCell.x] : null;
+							
+							if (!self._tileChecker(tileCheckData, targetCell.x, targetCell.y)) {
+								// The new destination tile is blocked, recalculate path
+								// Create a new path
+								recalcStartPoint = oldTargetCell;
+								recalcEndPoint = currentPath[currentPath.length - 1];
+								
+								replacementPath = self._finder.generate(
+									self._tileMap,
+									new IgePoint(recalcStartPoint.x, recalcStartPoint.y, 0),
+									new IgePoint(recalcEndPoint.x, recalcEndPoint.y, 0),
+									self._tileChecker,
+									self._allowSquare,
+									self._allowDiagonal,
+									false
+								);
+								
+								if (replacementPath.length) {
+									self.replacePath(self._currentPathIndex, replacementPath);
+									self._targetCellIndex = 0;
+								} else {
+									// Cannot generate valid path, delete this path
+									self.emit('dynamicFail', this, new IgePoint(recalcStartPoint.x, recalcStartPoint.y, 0), new IgePoint(recalcEndPoint.x, recalcEndPoint.y, 0));
+									self.clear();
+									return;
+								}
+								
+								currentPath = self._paths[self._currentPathIndex];
+								targetCell = currentPath[self._targetCellIndex];
+							}
+						}
+						
+						if (targetCell.mode === 0){
 							targetPoint = {x: targetCell.x * this._parent._tileWidth, y: targetCell.y * this._parent._tileHeight};
-						}else{
+						} else {
 							targetPoint = targetCell.clone();
 						}
+						
 						distanceBetweenP1AndP2 = Math.distance(currentPosition.x, currentPosition.y, targetPoint.x, targetPoint.y);
 
 						self._targetCellArrivalTime = self._currentTime + (distanceBetweenP1AndP2 / self._speed);

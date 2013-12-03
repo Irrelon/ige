@@ -146,15 +146,62 @@ var IgeMap2d = IgeClass.extend({
 	/**
 	 * Gets / sets the map's tile data.
 	 * @param {Array} val The map data array.
+	 * @param {Integer} startX The start x co-ordinate of the data.
+	 * @param {Integer} startY The start y co-ordinate of the data.
 	 * @return {*}
 	 */
-	mapData: function (val) {
+	mapData: function (val, startX, startY) {
 		if (val !== undefined) {
-			this._mapData = val;
+			if (!startX && !startY) {
+				this._mapData = val;
+			} else {
+				// Loop the map data and apply based on the start positions
+				var x, y;
+				
+				for (y in val) {
+					for (x in val[y]) {
+						this._mapData[startY + parseInt(y)][startX + parseInt(x)] = val[y][x];
+					}
+				}
+			}
 			return this;
 		}
 
 		return this._mapData;
+	},
+	
+	sortedMapDataAsArray: function () {
+		var data = this.mapData(),
+			finalData = {};
+		
+		var x, y, xArr, yArr, i, k;
+				
+		yArr = this._sortKeys(data);
+		
+		for (i = 0; i < yArr.length; i++) {
+			y = yArr[i];
+			xArr = this._sortKeys(data[y]);
+			
+			finalData[y] = finalData[y] || {};
+			
+			for (k = 0; k < xArr.length; k++) {
+				x = xArr[k];
+				finalData[y][x] = data[y][x];
+			}
+		}
+		
+		return finalData;
+	},
+	
+	_sortKeys: function (obj) {
+		var arr = [];
+		
+		for (var i in obj) {
+			arr.push(i);
+		}
+		
+		arr.sort();
+		return arr;
 	},
 
 	/**

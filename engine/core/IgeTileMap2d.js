@@ -430,6 +430,52 @@ var IgeTileMap2d = IgeEntity.extend({
 		
 		return this._hoverColor;
 	},
+	
+	/**
+	 * Loads map data from a saved map.
+	 * @param {Object} map The map data object.
+	 */
+	loadMap: function (map) {
+		// Just fill in the map data
+		this.map.mapData(map.data, 0, 0);
+
+		return this;
+	},
+
+	/**
+	 * Returns a map JSON string that can be saved to a data file and loaded
+	 * with the loadMap() method.
+	 * @return {Object} The map data object.
+	 */
+	saveMap: function () {
+		// in URL format
+		var textures = [], i,
+			x, y,
+			dataX = 0, dataY = 0,
+			mapData = this.map._mapData;
+
+		// Get the lowest x, y
+		for (y in mapData) {
+			if (mapData.hasOwnProperty(y)) {
+				for (x in mapData[y]) {
+					if (mapData[y].hasOwnProperty(x)) {
+						if (parseInt(x) < parseInt(dataX)) {
+							dataX = parseInt(x);
+						}
+
+						if (parseInt(y) < parseInt(dataY)) {
+							dataY = parseInt(y);
+						}
+					}
+				}
+			}
+		}
+
+		return JSON.stringify({
+			data: this.map.sortedMapDataAsArray(),
+			dataXY: [parseInt(dataX), parseInt(dataY)]
+		});
+	},
 
 	tick: function (ctx) {
 		var tileWidth = this._tileWidth,
