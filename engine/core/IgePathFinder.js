@@ -57,6 +57,10 @@ var IgePathFinder = IgeEventingClass.extend({
 
 		return this._neighbourLimit;
 	},
+	
+	aStar: function () {
+		this.log('The "IgePathFinder.aStar" method has been renamed to "generate". Please update your code.', 'error');
+	},
 
 	/**
 	 * Uses the A* algorithm to generate path data between two points.
@@ -69,7 +73,7 @@ var IgePathFinder = IgeEventingClass.extend({
 	 * @param {Boolean=} allowInvalidDestination If the path finder cannot path to the destination tile, if this is true the closest path will be returned instead.
 	 * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
 	 */
-	aStar: function (tileMap, startPoint, endPoint, comparisonCallback, allowSquare, allowDiagonal, allowInvalidDestination) {
+	generate: function (tileMap, startPoint, endPoint, comparisonCallback, allowSquare, allowDiagonal, allowInvalidDestination) {
 		var openList = [],
 			closedList = [],
 			listHash = {},

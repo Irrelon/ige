@@ -28,6 +28,121 @@ var IgePathComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Gets / sets the tile map that will be used when calculating paths.
+	 * @param {IgeTileMap2d} val The tileMap to use for path calculations.
+	 * @returns {*}
+	 */
+	tileMap: function (val) {
+		if (val !== undefined) {
+			this._tileMap = val;
+			return this._entity;
+		}
+		
+		return this._tileMap;
+	},
+	
+	/**
+	 * Gets / sets the path finder class instance used to generate paths.
+	 * @param {IgePathFinder} val The pathfinder class instance to use to generate paths.
+	 * @returns {*}
+	 */
+	finder: function (val) {
+		if (val !== undefined) {
+			this._finder = val;
+			return this._entity;
+		}
+		
+		return this._finder;
+	},
+
+	/**
+	 * Gets / sets the dynamic mode enabled flag. If dynamic mode is enabled
+	 * then at the end of every path point (reaching a tile along the path)
+	 * the path finder will evaluate the path by looking ahead and seeing if
+	 * the path has changed (the tiles along the path have now been marked as
+	 * cannot path on). If any tile along the path up to the look-ahead value
+	 * has been blocked, the path will auto re-calculate to avoid the new block.
+	 * 
+	 * For dynamic mode to work you need to supply a path-finder instance by
+	 * calling .finder(), a tile checker method by calling .tileChecker() and
+	 * the number of look-ahead steps by calling .lookAheadSteps(). See the
+	 * doc for those methods for usage and required arguments.
+	 * @param {Boolean} enable If set to true, enables dynamic mode.
+	 * @returns {*}
+	 */
+	dynamic: function (enable) {
+		if (enable !== undefined) {
+			this._dynamic = enable;
+			return this._entity;
+		}
+		
+		return this._dynamic;
+	},
+	
+	tileChecker: function (val) {
+		if (val !== undefined) {
+			this._tileChecker = val;
+			return this._entity;
+		}
+		
+		return this._tileChecker;
+	},
+	
+	lookAheadSteps: function (val) {
+		if (val !== undefined) {
+			this._lookAheadSteps = val;
+			return this._entity;
+		}
+		
+		return this._lookAheadSteps;
+	},
+	
+	allowSquare: function (val) {
+		if (val !== undefined) {
+			this._allowSquare = val;
+			return this._entity;
+		}
+		
+		return this._allowSquare;
+	},
+	
+	allowDiagonal: function (val) {
+		if (val !== undefined) {
+			this._allowDiagonal = val;
+			return this._entity;
+		}
+		
+		return this._allowDiagonal;
+	},
+	
+	set: function (fromX, fromY, fromZ, toX, toY, toZ) {
+		// Clear existing path
+		this.clear();
+		
+		// Create a new path
+		var path = this._finder.generate(
+			this._tileMap1,
+			new IgePoint(fromX, fromY, fromZ),
+			new IgePoint(toX, toY, toZ),
+			this._tileChecker,
+			this._allowSquare,
+			this._allowDiagonal
+		);
+		
+		this.add(path);
+		
+		return this._entity;
+	},
+	
+	addDestination: function (x, y, z) {
+		// Get the endPoint of the current path
+		var endPoint = this.endPoint();
+		
+		
+		return this._entity;
+	},
+
+	/**
 	 * Adds a path array containing path points (IgePoint instances)
 	 * to the path queue.
 	 * @param {Array} path
@@ -402,7 +517,7 @@ var IgePathComponent = IgeEventingClass.extend({
 				tempCurrentPathIndex,
 				tempPathText;
 
-			self._currentTime = ige._currentTime;//ige._tickDelta;
+			self._currentTime = ige._currentTime;
 
 			if (targetCell) {
 				if (targetCell.mode === 0) {
@@ -428,8 +543,17 @@ var IgePathComponent = IgeEventingClass.extend({
 						
 						this.translateTo(newPosition.x, newPosition.y, currentPosition.z);
 					} else {
-						// We are at the target cell, move to the next cell
+						// We are at the target cell, check if we are in dynamic mode
+						if (self._dynamic) {
+							// We are in dynamic mode, check steps ahead to see if they
+							// have been blocked or not
+							//HERE
+						}
+						
+						// Emit point complete
 						self.emit('pointComplete', this);
+						
+						// Move to the next cell
 						self._targetCellIndex++;
 
 						// Check we are being sane!
