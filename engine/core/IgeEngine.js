@@ -1369,8 +1369,11 @@ var IgeEngine = IgeEntity.extend({
 	 * @param {Number} sampleCount The number of times you
 	 * want the trace to break with the debugger line before
 	 * automatically switching off the trace.
+	 * @param {Function=} callbackEvaluator Optional callback
+	 * that if returns true, will fire debugger. Method is passed
+	 * the setter value as first argument.
 	 */
-	traceSet: function (obj, propName, sampleCount) {
+	traceSet: function (obj, propName, sampleCount, callbackEvaluator) {
 		obj.___igeTraceCurrentVal = obj[propName];
 		obj.___igeTraceMax = sampleCount || 1;
 		obj.___igeTraceCount = 0;
@@ -1380,7 +1383,13 @@ var IgeEngine = IgeEntity.extend({
 				return this.___igeTraceCurrentVal;
 			},
 			set: function (val) {
-				debugger;
+				if (callbackEvaluator){ 
+					if (callbackEvaluator(val)) {
+						debugger;
+					}
+				} else {
+					debugger;
+				}
 				this.___igeTraceCurrentVal = val;
 				this.___igeTraceCount++;
 

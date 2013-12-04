@@ -132,7 +132,7 @@ var IgeBox2dMultiWorldComponent = IgeEventingClass.extend({
 		options.sleep = options.sleep !== undefined ? options.sleep : true;
 		
 		// Create world instance
-		this._worlds[options.id] = world = new IgeBox2dWorld(options);
+		this._worlds[options.id] = world = new IgeBox2dWorld(this, options);
 		
 		return world;
 	}

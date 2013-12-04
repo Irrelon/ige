@@ -1,7 +1,7 @@
 var IgeBox2dWorld = IgeEventingClass.extend({
 	classId: 'IgeBox2dWorld',
 	
-	init: function (options) {
+	init: function (entity, options) {
 		this.b2Color = Box2D.Common.b2Color;
 		this.b2Vec2 = Box2D.Common.Math.b2Vec2;
 		this.b2Math = Box2D.Common.Math.b2Math;
@@ -21,6 +21,8 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 		this.b2FilterData = Box2D.Dynamics.b2FilterData;
 		this.b2DistanceJointDef = Box2D.Dynamics.Joints.b2DistanceJointDef;
 		
+		this._entity = entity;
+		
 		options = options || {
 			id: ige.newIdHex(),
 			gravity: new this.b2Vec2(0, 0),
@@ -30,7 +32,8 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 		this._id = options.id;
 		this._sleep = options.sleep;
 		this._scaleRatio = options.scaleRatio !== undefined ? options.scaleRatio : 30;
-		this._gravity = new this.b2Vec2(0, 0);
+		this._gravity = options.gravity;
+		this._mode = 0;
 
 		this._removeWhenReady = [];
 		
@@ -112,7 +115,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 
 		// Set the position
 		tempDef.position = new this.b2Vec2(entity._translate.x / this._scaleRatio, entity._translate.y / this._scaleRatio);
-
+		
 		// Create the new body
 		tempBod = this._world.CreateBody(tempDef);
 
@@ -200,7 +203,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 								}
 	
 								if (fixtureDef.filter && finalFixture) {
-									tempFilterData = new this._entity.box2d.b2FilterData();
+									tempFilterData = new this.b2FilterData();
 	
 									if (fixtureDef.filter.categoryBits !== undefined) { tempFilterData.categoryBits = fixtureDef.filter.categoryBits; }
 									if (fixtureDef.filter.maskBits !== undefined) { tempFilterData.maskBits = fixtureDef.filter.maskBits; }
@@ -339,7 +342,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 				this.contactListener();
 			}
 			
-			return this._entity;
+			return this;
 		}
 		
 		return this._networkDebugMode;
@@ -400,22 +403,23 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 	updateCallback: function (method) {
 		if (method !== undefined) {
 			this._updateCallback = method;
-			return this._entity;
+			return this;
 		}
 
 		return this._updateCallback;
 	},
 
 	start: function () {
+		var self = this;
 		if (!this._active) {
 			this._active = true;
 			
 			if (!this._networkDebugMode) {
 				if (this._mode === 0) {
 					// Add the box2d behaviour to the ige
-					this._entity.addBehaviour('box2dStep', this._behaviour);
+					ige.addBehaviour('box2dStep_' + self._id, function () { self._behaviour.apply(self, arguments); });
 				} else {
-					this._intervalTimer = setInterval(this._behaviour, 1000 / 60);
+					this._intervalTimer = setInterval(function () { self._behaviour.apply(self, arguments); }, 1000 / 60);
 				}
 			}
 		}
@@ -427,7 +431,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 
 			if (this._mode === 0) {
 				// Add the box2d behaviour to the ige
-				this._entity.removeBehaviour('box2dStep');
+				ige.removeBehaviour('box2dStep_' + this._id);
 			} else {
 				clearInterval(this._intervalTimer);
 			}
@@ -440,7 +444,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 	 * @private
 	 */
 	_behaviour: function (ctx) {
-		var self = this.box2d,
+		var self = this,
 			tempBod,
 			entity,
 			entityBox2dBody,
@@ -483,7 +487,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 					if (tempBod.IsAwake() && tempBod.m_type !== 0) {
 						// Update the entity data to match the body data
 						entityBox2dBody.updating = true;
-						entity.translateTo(tempBod.m_xf.position.x * self._scaleRatio, tempBod.m_xf.position.y * self._scaleRatio, entity._translate.z);
+						entity.translateTo(tempBod.m_xf.position.x * entity._b2dRef._scaleRatio, tempBod.m_xf.position.y * entity._b2dRef._scaleRatio, entity._translate.z);
 						entity.rotateTo(entity._rotate.x, entity._rotate.y, tempBod.GetAngle());
 						entityBox2dBody.updating = false;
 
@@ -518,7 +522,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 
 	destroy: function () {
 		// Stop processing box2d steps
-		this._entity.removeBehaviour('box2dStep');
+		this.removeBehaviour('box2dStep');
 
 		// Destroy all box2d world bodies
 
