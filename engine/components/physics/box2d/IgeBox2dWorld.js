@@ -1,224 +1,26 @@
-/**
- * The engine's box2d component class.
- */
-var IgeBox2dComponent = IgeEventingClass.extend({
-	classId: 'IgeBox2dComponent',
-	componentId: 'box2d',
-
-	init: function (entity, options) {
-		// Check that the engine has not already started
-		// as this will mess everything up if it has
-		if (ige._state !== 0) {
-			this.log('Cannot add box2d component to the ige instance once the engine has started!', 'error');
-		}
-
-		this._entity = entity;
-		this._options = options;
-		this._mode = 0;
-
-		this.b2Color = Box2D.Common.b2Color;
-		this.b2Vec2 = Box2D.Common.Math.b2Vec2;
-		this.b2Math = Box2D.Common.Math.b2Math;
-		this.b2Shape = Box2D.Collision.Shapes.b2Shape;
-		this.b2BodyDef = Box2D.Dynamics.b2BodyDef;
-		this.b2Body = Box2D.Dynamics.b2Body;
-		this.b2FixtureDef = Box2D.Dynamics.b2FixtureDef;
-		this.b2Fixture = Box2D.Dynamics.b2Fixture;
-		this.b2World = Box2D.Dynamics.b2World;
-		this.b2MassData = Box2D.Collision.Shapes.b2MassData;
-		this.b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape;
-		this.b2CircleShape = Box2D.Collision.Shapes.b2CircleShape;
-		this.b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
-		this.b2ContactListener = Box2D.Dynamics.b2ContactListener;
-		this.b2Distance = Box2D.Collision.b2Distance;
-		this.b2Contact = Box2D.Dynamics.Contacts.b2Contact;
-		this.b2FilterData = Box2D.Dynamics.b2FilterData;
-		this.b2DistanceJointDef = Box2D.Dynamics.Joints.b2DistanceJointDef;
-
-		// Extend the b2Contact class to allow the IGE entity accessor
-		// and other helper methods
-		this.b2Contact.prototype.igeEntityA = function () {
-			var ent = this.m_fixtureA.m_body._entity;
-			ent._box2dOurContactFixture = this.m_fixtureA;
-			ent._box2dTheirContactFixture = this.m_fixtureB;
-			return ent;
+var IgeBox2dWorld = IgeEventingClass.extend({
+	classId: 'IgeBox2dWorld',
+	
+	init: function (options) {
+		options = options || {
+			id: ige.newIdHex(),
+			gravity: new this.b2Vec2(0, 0),
+			sleep: true
 		};
-
-		this.b2Contact.prototype.igeEntityB = function () {
-			var ent = this.m_fixtureB.m_body._entity;
-			ent._box2dOurContactFixture = this.m_fixtureB;
-			ent._box2dTheirContactFixture = this.m_fixtureA;
-			return ent;
-		};
-
-		this.b2Contact.prototype.igeEitherId = function (id1, id2) {
-			if (!id2) {
-				return this.m_fixtureA.m_body._entity._id === id1 || this.m_fixtureB.m_body._entity._id === id1;
-			} else {
-				return (this.m_fixtureA.m_body._entity._id === id1 || this.m_fixtureB.m_body._entity._id === id1) &&
-					(this.m_fixtureA.m_body._entity._id === id2 || this.m_fixtureB.m_body._entity._id === id2);
-			}
-		};
-
-		this.b2Contact.prototype.igeEitherCategory = function (category1, category2) {
-			if (!category2) {
-				return this.m_fixtureA.m_body._entity._category === category1 || this.m_fixtureB.m_body._entity._category === category1;
-			} else {
-				return (this.m_fixtureA.m_body._entity._category === category1 || this.m_fixtureB.m_body._entity._category === category1) &&
-					(this.m_fixtureA.m_body._entity._category === category2 || this.m_fixtureB.m_body._entity._category === category2);
-			}
-		};
-
-		this.b2Contact.prototype.igeBothCategories = function (category1) {
-			return (this.m_fixtureA.m_body._entity._category === category1 && this.m_fixtureB.m_body._entity._category === category1);
-		};
-
-		this.b2Contact.prototype.igeEntityByCategory = function (category) {
-			if (this.m_fixtureA.m_body._entity._category === category) {
-				return this.igeEntityA();
-			}
-
-			if (this.m_fixtureB.m_body._entity._category === category) {
-				return this.igeEntityB();
-			}
-		};
-
-		this.b2Contact.prototype.igeEntityById = function (id) {
-			if (this.m_fixtureA.m_body._entity._id === id) {
-				return this.igeEntityA();
-			}
-
-			if (this.m_fixtureB.m_body._entity._id === id) {
-				return this.igeEntityB();
-			}
-		};
-
-		this.b2Contact.prototype.igeEntityByFixtureId = function (id) {
-			if (this.m_fixtureA.igeId === id) {
-				return this.igeEntityA();
-			}
-
-			if (this.m_fixtureB.igeId === id) {
-				return this.igeEntityB();
-			}
-		};
-
-		this.b2Contact.prototype.igeOtherEntity = function (entity) {
-			if (this.m_fixtureA.m_body._entity === entity) {
-				return this.igeEntityB();
-			} else {
-				return this.igeEntityA();
-			}
-		};
-
-		this._sleep = true;
-		this._scaleRatio = 30;
-		this._gravity = new this.b2Vec2(0, 0);
+		
+		this._id = options.id;
+		this._sleep = options.sleep;
+		this._scaleRatio = options.scaleRatio !== undefined ? options.scaleRatio : 30;
+		this._gravity = new ige.box2d.b2Vec2(0, 0);
 
 		this._removeWhenReady = [];
-
-		this.log('Physics component initiated!');
-	},
-
-	useWorker: function (val) {
-		if (typeof(Worker) !== 'undefined') {
-			if (val !== undefined) {
-				this._useWorker = val;
-				return this._entity;
-			}
-
-			return this._useWorker;
-		} else {
-			this.log('Web workers were not detected on this browser. Cannot access useWorker() method.', 'warning');
-		}
-	},
-
-	/**
-	 * Gets / sets the world interval mode. In mode 0 (zero) the
-	 * box2d simulation is synced to the framerate of the engine's
-	 * renderer. In mode 1 the box2d simulation is stepped at a constant
-	 * speed regardless of the engine's renderer. This must be set *before*
-	 * calling the start() method in order for the setting to take effect.
-	 * @param {Integer} val The mode, either 0 or 1.
-	 * @returns {*}
-	 */
-	mode: function (val) {
-		if (val !== undefined) {
-			this._mode = val;
-			return this._entity;
-		}
-
-		return this._mode;
-	},
-
-	/**
-	 * Gets / sets if the world should allow sleep or not.
-	 * @param {Boolean=} val
-	 * @return {*}
-	 */
-	sleep: function (val) {
-		if (val !== undefined) {
-			this._sleep = val;
-			return this._entity;
-		}
-
-		return this._sleep;
-	},
-
-	/**
-	 * Gets / sets the current engine to box2d scaling ratio.
-	 * @param val
-	 * @return {*}
-	 */
-	scaleRatio: function (val) {
-		if (val !== undefined) {
-			this._scaleRatio = val;
-			return this._entity;
-		}
-
-		return this._scaleRatio;
-	},
-
-	/**
-	 * Gets / sets the gravity vector.
-	 * @param x
-	 * @param y
-	 * @return {*}
-	 */
-	gravity: function (x, y) {
-		if (x !== undefined && y !== undefined) {
-			this._gravity = new this.b2Vec2(x, y);
-			return this._entity;
-		}
-
-		return this._gravity;
-	},
-
-	/**
-	 * Gets the current Box2d world object.
-	 * @return {b2World}
-	 */
-	world: function () {
-		return this._world;
-	},
-
-	/**
-	 * Creates the Box2d world.
-	 * @param {String=} id
-	 * @param {Object=} options
-	 * @return {*}
-	 */
-	createWorld: function (id, options) {
-		this._world = new this.b2World(
-			this._gravity,
-			this._sleep
+		
+		this._world = new ige.box2d.b2World(
+			options.gravity,
+			options.sleep
 		);
-
-		this.log('World created');
-
-		return this._entity;
 	},
-
+	
 	/**
 	 * Creates a Box2d fixture and returns it.
 	 * @param params
@@ -242,7 +44,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	/**
 	 * Creates a Box2d body and attaches it to an IGE entity
 	 * based on the supplied body definition.
-	 * @param {IgeEntity} entity
+	 * @param {IgeEntityBox2d} entity
 	 * @param {Object} body
 	 * @return {b2Body}
 	 */
@@ -704,4 +506,4 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeBox2dComponent; }
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeBox2dWorld; }

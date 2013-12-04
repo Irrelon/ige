@@ -94,6 +94,9 @@ var igeCoreConfig = {
 		['csap', 'IgeCuboid', 'primitives/IgeCuboid.js'],
 		/* Physics to Entity Components */
 		['csap', 'IgeBox2dComponent', 'components/physics/box2d/IgeBox2dComponent.js'],
+		['csap', 'IgeBox2dMultiWorldComponent', 'components/physics/box2d/IgeBox2dMultiWorldComponent.js'],
+		['csap', 'IgeBox2dWorld', 'components/physics/box2d/IgeBox2dWorld.js'],
+		['csap', 'IgeBox2dDebugPainter', 'components/physics/box2d/IgeBox2dDebugPainter.js'],
 		['csap', 'IgeEntityBox2d', 'components/physics/box2d/IgeEntityBox2d.js'],
 		['csap', 'IgeEntityCannon', 'components/physics/cannon/IgeEntityCannon.js'],
 		/* UI Classes */

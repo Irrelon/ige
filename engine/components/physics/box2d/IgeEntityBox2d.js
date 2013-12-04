@@ -4,12 +4,24 @@
 var IgeEntityBox2d = IgeEntity.extend({
 	classId: 'IgeEntityBox2d',
 
-	init: function () {
+	init: function (world) {
 		IgeEntity.prototype.init.call(this);
+		
+		if (world) {
+			if (typeof(world) === 'string') {
+				// Get world reference
+				world = ige.box2d.world(world);
+			}
+			
+			this._box2dWorld = world;
+			this._b2dRef = this._box2dWorld;
+		} else {
+			this._b2dRef = ige.box2d;
+		}
 		
 		// Check if box2d is enabled in the engine
 		if (ige.box2d) {
-			if (!ige.box2d._networkDebugMode) {
+			if (!this._b2dRef._networkDebugMode) {
 				// Store the existing transform methods
 				this._translateToProto = this.translateTo;
 				this._translateByProto = this.translateBy;
@@ -73,7 +85,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 			// Check that the box2d component exists
 			if (ige.box2d) {
 				// Ask the box2d component to create a new body for us
-				this._box2dBody = ige.box2d.createBody(this, def);
+				this._box2dBody = this._b2dRef.createBody(this, def);
 			} else {
 				this.log('You are trying to create a box2d entity but you have not added the box2d component to the ige instance!', 'error');
 			}
