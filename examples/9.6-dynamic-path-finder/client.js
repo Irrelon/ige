@@ -175,8 +175,7 @@ var Client = IgeClass.extend({
 					}
 				});
 				
-				// Create a path finder and generate a path using
-				// the collision map data
+				// Create a path finder
 				self.pathFinder = new IgePathFinder()
 					.neighbourLimit(100);
 
