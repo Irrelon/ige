@@ -2,6 +2,25 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 	classId: 'IgeBox2dWorld',
 	
 	init: function (options) {
+		this.b2Color = Box2D.Common.b2Color;
+		this.b2Vec2 = Box2D.Common.Math.b2Vec2;
+		this.b2Math = Box2D.Common.Math.b2Math;
+		this.b2Shape = Box2D.Collision.Shapes.b2Shape;
+		this.b2BodyDef = Box2D.Dynamics.b2BodyDef;
+		this.b2Body = Box2D.Dynamics.b2Body;
+		this.b2FixtureDef = Box2D.Dynamics.b2FixtureDef;
+		this.b2Fixture = Box2D.Dynamics.b2Fixture;
+		this.b2World = Box2D.Dynamics.b2World;
+		this.b2MassData = Box2D.Collision.Shapes.b2MassData;
+		this.b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape;
+		this.b2CircleShape = Box2D.Collision.Shapes.b2CircleShape;
+		this.b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
+		this.b2ContactListener = Box2D.Dynamics.b2ContactListener;
+		this.b2Distance = Box2D.Collision.b2Distance;
+		this.b2Contact = Box2D.Dynamics.Contacts.b2Contact;
+		this.b2FilterData = Box2D.Dynamics.b2FilterData;
+		this.b2DistanceJointDef = Box2D.Dynamics.Joints.b2DistanceJointDef;
+		
 		options = options || {
 			id: ige.newIdHex(),
 			gravity: new this.b2Vec2(0, 0),
@@ -11,11 +30,11 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 		this._id = options.id;
 		this._sleep = options.sleep;
 		this._scaleRatio = options.scaleRatio !== undefined ? options.scaleRatio : 30;
-		this._gravity = new ige.box2d.b2Vec2(0, 0);
+		this._gravity = new this.b2Vec2(0, 0);
 
 		this._removeWhenReady = [];
 		
-		this._world = new ige.box2d.b2World(
+		this._world = new this.b2World(
 			options.gravity,
 			options.sleep
 		);
