@@ -8,7 +8,7 @@ var RandomTweener = IgeEntity.extend({
 
 		IgeEntity.prototype.init.call(this);
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			this.depth(ige.client.scene1._children.length);
 			
 			// Define the texture this entity will use

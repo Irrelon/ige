@@ -19,7 +19,7 @@ var Player = IgeEntity.extend({
 			this.addComponent(IgeVelocityComponent);
 		}
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			self.texture(ige.client.textures.ship)
 			.width(20)
 			.height(20);
@@ -84,7 +84,7 @@ var Player = IgeEntity.extend({
 		}
 		/* CEXCLUDE */
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			if (ige.input.actionState('left')) {
 				if (!this.controls.left) {
 					// Record the new state

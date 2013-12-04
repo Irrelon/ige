@@ -11,7 +11,7 @@ var PlayerComponent = IgeEntity.extend({
 		// Store any options that were passed to us
 		this._options = options;
 		
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			// Listen for mouse events on the texture map
 			ige.client.textureMap1.mouseUp(function (tileX, tileY, event) {
 				// Send a message to the server asking to path to this tile

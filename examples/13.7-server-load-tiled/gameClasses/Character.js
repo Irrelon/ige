@@ -15,7 +15,7 @@ var Character = IgeEntityBox2d.extend({
 			.addComponent(IgeAnimationComponent);
 
 		// Load the character texture file
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			this._characterTexture = new IgeCellSheet('../assets/textures/sprites/vx_chara02_c.png', 12, 8);
 
 			// Wait for the texture to load

@@ -6,7 +6,7 @@ var CharacterContainer = IgeEntity.extend({
 		var self = this;
 		IgeEntity.prototype.init.call(this);
 		
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			// Setup the entity 3d bounds
 			self.size3d(20, 20, 40);
 	
@@ -46,7 +46,7 @@ var CharacterContainer = IgeEntity.extend({
 		if (sectionId === 'direction') {
 			// Check if the server sent us data, if not we are supposed
 			// to return the data instead of set it
-			if (!ige.isServer) {
+			if (ige.isClient) {
 				if (data) {
 					// We have been given new data!
 					this._streamDir = data;

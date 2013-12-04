@@ -8,7 +8,7 @@ var Game = IgeClass.extend({
 			.cannon.gravity(0, 0, -600)
 			.cannon.createWorld();
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			ige.client = new App();
 		}
 

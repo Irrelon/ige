@@ -12,7 +12,7 @@ var Ship = IgeEntity.extend({
 
 		this.scaleTo(4, 4, 4);
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			this.material(new THREE.MeshFaceMaterial())
 				.model(modelSpaceFrigate6);
 		}
@@ -97,7 +97,7 @@ var Ship = IgeEntity.extend({
 		}
 		/* CEXCLUDE */
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			if (ige.input.actionState('left')) {
 
 				if (!this.controls.left) {

@@ -6,7 +6,7 @@ var Character = IgeEntity.extend({
 		var self = this;
 		IgeEntity.prototype.init.call(this);
 		
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			// Setup the entity
 			self.addComponent(IgeAnimationComponent)
 				.depth(1);
