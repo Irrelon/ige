@@ -524,8 +524,10 @@ var IgeUiPositionExtension = {
 			
 			while (arrCount--) {
 				arrItem = arr[arrCount];
+				if (arrItem._updateUiPosition) {
+					arrItem._updateUiPosition();
+				}
 				
-				arrItem._updateUiPosition();
 				if (typeof(arrItem.updateUiChildren) === 'function') {
 					arrItem.updateUiChildren();
 				}

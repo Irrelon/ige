@@ -295,7 +295,9 @@ var IgeUiEntity = IgeEntity.extend([
 		if (this._parent) {
 			// Now we're mounted update our ui calculations since we have a parent
 			// to calculate from
-			this._updateUiPosition();
+			if (this._updateUiPosition) {
+				this._updateUiPosition();
+			}
 			
 			// Also update any children if we have any
 			if(this._children.length) {
@@ -342,7 +344,12 @@ var IgeUiEntity = IgeEntity.extend([
 	 * @private
 	 */
 	_resizeEvent: function (event) {
-		this._updateUiPosition();
+		
+		if (this._updateUiPosition) {
+			this._updateUiPosition();
+		} else {
+			debugger;
+		}
 		IgeEntity.prototype._resizeEvent.call(this, event);
 	}
 });
