@@ -27,6 +27,9 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		// Load jsRender for HTML template support
 		ige.requireScript(igeRoot + 'components/editor/vendor/jsRender.js');
 		
+		// Load the editor stylesheet
+		ige.requireStylesheet(igeRoot + 'components/editor/css/editor.css');
+		
 		// Listen for scenegraph tree selection updates
 		ige.on('sgTreeSelectionChanged', function (objectId) {
 			self._objectSelected(ige.$(objectId));
@@ -34,6 +37,8 @@ var IgeEditorComponent = IgeEventingClass.extend({
 
 		// Set the component to inactive to start with
 		this._enabled = true;
+		
+		this.log('Init complete');
 	},
 
 	/**

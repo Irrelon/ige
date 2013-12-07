@@ -1,4 +1,13 @@
 window.igeLoader = (function () {
+	// Load the engine stylesheet
+	var css = document.createElement('link');
+	css.rel = 'stylesheet';
+	css.type = 'text/css';
+	css.media = 'all';
+	css.href = igeRoot + 'css/ige.css';
+	
+	document.getElementsByTagName('head')[0].appendChild(css);
+	
 	var IgeLoader = function () {
 		var self = this,
 			ccScript;

@@ -31,7 +31,7 @@ body {
 	height: 60px;
 	left: 10px;
 	top: 10px;
-	background-image: url(../assets/textures/ui/irrelon.png);
+	background-image: url(../assets/irrelon.png);
 }
 
 .loadingCircle {

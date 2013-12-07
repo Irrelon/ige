@@ -336,6 +336,27 @@ var IgeEngine = IgeEntity.extend({
 			this.emit('allRequireScriptsLoaded');
 		}
 	},
+	
+	/**
+	 * Load a css style file into memory via a path or url. 
+	 * @param {String} url The file's path or url.
+	 */
+	requireStylesheet: function (url) {
+		if (url !== undefined) {
+			var self = this;
+			
+			// Load the engine stylesheet
+			var css = document.createElement('link');
+			css.rel = 'stylesheet';
+			css.type = 'text/css';
+			css.media = 'all';
+			css.href = url;
+			
+			document.getElementsByTagName('head')[0].appendChild(css);
+			
+			this.log('Load css stylesheet from: ' + url);
+		}
+	},
 
 	/**
 	 * Adds a scenegraph class into memory.
