@@ -29,7 +29,7 @@ var IgeEngine = IgeEntity.extend({
 		// Output our header
 		console.log('------------------------------------------------------------------------------');
 		console.log('* Powered by the Isogenic Game Engine ' + igeVersion + '                  *');
-		console.log('* (C)opyright 2013 Irrelon Software Limited                                  *');
+		console.log('* (C)opyright ' + new Date().getFullYear() + ' Irrelon Software Limited                                  *');
 		console.log('* http://www.isogenicengine.com                                              *');
 		console.log('------------------------------------------------------------------------------');
 		
@@ -1656,7 +1656,13 @@ var IgeEngine = IgeEntity.extend({
 			// Add the translate component to the ige instance
 			ige.addComponent(IgeEditorTranslateComponent);
 			ige.addComponent(IgeEditorRotateComponent);
+			
+			// Schedule tree updates every second
+			ige._sgTreeUpdateInterval = setInterval(function () { self.sgTreeUpdate(); }, 1000);
 		} else {
+			// Kill interval
+			clearInterval(ige._sgTreeUpdateInterval);
+			
 			var child = document.getElementById('igeSgTree');
 			child.parentNode.removeChild(child);
 
