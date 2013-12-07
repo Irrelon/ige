@@ -7,6 +7,12 @@ var IgeEntity = IgeObject.extend({
 
 	init: function () {
 		IgeObject.prototype.init.call(this);
+		
+		// Register the IgeEntity special properties handler for 
+		// serialise and de-serialise support
+		this._specialProp.push('_texture');
+		this._specialProp.push('_eventListeners');
+		this._specialProp.push('_aabb');
 
 		this._width = undefined;
 		this._height = undefined;
@@ -2063,6 +2069,38 @@ var IgeEntity = IgeObject.extend({
 
 		// Call IgeObject.destroy()
 		IgeObject.prototype.destroy.call(this);
+	},
+	
+	saveSpecialProp: function (obj, i) {
+		switch (i) {
+			case '_texture':
+				if (obj._texture) {
+					return {_texture: obj._texture.id()};
+				}
+				break;
+			
+			default:
+				// Call super-class saveSpecialProp
+				return IgeObject.prototype.saveSpecialProp.call(this, obj, i);
+				break;
+		}
+		
+		return undefined;
+	},
+	
+	loadSpecialProp: function (obj, i) {
+		switch (i) {
+			case '_texture':
+				return {_texture: ige.$(obj[i])};
+				break;
+			
+			default:
+				// Call super-class loadSpecialProp
+				return IgeObject.prototype.loadSpecialProp.call(this, obj, i);
+				break;
+		}
+		
+		return undefined;
 	},
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////

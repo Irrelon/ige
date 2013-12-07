@@ -17,6 +17,12 @@ var IgeObject = IgeEventingClass.extend({
 		this._timeStream = [];
 		this._inView = true;
 		this._managed = 1;
+		
+		this._specialProp = [
+			'_id',
+			'_parent',
+			'_children'
+		];
 	},
 
 	/**
@@ -1681,6 +1687,202 @@ var IgeObject = IgeEventingClass.extend({
 		delete this._eventListeners;
 
 		return this;
+	},
+	
+	objSave: function () {
+		return {igeClass: this.classId(), data: this._objSaveReassign(this, [])};
+	},
+	
+	objLoad: function (obj) {
+		this._objLoadReassign(this, obj.data);
+	},
+	
+	saveSpecialProp: function (obj, i) {
+		switch (i) {
+			case '_id':
+				if (obj._id) {
+					return {_id: obj._id};
+				}
+				break;
+			
+			case '_parent':
+				if (obj._parent) {
+					return {_parent: obj._parent.id()};
+				}
+				break;
+			
+			case '_children':
+				if (obj._children.length) {
+					var childIndex,
+						child,
+						arr = [];
+					
+					for (childIndex = 0; childIndex < obj._children.length; childIndex++) {
+						child = obj._children[childIndex];
+						arr.push(child.objSave());
+					}
+					
+					return {_children: arr};
+				}
+				break;
+		}
+		
+		return undefined;
+	},
+	
+	loadSpecialProp: function (obj, i) {
+		switch (i) {
+			case '_id':
+				return {_id: obj[i]};
+				break;
+			
+			case '_parent':
+				return {_parent: obj[i]};
+				break;
+			
+			case '_children':
+				return {_children: obj[i]};
+				break;
+		}
+		return undefined;
+	},
+	
+	loadGraph: function (obj) {
+		if (obj.igeClass && obj.data) {
+			// Create a new class instance
+			var classInstance = ige.newClassInstance(obj.igeClass),
+				newId,
+				childArr,
+				childIndex,
+				parentId;
+			
+			classInstance.objLoad(obj);
+			
+			if (classInstance._parent) {
+				// Record the id and delete it
+				parentId = classInstance._parent;
+				delete classInstance._parent;
+			}
+			
+			// Process item id
+			if (classInstance._id) {
+				newId = classInstance._id;
+				delete classInstance._id;
+				
+				classInstance.id(newId);
+			}
+			
+			// Check for children and process them if exists
+			if (classInstance._children && classInstance._children.length) {
+				childArr = classInstance._children;
+				classInstance._children = [];
+				
+				for (childIndex = 0; childIndex < childArr.length; childIndex++) {
+					classInstance.loadGraph(childArr[childIndex]);
+				}
+			}
+			
+			// Now mount the instance if it has a parent
+			classInstance.mount(this);
+		}
+	},
+	
+	_objSaveReassign: function (obj, ref) {
+		var copyObj,
+			specialKeys = this._specialProp,
+			refIndex,
+			specProp,
+			specPropKey,
+			i;
+		
+		if (typeof(obj) === 'object' && !(obj instanceof Array)) {
+			copyObj = {};
+			
+			for (i in obj) {
+				if (obj.hasOwnProperty(i)) {
+					if (typeof(obj[i]) === 'object') {
+						if (specialKeys.indexOf(i) === -1) {
+							// Check if the ref already exists
+							refIndex = ref.indexOf(obj[i]);
+							
+							if (refIndex > -1) {
+								copyObj[i] = '{ref:' + refIndex + '}';
+								this.log('Possible circular reference for property ' + i);
+							} else {
+								ref.push(obj[i]);
+								copyObj[i] = this._objSaveReassign(obj[i], ref);
+							}
+						} else {
+							// This is a special property that needs handling via
+							// it's own method to return an appropriate data value
+							// so check if there is a method for it
+							specProp = this.saveSpecialProp(obj, i);
+							
+							if (specProp) {
+								if (typeof(specProp) === 'object' && !(specProp instanceof Array)) {
+									// Process the returned object properties
+									for (specPropKey in specProp) {
+										if (specProp.hasOwnProperty(specPropKey)) {
+											// Copy the special property data to the key in
+											// our return object
+											copyObj[specPropKey] = specProp[specPropKey];
+										}
+									}
+								} else {
+									copyObj[i] = specProp;
+								}
+							}
+						}
+					} else {
+						copyObj[i] = obj[i];
+					}
+				}
+			}
+			
+			return copyObj;
+		} else {
+			return obj;
+		}
+	},
+	
+	_objLoadReassign: function (obj, newProps) {
+		var specialKeys = this._specialProp,
+			specProp,
+			specPropKey,
+			i;
+		
+		for (i in newProps) {
+			if (newProps.hasOwnProperty(i)) {
+				if (specialKeys.indexOf(i) === -1) {
+					if (typeof(newProps[i]) === 'object' && obj[i]) {
+						this._objLoadReassign(obj[i], newProps[i]);
+					} else {
+						// Assign the property value directly
+						obj[i] = newProps[i];
+					}
+				} else {
+					// This is a special property that needs handling via
+					// it's own method to return an appropriate data value
+					// so check if there is a method for it
+					specProp = this.loadSpecialProp(newProps, i);
+					
+					if (specProp) {
+						if (typeof(specProp) === 'object' && !(specProp instanceof Array)) {
+							// Process the returned object properties
+							for (specPropKey in specProp) {
+								if (specProp.hasOwnProperty(specPropKey)) {
+									// Copy the special property data to the key in
+									// our return object
+									obj[specPropKey] = specProp[specPropKey];
+								}
+							}
+						} else {
+							obj[i] = specProp;
+						}
+					}
+				}
+			}
+		}
 	},
 
 	/**
