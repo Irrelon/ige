@@ -368,7 +368,7 @@ var IgeViewport = IgeEntity.extend([
 				index++;
 
 				if (obj._shouldRender !== false) {
-					if ((!this._drawBoundsLimitId && !this._drawBoundsLimitCategory) || ((this._drawBoundsLimitId && this._drawBoundsLimitId === obj.id()) || (this._drawBoundsLimitCategory && this._drawBoundsLimitCategory === obj.category()))) {
+					if (obj._classId !== 'IgeScene2d' && (!this._drawBoundsLimitId && !this._drawBoundsLimitCategory) || ((this._drawBoundsLimitId && this._drawBoundsLimitId === obj.id()) || (this._drawBoundsLimitCategory && this._drawBoundsLimitCategory === obj.category()))) {
 						if (typeof(obj.aabb) === 'function') {
 							// Grab the AABB and then draw it
 							aabb = obj.aabb();
