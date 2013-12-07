@@ -1,5 +1,12 @@
 var IgeBox2dDebugPainter = IgeObject.extend({
 	classId: 'IgeBox2dDebugPainter',
+	
+	init: function (entity, options) {
+		IgeObject.prototype.init.call(this);
+		
+		this._entity = entity;
+		this._options = options;
+	},
 
 	tick: function (ctx) {
 		if (this._parent && this._parent.isometricMounts() === true) {

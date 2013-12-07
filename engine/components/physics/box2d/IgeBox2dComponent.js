@@ -553,7 +553,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 			// Create the debug painter entity and mount
 			// it to the passed scene
-			new igeClassStore.IgeBox2dDebugPainter()
+			new igeClassStore.IgeBox2dDebugPainter(this._entity)
 				.depth(40000) // Set a really high depth
 				.drawBounds(false)
 				.mount(mountScene);
