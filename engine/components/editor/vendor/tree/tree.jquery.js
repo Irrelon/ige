@@ -4,6 +4,10 @@
 			item = $('<li id="' + listData.id + '"><div class="expandLink"></div><span class="igeObject" data-id="' + listData.id + '" data-classId="' + listData.classId + '">' + listData.text + '</span></li>'),
 			i;
 		
+		if (!parent) {
+			item.find('.igeObject').addClass('selected');
+		}
+		
 		list.append(item);
 		
 		// Process list item children

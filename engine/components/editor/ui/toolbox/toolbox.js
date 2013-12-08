@@ -7,8 +7,14 @@ var UiToolBox = IgeEventingClass.extend({
 		this.tools = {};
 		
 		// Load tool scripts
-		ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolSelect.js');
-		ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolPan.js');
+		ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolSelect.js', function () {
+			self.tools['UiToolBox_ToolSelect'] = ige.newClassInstance('UiToolBox_ToolSelect');
+			self.select('toolSelect');
+		});
+		
+		ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolPan.js', function () {
+			self.tools['UiToolBox_ToolSelect'] = ige.newClassInstance('UiToolBox_ToolSelect');
+		});
 		
 		// Load the toolbox html into the editor DOM
 		ige.editor.loadHtml(igeRoot + 'components/editor/ui/toolbox/toolbox.html', function (html) {
@@ -29,7 +35,6 @@ var UiToolBox = IgeEventingClass.extend({
 			$('#leftBar').append(toolbox);
 			
 			// Select the default tool
-			//self.select('toolSelect');
 		});
 	},
 	

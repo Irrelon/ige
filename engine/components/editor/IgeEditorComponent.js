@@ -21,9 +21,6 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		
 		this.ui = {};
 		
-		// Add the editor panels component
-		this.addComponent(IgeEditorPanelsComponent);
-		
 		// Load jQuery, the editor will use it for DOM manipulation simplicity
 		ige.requireScript(igeRoot + 'components/editor/vendor/jquery.2.0.3.min.js');
 		
@@ -53,6 +50,8 @@ var IgeEditorComponent = IgeEventingClass.extend({
 				// Wait for all required files to finish loading
 				ige.on('allRequireScriptsLoaded', function () {
 					// Load UI scripts
+					ige.requireScript(igeRoot + 'components/editor/ui/panels/panels.js');
+					
 					ige.requireScript(igeRoot + 'components/editor/ui/scenegraph/scenegraph.js');
 					ige.requireScript(igeRoot + 'components/editor/ui/toolbox/toolbox.js');
 					
@@ -122,9 +121,20 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		return this._enabled;
 	},
 	
+	selectObject: function (id) {
+		if (id !== undefined) {
+			if (id) {
+				this._selectedObject = ige.$(id);
+				this._objectSelected(this._selectedObject);
+			} else {
+				delete this._selectedObject;
+			}
+		}
+	},
+	
 	_objectSelected: function (obj) {
 		if (obj) {
-			ige.editor.panels.showPanelByInstance(obj);
+			ige.editor.ui.panels.showPanelByInstance(obj);
 		}
 	},
 	

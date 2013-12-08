@@ -1,0 +1,8 @@
+.tree .igeObject {
+	cursor: pointer;
+}
+
+.tree .igeObject.selected {
+	font-weight: bold;
+	background-color: #00caef;
+}

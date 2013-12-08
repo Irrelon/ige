@@ -1,6 +1,5 @@
-var IgeEditorPanelsComponent = IgeEventingClass.extend({
-	classId: 'IgeEditorPanelsComponent',
-	componentId: 'panels',
+var UiPanels = IgeEventingClass.extend({
+	classId: 'UiPanels',
 	
 	init: function () {
 		this._panelProps = {};
@@ -152,7 +151,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Timespan',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberInt.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberInt.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -166,7 +165,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base Value',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberInt.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberInt.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -180,7 +179,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberIntMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberIntMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -210,7 +209,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base X',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -223,7 +222,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base Y',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -236,7 +235,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base Z',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -249,7 +248,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance X',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -269,7 +268,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance Y',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -289,7 +288,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance Z',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -317,7 +316,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -330,7 +329,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -358,7 +357,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base {Degrees}',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -371,7 +370,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance {Degrees} (Min, Max)',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -399,7 +398,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base X',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -412,7 +411,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base Y',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -425,7 +424,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base Z',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -438,7 +437,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance X',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -458,7 +457,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance Y',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -478,7 +477,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance Z',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -506,7 +505,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base X',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -519,7 +518,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base Y',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -532,7 +531,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base Z',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -545,7 +544,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance X',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -565,7 +564,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance Y',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -585,7 +584,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance Z',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -613,7 +612,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -626,7 +625,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -654,7 +653,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -667,7 +666,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -695,7 +694,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloat.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
@@ -708,7 +707,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatMinMax.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatMinMax.html',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -736,7 +735,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base Vector',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatXYZ.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatXYZ.html',
 							// Setup values for the template
 							beforeRender: function (obj, propItem) {
 								if (obj._velocityVector && obj._velocityVector.base) {
@@ -789,7 +788,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance Min Vector',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatXYZ.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatXYZ.html',
 							// Setup values for the template
 							beforeRender: function (obj, propItem) {
 								if (obj._velocityVector && obj._velocityVector.min) {
@@ -842,7 +841,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance Max Vector',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatXYZ.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatXYZ.html',
 							// Setup values for the template
 							beforeRender: function (obj, propItem) {
 								if (obj._velocityVector && obj._velocityVector.max) {
@@ -903,7 +902,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Base Vector',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatXYZ.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatXYZ.html',
 							// Setup values for the template
 							beforeRender: function (obj, propItem) {
 								if (obj._linearForceVector && obj._linearForceVector.base) {
@@ -956,7 +955,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance Min Vector',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatXYZ.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatXYZ.html',
 							// Setup values for the template
 							beforeRender: function (obj, propItem) {
 								if (obj._linearForceVector && obj._linearForceVector.min) {
@@ -1009,7 +1008,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 							label: 'Variance Max Vector',
 							desc: '',
 							alwaysShow: true,
-							templateUrl: igeRoot + 'components/editor/panels/templates/NumberFloatXYZ.html',
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatXYZ.html',
 							// Setup values for the template
 							beforeRender: function (obj, propItem) {
 								if (obj._linearForceVector && obj._linearForceVector.max) {
@@ -1132,7 +1131,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 						
 						(function (groupData) {
 							// Generate HTML for this group from the template
-							self.template(igeRoot + 'components/editor/panels/templates/group.html', function (err, template) {
+							self.template(igeRoot + 'components/editor/ui/panels/templates/group.html', function (err, template) {
 								if (!err) {
 									var groupSelector = $($.parseHTML(template.render(groupData))),
 										propName,
@@ -1158,7 +1157,7 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 													if (propData.obj[propData.id] && typeof(propData.obj[propData.id]) === 'object') {
 														// Get the IGE class that this property derives from
 														igeClass = ige.findBaseClass(propData.obj[propData.id]);
-														propertyTemplateUrl = propData.templateUrl || igeRoot + 'components/editor/panels/templates/' + igeClass + '.html';
+														propertyTemplateUrl = propData.templateUrl || igeRoot + 'components/editor/ui/panels/templates/' + igeClass + '.html';
 													} else {
 														propertyTemplateUrl = propData.templateUrl
 													}
@@ -1243,3 +1242,6 @@ var IgeEditorPanelsComponent = IgeEventingClass.extend({
 		}
 	}
 });
+
+// Init
+ige.editor.ui.panels = new UiPanels();

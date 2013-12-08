@@ -5,6 +5,12 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 		
 	},
 	
+	ready: function () {
+		ige.editor.on('selected', function (id) {
+			
+		});
+	},
+	
 	enabled: function (val) {
 		if (val !== undefined) {
 			this._enabled = val;
@@ -38,8 +44,8 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 				ige.input.off('preMouseDown', this._mouseDownHandle);
 				ige.input.off('preMouseMove', this._mouseMoveHandle);
 				
-				if (this._selectedObject) {
-					ige._currentViewport.drawBoundsLimitId(this._selectedObject.id());
+				if (ige.editor._selectedObject) {
+					ige._currentViewport.drawBoundsLimitId(ige.editor._selectedObject.id());
 				} else {
 					ige._currentViewport.drawBounds(false);
 					ige._currentViewport.drawBoundsLimitId('');
@@ -65,23 +71,23 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 	_mouseMove: function (event) {
 		var arr = ige.mouseOverList();
 		if (arr.length) {
-			if (!this._selectedObject) {
+			if (!ige.editor._selectedObject) {
 				ige._currentViewport.drawBounds(true);
 				ige._currentViewport.drawBoundsLimitId(arr[0].id());
 			} else {
 				ige._currentViewport.drawBounds(true);
-				ige._currentViewport.drawBoundsLimitId([this._selectedObject.id(), arr[0].id()]);
+				ige._currentViewport.drawBoundsLimitId([ige.editor._selectedObject.id(), arr[0].id()]);
 			}
 			
 			this._overObject = arr[0];
 		} else {
 			delete this._overObject;
 			
-			if (!this._selectedObject) {
+			if (!ige.editor._selectedObject) {
 				ige._currentViewport.drawBounds(false);
 				ige._currentViewport.drawBoundsLimitId('');
 			} else {
-				ige._currentViewport.drawBoundsLimitId(this._selectedObject.id());
+				ige._currentViewport.drawBoundsLimitId(ige.editor._selectedObject.id());
 			}
 		}
 	},
@@ -92,8 +98,8 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 	 * @private
 	 */
 	_mouseUp: function (event) {
-		this._selectedObject = this._overObject;
-		this.emit('selected', this._selectedObject);
+		ige.editor._selectedObject = this._overObject;
+		this.emit('selected', ige.editor._selectedObject);
 	},
 	
 	destroy: function () {

@@ -4,6 +4,8 @@ var UiSceneGraph = IgeEventingClass.extend({
 	init: function () {
 		var self = this;
 		
+		ige.requireStylesheet(igeRoot + 'components/editor/ui/scenegraph/scenegraph.css');
+		
 		// Add tab to tabs
 		$('<div class="tab active" data-content="scenegraphContent">SceneGraph</div>')
 			.appendTo('#tabs');
@@ -18,7 +20,13 @@ var UiSceneGraph = IgeEventingClass.extend({
 	},
 	
 	ready: function () {
-		// Hook the toolbox selected item event
+		// Render scenegraph
+		this.updateSceneGraph();
+		
+		// Hook toolbox select tool so we can keep in sync
+		ige.editor.on('selectedObject', function () {
+			
+		});
 	},
 	
 	updateSceneGraph: function () {

@@ -293,8 +293,9 @@ var IgeEngine = IgeEntity.extend({
 	/**
 	 * Load a js script file into memory via a path or url. 
 	 * @param {String} url The file's path or url.
+	 * @param {Function=} callback Optional callback when script loads.
 	 */
-	requireScript: function (url) {
+	requireScript: function (url, callback) {
 		if (url !== undefined) {
 			var self = this;
 			
@@ -306,6 +307,10 @@ var IgeEngine = IgeEntity.extend({
 			var elem = document.createElement('script');
 			elem.addEventListener('load', function () {
 				self._requireScriptLoaded(this);
+				
+				if (callback) {
+					setTimeout(function () { callback(); }, 20);
+				}
 			});
 			
 			// For compatibility with CocoonJS
