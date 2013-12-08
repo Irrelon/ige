@@ -1175,6 +1175,74 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
+	 * Walks the scenegraph and returns an array of all entities that the mouse
+	 * is currently over, ordered by their draw order from drawn last (above other
+	 * entities) to first (underneath other entities).
+	 */
+	mouseOverList: function (obj, entArr) {
+		var arr,
+			arrCount,
+			mp,
+			mouseTriggerPoly,
+			first = false;
+		
+		if (!obj) {
+			obj = ige;
+			entArr = [];
+			first = true;
+		}
+		
+		if (obj === ige) {
+			// Loop viewports
+			arr = obj._children;
+	
+			if (arr) {
+				arrCount = arr.length;
+	
+				// Loop our children
+				while (arrCount--) {
+					if (arr[arrCount]._scene) {
+						if (arr[arrCount]._scene._shouldRender) {
+							this.mouseOverList(arr[arrCount]._scene, entArr);
+						}
+					}
+				}
+			}
+		} else {
+			// Check if the mouse is over this entity
+			mp = this.mousePosWorld();
+
+			if (mp) {
+				// Trigger mode is against the AABB
+				mouseTriggerPoly = obj.aabb(); //this.localAabb();
+				
+				// Check if the current mouse position is inside this aabb
+				if (mouseTriggerPoly.xyInside(mp.x, mp.y)) {
+					entArr.push(obj);
+				}
+			}
+			
+			// Check if the entity has children
+			arr = obj._children;
+
+			if (arr) {
+				arrCount = arr.length;
+
+				// Loop our children
+				while (arrCount--) {
+					this.mouseOverList(arr[arrCount], entArr);
+				}
+			}
+		}
+		
+		if (first) {
+			entArr.reverse();
+		}
+		
+		return entArr;
+	},
+
+	/**
 	 * Handles the screen resize event.
 	 * @param event
 	 * @private
