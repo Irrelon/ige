@@ -62,8 +62,21 @@ var IgeEditorComponent = IgeEventingClass.extend({
 						// Add auto-backing
 						$('.backed').autoback();
 						
-						// Show stats
-						self.showStats(1);
+						// Observe changes to the engine to update our display
+						Object.observe(ige, function (changes) {
+							changes.forEach(function (change) {
+								switch (change.name) {
+									case '_fps':
+										// Update the fps
+										$('#fpsCounter').html(ige._fps + ' fps');
+										break;
+								}
+							});
+						});
+						
+						Object.observe(ige._children, function (changes) {
+							self.updateSceneGraph();
+						});
 					},
 					dataType: 'html'
 				});
@@ -77,13 +90,14 @@ var IgeEditorComponent = IgeEventingClass.extend({
 	},
 	
 	updateSceneGraph: function () {
-		$('#scenegraphContent')
-			.html('')
+		var sgContent = $('#scenegraphContent');
+		
+		sgContent.html('')
 			.tree({
 				data: ige.getSceneGraphData()
 			});
 		
-		$($('#scenegraphContent').find('ul')[0]).treeview();
+		$(sgContent.find('ul')[0]).treeview();
 	},
 
 	/**
@@ -108,56 +122,6 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		if (obj) {
 			ige.editor.panels.showPanelByInstance(obj);
 		}
-	},
-	
-	/**
-	 * Gets / sets the stats output mode that is in use. Set to 1 to
-	 * display default stats output at the lower-left of the HTML page.
-	 * @param {Number=} val
-	 * @param {Number=} interval The number of milliseconds between stats
-	 * updates.
-	 */
-	showStats: function (val, interval) {
-		var self = this;
-		
-		if (val !== undefined && (!ige.cocoonJs || !ige.cocoonJs.detected)) {
-			switch (val) {
-				case 0:
-					clearInterval(this._statsTimer);
-					break;
-
-				case 1:
-					if (interval !== undefined) {
-						this._statsInterval = interval;
-					} else {
-						if (this._statsInterval === undefined) {
-							this._statsInterval = 16;
-						}
-					}
-					//this._statsTimer = setInterval(this._statsTick, this._statsInterval);
-					
-					Object.observe(ige, function (changes) {
-						changes.forEach(function (change) {
-							switch (change.name) {
-								case '_fps':
-									// Update the fps
-									$('#fpsCounter').html(ige._fps + ' fps');
-									break;
-							}
-						});
-					});
-					
-					Object.observe(ige._children, function (changes) {
-						self.updateSceneGraph();
-					});
-					break;
-			}
-
-			this._showStats = val;
-			return this;
-		}
-
-		return this._showStats;
 	},
 	
 	/**

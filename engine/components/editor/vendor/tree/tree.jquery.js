@@ -1,7 +1,7 @@
 (function ($) {
 	function generateList (listData, parent) {
 		var list = $('<ul></ul>'),
-			item = $('<li id="' + listData.id + '" data-classId="' + listData.classId + '"><a>' + listData.text + '</a></li>'),
+			item = $('<li id="' + listData.id + '"><div class="expandLink"></div><span class="igeObject" data-id="' + listData.id + '" data-classId="' + listData.classId + '">' + listData.text + '</span></li>'),
 			i;
 		
 		list.append(item);

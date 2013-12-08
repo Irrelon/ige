@@ -6,16 +6,24 @@
 			}
 		});
 		
-		this.find('li.parent > a').click( function( ) {
-			$( this ).parent().toggleClass( 'active' );
-			$( this ).parent().children('ul').slideToggle('fast');
+		this.find('li.parent > .expandLink').click( function( ) {
+			$( this ).parent().toggleClass('active');
+			$( this ).parent().children('ul').slideToggle(0);
 		});
 		
-		/*$( '#all' ).click( function() {
-			$( '.tree li' ).each( function() {
-				$( this ).toggleClass( 'active' );
-				$( this ).children( 'ul' ).slideToggle( 'fast' );
+		this.find('li.parent > .expandLink').dblclick( function() {
+			$('.tree li').each( function() {
+				$(this).removeClass('active');
+				$(this).addClass('active');
+				$(this).children('ul').show();
 			});
-		});*/
+		});
+		
+		// Start expanded
+		$('.tree li').each( function() {
+			$(this).removeClass('active');
+			$(this).addClass('active');
+			$(this).children('ul').show();
+		});
 	};
 }(jQuery));
