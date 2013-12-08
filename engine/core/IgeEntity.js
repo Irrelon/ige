@@ -1674,7 +1674,7 @@ var IgeEntity = IgeObject.extend({
 					
 					// Check if the current mouse position is inside this aabb
 					if (mouseTriggerPoly.xyInside(mouseX, mouseY) || this._mouseAlwaysInside) {
-						// Point is inside the aabb
+						// Point is inside the trigger bounds
 						ige.input.queueEvent(this, this._mouseInTrigger);
 					} else {
 						if (ige.input.mouseMove) {
