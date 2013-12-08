@@ -45,9 +45,6 @@ var IgeEditorComponent = IgeEventingClass.extend({
 				// Load the editor stylesheet
 				ige.requireStylesheet(igeRoot + 'components/editor/css/editor.css');
 				
-				// Load UI scripts
-				ige.requireScript(igeRoot + 'components/editor/ui/toolbox/toolbox.js');
-				
 				// Listen for scenegraph tree selection updates
 				ige.on('sgTreeSelectionChanged', function (objectId) {
 					self._objectSelected(ige.$(objectId));
@@ -55,6 +52,10 @@ var IgeEditorComponent = IgeEventingClass.extend({
 				
 				// Wait for all required files to finish loading
 				ige.on('allRequireScriptsLoaded', function () {
+					// Load UI scripts
+					ige.requireScript(igeRoot + 'components/editor/ui/scenegraph/scenegraph.js');
+					ige.requireScript(igeRoot + 'components/editor/ui/toolbox/toolbox.js');
+					
 					// Load jquery plugins
 					ige.requireScript(igeRoot + 'components/editor/vendor/autoback.jquery.js');
 					ige.requireScript(igeRoot + 'components/editor/vendor/tree/tree.jquery.js');
@@ -73,12 +74,17 @@ var IgeEditorComponent = IgeEventingClass.extend({
 							});
 						});
 						
-						Object.observe(ige._children, function (changes) {
-							self.updateSceneGraph();
-						});
-						
 						// Add auto-backing
 						$('.backed').autoback();
+						
+						// Call finished on all ui instances
+						for (var i in self.ui) {
+							if (self.ui.hasOwnProperty(i)) {
+								if (self.ui[i].ready) {
+									self.ui[i].ready();
+								}
+							}
+						}
 					});
 				}, null, true);
 			});
@@ -96,17 +102,6 @@ var IgeEditorComponent = IgeEventingClass.extend({
 			success: callback,
 			dataType: 'html'
 		});
-	},
-	
-	updateSceneGraph: function () {
-		var sgContent = $('#scenegraphContent');
-		
-		sgContent.html('')
-			.tree({
-				data: ige.getSceneGraphData()
-			});
-		
-		$(sgContent.find('ul')[0]).treeview();
 	},
 
 	/**
