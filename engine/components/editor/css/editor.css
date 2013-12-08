@@ -1,3 +1,184 @@
+#leftBar {
+	position: absolute;
+	user-select: none;
+	-webkit-user-select: none;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	width: 64px;
+	z-index: 200000;
+}
+
+#rightBar {
+	position: absolute;
+	user-select: none;
+	-webkit-user-select: none;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 400px;
+	z-index: 200000;
+}
+
+#fpsCounter {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 64px;
+	height: 18px;
+	color: #ffffff;
+	padding: 1px;
+	font-family: Verdana, Tahoma;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    font-variant: small-caps;
+    font-size: 13px;
+	z-index: 200000;
+	text-align: center;
+	box-sizing: border-box;
+}
+
+.backLayer {
+	position: absolute;
+	background-color: #000;
+	opacity: 0.9;
+	z-index: 199999;
+}
+
+/* TABS */
+.tab {
+	padding: 3px;
+	font-family: Verdana, Tahoma, sans-serif;
+	font-size: 12px;
+	color: #fff;
+	background-color: #000;
+	border: 1px solid #333;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	display: inline-block;
+	float: left;
+	margin-left: 2px;
+}
+
+.tab.active {
+	background-color: #333;
+}
+
+.tabContentContainer {
+	border-top: 1px solid;
+	clear: both;
+	color: #000000;
+	background-color: #fff;
+	font-family: Verdana, Tahoma, sans-serif;
+	font-size: 12px;
+}
+
+.tabContent {
+	display: none;
+}
+
+.tabContent.active {
+	display: block;
+}
+
+/* Toolbox */
+.tool {
+	width:32px;
+	height: 32px;
+}
+
+.tool:hover {
+	background-color: #555;
+	cursor: pointer;
+}
+
+.tool.selected {
+	background-color: #00caef;
+}
+
+.toolCreate {
+	background-image: url('../ui/note.png');
+}
+
+.toolSelect {
+	background-image: url('../ui/hand.png');
+}
+
+.toolPaint {
+	background-image: url('../ui/brush.png');
+}
+
+.toolUnPaint {
+	background-image: url('../ui/brush-off.png');
+}
+
+.toolLayers {
+	background-image: url('../ui/layers.png');
+}
+
+.toolFullScreen {
+	background-image: url('../ui/full-screen.png');
+}
+
+.toolFullScreen {
+	background-image: url('../ui/full-screen.png');
+}
+
+.toolZoomIn {
+	background-image: url('../ui/zoom-in.png');
+}
+
+.toolZoomOut {
+	background-image: url('../ui/zoom-out.png');
+}
+
+.toolZoom {
+	background-image: url('../ui/zoom.png');
+}
+
+.toolPan {
+	background-image: url('../ui/panHand.png');
+}
+
+.toolShow {
+	background-image: url('../ui/show.png');
+}
+
+.toolHide {
+	background-image: url('../ui/hide.png');
+}
+
+/*////////////////////////////////////////////////////////////////////////////*/
+.sgButton {
+    display: block;
+    float: left;
+    font-variant: small-caps;
+    background-color: #084861;
+    padding: 1px;
+    padding-left: 2px;
+    padding-right: 2px;
+    margin-right: 1px;
+    width: 60px;
+    font-size: 13px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.met {
+    display: block;
+    float: left;
+    text-align: right;
+    font-variant: small-caps;
+    font-size: 13px;
+    background-color: rgba(7, 20, 25, 0.9);
+    padding: 1px;
+    padding-left: 2px;
+    padding-right: 6px;
+    margin-right: 1px;
+    min-width: 75px;
+    white-space: nowrap;
+}
 
 #igeSgTree {
     display: block;
@@ -7,10 +188,11 @@
     width: 300px;
     height: 200px;
     background-color: rgba(7, 20, 25, 0.9);
-    font-family: Verdana, Tahoma;
+    
     font-size: 11px;
     color: #ffffff;
     text-shadow: 1px 1px 3px #000000;
+	font-family: Verdana, Tahoma;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;

@@ -555,93 +555,8 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 
-	/**
-	 * Gets / sets the stats output mode that is in use. Set to 1 to
-	 * display default stats output at the lower-left of the HTML page.
-	 * @param {Number=} val
-	 * @param {Number=} interval The number of milliseconds between stats
-	 * updates.
-	 */
-	showStats: function (val, interval) {
-		if (val !== undefined && (!ige.cocoonJs || !ige.cocoonJs.detected)) {
-			switch (val) {
-				case 0:
-					clearInterval(this._statsTimer);
-					this._removeStatsDiv();
-					break;
-
-				case 1:
-					this._createStatsDiv();
-					if (interval !== undefined) {
-						this._statsInterval = interval;
-					} else {
-						if (this._statsInterval === undefined) {
-							this._statsInterval = 16;
-						}
-					}
-					this._statsTimer = setInterval(this._statsTick, this._statsInterval);
-					break;
-			}
-
-			this._showStats = val;
-			return this;
-		}
-
-		return this._showStats;
-	},
-
-	/**
-	 * Creates the stats output div on the DOM.
-	 * @private
-	 */
-	_createStatsDiv: function () {
-		if (ige.isClient) {
-			if (!document.getElementById('igeStats')) {
-				// Create the stats div
-				var div = document.createElement('div');
-				div.id = 'igeStatsFloater';
-				div.className = 'igeStatsFloater';
-				div.style.fontFamily = 'Verdana, Tahoma';
-				div.style.fontSize = "12px";
-				div.style.position = 'absolute';
-				div.style.color = '#ffffff';
-				div.style.textShadow = '1px 1px 3px #000000';
-				div.style.bottom = '4px';
-				div.style.left = '4px';
-				div.style.userSelect = 'none';
-				div.style.webkitUserSelect = 'none';
-				div.style.MozUserSelect = 'none';
-				div.style.zIndex = 100000;
-				div.innerHTML = 'Please wait...';
-
-				// Add div to body
-				if (document && document.readyState === 'complete') {
-					// The page has already loaded so add div now
-					document.body.appendChild(div);
-				} else {
-					// The page is not loaded yet so add a listener
-					window.addEventListener('load', function () {
-						document.body.appendChild(div);
-					});
-				}
-
-				window.addEventListener('unload', function () {});
-
-				this._statsDiv = div;
-			}
-		}
-	},
-
-	/**
-	 * Removes the stats output div from the DOM.
-	 * @private
-	 */
-	_removeStatsDiv: function () {
-		if (this._statsDiv) {
-			document.body.removeChild(this._statsDiv);
-		}
-		
-		delete this._statsDiv;
+	showStats: function () {
+		this.log('showStats has been removed from the ige in favour of the new editor component, please remove this call from your code.');
 	},
 
 	/**
@@ -1495,57 +1410,6 @@ var IgeEngine = IgeEntity.extend({
 		// Zero out counters
 		self._frames = 0;
 		self._drawCount = 0;
-	},
-
-	/**
-	 * Updates the stats HTML overlay with the latest data.
-	 * @private
-	 */
-	_statsTick: function () {
-		var self = ige,
-			i,
-			watchCount,
-			watchItem,
-			itemName,
-			res,
-			html = '';
-
-		// Check if the stats output is enabled
-		if (self._showStats && !self._statsPauseUpdate) {
-			switch (self._showStats) {
-				case 1:
-					if (self._watch && self._watch.length) {
-						watchCount = self._watch.length;
-
-						for (i = 0; i < watchCount; i++) {
-							watchItem = self._watch[i];
-
-							if (typeof(watchItem) === 'string') {
-								itemName = watchItem;
-								try {
-									eval('res = ' + watchItem);
-								} catch (err) {
-									res = '<span style="color:#ff0000;">' + err + '</span>';
-								}
-							} else {
-								itemName = watchItem.name;
-								res = watchItem.value;
-							}
-							html += i + ' (<a href="javascript:ige.watchStop(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">Remove</a>): <span style="color:#7aff80">' + itemName + '</span>: <span style="color:#00c6ff">' + res + '</span><br />';
-						}
-						html += '<br />';
-					}
-					html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowEditor();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Tick">' + self._dpt + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
-
-					if (self.network) {
-						// Add the network latency too
-						html += ' <span class="met" title="Network Latency (Time From Server to This Client)">' + self.network._latency + ' ms\/net</span>';
-					}
-
-					self._statsDiv.innerHTML = html;
-					break;
-			}
-		}
 	},
 
 	toggleShowEditor: function () {
