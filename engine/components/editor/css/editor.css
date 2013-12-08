@@ -102,55 +102,55 @@
 }
 
 .toolCreate {
-	background-image: url('../ui/note.png');
+	background-image: url('../ui/assets/note.png');
 }
 
 .toolSelect {
-	background-image: url('../ui/hand.png');
+	background-image: url('../ui/assets/hand.png');
 }
 
 .toolPaint {
-	background-image: url('../ui/brush.png');
+	background-image: url('../ui/assets/brush.png');
 }
 
 .toolUnPaint {
-	background-image: url('../ui/brush-off.png');
+	background-image: url('../ui/assets/brush-off.png');
 }
 
 .toolLayers {
-	background-image: url('../ui/layers.png');
+	background-image: url('../ui/assets/layers.png');
 }
 
 .toolFullScreen {
-	background-image: url('../ui/full-screen.png');
+	background-image: url('../ui/assets/full-screen.png');
 }
 
 .toolFullScreen {
-	background-image: url('../ui/full-screen.png');
+	background-image: url('../ui/assets/full-screen.png');
 }
 
 .toolZoomIn {
-	background-image: url('../ui/zoom-in.png');
+	background-image: url('../ui/assets/zoom-in.png');
 }
 
 .toolZoomOut {
-	background-image: url('../ui/zoom-out.png');
+	background-image: url('../ui/assets/zoom-out.png');
 }
 
 .toolZoom {
-	background-image: url('../ui/zoom.png');
+	background-image: url('../ui/assets/zoom.png');
 }
 
 .toolPan {
-	background-image: url('../ui/panHand.png');
+	background-image: url('../ui/assets/panHand.png');
 }
 
 .toolShow {
-	background-image: url('../ui/show.png');
+	background-image: url('../ui/assets/show.png');
 }
 
 .toolHide {
-	background-image: url('../ui/hide.png');
+	background-image: url('../ui/assets/hide.png');
 }
 
 /*////////////////////////////////////////////////////////////////////////////*/

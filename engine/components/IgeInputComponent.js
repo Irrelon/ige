@@ -255,7 +255,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * occurred on the main canvas, allowing you to pass through events like
 	 * mousedown and mouseup that occurred elsewhere on the DOM but might be
 	 * useful for the engine to be aware of, such as if you are dragging an entity
-	 * and then the mouse goes off-cavnas and the button is released.
+	 * and then the mouse goes off-canvas and the button is released.
 	 * @param {String} eventName The lowercase name of the event to fire e.g. mousedown.
 	 * @param {Object} eventObj The event object that was passed by the DOM.
 	 */
@@ -351,9 +351,11 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		this.mouseDown = event;
 
-		this.queueEvent(this, function () {
-			self.emit('mouseDown', [event, mx, my, event.button + 1]);
-		});
+		if (!self.emit('preMouseDown', [event, mx, my, event.button + 1])) {
+			this.queueEvent(this, function () {
+				self.emit('mouseDown', [event, mx, my, event.button + 1]);
+			});
+		}
 	},
 
 	/**
@@ -385,10 +387,12 @@ var IgeInputComponent = IgeEventingClass.extend({
 		}
 
 		this.mouseUp = event;
-
-		this.queueEvent(this, function () {
-			self.emit('mouseUp', [event, mx, my, event.button + 1]);
-		});
+		
+		if (!self.emit('preMouseUp', [event, mx, my, event.button + 1])) {
+			this.queueEvent(this, function () {
+				self.emit('mouseUp', [event, mx, my, event.button + 1]);
+			});
+		}
 	},
 
 	/**
@@ -409,9 +413,11 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		this.mouseMove = event;
 
-		this.queueEvent(this, function () {
-			self.emit('mouseMove', [event, mx, my, event.button + 1]);
-		});
+		if (!self.emit('preMouseMove', [event, mx, my, event.button + 1])) {
+			this.queueEvent(this, function () {
+				self.emit('mouseMove', [event, mx, my, event.button + 1]);
+			});
+		}
 	},
 
 	/**
@@ -437,9 +443,11 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		this.mouseWheel = event;
 
-		this.queueEvent(this, function () {
-			self.emit('mouseWheel', [event, mx, my, event.button + 1]);
-		});
+		if (!self.emit('preMouseWheel', [event, mx, my, event.button + 1])) {
+			this.queueEvent(this, function () {
+				self.emit('mouseWheel', [event, mx, my, event.button + 1]);
+			});
+		}
 	},
 
 	/**
@@ -451,9 +459,12 @@ var IgeInputComponent = IgeEventingClass.extend({
 		var self = this;
 
 		this._state[event.keyCode] = true;
-		this.queueEvent(this, function () {
-			self.emit('keyDown', [event, event.keyCode]);
-		});
+		
+		if (!self.emit('preKeyDown', [event, event.keyCode])) {
+			this.queueEvent(this, function () {
+				self.emit('keyDown', [event, event.keyCode]);
+			});
+		}
 	},
 
 	/**
@@ -465,9 +476,12 @@ var IgeInputComponent = IgeEventingClass.extend({
 		var self = this;
 
 		this._state[event.keyCode] = false;
-		this.queueEvent(this, function () {
-			self.emit('keyUp', [event, event.keyCode]);
-		});
+		
+		if (!self.emit('preKeyUp', [event, event.keyCode])) {
+			this.queueEvent(this, function () {
+				self.emit('keyUp', [event, event.keyCode]);
+			});
+		}
 	},
 
 	/**
