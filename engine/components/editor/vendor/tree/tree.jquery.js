@@ -1,7 +1,7 @@
 (function ($) {
 	function generateList (listData, parent) {
 		var list = $('<ul></ul>'),
-			item = $('<li id="' + listData.id + '" data-classId="' + listData.classId + '"><span class="folder">' + listData.text + '</span></li>'),
+			item = $('<li id="' + listData.id + '" data-classId="' + listData.classId + '"><a>' + listData.text + '</a></li>'),
 			i;
 		
 		list.append(item);
@@ -16,7 +16,6 @@
 		if (parent) {
 			parent.append(list);
 		} else {
-			list.addClass('treeview');
 			return list;
 		}
 	}

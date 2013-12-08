@@ -32,7 +32,8 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		ige.requireScript(igeRoot + 'components/editor/vendor/observe.js');
 		
 		// Load plugin styles
-		ige.requireStylesheet(igeRoot + 'components/editor/vendor/treeview/jquery.treeview.css');
+		//ige.requireStylesheet(igeRoot + 'components/editor/vendor/treeview/jquery.treeview.css');
+		ige.requireStylesheet(igeRoot + 'components/editor/vendor/treeview_simple/css/style.css');
 		
 		// Load the editor stylesheet
 		ige.requireStylesheet(igeRoot + 'components/editor/css/editor.css');
@@ -47,7 +48,8 @@ var IgeEditorComponent = IgeEventingClass.extend({
 			// Load jquery plugins
 			ige.requireScript(igeRoot + 'components/editor/vendor/autoback.jquery.js');
 			ige.requireScript(igeRoot + 'components/editor/vendor/tree/tree.jquery.js');
-			ige.requireScript(igeRoot + 'components/editor/vendor/treeview/jquery.treeview.js');
+			//ige.requireScript(igeRoot + 'components/editor/vendor/treeview/jquery.treeview.js');
+			ige.requireScript(igeRoot + 'components/editor/vendor/treeview_simple/treeview_simple.jquery.js');
 			
 			ige.on('allRequireScriptsLoaded', function () {
 				// Load editor html into the DOM
@@ -59,9 +61,6 @@ var IgeEditorComponent = IgeEventingClass.extend({
 						
 						// Add auto-backing
 						$('.backed').autoback();
-						
-						// Build scenegraph tree
-						self.updateSceneGraph();
 						
 						// Show stats
 						self.showStats(1);
@@ -82,8 +81,9 @@ var IgeEditorComponent = IgeEventingClass.extend({
 			.html('')
 			.tree({
 				data: ige.getSceneGraphData()
-			})
-			.treeview();
+			});
+		
+		$($('#scenegraphContent').find('ul')[0]).treeview();
 	},
 
 	/**
@@ -118,6 +118,8 @@ var IgeEditorComponent = IgeEventingClass.extend({
 	 * updates.
 	 */
 	showStats: function (val, interval) {
+		var self = this;
+		
 		if (val !== undefined && (!ige.cocoonJs || !ige.cocoonJs.detected)) {
 			switch (val) {
 				case 0:
@@ -132,7 +134,22 @@ var IgeEditorComponent = IgeEventingClass.extend({
 							this._statsInterval = 16;
 						}
 					}
-					this._statsTimer = setInterval(this._statsTick, this._statsInterval);
+					//this._statsTimer = setInterval(this._statsTick, this._statsInterval);
+					
+					Object.observe(ige, function (changes) {
+						changes.forEach(function (change) {
+							switch (change.name) {
+								case '_fps':
+									// Update the fps
+									$('#fpsCounter').html(ige._fps + ' fps');
+									break;
+							}
+						});
+					});
+					
+					Object.observe(ige._children, function (changes) {
+						self.updateSceneGraph();
+					});
 					break;
 			}
 
@@ -190,7 +207,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 
 					self._statsDiv.innerHTML = html;*/
 					
-					$('#fpsCounter').html(ige._fps + ' fps');
+					
 					break;
 			}
 		}

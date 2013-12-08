@@ -62,16 +62,20 @@
 }
 
 .tab.active {
-	background-color: #333;
+	background-color: #00caef;
 }
 
 .tabContentContainer {
 	border-top: 1px solid;
 	clear: both;
-	color: #000000;
-	background-color: #fff;
+	color: #fff;
 	font-family: Verdana, Tahoma, sans-serif;
 	font-size: 12px;
+	position: relative;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
 }
 
 .tabContent {
