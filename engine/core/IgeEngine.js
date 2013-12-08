@@ -579,6 +579,15 @@ var IgeEngine = IgeEntity.extend({
 	},
 
 	/**
+	 * Returns true if the class specified has been defined.
+	 * @param {String} id The ID of the class to check for.
+	 * @returns {*}
+	 */
+	classDefined: function (id) {
+		return Boolean(igeClassStore[id]);
+	},
+
+	/**
 	 * Generates a new instance of a class defined with a call
 	 * to the defineClass() method. Passes the options
 	 * parameter to the new class during it's constructor call.
