@@ -190,6 +190,10 @@
 .toolGroup .toolPause {
   background-image: url('../ui/assets/pause.png');
 }
+.toolGroup span.halflings-icon {
+  margin-left: 10px;
+  margin-top: 10px;
+}
 /*////////////////////////////////////////////////////////////////////////////*/
 .sgButton {
   display: block;

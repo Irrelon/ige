@@ -16,6 +16,10 @@ var UiToolBox = IgeEventingClass.extend({
 			self.tools['UiToolBox_ToolSelect'] = ige.newClassInstance('UiToolBox_ToolSelect');
 		});
 		
+		ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolTranslate.js', function () {
+			self.tools['UiToolBox_ToolTranslate'] = ige.newClassInstance('UiToolBox_ToolTranslate');
+		});
+		
 		// Load the toolbox html into the editor DOM
 		ige.editor.loadHtml(igeRoot + 'components/editor/ui/toolbox/toolbox.html', function (html) {
 			var toolbox = $(html);
