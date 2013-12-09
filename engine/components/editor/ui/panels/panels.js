@@ -4,9 +4,6 @@ var UiPanels = IgeEventingClass.extend({
 	init: function () {
 		this._panelProps = {};
 		
-		this._templateCache = {};
-		this._cacheTemplates = true;
-		
 		// Add tab to tabs
 		$('<div class="tab" data-content="propertiesContent">Properties</div>')
 			.appendTo('#tabs');
@@ -1142,7 +1139,7 @@ var UiPanels = IgeEventingClass.extend({
 						
 						(function (groupData) {
 							// Generate HTML for this group from the template
-							self.template(igeRoot + 'components/editor/ui/panels/templates/group.html', function (err, template) {
+							ige.editor.template(igeRoot + 'components/editor/ui/panels/templates/group.html', function (err, template) {
 								if (!err) {
 									var groupSelector = $($.parseHTML(template.render(groupData))),
 										propName,
@@ -1175,7 +1172,7 @@ var UiPanels = IgeEventingClass.extend({
 													
 													if (propertyTemplateUrl) {
 														// Generate HTML for this property from the template
-														self.template(propertyTemplateUrl, function (err, template) {
+														ige.editor.template(propertyTemplateUrl, function (err, template) {
 															if (!err) {
 																if (propData.beforeRender) {
 																	propData.beforeRender(propData.obj, propData);
@@ -1223,33 +1220,6 @@ var UiPanels = IgeEventingClass.extend({
 					}
 				}
 			}
-		}
-	},
-	
-	template: function (url, callback) {
-		var self = this;
-		
-		if (!this._cacheTemplates || !this._templateCache[url]) {
-			$.ajax(url, {
-				async: true,
-				dataType: 'text',
-				complete: function (xhr, status) {
-					if (status === 'success') {
-						// Convert the text into a jsRender template object
-						var template = jsviews.templates(xhr.responseText);
-						
-						if (self._cacheTemplates) {
-							self._templateCache[url] = template;
-						}
-						
-						if (callback) { callback(false, template); }
-					} else {
-						if (callback) { callback(true, status); }
-					}
-				}
-			});
-		} else {
-			if (callback) { callback(false, this._templateCache[url]); }
 		}
 	}
 });

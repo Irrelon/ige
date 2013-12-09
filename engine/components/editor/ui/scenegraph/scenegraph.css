@@ -1,9 +1,8 @@
 .tree .igeObject {
-	cursor: pointer;
+  cursor: pointer;
 }
-
 .tree .igeObject.selected {
-	font-weight: normal;
-	background-color: #008ea8;
-	padding: 4px;
+  font-weight: normal;
+  background-color: #008ea8;
+  padding: 4px;
 }

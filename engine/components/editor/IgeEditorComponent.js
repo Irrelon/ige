@@ -19,6 +19,9 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		this._options = options;
 		this._showStats = 0;
 		
+		this._templateCache = {};
+		this._cacheTemplates = true;
+		
 		this.ui = {};
 		
 		// Load jsRender for HTML template support
@@ -104,6 +107,43 @@ var IgeEditorComponent = IgeEventingClass.extend({
 			url: url,
 			success: callback,
 			dataType: 'html'
+		});
+	},
+	
+	template: function (url, callback) {
+		var self = this;
+		
+		if (!this._cacheTemplates || !this._templateCache[url]) {
+			$.ajax(url, {
+				async: true,
+				dataType: 'text',
+				complete: function (xhr, status) {
+					if (status === 'success') {
+						// Convert the text into a jsRender template object
+						var template = jsviews.templates(xhr.responseText);
+						
+						if (self._cacheTemplates) {
+							self._templateCache[url] = template;
+						}
+						
+						if (callback) { callback(false, template); }
+					} else {
+						if (callback) { callback(true, status); }
+					}
+				}
+			});
+		} else {
+			if (callback) { callback(false, this._templateCache[url]); }
+		}
+	},
+	
+	renderTemplate: function (url, data, callback) {
+		this.template(url, function (err, template) {
+			if (!err) {
+				callback(err, $($.parseHTML(template.render(data))));
+			} else {
+				callbacl(err);
+			}
 		});
 	},
 
