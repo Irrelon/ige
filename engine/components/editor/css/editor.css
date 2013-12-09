@@ -41,7 +41,7 @@
 
 .backLayer {
 	position: absolute;
-	background-color: #333;
+	background-color: #111;
 	opacity: 0.9;
 	z-index: 199999;
 }
