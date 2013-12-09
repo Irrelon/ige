@@ -2,12 +2,10 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 	classId: 'UiToolBox_ToolSelect',
 	
 	init: function () {
-		
-	},
-	
-	ready: function () {
-		ige.editor.on('selected', function (id) {
-			
+		// Hook editor select object updates so we can keep in sync
+		ige.editor.on('selectedObject', function (id) {
+			ige._currentViewport.drawBounds(true);
+			ige._currentViewport.drawBoundsLimitId(id);
 		});
 	},
 	
@@ -98,7 +96,7 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 	 * @private
 	 */
 	_mouseUp: function (event) {
-		ige.editor._selectedObject = this._overObject;
+		ige.editor.selectObject(this._overObject.id());
 		this.emit('selected', ige.editor._selectedObject);
 	},
 	

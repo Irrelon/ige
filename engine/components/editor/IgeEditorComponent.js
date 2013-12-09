@@ -21,6 +21,9 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		
 		this.ui = {};
 		
+		// Load jsRender for HTML template support
+		ige.requireScript(igeRoot + 'components/editor/vendor/jsRender.js');
+		
 		// Load jQuery, the editor will use it for DOM manipulation simplicity
 		ige.requireScript(igeRoot + 'components/editor/vendor/jquery.2.0.3.min.js');
 		
@@ -29,9 +32,6 @@ var IgeEditorComponent = IgeEventingClass.extend({
 			self.loadHtml(igeRoot + 'components/editor/root.html', function (html) {
 				// Add the html
 				$('body').append($(html));
-				
-				// Load jsRender for HTML template support
-				ige.requireScript(igeRoot + 'components/editor/vendor/jsRender.js');
 				
 				// Object mutation observer polyfill
 				ige.requireScript(igeRoot + 'components/editor/vendor/observe.js');
@@ -58,6 +58,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 					// Load jquery plugins
 					ige.requireScript(igeRoot + 'components/editor/vendor/autoback.jquery.js');
 					ige.requireScript(igeRoot + 'components/editor/vendor/tree/tree.jquery.js');
+					ige.requireScript(igeRoot + 'components/editor/vendor/tabs/tabs.jquery.js');
 					ige.requireScript(igeRoot + 'components/editor/vendor/treeview_simple/treeview_simple.jquery.js');
 					
 					ige.on('allRequireScriptsLoaded', function () {
@@ -84,6 +85,9 @@ var IgeEditorComponent = IgeEventingClass.extend({
 								}
 							}
 						}
+						
+						// Enable tabs
+						$('.tabGroup').tabs();
 					});
 				}, null, true);
 			});
@@ -135,6 +139,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 	_objectSelected: function (obj) {
 		if (obj) {
 			ige.editor.ui.panels.showPanelByInstance(obj);
+			this.emit('selectedObject', obj.id());
 		}
 	},
 	

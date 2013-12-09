@@ -23,9 +23,11 @@ var UiSceneGraph = IgeEventingClass.extend({
 		// Render scenegraph
 		this.updateSceneGraph();
 		
-		// Hook toolbox select tool so we can keep in sync
-		ige.editor.on('selectedObject', function () {
-			
+		// Hook editor select object updates so we can keep in sync
+		ige.editor.on('selectedObject', function (id) {
+			var sg = $('#scenegraphContent');
+			sg.find('.igeObject.selected').removeClass('selected');
+			$(sg.find('#' + id).find('.igeObject')[0]).addClass('selected');
 		});
 	},
 	
@@ -38,6 +40,12 @@ var UiSceneGraph = IgeEventingClass.extend({
 			});
 		
 		$(sgContent.find('ul')[0]).treeview();
+		
+		// Hook click events on the scenegraph tree
+		sgContent.find('.igeObject').click(function () {
+			var elem = $(this);
+			ige.editor.selectObject(elem.attr('data-id'));
+		});
 	}
 });
 

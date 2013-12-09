@@ -59,6 +59,7 @@
 	display: inline-block;
 	float: left;
 	margin-left: 2px;
+	cursor: pointer;
 }
 
 .tab.active {

@@ -7,6 +7,14 @@ var UiPanels = IgeEventingClass.extend({
 		this._templateCache = {};
 		this._cacheTemplates = true;
 		
+		// Add tab to tabs
+		$('<div class="tab" data-content="propertiesContent">Properties</div>')
+			.appendTo('#tabs');
+		
+		// Add content html
+		$('<div id="propertiesContent" class="tabContent"></div>')
+			.appendTo('#tabContents');
+		
 		// Define the classes and properties to expose
 		this.definition('IgeEntity', {
 			'groups': {
@@ -64,6 +72,9 @@ var UiPanels = IgeEventingClass.extend({
 						'_rotate': {
 							label: 'Rotate',
 							desc: '',
+							beforePropertyValue: function (propName, propVal) {
+								
+							},
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
 								var selector = $('#igeEditorProperty_' + propItem.id);
@@ -1139,7 +1150,7 @@ var UiPanels = IgeEventingClass.extend({
 										properties = groupData.props;
 									
 									// Add the group to the DOM
-									groupSelector.appendTo('#igeSgEditorRoot');
+									groupSelector.appendTo('#propertiesContent');
 									
 									// Now loop the props object and find properties that belong to this
 									// group and add their rendered HTML to the DOM inside the group's content
