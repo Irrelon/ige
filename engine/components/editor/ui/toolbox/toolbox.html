@@ -1,24 +1,31 @@
 <table class="toolGroup" cellpadding="0" cellspacing="0">
+	<tr>
+		<th colspan="2">Time</th>
+	</tr>
     <tr>
         <td><div id="toolPlay" data-action="play" data-group="timeGroup" class="toolToggleGroup toolPlay selected" title="Play"></div></td>
         <td><div id="toolPause" data-action="pause" data-group="timeGroup" class="toolToggleGroup toolPause" title="Pause"></div></td>
     </tr>
 </table>
-<table cellpadding="0" cellspacing="0">
+<table class="toolGroup" cellpadding="0" cellspacing="0">
+	<tr>
+		<th colspan="2">Tools</th>
+	</tr>
 	<tr>
 		<td><div id="toolSelect" data-tool="UiToolBox_ToolSelect" class="tool toolSelect" title="Select"></div></td>
 		<td><div id="toolCreate" data-tool="UiToolBox_ToolCreate" class="tool toolCreate" title="Create Entity"></div></td>
 	</tr>
 	<tr>
-		<td><div id="toolPaint" data-tool="UiToolBox_ToolPaint" class="tool toolPaint" title="Paint"></div></td>
-		<td><div id="toolUnPaint" data-tool="UiToolBox_ToolUnPaint" class="tool toolUnPaint" title="Clear"></div></td>
-	</tr>
-	<!--<tr>
-		<td><div id="toolShow" data-tool="UiToolBox_ToolShow" class="tool toolShow" title="Show"></div></td>
-		<td><div id="toolHide" data-tool="UiToolBox_ToolHide" class="tool toolHide" title="Hide"></div></td>
-	</tr>-->
-	<tr>
 		<td><div id="toolPan" data-tool="UiToolBox_ToolPan" class="tool toolPan" title="Pan" ondblclick="ige.translateTo(0, 0, 0);"></div></td>
 		<td><div id="toolZoom" data-tool="UiToolBox_ToolZoom" class="tool toolZoom" title="Zoom"></div></td>
+	</tr>
+</table>
+<table id="tileTools" class="toolGroup" cellpadding="0" cellspacing="0">
+	<tr>
+		<th colspan="2">Tiles</th>
+	</tr>
+	<tr>
+		<td><div id="toolPaint" data-active-for="IgeTileMap2d IgeTextureMap" data-tool="UiToolBox_ToolPaint" class="tool toolPaint disabled" title="Paint"></div></td>
+		<td><div id="toolUnPaint" data-active-for="IgeTileMap2d IgeTextureMap" data-tool="UiToolBox_ToolUnPaint" class="tool toolUnPaint disabled" title="Clear"></div></td>
 	</tr>
 </table>

@@ -3,6 +3,7 @@
 }
 
 .tree .igeObject.selected {
-	font-weight: bold;
-	background-color: #00caef;
+	font-weight: normal;
+	background-color: #008ea8;
+	padding: 4px;
 }

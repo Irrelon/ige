@@ -1,403 +1,357 @@
 #leftBar {
-	position: absolute;
-	user-select: none;
-	-webkit-user-select: none;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	width: 64px;
-	z-index: 200000;
+  position: absolute;
+  user-select: none;
+  -webkit-user-select: none;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 64px;
+  z-index: 200000;
 }
-
 #rightBar {
-	position: absolute;
-	user-select: none;
-	-webkit-user-select: none;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	width: 400px;
-	z-index: 200000;
+  position: absolute;
+  user-select: none;
+  -webkit-user-select: none;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 400px;
+  z-index: 200000;
 }
-
 #fpsCounter {
-	position: absolute;
-	left: 0;
-	bottom: 0;
-	width: 64px;
-	height: 18px;
-	color: #ffffff;
-	padding: 1px;
-	font-family: Verdana, Tahoma;
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    font-variant: small-caps;
-    font-size: 13px;
-	z-index: 200000;
-	text-align: center;
-	box-sizing: border-box;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 64px;
+  height: 18px;
+  color: #ffffff;
+  padding: 1px;
+  font-family: Verdana, Tahoma;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  font-variant: small-caps;
+  font-size: 13px;
+  z-index: 200000;
+  text-align: center;
+  box-sizing: border-box;
+  background-color: #000;
 }
-
 .backLayer {
-	position: absolute;
-	background-color: #111;
-	opacity: 0.9;
-	z-index: 199999;
+  position: absolute;
+  background-color: #050505;
+  opacity: 1;
+  z-index: 199999;
 }
-
 /* TABS */
 .tab {
-	padding: 3px;
-	font-family: Verdana, Tahoma, sans-serif;
-	font-size: 12px;
-	color: #fff;
-	background-color: #000;
-	border: 1px solid #333;
-	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
-	display: inline-block;
-	float: left;
-	margin-left: 2px;
-	cursor: pointer;
+  padding: 5px;
+  font-family: Verdana, Tahoma, sans-serif;
+  font-size: 12px;
+  color: #fff;
+  background-color: #005463;
+  display: inline-block;
+  float: left;
+  cursor: pointer;
 }
-
 .tab.active {
-	background-color: #00caef;
+  background-color: #008ea8;
 }
-
 .tabContents {
-	border-top: 1px solid;
-	clear: both;
-	color: #fff;
-	font-family: Verdana, Tahoma, sans-serif;
-	font-size: 12px;
-	position: relative;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
+  border-top: 1px solid;
+  clear: both;
+  color: #fff;
+  font-family: Verdana, Tahoma, sans-serif;
+  font-size: 12px;
+  position: relative;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
-
 .tabContent {
-	display: none;
+  display: none;
 }
-
 .tabContent.active {
-	display: block;
+  display: block;
 }
-
 /* Toolbox */
 .toolGroup {
-    border-bottom: 1px solid #666;
+  border-bottom: 1px solid #000;
 }
-
-.tool {
-	width:32px;
-	height: 32px;
+.toolGroup tr th {
+  color: #fff;
+  font-size: 10px;
+  font-family: Verdana, Tahoma, sans-serif;
+  font-weight: normal;
+  padding: 4px;
+  background-color: #232323;
 }
-
-.tool:hover {
-	background-color: #555;
-	cursor: pointer;
+.toolGroup .tool {
+  width: 32px;
+  height: 32px;
+  background-color: #005463;
 }
-
-.tool.selected {
-	background-color: #00caef;
+.toolGroup .tool:hover {
+  background-color: #00778d;
+  cursor: pointer;
 }
-
-.toolToggleGroup {
-    width:32px;
-    height: 32px;
+.toolGroup .tool.selected {
+  background-color: #008ea8;
 }
-
-.toolToggleGroup:hover {
-    background-color: #555;
-    cursor: pointer;
+.toolGroup .tool.disabled {
+  background-color: #333;
+  opacity: 0.3;
+  cursor: default;
 }
-
-.toolToggleGroup.selected {
-    background-color: #00caef;
+.toolGroup .toolToggleGroup {
+  width: 32px;
+  height: 32px;
+  background-color: #3b005a;
 }
-
-.toolCreate {
-	background-image: url('../ui/assets/note.png');
+.toolGroup .toolToggleGroup:hover {
+  background-color: #7d00bd;
+  cursor: pointer;
 }
-
-.toolSelect {
-	background-image: url('../ui/assets/hand.png');
+.toolGroup .toolToggleGroup.selected {
+  background-color: #b21dff;
 }
-
-.toolPaint {
-	background-image: url('../ui/assets/brush.png');
+.toolGroup .toolCreate {
+  background-image: url('../ui/assets/note.png');
 }
-
-.toolUnPaint {
-	background-image: url('../ui/assets/brush-off.png');
+.toolGroup .toolSelect {
+  background-image: url('../ui/assets/hand.png');
 }
-
-.toolLayers {
-	background-image: url('../ui/assets/layers.png');
+.toolGroup .toolPaint {
+  background-image: url('../ui/assets/brush.png');
 }
-
-.toolFullScreen {
-	background-image: url('../ui/assets/full-screen.png');
+.toolGroup .toolUnPaint {
+  background-image: url('../ui/assets/brush-off.png');
 }
-
-.toolFullScreen {
-	background-image: url('../ui/assets/full-screen.png');
+.toolGroup .toolLayers {
+  background-image: url('../ui/assets/layers.png');
 }
-
-.toolZoomIn {
-	background-image: url('../ui/assets/zoom-in.png');
+.toolGroup .toolFullScreen {
+  background-image: url('../ui/assets/full-screen.png');
 }
-
-.toolZoomOut {
-	background-image: url('../ui/assets/zoom-out.png');
+.toolGroup .toolFullScreen {
+  background-image: url('../ui/assets/full-screen.png');
 }
-
-.toolZoom {
-	background-image: url('../ui/assets/zoom.png');
+.toolGroup .toolZoomIn {
+  background-image: url('../ui/assets/zoom-in.png');
 }
-
-.toolPan {
-	background-image: url('../ui/assets/panHand.png');
+.toolGroup .toolZoomOut {
+  background-image: url('../ui/assets/zoom-out.png');
 }
-
-.toolShow {
-	background-image: url('../ui/assets/show.png');
+.toolGroup .toolZoom {
+  background-image: url('../ui/assets/zoom.png');
 }
-
-.toolHide {
-	background-image: url('../ui/assets/hide.png');
+.toolGroup .toolPan {
+  background-image: url('../ui/assets/panHand.png');
 }
-
-.toolPlay {
-    background-image: url('../ui/assets/show.png');
+.toolGroup .toolShow {
+  background-image: url('../ui/assets/show.png');
 }
-
-.toolPause {
-    background-image: url('../ui/assets/hide.png');
+.toolGroup .toolHide {
+  background-image: url('../ui/assets/hide.png');
 }
-
+.toolGroup .toolPlay {
+  background-image: url('../ui/assets/play.png');
+}
+.toolGroup .toolPause {
+  background-image: url('../ui/assets/pause.png');
+}
 /*////////////////////////////////////////////////////////////////////////////*/
 .sgButton {
-    display: block;
-    float: left;
-    font-variant: small-caps;
-    background-color: #084861;
-    padding: 1px;
-    padding-left: 2px;
-    padding-right: 2px;
-    margin-right: 1px;
-    width: 60px;
-    font-size: 13px;
-    text-align: center;
-    cursor: pointer;
+  display: block;
+  float: left;
+  font-variant: small-caps;
+  background-color: #084861;
+  padding: 1px;
+  padding-left: 2px;
+  padding-right: 2px;
+  margin-right: 1px;
+  width: 60px;
+  font-size: 13px;
+  text-align: center;
+  cursor: pointer;
 }
-
 .met {
-    display: block;
-    float: left;
-    text-align: right;
-    font-variant: small-caps;
-    font-size: 13px;
-    background-color: rgba(7, 20, 25, 0.9);
-    padding: 1px;
-    padding-left: 2px;
-    padding-right: 6px;
-    margin-right: 1px;
-    min-width: 75px;
-    white-space: nowrap;
+  display: block;
+  float: left;
+  text-align: right;
+  font-variant: small-caps;
+  font-size: 13px;
+  background-color: rgba(7, 20, 25, 0.9);
+  padding: 1px;
+  padding-left: 2px;
+  padding-right: 6px;
+  margin-right: 1px;
+  min-width: 75px;
+  white-space: nowrap;
 }
-
 #igeSgTree {
-    display: block;
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    width: 300px;
-    height: 200px;
-    background-color: rgba(7, 20, 25, 0.9);
-    
-    font-size: 11px;
-    color: #ffffff;
-    text-shadow: 1px 1px 3px #000000;
-	font-family: Verdana, Tahoma;
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    cursor: default;
-    z-index: 200000;
-	overflow: auto;
+  display: block;
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 300px;
+  height: 200px;
+  background-color: rgba(7, 20, 25, 0.9);
+  font-size: 11px;
+  color: #ffffff;
+  text-shadow: 1px 1px 3px #000000;
+  font-family: Verdana, Tahoma;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  cursor: default;
+  z-index: 200000;
+  overflow: auto;
 }
-
 #igeSgTree ul {
-    list-style: none;
-    margin: 0;
-    padding: 0px 0px 0px 14px;
-	white-space: nowrap;
+  list-style: none;
+  margin: 0;
+  padding: 0px 0px 0px 14px;
+  white-space: nowrap;
 }
-
 #igeSgTree li {
-    cursor: pointer;
-    margin: 3px;
-	white-space: nowrap;
-	padding-right: 10px;
+  cursor: pointer;
+  margin: 3px;
+  white-space: nowrap;
+  padding-right: 10px;
 }
-
 #igeSgTree li.selected {
-    font-weight: bold;
+  font-weight: bold;
 }
-
 #igeSgTree li.selected ul {
-    font-weight: normal;
+  font-weight: normal;
 }
-
 #igeSgConsoleHolder {
-	display: none;
-    position: absolute;
-    left: 410px;
-    top: 4px;
-    padding: 5px;
-    background-color: rgba(66, 66, 66, 0.9);
-    font-family: Verdana, sans-serif;
-    font-size: 12px;
-    color: #ffffff;
+  display: none;
+  position: absolute;
+  left: 410px;
+  top: 4px;
+  padding: 5px;
+  background-color: rgba(66, 66, 66, 0.9);
+  font-family: Verdana, sans-serif;
+  font-size: 12px;
+  color: #ffffff;
 }
-
 #igeSgConsoleHolder a {
-    color: #ffffff;
+  color: #ffffff;
 }
-
 #igeSgConsole {
-    width: 800px;
+  width: 800px;
 }
-
 #igeSgDocPage {
-    width: 800px;
-    height: 400px;
-    display: none;
-    background-color: #ffffff;
+  width: 800px;
+  height: 400px;
+  display: none;
+  background-color: #ffffff;
 }
-
 #igeSgItemClassChain {
-    display: none;
-    margin-top: 4px;
-    margin-bottom: 4px;
+  display: none;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
-
 #igeSgEditorRoot {
-	display: block;
-    position: absolute;
-    top: 4px;
-    right: 4px;
-	bottom: 30px;
-    width: 400px;
-    background-color: rgba(7, 20, 25, 0.9);
-    font-family: Verdana, Tahoma;
-    font-size: 11px;
-    color: #ffffff;
-    text-shadow: 1px 1px 3px #000000;
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    cursor: default;
-    z-index: 200000;
-	overflow: auto;
+  display: block;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  bottom: 30px;
+  width: 400px;
+  background-color: rgba(7, 20, 25, 0.9);
+  font-family: Verdana, Tahoma;
+  font-size: 11px;
+  color: #ffffff;
+  text-shadow: 1px 1px 3px #000000;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  cursor: default;
+  z-index: 200000;
+  overflow: auto;
 }
-
 #igeSgEditorRoot .content {
-	width: 100%;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
+  width: 100%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
 }
-
 #igeSgEditorRoot .content .span1 {
-	width: 11.11%;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
+  width: 11.11%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
 }
-
 #igeSgEditorRoot .content .span2 {
-	width: 22.22%;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
+  width: 22.22%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
 }
-
 #igeSgEditorRoot .content .span3 {
-	width: 33.33%;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
+  width: 33.33%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
 }
-
 #igeSgEditorRoot .content .span4 {
-	width: 44.44%;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
+  width: 44.44%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
 }
-
 #igeSgEditorRoot .content .span5 {
-	width: 55.55%;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
+  width: 55.55%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
 }
-
 #igeSgEditorRoot .content .span6 {
-	width: 66.66%;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
+  width: 66.66%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
 }
-
 #igeSgEditorRoot .content .span7 {
-	width: 77.77%;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
+  width: 77.77%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
 }
-
 #igeSgEditorRoot .content .span8 {
-	width: 88.88%;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
+  width: 88.88%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
 }
-
 #igeSgEditorRoot .content .span9 {
-	width: 99.99%;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
+  width: 99.99%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
 }
-
 #igeSgEditorRoot .label {
-	font-weight: bold;
+  font-weight: bold;
 }
-
 .igeEditorGroup {
-	font-family: "Open Sans", sans-serif;
-	font-size: 12px;
-	color: #ffffff;
-	position: relative;
-	background-color: #333;
-	padding: 5px;
-	border-radius: 5px;
-	margin: 5px;
+  font-family: "Open Sans", sans-serif;
+  font-size: 12px;
+  color: #ffffff;
+  position: relative;
+  background-color: #333;
+  padding: 5px;
+  border-radius: 5px;
+  margin: 5px;
 }
-
 .igeEditorGroup .label {
-	font-weight: bold;
-	font-size: 14px;
+  font-weight: bold;
+  font-size: 14px;
 }
-
 .igeEditorProperty .label {
-	font-weight: bold;
-	font-size: 12px;
+  font-weight: bold;
+  font-size: 12px;
 }

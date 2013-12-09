@@ -139,6 +139,20 @@ var IgeEditorComponent = IgeEventingClass.extend({
 	_objectSelected: function (obj) {
 		if (obj) {
 			ige.editor.ui.panels.showPanelByInstance(obj);
+			
+			// Update active-for selectors
+			$('[data-active-for]')
+				.removeClass('disabled')
+				.addClass('disabled');
+			
+			var classArr = ige.getClassDerivedList(obj),
+				i;
+			
+			for (i = 0; i < classArr.length; i++) {
+				$('[data-active-for~="' + classArr[i] + '"]')
+					.removeClass('disabled');
+			}
+			
 			this.emit('selectedObject', obj.id());
 		}
 	},
