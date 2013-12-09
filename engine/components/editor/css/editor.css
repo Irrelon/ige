@@ -41,7 +41,7 @@
 
 .backLayer {
 	position: absolute;
-	background-color: #000;
+	background-color: #333;
 	opacity: 0.9;
 	z-index: 199999;
 }
@@ -88,6 +88,10 @@
 }
 
 /* Toolbox */
+.toolGroup {
+    border-bottom: 1px solid #666;
+}
+
 .tool {
 	width:32px;
 	height: 32px;
@@ -100,6 +104,20 @@
 
 .tool.selected {
 	background-color: #00caef;
+}
+
+.toolToggleGroup {
+    width:32px;
+    height: 32px;
+}
+
+.toolToggleGroup:hover {
+    background-color: #555;
+    cursor: pointer;
+}
+
+.toolToggleGroup.selected {
+    background-color: #00caef;
 }
 
 .toolCreate {
@@ -152,6 +170,14 @@
 
 .toolHide {
 	background-image: url('../ui/assets/hide.png');
+}
+
+.toolPlay {
+    background-image: url('../ui/assets/show.png');
+}
+
+.toolPause {
+    background-image: url('../ui/assets/hide.png');
 }
 
 /*////////////////////////////////////////////////////////////////////////////*/

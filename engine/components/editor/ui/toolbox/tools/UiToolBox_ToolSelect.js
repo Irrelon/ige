@@ -43,6 +43,7 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 				ige.input.off('preMouseMove', this._mouseMoveHandle);
 				
 				if (ige.editor._selectedObject) {
+					ige._currentViewport.drawBoundsData(true);
 					ige._currentViewport.drawBoundsLimitId(ige.editor._selectedObject.id());
 				} else {
 					ige._currentViewport.drawBounds(false);
@@ -71,9 +72,11 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 		if (arr.length) {
 			if (!ige.editor._selectedObject) {
 				ige._currentViewport.drawBounds(true);
+				ige._currentViewport.drawBoundsData(true);
 				ige._currentViewport.drawBoundsLimitId(arr[0].id());
 			} else {
 				ige._currentViewport.drawBounds(true);
+				ige._currentViewport.drawBoundsData(true);
 				ige._currentViewport.drawBoundsLimitId([ige.editor._selectedObject.id(), arr[0].id()]);
 			}
 			
@@ -83,8 +86,11 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 			
 			if (!ige.editor._selectedObject) {
 				ige._currentViewport.drawBounds(false);
+				ige._currentViewport.drawBoundsData(false);
 				ige._currentViewport.drawBoundsLimitId('');
 			} else {
+				ige._currentViewport.drawBounds(true);
+				ige._currentViewport.drawBoundsData(true);
 				ige._currentViewport.drawBoundsLimitId(ige.editor._selectedObject.id());
 			}
 		}

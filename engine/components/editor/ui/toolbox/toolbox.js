@@ -20,8 +20,8 @@ var UiToolBox = IgeEventingClass.extend({
 		ige.editor.loadHtml(igeRoot + 'components/editor/ui/toolbox/toolbox.html', function (html) {
 			var toolbox = $(html);
 			
-			// Attach logic handlers to icons
-			toolbox.find('.tool').click(function () {
+			// Attach logic handlers to tools
+			toolbox.find('[data-tool]').click(function () {
 				var elem = $(this);
 				
 				// Clear existing tool selection
@@ -30,12 +30,40 @@ var UiToolBox = IgeEventingClass.extend({
 				// Add selected to this tool
 				self.select(elem.attr('id'));
 			});
+
+			// Attach logic handlers to actions
+			toolbox.find('[data-action]').click(function () {
+				var elem = $(this);
+
+				// Perform action
+				self.action(elem.attr('data-action'));
+			});
 			
 			// Add the html
 			$('#leftBar').append(toolbox);
 			
-			// Select the default tool
+			// Setup tool toggle buttons
+			$('.toolToggleGroup').click(function () {
+				// Un-select all others in the group
+				var elem = $(this),
+					group = elem.attr('data-group');
+
+				$('[data-group="' + group + '"]').removeClass('selected');
+				elem.addClass('selected');
+			});
 		});
+	},
+
+	action: function (actionId) {
+		switch (actionId) {
+			case 'play':
+				ige.pause(false);
+				break;
+
+			case 'pause':
+				ige.pause(true);
+				break;
+		}
 	},
 	
 	select: function (id) {

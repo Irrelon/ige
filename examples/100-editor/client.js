@@ -37,7 +37,7 @@ var Client = IgeClass.extend({
 					ige.addGraph('Scene1');
 					
 					// Show the scenegraph and editor
-					ige.toggleShowEditor();
+					//ige.toggleShowEditor();
 				}
 			});
 		});
