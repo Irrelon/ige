@@ -7,11 +7,11 @@ var UiSceneGraph = IgeEventingClass.extend({
 		ige.requireStylesheet(igeRoot + 'components/editor/ui/scenegraph/scenegraph.css');
 		
 		// Add tab to tabs
-		$('<div class="tab active" data-content="scenegraphContent">SceneGraph</div>')
+		$('<div class="tab" data-content="scenegraphContent" title="Scene Graph"><span class="icon graph"></span></div>')
 			.appendTo('#tabs');
 		
 		// Add content html
-		$('<div id="scenegraphContent" class="tabContent active tree"></div>')
+		$('<div id="scenegraphContent" class="tabContent tree"></div>')
 			.appendTo('#tabContents');
 		
 		Object.observe(ige._children, function (changes) {

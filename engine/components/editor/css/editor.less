@@ -16,7 +16,6 @@
 	top: 0;
 	right: 0;
 	bottom: 0;
-	width: 400px;
 	z-index: 200000;
 }
 
@@ -48,7 +47,7 @@
 }
 
 /* TABS */
-.tab {
+/*.tab {
 	padding: 5px;
 	font-family: Verdana, Tahoma, sans-serif;
 	font-size: 12px;
@@ -61,10 +60,49 @@
 
 .tab.active {
 	background-color: #008ea8;
+}*/
+
+#tabs {
+	position: absolute;
+	left: -32px;
+	width: 32px;
+}
+
+.tab {
+	.icon {
+		width:32px;
+		height: 32px;
+		background-color: #005463;
+		display: block;
+		
+		&:hover {
+			background-color: #00778d;
+			cursor: pointer;
+		}
+		
+		&.disabled {
+			background-color: #333;
+			opacity: 0.3;
+			cursor: default;
+		}
+		
+		&.graph {
+			background-image: url('../ui/assets/graph.png');
+		}
+		
+		&.props {
+			background-image: url('../ui/assets/props.png');
+		}
+	}
+	
+	&.active {
+		.icon {
+			background-color: #008ea8;
+		}
+	}
 }
 
 .tabContents {
-	border-top: 1px solid;
 	clear: both;
 	color: #fff;
 	font-family: Verdana, Tahoma, sans-serif;
@@ -72,8 +110,9 @@
 	position: relative;
 	top: 0;
 	bottom: 0;
-	left: 0;
 	right: 0;
+	width: 400px;
+	display: none;
 }
 
 .tabContent {
@@ -90,7 +129,7 @@
 	
 	tr th {
 		color: #fff;
-		font-size: 10px;
+		font-size: 9px;
 		font-family: Verdana, Tahoma, sans-serif;
 		font-weight: normal;
 		padding: 4px;

@@ -24,6 +24,45 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		
 		this.ui = {};
 		
+		this._interceptMouse = false;
+		
+		// Hook the engine's input system and take over mouse interaction
+		this._mouseUpHandle = ige.input.on('preMouseUp', function (event) {
+			if (self._interceptMouse) {
+				self.emit('mouseUp', event);
+				
+				// Return true to stop this event from being emitted by the engine to the scenegraph
+				return true;
+			}
+		});
+		
+		this._mouseDownHandle = ige.input.on('preMouseDown', function (event) {
+			if (self._interceptMouse) {
+				self.emit('mouseDown', event);
+				
+				// Return true to stop this event from being emitted by the engine to the scenegraph
+				return true;
+			}
+		});
+		
+		this._mouseMoveHandle = ige.input.on('preMouseMove', function (event) {
+			if (self._interceptMouse) {
+				self.emit('mouseMove', event);
+				
+				// Return true to stop this event from being emitted by the engine to the scenegraph
+				return true;
+			}
+		});
+		
+		this._contextMenuHandle = ige.input.on('preContextMenu', function (event) {
+			if (self._interceptMouse) {
+				self.emit('contextMenu', event);
+				
+				// Return true to stop this event from being emitted by the engine to the scenegraph
+				return true;
+			}
+		});
+		
 		// Load jsRender for HTML template support
 		ige.requireScript(igeRoot + 'components/editor/vendor/jsRender.js');
 		
@@ -36,10 +75,14 @@ var IgeEditorComponent = IgeEventingClass.extend({
 				// Add the html
 				$('body').append($(html));
 				
+				ige.requireScript(igeRoot + 'components/editor/vendor/jsrender-helpers.js');
+				
 				// Object mutation observer polyfill
 				ige.requireScript(igeRoot + 'components/editor/vendor/observe.js');
 				
 				// Load plugin styles
+				ige.requireStylesheet(igeRoot + 'components/editor/vendor/glyphicons/css/halflings.css');
+				ige.requireStylesheet(igeRoot + 'components/editor/vendor/glyphicons/css/glyphicons.css');
 				ige.requireStylesheet(igeRoot + 'components/editor/vendor/treeview_simple/css/style.css');
 				
 				// Load the editor stylesheet
@@ -53,8 +96,8 @@ var IgeEditorComponent = IgeEventingClass.extend({
 				// Wait for all required files to finish loading
 				ige.on('allRequireScriptsLoaded', function () {
 					// Load UI scripts
+					ige.requireScript(igeRoot + 'components/editor/ui/menu/menu.js');
 					ige.requireScript(igeRoot + 'components/editor/ui/panels/panels.js');
-					
 					ige.requireScript(igeRoot + 'components/editor/ui/scenegraph/scenegraph.js');
 					ige.requireScript(igeRoot + 'components/editor/ui/toolbox/toolbox.js');
 					
@@ -100,6 +143,10 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		this._enabled = true;
 		
 		this.log('Init complete');
+	},
+	
+	interceptMouse: function (val) {
+		this._interceptMouse = val;
 	},
 	
 	loadHtml: function (url, callback) {
@@ -179,13 +226,14 @@ var IgeEditorComponent = IgeEventingClass.extend({
 	_objectSelected: function (obj) {
 		if (obj) {
 			ige.editor.ui.panels.showPanelByInstance(obj);
+			this._selectedObjectClassList = ige.getClassDerivedList(obj);
 			
 			// Update active-for selectors
 			$('[data-active-for]')
 				.removeClass('disabled')
 				.addClass('disabled');
 			
-			var classArr = ige.getClassDerivedList(obj),
+			var classArr = this._selectedObjectClassList,
 				i;
 			
 			for (i = 0; i < classArr.length; i++) {

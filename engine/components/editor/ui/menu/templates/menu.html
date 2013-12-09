@@ -1,7 +1,12 @@
-<div class="menu">
-	<ul>
+<div class="menu" oncontextmenu="return false;">
+	{{if header}}
+	<ul class="header">
+		<li><span class="halflings-icon white {{:header.icon}}"></span>[{{:header.classId}}] {{:header.text}}</li>
+	</ul>
+	{{/if}}
+	<ul class="items">
 		{{for items}}
-		<li onclick="{{:action}}" id="{{:id}}"><span class="icon {{:icon}}"></span> <span class="text">{{:text}}</span></li>
-		{{/items}}
+			<li onclick="{{:action}}" id="{{:id}}" class="{{if sep}}separator{{/if}}"><span class="halflings-icon white {{:icon}}"></span> <span class="text">{{:text}}</span></li>
+		{{/for}}
 	</ul>
 </div> 

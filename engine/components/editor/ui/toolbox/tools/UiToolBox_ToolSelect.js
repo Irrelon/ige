@@ -14,33 +14,27 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 			this._enabled = val;
 			
 			if (val) {
+				ige.editor.interceptMouse(true);
+				
 				var self = this;
 		
 				// Hook the engine's input system and take over mouse interaction
-				this._mouseUpHandle = ige.input.on('preMouseUp', function (event) {
+				this._mouseUpHandle = ige.editor.on('mouseUp', function (event) {
 					self._mouseUp(event);
-					
-					// Return true to stop this event from being emitted by the engine to the scenegraph
-					return true;
 				});
 				
-				this._mouseDownHandle = ige.input.on('preMouseDown', function (event) {
+				this._mouseDownHandle = ige.editor.on('mouseDown', function (event) {
 					self._mouseDown(event);
-					
-					// Return true to stop this event from being emitted by the engine to the scenegraph
-					return true;
 				});
 				
-				this._mouseMoveHandle = ige.input.on('preMouseMove', function (event) {
+				this._mouseMoveHandle = ige.editor.on('mouseMove', function (event) {
 					self._mouseMove(event);
-					
-					// Return true to stop this event from being emitted by the engine to the scenegraph
-					return true;
 				});
 			} else {
-				ige.input.off('preMouseUp', this._mouseUpHandle);
-				ige.input.off('preMouseDown', this._mouseDownHandle);
-				ige.input.off('preMouseMove', this._mouseMoveHandle);
+				ige.editor.interceptMouse(false);
+				ige.editor.off('mouseUp', this._mouseUpHandle);
+				ige.editor.off('mouseDown', this._mouseDownHandle);
+				ige.editor.off('mouseMove', this._mouseMoveHandle);
 				
 				if (ige.editor._selectedObject) {
 					ige._currentViewport.drawBoundsData(true);
@@ -59,7 +53,7 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 	 * @private
 	 */
 	_mouseDown: function (event) {
-		
+		this.emit('mouseDown', event);
 	},
 
 	/**
@@ -94,6 +88,8 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 				ige._currentViewport.drawBoundsLimitId(ige.editor._selectedObject.id());
 			}
 		}
+		
+		this.emit('mouseMove', event);
 	},
 
 	/**
@@ -102,8 +98,12 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 	 * @private
 	 */
 	_mouseUp: function (event) {
-		ige.editor.selectObject(this._overObject.id());
-		this.emit('selected', ige.editor._selectedObject);
+		if (this._overObject) {
+			ige.editor.selectObject(this._overObject.id());
+			this.emit('selected', ige.editor._selectedObject);
+			
+			this.emit('mouseUp', event);
+		}
 	},
 	
 	destroy: function () {

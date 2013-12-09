@@ -5,7 +5,7 @@ var UiPanels = IgeEventingClass.extend({
 		this._panelProps = {};
 		
 		// Add tab to tabs
-		$('<div class="tab" data-content="propertiesContent">Properties</div>')
+		$('<div class="tab" data-content="propertiesContent" title="Properties"><span class="icon props"></span></div>')
 			.appendTo('#tabs');
 		
 		// Add content html

@@ -15,7 +15,6 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: 400px;
   z-index: 200000;
 }
 #fpsCounter {
@@ -44,21 +43,50 @@
   z-index: 199999;
 }
 /* TABS */
-.tab {
-  padding: 5px;
-  font-family: Verdana, Tahoma, sans-serif;
-  font-size: 12px;
-  color: #fff;
+/*.tab {
+	padding: 5px;
+	font-family: Verdana, Tahoma, sans-serif;
+	font-size: 12px;
+	color: #fff;
+	background-color: #005463;
+	display: inline-block;
+	float: left;
+	cursor: pointer;
+}
+
+.tab.active {
+	background-color: #008ea8;
+}*/
+#tabs {
+  position: absolute;
+  left: -32px;
+  width: 32px;
+}
+.tab .icon {
+  width: 32px;
+  height: 32px;
   background-color: #005463;
-  display: inline-block;
-  float: left;
+  display: block;
+}
+.tab .icon:hover {
+  background-color: #00778d;
   cursor: pointer;
 }
-.tab.active {
+.tab .icon.disabled {
+  background-color: #333;
+  opacity: 0.3;
+  cursor: default;
+}
+.tab .icon.graph {
+  background-image: url('../ui/assets/graph.png');
+}
+.tab .icon.props {
+  background-image: url('../ui/assets/props.png');
+}
+.tab.active .icon {
   background-color: #008ea8;
 }
 .tabContents {
-  border-top: 1px solid;
   clear: both;
   color: #fff;
   font-family: Verdana, Tahoma, sans-serif;
@@ -66,8 +94,9 @@
   position: relative;
   top: 0;
   bottom: 0;
-  left: 0;
   right: 0;
+  width: 400px;
+  display: none;
 }
 .tabContent {
   display: none;
@@ -81,7 +110,7 @@
 }
 .toolGroup tr th {
   color: #fff;
-  font-size: 10px;
+  font-size: 9px;
   font-family: Verdana, Tahoma, sans-serif;
   font-weight: normal;
   padding: 4px;

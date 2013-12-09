@@ -200,7 +200,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 			'touchstart': function (event) { event.igeType = 'touch'; self._rationalise(event, true); self._mouseDown(event); },
 			'touchend': function (event) { event.igeType = 'touch'; self._rationalise(event, true); self._mouseUp(event); },
 
-			'contextmenu': function (event) { event.preventDefault(); },
+			'contextmenu': function (event) { event.preventDefault(); event.igeType = 'mouse'; self._rationalise(event); self._contextMenu(event); },
 
 			'keydown': function (event) { event.igeType = 'key'; self._rationalise(event); self._keyDown(event); },
 			'keyup': function (event) { event.igeType = 'key'; self._rationalise(event); self._keyUp(event); }
@@ -391,6 +391,38 @@ var IgeInputComponent = IgeEventingClass.extend({
 		if (!self.emit('preMouseUp', [event, mx, my, event.button + 1])) {
 			this.queueEvent(this, function () {
 				self.emit('mouseUp', [event, mx, my, event.button + 1]);
+			});
+		}
+	},
+	
+	_contextMenu: function (event) {
+		if (this._debug) {
+			console.log('Context Menu', event);
+		}
+		// Update the mouse position within the viewports
+		this._updateMouseData(event);
+
+		var mx = event.igeX - ige._geometry.x2,
+			my = event.igeY - ige._geometry.y2,
+			self = this;
+
+		if (event.button === 0) {
+			this._state[this.mouse.button1] = false;
+		}
+
+		if (event.button === 1) {
+			this._state[this.mouse.button2] = false;
+		}
+
+		if (event.button === 2) {
+			this._state[this.mouse.button3] = false;
+		}
+
+		this.contextMenu = event;
+		
+		if (!self.emit('preContextMenu', [event, mx, my, event.button + 1])) {
+			this.queueEvent(this, function () {
+				self.emit('contextMenu', [event, mx, my, event.button + 1]);
 			});
 		}
 	},

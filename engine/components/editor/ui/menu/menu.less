@@ -1,0 +1,42 @@
+.menu {
+	position: absolute;
+	left: 100px;
+	top: 100px;
+	background: #000;
+	color: #fff;
+	font-family: Verdana, Tahoma, sans-serif;
+	font-size: 12px;
+	min-width: 180px;
+	
+	ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		
+		li {
+			padding: 5px;
+		}
+		
+		&.header {
+			background-color: #008ea8;
+		}
+		
+		&.items {
+			li {
+				cursor: pointer;
+				
+				.halflings-icon {
+					margin-right: 0px;
+				}
+				
+				&.separator {
+					border-top: 1px solid #333;
+				}
+				
+				&:hover {
+					background-color: #008ea8;
+				}
+			}
+		}
+	}
+}
