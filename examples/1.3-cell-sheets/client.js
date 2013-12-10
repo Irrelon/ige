@@ -51,7 +51,7 @@ var Client = IgeClass.extend({
 						// Set the entity's width and height to match the cell we are using
 						.dimensionsFromCell()
 						.translateTo(0, 50, 0)
-						.mount(self.obj[0]);
+						.mount(ige.$('baseScene'));
 				}
 			});
 		});

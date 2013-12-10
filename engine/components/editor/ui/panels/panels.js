@@ -144,11 +144,67 @@ var UiPanels = IgeEventingClass.extend({
 										// Set texture to none
 										delete obj._texture;
 									}
+									
+									// Update the cell panel
+									var updateMethod = $('#igeEditorProperty__cell').data('igePanelUpdate');
+									if (updateMethod) {
+										updateMethod();
+									} else {
+										console.log('Error, unable to update cell property panel!');
+									}
 								});
 								
 								panel.find('.dimensionsFromTexture').on('click', function () {
 									if (obj._texture) {
 										obj.dimensionsFromTexture();
+									}
+								});
+								
+								panel.find('.dimensionsFromCell').on('click', function () {
+									if (obj._texture) {
+										obj.dimensionsFromCell();
+									}
+								});
+							}
+						},
+						'_cell': {
+							label: 'Texture Cell',
+							desc: '',
+							alwaysShow: true,
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/ImageGallery.html',
+							// Setup the data the template needs to render correctly
+							beforeRender: function (obj, propItem) {
+								var cellIndex,
+									cellData;
+								
+								// Setup an array for the textures
+								propItem.images = [];
+								
+								if (obj._texture && obj._texture._cells) {
+									for (cellIndex = 1; cellIndex < obj._texture._cells.length; cellIndex++) {
+										cellData = obj._texture._cells[cellIndex];
+										
+										propItem.images.push({
+											id: cellIndex,
+											url: obj._texture.url(),
+											cellData: cellData,
+											selected: obj._cell === cellIndex,
+											scaleX: 1,
+											scaleY: 1
+										});
+									}
+								}
+							},
+							// Enable any listeners and logic to take action when the user interacts with the panel
+							afterRender: function (obj, propItem) {
+								var panel = $('#igeEditorProperty_' + propItem.id);
+								
+								panel.find('.image').on('click', function () {
+									var cellId = parseInt($(this).attr('id'));
+									
+									if (cellId) {
+										// Set the object's texture to the newly selected one
+										obj.cell(cellId);
 									}
 								});
 							}
@@ -1267,19 +1323,37 @@ var UiPanels = IgeEventingClass.extend({
 														// Generate HTML for this property from the template
 														ige.editor.template(propertyTemplateUrl, function (err, template) {
 															if (!err) {
-																if (propData.beforeRender) {
-																	propData.beforeRender(propData.obj, propData);
-																}
+																var propSelector,
+																	updateMethod;
 																
-																var propSelector = $($.parseHTML(template.render(propData)));
+																updateMethod = function () {
+																	// Remove existing property panel section
+																	var existingSelector = $('#igeEditorProperty_' + propData.id),
+																		existingData = existingSelector.data('igePanelUpdate');
+																	
+																	existingSelector.remove();
+																	
+																	if (propData.beforeRender) {
+																		propData.beforeRender(propData.obj, propData);
+																	}
+																	
+																	propSelector = $($.parseHTML(template.render(propData)));
+																	
+																	// Add the property selector to the DOM
+																	propData.groupSelector.append(propSelector);
+																	
+																	// Call any afterRender callback if there is one
+																	if (propData.afterRender) {
+																		propData.afterRender(propData.obj, propData);
+																	}
+																	
+																	if (existingData) {
+																		propSelector.data('igePanelUpdate', existingData);
+																	}
+																};
 																
-																// Add the property selector to the DOM
-																propData.groupSelector.append(propSelector);
-																
-																// Call any afterRender callback if there is one
-																if (propData.afterRender) {
-																	propData.afterRender(propData.obj, propData);
-																}
+																updateMethod();
+																propSelector.data('igePanelUpdate', updateMethod);
 															}
 														});
 													}

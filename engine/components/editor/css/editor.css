@@ -43,6 +43,7 @@
   font-size: 11px;
   font-family: Verdana, Tahoma, sans-serif;
   color: #fff;
+  margin-bottom: 5px;
 }
 .editorBtn.btn-primary {
   background-color: #7d00bd;
@@ -58,6 +59,19 @@
 }
 .halflings-icon.none {
   display: none;
+}
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: " ";
+}
+.clearfix:after {
+  clear: both;
+}
+.ImageGallery .image {
+  float: left;
+  margin-right: 5px;
+  margin-bottom: 5px;
 }
 /* TABS */
 #tabs {

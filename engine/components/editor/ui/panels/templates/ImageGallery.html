@@ -1,0 +1,11 @@
+<div id="igeEditorProperty_{{:id}}" class="igeEditorProperty ImageGallery" data-type="ImageGallery" data-prop="{{:id}}" data-obj-id="{{:obj._id}}">
+	<div class="header">
+		<div class="label">{{:label}}</div>
+	</div>
+	<div class="content">
+		{{for images}}
+		<div class="image" id="{{:id}}" style="-webkit-transform: scale({{:scaleX}}, {{:scaleY}}); transform: scale({{:scaleX}}, {{:scaleY}}); background-image: url({{:url}}); width: {{:cellData[2]}}px; height: {{:cellData[3]}}px; background-position: -{{:cellData[0]}}px -{{:cellData[1]}}px;"></div>
+		{{/for}}
+		<div class="clearfix"></div>
+	</div>
+</div>

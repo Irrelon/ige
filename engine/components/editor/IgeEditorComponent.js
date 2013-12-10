@@ -370,7 +370,6 @@ var IgeEditorComponent = IgeEventingClass.extend({
 
 		dblClick = function (event) {
 			event.stopPropagation();
-			console.log("ige.$('" + this.id + "')");
 		};
 
 		//elem.addEventListener('mouseover', mouseOver, false);
