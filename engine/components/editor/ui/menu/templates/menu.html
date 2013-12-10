@@ -6,7 +6,7 @@
 	{{/if}}
 	<ul class="items">
 		{{for items}}
-			<li onclick="{{:action}}" id="{{:id}}" class="{{if sep}}separator{{/if}}"><span class="halflings-icon white {{:icon}}"></span> <span class="text">{{:text}}</span></li>
+			<li onclick="{{:action}}; ige.editor.ui.menus.closeAll();" id="{{:id}}" class="{{if sep}}separator{{/if}}"><span class="halflings-icon white {{:icon}}"></span> <span class="text">{{:text}}</span></li>
 		{{/for}}
 	</ul>
 </div> 

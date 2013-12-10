@@ -28,9 +28,6 @@ var UiToolBox = IgeEventingClass.extend({
 			toolbox.find('[data-tool]').click(function () {
 				var elem = $(this);
 				
-				// Clear existing tool selection
-				self.deselect(self._currentTool);
-				
 				// Add selected to this tool
 				self.select(elem.attr('id'));
 			});
@@ -71,8 +68,12 @@ var UiToolBox = IgeEventingClass.extend({
 	},
 	
 	select: function (id) {
-		var elem = $('#' + id),
+		var self = this,
+			elem = $('#' + id),
 			toolClassId = elem.attr('data-tool');
+		
+		// Clear existing tool selection
+		self.deselect(self._currentTool);
 		
 		if (!elem.hasClass('selected')) {
 			elem.addClass('selected');

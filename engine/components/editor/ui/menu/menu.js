@@ -9,13 +9,20 @@ var UiMenu = IgeEventingClass.extend({
 			'IgeEntity': {
 				items: [{
 					sep: true,
+					id: 'select',
+					icon: 'hand-top',
+					text: 'Select',
+					action: "ige.editor.ui.toolbox.select('toolSelect');"
+				}, {
+					sep: true,
 					id: 'transform',
 					icon: 'th',
 					text: 'Transform'
 				}, {
 					id: 'translate',
 					icon: 'move',
-					text: 'Translate'
+					text: 'Translate',
+					action: "ige.editor.ui.toolbox.select('toolTranslate');"
 				}, {
 					id: 'rotate',
 					icon: 'repeat',
