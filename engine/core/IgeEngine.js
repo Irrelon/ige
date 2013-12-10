@@ -1217,7 +1217,7 @@ var IgeEngine = IgeEntity.extend({
 			// Check if the mouse is over this entity
 			mp = this.mousePosWorld();
 
-			if (mp) {
+			if (mp && obj.aabb) {
 				// Trigger mode is against the AABB
 				mouseTriggerPoly = obj.aabb(); //this.localAabb();
 				
