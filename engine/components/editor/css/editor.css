@@ -42,21 +42,10 @@
   opacity: 1;
   z-index: 199999;
 }
-/* TABS */
-/*.tab {
-	padding: 5px;
-	font-family: Verdana, Tahoma, sans-serif;
-	font-size: 12px;
-	color: #fff;
-	background-color: #005463;
-	display: inline-block;
-	float: left;
-	cursor: pointer;
+.halflings-icon.none {
+  display: none;
 }
-
-.tab.active {
-	background-color: #008ea8;
-}*/
+/* TABS */
 #tabs {
   position: absolute;
   left: -32px;
@@ -90,7 +79,7 @@
   clear: both;
   color: #fff;
   font-family: Verdana, Tahoma, sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   position: relative;
   top: 0;
   bottom: 0;
@@ -146,7 +135,7 @@
   background-color: #b21dff;
 }
 .toolGroup .toolCreate {
-  background-image: url('../ui/assets/note.png');
+  /*background-image: url('../ui/assets/note.png');*/
 }
 .toolGroup .toolSelect {
   background-image: url('../ui/assets/hand.png');
@@ -268,7 +257,7 @@
   padding: 5px;
   background-color: rgba(66, 66, 66, 0.9);
   font-family: Verdana, sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   color: #ffffff;
 }
 #igeSgConsoleHolder a {
@@ -372,7 +361,7 @@
 }
 .igeEditorGroup {
   font-family: "Open Sans", sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   color: #ffffff;
   position: relative;
   background-color: #333;
@@ -386,5 +375,5 @@
 }
 .igeEditorProperty .label {
   font-weight: bold;
-  font-size: 12px;
+  font-size: 11px;
 }

@@ -7,6 +7,10 @@ var UiToolBox = IgeEventingClass.extend({
 		this.tools = {};
 		
 		// Load tool scripts
+		ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolCreate.js', function () {
+			self.tools['UiToolBox_ToolCreate'] = ige.newClassInstance('UiToolBox_ToolCreate');
+		});
+		
 		ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolSelect.js', function () {
 			self.tools['UiToolBox_ToolSelect'] = ige.newClassInstance('UiToolBox_ToolSelect');
 			self.select('toolSelect');

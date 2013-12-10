@@ -78,8 +78,7 @@ var UiMenu = IgeEventingClass.extend({
 				ige.editor.ui.menus.create({
 					header: {
 						icon: 'th-large',
-						classId: ige.editor._selectedObject.classId(),
-						text: ige.editor._selectedObject.id()
+						text: '[' + ige.editor._selectedObject.classId() + ']' + ' '  + ige.editor._selectedObject.id()
 					},
 					groups: self.definition.IgeEntity
 				}, function (elem) {

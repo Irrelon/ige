@@ -136,7 +136,7 @@ var Client = IgeClass.extend({
 					.width(880)
 					.height(20)
 					.drawBounds(true)
-					//.mount(self.scene1)
+					.mount(self.scene1)
 					.box2dBody({
 						type: 'static',
 						allowSleep: true,
@@ -157,6 +157,8 @@ var Client = IgeClass.extend({
 				// Add the box2d debug painter entity to the
 				// scene to show the box2d body outlines
 				ige.box2d.enableDebug(self.scene1);
+				
+				ige.addComponent(IgeEditorComponent);
 			}
 		});
 	}
