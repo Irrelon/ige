@@ -17,7 +17,8 @@ var UiMenu = IgeEventingClass.extend({
 					sep: true,
 					id: 'transform',
 					icon: 'th',
-					text: 'Transform'
+					text: 'Transform',
+					action: "ige.editor.ui.toolbox.select('toolTransform');"
 				}, {
 					id: 'translate',
 					icon: 'move',
@@ -26,11 +27,13 @@ var UiMenu = IgeEventingClass.extend({
 				}, {
 					id: 'rotate',
 					icon: 'repeat',
-					text: 'Rotate'
+					text: 'Rotate',
+					action: "ige.editor.ui.toolbox.select('toolRotate');"
 				}, {
 					id: 'scale',
 					icon: 'resize-full',
-					text: 'Scale'
+					text: 'Scale',
+					action: "ige.editor.ui.toolbox.select('toolRotate');"
 				}, {
 					sep: true,
 					id: 'export',
@@ -44,7 +47,8 @@ var UiMenu = IgeEventingClass.extend({
 					sep: true,
 					id: 'destroy',
 					icon: 'certificate',
-					text: 'Destroy'
+					text: 'Destroy',
+					action: "ige.editor.destroySelected();"
 				}]
 			}
 		};

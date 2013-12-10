@@ -245,6 +245,13 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		}
 	},
 	
+	destroySelected: function () {
+		if (this._selectedObject) {
+			this._selectedObject.destroy();
+			this.selectObject(null);
+		}
+	},
+	
 	/**
 	 * Updates the stats HTML overlay with the latest data.
 	 * @private

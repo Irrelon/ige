@@ -309,7 +309,7 @@ var IgeEngine = IgeEntity.extend({
 				self._requireScriptLoaded(this);
 				
 				if (callback) {
-					setTimeout(function () { callback(); }, 20);
+					setTimeout(function () { callback(); }, 100);
 				}
 			});
 			
