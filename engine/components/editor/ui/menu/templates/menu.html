@@ -5,8 +5,13 @@
 	</ul>
 	{{/if}}
 	<ul class="items">
-		{{for items}}
-			<li onclick="{{:action}}; ige.editor.ui.menus.closeAll();" id="{{:id}}" class="{{if sep}}separator{{/if}}"><span class="halflings-icon white {{:icon}}"></span> <span class="text">{{:text}}</span></li>
+		{{for groups}}
+			{{:~log(#data)}}
+			{{for ~forEach(#data)}}
+				{{for #data}}
+					<li onclick="{{:action}}; ige.editor.ui.menus.closeAll();" id="{{:id}}" class="{{if sep}}separator{{/if}}"><span class="halflings-icon white {{:icon}}"></span> <span class="text">{{:text}}</span></li>
+				{{/for}}
+			{{/for}}
 		{{/for}}
 	</ul>
 </div> 

@@ -6,14 +6,15 @@ var UiMenu = IgeEventingClass.extend({
 		ige.requireStylesheet(igeRoot + 'components/editor/ui/menu/menu.css');
 		
 		this.definition = {
-			'IgeEntity': {
-				items: [{
+			'IgeEntity': [{
+				'mode': [{
 					sep: true,
 					id: 'select',
 					icon: 'hand-top',
 					text: 'Select',
 					action: "ige.editor.ui.toolbox.select('toolSelect');"
-				}, {
+				}],
+				'transform': [{
 					sep: true,
 					id: 'transform',
 					icon: 'th',
@@ -34,7 +35,8 @@ var UiMenu = IgeEventingClass.extend({
 					icon: 'resize-full',
 					text: 'Scale',
 					action: "ige.editor.ui.toolbox.select('toolRotate');"
-				}, {
+				}],
+				'export': [{
 					sep: true,
 					id: 'export',
 					icon: 'download-alt',
@@ -43,14 +45,15 @@ var UiMenu = IgeEventingClass.extend({
 					id: 'export-tree',
 					icon: 'sort-by-attributes',
 					text: 'Export Composite...'
-				}, {
+				}],
+				'action': [{
 					sep: true,
 					id: 'destroy',
 					icon: 'certificate',
 					text: 'Destroy',
 					action: "ige.editor.destroySelected();"
 				}]
-			}
+			}]
 		};
 		
 		ige.editor.on('mouseUp', function (event) {
@@ -78,7 +81,7 @@ var UiMenu = IgeEventingClass.extend({
 						classId: ige.editor._selectedObject.classId(),
 						text: ige.editor._selectedObject.id()
 					},
-					items: self.definition.IgeEntity.items
+					groups: self.definition.IgeEntity
 				}, function (elem) {
 					// Now position the menu
 					var menuWidth = elem.width(),

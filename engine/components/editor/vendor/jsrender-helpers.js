@@ -14,6 +14,15 @@ if (jsviews) {
 			return arr; 
 		},
 		
+		forEach: function (arr) {
+			var finalArr = [];
+			for (var i in arr) {
+				finalArr.push(arr[i]);
+			}
+			
+			return finalArr;
+		},
+		
 		percentage: function (val, total) {
 			return Math.floor((100 / total) * val);
 		},
