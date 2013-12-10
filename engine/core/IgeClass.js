@@ -376,6 +376,9 @@ var IgeClass = (function () {
 
 		// Add the implement method
 		IgeClass.prototype.implement = implement;
+		
+		// Add editor settings
+		IgeClass.prototype.__igeEditor = prop.editorOptions;
 
 		// Register the class with the class store
 		igeClassStore[prop.classId] = IgeClass;

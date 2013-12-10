@@ -6,12 +6,13 @@
   color: #fff;
   font-family: Verdana, Tahoma, sans-serif;
   font-size: 11px;
-  min-width: 180px;
+  min-width: 210px;
 }
 .menu ul {
   list-style: none;
   margin: 0;
   padding: 0;
+  max-height: 464px;
 }
 .menu ul li {
   padding: 5px;
@@ -20,6 +21,11 @@
   font-size: 11px;
   /*font-variant: small-caps;*/
   background-color: #7d00bd;
+}
+.menu ul.items {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 414px;
 }
 .menu ul.items li {
   cursor: pointer;
@@ -32,4 +38,22 @@
 }
 .menu ul.items li:hover {
   background-color: #008ea8;
+}
+.menu .searchForm .searchInput {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #222;
+  color: #fff;
+  border: none;
+  padding: 4px;
+  font-size: 11px;
+}
+.menu .searchForm .searchInput:focus {
+  outline: none;
+}
+.menu .searchForm .searchClear {
+  position: absolute;
+  top: 30px;
+  right: -7px;
+  cursor: pointer;
 }

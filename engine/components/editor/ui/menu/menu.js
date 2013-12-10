@@ -8,7 +8,6 @@ var UiMenu = IgeEventingClass.extend({
 		this.definition = {
 			'IgeEntity': [{
 				'mode': [{
-					sep: true,
 					id: 'select',
 					icon: 'hand-top',
 					text: 'Select',
@@ -122,6 +121,39 @@ var UiMenu = IgeEventingClass.extend({
 					
 					if (menuData.top !== undefined) {
 						html.css('top', menuData.top);
+					}
+					
+					if (menuData.search) {
+						// Assign callback to clear button if search enabled
+						html.find('.searchClear').click(function() {
+							html.find('.searchInput').val('');
+							html.find('ul.items li').show();
+						});
+						
+						// Perform search when text entered in search box
+						html.find('.searchInput').keyup(function () {
+							var list = html.find('ul.items'),
+								items = list.find('li'),
+								searchTerm = $(this).val();
+							
+							if (searchTerm) {
+								// Loop the list items and check if the text matches the search
+								items.each(function (index, elem) {
+									elem = $(elem);
+									
+									if (elem.attr('data-val').toLowerCase().indexOf(searchTerm.toLowerCase()) > -1) {
+										elem.show();
+									} else {
+										elem.hide();
+									}
+								});
+							} else {
+								html.find('ul.items li').show();
+							}
+						});
+						
+						// Set the search box with focus
+						html.find('.searchInput').focus();
 					}
 					
 					if (callback) { callback(html); }

@@ -1,16 +1,34 @@
 var UiToolBox_ToolCreate = IgeEventingClass.extend({
 	classId: 'UiToolBox_ToolCreate',
+	editorOptions: {
+		hide: true
+	},
 	
 	init: function () {
 		this.menuDefinition = [{
-			'group': [{
-				sep: true,
-				id: 'select',
-				icon: 'none',
-				text: 'IgeEntity',
-				action: "ige.editor.ui.toolbox.select('toolSelect');"
-			}]
+			'group': []
 		}];
+		
+		var sortArr = [], i;
+		
+		for (i in igeClassStore) {
+			if (igeClassStore.hasOwnProperty(i)) {
+				if (!igeClassStore[i].prototype.editorOptions || !igeClassStore[i].prototype.editorOptions.hide) {
+					sortArr.push(i);
+				}
+			}
+		}
+		
+		sortArr.sort();
+		
+		for (i = 0; i < sortArr.length; i++) {
+			this.menuDefinition[0].group.push({
+				id: sortArr[i],
+				icon: 'none',
+				text: sortArr[i],
+				action: "ige.editor.createObject('" + i + "');"
+			});
+		}
 	},
 	
 	enabled: function (val) {
@@ -28,7 +46,8 @@ var UiToolBox_ToolCreate = IgeEventingClass.extend({
 					icon: 'log_in',
 					text: 'Create &amp; Mount Object'
 				},
-				groups: self.menuDefinition
+				groups: self.menuDefinition,
+				search: true
 			}, function (elem) {
 				// Now position the menu
 				var menuHeight = elem.height();
@@ -37,6 +56,10 @@ var UiToolBox_ToolCreate = IgeEventingClass.extend({
 				
 				if (top + menuHeight > height) {
 					top = height - menuHeight - 10;
+				}
+				
+				if (top - menuHeight < 0) {
+					top = 10;
 				}
 				
 				elem.css('left', left)

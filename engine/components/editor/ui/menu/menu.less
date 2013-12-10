@@ -6,12 +6,13 @@
 	color: #fff;
 	font-family: Verdana, Tahoma, sans-serif;
 	font-size: 11px;
-	min-width: 180px;
+	min-width: 210px;
 	
 	ul {
 		list-style: none;
 		margin: 0;
 		padding: 0;
+		max-height: 464px;
 		
 		li {
 			padding: 5px;
@@ -24,6 +25,9 @@
 		}
 		
 		&.items {
+			overflow-y: auto;
+			overflow-x: hidden;
+			max-height: 414px;
 			li {
 				cursor: pointer;
 				
@@ -39,6 +43,29 @@
 					background-color: #008ea8;
 				}
 			}
+		}
+	}
+	
+	.searchForm {
+		.searchInput {
+			width: 100%;
+			box-sizing: border-box;
+			background-color: #222;
+			color: #fff;
+			border: none;
+			padding: 4px;
+			font-size: 11px;
+			
+			&:focus {
+				outline: none;
+			}
+		}
+		
+		.searchClear {
+			position: absolute;
+			top: 30px;
+			right: -7px;
+			cursor: pointer;
 		}
 	}
 }
