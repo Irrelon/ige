@@ -26,7 +26,7 @@ var UiToolBox_ToolCreate = IgeEventingClass.extend({
 				id: sortArr[i],
 				icon: 'none',
 				text: sortArr[i],
-				action: "ige.editor.createObject('" + i + "');"
+				action: "ige.editor.createObject('" + sortArr[i] + "', true);"
 			});
 		}
 	},

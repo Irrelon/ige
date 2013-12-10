@@ -98,11 +98,13 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 	 * @private
 	 */
 	_mouseUp: function (event) {
-		if (this._overObject) {
-			ige.editor.selectObject(this._overObject.id());
-			this.emit('selected', ige.editor._selectedObject);
-			
-			this.emit('mouseUp', event);
+		if (event.button === 0) {
+			if (this._overObject) {
+				ige.editor.selectObject(this._overObject.id());
+				this.emit('selected', ige.editor._selectedObject);
+				
+				this.emit('mouseUp', event);
+			}
 		}
 	},
 	

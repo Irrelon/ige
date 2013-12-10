@@ -14,9 +14,9 @@ var UiSceneGraph = IgeEventingClass.extend({
 		$('<div id="scenegraphContent" class="tabContent tree"></div>')
 			.appendTo('#tabContents');
 		
-		Object.observe(ige._children, function (changes) {
+		/*Object.observe(ige._children, function (changes) {
 			self.updateSceneGraph();
-		});
+		});*/
 	},
 	
 	ready: function () {

@@ -142,6 +142,13 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		// Set the component to inactive to start with
 		this._enabled = true;
 		
+		// Set object create defaults
+		this.objectDefault = {
+			'IgeTextureMap': {
+				drawGrid: 100
+			}
+		};
+		
 		this.log('Init complete');
 	},
 	
@@ -249,6 +256,32 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		if (this._selectedObject) {
 			this._selectedObject.destroy();
 			this.selectObject(null);
+		}
+	},
+	
+	createObject: function (classId, select) {
+		if (this._selectedObject) {
+			var newObj = ige.newClassInstance(classId);
+			newObj.mount(this._selectedObject);
+			this.ui.scenegraph.updateSceneGraph();
+			
+			if (select) {
+				this.selectObject(newObj.id());
+				this.ui.toolbox.select('toolSelect');
+			}
+			
+			// Set some object defaults if there are any
+			if (this.objectDefault[classId]) {
+				for (var i in this.objectDefault[classId]) {
+					if (this.objectDefault[classId].hasOwnProperty(i)) {
+						if (this.objectDefault[classId][i] instanceof Array) {
+							newObj[i].apply(newObj, this.objectDefault[classId][i]);
+						} else {
+							newObj[i].call(newObj, this.objectDefault[classId][i]);
+						}
+					}
+				}
+			}
 		}
 	},
 	

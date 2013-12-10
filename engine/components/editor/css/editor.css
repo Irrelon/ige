@@ -36,6 +36,20 @@
   box-sizing: border-box;
   background-color: #000;
 }
+.editorBtn {
+  border: none;
+  background-color: #ccc;
+  padding: 6px;
+  font-size: 11px;
+  font-family: Verdana, Tahoma, sans-serif;
+  color: #fff;
+}
+.editorBtn.btn-primary {
+  background-color: #7d00bd;
+}
+.editorBtn:focus {
+  outline: none;
+}
 .backLayer {
   position: absolute;
   background-color: #050505;

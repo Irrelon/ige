@@ -32,8 +32,10 @@ var UiToolBox = IgeEventingClass.extend({
 			toolbox.find('[data-tool]').click(function () {
 				var elem = $(this);
 				
-				// Add selected to this tool
-				self.select(elem.attr('id'));
+				if (!elem.hasClass('disabled')) {
+					// Add selected to this tool
+					self.select(elem.attr('id'));
+				}
 			});
 
 			// Attach logic handlers to actions

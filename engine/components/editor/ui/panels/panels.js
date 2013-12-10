@@ -102,6 +102,8 @@ var UiPanels = IgeEventingClass.extend({
 						'_texture': {
 							label: 'Set Texture',
 							desc: '',
+							alwaysShow: true,
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/IgeTexture.html',
 							// Setup the data the template needs to render correctly
 							beforeRender: function (obj, propItem) {
 								var textureArr = ige._textureStore,
@@ -130,7 +132,9 @@ var UiPanels = IgeEventingClass.extend({
 							},
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
-								$('#igeEditorProperty_' + propItem.id).find('.setTexture').on('change', function () {
+								var panel = $('#igeEditorProperty_' + propItem.id);
+								
+								panel.find('.setTexture').on('change', function () {
 									var textureId = $(this).val();
 									
 									if (textureId && ige.$(textureId)) {
@@ -140,6 +144,95 @@ var UiPanels = IgeEventingClass.extend({
 										// Set texture to none
 										delete obj._texture;
 									}
+								});
+								
+								panel.find('.dimensionsFromTexture').on('click', function () {
+									if (obj._texture) {
+										obj.dimensionsFromTexture();
+									}
+								});
+							}
+						}
+					}
+				},
+				'isometric': {
+					label: '2d &amp; Isometric Settings',
+					desc: '',
+					order: 1,
+					props: {
+						'_isometricMounts': {
+							label: 'Isometric Mounts',
+							desc: '',
+							alwaysShow: true,
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/List.html',
+							// Setup the data the template needs to render correctly
+							beforeRender: function (obj, propItem) {
+								var textureArr = ige._textureStore,
+									textureIndex,
+									tex;
+								
+								// Setup an array for the list
+								propItem.list = [{
+									value: 'yes',
+									text: 'Yes',
+									selected: obj._mountMode === 1 ? true : false
+								}, {
+									value: 'no',
+									text: 'No',
+									selected: obj._mountMode === 0 ? true : false
+								}];
+							},
+							// Enable any listeners and logic to take action when the user interacts with the panel
+							afterRender: function (obj, propItem) {
+								var panel = $('#igeEditorProperty_' + propItem.id);
+								
+								panel.find('.listValue').on('change', function () {
+									var itemValue = $(this).val();
+									
+									if (itemValue === 'yes') {
+										// Set the object's texture to the newly selected one
+										obj.isometricMounts(true);
+									} else {
+										obj.isometricMounts(false);
+									}
+								});
+							}
+						}
+					}
+				}
+			}
+		});
+		
+		this.definition('IgeTileMap2d', {
+			'groups': {
+				'tiles': {
+					label: 'Tile Settings',
+					desc: '',
+					order: 1,
+					props: {
+						'_tileWidth': {
+							label: 'Width of Tiles',
+							desc: '',
+							alwaysShow: true,
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberInt.html',
+							// Enable any listeners and logic to take action when the user interacts with the panel
+							afterRender: function (obj, propItem) {
+								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
+									// Set the property value to the newly selected one
+									obj.tileWidth(parseInt($(this).val()));
+								});
+							}
+						},
+						'_tileHeight': {
+							label: 'Height of Tiles',
+							desc: '',
+							alwaysShow: true,
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberInt.html',
+							// Enable any listeners and logic to take action when the user interacts with the panel
+							afterRender: function (obj, propItem) {
+								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
+									// Set the property value to the newly selected one
+									obj.tileHeight(parseInt($(this).val()));
 								});
 							}
 						}
