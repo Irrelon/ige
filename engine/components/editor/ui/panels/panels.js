@@ -94,6 +94,36 @@ var UiPanels = IgeEventingClass.extend({
 						}
 					}
 				},
+				'geometry': {
+					label: 'Geometry',
+					desc: '',
+					order: 0,
+					props: {
+						'_geometry': {
+							label: 'Size 3d',
+							desc: '',
+							// Enable any listeners and logic to take action when the user interacts with the panel
+							afterRender: function (obj, propItem) {
+								var selector = $('#igeEditorProperty_' + propItem.id);
+
+								selector.find('.setNumberX').on('change', function () {
+									// Set the property value to the newly selected one
+									obj[propItem.id].x = parseFloat($(this).val());
+								});
+
+								selector.find('.setNumberY').on('change', function () {
+									// Set the property value to the newly selected one
+									obj[propItem.id].y = parseFloat($(this).val());
+								});
+
+								selector.find('.setNumberZ').on('change', function () {
+									// Set the property value to the newly selected one
+									obj[propItem.id].z = parseFloat($(this).val());
+								});
+							}
+						}
+					}
+				},
 				'texture': {
 					label: 'Texture',
 					desc: '',
@@ -251,6 +281,26 @@ var UiPanels = IgeEventingClass.extend({
 									} else {
 										obj.isometricMounts(false);
 									}
+								});
+							}
+						}
+					}
+				},
+				'visibility': {
+					label: 'Visibility',
+					desc: '',
+					order: 1,
+					props: {
+						'_opacity': {
+							label: 'Opacity',
+							desc: '',
+							alwaysShow: true,
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloat.html',
+							// Enable any listeners and logic to take action when the user interacts with the panel
+							afterRender: function (obj, propItem) {
+								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
+									// Set the property value to the newly selected one
+									obj.opacity(parseFloat($(this).val()));
 								});
 							}
 						}

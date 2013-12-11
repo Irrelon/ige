@@ -24,13 +24,13 @@ var Client = IgeClass.extend({
 					self.mainScene = new IgeScene2d()
 						.id('mainScene')
 						.translateTo(20, 0, 0)
-						.drawBounds(false);
+						.drawBounds(true);
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
 						.addComponent(IgeMousePanComponent)
 						.addComponent(IgeMouseZoomComponent)
-						.mousePan.enabled(true)
+						.mousePan.enabled(false)
 						.id('vp1')
 						.autoSize(true)
 						.scene(self.mainScene)
@@ -44,10 +44,11 @@ var Client = IgeClass.extend({
 						.depth(0)
 						.tileWidth(40)
 						.tileHeight(40)
+						.width(300)
+						.height(200)
 						//.drawGrid(3)
 						//.drawMouse(true)
 						.translateTo(0, 0, 0)
-						.drawBounds(false)
 						.autoSection(10)
 						.drawSectionBounds(true)
 						.isometricMounts(true)
@@ -63,6 +64,8 @@ var Client = IgeClass.extend({
 							self.textureMap1.paintTile(x, y, texIndex, rand);
 						}
 					}
+
+					ige.addComponent(IgeEditorComponent);
 				}
 			});
 		});

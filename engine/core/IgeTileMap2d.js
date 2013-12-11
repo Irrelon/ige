@@ -106,11 +106,6 @@ var IgeTileMap2d = IgeEntity.extend({
 	},
 
 	_childMounted: function (obj) {
-		// Augment the child with tile powers!
-		/*obj.occupyTile = obj.occupyTile || this._objectOccupyTile;
-		obj.unOccupyTile = obj.unOccupyTile || this._objectUnOccupyTile;
-		obj.overTiles = obj.overTiles || this._objectOverTiles;*/
-
 		// We can also re-use the tile size methods since
 		// they alter the same properties on the calling
 		// entity anyway.
@@ -124,12 +119,12 @@ var IgeTileMap2d = IgeEntity.extend({
 		IgeEntity.prototype._childMounted.call(this, obj);
 	},
 
-	_resizeEvent: function (event) {
+	/*_resizeEvent: function (event) {
 		if (this._parent) {
 			this._geometry = this._parent._geometry.clone();
 		}
 		IgeEntity.prototype._resizeEvent.call(this, event);
-	},
+	},*/
 
 	/**
 	 * Sets a tile or area as occupied by the passed obj parameter.
