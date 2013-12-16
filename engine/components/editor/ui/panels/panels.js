@@ -9,7 +9,7 @@ var UiPanels = IgeEventingClass.extend({
 			.appendTo('#tabs');
 		
 		// Add content html
-		$('<div id="propertiesContent" class="tabContent"></div>')
+		$('<div id="propertiesContent" class="tabContent"><div class="header"><div class="label" id="objectLabel">Object Properties</div></div></div>')
 			.appendTo('#tabContents');
 		
 		// Define the classes and properties to expose
@@ -109,16 +109,19 @@ var UiPanels = IgeEventingClass.extend({
 								selector.find('.setNumberX').on('change', function () {
 									// Set the property value to the newly selected one
 									obj[propItem.id].x = parseFloat($(this).val());
+									obj[propItem.id].x2 = obj[propItem.id].x / 2;
 								});
 
 								selector.find('.setNumberY').on('change', function () {
 									// Set the property value to the newly selected one
 									obj[propItem.id].y = parseFloat($(this).val());
+									obj[propItem.id].y2 = obj[propItem.id].y / 2;
 								});
 
 								selector.find('.setNumberZ').on('change', function () {
 									// Set the property value to the newly selected one
 									obj[propItem.id].z = parseFloat($(this).val());
+									obj[propItem.id].z2 = obj[propItem.id].z / 2;
 								});
 							}
 						}
@@ -205,23 +208,36 @@ var UiPanels = IgeEventingClass.extend({
 							// Setup the data the template needs to render correctly
 							beforeRender: function (obj, propItem) {
 								var cellIndex,
-									cellData;
+									columns,
+									rows,
+									width,
+									height,
+									xScale,
+									yScale,
+									x, y;
 								
 								// Setup an array for the textures
 								propItem.images = [];
 								
-								if (obj._texture && obj._texture._cells) {
-									for (cellIndex = 1; cellIndex < obj._texture._cells.length; cellIndex++) {
-										cellData = obj._texture._cells[cellIndex];
-										
-										propItem.images.push({
-											id: cellIndex,
-											url: obj._texture.url(),
-											cellData: cellData,
-											selected: obj._cell === cellIndex,
-											scaleX: 1,
-											scaleY: 1
-										});
+								if (obj._texture && obj._texture._cells && obj._texture.horizontalCells && obj._texture.verticalCells) {
+									columns = obj._texture.horizontalCells();
+									rows = obj._texture.verticalCells();
+									width = obj._texture.sizeX();
+									height = obj._texture.sizeY();
+									xScale = columns * 40;
+									yScale = rows * 40;
+									
+									for (y = 0; y < rows; y++) {
+										for (x = 0; x < columns; x++) {
+											var imgObj = {
+												url: obj._texture.url(),
+												selected: (x + (y * columns) + 1) === cellIndex,
+												style: 'width: 40px; height: 40px; background-position: ' + (-x * 40) + 'px ' + (-y * 40) + 'px; background-size: ' + (xScale) + 'px ' + (yScale) + 'px',
+												cellIndex: x + (y * columns) + 1
+											};
+											
+											propItem.images.push(imgObj);
+										}
 									}
 								}
 							},
@@ -230,7 +246,8 @@ var UiPanels = IgeEventingClass.extend({
 								var panel = $('#igeEditorProperty_' + propItem.id);
 								
 								panel.find('.image').on('click', function () {
-									var cellId = parseInt($(this).attr('id'));
+									panel.find('.image').removeClass('active');
+									var cellId = parseInt($(this).addClass('active').attr('data-cell-index'));
 									
 									if (cellId) {
 										// Set the object's texture to the newly selected one

@@ -1,6 +1,6 @@
 .tree {
 	box-sizing: border-box;
-	padding: 5px;
+	/*padding: 5px;*/
 }
 
 .tree .expandLink {

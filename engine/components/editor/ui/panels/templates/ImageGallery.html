@@ -3,9 +3,13 @@
 		<div class="label">{{:label}}</div>
 	</div>
 	<div class="content">
-		{{for images}}
-		<div class="image" id="{{:id}}" style="-webkit-transform: scale({{:scaleX}}, {{:scaleY}}); transform: scale({{:scaleX}}, {{:scaleY}}); background-image: url({{:url}}); width: {{:cellData[2]}}px; height: {{:cellData[3]}}px; background-position: -{{:cellData[0]}}px -{{:cellData[1]}}px;"></div>
-		{{/for}}
+		{{if images && images.length}}
+			{{for images}}
+			<div class="image {{if selected}}active{{/if}}" {{if id}}id="{{:id}}"{{/if}} data-cell-index="{{:cellIndex}}" style="background-image: url({{:url}}); {{:style}}"></div>
+			{{/for}}
+		{{else}}
+			Not a cell sheet
+		{{/if}}
 		<div class="clearfix"></div>
 	</div>
 </div>

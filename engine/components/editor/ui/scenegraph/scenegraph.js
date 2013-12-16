@@ -11,7 +11,7 @@ var UiSceneGraph = IgeEventingClass.extend({
 			.appendTo('#tabs');
 		
 		// Add content html
-		$('<div id="scenegraphContent" class="tabContent tree"></div>')
+		$('<div id="scenegraphContent" class="tabContent"><div class="header"><div class="label">Scene Graph</div></div><div class="tree igeEditorGroup"></div></div>')
 			.appendTo('#tabContents');
 		
 		/*Object.observe(ige._children, function (changes) {
@@ -25,14 +25,14 @@ var UiSceneGraph = IgeEventingClass.extend({
 		
 		// Hook editor select object updates so we can keep in sync
 		ige.editor.on('selectedObject', function (id) {
-			var sg = $('#scenegraphContent');
+			var sg = $('#scenegraphContent .tree');
 			sg.find('.igeObject.selected').removeClass('selected');
 			$(sg.find('#' + id).find('.igeObject')[0]).addClass('selected');
 		});
 	},
 	
 	updateSceneGraph: function () {
-		var sgContent = $('#scenegraphContent');
+		var sgContent = $('#scenegraphContent .tree');
 		
 		sgContent.html('')
 			.tree({

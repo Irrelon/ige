@@ -86,7 +86,7 @@ var IgeEngine = IgeEntity.extend({
 		this._dependencyQueue = []; // Holds an array of functions that must all return true for the engine to start
 		this._drawCount = 0; // Holds the number of draws since the last frame (calls to drawImage)
 		this._dps = 0; // Number of draws that occurred last tick
-		this._dpt = 0;
+		this._dpf = 0;
 		this._frames = 0; // Number of frames looped through since last second tick
 		this._fps = 0; // Number of frames per second
 		this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
@@ -1487,7 +1487,7 @@ var IgeEngine = IgeEntity.extend({
 		self._fps = self._frames;
 
 		// Store draws per second
-		self._dps = self._dpt * self._fps;
+		self._dps = self._dpf * self._fps;
 
 		// Zero out counters
 		self._frames = 0;
@@ -1716,7 +1716,7 @@ var IgeEngine = IgeEntity.extend({
 			// calculate delta on the next tick
 			self.lastTick = self._tickStart;
 			self._frames++;
-			self._dpt = self._drawCount;
+			self._dpf = self._drawCount;
 			self._drawCount = 0;
 
 			// Call the input system tick to reset any flags etc
@@ -1840,8 +1840,8 @@ var IgeEngine = IgeEntity.extend({
 		return this._fps;
 	},
 
-	dpt: function () {
-		return this._dpt;
+	dpf: function () {
+		return this._dpf;
 	},
 
 	dps: function () {

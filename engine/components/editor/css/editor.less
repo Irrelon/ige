@@ -19,24 +19,39 @@
 	z-index: 200000;
 }
 
-#fpsCounter {
+#editorCounters {
 	position: absolute;
 	left: 0;
 	bottom: 0;
 	width: 64px;
-	height: 18px;
 	color: #ffffff;
 	padding: 1px;
-	font-family: Verdana, Tahoma;
+	font-family: Verdana, Tahoma, sans-serif;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     font-variant: small-caps;
-    font-size: 13px;
+    font-size: 11px;
 	z-index: 200000;
 	text-align: center;
 	box-sizing: border-box;
-	background-color: #000;
+	
+	.header {
+		color: #fff;
+		font-size: 9px;
+		font-family: Verdana, Tahoma, sans-serif;
+		font-weight: normal;
+		padding: 4px;
+		background-color: #232323;
+		font-variant: normal;
+	}
+	
+	.counter {
+		background-color: #131313;
+		border-top: 1px solid #000;
+		padding-top: 3px;
+		padding-bottom: 3px;
+	}
 }
 
 .editorBtn {
@@ -49,7 +64,15 @@
 	margin-bottom: 5px;
 	
 	&.btn-primary {
-		background-color: #7d00bd;
+		background-color: #005463;
+		
+		&:hover {
+			background-color: #00778d;
+		}
+		
+		&:active {
+			background-color: #008ea8;
+		}
 	}
 	
 	&:focus {
@@ -81,6 +104,10 @@
 	float: left;
 	margin-right: 5px;
 	margin-bottom: 5px;
+	
+	&.active {
+		border: 1px solid #666;
+	}
 }
 
 /* TABS */
@@ -131,9 +158,11 @@
 	font-size: 11px;
 	position: relative;
 	top: 0;
-	bottom: 0;
+	/*bottom: 0;*/
 	right: 0;
 	width: 400px;
+	height: 100%;
+	overflow-y: auto;
 	display: none;
 }
 
@@ -303,7 +332,7 @@
     font-size: 11px;
     color: #ffffff;
     text-shadow: 1px 1px 3px #000000;
-	font-family: Verdana, Tahoma;
+	font-family: Verdana, Tahoma, sans-serif;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -341,7 +370,7 @@
     top: 4px;
     padding: 5px;
     background-color: rgba(66, 66, 66, 0.9);
-    font-family: Verdana, sans-serif;
+    font-family: Verdana, Tahoma, sans-serif;
     font-size: 11px;
     color: #ffffff;
 }
@@ -375,7 +404,7 @@
 	bottom: 30px;
     width: 400px;
     background-color: rgba(7, 20, 25, 0.9);
-    font-family: Verdana, Tahoma;
+    font-family: Verdana, Tahoma, sans-serif;
     font-size: 11px;
     color: #ffffff;
     text-shadow: 1px 1px 3px #000000;
@@ -462,22 +491,50 @@
 }
 
 .igeEditorGroup {
-	font-family: "Open Sans", sans-serif;
+	font-family: Verdana, Tahoma, sans-serif;
 	font-size: 11px;
 	color: #ffffff;
 	position: relative;
-	background-color: #333;
+	background-color: #232323;
 	padding: 5px;
-	border-radius: 5px;
-	margin: 5px;
+	border-bottom: 1px solid #ccc;
 }
 
-.igeEditorGroup .label {
-	font-weight: bold;
-	font-size: 14px;
+.header {
+	.label {
+		font-family: "Open Sans", sans-serif;
+		font-weight: bold;
+		font-size: 14px;
+		padding: 5px;
+		background-color: #535353;
+		border-bottom: 1px solid #000;
+	}
 }
 
-.igeEditorProperty .label {
-	font-weight: bold;
-	font-size: 11px;
+.igeEditorGroup {
+	.header {
+		.label {
+			padding: 0;
+			background-color: inherit;
+			border: none;
+		}
+	}
+}
+
+.igeEditorProperty {
+	input {
+		&[type="number"] {
+			width: 80px;
+		}
+	}
+	
+	.header {
+		.label {
+			padding: 0;
+			background-color: inherit;
+			font-weight: normal;
+			font-size: 11px;
+			border: none;
+		}
+	}
 }
