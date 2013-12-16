@@ -119,12 +119,12 @@ var IgeTileMap2d = IgeEntity.extend({
 		IgeEntity.prototype._childMounted.call(this, obj);
 	},
 
-	/*_resizeEvent: function (event) {
+	_resizeEvent: function (event) {
 		if (this._parent) {
 			this._geometry = this._parent._geometry.clone();
 		}
 		IgeEntity.prototype._resizeEvent.call(this, event);
-	},*/
+	},
 
 	/**
 	 * Sets a tile or area as occupied by the passed obj parameter.

@@ -15,7 +15,7 @@ var CharacterContainer = IgeEntity.extend({
 			.setType(3)
 			.drawBounds(false)
 			.drawBoundsData(false)
-			.originTo(0.5, 0.8, 0.5)
+			.originTo(0.5, 0.3, 0.5)
 			.mount(this);
 	},
 

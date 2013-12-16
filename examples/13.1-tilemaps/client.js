@@ -137,7 +137,7 @@ var Client = IgeClass.extend({
 						.tileWidth(1)
 						.tileHeight(1)
 						.occupyTile()
-						.size3d(40, 40, 40)
+						.size3d(40, 40, 0)
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.mouseUp(upFunc);
@@ -151,7 +151,7 @@ var Client = IgeClass.extend({
 						.tileWidth(2)
 						.tileHeight(2)
 						.occupyTile()
-						.size3d(80, 80, 40)
+						.size3d(80, 80, 0)
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.mouseUp(upFunc);
