@@ -44,7 +44,7 @@ var UiToolBox_ToolCreate = IgeEventingClass.extend({
 			ige.editor.ui.menus.create({
 				header: {
 					icon: 'log_in',
-					text: 'Create &amp; Mount Object'
+					text: 'Create Object'
 				},
 				groups: self.menuDefinition,
 				search: true
