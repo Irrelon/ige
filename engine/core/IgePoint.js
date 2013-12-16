@@ -15,10 +15,6 @@ var IgePoint = IgeClass.extend({
 		this.y = y = y !== undefined ? y : 0;
 		this.z = z = z !== undefined ? z : 0;
 		
-		/*this.x = x;
-		this.y = y;
-		this.z = z;*/
-		
 		this._floor = floor !== undefined;
 		
 		if (this._floor) {
@@ -42,6 +38,12 @@ var IgePoint = IgeClass.extend({
 	x: function (val) {
 		if (val !== undefined) {
 			this.x = val;
+			
+			if (this._floor) {
+				this.x2 = Math.floor(x / 2);
+			} else {
+				this.x2 = x / 2;
+			}
 			return this;
 		}
 		
@@ -56,6 +58,12 @@ var IgePoint = IgeClass.extend({
 	y: function (val) {
 		if (val !== undefined) {
 			this.y = val;
+			
+			if (this._floor) {
+				this.y2 = Math.floor(y / 2);
+			} else {
+				this.y2 = y / 2;
+			}
 			return this;
 		}
 		
@@ -70,6 +78,12 @@ var IgePoint = IgeClass.extend({
 	z: function (val) {
 		if (val !== undefined) {
 			this.z = val;
+			
+			if (this._floor) {
+				this.z2 = Math.floor(z / 2);
+			} else {
+				this.z2 = z / 2;
+			}
 			return this;
 		}
 		
