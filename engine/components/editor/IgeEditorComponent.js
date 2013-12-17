@@ -142,10 +142,10 @@ var IgeEditorComponent = IgeEventingClass.extend({
 							
 							if (elem.hasClass('active')) {
 								$('.counter').show();
-								elem.html('Stats Off');
+								elem.html('Stats On');
 							} else {
 								$('.counter').hide();
-								elem.html('Stats On');
+								elem.html('Stats Off');
 							}
 						});
 						
@@ -157,10 +157,10 @@ var IgeEditorComponent = IgeEventingClass.extend({
 							
 							if (elem.hasClass('active')) {
 								ige.editor.show();
-								elem.html('Editor Off');
+								elem.html('Editor On');
 							} else {
 								ige.editor.hide();
-								elem.html('Editor On');
+								elem.html('Editor Off');
 							}
 						});
 					});
