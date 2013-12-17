@@ -136,32 +136,12 @@ var IgeEditorComponent = IgeEventingClass.extend({
 						
 						// Enable the stats toggle button
 						$('#statsToggle').on('click', function () {
-							var elem = $(this);
-							
-							elem.toggleClass('active');
-							
-							if (elem.hasClass('active')) {
-								$('.counter').show();
-								elem.html('Stats On');
-							} else {
-								$('.counter').hide();
-								elem.html('Stats Off');
-							}
+							ige.editor.toggleStats();
 						});
 						
 						// Enable the editor toggle button
 						$('#editorToggle').on('click', function () {
-							var elem = $(this);
-							
-							elem.toggleClass('active');
-							
-							if (elem.hasClass('active')) {
-								ige.editor.show();
-								elem.html('Editor On');
-							} else {
-								ige.editor.hide();
-								elem.html('Editor Off');
-							}
+							ige.editor.toggle();
 						});
 					});
 				}, null, true);
@@ -204,9 +184,24 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		return this._enabled;
 	},
 	
+	toggle: function () {
+		var elem = $('#editorToggle');
+		
+		if (elem.hasClass('active')) {
+			ige.editor.hide();
+		} else {
+			ige.editor.show();
+		}
+	},
+	
 	show: function () {
 		this.enabled(true);
 		this._show = true;
+		
+		$('#editorToggle')
+			.html('Editor On')
+			.removeClass('active')
+			.addClass('active');
 		
 		$('.editorElem.toggleHide').css('display', 'block');
 	},
@@ -215,7 +210,38 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		this.enabled(false);
 		this._show = false;
 		
+		$('#editorToggle')
+			.html('Editor Off')
+			.removeClass('active');
+		
 		$('.editorElem.toggleHide').css('display', 'none');
+	},
+	
+	toggleStats: function () {
+		var elem = $('#statsToggle');
+							
+		if (elem.hasClass('active')) {
+			ige.editor.hideStats();
+		} else {
+			ige.editor.showStats();
+		}
+	},
+	
+	showStats: function () {
+		$('#statsToggle')
+			.html('Stats On')
+			.removeClass('active')
+			.addClass('active');
+		
+		$('.counter').show();
+	},
+	
+	hideStats: function () {
+		$('#statsToggle')
+			.html('Stats Off')
+			.removeClass('active');
+		
+		$('.counter').hide();
 	},
 	
 	loadHtml: function (url, callback) {

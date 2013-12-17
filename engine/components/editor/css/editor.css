@@ -51,6 +51,7 @@
   border-top: 1px solid #000;
   padding-top: 3px;
   padding-bottom: 3px;
+  display: none;
 }
 #editorControl .header.toggle {
   border-top: 1px solid #000;
