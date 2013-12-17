@@ -1,3 +1,6 @@
+.editorElem.toggleHide {
+  display: none;
+}
 #leftBar {
   position: absolute;
   user-select: none;
@@ -17,7 +20,7 @@
   bottom: 0;
   z-index: 200000;
 }
-#editorCounters {
+#editorControl {
   position: absolute;
   left: 0;
   bottom: 0;
@@ -34,7 +37,7 @@
   text-align: center;
   box-sizing: border-box;
 }
-#editorCounters .header {
+#editorControl .header {
   color: #fff;
   font-size: 9px;
   font-family: Verdana, Tahoma, sans-serif;
@@ -43,11 +46,26 @@
   background-color: #232323;
   font-variant: normal;
 }
-#editorCounters .counter {
+#editorControl .counter {
   background-color: #131313;
   border-top: 1px solid #000;
   padding-top: 3px;
   padding-bottom: 3px;
+}
+#editorControl .header.toggle {
+  border-top: 1px solid #000;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  background-color: #005463;
+  cursor: pointer;
+  font-variant: normal;
+  font-size: 9px;
+}
+#editorControl .header.toggle:hover {
+  background-color: #00778d;
+}
+#editorControl .header.toggle.active {
+  background-color: #008ea8;
 }
 .editorBtn {
   border: none;

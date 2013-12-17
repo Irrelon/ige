@@ -1,3 +1,9 @@
+.editorElem {
+	&.toggleHide {
+		display: none;
+	}
+}
+
 #leftBar {
 	position: absolute;
 	user-select: none;
@@ -19,7 +25,7 @@
 	z-index: 200000;
 }
 
-#editorCounters {
+#editorControl {
 	position: absolute;
 	left: 0;
 	bottom: 0;
@@ -51,6 +57,24 @@
 		border-top: 1px solid #000;
 		padding-top: 3px;
 		padding-bottom: 3px;
+	}
+	
+	.header.toggle {
+		border-top: 1px solid #000;
+		padding-top: 3px;
+		padding-bottom: 3px;
+		background-color: #005463;
+		cursor: pointer;
+		font-variant: normal;
+		font-size: 9px;
+		
+		&:hover {
+			background-color: #00778d;
+		}
+		
+		&.active {
+			background-color: #008ea8;
+		}
 	}
 }
 

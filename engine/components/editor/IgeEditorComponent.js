@@ -28,7 +28,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		
 		// Hook the engine's input system and take over mouse interaction
 		this._mouseUpHandle = ige.input.on('preMouseUp', function (event) {
-			if (self._interceptMouse) {
+			if (self._enabled && self._interceptMouse) {
 				self.emit('mouseUp', event);
 				
 				// Return true to stop this event from being emitted by the engine to the scenegraph
@@ -37,7 +37,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		});
 		
 		this._mouseDownHandle = ige.input.on('preMouseDown', function (event) {
-			if (self._interceptMouse) {
+			if (self._enabled && self._interceptMouse) {
 				self.emit('mouseDown', event);
 				
 				// Return true to stop this event from being emitted by the engine to the scenegraph
@@ -46,7 +46,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		});
 		
 		this._mouseMoveHandle = ige.input.on('preMouseMove', function (event) {
-			if (self._interceptMouse) {
+			if (self._enabled && self._interceptMouse) {
 				self.emit('mouseMove', event);
 				
 				// Return true to stop this event from being emitted by the engine to the scenegraph
@@ -55,7 +55,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		});
 		
 		this._contextMenuHandle = ige.input.on('preContextMenu', function (event) {
-			if (self._interceptMouse) {
+			if (self._enabled && self._interceptMouse) {
 				self.emit('contextMenu', event);
 				
 				// Return true to stop this event from being emitted by the engine to the scenegraph
@@ -133,13 +133,44 @@ var IgeEditorComponent = IgeEventingClass.extend({
 						
 						// Enable tabs
 						$('.tabGroup').tabs();
+						
+						// Enable the stats toggle button
+						$('#statsToggle').on('click', function () {
+							var elem = $(this);
+							
+							elem.toggleClass('active');
+							
+							if (elem.hasClass('active')) {
+								$('.counter').show();
+								elem.html('Stats Off');
+							} else {
+								$('.counter').hide();
+								elem.html('Stats On');
+							}
+						});
+						
+						// Enable the editor toggle button
+						$('#editorToggle').on('click', function () {
+							var elem = $(this);
+							
+							elem.toggleClass('active');
+							
+							if (elem.hasClass('active')) {
+								ige.editor.show();
+								elem.html('Editor Off');
+							} else {
+								ige.editor.hide();
+								elem.html('Editor On');
+							}
+						});
 					});
 				}, null, true);
 			});
 		}, null, true);
 		
 		// Set the component to inactive to start with
-		this._enabled = true;
+		this._enabled = false;
+		this._show = false;
 		
 		// Set object create defaults
 		this.objectDefault = {
@@ -153,6 +184,38 @@ var IgeEditorComponent = IgeEventingClass.extend({
 	
 	interceptMouse: function (val) {
 		this._interceptMouse = val;
+	},
+	
+	/**
+	 * Gets / sets the enabled flag. If set to true, 
+	 * operations will be processed. If false, no operations will
+	 * occur.
+	 * @param {Boolean=} val
+	 * @return {*}
+	 */
+	enabled: function (val) {
+		var self = this;
+
+		if (val !== undefined) {
+			this._enabled = val;
+			return this._entity;
+		}
+
+		return this._enabled;
+	},
+	
+	show: function () {
+		this.enabled(true);
+		this._show = true;
+		
+		$('.editorElem.toggleHide').css('display', 'block');
+	},
+	
+	hide: function () {
+		this.enabled(false);
+		this._show = false;
+		
+		$('.editorElem.toggleHide').css('display', 'none');
 	},
 	
 	loadHtml: function (url, callback) {
@@ -198,24 +261,6 @@ var IgeEditorComponent = IgeEventingClass.extend({
 				callbacl(err);
 			}
 		});
-	},
-
-	/**
-	 * Gets / sets the enabled flag. If set to true, 
-	 * operations will be processed. If false, no operations will
-	 * occur.
-	 * @param {Boolean=} val
-	 * @return {*}
-	 */
-	enabled: function (val) {
-		var self = this;
-
-		if (val !== undefined) {
-			this._enabled = val;
-			return this._entity;
-		}
-
-		return this._enabled;
 	},
 	
 	selectObject: function (id) {
