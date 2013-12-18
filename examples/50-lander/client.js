@@ -1,9 +1,6 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
-		ige.showStats(1);
-		ige.input.debug(true);
-
 		var self = this;
 		self.obj = [];
 		self.textures = {};
@@ -12,7 +9,7 @@ var Client = IgeClass.extend({
 		self.textures.ship = new IgeTexture('./assets/Ship.js');
 		self.textures.rectangle = new IgeTexture('./assets/Rectangle.js');
 		self.textures.orb = new IgeTexture('./assets/Orb.js');
-		self.textures.font = new IgeFontSheet('./assets/agency_fb_20pt.png', 3);
+		self.textures.font = new IgeFontSheet('./assets/agency_fb_20pt.png');
 
 		// Implement our externally declared methods
 		self.implement(ClientWorld);
@@ -45,6 +42,7 @@ var Client = IgeClass.extend({
 					ige.input.mapAction('drop', ige.input.key.space);
 
 					self.player = new Player()
+						.id('player1')
 						.addBehaviour('PlayerControl', PlayerBehaviour)
 						.translateTo(self.landingPads[0]._translate.x, self.landingPads[0]._translate.y - 20, 0)
 						.mount(self.objectScene);
