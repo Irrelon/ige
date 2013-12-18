@@ -7,7 +7,7 @@
 	font-family: Verdana, Tahoma, sans-serif;
 	font-size: 11px;
 	min-width: 210px;
-	z-index: 200003;
+	z-index: 200004;
 	
 	ul {
 		list-style: none;
@@ -79,4 +79,26 @@
 	bottom: 0;
 	right: 0;
 	z-index: 200002;
+}
+
+.dropMenuContainer {
+	.menuButton {
+		color: #fff;
+		font-family: Verdana, Tahoma, sans-serif;
+		font-size: 11px;
+		padding: 6px;
+		cursor: pointer;
+		display: block;
+		background-color: #333;
+		border-right: 1px solid #222;
+		float: left;
+		
+		&:hover {
+			background-color: #555;
+		}
+		
+		&.active {
+			background-color: #777;
+		}
+	}
 }

@@ -3,7 +3,56 @@ var UiMenu = IgeEventingClass.extend({
 	
 	init: function () {
 		var self = this;
+		self._menus = {};
 		ige.requireStylesheet(igeRoot + 'components/editor/ui/menu/menu.css');
+	},
+	
+	ready: function () {
+		var self = this;
+		
+		// Add a bunch of default menus
+		/*self.add({
+			id: 'fileMenu',
+			text: 'Project',
+			menu: {
+				'group1': [{
+					id: 'newProject',
+					icon: 'none',
+					text: 'New Project',
+					action: "ige.editor.newProject();"
+				}],
+				'group2': [{
+					sep: true,
+					id: 'openProject',
+					icon: 'none',
+					text: 'Open Project...',
+					action: "ige.editor.openProject();"
+				}, {
+					id: 'saveProject',
+					icon: 'none',
+					text: 'Save Project',
+					action: "ige.editor.saveProject();"
+				}, {
+					id: 'saveProjectAs',
+					icon: 'none',
+					text: 'Save Project As...',
+					action: "ige.editor.saveProjectAs();"
+				}]
+			}
+		});*/
+		
+		self.add({
+			id: 'toolsMenu',
+			text: 'Tools',
+			menu: {
+				'group1': [{
+					id: 'spriteSheetEditor',
+					icon: 'none',
+					text: 'Sprite Sheet Editor...',
+					action: "ige.editor.ui.textureEditor.showSpriteSheetEditor();"
+				}]
+			}
+		});
 	},
 	
 	create: function (menuData, callback) {
@@ -23,8 +72,7 @@ var UiMenu = IgeEventingClass.extend({
 					if (menuData.blur) {
 						$('<div class="menuUnderlay"></div>')
 							.on('click', function () {
-								menuData.blur();
-								$(this).remove();
+								menuData.blur($(this));
 							})
 							.appendTo('body');
 					}
@@ -78,12 +126,123 @@ var UiMenu = IgeEventingClass.extend({
 		);
 	},
 	
-	underlayClicked: function (id) {
-		this.emit('underlayClicked', id);
+	add: function (obj) {
+		var self = this;
+		
+		self._menus[obj.id] = obj;
+		
+		ige.editor.renderTemplate(
+			igeRoot + 'components/editor/ui/menu/templates/menuButton.html',
+			obj,
+			function (err, htmlElem) {
+				if (!err) {
+					var lastMenu = $('.dropMenuContainer .menuButtons').last();
+					
+					if (!lastMenu.length) {
+						htmlElem.appendTo('.dropMenuContainer');
+					} else {
+						htmlElem.insertAfter(lastMenu);
+					}
+					
+					// Enable the button to toggle menu by id
+					htmlElem
+						.off('click')
+						.on('click', function () {
+							self.toggle(obj.id);
+						})
+				}
+			}
+		);
+	},
+	
+	buttonOff: function (id) {
+		var self = this,
+			obj = self._menus[id],
+			menuButton = $('.dropMenuContainer #' + id);
+		
+		if (menuButton.hasClass('active')) {
+			// Deactivate the menu
+			$('.dropMenuContainer .menuButton').removeClass('active');
+			ige.editor.ui.menus.closeAll();
+			
+			if (self._editorTool) {
+				ige.editor.ui.toolbox.select(self._editorTool);
+				delete self._editorTool;
+			}
+		}
+	},
+	
+	buttonOn: function (id) {
+		var self = this,
+			obj = self._menus[id],
+			menuButton = $('.dropMenuContainer #' + id);
+		
+		// Store the current selected editor tool and then deactivate the tool
+		self._editorTool = ige.editor.ui.toolbox._currentTool ? ige.editor.ui.toolbox._currentTool : self._editorTool;
+		ige.editor.ui.toolbox.deselect();
+		
+		// Toggle all other menus off
+		$('.dropMenuContainer .menuButton').removeClass('active');
+		ige.editor.ui.menus.closeAll();
+		
+		// Activate the menu
+		if (obj) {
+			menuButton.addClass('active');
+			
+			// Display menu
+			var position = menuButton.offset(),
+				left = position.left,
+				top = position.top,
+				height = $('body').height();
+			
+			ige.editor.ui.menus.create({
+				groups: obj.menu,
+				search: false,
+				blur: function (underlayElem) {
+					self.toggle(id);
+					underlayElem.remove();
+				}
+			}, function (elem) {
+				// Now position the menu
+				var menuHeight = elem.height();
+				
+				top -= menuHeight / 2;
+				
+				if (top + menuHeight > height) {
+					top = height - menuHeight - 10;
+				}
+				
+				if (top - menuHeight < 25) {
+					top = 25;
+				}
+				
+				elem.css('left', left)
+					.css('top', top);
+			});
+		}
+	},
+	
+	toggle: function (id) {
+		if (!id) {
+			id = $('.dropMenuContainer .menuButton.active').attr('id');
+		}
+		
+		if (id) {
+			var self = this,
+				menuButton = $('.dropMenuContainer #' + id);
+			
+			// Check if the menu to toggle is already active
+			if (menuButton.hasClass('active')) {
+				self.buttonOff(id);
+			} else {
+				self.buttonOn(id);
+			}
+		}
 	},
 	
 	closeAll: function () {
 		$('.menu').remove();
+		$('.menuUnderlay').remove();
 	},
 	
 	destroy: function (id) {

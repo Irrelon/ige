@@ -10,22 +10,31 @@ var UiDialogs = IgeEventingClass.extend({
 		var self = this;
 	},
 	
-	create: function (ops) {
+	create: function (dialogData) {
 		// Create a dialog and show as loading
 		ige.editor.renderTemplate(
 			igeRoot + 'components/editor/ui/dialogs/templates/dialog.html',
 			{
-				id: ops.id,
-				title: ops.title,
-				modal: ops.modal
+				id: dialogData.id,
+				title: dialogData.title,
+				modal: dialogData.modal
 			},
 			function (err, dialogElem) {
 				if (!err) {
 					$('body').append(dialogElem);
 					
+					if (dialogData.blur) {
+						// Add a dialog underlay
+						$('<div class="dialogUnderlay" data-for="' + dialogData.id + '"></div>')
+							.on('click', function () {
+								dialogData.blur($(this));
+							})
+							.appendTo('body');
+					}
+					
 					ige.editor.renderTemplate(
-						ops.contentTemplate,
-						ops.contentData,
+						dialogData.contentTemplate,
+						dialogData.contentData,
 						function (err, contentElem) {
 							if (!err) {
 								dialogElem.find('.content')
@@ -36,6 +45,11 @@ var UiDialogs = IgeEventingClass.extend({
 				}
 			}
 		);
+	},
+	
+	close: function (id) {
+		$('#' + id).remove();
+		$('.dialogUnderlay[data-for="' + id + '"]').remove();
 	}
 });
 

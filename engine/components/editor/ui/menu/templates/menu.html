@@ -14,7 +14,7 @@
 		{{for groups}}
 			{{for ~forEach(#data)}}
 				{{for #data}}
-					<li onclick="{{:action}}; ige.editor.ui.menus.closeAll();" id="{{:id}}" class="{{if sep}}separator{{/if}}" data-val="{{:text}}"><span class="halflings-icon white {{:icon}}"></span> <span class="text">{{:text}}</span></li>
+					<li onclick="{{:action}}; ige.editor.ui.menus.closeAll(); ige.editor.ui.menus.toggle();" id="{{:id}}" class="{{if sep}}separator{{/if}}" data-val="{{:text}}"><span class="halflings-icon white {{:icon}}"></span> <span class="text">{{:text}}</span></li>
 				{{/for}}
 			{{/for}}
 		{{/for}}

@@ -119,7 +119,6 @@ var IgeEditorComponent = IgeEventingClass.extend({
 				ige.on('allRequireScriptsLoaded', function () {
 					// Load UI scripts
 					ige.requireScript(igeRoot + 'components/editor/ui/dialogs/dialogs.js');
-					ige.requireScript(igeRoot + 'components/editor/ui/menuButtons/menuButtons.js');
 					ige.requireScript(igeRoot + 'components/editor/ui/scenegraph/scenegraph.js');
 					ige.requireScript(igeRoot + 'components/editor/ui/menu/menu.js');
 					ige.requireScript(igeRoot + 'components/editor/ui/toolbox/toolbox.js');
@@ -310,7 +309,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 			if (!err) {
 				callback(err, $($.parseHTML(template.render(data))));
 			} else {
-				callbacl(err);
+				callback(err);
 			}
 		});
 	},

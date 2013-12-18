@@ -3,7 +3,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 	
 	init: function () {
 		var self = this;
-		ige.requireStylesheet(igeRoot + 'components/editor/ui/menuButtons/menuButtons.css');
+		ige.requireStylesheet(igeRoot + 'components/editor/ui/textureEditor/textureEditor.css');
 	},
 	
 	ready: function () {
@@ -12,8 +12,12 @@ var UiTextureEditor = IgeEventingClass.extend({
 	
 	showSpriteSheetEditor: function () {
 		ige.editor.ui.dialogs.create({
-			id: 'textureEditorDialog',
-			contentTemplate: igeRoot + 'components/editor/ui/textureEditor/templates/spriteSheetEditor.html'
+			id: 'spriteSheetEditorDialog',
+			title: 'Sprite Sheet Editor',
+			contentTemplate: igeRoot + 'components/editor/ui/textureEditor/templates/spriteSheetEditor.html',
+			blur: function () {
+				ige.editor.ui.dialogs.close('spriteSheetEditorDialog');
+			}
 		});
 	}
 });
