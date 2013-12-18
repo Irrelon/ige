@@ -500,7 +500,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 			elem1.id = 'igeSgTree';
 			elem1.style.top = (parseInt(canvasBoundingRect.top) + 5) + 'px';
 			elem1.style.left = (parseInt(canvasBoundingRect.left) + 5) + 'px';
-			elem1.style.height = (ige._bounds3d.y - 30) + 'px';
+			elem1.style.height = (ige._bounds2d.y - 30) + 'px';
 			elem1.style.overflow = 'auto';
 			elem1.addEventListener('mousemove', function (event) {
 				event.stopPropagation();

@@ -232,8 +232,8 @@ var IgeFontSheet = IgeTexture.extend({
 					break;
 			}
 
-			/*_ctx.strokeStyle = '#ff0000';
-			_ctx.strokeRect(masterX + (-totalWidth / 2), masterY + renderStartY, totalWidth, totalHeight);*/
+			_ctx.strokeStyle = '#ff0000';
+			_ctx.strokeRect(renderStartX, renderStartY, totalWidth, totalHeight);
 
 			for (lineIndex = 0; lineIndex < lineArr.length; lineIndex++) {
 				lineText = lineArr[lineIndex];

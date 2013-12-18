@@ -483,7 +483,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	_resizeEvent: function (event) {
 		// Set width / height of scene to match parent
 		if (this._areaRectAutoSize) {
-			var geom = this._entity._parent._bounds3d,
+			var geom = this._entity._parent._bounds2d,
 				additionX = 0, additionY = 0;
 
 			if (this._areaRectAutoSizeOptions) {

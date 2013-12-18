@@ -30,6 +30,8 @@ var IgeEntity = IgeObject.extend({
 
 		this._bounds2d = new IgePoint(40, 40, 0);
 		this._bounds3d = new IgePoint(40, 40, 40);
+		
+		this._oldBounds2d = new IgePoint(40, 40, 0);
 		this._oldBounds3d = new IgePoint(40, 40, 40);
 
 		this._highlight = false;
@@ -668,15 +670,15 @@ var IgeEntity = IgeObject.extend({
 	},
 	
 	/**
-	 * Gets / sets the 3d geometry of the entity. The x and y values are
-	 * relative to the center of the entity and the z value is wholly
-	 * positive from the "floor". Primarily used when creating isometric
-	 * container entities.
+	 * Gets / sets the 2d geometry of the entity. The x and y values are
+	 * relative to the center of the entity. This geometry is used when
+	 * rendering textures for the entity and positioning in world space as
+	 * well as UI positioning calculations. It holds no bearing on isometric
+	 * positioning.
 	 * @param {Number=} x The new x value in pixels.
 	 * @param {Number=} y The new y value in pixels.
-	 * @param {Number=} z The new z value in pixels.
-	 * @example #Set the dimensions of the entity (width, height and length)
-	 *     entity.size3d(40, 40, 20);
+	 * @example #Set the dimensions of the entity (width and height)
+	 *     entity.bounds2d(40, 40);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */

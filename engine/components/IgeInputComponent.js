@@ -333,8 +333,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.igeX - ige._bounds3d.x2,
-			my = event.igeY - ige._bounds3d.y2,
+		var mx = event.igeX - ige._bounds2d.x2,
+			my = event.igeY - ige._bounds2d.y2,
 			self = this;
 
 		if (event.button === 0) {
@@ -370,8 +370,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.igeX - ige._bounds3d.x2,
-			my = event.igeY - ige._bounds3d.y2,
+		var mx = event.igeX - ige._bounds2d.x2,
+			my = event.igeY - ige._bounds2d.y2,
 			self = this;
 
 		if (event.button === 0) {
@@ -402,8 +402,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.igeX - ige._bounds3d.x2,
-			my = event.igeY - ige._bounds3d.y2,
+		var mx = event.igeX - ige._bounds2d.x2,
+			my = event.igeY - ige._bounds2d.y2,
 			self = this;
 
 		if (event.button === 0) {
@@ -436,8 +436,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		ige._mouseOverVp = this._updateMouseData(event);
 
-		var mx = event.igeX - ige._bounds3d.x2,
-			my = event.igeY - ige._bounds3d.y2,
+		var mx = event.igeX - ige._bounds2d.x2,
+			my = event.igeY - ige._bounds2d.y2,
 			self = this;
 
 		this._state[this.mouse.x] = mx;
@@ -461,8 +461,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.igeX - ige._bounds3d.x2,
-			my = event.igeY - ige._bounds3d.y2,
+		var mx = event.igeX - ige._bounds2d.x2,
+			my = event.igeY - ige._bounds2d.y2,
 			self = this;
 
 		this._state[this.mouse.wheel] = event.wheelDelta;
@@ -530,8 +530,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		var arr = ige._children,
 			arrCount = arr.length,
 			vp, vpUpdated,
-			mx = (event.igeX - ige._bounds3d.x2) - ige._translate.x,
-			my = (event.igeY - ige._bounds3d.y2) - ige._translate.y;
+			mx = (event.igeX - ige._bounds2d.x2) - ige._translate.x,
+			my = (event.igeY - ige._bounds2d.y2) - ige._translate.y;
 
 		ige._mousePos.x = mx;
 		ige._mousePos.y = my;
@@ -540,8 +540,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 			vp = arr[arr.length - (arrCount + 1)];
 			// Check if the mouse is inside this viewport's bounds
 			// TODO: Update this code to take into account viewport rotation and camera rotation
-			if (mx > vp._translate.x - vp._bounds3d.x / 2 && mx < vp._translate.x + vp._bounds3d.x / 2) {
-				if (my > vp._translate.y - vp._bounds3d.y / 2 && my < vp._translate.y + vp._bounds3d.y / 2) {
+			if (mx > vp._translate.x - vp._bounds2d.x / 2 && mx < vp._translate.x + vp._bounds2d.x / 2) {
+				if (my > vp._translate.y - vp._bounds2d.y / 2 && my < vp._translate.y + vp._bounds2d.y / 2) {
 					// Mouse is inside this viewport
 					vp._mousePos = new IgePoint(
 						Math.floor((mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x),
