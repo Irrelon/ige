@@ -124,6 +124,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 					ige.requireScript(igeRoot + 'components/editor/ui/toolbox/toolbox.js');
 					ige.requireScript(igeRoot + 'components/editor/ui/panels/panels.js');
 					ige.requireScript(igeRoot + 'components/editor/ui/textures/textures.js');
+					ige.requireScript(igeRoot + 'components/editor/ui/textureEditor/textureEditor.js');
 					
 					// Load jquery plugins
 					ige.requireScript(igeRoot + 'components/editor/vendor/autoback.jquery.js');

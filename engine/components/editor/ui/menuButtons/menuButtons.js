@@ -13,7 +13,7 @@ var UiMenuButtons = IgeEventingClass.extend({
 		var self = this;
 		
 		// Add a bunch of default menus
-		self.add({
+		/*self.add({
 			id: 'fileMenu',
 			text: 'Project',
 			menu: {
@@ -41,17 +41,17 @@ var UiMenuButtons = IgeEventingClass.extend({
 					action: "ige.editor.saveProjectAs();"
 				}]
 			}
-		});
+		});*/
 		
 		self.add({
 			id: 'toolsMenu',
 			text: 'Tools',
 			menu: {
 				'group1': [{
-					id: 'textureEditor',
+					id: 'spriteSheetEditor',
 					icon: 'none',
-					text: 'Texture Editor...',
-					action: "ige.editor.textureEditor();"
+					text: 'Sprite Sheet Editor...',
+					action: "ige.editor.ui.textureEditor.showSpriteSheetEditor();"
 				}]
 			}
 		});
