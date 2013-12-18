@@ -14,14 +14,18 @@ var UiDialogs = IgeEventingClass.extend({
 		// Create a dialog and show as loading
 		ige.editor.renderTemplate(
 			igeRoot + 'components/editor/ui/dialogs/templates/dialog.html',
-			ops.templateData,
+			{
+				id: ops.id,
+				title: ops.title,
+				modal: ops.modal
+			},
 			function (err, dialogElem) {
 				if (!err) {
 					$('body').append(dialogElem);
 					
 					ige.editor.renderTemplate(
 						ops.contentTemplate,
-						ops.templateData,
+						ops.contentData,
 						function (err, contentElem) {
 							if (!err) {
 								dialogElem.find('.content')

@@ -118,6 +118,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 				// Wait for all required files to finish loading
 				ige.on('allRequireScriptsLoaded', function () {
 					// Load UI scripts
+					ige.requireScript(igeRoot + 'components/editor/ui/dialogs/dialogs.js');
 					ige.requireScript(igeRoot + 'components/editor/ui/menuButtons/menuButtons.js');
 					ige.requireScript(igeRoot + 'components/editor/ui/scenegraph/scenegraph.js');
 					ige.requireScript(igeRoot + 'components/editor/ui/menu/menu.js');
