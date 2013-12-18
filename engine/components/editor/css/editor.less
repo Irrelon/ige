@@ -167,6 +167,11 @@
 		&.props {
 			background-image: url('../ui/assets/props.png');
 		}
+		
+		.halflings-icon {
+			margin-left: 10px;
+			margin-top: 8px;
+		}
 	}
 	
 	&.active {
@@ -193,10 +198,36 @@
 
 .tabContent {
 	display: none;
-}
-
-.tabContent.active {
-	display: block;
+	
+	&.active {
+		display: block;
+	}
+	
+	.header {
+		.controls {
+			position: absolute;
+			right: 0;
+			top: 0;
+			
+			.control {
+				cursor: pointer;
+				background-color: #686868;
+				width: 32px;
+				height: 32px;
+				
+				&:hover {
+					background-color: #797979;
+				}
+				
+				.halflings-icon {
+					padding: 0;
+					margin: 0;
+					margin-top: 9px;
+					margin-left: 10px;
+				}
+			}
+		}
+	}
 }
 
 /* Toolbox */
@@ -530,9 +561,10 @@
 		font-family: "Open Sans", sans-serif;
 		font-weight: bold;
 		font-size: 14px;
-		padding: 5px;
+		padding: 6px;
 		background-color: #535353;
-		border-bottom: 1px solid #000;
+		/*border-bottom: 1px solid #000;*/
+		height: 20px;
 	}
 }
 

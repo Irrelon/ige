@@ -8,11 +8,15 @@ var UiSceneGraph = IgeEventingClass.extend({
 		
 		// Add tab to tabs
 		$('<div class="tab" data-content="scenegraphContent" title="Scene Graph"><span class="icon graph"></span></div>')
-			.appendTo('#tabs');
+			.insertAfter('#tabs .tab1');
 		
 		// Add content html
-		$('<div id="scenegraphContent" class="tabContent"><div class="header"><div class="label">Scene Graph</div></div><div class="tree igeEditorGroup"></div></div>')
+		$('<div id="scenegraphContent" class="tabContent"><div class="header"><div class="label">Scene Graph</div><div class="controls"></div></div><div class="tree igeEditorGroup"></div></div>')
 			.appendTo('#tabContents');
+		
+		// Add controls
+		$('#scenegraphContent .header .controls')
+			.append('<div class="control" title="Refresh SceneGraph Tree"><span id="refreshSceneGraph" class="halflings-icon white refresh"></span></div>');
 		
 		/*Object.observe(ige._children, function (changes) {
 			self.updateSceneGraph();

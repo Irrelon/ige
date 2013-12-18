@@ -96,10 +96,11 @@ var IgeEditorComponent = IgeEventingClass.extend({
 				// Wait for all required files to finish loading
 				ige.on('allRequireScriptsLoaded', function () {
 					// Load UI scripts
-					ige.requireScript(igeRoot + 'components/editor/ui/menu/menu.js');
-					ige.requireScript(igeRoot + 'components/editor/ui/panels/panels.js');
 					ige.requireScript(igeRoot + 'components/editor/ui/scenegraph/scenegraph.js');
+					ige.requireScript(igeRoot + 'components/editor/ui/menu/menu.js');
 					ige.requireScript(igeRoot + 'components/editor/ui/toolbox/toolbox.js');
+					ige.requireScript(igeRoot + 'components/editor/ui/panels/panels.js');
+					ige.requireScript(igeRoot + 'components/editor/ui/textures/textures.js');
 					
 					// Load jquery plugins
 					ige.requireScript(igeRoot + 'components/editor/vendor/autoback.jquery.js');
