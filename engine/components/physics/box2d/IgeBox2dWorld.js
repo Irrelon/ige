@@ -92,6 +92,10 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 			case 'dynamic':
 				tempDef.type = this.b2Body.b2_dynamicBody;
 				break;
+			
+			case 'kinematic':
+                tempDef.type = this.b2Body.b2_kinematicBody;
+                break;
 		}
 
 		// Add the parameters of the body to the new body instance
