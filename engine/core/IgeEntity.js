@@ -28,10 +28,10 @@ var IgeEntity = IgeObject.extend({
 		this._scale = new IgePoint3d(1, 1, 1);
 		this._origin = new IgePoint3d(0.5, 0.5, 0.5);
 
-		this._bounds2d = new IgePoint3d(40, 40, 0);
+		this._bounds2d = new IgePoint2d(40, 40);
 		this._bounds3d = new IgePoint3d(0, 0, 0);
 		
-		this._oldBounds2d = new IgePoint3d(40, 40, 0);
+		this._oldBounds2d = new IgePoint2d(40, 40);
 		this._oldBounds3d = new IgePoint3d(0, 0, 0);
 
 		this._highlight = false;
