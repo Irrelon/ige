@@ -132,7 +132,7 @@ var IgeUiTooltip = IgeUiElement.extend({
 			});
 			if (typeof(val) == 'string') {
 				this.textBox.mount(this);
-				this.textBox.height(this._height);
+				this.textBox.height(this._bounds2d.y);
 				this.textBox.top(0);
 				// Set the text of the font entity to the value
 				this.fontEntityText.text(this._value);
@@ -140,8 +140,8 @@ var IgeUiTooltip = IgeUiElement.extend({
 			else if (typeof(val) == 'object' && typeof(val[0] == 'string') && typeof(val[1] == 'string')) {
 				this.titleBox.mount(this);
 				this.textBox.mount(this);
-				this.textBox.height(this._height - this.titleBox._height);
-				this.textBox.top(this.titleBox._height);
+				this.textBox.height(this._bounds2d.y - this.titleBox._bounds2d.y);
+				this.textBox.top(this.titleBox._bounds2d.y);
 				//title + text
 				this.fontEntityTitle.text(val[0]);
 				this.fontEntityText.text(val[1]);
@@ -180,7 +180,7 @@ var IgeUiTooltip = IgeUiElement.extend({
 		var tt = this._tooltip;
 		if (tt._hidden) tt.show();
 		var mountPos = tt._mountEntity.worldPosition();
-		tt.translateTo(event.igeX - mountPos.x + tt._width / 2 + 10, event.igeY - mountPos.y + tt._height / 2, 0);
+		tt.translateTo(event.igeX - mountPos.x + tt._bounds2d.x2 + 10, event.igeY - mountPos.y + tt._bounds2d.y2, 0);
 		tt.updateUiChildren();
 	},
 

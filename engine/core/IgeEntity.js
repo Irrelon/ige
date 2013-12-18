@@ -466,7 +466,7 @@ var IgeEntity = IgeObject.extend({
 			if (lockAspect) {
 				if (this._texture) {
 					// Calculate the height based on the new width
-					ratio = this._texture._sizeX / this._bounds3d.x;
+					ratio = this._texture._sizeX / this._bounds2d.x;
 					this.height(this._texture._sizeY / ratio);
 				} else {
 					this.log('Cannot set height based on texture aspect ratio and new width because no texture is currently assigned to the entity!', 'error');
@@ -503,7 +503,7 @@ var IgeEntity = IgeObject.extend({
 			if (lockAspect) {
 				if (this._texture) {
 					// Calculate the width based on the new height
-					ratio = this._texture._sizeY / this._bounds3d.y;
+					ratio = this._texture._sizeY / this._bounds2d.y;
 					this.width(this._texture._sizeX / ratio);
 				} else {
 					this.log('Cannot set width based on texture aspect ratio and new height because no texture is currently assigned to the entity!', 'error');
@@ -631,17 +631,16 @@ var IgeEntity = IgeObject.extend({
 		if (px !== undefined) {
 			if (lockAspect) {
 				// Calculate the height from the change in width
-				var ratio = px / this._bounds3d.x;
-				this.height(this._bounds3d.y * ratio);
+				var ratio = px / this._bounds2d.x;
+				this.height(this._bounds2d.y * ratio);
 			}
 
-			this._width = px;
-			this._bounds3d.x = px;
-			this._bounds3d.x2 = (px / 2);
+			this._bounds2d.x = px;
+			this._bounds2d.x2 = (px / 2);
 			return this;
 		}
 
-		return this._width;
+		return this._bounds2d.x;
 	},
 
 	/**
@@ -656,17 +655,16 @@ var IgeEntity = IgeObject.extend({
 		if (px !== undefined) {
 			if (lockAspect) {
 				// Calculate the width from the change in height
-				var ratio = px / this._bounds3d.y;
-				this.width(this._bounds3d.x * ratio);
+				var ratio = px / this._bounds2d.y;
+				this.width(this._bounds2d.x * ratio);
 			}
 
-			this._height = px;
-			this._bounds3d.y = px;
-			this._bounds3d.y2 = (px / 2);
+			this._bounds2d.y = px;
+			this._bounds2d.y2 = (px / 2);
 			return this;
 		}
 
-		return this._height;
+		return this._bounds2d.y;
 	},
 
 	/**

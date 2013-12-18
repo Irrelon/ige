@@ -15,8 +15,6 @@ var IgeUiEntity = IgeEntity.extend([
 
 		// Set some defaults
 		this._color = '#000000';
-		this._width = 0;
-		this._height = 0;
 		this._borderLeftWidth = 0;
 		this._borderTopWidth = 0;
 		this._borderRightWidth = 0;
