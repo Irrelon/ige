@@ -14,7 +14,7 @@ var IgeEntity = IgeObject.extend({
 		this._specialProp.push('_eventListeners');
 		this._specialProp.push('_aabb');
 
-		this._anchor = new IgePoint(0, 0, 0);
+		this._anchor = new IgePoint3d(0, 0, 0);
 		this._renderPos = {x: 0, y: 0};
 
 		this._opacity = 1;
@@ -22,17 +22,17 @@ var IgeEntity = IgeObject.extend({
 
 		this._deathTime = undefined;
 
-		this._translate = new IgePoint(0, 0, 0);
-		this._oldTranslate = new IgePoint(0, 0, 0);
-		this._rotate = new IgePoint(0, 0, 0);
-		this._scale = new IgePoint(1, 1, 1);
-		this._origin = new IgePoint(0.5, 0.5, 0.5);
+		this._translate = new IgePoint3d(0, 0, 0);
+		this._oldTranslate = new IgePoint3d(0, 0, 0);
+		this._rotate = new IgePoint3d(0, 0, 0);
+		this._scale = new IgePoint3d(1, 1, 1);
+		this._origin = new IgePoint3d(0.5, 0.5, 0.5);
 
-		this._bounds2d = new IgePoint(40, 40, 0);
-		this._bounds3d = new IgePoint(0, 0, 0);
+		this._bounds2d = new IgePoint3d(40, 40, 0);
+		this._bounds3d = new IgePoint3d(0, 0, 0);
 		
-		this._oldBounds2d = new IgePoint(40, 40, 0);
-		this._oldBounds3d = new IgePoint(0, 0, 0);
+		this._oldBounds2d = new IgePoint3d(40, 40, 0);
+		this._oldBounds3d = new IgePoint3d(0, 0, 0);
 
 		this._highlight = false;
 		this._mouseEventsActive = false;
@@ -280,7 +280,7 @@ var IgeEntity = IgeObject.extend({
 	 * @example #Get the mouse position relative to the entity
 	 *     // The returned value is an object with properties x, y, z
 	 *     var mousePos = entity.mousePos();
-	 * @return {IgePoint} The mouse point relative to the entity
+	 * @return {IgePoint3d} The mouse point relative to the entity
 	 * center.
 	 */
 	mousePos: function (viewport) {
@@ -301,7 +301,7 @@ var IgeEntity = IgeObject.extend({
 			this._transformPoint(mp);
 			return mp;
 		} else {
-			return new IgePoint(0, 0, 0);
+			return new IgePoint3d(0, 0, 0);
 		}
 	},
 
@@ -314,7 +314,7 @@ var IgeEntity = IgeObject.extend({
 	 * is rendering to is used instead.
 	 * @example #Get absolute mouse position
 	 *     var mousePosAbs = entity.mousePosAbsolute();
-	 * @return {IgePoint} The mouse point relative to the entity
+	 * @return {IgePoint3d} The mouse point relative to the entity
 	 * center.
 	 */
 	mousePosAbsolute: function (viewport) {
@@ -325,7 +325,7 @@ var IgeEntity = IgeObject.extend({
 			return mp;
 		}
 
-		return new IgePoint(0, 0, 0);
+		return new IgePoint3d(0, 0, 0);
 	},
 
 	/**
@@ -336,7 +336,7 @@ var IgeEntity = IgeObject.extend({
 	 * is rendering to is used instead.
 	 * @example #Get mouse position in world co-ordinates
 	 *     var mousePosWorld = entity.mousePosWorld();
-	 * @return {IgePoint} The mouse point relative to the world
+	 * @return {IgePoint3d} The mouse point relative to the world
 	 * center.
 	 */
 	mousePosWorld: function (viewport) {
@@ -353,14 +353,14 @@ var IgeEntity = IgeObject.extend({
 
 	/**
 	 * Rotates the entity to point at the target point around the z axis.
-	 * @param {IgePoint} point The point in world co-ordinates to
+	 * @param {IgePoint3d} point The point in world co-ordinates to
 	 * point the entity at.
 	 * @example #Point the entity at another entity
 	 *     entity.rotateToPoint(otherEntity.worldPosition());
 	 * @example #Point the entity at mouse
 	 *     entity.rotateToPoint(ige._currentViewport.mousePos());
 	 * @example #Point the entity at an arbitrary point x, y
-	 *     entity.rotateToPoint(new IgePoint(x, y, 0));
+	 *     entity.rotateToPoint(new IgePoint3d(x, y, 0));
 	 * @return {*}
 	 */
 	rotateToPoint: function (point) {
@@ -534,7 +534,7 @@ var IgeEntity = IgeObject.extend({
 				this._parent.occupyTile(x, y, width, height, this);
 			} else {
 				// Occupy tiles based upon tile point and tile width/height
-				var trPoint = new IgePoint(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
+				var trPoint = new IgePoint3d(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
 					tilePoint = this._parent.pointToTile(trPoint);
 	
 				if (this._parent._mountMode === 1) {
@@ -564,7 +564,7 @@ var IgeEntity = IgeObject.extend({
 				this._parent.unOccupyTile(x, y, width, height);
 			} else {
 				// Un-occupy tiles based upon tile point and tile width/height
-				var trPoint = new IgePoint(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
+				var trPoint = new IgePoint3d(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
 					tilePoint = this._parent.pointToTile(trPoint);
 	
 				if (this._parent._mountMode === 1) {
@@ -582,7 +582,7 @@ var IgeEntity = IgeObject.extend({
 	 * over, calculated using the current world co-ordinates of the object
 	 * as well as it's 3d geometry.
 	 * @private
-	 * @return {Array} The array of tile co-ordinates as IgePoint instances.
+	 * @return {Array} The array of tile co-ordinates as IgePoint3d instances.
 	 */
 	overTiles: function () {
 		// Check that the entity is mounted to a tile map
@@ -596,7 +596,7 @@ var IgeEntity = IgeObject.extend({
 	
 			for (x = 0; x < tileWidth; x++) {
 				for (y = 0; y < tileHeight; y++) {
-					tileArr.push(new IgePoint(tile.x + x, tile.y + y, 0));
+					tileArr.push(new IgePoint3d(tile.x + x, tile.y + y, 0));
 				}
 			}
 	
@@ -614,7 +614,7 @@ var IgeEntity = IgeObject.extend({
 	 */
 	anchor: function (x, y) {
 		if (x !== undefined && y !== undefined) {
-			this._anchor = new IgePoint(x, y, 0);
+			this._anchor = new IgePoint3d(x, y, 0);
 			return this;
 		}
 
@@ -684,7 +684,7 @@ var IgeEntity = IgeObject.extend({
 	 */
 	bounds2d: function (x, y) {
 		if (x !== undefined && y !== undefined) {
-			this._bounds2d = new IgePoint(x, y, 0);
+			this._bounds2d = new IgePoint3d(x, y, 0);
 			return this;
 		}
 
@@ -706,7 +706,7 @@ var IgeEntity = IgeObject.extend({
 	 */
 	bounds3d: function (x, y, z) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
-			this._bounds3d = new IgePoint(x, y, z);
+			this._bounds3d = new IgePoint3d(x, y, z);
 			return this;
 		}
 
@@ -988,14 +988,14 @@ var IgeEntity = IgeObject.extend({
 
 	/**
 	 * Returns the absolute world position of the entity as an
-	 * IgePoint.
+	 * IgePoint3d.
 	 * @example #Get the world position of the entity
 	 *     var wordPos = entity.worldPosition();
-	 * @return {IgePoint} The absolute world position of the
+	 * @return {IgePoint3d} The absolute world position of the
 	 * entity.
 	 */
 	worldPosition: function () {
-		return new IgePoint(this._worldMatrix.matrix[2], this._worldMatrix.matrix[5], 0);
+		return new IgePoint3d(this._worldMatrix.matrix[2], this._worldMatrix.matrix[5], 0);
 	},
 
 	/**
@@ -1035,7 +1035,7 @@ var IgeEntity = IgeObject.extend({
 	 * Converts a point from local space to this entity's world space
 	 * using it's world transform matrix. This will alter the point's
 	 * data directly.
-	 * @param {IgePoint} point The IgePoint to convert.
+	 * @param {IgePoint3d} point The IgePoint3d to convert.
 	 */
 	localToWorldPoint: function (point, viewport) {
 		viewport = viewport || ige._currentViewport;
@@ -1043,17 +1043,17 @@ var IgeEntity = IgeObject.extend({
 	},
 	
 	/**
-	 * Returns the screen position of the entity as an IgePoint where x is the
+	 * Returns the screen position of the entity as an IgePoint3d where x is the
 	 * "left" and y is the "top", useful for positioning HTML elements at the
 	 * screen location of an IGE entity. This method assumes that the top-left
 	 * of the main canvas element is at 0, 0. If not you can adjust the values
 	 * yourself to allow for offset.
 	 * @example #Get the screen position of the entity
 	 *     var screenPos = entity.screenPosition();
-	 * @return {IgePoint} The screen position of the entity.
+	 * @return {IgePoint3d} The screen position of the entity.
 	 */
 	screenPosition: function () {
-		return new IgePoint(
+		return new IgePoint3d(
 			Math.floor(((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x) + ige._bounds2d.x2),
 			Math.floor(((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y) + ige._bounds2d.y2),
 			0
@@ -1216,7 +1216,7 @@ var IgeEntity = IgeObject.extend({
 				geom = this._bounds3d;
 				
 				// Top face
-				tf1 = new IgePoint(-(geom.x / 2), -(geom.y / 2),  (geom.z / 2)).toIso();
+				tf1 = new IgePoint3d(-(geom.x / 2), -(geom.y / 2),  (geom.z / 2)).toIso();
 
 				x = (tf1.x + geom.x) + anc.x;
 				y = tf1.y + anc.y;
@@ -1472,23 +1472,23 @@ var IgeEntity = IgeObject.extend({
 	 */
 	isBehind: function (otherObject) {
 		var thisG3d = this._bounds3d,
-			thisMin = new IgePoint(
+			thisMin = new IgePoint3d(
 				this._translate.x - thisG3d.x / 2,
 				this._translate.y - thisG3d.y / 2,
 				this._translate.z
 			),
-			thisMax = new IgePoint(
+			thisMax = new IgePoint3d(
 				this._translate.x + thisG3d.x / 2,
 				this._translate.y + thisG3d.y / 2,
 				this._translate.z + thisG3d.z
 			),
 			otherG3d = otherObject._bounds3d,
-			otherMin = new IgePoint(
+			otherMin = new IgePoint3d(
 				otherObject._translate.x - otherG3d.x / 2,
 				otherObject._translate.y - otherG3d.y / 2,
 				otherObject._translate.z
 			),
-			otherMax = new IgePoint(
+			otherMax = new IgePoint3d(
 				otherObject._translate.x + otherG3d.x / 2,
 				otherObject._translate.y + otherG3d.y / 2,
 				otherObject._translate.z + otherG3d.z
@@ -1704,8 +1704,19 @@ var IgeEntity = IgeObject.extend({
 					mouseX = mp.x;
 					mouseY = mp.y;
 					
-					// Use the trigger polygon if defined or default to aabb
-					mouseTriggerPoly = this._triggerPolygon ? this[this._triggerPolygon] ? this[this._triggerPolygon]() : this.aabb() : this.aabb();
+					// Use the trigger polygon if defined
+					if (this._triggerPolygon && this[this._triggerPolygon]) {
+						mouseTriggerPoly = this[this._triggerPolygon]();
+					} else {
+						// Default to either aabb or bounds3dPolygon depending on entity parent mounting mode
+						if (this._parent && this._parent._mountMode === 1) {
+							// Use bounds3dPolygon
+							mouseTriggerPoly = this.bounds3dPolygon();
+						} else {
+							// Use aabb
+							mouseTriggerPoly = this.aabb();
+						}
+					}
 					
 					// Check if the current mouse position is inside this aabb
 					if (this._mouseAlwaysInside || mouseTriggerPoly.xyInside(mouseX, mouseY)) {
@@ -1946,13 +1957,13 @@ var IgeEntity = IgeObject.extend({
 	 * Transforms a point by the entity's parent world matrix and
 	 * it's own local matrix transforming the point to this entity's
 	 * world space.
-	 * @param {IgePoint} point The point to transform.
+	 * @param {IgePoint3d} point The point to transform.
 	 * @example #Transform a point by the entity's world matrix values
-	 *     var point = new IgePoint(0, 0, 0);
+	 *     var point = new IgePoint3d(0, 0, 0);
 	 *     entity._transformPoint(point);
 	 *     
 	 *     console.log(point);
-	 * @return {IgePoint} The transformed point.
+	 * @return {IgePoint3d} The transformed point.
 	 * @private
 	 */
 	_transformPoint: function (point) {
@@ -2566,9 +2577,9 @@ var IgeEntity = IgeObject.extend({
 
 	/**
 	 * Translates the entity to the passed point.
-	 * @param {IgePoint} point The point with co-ordinates.
+	 * @param {IgePoint3d} point The point with co-ordinates.
 	 * @example #Translate the entity to 10, 0, 0
-	 *     var point = new IgePoint(10, 0, 0),
+	 *     var point = new IgePoint3d(10, 0, 0),
 	 *         entity = new IgeEntity();
 	 *     
 	 *     entity.translateToPoint(point);
@@ -3014,7 +3025,7 @@ var IgeEntity = IgeObject.extend({
 
 		if (this._mode === 1) {
 			// iso translation
-			var isoPoint = this._translateIso = new IgePoint(
+			var isoPoint = this._translateIso = new IgePoint3d(
 				this._translate.x,
 				this._translate.y,
 				this._translate.z + this._bounds3d.z / 2

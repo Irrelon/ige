@@ -85,7 +85,7 @@ var IgeRect = IgeClass.extend({
 	/**
 	 * Returns boolean indicating if the passed point is
 	 * inside the rectangle.
-	 * @param {IgePoint} point
+	 * @param {IgePoint3d} point
 	 * @return {Boolean}
 	 */
 	pointInside: function (point) {

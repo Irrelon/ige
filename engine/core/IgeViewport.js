@@ -15,7 +15,7 @@ var IgeViewport = IgeEntity.extend([
 		IgeEntity.prototype.init.call(this);
 
 		this._mouseAlwaysInside = true;
-		this._mousePos = new IgePoint(0, 0, 0);
+		this._mousePos = new IgePoint3d(0, 0, 0);
 		this._overflow = '';
 		this._clipping = true;
 
@@ -27,12 +27,12 @@ var IgeViewport = IgeEntity.extend([
 			
 			if (options && options.scaleToWidth && options.scaleToHeight) {
 				// Store the w/h we want to lock to
-				this._lockDimension = new IgePoint(options.scaleToWidth, options.scaleToHeight, 0);
+				this._lockDimension = new IgePoint3d(options.scaleToWidth, options.scaleToHeight, 0);
 			}
 		}
 
 		// Setup default objects
-		this._bounds2d = new IgePoint(width || ige._bounds2d.x, height || ige._bounds2d.y, 0);
+		this._bounds2d = new IgePoint3d(width || ige._bounds2d.x, height || ige._bounds2d.y, 0);
 		this.camera = new IgeCamera(this);
 		this.camera._entity = this;
 		//this._drawMouse = true;
@@ -49,7 +49,7 @@ var IgeViewport = IgeEntity.extend([
 	 */
 	minimumVisibleArea: function (width, height) {
 		// Store the w/h we want to lock to
-		this._lockDimension = new IgePoint(width, height, 0);
+		this._lockDimension = new IgePoint3d(width, height, 0);
 		if (ige.isClient) {
 			this._resizeEvent({});
 		}
@@ -88,7 +88,7 @@ var IgeViewport = IgeEntity.extend([
 
 	/**
 	 * Returns the viewport's mouse position.
-	 * @return {IgePoint}
+	 * @return {IgePoint3d}
 	 */
 	mousePos: function () {
 		// Viewport mouse position is calculated and assigned in the
@@ -255,7 +255,7 @@ var IgeViewport = IgeEntity.extend([
 	},
 
 	/**
-	 * Returns the screen position of the viewport as an IgePoint where x is the
+	 * Returns the screen position of the viewport as an IgePoint3d where x is the
 	 * "left" and y is the "top", useful for positioning HTML elements at the
 	 * screen location of an IGE entity. The returned values indicate the center
 	 * of the viewport on the screen.
@@ -265,10 +265,10 @@ var IgeViewport = IgeEntity.extend([
 	 * yourself to allow for offset.
 	 * @example #Get the screen position of the entity
 	 *     var screenPos = entity.screenPosition();
-	 * @return {IgePoint} The screen position of the entity.
+	 * @return {IgePoint3d} The screen position of the entity.
 	 */
 	screenPosition: function () {
-		return new IgePoint(
+		return new IgePoint3d(
 			Math.floor(this._worldMatrix.matrix[2] + ige._bounds2d.x2),
 			Math.floor(this._worldMatrix.matrix[5] + ige._bounds2d.y2),
 			0
@@ -414,22 +414,22 @@ var IgeViewport = IgeEntity.extend([
 
 											// Calculate the 3d bounds data
 											r3d = obj._bounds3d;
-											xl1 = new IgePoint(-(r3d.x / 2), 0, 0).toIso();
-											xl2 = new IgePoint(+(r3d.x / 2), 0, 0).toIso();
-											xl3 = new IgePoint(0, -(r3d.y / 2), 0).toIso();
-											xl4 = new IgePoint(0, +(r3d.y / 2), 0).toIso();
-											xl5 = new IgePoint(0, 0, -(r3d.z / 2)).toIso();
-											xl6 = new IgePoint(0, 0, +(r3d.z / 2)).toIso();
+											xl1 = new IgePoint3d(-(r3d.x / 2), 0, 0).toIso();
+											xl2 = new IgePoint3d(+(r3d.x / 2), 0, 0).toIso();
+											xl3 = new IgePoint3d(0, -(r3d.y / 2), 0).toIso();
+											xl4 = new IgePoint3d(0, +(r3d.y / 2), 0).toIso();
+											xl5 = new IgePoint3d(0, 0, -(r3d.z / 2)).toIso();
+											xl6 = new IgePoint3d(0, 0, +(r3d.z / 2)).toIso();
 											// Bottom face
-											bf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
-											bf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
-											bf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
-											bf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
+											bf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
+											bf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
+											bf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
+											bf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
 											// Top face
-											tf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
-											tf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
-											tf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
-											tf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
+											tf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
+											tf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
+											tf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
+											tf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
 
 											ga = ctx.globalAlpha;
 

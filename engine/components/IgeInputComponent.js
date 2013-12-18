@@ -543,7 +543,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 			if (mx > vp._translate.x - vp._bounds2d.x / 2 && mx < vp._translate.x + vp._bounds2d.x / 2) {
 				if (my > vp._translate.y - vp._bounds2d.y / 2 && my < vp._translate.y + vp._bounds2d.y / 2) {
 					// Mouse is inside this viewport
-					vp._mousePos = new IgePoint(
+					vp._mousePos = new IgePoint3d(
 						Math.floor((mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x),
 						Math.floor((my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y),
 						0

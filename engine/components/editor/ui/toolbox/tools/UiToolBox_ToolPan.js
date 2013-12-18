@@ -50,7 +50,7 @@ var UiToolBox_ToolPan = IgeEventingClass.extend({
 			// Record the mouse down position - pre-start
 			var mx = (event.igeX - ige._bounds2d.x2),
 				my = (event.igeY - ige._bounds2d.y2),
-				curMousePos = new IgePoint(mx, my, 0);
+				curMousePos = new IgePoint3d(mx, my, 0);
 			
 			this._opStartMouse = curMousePos.clone();
 

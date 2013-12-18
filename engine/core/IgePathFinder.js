@@ -65,8 +65,8 @@ var IgePathFinder = IgeEventingClass.extend({
 	/**
 	 * Uses the A* algorithm to generate path data between two points.
 	 * @param {IgeCollisionMap2d} tileMap The tile map to use when generating the path.
-	 * @param {IgePoint} startPoint The point on the map to start path-finding from.
-	 * @param {IgePoint} endPoint The point on the map to try to path-find to.
+	 * @param {IgePoint3d} startPoint The point on the map to start path-finding from.
+	 * @param {IgePoint3d} endPoint The point on the map to try to path-find to.
 	 * @param {Function} comparisonCallback The callback function that will decide if each tile that is being considered for use in the path is allowed or not based on the tile map's data stored for that tile which is passed to this method as the first parameter. Must return a boolean value.
 	 * @param {Boolean} allowSquare Whether to allow neighboring tiles along a square axis. Defaults to true if undefined.
 	 * @param {Boolean} allowDiagonal Whether to allow neighboring tiles along a diagonal axis. Defaults to false if undefined.

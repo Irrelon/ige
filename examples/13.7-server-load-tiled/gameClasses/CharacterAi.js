@@ -63,7 +63,7 @@ var CharacterAi = Character.extend({
 			return;
 		}
 
-		destTile = new IgePoint(destTileX, destTileY, 0);
+		destTile = new IgePoint3d(destTileX, destTileY, 0);
 		path = self.pathFinder.generate(self.collisionMap, currentTile, destTile, tileChecker, true, false);
 
 		if (path.length) {

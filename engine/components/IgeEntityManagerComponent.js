@@ -202,7 +202,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 			x -= offset.x;
 			y -= offset.y;
 
-			this._areaCenter = new IgePoint(x, y, 0);
+			this._areaCenter = new IgePoint3d(x, y, 0);
 			return this._entity;
 		}
 

@@ -35,7 +35,7 @@ var IgeCamera = IgeEntity.extend({
 	/**
 	 * Pan (tween) the camera to the new specified point in
 	 * the specified time.
-	 * @param {IgePoint} point The point describing the co-ordinates to pan to.
+	 * @param {IgePoint3d} point The point describing the co-ordinates to pan to.
 	 * @param {Number} durationMs The number of milliseconds to span the pan operation over.
 	 * @param {String=} easing Optional easing method name.
 	 */
@@ -58,7 +58,7 @@ var IgeCamera = IgeEntity.extend({
 	/**
 	 * Pan (tween) the camera by the new specified point in
 	 * the specified time.
-	 * @param {IgePoint} point The point describing the co-ordinates to pan by.
+	 * @param {IgePoint3d} point The point describing the co-ordinates to pan by.
 	 * @param {Number} durationMs The number of milliseconds to span the pan operation over.
 	 * @param {String=} easing Optional easing method name.
 	 */

@@ -9,7 +9,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		IgeTileMap2d.prototype.init.call(this, tileWidth, tileHeight);
 		this.map = new IgeMap2d();
 		this._textureList = [];
-		this._renderCenter = new IgePoint(0, 0, 0);
+		this._renderCenter = new IgePoint3d(0, 0, 0);
 		this._cacheDirty = true;
 	},
 

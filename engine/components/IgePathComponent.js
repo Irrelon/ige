@@ -124,8 +124,8 @@ var IgePathComponent = IgeEventingClass.extend({
 		// Create a new path
 		var path = this._finder.generate(
 			this._tileMap,
-			new IgePoint(fromX, fromY, fromZ),
-			new IgePoint(toX, toY, toZ),
+			new IgePoint3d(fromX, fromY, fromZ),
+			new IgePoint3d(toX, toY, toZ),
 			this._tileChecker,
 			this._allowSquare,
 			this._allowDiagonal
@@ -144,7 +144,7 @@ var IgePathComponent = IgeEventingClass.extend({
 		var path = this._finder.generate(
 			this._tileMap,
 			endPoint,
-			new IgePoint(x, y, z),
+			new IgePoint3d(x, y, z),
 			this._tileChecker,
 			this._allowSquare,
 			this._allowDiagonal
@@ -161,7 +161,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Adds a path array containing path points (IgePoint instances)
+	 * Adds a path array containing path points (IgePoint3d instances)
 	 * to the path queue.
 	 * @param {Array} path
 	 * @return {*}
@@ -197,7 +197,7 @@ var IgePathComponent = IgeEventingClass.extend({
 
 	/**
 	 * Gets the path node point that the entity is travelling from.
-	 * @return {IgePoint} A new point representing the travelled from node.
+	 * @return {IgePoint3d} A new point representing the travelled from node.
 	 */
 	previousTargetPoint: function () {
 		if (this._paths.length) {
@@ -205,20 +205,20 @@ var IgePathComponent = IgeEventingClass.extend({
 				entParent = this._entity._parent,
 				targetCell = this._paths[this._currentPathIndex][tpI];
 
-			return targetCell.mode === 0 ? new IgePoint(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0) : targetCell.clone();
+			return targetCell.mode === 0 ? new IgePoint3d(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0) : targetCell.clone();
 		}
 	},
 
 	/**
 	 * Gets the path node point that the entity is travelling to.
-	 * @return {IgePoint} A new point representing the travelling to node.
+	 * @return {IgePoint3d} A new point representing the travelling to node.
 	 */
 	currentTargetPoint: function () {
 		if (this._paths.length) {
 			var entParent = this._entity._parent,
 				targetCell = this._paths[this._currentPathIndex][this._targetCellIndex];
 
-			return targetCell.mode === 0 ? new IgePoint(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0) : targetCell.clone();
+			return targetCell.mode === 0 ? new IgePoint3d(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0) : targetCell.clone();
 		}
 	},
 
@@ -448,7 +448,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	/**
 	 * Returns the last point of the last path in the
 	 * path queue.
-	 * @return {IgePoint}
+	 * @return {IgePoint3d}
 	 */
 	endPoint: function () {
 		var paths = this._paths,
@@ -613,8 +613,8 @@ var IgePathComponent = IgeEventingClass.extend({
 								
 								replacementPath = self._finder.generate(
 									self._tileMap,
-									new IgePoint(recalcStartPoint.x, recalcStartPoint.y, 0),
-									new IgePoint(recalcEndPoint.x, recalcEndPoint.y, 0),
+									new IgePoint3d(recalcStartPoint.x, recalcStartPoint.y, 0),
+									new IgePoint3d(recalcEndPoint.x, recalcEndPoint.y, 0),
 									self._tileChecker,
 									self._allowSquare,
 									self._allowDiagonal,
@@ -626,7 +626,7 @@ var IgePathComponent = IgeEventingClass.extend({
 									self._targetCellIndex = 0;
 								} else {
 									// Cannot generate valid path, delete this path
-									self.emit('dynamicFail', [this, new IgePoint(recalcStartPoint.x, recalcStartPoint.y, 0), new IgePoint(recalcEndPoint.x, recalcEndPoint.y, 0)]);
+									self.emit('dynamicFail', [this, new IgePoint3d(recalcStartPoint.x, recalcStartPoint.y, 0), new IgePoint3d(recalcEndPoint.x, recalcEndPoint.y, 0)]);
 									self.clear();
 									return;
 								}
@@ -700,9 +700,9 @@ var IgePathComponent = IgeEventingClass.extend({
 							
 							if(tempCurrentPath[pathPointIndex].mode===0){
 								if (entity._parent.isometricMounts()) {
-									tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0).toIso();
+									tracePathPoint = new IgePoint3d((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0).toIso();
 								} else {
-									tracePathPoint = new IgePoint((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0);
+									tracePathPoint = new IgePoint3d((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0);
 								}
 							}else{
 								if (entity._parent.isometricMounts()) {
@@ -801,15 +801,15 @@ var IgePathComponent = IgeEventingClass.extend({
 	/**
 	 * Calculates the position of the entity along a vector
 	 * based on the speed of the entity and the delta time.
-	 * @param {IgePoint} p1 Vector starting point
-	 * @param {IgePoint} p2 Vevtor ending point
+	 * @param {IgePoint3d} p1 Vector starting point
+	 * @param {IgePoint3d} p2 Vevtor ending point
 	 * @param {Number} speed Speed along the vector
 	 * @param {Number} deltaTime The time between the last upadte and now.
-	 * @return {IgePoint}
+	 * @return {IgePoint3d}
 	 * @private
 	 */
 	_positionAlongVector: function (p1, p2, speed, deltaTime) {
-		var newPoint = new IgePoint(0, 0, 0),
+		var newPoint = new IgePoint3d(0, 0, 0),
 			deltaY = (p2.y - p1.y),
 			deltaX = (p2.x - p1.x),
 			distanceBetweenP1AndP2 = Math.distance(p1.x, p1.y, p2.x, p2.y),

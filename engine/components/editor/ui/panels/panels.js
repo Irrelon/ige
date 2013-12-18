@@ -99,8 +99,28 @@ var UiPanels = IgeEventingClass.extend({
 					desc: '',
 					order: 0,
 					props: {
+						'_bounds2d': {
+							label: '2d Bounds',
+							desc: '',
+							// Enable any listeners and logic to take action when the user interacts with the panel
+							afterRender: function (obj, propItem) {
+								var selector = $('#igeEditorProperty_' + propItem.id);
+
+								selector.find('.setNumberX').on('change', function () {
+									// Set the property value to the newly selected one
+									obj[propItem.id].x = parseFloat($(this).val());
+									obj[propItem.id].x2 = obj[propItem.id].x / 2;
+								});
+
+								selector.find('.setNumberY').on('change', function () {
+									// Set the property value to the newly selected one
+									obj[propItem.id].y = parseFloat($(this).val());
+									obj[propItem.id].y2 = obj[propItem.id].y / 2;
+								});
+							}
+						},
 						'_bounds3d': {
-							label: 'Size 3d',
+							label: '3d Bounds',
 							desc: '',
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
@@ -981,7 +1001,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._velocityVector && obj._velocityVector.base) {
 										obj._velocityVector.base.x = x;
 									} else {
-										obj._velocityVector = new IgePoint(x, 0, 0);
+										obj._velocityVector = new IgePoint3d(x, 0, 0);
 									}
 								});
 								
@@ -992,7 +1012,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._velocityVector && obj._velocityVector.base) {
 										obj._velocityVector.base.y = y;
 									} else {
-										obj._velocityVector = new IgePoint(y, 0, 0);
+										obj._velocityVector = new IgePoint3d(y, 0, 0);
 									}
 								});
 								
@@ -1003,7 +1023,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._velocityVector && obj._velocityVector.base) {
 										obj._velocityVector.base.z = z;
 									} else {
-										obj._velocityVector = new IgePoint(z, 0, 0);
+										obj._velocityVector = new IgePoint3d(z, 0, 0);
 									}
 								});
 							}
@@ -1034,7 +1054,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._velocityVector && obj._velocityVector.min) {
 										obj._velocityVector.min.x = x;
 									} else {
-										obj._velocityVector = new IgePoint(x, 0, 0);
+										obj._velocityVector = new IgePoint3d(x, 0, 0);
 									}
 								});
 								
@@ -1045,7 +1065,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._velocityVector && obj._velocityVector.min) {
 										obj._velocityVector.min.y = y;
 									} else {
-										obj._velocityVector = new IgePoint(y, 0, 0);
+										obj._velocityVector = new IgePoint3d(y, 0, 0);
 									}
 								});
 								
@@ -1056,7 +1076,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._velocityVector && obj._velocityVector.min) {
 										obj._velocityVector.min.z = z;
 									} else {
-										obj._velocityVector = new IgePoint(z, 0, 0);
+										obj._velocityVector = new IgePoint3d(z, 0, 0);
 									}
 								});
 							}
@@ -1087,7 +1107,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._velocityVector && obj._velocityVector.max) {
 										obj._velocityVector.max.x = x;
 									} else {
-										obj._velocityVector = new IgePoint(x, 0, 0);
+										obj._velocityVector = new IgePoint3d(x, 0, 0);
 									}
 								});
 								
@@ -1098,7 +1118,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._velocityVector && obj._velocityVector.max) {
 										obj._velocityVector.max.y = y;
 									} else {
-										obj._velocityVector = new IgePoint(y, 0, 0);
+										obj._velocityVector = new IgePoint3d(y, 0, 0);
 									}
 								});
 								
@@ -1109,7 +1129,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._velocityVector && obj._velocityVector.max) {
 										obj._velocityVector.max.z = z;
 									} else {
-										obj._velocityVector = new IgePoint(z, 0, 0);
+										obj._velocityVector = new IgePoint3d(z, 0, 0);
 									}
 								});
 							}
@@ -1148,7 +1168,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._linearForceVector && obj._linearForceVector.base) {
 										obj._linearForceVector.base.x = x;
 									} else {
-										obj._linearForceVector = new IgePoint(x, 0, 0);
+										obj._linearForceVector = new IgePoint3d(x, 0, 0);
 									}
 								});
 								
@@ -1159,7 +1179,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._linearForceVector && obj._linearForceVector.base) {
 										obj._linearForceVector.base.y = y;
 									} else {
-										obj._linearForceVector = new IgePoint(y, 0, 0);
+										obj._linearForceVector = new IgePoint3d(y, 0, 0);
 									}
 								});
 								
@@ -1170,7 +1190,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._linearForceVector && obj._linearForceVector.base) {
 										obj._linearForceVector.base.z = z;
 									} else {
-										obj._linearForceVector = new IgePoint(z, 0, 0);
+										obj._linearForceVector = new IgePoint3d(z, 0, 0);
 									}
 								});
 							}
@@ -1201,7 +1221,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._linearForceVector && obj._linearForceVector.min) {
 										obj._linearForceVector.min.x = x;
 									} else {
-										obj._linearForceVector = new IgePoint(x, 0, 0);
+										obj._linearForceVector = new IgePoint3d(x, 0, 0);
 									}
 								});
 								
@@ -1212,7 +1232,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._linearForceVector && obj._linearForceVector.min) {
 										obj._linearForceVector.min.y = y;
 									} else {
-										obj._linearForceVector = new IgePoint(y, 0, 0);
+										obj._linearForceVector = new IgePoint3d(y, 0, 0);
 									}
 								});
 								
@@ -1223,7 +1243,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._linearForceVector && obj._linearForceVector.min) {
 										obj._linearForceVector.min.z = z;
 									} else {
-										obj._linearForceVector = new IgePoint(z, 0, 0);
+										obj._linearForceVector = new IgePoint3d(z, 0, 0);
 									}
 								});
 							}
@@ -1254,7 +1274,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._linearForceVector && obj._linearForceVector.max) {
 										obj._linearForceVector.max.x = x;
 									} else {
-										obj._linearForceVector = new IgePoint(x, 0, 0);
+										obj._linearForceVector = new IgePoint3d(x, 0, 0);
 									}
 								});
 								
@@ -1265,7 +1285,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._linearForceVector && obj._linearForceVector.max) {
 										obj._linearForceVector.max.y = y;
 									} else {
-										obj._linearForceVector = new IgePoint(y, 0, 0);
+										obj._linearForceVector = new IgePoint3d(y, 0, 0);
 									}
 								});
 								
@@ -1276,7 +1296,7 @@ var UiPanels = IgeEventingClass.extend({
 									if (obj._linearForceVector && obj._linearForceVector.max) {
 										obj._linearForceVector.max.z = z;
 									} else {
-										obj._linearForceVector = new IgePoint(z, 0, 0);
+										obj._linearForceVector = new IgePoint3d(z, 0, 0);
 									}
 								});
 							}

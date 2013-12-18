@@ -51,7 +51,7 @@ var ServerNetworkEvents = {
 		
 		// Generate a path to the destination tile and then start movement
 		// along the path
-		newPath = ige.server.pathFinder.generate(ige.server.collisionMap, startTile, new IgePoint(parseInt(data[0]), parseInt(data[1]), 0), function (tileData, tileX, tileY) {
+		newPath = ige.server.pathFinder.generate(ige.server.collisionMap, startTile, new IgePoint3d(parseInt(data[0]), parseInt(data[1]), 0), function (tileData, tileX, tileY) {
 			// If the map tile data is set to 1, don't allow a path along it
 			return tileData !== 1;
 		}, true, false);

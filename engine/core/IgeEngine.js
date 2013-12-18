@@ -92,7 +92,7 @@ var IgeEngine = IgeEntity.extend({
 		this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
 		this._frameAlternator = false; // Is set to the boolean not of itself each frame
 		this._viewportDepth = false;
-		this._mousePos = new IgePoint(0, 0, 0);
+		this._mousePos = new IgePoint3d(0, 0, 0);
 		this._currentViewport = null; // Set in IgeViewport.js tick(), holds the current rendering viewport
 		this._currentCamera = null; // Set in IgeViewport.js tick(), holds the current rendering viewport's camera
 		this._currentTime = 0; // The current engine time
@@ -108,7 +108,7 @@ var IgeEngine = IgeEntity.extend({
 		this._timeSpentInTick = {}; // An object holding time-spent-in-tick (total time spent in this object's tick method)
 		this._timeSpentLastTick = {}; // An object holding time-spent-last-tick (time spent in this object's tick method last tick)
 		this._timeScale = 1; // The default time scaling factor to speed up or slow down engine time
-		this._globalScale = new IgePoint(1, 1, 1);
+		this._globalScale = new IgePoint3d(1, 1, 1);
 		this._graphInstances = []; // Holds an array of instances of graph classes
 
 		// Set the context to a dummy context to start
@@ -1173,7 +1173,7 @@ var IgeEngine = IgeEntity.extend({
 	/**
 	 * Returns the mouse position relative to the main front buffer. Mouse
 	 * position is set by the ige.input component (IgeInputComponent)
-	 * @return {IgePoint}
+	 * @return {IgePoint3d}
 	 */
 	mousePos: function () {
 		return this._mousePos.clone();
@@ -1288,7 +1288,7 @@ var IgeEngine = IgeEntity.extend({
 				}
 			}
 
-			ige._bounds2d = new IgePoint(newWidth, newHeight, 0);
+			ige._bounds2d = new IgePoint3d(newWidth, newHeight, 0);
 
 			// Loop any mounted children and check if
 			// they should also get resized
@@ -1297,7 +1297,7 @@ var IgeEngine = IgeEntity.extend({
 			}
 		} else {
 			if (ige._canvas) {
-				ige._bounds2d = new IgePoint(ige._canvas.width, ige._canvas.height, 0);
+				ige._bounds2d = new IgePoint3d(ige._canvas.width, ige._canvas.height, 0);
 			}
 		}
 

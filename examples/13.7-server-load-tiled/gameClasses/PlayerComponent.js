@@ -85,7 +85,7 @@ var PlayerComponent = IgeClass.extend({
 					xVel = 0;
 					yVel = vel;
 				}
-				this._box2dBody.SetLinearVelocity(new IgePoint(0, vel, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(0, vel, 0));
 				this._box2dBody.SetAwake(true);
 				this.imageEntity.animation.select('walkDown');
 				break;
@@ -99,7 +99,7 @@ var PlayerComponent = IgeClass.extend({
 					xVel = vel;
 					yVel = 0;
 				}
-				this._box2dBody.SetLinearVelocity(new IgePoint(vel, 0, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(vel, 0, 0));
 				this._box2dBody.SetAwake(true);
 				this.imageEntity.animation.select('walkRight');
 				break;
@@ -113,7 +113,7 @@ var PlayerComponent = IgeClass.extend({
 					xVel = -vel;
 					yVel = 0;
 				}
-				this._box2dBody.SetLinearVelocity(new IgePoint(-vel, 0, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(-vel, 0, 0));
 				this._box2dBody.SetAwake(true);
 				this.imageEntity.animation.select('walkLeft');
 				break;
@@ -126,7 +126,7 @@ var PlayerComponent = IgeClass.extend({
 					xVel = vel;
 					yVel = -vel;
 				}
-				this._box2dBody.SetLinearVelocity(new IgePoint(vel, -vel, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(vel, -vel, 0));
 				this._box2dBody.SetAwake(true);
 				this.imageEntity.animation.select('walkRight');
 				break;
@@ -139,7 +139,7 @@ var PlayerComponent = IgeClass.extend({
 					xVel = -vel;
 					yVel = -vel;
 				}
-				this._box2dBody.SetLinearVelocity(new IgePoint(-vel, -vel, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(-vel, -vel, 0));
 				this._box2dBody.SetAwake(true);
 				this.imageEntity.animation.select('walkLeft');
 				break;
@@ -152,7 +152,7 @@ var PlayerComponent = IgeClass.extend({
 					xVel = vel;
 					yVel = vel;
 				}
-				this._box2dBody.SetLinearVelocity(new IgePoint(vel, vel, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(vel, vel, 0));
 				this._box2dBody.SetAwake(true);
 				this.imageEntity.animation.select('walkRight');
 				break;
@@ -165,7 +165,7 @@ var PlayerComponent = IgeClass.extend({
 					xVel = -vel;
 					yVel = vel;
 				}
-				this._box2dBody.SetLinearVelocity(new IgePoint(-vel, vel, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(-vel, vel, 0));
 				this._box2dBody.SetAwake(true);
 				this.imageEntity.animation.select('walkLeft');
 				break;
@@ -175,7 +175,7 @@ var PlayerComponent = IgeClass.extend({
 				break;
 		}
 
-		this._box2dBody.SetLinearVelocity(new IgePoint(xVel, yVel, 0));
+		this._box2dBody.SetLinearVelocity(new IgePoint3d(xVel, yVel, 0));
 		this._box2dBody.SetAwake(true);
 	}
 });

@@ -7,7 +7,8 @@ var igeCoreConfig = {
 		['csap', 'IgeClass', 'core/IgeClass.js'],
 		['csap', 'IgeEventingClass', 'core/IgeEventingClass.js'],
 		/* Data Classes */
-		['csap', 'IgePoint', 'core/IgePoint.js'],
+		['csap', 'IgePoint2d', 'core/IgePoint2d.js'],
+		['csap', 'IgePoint3d', 'core/IgePoint3d.js'],
 		['csap', 'IgePoly2d', 'core/IgePoly2d.js'],
 		['csap', 'IgeRect', 'core/IgeRect.js'],
 		['csap', 'IgeMatrix2d', 'core/IgeMatrix2d.js'],

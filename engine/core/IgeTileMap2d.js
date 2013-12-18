@@ -251,8 +251,8 @@ var IgeTileMap2d = IgeEntity.extend({
 	/**
 	 * Returns the tile co-ordinates of the tile that the point's world
 	 * co-ordinates reside inside.
-	 * @param {IgePoint=} point
-	 * @return {IgePoint} The tile co-ordinates as a point object.
+	 * @param {IgePoint3d=} point
+	 * @return {IgePoint3d} The tile co-ordinates as a point object.
 	 */
 	pointToTile: function (point) {
 		// TODO: Could this do with some caching to check if the input values have changed and if not, supply the same pre-calculated data if it already exists?
@@ -265,7 +265,7 @@ var IgeTileMap2d = IgeEntity.extend({
 			dx = mx + this._tileWidth / 2;
 			dy = my + this._tileHeight / 2;
 
-			tilePos = new IgePoint(
+			tilePos = new IgePoint3d(
 				Math.floor(dx / this._tileWidth),
 				Math.floor(dy / this._tileWidth),
 				0
@@ -277,13 +277,13 @@ var IgeTileMap2d = IgeEntity.extend({
 			dx = mx;
 			dy = my - this._tileHeight / 2;
 
-			tilePos = new IgePoint(
+			tilePos = new IgePoint3d(
 				dx,
 				dy,
 				0
 			).to2d();
 
-			tilePos = new IgePoint(
+			tilePos = new IgePoint3d(
 				Math.floor(tilePos.x / this._tileWidth) + 1,
 				Math.floor(tilePos.y / this._tileHeight) + 1,
 				0
@@ -295,7 +295,7 @@ var IgeTileMap2d = IgeEntity.extend({
 
 	/**
 	 * Returns the world co-ordinates of the tile the mouse is currently over.
-	 * @return {IgePoint}
+	 * @return {IgePoint3d}
 	 */
 	mouseTileWorldXY: function () {
 		if (this._mountMode === 0) {
@@ -314,7 +314,7 @@ var IgeTileMap2d = IgeEntity.extend({
 
 	/**
 	 * Returns the tile co-ordinates of the tile the mouse is currently over.
-	 * @return {IgePoint}
+	 * @return {IgePoint3d}
 	 */
 	mouseToTile: function () {
 		return this.pointToTile(this.mousePos());
@@ -510,8 +510,8 @@ var IgeTileMap2d = IgeEntity.extend({
 			gridMaxY = y + tileHeight * gridCount;
 
 			for (index = 0; index <= gridCount; index++) {
-				gStart = new IgePoint(x, y + (tileHeight * index), 0);
-				gEnd = new IgePoint(gridMaxX, y + (tileHeight * index), 0);
+				gStart = new IgePoint3d(x, y + (tileHeight * index), 0);
+				gEnd = new IgePoint3d(gridMaxX, y + (tileHeight * index), 0);
 
 				if (this._mountMode === 1) {
 					// Iso grid
@@ -526,8 +526,8 @@ var IgeTileMap2d = IgeEntity.extend({
 			}
 
 			for (index = 0; index <= gridCount; index++) {
-				gStart = new IgePoint(x + (tileWidth * index), y, 0);
-				gEnd = new IgePoint(x + (tileWidth * index), gridMaxY, 0);
+				gStart = new IgePoint3d(x + (tileWidth * index), y, 0);
+				gEnd = new IgePoint3d(x + (tileWidth * index), gridMaxY, 0);
 
 				if (this._mountMode === 1) {
 					// Iso grid
@@ -549,7 +549,7 @@ var IgeTileMap2d = IgeEntity.extend({
 					for (x in this.map._mapData[y]) {
 						if (this.map._mapData[y][x]) {
 							// Tile is occupied
-							tilePoint = new IgePoint(tileWidth * x, tileHeight * y, 0);
+							tilePoint = new IgePoint3d(tileWidth * x, tileHeight * y, 0);
 
 							// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
 							if (this._mountMode === 0) {
@@ -585,7 +585,7 @@ var IgeTileMap2d = IgeEntity.extend({
 			for (y = this._highlightTileRect.y; y < this._highlightTileRect.y + this._highlightTileRect.height; y++) {
 				for (x = this._highlightTileRect.x; x < this._highlightTileRect.x + this._highlightTileRect.width; x++) {
 					// Tile is occupied
-					tilePoint = new IgePoint(tileWidth * x, tileHeight * y, 0);
+					tilePoint = new IgePoint3d(tileWidth * x, tileHeight * y, 0);
 
 					// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
 					if (this._mountMode === 0) {
