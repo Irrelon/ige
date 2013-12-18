@@ -1,0 +1,17 @@
+.dropMenuContainer .menuButton {
+  color: #fff;
+  font-family: Verdana, Tahoma, sans-serif;
+  font-size: 11px;
+  padding: 6px;
+  cursor: pointer;
+  display: block;
+  background-color: #333;
+  border-right: 1px solid #222;
+  float: left;
+}
+.dropMenuContainer .menuButton:hover {
+  background-color: #555;
+}
+.dropMenuContainer .menuButton.active {
+  background-color: #777;
+}

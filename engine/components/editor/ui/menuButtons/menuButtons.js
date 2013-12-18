@@ -47,7 +47,12 @@ var UiMenuButtons = IgeEventingClass.extend({
 			id: 'toolsMenu',
 			text: 'Tools',
 			menu: {
-				
+				'group1': [{
+					id: 'textureEditor',
+					icon: 'none',
+					text: 'Texture Editor...',
+					action: "ige.editor.textureEditor();"
+				}]
 			}
 		});
 	},
@@ -98,7 +103,7 @@ var UiMenuButtons = IgeEventingClass.extend({
 			}
 		} else {
 			// Store the current selected editor tool and then deactivate the tool
-			self._editorTool = ige.editor.ui.toolbox._currentTool;
+			self._editorTool = ige.editor.ui.toolbox._currentTool ? ige.editor.ui.toolbox._currentTool : self._editorTool;
 			ige.editor.ui.toolbox.deselect();
 			
 			// Toggle all other menus off
@@ -111,13 +116,16 @@ var UiMenuButtons = IgeEventingClass.extend({
 				
 				// Display menu
 				var position = menuButton.offset(),
-					left = position.left + menuButton.width(),
+					left = position.left,
 					top = position.top,
 					height = $('body').height();
 				
 				ige.editor.ui.menus.create({
 					groups: obj.menu,
-					search: false
+					search: false,
+					blur: function () {
+						self.toggle(id);
+					}
 				}, function (elem) {
 					// Now position the menu
 					var menuHeight = elem.height();
@@ -128,8 +136,8 @@ var UiMenuButtons = IgeEventingClass.extend({
 						top = height - menuHeight - 10;
 					}
 					
-					if (top - menuHeight < 30) {
-						top = 30;
+					if (top - menuHeight < 25) {
+						top = 25;
 					}
 					
 					elem.css('left', left)

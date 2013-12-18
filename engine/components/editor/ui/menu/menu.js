@@ -19,6 +19,16 @@ var UiMenu = IgeEventingClass.extend({
 					self._elem = htmlElem;
 					$('body').append(htmlElem);
 					
+					// Hook underlay click if blur was passed
+					if (menuData.blur) {
+						$('<div class="menuUnderlay"></div>')
+							.on('click', function () {
+								menuData.blur();
+								$(this).remove();
+							})
+							.appendTo('body');
+					}
+					
 					htmlElem.attr('id', 'menu_' + (menuData.id || ige.newIdHex()));
 					
 					if (menuData.left !== undefined) {
@@ -66,6 +76,10 @@ var UiMenu = IgeEventingClass.extend({
 				}
 			}
 		);
+	},
+	
+	underlayClicked: function (id) {
+		this.emit('underlayClicked', id);
 	},
 	
 	closeAll: function () {
