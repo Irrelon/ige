@@ -72,7 +72,6 @@ var igeCoreConfig = {
 		['csap', 'IgeFontSmartTexture', 'assets/IgeFontSmartTexture.js'],
 		['csap', 'IgeObject', 'core/IgeObject.js'],
 		['csap', 'IgeEntity', 'core/IgeEntity.js'],
-		['csap', 'IgeIsoEntity', 'core/IgeIsoEntity.js'],
 		['csap', 'IgeUiEntity', 'core/IgeUiEntity.js'],
 		['csap', 'IgeUiElement', 'core/IgeUiElement.js'],
 		['csap', 'IgeFontEntity', 'core/IgeFontEntity.js'],

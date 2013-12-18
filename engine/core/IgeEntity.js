@@ -44,7 +44,7 @@ var IgeEntity = IgeObject.extend({
 		this._inView = true;
 		this._hidden = false;
 		
-		this._mouseEventTrigger = 0;
+		//this._mouseEventTrigger = 0;
 
 		/* CEXCLUDE */
 		if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') {
@@ -1660,23 +1660,11 @@ var IgeEntity = IgeObject.extend({
 					mouseX = mp.x;
 					mouseY = mp.y;
 					
-					if (this._mouseEventTrigger === 0) {
-						// Trigger mode is against the AABB
-						mouseTriggerPoly = this.aabb(); //this.localAabb();
-					}
-					
-					if (this._mouseEventTrigger === 1) {
-						// Trigger mode is against the iso bounds polygon
-						mouseTriggerPoly = this.isoBoundsPoly();
-					}
-					
-					if (this._mouseEventTrigger === 2) {
-						// Triger mode is against a custom polygon
-						mouseTriggerPoly = this.customTriggerPoly();
-					}
+					// Use the trigger polygon if defined or default to aabb
+					mouseTriggerPoly = this._triggerPolygon || this.aabb();
 					
 					// Check if the current mouse position is inside this aabb
-					if (mouseTriggerPoly.xyInside(mouseX, mouseY) || this._mouseAlwaysInside) {
+					if (this._mouseAlwaysInside || mouseTriggerPoly.xyInside(mouseX, mouseY)) {
 						// Point is inside the trigger bounds
 						ige.input.queueEvent(this, this._mouseInTrigger);
 					} else {
@@ -2338,6 +2326,15 @@ var IgeEntity = IgeObject.extend({
 
 		return this;
 	},
+	
+	triggerPolygon: function (poly) {
+		if (poly !== undefined) {
+			this._triggerPolygon = poly;
+			return this;
+		}
+		
+		return this._triggerPolygon;
+	},
 
 	/**
 	 * Gets / sets the shape / polygon that the mouse events
@@ -2345,9 +2342,11 @@ var IgeEntity = IgeObject.extend({
 	 * 'isoBounds'. The default is 'aabb'.
 	 * @param val
 	 * @returns {*}
+	 * @deprecated
 	 */
 	mouseEventTrigger: function (val) {
-		if (val !== undefined) {
+		this.log('mouseEventTrigger is no longer in use. Please see triggerPolygon() instead.', 'warning');
+		/*if (val !== undefined) {
 			// Set default value
 			this._mouseEventTrigger = 0;
 			
@@ -2367,7 +2366,7 @@ var IgeEntity = IgeObject.extend({
 			return this;
 		}
 		
-		return this._mouseEventTrigger === 0 ? 'aabb' : 'isoBounds';
+		return this._mouseEventTrigger === 0 ? 'aabb' : 'isoBounds';*/
 	},
 
 	/**
