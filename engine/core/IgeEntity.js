@@ -22,17 +22,17 @@ var IgeEntity = IgeObject.extend({
 
 		this._deathTime = undefined;
 
-		this._oldTranslate = new IgePoint(0, 0, 0);
 		this._translate = new IgePoint(0, 0, 0);
+		this._oldTranslate = new IgePoint(0, 0, 0);
 		this._rotate = new IgePoint(0, 0, 0);
 		this._scale = new IgePoint(1, 1, 1);
 		this._origin = new IgePoint(0.5, 0.5, 0.5);
 
 		this._bounds2d = new IgePoint(40, 40, 0);
-		this._bounds3d = new IgePoint(40, 40, 40);
+		this._bounds3d = new IgePoint(0, 0, 0);
 		
 		this._oldBounds2d = new IgePoint(40, 40, 0);
-		this._oldBounds3d = new IgePoint(40, 40, 40);
+		this._oldBounds3d = new IgePoint(0, 0, 0);
 
 		this._highlight = false;
 		this._mouseEventsActive = false;
@@ -1159,7 +1159,7 @@ var IgeEntity = IgeObject.extend({
 				tf1;
 
 			// Handle 2d entities
-			if (this._mode === 0) {
+			//if (this._mode === 0) {
 				geom = this._bounds2d;
 				geomX2 = geom.x2;
 				geomY2 = geom.y2;
@@ -1207,9 +1207,9 @@ var IgeEntity = IgeObject.extend({
 				);
 
 				box = new IgeRect(minX, minY, maxX - minX, maxY - minY);
-			}
+			//}
 
-			// Handle isometric entities
+			/*// Handle isometric entities
 			if (this._mode === 1) {
 				geom = this._bounds3d;
 				
@@ -1259,7 +1259,7 @@ var IgeEntity = IgeObject.extend({
 				);
 
 				box = new IgeRect(Math.floor(minX), Math.floor(minY), Math.floor(maxX - minX), Math.floor(maxY - minY));
-			}
+			}*/
 
 			this._aabb = box;
 			this._aabbDirty = false;

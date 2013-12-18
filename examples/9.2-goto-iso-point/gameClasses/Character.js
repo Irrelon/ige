@@ -1,28 +1,25 @@
 // Define our player character container classes
-var CharacterContainer = IgeEntity.extend({
-	classId: 'CharacterContainer',
+var Character = IgeEntity.extend({
+	classId: 'Character',
 
 	init: function () {
 		var self = this;
 		IgeEntity.prototype.init.call(this);
 
-		// Setup the entity 3d bounds
-		self.bounds3d(20, 20, 40);
-
 		// Create a character entity as a child of this container
 		self.addComponent(IgeAnimationComponent)
 			.addComponent(IgeVelocityComponent)
-			.bounds3d(20, 20, 40)
 			.depth(1)
-			.setType(3);
+			.setType(3)
+			.bounds3d(20, 20, 40);
 
 		// Load the character texture file
 		this._characterTexture = new IgeCellSheet('../assets/textures/sprites/vx_chara02_c.png', 12, 8);
 
 		// Wait for the texture to load
 		this._characterTexture.on('loaded', function () {
-			self.texture(self._characterTexture);
-				//.dimensionsFromCell();
+			self.texture(self._characterTexture)
+				.dimensionsFromCell();
 		}, false, true);
 	},
 	
@@ -213,4 +210,4 @@ var CharacterContainer = IgeEntity.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = CharacterContainer; }
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Character; }

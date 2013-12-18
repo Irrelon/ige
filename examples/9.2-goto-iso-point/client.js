@@ -1,13 +1,14 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
-		ige.showStats(1);
 		ige.globalSmoothing(true);
 
 		// Load our textures
 		var self = this;
 		this.obj = [];
 
+		ige.addComponent(IgeEditorComponent);
+		
 		// Create the HTML canvas
 		ige.createFrontBuffer(true);
 
@@ -23,16 +24,16 @@ var Client = IgeClass.extend({
 				// mouse cursor moves over one of our entities
 				overFunc = function () {
 					this.highlight(true);
-					this.drawBounds(true);
-					this.drawBoundsData(true);
+					/*this.drawBounds(true);
+					this.drawBoundsData(true);*/
 				};
 
 				// Define a function that will be called when the
 				// mouse cursor moves away from one of our entities
 				outFunc = function () {
 					this.highlight(false);
-					this.drawBounds(false);
-					this.drawBoundsData(false);
+					/*this.drawBounds(false);
+					this.drawBoundsData(false);*/
 				};
 
 				// Create an isometric tile map
@@ -47,7 +48,7 @@ var Client = IgeClass.extend({
 
 				// Create the 3d container that the player
 				// entity will be mounted to
-				self.player = new CharacterContainer()
+				self.player = new Character()
 					.id('player')
 					.addComponent(PlayerComponent)
 					.isometric(true)
