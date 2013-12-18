@@ -492,6 +492,10 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		this._state[event.keyCode] = true;
 		
+		if (this._debug) {
+			console.log('Key Down', event);
+		}
+		
 		if (!self.emit('preKeyDown', [event, event.keyCode])) {
 			this.queueEvent(this, function () {
 				self.emit('keyDown', [event, event.keyCode]);
@@ -508,6 +512,10 @@ var IgeInputComponent = IgeEventingClass.extend({
 		var self = this;
 
 		this._state[event.keyCode] = false;
+		
+		if (this._debug) {
+			console.log('Key Up', event);
+		}
 		
 		if (!self.emit('preKeyUp', [event, event.keyCode])) {
 			this.queueEvent(this, function () {

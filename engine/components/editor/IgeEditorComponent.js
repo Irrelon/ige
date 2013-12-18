@@ -26,6 +26,28 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		
 		this._interceptMouse = false;
 		
+		// Hook the input component's keyUp and check for the = symbol... if there, toggle editor
+		this._activateKeyHandle = ige.input.on('keyUp', function (event) {
+			if (event.keyIdentifier === "U+00BB") {
+				// = key pressed, toggle the editor
+				self.toggle();
+				
+				// Return true to stop this event from being emitted by the engine to the scenegraph
+				return true;
+			}
+		});
+		
+		// Hook the input component's keyUp and check for the - symbol... if there, toggle stats
+		this._activateKeyHandle = ige.input.on('keyUp', function (event) {
+			if (event.keyIdentifier === "U+00BD") {
+				// Toggle the stats
+				self.toggleStats();
+				
+				// Return true to stop this event from being emitted by the engine to the scenegraph
+				return true;
+			}
+		});
+		
 		// Hook the engine's input system and take over mouse interaction
 		this._mouseUpHandle = ige.input.on('preMouseUp', function (event) {
 			if (self._enabled && self._interceptMouse) {
