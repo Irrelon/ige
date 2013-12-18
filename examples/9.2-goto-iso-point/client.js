@@ -18,17 +18,7 @@ var Client = IgeClass.extend({
 				ige.addGraph('IgeBaseScene');
 				
 				var baseScene = ige.$('baseScene');
-
-				// Create an isometric tile map
-				self.tileMap1 = new IgeTileMap2d()
-					.id('tileMap1')
-					.isometricMounts(true)
-					.tileWidth(40)
-					.tileHeight(40)
-					.drawGrid(3)
-					.drawMouse(true)
-					.mount(baseScene);
-
+				
 				// Define a function that will be called when the
 				// mouse cursor moves over one of our entities
 				overFunc = function () {
@@ -45,6 +35,16 @@ var Client = IgeClass.extend({
 					this.drawBoundsData(false);
 				};
 
+				// Create an isometric tile map
+				self.tileMap1 = new IgeTileMap2d()
+					.id('tileMap1')
+					.isometricMounts(true)
+					.tileWidth(40)
+					.tileHeight(40)
+					.drawGrid(3)
+					.drawMouse(true)
+					.mount(baseScene);
+
 				// Create the 3d container that the player
 				// entity will be mounted to
 				self.player = new CharacterContainer()
@@ -55,7 +55,7 @@ var Client = IgeClass.extend({
 					.mouseOut(outFunc)
 					.mount(self.tileMap1);
 				
-				self.player.triggerPolygon(self.player.isoBoundsPoly());
+				self.player.triggerPolygon('bounds3dPolygon');
 
 				// Set the camera to track the character with some
 				// tracking smoothing turned on (100)

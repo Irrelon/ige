@@ -1,27 +1,31 @@
-// Define our player character classes
-var Character = IgeEntity.extend({
-	classId: 'Character',
+// Define our player character container classes
+var CharacterContainer = IgeEntity.extend({
+	classId: 'CharacterContainer',
 
 	init: function () {
 		var self = this;
 		IgeEntity.prototype.init.call(this);
 
-		// Setup the entity
+		// Setup the entity 3d bounds
+		self.bounds3d(20, 20, 40);
+
+		// Create a character entity as a child of this container
 		self.addComponent(IgeAnimationComponent)
 			.addComponent(IgeVelocityComponent)
+			.bounds3d(20, 20, 40)
 			.depth(1)
-			.bounds3d(40, 40, 40);
+			.setType(3);
 
 		// Load the character texture file
 		this._characterTexture = new IgeCellSheet('../assets/textures/sprites/vx_chara02_c.png', 12, 8);
 
 		// Wait for the texture to load
 		this._characterTexture.on('loaded', function () {
-			self.texture(self._characterTexture)
-				.dimensionsFromCell();
+			self.texture(self._characterTexture);
+				//.dimensionsFromCell();
 		}, false, true);
 	},
-
+	
 	/**
 	 * Sets the type of character which determines the character's
 	 * animation sequences and appearance.
@@ -132,27 +136,59 @@ var Character = IgeEntity.extend({
 				y
 			),
 			speed = 0.1,
-			time = (distance / speed);
+			time = (distance / speed),
+			direction = '';
 
-		// Set the animation based on direction
-		if (Math.abs(distX) > Math.abs(distY)) {
-			// Moving horizontal
-			if (distX < 0) {
-				// Moving left
-				this.animation.select('walkLeft');
-			} else {
-				// Moving right
+		// Set the animation based on direction - these are modified
+		// for isometric views
+		if (distY < 0) {
+			direction += 'N';
+		}
+
+		if (distY > 0) {
+			direction += 'S';
+		}
+
+		if (distX > 0) {
+			direction += 'E';
+		}
+
+		if (distX < 0) {
+			direction += 'W';
+		}
+
+		switch (direction) {
+			case 'N':
 				this.animation.select('walkRight');
-			}
-		} else {
-			// Moving vertical
-			if (distY < 0) {
-				// Moving up
-				this.animation.select('walkUp');
-			} else {
-				// Moving down
+				break;
+
+			case 'S':
+				this.animation.select('walkLeft');
+				break;
+
+			case 'E':
+				this.animation.select('walkRight');
+				break;
+
+			case 'W':
+				this.animation.select('walkLeft');
+				break;
+
+			case 'SE':
 				this.animation.select('walkDown');
-			}
+				break;
+
+			case 'NW':
+				this.animation.select('walkUp');
+				break;
+
+			case 'NE':
+				this.animation.select('walkRight');
+				break;
+
+			case 'SW':
+				this.animation.select('walkLeft');
+				break;
 		}
 
 		// Start tweening the little person to their destination
@@ -162,9 +198,6 @@ var Character = IgeEntity.extend({
 			.duration(time)
 			.afterTween(function () {
 				self.animation.stop();
-				// And you could make him reset back
-				// to his original animation frame with:
-				//self.cell(10);
 			})
 			.start();
 
@@ -177,17 +210,7 @@ var Character = IgeEntity.extend({
 		// the closer they become to the bottom of the screen
 		this.depth(this._translate.y);
 		IgeEntity.prototype.tick.call(this, ctx);
-	},
-
-	destroy: function () {
-		// Destroy the texture object
-		if (this._characterTexture) {
-			this._characterTexture.destroy();
-		}
-
-		// Call the super class
-		IgeEntity.prototype.destroy.call(this);
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Character; }
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = CharacterContainer; }
