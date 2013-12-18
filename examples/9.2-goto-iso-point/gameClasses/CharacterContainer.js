@@ -7,12 +7,12 @@ var CharacterContainer = IgeEntity.extend({
 		IgeEntity.prototype.init.call(this);
 
 		// Setup the entity 3d bounds
-		self.size3d(20, 20, 40);
+		self.bounds3d(20, 20, 40);
 
 		// Create a character entity as a child of this container
 		self.addComponent(IgeAnimationComponent)
 			.addComponent(IgeVelocityComponent)
-			.size3d(20, 20, 40)
+			.bounds3d(20, 20, 40)
 			.depth(1)
 			.setType(3);
 

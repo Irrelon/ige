@@ -712,7 +712,13 @@ var IgeEntity = IgeObject.extend({
 
 		return this._bounds3d;
 	},
-	
+
+	/**
+	 * @deprecated Use bounds3d instead
+	 * @param x
+	 * @param y
+	 * @param z
+	 */
 	size3d: function (x, y, z) {
 		this.log('size3d has been renamed to bounds3d but is exactly the same so please search/replace your code to update calls.', 'warning');
 	},

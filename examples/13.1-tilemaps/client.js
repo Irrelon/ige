@@ -128,7 +128,7 @@ var Client = IgeClass.extend({
 						.mouseUp(upFunc);
 
 					// Create two isometric 3d entities
-					self.obj[2] = new IgeIsoEntity()
+					self.obj[2] = new IgeEntity()
 						.id('3d1')
 						.isometric(true)
 						.mount(self.tileMap2)
@@ -137,12 +137,12 @@ var Client = IgeClass.extend({
 						.tileWidth(1)
 						.tileHeight(1)
 						.occupyTile()
-						.size3d(40, 40, 0)
+						.bounds3d(40, 40, 0)
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.mouseUp(upFunc);
 
-					self.obj[3] = new IgeIsoEntity()
+					self.obj[3] = new IgeEntity()
 						.id('3d2')
 						.isometric(true)
 						.mount(self.tileMap2)
@@ -151,7 +151,7 @@ var Client = IgeClass.extend({
 						.tileWidth(2)
 						.tileHeight(2)
 						.occupyTile()
-						.size3d(80, 80, 0)
+						.bounds3d(80, 80, 0)
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.mouseUp(upFunc);
