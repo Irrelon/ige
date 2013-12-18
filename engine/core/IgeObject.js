@@ -810,6 +810,11 @@ var IgeObject = IgeEventingClass.extend({
 	 */
 	mount: function (obj) {
 		if (obj) {
+			if (obj === this) {
+				this.log('Cannot mount an object to itself!', 'error');
+				return this;
+			}
+			
 			if (obj._children) {
 				// Check that the engine will allow us to register this object
 				this.id(); // Generates a new id if none is currently set, and registers it on the object register!
