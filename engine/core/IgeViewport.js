@@ -354,6 +354,7 @@ var IgeViewport = IgeEntity.extend([
 			obj,
 			aabb,
 			aabbC,
+			bounds3dPoly,
 			ga,
 			r3d,
 			xl1, xl2, xl3, xl4, xl5, xl6,
@@ -398,8 +399,10 @@ var IgeViewport = IgeEntity.extend([
 
 									// Check if the object is mounted to an isometric mount
 									if (obj._parent && obj._parent._mountMode === 1) {
+										bounds3dPoly = obj.bounds3dPolygon().aabb();
 										ctx.save();
-											ctx.translate(aabb.x + aabb.width / 2, aabb.y + aabb.height / 2);
+											//if (obj.id() === 'player') { debugger; }
+											ctx.translate(bounds3dPoly.x, bounds3dPoly.y + bounds3dPoly.height / 2);
 											//obj._transformContext(ctx);
 
 											// Calculate the 3d bounds data
