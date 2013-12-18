@@ -108,7 +108,12 @@ var UiToolBox = IgeEventingClass.extend({
 			delete this._currentToolInstance;
 		}
 		
-		$('#' + id).removeClass('selected');
+		if (id) {
+			$('#' + id).removeClass('selected');
+		} else {
+			$('.tool.toolSelect.selected').removeClass('selected');
+		}
+		
 		this._currentTool = null;
 	}
 });

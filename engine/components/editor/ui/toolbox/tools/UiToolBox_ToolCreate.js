@@ -58,8 +58,8 @@ var UiToolBox_ToolCreate = IgeEventingClass.extend({
 					top = height - menuHeight - 10;
 				}
 				
-				if (top - menuHeight < 0) {
-					top = 10;
+				if (top - menuHeight < 30) {
+					top = 30;
 				}
 				
 				elem.css('left', left)

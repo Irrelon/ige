@@ -1,11 +1,23 @@
 .editorElem.toggleHide {
   display: none;
 }
-#leftBar {
+#topBar {
   position: absolute;
   user-select: none;
   -webkit-user-select: none;
   top: 0;
+  left: 0;
+  right: 0;
+  height: 25px;
+  z-index: 200001;
+  border-bottom: 1px solid #333;
+  background: #222;
+}
+#leftBar {
+  position: absolute;
+  user-select: none;
+  -webkit-user-select: none;
+  top: 25px;
   left: 0;
   bottom: 0;
   width: 64px;
@@ -15,7 +27,7 @@
   position: absolute;
   user-select: none;
   -webkit-user-select: none;
-  top: 0;
+  top: 25px;
   right: 0;
   bottom: 0;
   z-index: 200000;
