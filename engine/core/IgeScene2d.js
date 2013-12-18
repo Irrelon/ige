@@ -14,8 +14,8 @@ var IgeScene2d = IgeEntity.extend({
 
 		// Set the geometry of the scene to the main canvas
 		// width / height - used when positioning UI elements
-		this._geometry.x = ige._geometry.x;
-		this._geometry.y = ige._geometry.y;
+		this._bounds3d.x = ige._bounds3d.x;
+		this._bounds3d.y = ige._bounds3d.y;
 		
 		this.streamSections(['transform', 'ignoreCamera']);
 	},
@@ -145,7 +145,7 @@ var IgeScene2d = IgeEntity.extend({
 	_resizeEvent: function (event) {
 		// Set width / height of scene to match main ige (SCENES ARE ALWAYS THE FULL IGE SIZE!!)
 		if (this._autoSize) {
-			this._geometry = ige._geometry.clone();
+			this._bounds3d = ige._bounds3d.clone();
 		}
 
 		// Resize any children

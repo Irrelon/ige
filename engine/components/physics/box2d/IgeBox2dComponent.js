@@ -330,7 +330,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 											if (fixtureDef.shape.data && typeof(fixtureDef.shape.data.radius) !== 'undefined') {
 												tempShape.SetRadius(fixtureDef.shape.data.radius / this._scaleRatio);
 											} else {
-												tempShape.SetRadius((entity._geometry.x / this._scaleRatio) / 2);
+												tempShape.SetRadius((entity._bounds3d.x / this._scaleRatio) / 2);
 											}
 											
 											if (fixtureDef.shape.data) {
@@ -352,13 +352,13 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 											if (fixtureDef.shape.data) {
 												finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
 												finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
-												finalWidth = fixtureDef.shape.data.width !== undefined ? fixtureDef.shape.data.width : (entity._geometry.x / 2);
-												finalHeight = fixtureDef.shape.data.height !== undefined ? fixtureDef.shape.data.height : (entity._geometry.y / 2);
+												finalWidth = fixtureDef.shape.data.width !== undefined ? fixtureDef.shape.data.width : (entity._bounds3d.x / 2);
+												finalHeight = fixtureDef.shape.data.height !== undefined ? fixtureDef.shape.data.height : (entity._bounds3d.y / 2);
 											} else {
 												finalX = 0;
 												finalY = 0;
-												finalWidth = (entity._geometry.x / 2);
-												finalHeight = (entity._geometry.y / 2);
+												finalWidth = (entity._bounds3d.x / 2);
+												finalHeight = (entity._bounds3d.y / 2);
 											}
 	
 											// Set the polygon as a box

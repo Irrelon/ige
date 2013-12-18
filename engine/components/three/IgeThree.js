@@ -7,7 +7,7 @@ var IgeThree = IgeEventingClass.extend({
 		this._options = options;
 
 		this._loader = new THREE.JSONLoader();
-		this._geometryLoader = new THREE.GeometryLoader();
+		this._bounds3dLoader = new THREE.GeometryLoader();
 
 		// Override a number of prototypes to inject Three-based
 		// processing code into them instead of their standard 2d
@@ -217,7 +217,7 @@ var IgeThree = IgeEventingClass.extend({
 		// Add canvas element to DOM
 		this.three._canvas = this._threeRenderer.domElement;
 		document.body.appendChild(this.three._canvas);
-		ige._geometry = new IgePoint(this.three._canvas.width, this.three._canvas.height, 0);
+		ige._bounds3d = new IgePoint(this.three._canvas.width, this.three._canvas.height, 0);
 
 		/*controls = new THREE.TrackballControls(this._threeObj, this._threeRenderer.domElement);
 		 controls.rotateSpeed = 0.20;*/
@@ -291,9 +291,9 @@ var IgeThree = IgeEventingClass.extend({
 
 	IgeEntity_model: function(model) {
 		if (model !== undefined) {
-			ige.three._geometryLoader.path = './models';
+			ige.three._bounds3dLoader.path = './models';
 			this._threeObj = new THREE.Mesh(
-				ige.three._geometryLoader.parse(model),
+				ige.three._bounds3dLoader.parse(model),
 				this._material || new THREE.MeshFaceMaterial()
 			);
 

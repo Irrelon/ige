@@ -69,17 +69,17 @@ var IgeFontSmartTexture = {
 			// Text alignment
 			if (entity._textAlignX === 0) {
 				ctx.textAlign = 'left';
-				ctx.translate(-entity._geometry.x2, 0);
+				ctx.translate(-entity._bounds3d.x2, 0);
 			}
 
 			if (entity._textAlignX === 1) {
 				ctx.textAlign = 'center';
-				//ctx.translate(-entity._geometry.x2, 0);
+				//ctx.translate(-entity._bounds3d.x2, 0);
 			}
 
 			if (entity._textAlignX === 2) {
 				ctx.textAlign = 'right';
-				ctx.translate(entity._geometry.x2, 0);
+				ctx.translate(entity._bounds3d.x2, 0);
 			}
 
 			if (entity._nativeStroke) {
@@ -101,7 +101,7 @@ var IgeFontSmartTexture = {
 				lineArr.push(text);
 			}
 
-			lineHeight = Math.floor(entity._geometry.y / lineArr.length);
+			lineHeight = Math.floor(entity._bounds3d.y / lineArr.length);
 			renderStartY = -((lineHeight + (entity._textLineSpacing)) / 2) * (lineArr.length - 1);
 
 			for (i = 0; i < lineArr.length; i++) {

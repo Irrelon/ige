@@ -48,8 +48,8 @@ var UiToolBox_ToolPan = IgeEventingClass.extend({
 	_mouseDown: function (event) {
 		if (!this._opStarted) {
 			// Record the mouse down position - pre-start
-			var mx = (event.igeX - ige._geometry.x2),
-				my = (event.igeY - ige._geometry.y2),
+			var mx = (event.igeX - ige._bounds3d.x2),
+				my = (event.igeY - ige._bounds3d.y2),
 				curMousePos = new IgePoint(mx, my, 0);
 			
 			this._opStartMouse = curMousePos.clone();
@@ -74,8 +74,8 @@ var UiToolBox_ToolPan = IgeEventingClass.extend({
 	_mouseMove: function (event) {
 		// Pan the camera if the mouse is down
 		if (this._opStartMouse) {
-			var mx = (event.igeX - ige._geometry.x2),
-				my = (event.igeY - ige._geometry.y2),
+			var mx = (event.igeX - ige._bounds3d.x2),
+				my = (event.igeY - ige._bounds3d.y2),
 				curMousePos = {x: mx, y: my},
 				panCords = {
 					x: this._opStartMouse.x - curMousePos.x,
@@ -124,8 +124,8 @@ var UiToolBox_ToolPan = IgeEventingClass.extend({
 		// End the pan
 		if (this._opStarted) {
 			if (this._opStartMouse) {
-				var mx = (event.igeX - ige._geometry.x2),
-					my = (event.igeY - ige._geometry.y2),
+				var mx = (event.igeX - ige._bounds3d.x2),
+					my = (event.igeY - ige._bounds3d.y2),
 					curMousePos = {x: mx, y: my},
 					panCords = {
 						x: this._opStartMouse.x - curMousePos.x,

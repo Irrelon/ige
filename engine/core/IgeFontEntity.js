@@ -31,7 +31,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	width: function (val, lockAspect, modifier, noUpdate) {
 		if (val !== undefined) {
-			if (this._geometry.x !== val) {
+			if (this._bounds3d.x !== val) {
 				this.clearCache();
 			}
 		}
@@ -57,7 +57,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	height: function (val, lockAspect, modifier, noUpdate) {
 		if (val !== undefined) {
-			if (this._geometry.y !== val) {
+			if (this._bounds3d.y !== val) {
 				this.clearCache();
 			}
 		}
@@ -335,7 +335,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 				// add a line break before the word
 				lineWidth = this.measureTextWidth(currentTextLine);
 				
-				if (lineWidth >= this._geometry.x) {
+				if (lineWidth >= this._bounds3d.x) {
 					// Start a new line
 					currentTextLine = words[wordIndex];
 					

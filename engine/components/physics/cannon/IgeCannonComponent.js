@@ -149,10 +149,10 @@ var IgeCannonComponent = IgeEventingClass.extend({
 											if (fixtureDef.shape.data.sizeX !== undefined && fixtureDef.shape.data.sizeY !== undefined && fixtureDef.shape.data.sizeZ !== undefined) {
 												tempShape = new CANNON.Box(new CANNON.Vec3(fixtureDef.shape.data.sizeX / this._scaleRatio, fixtureDef.shape.data.sizeY / this._scaleRatio, fixtureDef.shape.data.sizeZ / this._scaleRatio));
 											} else {
-												tempShape = new CANNON.Box(new CANNON.Vec3(entity._geometry.x2 + 1 / this._scaleRatio, entity._geometry.y2 / this._scaleRatio, entity._geometry.z2 / this._scaleRatio));
+												tempShape = new CANNON.Box(new CANNON.Vec3(entity._bounds3d.x2 + 1 / this._scaleRatio, entity._bounds3d.y2 / this._scaleRatio, entity._bounds3d.z2 / this._scaleRatio));
 											}
 										} else {
-											tempShape = new CANNON.Box(new CANNON.Vec3(entity._geometry.x2 + 1 / this._scaleRatio, entity._geometry.y2 + 1 / this._scaleRatio, entity._geometry.z2 + 1 / this._scaleRatio));
+											tempShape = new CANNON.Box(new CANNON.Vec3(entity._bounds3d.x2 + 1 / this._scaleRatio, entity._bounds3d.y2 + 1 / this._scaleRatio, entity._bounds3d.z2 + 1 / this._scaleRatio));
 										}
 										break;
 								}
@@ -175,7 +175,7 @@ var IgeCannonComponent = IgeEventingClass.extend({
 		if (body.linearDamping !== undefined) { tempBod.linearDamping = body.linearDamping; }
 
 		// Set the position
-		tempBod.position.set(entity._translate.x / this._scaleRatio, entity._translate.y / this._scaleRatio, (entity._translate.z + entity._geometry.z2)  / this._scaleRatio);
+		tempBod.position.set(entity._translate.x / this._scaleRatio, entity._translate.y / this._scaleRatio, (entity._translate.z + entity._bounds3d.z2)  / this._scaleRatio);
 
 		// Store the entity that is linked to this body
 		tempBod._igeEntity = entity;
@@ -233,7 +233,7 @@ var IgeCannonComponent = IgeEventingClass.extend({
 
 						// Update the entity data to match the body data
 						tempBod._igeUpdating = true;
-						entity.translateTo(Math.ceil(tempBod.position.x * self._scaleRatio), Math.ceil(tempBod.position.y * self._scaleRatio), Math.ceil((tempBod.position.z * self._scaleRatio) - entity._geometry.z2));
+						entity.translateTo(Math.ceil(tempBod.position.x * self._scaleRatio), Math.ceil(tempBod.position.y * self._scaleRatio), Math.ceil((tempBod.position.z * self._scaleRatio) - entity._bounds3d.z2));
 						//entity.rotateTo(entity._rotate.x, entity._rotate.y, tempBod.GetAngle());
 						tempBod._igeUpdating = false;
 					}
@@ -291,12 +291,12 @@ var IgeCannonComponent = IgeEventingClass.extend({
 
 			if (self._cannonDebug && this._currentCamera) {
 				// Draw the debug data
-				self._debugCanvas.width = ige._geometry.x;
-				self._debugCanvas.height = ige._geometry.y;
+				self._debugCanvas.width = ige._bounds3d.x;
+				self._debugCanvas.height = ige._bounds3d.y;
 
 				self._debugCtx.save();
 				this._currentCamera._transformContext(self._debugCtx);
-				self._debugCtx.translate(ige._geometry.x2, ige._geometry.y2);
+				self._debugCtx.translate(ige._bounds3d.x2, ige._bounds3d.y2);
 				self._world.DrawDebugData();
 				self._debugCtx.restore();
 			}

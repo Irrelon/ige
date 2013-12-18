@@ -618,7 +618,7 @@ var IgeTexture = IgeEventingClass.extend({
 			if (this._mode === 0) {
 				// This texture is image-based
 				var cell = this._cells[entity._cell],
-					geom = entity._geometry,
+					geom = entity._bounds3d,
 					poly = entity._renderPos; // Render pos is calculated in the IgeEntity.aabb() method
 
 				if (cell) {

@@ -99,7 +99,7 @@ var UiPanels = IgeEventingClass.extend({
 					desc: '',
 					order: 0,
 					props: {
-						'_geometry': {
+						'_bounds3d': {
 							label: 'Size 3d',
 							desc: '',
 							// Enable any listeners and logic to take action when the user interacts with the panel

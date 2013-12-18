@@ -310,13 +310,13 @@ var IgeCamera = IgeEntity.extend({
 			var isoPoint = this._translateIso = new IgePoint(
 				this._translate.x,
 				this._translate.y,
-				this._translate.z + this._geometry.z / 2
+				this._translate.z + this._bounds3d.z / 2
 			).toIso();
 
-			if (this._parent && this._parent._geometry.z) {
+			if (this._parent && this._parent._bounds3d.z) {
 				// This adjusts the child entity so that 0, 0, 0 inside the
 				// parent is the center of the base of the parent
-				isoPoint.y += this._parent._geometry.z / 1.6;
+				isoPoint.y += this._parent._bounds3d.z / 1.6;
 			}
 
 			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));

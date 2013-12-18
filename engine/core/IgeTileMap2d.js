@@ -121,7 +121,7 @@ var IgeTileMap2d = IgeEntity.extend({
 
 	_resizeEvent: function (event) {
 		if (this._parent) {
-			this._geometry = this._parent._geometry.clone();
+			this._bounds3d = this._parent._bounds3d.clone();
 		}
 		IgeEntity.prototype._resizeEvent.call(this, event);
 	},

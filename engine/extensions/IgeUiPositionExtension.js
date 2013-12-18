@@ -27,11 +27,11 @@ var IgeUiPositionExtension = {
 					
 					if (this._parent) {
 						// We have a parent, use it's geometry
-						parentWidth = this._parent._geometry.x;
+						parentWidth = this._parent._bounds3d.x;
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentWidth = ige._geometry.x;
+						parentWidth = ige._bounds3d.x;
 					}
 						
 					// Calculate real width from percentage
@@ -82,11 +82,11 @@ var IgeUiPositionExtension = {
 					
 					if (this._parent) {
 						// We have a parent, use it's geometry
-						parentWidth = this._parent._geometry.x;
+						parentWidth = this._parent._bounds3d.x;
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentWidth = ige._geometry.x;
+						parentWidth = ige._bounds3d.x;
 					}
 						
 					// Calculate real width from percentage
@@ -139,11 +139,11 @@ var IgeUiPositionExtension = {
 					
 					if (this._parent) {
 						// We have a parent, use it's geometry
-						parentWidth = this._parent._geometry.x2;
+						parentWidth = this._parent._bounds3d.x2;
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentWidth = ige._geometry.x2;
+						parentWidth = ige._bounds3d.x2;
 					}
 						
 					// Calculate real width from percentage
@@ -194,11 +194,11 @@ var IgeUiPositionExtension = {
 					
 					if (this._parent) {
 						// We have a parent, use it's geometry
-						parentHeight = this._parent._geometry.y;
+						parentHeight = this._parent._bounds3d.y;
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentHeight = ige._geometry.y;
+						parentHeight = ige._bounds3d.y;
 					}
 						
 					// Calculate real width from percentage
@@ -249,11 +249,11 @@ var IgeUiPositionExtension = {
 					
 					if (this._parent) {
 						// We have a parent, use it's geometry
-						parentHeight = this._parent._geometry.y;
+						parentHeight = this._parent._bounds3d.y;
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentHeight = ige._geometry.y;
+						parentHeight = ige._bounds3d.y;
 					}
 						
 					// Calculate real width from percentage
@@ -306,11 +306,11 @@ var IgeUiPositionExtension = {
 					
 					if (this._parent) {
 						// We have a parent, use it's geometry
-						parentWidth = this._parent._geometry.y2;
+						parentWidth = this._parent._bounds3d.y2;
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentWidth = ige._geometry.y2;
+						parentWidth = ige._bounds3d.y2;
 					}
 						
 					// Calculate real width from percentage
@@ -349,8 +349,8 @@ var IgeUiPositionExtension = {
 				// Remove all data
 				delete this._uiWidth;
 				this._width = 0;
-				this._geometry.x = 0;
-				this._geometry.x2 = 0;
+				this._bounds3d.x = 0;
+				this._bounds3d.x2 = 0;
 			} else {
 				this._uiWidth = px;
 				this._widthModifier = modifier !== undefined ? modifier : 0;
@@ -358,7 +358,7 @@ var IgeUiPositionExtension = {
 				if (typeof(px) === 'string') {
 					if (this._parent) {
 						// Percentage
-						var parentWidth = this._parent._geometry.x,
+						var parentWidth = this._parent._bounds3d.x,
 							val = parseInt(px, 10),
 							newVal,
 							ratio;
@@ -368,35 +368,35 @@ var IgeUiPositionExtension = {
 	
 						if (lockAspect) {
 							// Calculate the height from the change in width
-							ratio = newVal / this._geometry.x;
-							this.height(this._geometry.y / ratio, false, 0, noUpdate);
+							ratio = newVal / this._bounds3d.x;
+							this.height(this._bounds3d.y / ratio, false, 0, noUpdate);
 						}
 	
 						this._width = newVal;
-						this._geometry.x = newVal;
-						this._geometry.x2 = Math.floor(this._geometry.x / 2);
+						this._bounds3d.x = newVal;
+						this._bounds3d.x2 = Math.floor(this._bounds3d.x / 2);
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						var parentWidth = ige._geometry.x,
+						var parentWidth = ige._bounds3d.x,
 							val = parseInt(px, 10);
 	
 						// Calculate real height from percentage
-						this._geometry.x = (parentWidth / 100 * val) + this._widthModifier | 0;
-						this._geometry.x2 = Math.floor(this._geometry.x / 2);
+						this._bounds3d.x = (parentWidth / 100 * val) + this._widthModifier | 0;
+						this._bounds3d.x2 = Math.floor(this._bounds3d.x / 2);
 	
-						this._width = this._geometry.x;
+						this._width = this._bounds3d.x;
 					}
 				} else {
 					if (lockAspect) {
 						// Calculate the height from the change in width
-						var ratio = px / this._geometry.x;
-						this.height(this._geometry.y * ratio, false, 0, noUpdate);
+						var ratio = px / this._bounds3d.x;
+						this.height(this._bounds3d.y * ratio, false, 0, noUpdate);
 					}
 	
 					this._width = px;
-					this._geometry.x = px;
-					this._geometry.x2 = Math.floor(this._geometry.x / 2);
+					this._bounds3d.x = px;
+					this._bounds3d.x2 = Math.floor(this._bounds3d.x / 2);
 				}
 			}
 
@@ -425,8 +425,8 @@ var IgeUiPositionExtension = {
 				// Remove all data
 				delete this._uiHeight;
 				this._height = 0;
-				this._geometry.y = 0;
-				this._geometry.y2 = 0;
+				this._bounds3d.y = 0;
+				this._bounds3d.y2 = 0;
 			} else {
 				this._uiHeight = px;
 				this._heightModifier = modifier !== undefined ? modifier : 0;
@@ -434,7 +434,7 @@ var IgeUiPositionExtension = {
 				if (typeof(px) === 'string') {
 					if (this._parent) {
 						// Percentage
-						var parentHeight = this._parent._geometry.y,
+						var parentHeight = this._parent._bounds3d.y,
 							val = parseInt(px, 10),
 							newVal,
 							ratio;
@@ -445,34 +445,34 @@ var IgeUiPositionExtension = {
 	
 						if (lockAspect) {
 							// Calculate the height from the change in width
-							ratio = newVal / this._geometry.y;
-							this.width(this._geometry.x / ratio, false, 0, noUpdate);
+							ratio = newVal / this._bounds3d.y;
+							this.width(this._bounds3d.x / ratio, false, 0, noUpdate);
 						}
 	
 						this._height = newVal;
-						this._geometry.y = newVal;
-						this._geometry.y2 = Math.floor(this._geometry.y / 2);
+						this._bounds3d.y = newVal;
+						this._bounds3d.y2 = Math.floor(this._bounds3d.y / 2);
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						var parentHeight = ige._geometry.y,
+						var parentHeight = ige._bounds3d.y,
 							val = parseInt(px, 10);
 	
 						// Calculate real height from percentage
-						this._geometry.y = (parentHeight / 100 * val) + this._heightModifier | 0;
-						this._geometry.y2 = Math.floor(this._geometry.y / 2);
-						this._height = this._geometry.y;
+						this._bounds3d.y = (parentHeight / 100 * val) + this._heightModifier | 0;
+						this._bounds3d.y2 = Math.floor(this._bounds3d.y / 2);
+						this._height = this._bounds3d.y;
 					}
 				} else {
 					if (lockAspect) {
 						// Calculate the height from the change in width
-						var ratio = px / this._geometry.y;
-						this.width(this._geometry.x * ratio, false, 0, noUpdate);
+						var ratio = px / this._bounds3d.y;
+						this.width(this._bounds3d.x * ratio, false, 0, noUpdate);
 					}
 	
 					this._height = px;
-					this._geometry.y = px;
-					this._geometry.y2 = Math.floor(this._geometry.y / 2);
+					this._bounds3d.y = px;
+					this._bounds3d.y2 = Math.floor(this._bounds3d.y / 2);
 				}
 			}
 			
@@ -544,8 +544,8 @@ var IgeUiPositionExtension = {
 	 */
 	_updateUiPosition: function () {
 		if (this._parent) {
-			var parentGeom = this._parent._geometry,
-				geomScaled = this._geometry.multiplyPoint(this._scale),
+			var parentGeom = this._parent._bounds3d,
+				geomScaled = this._bounds3d.multiplyPoint(this._scale),
 				percent,
 				newVal,
 				ratio;
@@ -563,7 +563,7 @@ var IgeUiPositionExtension = {
 				newVal = (parentGeom.x / 100 * percent);
 	
 				// Calculate scale ratio
-				ratio = newVal / this._geometry.x;
+				ratio = newVal / this._bounds3d.x;
 	
 				// Set the new scale
 				this._scale.x = ratio;
@@ -581,7 +581,7 @@ var IgeUiPositionExtension = {
 				newVal = (parentGeom.y / 100 * percent);
 
 				// Calculate scale ratio
-				ratio = newVal / this._geometry.y;
+				ratio = newVal / this._bounds3d.y;
 
 				// Set the new scale
 				this._scale.y = ratio;

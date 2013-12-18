@@ -698,7 +698,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		if (this._mountMode === 0) {
 			return {
 				_cell: 1,
-				_geometry: {
+				_bounds3d: {
 					x: this._tileWidth,
 					y: this._tileHeight
 				},
@@ -712,7 +712,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		if (this._mountMode === 1) {
 			return {
 				_cell: 1,
-				_geometry: {
+				_bounds3d: {
 					x: this._tileWidth * 2,
 					y: this._tileHeight
 				},

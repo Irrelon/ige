@@ -15648,7 +15648,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 		_currentMaterialId = -1,
 		_currentGeometryGroupHash = null,
 		_currentCamera = null,
-		_geometryGroupCounter = 0,
+		_bounds3dGroupCounter = 0,
 
 		_usedTextureUnits = 0,
 
@@ -19630,7 +19630,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		for ( var g in geometry.geometryGroups ) {
 
-			geometry.geometryGroups[ g ].id = _geometryGroupCounter ++;
+			geometry.geometryGroups[ g ].id = _bounds3dGroupCounter ++;
 
 			geometry.geometryGroupsList.push( geometry.geometryGroups[ g ] );
 

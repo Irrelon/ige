@@ -51,7 +51,7 @@ var IgeUiEntity = IgeEntity.extend([
 	},
 
 	_renderBackground: function (ctx) {
-		var geom = this._geometry,
+		var geom = this._bounds3d,
 			left, top, width, height;
 
 		if (this._backgroundColor || this._patternFill) {
@@ -156,7 +156,7 @@ var IgeUiEntity = IgeEntity.extend([
 
 	_renderBorder: function (ctx) {
 		var rad,
-			geom = this._geometry,
+			geom = this._bounds3d,
 			left = (-(geom.x2) | 0) + 0.5,
 			top = (-(geom.y2) | 0) + 0.5,
 			width = geom.x - 1,
@@ -322,7 +322,7 @@ var IgeUiEntity = IgeEntity.extend([
 			if (this._overflow === 'hidden') {
 				// Limit drawing of child entities to within the bounds
 				// of this one
-				var geom = this._geometry,
+				var geom = this._bounds3d,
 					left = -(geom.x / 2) + this._paddingLeft | 0,
 					top = -(geom.y / 2) + (this._paddingTop) | 0,
 					width = geom.x + this._paddingRight,

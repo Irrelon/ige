@@ -14,9 +14,6 @@ var IgeEntity = IgeObject.extend({
 		this._specialProp.push('_eventListeners');
 		this._specialProp.push('_aabb');
 
-		this._width = undefined;
-		this._height = undefined;
-
 		this._anchor = new IgePoint(0, 0, 0);
 		this._renderPos = {x: 0, y: 0};
 
@@ -31,8 +28,9 @@ var IgeEntity = IgeObject.extend({
 		this._scale = new IgePoint(1, 1, 1);
 		this._origin = new IgePoint(0.5, 0.5, 0.5);
 
-		this._geometry = new IgePoint(40, 40, 40);
-		this._oldGeometry = new IgePoint(40, 40, 40);
+		this._bounds2d = new IgePoint(40, 40, 0);
+		this._bounds3d = new IgePoint(40, 40, 40);
+		this._oldBounds3d = new IgePoint(40, 40, 40);
 
 		this._highlight = false;
 		this._mouseEventsActive = false;
@@ -468,7 +466,7 @@ var IgeEntity = IgeObject.extend({
 			if (lockAspect) {
 				if (this._texture) {
 					// Calculate the height based on the new width
-					ratio = this._texture._sizeX / this._geometry.x;
+					ratio = this._texture._sizeX / this._bounds3d.x;
 					this.height(this._texture._sizeY / ratio);
 				} else {
 					this.log('Cannot set height based on texture aspect ratio and new width because no texture is currently assigned to the entity!', 'error');
@@ -505,7 +503,7 @@ var IgeEntity = IgeObject.extend({
 			if (lockAspect) {
 				if (this._texture) {
 					// Calculate the width based on the new height
-					ratio = this._texture._sizeY / this._geometry.y;
+					ratio = this._texture._sizeY / this._bounds3d.y;
 					this.width(this._texture._sizeX / ratio);
 				} else {
 					this.log('Cannot set width based on texture aspect ratio and new height because no texture is currently assigned to the entity!', 'error');
@@ -633,13 +631,13 @@ var IgeEntity = IgeObject.extend({
 		if (px !== undefined) {
 			if (lockAspect) {
 				// Calculate the height from the change in width
-				var ratio = px / this._geometry.x;
-				this.height(this._geometry.y * ratio);
+				var ratio = px / this._bounds3d.x;
+				this.height(this._bounds3d.y * ratio);
 			}
 
 			this._width = px;
-			this._geometry.x = px;
-			this._geometry.x2 = (px / 2);
+			this._bounds3d.x = px;
+			this._bounds3d.x2 = (px / 2);
 			return this;
 		}
 
@@ -658,13 +656,13 @@ var IgeEntity = IgeObject.extend({
 		if (px !== undefined) {
 			if (lockAspect) {
 				// Calculate the width from the change in height
-				var ratio = px / this._geometry.y;
-				this.width(this._geometry.x * ratio);
+				var ratio = px / this._bounds3d.y;
+				this.width(this._bounds3d.x * ratio);
 			}
 
 			this._height = px;
-			this._geometry.y = px;
-			this._geometry.y2 = (px / 2);
+			this._bounds3d.y = px;
+			this._bounds3d.y2 = (px / 2);
 			return this;
 		}
 
@@ -686,11 +684,11 @@ var IgeEntity = IgeObject.extend({
 	 */
 	size3d: function (x, y, z) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
-			this._geometry = new IgePoint(x, y, z);
+			this._bounds3d = new IgePoint(x, y, z);
 			return this;
 		}
 
-		return this._geometry;
+		return this._bounds3d;
 	},
 
 	/**
@@ -1024,15 +1022,15 @@ var IgeEntity = IgeObject.extend({
 	 */
 	screenPosition: function () {
 		return new IgePoint(
-			Math.floor(((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x) + ige._geometry.x2),
-			Math.floor(((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y) + ige._geometry.y2),
+			Math.floor(((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x) + ige._bounds3d.x2),
+			Math.floor(((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y) + ige._bounds3d.y2),
 			0
 		);
 	},
 	
 	localIsoBoundsPoly: function (recalculate) {
 		if (this._isoBoundsPolyDirty || !this._localIsoBoundsPoly || recalculate) {
-			var geom = this._geometry,
+			var geom = this._bounds3d,
 				poly = new IgePoly2d(),
 				// Bottom face
 				bf2 = Math.toIso(+(geom.x2), -(geom.y2),  -(geom.z2)),
@@ -1116,7 +1114,7 @@ var IgeEntity = IgeObject.extend({
 				maxX, maxY,
 				box,
 				anc = this._anchor,
-				geom = this._geometry,
+				geom = this._bounds3d,
 				geomX2 = geom.x2,
 				geomY2 = geom.y2,
 				x, y,
@@ -1373,7 +1371,7 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	_projectionOverlap: function (otherObject) {
-		var thisG3d = this._geometry,
+		var thisG3d = this._bounds3d,
 			thisMin = {
 				x: this._translate.x - thisG3d.x / 2,
 				y: this._translate.y - thisG3d.y / 2,
@@ -1384,7 +1382,7 @@ var IgeEntity = IgeObject.extend({
 				y: this._translate.y + thisG3d.y / 2,
 				z: this._translate.z + thisG3d.z
 			},
-			otherG3d = otherObject._geometry,
+			otherG3d = otherObject._bounds3d,
 			otherMin = {
 				x: otherObject._translate.x - otherG3d.x / 2,
 				y: otherObject._translate.y - otherG3d.y / 2,
@@ -1427,7 +1425,7 @@ var IgeEntity = IgeObject.extend({
 	 * or false if not.
 	 */
 	isBehind: function (otherObject) {
-		var thisG3d = this._geometry,
+		var thisG3d = this._bounds3d,
 			thisMin = new IgePoint(
 				this._translate.x - thisG3d.x / 2,
 				this._translate.y - thisG3d.y / 2,
@@ -1438,7 +1436,7 @@ var IgeEntity = IgeObject.extend({
 				this._translate.y + thisG3d.y / 2,
 				this._translate.z + thisG3d.z
 			),
-			otherG3d = otherObject._geometry,
+			otherG3d = otherObject._bounds3d,
 			otherMin = new IgePoint(
 				otherObject._translate.x - otherG3d.x / 2,
 				otherObject._translate.y - otherG3d.y / 2,
@@ -1748,9 +1746,9 @@ var IgeEntity = IgeObject.extend({
 			
 			this.emit('compositeReady');
 		} else {
-			if (this._geometry.x > 0 && this._geometry.y > 0) {
-				_canvas.width = this._geometry.x;
-				_canvas.height = this._geometry.y;
+			if (this._bounds3d.x > 0 && this._bounds3d.y > 0) {
+				_canvas.width = this._bounds3d.x;
+				_canvas.height = this._bounds3d.y;
 			} else {
 				// We cannot set a zero size for a canvas, it will
 				// cause the browser to freak out
@@ -1759,7 +1757,7 @@ var IgeEntity = IgeObject.extend({
 			}
 			
 			// Translate to the center of the canvas
-			_ctx.translate(this._geometry.x2, this._geometry.y2);
+			_ctx.translate(this._bounds3d.x2, this._bounds3d.y2);
 			
 			this._cacheDirty = false;
 		}
@@ -1804,9 +1802,9 @@ var IgeEntity = IgeObject.extend({
 
 					// This is the proper way to do this but firefox has a bug which I'm gonna report
 					// so instead I have to use ANOTHER translate call instead. So crap!
-					//ctx.rect(-this._geometry.x2, -this._geometry.y2, this._geometry.x, this._geometry.y);
-					ctx.translate(-this._geometry.x2, -this._geometry.y2);
-					ctx.rect(0, 0, this._geometry.x, this._geometry.y);
+					//ctx.rect(-this._bounds3d.x2, -this._bounds3d.y2, this._bounds3d.x, this._bounds3d.y);
+					ctx.translate(-this._bounds3d.x2, -this._bounds3d.y2);
+					ctx.rect(0, 0, this._bounds3d.x, this._bounds3d.y);
 					if (this._backgroundPatternTrackCamera) {
 						ctx.translate(-ige._currentCamera._translate.x, -ige._currentCamera._translate.y);
 						ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
@@ -1840,10 +1838,10 @@ var IgeEntity = IgeObject.extend({
 			if (this._compositeCache && ige._currentViewport._drawCompositeBounds) {
 				//console.log('moo');
 				ctx.fillStyle = 'rgba(0, 0, 255, 0.3)';
-				ctx.fillRect(-this._geometry.x2, -this._geometry.y2, this._geometry.x,	this._geometry.y);
+				ctx.fillRect(-this._bounds3d.x2, -this._bounds3d.y2, this._bounds3d.x,	this._bounds3d.y);
 				ctx.fillStyle = '#ffffff';
-				ctx.fillText('Composite Entity', -this._geometry.x2, -this._geometry.y2 - 15);
-				ctx.fillText(this.id(), -this._geometry.x2, -this._geometry.y2 - 5);
+				ctx.fillText('Composite Entity', -this._bounds3d.x2, -this._bounds3d.y2 - 15);
+				ctx.fillText(this.id(), -this._bounds3d.x2, -this._bounds3d.y2 - 5);
 			}
 		}
 	},
@@ -1859,7 +1857,7 @@ var IgeEntity = IgeObject.extend({
 		ctx.save();
 		if (this._compositeCache) {
 			var aabbC = this._compositeAabbCache;
-			ctx.translate(this._geometry.x2 + aabbC.x, this._geometry.y2 + aabbC.y);
+			ctx.translate(this._bounds3d.x2 + aabbC.x, this._bounds3d.y2 + aabbC.y);
 			
 			if (this._parent && this._parent._ignoreCamera) {
 				// Translate the entity back to negate the scene translate
@@ -1873,15 +1871,15 @@ var IgeEntity = IgeObject.extend({
 		// We have a clean cached version so output that
 		ctx.drawImage(
 			this._cacheCanvas,
-			-this._geometry.x2, -this._geometry.y2
+			-this._bounds3d.x2, -this._bounds3d.y2
 		);
 		
 		if (ige._currentViewport._drawCompositeBounds) {
 			ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
-			ctx.fillRect(-this._geometry.x2, -this._geometry.y2, this._cacheCanvas.width,	this._cacheCanvas.height);
+			ctx.fillRect(-this._bounds3d.x2, -this._bounds3d.y2, this._cacheCanvas.width,	this._cacheCanvas.height);
 			ctx.fillStyle = '#ffffff';
-			ctx.fillText('Composite Cache', -this._geometry.x2, -this._geometry.y2 - 15);
-			ctx.fillText(this.id(), -this._geometry.x2, -this._geometry.y2 - 5);
+			ctx.fillText('Composite Cache', -this._bounds3d.x2, -this._bounds3d.y2 - 15);
+			ctx.fillText(this.id(), -this._bounds3d.x2, -this._bounds3d.y2 - 5);
 		}
 
 		ige._drawCount++;
@@ -1890,7 +1888,7 @@ var IgeEntity = IgeObject.extend({
 			ctx.globalCompositeOperation = 'lighter';
 			ctx.drawImage(
 				this._cacheCanvas,
-				-this._geometry.x2, -this._geometry.y2
+				-this._bounds3d.x2, -this._bounds3d.y2
 			);
 
 			ige._drawCount++;
@@ -2019,8 +2017,8 @@ var IgeEntity = IgeObject.extend({
 							str += ".height(" + this.height() + ")";
 						}
 						break;
-					case '_geometry':
-						str += ".size3d(" + this._geometry.x + ", " + this._geometry.y + ", " + this._geometry.z + ")";
+					case '_bounds3d':
+						str += ".size3d(" + this._bounds3d.x + ", " + this._bounds3d.y + ", " + this._bounds3d.z + ")";
 						break;
 					case '_deathTime':
 						if (options.deathTime !== false && options.lifeSpan !== false) {
@@ -2973,13 +2971,13 @@ var IgeEntity = IgeObject.extend({
 			var isoPoint = this._translateIso = new IgePoint(
 				this._translate.x,
 				this._translate.y,
-				this._translate.z + this._geometry.z / 2
+				this._translate.z + this._bounds3d.z / 2
 			).toIso();
 
-			if (this._parent && this._parent._geometry.z) {
+			if (this._parent && this._parent._bounds3d.z) {
 				// This adjusts the child entity so that 0, 0, 0 inside the
 				// parent is the center of the base of the parent
-				isoPoint.y += this._parent._geometry.z / 1.6;
+				isoPoint.y += this._parent._bounds3d.z / 1.6;
 			}
 
 			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
@@ -2991,8 +2989,8 @@ var IgeEntity = IgeObject.extend({
 		// Adjust local matrix for origin values if not at center
 		if (this._origin.x !== 0.5 || this._origin.y !== 0.5) {
 			this._localMatrix.translateBy(
-				(this._geometry.x * (0.5 - this._origin.x)),
-				(this._geometry.y * (0.5 - this._origin.y))
+				(this._bounds3d.x * (0.5 - this._origin.x)),
+				(this._bounds3d.y * (0.5 - this._origin.y))
 			);
 		}
 		
@@ -3016,12 +3014,12 @@ var IgeEntity = IgeObject.extend({
 		}
 		
 		// Check if the geometry has changed and if so, update the aabb dirty
-		if (!this._oldGeometry.compare(this._geometry)) {
+		if (!this._oldBounds3d.compare(this._bounds3d)) {
 			this._aabbDirty = true;
 			this._isoBoundsPolyDirty = true;
 			
 			// Record the new geometry to the oldGeometry data
-			this._oldGeometry.copy(this._geometry);
+			this._oldBounds3d.copy(this._bounds3d);
 		}
 		
 		return this;
@@ -3167,7 +3165,7 @@ var IgeEntity = IgeObject.extend({
 						this.size3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 					}
 				} else {
-					return String(this._geometry.x + ',' + this._geometry.y + ',' + this._geometry.z);
+					return String(this._bounds3d.x + ',' + this._bounds3d.y + ',' + this._bounds3d.z);
 				}
 				break;
 			
