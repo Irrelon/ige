@@ -1152,6 +1152,8 @@ var IgeEntity = IgeObject.extend({
 				maxX, maxY,
 				box,
 				anc = this._anchor,
+				ancX = anc.x,
+				ancY = anc.y,
 				geom,
 				geomX2,
 				geomY2,
@@ -1164,15 +1166,15 @@ var IgeEntity = IgeObject.extend({
 				geomX2 = geom.x2;
 				geomY2 = geom.y2;
 				
-				x = geomX2 + anc.x;
-				y = geomY2 + anc.y;
+				x = geomX2;
+				y = geomY2;
 
-				poly.addPoint(-x, -y);
-				poly.addPoint(x, -y);
-				poly.addPoint(x, y);
-				poly.addPoint(-x, y);
+				poly.addPoint(-x + ancX, -y + ancY);
+				poly.addPoint(x + ancX, -y + ancY);
+				poly.addPoint(x + ancX, y + ancY);
+				poly.addPoint(-x + ancX, y + ancY);
 
-				this._renderPos = {x: -x, y: -y};
+				this._renderPos = {x: -x + ancX, y: -y + ancY};
 
 				// Convert the poly's points from local space to world space
 				this.localToWorld(poly._poly, null, inverse);
