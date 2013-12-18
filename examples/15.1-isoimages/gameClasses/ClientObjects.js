@@ -14,14 +14,10 @@ var ClientObjects = {
 				.translateToTile(tileX, tileY, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
-				.occupyTile(tileX, tileY, 2, 2);
-
-			// Create the "image" entity
-			this.imageEntity = new IgeEntity()
 				.texture(ige.client.gameTexture.bank)
 				.dimensionsFromCell()
 				.scaleTo(0.3, 0.3, 1)
-				.mount(this);
+				.occupyTile(tileX, tileY, 2, 2);
 		},
 		
 		translateToTile: function (tileX, tileY) {
@@ -44,14 +40,10 @@ var ClientObjects = {
 				.translateToTile(tileX, tileY, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
-				.occupyTile(tileX, tileY, 3, 4);
-
-			// Create the "image" entity
-			this.imageEntity = new IgeEntity()
+				.occupyTile(tileX, tileY, 3, 4)
 				.texture(ige.client.gameTexture.electricals)
 				.dimensionsFromCell()
-				.scaleTo(0.45, 0.45, 1)
-				.mount(this);
+				.scaleTo(0.45, 0.45, 1);
 		},
 		
 		translateToTile: function (tileX, tileY) {
@@ -74,16 +66,11 @@ var ClientObjects = {
 				.translateToTile(tileX, tileY, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
-				.occupyTile(tileX, tileY, 2, 2);
-
-			// Create the "image" entity
-			this.imageEntity = new IgeEntity()
+				.occupyTile(tileX, tileY, 2, 2)
 				.texture(ige.client.gameTexture.burgers)
 				.dimensionsFromCell()
-				.scaleTo(0.3, 0.3, 1)
-				//.anchor(-5, -20)
-				.translateTo(2, 6, 0)
-				.mount(this);
+				.anchor(5, 20)
+				.scaleTo(0.3, 0.3, 1);
 		},
 		
 		translateToTile: function (tileX, tileY) {

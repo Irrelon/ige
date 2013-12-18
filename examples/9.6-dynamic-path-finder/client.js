@@ -107,7 +107,7 @@ var Client = IgeClass.extend({
 
 				// Create the 3d container that the player
 				// entity will be mounted to
-				self.player1 = new CharacterContainer()
+				self.player1 = new Character()
 					.id('player1')
 					.addComponent(IgePathComponent)
 					.mouseOver(overFunc)
@@ -116,7 +116,7 @@ var Client = IgeClass.extend({
 					.drawBoundsData(false)
 					.mount(self.tileMap1);
 				
-				self.player2 = new CharacterContainer()
+				self.player2 = new Character()
 					.id('player2')
 					.addComponent(IgePathComponent)
 					.mouseOver(overFunc)
@@ -237,8 +237,8 @@ var Client = IgeClass.extend({
 					// Mark the current point as un-blocked
 					self.tileMap1.unOccupyTile(currentCellX, currentCellY, 1, 1);
 				});
-				self.player1.path.on('traversalComplete', function (entity) { this._entity.character.animation.stop(); console.log('Traversal of all paths completed.'); });
-				self.player1.path.on('dynamicFail', function (entity, pathFrom, pathTo) { this._entity.character.animation.stop(); console.log('Dynamic path update required but could not find valid path to desination.'); });
+				self.player1.path.on('traversalComplete', function (entity) { this._entity.animation.stop(); console.log('Traversal of all paths completed.'); });
+				self.player1.path.on('dynamicFail', function (entity, pathFrom, pathTo) { this._entity.animation.stop(); console.log('Dynamic path update required but could not find valid path to desination.'); });
 				
 				self.player2.path.on('pointComplete', function (entity, currentCellX, currentCellY, nextCellX, nextCellY) {
 					console.log('Path point reached...');
@@ -258,8 +258,8 @@ var Client = IgeClass.extend({
 					// Mark the current point as un-blocked
 					self.tileMap1.unOccupyTile(currentCellX, currentCellY, 1, 1);
 				});
-				self.player2.path.on('traversalComplete', function (entity) { this._entity.character.animation.stop(); console.log('Traversal of all paths completed.'); });
-				self.player2.path.on('dynamicFail', function (entity, pathFrom, pathTo) { this._entity.character.animation.stop(); console.log('Dynamic path update required but could not find valid path to desination.'); });
+				self.player2.path.on('traversalComplete', function (entity) { this._entity.animation.stop(); console.log('Traversal of all paths completed.'); });
+				self.player2.path.on('dynamicFail', function (entity, pathFrom, pathTo) { this._entity.animation.stop(); console.log('Dynamic path update required but could not find valid path to desination.'); });
 
 				// Some error events from the path finder
 				self.pathFinder.on('noPathFound', function () { console.log('Could not find a path to the destination!'); });

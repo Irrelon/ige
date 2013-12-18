@@ -76,7 +76,7 @@ var Client = IgeClass.extend({
 
 				// Create the 3d container that the player
 				// entity will be mounted to
-				self.player = new CharacterContainer()
+				self.player = new Character()
 					.id('player')
 					.addComponent(PlayerComponent)
 					.isometric(true)

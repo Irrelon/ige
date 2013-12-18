@@ -54,7 +54,6 @@ var Client = IgeClass.extend({
 					.isometric(true)
 					.mouseOver(overFunc)
 					.mouseOut(outFunc)
-					.anchor(0, 3)
 					.mount(self.tileMap1);
 				
 				self.player.triggerPolygon('bounds3dPolygon');

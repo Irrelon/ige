@@ -123,7 +123,7 @@ var Client = IgeClass.extend({
 
 				// Create the 3d container that the player
 				// entity will be mounted to
-				self.player = new CharacterContainer()
+				self.player = new Character()
 					.id('player')
 					.addComponent(PlayerComponent)
 					.addComponent(IgePathComponent)
@@ -211,7 +211,7 @@ var Client = IgeClass.extend({
 				self.player.path.on('cleared', function () { console.log('Path data cleared.'); });
 				self.player.path.on('pointComplete', function () { console.log('Path point reached...'); });
 				self.player.path.on('pathComplete', function () { console.log('Path completed...'); });
-				self.player.path.on('traversalComplete', function () { this._entity.character.animation.stop(); console.log('Traversal of all paths completed.'); });
+				self.player.path.on('traversalComplete', function () { this._entity.animation.stop(); console.log('Traversal of all paths completed.'); });
 
 				// Some error events from the path finder
 				self.pathFinder.on('noPathFound', function () { console.log('Could not find a path to the destination!'); });
