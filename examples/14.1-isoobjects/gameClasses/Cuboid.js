@@ -9,7 +9,7 @@ var Cuboid = IgeEntity.extend({
 			.mouseMove(mouseMoveFunc)
 			.mouseOut(mouseOutFunc)
 			.mouseEventsActive(true)
-			.mouseEventTrigger('isoBounds')
+			.triggerPolygon('bounds3dPolygon')
 			.opacity(0.95)
 	}
 });

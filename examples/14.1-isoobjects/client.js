@@ -242,7 +242,7 @@ var Client = IgeClass.extend({
 						.mouseOver(mouseOverFunc)
 						.mouseOut(mouseOutFunc)
 						.mouseEventsActive(true)
-						.mouseEventTrigger('isoBounds');
+						.triggerPolygon('bounds3dPolygon');
 
 					self.obj[14] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.addComponent(IgeVelocityComponent)

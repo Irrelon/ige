@@ -383,7 +383,7 @@ var IgeViewport = IgeEntity.extend([
 							
 							if (aabb) {
 								if (obj._drawBounds || obj._drawBounds === undefined) {
-									if (!obj._parent || (obj._parent && obj._parent._mountMode !== 1)) {
+									//if (!obj._parent || (obj._parent && obj._parent._mountMode !== 1)) {
 										// Draw a rect around the bounds of the object transformed in world space
 										ctx.save();
 											obj._worldMatrix.transformRenderingContext(ctx);
@@ -394,7 +394,7 @@ var IgeViewport = IgeEntity.extend([
 										// Draw individual bounds
 										ctx.strokeStyle = '#00deff';
 										ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
-									}
+									//}
 
 									// Check if the object is mounted to an isometric mount
 									if (obj._parent && obj._parent._mountMode === 1) {
@@ -403,7 +403,7 @@ var IgeViewport = IgeEntity.extend([
 											//obj._transformContext(ctx);
 
 											// Calculate the 3d bounds data
-											r3d = obj._bounds2d;
+											r3d = obj._bounds3d;
 											xl1 = new IgePoint(-(r3d.x / 2), 0, 0).toIso();
 											xl2 = new IgePoint(+(r3d.x / 2), 0, 0).toIso();
 											xl3 = new IgePoint(0, -(r3d.y / 2), 0).toIso();

@@ -102,8 +102,6 @@ var Client = IgeClass.extend({
 			.mouseZoom.enabled(false)
 			.autoSize(true)
 			.scene(this.mainScene)
-			.drawBounds(false)
-			.drawBoundsData(false)
 			.mount(ige);
 
 		// Create some listeners for when the viewport is being panned

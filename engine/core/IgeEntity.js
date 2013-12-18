@@ -1060,8 +1060,13 @@ var IgeEntity = IgeObject.extend({
 		);
 	},
 	
-	localIsoBoundsPoly: function (recalculate) {
-		if (this._isoBoundsPolyDirty || !this._localIsoBoundsPoly || recalculate) {
+	/**
+	 * @deprecated Use bounds3dPolygon instead
+	 */
+	localIsoBoundsPoly: function () {},
+	
+	localBounds3dPolygon: function (recalculate) {
+		if (this._bounds3dPolygonDirty || !this._localBounds3dPolygon || recalculate) {
 			var geom = this._bounds3d,
 				poly = new IgePoly2d(),
 				// Bottom face
@@ -1081,40 +1086,41 @@ var IgeEntity = IgeObject.extend({
 				.addPoint(tf4.x, tf4.y)
 				.addPoint(tf1.x, tf1.y);
 			
-			this._localIsoBoundsPoly = poly;
-			this._isoBoundsPolyDirty = false;
+			this._localBounds3dPolygon = poly;
+			this._bounds3dPolygonDirty = false;
 		}
 		
-		return this._localIsoBoundsPoly;
+		return this._localBounds3dPolygon;
 	},
 	
-	isoBoundsPoly: function (recalculate) {
-		if (this._isoBoundsPolyDirty || !this._isoBoundsPoly || recalculate) {
-			var poly = this.localIsoBoundsPoly(recalculate).clone();
+	/**
+	 * @deprecated Use bounds3dPolygon instead
+	 */
+	isoBoundsPoly: function () {},
+	
+	bounds3dPolygon: function (recalculate) {
+		if (this._bounds3dPolygonDirty || !this._bounds3dPolygon || recalculate) {
+			var poly = this.localBounds3dPolygon(recalculate).clone();
 			
 			// Convert local co-ordinates to world based on entities world matrix
 			this.localToWorld(poly._poly);
 			
-			this._isoBoundsPoly = poly;
+			this._bounds3dPolygon = poly;
 		}
 		
-		return this._isoBoundsPoly;
+		return this._bounds3dPolygon;
 	},
+
+	/**
+	 * @deprecated Use mouseInBounds3d instead
+	 */
+	mouseInIsoBounds: function () {},
 	
-	mouseInIsoBounds: function (recalculate) {
-		var poly = this.localIsoBoundsPoly(recalculate),
+	mouseInBounds3d: function (recalculate) {
+		var poly = this.localBounds3dPolygon(recalculate),
 			mp = this.mousePos();
 		
 		return poly.pointInside(mp);
-	},
-	
-	customTriggerPoly: function (poly) {
-		if (poly !== undefined) {
-			this._customTriggerPoly = poly;
-			return this;
-		}
-		
-		return this._customTriggerPoly;
 	},
 
 	/**
@@ -1697,7 +1703,7 @@ var IgeEntity = IgeObject.extend({
 					mouseY = mp.y;
 					
 					// Use the trigger polygon if defined or default to aabb
-					mouseTriggerPoly = this._triggerPolygon || this.aabb();
+					mouseTriggerPoly = this._triggerPolygon ? this[this._triggerPolygon] ? this[this._triggerPolygon]() : this.aabb() : this.aabb();
 					
 					// Check if the current mouse position is inside this aabb
 					if (this._mouseAlwaysInside || mouseTriggerPoly.xyInside(mouseX, mouseY)) {
@@ -3046,7 +3052,7 @@ var IgeEntity = IgeObject.extend({
 			this._oldWorldMatrix.copy(this._worldMatrix);
 			this._transformChanged = true;
 			this._aabbDirty = true;
-			this._isoBoundsPolyDirty = true;
+			this._bounds3dPolygonDirty = true;
 		} else {
 			this._transformChanged = false;
 		}
@@ -3060,7 +3066,7 @@ var IgeEntity = IgeObject.extend({
 		}
 		
 		if (!this._oldBounds3d.compare(this._bounds3d)) {
-			this._isoBoundsPolyDirty = true;
+			this._bounds3dPolygonDirty = true;
 			
 			// Record the new geometry to the oldGeometry data
 			this._oldBounds3d.copy(this._bounds3d);
