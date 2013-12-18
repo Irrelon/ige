@@ -126,6 +126,44 @@ var IgePoly2d = IgeClass.extend({
 
 		return Boolean(c);
 	},
+	
+	aabb: function () {
+		var minX,
+			minY,
+			maxX,
+			maxY;
+		
+		// Get the extents of the newly transformed poly
+		minX = Math.min(
+			this._poly[0].x,
+			this._poly[1].x,
+			this._poly[2].x,
+			this._poly[3].x
+		);
+	
+		minY = Math.min(
+			this._poly[0].y,
+			this._poly[1].y,
+			this._poly[2].y,
+			this._poly[3].y
+		);
+	
+		maxX = Math.max(
+			this._poly[0].x,
+			this._poly[1].x,
+			this._poly[2].x,
+			this._poly[3].x
+		);
+	
+		maxY = Math.max(
+			this._poly[0].y,
+			this._poly[1].y,
+			this._poly[2].y,
+			this._poly[3].y
+		);
+	
+		return new IgeRect(minX, minY, maxX - minX, maxY - minY);
+	},
 
 	/**
 	 * Returns a copy of this IgePoly2d object that is
