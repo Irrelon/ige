@@ -97,6 +97,28 @@ var IgeEntityBox2d = IgeEntity.extend({
 	},
 
 	/**
+	 * Gets / sets the box2d body's gravitic value. If set to false,
+	 * this entity will not be affected by gravity. If set to true it
+	 * will be affected by gravity.
+	 * @param {Boolean=} val True to allow gravity to affect this entity.
+	 * @returns {*}
+	 */
+	gravitic: function (val) {
+		if (this._box2dBody) {
+			if (val !== undefined) {
+				this._box2dBody.m_nonGravitic = !val;
+				this._box2dBodyDef.gravitic = val;
+				
+				// Wake up the body
+				this._box2dBody.SetAwake(true);
+				return this;
+			}
+			
+			return !this._box2dBody.m_nonGravitic;
+		}
+	},
+
+	/**
 	 * Takes over translateTo calls and processes box2d movement as well.
 	 * @param x
 	 * @param y
