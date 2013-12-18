@@ -123,7 +123,7 @@ var IgeUiDropDown = IgeUiElement.extend({
 		if (this._toggleState) {
 			var self = this,
 				optionContainer,
-				mainTop = this._bounds3d.y + 5,
+				mainTop = this._bounds2d.y + 5,
 				mainHeight = this._options.length * 30,
 				optionTop = 0,
 				i;
@@ -134,7 +134,7 @@ var IgeUiDropDown = IgeUiElement.extend({
 				.borderColor(this._borderColor)
 				.borderWidth(this._borderWidth)
 				.top(mainTop)
-				.width(this._bounds3d.x)
+				.width(this._bounds2d.x)
 				.height(mainHeight)
 				.mount(this);
 			
@@ -148,10 +148,10 @@ var IgeUiDropDown = IgeUiElement.extend({
 					.data('optionIndex', i)
 					.styleClass('IgeUiDropDownOption')
 					.value(this._options[i].text)
-					.top((this._bounds3d.y * i) + 1)
+					.top((this._bounds2d.y * i) + 1)
 					.left(1)
-					.width(this._bounds3d.x - 2)
-					.height(this._bounds3d.y - 2)
+					.width(this._bounds2d.x - 2)
+					.height(this._bounds2d.y - 2)
 					.allowFocus(true)
 					.allowActive(true)
 					.allowHover(true)
@@ -170,14 +170,14 @@ var IgeUiDropDown = IgeUiElement.extend({
 		
 		// Draw drop-down box
 		ctx.fillStyle = '#cccccc';
-		ctx.fillRect(Math.floor(this._bounds3d.x2) - 30, -this._bounds3d.y2 + 1, 30, this._bounds3d.y - 2);
+		ctx.fillRect(Math.floor(this._bounds2d.x2) - 30, -this._bounds2d.y2 + 1, 30, this._bounds2d.y - 2);
 		
 		// Chevron
 		ctx.strokeStyle = this._color;
 		ctx.beginPath();
-		ctx.moveTo(this._bounds3d.x2 - 18.5, -this._bounds3d.y2 + 14.5);
-		ctx.lineTo(this._bounds3d.x2 - 14.5, 2.5);
-		ctx.lineTo(this._bounds3d.x2 - 10.5, -this._bounds3d.y2 + 14.5);
+		ctx.moveTo(this._bounds2d.x2 - 18.5, -this._bounds2d.y2 + 14.5);
+		ctx.lineTo(this._bounds2d.x2 - 14.5, 2.5);
+		ctx.lineTo(this._bounds2d.x2 - 10.5, -this._bounds2d.y2 + 14.5);
 		ctx.stroke();
 		
 		this._renderBorder(ctx);

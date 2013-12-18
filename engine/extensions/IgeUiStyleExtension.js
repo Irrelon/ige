@@ -86,13 +86,13 @@ var IgeUiStyleExtension = {
 			if (typeof(x) === 'string') {
 				// Work out the actual size in pixels
 				// from the percentage
-				x = this._bounds3d.x / 100 * parseInt(x, 10);
+				x = this._bounds2d.x / 100 * parseInt(x, 10);
 			}
 
 			if (typeof(y) === 'string') {
 				// Work out the actual size in pixels
 				// from the percentage
-				y = this._bounds3d.y / 100 * parseInt(y, 10);
+				y = this._bounds2d.y / 100 * parseInt(y, 10);
 			}
 			
 			if (x !== 0 && y !== 0) {

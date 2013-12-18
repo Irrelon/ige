@@ -15,7 +15,7 @@ var IgeUiAutoFlow = IgeUiElement.extend({
 
 		for (i = 0; i < arrCount; i++) {
 			item = arr[i];
-			itemY = item._bounds3d.y;
+			itemY = item._bounds2d.y;
 
 			item.top(currentY);
 

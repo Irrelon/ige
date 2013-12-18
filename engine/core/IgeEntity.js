@@ -666,7 +666,7 @@ var IgeEntity = IgeObject.extend({
 
 		return this._bounds2d.y;
 	},
-
+	
 	/**
 	 * Gets / sets the 3d geometry of the entity. The x and y values are
 	 * relative to the center of the entity and the z value is wholly
@@ -680,13 +680,39 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	size3d: function (x, y, z) {
+	bounds2d: function (x, y) {
+		if (x !== undefined && y !== undefined) {
+			this._bounds2d = new IgePoint(x, y, 0);
+			return this;
+		}
+
+		return this._bounds2d;
+	},
+
+	/**
+	 * Gets / sets the 3d geometry of the entity. The x and y values are
+	 * relative to the center of the entity and the z value is wholly
+	 * positive from the "floor". Used to define a 3d bounding cuboid for
+	 * the entity used in isometric depth sorting and hit testing.
+	 * @param {Number=} x The new x value in pixels.
+	 * @param {Number=} y The new y value in pixels.
+	 * @param {Number=} z The new z value in pixels.
+	 * @example #Set the dimensions of the entity (width, height and length)
+	 *     entity.bounds3d(40, 40, 20);
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
+	bounds3d: function (x, y, z) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._bounds3d = new IgePoint(x, y, z);
 			return this;
 		}
 
 		return this._bounds3d;
+	},
+	
+	size3d: function (x, y, z) {
+		this.log('size3d has been renamed to bounds3d but is exactly the same so please search/replace your code to update calls.', 'warning');
 	},
 
 	/**
@@ -1020,8 +1046,8 @@ var IgeEntity = IgeObject.extend({
 	 */
 	screenPosition: function () {
 		return new IgePoint(
-			Math.floor(((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x) + ige._bounds3d.x2),
-			Math.floor(((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y) + ige._bounds3d.y2),
+			Math.floor(((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x) + ige._bounds2d.x2),
+			Math.floor(((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y) + ige._bounds2d.y2),
 			0
 		);
 	},
@@ -1112,14 +1138,18 @@ var IgeEntity = IgeObject.extend({
 				maxX, maxY,
 				box,
 				anc = this._anchor,
-				geom = this._bounds3d,
-				geomX2 = geom.x2,
-				geomY2 = geom.y2,
+				geom,
+				geomX2,
+				geomY2,
 				x, y,
 				tf1;
 
 			// Handle 2d entities
 			if (this._mode === 0) {
+				geom = this._bounds2d;
+				geomX2 = geom.x2;
+				geomY2 = geom.y2;
+				
 				x = geomX2 + anc.x;
 				y = geomY2 + anc.y;
 
@@ -1167,6 +1197,8 @@ var IgeEntity = IgeObject.extend({
 
 			// Handle isometric entities
 			if (this._mode === 1) {
+				geom = this._bounds3d;
+				
 				// Top face
 				tf1 = new IgePoint(-(geom.x / 2), -(geom.y / 2),  (geom.z / 2)).toIso();
 
@@ -1744,9 +1776,9 @@ var IgeEntity = IgeObject.extend({
 			
 			this.emit('compositeReady');
 		} else {
-			if (this._bounds3d.x > 0 && this._bounds3d.y > 0) {
-				_canvas.width = this._bounds3d.x;
-				_canvas.height = this._bounds3d.y;
+			if (this._bounds2d.x > 0 && this._bounds2d.y > 0) {
+				_canvas.width = this._bounds2d.x;
+				_canvas.height = this._bounds2d.y;
 			} else {
 				// We cannot set a zero size for a canvas, it will
 				// cause the browser to freak out
@@ -1755,7 +1787,7 @@ var IgeEntity = IgeObject.extend({
 			}
 			
 			// Translate to the center of the canvas
-			_ctx.translate(this._bounds3d.x2, this._bounds3d.y2);
+			_ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
 			
 			this._cacheDirty = false;
 		}
@@ -1800,9 +1832,9 @@ var IgeEntity = IgeObject.extend({
 
 					// This is the proper way to do this but firefox has a bug which I'm gonna report
 					// so instead I have to use ANOTHER translate call instead. So crap!
-					//ctx.rect(-this._bounds3d.x2, -this._bounds3d.y2, this._bounds3d.x, this._bounds3d.y);
-					ctx.translate(-this._bounds3d.x2, -this._bounds3d.y2);
-					ctx.rect(0, 0, this._bounds3d.x, this._bounds3d.y);
+					//ctx.rect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
+					ctx.translate(-this._bounds2d.x2, -this._bounds2d.y2);
+					ctx.rect(0, 0, this._bounds2d.x, this._bounds2d.y);
 					if (this._backgroundPatternTrackCamera) {
 						ctx.translate(-ige._currentCamera._translate.x, -ige._currentCamera._translate.y);
 						ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
@@ -1836,10 +1868,10 @@ var IgeEntity = IgeObject.extend({
 			if (this._compositeCache && ige._currentViewport._drawCompositeBounds) {
 				//console.log('moo');
 				ctx.fillStyle = 'rgba(0, 0, 255, 0.3)';
-				ctx.fillRect(-this._bounds3d.x2, -this._bounds3d.y2, this._bounds3d.x,	this._bounds3d.y);
+				ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x,	this._bounds2d.y);
 				ctx.fillStyle = '#ffffff';
-				ctx.fillText('Composite Entity', -this._bounds3d.x2, -this._bounds3d.y2 - 15);
-				ctx.fillText(this.id(), -this._bounds3d.x2, -this._bounds3d.y2 - 5);
+				ctx.fillText('Composite Entity', -this._bounds2d.x2, -this._bounds2d.y2 - 15);
+				ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
 			}
 		}
 	},
@@ -1855,7 +1887,7 @@ var IgeEntity = IgeObject.extend({
 		ctx.save();
 		if (this._compositeCache) {
 			var aabbC = this._compositeAabbCache;
-			ctx.translate(this._bounds3d.x2 + aabbC.x, this._bounds3d.y2 + aabbC.y);
+			ctx.translate(this._bounds2d.x2 + aabbC.x, this._bounds2d.y2 + aabbC.y);
 			
 			if (this._parent && this._parent._ignoreCamera) {
 				// Translate the entity back to negate the scene translate
@@ -1869,15 +1901,15 @@ var IgeEntity = IgeObject.extend({
 		// We have a clean cached version so output that
 		ctx.drawImage(
 			this._cacheCanvas,
-			-this._bounds3d.x2, -this._bounds3d.y2
+			-this._bounds2d.x2, -this._bounds2d.y2
 		);
 		
 		if (ige._currentViewport._drawCompositeBounds) {
 			ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
-			ctx.fillRect(-this._bounds3d.x2, -this._bounds3d.y2, this._cacheCanvas.width,	this._cacheCanvas.height);
+			ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._cacheCanvas.width,	this._cacheCanvas.height);
 			ctx.fillStyle = '#ffffff';
-			ctx.fillText('Composite Cache', -this._bounds3d.x2, -this._bounds3d.y2 - 15);
-			ctx.fillText(this.id(), -this._bounds3d.x2, -this._bounds3d.y2 - 5);
+			ctx.fillText('Composite Cache', -this._bounds2d.x2, -this._bounds2d.y2 - 15);
+			ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
 		}
 
 		ige._drawCount++;
@@ -1886,7 +1918,7 @@ var IgeEntity = IgeObject.extend({
 			ctx.globalCompositeOperation = 'lighter';
 			ctx.drawImage(
 				this._cacheCanvas,
-				-this._bounds3d.x2, -this._bounds3d.y2
+				-this._bounds2d.x2, -this._bounds2d.y2
 			);
 
 			ige._drawCount++;
@@ -2016,7 +2048,7 @@ var IgeEntity = IgeObject.extend({
 						}
 						break;
 					case '_bounds3d':
-						str += ".size3d(" + this._bounds3d.x + ", " + this._bounds3d.y + ", " + this._bounds3d.z + ")";
+						str += ".bounds3d(" + this._bounds3d.x + ", " + this._bounds3d.y + ", " + this._bounds3d.z + ")";
 						break;
 					case '_deathTime':
 						if (options.deathTime !== false && options.lifeSpan !== false) {
@@ -2987,8 +3019,8 @@ var IgeEntity = IgeObject.extend({
 		// Adjust local matrix for origin values if not at center
 		if (this._origin.x !== 0.5 || this._origin.y !== 0.5) {
 			this._localMatrix.translateBy(
-				(this._bounds3d.x * (0.5 - this._origin.x)),
-				(this._bounds3d.y * (0.5 - this._origin.y))
+				(this._bounds2d.x * (0.5 - this._origin.x)),
+				(this._bounds2d.y * (0.5 - this._origin.y))
 			);
 		}
 		
@@ -3012,8 +3044,14 @@ var IgeEntity = IgeObject.extend({
 		}
 		
 		// Check if the geometry has changed and if so, update the aabb dirty
-		if (!this._oldBounds3d.compare(this._bounds3d)) {
+		if (!this._oldBounds2d.compare(this._bounds2d)) {
 			this._aabbDirty = true;
+			
+			// Record the new geometry to the oldGeometry data
+			this._oldBounds2d.copy(this._bounds2d);
+		}
+		
+		if (!this._oldBounds3d.compare(this._bounds3d)) {
 			this._isoBoundsPolyDirty = true;
 			
 			// Record the new geometry to the oldGeometry data
@@ -3156,11 +3194,22 @@ var IgeEntity = IgeObject.extend({
 				}
 				break;
 			
-			case 'geometry':
+			case 'bounds2d':
 				if (data !== undefined) {
 					if (ige.isClient) {
 						var geom = data.split(',');
-						this.size3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
+						this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
+					}
+				} else {
+					return String(this._bounds2d.x + ',' + this._bounds2d.y);
+				}
+				break;
+			
+			case 'bounds3d':
+				if (data !== undefined) {
+					if (ige.isClient) {
+						var geom = data.split(',');
+						this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 					}
 				} else {
 					return String(this._bounds3d.x + ',' + this._bounds3d.y + ',' + this._bounds3d.z);

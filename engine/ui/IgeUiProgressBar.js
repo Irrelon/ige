@@ -120,7 +120,7 @@ var IgeUiProgressBar = IgeUiElement.extend({
 		var min = this._min,
 			max = this._max,
 			progress = this._progress,
-			interval = this._bounds3d.x / (max - min),
+			interval = this._bounds2d.x / (max - min),
 			barWidth = (progress - min) * interval;
 
 		// Check the value is not out of range
@@ -135,19 +135,19 @@ var IgeUiProgressBar = IgeUiElement.extend({
 		// Draw bar fill
 		if (this._barBackColor) {
 			ctx.fillStyle = this._barBackColor;
-			ctx.fillRect(-this._bounds3d.x2, -this._bounds3d.y2, this._bounds3d.x, this._bounds3d.y);
+			ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
 		}
 
 		// Draw bar
 		if (this._barColor) {
 			ctx.fillStyle = this._barColor;
-			ctx.fillRect(-this._bounds3d.x2, -this._bounds3d.y2, barWidth, this._bounds3d.y);
+			ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, barWidth, this._bounds2d.y);
 		}
 
 		// Draw bar border
 		if (this._barBorderColor) {
 			ctx.strokeStyle = this._barBorderColor;
-			ctx.strokeRect(-this._bounds3d.x2, -this._bounds3d.y2, this._bounds3d.x, this._bounds3d.y);
+			ctx.strokeRect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
 		}
 
 		// Draw bar text centered
