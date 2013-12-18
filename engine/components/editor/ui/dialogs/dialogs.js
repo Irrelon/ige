@@ -37,8 +37,18 @@ var UiDialogs = IgeEventingClass.extend({
 						dialogData.contentData,
 						function (err, contentElem) {
 							if (!err) {
+								// Size the dialog
+								dialogElem
+									.animate({
+										'width': dialogData.width,
+										'height': dialogData.height,
+										'marginLeft': -(dialogData.width / 2),
+										'marginTop': -(dialogData.height / 2)
+									}, 300);
+								
+								// Add the content
 								dialogElem.find('.content')
-									.append(contentElem);
+									.html(contentElem);
 							}
 						}
 					);

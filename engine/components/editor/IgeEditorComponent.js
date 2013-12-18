@@ -281,6 +281,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		var self = this;
 		
 		if (!this._cacheTemplates || !this._templateCache[url]) {
+			this.log('Loading template data from: ' + url);
 			$.ajax(url, {
 				async: true,
 				dataType: 'text',

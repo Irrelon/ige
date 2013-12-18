@@ -8,6 +8,23 @@
   height: 300px;
   background-color: #000;
   z-index: 200003;
+  font-family: Verdana, Tahoma, sans-serif;
+  font-size: 11px;
+  color: #fff;
+}
+.dialog .header {
+  padding: 8px;
+  background-color: #333;
+}
+.dialog .header .title {
+  font-size: 12px;
+}
+.dialog .content {
+  position: absolute;
+  top: 30px;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 .dialog .content .loadingCircle {
   position: absolute;

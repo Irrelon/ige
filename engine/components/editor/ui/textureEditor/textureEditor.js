@@ -17,7 +17,9 @@ var UiTextureEditor = IgeEventingClass.extend({
 			contentTemplate: igeRoot + 'components/editor/ui/textureEditor/templates/spriteSheetEditor.html',
 			blur: function () {
 				ige.editor.ui.dialogs.close('spriteSheetEditorDialog');
-			}
+			},
+			width: 800,
+			height: 400
 		});
 	}
 });
