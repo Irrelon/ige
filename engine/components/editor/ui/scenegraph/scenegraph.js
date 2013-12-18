@@ -15,12 +15,11 @@ var UiSceneGraph = IgeEventingClass.extend({
 			.appendTo('#tabContents');
 		
 		// Add controls
-		$('#scenegraphContent .header .controls')
-			.append('<div class="control" title="Refresh SceneGraph Tree"><span id="refreshSceneGraph" class="halflings-icon white refresh"></span></div>');
-		
-		/*Object.observe(ige._children, function (changes) {
-			self.updateSceneGraph();
-		});*/
+		$('<div class="control" title="Refresh SceneGraph Tree"><span id="refreshSceneGraph" class="halflings-icon white refresh"></span></div>')
+			.on('click', function () {
+				ige.editor.ui.scenegraph.updateSceneGraph();
+			})
+			.appendTo('#scenegraphContent .header .controls');
 	},
 	
 	ready: function () {
@@ -29,10 +28,14 @@ var UiSceneGraph = IgeEventingClass.extend({
 		
 		// Hook editor select object updates so we can keep in sync
 		ige.editor.on('selectedObject', function (id) {
-			var sg = $('#scenegraphContent .tree');
-			sg.find('.igeObject.selected').removeClass('selected');
-			$(sg.find('#' + id).find('.igeObject')[0]).addClass('selected');
+			ige.editor.ui.scenegraph.selectObjectById(id);
 		});
+	},
+	
+	selectObjectById: function (id) {
+		var sg = $('#scenegraphContent .tree');
+		sg.find('.igeObject.selected').removeClass('selected');
+		$(sg.find('#' + id).find('.igeObject')[0]).addClass('selected');
 	},
 	
 	updateSceneGraph: function () {
@@ -50,6 +53,11 @@ var UiSceneGraph = IgeEventingClass.extend({
 			var elem = $(this);
 			ige.editor.selectObject(elem.attr('data-id'));
 		});
+		
+		// Make sure we have the current selection highlighted
+		if (ige.editor._selectedObject) {
+			this.selectObjectById(ige.editor._selectedObject.id());
+		}
 	}
 });
 
