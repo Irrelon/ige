@@ -16,8 +16,8 @@ var RandomTweener = IgeEntity.extend({
 		this._translate.tween()
 			.duration(7000)
 			.properties({
-				x: (Math.random() * ige._geometry.x) - ige._geometry.x2,
-				y: (Math.random() * ige._geometry.y) - ige._geometry.y2
+				x: (Math.random() * ige._bounds2d.x) - ige._bounds2d.x2,
+				y: (Math.random() * ige._bounds2d.y) - ige._bounds2d.y2
 			})
 			.easing('outElastic')
 			.afterTween(function () {
