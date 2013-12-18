@@ -131,36 +131,23 @@ var IgePoly2d = IgeClass.extend({
 		var minX,
 			minY,
 			maxX,
-			maxY;
+			maxY,
+			xArr = [],
+			yArr = [],
+			arr = this._poly,
+			arrIndex,
+			arrCount = arr.length;
+		
+		for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+			xArr.push(arr[arrIndex].x);
+			yArr.push(arr[arrIndex].y);
+		}
 		
 		// Get the extents of the newly transformed poly
-		minX = Math.min(
-			this._poly[0].x,
-			this._poly[1].x,
-			this._poly[2].x,
-			this._poly[3].x
-		);
-	
-		minY = Math.min(
-			this._poly[0].y,
-			this._poly[1].y,
-			this._poly[2].y,
-			this._poly[3].y
-		);
-	
-		maxX = Math.max(
-			this._poly[0].x,
-			this._poly[1].x,
-			this._poly[2].x,
-			this._poly[3].x
-		);
-	
-		maxY = Math.max(
-			this._poly[0].y,
-			this._poly[1].y,
-			this._poly[2].y,
-			this._poly[3].y
-		);
+		minX = Math.min.apply(Math, xArr);
+		minY = Math.min.apply(Math, yArr);
+		maxX = Math.max.apply(Math, xArr);
+		maxY = Math.max.apply(Math, yArr);
 	
 		return new IgeRect(minX, minY, maxX - minX, maxY - minY);
 	},

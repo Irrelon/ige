@@ -401,8 +401,15 @@ var IgeViewport = IgeEntity.extend([
 									if (obj._parent && obj._parent._mountMode === 1) {
 										bounds3dPoly = obj.bounds3dPolygon().aabb();
 										ctx.save();
-											//if (obj.id() === 'player') { debugger; }
-											ctx.translate(bounds3dPoly.x, bounds3dPoly.y + bounds3dPoly.height / 2);
+											ctx.strokeStyle = '#0068b8';
+											ctx.strokeRect(bounds3dPoly.x, bounds3dPoly.y, bounds3dPoly.width, bounds3dPoly.height);
+										ctx.restore();
+										
+										ctx.save();
+											ctx.translate(
+												bounds3dPoly.x + bounds3dPoly.width / 2,
+												bounds3dPoly.y + bounds3dPoly.height / 2
+											);
 											//obj._transformContext(ctx);
 
 											// Calculate the 3d bounds data
