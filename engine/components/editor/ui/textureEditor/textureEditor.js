@@ -158,6 +158,9 @@ var UiTextureEditor = IgeEventingClass.extend({
 							// Set the cell width and height from this image
 							self._cellWidth = img.width;
 							self._cellHeight = img.height;
+							
+							// Remove instructions
+							$('#textureEditorDialog').find('.instructions').remove();
 						} else {
 							var cell = self.cellFromXY(e.originalEvent);
 							self._cells[cell.x] = self._cells[cell.x] || [];
