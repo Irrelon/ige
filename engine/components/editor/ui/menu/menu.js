@@ -5,54 +5,36 @@ var UiMenu = IgeEventingClass.extend({
 		var self = this;
 		self._menus = {};
 		ige.requireStylesheet(igeRoot + 'components/editor/ui/menu/menu.css');
+		
+		// Pre-load the template we need
+		ige.editor.template(
+			igeRoot + 'components/editor/ui/menu/templates/menuButton.html',
+			function () {
+				self.add({
+					id: 'fileMenu',
+					text: 'Project',
+					menu: {}
+				});
+				
+				self.add({
+					id: 'toolsMenu',
+					text: 'Tools',
+					menu: {}
+				});
+			}
+		);
 	},
 	
 	ready: function () {
 		var self = this;
-		
-		// Add a bunch of default menus
-		/*self.add({
-			id: 'fileMenu',
-			text: 'Project',
-			menu: {
-				'group1': [{
-					id: 'newProject',
-					icon: 'none',
-					text: 'New Project',
-					action: "ige.editor.newProject();"
-				}],
-				'group2': [{
-					sep: true,
-					id: 'openProject',
-					icon: 'none',
-					text: 'Open Project...',
-					action: "ige.editor.openProject();"
-				}, {
-					id: 'saveProject',
-					icon: 'none',
-					text: 'Save Project',
-					action: "ige.editor.saveProject();"
-				}, {
-					id: 'saveProjectAs',
-					icon: 'none',
-					text: 'Save Project As...',
-					action: "ige.editor.saveProjectAs();"
-				}]
-			}
-		});*/
-		
-		self.add({
-			id: 'toolsMenu',
-			text: 'Tools',
-			menu: {
-				'group1': [{
-					id: 'spriteSheetEditor',
-					icon: 'none',
-					text: 'Sprite Sheet Editor...',
-					action: "ige.editor.ui.textureEditor.showSpriteSheetEditor();"
-				}]
-			}
-		});
+	},
+	
+	addMenuGroup: function (menuId, groupId) {
+		this._menus[menuId].menu[groupId] = this._menus[menuId].menu[groupId] || [];
+	},
+	
+	addMenuItem: function (menuId, groupId, item) {
+		this._menus[menuId].menu[groupId].push(item);
 	},
 	
 	create: function (menuData, callback) {

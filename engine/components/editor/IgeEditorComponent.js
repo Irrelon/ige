@@ -92,6 +92,17 @@ var IgeEditorComponent = IgeEventingClass.extend({
 		ige.requireScript(igeRoot + 'components/editor/vendor/jquery.2.0.3.min.js');
 		
 		ige.on('allRequireScriptsLoaded', function () {
+			// Stop drag-drop of files over the page from doing a redirect and leaving the page
+			$(function () {
+				$('body')
+					.on('dragover', function (e) {
+						e.preventDefault();
+					})
+					.on('drop', function (e) {
+						e.preventDefault();
+					});
+			});
+			
 			// Load editor html into the DOM
 			self.loadHtml(igeRoot + 'components/editor/root.html', function (html) {
 				// Add the html
@@ -118,13 +129,13 @@ var IgeEditorComponent = IgeEventingClass.extend({
 				// Wait for all required files to finish loading
 				ige.on('allRequireScriptsLoaded', function () {
 					// Load UI scripts
-					ige.requireScript(igeRoot + 'components/editor/ui/dialogs/dialogs.js');
-					ige.requireScript(igeRoot + 'components/editor/ui/scenegraph/scenegraph.js');
-					ige.requireScript(igeRoot + 'components/editor/ui/menu/menu.js');
-					ige.requireScript(igeRoot + 'components/editor/ui/toolbox/toolbox.js');
-					ige.requireScript(igeRoot + 'components/editor/ui/panels/panels.js');
-					ige.requireScript(igeRoot + 'components/editor/ui/textures/textures.js');
-					ige.requireScript(igeRoot + 'components/editor/ui/textureEditor/textureEditor.js');
+					ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/dialogs/dialogs.js');
+					ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/scenegraph/scenegraph.js');
+					ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/menu/menu.js');
+					ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/toolbox/toolbox.js');
+					ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/panels/panels.js');
+					ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/textures/textures.js');
+					ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/textureEditor/textureEditor.js');
 					
 					// Load jquery plugins
 					ige.requireScript(igeRoot + 'components/editor/vendor/autoback.jquery.js');

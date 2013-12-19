@@ -49,6 +49,14 @@ var UiDialogs = IgeEventingClass.extend({
 								// Add the content
 								dialogElem.find('.content')
 									.html(contentElem);
+								
+								if (dialogData.callback) {
+									dialogData.callback(false, dialogElem);
+								}
+							} else {
+								if (dialogData.callback) {
+									dialogData.callback(err);
+								}
 							}
 						}
 					);

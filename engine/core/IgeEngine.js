@@ -289,6 +289,42 @@ var IgeEngine = IgeEntity.extend({
 
 		return this;
 	},
+	
+	sync: function (method, attrArr) {
+		if (typeof(attrArr) === 'string') {
+			attrArr = [attrArr];
+		}
+		
+		this._syncArr = this._syncArr || [];
+		this._syncArr.push({method: method, attrArr: attrArr});
+		
+		if (this._syncArr.length === 1) {
+			// Start sync waterfall
+			this._syncIndex = 0;
+			this._processSync();
+		}
+	},
+	
+	_processSync: function () {
+		var syncEntry;
+		
+		if (ige._syncIndex < ige._syncArr.length) {
+			syncEntry = ige._syncArr[ige._syncIndex];
+			
+			// Add the callback to the last attribute
+			syncEntry.attrArr.push(function () {
+				ige._syncIndex++;
+				setTimeout(ige._processSync, 1);
+			});
+			
+			// Call the method
+			syncEntry.method.apply(ige, syncEntry.attrArr);
+		} else {
+			// Reached end of sync cycle
+			delete ige._syncArr;
+			delete ige._syncIndex;
+		}
+	},
 
 	/**
 	 * Load a js script file into memory via a path or url. 
@@ -320,7 +356,6 @@ var IgeEngine = IgeEntity.extend({
 			elem.src = url;
 			
 			this.log('Loading script from: ' + url);
-			
 			this.emit('requireScriptLoading', url);
 		}
 	},
