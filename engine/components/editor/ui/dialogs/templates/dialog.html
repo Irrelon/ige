@@ -1,14 +1,16 @@
-<div class="dialog" id="{{:id}}">
+<div class="dialog {{:dialogClass}}" id="{{:id}}">
 	<div class="header">
 		<div class="title">{{:title}}</div>
-		{{if !modal}}
 		<div class="controls">
-			<div class="close"></div>
+			{{if !modal}}
+			<div class="control close" title="Close Dialog">
+				<span class="halflings-icon white remove"></span>
+			</div>
+			{{/if}}
 		</div>
-		{{/if}}
 	</div>
 	<div class="content">
 		<div class="loadingCircle"></div>
-		<div class="msg">Loading Content...</div>
+		<div class="loadingMsg">Loading Content...</div>
 	</div>
 </div> 

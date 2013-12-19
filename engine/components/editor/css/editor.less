@@ -100,6 +100,7 @@
 	font-family: Verdana, Tahoma, sans-serif;
 	color: #fff;
 	margin-bottom: 5px;
+	cursor: pointer;
 	
 	&.btn-primary {
 		background-color: #005463;
@@ -110,6 +111,18 @@
 		
 		&:active {
 			background-color: #008ea8;
+		}
+	}
+	
+	&.btn-negative {
+		background-color: #730000;
+		
+		&:hover {
+			background-color: #a50000;
+		}
+		
+		&:active {
+			background-color: #df0000;
 		}
 	}
 	
@@ -223,6 +236,7 @@
 			top: 0;
 			
 			.control {
+				float: right;
 				cursor: pointer;
 				background-color: #686868;
 				width: 32px;

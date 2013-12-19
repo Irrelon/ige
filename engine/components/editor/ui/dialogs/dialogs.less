@@ -7,17 +7,43 @@
 	width: 500px;
 	height: 300px;
 	background-color: #000;
-	z-index: 200003;
 	font-family: Verdana, Tahoma, sans-serif;
-		font-size: 11px;
-		color: #fff;
+	font-size: 11px;
+	color: #fff;
+	box-shadow: 0 0 85px 0 rgba(0, 0, 0, 0.5);
 	
 	.header {
-		padding: 8px;
 		background-color: #333;
+		height: 32px;
 		
 		.title {
+			padding: 8px;
 			font-size: 12px;
+		}
+		
+		.controls {
+			position: absolute;
+			right: 0;
+			top: 0;
+			
+			.control {
+				float: right;
+				cursor: pointer;
+				background-color: #686868;
+				width: 32px;
+				height: 32px;
+				
+				&:hover {
+					background-color: #797979;
+				}
+				
+				.halflings-icon {
+					padding: 0;
+					margin: 0;
+					margin-top: 8px;
+					margin-left: 10px;
+				}
+			}
 		}
 	}
 	
@@ -38,7 +64,7 @@
 			margin-left: -20px;
 		}
 		
-		.msg {
+		.loadingMsg {
 			left: 50%;
 			top: 50%;
 			position: absolute;
@@ -50,6 +76,35 @@
 			color: #999;
 			font-family: Verdana, Tahoma, sans-serif;
 			font-size: 10px;
+		}
+	}
+	
+	&.confirm {
+		.content {
+			.msg {
+				text-align: center;
+				margin-top: 30px;
+			}
+			
+			.actionButtons {
+				position: absolute;
+				bottom: 10px;
+				left: 30px;
+				right: 30px;
+				height: 30px;
+				text-align: center;
+				
+				.editorBtn {
+					min-width: 100px;
+					text-align: center;
+					margin-right: 10px;
+					display: inline-block;
+					
+					&:last-child {
+						margin-right: 0;
+					}
+				}
+			}
 		}
 	}
 }

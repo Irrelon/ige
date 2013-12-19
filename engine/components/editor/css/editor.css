@@ -88,6 +88,7 @@
   font-family: Verdana, Tahoma, sans-serif;
   color: #fff;
   margin-bottom: 5px;
+  cursor: pointer;
 }
 .editorBtn.btn-primary {
   background-color: #005463;
@@ -97,6 +98,15 @@
 }
 .editorBtn.btn-primary:active {
   background-color: #008ea8;
+}
+.editorBtn.btn-negative {
+  background-color: #730000;
+}
+.editorBtn.btn-negative:hover {
+  background-color: #a50000;
+}
+.editorBtn.btn-negative:active {
+  background-color: #df0000;
 }
 .editorBtn:focus {
   outline: none;
@@ -186,6 +196,7 @@
   top: 0;
 }
 .tabContent .header .controls .control {
+  float: right;
   cursor: pointer;
   background-color: #686868;
   width: 32px;

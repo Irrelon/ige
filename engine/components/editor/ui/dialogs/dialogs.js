@@ -3,6 +3,7 @@ var UiDialogs = IgeEventingClass.extend({
 	
 	init: function () {
 		var self = this;
+		self._dialogOrder = 200010;
 		ige.requireStylesheet(igeRoot + 'components/editor/ui/dialogs/dialogs.css');
 	},
 	
@@ -11,25 +12,54 @@ var UiDialogs = IgeEventingClass.extend({
 	},
 	
 	create: function (dialogData) {
+		var self = this;
+		self._dialogOrder += 2;
+		
 		// Create a dialog and show as loading
 		ige.editor.renderTemplate(
 			igeRoot + 'components/editor/ui/dialogs/templates/dialog.html',
 			{
 				id: dialogData.id,
 				title: dialogData.title,
-				modal: dialogData.modal
+				modal: dialogData.modal,
+				dialogClass: dialogData.dialogClass
 			},
 			function (err, dialogElem) {
 				if (!err) {
 					$('body').append(dialogElem);
+					dialogElem
+						.css({
+							'zIndex': self._dialogOrder,
+							'width': dialogData.width,
+							'height': dialogData.height,
+							'marginLeft': -(dialogData.width / 2),
+							'marginTop': -(dialogData.height / 2),
+							'opacity': 1
+						});
 					
-					if (dialogData.blur) {
-						// Add a dialog underlay
-						$('<div class="dialogUnderlay" data-for="' + dialogData.id + '"></div>')
-							.on('click', function () {
+					// Add a dialog underlay
+					var underlay = $('<div class="dialogUnderlay" data-for="' + dialogData.id + '"></div>')
+						.css('zIndex', self._dialogOrder - 1)
+						.appendTo('body');
+					
+					// If not modal, remove dialog when underlay clicked
+					if (!dialogData.modal) {
+						underlay.on('click', function () {
+							dialogData.blur($(this));
+						});
+					} else {
+						underlay.css('backgroundColor', 'rgba(0, 0, 0, 0.2)');
+					}
+					
+					// If not modal, hook the close button
+					if (!dialogData.modal) {
+						dialogElem.find('.controls').find('.control.close').on('click', function () {
+							if (dialogData.blur) {
 								dialogData.blur($(this));
-							})
-							.appendTo('body');
+							} else {
+								ige.editor.ui.dialogs.close('textureEditorDialog');
+							}
+						});
 					}
 					
 					ige.editor.renderTemplate(
@@ -37,14 +67,9 @@ var UiDialogs = IgeEventingClass.extend({
 						dialogData.contentData,
 						function (err, contentElem) {
 							if (!err) {
-								// Size the dialog
-								dialogElem
-									.animate({
-										'width': dialogData.width,
-										'height': dialogData.height,
-										'marginLeft': -(dialogData.width / 2),
-										'marginTop': -(dialogData.height / 2)
-									}, 300);
+								/*dialogElem.animate({
+									'opacity': 1.0
+								}, 300);*/
 								
 								// Add the content
 								dialogElem.find('.content')
@@ -65,9 +90,59 @@ var UiDialogs = IgeEventingClass.extend({
 		);
 	},
 	
+	addControl: function (dialogId, controlElem) {
+		$('#' + dialogId).find('.controls').append(controlElem);
+	},
+	
+	confirm: function (dialogOptions) {
+		dialogOptions.id = dialogOptions.id || ige.newIdHex();
+		if (dialogOptions.dialogClass) {
+			dialogOptions.dialogClass += ' confirm';
+		} else {
+			dialogOptions.dialogClass = 'confirm';
+		}
+		
+		this.create({
+			id: dialogOptions.id,
+			title: dialogOptions.title,
+			dialogClass: dialogOptions.dialogClass,
+			modal: true,
+			contentTemplate: igeRoot + 'components/editor/ui/dialogs/templates/confirm.html',
+			width: dialogOptions.width || 400,
+			height: dialogOptions.height || 200,
+			contentData: dialogOptions.contentData,
+			callback: function (err, dialogElem) {
+				if (!err) {
+					// Attach listeners to this confirmation dialog's buttons
+					var buttons = dialogElem.find('.actionButtons');
+					buttons.find('.negative').on('click', function () {
+						if (dialogOptions.negative) {
+							dialogOptions.negative();
+						}
+						ige.editor.ui.dialogs.close(dialogOptions.id);
+					});
+					
+					buttons.find('.positive').on('click', function () {
+						if (dialogOptions.positive) {
+							dialogOptions.positive();
+						}
+						ige.editor.ui.dialogs.close(dialogOptions.id);
+					});
+					
+					if (dialogOptions.ready) {
+						dialogOptions.ready();
+					}
+				}
+			}
+		});
+		//dialogOptions.readyCallback, positiveCallback, negativeCallback
+	},
+	
 	close: function (id) {
 		$('#' + id).remove();
 		$('.dialogUnderlay[data-for="' + id + '"]').remove();
+		
+		this._dialogOrder -= 2;
 	}
 });
 

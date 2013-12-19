@@ -138,12 +138,12 @@ var IgeEditorComponent = IgeEventingClass.extend({
 					ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/textureEditor/textureEditor.js');
 					
 					// Load jquery plugins
-					ige.requireScript(igeRoot + 'components/editor/vendor/autoback.jquery.js');
-					ige.requireScript(igeRoot + 'components/editor/vendor/tree/tree.jquery.js');
-					ige.requireScript(igeRoot + 'components/editor/vendor/tabs/tabs.jquery.js');
-					ige.requireScript(igeRoot + 'components/editor/vendor/treeview_simple/treeview_simple.jquery.js');
+					ige.sync(ige.requireScript, igeRoot + 'components/editor/vendor/autoback.jquery.js');
+					ige.sync(ige.requireScript, igeRoot + 'components/editor/vendor/tree/tree.jquery.js');
+					ige.sync(ige.requireScript, igeRoot + 'components/editor/vendor/tabs/tabs.jquery.js');
+					ige.sync(ige.requireScript, igeRoot + 'components/editor/vendor/treeview_simple/treeview_simple.jquery.js');
 					
-					ige.on('allRequireScriptsLoaded', function () {
+					ige.on('syncComplete', function () {
 						// Observe changes to the engine to update our display
 						setInterval(function () {
 							// Update the stats counters

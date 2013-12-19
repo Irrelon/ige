@@ -323,6 +323,8 @@ var IgeEngine = IgeEntity.extend({
 			// Reached end of sync cycle
 			delete ige._syncArr;
 			delete ige._syncIndex;
+			
+			ige.emit('syncComplete');
 		}
 	},
 
