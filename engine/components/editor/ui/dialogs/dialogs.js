@@ -114,6 +114,10 @@ var UiDialogs = IgeEventingClass.extend({
 		dialogOptions.contentTemplate = dialogOptions.contentTemplate || igeRoot + 'components/editor/ui/dialogs/templates/confirm.html';
 		dialogOptions.width = dialogOptions.width || 400;
 		dialogOptions.height = dialogOptions.height || 200;
+		dialogOptions.contentData = dialogOptions.contentData || {
+			positiveTitle: 'OK',
+			negativeTitle: 'Cancel'
+		};
 		
 		dialogOptions.callback = function (err, dialogElem) {
 			if (!err) {
@@ -154,6 +158,11 @@ var UiDialogs = IgeEventingClass.extend({
 		dialogOptions.contentTemplate = dialogOptions.contentTemplate || igeRoot + 'components/editor/ui/dialogs/templates/input.html';
 		dialogOptions.width = dialogOptions.width || 400;
 		dialogOptions.height = dialogOptions.height || 200;
+		dialogOptions.contentData = dialogOptions.contentData || {
+			msg: 'Please enter a value',
+			positiveTitle: 'OK',
+			negativeTitle: 'Cancel'
+		};
 		
 		dialogOptions.callback = function (err, dialogElem) {
 			if (!err) {
@@ -168,7 +177,7 @@ var UiDialogs = IgeEventingClass.extend({
 				
 				buttons.find('.positive').on('click', function () {
 					if (dialogOptions.positive) {
-						dialogOptions.positive();
+						dialogOptions.positive(dialogElem.find('.content').find('input').first().val());
 					}
 					ige.editor.ui.dialogs.close(dialogOptions.id);
 				});
@@ -194,6 +203,9 @@ var UiDialogs = IgeEventingClass.extend({
 		dialogOptions.contentTemplate = dialogOptions.contentTemplate || igeRoot + 'components/editor/ui/dialogs/templates/prompt.html';
 		dialogOptions.width = dialogOptions.width || 400;
 		dialogOptions.height = dialogOptions.height || 200;
+		dialogOptions.contentData = dialogOptions.contentData || {
+			positiveTitle: 'OK'
+		};
 		
 		dialogOptions.callback = function (err, dialogElem) {
 			if (!err) {
