@@ -35,6 +35,13 @@
 .dialog .header .controls .control:hover {
   background-color: #797979;
 }
+.dialog .header .controls .control.sep {
+  width: 5px;
+  background: none;
+}
+.dialog .header .controls .control.sep:hover {
+  background: none;
+}
 .dialog .header .controls .control .halflings-icon {
   padding: 0;
   margin: 0;

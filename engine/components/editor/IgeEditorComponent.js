@@ -136,6 +136,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 					ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/panels/panels.js');
 					ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/textures/textures.js');
 					ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/textureEditor/textureEditor.js');
+					ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/animationEditor/animationEditor.js');
 					
 					// Load jquery plugins
 					ige.sync(ige.requireScript, igeRoot + 'components/editor/vendor/autoback.jquery.js');

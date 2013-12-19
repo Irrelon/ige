@@ -15,12 +15,14 @@ var UiDialogs = IgeEventingClass.extend({
 		var self = this;
 		self._dialogOrder += 2;
 		
+		dialogData.id = dialogData.id || ige.newIdHex();
+		
 		// Create a dialog and show as loading
 		ige.editor.renderTemplate(
 			igeRoot + 'components/editor/ui/dialogs/templates/dialog.html',
 			{
 				id: dialogData.id,
-				title: dialogData.title,
+				title: dialogData.title || 'Dialog',
 				modal: dialogData.modal,
 				dialogClass: dialogData.dialogClass
 			},
@@ -45,7 +47,11 @@ var UiDialogs = IgeEventingClass.extend({
 					// If not modal, remove dialog when underlay clicked
 					if (!dialogData.modal) {
 						underlay.on('click', function () {
-							dialogData.blur($(this));
+							if (dialogData.blur) {
+								dialogData.blur($(this));
+							} else {
+								ige.editor.ui.dialogs.close(dialogData.id);
+							}
 						});
 					} else {
 						underlay.css('backgroundColor', 'rgba(0, 0, 0, 0.2)');
@@ -57,34 +63,40 @@ var UiDialogs = IgeEventingClass.extend({
 							if (dialogData.blur) {
 								dialogData.blur($(this));
 							} else {
-								ige.editor.ui.dialogs.close('textureEditorDialog');
+								ige.editor.ui.dialogs.close(dialogData.id);
 							}
 						});
 					}
 					
-					ige.editor.renderTemplate(
-						dialogData.contentTemplate,
-						dialogData.contentData,
-						function (err, contentElem) {
-							if (!err) {
-								/*dialogElem.animate({
-									'opacity': 1.0
-								}, 300);*/
-								
-								// Add the content
-								dialogElem.find('.content')
-									.html(contentElem);
-								
-								if (dialogData.callback) {
-									dialogData.callback(false, dialogElem);
-								}
-							} else {
-								if (dialogData.callback) {
-									dialogData.callback(err);
+					if (dialogData.contentTemplate) {
+						ige.editor.renderTemplate(
+							dialogData.contentTemplate,
+							dialogData.contentData || {},
+							function (err, contentElem) {
+								if (!err) {
+									/*dialogElem.animate({
+										'opacity': 1.0
+									}, 300);*/
+									
+									// Add the content
+									dialogElem.find('.content')
+										.html(contentElem);
+									
+									if (dialogData.callback) {
+										dialogData.callback(false, dialogElem);
+									}
+								} else {
+									if (dialogData.callback) {
+										dialogData.callback(err);
+									}
 								}
 							}
+						);
+					} else {
+						if (dialogData.callback) {
+							dialogData.callback(false, dialogElem);
 						}
-					);
+					}
 				}
 			}
 		);

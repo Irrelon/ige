@@ -62,9 +62,12 @@ var UiTextureEditor = IgeEventingClass.extend({
 					// Add dialog controls
 					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control download" title="Download as Image..."><span class="halflings-icon white download-alt"></span></div>'));
 					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control clear" title="Clear"><span class="halflings-icon white file"></span></div>'));
+					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control sep"></div>'));
+					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control animate" title="Test as Animation..."><span class="halflings-icon white film"></span></div>'));
 					
 					$('.control.download').on('click', function () { self.downloadImage(); });
 					$('.control.clear').on('click', function () { self.clearImage(); });
+					$('.control.animate').on('click', function () { self.toAnimationEditor(); });
 					
 					self.setupListeners(dialogElem);
 					self.setupCanvas();
@@ -170,11 +173,9 @@ var UiTextureEditor = IgeEventingClass.extend({
 		setInterval(function () { self._renderCanvas(); }, 1000 / 60);
 	},
 	
-	downloadImage: function () {
+	getFinalTexture: function () {
 		var self = this,
-			drawnArea,
-			form = $('#textureEditorDialog').find('form'),
-			imageDataElem = form.find('#formImageData');
+			drawnArea;
 		
 		// Render a frame without grid lines
 		self._renderCanvas(true);
@@ -191,6 +192,24 @@ var UiTextureEditor = IgeEventingClass.extend({
 			// Draw the data to the temp canvas
 			ctx = newCanvas.getContext('2d');
 			ctx.drawImage(self._canvas[0], 0, 0);
+			
+			return newCanvas;
+		}
+	},
+	
+	downloadImage: function () {
+		var self = this,
+			drawnArea,
+			form = $('#textureEditorDialog').find('form'),
+			imageDataElem = form.find('#formImageData'),
+			newCanvas;
+		
+		// Render a frame without grid lines
+		self._renderCanvas(true);
+		drawnArea = self.drawnArea();
+		
+		if (drawnArea.width > 0 && drawnArea.height > 0) {
+			newCanvas = self.getFinalTexture();
 			
 			// Download canvas image as png
 			imageDataElem.val(newCanvas.toDataURL('image/png'));
@@ -223,6 +242,17 @@ var UiTextureEditor = IgeEventingClass.extend({
 				self._cellWidth = 0;
 				self._cellHeight = 0;
 			}
+		});
+	},
+	
+	toAnimationEditor: function () {
+		var self = this;
+		
+		// Show the animation dialog with the texture and settings already filled in
+		ige.editor.ui.animationEditor.show({
+			textureImage: self.getFinalTexture(),
+			cellWidth: self._cellWidth,
+			cellHeight: self._cellHeight
 		});
 	},
 	
