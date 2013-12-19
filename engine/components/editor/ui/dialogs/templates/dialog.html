@@ -1,5 +1,8 @@
-<div class="dialog {{:dialogClass}}" id="{{:id}}">
+<div class="editorElem toggleHide shown dialog {{:dialogClass}}" id="{{:id}}">
 	<div class="header">
+		{{if icon}}
+		<span class="icon {{:icon}}"></span>
+		{{/if}}
 		<div class="title">{{:title}}</div>
 		<div class="controls">
 			{{if !modal}}

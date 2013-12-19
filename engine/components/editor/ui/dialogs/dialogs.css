@@ -19,6 +19,11 @@
 .dialog .header.secondary {
   background-color: #222;
 }
+.dialog .header .icon {
+  float: left;
+  margin-top: 9px;
+  margin-left: 9px;
+}
 .dialog .header .title {
   padding: 9px;
   font-size: 12px;
@@ -81,12 +86,22 @@
   font-size: 10px;
 }
 .dialog.confirm .content .msg,
-.dialog.input .content .msg {
+.dialog.input .content .msg,
+.dialog.prompt .content .msg {
   text-align: center;
-  margin-top: 30px;
+  padding: 30px;
+}
+.dialog.confirm .content .msg.paragraphs,
+.dialog.input .content .msg.paragraphs,
+.dialog.prompt .content .msg.paragraphs {
+  padding: 0;
+  padding-left: 10px;
+  padding-right: 10px;
+  text-align: left;
 }
 .dialog.confirm .content .actionButtons,
-.dialog.input .content .actionButtons {
+.dialog.input .content .actionButtons,
+.dialog.prompt .content .actionButtons {
   position: absolute;
   bottom: 10px;
   left: 30px;
@@ -95,14 +110,16 @@
   text-align: center;
 }
 .dialog.confirm .content .actionButtons .editorBtn,
-.dialog.input .content .actionButtons .editorBtn {
+.dialog.input .content .actionButtons .editorBtn,
+.dialog.prompt .content .actionButtons .editorBtn {
   min-width: 100px;
   text-align: center;
   margin-right: 10px;
   display: inline-block;
 }
 .dialog.confirm .content .actionButtons .editorBtn:last-child,
-.dialog.input .content .actionButtons .editorBtn:last-child {
+.dialog.input .content .actionButtons .editorBtn:last-child,
+.dialog.prompt .content .actionButtons .editorBtn:last-child {
   margin-right: 0;
 }
 .dialogUnderlay {

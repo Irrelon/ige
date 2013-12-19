@@ -1,6 +1,9 @@
 .editorElem.toggleHide {
   display: none;
 }
+.editorElem.toggleHide.shown {
+  display: block;
+}
 #topBar {
   position: absolute;
   user-select: none;

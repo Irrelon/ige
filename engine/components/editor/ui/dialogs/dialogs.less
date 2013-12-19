@@ -20,6 +20,12 @@
 			background-color: #222;
 		}
 		
+		.icon {
+			float: left;
+			margin-top: 9px;
+			margin-left: 9px;
+		}
+		
 		.title {
 			padding: 9px;
 			font-size: 12px;
@@ -92,11 +98,18 @@
 		}
 	}
 	
-	&.confirm, &.input {
+	&.confirm, &.input, &.prompt {
 		.content {
 			.msg {
 				text-align: center;
-				margin-top: 30px;
+				padding: 30px;
+				
+				&.paragraphs {
+					padding: 0;
+					padding-left: 10px;
+					padding-right: 10px;
+					text-align: left;
+				}
 			}
 			
 			.actionButtons {

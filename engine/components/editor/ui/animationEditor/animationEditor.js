@@ -34,6 +34,7 @@ var UiAnimationEditor = IgeEventingClass.extend({
 		
 		ige.editor.ui.dialogs.create({
 			id: 'animationEditorDialog',
+			icon: 'halflings-icon white film',
 			title: 'Animation Editor',
 			contentTemplate: igeRoot + 'components/editor/ui/animationEditor/templates/animationEditor.html',
 			blur: function () {
@@ -59,6 +60,8 @@ var UiAnimationEditor = IgeEventingClass.extend({
 			width: 1000,
 			height: 600,
 			contentData: {
+				outputCanvasWidth: 800,
+				outputCanvasHeight: 436,
 				framesCanvasWidth: 2000,
 				framesCanvasHeight: 100,
 				cellsCanvasWidth: self._textureImage !== undefined ? self._textureImage.width : 200,
@@ -89,6 +92,9 @@ var UiAnimationEditor = IgeEventingClass.extend({
 	setupListeners: function (dndTarget) {
 		var self = this,
 			dialogElem = $('#animationEditorDialog');
+		
+		self._outputCanvas = dialogElem.find('.viewArea').find('canvas');
+		self._outputCtx = self._outputCanvas[0].getContext('2d');
 		
 		self._framesCanvas = dialogElem.find('.framesArea').find('canvas');
 		self._framesCtx = self._framesCanvas[0].getContext('2d');

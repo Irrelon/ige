@@ -240,7 +240,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 			.removeClass('active')
 			.addClass('active');
 		
-		$('.editorElem.toggleHide').css('display', 'block');
+		$('.editorElem.toggleHide').addClass('shown');
 	},
 	
 	hide: function () {
@@ -251,7 +251,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 			.html('Editor Off')
 			.removeClass('active');
 		
-		$('.editorElem.toggleHide').css('display', 'none');
+		$('.editorElem.toggleHide').removeClass('shown');
 	},
 	
 	toggleStats: function () {

@@ -16,16 +16,12 @@ var UiDialogs = IgeEventingClass.extend({
 		self._dialogOrder += 2;
 		
 		dialogData.id = dialogData.id || ige.newIdHex();
+		dialogData.title = dialogData.title || 'Dialog';
 		
 		// Create a dialog and show as loading
 		ige.editor.renderTemplate(
 			igeRoot + 'components/editor/ui/dialogs/templates/dialog.html',
-			{
-				id: dialogData.id,
-				title: dialogData.title || 'Dialog',
-				modal: dialogData.modal,
-				dialogClass: dialogData.dialogClass
-			},
+			dialogData,
 			function (err, dialogElem) {
 				if (!err) {
 					$('body').append(dialogElem);
@@ -40,7 +36,7 @@ var UiDialogs = IgeEventingClass.extend({
 						});
 					
 					// Add a dialog underlay
-					var underlay = $('<div class="dialogUnderlay" data-for="' + dialogData.id + '"></div>')
+					var underlay = $('<div class="editorElem toggleHide shown dialogUnderlay" data-for="' + dialogData.id + '"></div>')
 						.css('zIndex', self._dialogOrder - 1)
 						.appendTo('body');
 					
@@ -114,40 +110,36 @@ var UiDialogs = IgeEventingClass.extend({
 			dialogOptions.dialogClass = 'confirm';
 		}
 		
-		this.create({
-			id: dialogOptions.id,
-			title: dialogOptions.title,
-			dialogClass: dialogOptions.dialogClass,
-			modal: true,
-			contentTemplate: igeRoot + 'components/editor/ui/dialogs/templates/confirm.html',
-			width: dialogOptions.width || 400,
-			height: dialogOptions.height || 200,
-			contentData: dialogOptions.contentData,
-			callback: function (err, dialogElem) {
-				if (!err) {
-					// Attach listeners to this confirmation dialog's buttons
-					var buttons = dialogElem.find('.actionButtons');
-					buttons.find('.negative').on('click', function () {
-						if (dialogOptions.negative) {
-							dialogOptions.negative();
-						}
-						ige.editor.ui.dialogs.close(dialogOptions.id);
-					});
-					
-					buttons.find('.positive').on('click', function () {
-						if (dialogOptions.positive) {
-							dialogOptions.positive();
-						}
-						ige.editor.ui.dialogs.close(dialogOptions.id);
-					});
-					
-					if (dialogOptions.ready) {
-						dialogOptions.ready();
+		dialogOptions.modal = true;
+		dialogOptions.contentTemplate = dialogOptions.contentTemplate || igeRoot + 'components/editor/ui/dialogs/templates/confirm.html';
+		dialogOptions.width = dialogOptions.width || 400;
+		dialogOptions.height = dialogOptions.height || 200;
+		
+		dialogOptions.callback = function (err, dialogElem) {
+			if (!err) {
+				// Attach listeners to this confirmation dialog's buttons
+				var buttons = dialogElem.find('.actionButtons');
+				buttons.find('.negative').on('click', function () {
+					if (dialogOptions.negative) {
+						dialogOptions.negative();
 					}
+					ige.editor.ui.dialogs.close(dialogOptions.id);
+				});
+				
+				buttons.find('.positive').on('click', function () {
+					if (dialogOptions.positive) {
+						dialogOptions.positive();
+					}
+					ige.editor.ui.dialogs.close(dialogOptions.id);
+				});
+				
+				if (dialogOptions.ready) {
+					dialogOptions.ready();
 				}
 			}
-		});
-		//dialogOptions.readyCallback, positiveCallback, negativeCallback
+		};
+		
+		this.create(dialogOptions);
 	},
 	
 	input: function (dialogOptions) {
@@ -158,39 +150,69 @@ var UiDialogs = IgeEventingClass.extend({
 			dialogOptions.dialogClass = 'input';
 		}
 		
-		this.create({
-			id: dialogOptions.id,
-			title: dialogOptions.title,
-			dialogClass: dialogOptions.dialogClass,
-			modal: true,
-			contentTemplate: dialogOptions.contentTemplate,
-			width: dialogOptions.width || 400,
-			height: dialogOptions.height || 200,
-			contentData: dialogOptions.contentData,
-			callback: function (err, dialogElem) {
-				if (!err) {
-					// Attach listeners to this confirmation dialog's buttons
-					var buttons = dialogElem.find('.actionButtons');
-					buttons.find('.negative').on('click', function () {
-						if (dialogOptions.negative) {
-							dialogOptions.negative();
-						}
-						ige.editor.ui.dialogs.close(dialogOptions.id);
-					});
-					
-					buttons.find('.positive').on('click', function () {
-						if (dialogOptions.positive) {
-							dialogOptions.positive();
-						}
-						ige.editor.ui.dialogs.close(dialogOptions.id);
-					});
-					
-					if (dialogOptions.ready) {
-						dialogOptions.ready();
+		dialogOptions.modal = true;
+		dialogOptions.contentTemplate = dialogOptions.contentTemplate || igeRoot + 'components/editor/ui/dialogs/templates/input.html';
+		dialogOptions.width = dialogOptions.width || 400;
+		dialogOptions.height = dialogOptions.height || 200;
+		
+		dialogOptions.callback = function (err, dialogElem) {
+			if (!err) {
+				// Attach listeners to this confirmation dialog's buttons
+				var buttons = dialogElem.find('.actionButtons');
+				buttons.find('.negative').on('click', function () {
+					if (dialogOptions.negative) {
+						dialogOptions.negative();
 					}
+					ige.editor.ui.dialogs.close(dialogOptions.id);
+				});
+				
+				buttons.find('.positive').on('click', function () {
+					if (dialogOptions.positive) {
+						dialogOptions.positive();
+					}
+					ige.editor.ui.dialogs.close(dialogOptions.id);
+				});
+				
+				if (dialogOptions.ready) {
+					dialogOptions.ready();
 				}
 			}
-		});
+		};
+		
+		this.create(dialogOptions);
+	},
+	
+	prompt: function (dialogOptions) {
+		dialogOptions.id = dialogOptions.id || ige.newIdHex();
+		if (dialogOptions.dialogClass) {
+			dialogOptions.dialogClass += ' prompt';
+		} else {
+			dialogOptions.dialogClass = 'prompt';
+		}
+		
+		dialogOptions.modal = true;
+		dialogOptions.contentTemplate = dialogOptions.contentTemplate || igeRoot + 'components/editor/ui/dialogs/templates/prompt.html';
+		dialogOptions.width = dialogOptions.width || 400;
+		dialogOptions.height = dialogOptions.height || 200;
+		
+		dialogOptions.callback = function (err, dialogElem) {
+			if (!err) {
+				// Attach listeners to this confirmation dialog's buttons
+				var buttons = dialogElem.find('.actionButtons');
+				buttons.find('.positive').on('click', function () {
+					if (dialogOptions.positive) {
+						dialogOptions.positive();
+					}
+					ige.editor.ui.dialogs.close(dialogOptions.id);
+				});
+				
+				if (dialogOptions.ready) {
+					dialogOptions.ready();
+				}
+			}
+		};
+		
+		this.create(dialogOptions);
 	},
 	
 	close: function (id) {

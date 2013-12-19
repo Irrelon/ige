@@ -36,6 +36,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 		
 		ige.editor.ui.dialogs.create({
 			id: 'textureEditorDialog',
+			icon: 'halflings-icon white picture',
 			title: 'Texture Editor',
 			contentTemplate: igeRoot + 'components/editor/ui/textureEditor/templates/textureEditor.html',
 			blur: function () {
@@ -67,14 +68,18 @@ var UiTextureEditor = IgeEventingClass.extend({
 			callback: function (err, dialogElem) {
 				if (!err) {
 					// Add dialog controls
+					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control sep"></div>'));
 					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control download" title="Download as Image..."><span class="halflings-icon white download-alt"></span></div>'));
 					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control clear" title="Clear"><span class="halflings-icon white file"></span></div>'));
 					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control sep"></div>'));
 					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control animate" title="Test as Animation..."><span class="halflings-icon white film"></span></div>'));
+					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control sep"></div>'));
+					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control help" title="Help..."><span class="halflings-icon white question-sign"></span></div>'));
 					
 					$('.control.download').on('click', function () { self.downloadImage(); });
 					$('.control.clear').on('click', function () { self.clearImage(); });
 					$('.control.animate').on('click', function () { self.toAnimationEditor(); });
+					$('.control.help').on('click', function () { self.help(); });
 					
 					self.setupListeners(dialogElem);
 					self.setupCanvas();
@@ -150,7 +155,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 							negativeTitle: 'Cancel'
 						},
 						negative: function () {
-							delete self._tempImages;
+							self._tempImages = [];
 						},
 						positive: function () {
 							// Remove instructions
@@ -198,7 +203,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 								}
 							}
 							
-							delete self._tempImages;
+							self._tempImages = [];
 						}
 					});
 				} else {
@@ -355,6 +360,21 @@ var UiTextureEditor = IgeEventingClass.extend({
 			textureImage: self.getFinalTexture(),
 			cellWidth: self._cellWidth,
 			cellHeight: self._cellHeight
+		});
+	},
+	
+	help: function () {
+		var self = this;
+		
+		ige.editor.ui.dialogs.prompt({
+			icon: 'halflings-icon white question-sign',
+			title: 'Texture Editor Help',
+			width: 400,
+			height: 220,
+			contentTemplate: igeRoot + 'components/editor/ui/textureEditor/templates/help.html',
+			contentData: {
+				positiveTitle: 'OK'
+			}
 		});
 	},
 	

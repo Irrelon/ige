@@ -52,7 +52,7 @@ var UiMenu = IgeEventingClass.extend({
 					
 					// Hook underlay click if blur was passed
 					if (menuData.blur) {
-						$('<div class="menuUnderlay"></div>')
+						$('<div class="editorElem toggleHide shown menuUnderlay"></div>')
 							.on('click', function () {
 								menuData.blur($(this));
 							})

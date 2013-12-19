@@ -22,3 +22,6 @@
   font-size: 16px;
   padding-top: 200px;
 }
+#multiFileInput .content select {
+  min-width: 100px;
+}
