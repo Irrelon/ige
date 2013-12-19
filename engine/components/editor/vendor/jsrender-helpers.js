@@ -14,6 +14,28 @@ if (jsviews) {
 			return arr; 
 		},
 		
+		forNum: function () {
+			var num,
+				startVal = 0,
+				i;
+			
+			if (arguments.length === 1) {
+				num = arguments[0];
+			} else {
+				startVal = arguments[0];
+				num = arguments[1];
+			}
+			
+			num = Math.round(Number(num));
+			
+			var arr = [];
+			for (i = startVal; i <= num; i++) {
+				arr.push({num: i});
+			}
+			
+			return arr; 
+		},
+		
 		forEach: function (arr) {
 			var finalArr = [];
 			for (var i in arr) {

@@ -150,6 +150,49 @@ var UiDialogs = IgeEventingClass.extend({
 		//dialogOptions.readyCallback, positiveCallback, negativeCallback
 	},
 	
+	input: function (dialogOptions) {
+		dialogOptions.id = dialogOptions.id || ige.newIdHex();
+		if (dialogOptions.dialogClass) {
+			dialogOptions.dialogClass += ' input';
+		} else {
+			dialogOptions.dialogClass = 'input';
+		}
+		
+		this.create({
+			id: dialogOptions.id,
+			title: dialogOptions.title,
+			dialogClass: dialogOptions.dialogClass,
+			modal: true,
+			contentTemplate: dialogOptions.contentTemplate,
+			width: dialogOptions.width || 400,
+			height: dialogOptions.height || 200,
+			contentData: dialogOptions.contentData,
+			callback: function (err, dialogElem) {
+				if (!err) {
+					// Attach listeners to this confirmation dialog's buttons
+					var buttons = dialogElem.find('.actionButtons');
+					buttons.find('.negative').on('click', function () {
+						if (dialogOptions.negative) {
+							dialogOptions.negative();
+						}
+						ige.editor.ui.dialogs.close(dialogOptions.id);
+					});
+					
+					buttons.find('.positive').on('click', function () {
+						if (dialogOptions.positive) {
+							dialogOptions.positive();
+						}
+						ige.editor.ui.dialogs.close(dialogOptions.id);
+					});
+					
+					if (dialogOptions.ready) {
+						dialogOptions.ready();
+					}
+				}
+			}
+		});
+	},
+	
 	close: function (id) {
 		$('#' + id).remove();
 		$('.dialogUnderlay[data-for="' + id + '"]').remove();

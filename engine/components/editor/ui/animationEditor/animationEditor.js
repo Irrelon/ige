@@ -5,7 +5,7 @@ var UiAnimationEditor = IgeEventingClass.extend({
 		var self = this;
 		ige.requireStylesheet(igeRoot + 'components/editor/ui/animationEditor/animationEditor.css');
 		
-		self._cells = [];
+		self._frames = [];
 		self._cellCount = 0;
 		self._cellWidth = 0;
 		self._cellHeight = 0;
@@ -59,8 +59,10 @@ var UiAnimationEditor = IgeEventingClass.extend({
 			width: 1000,
 			height: 600,
 			contentData: {
-				canvasWidth: 1000,
-				canvasHeight: 100
+				framesCanvasWidth: 2000,
+				framesCanvasHeight: 100,
+				cellsCanvasWidth: self._textureImage !== undefined ? self._textureImage.width : 200,
+				cellsCanvasHeight: self._textureImage !== undefined ? self._textureImage.height : 404
 			},
 			callback: function (err, dialogElem) {
 				if (!err) {
@@ -86,35 +88,66 @@ var UiAnimationEditor = IgeEventingClass.extend({
 	
 	setupListeners: function (dndTarget) {
 		var self = this,
-			overFunc,
-			dropFunc;
+			dialogElem = $('#animationEditorDialog');
 		
-		self._mainCanvas = $('#animationEditorDialog').find('.cellArea').find('canvas');
-		self._ctx = self._mainCanvas[0].getContext('2d');
+		self._framesCanvas = dialogElem.find('.framesArea').find('canvas');
+		self._framesCtx = self._framesCanvas[0].getContext('2d');
+		
+		self._cellsCanvas = dialogElem.find('.cellArea').find('canvas');
+		self._cellsCtx = self._cellsCanvas[0].getContext('2d');
 		
 		// When moving over the canvas, highlight the cell
-		self._mainCanvas.on('mousemove', function (e) {
+		self._framesCanvas.on('mousemove', function (e) {
 			var oe = e.originalEvent,
 				cell;
 			
 			if (self._cellWidth && self._cellHeight) {
-				self._highlightCell = self.cellFromXY(oe);
+				cell = self.cellFromXY(oe);
+				
+				if (cell.y === 0) {
+					self._framesHighlightCell = cell;
+				} else {
+					delete self._framesHighlightCell;
+				}
 			}
 		});
 		
-		self._mainCanvas.on('mouseout', function (e) {
-			delete self._highlightCell;
+		self._framesCanvas.on('mouseout', function (e) {
+			delete self._framesHighlightCell;
 		});
 		
 		// If canvas is clicked, clear the cell
-		self._mainCanvas.on('click', function (e) {
+		self._framesCanvas.on('click', function (e) {
 			var oe = e.originalEvent,
 				cell = self.cellFromXY(oe);
 			
-			if (self._cells[cell.x] && self._cells[cell.x][cell.y]) {
-				self._images.pull(self._cells[cell.x][cell.y]);
-				delete self._cells[cell.x][cell.y];
+			if (self._frames[cell.x]) {
+				self._frames.splice(cell.x, 1);
 			}
+		});
+		
+		// When moving over the canvas, highlight the cell
+		self._cellsCanvas.on('mousemove', function (e) {
+			var oe = e.originalEvent,
+				cell;
+			
+			if (self._cellWidth && self._cellHeight) {
+				self._cellsHighlightCell = self.cellFromXY(oe);
+			}
+		});
+		
+		self._cellsCanvas.on('mouseout', function (e) {
+			delete self._cellsHighlightCell;
+		});
+		
+		// If canvas is clicked, clear the cell
+		self._cellsCanvas.on('click', function (e) {
+			var oe = e.originalEvent,
+				cell = self.cellFromXY(oe);
+			
+			// Add the cell index to the animation frames
+			// Loop the available cells and draw them
+			self._frames.push(cell);
 		});
 	},
 	
@@ -141,18 +174,44 @@ var UiAnimationEditor = IgeEventingClass.extend({
 	
 	_renderCanvas: function (noGrid) {
 		var self = this,
-			ctx = self._ctx,
+			framesCtx = self._framesCtx,
+			cellsCtx = self._cellsCtx,
 			cell,
 			cellWidth,
-			cellHeight;
+			cellHeight,
+			x, y, i;
 		
 		// Clear the canvas
-		ctx.clearRect(0, 0, self._mainCanvas[0].width, self._mainCanvas[0].height);
+		framesCtx.clearRect(0, 0, self._framesCanvas[0].width, self._framesCanvas[0].height);
+		cellsCtx.clearRect(0, 0, self._cellsCanvas[0].width, self._cellsCanvas[0].height);
 		
-		// Loop the cells and draw them
-		for (x in self._cells) {
-			if (self._cells.hasOwnProperty(x)) {
-				ctx.drawImage(self._cells[x], parseInt(x) * self._cellWidth, 0);
+		// Loop the frames and draw them
+		for (i = 0; i < self._frames.length; i++) {
+			cell = self._frames[i];
+			
+			framesCtx.drawImage(
+				self._textureImage,
+				cell.x * self._cellWidth,
+				cell.y * self._cellHeight,
+				self._cellWidth,
+				self._cellHeight,
+				i * self._cellWidth,
+				0,
+				self._cellWidth,
+				self._cellHeight
+			);
+		}
+		
+		// Loop the available cells and draw them
+		if (self._textureImage) {
+			for (y = 0; y < self._textureImage.height; y += self._cellHeight) {
+				for (x = 0; x < self._textureImage.width; x += self._cellWidth) {
+					cellsCtx.drawImage(
+						self._textureImage,
+						parseInt(x) * self._cellWidth,
+						parseInt(y) * self._cellHeight
+					);
+				}
 			}
 		}
 		
@@ -161,28 +220,54 @@ var UiAnimationEditor = IgeEventingClass.extend({
 			cellHeight = self._cellHeight;
 			
 			// Draw highlighted cell
-			cell = self._highlightCell;
+			cell = self._framesHighlightCell;
 			
 			if (cell) {
-				ctx.fillStyle = 'rgba(0, 0 , 0, 0.2)';
-				ctx.fillRect(cell.x * cellWidth, cell.y * cellHeight, cellWidth, cellHeight);
+				framesCtx.fillStyle = 'rgba(0, 0 , 0, 0.2)';
+				framesCtx.fillRect(cell.x * cellWidth, cell.y * cellHeight, cellWidth, cellHeight);
 			}
 			
 			// Draw cell grid
 			if (cellWidth > 0 && cellHeight > 0) {
-				ctx.strokeStyle = '#4affff';
-				for (var x = 0; x < self._mainCanvas[0].width; x += cellWidth) {
-					ctx.beginPath();
-					ctx.moveTo(x, 0);
-					ctx.lineTo(x, self._mainCanvas[0].height);
-					ctx.stroke();
+				framesCtx.strokeStyle = '#4affff';
+				for (x = 0; x < self._framesCanvas[0].width; x += cellWidth) {
+					framesCtx.beginPath();
+					framesCtx.moveTo(x, 0);
+					framesCtx.lineTo(x, cellHeight);
+					framesCtx.stroke();
 				}
 				
-				for (var y = 0; y < self._mainCanvas[0].height; y += cellHeight) {
-					ctx.beginPath();
-					ctx.moveTo(0, y);
-					ctx.lineTo(self._mainCanvas[0].width, y);
-					ctx.stroke();
+				for (y = 0; y < cellHeight * 2; y += cellHeight) {
+					framesCtx.beginPath();
+					framesCtx.moveTo(0, y);
+					framesCtx.lineTo(self._framesCanvas[0].width, y);
+					framesCtx.stroke();
+				}
+			}
+			
+			// Draw highlighted cell
+			cell = self._cellsHighlightCell;
+			
+			if (cell) {
+				cellsCtx.fillStyle = 'rgba(0, 0 , 0, 0.2)';
+				cellsCtx.fillRect(cell.x * cellWidth, cell.y * cellHeight, cellWidth, cellHeight);
+			}
+			
+			// Draw cell grid
+			if (cellWidth > 0 && cellHeight > 0 && self._textureImage) {
+				cellsCtx.strokeStyle = '#4affff';
+				for (x = 0; x <= self._textureImage.width; x += cellWidth) {
+					cellsCtx.beginPath();
+					cellsCtx.moveTo(x, 0);
+					cellsCtx.lineTo(x, self._textureImage.height);
+					cellsCtx.stroke();
+				}
+				
+				for (y = 0; y <= self._textureImage.height; y += cellHeight) {
+					cellsCtx.beginPath();
+					cellsCtx.moveTo(0, y);
+					cellsCtx.lineTo(self._textureImage.width, y);
+					cellsCtx.stroke();
 				}
 			}
 		}

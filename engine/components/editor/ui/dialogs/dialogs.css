@@ -80,11 +80,13 @@
   font-family: Verdana, Tahoma, sans-serif;
   font-size: 10px;
 }
-.dialog.confirm .content .msg {
+.dialog.confirm .content .msg,
+.dialog.input .content .msg {
   text-align: center;
   margin-top: 30px;
 }
-.dialog.confirm .content .actionButtons {
+.dialog.confirm .content .actionButtons,
+.dialog.input .content .actionButtons {
   position: absolute;
   bottom: 10px;
   left: 30px;
@@ -92,13 +94,15 @@
   height: 30px;
   text-align: center;
 }
-.dialog.confirm .content .actionButtons .editorBtn {
+.dialog.confirm .content .actionButtons .editorBtn,
+.dialog.input .content .actionButtons .editorBtn {
   min-width: 100px;
   text-align: center;
   margin-right: 10px;
   display: inline-block;
 }
-.dialog.confirm .content .actionButtons .editorBtn:last-child {
+.dialog.confirm .content .actionButtons .editorBtn:last-child,
+.dialog.input .content .actionButtons .editorBtn:last-child {
   margin-right: 0;
 }
 .dialogUnderlay {

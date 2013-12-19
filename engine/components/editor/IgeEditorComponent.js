@@ -180,7 +180,7 @@ var IgeEditorComponent = IgeEventingClass.extend({
 						$('#editorToggle').on('click', function () {
 							ige.editor.toggle();
 						});
-					});
+					}, null, true);
 				}, null, true);
 			});
 		}, null, true);

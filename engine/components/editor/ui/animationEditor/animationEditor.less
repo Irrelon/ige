@@ -1,5 +1,10 @@
 #animationEditorDialog {
+	user-select: none;
+	-webkit-user-select: none;
+	
 	.viewArea {
+		user-select: none;
+	-webkit-user-select: none;
 		position: absolute;
 		top: 0;
 		bottom: 132px;
@@ -13,6 +18,8 @@
 		}
 		
 		.instructions {
+			user-select: none;
+			-webkit-user-select: none;
 			position: absolute;
 			text-align: center;
 			padding: 110px;
@@ -27,25 +34,45 @@
 	}
 	
 	.controlArea {
+		user-select: none;
+		-webkit-user-select: none;
 		position: absolute;
 		top: 0;
 		bottom: 132px;
 		right: 0;
 		width: 200px;
 		background-color: #111;
+		
+		canvas {
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
 	}
 	
-	.cellArea {
+	.framesArea {
+		user-select: none;
+		-webkit-user-select: none;
 		position: absolute;
 		bottom: 0;
 		left: 0;
 		right: 0;
 		height: 132px;
 		
-		canvas {
+		.scroll {
 			position: absolute;
-			top: 30;
+			bottom: 0;
 			left: 0;
+			right: 0;
+			height: 100px;
+			overflow-x: auto;
+			overflow-y: hidden;
+			
+			canvas {
+				position: absolute;
+				top: 0;
+				left: 0;
+			}
 		}
 	}
 }

@@ -5,11 +5,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 		var self = this;
 		ige.requireStylesheet(igeRoot + 'components/editor/ui/textureEditor/textureEditor.css');
 		
-		self._images = [];
-		self._cells = [];
-		self._cellCount = 0;
-		self._cellWidth = 0;
-		self._cellHeight = 0;
+		self.reset();
 	},
 	
 	ready: function () {
@@ -24,8 +20,19 @@ var UiTextureEditor = IgeEventingClass.extend({
 		});
 	},
 	
+	reset: function () {
+		var self = this;
+		self._tempImages = [];
+		self._images = [];
+		self._cells = [];
+		self._cellCount = 0;
+		self._cellWidth = 0;
+		self._cellHeight = 0;
+	},
+	
 	show: function () {
 		var self = this;
+		self.reset();
 		
 		ige.editor.ui.dialogs.create({
 			id: 'textureEditorDialog',
@@ -55,7 +62,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 			height: 600,
 			contentData: {
 				canvasWidth: 800,
-				canvasHeight: 570
+				canvasHeight: 568
 			},
 			callback: function (err, dialogElem) {
 				if (!err) {
@@ -127,43 +134,142 @@ var UiTextureEditor = IgeEventingClass.extend({
 			event.stopPropagation();
 			
 			if (dataTransfer.files && dataTransfer.files.length > 0) {
-				reader = new FileReader();
-				
-				reader.onload = function (event) {
-					var img = new Image();
+				if (dataTransfer.files.length > 1) {
+					for (i = 0; i < dataTransfer.files.length; i++) {
+						self._loadTempImage(dataTransfer.files[i]);
+					}
 					
-					img.onload = function () {
-						self._images.push(img);
-						
-						if (self._cellCount === 0) {
-							// This is the first image dropped
-							self._cells[0] = self._cells[0] || [];
-							self._cells[0][0] = img;
-							
-							// Set the cell width and height from this image
-							self._cellWidth = img.width;
-							self._cellHeight = img.height;
-							
+					// Show multi-file input dialog
+					ige.editor.ui.dialogs.input({
+						id: 'multiFileInput',
+						title: 'Multi-File Import',
+						contentTemplate: igeRoot + 'components/editor/ui/textureEditor/templates/multiFiles.html',
+						contentData: {
+							fileCount: dataTransfer.files.length,
+							positiveTitle: 'OK',
+							negativeTitle: 'Cancel'
+						},
+						negative: function () {
+							delete self._tempImages;
+						},
+						positive: function () {
 							// Remove instructions
 							$('#textureEditorDialog').find('.instructions').remove();
-						} else {
-							var cell = self.cellFromXY(e.originalEvent);
-							self._cells[cell.x] = self._cells[cell.x] || [];
-							self._cells[cell.x][cell.y] = img;
+							
+							// Get the selected number of columns
+							var columns = $('#multiFileInput').find('select').val(),
+								noBreak = true,
+								i = 0,
+								x = 0, y;
+							
+							// Find the next cell in a column-limited area
+							while (noBreak) {
+								y = Math.floor(i / columns);
+								
+								if (!self._cells[x] || (self._cells[x] && !self._cells[x][y])) {
+									noBreak = false;
+								} else {
+									i++;
+									x++;
+									
+									if (x >= columns) {
+										x = 0;
+									}
+								}
+							}
+							
+							for (i = 0; i < self._tempImages.length; i++) {
+								if (self._cellCount === 0) {
+									// This is the first image
+									// Set the cell width and height from this image
+									self._cellWidth = self._tempImages[i].width;
+									self._cellHeight = self._tempImages[i].height;
+								}
+								
+								self._cells[x] = self._cells[x] || [];
+								self._cells[x][y] = self._tempImages[i];
+								self._cellCount++;
+								
+								x++;
+									
+								if (x >= columns) {
+									x = 0;
+									y++;
+								}
+							}
+							
+							delete self._tempImages;
 						}
-						
-						self._cellCount++;
-					};
-					
-					img.src = event.target.result;
-				};
-				
-				reader.readAsDataURL(dataTransfer.files[0]);
+					});
+				} else {
+					self._loadImage(dataTransfer.files[0]);
+				}
 			}
 		};
 		
 		dndTarget.on('dragover', overFunc);
 		dndTarget.on('drop', dropFunc);
+	},
+	
+	_loadImage: function (file, callback) {
+		var self = this,
+			reader = new FileReader();
+					
+		reader.onload = function (event) {
+			var img = new Image();
+			
+			img.onload = function () {
+				self._images.push(img);
+				
+				if (self._cellCount === 0) {
+					// This is the first image dropped
+					self._cells[0] = self._cells[0] || [];
+					self._cells[0][0] = img;
+					
+					// Set the cell width and height from this image
+					self._cellWidth = img.width;
+					self._cellHeight = img.height;
+					
+					// Remove instructions
+					$('#textureEditorDialog').find('.instructions').remove();
+				} else {
+					var cell = self.cellFromXY(e.originalEvent);
+					self._cells[cell.x] = self._cells[cell.x] || [];
+					self._cells[cell.x][cell.y] = img;
+				}
+				
+				self._cellCount++;
+				
+				if (callback) {
+					callback();
+				}
+			};
+			
+			img.src = event.target.result;
+		};
+		
+		reader.readAsDataURL(file);
+	},
+	
+	_loadTempImage: function (file, callback) {
+		var self = this,
+			reader = new FileReader();
+					
+		reader.onload = function (event) {
+			var img = new Image();
+			
+			img.onload = function () {
+				self._tempImages.push(img);
+				
+				if (callback) {
+					callback();
+				}
+			};
+			
+			img.src = event.target.result;
+		};
+		
+		reader.readAsDataURL(file);
 	},
 	
 	setupCanvas: function () {
@@ -236,11 +342,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 			
 			positive: function () {
 				// Clear all the cell data
-				self._images = [];
-				self._cells = [];
-				self._cellCount = 0;
-				self._cellWidth = 0;
-				self._cellHeight = 0;
+				self.reset();
 			}
 		});
 	},
