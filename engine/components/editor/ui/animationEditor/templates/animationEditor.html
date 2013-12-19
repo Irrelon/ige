@@ -1,8 +1,19 @@
 <div class="viewArea">
-	<canvas width="{{:canvasWidth}}" height="{{:canvasHeight}}"></canvas>
+	
 </div>
 <div class="controlArea">
-	<canvas width="200" height="400"></canvas>
+	<div class="header secondary">
+		<div class="title">Texture Cells</div>
+	</div>
+	<div class="content checkerboard">
+		
+	</div>
+</div>
+<div class="cellArea checkerboard">
+	<div class="header secondary">
+		<div class="title">Animation Frames</div>
+	</div>
+	<canvas width="{{:canvasWidth}}" height="{{:canvasHeight}}"></canvas>
 </div>
 <form id="downloadForm" action="http://www.isogenicengine.com/tools/fontSheetGenerator/saver/savePng.php" method="post">
 	<input type="hidden" id="formImageFileName" name="imageFileName" value="texture.png">

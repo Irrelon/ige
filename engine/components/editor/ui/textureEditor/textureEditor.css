@@ -4,7 +4,6 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background-image: url(../../assets/checkBack.png);
 }
 #textureEditorDialog .viewArea canvas {
   position: absolute;

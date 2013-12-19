@@ -1,10 +1,9 @@
 #animationEditorDialog .viewArea {
   position: absolute;
   top: 0;
-  bottom: 0;
+  bottom: 132px;
   left: 0;
   width: 800px;
-  background-image: url(../../assets/checkBack.png);
 }
 #animationEditorDialog .viewArea canvas {
   position: absolute;
@@ -26,12 +25,20 @@
 #animationEditorDialog .controlArea {
   position: absolute;
   top: 0;
-  bottom: 0;
+  bottom: 132px;
   right: 0;
   width: 200px;
+  background-color: #111;
 }
-#animationEditorDialog .controlArea canvas {
+#animationEditorDialog .cellArea {
   position: absolute;
-  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 132px;
+}
+#animationEditorDialog .cellArea canvas {
+  position: absolute;
+  top: 30;
   left: 0;
 }

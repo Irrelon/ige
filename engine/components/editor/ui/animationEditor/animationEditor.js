@@ -59,8 +59,8 @@ var UiAnimationEditor = IgeEventingClass.extend({
 			width: 1000,
 			height: 600,
 			contentData: {
-				canvasWidth: 800,
-				canvasHeight: 570
+				canvasWidth: 1000,
+				canvasHeight: 100
 			},
 			callback: function (err, dialogElem) {
 				if (!err) {
@@ -89,7 +89,7 @@ var UiAnimationEditor = IgeEventingClass.extend({
 			overFunc,
 			dropFunc;
 		
-		self._mainCanvas = $('#animationEditorDialog').find('.viewArea').find('canvas');
+		self._mainCanvas = $('#animationEditorDialog').find('.cellArea').find('canvas');
 		self._ctx = self._mainCanvas[0].getContext('2d');
 		
 		// When moving over the canvas, highlight the cell
@@ -152,11 +152,7 @@ var UiAnimationEditor = IgeEventingClass.extend({
 		// Loop the cells and draw them
 		for (x in self._cells) {
 			if (self._cells.hasOwnProperty(x)) {
-				for (y in self._cells[x]) {
-					if (self._cells[x].hasOwnProperty(y)) {
-						ctx.drawImage(self._cells[x][y], parseInt(x) * self._cellWidth, parseInt(y) * self._cellHeight);
-					}
-				}
+				ctx.drawImage(self._cells[x], parseInt(x) * self._cellWidth, 0);
 			}
 		}
 		

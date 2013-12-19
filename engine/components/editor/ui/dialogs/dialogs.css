@@ -16,8 +16,11 @@
   background-color: #333;
   height: 32px;
 }
+.dialog .header.secondary {
+  background-color: #222;
+}
 .dialog .header .title {
-  padding: 8px;
+  padding: 9px;
   font-size: 12px;
 }
 .dialog .header .controls {
@@ -45,12 +48,12 @@
 .dialog .header .controls .control .halflings-icon {
   padding: 0;
   margin: 0;
-  margin-top: 8px;
+  margin-top: 9px;
   margin-left: 10px;
 }
 .dialog .content {
   position: absolute;
-  top: 30px;
+  top: 32px;
   left: 0;
   right: 0;
   bottom: 0;
