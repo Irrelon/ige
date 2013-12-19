@@ -124,7 +124,7 @@ var IgeViewport = IgeEntity.extend([
 	 * Processes the updates before the render tick is called.
 	 * @param ctx
 	 */
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		// Check if we have a scene attached to this viewport
 		if (this._scene) {
 			// Store the viewport camera in the main ige so that
@@ -135,11 +135,11 @@ var IgeViewport = IgeEntity.extend([
 
 			this._scene._parent = this;
 
-			this.camera.update(ctx);
-			IgeEntity.prototype.update.call(this, ctx);
+			this.camera.update(ctx, tickDelta);
+			IgeEntity.prototype.update.call(this, ctx, tickDelta);
 			
 			if (this._scene.newFrame()) {
-				this._scene.update(ctx);
+				this._scene.update(ctx, tickDelta);
 			}
 		}
 	},

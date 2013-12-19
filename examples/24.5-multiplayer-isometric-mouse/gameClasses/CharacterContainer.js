@@ -65,7 +65,7 @@ var CharacterContainer = IgeEntity.extend({
 		}
 	},
 
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		if (ige.isServer) {
 			// Make sure the character is animating in the correct
 			// direction - this variable is actually streamed to the client
@@ -113,7 +113,7 @@ var CharacterContainer = IgeEntity.extend({
 			}
 		}
 		
-		IgeEntity.prototype.update.call(this, ctx);
+		IgeEntity.prototype.update.call(this, ctx, tickDelta);
 	}
 });
 

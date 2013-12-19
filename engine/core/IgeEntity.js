@@ -1635,7 +1635,7 @@ var IgeEntity = IgeObject.extend({
 	 * entity's motion, AI etc.
 	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
 	 */
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		// Check if the entity should still exist
 		if (this._deathTime !== undefined && this._deathTime <= ige._tickStart) {
 			// Check if the deathCallBack was set
@@ -1651,7 +1651,7 @@ var IgeEntity = IgeObject.extend({
 			delete this._streamDataCache;
 
 			// Process any behaviours assigned to the entity
-			this._processUpdateBehaviours(ctx);
+			this._processUpdateBehaviours(ctx, tickDelta);
 
 			if (this._timeStream.length) {
 				// Process any interpolation
@@ -1676,7 +1676,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		// Process super class
-		IgeObject.prototype.update.call(this,ctx);
+		IgeObject.prototype.update.call(this, ctx, tickDelta);
 	},
 
 	/**

@@ -76,12 +76,12 @@ var CharacterAi = Character.extend({
 		}
 	},
 
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		if (this.pathNextUpdate) {
 			this.newPath();
 		}
 
-		Character.prototype.update.call(this, ctx);
+		Character.prototype.update.call(this, ctx, tickDelta);
 	}
 });
 

@@ -1770,10 +1770,11 @@ var IgeEngine = IgeEntity.extend({
 	
 	updateSceneGraph: function (ctx) {
 		var arr = this._children,
-			arrCount, us, ud;
+			arrCount, us, ud,
+			tickDelta = ige._tickDelta;
 
 		// Process any behaviours assigned to the engine
-		this._processUpdateBehaviours(ctx);
+		this._processUpdateBehaviours(ctx, tickDelta);
 
 		if (arr) {
 			arrCount = arr.length;
@@ -1782,7 +1783,7 @@ var IgeEngine = IgeEntity.extend({
 			if (igeConfig.debug._timing) {
 				while (arrCount--) {
 					us = new Date().getTime();
-					arr[arrCount].update(ctx);
+					arr[arrCount].update(ctx, tickDelta);
 					ud = new Date().getTime() - us;
 					
 					if (arr[arrCount]) {
@@ -1800,7 +1801,7 @@ var IgeEngine = IgeEntity.extend({
 				}
 			} else {
 				while (arrCount--) {
-					arr[arrCount].update(ctx);
+					arr[arrCount].update(ctx, tickDelta);
 				}
 			}
 		}

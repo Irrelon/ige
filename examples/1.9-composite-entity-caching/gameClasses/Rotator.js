@@ -15,7 +15,7 @@ var Rotator = IgeEntity.extend({
 	 * Called every frame by the engine when this entity is mounted to the scenegraph.
 	 * @param ctx The canvas context.
 	 */
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		// Rotate this entity by 0.1 degrees.
 		//this.rotateBy(0, 0, (this._rSpeed * ige._tickDelta) * Math.PI / 180);
 		if (this._rSpeed) {
@@ -24,7 +24,7 @@ var Rotator = IgeEntity.extend({
 		}
 		
 		// Call the IgeEntity (super-class) tick() method
-		IgeEntity.prototype.update.call(this, ctx);
+		IgeEntity.prototype.update.call(this, ctx, tickDelta);
 	},
 
 	/**

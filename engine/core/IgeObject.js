@@ -1439,7 +1439,7 @@ var IgeObject = IgeEventingClass.extend({
 		return this;
 	},
 	
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		// Check that we are alive before processing further
 		if (this._alive) {
 			if (this._newBorn) { this._newBorn = false; }
@@ -1470,7 +1470,7 @@ var IgeObject = IgeEventingClass.extend({
 				if (igeConfig.debug._timing) {
 					while (arrCount--) {
 						ts = new Date().getTime();
-						arr[arrCount].update(ctx);
+						arr[arrCount].update(ctx, tickDelta);
 						td = new Date().getTime() - ts;
 						if (arr[arrCount]) {
 							if (!ige._timeSpentInTick[arr[arrCount].id()]) {
@@ -1487,7 +1487,7 @@ var IgeObject = IgeEventingClass.extend({
 					}
 				} else {
 					while (arrCount--) {
-						arr[arrCount].update(ctx);
+						arr[arrCount].update(ctx, tickDelta);
 					}
 				}
 			}
@@ -1596,7 +1596,7 @@ var IgeObject = IgeEventingClass.extend({
 	 * Calls each behaviour method for the object.
 	 * @private
 	 */
-	_processUpdateBehaviours: function (ctx) {
+	_processUpdateBehaviours: function (ctx, tickDelta) {
 		var arr = this._updateBehaviours,
 			arrCount;
 

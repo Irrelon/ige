@@ -114,7 +114,7 @@ var IgeScene2d = IgeEntity.extend({
 		return this._ignoreCamera;
 	},
 	
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		if (this._ignoreCamera) {
 			// Translate the scene so it is always center of the camera
 			var cam = ige._currentCamera;
@@ -124,7 +124,7 @@ var IgeScene2d = IgeEntity.extend({
 			//this._localMatrix.multiply(ige._currentCamera._worldMatrix.getInverse());
 		}
 		
-		IgeEntity.prototype.update.call(this, ctx);
+		IgeEntity.prototype.update.call(this, ctx, tickDelta);
 	},
 
 	/**

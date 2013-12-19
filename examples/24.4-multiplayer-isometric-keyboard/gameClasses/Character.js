@@ -128,7 +128,7 @@ var Character = IgeEntity.extend({
 		return this;
 	},
 
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		if (ige.isClient) {
 			// Set the current animation based on direction
 			var self = this,
@@ -190,7 +190,7 @@ var Character = IgeEntity.extend({
 			this.depth(this._translate.y);
 		}
 		
-		IgeEntity.prototype.update.call(this, ctx);
+		IgeEntity.prototype.update.call(this, ctx, tickDelta);
 	},
 
 	destroy: function () {

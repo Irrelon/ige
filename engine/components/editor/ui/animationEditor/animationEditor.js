@@ -47,11 +47,6 @@ var UiAnimationEditor = IgeEventingClass.extend({
 						positiveTitle: 'OK',
 						negativeTitle: 'Cancel'
 					},
-					
-					ready: function () {
-						
-					},
-					
 					positive: function () {
 						ige.editor.ui.dialogs.close('animationEditorDialog');
 					}
@@ -69,19 +64,6 @@ var UiAnimationEditor = IgeEventingClass.extend({
 			},
 			callback: function (err, dialogElem) {
 				if (!err) {
-					// Add dialog controls
-					/*ige.editor.ui.dialogs.addControl('animationEditorDialog', $('<div class="control download" title="Download as Image..."><span class="halflings-icon white download-alt"></span></div>'));
-					ige.editor.ui.dialogs.addControl('animationEditorDialog', $('<div class="control clear" title="Clear"><span class="halflings-icon white file"></span></div>'));
-					ige.editor.ui.dialogs.addControl('animationEditorDialog', $('<div class="control sep"></div>'));
-					ige.editor.ui.dialogs.addControl('animationEditorDialog', $('<div class="control animate" title="Test Animation..."><span class="halflings-icon white film"></span></div>'));
-					
-					$('.control.download').on('click', function () { self.downloadImage(); });
-					$('.control.clear').on('click', function () { self.clearImage(); });
-					$('.control.animate').on('click', function () {
-						// Show the animation dialog with the texture and settings already filled in
-						
-					});*/
-					
 					self.setupListeners(dialogElem);
 					self.setupCanvas();
 				}
@@ -89,9 +71,8 @@ var UiAnimationEditor = IgeEventingClass.extend({
 		});
 	},
 	
-	setupListeners: function (dndTarget) {
-		var self = this,
-			dialogElem = $('#animationEditorDialog');
+	setupListeners: function (dialogElem) {
+		var self = this;
 		
 		self._outputCanvas = dialogElem.find('.viewArea').find('canvas');
 		self._outputCtx = self._outputCanvas[0].getContext('2d');
@@ -182,6 +163,7 @@ var UiAnimationEditor = IgeEventingClass.extend({
 		var self = this,
 			framesCtx = self._framesCtx,
 			cellsCtx = self._cellsCtx,
+			outputCtx = self._outputCtx,
 			cell,
 			cellWidth,
 			cellHeight,
@@ -190,6 +172,7 @@ var UiAnimationEditor = IgeEventingClass.extend({
 		// Clear the canvas
 		framesCtx.clearRect(0, 0, self._framesCanvas[0].width, self._framesCanvas[0].height);
 		cellsCtx.clearRect(0, 0, self._cellsCanvas[0].width, self._cellsCanvas[0].height);
+		outputCtx.clearRect(0, 0, self._outputCanvas[0].width, self._outputCanvas[0].height);
 		
 		// Loop the frames and draw them
 		for (i = 0; i < self._frames.length; i++) {
@@ -220,6 +203,8 @@ var UiAnimationEditor = IgeEventingClass.extend({
 				}
 			}
 		}
+		
+		// 
 		
 		if (!noGrid) {
 			cellWidth = self._cellWidth;

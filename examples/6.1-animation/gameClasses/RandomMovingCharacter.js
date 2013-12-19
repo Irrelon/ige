@@ -1,7 +1,7 @@
 var RandomMovingCharacter = Character.extend({
 	classId: 'RandomMovingCharacter',
 
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		if (this.data('moving') === false) {
 			this.walkTo(
 				(Math.random() * ige._bounds2d.x) - ige._bounds2d.x2,
@@ -9,7 +9,7 @@ var RandomMovingCharacter = Character.extend({
 			);
 		}
 
-		Character.prototype.update.call(this, ctx);
+		Character.prototype.update.call(this, ctx, tickDelta);
 	}
 });
 

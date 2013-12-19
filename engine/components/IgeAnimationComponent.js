@@ -312,19 +312,19 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	/**
 	 * Handles the animation processing each update.
 	 * @param {CanvasRenderingContext2D} ctx The rendering context to use when doing draw operations.
+	 * @param {Number} tickDelta The delta time between the last tick and this one.
 	 */
-	_update: function (ctx) {
+	_update: function (ctx, tickDelta) {
 		var self = this.animation;
 		
 		if (self._anim) {
-			var _tickDelta = ige._tickDelta,
-				anim = self._anim,
+			var anim = self._anim,
 				multiple,
 				cell,
 				frame;
 
 			// Advance the internal animation timer
-			anim.currentDelta += _tickDelta;
+			anim.currentDelta += tickDelta;
 
 			// Check if the animation timer is greater than the total animation time
 			if (anim.currentDelta > anim.totalTime) {
