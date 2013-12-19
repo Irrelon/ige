@@ -4,11 +4,21 @@ var UiAnimationEditor = IgeEventingClass.extend({
 	init: function () {
 		var self = this;
 		ige.requireStylesheet(igeRoot + 'components/editor/ui/animationEditor/animationEditor.css');
-		
+		self.reset();
+	},
+	
+	reset: function () {
+		var self = this;
 		self._frames = [];
 		self._cellCount = 0;
 		self._cellWidth = 0;
 		self._cellHeight = 0;
+		
+		self._lastTick = new Date().getTime();
+		self._tickDelta = 0;
+		
+		self._animationEntity = new IgeEntity()
+			.addComponent(IgeAnimationComponent);
 	},
 	
 	ready: function () {
@@ -25,6 +35,7 @@ var UiAnimationEditor = IgeEventingClass.extend({
 	
 	show: function (settings) {
 		var self = this;
+		self.reset();
 		
 		if (settings) {
 			self._textureImage = settings.textureImage;
@@ -48,6 +59,7 @@ var UiAnimationEditor = IgeEventingClass.extend({
 						negativeTitle: 'Cancel'
 					},
 					positive: function () {
+						self.destroy();
 						ige.editor.ui.dialogs.close('animationEditorDialog');
 					}
 				});
@@ -110,6 +122,7 @@ var UiAnimationEditor = IgeEventingClass.extend({
 			
 			if (self._frames[cell.x]) {
 				self._frames.splice(cell.x, 1);
+				self._animationEntity.animation.removeFrame('editorAnim', cell.x);
 			}
 		});
 		
@@ -127,15 +140,44 @@ var UiAnimationEditor = IgeEventingClass.extend({
 			delete self._cellsHighlightCell;
 		});
 		
-		// If canvas is clicked, clear the cell
+		// If canvas is clicked, add the cell to the animation frames
 		self._cellsCanvas.on('click', function (e) {
 			var oe = e.originalEvent,
-				cell = self.cellFromXY(oe);
+				cell = self.cellFromXY(oe),
+				frameIndex;
 			
 			// Add the cell index to the animation frames
 			// Loop the available cells and draw them
 			self._frames.push(cell);
+			
+			// Get the frame index from cell position
+			frameIndex = self.indexFromCell(cell);
+			
+			// Change the defined animation
+			if (self._animationEntity.animation.defined('editorAnim')) {
+				self._animationEntity
+					.animation.addFrame('editorAnim', frameIndex);
+			} else {
+				self._animationEntity
+					.animation.define('editorAnim', [frameIndex], 5, -1, false)
+					.animation.start('editorAnim');
+			}
 		});
+	},
+	
+	indexFromCell: function (cell) {
+		var self = this;
+		return (cell.y * (self._textureImage.width / self._cellWidth)) + cell.x + 1; 
+	},
+	
+	cellFromIndex: function (index) {
+		index = index - 1;
+		var self = this,
+			cellsPerRow = (self._textureImage.width / self._cellWidth),
+			y = Math.floor(index / cellsPerRow),
+			x = index - (y * cellsPerRow);
+		
+		return {x: x, y: y};
 	},
 	
 	setupCanvas: function () {
@@ -167,7 +209,12 @@ var UiAnimationEditor = IgeEventingClass.extend({
 			cell,
 			cellWidth,
 			cellHeight,
-			x, y, i;
+			x, y, i,
+			cellIndex;
+		
+		self._currentTime = new Date().getTime();
+		self._tickDelta = self._currentTime - self._lastTick;
+		self._lastTick = self._currentTime;
 		
 		// Clear the canvas
 		framesCtx.clearRect(0, 0, self._framesCanvas[0].width, self._framesCanvas[0].height);
@@ -204,7 +251,31 @@ var UiAnimationEditor = IgeEventingClass.extend({
 			}
 		}
 		
-		// 
+		// Render the animation frame on the output canvas
+		if (self._animationEntity && self._animationEntity.animation.defined('editorAnim')) {
+			self._animationEntity.animation._update.apply(self._animationEntity, [null, self._tickDelta]);
+			cellIndex = self._animationEntity.cell();
+			
+			cell = self.cellFromIndex(cellIndex);
+			
+			outputCtx.save();
+			outputCtx.translate(
+				Math.floor((self._outputCanvas[0].width / 2) - (self._cellWidth / 2)),
+				Math.floor((self._outputCanvas[0].height / 2) - (self._cellHeight / 2))
+			);
+			outputCtx.drawImage(
+				self._textureImage,
+				cell.x * self._cellWidth,
+				cell.y * self._cellHeight,
+				self._cellWidth,
+				self._cellHeight,
+				0,
+				0,
+				self._cellWidth,
+				self._cellHeight
+			);
+			outputCtx.restore();
+		}
 		
 		if (!noGrid) {
 			cellWidth = self._cellWidth;
@@ -262,6 +333,16 @@ var UiAnimationEditor = IgeEventingClass.extend({
 				}
 			}
 		}
+	},
+	
+	destroy: function () {
+		var self = this;
+		
+		self._animationEntity.animation.stop();
+		self._animationEntity.animation.remove('editorAnim');
+		self._animationEntity.destroy();
+		
+		delete self._animationEntity;
 	}
 });
 

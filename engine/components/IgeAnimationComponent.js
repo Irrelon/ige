@@ -58,10 +58,12 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 				// Check each frame for string values
 				for (i = 0; i < frames.length; i++) {
 					frame = frames[i];
+					
 					if (typeof(frame) === 'string') {
 						if (this._entity._texture) {
 							// The frame has a cell id so convert to an index
 							frame = this._entity._texture.cellIdToIndex(frame);
+							frames[i] = frame;
 						} else {
 							this.log('You can increase the performance of id-based cell animations by specifying the animation.define AFTER you have assigned your sprite sheet to the entity on entity with ID: ' + this._entity.id(), 'warning');
 							break;
@@ -87,6 +89,51 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 			this.log('Cannot define an animation without a frame array!', 'error');
 		}
 		return this._entity;
+	},
+	
+	addFrame: function (id, frameId) {
+		if (this._anims[id]) {
+			var anim = this._anims[id];
+			
+			if (typeof(frameId) === 'string') {
+				frameId = this._entity._texture.cellIdToIndex(frameId);
+			}
+			
+			anim.frames.push(frameId);
+			anim.frameCount++;
+			anim.totalTime = anim.frames.length * anim.frameTime;
+		}
+	},
+	
+	removeFrame: function (id, frameIndex) {
+		if (this._anims[id]) {
+			var anim = this._anims[id];
+			
+			anim.frames.splice(frameIndex, 1);
+			anim.frameCount--;
+			anim.totalTime = anim.frames.length * anim.frameTime;
+		}
+	},
+
+	/**
+	 * Removes a previously defined animation from the entity.
+	 * @param {String} id The id of the animation to remove.
+	 * @returns {*}
+	 */
+	remove: function (id) {
+		delete this._anims[id];
+		this._anims.length--;
+		
+		return this._entity;
+	},
+
+	/**
+	 * Returns true if the specified animation has been defined.
+	 * @param {String} id The id of the animation to check for.
+	 * @returns {Boolean} True if the animation has been defined.
+	 */
+	defined: function (id) {
+		return Boolean(this._anims[id]);
 	},
 
 	/**
