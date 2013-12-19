@@ -3470,7 +3470,7 @@ var IgeEntity = IgeObject.extend({
 					if (this._streamControl) {
 						// Call the callback method and if it returns true,
 						// send the stream data to this client
-						if (this._streamControl.apply(this, [i])) {
+						if (this._streamControl.apply(this, [i, this._streamRoomId])) {
 							recipientArr.push(i);
 						}
 					} else {
@@ -3486,7 +3486,7 @@ var IgeEntity = IgeObject.extend({
 
 		if (this._streamMode === 2) {
 			// Stream mode is advanced
-			this._streamSync(clientId);
+			this._streamSync(clientId, this._streamRoomId);
 
 			return this;
 		}
@@ -3536,14 +3536,16 @@ var IgeEntity = IgeObject.extend({
 	},
 	
 	/**
-	 * Asks the stream system to queue the stream data to
-	 * the specified client id or array of ids.
-	 * @param {Array} recipientArr The array of ids of the
-	 * client(s) to queue stream data for. The stream data being queued
+	 * Asks the stream system to queue the stream data to the specified
+	 * client id or array of ids.
+	 * @param {Array} recipientArr The array of ids of the client(s) to
+	 * queue stream data for. The stream data being queued
 	 * is returned by a call to this._streamData().
+	 * @param {String} streamRoomId The id of the room the entity belongs
+	 * in (can be undefined or null if no room assigned).
 	 * @private
 	 */
-	_streamSync: function (recipientArr) {
+	_streamSync: function (recipientArr, streamRoomId) {
 		var arrCount = recipientArr.length,
 			arrIndex,
 			clientId,
