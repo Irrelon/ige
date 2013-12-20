@@ -342,6 +342,39 @@ var UiPanels = IgeEventingClass.extend({
 							}
 						}
 					}
+				},
+				'mounting': {
+					label: 'Mounting &amp; Draw Order',
+					desc: '',
+					order: 1,
+					props: {
+						'_layer': {
+							label: 'Layer',
+							desc: '',
+							alwaysShow: true,
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberInt.html',
+							// Enable any listeners and logic to take action when the user interacts with the panel
+							afterRender: function (obj, propItem) {
+								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
+									// Set the property value to the newly selected one
+									obj.layer(parseInt($(this).val()));
+								});
+							}
+						},
+						'_depth': {
+							label: 'Depth',
+							desc: '',
+							alwaysShow: true,
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberInt.html',
+							// Enable any listeners and logic to take action when the user interacts with the panel
+							afterRender: function (obj, propItem) {
+								$('#igeEditorProperty_' + propItem.id).find('.setNumber').on('change', function () {
+									// Set the property value to the newly selected one
+									obj.layer(parseInt($(this).val()));
+								});
+							}
+						}
+					}
 				}
 			}
 		});
