@@ -2,33 +2,12 @@
   user-select: none;
   -webkit-user-select: none;
 }
-#animationEditorDialog .viewArea {
-  user-select: none;
-  -webkit-user-select: none;
-  position: absolute;
-  top: 0;
-  bottom: 132px;
-  left: 0;
-  width: 800px;
-}
-#animationEditorDialog .viewArea canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-#animationEditorDialog .viewArea .instructions {
-  user-select: none;
-  -webkit-user-select: none;
-  position: absolute;
-  text-align: center;
-  padding: 110px;
-  background-color: rgba(0, 0, 0, 0.6);
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: 0;
-  font-size: 16px;
-  padding-top: 200px;
+#animationEditorDialog .scroll {
+  position: relative;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  width: 100%;
 }
 #animationEditorDialog .controlArea {
   user-select: none;
@@ -36,11 +15,25 @@
   position: absolute;
   top: 0;
   bottom: 132px;
-  right: 0;
-  width: 200px;
-  background-color: #111;
+  left: 0;
+  width: 500px;
 }
 #animationEditorDialog .controlArea canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#animationEditorDialog .viewArea {
+  user-select: none;
+  -webkit-user-select: none;
+  position: absolute;
+  top: 0;
+  bottom: 132px;
+  right: 0;
+  width: 500px;
+  background-color: #111;
+}
+#animationEditorDialog .viewArea canvas {
   position: absolute;
   top: 0;
   left: 0;
@@ -55,12 +48,7 @@
   height: 132px;
 }
 #animationEditorDialog .framesArea .scroll {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   height: 100px;
-  overflow-x: auto;
   overflow-y: hidden;
 }
 #animationEditorDialog .framesArea .scroll canvas {

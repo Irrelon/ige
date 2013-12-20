@@ -22,7 +22,7 @@
   font-size: 11px;
   background-color: #7d00bd;
   user-select: none;
-  -wekkit-user-select: none;
+  -webkit-user-select: none;
 }
 .menu ul.items {
   overflow-y: auto;

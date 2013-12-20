@@ -81,9 +81,17 @@ var UiDialogs = IgeEventingClass.extend({
 									if (dialogData.callback) {
 										dialogData.callback(false, dialogElem);
 									}
+									
+									if (dialogData.ready) {
+										dialogData.ready.apply(dialogElem, [err]);
+									}
 								} else {
 									if (dialogData.callback) {
 										dialogData.callback(err);
+									}
+									
+									if (dialogData.ready) {
+										dialogData.ready.apply(dialogElem, [err]);
 									}
 								}
 							}
@@ -91,6 +99,10 @@ var UiDialogs = IgeEventingClass.extend({
 					} else {
 						if (dialogData.callback) {
 							dialogData.callback(false, dialogElem);
+						}
+						
+						if (dialogData.ready) {
+							dialogData.ready.apply(dialogElem, [err]);
 						}
 					}
 				}
@@ -125,20 +137,20 @@ var UiDialogs = IgeEventingClass.extend({
 				var buttons = dialogElem.find('.actionButtons');
 				buttons.find('.negative').on('click', function () {
 					if (dialogOptions.negative) {
-						dialogOptions.negative();
+						dialogOptions.negative.apply(dialogElem);
 					}
 					ige.editor.ui.dialogs.close(dialogOptions.id);
 				});
 				
 				buttons.find('.positive').on('click', function () {
 					if (dialogOptions.positive) {
-						dialogOptions.positive();
+						dialogOptions.positive.apply(dialogElem);
 					}
 					ige.editor.ui.dialogs.close(dialogOptions.id);
 				});
 				
 				if (dialogOptions.ready) {
-					dialogOptions.ready();
+					dialogOptions.ready.apply(dialogElem, [err]);
 				}
 			}
 		};
@@ -170,20 +182,20 @@ var UiDialogs = IgeEventingClass.extend({
 				var buttons = dialogElem.find('.actionButtons');
 				buttons.find('.negative').on('click', function () {
 					if (dialogOptions.negative) {
-						dialogOptions.negative();
+						dialogOptions.negative.apply(dialogElem);
 					}
 					ige.editor.ui.dialogs.close(dialogOptions.id);
 				});
 				
 				buttons.find('.positive').on('click', function () {
 					if (dialogOptions.positive) {
-						dialogOptions.positive(dialogElem.find('.content').find('input').first().val());
+						dialogOptions.positive.apply(dialogElem);
 					}
 					ige.editor.ui.dialogs.close(dialogOptions.id);
 				});
 				
 				if (dialogOptions.ready) {
-					dialogOptions.ready();
+					dialogOptions.ready.apply(dialogElem, [err]);
 				}
 			}
 		};
@@ -213,13 +225,13 @@ var UiDialogs = IgeEventingClass.extend({
 				var buttons = dialogElem.find('.actionButtons');
 				buttons.find('.positive').on('click', function () {
 					if (dialogOptions.positive) {
-						dialogOptions.positive();
+						dialogOptions.positive.apply(dialogElem);
 					}
 					ige.editor.ui.dialogs.close(dialogOptions.id);
 				});
 				
 				if (dialogOptions.ready) {
-					dialogOptions.ready();
+					dialogOptions.ready.apply(dialogElem, [err]);
 				}
 			}
 		};

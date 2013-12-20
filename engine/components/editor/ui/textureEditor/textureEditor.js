@@ -22,12 +22,21 @@ var UiTextureEditor = IgeEventingClass.extend({
 	
 	reset: function () {
 		var self = this;
+		
 		self._tempImages = [];
-		self._images = [];
 		self._cells = [];
-		self._cellCount = 0;
+		self._imageLoaded = false;
 		self._cellWidth = 0;
 		self._cellHeight = 0;
+		self._cellCols = 1;
+		self._cellRows = 1;
+		self._cells = [];
+		
+		self._backBuffer = document.createElement('canvas');
+		self._backBufferCtx = self._backBuffer.getContext('2d');
+		
+		self._backBuffer.width = 1;
+		self._backBuffer.height = 1;
 	},
 	
 	show: function () {
@@ -50,10 +59,6 @@ var UiTextureEditor = IgeEventingClass.extend({
 						negativeTitle: 'Cancel'
 					},
 					
-					ready: function () {
-						
-					},
-					
 					positive: function () {
 						ige.editor.ui.dialogs.close('textureEditorDialog');
 					}
@@ -65,11 +70,12 @@ var UiTextureEditor = IgeEventingClass.extend({
 				canvasWidth: 800,
 				canvasHeight: 568
 			},
-			callback: function (err, dialogElem) {
+			ready: function (err) {
 				if (!err) {
 					// Add dialog controls
 					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control sep"></div>'));
 					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control download" title="Download as Image..."><span class="halflings-icon white download-alt"></span></div>'));
+					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control split" title="Split Image Into Cells"><span class="halflings-icon white th"></span></div>'));
 					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control clear" title="Clear"><span class="halflings-icon white file"></span></div>'));
 					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control sep"></div>'));
 					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control animate" title="Test as Animation..."><span class="halflings-icon white film"></span></div>'));
@@ -77,11 +83,12 @@ var UiTextureEditor = IgeEventingClass.extend({
 					ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control help" title="Help..."><span class="halflings-icon white question-sign"></span></div>'));
 					
 					$('.control.download').on('click', function () { self.downloadImage(); });
+					$('.control.split').on('click', function () { self.splitImage(); });
 					$('.control.clear').on('click', function () { self.clearImage(); });
 					$('.control.animate').on('click', function () { self.toAnimationEditor(); });
 					$('.control.help').on('click', function () { self.help(); });
 					
-					self.setupListeners(dialogElem);
+					self.setupListeners(this);
 					self.setupCanvas();
 				}
 			}
@@ -115,10 +122,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 			var oe = e.originalEvent,
 				cell = self.cellFromXY(oe);
 			
-			if (self._cells[cell.x] && self._cells[cell.x][cell.y]) {
-				self._images.pull(self._cells[cell.x][cell.y]);
-				delete self._cells[cell.x][cell.y];
-			}
+			self.clearCell(cell);
 		});
 		
 		// Setup live event listener for underlay drag and drop events
@@ -184,7 +188,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 							}
 							
 							for (i = 0; i < self._tempImages.length; i++) {
-								if (self._cellCount === 0) {
+								if (!self._imageLoaded) {
 									// This is the first image
 									// Set the cell width and height from this image
 									self._cellWidth = self._tempImages[i].width;
@@ -193,7 +197,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 								
 								self._cells[x] = self._cells[x] || [];
 								self._cells[x][y] = self._tempImages[i];
-								self._cellCount++;
+								self._imageLoaded = true;
 								
 								x++;
 									
@@ -207,7 +211,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 						}
 					});
 				} else {
-					self._loadImage(dataTransfer.files[0]);
+					self._loadImage(e, dataTransfer.files[0]);
 				}
 			}
 		};
@@ -216,7 +220,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 		dndTarget.on('drop', dropFunc);
 	},
 	
-	_loadImage: function (file, callback) {
+	_loadImage: function (e, file, callback) {
 		var self = this,
 			reader = new FileReader();
 					
@@ -224,26 +228,21 @@ var UiTextureEditor = IgeEventingClass.extend({
 			var img = new Image();
 			
 			img.onload = function () {
-				self._images.push(img);
-				
-				if (self._cellCount === 0) {
-					// This is the first image dropped
-					self._cells[0] = self._cells[0] || [];
-					self._cells[0][0] = img;
-					
+				if (!self._imageLoaded) {
 					// Set the cell width and height from this image
 					self._cellWidth = img.width;
 					self._cellHeight = img.height;
 					
+					self.addImage({x: 0, y: 0}, img);
+					
 					// Remove instructions
 					$('#textureEditorDialog').find('.instructions').remove();
 				} else {
-					var cell = self.cellFromXY(e.originalEvent);
-					self._cells[cell.x] = self._cells[cell.x] || [];
-					self._cells[cell.x][cell.y] = img;
+					// Add image to back-buffer in correct location
+					self.addImage(self.cellFromXY(e.originalEvent), img);
 				}
 				
-				self._cellCount++;
+				self._imageLoaded = true;
 				
 				if (callback) {
 					callback();
@@ -328,6 +327,211 @@ var UiTextureEditor = IgeEventingClass.extend({
 		}
 	},
 	
+	splitImage: function () {
+		var self = this,
+			cols = self._cellCols,
+			rows = self._cellRows;
+		
+		// Show split image dialog to select rows and columns
+		ige.editor.ui.dialogs.input({
+			title: 'Split Image Into Cells',
+			width: 400,
+			height: 250,
+			contentTemplate: igeRoot + 'components/editor/ui/textureEditor/templates/splitImage.html',
+			contentData: {
+				positiveTitle: 'OK',
+				negativeTitle: 'Cancel',
+				rows: rows,
+				cols: cols
+			},
+			
+			ready: function () {
+				var colsElem = this.find('#cols'),
+					rowsElem = this.find('#rows');
+				
+				colsElem.on('change', function () {
+					var cols = colsElem.val();
+					cols = cols || 1;
+					self.cellCols(cols);
+				});
+				
+				rowsElem.on('change', function () {
+					var rows = rowsElem.val();
+					rows = rows || 1;
+					self.cellRows(rows);
+				});
+			},
+			
+			positive: function () {
+				// Grab the new values from the dialog
+				var cols = this.find('#cols').val(),
+					rows = this.find('#rows').val();
+				
+				cols = cols || 1;
+				rows = rows || 1;
+				
+				self.cellCols(cols);
+				self.cellRows(rows);
+			},
+			
+			negative: function () {
+				// Reset the values of the cols and rows
+				self.cellCols(cols);
+				self.cellRows(rows);
+			}
+		});
+	},
+	
+	cellCols: function (val) {
+		if (val !== undefined) {
+			if (this._backBuffer) {
+				// Use the first image
+				var img = this._backBuffer,
+					imgWidth = img.width,
+					imgHeight = img.height;
+				
+				// Calculate cell width from number of cols specified
+				this._cellWidth = Math.floor(imgWidth / val);
+				this._cellCols = val;
+				
+				// Recalculate occupied cells
+				this._cells = [];
+				this.occupyCells(0, 0, imgWidth, imgHeight);
+			}
+		}
+		
+		return this._cellCols;
+	},
+	
+	cellRows: function (val) {
+		if (val !== undefined) {
+			if (this._backBuffer) {
+				// Use the first image
+				var img = this._backBuffer,
+					imgWidth = img.width,
+					imgHeight = img.height;
+				
+				// Calculate cell width from number of cols specified
+				this._cellHeight = Math.floor(imgHeight / val);
+				this._cellRows = val;
+				
+				// Recalculate occupied cells
+				this._cells = [];
+				this.occupyCells(0, 0, imgWidth, imgHeight);
+			}
+		}
+		
+		return this._cellRows;
+	},
+	
+	resizeBackBuffer: function (newWidth, newHeight) {
+		var newBackBuffer = document.createElement('canvas'),
+			nbbCtx = newBackBuffer.getContext('2d');
+		
+		newBackBuffer.width = newWidth;
+		newBackBuffer.height = newHeight;
+		
+		// Paint old back-buffer to new one
+		nbbCtx.drawImage(this._backBuffer, 0, 0);
+		
+		// Assign new bb
+		this._backBuffer = newBackBuffer;
+		this._backBufferCtx = nbbCtx;
+	},
+	
+	addImage: function (cell, img) {
+		// Paint the whole image to the back-buffer from the cell x, y
+		var self = this,
+			x = cell.x * self._cellWidth,
+			y = cell.y * self._cellHeight;
+		
+		if (x + img.width > self._backBuffer.width || y + img.height > self._backBuffer.height) {
+			// Set back-buffer size
+			var newWidth,
+				newHeight;
+			
+			if (x + img.width > self._backBuffer.width) {
+				newWidth = x + img.width;
+			} else {
+				newWidth = self._backBuffer.width;
+			}
+			
+			if (y + img.height > self._backBuffer.height) {
+				newHeight = y + img.height;
+			} else {
+				newHeight = self._backBuffer.height;
+			}
+			
+			self.resizeBackBuffer(newWidth, newHeight);
+		}
+		
+		// Clear the space the image will occupy
+		self._backBufferCtx.clearRect(x, y, img.width, img.height);
+		
+		// Draw image
+		self._backBufferCtx.drawImage(img, x, y);
+		
+		// Recalculate cell columns and rows
+		self.recalcColsRows();
+		
+		// Occupy cells
+		self.occupyCells(x, y, img.width, img.height);
+	},
+	
+	recalcColsRows: function () {
+		var self = this;
+		self._cellCols = self._backBuffer.width / self._cellWidth;
+		self._cellRows = self._backBuffer.height / self._cellHeight;
+	},
+	
+	occupyCells: function (x, y, w, h) {
+		var self = this,
+			cellX = Math.floor(x / self._cellWidth),
+			cellY = Math.floor(y / self._cellHeight),
+			cellW = Math.floor(w / self._cellWidth),
+			cellH = Math.floor(h / self._cellHeight),
+			j, k;
+		
+		for (j = 0; j < cellW; j++) {
+			for (k = 0; k < cellH; k++) {
+				self._cells[j + cellX] = self._cells[j] || [];
+				self._cells[j + cellX][k + cellY] = true;
+			}
+		}
+	},
+	
+	clearCell: function (cell) {
+		var self = this,
+			j, k, maxX = 0, maxY = 0;
+		
+		// Clear a section of the back-buffer
+		self._backBufferCtx.clearRect(cell.x * self._cellWidth, cell.y * self._cellHeight, self._cellWidth, self._cellHeight);
+		
+		if (self._cells[cell.x] && self._cells[cell.x][cell.y]) {
+			self._cells[cell.x][cell.y] = false;
+		}
+		
+		// Now reset the back-buffer size to match max cells
+		for (j in self._cells) {
+			if (self._cells.hasOwnProperty(j)) {
+				for (k in self._cells[j]) {
+					if (self._cells[j].hasOwnProperty(k) && self._cells[j][k]) {
+						if (parseInt(j) + 1 > maxX) {
+							maxX = parseInt(j) + 1;
+						}
+						
+						if (parseInt(k) + 1 > maxY) {
+							maxY = parseInt(k) + 1;
+						}
+					}
+				}
+			}
+		}
+		
+		self.resizeBackBuffer(maxX * self._cellWidth, maxY * self._cellHeight);
+		self.recalcColsRows();
+	},
+	
 	clearImage: function () {
 		var self = this;
 		
@@ -339,10 +543,6 @@ var UiTextureEditor = IgeEventingClass.extend({
 				msg: 'Are you sure you want to clear this texture?',
 				positiveTitle: 'OK',
 				negativeTitle: 'Cancel'
-			},
-			
-			ready: function () {
-				
 			},
 			
 			positive: function () {
@@ -393,37 +593,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 	},
 	
 	drawnArea: function () {
-		var self = this,
-			maxX = 0,
-			maxY = 0;
-		
-		if (self._cellWidth > 0 && self._cellHeight > 0) {
-			for (x in self._cells) {
-				if (self._cells.hasOwnProperty(x)) {
-					for (y in self._cells[x]) {
-						if (self._cells[x].hasOwnProperty(y)) {
-							if (x > maxX) {
-								maxX = x;
-							}
-							
-							if (y > maxY) {
-								maxY = y;
-							}
-						}
-					}
-				}
-			}
-			
-			return {
-				width: self._cellWidth + (maxX * self._cellWidth),
-				height: self._cellHeight + (maxY * self._cellHeight)
-			}
-		} else {
-			return {
-				width: 0,
-				height: 0
-			}
-		}
+		return {width: this._backBuffer.width, height: this._backBuffer.height};
 	},
 	
 	_renderCanvas: function (noGrid) {
@@ -431,25 +601,30 @@ var UiTextureEditor = IgeEventingClass.extend({
 			ctx = self._ctx,
 			cell,
 			cellWidth,
-			cellHeight;
+			cellHeight,
+			j, k;
 		
 		// Clear the canvas
 		ctx.clearRect(0, 0, self._canvas[0].width, self._canvas[0].height);
 		
 		// Loop the cells and draw them
-		for (x in self._cells) {
-			if (self._cells.hasOwnProperty(x)) {
-				for (y in self._cells[x]) {
-					if (self._cells[x].hasOwnProperty(y)) {
-						ctx.drawImage(self._cells[x][y], parseInt(x) * self._cellWidth, parseInt(y) * self._cellHeight);
-					}
-				}
-			}
-		}
+		ctx.drawImage(self._backBuffer, 0, 0);
 		
 		if (!noGrid) {
 			cellWidth = self._cellWidth;
 			cellHeight = self._cellHeight;
+			
+			// Draw occupied cells
+			ctx.fillStyle = 'rgba(255, 0 , 0, 0.5)';
+			for (j in self._cells) {
+				if (self._cells.hasOwnProperty(j)) {
+					for (k in self._cells[j]) {
+						if (self._cells[j].hasOwnProperty(k) && self._cells[j][k]) {
+							ctx.fillRect(j * cellWidth, k * cellHeight, cellWidth, cellHeight);
+						}
+					}
+				}
+			}
 			
 			// Draw highlighted cell
 			cell = self._highlightCell;

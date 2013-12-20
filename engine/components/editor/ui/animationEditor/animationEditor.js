@@ -67,11 +67,11 @@ var UiAnimationEditor = IgeEventingClass.extend({
 			width: 1000,
 			height: 600,
 			contentData: {
-				outputCanvasWidth: 800,
-				outputCanvasHeight: 436,
+				outputCanvasWidth: 500,
+				outputCanvasHeight: 404,
 				framesCanvasWidth: 2000,
 				framesCanvasHeight: 100,
-				cellsCanvasWidth: self._textureImage !== undefined ? self._textureImage.width : 200,
+				cellsCanvasWidth: self._textureImage !== undefined ? self._textureImage.width : 500,
 				cellsCanvasHeight: self._textureImage !== undefined ? self._textureImage.height : 404
 			},
 			callback: function (err, dialogElem) {
