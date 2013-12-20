@@ -4,6 +4,7 @@ var igeCoreConfig = {
 		['c', 'IgeStackTrace', 'components/stackTrace/lib_stack.js'],
 		/* The IGE Core Files */
 		['csap', 'IgeBase', 'core/IgeBase.js'],
+		['csap', 'IgeArray', 'core/IgeArray.js'],
 		['csap', 'IgeClass', 'core/IgeClass.js'],
 		['csap', 'IgeEventingClass', 'core/IgeEventingClass.js'],
 		/* Data Classes */

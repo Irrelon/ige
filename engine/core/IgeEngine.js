@@ -152,7 +152,7 @@ var IgeEngine = IgeEntity.extend({
 	 * all objects for.
 	 */
 	$$: function (categoryName) {
-		return this._categoryRegister[categoryName] || [];
+		return this._categoryRegister[categoryName] || new IgeArray();
 	},
 
 	/**
@@ -162,7 +162,7 @@ var IgeEngine = IgeEntity.extend({
 	 * all objects for.
 	 */
 	$$$: function (groupName) {
-		return this._groupRegister[groupName] || [];
+		return this._groupRegister[groupName] || new IgeArray();
 	},
 
 	/**
@@ -217,7 +217,7 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	categoryRegister: function (obj) {
 		if (obj !== undefined) {
-			this._categoryRegister[obj._category] = this._categoryRegister[obj._category] || [];
+			this._categoryRegister[obj._category] = this._categoryRegister[obj._category] || new IgeArray();
 			this._categoryRegister[obj._category].push(obj);
 			obj._categoryRegistered = true;
 		}
@@ -253,7 +253,7 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	groupRegister: function (obj, groupName) {
 		if (obj !== undefined) {
-			this._groupRegister[groupName] = this._groupRegister[groupName] || [];
+			this._groupRegister[groupName] = this._groupRegister[groupName] || new IgeArray();
 			this._groupRegister[groupName].push(obj);
 			obj._groupRegistered = true;
 		}
