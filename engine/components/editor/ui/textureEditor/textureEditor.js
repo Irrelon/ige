@@ -24,7 +24,6 @@ var UiTextureEditor = IgeEventingClass.extend({
 		var self = this;
 		
 		self._tempImages = [];
-		self._cells = [];
 		self._imageLoaded = false;
 		self._cellWidth = 0;
 		self._cellHeight = 0;
@@ -137,7 +136,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 		dropFunc = function (e) {
 			var event = e.originalEvent,
 				dataTransfer = event.dataTransfer,
-				reader;
+				i;
 			
 			event.preventDefault();
 			event.stopPropagation();
@@ -189,14 +188,15 @@ var UiTextureEditor = IgeEventingClass.extend({
 							
 							for (i = 0; i < self._tempImages.length; i++) {
 								if (!self._imageLoaded) {
-									// This is the first image
-									// Set the cell width and height from this image
 									self._cellWidth = self._tempImages[i].width;
 									self._cellHeight = self._tempImages[i].height;
 								}
 								
-								self._cells[x] = self._cells[x] || [];
-								self._cells[x][y] = self._tempImages[i];
+								self.addImage({
+									x: x,
+									y: y
+								}, self._tempImages[i]);
+								
 								self._imageLoaded = true;
 								
 								x++;
@@ -425,6 +425,14 @@ var UiTextureEditor = IgeEventingClass.extend({
 	},
 	
 	resizeBackBuffer: function (newWidth, newHeight) {
+		if (newWidth < 1) {
+			newWidth = 1;
+		}
+		
+		if (newHeight < 1) {
+			newHeight = 1;
+		}
+		
 		var newBackBuffer = document.createElement('canvas'),
 			nbbCtx = newBackBuffer.getContext('2d');
 		
@@ -494,7 +502,7 @@ var UiTextureEditor = IgeEventingClass.extend({
 		
 		for (j = 0; j < cellW; j++) {
 			for (k = 0; k < cellH; k++) {
-				self._cells[j + cellX] = self._cells[j] || [];
+				self._cells[j + cellX] = self._cells[j + cellX] || [];
 				self._cells[j + cellX][k + cellY] = true;
 			}
 		}
