@@ -4,7 +4,6 @@ var igeCoreConfig = {
 		['c', 'IgeStackTrace', 'components/stackTrace/lib_stack.js'],
 		/* The IGE Core Files */
 		['csap', 'IgeBase', 'core/IgeBase.js'],
-		['csap', 'IgeArray', 'core/IgeArray.js'],
 		['csap', 'IgeClass', 'core/IgeClass.js'],
 		['csap', 'IgeEventingClass', 'core/IgeEventingClass.js'],
 		/* Data Classes */
@@ -91,6 +90,7 @@ var igeCoreConfig = {
 		['csap', 'IgeTimeout', 'core/IgeTimeout.js'],
 		['csap', 'IgeCuboidSmartTexture', 'assets/IgeCuboidSmartTexture.js'],
 		['csap', 'IgeCuboid', 'primitives/IgeCuboid.js'],
+		['csap', 'IgeArray', 'core/IgeArray.js'],
 		/* Physics to Entity Components */
 		['csap', 'IgeBox2dComponent', 'components/physics/box2d/IgeBox2dComponent.js'],
 		['csap', 'IgeBox2dMultiWorldComponent', 'components/physics/box2d/IgeBox2dMultiWorldComponent.js'],
