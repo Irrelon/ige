@@ -1,4 +1,10 @@
 var igeCoreConfig = {
+	/* Includes for the main IGE loader. Flags are indicated as:
+	 * c = client
+	 * s = server
+	 * a = 
+	 * p = prototype
+	 */
 	include: [
 		/* Client-Side Stack Trace Support */
 		['c', 'IgeStackTrace', 'components/stackTrace/lib_stack.js'],
