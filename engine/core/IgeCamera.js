@@ -93,8 +93,14 @@ var IgeCamera = IgeEntity.extend({
 	trackTranslate: function (entity, smoothing, rounding) {
 		if (entity !== undefined) {
 			this.log('Camera on viewport ' + this._entity.id() + ' is now tracking translation target ' + entity.id());
-			this._trackTranslateRounding = rounding;
-			this._trackTranslateSmoothing = smoothing >= 1  ? smoothing : 0;
+			if (rounding !== undefined) {
+				this._trackTranslateRounding = rounding;
+			}
+			
+			if (smoothing !== undefined) {
+				this._trackTranslateSmoothing = smoothing >= 1  ? smoothing : 0;
+			}
+			
 			this._trackTranslateTarget = entity;
 			return this._entity;
 		}
