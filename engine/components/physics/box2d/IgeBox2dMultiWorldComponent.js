@@ -1,5 +1,5 @@
 /**
- * The engine's box2d component class.
+ * The engine's box2d multi-world component class.
  */
 var IgeBox2dMultiWorldComponent = IgeEventingClass.extend({
 	classId: 'IgeBox2dMultiWorldComponent',

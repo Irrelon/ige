@@ -186,7 +186,7 @@
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">mousePos</span>({<span class="argType"><a href="./IgeViewport.html">IgeViewport</a></span>} <span class="argName">viewport</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeViewport.html">IgeViewport</a></span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the entity center.</div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} The mouse point relative to the entity center.</div>
     
 					<div class="methodExample">
 						<div class="content"><h1>Get the mouse position relative to the entity</h1>
@@ -205,7 +205,7 @@ var mousePos = entity.mousePos();
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">mousePosAbsolute</span>({<span class="argType"><a href="./IgeViewport.html">IgeViewport</a></span>} <span class="argName">viewport</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeViewport.html">IgeViewport</a></span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the entity center.</div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} The mouse point relative to the entity center.</div>
     
 					<div class="methodExample">
 						<div class="content"><h1>Get absolute mouse position</h1>
@@ -223,7 +223,7 @@ var mousePos = entity.mousePos();
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">mousePosWorld</span>({<span class="argType"><a href="./IgeViewport.html">IgeViewport</a></span>} <span class="argName">viewport</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeViewport.html">IgeViewport</a></span>}<span class="argName">viewport</span> The viewport to use as the base from which the mouse position is determined. If no viewport is specified then the current viewport the engine is rendering to is used instead.</li></ul></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The mouse point relative to the world center.</div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} The mouse point relative to the world center.</div>
     
 					<div class="methodExample">
 						<div class="content"><h1>Get mouse position in world co-ordinates</h1>
@@ -239,8 +239,8 @@ var mousePos = entity.mousePos();
     <!--=if{desc}[-->
     <div class="methodDesc">Rotates the entity to point at the target point around the z axis.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">rotateToPoint</span>({<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>} <span class="argName">point</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">point</span> The point in world co-ordinates to point the entity at.</li></ul></div>
+    <div class="methodDefinition"><span class="methodName">rotateToPoint</span>({<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>}<span class="argName">point</span> The point in world co-ordinates to point the entity at.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
 					<div class="methodExample">
@@ -262,7 +262,7 @@ var mousePos = entity.mousePos();
 					<div class="methodExample">
 						<div class="content"><h1>Point the entity at an arbitrary point x, y</h1>
 
-<pre><code>entity.rotateToPoint(new IgePoint(x, y, 0));
+<pre><code>entity.rotateToPoint(new IgePoint3d(x, y, 0));
 </code></pre>
 </div>
 					</div>
@@ -394,7 +394,7 @@ entity.heightByTile(1, true);
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">overTiles</span>()</div>
     <div class="methodArgs"></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} The array of tile co-ordinates as IgePoint instances.</div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} The array of tile co-ordinates as IgePoint3d instances.</div>
     
 </div><a name="anchor"></a>
 <h3 class="methodTitle">anchor</h3>
@@ -442,24 +442,50 @@ entity.heightByTile(1, true);
 </div>
 					</div>
 				
-</div><a name="size3d"></a>
-<h3 class="methodTitle">size3d</h3>
+</div><a name="bounds2d"></a>
+<h3 class="methodTitle">bounds2d</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Gets / sets the 3d geometry of the entity. The x and y values are relative to the center of the entity and the z value is wholly positive from the "floor". Primarily used when creating isometric container entities.</div>
+    <div class="methodDesc">Gets / sets the 2d geometry of the entity. The x and y values are relative to the center of the entity. This geometry is used when rendering textures for the entity and positioning in world space as well as UI positioning calculations. It holds no bearing on isometric positioning.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">size3d</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>, {<span class="argType">Number</span>} <span class="argName">z</span>)</div>
+    <div class="methodDefinition"><span class="methodName">bounds2d</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The new x value in pixels.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The new y value in pixels.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Set the dimensions of the entity (width and height)</h1>
+
+<pre><code>entity.bounds2d(40, 40);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="bounds3d"></a>
+<h3 class="methodTitle">bounds3d</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the 3d geometry of the entity. The x and y values are relative to the center of the entity and the z value is wholly positive from the "floor". Used to define a 3d bounding cuboid for the entity used in isometric depth sorting and hit testing.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">bounds3d</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>, {<span class="argType">Number</span>} <span class="argName">z</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The new x value in pixels.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The new y value in pixels.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The new z value in pixels.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
     
 					<div class="methodExample">
 						<div class="content"><h1>Set the dimensions of the entity (width, height and length)</h1>
 
-<pre><code>entity.size3d(40, 40, 20);
+<pre><code>entity.bounds3d(40, 40, 20);
 </code></pre>
 </div>
 					</div>
 				
+</div><a name="size3d"></a>
+<h3 class="methodTitle">size3d</h3>
+<div class="methodSection">
+    <!---->
+    <div class="methodDefinition"><span class="methodName">size3d</span>({<span class="argType"></span>} <span class="argName">x</span>, {<span class="argType"></span>} <span class="argName">y</span>, {<span class="argType"></span>} <span class="argName">z</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
 </div><a name="lifeSpan"></a>
 <h3 class="methodTitle">lifeSpan</h3>
 <div class="methodSection">
@@ -677,11 +703,11 @@ entity.texture(texture)
 <h3 class="methodTitle">worldPosition</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Returns the absolute world position of the entity as an IgePoint.</div>
+    <div class="methodDesc">Returns the absolute world position of the entity as an IgePoint3d.</div>
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">worldPosition</span>()</div>
     <div class="methodArgs"></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The absolute world position of the entity.</div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} The absolute world position of the entity.</div>
     
 					<div class="methodExample">
 						<div class="content"><h1>Get the world position of the entity</h1>
@@ -725,19 +751,19 @@ entity.texture(texture)
     <!--=if{desc}[-->
     <div class="methodDesc">Converts a point from local space to this entity's world space using it's world transform matrix. This will alter the point's data directly.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">localToWorldPoint</span>({<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>} <span class="argName">point</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">point</span> The IgePoint to convert.</li></ul></div>
+    <div class="methodDefinition"><span class="methodName">localToWorldPoint</span>({<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>}<span class="argName">point</span> The IgePoint3d to convert.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
 </div><a name="screenPosition"></a>
 <h3 class="methodTitle">screenPosition</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Returns the screen position of the entity as an IgePoint where x is the "left" and y is the "top", useful for positioning HTML elements at the screen location of an IGE entity. This method assumes that the top-left of the main canvas element is at 0, 0. If not you can adjust the values yourself to allow for offset.</div>
+    <div class="methodDesc">Returns the screen position of the entity as an IgePoint3d where x is the "left" and y is the "top", useful for positioning HTML elements at the screen location of an IGE entity. This method assumes that the top-left of the main canvas element is at 0, 0. If not you can adjust the values yourself to allow for offset.</div>
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">screenPosition</span>()</div>
     <div class="methodArgs"></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The screen position of the entity.</div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} The screen position of the entity.</div>
     
 					<div class="methodExample">
 						<div class="content"><h1>Get the screen position of the entity</h1>
@@ -747,6 +773,30 @@ entity.texture(texture)
 </div>
 					</div>
 				
+</div><a name="localIsoBoundsPoly"></a>
+<h3 class="methodTitle">localIsoBoundsPoly</h3>
+<div class="methodSection">
+    <!---->
+    <div class="methodDefinition"><span class="methodName">localIsoBoundsPoly</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="isoBoundsPoly"></a>
+<h3 class="methodTitle">isoBoundsPoly</h3>
+<div class="methodSection">
+    <!---->
+    <div class="methodDefinition"><span class="methodName">isoBoundsPoly</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="mouseInIsoBounds"></a>
+<h3 class="methodTitle">mouseInIsoBounds</h3>
+<div class="methodSection">
+    <!---->
+    <div class="methodDefinition"><span class="methodName">mouseInIsoBounds</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
 </div><a name="aabb"></a>
 <h3 class="methodTitle">aabb</h3>
 <div class="methodSection">
@@ -1016,14 +1066,14 @@ entity._transformContext(ctx);
     <!--=if{desc}[-->
     <div class="methodDesc">Transforms a point by the entity's parent world matrix and it's own local matrix transforming the point to this entity's world space.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">_transformPoint</span>({<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>} <span class="argName">point</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">point</span> The point to transform.</li></ul></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The transformed point.</div>
+    <div class="methodDefinition"><span class="methodName">_transformPoint</span>({<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>}<span class="argName">point</span> The point to transform.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} The transformed point.</div>
     
 					<div class="methodExample">
 						<div class="content"><h1>Transform a point by the entity's world matrix values</h1>
 
-<pre><code>var point = new IgePoint(0, 0, 0);
+<pre><code>var point = new IgePoint3d(0, 0, 0);
 entity._transformPoint(point);
 
 console.log(point);
@@ -1039,16 +1089,6 @@ console.log(point);
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">_transformPoints</span>({<span class="argType">Array</span>} <span class="argName">points</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">points</span> The points array to transform.</li></ul></div>
-    <div class="methodReturnDesc"></div>
-    
-</div><a name="_mouseInTrigger"></a>
-<h3 class="methodTitle">_mouseInTrigger</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Checks mouse input types and fires the correct mouse event handler. This is an internal method that should never be called externally.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">_mouseInTrigger</span>({<span class="argType">Object</span>} <span class="argName">evc</span>, {<span class="argType">Object</span>} <span class="argName">data</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">evc</span> The input component event control object.</li><li>{<span class="argType">Object</span>}<span class="argName">data</span> Data passed by the input component into the new event.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
 </div><a name="_stringify"></a>
@@ -1269,6 +1309,45 @@ console.log(point);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
+</div><a name="mouseWheel"></a>
+<h3 class="methodTitle">mouseWheel</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the callback that is fired when a mouse wheel event is triggered.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">mouseWheel</span>({<span class="argType">Function</span>} <span class="argName">callback</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">callback</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Hook the mouse wheel event and stop it propagating further down the scenegraph</h1>
+
+<pre><code>entity.mouseWheel(function (event, control) {
+    // Mouse wheel with button
+    console.log('Mouse wheel button: ' + event.button);
+    console.log('Mouse wheel delta: ' + event.wheelDelta);
+
+    // Stop the event propagating further down the scenegraph
+    control.stopPropagation();
+
+    // You can ALSO stop propagation without the control object
+    // reference via the global reference:
+    ige.input.stopPropagation();
+});
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="mouseWheelOff"></a>
+<h3 class="methodTitle">mouseWheelOff</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes the callback that is fired when a mouse wheel event is triggered.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">mouseWheelOff</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
 </div><a name="mouseEventTrigger"></a>
 <h3 class="methodTitle">mouseEventTrigger</h3>
 <div class="methodSection">
@@ -1299,6 +1378,16 @@ console.log(point);
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
+</div><a name="_handleMouseWheel"></a>
+<h3 class="methodTitle">_handleMouseWheel</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Handler method that determines if a mouse-wheel event should be fired.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_handleMouseWheel</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
 </div><a name="_handleMouseUp"></a>
 <h3 class="methodTitle">_handleMouseUp</h3>
 <div class="methodSection">
@@ -1317,6 +1406,16 @@ console.log(point);
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">_handleMouseDown</span>()</div>
     <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_mouseInTrigger"></a>
+<h3 class="methodTitle">_mouseInTrigger</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Checks mouse input types and fires the correct mouse event handler. This is an internal method that should never be called externally.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_mouseInTrigger</span>({<span class="argType">Object</span>} <span class="argName">evc</span>, {<span class="argType">Object</span>} <span class="argName">data</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">evc</span> The input component event control object.</li><li>{<span class="argType">Object</span>}<span class="argName">data</span> Data passed by the input component into the new event.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
 </div><a name="translateBy"></a>
@@ -1361,14 +1460,14 @@ console.log(point);
     <!--=if{desc}[-->
     <div class="methodDesc">Translates the entity to the passed point.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">translateToPoint</span>({<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>} <span class="argName">point</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">point</span> The point with co-ordinates.</li></ul></div>
+    <div class="methodDefinition"><span class="methodName">translateToPoint</span>({<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>}<span class="argName">point</span> The point with co-ordinates.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
 					<div class="methodExample">
 						<div class="content"><h1>Translate the entity to 10, 0, 0</h1>
 
-<pre><code>var point = new IgePoint(10, 0, 0),
+<pre><code>var point = new IgePoint3d(10, 0, 0),
     entity = new IgeEntity();
 
 entity.translateToPoint(point);
@@ -1898,8 +1997,8 @@ entity.streamFloatPrecision(2);
     <!--=if{desc}[-->
     <div class="methodDesc">Asks the stream system to queue the stream data to the specified client id or array of ids.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">_streamSync</span>({<span class="argType">Array</span>} <span class="argName">recipientArr</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">recipientArr</span> The array of ids of the client(s) to queue stream data for. The stream data being queued is returned by a call to this._streamData().</li></ul></div>
+    <div class="methodDefinition"><span class="methodName">_streamSync</span>({<span class="argType">Array</span>} <span class="argName">recipientArr</span>, {<span class="argType">String</span>} <span class="argName">streamRoomId</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">recipientArr</span> The array of ids of the client(s) to queue stream data for. The stream data being queued is returned by a call to this._streamData().</li><li>{<span class="argType">String</span>}<span class="argName">streamRoomId</span> The id of the room the entity belongs in (can be undefined or null if no room assigned).</li></ul></div>
     <div class="methodReturnDesc"></div>
     
 </div><a name="streamForceUpdate"></a>

@@ -1,0 +1,249 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgePoint2d <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/core/IgePoint2d.js">IgePoint2d.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">Creates a new 2d point (x, y).</div>
+</div>
+<!--=if{extends}[-->
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="IgeClass.html">IgeClass</a></div>
+</div>
+<!--=if{extends}]-->
+<h2>Methods</h2><a name="floor"></a>
+<h3 class="methodTitle">floor</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the floor mode of this point. If set to true the point's data will be mathematically floored when they are assigned.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">floor</span>({<span class="argType"></span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="compare"></a>
+<h3 class="methodTitle">compare</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Compares this point's x, y data with the passed point and returns true if they are the same and false if any is different.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">compare</span>({<span class="argType"><a href="./IgePoint2d.html">IgePoint2d</a></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint2d.html">IgePoint2d</a></span>}<span class="argName">point</span> The point to compare data with.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+    
+</div><a name="copy"></a>
+<h3 class="methodTitle">copy</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Copies the x, y data from the passed point and overwrites this point's data with those values.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">copy</span>({<span class="argType"><a href="./IgePoint2d.html">IgePoint2d</a></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint2d.html">IgePoint2d</a></span>}<span class="argName">point</span> The point to copy values from.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="toIso"></a>
+<h3 class="methodTitle">toIso</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Converts the point's x, y to an isometric x, y 2d co-ordinate and returns an object whose x, y values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">toIso</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Object</span>} </div>
+    
+</div><a name="thisToIso"></a>
+<h3 class="methodTitle">thisToIso</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Converts this point's x, y data into isometric co-ordinate space and overwrites the previous x, y values with the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisToIso</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="to2d"></a>
+<h3 class="methodTitle">to2d</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Converts this point's x, y data into 2d co-ordinate space and returns an object whose x, y values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">to2d</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Object</span>} </div>
+    
+</div><a name="thisTo2d"></a>
+<h3 class="methodTitle">thisTo2d</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Converts this point's x, y data into 2d co-ordinate space and overwrites the previous x, y values with the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisTo2d</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="addPoint"></a>
+<h3 class="methodTitle">addPoint</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Adds this point's data by the x, y, values specified and returns a new IgePoint2d whose values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">addPoint</span>({<span class="argType"></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="thisAddPoint"></a>
+<h3 class="methodTitle">thisAddPoint</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Adds this point's data by the x, y values specified and overwrites the previous x, y values with the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisAddPoint</span>({<span class="argType"></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="minusPoint"></a>
+<h3 class="methodTitle">minusPoint</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Minuses this point's data by the x, y values specified and returns a new IgePoint2d whose values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">minusPoint</span>({<span class="argType"></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="thisMinusPoint"></a>
+<h3 class="methodTitle">thisMinusPoint</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Minuses this point's data by the x, y values specified and overwrites the previous x, y values with the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisMinusPoint</span>({<span class="argType"></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="multiply"></a>
+<h3 class="methodTitle">multiply</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Multiplies this point's data by the x, y values specified and returns a new IgePoint2d whose values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">multiply</span>({<span class="argType"></span>} <span class="argName">x</span>, {<span class="argType"></span>} <span class="argName">y</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="multiplyPoint"></a>
+<h3 class="methodTitle">multiplyPoint</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Multiplies this point's data by the point specified and returns a new IgePoint2d whose values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">multiplyPoint</span>({<span class="argType"><a href="./IgePoint2d.html">IgePoint2d</a></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint2d.html">IgePoint2d</a></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="thisMultiply"></a>
+<h3 class="methodTitle">thisMultiply</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Multiplies this point's data by the x, y values specified and overwrites the previous x, y values with the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisMultiply</span>({<span class="argType"></span>} <span class="argName">x</span>, {<span class="argType"></span>} <span class="argName">y</span>, {<span class="argType"></span>} <span class="argName">z</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">z</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="divide"></a>
+<h3 class="methodTitle">divide</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Divides this point's data by the x, y values specified and returns a new IgePoint2d whose values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">divide</span>({<span class="argType"></span>} <span class="argName">x</span>, {<span class="argType"></span>} <span class="argName">y</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="dividePoint"></a>
+<h3 class="methodTitle">dividePoint</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Divides this point's data by the point specified and returns a new IgePoint2d whose values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">dividePoint</span>({<span class="argType"><a href="./IgePoint2d.html">IgePoint2d</a></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint2d.html">IgePoint2d</a></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="thisDivide"></a>
+<h3 class="methodTitle">thisDivide</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Divides this point's data by the x, y values specified and overwrites the previous x, y values with the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisDivide</span>({<span class="argType"></span>} <span class="argName">x</span>, {<span class="argType"></span>} <span class="argName">y</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="clone"></a>
+<h3 class="methodTitle">clone</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a clone of this IgePoint2d's data as a new instance.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">clone</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="interpolate"></a>
+<h3 class="methodTitle">interpolate</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Interpolates the x, y values of this point towards the endPoint's x, y values based on the passed time variables and returns a new IgePoint2d whose values are the result.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">interpolate</span>({<span class="argType"></span>} <span class="argName">endPoint</span>, {<span class="argType"></span>} <span class="argName">startTime</span>, {<span class="argType"></span>} <span class="argName">currentTime</span>, {<span class="argType"></span>} <span class="argName">endTime</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">endPoint</span> </li><li>{<span class="argType"></span>}<span class="argName">startTime</span> </li><li>{<span class="argType"></span>}<span class="argName">currentTime</span> </li><li>{<span class="argType"></span>}<span class="argName">endTime</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="rotate"></a>
+<h3 class="methodTitle">rotate</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Rotates the point by the given radians.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">rotate</span>({<span class="argType">Number</span>} <span class="argName">radians</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">radians</span> Radians to rotate by.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint2d</span>} A new point with the rotated x, y.</div>
+    
+</div><a name="thisRotate"></a>
+<h3 class="methodTitle">thisRotate</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Rotates the point by the given radians and updates this point to the new x, y values.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">thisRotate</span>({<span class="argType">Number</span>} <span class="argName">radians</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">radians</span> Radians to rotate by.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint2d</span>} This point.</div>
+    
+</div><a name="toString"></a>
+<h3 class="methodTitle">toString</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a string representation of the point's x, y converting floating point values into fixed using the passed precision parameter. If no precision is specified then the precision defaults to 2.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">toString</span>({<span class="argType">Number</span>} <span class="argName">precision</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">precision</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
+    
+</div>	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>
