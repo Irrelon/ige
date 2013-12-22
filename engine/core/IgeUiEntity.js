@@ -14,7 +14,8 @@ var IgeUiEntity = IgeEntity.extend([
 		IgeEntity.prototype.init.call(this);
 
 		// Set some defaults
-		this._color = '#000000';
+		this._width = 0;
+		this._height = 0;
 		this._borderLeftWidth = 0;
 		this._borderTopWidth = 0;
 		this._borderRightWidth = 0;
@@ -30,15 +31,6 @@ var IgeUiEntity = IgeEntity.extend([
 		this._paddingBottom = 0;
 	},
 	
-	disabled: function (val) {
-		if (val !== undefined) {
-			this._disabled = val;
-			return this;
-		}
-		
-		return this._disabled;
-	},
-	
 	overflow: function (val) {
 		if (val !== undefined) {
 			this._overflow = val;
@@ -49,7 +41,7 @@ var IgeUiEntity = IgeEntity.extend([
 	},
 
 	_renderBackground: function (ctx) {
-		var geom = this._bounds2d,
+		var geom = this._geometry,
 			left, top, width, height;
 
 		if (this._backgroundColor || this._patternFill) {
@@ -154,7 +146,7 @@ var IgeUiEntity = IgeEntity.extend([
 
 	_renderBorder: function (ctx) {
 		var rad,
-			geom = this._bounds2d,
+			geom = this._geometry,
 			left = (-(geom.x2) | 0) + 0.5,
 			top = (-(geom.y2) | 0) + 0.5,
 			width = geom.x - 1,
@@ -170,7 +162,13 @@ var IgeUiEntity = IgeEntity.extend([
 			ctx.lineWidth = this._borderWidth;
 			ctx.strokeRect(left, top, width, height);
 		} else {
+			var startNewStroke = function() {
+				ctx.stroke();
+				ctx.beginPath();
+			};		
 			rad = Math.PI / 180;
+			
+			ctx.beginPath();
 			if (this._borderTopWidth) {
 				// Top-left corner top-half
 				ctx.strokeStyle = this._borderTopColor;
@@ -178,99 +176,82 @@ var IgeUiEntity = IgeEntity.extend([
 
 				if (this._borderTopLeftRadius > 0) {
 					// Top-left corner top-half
-					ctx.beginPath();
-						ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 225 * rad, 270 * rad);
-					ctx.stroke();
+					ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 225 * rad, 270 * rad);
 				}
 
 				// Top border
-				ctx.beginPath();
 				ctx.moveTo(left + this._borderTopLeftRadius, top);
 				ctx.lineTo(left + width - this._borderTopRightRadius, top);
-				ctx.stroke();
 
 				if (this._borderTopRightRadius > 0) {
 					// Top-right corner top-half
-					ctx.beginPath();
-						ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -90 * rad, -45 * rad);
-					ctx.stroke();
+					ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -90 * rad, -45 * rad);
 				}
 			}
-
+			
+			if (!this._borderRightWidth || this._borderTopColor != this._borderRightColor || this._borderTopWidth != this._borderRightWidth)
+				startNewStroke();
 			if (this._borderRightWidth) {
 				// Top-right corner bottom-half
 				ctx.strokeStyle = this._borderRightColor;
 				ctx.lineWidth = this._borderRightWidth;
 
 				if (this._borderTopRightRadius > 0) {
-					ctx.beginPath();
-						ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -45 * rad, 0);
-					ctx.stroke();
+					ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -45 * rad, 0);
 				}
 
 				// Right border
-				ctx.beginPath();
 				ctx.moveTo(left + width, top + this._borderTopRightRadius);
 				ctx.lineTo(left + width, top + height - this._borderBottomRightRadius);
-				ctx.stroke();
 
 				if (this._borderBottomRightRadius > 0) {
 					// Bottom-right corner top-half
-					ctx.beginPath();
-						ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderTopRightRadius, 0, 45 * rad);
-					ctx.stroke();
+					ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderTopRightRadius, 0, 45 * rad);
 				}
 			}
 
+			if (!this._borderBottomWidth || this._borderRightColor != this._borderBottomColor || this._borderRightWidth != this._borderBottomWidth)
+				startNewStroke();
 			if (this._borderBottomWidth) {
 				// Bottom-right corner bottom-half
 				ctx.strokeStyle = this._borderBottomColor;
 				ctx.lineWidth = this._borderBottomWidth;
 
 				if (this._borderBottomRightRadius > 0) {
-					ctx.beginPath();
-						ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderBottomRightRadius, 45 * rad, 90 * rad);
-					ctx.stroke();
+					ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderBottomRightRadius, 45 * rad, 90 * rad);
 				}
 
 				// Bottom border
-				ctx.beginPath();
 				ctx.moveTo(left + width - this._borderBottomRightRadius, top + height);
 				ctx.lineTo(left + this._borderBottomLeftRadius, top + height);
-				ctx.stroke();
 
 				if (this._borderBottomLeftRadius > 0) {
 					// Bottom-left corner bottom-half
-					ctx.beginPath();
-						ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 90 * rad, 135 * rad);
-					ctx.stroke();
+					ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 90 * rad, 135 * rad);
 				}
 			}
 
+			if (!this._borderLeftWidth || this._borderBottomColor != this._borderLeftColor || this._borderBottomWidth != this._borderLeftWidth)
+				startNewStroke();
 			if (this._borderLeftWidth) {
 				// Bottom-left corner top-half
 				ctx.strokeStyle = this._borderLeftColor;
 				ctx.lineWidth = this._borderLeftWidth;
 
 				if (this._borderBottomLeftRadius > 0) {
-					ctx.beginPath();
-						ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 135 * rad, 180 * rad);
-					ctx.stroke();
+					ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 135 * rad, 180 * rad);
 				}
 
 				// Left border
-				ctx.beginPath();
 				ctx.moveTo(left, top + height - this._borderBottomLeftRadius);
 				ctx.lineTo(left, top + this._borderTopLeftRadius);
-				ctx.stroke();
 
 				if (this._borderTopLeftRadius > 0) {
 					// Top-left corner bottom-half
-					ctx.beginPath();
-						ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 180 * rad, 225 * rad);
-					ctx.stroke();
+					ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 180 * rad, 225 * rad);
 				}
 			}
+			ctx.stroke();
 		}
 	},
 
@@ -291,16 +272,7 @@ var IgeUiEntity = IgeEntity.extend([
 		var ret = IgeEntity.prototype.mount.call(this, obj);
 
 		if (this._parent) {
-			// Now we're mounted update our ui calculations since we have a parent
-			// to calculate from
-			if (this._updateUiPosition) {
-				this._updateUiPosition();
-			}
-			
-			// Also update any children if we have any
-			if(this._children.length) {
-				this.updateUiChildren();
-			}
+			this._updateUiPosition();
 		}
 
 		return ret;
@@ -320,7 +292,7 @@ var IgeUiEntity = IgeEntity.extend([
 			if (this._overflow === 'hidden') {
 				// Limit drawing of child entities to within the bounds
 				// of this one
-				var geom = this._bounds2d,
+				var geom = this._geometry,
 					left = -(geom.x / 2) + this._paddingLeft | 0,
 					top = -(geom.y / 2) + (this._paddingTop) | 0,
 					width = geom.x + this._paddingRight,
@@ -342,12 +314,7 @@ var IgeUiEntity = IgeEntity.extend([
 	 * @private
 	 */
 	_resizeEvent: function (event) {
-		
-		if (this._updateUiPosition) {
-			this._updateUiPosition();
-		} else {
-			debugger;
-		}
+		this._updateUiPosition();
 		IgeEntity.prototype._resizeEvent.call(this, event);
 	}
 });
