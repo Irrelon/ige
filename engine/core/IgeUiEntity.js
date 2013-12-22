@@ -14,8 +14,7 @@ var IgeUiEntity = IgeEntity.extend([
 		IgeEntity.prototype.init.call(this);
 
 		// Set some defaults
-		this._width = 0;
-		this._height = 0;
+		this._color = '#000000';
 		this._borderLeftWidth = 0;
 		this._borderTopWidth = 0;
 		this._borderRightWidth = 0;
@@ -31,6 +30,15 @@ var IgeUiEntity = IgeEntity.extend([
 		this._paddingBottom = 0;
 	},
 	
+	disabled: function (val) {
+		if (val !== undefined) {
+			this._disabled = val;
+			return this;
+		}
+		
+		return this._disabled;
+	},
+	
 	overflow: function (val) {
 		if (val !== undefined) {
 			this._overflow = val;
@@ -41,7 +49,7 @@ var IgeUiEntity = IgeEntity.extend([
 	},
 
 	_renderBackground: function (ctx) {
-		var geom = this._geometry,
+		var geom = this._bounds2d,
 			left, top, width, height;
 
 		if (this._backgroundColor || this._patternFill) {
@@ -146,7 +154,7 @@ var IgeUiEntity = IgeEntity.extend([
 
 	_renderBorder: function (ctx) {
 		var rad,
-			geom = this._geometry,
+			geom = this._bounds2d,
 			left = (-(geom.x2) | 0) + 0.5,
 			top = (-(geom.y2) | 0) + 0.5,
 			width = geom.x - 1,
@@ -272,7 +280,16 @@ var IgeUiEntity = IgeEntity.extend([
 		var ret = IgeEntity.prototype.mount.call(this, obj);
 
 		if (this._parent) {
-			this._updateUiPosition();
+			// Now we're mounted update our ui calculations since we have a parent
+			// to calculate from
+			if (this._updateUiPosition) {
+				this._updateUiPosition();
+			}
+			
+			// Also update any children if we have any
+			if(this._children.length) {
+				this.updateUiChildren();
+			}
 		}
 
 		return ret;
@@ -292,7 +309,7 @@ var IgeUiEntity = IgeEntity.extend([
 			if (this._overflow === 'hidden') {
 				// Limit drawing of child entities to within the bounds
 				// of this one
-				var geom = this._geometry,
+				var geom = this._bounds2d,
 					left = -(geom.x / 2) + this._paddingLeft | 0,
 					top = -(geom.y / 2) + (this._paddingTop) | 0,
 					width = geom.x + this._paddingRight,
@@ -314,7 +331,12 @@ var IgeUiEntity = IgeEntity.extend([
 	 * @private
 	 */
 	_resizeEvent: function (event) {
-		this._updateUiPosition();
+		
+		if (this._updateUiPosition) {
+			this._updateUiPosition();
+		} else {
+			debugger;
+		}
 		IgeEntity.prototype._resizeEvent.call(this, event);
 	}
 });
