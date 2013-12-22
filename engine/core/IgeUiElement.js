@@ -1,3 +1,9 @@
+/**
+ * Creates a new UI element. UI elements use more resources and CPU
+ * than standard IgeEntity instances but provide a rich set of extra
+ * positioning and styling methods as well as reacting to styles
+ * defined using the IgeUiManagerComponent.
+ */
 var IgeUiElement = IgeUiEntity.extend({
 	classId: 'IgeUiElement',
 
@@ -188,7 +194,9 @@ var IgeUiElement = IgeUiEntity.extend({
 	 *             'padding': [10, 10, 10, 10] // Set padding using multiple values
 	 *         });
 	 * 
-	 * @param styleData
+	 * @param {Object} styleData The style object to apply. This object should
+	 * contain key/value pairs where the key matches a method name and the value
+	 * is the parameter to pass it.
 	 */
 	applyStyle: function (styleData) {
 		var args;
