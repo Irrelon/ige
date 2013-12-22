@@ -1800,7 +1800,11 @@ var IgeEntity = IgeObject.extend({
 			
 			// Translate to the center of the canvas
 			_ctx.translate(-aabbC.x, -aabbC.y);
-			
+
+			/**
+			 * Fires when the entity's composite cache is ready.
+			 * @event IgeEntity#compositeReady
+			 */
 			this.emit('compositeReady');
 		} else {
 			if (this._bounds2d.x > 0 && this._bounds2d.y > 0) {
@@ -2103,8 +2107,7 @@ var IgeEntity = IgeObject.extend({
 	 */
 	destroy: function () {
 		this._alive = false;
-		this.emit('destroyed', this);
-
+		
 		/* CEXCLUDE */
 		// Check if the entity is streaming
 		if (this._streamMode === 1) {
@@ -2112,6 +2115,13 @@ var IgeEntity = IgeObject.extend({
 			this.streamDestroy();
 		}
 		/* CEXCLUDE */
+		
+		/**
+		 * Fires when the entity has been destroyed.
+		 * @event IgeEntity#destroyed
+		 * @param {IgeEntity} The entity that has been destroyed. 
+		 */
+		this.emit('destroyed', this);
 
 		// Call IgeObject.destroy()
 		IgeObject.prototype.destroy.call(this);
@@ -2435,6 +2445,13 @@ var IgeEntity = IgeObject.extend({
 			this._mouseStateOver = true;
 			if (this._mouseOver) { this._mouseOver(event, evc, data); }
 			
+			/**
+			 * Fires when the mouse moves over the entity.
+			 * @event IgeEntity#mouseOver
+			 * @param {Object} The DOM event object.
+			 * @param {Object} The IGE event control object.
+			 * @param {*} Any further event data.
+			 */
 			this.emit('mouseOver', [event, evc, data]);
 		}
 
@@ -2457,6 +2474,13 @@ var IgeEntity = IgeObject.extend({
 			this._mouseStateOver = false;
 			if (this._mouseOut) { this._mouseOut(event, evc, data); }
 			
+			/**
+			 * Fires when the mouse moves away from the entity.
+			 * @event IgeEntity#mouseOut
+			 * @param {Object} The DOM event object.
+			 * @param {Object} The IGE event control object.
+			 * @param {*} Any further event data.
+			 */
 			this.emit('mouseOut', [event, evc, data]);
 		}
 	},
@@ -2468,6 +2492,14 @@ var IgeEntity = IgeObject.extend({
 	 */
 	_handleMouseWheel: function (event, evc, data) {
 		if (this._mouseWheel) { this._mouseWheel(event, evc, data); }
+		
+		/**
+		 * Fires when the mouse wheel is moved over the entity.
+		 * @event IgeEntity#mouseWheel
+		 * @param {Object} The DOM event object.
+		 * @param {Object} The IGE event control object.
+		 * @param {*} Any further event data.
+		 */
 		this.emit('mouseWheel', [event, evc, data]);
 	},
 
@@ -2481,6 +2513,13 @@ var IgeEntity = IgeObject.extend({
 		this._mouseStateDown = false;
 		if (this._mouseUp) { this._mouseUp(event, evc, data); }
 		
+		/**
+		 * Fires when a mouse up occurs on the entity.
+		 * @event IgeEntity#mouseUp
+		 * @param {Object} The DOM event object.
+		 * @param {Object} The IGE event control object.
+		 * @param {*} Any further event data.
+		 */
 		this.emit('mouseUp', [event, evc, data]);
 	},
 
@@ -2494,6 +2533,13 @@ var IgeEntity = IgeObject.extend({
 			this._mouseStateDown = true;
 			if (this._mouseDown) { this._mouseDown(event, evc, data); }
 			
+			/**
+			 * Fires when a mouse down occurs on the entity.
+			 * @event IgeEntity#mouseDown
+			 * @param {Object} The DOM event object.
+			 * @param {Object} The IGE event control object.
+			 * @param {*} Any further event data.
+			 */
 			this.emit('mouseDown', [event, evc, data]);
 		}
 	},
@@ -3868,6 +3914,13 @@ var IgeEntity = IgeObject.extend({
 					previousData = timeStream[timeStream.length - 2];
 					nextData = timeStream[timeStream.length - 1];
 					timeStream.shift();
+					
+					/**
+					 * Fires when the entity interpolates against old data, usually
+					 * the result of slow processing on the client or too much data
+					 * being sent from the server.
+					 * @event IgeEntity#interpolationLag
+					 */
 					this.emit('interpolationLag');
 				}
 			}
