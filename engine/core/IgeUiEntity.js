@@ -185,7 +185,7 @@ var IgeUiEntity = IgeEntity.extend([
 
 				if (this._borderTopRightRadius > 0) {
 					// Top-right corner top-half
-					ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -90 * rad, -45 * rad);
+					ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -90 * rad, -44 * rad); // use -44 instead of -45 to fully connect with next piece
 				}
 			}
 			
@@ -206,7 +206,7 @@ var IgeUiEntity = IgeEntity.extend([
 
 				if (this._borderBottomRightRadius > 0) {
 					// Bottom-right corner top-half
-					ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderTopRightRadius, 0, 45 * rad);
+					ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderTopRightRadius, 0, 46 * rad); // use 46 instead of 45 to fully connect with next piece
 				}
 			}
 
@@ -227,7 +227,7 @@ var IgeUiEntity = IgeEntity.extend([
 
 				if (this._borderBottomLeftRadius > 0) {
 					// Bottom-left corner bottom-half
-					ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 90 * rad, 135 * rad);
+					ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 90 * rad, 136 * rad); // use 136 instead of 135 to fully connect with next piece
 				}
 			}
 
@@ -248,7 +248,7 @@ var IgeUiEntity = IgeEntity.extend([
 
 				if (this._borderTopLeftRadius > 0) {
 					// Top-left corner bottom-half
-					ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 180 * rad, 225 * rad);
+					ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 180 * rad, 226 * rad); // use 226 instead of 225 to fully connect with next piece
 				}
 			}
 			ctx.stroke();
