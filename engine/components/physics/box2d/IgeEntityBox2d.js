@@ -1,5 +1,5 @@
 /**
- * Creates a new isometric 3d entity.
+ * Creates a new entity with box2d integration.
  */
 var IgeEntityBox2d = IgeEntity.extend({
 	classId: 'IgeEntityBox2d',

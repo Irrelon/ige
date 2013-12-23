@@ -1,6 +1,6 @@
 /**
  * Creates a new font entity. A font entity will use a font sheet
- * (IgeFontSheet) and render text based on that font sheet's glyphs.
+ * (IgeFontSheet) or native font and render text.
  */
 var IgeFontEntity = IgeUiEntity.extend({
 	classId: 'IgeFontEntity',
