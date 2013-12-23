@@ -684,8 +684,13 @@ var IgeEntity = IgeObject.extend({
 	 */
 	bounds2d: function (x, y) {
 		if (x !== undefined && y !== undefined) {
-			this._bounds2d = new IgePoint3d(x, y, 0);
+			this._bounds2d = new IgePoint2d(x, y, 0);
 			return this;
+		}
+		
+		if (x !== undefined && y === undefined) {
+			// x is considered an IgePoint2d instance
+			this._bounds2d = new IgePoint2d(x.x, x.y);
 		}
 
 		return this._bounds2d;
