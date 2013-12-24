@@ -1,12 +1,12 @@
 /**
- * Creates a new 2d polygon made up of IgePoint3d instances.
+ * Creates a new 2d polygon made up of IgePoint2d instances.
  */
 var IgePoly2d = IgeClass.extend({
 	classId: 'IgePoly2d',
 
 	init: function () {
 		this._poly = [];
-		this._scale = new IgePoint3d(1, 1, 1);
+		this._scale = new IgePoint2d(1, 1, );
 	},
 
 	scale: function (x, y) {
@@ -66,7 +66,7 @@ var IgePoly2d = IgeClass.extend({
 	 * @param y
 	 */
 	addPoint: function (x, y) {
-		this._poly.push(new IgePoint3d(x, y, 0));
+		this._poly.push(new IgePoint2d(x, y));
 		return this;
 	},
 
@@ -80,7 +80,7 @@ var IgePoly2d = IgeClass.extend({
 
 	/**
 	 * Check if a point is inside this polygon.
-	 * @param {IgePoint3d} point
+	 * @param {IgePoint2d} point
 	 * @return {Boolean}
 	 */
 	pointInPoly: function (point) {
