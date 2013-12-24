@@ -2196,16 +2196,6 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
-	 * Removes the callback that is fired when a mouse
-	 * move event is triggered.
-	 */
-	mouseMoveOff: function () {
-		delete this._mouseMove;
-
-		return this;
-	},
-
-	/**
 	 * Gets / sets the callback that is fired when a mouse
 	 * over event is triggered.
 	 * @param {Function=} callback
@@ -2231,16 +2221,6 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._mouseOver;
-	},
-
-	/**
-	 * Removes the callback that is fired when a mouse
-	 * over event is triggered.
-	 */
-	mouseOverOff: function () {
-		delete this._mouseOver;
-
-		return this;
 	},
 
 	/**
@@ -2272,16 +2252,6 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
-	 * Removes the callback that is fired when a mouse
-	 * out event is triggered.
-	 */
-	mouseOutOff: function () {
-		delete this._mouseOut;
-
-		return this;
-	},
-
-	/**
 	 * Gets / sets the callback that is fired when a mouse
 	 * up event is triggered.
 	 * @param {Function=} callback
@@ -2307,16 +2277,6 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._mouseUp;
-	},
-
-	/**
-	 * Removes the callback that is fired when a mouse
-	 * up event is triggered.
-	 */
-	mouseUpOff: function () {
-		delete this._mouseUp;
-
-		return this;
 	},
 
 	/**
@@ -2346,17 +2306,6 @@ var IgeEntity = IgeObject.extend({
 
 		return this._mouseDown;
 	},
-
-	/**
-	 * Removes the callback that is fired when a mouse
-	 * down event is triggered if the listener was registered
-	 * via the mouseDown() method.
-	 */
-	mouseDownOff: function () {
-		delete this._mouseDown;
-
-		return this;
-	},
 	
 	/**
 	 * Gets / sets the callback that is fired when a mouse
@@ -2385,6 +2334,57 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._mouseWheel;
+	},
+	
+	/**
+	 * Removes the callback that is fired when a mouse
+	 * move event is triggered.
+	 */
+	mouseMoveOff: function () {
+		delete this._mouseMove;
+
+		return this;
+	},
+
+	/**
+	 * Removes the callback that is fired when a mouse
+	 * over event is triggered.
+	 */
+	mouseOverOff: function () {
+		delete this._mouseOver;
+
+		return this;
+	},
+	
+	/**
+	 * Removes the callback that is fired when a mouse
+	 * out event is triggered.
+	 */
+	mouseOutOff: function () {
+		delete this._mouseOut;
+
+		return this;
+	},
+
+	/**
+	 * Removes the callback that is fired when a mouse
+	 * up event is triggered.
+	 */
+	mouseUpOff: function () {
+		delete this._mouseUp;
+
+		return this;
+	},
+	
+	/**
+	 * Removes the callback that is fired when a mouse
+	 * down event is triggered if the listener was registered
+	 * via the mouseDown() method.
+	 */
+	mouseDownOff: function () {
+		delete this._mouseDown;
+
+		return this;
 	},
 
 	/**
