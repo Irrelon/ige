@@ -37,9 +37,9 @@ var IgeEntity = IgeObject.extend({
 		this._highlight = false;
 		this._mouseEventsActive = false;
 
-        this._localMatrix = new IgeMatrix2d(this);
-        this._worldMatrix = new IgeMatrix2d(this);
-		this._oldWorldMatrix = new IgeMatrix2d(this);
+        this._localMatrix = new IgeMatrix2d();
+        this._worldMatrix = new IgeMatrix2d();
+		this._oldWorldMatrix = new IgeMatrix2d();
 
 		this._inView = true;
 		this._hidden = false;
@@ -404,7 +404,7 @@ var IgeEntity = IgeObject.extend({
 				finalZ = this._translate.z;
 			}
 
-			this.translateTo(x * this._parent._tileWidth, y * this._parent._tileHeight, finalZ);
+			this.translateTo((x * this._parent._tileWidth) + this._parent._tileWidth / 2, (y * this._parent._tileHeight) + this._parent._tileWidth / 2, finalZ);
 		} else {
 			this.log('Cannot translate to tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.', 'warning');
 		}
@@ -1024,6 +1024,11 @@ var IgeEntity = IgeObject.extend({
 	localToWorld: function (points, viewport, inverse) {
 		viewport = viewport || ige._currentViewport;
 		
+		if (this._adjustmentMatrix) {
+			// Apply the optional adjustment matrix
+			this._worldMatrix.multiply(this._adjustmentMatrix);
+		}
+		
 		if (!inverse) {
 			this._worldMatrix.transform(points, this);
 		} else {
@@ -1162,111 +1167,55 @@ var IgeEntity = IgeObject.extend({
 				geom,
 				geomX2,
 				geomY2,
-				x, y,
-				tf1;
+				x, y;
 
-			// Handle 2d entities
-			//if (this._mode === 0) {
-				geom = this._bounds2d;
-				geomX2 = geom.x2;
-				geomY2 = geom.y2;
-				
-				x = geomX2;
-				y = geomY2;
+			geom = this._bounds2d;
+			geomX2 = geom.x2;
+			geomY2 = geom.y2;
+			
+			x = geomX2;
+			y = geomY2;
 
-				poly.addPoint(-x + ancX, -y + ancY);
-				poly.addPoint(x + ancX, -y + ancY);
-				poly.addPoint(x + ancX, y + ancY);
-				poly.addPoint(-x + ancX, y + ancY);
+			poly.addPoint(-x + ancX, -y + ancY);
+			poly.addPoint(x + ancX, -y + ancY);
+			poly.addPoint(x + ancX, y + ancY);
+			poly.addPoint(-x + ancX, y + ancY);
 
-				this._renderPos = {x: -x + ancX, y: -y + ancY};
+			this._renderPos = {x: -x + ancX, y: -y + ancY};
 
-				// Convert the poly's points from local space to world space
-				this.localToWorld(poly._poly, null, inverse);
+			// Convert the poly's points from local space to world space
+			this.localToWorld(poly._poly, null, inverse);
 
-				// Get the extents of the newly transformed poly
-				minX = Math.min(
-					poly._poly[0].x,
-					poly._poly[1].x,
-					poly._poly[2].x,
-					poly._poly[3].x
-				);
+			// Get the extents of the newly transformed poly
+			minX = Math.min(
+				poly._poly[0].x,
+				poly._poly[1].x,
+				poly._poly[2].x,
+				poly._poly[3].x
+			);
 
-				minY = Math.min(
-					poly._poly[0].y,
-					poly._poly[1].y,
-					poly._poly[2].y,
-					poly._poly[3].y
-				);
+			minY = Math.min(
+				poly._poly[0].y,
+				poly._poly[1].y,
+				poly._poly[2].y,
+				poly._poly[3].y
+			);
 
-				maxX = Math.max(
-					poly._poly[0].x,
-					poly._poly[1].x,
-					poly._poly[2].x,
-					poly._poly[3].x
-				);
+			maxX = Math.max(
+				poly._poly[0].x,
+				poly._poly[1].x,
+				poly._poly[2].x,
+				poly._poly[3].x
+			);
 
-				maxY = Math.max(
-					poly._poly[0].y,
-					poly._poly[1].y,
-					poly._poly[2].y,
-					poly._poly[3].y
-				);
+			maxY = Math.max(
+				poly._poly[0].y,
+				poly._poly[1].y,
+				poly._poly[2].y,
+				poly._poly[3].y
+			);
 
-				box = new IgeRect(minX, minY, maxX - minX, maxY - minY);
-			//}
-
-			/*// Handle isometric entities
-			if (this._mode === 1) {
-				geom = this._bounds3d;
-				
-				// Top face
-				tf1 = new IgePoint3d(-(geom.x / 2), -(geom.y / 2),  (geom.z / 2)).toIso();
-
-				x = (tf1.x + geom.x) + anc.x;
-				y = tf1.y + anc.y;
-
-				poly.addPoint(-x, -y);
-				poly.addPoint(x, -y);
-				poly.addPoint(x, y);
-				poly.addPoint(-x, y);
-
-				this._renderPos = {x: -x, y: -y};
-
-				// Convert the poly's points from local space to world space
-				this.localToWorld(poly._poly, null, inverse);
-
-				// Get the extents of the newly transformed poly
-				minX = Math.min(
-					poly._poly[0].x,
-					poly._poly[1].x,
-					poly._poly[2].x,
-					poly._poly[3].x
-				);
-
-				minY = Math.min(
-					poly._poly[0].y,
-					poly._poly[1].y,
-					poly._poly[2].y,
-					poly._poly[3].y
-				);
-
-				maxX = Math.max(
-					poly._poly[0].x,
-					poly._poly[1].x,
-					poly._poly[2].x,
-					poly._poly[3].x
-				);
-
-				maxY = Math.max(
-					poly._poly[0].y,
-					poly._poly[1].y,
-					poly._poly[2].y,
-					poly._poly[3].y
-				);
-
-				box = new IgeRect(Math.floor(minX), Math.floor(minY), Math.floor(maxX - minX), Math.floor(maxY - minY));
-			}*/
+			box = new IgeRect(minX, minY, maxX - minX, maxY - minY);
 
 			this._aabb = box;
 			this._aabbDirty = false;
@@ -1699,42 +1648,15 @@ var IgeEntity = IgeObject.extend({
 			this._processTickBehaviours(ctx);
 			
 			// Process any mouse events we need to do
-			var mp, mouseTriggerPoly, mouseX, mouseY,
-				self = this;
-
-			if (this._mouseEventsActive && ige._currentViewport) {
-				mp = this.mousePosWorld();
-
-				if (mp) {
-					mouseX = mp.x;
-					mouseY = mp.y;
-					
-					// Use the trigger polygon if defined
-					if (this._triggerPolygon && this[this._triggerPolygon]) {
-						mouseTriggerPoly = this[this._triggerPolygon]();
-					} else {
-						// Default to either aabb or bounds3dPolygon depending on entity parent mounting mode
-						if (this._parent && this._parent._mountMode === 1) {
-							// Use bounds3dPolygon
-							mouseTriggerPoly = this.bounds3dPolygon();
-						} else {
-							// Use aabb
-							mouseTriggerPoly = this.aabb();
-						}
-					}
-					
-					// Check if the current mouse position is inside this aabb
-					if (this._mouseAlwaysInside || mouseTriggerPoly.xyInside(mouseX, mouseY)) {
-						// Point is inside the trigger bounds
-						ige.input.queueEvent(this, this._mouseInTrigger);
-					} else {
-						if (ige.input.mouseMove) {
-							// There is a mouse move event but we are not inside the entity
-							// so fire a mouse out event (_handleMouseOut will check if the
-							// mouse WAS inside before firing an out event).
-							self._handleMouseOut(ige.input.mouseMove);
-						}
-					}
+			if (this._processTriggerHitTests()) {
+				// Point is inside the trigger bounds
+				ige.input.queueEvent(this, this._mouseInTrigger, null);
+			} else {
+				if (ige.input.mouseMove) {
+					// There is a mouse move event but we are not inside the entity
+					// so fire a mouse out event (_handleMouseOut will check if the
+					// mouse WAS inside before firing an out event).
+					this._handleMouseOut(ige.input.mouseMove);
 				}
 			}
 
@@ -1778,6 +1700,39 @@ var IgeEntity = IgeObject.extend({
 				IgeObject.prototype.tick.call(this, ctx);
 			}
 		}
+	},
+	
+	_processTriggerHitTests: function () {
+		var mp, mouseTriggerPoly;
+
+		if (this._mouseEventsActive && ige._currentViewport) {
+			if (!this._mouseAlwaysInside) {
+				mp = this.mousePosWorld();
+	
+				if (mp) {
+					// Use the trigger polygon if defined
+					if (this._triggerPolygon && this[this._triggerPolygon]) {
+						mouseTriggerPoly = this[this._triggerPolygon](mp);
+					} else {
+						// Default to either aabb or bounds3dPolygon depending on entity parent mounting mode
+						if (this._parent && this._parent._mountMode === 1) {
+							// Use bounds3dPolygon
+							mouseTriggerPoly = this.bounds3dPolygon();
+						} else {
+							// Use aabb
+							mouseTriggerPoly = this.aabb();
+						}
+					}
+					
+					// Check if the current mouse position is inside this aabb
+					return mouseTriggerPoly.xyInside(mp.x, mp.y);
+				}
+			} else {
+				return true;
+			}
+		}
+		
+		return false;
 	},
 	
 	_refreshCache: function (dontTransform) {
@@ -2583,6 +2538,54 @@ var IgeEntity = IgeObject.extend({
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// TRANSFORM
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Enables tracing calls which inadvertently assign NaN values to
+	 * transformation properties. When called on an entity this system
+	 * will break with a debug line when a transform property is set
+	 * to NaN allowing you to step back through the call stack and 
+	 * determine where the offending value originated.
+	 * @returns {IgeEntity}
+	 */
+	debugTransforms: function () {
+		ige.traceSet(this._translate, 'x', 1, function (val) {
+			return isNaN(val);
+		});
+		
+		ige.traceSet(this._translate, 'y', 1, function (val) {
+			return isNaN(val);
+		});
+		
+		ige.traceSet(this._translate, 'z', 1, function (val) {
+			return isNaN(val);
+		});
+		
+		ige.traceSet(this._rotate, 'x', 1, function (val) {
+			return isNaN(val);
+		});
+		
+		ige.traceSet(this._rotate, 'y', 1, function (val) {
+			return isNaN(val);
+		});
+		
+		ige.traceSet(this._rotate, 'z', 1, function (val) {
+			return isNaN(val);
+		});
+		
+		ige.traceSet(this._scale, 'x', 1, function (val) {
+			return isNaN(val);
+		});
+		
+		ige.traceSet(this._scale, 'y', 1, function (val) {
+			return isNaN(val);
+		});
+		
+		ige.traceSet(this._scale, 'z', 1, function (val) {
+			return isNaN(val);
+		});
+		
+		return this;
+	},
+	
 	/**
 	 * Translates the entity by adding the passed values to
 	 * the current translation values.
