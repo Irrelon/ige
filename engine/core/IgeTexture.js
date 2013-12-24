@@ -16,7 +16,7 @@ var IgeTexture = IgeEventingClass.extend({
 		this._loaded = false;
 		
 		/* CEXCLUDE */
-		// If on a server, import the relevant libraries
+		// If on a server, error
 		if (ige.isServer) {
 			this.log('Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don\'t try to load a texture on the server-side using something like an if statement around your texture laoding such as "if (ige.isClient) {}".', 'error');
 			return this;
@@ -291,24 +291,29 @@ var IgeTexture = IgeEventingClass.extend({
 			rs_sandboxContext,
 			self = this,
 			scriptElem;
-
-		//ige.textureLoadStart(scriptUrl, this);
-
-		// Store the script data
-		self._mode = 1;
-		self.script = scriptObj;
-
-		// Run the asset script init method
-		if (typeof(scriptObj.init) === 'function') {
-			scriptObj.init.apply(scriptObj, [self]);
+		
+		// Check the object has a render method
+		if (typeof(scriptObj.render) === 'function') {
+			//ige.textureLoadStart(scriptUrl, this);
+	
+			// Store the script data
+			self._mode = 1;
+			self.script = scriptObj;
+	
+			// Run the asset script init method
+			if (typeof(scriptObj.init) === 'function') {
+				scriptObj.init.apply(scriptObj, [self]);
+			}
+	
+			//self.sizeX(image.width);
+			//self.sizeY(image.height);
+	
+			self._loaded = true;
+			self.emit('loaded');
+			//ige.textureLoadEnd(scriptUrl, self);
+		} else {
+			this.log('Cannot assign smart texture because it doesn\'t have a render() method!', 'error');
 		}
-
-		//self.sizeX(image.width);
-		//self.sizeY(image.height);
-
-		self._loaded = true;
-		self.emit('loaded');
-		//ige.textureLoadEnd(scriptUrl, self);
 	},
 
 	/**
