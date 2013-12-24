@@ -14,7 +14,7 @@ var IgeEntity = IgeObject.extend({
 		this._specialProp.push('_eventListeners');
 		this._specialProp.push('_aabb');
 
-		this._anchor = new IgePoint3d(0, 0, 0);
+		this._anchor = new IgePoint2d(0, 0);
 		this._renderPos = {x: 0, y: 0};
 
 		this._opacity = 1;
@@ -614,7 +614,7 @@ var IgeEntity = IgeObject.extend({
 	 */
 	anchor: function (x, y) {
 		if (x !== undefined && y !== undefined) {
-			this._anchor = new IgePoint3d(x, y, 0);
+			this._anchor = new IgePoint2d(x, y);
 			return this;
 		}
 

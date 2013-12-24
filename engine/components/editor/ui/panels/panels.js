@@ -275,7 +275,31 @@ var UiPanels = IgeEventingClass.extend({
 									}
 								});
 							}
-						}
+						},
+						'_anchor': {
+							label: 'Image Anchor Point',
+							desc: '',
+							// Enable any listeners and logic to take action when the user interacts with the panel
+							afterRender: function (obj, propItem) {
+								var selector = $('#igeEditorProperty_' + propItem.id);
+
+								selector.find('.setNumberX').on('change', function () {
+									// Set the property value to the newly selected one
+									obj[propItem.id].x = parseFloat($(this).val());
+									obj[propItem.id].x2 = obj[propItem.id].x / 2;
+									
+									obj.aabb(true);
+								});
+
+								selector.find('.setNumberY').on('change', function () {
+									// Set the property value to the newly selected one
+									obj[propItem.id].y = parseFloat($(this).val());
+									obj[propItem.id].y2 = obj[propItem.id].y / 2;
+									
+									obj.aabb(true);
+								});
+							}
+						},
 					}
 				},
 				'isometric': {
@@ -328,6 +352,44 @@ var UiPanels = IgeEventingClass.extend({
 					desc: '',
 					order: 1,
 					props: {
+						'_hidden': {
+							label: 'Hidden',
+							desc: '',
+							alwaysShow: true,
+							templateUrl: igeRoot + 'components/editor/ui/panels/templates/List.html',
+							// Setup the data the template needs to render correctly
+							beforeRender: function (obj, propItem) {
+								var textureArr = ige._textureStore,
+									textureIndex,
+									tex;
+								
+								// Setup an array for the list
+								propItem.list = [{
+									value: 'yes',
+									text: 'Yes',
+									selected: obj._hidden
+								}, {
+									value: 'no',
+									text: 'No',
+									selected: !obj._hidden
+								}];
+							},
+							// Enable any listeners and logic to take action when the user interacts with the panel
+							afterRender: function (obj, propItem) {
+								var panel = $('#igeEditorProperty_' + propItem.id);
+								
+								panel.find('.listValue').on('change', function () {
+									var itemValue = $(this).val();
+									
+									if (itemValue === 'yes') {
+										// Set the object's hidden value
+										obj.hide();
+									} else {
+										obj.show();
+									}
+								});
+							}
+						},
 						'_opacity': {
 							label: 'Opacity',
 							desc: '',
