@@ -6,7 +6,7 @@ var IgePoly2d = IgeClass.extend({
 
 	init: function () {
 		this._poly = [];
-		this._scale = new IgePoint2d(1, 1, );
+		this._scale = new IgePoint2d(1, 1);
 	},
 
 	scale: function (x, y) {
