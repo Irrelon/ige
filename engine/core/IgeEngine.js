@@ -1429,13 +1429,14 @@ var IgeEngine = IgeEntity.extend({
 	 * the setter value as first argument.
 	 */
 	traceSet: function (obj, propName, sampleCount, callbackEvaluator) {
-		obj.___igeTraceCurrentVal = obj[propName];
+		obj.___igeTraceCurrentVal = obj.___igeTraceCurrentVal || {};
+		obj.___igeTraceCurrentVal[propName] = obj[propName];
 		obj.___igeTraceMax = sampleCount || 1;
 		obj.___igeTraceCount = 0;
 
 		Object.defineProperty(obj, propName, {
 			get: function () {
-				return this.___igeTraceCurrentVal;
+				return this.___igeTraceCurrentVal[propName];
 			},
 			set: function (val) {
 				if (callbackEvaluator){ 
@@ -1445,7 +1446,8 @@ var IgeEngine = IgeEntity.extend({
 				} else {
 					debugger;
 				}
-				this.___igeTraceCurrentVal = val;
+				
+				this.___igeTraceCurrentVal[propName] = val;
 				this.___igeTraceCount++;
 
 				if (this.___igeTraceCount === this.___igeTraceMax) {
