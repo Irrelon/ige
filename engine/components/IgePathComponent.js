@@ -561,7 +561,13 @@ var IgePathComponent = IgeEventingClass.extend({
 							ige._tickDelta
 						);
 						
-						this.translateTo(newPosition.x, newPosition.y, currentPosition.z);
+						if (this._mode === 0) {
+							this.translateTo(newPosition.x, newPosition.y, currentPosition.z);
+						}
+						
+						if (this._mode === 1) {
+							this.translateTo(newPosition.x, newPosition.y, currentPosition.z);
+						}
 					} else {
 						// Move to the next cell
 						self._targetCellIndex++;
@@ -674,7 +680,7 @@ var IgePathComponent = IgeEventingClass.extend({
 				tempPathText;
 
 			if (self._active) {
-				currentPath = self._paths[self._currentPathIndex]
+				currentPath = self._paths[self._currentPathIndex];
 			} else {
 				currentPath = self._paths[0];
 			}
@@ -698,13 +704,13 @@ var IgePathComponent = IgeEventingClass.extend({
 								ctx.fillStyle = '#fff000';
 							}
 							
-							if(tempCurrentPath[pathPointIndex].mode===0){
+							if(tempCurrentPath[pathPointIndex].mode === 0){
 								if (entity._parent.isometricMounts()) {
 									tracePathPoint = new IgePoint3d((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0).toIso();
 								} else {
 									tracePathPoint = new IgePoint3d((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0);
 								}
-							}else{
+							} else {
 								if (entity._parent.isometricMounts()) {
 									tracePathPoint = tempCurrentPath[pathPointIndex].clone().toIso();
 								} else {
@@ -802,9 +808,9 @@ var IgePathComponent = IgeEventingClass.extend({
 	 * Calculates the position of the entity along a vector
 	 * based on the speed of the entity and the delta time.
 	 * @param {IgePoint3d} p1 Vector starting point
-	 * @param {IgePoint3d} p2 Vevtor ending point
+	 * @param {IgePoint3d} p2 Vector ending point
 	 * @param {Number} speed Speed along the vector
-	 * @param {Number} deltaTime The time between the last upadte and now.
+	 * @param {Number} deltaTime The time between the last update and now.
 	 * @return {IgePoint3d}
 	 * @private
 	 */

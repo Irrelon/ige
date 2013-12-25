@@ -386,11 +386,11 @@ var IgeViewport = IgeEntity.extend([
 								if (obj._drawBounds || obj._drawBounds === undefined) {
 									//if (!obj._parent || (obj._parent && obj._parent._mountMode !== 1)) {
 										// Draw a rect around the bounds of the object transformed in world space
-										ctx.save();
+										/*ctx.save();
 											obj._worldMatrix.transformRenderingContext(ctx);
 											ctx.strokeStyle = '#9700ae';
 											ctx.strokeRect(-obj._bounds2d.x2, -obj._bounds2d.y2, obj._bounds2d.x, obj._bounds2d.y);
-										ctx.restore();
+										ctx.restore();*/
 										
 										// Draw individual bounds
 										ctx.strokeStyle = '#00deff';

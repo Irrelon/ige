@@ -87,6 +87,7 @@ var igeCoreConfig = {
 		['csap', 'IgeMapStack2d', 'core/IgeMapStack2d.js'],
 		['csap', 'IgeTileMap2d', 'core/IgeTileMap2d.js'],
 		['csap', 'IgeTextureMap', 'core/IgeTextureMap.js'],
+		['csap', 'IgeTileMap2dSmartTexture', 'assets/IgeTileMap2dSmartTexture.js'],
 		['csap', 'IgeCollisionMap2d', 'core/IgeCollisionMap2d.js'],
 		['csap', 'IgeCamera', 'core/IgeCamera.js'],
 		['csap', 'IgeViewport', 'core/IgeViewport.js'],

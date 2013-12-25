@@ -185,6 +185,18 @@ var IgeRect = IgeClass.extend({
 	toString: function (precision) {
 		if (precision === undefined) { precision = 2; }
 		return this.x.toFixed(precision) + ',' + this.y.toFixed(precision) + ',' + this.width.toFixed(precision) + ',' + this.height.toFixed(precision);
+	},
+	
+	/**
+	 * Draws the polygon bounding lines to the passed context.
+	 * @param {CanvasRenderingContext2D} ctx
+	 */
+	render: function (ctx, fill) {
+		ctx.rect(this.x, this.y, this.width, this.height);
+		if (fill) { ctx.fill(); }
+		ctx.stroke();
+
+		return this;
 	}
 });
 

@@ -78,9 +78,10 @@ var Client = IgeClass.extend({
 					.isometricMounts(self.isoMode)
 					.tileWidth(40)
 					.tileHeight(40)
-					.drawGrid(3)
+					.gridSize(4, 3)
+					.drawGrid(true)
 					.drawMouse(true)
-					.drawBounds(false)
+					.drawBounds(true)
 					.drawBoundsData(false)
 					.occupyTile(1, 1, 1, 1, 1) // Mark tile as occupied with a value of 1 (x, y, width, height, value)
 					.occupyTile(1, 2, 1, 1, 1)
@@ -204,6 +205,10 @@ var Client = IgeClass.extend({
 					.path.add(path2)
 					.path.add(path3)
 					.path.add(path4);
+				
+				if (self.isoMode) {
+					self.player.isometric(true);
+				}
 
 				// Register some event listeners for the path
 				self.player.path.on('started', function () { console.log('Pathing started...'); });

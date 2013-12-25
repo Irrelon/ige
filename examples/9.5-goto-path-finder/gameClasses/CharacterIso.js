@@ -7,8 +7,7 @@ var Character = IgeEntity.extend({
 		IgeEntity.prototype.init.call(this);
 
 		// Create a character entity as a child of this container
-		self.isometric(true)
-			.addComponent(IgeAnimationComponent)
+		self.addComponent(IgeAnimationComponent)
 			.addComponent(IgeVelocityComponent)
 			.depth(1)
 			.setType(3)

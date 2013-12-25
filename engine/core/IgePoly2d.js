@@ -390,7 +390,7 @@ var IgePoly2d = IgeClass.extend({
 	 * Draws the polygon bounding lines to the passed context.
 	 * @param {CanvasRenderingContext2D} ctx
 	 */
-	render: function (ctx) {
+	render: function (ctx, fill) {
 		var polyPoints = this._poly,
 			pointCount = polyPoints.length,
 			scaleX = this._scale.x,
@@ -403,6 +403,7 @@ var IgePoly2d = IgeClass.extend({
 			ctx.lineTo(polyPoints[i].x * scaleX, polyPoints[i].y * scaleY);
 		}
 		ctx.lineTo(polyPoints[0].x * scaleX, polyPoints[0].y * scaleY);
+		if (fill) { ctx.fill(); }
 		ctx.stroke();
 
 		return this;
