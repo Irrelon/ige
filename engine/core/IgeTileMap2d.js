@@ -151,32 +151,6 @@ var IgeTileMap2d = IgeEntity.extend({
 		return this._gridColor;
 	},
 	
-	_updateAdjustmentMatrix: function () {
-		if (this._bounds2d.x2 && this._bounds2d.y2 && this._tileWidth && this._tileHeight) {
-			if (this._mountMode === 0) {
-				this._adjustmentMatrix.translateTo(this._bounds2d.x2, this._bounds2d.y2);
-			}
-			
-			if (this._mountMode === 1) {
-				this._adjustmentMatrix.translateTo(0, this._bounds2d.y2);
-			}
-		}
-	},
-
-	_childMounted: function (obj) {
-		// We can also re-use the tile size methods since
-		// they alter the same properties on the calling
-		// entity anyway.
-		obj.tileWidth = obj.tileWidth || this.tileWidth;
-		obj.tileHeight = obj.tileHeight || this.tileHeight;
-
-		// Set default values
-		obj._tileWidth = obj._tileWidth || 1;
-		obj._tileHeight = obj._tileHeight || 1;
-
-		IgeEntity.prototype._childMounted.call(this, obj);
-	},
-
 	/**
 	 * Sets a tile or area as occupied by the passed obj parameter.
 	 * Any previous occupy data on the specified tile or area will be
@@ -446,6 +420,14 @@ var IgeTileMap2d = IgeEntity.extend({
 
 		return rect;
 	},
+	
+	inGrid: function (x, y, width, height) {
+		if (width === undefined) { width = 1; }
+		if (height === undefined) { height = 1; }
+		
+		// Checks if the passed area is inside the tile map grid as defined by gridSize
+		return x >= 0 && y >= 0 && x + width <= this._gridSize.x && y + height <= this._gridSize.y;
+	},
 
 	/**
 	 * Gets / sets the mouse tile hover color used in conjunction with the
@@ -558,6 +540,32 @@ var IgeTileMap2d = IgeEntity.extend({
 		}
 		
 		return false;
+	},
+	
+	_updateAdjustmentMatrix: function () {
+		if (this._bounds2d.x2 && this._bounds2d.y2 && this._tileWidth && this._tileHeight) {
+			if (this._mountMode === 0) {
+				this._adjustmentMatrix.translateTo(this._bounds2d.x2, this._bounds2d.y2);
+			}
+			
+			if (this._mountMode === 1) {
+				this._adjustmentMatrix.translateTo(0, this._bounds2d.y2);
+			}
+		}
+	},
+
+	_childMounted: function (obj) {
+		// We can also re-use the tile size methods since
+		// they alter the same properties on the calling
+		// entity anyway.
+		obj.tileWidth = obj.tileWidth || this.tileWidth;
+		obj.tileHeight = obj.tileHeight || this.tileHeight;
+
+		// Set default values
+		obj._tileWidth = obj._tileWidth || 1;
+		obj._tileHeight = obj._tileHeight || 1;
+
+		IgeEntity.prototype._childMounted.call(this, obj);
 	}
 });
 
