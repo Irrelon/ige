@@ -21,6 +21,12 @@ var UiMenu = IgeEventingClass.extend({
 					text: 'Tools',
 					menu: {}
 				});
+				
+				self.add({
+					id: 'insertMenu',
+					text: 'Insert',
+					menu: {}
+				});
 			}
 		);
 	},
