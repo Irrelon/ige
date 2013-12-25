@@ -83,6 +83,7 @@ var igeCoreConfig = {
 		['csap', 'IgeUiElement', 'core/IgeUiElement.js'],
 		['csap', 'IgeFontEntity', 'core/IgeFontEntity.js'],
 		['csap', 'IgeParticleEmitter', 'core/IgeParticleEmitter.js'],
+		['csap', 'IgeParticle', 'core/IgeParticle.js'],
 		['csap', 'IgeMap2d', 'core/IgeMap2d.js'],
 		['csap', 'IgeMapStack2d', 'core/IgeMapStack2d.js'],
 		['csap', 'IgeTileMap2d', 'core/IgeTileMap2d.js'],

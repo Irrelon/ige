@@ -1077,13 +1077,16 @@ var UiPanels = IgeEventingClass.extend({
 							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatXYZ.html',
 							// Setup values for the template
 							beforeRender: function (obj, propItem) {
-								if (obj._velocityVector && obj._velocityVector.base) {
-									propItem.x = obj._velocityVector.base.x;
-									propItem.y = obj._velocityVector.base.y;
-									propItem.z = obj._velocityVector.base.z;
-								} else {
-									propItem.x = propItem.y = propItem.z = 0;
+								if (!obj._velocityVector) {
+									obj.velocityVector(new IgePoint3d(0, 0, 0), new IgePoint3d(0, 0, 0), new IgePoint3d(0, 0, 0));
 								}
+								
+								if (!obj._velocityVector.base) {
+									obj._velocityVector.base = new IgePoint3d(0, 0, 0);
+								}
+								propItem.x = obj._velocityVector.base.x;
+								propItem.y = obj._velocityVector.base.y;
+								propItem.z = obj._velocityVector.base.z;
 							},
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
@@ -1093,10 +1096,12 @@ var UiPanels = IgeEventingClass.extend({
 									var x = parseFloat($(this).val());
 									
 									// Set the property value to the newly selected one
-									if (obj._velocityVector && obj._velocityVector.base) {
-										obj._velocityVector.base.x = x;
-									} else {
-										obj._velocityVector = new IgePoint3d(x, 0, 0);
+									if (obj._velocityVector) {
+										if (obj._velocityVector.base) {
+											obj._velocityVector.base.x = x;
+										} else {
+											obj._velocityVector.base = new IgePoint3d(x, 0, 0);
+										}
 									}
 								});
 								
@@ -1104,10 +1109,12 @@ var UiPanels = IgeEventingClass.extend({
 									var y = parseFloat($(this).val());
 									
 									// Set the property value to the newly selected one
-									if (obj._velocityVector && obj._velocityVector.base) {
-										obj._velocityVector.base.y = y;
-									} else {
-										obj._velocityVector = new IgePoint3d(y, 0, 0);
+									if (obj._velocityVector) {
+										if (obj._velocityVector.base) {
+											obj._velocityVector.base.y = y;
+										} else {
+											obj._velocityVector.base = new IgePoint3d(0, y, 0);
+										}
 									}
 								});
 								
@@ -1115,10 +1122,12 @@ var UiPanels = IgeEventingClass.extend({
 									var z = parseFloat($(this).val());
 									
 									// Set the property value to the newly selected one
-									if (obj._velocityVector && obj._velocityVector.base) {
-										obj._velocityVector.base.z = z;
-									} else {
-										obj._velocityVector = new IgePoint3d(z, 0, 0);
+									if (obj._velocityVector) {
+										if (obj._velocityVector.base) {
+											obj._velocityVector.base.z = z;
+										} else {
+											obj._velocityVector.base = new IgePoint3d(0, 0, z);
+										}
 									}
 								});
 							}
@@ -1130,13 +1139,16 @@ var UiPanels = IgeEventingClass.extend({
 							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatXYZ.html',
 							// Setup values for the template
 							beforeRender: function (obj, propItem) {
-								if (obj._velocityVector && obj._velocityVector.min) {
-									propItem.x = obj._velocityVector.min.x;
-									propItem.y = obj._velocityVector.min.y;
-									propItem.z = obj._velocityVector.min.z;
-								} else {
-									propItem.x = propItem.y = propItem.z = 0;
+								if (!obj._velocityVector) {
+									obj.velocityVector(new IgePoint3d(0, 0, 0), new IgePoint3d(0, 0, 0), new IgePoint3d(0, 0, 0));
 								}
+								
+								if (!obj._velocityVector.min) {
+									obj._velocityVector.min = new IgePoint3d(0, 0, 0);
+								}
+								propItem.x = obj._velocityVector.min.x;
+								propItem.y = obj._velocityVector.min.y;
+								propItem.z = obj._velocityVector.min.z;
 							},
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
@@ -1146,10 +1158,12 @@ var UiPanels = IgeEventingClass.extend({
 									var x = parseFloat($(this).val());
 									
 									// Set the property value to the newly selected one
-									if (obj._velocityVector && obj._velocityVector.min) {
-										obj._velocityVector.min.x = x;
-									} else {
-										obj._velocityVector = new IgePoint3d(x, 0, 0);
+									if (obj._velocityVector) {
+										if (obj._velocityVector.min) {
+											obj._velocityVector.min.x = x;
+										} else {
+											obj._velocityVector.min = new IgePoint3d(x, 0, 0);
+										}
 									}
 								});
 								
@@ -1157,10 +1171,12 @@ var UiPanels = IgeEventingClass.extend({
 									var y = parseFloat($(this).val());
 									
 									// Set the property value to the newly selected one
-									if (obj._velocityVector && obj._velocityVector.min) {
-										obj._velocityVector.min.y = y;
-									} else {
-										obj._velocityVector = new IgePoint3d(y, 0, 0);
+									if (obj._velocityVector) {
+										if (obj._velocityVector.min) {
+											obj._velocityVector.min.y = y;
+										} else {
+											obj._velocityVector.min = new IgePoint3d(0, y, 0);
+										}
 									}
 								});
 								
@@ -1168,10 +1184,12 @@ var UiPanels = IgeEventingClass.extend({
 									var z = parseFloat($(this).val());
 									
 									// Set the property value to the newly selected one
-									if (obj._velocityVector && obj._velocityVector.min) {
-										obj._velocityVector.min.z = z;
-									} else {
-										obj._velocityVector = new IgePoint3d(z, 0, 0);
+									if (obj._velocityVector) {
+										if (obj._velocityVector.min) {
+											obj._velocityVector.min.z = z;
+										} else {
+											obj._velocityVector.min = new IgePoint3d(0, 0, z);
+										}
 									}
 								});
 							}
@@ -1183,13 +1201,16 @@ var UiPanels = IgeEventingClass.extend({
 							templateUrl: igeRoot + 'components/editor/ui/panels/templates/NumberFloatXYZ.html',
 							// Setup values for the template
 							beforeRender: function (obj, propItem) {
-								if (obj._velocityVector && obj._velocityVector.max) {
-									propItem.x = obj._velocityVector.max.x;
-									propItem.y = obj._velocityVector.max.y;
-									propItem.z = obj._velocityVector.max.z;
-								} else {
-									propItem.x = propItem.y = propItem.z = 0;
+								if (!obj._velocityVector) {
+									obj.velocityVector(new IgePoint3d(0, 0, 0), new IgePoint3d(0, 0, 0), new IgePoint3d(0, 0, 0));
 								}
+								
+								if (!obj._velocityVector.max) {
+									obj._velocityVector.max = new IgePoint3d(0, 0, 0);
+								}
+								propItem.x = obj._velocityVector.max.x;
+								propItem.y = obj._velocityVector.max.y;
+								propItem.z = obj._velocityVector.max.z;
 							},
 							// Enable any listeners and logic to take action when the user interacts with the panel
 							afterRender: function (obj, propItem) {
@@ -1199,10 +1220,12 @@ var UiPanels = IgeEventingClass.extend({
 									var x = parseFloat($(this).val());
 									
 									// Set the property value to the newly selected one
-									if (obj._velocityVector && obj._velocityVector.max) {
-										obj._velocityVector.max.x = x;
-									} else {
-										obj._velocityVector = new IgePoint3d(x, 0, 0);
+									if (obj._velocityVector) {
+										if (obj._velocityVector.max) {
+											obj._velocityVector.max.x = x;
+										} else {
+											obj._velocityVector.max = new IgePoint3d(x, 0, 0);
+										}
 									}
 								});
 								
@@ -1210,10 +1233,12 @@ var UiPanels = IgeEventingClass.extend({
 									var y = parseFloat($(this).val());
 									
 									// Set the property value to the newly selected one
-									if (obj._velocityVector && obj._velocityVector.max) {
-										obj._velocityVector.max.y = y;
-									} else {
-										obj._velocityVector = new IgePoint3d(y, 0, 0);
+									if (obj._velocityVector) {
+										if (obj._velocityVector.max) {
+											obj._velocityVector.max.y = y;
+										} else {
+											obj._velocityVector.max = new IgePoint3d(0, y, 0);
+										}
 									}
 								});
 								
@@ -1221,10 +1246,12 @@ var UiPanels = IgeEventingClass.extend({
 									var z = parseFloat($(this).val());
 									
 									// Set the property value to the newly selected one
-									if (obj._velocityVector && obj._velocityVector.max) {
-										obj._velocityVector.max.z = z;
-									} else {
-										obj._velocityVector = new IgePoint3d(z, 0, 0);
+									if (obj._velocityVector) {
+										if (obj._velocityVector.max) {
+											obj._velocityVector.max.z = z;
+										} else {
+											obj._velocityVector.max = new IgePoint3d(0, 0, z);
+										}
 									}
 								});
 							}
