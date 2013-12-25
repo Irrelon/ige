@@ -26,8 +26,6 @@ var IgeTileMap2d = IgeEntity.extend({
 
 		self._drawGrid = 0;
         self._gridColor = '#ffffff';
-		
-		self.triggerPolygon('tileMapHitPolygon');
 	},
 
 	/**
@@ -510,7 +508,23 @@ var IgeTileMap2d = IgeEntity.extend({
 		});
 	},
 	
-	tileMapHitPolygon: function () {
+	isometricMounts: function (val) {
+		if (val !== undefined) {
+			IgeEntity.prototype.isometricMounts.call(this, val);
+			
+			// Re-call the methods that check iso mounts property
+			this.tileWidth(this._tileWidth);
+			this.tileHeight(this._tileHeight);
+			this.gridSize(this._gridSize.x, this._gridSize.y);
+			
+			this._updateAdjustmentMatrix();
+			return this;
+		}
+		
+		return this._mountMode;
+	},
+	
+	tileMapHitPolygon: function (mousePoint) {
 		if (this._mountMode === 0) {
 			return this.aabb();
 		}
@@ -526,6 +540,24 @@ var IgeTileMap2d = IgeEntity.extend({
 			
 			return poly;
 		}
+	},
+	
+	_processTriggerHitTests: function () {
+		// This method overrides the one in IgeEntity
+		if (this._mouseEventsActive && ige._currentViewport) {
+			if (!this._mouseAlwaysInside) {
+				var mouseTile = this.mouseToTile();
+				if (mouseTile.x >= 0 && mouseTile.y >= 0 && mouseTile.x < this._gridSize.x && mouseTile.y < this._gridSize.y) {
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 });
 

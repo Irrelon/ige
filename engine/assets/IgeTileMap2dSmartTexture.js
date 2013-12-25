@@ -6,14 +6,13 @@ var IgeTileMap2dSmartTexture = {
 			gridSize = entity._gridSize,
 			x = 0, y = 0;
 		
-		ctx.save();
-		var triggerPoly = entity.tileMapHitPolygon(),
-			mp = entity.mousePosWorld();
+		/*ctx.save();
+		var triggerPoly = entity.tileMapHitPolygon();
 		
 		ctx.strokeStyle = '#00ff00';
 		ctx.fillStyle = '#ff99f4';
 		
-		if (triggerPoly.xyInside(mp.x, mp.y)) {
+		if (entity._processTriggerHitTests()) {
 			ctx.fillStyle = '#ff26e8';
 		}
 		
@@ -27,7 +26,7 @@ var IgeTileMap2dSmartTexture = {
 		}
 		
 		//
-		ctx.restore();
+		ctx.restore();*/
 		
 		if (entity._drawGrid) {
 			ctx.strokeStyle = entity._gridColor;
