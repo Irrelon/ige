@@ -167,7 +167,7 @@ var Client = IgeClass.extend({
 			.drawGrid(true)
 			.drawMouse(true)
 			.highlightOccupied(true)
-			.mouseOver(this._mapOnMouseOver)
+			.mouseMove(this._mapOnMouseOver)
 			.mouseUp(this._mapOnMouseUp)
 			.mount(this.gameScene);
 
@@ -655,7 +655,7 @@ var Client = IgeClass.extend({
 		// Create a new item at a far off tile position - it will
 		// be moved to follow the mouse cursor anyway but it's cleaner
 		// to create it off-screen first.
-		return new this[type](this.tileMap1, -1000, -1000);
+		return new this[type](this.tileMap1, -1000, -1000).debugTransforms(true);
 	},
 
 	/**
@@ -798,11 +798,15 @@ var Client = IgeClass.extend({
 	
 	/**
 	 * Handles when the mouse over event occurs on our map (tileMap1).
-	 * @param x
-	 * @param y
+	 * @param event
+	 * @param evc
 	 * @private
 	 */
-	_mapOnMouseOver: function (x, y) {
+	_mapOnMouseOver: function (event, evc) {
+        var mp = this.mouseToTile(),
+			x = mp.x,
+			y = mp.y;
+
 		switch (ige.client.data('cursorMode')) {
 			case 'select':
 				// If we already have a selection, un-highlight it
