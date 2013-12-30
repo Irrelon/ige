@@ -1437,7 +1437,7 @@ var IgeEngine = IgeEntity.extend({
 
 		Object.defineProperty(obj, propName, {
 			get: function () {
-				return this.___igeTraceCurrentVal[propName];
+				return obj.___igeTraceCurrentVal[propName];
 			},
 			set: function (val) {
 				if (callbackEvaluator){ 
@@ -1448,10 +1448,10 @@ var IgeEngine = IgeEntity.extend({
 					debugger;
 				}
 				
-				this.___igeTraceCurrentVal[propName] = val;
-				this.___igeTraceCount++;
+				obj.___igeTraceCurrentVal[propName] = val;
+				obj.___igeTraceCount++;
 
-				if (this.___igeTraceCount === this.___igeTraceMax) {
+				if (obj.___igeTraceCount === obj.___igeTraceMax) {
 					// Maximum amount of trace samples reached, turn off
 					// the trace system
 					ige.traceSetOff(obj, propName);
@@ -1468,7 +1468,7 @@ var IgeEngine = IgeEntity.extend({
 	 * want to disable the trace for.
 	 */
 	traceSetOff: function (object, propName) {
-		Object.defineProperty(object, propName, {set: function (val) { this.___igeTraceCurrentVal = val; }});
+		Object.defineProperty(object, propName, {set: function (val) { this.___igeTraceCurrentVal[propName] = val; }});
 	},
 
 	/**
