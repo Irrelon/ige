@@ -311,12 +311,13 @@ var IgePathFinder = IgeEventingClass.extend({
 	},
 
 	/**
-	 * The heuristic to calculate the rough cost of pathing
-	 * from the x1, y1 to x2, y2.
+	 * The heuristic to calculate the rough cost of pathing from the
+	 * x1, y1 to x2, y2.
 	 * @param {Number} x1 The first x co-ordinate.
 	 * @param {Number} y1 The first y co-ordinate.
 	 * @param {Number} x2 The second x co-ordinate.
 	 * @param {Number} y2 The second y co-ordinate.
+	 * @param {Number} moveCost The cost multiplier to multiply by.
 	 * @return {Number} Returns the heuristic cost between the co-ordinates specified.
 	 * @private
 	 */
