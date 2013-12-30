@@ -110,6 +110,7 @@ var IgeEngine = IgeEntity.extend({
 		this._timeScale = 1; // The default time scaling factor to speed up or slow down engine time
 		this._globalScale = new IgePoint3d(1, 1, 1);
 		this._graphInstances = []; // Holds an array of instances of graph classes
+		this._spawnQueue = []; // Holds an array of entities that are yet to be born
 
 		// Set the context to a dummy context to start
 		// with in case we are in "headless" mode and
@@ -1514,6 +1515,15 @@ var IgeEngine = IgeEntity.extend({
 		
 		return arr;
 	},
+	
+	spawnQueue: function (ent) {
+		if (ent !== undefined) {
+			this._spawnQueue.push(ent);
+			return this;
+		}
+		
+		return this._spawnQueue;
+	},
 
 	/**
 	 * Is called every second and does things like calculate the current FPS.
@@ -1536,14 +1546,15 @@ var IgeEngine = IgeEntity.extend({
 	/**
 	 * Gets / sets the current time scalar value. The engine's internal
 	 * time is multiplied by this value and it's default is 1. You can set it to
-	 * 0.5 to slow down time by half or 1.5 to speed up time by half. Currently
-	 * will not accept a negative value.
+	 * 0.5 to slow down time by half or 1.5 to speed up time by half. Negative
+	 * values will reverse time but not all engine systems handle this well
+	 * at the moment.
 	 * @param {Number=} val The time scale value.
 	 * @returns {*}
 	 */
 	timeScale: function (val) {
 		if (val !== undefined) {
-			this._timeScale = Math.abs(val);
+			this._timeScale = val;
 			return this;
 		}
 
@@ -1662,7 +1673,11 @@ var IgeEngine = IgeEntity.extend({
 			self = ige,
 			ptArr = self._postTick,
 			ptCount = ptArr.length,
-			ptIndex;
+			ptIndex,
+			unbornQueue,
+			unbornCount,
+			unbornIndex,
+			unbornEntity;
 
 		// Scale the timestamp according to the current
 		// engine's time scaling factor
@@ -1709,6 +1724,19 @@ var IgeEngine = IgeEntity.extend({
 			} else {
 				// Calculate the frame delta
 				self._tickDelta = self._tickStart - self.lastTick;
+			}
+			
+			// Check for unborn entities that should be born now
+			unbornQueue = ige._spawnQueue;
+			unbornCount = unbornQueue.length;
+			for (unbornIndex = unbornCount - 1; unbornIndex >= 0; unbornIndex--) {
+				unbornEntity = unbornQueue[unbornIndex];
+				
+				if (ige._currentTime >= unbornEntity._bornTime) {
+					// Now birth this entity
+					unbornEntity.mount(ige.$(unbornEntity._birthMount));
+					unbornQueue.splice(unbornIndex, 1);
+				}
 			}
 
 			// Update the scenegraph

@@ -21,6 +21,7 @@ var IgeEntity = IgeObject.extend({
 		this._cell = 1;
 
 		this._deathTime = undefined;
+		this._bornTime = ige._currentTime;
 
 		this._translate = new IgePoint3d(0, 0, 0);
 		this._oldTranslate = new IgePoint3d(0, 0, 0);
@@ -36,6 +37,8 @@ var IgeEntity = IgeObject.extend({
 
 		this._highlight = false;
 		this._mouseEventsActive = false;
+		
+		this._velocity = new IgePoint3d(0, 0, 0);
 
         this._localMatrix = new IgeMatrix2d();
         this._worldMatrix = new IgeMatrix2d();
@@ -1563,32 +1566,47 @@ var IgeEntity = IgeObject.extend({
 			// The entity should be removed because it has died
 			this.destroy();
 		} else {
-			// Remove the stream data cache
-			delete this._streamDataCache;
-
-			// Process any behaviours assigned to the entity
-			this._processUpdateBehaviours(ctx, tickDelta);
-
-			if (this._timeStream.length) {
-				// Process any interpolation
-				this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
+			// Check that the entity has been born
+			if (this._bornTime === undefined || ige._currentTime >= this._bornTime) {
+				// Remove the stream data cache
+				delete this._streamDataCache;
+	
+				// Process any behaviours assigned to the entity
+				this._processUpdateBehaviours(ctx, tickDelta);
+				
+				// Process velocity
+				if (this._velocity.x || this._velocity.y) {
+					this._translate.x += (this._velocity.x / 16) * tickDelta;
+					this._translate.y += (this._velocity.y / 16) * tickDelta;
+				}
+	
+				if (this._timeStream.length) {
+					// Process any interpolation
+					this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
+				}
+	
+				// Check for changes to the transform values
+				// directly without calling the transform methods
+				this.updateTransform();
+	
+				if (!this._noAabb && this._aabbDirty) {
+					// Update the aabb
+					this.aabb();
+				}
+	
+				this._oldTranslate = this._translate.clone();
+	
+				// Update this object's current frame alternator value
+				// which allows us to determine if we are still on the
+				// same frame
+				this._frameAlternatorCurrent = ige._frameAlternator;
+			} else {
+				// The entity is not yet born, unmount it and add to the spawn queue
+				this._birthMount = this._parent.id();
+				this.unMount();
+				
+				ige.spawnQueue(this);
 			}
-
-			// Check for changes to the transform values
-			// directly without calling the transform methods
-			this.updateTransform();
-
-			if (!this._noAabb && this._aabbDirty) {
-				// Update the aabb
-				this.aabb();
-			}
-
-			this._oldTranslate = this._translate.clone();
-
-			// Update this object's current frame alternator value
-			// which allows us to determine if we are still on the
-			// same frame
-			this._frameAlternatorCurrent = ige._frameAlternator;
 		}
 
 		// Process super class
@@ -2546,6 +2564,30 @@ var IgeEntity = IgeObject.extend({
 		});
 		
 		return this;
+	},
+	
+	velocityTo: function (x, y, z) {
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._velocity.x = x;
+			this._velocity.y = y;
+			this._velocity.z = z;
+		} else {
+			this.log('velocityTo() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
+		return this._entity || this;
+	},
+	
+	velocityBy: function (x, y, z) {
+		if (x !== undefined && y!== undefined && z !== undefined) {
+			this._velocity.x += x;
+			this._velocity.y += y;
+			this._velocity.z += z;
+		} else {
+			this.log('velocityBy() called with a missing or undefined x, y or z parameter!', 'error');
+		}
+
+		return this._entity || this;
 	},
 	
 	/**

@@ -18,6 +18,7 @@ var IgeViewport = IgeEntity.extend([
 		this._mousePos = new IgePoint3d(0, 0, 0);
 		this._overflow = '';
 		this._clipping = true;
+		this._bornTime = undefined;
 
 		// Set default options if not specified
 		// TODO: Is this required or even used?
