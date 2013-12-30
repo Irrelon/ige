@@ -613,6 +613,50 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Checks if the object has the specified behaviour already added to it.
+	 * @param {String} id
+	 * @param {Boolean=} duringTick If true will look to remove the behaviour
+	 * from the tick method rather than the update method.
+	 * @example #Check for a behaviour with the id "myBehaviour"
+	 *     var entity = new IgeEntity();
+	 *     entity.addBehaviour('myBehaviour', function () {
+	 *         // Code here will execute during each engine update for
+	 *         // this entity. I can access the entity via the "this"
+	 *         // keyword such as:
+	 *         this._somePropertyOfTheEntity = 'moo';
+	 *     });
+	 *     
+	 *     // Now check for the "myBehaviour" behaviour
+	 *     console.log(entity.hasBehaviour('myBehaviour')); // Will log "true"
+	 * @return {*} Returns this on success or false on failure.
+	 */
+	hasBehaviour: function (id, duringTick) {
+		if (id !== undefined) {
+			var arr,
+				arrCount;
+			
+			if (duringTick) {
+				arr = this._tickBehaviours;
+			} else {
+				arr = this._updateBehaviours;
+			}
+
+			// Find the behaviour
+			if (arr) {
+				arrCount = arr.length;
+
+				while (arrCount--) {
+					if (arr[arrCount].id === id) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	},
+	
+	/**
 	 * Gets / sets the boolean flag determining if this object should have
 	 * it's bounds drawn when the bounds for all objects are being drawn.
 	 * In order for bounds to be drawn the viewport the object is being drawn
