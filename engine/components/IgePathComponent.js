@@ -7,24 +7,16 @@ var IgePathComponent = IgeEventingClass.extend({
 
 	init: function (entity, options) {
 		this._entity = entity;
-		this._transform = entity.transform;
-
-		// Setup the array that will hold our active paths
-		this._paths = []; // Holds a list of paths to traverse
-		this._currentPathIndex = -1; // Holds the current path we are traversing
-		this._traverseDirection = 0; // The direction to traverse the path (0 = normal, 1 = reverse order)
-		this._targetCellIndex = -1; // Holds the target cell of the current path - where in the path we are pathing to
-		this._targetCellArrivalTime = 0; // Holds the timestamp that we will arrive at the target cell
-		this._active = false; // Determines if we should be traversing paths or not
-		this._paused = false;
-		this._warnTime = 0;
-		this._autoStop = true;
-		this._startTime = null;
-		this._speed = 0.1;
-
+		this._points = [];
+		this._speed = 1 / 1000;
+		
+		this._previousPointFrom = 0;
+		this._currentPointFrom = 0;
+		this._previousPointTo = 0;
+		this._currentPointTo = 0;
+		
 		// Add the path behaviour to the entity
 		entity.addBehaviour('path', this._updateBehaviour, false);
-		entity.addBehaviour('path', this._tickBehaviour, true);
 	},
 
 	/**
@@ -35,7 +27,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	tileMap: function (val) {
 		if (val !== undefined) {
 			this._tileMap = val;
-			return this._entity;
+			return this;
 		}
 		
 		return this._tileMap;
@@ -49,7 +41,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	finder: function (val) {
 		if (val !== undefined) {
 			this._finder = val;
-			return this._entity;
+			return this;
 		}
 		
 		return this._finder;
@@ -73,18 +65,24 @@ var IgePathComponent = IgeEventingClass.extend({
 	dynamic: function (enable) {
 		if (enable !== undefined) {
 			this._dynamic = enable;
-			return this._entity;
+			return this;
 		}
 		
 		return this._dynamic;
 	},
-	
+
+	/**
+	 * Gets / sets the tile checker method used when calculating paths.
+	 * @param {Function=} val The method to call when checking if a tile is valid
+	 * to traverse when calculating paths.
+	 * @returns {*}
+	 */
 	tileChecker: function (val) {
 		if (val !== undefined) {
 			var self = this;
 			
 			this._tileChecker = function () { return val.apply(self._entity, arguments); };
-			return this._entity;
+			return this;
 		}
 		
 		return this._tileChecker;
@@ -93,30 +91,51 @@ var IgePathComponent = IgeEventingClass.extend({
 	lookAheadSteps: function (val) {
 		if (val !== undefined) {
 			this._lookAheadSteps = val;
-			return this._entity;
+			return this;
 		}
 		
 		return this._lookAheadSteps;
 	},
-	
+
+	/**
+	 * Gets / sets the flag determining if a path can use N, S, E and W movement.
+	 * @param {Boolean=} val Set to true to allow, false to disallow.
+	 * @returns {*}
+	 */
 	allowSquare: function (val) {
 		if (val !== undefined) {
 			this._allowSquare = val;
-			return this._entity;
+			return this;
 		}
 		
 		return this._allowSquare;
 	},
 	
+	/**
+	 * Gets / sets the flag determining if a path can use NW, SW, NE and SE movement.
+	 * @param {Boolean=} val Set to true to allow, false to disallow.
+	 * @returns {*}
+	 */
 	allowDiagonal: function (val) {
 		if (val !== undefined) {
 			this._allowDiagonal = val;
-			return this._entity;
+			return this;
 		}
 		
 		return this._allowDiagonal;
 	},
-	
+
+	/**
+	 * Clears any existing path points and sets the path the entity will traverse
+	 * from start to finish.
+	 * @param {Number} fromX The x tile to path from.
+	 * @param {Number} fromY The y tile to path from.
+	 * @param {Number} fromZ The z tile to path from.
+	 * @param {Number} toX The x tile to path to.
+	 * @param {Number} toY The y tile to path to.
+	 * @param {Number} toZ The z tile to path to.
+	 * @returns {*}
+	 */
 	set: function (fromX, fromY, fromZ, toX, toY, toZ) {
 		// Clear existing path
 		this.clear();
@@ -131,14 +150,14 @@ var IgePathComponent = IgeEventingClass.extend({
 			this._allowDiagonal
 		);
 		
-		this.add(path);
+		this.addPoints(path);
 		
-		return this._entity;
+		return this;
 	},
 	
-	addDestination: function (x, y, z) {
+	add: function (x, y, z) {
 		// Get the endPoint of the current path
-		var endPoint = this.endPoint();
+		var endPoint = this.getEndPoint();
 		
 		// Create a new path
 		var path = this._finder.generate(
@@ -150,91 +169,47 @@ var IgePathComponent = IgeEventingClass.extend({
 			this._allowDiagonal
 		);
 		
-		this.add(path);
+		// Remove the first tile, it's the last one on the list already
+		path.shift();
 		
-		return this._entity;
-	},
-	
-	replacePath: function (pathIndex, newPath) {
-		this._paths[pathIndex] = newPath;
-		return this._entity;
+		this.addPoints(path);
+		
+		return this;
 	},
 
 	/**
-	 * Adds a path array containing path points (IgePoint3d instances)
-	 * to the path queue.
-	 * @param {Array} path
+	 * Adds a path array containing path points (IgePoint3d instances) to the points queue.
+	 * @param {Array} path An array of path points.
 	 * @return {*}
 	 */
-	add: function (path) {
+	addPoints: function (path) {
 		if (path !== undefined) {
 			// Check the path array has items in it!
 			if (path.length) {
-				//this.log('Adding path to queue... (active: ' + this._active + ')');
-				this._paths.push(path);
+				this._points = this._points.concat(path);
+				this._calculatePathData();
 			} else {
 				this.log('Cannot add an empty path to the path queue!', 'warning');
 			}
 		}
 
-		return this._entity;
-	},
-
-	/**
-	 * Gets / sets the current path index that the pathing
-	 * system is traversing.
-	 * @param {Number=} index
-	 * @return {*}
-	 */
-	current: function (index) {
-		if (index !== undefined) {
-			this._currentPathIndex = index;
-			return this._entity;
-		}
-
-		return this._currentPathIndex;
+		return this;
 	},
 
 	/**
 	 * Gets the path node point that the entity is travelling from.
 	 * @return {IgePoint3d} A new point representing the travelled from node.
 	 */
-	previousTargetPoint: function () {
-		if (this._paths.length) {
-			var tpI = this._targetCellIndex > 0 ? this._targetCellIndex - 1 : this._targetCellIndex,
-				entParent = this._entity._parent,
-				targetCell = this._paths[this._currentPathIndex][tpI];
-
-			return targetCell.mode === 0 ? new IgePoint3d(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0) : targetCell.clone();
-		}
+	getFromPoint: function () {
+		return this._points[this._currentPointFrom];
 	},
 
 	/**
 	 * Gets the path node point that the entity is travelling to.
 	 * @return {IgePoint3d} A new point representing the travelling to node.
 	 */
-	currentTargetPoint: function () {
-		if (this._paths.length) {
-			var entParent = this._entity._parent,
-				targetCell = this._paths[this._currentPathIndex][this._targetCellIndex];
-
-			return targetCell.mode === 0 ? new IgePoint3d(targetCell.x * entParent._tileWidth, targetCell.y * entParent._tileHeight, 0) : targetCell.clone();
-		}
-	},
-
-	previousTargetCell: function (delta) {
-		if (this._paths.length) {
-			if (!delta) { delta = 1; } else { delta += 1; }
-			var tpI = this._targetCellIndex > 0 ? this._targetCellIndex - delta : this._targetCellIndex;
-
-			return this._paths[this._currentPathIndex][tpI];
-		}
-	},
-
-	currentTargetCell: function () {
-		if (this._paths.length) {
-			return this._paths[this._currentPathIndex][this._targetCellIndex];
-		}
+	getToPoint: function () {
+		return this._points[this._currentPointTo];
 	},
 
 	/**
@@ -251,8 +226,8 @@ var IgePathComponent = IgeEventingClass.extend({
 	 * @return {String} A string such as N, S, E, W, NW, NE, SW, SE.
 	 * If there is currently no direction then the return value is a blank string.
 	 */
-	currentDirection: function () {
-		var cell = this.currentTargetCell(),
+	getDirection: function () {
+		var cell = this.getToPoint(),
 			dir = '';
 		
 		if (cell) {
@@ -309,7 +284,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	warnTime: function (ms) {
 		if (ms !== undefined) {
 			this._warnTime = ms;
-			return this._entity;
+			return this;
 		}
 
 		return this._warnTime;
@@ -324,10 +299,103 @@ var IgePathComponent = IgeEventingClass.extend({
 	autoStop: function (val) {
 		if (val !== undefined) {
 			this._autoStop = val;
-			return this._entity;
+			return this;
 		}
 
 		return this._autoStop;
+	},
+
+	/**
+	 * Gets / sets the speed at which the entity will traverse the path in pixels
+	 * per second (world space).
+	 * @param {Number=} val
+	 * @return {*}
+	 */
+	speed: function (val) {
+		if (val !== undefined) {
+			this._speed = val / 1000;
+			
+			if (this._active) {
+				this.stop();
+				this.start(this._startTime);
+			}
+			return this;
+		}
+
+		return this._speed;
+	},
+
+	/**
+	 * Starts path traversal.
+	 * @param {Number=} startTime The time to start path traversal. Defaults
+	 * to new Date().getTime() if no
+	 * value is presented.
+	 * @return {*}
+	 */
+	start: function (startTime) {
+		if (!this._active) {
+			this._active = true;
+			this._startTime = startTime || ige._currentTime;
+			
+			this._calculatePathData();
+		} else {
+			this._finished = false;
+		}
+		
+		return this;
+	},
+
+	/**
+	 * Returns the last point of the last path in the path queue.
+	 * @return {IgePoint3d}
+	 */
+	getEndPoint: function () {
+		return this._points[this._points.length - 1];
+	},
+
+	/**
+	 * Pauses path traversal but does not clear the path queue or any path data.
+	 * @return {*}
+	 */
+	pause: function () {
+		this._active = false;
+		this._paused = true;
+		this._pauseTime = ige._currentTime;
+		
+		this.emit('paused', this._entity);
+		return this;
+	},
+
+	/**
+	 * Clears all path queue and path data.
+	 * @return {*}
+	 */
+	clear: function () {
+		if (this._active) {
+			this.stop();
+		}
+		
+		this._points = [];
+		this._previousPointFrom = 0;
+		this._currentPointFrom = 0;
+		this._previousPointTo = 0;
+		this._currentPointTo = 0;
+		
+		this.emit('cleared', this._entity);
+		return this;
+	},
+	
+	/**
+	 * Stops path traversal but does not clear the path
+	 * queue or any path data.
+	 * @return {*}
+	 */
+	stop: function () {
+		//this.log('Setting pathing as inactive...');
+		this._active = false;
+		this.emit('stopped', this._entity);
+		
+		return this;
 	},
 
 	/**
@@ -340,7 +408,14 @@ var IgePathComponent = IgeEventingClass.extend({
 	drawPath: function (val) {
 		if (val !== undefined) {
 			this._drawPath = val;
-			return this._entity;
+			
+			if (val) {
+				this._entity.addBehaviour('path', this._tickBehaviour, true);
+			} else {
+				this._entity.removeBehaviour('path', true);
+			}
+			
+			return this;
 		}
 
 		return this._drawPath;
@@ -356,7 +431,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	drawPathGlow: function (val) {
 		if (val !== undefined) {
 			this._drawPathGlow = val;
-			return this._entity;
+			return this;
 		}
 
 		return this._drawPathGlow;
@@ -371,146 +446,26 @@ var IgePathComponent = IgeEventingClass.extend({
 	drawPathText: function (val) {
 		if (val !== undefined) {
 			this._drawPathText = val;
-			return this._entity;
+			return this;
 		}
 
 		return this._drawPathText;
 	},
-
-	/**
-	 * Gets / sets the speed at which the entity will
-	 * traverse the path.
-	 * @param {Number=} val
-	 * @return {*}
-	 */
-	speed: function (val) {
-		if (val !== undefined) {
-			this._speed = val;
-			return this._entity;
-		}
-
-		return this._speed;
-	},
-
-	/**
-	 * Starts path traversal.
-	 * @param {Number=} startTime The time to start path
-	 * traversal. Defaults to new Date().getTime() if no
-	 * value is presented.
-	 * @return {*}
-	 */
-	start: function (startTime) {
-		// Check that we are not already active
-		if (!this._active) {
-			// Check that the parent has tileWidth and height properties
-			if (this._entity._parent && (!this._entity._parent._tileWidth || !this._entity._parent._tileHeight)) {
-				this.log('Cannot start path traversal on entity because it is not mounted to a tile or texture map so it\'s parent does not have _tileWidth and _tileHeight property values. Either set these values or mount to a map.', 'error');
-			} else {
-				/* DEXCLUDE */
-				//this.log('Starting path traversal...');
-				/* DEXCLUDE */
-				// Check we have some paths to traverse!
-				if (this._paths.length) {
-					// If we don't have a current path index, set it to zero
-					if (this._currentPathIndex === -1) { this._currentPathIndex = 0; }
-					if (this._targetCellIndex === -1) { this._targetCellIndex = 0; }
 	
-					// If we weren't passed a start time, assign it the current time
-					if (startTime === undefined) {
-						startTime = ige._currentTime;
-					}
+	multiplyPoint: function (point) {
+		return point.multiply(
+			this._entity._parent._tileWidth,
+			this._entity._parent._tileHeight,
+			1
+		);
+	},
 	
-					if (this._paused) {
-						// Bring the arrival time of the target cell forward to take
-						// into account the time we were paused
-						this._targetCellArrivalTime += startTime - this._pauseTime;
-						this._paused = false;
-					}
-	
-					this._startTime = startTime;
-					this._currentTime = this._startTime;
-	
-					// Set pathing to active
-					this._active = true;
-					this.emit('started', this._entity);
-					/* DEXCLUDE */
-					//this.log('Traversal started (active: ' + this._active + ')');
-					/* DEXCLUDE */
-				} else {
-					this.log('Cannot start path because no paths have been added!', 'warning');
-				}
-			}
-		}
-
-		return this._entity;
-	},
-
-	/**
-	 * Returns the last point of the last path in the
-	 * path queue.
-	 * @return {IgePoint3d}
-	 */
-	endPoint: function () {
-		var paths = this._paths,
-			pathCount = this._paths.length,
-			points,
-			pointCount;
-
-		if (pathCount) {
-			// We have paths so figure out the last point
-			// of the last path and return it
-			points = paths[pathCount - 1];
-			pointCount = points.length;
-
-			return points[pointCount - 1];
-		} else {
-			// No paths so return a null point
-			return null;
-		}
-	},
-
-	/**
-	 * Pauses path traversal but does not clear the path
-	 * queue or any path data.
-	 * @return {*}
-	 */
-	pause: function () {
-		this._active = false;
-		this._paused = true;
-		this._pauseTime = ige._currentTime;
-		this.emit('paused', this._entity);
-		return this._entity;
-	},
-
-	/**
-	 * Stops path traversal but does not clear the path
-	 * queue or any path data.
-	 * @return {*}
-	 */
-	stop: function () {
-		//this.log('Setting pathing as inactive...');
-		this._active = false;
-		this.emit('stopped', this._entity);
-		return this._entity;
-	},
-
-	/**
-	 * Clears all path queue and path data.
-	 * @return {*}
-	 */
-	clear: function () {
-		if (this._active) {
-			this.stop();
-		}
-		this._paths = [];
-
-		this._currentPathIndex = -1;
-		this._targetCellIndex = -1;
-		this._targetCellArrivalTime = 0;
-
-		this.emit('cleared', this._entity);
-
-		return this._entity;
+	transformPoint: function (point) {
+		return new IgePoint3d(
+			point.x + this._entity._parent._tileWidth / 2,
+			point.y + this._entity._parent._tileHeight / 2,
+			point.z
+		);
 	},
 
 	/**
@@ -520,220 +475,252 @@ var IgePathComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_updateBehaviour: function (ctx) {
-		// TODO: Fix the distance, time, speed issue so that if we have a large tick delta, it carries on the path instead of extending the current to target cell
-		if (this.path._active) {
-			var self = this.path,
-				currentPath = self._paths[self._currentPathIndex],
-				currentPosition = this._translate,
-				oldTargetCell = currentPath[self._targetCellIndex],
-				targetCell = currentPath[self._targetCellIndex],
-				newTargetCell,
-				targetPoint,
-				newPosition,
-				distanceBetweenP1AndP2,
-				tileMapData,
-				tileCheckData,
-				recalcStartPoint,
-				recalcEndPoint,
-				replacementPath;
-
-			self._currentTime = ige._currentTime;
-
-			if (targetCell) {
-				if (targetCell.mode === 0) {
-					targetPoint = {
-						x: targetCell.x * this._parent._tileWidth,
-						y: targetCell.y * this._parent._tileHeight
-					};
-				} else {
-					targetPoint = {
-						x: targetCell.x,
-						y: targetCell.y
-					};
+		var path = this.path,
+			currentTime = ige._currentTime,
+			progressTime = currentTime - path._startTime;
+		
+		// Check if we should be processing paths
+		if (path._active && path._totalDistance !== 0 && currentTime >= path._startTime && (progressTime <= path._totalTime || !path._finished)) {
+			var distanceTravelled = (path._speed) * progressTime,
+				totalDistance = 0,
+				pointArr = path._points,
+				pointCount = pointArr.length,
+				pointIndex,
+				pointFrom,
+				pointTo,
+				newPoint,
+				dynamicResult;
+			
+			// Loop points along the path and determine which points we are traversing between
+			for (pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+				totalDistance += pointArr[pointIndex]._distanceToNext;
+				
+				if (totalDistance > distanceTravelled) {
+					// Found points we are traversing
+					path._finished = false;
+					path._currentPointFrom = pointIndex;
+					path._currentPointTo = pointIndex + 1;
+					pointFrom = pointArr[pointIndex];
+					pointTo = pointArr[pointIndex + 1];
+					break;
 				}
-
-				if (currentPath) {
-					if (self._currentTime < self._targetCellArrivalTime && (targetPoint.x !== currentPosition.x || targetPoint.y !== currentPosition.y)) {
-						newPosition = self._positionAlongVector(
-							currentPosition,
-							targetPoint,
-							self._speed,
-							ige._tickDelta
-						);
+			}
+			
+			// Check if we have points to traverse between
+			if (pointFrom && pointTo) {
+				if (path._currentPointFrom !== path._previousPointFrom) {
+					// Emit point complete
+					path.emit('pointComplete', [this, pointArr[path._previousPointFrom].x, pointArr[path._previousPointFrom].y, pointArr[path._currentPointFrom].x, pointArr[path._currentPointFrom].y]);
+				}
+				
+				// Check if we are in dynamic mode and if so, ensure our path is still valid
+				if (path._dynamic) {
+					dynamicResult = path._processDynamic(pointFrom, pointTo, pointArr[pointCount - 1]);
+					if (dynamicResult === true) {
+						// Re-assign the points to the new ones that the dynamic path
+						// spliced into our points array
+						pointFrom = pointArr[path._currentPointFrom];
+						pointTo = pointArr[path._currentPointTo];
 						
-						if (this._mode === 0) {
-							this.translateTo(newPosition.x, newPosition.y, currentPosition.z);
-						}
-						
-						if (this._mode === 1) {
-							this.translateTo(newPosition.x, newPosition.y, currentPosition.z);
-						}
-					} else {
-						// Move to the next cell
-						self._targetCellIndex++;
-
-						// Check we are being sane!
-						if (!currentPath[self._targetCellIndex]) {
-							// Make sure we're exactly on the target
-							this.translateTo(targetPoint.x, targetPoint.y, currentPosition.z);
-							
-							// Emit point complete
-							self.emit('pointComplete', [this, oldTargetCell.x, oldTargetCell.y]);
-							self.emit('pathComplete', [this, oldTargetCell.x, oldTargetCell.y]);
-
-							// No more cells, go to next path
-							self._targetCellIndex = 0;
-							self._currentPathIndex++;
-							//self.log('Advancing to next path...');
-
-							if (!self._paths[self._currentPathIndex]) {
-								//self.log('No more paths, resting now.');
-								// No more paths, reset and exit
-								self.clear();
-								self.emit('traversalComplete', this);
-
-								return false;
-							}
-						}
-
-						// Set the new target cell's arrival time
-						currentPath = self._paths[self._currentPathIndex];
-						targetCell = currentPath[self._targetCellIndex];
-						
-						// Emit point complete
-						self.emit('pointComplete', [this, oldTargetCell.x, oldTargetCell.y, targetCell.x, targetCell.y]);
-						newTargetCell = targetCell;
-						
-						// Check if we are in dynamic mode
-						if (self._dynamic) {
-							// We are in dynamic mode, check steps ahead to see if they
-							// have been blocked or not
-							tileMapData = self._tileMap.map._mapData;
-							tileCheckData = tileMapData[targetCell.y] && tileMapData[targetCell.y][targetCell.x] ? tileMapData[targetCell.y][targetCell.x] : null;
-							
-							if (!self._tileChecker(tileCheckData, targetCell.x, targetCell.y, null, null, null, true)) {
-								// The new destination tile is blocked, recalculate path
-								// Create a new path
-								recalcStartPoint = oldTargetCell;
-								recalcEndPoint = currentPath[currentPath.length - 1];
-								
-								replacementPath = self._finder.generate(
-									self._tileMap,
-									new IgePoint3d(recalcStartPoint.x, recalcStartPoint.y, 0),
-									new IgePoint3d(recalcEndPoint.x, recalcEndPoint.y, 0),
-									self._tileChecker,
-									self._allowSquare,
-									self._allowDiagonal,
-									false
-								);
-								
-								if (replacementPath.length) {
-									self.replacePath(self._currentPathIndex, replacementPath);
-									self._targetCellIndex = 0;
-								} else {
-									// Cannot generate valid path, delete this path
-									self.emit('dynamicFail', [this, new IgePoint3d(recalcStartPoint.x, recalcStartPoint.y, 0), new IgePoint3d(recalcEndPoint.x, recalcEndPoint.y, 0)]);
-									self.clear();
-									return;
-								}
-								
-								currentPath = self._paths[self._currentPathIndex];
-								targetCell = currentPath[self._targetCellIndex];
-							}
-						}
-						
-						if (targetCell.mode === 0){
-							targetPoint = {x: targetCell.x * this._parent._tileWidth, y: targetCell.y * this._parent._tileHeight};
-						} else {
-							targetPoint = targetCell.clone();
-						}
-						
-						distanceBetweenP1AndP2 = Math.distance(currentPosition.x, currentPosition.y, targetPoint.x, targetPoint.y);
-
-						self._targetCellArrivalTime = self._currentTime + (distanceBetweenP1AndP2 / self._speed);
+						path.emit('pathRecalculated', [this, pointArr[path._previousPointFrom].x, pointArr[path._previousPointFrom].y, pointArr[path._currentPointFrom].x, pointArr[path._currentPointFrom].y]);
 					}
-				} else {
-					// No path so stop pathing!
-					self.stop();
+					
+					if (dynamicResult === -1) {
+						// Failed to find a new dynamic path
+						path._finished = true;
+					}
 				}
-
-
+				
+				// Calculate position along vector between the two points
+				newPoint = path._positionAlongVector(
+					pointFrom,
+					pointTo,
+					path._speed,
+					pointFrom._deltaTimeToNext - (pointFrom._absoluteTimeToNext - progressTime)
+				);
+				
+				newPoint = path.multiplyPoint(newPoint);
+				newPoint = path.transformPoint(newPoint);
+				
+				// Translate the entity to the new path point
+				this.translateToPoint(newPoint);
+				
+				path._previousPointFrom = path._currentPointFrom;
+				path._previousPointTo = path._currentPointTo;
+			} else {
+				pointTo = pointArr[pointCount - 1];
+				
+				newPoint = path.multiplyPoint(pointTo);
+				newPoint = path.transformPoint(newPoint);
+				
+				path._previousPointFrom = pointCount - 1;
+				path._previousPointTo = pointCount - 1;
+				path._currentPointFrom = pointCount - 1;
+				path._currentPointTo = pointCount - 1;
+				
+				this.translateToPoint(newPoint);
+				
+				path._finished = true;
+				path.emit('pathComplete', [this, pointArr[path._previousPointFrom].x, pointArr[path._previousPointFrom].y]);
 			}
 		}
 	},
 	
-	_tickBehaviour: function (ctx) {
-		if (ige.isClient) {
-			this.path._drawPathToCtx(this, ctx);
+	_processDynamic: function (pointFrom, pointTo, destinationPoint) {
+		var self = this,
+			tileMapData,
+			tileCheckData,
+			newPathPoints;
+		
+		// We are in dynamic mode, check steps ahead to see if they
+		// have been blocked or not
+		tileMapData = self._tileMap.map._mapData;
+		tileCheckData = tileMapData[pointTo.y] && tileMapData[pointTo.y][pointTo.x] ? tileMapData[pointTo.y][pointTo.x] : null;
+		
+		if (!self._tileChecker(tileCheckData, pointTo.x, pointTo.y, null, null, null, true)) {
+			// The new destination tile is blocked, recalculate path
+			newPathPoints = self._finder.generate(
+				self._tileMap,
+				new IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z),
+				new IgePoint3d(destinationPoint.x, destinationPoint.y, destinationPoint.z),
+				self._tileChecker,
+				self._allowSquare,
+				self._allowDiagonal,
+				false
+			);
+			
+			if (newPathPoints.length) {
+				self.replacePoints(self._currentPointFrom, self._points.length - self._currentPointFrom, newPathPoints);
+				return true;
+			} else {
+				// Cannot generate valid path, delete this path
+				self.emit('dynamicFail', [this, new IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z), new IgePoint3d(destinationPoint.x, destinationPoint.y, destinationPoint.z)]);
+				self.clear();
+				
+				return -1;
+			}
 		}
+		
+		return false;
+	},
+	
+	_calculatePathData: function () {
+		var totalDistance = 0,
+			pointFrom,
+			pointTo,
+			i;
+		
+		// Calculate total distance to travel
+		for (i = 1; i < this._points.length; i++) {
+			pointFrom = this._points[i - 1];
+			pointTo = this._points[i];
+			pointFrom._distanceToNext = Math.distance(pointFrom.x, pointFrom.y, pointTo.x, pointTo.y);
+			
+			totalDistance += Math.abs(pointFrom._distanceToNext);
+			
+			pointFrom._deltaTimeToNext = pointFrom._distanceToNext / this._speed;
+			pointFrom._absoluteTimeToNext = totalDistance / this._speed;
+		}
+		
+		this._totalDistance = totalDistance;
+		this._totalTime = totalDistance / this._speed;
+		
+		return this;
 	},
 
-	_drawPathToCtx: function (entity, ctx) {
-		if (this._paths.length) {
-			var self = this,
-				currentPath,
+	/**
+	 * Replaces a number of points in the current queue with the new points passed.
+	 * @param {Number} fromIndex The from index.
+	 * @param {Number} replaceLength The number of points to replace.
+	 * @param {Array} newPoints The array of new points to insert.
+	 */
+	replacePoints: function (fromIndex, replaceLength, newPoints) {
+		var args = [fromIndex, replaceLength].concat(newPoints);
+		this._points.splice.apply(this._points, args);
+		this._calculatePathData();
+	},
+	
+	_tickBehaviour: function (ctx) {
+		if (ige.isClient) {
+			var self = this.path,
+				entity = this,
+				currentPath = self._points,
 				oldTracePathPoint,
 				tracePathPoint,
 				pathPointIndex,
-				tempCurrentPath,
-				tempCurrentPathIndex,
 				tempPathText;
-
-			if (self._active) {
-				currentPath = self._paths[self._currentPathIndex];
-			} else {
-				currentPath = self._paths[0];
-			}
-
-			if (currentPath) {
-				if (self._drawPath) {
+			
+			if (currentPath.length) {
+				if (currentPath && self._drawPath) {
 					// Draw the current path
 					ctx.save();
-					tempCurrentPathIndex = 0;
-
-					while (self._paths[tempCurrentPathIndex]) {
-						tempCurrentPath = self._paths[tempCurrentPathIndex];
-						oldTracePathPoint = undefined;
-
-						for (pathPointIndex = 0; pathPointIndex < tempCurrentPath.length; pathPointIndex++) {
-							if (tempCurrentPathIndex === self._currentPathIndex) {
-								ctx.strokeStyle = '#0096ff';
-								ctx.fillStyle = '#0096ff';
-							} else {
-								ctx.strokeStyle = '#fff000';
-								ctx.fillStyle = '#fff000';
-							}
-							
-							if(tempCurrentPath[pathPointIndex].mode === 0){
-								if (entity._parent.isometricMounts()) {
-									tracePathPoint = new IgePoint3d((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0).toIso();
-								} else {
-									tracePathPoint = new IgePoint3d((tempCurrentPath[pathPointIndex].x * entity._parent._tileWidth), (tempCurrentPath[pathPointIndex].y * entity._parent._tileHeight), 0);
+	
+					oldTracePathPoint = undefined;
+	
+					for (pathPointIndex = 0; pathPointIndex < currentPath.length; pathPointIndex++) {
+						ctx.strokeStyle = '#0096ff';
+						ctx.fillStyle = '#0096ff';
+						
+						tracePathPoint = new IgePoint3d(
+							currentPath[pathPointIndex].x,
+							currentPath[pathPointIndex].y,
+							currentPath[pathPointIndex].z
+						);
+						
+						tracePathPoint = self.multiplyPoint(tracePathPoint);
+						tracePathPoint = self.transformPoint(tracePathPoint);
+						
+						if (entity._parent._mountMode === 1) {
+							tracePathPoint = tracePathPoint.toIso();
+						}
+	
+						if (!oldTracePathPoint) {
+							// The starting point of the path
+							ctx.beginPath();
+							ctx.arc(tracePathPoint.x, tracePathPoint.y, 5, 0, Math.PI*2, true);
+							ctx.closePath();
+							ctx.fill();
+						} else {
+							// Not the starting point
+							if (self._drawPathGlow) {
+								ctx.globalAlpha = 0.1;
+								for (var k = 3; k >= 0 ; k--) {
+									ctx.lineWidth = (k + 1) * 4 - 3.5;
+									ctx.beginPath();
+									ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
+									ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
+									
+									if (pathPointIndex < self._currentPointTo) {
+										ctx.strokeStyle = '#666666';
+										ctx.fillStyle = '#333333';
+									}
+									if (k === 0) {
+										ctx.globalAlpha = 1;
+									}
+	
+									ctx.stroke();
 								}
 							} else {
-								if (entity._parent.isometricMounts()) {
-									tracePathPoint = tempCurrentPath[pathPointIndex].clone().toIso();
-								} else {
-									tracePathPoint = tempCurrentPath[pathPointIndex].clone();
-								}
-							}
-
-							if (!oldTracePathPoint) {
-								// The starting point of the path
 								ctx.beginPath();
-								ctx.arc(tracePathPoint.x, tracePathPoint.y, 5, 0, Math.PI*2, true);
-								ctx.closePath();
-
-								if (tempCurrentPathIndex < self._currentPathIndex) {
-									ctx.fillStyle = '#666666';
+								ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
+								ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
+								
+								if (pathPointIndex < self._currentPointTo) {
+									ctx.strokeStyle = '#666666';
+									ctx.fillStyle = '#333333';
 								}
-
-								ctx.fill();
-
+	
+								ctx.stroke();
+							}
+	
+							if (pathPointIndex === self._currentPointTo) {
+								ctx.save();
+								ctx.fillStyle = '#24b9ea';
+								ctx.fillRect(tracePathPoint.x - 5, tracePathPoint.y - 5, 10, 10);
+								
 								if (self._drawPathText) {
-									ctx.save();
 									ctx.fillStyle = '#eade24';
-
+				
 									if (self._drawPathGlow) {
 										// Apply shadow to the text
 										ctx.shadowOffsetX = 1;
@@ -741,90 +728,70 @@ var IgePathComponent = IgeEventingClass.extend({
 										ctx.shadowBlur    = 4;
 										ctx.shadowColor   = 'rgba(0, 0, 0, 1)';
 									}
-
+				
 									tempPathText = 'Entity: ' + entity.id();
-									ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y - 22);
-
-									tempPathText = 'Path ' + tempCurrentPathIndex + ' (' + tempCurrentPath[pathPointIndex].x + ', ' + tempCurrentPath[pathPointIndex].y + ')';
-									ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y - 10);
-									ctx.restore();
+									ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y + 16);
+				
+									tempPathText = 'Point (' + currentPath[pathPointIndex].x + ', ' + currentPath[pathPointIndex].y + ')';
+									ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y + 28);
+									
+									tempPathText = 'Abs (' + Math.floor(entity._translate.x) + ', ' + Math.floor(entity._translate.y) + ')';
+									ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y + 40);
 								}
+								
+								ctx.restore();
 							} else {
-								// Not the starting point
-								if (self._drawPathGlow) {
-									ctx.globalAlpha = 0.1;
-									for (var k = 3; k >= 0 ; k--) {
-										ctx.lineWidth = (k + 1) * 4 - 3.5;
-										ctx.beginPath();
-										ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
-										ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
-										if (tempCurrentPathIndex < self._currentPathIndex || (tempCurrentPathIndex === self._currentPathIndex && pathPointIndex < self._targetCellIndex)) {
-											ctx.strokeStyle = '#666666';
-											ctx.fillStyle = '#333333';
-										}
-										if (k === 0) {
-											ctx.globalAlpha = 1;
-										}
-
-										ctx.stroke();
-									}
-								} else {
-									ctx.beginPath();
-									ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
-									ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
-									if (tempCurrentPathIndex < self._currentPathIndex || (tempCurrentPathIndex === self._currentPathIndex && pathPointIndex < self._targetCellIndex)) {
-										ctx.strokeStyle = '#666666';
-										ctx.fillStyle = '#333333';
-									}
-
-									ctx.stroke();
-								}
-
-								if (tempCurrentPathIndex === self._currentPathIndex && pathPointIndex === self._targetCellIndex) {
-									ctx.save();
-									ctx.translate(tracePathPoint.x, tracePathPoint.y);
-									ctx.rotate(45 * Math.PI / 180);
-									ctx.translate(-tracePathPoint.x, -tracePathPoint.y);
-									ctx.fillStyle = '#d024ea';
-									ctx.fillRect(tracePathPoint.x - 5, tracePathPoint.y - 5, 10, 10);
-									ctx.restore();
-								} else {
-									ctx.fillRect(tracePathPoint.x - 2.5, tracePathPoint.y - 2.5, 5, 5);
-								}
+								ctx.fillRect(tracePathPoint.x - 2.5, tracePathPoint.y - 2.5, 5, 5);
 							}
-
-							oldTracePathPoint = tracePathPoint;
 						}
-
-						tempCurrentPathIndex++;
+	
+						oldTracePathPoint = tracePathPoint;
 					}
+					
 					ctx.restore();
 				}
 			}
 		}
 	},
 
+	getPreviousPoint: function (val) {
+		return this._points[this._currentPointFrom - val];
+	},
+	
+	getNextPoint: function (val) {
+		return this._points[this._currentPointTo + val];
+	},
+
 	/**
-	 * Calculates the position of the entity along a vector
-	 * based on the speed of the entity and the delta time.
-	 * @param {IgePoint3d} p1 Vector starting point
-	 * @param {IgePoint3d} p2 Vector ending point
+	 * Calculates the position of the entity along a vector based on the speed
+	 * of the entity and the delta time.
+	 * @param {IgePoint3d} p1 Vector start point
+	 * @param {IgePoint3d} p2 Vector end point
 	 * @param {Number} speed Speed along the vector
 	 * @param {Number} deltaTime The time between the last update and now.
 	 * @return {IgePoint3d}
 	 * @private
 	 */
 	_positionAlongVector: function (p1, p2, speed, deltaTime) {
-		var newPoint = new IgePoint3d(0, 0, 0),
-			deltaY = (p2.y - p1.y),
-			deltaX = (p2.x - p1.x),
-			distanceBetweenP1AndP2 = Math.distance(p1.x, p1.y, p2.x, p2.y),
-			xVelocity = speed * deltaX / distanceBetweenP1AndP2,
-			yVelocity = speed * deltaY / distanceBetweenP1AndP2;
-
-		if (distanceBetweenP1AndP2 > 0) {
-			newPoint.x = p1.x + (xVelocity * deltaTime);
-			newPoint.y = p1.y + (yVelocity * deltaTime);
+		var newPoint,
+			p1X = p1.x,
+			p1Y = p1.y,
+			p2X = p2.x,
+			p2Y = p2.y,
+			deltaX = (p2X - p1X),
+			deltaY = (p2Y - p1Y),
+			magnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
+			normalisedX = deltaX / magnitude,
+			normalisedY = deltaY / magnitude;
+		
+		if (deltaX !== 0 || deltaY !== 0) {
+			newPoint = new IgePoint3d(
+				p1X + (normalisedX * (speed * deltaTime)),
+				p1Y + (normalisedY * (speed * deltaTime)),
+				0
+			);
+		} else {
+			newPoint = new IgePoint3d(0, 0, 0);
 		}
 
 		return newPoint;
