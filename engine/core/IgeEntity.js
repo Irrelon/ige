@@ -375,44 +375,6 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
-	 * Translates the object to the tile co-ordinates passed.
-	 * @param {Number} x The x tile co-ordinate.
-	 * @param {Number} y The y tile co-ordinate.
-	 * @param {Number=} z The z tile co-ordinate.
-	 * @example #Translate entity to tile
-	 *     // Create a tile map
-	 *     var tileMap = new IgeTileMap2d()
-	 *         .tileWidth(40)
-	 *         .tileHeight(40);
-	 *     
-	 *     // Mount our entity to the tile map
-	 *     entity.mount(tileMap);
-	 *     
-	 *     // Translate the entity to the tile x:10, y:12
-	 *     entity.translateToTile(10, 12, 0);
-	 * @return {*} The object this method was called from to allow
-	 * method chaining.
-	 */
-	translateToTile: function (x, y, z) {
-		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
-			var finalZ;
-
-			// Handle being passed a z co-ordinate
-			if (z !== undefined) {
-				finalZ = z * this._parent._tileWidth;
-			} else {
-				finalZ = this._translate.z;
-			}
-
-			this.translateTo((x * this._parent._tileWidth) + this._parent._tileWidth / 2, (y * this._parent._tileHeight) + this._parent._tileWidth / 2, finalZ);
-		} else {
-			this.log('Cannot translate to tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.', 'warning');
-		}
-
-		return this;
-	},
-
-	/**
 	 * Gets / sets the texture to use as the background
 	 * pattern for this entity.
 	 * @param {IgeTexture} texture The texture to use as
@@ -2649,6 +2611,44 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._entity || this;
+	},
+	
+	/**
+	 * Translates the object to the tile co-ordinates passed.
+	 * @param {Number} x The x tile co-ordinate.
+	 * @param {Number} y The y tile co-ordinate.
+	 * @param {Number=} z The z tile co-ordinate.
+	 * @example #Translate entity to tile
+	 *     // Create a tile map
+	 *     var tileMap = new IgeTileMap2d()
+	 *         .tileWidth(40)
+	 *         .tileHeight(40);
+	 *     
+	 *     // Mount our entity to the tile map
+	 *     entity.mount(tileMap);
+	 *     
+	 *     // Translate the entity to the tile x:10, y:12
+	 *     entity.translateToTile(10, 12, 0);
+	 * @return {*} The object this method was called from to allow
+	 * method chaining.
+	 */
+	translateToTile: function (x, y, z) {
+		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
+			var finalZ;
+
+			// Handle being passed a z co-ordinate
+			if (z !== undefined) {
+				finalZ = z * this._parent._tileWidth;
+			} else {
+				finalZ = this._translate.z;
+			}
+
+			this.translateTo((x * this._parent._tileWidth) + this._parent._tileWidth / 2, (y * this._parent._tileHeight) + this._parent._tileWidth / 2, finalZ);
+		} else {
+			this.log('Cannot translate to tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.', 'warning');
+		}
+
+		return this;
 	},
 
 	/**
