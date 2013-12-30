@@ -7,7 +7,6 @@ var Client = IgeClass.extend({
 
 		var self = this;
 
-		self.obj = [];
 		self.gameTextures = {};
 		self.fsm = new IgeFSM();
 
@@ -35,7 +34,10 @@ var Client = IgeClass.extend({
 					self.setupUi();
 
 					// Setup the initial entities
-					//self.setupEntities();
+					self.setupEntities();
+					
+					// Set the initial fsm state
+					self.fsm.initialState('select');
 				}
 			});
 		});
@@ -618,8 +620,9 @@ var Client = IgeClass.extend({
 	 * @return {*}
 	 */
 	placeItem: function (type, tileX, tileY) {
-		var item = new this[type](this.tileMap1, tileX, tileY).place();
-		this.obj.push(item);
+		var item = ige.newClassInstance(type)
+			.mount(ige.$('tileMap1'))
+			.translateToTile(tileX, tileY);
 
 		return item;
 	},

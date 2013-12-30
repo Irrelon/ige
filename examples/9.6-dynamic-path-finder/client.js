@@ -80,12 +80,13 @@ var Client = IgeClass.extend({
 					.isometricMounts(self.isoMode)
 					.tileWidth(40)
 					.tileHeight(40)
-					.drawGrid(3)
+					.gridSize(20, 20)
+					.drawGrid(true)
 					.drawMouse(true)
 					.drawBounds(false)
 					.drawBoundsData(false)
 					 // Mark tile as occupied with a value of 1 (x, y, width, height, value)
-					.loadMap({"data":{"0":{"1":1,"5":1,"6":1,"14":1,"-1":1},"1":{"1":1,"3":1,"6":1,"7":1,"8":1,"9":1,"11":1,"14":1,"-1":1},"2":{"3":1,"4":1,"8":1,"11":1,"12":1,"14":1,"-1":1},"3":{"1":1,"6":1,"8":1,"11":1,"14":1,"-1":1},"4":{"0":1,"1":1,"2":1,"3":1,"4":1,"5":1,"6":1,"8":1,"14":1,"-1":1,"-2":1,"-3":1},"5":{"8":1,"10":1,"11":1,"12":1,"14":1,"-3":1},"6":{"0":1,"1":1,"2":1,"4":1,"5":1,"6":1,"8":1,"12":1,"14":1,"-1":1,"-3":1},"7":{"1":1,"5":1,"8":1,"9":1,"10":1,"12":1,"14":1,"-1":1,"-3":1},"8":{"3":1,"12":1,"14":1,"-1":1,"-3":1},"9":{"1":1,"2":1,"3":1,"4":1,"5":1,"6":1,"8":1,"9":1,"10":1,"11":1,"12":1,"14":1,"-3":1},"10":{"0":1,"1":1,"6":1,"14":1,"-1":1,"-2":1,"-3":1},"11":{"6":1,"7":1,"8":1,"9":1,"10":1,"11":1,"12":1,"13":1,"14":1},"-1":{"0":1,"1":1,"2":1,"3":1,"4":1,"5":1,"8":1,"9":1,"10":1,"11":1,"12":1,"13":1,"14":1,"-1":1,"-2":1,"-3":1,"-4":1},"-2":{"3":1,"5":1,"7":1,"8":1,"-4":1},"-3":{"1":1,"5":1,"7":1,"-1":1,"-2":1,"-3":1,"-4":1},"-4":{"1":1,"2":1,"3":1,"4":1,"5":1,"7":1,"-1":1},"-5":{"5":1,"7":1,"-1":1},"-6":{"1":1,"2":1,"3":1,"7":1,"-1":1},"-7":{"7":1,"-1":1},"-8":{"0":1,"1":1,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"-1":1}},"dataXY":[-4,-8]})
+					.loadMap({"data":{"0":{"0":1,"1":1,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":1,"12":1,"13":1,"14":1},"1":{"0":1,"2":1,"14":1},"2":{"0":1,"2":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"14":1},"3":{"0":1,"2":1,"10":1,"14":1},"4":{"0":1,"2":1,"10":1,"14":1},"5":{"0":1,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"14":1},"6":{"0":1,"4":1,"7":1,"10":1,"14":1},"7":{"0":1,"2":1,"7":1,"10":1,"11":1,"12":1,"13":1,"14":1},"8":{"0":1,"2":1,"3":1,"4":1,"6":1,"7":1,"10":1},"9":{"0":1,"4":1,"7":1,"8":1,"10":1},"10":{"0":1,"2":1,"4":1,"7":1,"10":1},"11":{"0":1,"2":1,"4":1,"5":1,"7":1,"10":1},"12":{"0":1,"2":1,"10":1},"13":{"0":1,"2":1,"3":1,"4":1,"5":1,"9":1,"10":1},"14":{"0":1,"8":1,"9":1},"15":{"0":1,"1":1,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1}},"dataXY":[0,0]})
 					.highlightOccupied(true) // Draws a red tile wherever a tile is "occupied"
 					.mount(self.objectScene);
 
@@ -114,6 +115,7 @@ var Client = IgeClass.extend({
 					.mouseOut(outFunc)
 					.drawBounds(false)
 					.drawBoundsData(false)
+					.debugTransforms()
 					.mount(self.tileMap1);
 				
 				self.player2 = new Character()
@@ -123,6 +125,7 @@ var Client = IgeClass.extend({
 					.mouseOut(outFunc)
 					.drawBounds(false)
 					.drawBoundsData(false)
+					.debugTransforms()
 					.mount(self.tileMap1)
 					.translateToTile(-3, -2);
 
@@ -180,10 +183,10 @@ var Client = IgeClass.extend({
 					.neighbourLimit(100);
 
 				// Configure the path component for the player entity
-				self.player1
-					.path.finder(self.pathFinder)
-					.path.tileMap(self.tileMap1)
-					.path.tileChecker(function (tileData, tileX, tileY, node, prevNodeX, prevNodeY, dynamic) {
+				self.player1.path
+					.finder(self.pathFinder)
+					.tileMap(self.tileMap1)
+					.tileChecker(function (tileData, tileX, tileY, node, prevNodeX, prevNodeY, dynamic) {
 						// If the map tile data is set to 1, don't allow a path along it
 						if (typeof tileData === 'string') {
 							return tileData === this._id;
@@ -191,18 +194,18 @@ var Client = IgeClass.extend({
 						
 						return tileData !== 1;
 					})
-					.path.lookAheadSteps(3)
-					.path.dynamic(true)
-					.path.allowSquare(true) // Allow north, south, east and west movement
-					.path.allowDiagonal(false) // Allow north-east, north-west, south-east, south-west movement
-					.path.drawPath(true) // Enable debug drawing the paths
-					.path.drawPathGlow(true) // Enable path glowing (eye candy)
-					.path.drawPathText(true); // Enable path text output
+					.lookAheadSteps(3)
+					.dynamic(true)
+					.allowSquare(true) // Allow north, south, east and west movement
+					.allowDiagonal(false) // Allow north-east, north-west, south-east, south-west movement
+					.drawPath(true) // Enable debug drawing the paths
+					.drawPathGlow(true) // Enable path glowing (eye candy)
+					.drawPathText(true); // Enable path text output
 				
-				self.player2
-					.path.finder(self.pathFinder)
-					.path.tileMap(self.tileMap1)
-					.path.tileChecker(function (tileData, tileX, tileY, node, prevNodeX, prevNodeY, dynamic) {
+				self.player2.path
+					.finder(self.pathFinder)
+					.tileMap(self.tileMap1)
+					.tileChecker(function (tileData, tileX, tileY, node, prevNodeX, prevNodeY, dynamic) {
 						// If the map tile data is set to 1, don't allow a path along it
 						if (typeof tileData === 'string') {
 							return tileData === this._id;
@@ -210,55 +213,59 @@ var Client = IgeClass.extend({
 						
 						return tileData !== 1;
 					})
-					.path.lookAheadSteps(3)
-					.path.dynamic(true)
-					.path.allowSquare(true) // Allow north, south, east and west movement
-					.path.allowDiagonal(false) // Allow north-east, north-west, south-east, south-west movement
-					.path.drawPath(true) // Enable debug drawing the paths
-					.path.drawPathGlow(true) // Enable path glowing (eye candy)
-					.path.drawPathText(true); // Enable path text output
+					.lookAheadSteps(3)
+					.dynamic(true)
+					.allowSquare(true) // Allow north, south, east and west movement
+					.allowDiagonal(false) // Allow north-east, north-west, south-east, south-west movement
+					.drawPath(true) // Enable debug drawing the paths
+					.drawPathGlow(true) // Enable path glowing (eye candy)
+					.drawPathText(true); // Enable path text output
 				
 				// Register some event listeners for the path
-				self.player1.path.on('pointComplete', function (entity, currentCellX, currentCellY, nextCellX, nextCellY) {
+				self.player1.path.on('pointComplete', function (entity) {
 					console.log('Path point reached...');
 					
 					// Mark the previous point as un-blocked
-					var previousCell = entity.path.previousTargetCell(1);
+					var previousCell = entity.path.getPreviousPoint(0),
+						nextCell = entity.path.getNextPoint(0);
+					
 					if (previousCell !== undefined) {
-						self.tileMap1.unOccupyTile(previousCell.x, previousCell.y, 1, 1);
+						//self.tileMap1.unOccupyTile(previousCell.x, previousCell.y, 1, 1);
 					}
 					
 					// Mark the current point as blocked
-					self.tileMap1.occupyTile(currentCellX, currentCellY, 1, 1, entity._id);
+					//self.tileMap1.occupyTile(nextCell.x, nextCell.y, 1, 1, entity._id);
 				});
 				self.player1.path.on('pathComplete', function (entity, currentCellX, currentCellY) {
 					console.log('Path completed...');
 					
 					// Mark the current point as un-blocked
 					self.tileMap1.unOccupyTile(currentCellX, currentCellY, 1, 1);
+					this._entity.animation.stop();
 				});
-				self.player1.path.on('traversalComplete', function (entity) { this._entity.animation.stop(); console.log('Traversal of all paths completed.'); });
 				self.player1.path.on('dynamicFail', function (entity, pathFrom, pathTo) { this._entity.animation.stop(); console.log('Dynamic path update required but could not find valid path to desination.'); });
 				
-				self.player2.path.on('pointComplete', function (entity, currentCellX, currentCellY, nextCellX, nextCellY) {
+				self.player2.path.on('pointComplete', function (entity) {
 					console.log('Path point reached...');
 					
 					// Mark the previous point as un-blocked
-					var previousCell = entity.path.previousTargetCell(1);
+					var previousCell = entity.path.getPreviousPoint(0),
+						nextCell = entity.path.getNextPoint(0);
+					
 					if (previousCell !== undefined) {
-						self.tileMap1.unOccupyTile(previousCell.x, previousCell.y, 1, 1);
+						//self.tileMap1.unOccupyTile(previousCell.x, previousCell.y, 1, 1);
 					}
 					
 					// Mark the current point as blocked
-					self.tileMap1.occupyTile(currentCellX, currentCellY, 1, 1, entity._id);
+					//self.tileMap1.occupyTile(nextCell.x, nextCell.y, 1, 1, entity._id);
 				});
 				self.player2.path.on('pathComplete', function (entity, currentCellX, currentCellY) {
-					console.log('Path completed...');
+					console.log('Path completed');
 					
 					// Mark the current point as un-blocked
 					self.tileMap1.unOccupyTile(currentCellX, currentCellY, 1, 1);
+					this._entity.animation.stop();
 				});
-				self.player2.path.on('traversalComplete', function (entity) { this._entity.animation.stop(); console.log('Traversal of all paths completed.'); });
 				self.player2.path.on('dynamicFail', function (entity, pathFrom, pathTo) { this._entity.animation.stop(); console.log('Dynamic path update required but could not find valid path to desination.'); });
 
 				// Some error events from the path finder
@@ -267,13 +274,15 @@ var Client = IgeClass.extend({
 				self.pathFinder.on('pathFound', function () { console.log('Path to destination calculated...'); });
 
 				// Assign the path to the player and start it!
-				self.player1
-					.path.set(0, 0, 0, -3, -2, 0)
-					.path.start();
+				self.player1.path
+					.set(1, 1, 0, 13, 1, 0)
+					.speed(2)
+					.start();
 				
-				self.player2
-					.path.set(-3, -2, 0, 0, 0, 0)
-					.path.start();
+				self.player2.path
+					.set(3, 1, 0, 1, 1, 0)
+					.speed(2)
+					.start();
 			}
 		});
 	}
