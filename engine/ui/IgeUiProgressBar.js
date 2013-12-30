@@ -58,6 +58,15 @@ var IgeUiProgressBar = IgeUiElement.extend({
 
 		return this._barText;
 	},
+	
+	min: function (val) {
+		if (val !== undefined) {
+			this._min = val;
+			return this;
+		}
+
+		return this._min;
+	},
 
 	max: function (val) {
 		if (val !== undefined) {
@@ -66,15 +75,6 @@ var IgeUiProgressBar = IgeUiElement.extend({
 		}
 
 		return this._max;
-	},
-
-	min: function (val) {
-		if (val !== undefined) {
-			this._min = val;
-			return this;
-		}
-
-		return this._min;
 	},
 
 	progress: function (val) {
