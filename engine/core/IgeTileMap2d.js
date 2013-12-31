@@ -249,8 +249,8 @@ var IgeTileMap2d = IgeEntity.extend({
 	/**
 	 * Returns the tile co-ordinates of the tile that the point's world
 	 * co-ordinates reside inside.
-	 * @param {IgePoint2d=} point
-	 * @return {IgePoint2d} The tile co-ordinates as a point object.
+	 * @param {IgePoint3d} point
+	 * @return {IgePoint3d} The tile co-ordinates as a point object.
 	 */
 	pointToTile: function (point) {
 		// TODO: Could this do with some caching to check if the input values have changed and if not,
@@ -264,9 +264,10 @@ var IgeTileMap2d = IgeEntity.extend({
 			dx = mx; //+ this._tileWidth / 2;
 			dy = my; //+ this._tileHeight / 2;
 
-			tilePos = new IgePoint2d(
+			tilePos = new IgePoint3d(
 				Math.floor(dx / this._tileWidth),
-				Math.floor(dy / this._tileWidth)
+				Math.floor(dy / this._tileWidth),
+				0
 			);
 		}
 
@@ -274,15 +275,11 @@ var IgeTileMap2d = IgeEntity.extend({
 			// iso
 			dx = mx;
 			dy = my;
-
-			tilePos = new IgePoint2d(
-				dx,
-				dy
-			).to2d();
-
+			
 			tilePos = new IgePoint3d(
-				Math.floor(tilePos.x / this._tileWidth),
-				Math.floor(tilePos.y / this._tileHeight)
+				Math.floor(dx / this._tileWidth),
+				Math.floor(dy / this._tileHeight),
+				0
 			);
 		}
 
@@ -293,19 +290,14 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * Returns the world co-ordinates of the tile the mouse is currently over.
 	 * @return {IgePoint3d}
 	 */
-	mouseTileWorldXY: function () {
-		if (this._mountMode === 0) {
-			return this._mouseTilePos
-				.clone()
-				.thisMultiply(this._tileWidth, this._tileHeight, 0);
-		}
+	mouseTilePoint: function () {
+		var tilePos = this.mouseToTile()
+			.thisMultiply(this._tileWidth, this._tileHeight, 1);
 
-		if (this._mountMode === 1) {
-			return this._mouseTilePos
-				.clone()
-				.thisMultiply(this._tileWidth, this._tileHeight, 0)
-				.thisToIso();
-		}
+		tilePos.x += this._tileWidth / 2;
+		tilePos.y += this._tileHeight / 2;
+		
+		return tilePos;
 	},
 	
 	tileToPoint: function (x, y) {
@@ -313,7 +305,7 @@ var IgeTileMap2d = IgeEntity.extend({
 		
 		if (this._mountMode === 0) {
 			point = new IgePoint3d(x, y, 0)
-				.thisMultiply(this._tileWidth, this._tileHeight, 0);
+				.thisMultiply(this._tileWidth, this._tileHeight, 1);
 			
 			point.x -= this._bounds2d.x2 - (this._tileWidth / 2);
 			point.y -= this._bounds2d.y2 - (this._tileHeight / 2);
@@ -336,7 +328,15 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * @return {IgePoint3d}
 	 */
 	mouseToTile: function () {
-		return this.pointToTile(this.mousePos());
+		var tilePos;
+		
+		if (this._mountMode === 0) {
+			tilePos = this.pointToTile(this.mousePos());
+		} else {
+			tilePos = this.pointToTile(this.mousePos().to2d());
+		}
+		
+		return tilePos;
 	},
 
 	/**
