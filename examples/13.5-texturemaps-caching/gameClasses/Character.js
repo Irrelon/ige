@@ -20,7 +20,8 @@ var Character = IgeEntityBox2d.extend({
 			this._characterTexture.on('loaded', function () {
 				// Create a character entity as a child of this container
 				self.texture(self._characterTexture)
-					.dimensionsFromCell();
+					.dimensionsFromCell()
+					.anchor(0, 8);
 			}, false, true);
 		}
 	},
