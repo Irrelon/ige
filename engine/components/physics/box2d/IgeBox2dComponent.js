@@ -437,8 +437,8 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			while (rectCount--) {
 				rect = rectArray[rectCount];
 
-				posX = (tileWidth * (rect.width / 2)) - (tileWidth / 2);
-				posY = (tileHeight * (rect.height / 2)) - (tileHeight / 2);
+				posX = (tileWidth * (rect.width / 2));
+				posY = (tileHeight * (rect.height / 2));
 
 				new IgeEntityBox2d()
 					.translateTo(rect.x * tileWidth + posX, rect.y * tileHeight + posY, 0)
