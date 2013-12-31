@@ -227,21 +227,28 @@ var IgeViewport = IgeEntity.extend([
 			// viewport (usually for debug purposes)
 			if (this._drawMouse && ctx === ige._ctx) {
 				ctx.save();
-					var mp = this.mousePos();
+				var mp = this.mousePos(),
+					text,
+					mx,
+					my,
+					textMeasurement;
 
-					// Re-scale the context to ensure that output is always 1:1
-					ctx.scale(1 / this.camera._scale.x, 1 / this.camera._scale.y);
+				// Re-scale the context to ensure that output is always 1:1
+				ctx.scale(1 / this.camera._scale.x, 1 / this.camera._scale.y);
 
-					// Work out the re-scale mouse position
-					var mx = Math.floor(mp.x * this.camera._scale.x),
-						my = Math.floor(mp.y * this.camera._scale.y),
-						textMeasurement;
+				// Work out the re-scale mouse position
+				mx = Math.floor(mp.x * this.camera._scale.x);
+				my = Math.floor(mp.y * this.camera._scale.y);
 
-					ctx.fillStyle = '#fc00ff';
-					ctx.fillRect(mx - 5, my - 5, 10, 10);
+				ctx.fillStyle = '#fc00ff';
+				ctx.fillRect(mx - 5, my - 5, 10, 10);
 
-					textMeasurement = ctx.measureText('Viewport ' + this.id() + ' :: ' + mx + ', ' + my);
-					ctx.fillText('Viewport ' + this.id() + ' :: ' + mx + ', ' + my, mx - textMeasurement.width / 2, my - 15);
+				text = this.id() + ' X: ' + mx + ', Y: ' + my;
+				textMeasurement = ctx.measureText(text);
+				ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+				ctx.fillRect(Math.floor(mx - textMeasurement.width / 2 - 5), Math.floor(my - 25), Math.floor(textMeasurement.width + 10), 14);
+				ctx.fillStyle = '#ffffff';
+				ctx.fillText(text, mx - textMeasurement.width / 2, my - 15);
 				ctx.restore();
 			}
 			
