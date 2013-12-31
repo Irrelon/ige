@@ -25,12 +25,13 @@ var PlayerComponent = IgeClass.extend({
 	 * @private
 	 */
 	_mouseUp: function (event, x, y, button) {
+		return;
 		// Get the tile co-ordinates that the mouse is currently over
 		var endTile = ige.$('tileMap1').mouseToTile(),
 			currentPosition = this._entity._translate,
 			startTile,
 			newPath,
-			endPoint = this._entity.path.endPoint();
+			endPoint = this._entity.path.getEndPoint();
 
 		// Check if we have a current path, if so, add to it
 		if (endPoint) {

@@ -57,30 +57,13 @@ var Client = IgeClass.extend({
 					.isometricMounts(self.isoMode)
 					.tileWidth(40)
 					.tileHeight(40)
-					.drawGrid(3)
+					.gridSize(10, 10)
+					.drawGrid(true)
 					.drawMouse(true)
+					.drawMouseData(true)
 					.drawBounds(false)
 					.drawBoundsData(false)
-					.occupyTile(1, 1, 1, 1, 1) // Mark tile as occupied with a value of 1 (x, y, width, height, value)
-					.occupyTile(1, 2, 1, 1, 1)
-					.occupyTile(1, 3, 1, 1, 1)
-					.occupyTile(1, 4, 1, 1, 1)
-					.occupyTile(2, 4, 1, 1, 1)
-					.occupyTile(4, 4, 1, 1, 1)
-					.occupyTile(4, 3, 1, 1, 1)
-					.occupyTile(4, 2, 1, 1, 1)
-					.occupyTile(3, 2, 1, 1, 1)
-					.occupyTile(3, 1, 1, 1, 1)
-					.occupyTile(1, 0, 1, 1, 1)
-					.occupyTile(1, -1, 1, 1, 1)
-					.occupyTile(2, -1, 1, 1, 1)
-					.occupyTile(3, -1, 1, 1, 1)
-					.occupyTile(4, -1, 1, 1, 1)
-					.occupyTile(5, -1, 1, 1, 1)
-					.occupyTile(5, 0, 1, 1, 1)
-					.occupyTile(6, 1, 1, 1, 1)
-					.occupyTile(6, 2, 1, 1, 1)
-					.occupyTile(6, 3, 1, 1, 1)
+					.loadMap({"data":{"1":{"1":1,"2":1,"3":1,"4":1,"5":1},"2":{"1":1,"5":1},"3":{"1":1,"3":1,"6":1},"4":{"1":1,"3":1,"4":1,"6":1},"5":{"1":1,"4":1,"6":1},"6":{"1":1,"2":1,"4":1}},"dataXY":[0,0]})
 					.highlightOccupied(true) // Draws a red tile wherever a tile is "occupied"
 					.mount(self.objectScene);
 
@@ -224,42 +207,19 @@ var Client = IgeClass.extend({
 
 				// Create a path finder and generate a path using
 				// the collision map data
-				self.pathFinder = new IgePathFinder();
-
-				// Generate first path, diagonal enabled
-				var path1, path2, path3, path4;
-
-				path1 = self.pathFinder.generate(self.tileMap1, new IgePoint3d(0, 0, 0), new IgePoint3d(3, 0, 0), function (tileData, tileX, tileY) {
-					// If the map tile data is set to 1, don't allow a path along it
-					return tileData !== 1;
-				}, true, true);
-
-				// Generate first path, diagonal disabled
-				path2 = self.pathFinder.generate(self.tileMap1, new IgePoint3d(3, 0, 0), new IgePoint3d(6, 4, 0), function (tileData, tileX, tileY) {
-					// If the map tile data is set to 1, don't allow a path along it
-					return tileData !== 1;
-				}, true, false);
-
-				// Generate first path, diagonal enabled
-				path3 = self.pathFinder.generate(self.tileMap1, new IgePoint3d(6, 4, 0), new IgePoint3d(7, 0, 0), function (tileData, tileX, tileY) {
-					// If the map tile data is set to 1, don't allow a path along it
-					return tileData !== 1;
-				}, true, true);
-
-				// Generate first path, diagonal disabled
-				path4 = self.pathFinder.generate(self.tileMap1, new IgePoint3d(7, 0, 0), new IgePoint3d(0, 0, 0), function (tileData, tileX, tileY) {
-					// If the map tile data is set to 1, don't allow a path along it
-					return tileData !== 1;
-				}, true, false);
+				self.pathFinder = new IgePathFinder()
+					.neighbourLimit(100);
 
 				// Assign the path to the player
-				self.player
-					.path.drawPath(true) // Enable debug drawing the paths
-					.path.drawPathGlow(true) // Enable path glowing (eye candy)
-					.path.add(path1)
-					.path.add(path2)
-					.path.add(path3)
-					.path.add(path4);
+				self.player.path
+					.finder(self.pathFinder)
+					.tileMap(self.tileMap1)
+					.tileChecker(function (tileData, tileX, tileY) {
+						// If the map tile data is set to 1, don't allow a path along it
+						return tileData !== 1;
+					})
+					.drawPath(true) // Enable debug drawing the paths
+					.drawPathGlow(true); // Enable path glowing (eye candy)
 
 				// Register some event listeners for the path (these are for debug console logging so you
 				// know what events are emitted by the path component and what they mean)
@@ -277,7 +237,14 @@ var Client = IgeClass.extend({
 				self.pathFinder.on('pathFound', function () { console.log('Path to destination calculated...'); });
 
 				// Start traversing the path!
-				self.player.path.start();
+				self.player.path
+					.set(0, 0, 0, 0, 4, 0)
+					.add(2, 4, 0)
+					.add(5, 4, 0)
+					.add(6, 2, 0)
+					.add(0, 0, 0)
+					.speed(2)
+					.start();
 			}
 		});
 	}
