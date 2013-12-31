@@ -146,8 +146,11 @@ var IgeTileMap2dSmartTexture = {
 
 		if (entity._drawMouse) {
 			// Get mouse position
-			var mouseTile = entity.mouseToTile(),
-				tilePoint;
+			var mousePos = entity.mousePos(),
+				mouseTile = entity.mouseToTile(),
+				tilePoint,
+				text,
+				textMeasurement;
 			
 			if (mouseTile.x >= 0 && mouseTile.y >= 0 && mouseTile.x < gridSize.x && mouseTile.y < gridSize.y) {
 				// Paint the tile the mouse is currently intersecting
@@ -178,6 +181,15 @@ var IgeTileMap2dSmartTexture = {
 					ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
 					ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
 					ctx.fill();
+				}
+				
+				if (entity._drawMouseData) {
+					text = 'Tile X: ' + mouseTile.x + ' Y: ' + mouseTile.y;
+					textMeasurement = ctx.measureText(text);
+					ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+					ctx.fillRect(Math.floor(mousePos.x - textMeasurement.width / 2 - 5), Math.floor(mousePos.y - 40), Math.floor(textMeasurement.width + 10), 14);
+					ctx.fillStyle = '#ffffff';
+					ctx.fillText(text, Math.floor(mousePos.x - textMeasurement.width / 2), Math.floor(mousePos.y - 30));
 				}
 			}
 		}
