@@ -134,9 +134,12 @@ var IgePathComponent = IgeEventingClass.extend({
 	 * @param {Number} toX The x tile to path to.
 	 * @param {Number} toY The y tile to path to.
 	 * @param {Number} toZ The z tile to path to.
+	 * @param {Boolean=} findNearest If the destination is unreachable, when set to
+	 * true this option will allow the pathfinder to return the closest path to the
+	 * destination tile.
 	 * @returns {*}
 	 */
-	set: function (fromX, fromY, fromZ, toX, toY, toZ) {
+	set: function (fromX, fromY, fromZ, toX, toY, toZ, findNearest) {
 		// Clear existing path
 		this.clear();
 		
@@ -147,7 +150,8 @@ var IgePathComponent = IgeEventingClass.extend({
 			new IgePoint3d(toX, toY, toZ),
 			this._tileChecker,
 			this._allowSquare,
-			this._allowDiagonal
+			this._allowDiagonal,
+			findNearest
 		);
 		
 		this.addPoints(path);
@@ -155,7 +159,7 @@ var IgePathComponent = IgeEventingClass.extend({
 		return this;
 	},
 	
-	add: function (x, y, z) {
+	add: function (x, y, z, findNearest) {
 		// Get the endPoint of the current path
 		var endPoint = this.getEndPoint(),
 			shift = true;
@@ -173,7 +177,8 @@ var IgePathComponent = IgeEventingClass.extend({
 			new IgePoint3d(x, y, z),
 			this._tileChecker,
 			this._allowSquare,
-			this._allowDiagonal
+			this._allowDiagonal,
+			findNearest
 		);
 		
 		if (shift) {
