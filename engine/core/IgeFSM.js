@@ -162,11 +162,11 @@ var IgeFSM = IgeClass.extend({
 	defineTransition: function (fromState, toState, transitionCheck) {
 		if (fromState && toState && transitionCheck) {
 			if (!this._states[fromState]) {
-				this.log('fromState' + fromState + 'specified is not defined as a state!', 'error');
+				this.log('fromState "' + fromState + '" specified is not defined as a state!', 'error');
 			}
 	
 			if (!this._states[toState]) {
-				this.log('toState' + toState + 'specified is not defined as a state!', 'error');
+				this.log('toState "' + toState + '" specified is not defined as a state!', 'error');
 			}
 	
 			this._transitions[fromState] = this._transitions[fromState] || {};
