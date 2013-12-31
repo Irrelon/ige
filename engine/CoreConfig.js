@@ -86,7 +86,6 @@ var igeCoreConfig = {
 		['csap', 'IgeParticleEmitter', 'core/IgeParticleEmitter.js'],
 		['csap', 'IgeParticle', 'core/IgeParticle.js'],
 		['csap', 'IgeMap2d', 'core/IgeMap2d.js'],
-		['csap', 'IgeMapStack2d', 'core/IgeMapStack2d.js'],
 		['csap', 'IgeTileMap2d', 'core/IgeTileMap2d.js'],
 		['csap', 'IgeTextureMap', 'core/IgeTextureMap.js'],
 		['csap', 'IgeTileMap2dSmartTexture', 'assets/IgeTileMap2dSmartTexture.js'],
