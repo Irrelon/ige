@@ -157,7 +157,14 @@ var IgePathComponent = IgeEventingClass.extend({
 	
 	add: function (x, y, z) {
 		// Get the endPoint of the current path
-		var endPoint = this.getEndPoint();
+		var endPoint = this.getEndPoint(),
+			shift = true;
+		
+		if (!endPoint) {
+			// There is no existing path, detect current tile position
+			endPoint = this._entity._parent.pointToTile(this._entity._translate);
+			shift = false;
+		}
 		
 		// Create a new path
 		var path = this._finder.generate(
@@ -169,8 +176,10 @@ var IgePathComponent = IgeEventingClass.extend({
 			this._allowDiagonal
 		);
 		
-		// Remove the first tile, it's the last one on the list already
-		path.shift();
+		if (shift) {
+			// Remove the first tile, it's the last one on the list already
+			path.shift();
+		}
 		
 		this.addPoints(path);
 		
@@ -227,48 +236,52 @@ var IgePathComponent = IgeEventingClass.extend({
 	 * If there is currently no direction then the return value is a blank string.
 	 */
 	getDirection: function () {
-		var cell = this.getToPoint(),
-			dir = '';
-		
-		if (cell) {
-			dir = cell.direction;
+		if (!this._finished) {
+			var cell = this.getToPoint(),
+				dir = '';
 			
-			if (this._entity._mode === 1) {
-				// Convert direction for isometric
-				switch (dir) {
-					case 'E':
-						dir = 'SE';
-						break;
-					
-					case 'S':
-						dir = 'SW';
-						break;
-					
-					case 'W':
-						dir = 'NW';
-						break;
-					
-					case 'N':
-						dir = 'NE';
-						break;
-					
-					case 'NE':
-						dir = 'E';
-						break;
-					
-					case 'SW':
-						dir = 'W';
-						break;
-					
-					case 'NW':
-						dir = 'N';
-						break;
-					
-					case 'SE':
-						dir = 'S';
-						break;
+			if (cell) {
+				dir = cell.direction;
+				
+				if (this._entity._mode === 1) {
+					// Convert direction for isometric
+					switch (dir) {
+						case 'E':
+							dir = 'SE';
+							break;
+						
+						case 'S':
+							dir = 'SW';
+							break;
+						
+						case 'W':
+							dir = 'NW';
+							break;
+						
+						case 'N':
+							dir = 'NE';
+							break;
+						
+						case 'NE':
+							dir = 'E';
+							break;
+						
+						case 'SW':
+							dir = 'W';
+							break;
+						
+						case 'NW':
+							dir = 'N';
+							break;
+						
+						case 'SE':
+							dir = 'S';
+							break;
+					}
 				}
 			}
+		} else {
+			dir = '';
 		}
 
 		return dir;
@@ -335,6 +348,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	start: function (startTime) {
 		if (!this._active) {
 			this._active = true;
+			this._finished = false;
 			this._startTime = startTime || ige._currentTime;
 			
 			this._calculatePathData();
@@ -375,11 +389,11 @@ var IgePathComponent = IgeEventingClass.extend({
 			this.stop();
 		}
 		
-		this._points = [];
 		this._previousPointFrom = 0;
 		this._currentPointFrom = 0;
 		this._previousPointTo = 0;
 		this._currentPointTo = 0;
+		this._points = [];
 		
 		this.emit('cleared', this._entity);
 		return this;
@@ -393,6 +407,7 @@ var IgePathComponent = IgeEventingClass.extend({
 	stop: function () {
 		//this.log('Setting pathing as inactive...');
 		this._active = false;
+		this._finished = true;
 		this.emit('stopped', this._entity);
 		
 		return this;
