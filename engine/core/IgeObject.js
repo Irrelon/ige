@@ -707,8 +707,7 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Gets / sets the boolean flag determining if this object should have
-	 * it's mouse position data drawn when the bounds for all objects are
-	 * being drawn.
+	 * it's mouse position drawn, usually for debug purposes.
 	 * @param {Boolean=} val
 	 * @example #Enable draw mouse position data
 	 *     var entity = new IgeEntity();
@@ -727,6 +726,31 @@ var IgeObject = IgeEventingClass.extend({
 		}
 
 		return this._drawMouse;
+	},
+	
+	/**
+	 * Gets / sets the boolean flag determining if this object should have
+	 * it's extra mouse data drawn for debug purposes. For instance, on tilemaps
+	 * (IgeTileMap2d) instances, when enabled you will see the tile x and y
+	 * co-ordinates currently being hoverered over by the mouse.
+	 * @param {Boolean=} val
+	 * @example #Enable draw mouse data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawMouseData(true);
+	 * @example #Disable draw mouse data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawMouseData(false);
+	 * @example #Get the current flag value
+	 *     console.log(entity.drawMouseData());
+	 * @return {*}
+	 */
+	drawMouseData: function (val) {
+		if (val !== undefined) {
+			this._drawMouseData = val;
+			return this;
+		}
+
+		return this._drawMouseData;
 	},
 
 	/**
