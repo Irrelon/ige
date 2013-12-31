@@ -247,6 +247,32 @@ var IgeMap2d = IgeClass.extend({
 			default:
 			break;
 		}
+	},
+	
+	translateDataBy: function (transX, transY) {
+		var yArr = this.mapData(),
+			newArr = [],
+			x, y,
+			xArr,
+			i, k;
+		
+		for (y in yArr) {
+			if (yArr.hasOwnProperty(y)) {
+				i = parseInt(y, 10);
+				xArr = yArr[i];
+				
+				newArr[i + transY] = newArr[i + transY] || {};
+				
+				for (x in xArr) {
+					if (xArr.hasOwnProperty(x)) {
+						k = parseInt(x, 10);
+						newArr[i + transY][k + transX] = yArr[y][x];
+					}
+				}
+			}
+		}
+		
+		this.mapData(newArr, 0, 0);
 	}
 });
 
