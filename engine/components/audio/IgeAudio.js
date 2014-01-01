@@ -11,7 +11,7 @@ var IgeAudio = IgeEventingClass.extend({
 	 * Gets / sets the current object id. If no id is currently assigned and no
 	 * id is passed to the method, it will automatically generate and assign a
 	 * new id as a 16 character hexadecimal value typed as a string.
-	 * @param {String=} id
+	 * @param {String=} id The id to set to.
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	id: function (id) {
@@ -57,8 +57,14 @@ var IgeAudio = IgeEventingClass.extend({
 
 		return this._id;
 	},
-	
-	load: function (url) {
+
+	/**
+	 * Loads an audio file from the given url.
+	 * @param {String} url The url to load the audio file from.
+	 * @param {Function=} callback Optional callback method to call when the audio
+	 * file has loaded or on error.
+	 */
+	load: function (url, callback) {
 		var self = this,
 			request = new XMLHttpRequest();
 		
@@ -69,32 +75,44 @@ var IgeAudio = IgeEventingClass.extend({
 		request.onload = function() {
 			self._data = request.response;
 			self._url = url;
-			self._loaded();
+			self._loaded(callback);
+		};
+		
+		request.onerror = function (err) {
+			callback.apply(self, [err]);
 		};
 		
 		request.send();
 	},
 	
-	_loaded: function () {
+	_loaded: function (callback) {
 		var self = this;
 		
 		ige.audio.decode(self._data, function(err, buffer) {
 			if (!err) {
 				self._buffer = buffer;
-				self._bufferSource = ige.audio._ctx.createBufferSource();
-				self._bufferSource.buffer = buffer;
-				self._bufferSource.connect(ige.audio._ctx.destination);
+				ige.audio.log('Audio file (' + self._url + ') loaded successfully');
 				
-				ige.audio.log('Audio file (' + self._url + ') loaded successfully')
+				if (callback) { callback.apply(self, [false]); }
 			} else {
 				self.log('Failed to decode audio data from: ' + self._url, 'warning');
+				if (callback) { callback.apply(self, [err]); }
 			}
 		});
 	},
-	
+
+	/**
+	 * Plays the audio.
+	 */
 	play: function () {
-		if (this._bufferSource) {
-			this._bufferSource.start(0);
+		var self = this,
+			bufferSource;
+		
+		if (self._buffer) {
+			bufferSource = ige.audio._ctx.createBufferSource();
+			bufferSource.buffer = self._buffer;
+			bufferSource.connect(ige.audio._ctx.destination);
+			bufferSource.start(0);
 		}
 	}
 });
