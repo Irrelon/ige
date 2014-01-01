@@ -99,6 +99,9 @@ var igeCoreConfig = {
 		['csap', 'IgeCuboidSmartTexture', 'assets/IgeCuboidSmartTexture.js'],
 		['csap', 'IgeCuboid', 'primitives/IgeCuboid.js'],
 		['csap', 'IgeArray', 'core/IgeArray.js'],
+		/* Audio Components */
+		['csap', 'IgeAudioComponent', 'components/audio/IgeAudioComponent.js'],
+		['csap', 'IgeAudio', 'components/audio/IgeAudio.js'],
 		/* Physics to Entity Components */
 		['csap', 'IgeBox2dComponent', 'components/physics/box2d/IgeBox2dComponent.js'],
 		['csap', 'IgeBox2dMultiWorldComponent', 'components/physics/box2d/IgeBox2dMultiWorldComponent.js'],
