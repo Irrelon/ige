@@ -9,9 +9,7 @@ var IgeUiProgressBar = IgeUiElement.extend({
 		this._min = 0;
 		this._max = 100;
 		this._progress = 0;
-		this._barBackColor = '#000000';
 		this._barColor = '#fff600';
-		this._barBorderColor = '#ffffff';
 		this._barText = {
 			pre: '',
 			post: '',
