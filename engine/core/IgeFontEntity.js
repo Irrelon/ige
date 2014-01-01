@@ -83,6 +83,9 @@ var IgeFontEntity = IgeUiEntity.extend({
 		if (text !== undefined) {
 			var wasDifferent = false;
 			
+			// Ensure we have a string
+			text = String(text);
+			
 			if (this._text !== text) {
 				this.clearCache();
 				wasDifferent = true;
