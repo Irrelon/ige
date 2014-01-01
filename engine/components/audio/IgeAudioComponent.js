@@ -46,15 +46,25 @@ var IgeAudioComponent = IgeEventingClass.extend({
 			return undefined;
 		}
 	},
-	
-	load: function (id, urls) {
-		var audio = new IgeAudio(urls);
+
+	/**
+	 * Loads an audio file from the given url and assigns it the id specified.
+	 * @param {String} url The url to load the audio from.
+	 * @param {String=} id The id to assign the audio.
+	 */
+	load: function (url, id) {
+		var audio = new IgeAudio(url);
 		
 		if (id) {
 			audio.id(id);
 		}
 	},
-	
+
+	/**
+	 * Decodes audio data and calls back with an audio buffer.
+	 * @param {ArrayBuffer} data The audio data to decode.
+	 * @param {Function} callback The callback to pass the buffer to.
+	 */
 	decode: function (data, callback) {
 		this._ctx.decodeAudioData(data, function (buffer) {
 			callback(false, buffer);
