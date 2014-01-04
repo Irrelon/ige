@@ -1628,15 +1628,17 @@ var IgeEntity = IgeObject.extend({
 			this._processTickBehaviours(ctx);
 			
 			// Process any mouse events we need to do
-			if (this._processTriggerHitTests()) {
-				// Point is inside the trigger bounds
-				ige.input.queueEvent(this, this._mouseInTrigger, null);
-			} else {
-				if (ige.input.mouseMove) {
-					// There is a mouse move event but we are not inside the entity
-					// so fire a mouse out event (_handleMouseOut will check if the
-					// mouse WAS inside before firing an out event).
-					this._handleMouseOut(ige.input.mouseMove);
+			if (this._mouseEventsActive) {
+				if (this._processTriggerHitTests()) {
+					// Point is inside the trigger bounds
+					ige.input.queueEvent(this, this._mouseInTrigger, null);
+				} else {
+					if (ige.input.mouseMove) {
+						// There is a mouse move event but we are not inside the entity
+						// so fire a mouse out event (_handleMouseOut will check if the
+						// mouse WAS inside before firing an out event).
+						this._handleMouseOut(ige.input.mouseMove);
+					}
 				}
 			}
 
@@ -1685,7 +1687,7 @@ var IgeEntity = IgeObject.extend({
 	_processTriggerHitTests: function () {
 		var mp, mouseTriggerPoly;
 
-		if (this._mouseEventsActive && ige._currentViewport) {
+		if (ige._currentViewport) {
 			if (!this._mouseAlwaysInside) {
 				mp = this.mousePosWorld();
 	
