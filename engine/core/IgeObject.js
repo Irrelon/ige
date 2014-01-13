@@ -1585,7 +1585,12 @@ var IgeObject = IgeEventingClass.extend({
 				// Loop our children and call their tick methods
 				if (igeConfig.debug._timing) {
 					while (arrCount--) {
-						if (arr[arrCount] && !arr[arrCount]._newBorn) {
+						if (!arr[arrCount]) {
+							this.log('Object _children is undefined for index ' + arrCount + ' and _id: ' + this._id, 'error');
+							continue;
+						}
+						
+						if (!arr[arrCount]._newBorn) {
 							ctx.save();
 							ts = new Date().getTime();
 							arr[arrCount].tick(ctx);
@@ -1607,7 +1612,12 @@ var IgeObject = IgeEventingClass.extend({
 					}
 				} else {
 					while (arrCount--) {
-						if (arr[arrCount] && !arr[arrCount]._newBorn) {
+						if (!arr[arrCount]) {
+							this.log('Object _children is undefined for index ' + arrCount + ' and _id: ' + this._id, 'error');
+							continue;
+						}
+						
+						if (!arr[arrCount]._newBorn) {
 							ctx.save();
 							arr[arrCount].tick(ctx);
 							ctx.restore();
