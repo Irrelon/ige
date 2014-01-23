@@ -18,6 +18,7 @@ var IgeViewport = IgeEntity.extend([
 		this._mousePos = new IgePoint3d(0, 0, 0);
 		this._overflow = '';
 		this._clipping = true;
+		this._bornTime = undefined;
 
 		// Set default options if not specified
 		// TODO: Is this required or even used?
@@ -226,21 +227,28 @@ var IgeViewport = IgeEntity.extend([
 			// viewport (usually for debug purposes)
 			if (this._drawMouse && ctx === ige._ctx) {
 				ctx.save();
-					var mp = this.mousePos();
+				var mp = this.mousePos(),
+					text,
+					mx,
+					my,
+					textMeasurement;
 
-					// Re-scale the context to ensure that output is always 1:1
-					ctx.scale(1 / this.camera._scale.x, 1 / this.camera._scale.y);
+				// Re-scale the context to ensure that output is always 1:1
+				ctx.scale(1 / this.camera._scale.x, 1 / this.camera._scale.y);
 
-					// Work out the re-scale mouse position
-					var mx = Math.floor(mp.x * this.camera._scale.x),
-						my = Math.floor(mp.y * this.camera._scale.y),
-						textMeasurement;
+				// Work out the re-scale mouse position
+				mx = Math.floor(mp.x * this.camera._scale.x);
+				my = Math.floor(mp.y * this.camera._scale.y);
 
-					ctx.fillStyle = '#fc00ff';
-					ctx.fillRect(mx - 5, my - 5, 10, 10);
+				ctx.fillStyle = '#fc00ff';
+				ctx.fillRect(mx - 5, my - 5, 10, 10);
 
-					textMeasurement = ctx.measureText('Viewport ' + this.id() + ' :: ' + mx + ', ' + my);
-					ctx.fillText('Viewport ' + this.id() + ' :: ' + mx + ', ' + my, mx - textMeasurement.width / 2, my - 15);
+				text = this.id() + ' X: ' + mx + ', Y: ' + my;
+				textMeasurement = ctx.measureText(text);
+				ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+				ctx.fillRect(Math.floor(mx - textMeasurement.width / 2 - 5), Math.floor(my - 25), Math.floor(textMeasurement.width + 10), 14);
+				ctx.fillStyle = '#ffffff';
+				ctx.fillText(text, mx - textMeasurement.width / 2, my - 15);
 				ctx.restore();
 			}
 			
@@ -386,11 +394,11 @@ var IgeViewport = IgeEntity.extend([
 								if (obj._drawBounds || obj._drawBounds === undefined) {
 									//if (!obj._parent || (obj._parent && obj._parent._mountMode !== 1)) {
 										// Draw a rect around the bounds of the object transformed in world space
-										ctx.save();
+										/*ctx.save();
 											obj._worldMatrix.transformRenderingContext(ctx);
 											ctx.strokeStyle = '#9700ae';
 											ctx.strokeRect(-obj._bounds2d.x2, -obj._bounds2d.y2, obj._bounds2d.x, obj._bounds2d.y);
-										ctx.restore();
+										ctx.restore();*/
 										
 										// Draw individual bounds
 										ctx.strokeStyle = '#00deff';

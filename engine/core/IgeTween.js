@@ -251,7 +251,11 @@ var IgeTween = IgeClass.extend({
 	 */
 	easing: function (methodName) {
 		if (methodName !== undefined) {
-			this._easing = methodName;
+			if (ige.tween.easing[methodName]) {
+				this._easing = methodName;
+			} else {
+				this.log('The easing method you have selected does not exist, please use a valid easing method. For a list of easing methods please inspect ige.tween.easing from your console.', 'error', ige.tween.easing);
+			}
 		}
 
 		return this;

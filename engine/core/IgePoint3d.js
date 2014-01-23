@@ -90,7 +90,6 @@ var IgePoint3d = IgeClass.extend({
 		var val = this.toIso();
 		this.x = val.x;
 		this.y = val.y;
-		this.z = 0;
 
 		return this;
 	},

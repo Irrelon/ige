@@ -2,20 +2,21 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 
 	init: function () {
-		ige.showStats(1);
-
 		// Enabled texture smoothing when scaling textures
 		ige.globalSmoothing(true);
 
-		// Load our textures
 		var self = this;
 
-		this.obj = [];
-		this.gameTexture = {};
+		self.gameTextures = {};
+		self.fsm = new IgeFSM();
 
-		// Implement our game object definitions (see ClientObjects.js)
-		this.implement(ClientObjects);
-
+		self.defineFSM();
+		self.start();
+	},
+	
+	start: function () {
+		var self = this;
+		
 		// Wait for our textures to load before continuing
 		ige.on('texturesLoaded', function () {
 			// Create the HTML canvas
@@ -25,166 +26,163 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					ige.viewportDepth(true);
-
-					// Create the basic scene, viewport etc
-					self.setupScene();
+					
+					ige.addGraph('IgeBaseScene');
+					ige.addGraph('DefaultLevel');
 					
 					// Create the UI entities
 					self.setupUi();
 
 					// Setup the initial entities
 					self.setupEntities();
+					
+					// Set the initial fsm state
+					self.fsm.initialState('select');
 				}
 			});
 		});
-
-		this.loadTextures();
+		
+		self.loadTextures();
+	},
+	
+	defineFSM: function () {
+		var self = this;
+		self.fsm = new IgeFSM();
+		
+		// Define the fsm states
+		self.fsm.defineState('select', {
+            enter: function(data, completeCallback) {
+				// Hook mouse events
+				completeCallback();
+			},
+            exit: function(data, completeCallback) {
+				// Un-hook mouse events
+				completeCallback();
+			}
+        });
+		
+		self.fsm.defineState('buildDialog', {
+            enter: function(data, completeCallback) {
+				completeCallback();
+			},
+            exit: function(data, completeCallback) {
+				completeCallback();
+			}
+        });
+		
+		self.fsm.defineState('build', {
+            enter: function(data, completeCallback) {
+				var self = this,
+					tileMap = ige.$('tileMap1');
+				
+				// Create a new instance of the object we are going to build
+				self.cursorObject = new ige.newClassInstance(data.classId)
+					.mount(ige.$('tileMap1'));
+				
+				// Hook mouse events
+				self.mouseMoveHandle = tileMap.on('mouseMove', function (event, evc, data) {
+					var tile = tileMap.mouseToTile(),
+						objectTileWidth = self.cursorObject._bounds3d.x / tileMap._tileWidth,
+						objectTileHeight = self.cursorObject._bounds3d.y / tileMap._tileHeight;
+					
+					// Check that the tiles this object will occupy if moved are
+					// not already occupied
+					if (!tileMap.isTileOccupied(
+						tile.x,
+						tile.y,
+						objectTileWidth,
+						objectTileHeight
+					) && tileMap.inGrid(tile.x, tile.y, objectTileWidth, objectTileHeight)) {
+						// Move our cursor object to the tile
+						self.cursorObject.translateToTile(tile.x + self.cursorObject._tileAdjustX, tile.y + self.cursorObject._tileAdjustY);
+						self.cursorTile = tile;
+					}
+				});
+				
+				self.mouseUpHandle = tileMap.on('mouseUp', function (event, evc, data) {
+					var objectTileWidth = self.cursorObject._bounds3d.x / tileMap._tileWidth,
+						objectTileHeight = self.cursorObject._bounds3d.y / tileMap._tileHeight;
+					
+					// Build the cursorObject by releasing it from our control
+					// and switching state
+					self.cursorObject.occupyTile(
+						self.cursorTile.x,
+						self.cursorTile.y,
+						objectTileWidth,
+						objectTileHeight
+					);
+					
+					// Tween the object to the position by "bouncing" it
+					self.cursorObject
+						.translate().z(100)
+						._translate.tween(
+							{z: 0},
+							1000,
+							{easing:'outBounce'}
+						).start();
+					
+					self.cursorObject = null;
+					
+					// Play the coin particle effect
+					ige.$('coinEmitter').start();
+					
+					ige.client.fsm.enterState('select');
+				});
+				
+				completeCallback();
+			},
+            exit: function(data, completeCallback) {
+				// Clear our mouse listeners
+				var self = this,
+					tileMap = ige.$('tileMap1');
+				
+				tileMap.off('mouseUp', self.mouseUpHandle);
+				tileMap.off('mouseMove', self.mouseMoveHandle);
+				
+				completeCallback();
+			}
+        });
+		
+		self.fsm.defineState('pan', {
+            enter: function(data, completeCallback) {
+				completeCallback();
+			},
+            exit: function(data, completeCallback) {
+				completeCallback();
+			}
+        });
 	},
 
 	loadTextures: function () {
-		this.gameTexture.background1 = new IgeTexture('../assets/textures/backgrounds/grassTile.png');
-		this.gameTexture.bank = new IgeTexture('../assets/textures/buildings/bank1.png');
-		this.gameTexture.electricals = new IgeTexture('../assets/textures/buildings/electricalsShop1.png');
-		this.gameTexture.burgers = new IgeTexture('../assets/textures/buildings/burgerShop1.png');
-		this.gameTexture.base_se = new IgeTexture('../assets/textures/buildings/base_se.png');
-		this.gameTexture.base_se_left = new IgeTexture('../assets/textures/buildings/base_se_left.png');
-		this.gameTexture.base_se_middle = new IgeTexture('../assets/textures/buildings/base_se_middle.png');
-		this.gameTexture.base_se_right = new IgeTexture('../assets/textures/buildings/base_se_right.png');
-		this.gameTexture.base_sw = new IgeTexture('../assets/textures/buildings/base_sw.png');
-		this.gameTexture.base_sw_left = new IgeTexture('../assets/textures/buildings/base_sw_left.png');
-		this.gameTexture.base_sw_middle = new IgeTexture('../assets/textures/buildings/base_sw_middle.png');
-		this.gameTexture.base_sw_right = new IgeTexture('../assets/textures/buildings/base_sw_right.png');
-		this.gameTexture.stacker_se = new IgeTexture('../assets/textures/buildings/stacker_se.png');
-		this.gameTexture.stacker_se_left = new IgeTexture('../assets/textures/buildings/stacker_se_left.png');
-		this.gameTexture.stacker_se_middle = new IgeTexture('../assets/textures/buildings/stacker_se_middle.png');
-		this.gameTexture.stacker_se_right = new IgeTexture('../assets/textures/buildings/stacker_se_right.png');
-		this.gameTexture.stacker_sw = new IgeTexture('../assets/textures/buildings/stacker_sw.png');
-		this.gameTexture.stacker_sw_left = new IgeTexture('../assets/textures/buildings/stacker_sw_left.png');
-		this.gameTexture.stacker_sw_middle = new IgeTexture('../assets/textures/buildings/stacker_sw_middle.png');
-		this.gameTexture.stacker_sw_right = new IgeTexture('../assets/textures/buildings/stacker_sw_right.png');
-		this.gameTexture.crane_se = new IgeTexture('../assets/textures/buildings/crane_se.png');
-		this.gameTexture.crane_sw = new IgeTexture('../assets/textures/buildings/crane_sw.png');
-		this.gameTexture.crane_ne = new IgeTexture('../assets/textures/buildings/crane_ne.png');
-		this.gameTexture.crane_nw = new IgeTexture('../assets/textures/buildings/crane_nw.png');
+		this.gameTextures.background1 = new IgeTexture('../assets/textures/backgrounds/grassTile.png');
+		this.gameTextures.bank = new IgeTexture('../assets/textures/buildings/bank1.png');
+		this.gameTextures.electricals = new IgeTexture('../assets/textures/buildings/electricalsShop1.png');
+		this.gameTextures.burgers = new IgeTexture('../assets/textures/buildings/burgerShop1.png');
+		this.gameTextures.base_se = new IgeTexture('../assets/textures/buildings/base_se.png');
+		this.gameTextures.base_se_left = new IgeTexture('../assets/textures/buildings/base_se_left.png');
+		this.gameTextures.base_se_middle = new IgeTexture('../assets/textures/buildings/base_se_middle.png');
+		this.gameTextures.base_se_right = new IgeTexture('../assets/textures/buildings/base_se_right.png');
+		this.gameTextures.base_sw = new IgeTexture('../assets/textures/buildings/base_sw.png');
+		this.gameTextures.base_sw_left = new IgeTexture('../assets/textures/buildings/base_sw_left.png');
+		this.gameTextures.base_sw_middle = new IgeTexture('../assets/textures/buildings/base_sw_middle.png');
+		this.gameTextures.base_sw_right = new IgeTexture('../assets/textures/buildings/base_sw_right.png');
+		this.gameTextures.stacker_se = new IgeTexture('../assets/textures/buildings/stacker_se.png');
+		this.gameTextures.stacker_se_left = new IgeTexture('../assets/textures/buildings/stacker_se_left.png');
+		this.gameTextures.stacker_se_middle = new IgeTexture('../assets/textures/buildings/stacker_se_middle.png');
+		this.gameTextures.stacker_se_right = new IgeTexture('../assets/textures/buildings/stacker_se_right.png');
+		this.gameTextures.stacker_sw = new IgeTexture('../assets/textures/buildings/stacker_sw.png');
+		this.gameTextures.stacker_sw_left = new IgeTexture('../assets/textures/buildings/stacker_sw_left.png');
+		this.gameTextures.stacker_sw_middle = new IgeTexture('../assets/textures/buildings/stacker_sw_middle.png');
+		this.gameTextures.stacker_sw_right = new IgeTexture('../assets/textures/buildings/stacker_sw_right.png');
+		this.gameTextures.crane_se = new IgeTexture('../assets/textures/buildings/crane_se.png');
+		this.gameTextures.crane_sw = new IgeTexture('../assets/textures/buildings/crane_sw.png');
+		this.gameTextures.crane_ne = new IgeTexture('../assets/textures/buildings/crane_ne.png');
+		this.gameTextures.crane_nw = new IgeTexture('../assets/textures/buildings/crane_nw.png');
 
-		this.gameTexture.uiButtonSelect = new IgeTexture('../assets/textures/ui/uiButton_select.png');
-		this.gameTexture.uiButtonMove = new IgeTexture('../assets/textures/ui/uiButton_move.png');
-		this.gameTexture.uiButtonDelete = new IgeTexture('../assets/textures/ui/uiButton_delete.png');
-		this.gameTexture.uiButtonHouse = new IgeTexture('../assets/textures/ui/uiButton_house.png');
-	},
-
-	setupScene: function () {
-		// Create the scene
-		this.mainScene = new IgeScene2d()
-			.id('mainScene');
-
-		// Resize the background and then create a background pattern
-		this.gameTexture.background1.resize(40, 20);
-		this.backgroundScene = new IgeScene2d()
-			.id('backgroundScene')
-			.depth(0)
-			.backgroundPattern(this.gameTexture.background1, 'repeat', true, true)
-			.ignoreCamera(true) // We want the scene to remain static
-			.mount(this.mainScene);
-
-		this.objectScene = new IgeScene2d()
-			.id('objectScene')
-			.depth(1)
-			.isometric(false)
-			.mount(this.mainScene);
-
-		// Create the main viewport
-		this.vp1 = new IgeViewport()
-			.id('vp1')
-			.addComponent(IgeMousePanComponent)
-			.addComponent(IgeMouseZoomComponent)
-			.mousePan.enabled(true)
-			.mouseZoom.enabled(false)
-			.autoSize(true)
-			.scene(this.mainScene)
-			.drawBounds(true)
-			//.drawBoundsData(false)
-			.mount(ige);
-
-		// Create some listeners for when the viewport is being panned
-		// so that we don't create an entity accidentally after a mouseUp
-		// occurs if we were panning
-		this.vp1.mousePan.on('panStart', function () {
-			// Store the current cursor mode
-			ige.client.data('tempCursorMode', ige.client.data('cursorMode'));
-
-			// Switch the cursor mode
-			ige.client.data('cursorMode', 'panning');
-			ige.input.stopPropagation();
-		});
-
-		this.vp1.mousePan.on('panEnd', function () {
-			// Switch the cursor mode back
-			ige.client.data('cursorMode', ige.client.data('tempCursorMode'));
-			ige.input.stopPropagation();
-		});
-		
-		// Create the scene that the game items will
-		// be mounted to (like the tile map). This scene
-		// is then mounted to the main scene.
-		this.gameScene = new IgeScene2d()
-			.id('gameScene')
-			.depth(1)
-			.translateTo(0, -360, 0)
-			.mount(this.mainScene);
-
-		// Create the UI scene that will have all the UI
-		// entities mounted to it. This scene is at a higher
-		// depth than gameScene so it will always be rendered
-		// "on top" of the other game items which will all
-		// be mounted to off of gameScene somewhere down the
-		// scenegraph.
-		this.uiScene = new IgeScene2d()
-			.id('uiScene')
-			.depth(2)
-			.ignoreCamera(true)
-			.mount(this.mainScene);
-		
-		// Create a collision map. We don't mount this to
-		// our scene because we are only going to use it
-		// for storing where buildings CAN be placed since
-		// the island background has limited space to build.
-		// TODO: Fill the collision map with data that denotes the sections of the map that CAN be used for building, then add logic in to check that when a build request happens, it is in an area of this map.
-		this.collisionMap1 = new IgeMap2d();
-
-		// Create the tile map that will store which buildings
-		// are occupying which tiles on the map. When we create
-		// new buildings we mount them to this tile map. The tile
-		// map also has a number of mouse event listeners to
-		// handle things like building new objects in the game.
-		this.tileMap1 = new IgeTileMap2d()
-			.id('tileMap1')
-			.layer(2)
-			.isometricMounts(true)
-			.tileWidth(20)
-			.tileHeight(20)
-			.drawGrid(40)
-			.drawMouse(true)
-			.highlightOccupied(true)
-			.mouseOver(this._mapOnMouseOver)
-			.mouseUp(this._mapOnMouseUp)
-			.mount(this.gameScene);
-
-		/*
-			Just so we're all clear about what just happened, we have
-			created a scenegraph that looks like this:
-
-			ige (IgeEntity)
-			|+ vp1 (IgeViewport)
-				|+ mainScene (IgeScene)
-					|+ gameScene (IgeScene)
-					|	+ backDrop (IgeEntity)
-					|	+ tileMap1 (IgeTileMap2d)
-					|+ uiScene (IgeScene)
-
-			For a full readout of the scenegraph at any time, use the
-			JS console and issue the command: ige.scenegraph();
-		 */
+		this.gameTextures.uiButtonSelect = new IgeTexture('../assets/textures/ui/uiButton_select.png');
+		this.gameTextures.uiButtonMove = new IgeTexture('../assets/textures/ui/uiButton_move.png');
+		this.gameTextures.uiButtonDelete = new IgeTexture('../assets/textures/ui/uiButton_delete.png');
+		this.gameTextures.uiButtonHouse = new IgeTexture('../assets/textures/ui/uiButton_house.png');
 	},
 	
 	/**
@@ -192,8 +190,11 @@ var Client = IgeClass.extend({
 	 * perform certain tasks like placing and removing buildings.
 	 */
 	setupUi: function () {
+		var uiScene = ige.$('uiScene'),
+			menuBar;
+		
 		// Create the top menu bar
-		this.menuBar = new IgeUiEntity()
+		menuBar = new IgeUiEntity()
 			.id('menuBar')
 			.depth(10)
 			.backgroundColor('#333333')
@@ -204,16 +205,16 @@ var Client = IgeClass.extend({
 			.mouseDown(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
 			.mouseUp(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
 			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
-			.mount(this.uiScene);
+			.mount(uiScene);
 
 		// Create the menu bar buttons
-		this.uiButtonSelect = new IgeUiRadioButton()
+		new IgeUiRadioButton()
 			.id('uiButtonSelect')
 			.left(3)
 			.top(3)
 			.width(32)
 			.height(32)
-			.texture(ige.client.gameTexture.uiButtonSelect)
+			.texture(ige.client.gameTextures.uiButtonSelect)
 			// Set the radio group so the controls will receive group events
 			.radioGroup('menuControl')
 			.mouseOver(function () {
@@ -249,15 +250,15 @@ var Client = IgeClass.extend({
 				ige.client.data('currentlyHighlighted', false);
 			})
 			.select() // Start with this default selected
-			.mount(this.menuBar);
+			.mount(menuBar);
 
-		this.uiButtonMove = new IgeUiRadioButton()
+		new IgeUiRadioButton()
 			.id('uiButtonMove')
 			.left(40)
 			.top(3)
 			.width(32)
 			.height(32)
-			.texture(ige.client.gameTexture.uiButtonMove)
+			.texture(ige.client.gameTextures.uiButtonMove)
 			// Set the radio group so the controls will receive group events
 			.radioGroup('menuControl')
 			.mouseOver(function () {
@@ -292,15 +293,15 @@ var Client = IgeClass.extend({
 				this.backgroundColor('');
 				ige.client.data('currentlyHighlighted', false);
 			})
-			.mount(this.menuBar);
+			.mount(menuBar);
 
-		this.uiButtonDelete = new IgeUiRadioButton()
+		new IgeUiRadioButton()
 			.id('uiButtonDelete')
 			.left(77)
 			.top(3)
 			.width(32)
 			.height(32)
-			.texture(ige.client.gameTexture.uiButtonDelete)
+			.texture(ige.client.gameTextures.uiButtonDelete)
 			// Set the radio group so the controls will receive group events
 			.radioGroup('menuControl')
 			.mouseOver(function () {
@@ -335,12 +336,15 @@ var Client = IgeClass.extend({
 				this.backgroundColor('');
 				ige.client.data('currentlyHighlighted', false);
 			})
-			.mount(this.menuBar);
+			.mount(menuBar);
 
 		this.setupUi_BuildingsMenu();
 	},
 	
 	setupUi_BuildingsMenu: function () {
+		var uiScene = ige.$('uiScene'),
+			menuBar = ige.$('menuBar');
+		
 		// First, create an entity that will act as a drop-down menu
 		this.uiMenuBuildings = new IgeUiEntity()
 			.id('uiMenuBuildings')
@@ -349,7 +353,7 @@ var Client = IgeClass.extend({
 			.width(200)
 			.height(200)
 			.backgroundColor('#222')
-			.mount(this.uiScene)
+			.mount(uiScene)
 			.mouseDown(function () {
 				ige.input.stopPropagation();
 			})
@@ -372,7 +376,7 @@ var Client = IgeClass.extend({
 			.data('buildingType', 'Bank') // Set the class to instantiate from this button
 			.top(0)
 			.left(0)
-			.texture(this.gameTexture.bank)
+			.texture(this.gameTextures.bank)
 			.width(50, true)
 			.mount(this.uiMenuBuildings)
 			// Set the radio group so the controls will receive group events
@@ -431,7 +435,7 @@ var Client = IgeClass.extend({
 			.data('buildingType', 'Burgers') // Set the class to instantiate from this button
 			.top(0)
 			.left(50)
-			.texture(this.gameTexture.burgers)
+			.texture(this.gameTextures.burgers)
 			.width(50, true)
 			.mount(this.uiMenuBuildings)
 			// Set the radio group so the controls will receive group events
@@ -490,7 +494,7 @@ var Client = IgeClass.extend({
 			.data('buildingType', 'Electricals') // Set the class to instantiate from this button
 			.top(0)
 			.left(100)
-			.texture(this.gameTexture.electricals)
+			.texture(this.gameTextures.electricals)
 			.width(50, true)
 			.mount(this.uiMenuBuildings)
 			// Set the radio group so the controls will receive group events
@@ -544,13 +548,13 @@ var Client = IgeClass.extend({
 				}
 			});
 		
-		this.uiButtonBuildings = new IgeUiRadioButton()
+		new IgeUiRadioButton()
 			.id('uiButtonBuildings')
 			.left(124)
 			.top(3)
 			.width(32)
 			.height(32)
-			.texture(ige.client.gameTexture.uiButtonHouse)
+			.texture(ige.client.gameTextures.uiButtonHouse)
 			// Set the radio group so the controls will receive group events
 			.radioGroup('menuControl')
 			.mouseOver(function () {
@@ -598,7 +602,7 @@ var Client = IgeClass.extend({
 					ige.client.data('ghostItem', false);
 				}
 			})
-			.mount(this.menuBar);
+			.mount(menuBar);
 	},
 
 	setupEntities: function () {
@@ -616,8 +620,9 @@ var Client = IgeClass.extend({
 	 * @return {*}
 	 */
 	placeItem: function (type, tileX, tileY) {
-		var item = new this[type](this.tileMap1, tileX, tileY).place();
-		this.obj.push(item);
+		var item = ige.newClassInstance(type)
+			.mount(ige.$('tileMap1'))
+			.translateToTile(tileX, tileY);
 
 		return item;
 	},
@@ -654,7 +659,7 @@ var Client = IgeClass.extend({
 		// Create a new item at a far off tile position - it will
 		// be moved to follow the mouse cursor anyway but it's cleaner
 		// to create it off-screen first.
-		return new this[type](this.tileMap1, -1000, -1000);
+		return new this[type](this.tileMap1, -1000, -1000).debugTransforms(true);
 	},
 
 	/**
@@ -797,11 +802,15 @@ var Client = IgeClass.extend({
 	
 	/**
 	 * Handles when the mouse over event occurs on our map (tileMap1).
-	 * @param x
-	 * @param y
+	 * @param event
+	 * @param evc
 	 * @private
 	 */
-	_mapOnMouseOver: function (x, y) {
+	_mapOnMouseOver: function (event, evc) {
+        var mp = this.mouseToTile(),
+			x = mp.x,
+			y = mp.y;
+
 		switch (ige.client.data('cursorMode')) {
 			case 'select':
 				// If we already have a selection, un-highlight it

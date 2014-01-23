@@ -4,7 +4,6 @@ var Cuboid = IgeEntity.extend({
 	init: function (mouseMoveFunc, mouseOutFunc) {
 		IgeEntity.prototype.init.call(this);
 		
-		
 		this.isometric(true)
 			.mouseMove(mouseMoveFunc)
 			.mouseOut(mouseOutFunc)

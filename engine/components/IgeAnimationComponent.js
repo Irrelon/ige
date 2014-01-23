@@ -359,10 +359,13 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	/**
 	 * Handles the animation processing each update.
 	 * @param {CanvasRenderingContext2D} ctx The rendering context to use when doing draw operations.
-	 * @param {Number} tickDelta The delta time between the last tick and this one.
+	 * @param {Number} tickDelta The current ige._tickDelta passed down the scenegraph.
 	 */
 	_update: function (ctx, tickDelta) {
 		var self = this.animation;
+		
+		// Just in case someone forgets to pass it in their update call!
+		tickDelta = tickDelta || ige._tickDelta;
 		
 		if (self._anim) {
 			var anim = self._anim,

@@ -45,15 +45,15 @@ var Client = IgeClass.extend({
 							this._emitter = emitter;
 							IgeEntity.prototype.init.call(this);
 
+							this.noAabb(true);
+							
 							// Setup the particle default values
 							this.addComponent(IgeVelocityComponent)
 								.texture(gameTexture[3])
 								.width(50)
 								.height(50)
 								.drawBounds(false)
-								.drawBoundsData(false)
-								.mouseOver(overFunc)
-								.mouseOut(outFunc);
+								.drawBoundsData(false);
 						},
 
 						tick: function (ctx) {

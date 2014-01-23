@@ -7,11 +7,12 @@ var Character = IgeEntity.extend({
 		IgeEntity.prototype.init.call(this);
 
 		// Create a character entity as a child of this container
-		self.addComponent(IgeAnimationComponent)
+		self.isometric(true)
+			.addComponent(IgeAnimationComponent)
 			.addComponent(IgeVelocityComponent)
 			.depth(1)
 			.setType(3)
-			.bounds3d(20, 60, 40)
+			.bounds3d(20, 20, 40)
 			.anchor(0, 8);
 
 		// Load the character texture file

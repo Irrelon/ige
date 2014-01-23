@@ -613,6 +613,50 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Checks if the object has the specified behaviour already added to it.
+	 * @param {String} id
+	 * @param {Boolean=} duringTick If true will look to remove the behaviour
+	 * from the tick method rather than the update method.
+	 * @example #Check for a behaviour with the id "myBehaviour"
+	 *     var entity = new IgeEntity();
+	 *     entity.addBehaviour('myBehaviour', function () {
+	 *         // Code here will execute during each engine update for
+	 *         // this entity. I can access the entity via the "this"
+	 *         // keyword such as:
+	 *         this._somePropertyOfTheEntity = 'moo';
+	 *     });
+	 *     
+	 *     // Now check for the "myBehaviour" behaviour
+	 *     console.log(entity.hasBehaviour('myBehaviour')); // Will log "true"
+	 * @return {*} Returns this on success or false on failure.
+	 */
+	hasBehaviour: function (id, duringTick) {
+		if (id !== undefined) {
+			var arr,
+				arrCount;
+			
+			if (duringTick) {
+				arr = this._tickBehaviours;
+			} else {
+				arr = this._updateBehaviours;
+			}
+
+			// Find the behaviour
+			if (arr) {
+				arrCount = arr.length;
+
+				while (arrCount--) {
+					if (arr[arrCount].id === id) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	},
+	
+	/**
 	 * Gets / sets the boolean flag determining if this object should have
 	 * it's bounds drawn when the bounds for all objects are being drawn.
 	 * In order for bounds to be drawn the viewport the object is being drawn
@@ -663,8 +707,7 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Gets / sets the boolean flag determining if this object should have
-	 * it's mouse position data drawn when the bounds for all objects are
-	 * being drawn.
+	 * it's mouse position drawn, usually for debug purposes.
 	 * @param {Boolean=} val
 	 * @example #Enable draw mouse position data
 	 *     var entity = new IgeEntity();
@@ -683,6 +726,31 @@ var IgeObject = IgeEventingClass.extend({
 		}
 
 		return this._drawMouse;
+	},
+	
+	/**
+	 * Gets / sets the boolean flag determining if this object should have
+	 * it's extra mouse data drawn for debug purposes. For instance, on tilemaps
+	 * (IgeTileMap2d) instances, when enabled you will see the tile x and y
+	 * co-ordinates currently being hoverered over by the mouse.
+	 * @param {Boolean=} val
+	 * @example #Enable draw mouse data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawMouseData(true);
+	 * @example #Disable draw mouse data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawMouseData(false);
+	 * @example #Get the current flag value
+	 *     console.log(entity.drawMouseData());
+	 * @return {*}
+	 */
+	drawMouseData: function (val) {
+		if (val !== undefined) {
+			this._drawMouseData = val;
+			return this;
+		}
+
+		return this._drawMouseData;
 	},
 
 	/**
@@ -1517,6 +1585,11 @@ var IgeObject = IgeEventingClass.extend({
 				// Loop our children and call their tick methods
 				if (igeConfig.debug._timing) {
 					while (arrCount--) {
+						if (!arr[arrCount]) {
+							this.log('Object _children is undefined for index ' + arrCount + ' and _id: ' + this._id, 'error');
+							continue;
+						}
+						
 						if (!arr[arrCount]._newBorn) {
 							ctx.save();
 							ts = new Date().getTime();
@@ -1539,6 +1612,11 @@ var IgeObject = IgeEventingClass.extend({
 					}
 				} else {
 					while (arrCount--) {
+						if (!arr[arrCount]) {
+							this.log('Object _children is undefined for index ' + arrCount + ' and _id: ' + this._id, 'error');
+							continue;
+						}
+						
 						if (!arr[arrCount]._newBorn) {
 							ctx.save();
 							arr[arrCount].tick(ctx);

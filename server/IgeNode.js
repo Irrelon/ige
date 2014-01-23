@@ -183,29 +183,6 @@ var IgeNode = IgeClass.extend({
 		}
 
 		this._generateStage1(gamePath, toPath, deployOptions);
-		return;
-
-		// Check that the deployment folder does not exist
-		if (this.fs.existsSync(toPath)) {
-			// The deployment folder already exists!
-			console.log('Warning, the deployment folder already exists at: ' + toPath);
-			console.log('Deploying to this folder will overwrite all existing data!');
-			this.ask('-> Type yes to execute: ', function (response) {
-				if (response === 'yes') {
-					// Init the folder and exit
-					console.log('');
-					self._generateStage1(gamePath, toPath);
-				} else {
-					console.log('Operation cancelled, no files were modified.');
-					setTimeout(this.exitProcess, 50);
-				}
-			});
-		} else {
-			// Create the deployment folder
-			console.log('Creating deployment folder: ' + toPath);
-			this.fs.mkdirSync(toPath);
-			this._generateStage1(gamePath, toPath);
-		}
 	},
 
 	_generateStage1: function (gamePath, toPath, deployOptions) {
@@ -330,7 +307,8 @@ var IgeNode = IgeClass.extend({
 			fileIndex,
 			file,
 			data = '',
-			fullCodeEval = clientCode;
+			fullCodeEval = clientCode,
+			rerun;
 
 		console.log('Scanning client code for class usage...');
 
@@ -340,7 +318,20 @@ var IgeNode = IgeClass.extend({
 				file = arr[fileIndex];
 				//console.log('Checking for usage of: ' + file[1]);
 
-				if (((deployOptions.proto && file[0].indexOf('p') > -1) || (fullCodeEval.indexOf(file[1]) > -1 || (file[0].indexOf('c') > -1 && file[0].indexOf('a') === -1))) && finalArr.indexOf(file[2]) === -1) {
+				if ((
+					// If we are deploying prototype and file has "p" flag
+					(deployOptions.proto && file[0].indexOf('p') > -1)
+					|| (
+						// The class the file declares exists in the client-side source code
+						fullCodeEval.indexOf(file[1]) > -1
+						|| (
+							// The file has a flag of "c" AND DOES NOT have a flag of "a"
+							file[0].indexOf('c') > -1 && file[0].indexOf('a') === -1
+							)
+						)
+					// The file has not already been included
+					) && finalArr.indexOf(file[2]) === -1
+				) {
 					// The client code is using this class
 					console.log('Class "' + file[1] + '" used in project, keeping file: engine/' + file[2]);
 					finalArr.push(file[2]);

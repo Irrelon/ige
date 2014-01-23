@@ -519,7 +519,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			viewArea = ige._currentViewport.viewArea();
 
 		// Render the map sections
-		ctx.translate(-(this._tileWidth / 2), -(this._tileHeight / 2));
+		//ctx.translate(-(this._tileWidth / 2), -(this._tileHeight / 2));
 
 		sectionWidth = (this._tileWidth * this._autoSection);
 		sectionHeight = (this._tileHeight * this._autoSection);
@@ -610,7 +610,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			sx = tx - ty;
 			sy = (tx + ty) * 0.5;
 
-			finalX = sx;
+			finalX = sx - this._tileWidth / 2;
 			finalY = sy;
 		}
 

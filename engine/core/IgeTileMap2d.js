@@ -1,5 +1,3 @@
-// TODO: Make the mouse events inactive on tilemaps, instead allow behaviours to be added that call the mouseToTile method and can do things based on that. This solves the problem of tilemaps having arbitrary infinite bounds and allows the programmer to decide which tile maps are being interacted with.
-// TODO: Implement the _stringify() method for this class
 /**
  * Tile maps provide a way to align mounted child objects to a tile-based grid.
  * NOTE: These are not to be confused with IgeTextureMap's which allow you to
@@ -10,47 +8,24 @@ var IgeTileMap2d = IgeEntity.extend({
 	IgeTileMap2d: true,
 
 	init: function (tileWidth, tileHeight) {
-		this._alwaysInView = true;
 		IgeEntity.prototype.init.call(this);
 
-		var self = this;
+		tileWidth = tileWidth !== undefined ? tileWidth : 40;
+		tileHeight = tileHeight !== undefined ? tileHeight : 40;
+		
+		var self = this,
+			tex = new IgeTexture(IgeTileMap2dSmartTexture);
+		
+		self.texture(tex);
+		self.map = new IgeMap2d();
+		self._adjustmentMatrix = new IgeMatrix2d();
 
-		this.map = new IgeMap2d();
+		self.tileWidth(tileWidth);
+		self.tileHeight(tileHeight);
+		self.gridSize(3, 3);
 
-		this._tileWidth = tileWidth !== undefined ? tileWidth : 40;
-		this._tileHeight = tileHeight !== undefined ? tileHeight : 40;
-
-		this._drawGrid = 0;
-        this._gridColor = '#ffffff';
-	},
-
-	/**
-	 * Gets / sets the number of grid cells that the tile map should paint
-	 * to the context during the tick method.
-	 * @param val
-	 * @return {*}
-	 */
-	drawGrid: function (val)  {
-		if (val !== undefined) {
-			this._drawGrid = val;
-			return this;
-		}
-
-		return this._drawGrid;
-	},
-
-	/**
-	 * Gets / sets the color of the grid overlay. It can accepts a string
-	 * @param val
-	 * @return {*}
-	 */
-	gridColor: function (val)  {
-		if (val !== undefined) {
-			this._gridColor = val;
-			return this;
-		}
-
-		return this._gridColor;
+		self._drawGrid = 0;
+        self._gridColor = '#ffffff';
 	},
 
 	/**
@@ -85,6 +60,11 @@ var IgeTileMap2d = IgeEntity.extend({
 	tileWidth: function (val) {
 		if (val !== undefined) {
 			this._tileWidth = val;
+			if (this._gridSize && this._gridSize.x) {
+				this.width(this._tileWidth * this._gridSize.x);
+				this._updateAdjustmentMatrix();
+			}
+			
 			return this;
 		}
 
@@ -99,33 +79,78 @@ var IgeTileMap2d = IgeEntity.extend({
 	tileHeight: function (val) {
 		if (val !== undefined) {
 			this._tileHeight = val;
+			if (this._gridSize && this._gridSize.y) {
+				this.height(this._tileHeight * this._gridSize.y);
+				this._updateAdjustmentMatrix();
+			}
+			
 			return this;
 		}
 
 		return this._tileHeight;
 	},
-
-	_childMounted: function (obj) {
-		// We can also re-use the tile size methods since
-		// they alter the same properties on the calling
-		// entity anyway.
-		obj.tileWidth = obj.tileWidth || this.tileWidth;
-		obj.tileHeight = obj.tileHeight || this.tileHeight;
-
-		// Set default values
-		obj._tileWidth = obj._tileWidth || 1;
-		obj._tileHeight = obj._tileHeight || 1;
-
-		IgeEntity.prototype._childMounted.call(this, obj);
-	},
-
-	_resizeEvent: function (event) {
-		if (this._parent) {
-			this._bounds2d = this._parent._bounds2d.clone();
+	
+	gridSize: function (x, y) {
+		if (x !== undefined && y !== undefined) {
+			this._gridSize = new IgePoint2d(x, y);
+			
+			// If in 2d mount mode
+			if (this._mountMode === 0) {
+				if (this._tileWidth) {
+					this.width(this._tileWidth * this._gridSize.x);
+				}
+			}
+			
+			// If in isometric mount mode
+			if (this._mountMode === 1) {
+				if (this._tileWidth) {
+					this.width((this._tileWidth * 2) * this._gridSize.x);
+				}
+			}
+			
+			if (this._tileHeight) {
+				this.height(this._tileHeight * this._gridSize.y);
+			}
+			
+			this._updateAdjustmentMatrix();
+			
+			return this;
 		}
-		IgeEntity.prototype._resizeEvent.call(this, event);
+
+		return this._gridSize;
+	},
+	
+	/**
+	 * Gets / sets if the tile map should paint a grid to the context during
+	 * the tick method.
+	 * @param {Boolean=} val If true, will paint the grid on tick.
+	 * @return {*}
+	 */
+	drawGrid: function (val)  {
+		if (val !== undefined) {
+			this._drawGrid = val;
+			return this;
+		}
+
+		return this._drawGrid;
 	},
 
+	/**
+	 * Gets / sets the color of the grid overlay. It accepts a string color
+	 * definition with the same specifications as the canvas context strokeStyle
+	 * property.
+	 * @param {String=} val The color of the grid.
+	 * @return {*}
+	 */
+	gridColor: function (val)  {
+		if (val !== undefined) {
+			this._gridColor = val;
+			return this;
+		}
+
+		return this._gridColor;
+	},
+	
 	/**
 	 * Sets a tile or area as occupied by the passed obj parameter.
 	 * Any previous occupy data on the specified tile or area will be
@@ -221,49 +246,23 @@ var IgeTileMap2d = IgeEntity.extend({
 		return this.map.tileData(x, y);
 	},
 
-	mouseDown: function (val) {
-		if (val !== undefined) {
-			this._tileMapMouseDown = val;
-			return this;
-		}
-
-		return this._tileMapMouseDown;
-	},
-
-	mouseUp: function (val) {
-		if (val !== undefined) {
-			this._tileMapMouseUp = val;
-			return this;
-		}
-
-		return this._tileMapMouseUp;
-	},
-
-	mouseOver: function (val) {
-		if (val !== undefined) {
-			this._tileMapMouseOver = val;
-			return this;
-		}
-
-		return this._tileMapMouseOver;
-	},
-
 	/**
 	 * Returns the tile co-ordinates of the tile that the point's world
 	 * co-ordinates reside inside.
-	 * @param {IgePoint3d=} point
+	 * @param {IgePoint3d} point
 	 * @return {IgePoint3d} The tile co-ordinates as a point object.
 	 */
 	pointToTile: function (point) {
-		// TODO: Could this do with some caching to check if the input values have changed and if not, supply the same pre-calculated data if it already exists?
+		// TODO: Could this do with some caching to check if the input values have changed and if not,
+		// TODO: supply the same pre-calculated data if it already exists?
 		var mx = point.x,
 			my = point.y,
 			dx, dy, tilePos;
 
 		if (this._mountMode === 0) {
 			// 2d
-			dx = mx + this._tileWidth / 2;
-			dy = my + this._tileHeight / 2;
+			dx = mx; //+ this._tileWidth / 2;
+			dy = my; //+ this._tileHeight / 2;
 
 			tilePos = new IgePoint3d(
 				Math.floor(dx / this._tileWidth),
@@ -275,17 +274,11 @@ var IgeTileMap2d = IgeEntity.extend({
 		if (this._mountMode === 1) {
 			// iso
 			dx = mx;
-			dy = my - this._tileHeight / 2;
-
+			dy = my;
+			
 			tilePos = new IgePoint3d(
-				dx,
-				dy,
-				0
-			).to2d();
-
-			tilePos = new IgePoint3d(
-				Math.floor(tilePos.x / this._tileWidth) + 1,
-				Math.floor(tilePos.y / this._tileHeight) + 1,
+				Math.floor(dx / this._tileWidth),
+				Math.floor(dy / this._tileHeight),
 				0
 			);
 		}
@@ -297,19 +290,37 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * Returns the world co-ordinates of the tile the mouse is currently over.
 	 * @return {IgePoint3d}
 	 */
-	mouseTileWorldXY: function () {
-		if (this._mountMode === 0) {
-			return this._mouseTilePos
-				.clone()
-				.thisMultiply(this._tileWidth, this._tileHeight, 0);
-		}
+	mouseTilePoint: function () {
+		var tilePos = this.mouseToTile()
+			.thisMultiply(this._tileWidth, this._tileHeight, 1);
 
-		if (this._mountMode === 1) {
-			return this._mouseTilePos
-				.clone()
-				.thisMultiply(this._tileWidth, this._tileHeight, 0)
-				.thisToIso();
+		tilePos.x += this._tileWidth / 2;
+		tilePos.y += this._tileHeight / 2;
+		
+		return tilePos;
+	},
+	
+	tileToPoint: function (x, y) {
+		var point;
+		
+		if (this._mountMode === 0) {
+			point = new IgePoint3d(x, y, 0)
+				.thisMultiply(this._tileWidth, this._tileHeight, 1);
+			
+			point.x -= this._bounds2d.x2 - (this._tileWidth / 2);
+			point.y -= this._bounds2d.y2 - (this._tileHeight / 2);
 		}
+		
+		if (this._mountMode === 1) {
+			point = new IgePoint3d(x * this._tileWidth + this._tileWidth / 2, y * this._tileHeight + this._tileHeight / 2, 0);
+			point.x -= this._bounds2d.x2 / 2;
+			point.y -= this._bounds2d.y2;
+		}
+		
+		point.x2 = point.x / 2;
+		point.y2 = point.y / 2;
+		
+		return point;
 	},
 
 	/**
@@ -317,7 +328,15 @@ var IgeTileMap2d = IgeEntity.extend({
 	 * @return {IgePoint3d}
 	 */
 	mouseToTile: function () {
-		return this.pointToTile(this.mousePos());
+		var tilePos;
+		
+		if (this._mountMode === 0) {
+			tilePos = this.pointToTile(this.mousePos());
+		} else {
+			tilePos = this.pointToTile(this.mousePos().to2d());
+		}
+		
+		return tilePos;
 	},
 
 	/**
@@ -401,14 +420,13 @@ var IgeTileMap2d = IgeEntity.extend({
 
 		return rect;
 	},
-
-	/**
-	 * Sets the internal mouse position data based on the current mouse position
-	 * relative to the tile map.
-	 * @private
-	 */
-	_calculateMousePosition: function () {
-		this._mouseTilePos = this.pointToTile(this.mousePos());
+	
+	inGrid: function (x, y, width, height) {
+		if (width === undefined) { width = 1; }
+		if (height === undefined) { height = 1; }
+		
+		// Checks if the passed area is inside the tile map grid as defined by gridSize
+		return x >= 0 && y >= 0 && x + width <= this._gridSize.x && y + height <= this._gridSize.y;
 	},
 
 	/**
@@ -468,183 +486,86 @@ var IgeTileMap2d = IgeEntity.extend({
 
 		return JSON.stringify({
 			data: this.map.sortedMapDataAsArray(),
-			dataXY: [parseInt(dataX), parseInt(dataY)]
+			dataXY: [parseInt(dataX, 10), parseInt(dataY, 10)]
 		});
 	},
-
-	tick: function (ctx) {
-		var tileWidth = this._tileWidth,
-			tileHeight = this._tileHeight,
-			index,
-			x, y,
-			gridMaxX, gridMaxY,
-			gStart, gEnd,
-			tilePoint,
-			gridCount;
-
-		this._calculateMousePosition();
-
-		// Now check if we have any mouse events to call
-		if (ige.input.mouseMove && this._tileMapMouseOver) {
-			this._tileMapMouseOver(this._mouseTilePos.x, this._mouseTilePos.y, ige.input.mouseMove);
+	
+	isometricMounts: function (val) {
+		if (val !== undefined) {
+			IgeEntity.prototype.isometricMounts.call(this, val);
+			
+			// Re-call the methods that check iso mounts property
+			this.tileWidth(this._tileWidth);
+			this.tileHeight(this._tileHeight);
+			this.gridSize(this._gridSize.x, this._gridSize.y);
+			
+			this._updateAdjustmentMatrix();
+			return this;
 		}
-
-		if (ige.input.mouseDown && this._tileMapMouseDown) {
-			this._tileMapMouseDown(this._mouseTilePos.x, this._mouseTilePos.y, ige.input.mouseDown);
+		
+		return this._mountMode;
+	},
+	
+	tileMapHitPolygon: function (mousePoint) {
+		if (this._mountMode === 0) {
+			return this.aabb();
 		}
-
-		if (ige.input.mouseUp && this._tileMapMouseUp) {
-			this._tileMapMouseUp(this._mouseTilePos.x, this._mouseTilePos.y, ige.input.mouseUp);
+		
+		if (this._mountMode === 1) {
+			var aabb = this.aabb(),
+				poly = new IgePoly2d();
+			
+			poly.addPoint(aabb.x + aabb.width / 2, aabb.y);
+			poly.addPoint(aabb.x + aabb.width, aabb.y + aabb.height / 2);
+			poly.addPoint(aabb.x + aabb.width / 2, (aabb.y + aabb.height) - 1);
+			poly.addPoint(aabb.x - 1, (aabb.y + aabb.height / 2) - 1);
+			
+			return poly;
 		}
-
-		// Transform the context ready for drawing
-		this._transformContext(ctx);
-
-		// Check if we need to draw the tile grid (usually for debug)
-		if (this._drawGrid > 0) {
-			ctx.strokeStyle = this._gridColor;
-			gridCount = this._drawGrid;
-			x = -(tileWidth / 2);
-			y = -(tileHeight / 2);
-			gridMaxX = x + tileWidth * gridCount;
-			gridMaxY = y + tileHeight * gridCount;
-
-			for (index = 0; index <= gridCount; index++) {
-				gStart = new IgePoint3d(x, y + (tileHeight * index), 0);
-				gEnd = new IgePoint3d(gridMaxX, y + (tileHeight * index), 0);
-
-				if (this._mountMode === 1) {
-					// Iso grid
-					gStart = gStart.toIso();
-					gEnd = gEnd.toIso();
+	},
+	
+	_processTriggerHitTests: function () {
+		// This method overrides the one in IgeEntity
+		if (this._mouseEventsActive && ige._currentViewport) {
+			if (!this._mouseAlwaysInside) {
+				var mouseTile = this.mouseToTile();
+				if (mouseTile.x >= 0 && mouseTile.y >= 0 && mouseTile.x < this._gridSize.x && mouseTile.y < this._gridSize.y) {
+					return true;
+				} else {
+					return false;
 				}
-
-				ctx.beginPath();
-				ctx.moveTo(gStart.x, gStart.y);
-				ctx.lineTo(gEnd.x, gEnd.y);
-				ctx.stroke();
-			}
-
-			for (index = 0; index <= gridCount; index++) {
-				gStart = new IgePoint3d(x + (tileWidth * index), y, 0);
-				gEnd = new IgePoint3d(x + (tileWidth * index), gridMaxY, 0);
-
-				if (this._mountMode === 1) {
-					// Iso grid
-					gStart = gStart.toIso();
-					gEnd = gEnd.toIso();
-				}
-
-				ctx.beginPath();
-				ctx.moveTo(gStart.x, gStart.y);
-				ctx.lineTo(gEnd.x, gEnd.y);
-				ctx.stroke();
+			} else {
+				return true;
 			}
 		}
-
-		if (this._highlightOccupied) {
-			ctx.fillStyle = '#ff0000';
-			for (y in this.map._mapData) {
-				if (this.map._mapData[y]) {
-					for (x in this.map._mapData[y]) {
-						if (this.map._mapData[y][x]) {
-							// Tile is occupied
-							tilePoint = new IgePoint3d(tileWidth * x, tileHeight * y, 0);
-
-							// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
-							if (this._mountMode === 0) {
-								// 2d
-								ctx.fillRect(
-									tilePoint.x - tileWidth / 2,
-									tilePoint.y - tileHeight / 2,
-									tileWidth,
-									tileHeight
-								);
-							}
-
-							if (this._mountMode === 1) {
-								// iso
-								tilePoint.thisToIso();
-
-								ctx.beginPath();
-								ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-								ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
-								ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
-								ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
-								ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-								ctx.fill();
-							}
-						}
-					}
-				}
-			}
-		}
-
-		if (this._highlightTileRect) {
-			ctx.fillStyle = '#e4ff00';
-			for (y = this._highlightTileRect.y; y < this._highlightTileRect.y + this._highlightTileRect.height; y++) {
-				for (x = this._highlightTileRect.x; x < this._highlightTileRect.x + this._highlightTileRect.width; x++) {
-					// Tile is occupied
-					tilePoint = new IgePoint3d(tileWidth * x, tileHeight * y, 0);
-
-					// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
-					if (this._mountMode === 0) {
-						// 2d
-						ctx.fillRect(
-							tilePoint.x - tileWidth / 2,
-							tilePoint.y - tileHeight / 2,
-							tileWidth,
-							tileHeight
-						);
-					}
-
-					if (this._mountMode === 1) {
-						// iso
-						tilePoint.thisToIso();
-
-						ctx.beginPath();
-						ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-						ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
-						ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
-						ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
-						ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-						ctx.fill();
-					}
-				}
-			}
-		}
-
-		if (this._drawMouse) {
-			// Paint the tile the mouse is currently intersecting
-			ctx.fillStyle = this._hoverColor || '#6000ff';
+		
+		return false;
+	},
+	
+	_updateAdjustmentMatrix: function () {
+		if (this._bounds2d.x2 && this._bounds2d.y2 && this._tileWidth && this._tileHeight) {
 			if (this._mountMode === 0) {
-				// 2d
-				ctx.fillRect(
-					(this._mouseTilePos.x * tileWidth) - tileWidth / 2,
-					(this._mouseTilePos.y * tileHeight) - tileHeight / 2,
-					tileWidth,
-					tileHeight
-				);
+				this._adjustmentMatrix.translateTo(this._bounds2d.x2, this._bounds2d.y2);
 			}
-
+			
 			if (this._mountMode === 1) {
-				// iso
-				tilePoint = this._mouseTilePos
-					.clone()
-					.thisMultiply(tileWidth, tileHeight, 0)
-					.thisToIso();
-
-				ctx.beginPath();
-				ctx.moveTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-				ctx.lineTo(tilePoint.x + tileWidth, tilePoint.y);
-				ctx.lineTo(tilePoint.x, tilePoint.y + tileHeight / 2);
-				ctx.lineTo(tilePoint.x - tileWidth, tilePoint.y);
-				ctx.lineTo(tilePoint.x, tilePoint.y - tileHeight / 2);
-				ctx.fill();
+				this._adjustmentMatrix.translateTo(0, this._bounds2d.y2);
 			}
 		}
+	},
 
-		IgeEntity.prototype.tick.call(this, ctx, true);
+	_childMounted: function (obj) {
+		// We can also re-use the tile size methods since
+		// they alter the same properties on the calling
+		// entity anyway.
+		obj.tileWidth = obj.tileWidth || this.tileWidth;
+		obj.tileHeight = obj.tileHeight || this.tileHeight;
+
+		// Set default values
+		obj._tileWidth = obj._tileWidth || 1;
+		obj._tileHeight = obj._tileHeight || 1;
+
+		IgeEntity.prototype._childMounted.call(this, obj);
 	}
 });
 

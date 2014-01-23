@@ -9,9 +9,7 @@ var IgeUiProgressBar = IgeUiElement.extend({
 		this._min = 0;
 		this._max = 100;
 		this._progress = 0;
-		this._barBackColor = '#000000';
 		this._barColor = '#fff600';
-		this._barBorderColor = '#ffffff';
 		this._barText = {
 			pre: '',
 			post: '',
@@ -58,6 +56,15 @@ var IgeUiProgressBar = IgeUiElement.extend({
 
 		return this._barText;
 	},
+	
+	min: function (val) {
+		if (val !== undefined) {
+			this._min = val;
+			return this;
+		}
+
+		return this._min;
+	},
 
 	max: function (val) {
 		if (val !== undefined) {
@@ -66,15 +73,6 @@ var IgeUiProgressBar = IgeUiElement.extend({
 		}
 
 		return this._max;
-	},
-
-	min: function (val) {
-		if (val !== undefined) {
-			this._min = val;
-			return this;
-		}
-
-		return this._min;
 	},
 
 	progress: function (val) {

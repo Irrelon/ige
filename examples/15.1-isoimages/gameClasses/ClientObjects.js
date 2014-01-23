@@ -14,7 +14,7 @@ var ClientObjects = {
 				.translateToTile(tileX, tileY, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
-				.texture(ige.client.gameTexture.bank)
+				.texture(ige.client.gameTextures.bank)
 				.dimensionsFromCell()
 				.scaleTo(0.3, 0.3, 1)
 				.occupyTile(tileX, tileY, 2, 2);
@@ -41,7 +41,7 @@ var ClientObjects = {
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
 				.occupyTile(tileX, tileY, 3, 4)
-				.texture(ige.client.gameTexture.electricals)
+				.texture(ige.client.gameTextures.electricals)
 				.dimensionsFromCell()
 				.scaleTo(0.45, 0.45, 1);
 		},
@@ -67,7 +67,7 @@ var ClientObjects = {
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
 				.occupyTile(tileX, tileY, 2, 2)
-				.texture(ige.client.gameTexture.burgers)
+				.texture(ige.client.gameTextures.burgers)
 				.dimensionsFromCell()
 				.anchor(5, 20)
 				.scaleTo(0.3, 0.3, 1);
@@ -119,9 +119,9 @@ var ClientObjects = {
 			);
 
 			new IgeEntity()
-				.texture(ige.client.gameTexture.base_se)
-				.width(ige.client.gameTexture.base_se.image.width * 0.265 * (parent._tileWidth / 40))
-				.height(ige.client.gameTexture.base_se.image.height * 0.265 * (parent._tileWidth / 40))
+				.texture(ige.client.gameTextures.base_se)
+				.width(ige.client.gameTextures.base_se.image.width * 0.265 * (parent._tileWidth / 40))
+				.height(ige.client.gameTextures.base_se.image.height * 0.265 * (parent._tileWidth / 40))
 				.mount(this.data('baseRef'));
 		},
 
@@ -197,9 +197,9 @@ var ClientObjects = {
 					.mouseOut(function () { this.highlight(false); this.drawBounds(false); this.drawBoundsData(false); });
 
 				new IgeEntity()
-					.texture(ige.client.gameTexture.stacker_se)
-					.width(ige.client.gameTexture.base_se.image.width * 0.265 * (this._parent._tileWidth / 40))
-					.height(ige.client.gameTexture.base_se.image.height * 0.265 * (this._parent._tileHeight / 40))
+					.texture(ige.client.gameTextures.stacker_se)
+					.width(ige.client.gameTextures.base_se.image.width * 0.265 * (this._parent._tileWidth / 40))
+					.height(ige.client.gameTextures.base_se.image.height * 0.265 * (this._parent._tileHeight / 40))
 					.mount(this.data('floorRef')[floor]);
 			}
 
@@ -328,9 +328,9 @@ var ClientObjects = {
 				);
 
 				new IgeEntity()
-					.texture(ige.client.gameTexture[levelTextureId])
-					.width(ige.client.gameTexture[levelTextureId].image.width * 0.265 * (this._parent._tileWidth / 40))
-					.height(ige.client.gameTexture[levelTextureId].image.height * 0.265 * (this._parent._tileHeight / 40))
+					.texture(ige.client.gameTextures[levelTextureId])
+					.width(ige.client.gameTextures[levelTextureId].image.width * 0.265 * (this._parent._tileWidth / 40))
+					.height(ige.client.gameTextures[levelTextureId].image.height * 0.265 * (this._parent._tileHeight / 40))
 					.anchor(-anchorX, -anchorY)
 					.mount(this.data('craneRef'));
 			}

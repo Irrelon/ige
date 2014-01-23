@@ -9,7 +9,7 @@ var IgeBox2dDebugPainter = IgeObject.extend({
 	},
 
 	tick: function (ctx) {
-		if (this._parent && this._parent.isometricMounts() === true) {
+		if (this._parent && this._parent.isometricMounts() === 1) {
 			ctx.scale(1.414, 0.707); // This should be super-accurate now
 			ctx.rotate(45  * Math.PI / 180);
 		}

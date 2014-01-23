@@ -114,8 +114,8 @@
     <!--=if{desc}[-->
     <div class="methodDesc">Load a js script file into memory via a path or url.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">requireScript</span>({<span class="argType">String</span>} <span class="argName">url</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">url</span> The file's path or url.</li></ul></div>
+    <div class="methodDefinition"><span class="methodName">requireScript</span>({<span class="argType">String</span>} <span class="argName">url</span>, {<span class="argType">Function</span>} <span class="argName">callback</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">url</span> The file's path or url.</li><li>{<span class="argType">Function</span>}<span class="argName">callback</span> Optional callback when script loads.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
 </div><a name="_requireScriptLoaded"></a>
@@ -126,6 +126,16 @@
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">_requireScriptLoaded</span>({<span class="argType">Element</span>} <span class="argName">elem</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Element</span>}<span class="argName">elem</span> The script element added to the DOM.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="requireStylesheet"></a>
+<h3 class="methodTitle">requireStylesheet</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Load a css style file into memory via a path or url.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">requireStylesheet</span>({<span class="argType">String</span>} <span class="argName">url</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">url</span> The file's path or url.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
 </div><a name="addGraph"></a>
@@ -218,36 +228,6 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">fpsRate</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><a name="showStats"></a>
-<h3 class="methodTitle">showStats</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Gets / sets the stats output mode that is in use. Set to 1 to display default stats output at the lower-left of the HTML page.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">showStats</span>({<span class="argType">Number</span>} <span class="argName">val</span>, {<span class="argType">Number</span>} <span class="argName">interval</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li><li>{<span class="argType">Number</span>}<span class="argName">interval</span> The number of milliseconds between stats updates.</li></ul></div>
-    <div class="methodReturnDesc"></div>
-    
-</div><a name="_createStatsDiv"></a>
-<h3 class="methodTitle">_createStatsDiv</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Creates the stats output div on the DOM.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">_createStatsDiv</span>()</div>
-    <div class="methodArgs"></div>
-    <div class="methodReturnDesc"></div>
-    
-</div><a name="_removeStatsDiv"></a>
-<h3 class="methodTitle">_removeStatsDiv</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Removes the stats output div from the DOM.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">_removeStatsDiv</span>()</div>
-    <div class="methodArgs"></div>
-    <div class="methodReturnDesc"></div>
-    
 </div><a name="defineClass"></a>
 <h3 class="methodTitle">defineClass</h3>
 <div class="methodSection">
@@ -267,6 +247,16 @@
     <div class="methodDefinition"><span class="methodName">getClass</span>({<span class="argType">String</span>} <span class="argName">id</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> The ID of the class to retrieve.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Object</span>} The class definition.</div>
+    
+</div><a name="classDefined"></a>
+<h3 class="methodTitle">classDefined</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns true if the class specified has been defined.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">classDefined</span>({<span class="argType">String</span>} <span class="argName">id</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> The ID of the class to check for.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
 </div><a name="newClassInstance"></a>
 <h3 class="methodTitle">newClassInstance</h3>
@@ -546,7 +536,17 @@
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">mousePos</span>()</div>
     <div class="methodArgs"></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} </div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} </div>
+    
+</div><a name="mouseOverList"></a>
+<h3 class="methodTitle">mouseOverList</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Walks the scenegraph and returns an array of all entities that the mouse is currently over, ordered by their draw order from drawn last (above other entities) to first (underneath other entities).</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">mouseOverList</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
     
 </div><a name="_resizeEvent"></a>
 <h3 class="methodTitle">_resizeEvent</h3>
@@ -604,8 +604,8 @@
     <!--=if{desc}[-->
     <div class="methodDesc">Sets a trace up on the setter of the passed object's specified property. When the property is set by any code the debugger line is activated and code execution will be paused allowing you to step through code or examine the call stack to see where the property set originated.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">traceSet</span>({<span class="argType">Object</span>} <span class="argName">obj</span>, {<span class="argType">String</span>} <span class="argName">propName</span>, {<span class="argType">Number</span>} <span class="argName">sampleCount</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">obj</span> The object whose property you want to trace.</li><li>{<span class="argType">String</span>}<span class="argName">propName</span> The name of the property you want to put the trace on.</li><li>{<span class="argType">Number</span>}<span class="argName">sampleCount</span> The number of times you want the trace to break with the debugger line before automatically switching off the trace.</li></ul></div>
+    <div class="methodDefinition"><span class="methodName">traceSet</span>({<span class="argType">Object</span>} <span class="argName">obj</span>, {<span class="argType">String</span>} <span class="argName">propName</span>, {<span class="argType">Number</span>} <span class="argName">sampleCount</span>, {<span class="argType">Function</span>} <span class="argName">callbackEvaluator</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">obj</span> The object whose property you want to trace.</li><li>{<span class="argType">String</span>}<span class="argName">propName</span> The name of the property you want to put the trace on.</li><li>{<span class="argType">Number</span>}<span class="argName">sampleCount</span> The number of times you want the trace to break with the debugger line before automatically switching off the trace.</li><li>{<span class="argType">Function</span>}<span class="argName">callbackEvaluator</span> Optional callback that if returns true, will fire debugger. Method is passed the setter value as first argument.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
 </div><a name="traceSetOff"></a>
@@ -645,16 +645,6 @@
     <div class="methodDesc">Is called every second and does things like calculate the current FPS.</div>
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">_secondTick</span>()</div>
-    <div class="methodArgs"></div>
-    <div class="methodReturnDesc"></div>
-    
-</div><a name="_statsTick"></a>
-<h3 class="methodTitle">_statsTick</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Updates the stats HTML overlay with the latest data.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">_statsTick</span>()</div>
     <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     

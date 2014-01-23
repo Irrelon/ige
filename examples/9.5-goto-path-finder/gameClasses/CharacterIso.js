@@ -11,8 +11,7 @@ var Character = IgeEntity.extend({
 			.addComponent(IgeVelocityComponent)
 			.depth(1)
 			.setType(3)
-			.bounds3d(20, 60, 40)
-			.anchor(0, 8);
+			.bounds3d(20, 20, 40);
 
 		// Load the character texture file
 		this._characterTexture = new IgeCellSheet('../assets/textures/sprites/vx_chara02_c.png', 12, 8);
@@ -22,6 +21,18 @@ var Character = IgeEntity.extend({
 			self.texture(self._characterTexture)
 				.dimensionsFromCell();
 		}, false, true);
+	},
+	
+	mount: function (val) {
+		IgeEntity.prototype.mount.call(this, val);
+		
+		// If we are mounted to an isometric tile map, adjust the anchor to
+		// align our image with the iso-tiles :)
+		if (this._parent._mountMode === 1) {
+			this.anchor(0, 8);
+		}
+		
+		return this;
 	},
 	
 	/**

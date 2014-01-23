@@ -48,10 +48,10 @@ var IgeEventingClass = IgeClass.extend({
 			if (typeof eventName === 'string') {
 				// Compose the new listener
 				newListener = {
-					call:call,
-					context:context,
-					oneShot:oneShot,
-					sendEventName:sendEventName
+					call: call,
+					context: context,
+					oneShot: oneShot,
+					sendEventName: sendEventName
 				};
 
 				elArr = this._eventListeners[eventName] = this._eventListeners[eventName] || [];

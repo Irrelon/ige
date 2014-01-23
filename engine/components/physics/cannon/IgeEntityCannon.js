@@ -1,5 +1,5 @@
 /**
- * Creates a new isometric 3d entity.
+ * Creates a new entity with CANNON 3d physics integration.
  */
 var IgeEntityCannon = IgeEntity.extend({
 	classId: 'IgeEntityCannon',

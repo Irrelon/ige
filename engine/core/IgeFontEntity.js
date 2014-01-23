@@ -1,6 +1,6 @@
 /**
  * Creates a new font entity. A font entity will use a font sheet
- * (IgeFontSheet) and render text based on that font sheet's glyphs.
+ * (IgeFontSheet) or native font and render text.
  */
 var IgeFontEntity = IgeUiEntity.extend({
 	classId: 'IgeFontEntity',
@@ -82,6 +82,9 @@ var IgeFontEntity = IgeUiEntity.extend({
 	text: function (text) {
 		if (text !== undefined) {
 			var wasDifferent = false;
+			
+			// Ensure we have a string
+			text = String(text);
 			
 			if (this._text !== text) {
 				this.clearCache();

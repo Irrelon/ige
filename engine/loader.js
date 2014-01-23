@@ -1,3 +1,6 @@
+if (!igeRoot) {
+	igeRoot = './';
+}
 window.igeLoader = (function () {
 	// Load the engine stylesheet
 	var css = document.createElement('link');
