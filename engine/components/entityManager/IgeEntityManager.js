@@ -72,7 +72,12 @@ var IgeEntityManager = IgeEventingClass.extend({
 
 			if (item._managed) {
 				if (item.aabb) {
-					itemAabb = item.aabb();
+					if (item._mode === 1 || (item._parent && item._parent._mountMode === 1)) {
+						itemAabb = item.bounds3dPolygon().aabb();
+					} else {
+						itemAabb = item.aabb();
+					}
+					
 					inVisibleArea = false;
 					
 					// Check the entity to see if its bounds are "inside" any
@@ -126,7 +131,12 @@ var IgeEntityManager = IgeEventingClass.extend({
 
 			if (item._managed) {
 				if (item.aabb) {
-					itemAabb = item.aabb();
+					if (item._mode === 1 || (item._parent && item._parent._mountMode === 1)) {
+						itemAabb = item.bounds3dPolygon().aabb();
+					} else {
+						itemAabb = item.aabb();
+					}
+					
 					inVisibleArea = false;
 					
 					// Check the entity to see if its bounds are "inside" any
