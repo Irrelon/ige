@@ -16,3 +16,5 @@ for (var methodName in IgeEntity.prototype) {
 		}
 	}
 }
+
+if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeArray; }
