@@ -58,6 +58,10 @@ var IgeEntity = IgeObject.extend({
 
 		// Set the default stream sections as just the transform data
 		this.streamSections(['transform']);
+        // Object to save the sent stream data in
+        this._streamDataSent = {};
+        // Object to save custom comparisons in
+        this._streamDataSectionsComparison = {};
 	},
 
 	/**
@@ -1568,8 +1572,6 @@ var IgeEntity = IgeObject.extend({
 		} else {
 			// Check that the entity has been born
 			if (this._bornTime === undefined || ige._currentTime >= this._bornTime) {
-				// Remove the stream data cache
-				delete this._streamDataCache;
 	
 				// Process any behaviours assigned to the entity
 				this._processUpdateBehaviours(ctx, tickDelta);
@@ -2053,7 +2055,6 @@ var IgeEntity = IgeObject.extend({
 		/* CEXCLUDE */
 		// Check if the entity is streaming
 		if (this._streamMode === 1) {
-			delete this._streamDataCache;
 			this.streamDestroy();
 		}
 		/* CEXCLUDE */
@@ -3450,6 +3451,36 @@ var IgeEntity = IgeObject.extend({
 
 		return this._streamControl;
 	},
+	
+	/**
+	 * Set the stream rooms for an entity manually
+	 * @param {*} streamRoomIds String 'inherit' or array of roomIds
+	 * @example #Assign stream rooms to an entity
+	 *     // Our entity is in stream mode and we use rooms
+	 *     // Create our room list - the rooms we want to stream the entities to
+	 *     var rooms = ['room1'];
+	 *	
+	 *     // Assign those rooms to an entity
+	 *     entity.setStreamRooms(rooms);
+	 *     
+	 *     // ...
+	 *     
+	 *     // Now we want the entity to inherit the scene's streaming room again
+	 *     entity.setStreamRooms('inherit');
+	 * @return {*} Returns this, for method chaining
+	 */
+	setStreamRooms: function(streamRoomIds) {
+		if (streamRoomIds) {
+			if (streamRoomIds == 'inherit') {
+				this._streamRoomIdManuallySet = false;
+				this._streamRoomIds = this._parent._streamRoomIds;
+			} else if (Array.isArray(streamRoomIds)) {
+				this._streamRoomIdManuallySet = false;
+				this._streamRoomIds = streamRoomIds;
+			}
+		}
+		return this;
+	},
 
 	/**
 	 * Gets / sets the stream sync interval. This value
@@ -3469,7 +3500,7 @@ var IgeEntity = IgeObject.extend({
 	 * chaining or the current value if no arguments are specified.
 	 */
 	streamSyncInterval: function (val, sectionId) {
-		if (val !== undefined) {
+        if (val !== undefined) {
 			if (!sectionId) {
 				if (val < 16) {
 					delete this._streamSyncInterval;
@@ -3478,14 +3509,18 @@ var IgeEntity = IgeObject.extend({
 					this._streamSyncInterval = val;
 				}
 			} else {
-				this._streamSyncSectionInterval = this._streamSyncSectionInterval || {};
-				this._streamSyncSectionDelta = this._streamSyncSectionDelta || {};
-				if (val < 16) {
-					delete this._streamSyncSectionInterval[sectionId];
-				} else {
-					this._streamSyncSectionDelta[sectionId] = 0;
-					this._streamSyncSectionInterval[sectionId] = val;
-				}
+                if (val >= (this._streamSyncInterval ? this._streamSyncInterval : ige.network.stream._streamInterval)) {
+                    this._streamSyncSectionInterval = this._streamSyncSectionInterval || {};
+                    this._streamSyncSectionDelta = this._streamSyncSectionDelta || {};
+                    if (val < 16) {
+                        delete this._streamSyncSectionInterval[sectionId];
+                    } else {
+                        this._streamSyncSectionDelta[sectionId] = 0;
+                        this._streamSyncSectionInterval[sectionId] = val;
+                    }
+                } else {
+                    this.log('Cannot have a lower section stream interval than the global or entity stream interval. Try lowering the entity or global stream interval, and set higher intervals for the other stream sections (has to be a multiple of entity/global interval).', 'warning');
+                }
 			}
 			return this;
 		}
@@ -3536,31 +3571,45 @@ var IgeEntity = IgeObject.extend({
 	 * specified client id or array of client ids.
 	 * @param {Array} clientId An array of string IDs of each
 	 * client to send the stream data to.
+     * @param force an update, right now.
 	 * @return {IgeEntity} "this".
 	 */
-	streamSync: function (clientId) {
+	streamSync: function (clientId, force) {
 		if (this._streamMode === 1) {
-			// Check if we have a stream sync interval
-			if (this._streamSyncInterval) {
-				this._streamSyncDelta += ige._tickDelta;
+            this._streamSyncDelta += ige._tickDelta;
 
-				if (this._streamSyncDelta < this._streamSyncInterval) {
-					// The stream sync interval is still higher than
-					// the stream sync delta so exit without calling the
-					// stream sync method
-					return this;
-				} else {
-					// We've reached the delta we want so zero it now
-					// ready for the next loop
-					this._streamSyncDelta = 0;
-				}
-			}
+            //Use the global network stream as fallback timer if no individual stream interval is indicated
+            if (!force && this._streamSyncDelta < (this._streamSyncInterval ? this._streamSyncInterval : ige.network.stream._streamInterval)) {
+                // The stream sync interval is still higher than
+                // the stream sync delta so exit without calling the
+                // stream sync method
+                return this;
+            } else {
+                // We've reached the delta we want so zero it now
+                // ready for the next loop
+                this._streamSyncDelta = 0;
+            }
 
 			// Grab an array of connected clients from the network
 			// system
 			var recipientArr = [],
-				clientArr = ige.network.clients(this._streamRoomId),
+				clientArr = [],
 				i;
+			
+			//get all recipients 
+			if (this._streamRoomIds != undefined) {
+				//by rooms, if available
+				for (s in this._streamRoomIds) {
+                    var cArr = ige.network.clients(this._streamRoomIds[s]);
+                    if (cArr != undefined) {
+                        for (c in cArr) {
+                            if (c != undefined && clientArr.indexOf(c) == -1) clientArr[c] = cArr[c];
+                        }
+                    }
+				}
+			} else {
+				clientArr = ige.network.clients();
+			}
 			
 			for (i in clientArr) {
 				if (clientArr.hasOwnProperty(i)) {
@@ -3568,7 +3617,7 @@ var IgeEntity = IgeObject.extend({
 					if (this._streamControl) {
 						// Call the callback method and if it returns true,
 						// send the stream data to this client
-						if (this._streamControl.apply(this, [i, this._streamRoomId])) {
+						if (this._streamControl.apply(this, [i, this._streamRoomIds])) {
 							recipientArr.push(i);
 						}
 					} else {
@@ -3584,7 +3633,7 @@ var IgeEntity = IgeObject.extend({
 
 		if (this._streamMode === 2) {
 			// Stream mode is advanced
-			this._streamSync(clientId, this._streamRoomId);
+			this._streamSync(clientId, this._streamRoomIds);
 
 			return this;
 		}
@@ -3639,11 +3688,11 @@ var IgeEntity = IgeObject.extend({
 	 * @param {Array} recipientArr The array of ids of the client(s) to
 	 * queue stream data for. The stream data being queued
 	 * is returned by a call to this._streamData().
-	 * @param {String} streamRoomId The id of the room the entity belongs
+	 * @param {String} streamRoomIds The ids of the rooms the entity belongs
 	 * in (can be undefined or null if no room assigned).
 	 * @private
 	 */
-	_streamSync: function (recipientArr, streamRoomId) {
+	_streamSync: function (recipientArr, streamRoomIds) {
 		var arrCount = recipientArr.length,
 			arrIndex,
 			clientId,
@@ -3651,6 +3700,10 @@ var IgeEntity = IgeObject.extend({
 			thisId = this.id(),
 			filteredArr = [],
 			createResult = true; // We set this to true by default
+
+        // Get the stream data, if any
+        var data = this._streamData();
+        if (!data) return;
 
 		// Loop the recipient array
 		for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
@@ -3667,9 +3720,10 @@ var IgeEntity = IgeObject.extend({
 			// this client that the create worked before bothering
 			// to waste bandwidth on stream updates
 			if (createResult) {
-				// Get the stream data
-				var data = this._streamData();
 
+                filteredArr.push(clientId);
+
+                /*
 				// Is the data different from the last data we sent
 				// this client?
 				stream._streamClientData[thisId] = stream._streamClientData[thisId] || {};
@@ -3680,11 +3734,12 @@ var IgeEntity = IgeObject.extend({
 					// Store the new data for later comparison
 					stream._streamClientData[thisId][clientId] = data;
 				}
+				*/
 			}
 		}
 		
 		if (filteredArr.length) {
-			stream.queue(thisId, data, filteredArr);
+			stream.queue(data, filteredArr);
 		}
 	},
 
@@ -3697,15 +3752,7 @@ var IgeEntity = IgeObject.extend({
 	 * @returns {*}
 	 */
 	streamForceUpdate: function () {
-		if (ige.isServer) {
-			var thisId = this.id();
-			
-			// Invalidate the stream client data lookup to ensure
-			// the latest data will be pushed on the next stream sync
-			if (ige.network && ige.network.stream && ige.network.stream._streamClientData && ige.network.stream._streamClientData[thisId]) {
-				ige.network.stream._streamClientData[thisId] = {};
-			}
-		}
+        this.streamSync();
 		
 		return this;
 	},
@@ -3812,86 +3859,122 @@ var IgeEntity = IgeObject.extend({
 	 * the last time the stream data was generated. The returned data is
 	 * a string that has been compressed in various ways to reduce network
 	 * overhead during transmission.
-	 * @return {String} The string representation of the stream data for
-	 * this entity.
+	 * @return {*} The string representation of the stream data for
+	 * this entity, if any data was found that needs to be streamed.
 	 * @private
 	 */
 	_streamData: function () {
-		// Check if we already have a cached version of the streamData
-		if (this._streamDataCache) {
-			return this._streamDataCache;
-		} else {
-			// Let's generate our stream data
-			var streamData = '',
-				sectionDataString = '',
-				sectionArr = this._streamSections,
-				sectionCount = sectionArr.length,
-				sectionData,
-				sectionIndex,
-				sectionId;
+        // Let's generate our stream data
+        var streamData = '',
+            sectionDataString = '',
+            sectionArr = this._streamSections,
+            sectionCount = sectionArr.length,
+            sectionData,
+            sectionIndex,
+            sectionId,
+            dataGathered = false;
 
-			// Add the entity id
-			streamData += this.id();
+        // Add the entity id
+        streamData += this.id();
 
-			// Only send further data if the entity is still "alive"
-			if (this._alive) {
-				// Now loop the data sections array and compile the rest of the
-				// data string from the data section return data
-				for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
-					sectionData = '';
-					sectionId = sectionArr[sectionIndex];
-					
-					// Stream section sync intervals allow individual stream sections
-					// to be streamed at different (usually longer) intervals than other
-					// sections so you could for instance reduce the number of updates
-					// a particular section sends out in a second because the data is
-					// not that important compared to updated transformation data
-					if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
-						// Check if the section interval has been reached
-						this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
+        // Only send further data if the entity is still "alive"
+        if (this._alive) {
+            // Now loop the data sections array and compile the rest of the
+            // data string from the data section return data
+            for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
+                sectionData = '';
+                sectionId = sectionArr[sectionIndex];
 
-						if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
-							// Get the section data for this section id
-							sectionData = this.streamSectionData(sectionId);
+                // Stream section sync intervals allow individual stream sections
+                // to be streamed at different (usually longer) intervals than other
+                // sections so you could for instance reduce the number of updates
+                // a particular section sends out in a second because the data is
+                // not that important compared to updated transformation data
+                if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
+                    // Check if the section interval has been reached
+                    this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
 
-							// Reset the section delta
-							this._streamSyncSectionDelta[sectionId] = 0;
-						}
-					} else {
-						// Get the section data for this section id
-						sectionData = this.streamSectionData(sectionId);
-					}
+                    if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
+                        // Get the section data for this section id
+                        sectionData = this.streamSectionData(sectionId);
 
-					// Add the section start designator character. We do this
-					// regardless of if there is actually any section data because
-					// we want to be able to identify sections in a serial fashion
-					// on receipt of the data string on the client
-					sectionDataString += ige.network.stream._sectionDesignator;
+                        // Reset the section delta
+                        this._streamSyncSectionDelta[sectionId] = 0;
+                    }
+                } else {
+                    // Get the section data for this section id
+                    sectionData = this.streamSectionData(sectionId);
+                }
 
-					// Check if we were returned any data
-					if (sectionData !== undefined) {
-						// Add the data to the section string
-						sectionDataString += sectionData;
-					}
-				}
+                // Add the section start designator character. We do this
+                // regardless of if there is actually any section data because
+                // we want to be able to identify sections in a serial fashion
+                // on receipt of the data string on the client
+                sectionDataString += ige.network.stream._sectionDesignator;
 
-				// Add any custom data to the stream string at this point
-				if (sectionDataString) {
-					streamData += sectionDataString;
-				}
+                // Check if we were returned any data
+                if (sectionData !== undefined) {
+                    // Make sure it's not the same we already got last gathering EXCEPT the user demands not to
+                    // have such a comparison. Here the user can also provide a custom comparison
+                    if (this._streamDataSectionsComparison[sectionId] === false ||
+                        (this._streamDataSectionsComparison[sectionId] && this._streamDataSectionsComparison[sectionId].call(this, sectionId, sectionData, this._streamDataSent[sectionId])) ||
+                        sectionData != this._streamDataSent[sectionId]) {
+                        // Add the data to the section string
+                        sectionDataString += sectionData;
+                        // Cache the result in order to make sure we don't resend the same thing
+                        if (!this._streamDataSectionsComparison[sectionId]) this._streamDataSent[sectionId] = sectionData;
 
-				// Remove any .00 from the string since we don't need that data
-				// TODO: What about if a property is a string with something.00 and it should be kept?
-				streamData = streamData.replace(this._floatRemoveRegExp, ',');
-			}
+                        dataGathered = true;
+                    }
+                } else {
+                    // If it's undefined we can forget about the streamDataSent for comparison, since the user
+                    // seems to intend to manually control the stream data he wants to send.
+                    this._streamDataSent[sectionId] = undefined;
+                }
+            }
 
-			// Store the data in cache in case we are asked for it again this tick
-			// the update() method of the IgeEntity class clears this every tick
-			this._streamDataCache = streamData;
+            if (!dataGathered) return;
 
-			return streamData;
-		}
+            // Add any custom data to the stream string at this point
+            if (sectionDataString) {
+                streamData += sectionDataString;
+            }
+
+            // Remove any .00 from the string since we don't need that data
+            // TODO: What about if a property is a string with something.00 and it should be kept?
+            streamData = streamData.replace(this._floatRemoveRegExp, ',');
+        }
+
+        return streamData;
 	},
+
+    /**
+     * Set a custom comparison for a specific section. Per default section
+     * data is compared with the "==" operator to figure out whether the
+     * current data was already sent or not. If you put "false" as the function
+     * then the data will always be streamed no matter what. You can though also
+     * control it manually by setting a function(sectionId, newData, oldData) which compares
+     * your data for you and returns a boolean for whether the data should be sent
+     * (true) or the data should not be sent (false). Further you can save the
+     * comparison value the way you want (this._streamDataSent[sectionId] = 'yourComparisonValue')
+     * @example #set a custom section data comparison: false
+     *     // always send the data, no matter what we previously sent
+     *     entity.setStreamSectionComparison('transform', false);
+     * @example #set a custom section data comparison: function
+     *     // always send the data, no matter what we previously sent
+     *     entity.setStreamSectionComparison('transform', function(sectionId, newData, oldData) {
+     *         // with what do we want to compare the new data afterwards?
+     *         this._streamDataSent[sectionId] = newData.id;
+     *         // compare the new data to the old one. Return true if the new data should be streamed.
+     *         return newData.id != oldData;
+     *     });
+     * @return The string representation of the stream data for
+     * this entity, if any data was found that needs to be streamed.
+     * @private
+     */
+    setStreamSectionComparison: function(sectionId, funcOrFalse) {
+        this._streamDataSectionsComparison[sectionId] = funcOrFalse;
+    },
 	/* CEXCLUDE */
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
