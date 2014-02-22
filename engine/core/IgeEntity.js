@@ -3490,11 +3490,13 @@ var IgeEntity = IgeObject.extend({
 		ige.network.send('_igeStreamDestroy', [ige._currentTime, thisId], clientId);
 		
 		ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
+		ige.network.stream._streamClientData[thisId] = ige.network.stream._streamClientData[thisId] || {};
 
 		if (clientId) {
 			// Mark the client as having received a destroy
 			// command for this entity
 			ige.network.stream._streamClientCreated[thisId][clientId] = false;
+            ige.network.stream._streamClientData[thisId][clientId] = undefined;
 		} else {
 			// Mark all clients as having received this destroy
 			arr = ige.network.clients();
@@ -3502,6 +3504,7 @@ var IgeEntity = IgeObject.extend({
 			for (i in arr) {
 				if (arr.hasOwnProperty(i)) {
 					ige.network.stream._streamClientCreated[thisId][i] = false;
+                    ige.network.stream._streamClientData[thisId][i] = undefined;
 				}
 			}
 		}
