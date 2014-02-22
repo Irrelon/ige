@@ -15,9 +15,10 @@ var IgeViewport = IgeEntity.extend([
 		IgeEntity.prototype.init.call(this);
 
 		this._mouseAlwaysInside = true;
-		this._mousePos = new IgePoint(0, 0, 0);
+		this._mousePos = new IgePoint3d(0, 0, 0);
 		this._overflow = '';
 		this._clipping = true;
+		this._bornTime = undefined;
 
 		// Set default options if not specified
 		// TODO: Is this required or even used?
@@ -27,12 +28,12 @@ var IgeViewport = IgeEntity.extend([
 			
 			if (options && options.scaleToWidth && options.scaleToHeight) {
 				// Store the w/h we want to lock to
-				this._lockDimension = new IgePoint(options.scaleToWidth, options.scaleToHeight, 0);
+				this._lockDimension = new IgePoint3d(options.scaleToWidth, options.scaleToHeight, 0);
 			}
 		}
 
 		// Setup default objects
-		this._geometry = new IgePoint(width || ige._geometry.x, height || ige._geometry.y, 0);
+		this._bounds2d = new IgePoint3d(width || ige._bounds2d.x, height || ige._bounds2d.y, 0);
 		this.camera = new IgeCamera(this);
 		this.camera._entity = this;
 		//this._drawMouse = true;
@@ -49,8 +50,8 @@ var IgeViewport = IgeEntity.extend([
 	 */
 	minimumVisibleArea: function (width, height) {
 		// Store the w/h we want to lock to
-		this._lockDimension = new IgePoint(width, height, 0);
-		if (!ige.isServer) {
+		this._lockDimension = new IgePoint3d(width, height, 0);
+		if (ige.isClient) {
 			this._resizeEvent({});
 		}
 		
@@ -88,7 +89,7 @@ var IgeViewport = IgeEntity.extend([
 
 	/**
 	 * Returns the viewport's mouse position.
-	 * @return {IgePoint}
+	 * @return {IgePoint3d}
 	 */
 	mousePos: function () {
 		// Viewport mouse position is calculated and assigned in the
@@ -124,7 +125,7 @@ var IgeViewport = IgeEntity.extend([
 	 * Processes the updates before the render tick is called.
 	 * @param ctx
 	 */
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		// Check if we have a scene attached to this viewport
 		if (this._scene) {
 			// Store the viewport camera in the main ige so that
@@ -135,11 +136,11 @@ var IgeViewport = IgeEntity.extend([
 
 			this._scene._parent = this;
 
-			this.camera.update(ctx);
-			IgeEntity.prototype.update.call(this, ctx);
+			this.camera.update(ctx, tickDelta);
+			IgeEntity.prototype.update.call(this, ctx, tickDelta);
 			
 			if (this._scene.newFrame()) {
-				this._scene.update(ctx);
+				this._scene.update(ctx, tickDelta);
 			}
 		}
 	},
@@ -164,17 +165,17 @@ var IgeViewport = IgeEntity.extend([
 
 			// Translate to the top-left of the viewport
 			ctx.translate(
-				-(this._geometry.x * this._origin.x) | 0,
-				-(this._geometry.y * this._origin.y) | 0
+				-(this._bounds2d.x * this._origin.x) | 0,
+				-(this._bounds2d.y * this._origin.y) | 0
 			);
 
 			// Clear the rectangle area of the viewport
-			ctx.clearRect(0, 0, this._geometry.x, this._geometry.y);
+			ctx.clearRect(0, 0, this._bounds2d.x, this._bounds2d.y);
 
 			// Clip the context so we only draw "inside" the viewport area
 			if (this._clipping || this._borderColor) {
 				ctx.beginPath();
-				ctx.rect(0, 0, this._geometry.x / ige._scale.x, this._geometry.y / ige._scale.x);
+				ctx.rect(0, 0, this._bounds2d.x / ige._scale.x, this._bounds2d.y / ige._scale.x);
 
 				// Paint a border if required
 				if (this._borderColor) {
@@ -188,7 +189,7 @@ var IgeViewport = IgeEntity.extend([
 			}
 
 			// Translate back to the center of the viewport
-			ctx.translate(((this._geometry.x / 2) | 0) + ige._translate.x, ((this._geometry.y / 2) | 0) + ige._translate.y);
+			ctx.translate(((this._bounds2d.x / 2) | 0) + ige._translate.x, ((this._bounds2d.y / 2) | 0) + ige._translate.y);
 			/*ctx.translate(ige._translate.x, ige._translate.y);*/
 			if (ige._scale.x !== 1 || ige._scale.y !== 1) {
 				ctx.scale(ige._scale.x, ige._scale.y);
@@ -226,21 +227,28 @@ var IgeViewport = IgeEntity.extend([
 			// viewport (usually for debug purposes)
 			if (this._drawMouse && ctx === ige._ctx) {
 				ctx.save();
-					var mp = this.mousePos();
+				var mp = this.mousePos(),
+					text,
+					mx,
+					my,
+					textMeasurement;
 
-					// Re-scale the context to ensure that output is always 1:1
-					ctx.scale(1 / this.camera._scale.x, 1 / this.camera._scale.y);
+				// Re-scale the context to ensure that output is always 1:1
+				ctx.scale(1 / this.camera._scale.x, 1 / this.camera._scale.y);
 
-					// Work out the re-scale mouse position
-					var mx = Math.floor(mp.x * this.camera._scale.x),
-						my = Math.floor(mp.y * this.camera._scale.y),
-						textMeasurement;
+				// Work out the re-scale mouse position
+				mx = Math.floor(mp.x * this.camera._scale.x);
+				my = Math.floor(mp.y * this.camera._scale.y);
 
-					ctx.fillStyle = '#fc00ff';
-					ctx.fillRect(mx - 5, my - 5, 10, 10);
+				ctx.fillStyle = '#fc00ff';
+				ctx.fillRect(mx - 5, my - 5, 10, 10);
 
-					textMeasurement = ctx.measureText('Viewport ' + this.id() + ' :: ' + mx + ', ' + my);
-					ctx.fillText('Viewport ' + this.id() + ' :: ' + mx + ', ' + my, mx - textMeasurement.width / 2, my - 15);
+				text = this.id() + ' X: ' + mx + ', Y: ' + my;
+				textMeasurement = ctx.measureText(text);
+				ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+				ctx.fillRect(Math.floor(mx - textMeasurement.width / 2 - 5), Math.floor(my - 25), Math.floor(textMeasurement.width + 10), 14);
+				ctx.fillStyle = '#ffffff';
+				ctx.fillText(text, mx - textMeasurement.width / 2, my - 15);
 				ctx.restore();
 			}
 			
@@ -255,7 +263,7 @@ var IgeViewport = IgeEntity.extend([
 	},
 
 	/**
-	 * Returns the screen position of the viewport as an IgePoint where x is the
+	 * Returns the screen position of the viewport as an IgePoint3d where x is the
 	 * "left" and y is the "top", useful for positioning HTML elements at the
 	 * screen location of an IGE entity. The returned values indicate the center
 	 * of the viewport on the screen.
@@ -265,12 +273,12 @@ var IgeViewport = IgeEntity.extend([
 	 * yourself to allow for offset.
 	 * @example #Get the screen position of the entity
 	 *     var screenPos = entity.screenPosition();
-	 * @return {IgePoint} The screen position of the entity.
+	 * @return {IgePoint3d} The screen position of the entity.
 	 */
 	screenPosition: function () {
-		return new IgePoint(
-			Math.floor(this._worldMatrix.matrix[2] + ige._geometry.x2),
-			Math.floor(this._worldMatrix.matrix[5] + ige._geometry.y2),
+		return new IgePoint3d(
+			Math.floor(this._worldMatrix.matrix[2] + ige._bounds2d.x2),
+			Math.floor(this._worldMatrix.matrix[5] + ige._bounds2d.y2),
 			0
 		);
 	},
@@ -321,7 +329,7 @@ var IgeViewport = IgeEntity.extend([
 	},
 	
 	paintGuides: function (ctx) {
-		var geom = ige._geometry;
+		var geom = ige._bounds2d;
 		
 		// Check draw-guides setting
 		if (this._drawGuides) {
@@ -354,6 +362,7 @@ var IgeViewport = IgeEntity.extend([
 			obj,
 			aabb,
 			aabbC,
+			bounds3dPoly,
 			ga,
 			r3d,
 			xl1, xl2, xl3, xl4, xl5, xl6,
@@ -368,7 +377,7 @@ var IgeViewport = IgeEntity.extend([
 				index++;
 
 				if (obj._shouldRender !== false) {
-					if ((!this._drawBoundsLimitId && !this._drawBoundsLimitCategory) || ((this._drawBoundsLimitId && this._drawBoundsLimitId === obj.id()) || (this._drawBoundsLimitCategory && this._drawBoundsLimitCategory === obj.category()))) {
+					if (obj._classId !== 'IgeScene2d' && (!this._drawBoundsLimitId && !this._drawBoundsLimitCategory) || ((this._drawBoundsLimitId && (this._drawBoundsLimitId instanceof Array ? this._drawBoundsLimitId.indexOf(obj.id()) > -1 : this._drawBoundsLimitId === obj.id())) || (this._drawBoundsLimitCategory && this._drawBoundsLimitCategory === obj.category()))) {
 						if (typeof(obj.aabb) === 'function') {
 							// Grab the AABB and then draw it
 							aabb = obj.aabb();
@@ -383,43 +392,52 @@ var IgeViewport = IgeEntity.extend([
 							
 							if (aabb) {
 								if (obj._drawBounds || obj._drawBounds === undefined) {
-									if (!obj._parent || (obj._parent && obj._parent._mountMode !== 1)) {
+									//if (!obj._parent || (obj._parent && obj._parent._mountMode !== 1)) {
 										// Draw a rect around the bounds of the object transformed in world space
-										ctx.save();
+										/*ctx.save();
 											obj._worldMatrix.transformRenderingContext(ctx);
 											ctx.strokeStyle = '#9700ae';
-											ctx.strokeRect(-obj._geometry.x2, -obj._geometry.y2, obj._geometry.x, obj._geometry.y);
-										ctx.restore();
+											ctx.strokeRect(-obj._bounds2d.x2, -obj._bounds2d.y2, obj._bounds2d.x, obj._bounds2d.y);
+										ctx.restore();*/
 										
 										// Draw individual bounds
 										ctx.strokeStyle = '#00deff';
 										ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
-									}
+									//}
 
 									// Check if the object is mounted to an isometric mount
 									if (obj._parent && obj._parent._mountMode === 1) {
+										bounds3dPoly = obj.bounds3dPolygon().aabb();
 										ctx.save();
-											ctx.translate(aabb.x + aabb.width / 2, aabb.y + aabb.height / 2);
+											ctx.strokeStyle = '#0068b8';
+											ctx.strokeRect(bounds3dPoly.x, bounds3dPoly.y, bounds3dPoly.width, bounds3dPoly.height);
+										ctx.restore();
+										
+										ctx.save();
+											ctx.translate(
+												bounds3dPoly.x + bounds3dPoly.width / 2,
+												bounds3dPoly.y + bounds3dPoly.height / 2
+											);
 											//obj._transformContext(ctx);
 
 											// Calculate the 3d bounds data
-											r3d = obj._geometry;
-											xl1 = new IgePoint(-(r3d.x / 2), 0, 0).toIso();
-											xl2 = new IgePoint(+(r3d.x / 2), 0, 0).toIso();
-											xl3 = new IgePoint(0, -(r3d.y / 2), 0).toIso();
-											xl4 = new IgePoint(0, +(r3d.y / 2), 0).toIso();
-											xl5 = new IgePoint(0, 0, -(r3d.z / 2)).toIso();
-											xl6 = new IgePoint(0, 0, +(r3d.z / 2)).toIso();
+											r3d = obj._bounds3d;
+											xl1 = new IgePoint3d(-(r3d.x / 2), 0, 0).toIso();
+											xl2 = new IgePoint3d(+(r3d.x / 2), 0, 0).toIso();
+											xl3 = new IgePoint3d(0, -(r3d.y / 2), 0).toIso();
+											xl4 = new IgePoint3d(0, +(r3d.y / 2), 0).toIso();
+											xl5 = new IgePoint3d(0, 0, -(r3d.z / 2)).toIso();
+											xl6 = new IgePoint3d(0, 0, +(r3d.z / 2)).toIso();
 											// Bottom face
-											bf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
-											bf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
-											bf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
-											bf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
+											bf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
+											bf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
+											bf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
+											bf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
 											// Top face
-											tf1 = new IgePoint(-(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
-											tf2 = new IgePoint(+(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
-											tf3 = new IgePoint(+(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
-											tf4 = new IgePoint(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
+											tf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
+											tf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
+											tf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
+											tf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
 
 											ga = ctx.globalAlpha;
 
@@ -511,7 +529,7 @@ var IgeViewport = IgeEntity.extend([
 	 */
 	_resizeEvent: function (event) {
 		if (this._autoSize && this._parent) {
-			this._geometry = this._parent._geometry.clone();
+			this._bounds2d = this._parent._bounds2d.clone();
 		}
 
 		this._updateUiPosition();
@@ -528,27 +546,27 @@ var IgeViewport = IgeEntity.extend([
 				tmpX,
 				tmpY;
 			
-			if (this._geometry.x > this._lockDimension.x && this._geometry.y > this._lockDimension.y) {
+			if (this._bounds2d.x > this._lockDimension.x && this._bounds2d.y > this._lockDimension.y) {
 				// Scale using lowest ratio
-				tmpX = this._geometry.x / this._lockDimension.x;
-				tmpY = this._geometry.y / this._lockDimension.y;
+				tmpX = this._bounds2d.x / this._lockDimension.x;
+				tmpY = this._bounds2d.y / this._lockDimension.y;
 				
 				ratio = tmpX < tmpY ? tmpX : tmpY;
 			} else {
-				if (this._geometry.x > this._lockDimension.x && this._geometry.y < this._lockDimension.y) {
+				if (this._bounds2d.x > this._lockDimension.x && this._bounds2d.y < this._lockDimension.y) {
 					// Scale out to show height
-					ratio = this._geometry.y / this._lockDimension.y;
+					ratio = this._bounds2d.y / this._lockDimension.y;
 				}
 				
-				if (this._geometry.x < this._lockDimension.x && this._geometry.y > this._lockDimension.y) {
+				if (this._bounds2d.x < this._lockDimension.x && this._bounds2d.y > this._lockDimension.y) {
 					// Scale out to show width
-					ratio = this._geometry.x / this._lockDimension.x;
+					ratio = this._bounds2d.x / this._lockDimension.x;
 				}
 				
-				if (this._geometry.x < this._lockDimension.x && this._geometry.y < this._lockDimension.y) {
+				if (this._bounds2d.x < this._lockDimension.x && this._bounds2d.y < this._lockDimension.y) {
 					// Scale using lowest ratio
-					tmpX = this._geometry.x / this._lockDimension.x;
-					tmpY = this._geometry.y / this._lockDimension.y;
+					tmpX = this._bounds2d.x / this._lockDimension.x;
+					tmpY = this._bounds2d.y / this._lockDimension.y;
 					
 					ratio = tmpX < tmpY ? tmpX : tmpY;
 				}

@@ -7,27 +7,21 @@ var Character = IgeEntityBox2d.extend({
 		IgeEntityBox2d.prototype.init.call(this);
 
 		// Setup the entity
-		self.depth(1)
-			.size3d(20, 20, 40);
-
-		self.imageEntity = new IgeEntity()
-			.addComponent(IgeAnimationComponent);
+		self.addComponent(IgeAnimationComponent)
+			.isometric(true)
+			.depth(1)
+			.bounds3d(20, 20, 40);
 
 		// Load the character texture file
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			this._characterTexture = new IgeCellSheet('../assets/textures/sprites/vx_chara02_c.png', 12, 8);
 
 			// Wait for the texture to load
 			this._characterTexture.on('loaded', function () {
 				// Create a character entity as a child of this container
-				self.imageEntity
-					.id(self.id() + '_image')
-					.drawBounds(false)
-					.drawBoundsData(false)
-					.originTo(0.5, 0.65, 0.5)
-					.texture(self._characterTexture)
+				self.texture(self._characterTexture)
 					.dimensionsFromCell()
-					.mount(self);
+					.anchor(0, 8);
 			}, false, true);
 		}
 	},
@@ -42,7 +36,7 @@ var Character = IgeEntityBox2d.extend({
 	setType: function (type) {
 		switch (type) {
 			case 0:
-				this.imageEntity.animation.define('walkDown', [1, 2, 3, 2], 8, -1)
+				this.animation.define('walkDown', [1, 2, 3, 2], 8, -1)
 					.animation.define('walkLeft', [13, 14, 15, 14], 8, -1)
 					.animation.define('walkRight', [25, 26, 27, 26], 8, -1)
 					.animation.define('walkUp', [37, 38, 39, 38], 8, -1)
@@ -52,77 +46,77 @@ var Character = IgeEntityBox2d.extend({
 				break;
 
 			case 1:
-				this.imageEntity.animation.define('walkDown', [4, 5, 6, 5], 8, -1)
+				this.animation.define('walkDown', [4, 5, 6, 5], 8, -1)
 					.animation.define('walkLeft', [16, 17, 18, 17], 8, -1)
 					.animation.define('walkRight', [28, 29, 30, 29], 8, -1)
 					.animation.define('walkUp', [40, 41, 42, 41], 8, -1)
 					.cell(4);
 
-				this.imageEntity._restCell = 4;
+				this._restCell = 4;
 				break;
 
 			case 2:
-				this.imageEntity.animation.define('walkDown', [7, 8, 9, 8], 8, -1)
+				this.animation.define('walkDown', [7, 8, 9, 8], 8, -1)
 					.animation.define('walkLeft', [19, 20, 21, 20], 8, -1)
 					.animation.define('walkRight', [31, 32, 33, 32], 8, -1)
 					.animation.define('walkUp', [43, 44, 45, 44], 8, -1)
 					.cell(7);
 
-				this.imageEntity._restCell = 7;
+				this._restCell = 7;
 				break;
 
 			case 3:
-				this.imageEntity.animation.define('walkDown', [10, 11, 12, 11], 8, -1)
+				this.animation.define('walkDown', [10, 11, 12, 11], 8, -1)
 					.animation.define('walkLeft', [22, 23, 24, 23], 8, -1)
 					.animation.define('walkRight', [34, 35, 36, 35], 8, -1)
 					.animation.define('walkUp', [46, 47, 48, 47], 8, -1)
 					.cell(10);
 
-				this.imageEntity._restCell = 10;
+				this._restCell = 10;
 				break;
 
 			case 4:
-				this.imageEntity.animation.define('walkDown', [49, 50, 51, 50], 8, -1)
+				this.animation.define('walkDown', [49, 50, 51, 50], 8, -1)
 					.animation.define('walkLeft', [61, 62, 63, 62], 8, -1)
 					.animation.define('walkRight', [73, 74, 75, 74], 8, -1)
 					.animation.define('walkUp', [85, 86, 87, 86], 8, -1)
 					.cell(49);
 
-				this.imageEntity._restCell = 49;
+				this._restCell = 49;
 				break;
 
 			case 5:
-				this.imageEntity.animation.define('walkDown', [52, 53, 54, 53], 8, -1)
+				this.animation.define('walkDown', [52, 53, 54, 53], 8, -1)
 					.animation.define('walkLeft', [64, 65, 66, 65], 8, -1)
 					.animation.define('walkRight', [76, 77, 78, 77], 8, -1)
 					.animation.define('walkUp', [88, 89, 90, 89], 8, -1)
 					.cell(52);
 
-				this.imageEntity._restCell = 52;
+				this._restCell = 52;
 				break;
 
 			case 6:
-				this.imageEntity.animation.define('walkDown', [55, 56, 57, 56], 8, -1)
+				this.animation.define('walkDown', [55, 56, 57, 56], 8, -1)
 					.animation.define('walkLeft', [67, 68, 69, 68], 8, -1)
 					.animation.define('walkRight', [79, 80, 81, 80], 8, -1)
 					.animation.define('walkUp', [91, 92, 93, 92], 8, -1)
 					.cell(55);
 
-				this.imageEntity._restCell = 55;
+				this._restCell = 55;
 				break;
 
 			case 7:
-				this.imageEntity.animation.define('walkDown', [58, 59, 60, 59], 8, -1)
+				this.animation.define('walkDown', [58, 59, 60, 59], 8, -1)
 					.animation.define('walkLeft', [70, 71, 72, 71], 8, -1)
 					.animation.define('walkRight', [82, 83, 84, 83], 8, -1)
 					.animation.define('walkUp', [94, 95, 96, 95], 8, -1)
 					.cell(58);
 
-				this.imageEntity._restCell = 58;
+				this._restCell = 58;
 				break;
 		}
 
-		this.imageEntity._characterType = type;
+		this._characterType = type;
 
 		return this;
 	},

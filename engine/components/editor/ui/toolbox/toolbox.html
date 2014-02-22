@@ -1,0 +1,44 @@
+<table class="toolGroup" cellpadding="0" cellspacing="0">
+	<tr>
+		<th colspan="2">Time</th>
+	</tr>
+    <tr>
+        <td><div id="toolPlay" data-action="play" data-group="timeGroup" class="toolToggleGroup toolPlay selected" title="Play"></div></td>
+        <td><div id="toolPause" data-action="pause" data-group="timeGroup" class="toolToggleGroup toolPause" title="Pause"></div></td>
+    </tr>
+</table>
+<table class="toolGroup" cellpadding="0" cellspacing="0">
+	<tr>
+		<th colspan="2">Tools</th>
+	</tr>
+	<tr>
+		<td><div id="toolSelect" data-tool="UiToolBox_ToolSelect" class="tool toolSelect" title="Select"></div></td>
+		<td><div id="toolCreate" data-active-for="IgeEntity" data-tool="UiToolBox_ToolCreate" class="tool toolCreate disabled" title="Create Object"><span class="halflings-icon white log_in"></span></div></td>
+	</tr>
+	<tr>
+		<td><div id="toolPan" data-tool="UiToolBox_ToolPan" class="tool toolPan" title="Pan" ondblclick="ige.translateTo(0, 0, 0);"></div></td>
+		<td><div id="toolZoom" data-tool="UiToolBox_ToolZoom" class="tool toolZoom" title="Zoom"></div></td>
+	</tr>
+</table>
+<table class="toolGroup" cellpadding="0" cellspacing="0">
+	<tr>
+		<th colspan="2">Transform</th>
+	</tr>
+	<tr>
+		<td><div id="toolTransform" data-active-for="IgeEntity" data-tool="UiToolBox_ToolTransform" class="tool disabled" title="Free Transform"><span class="halflings-icon white th"></span></div></td>
+		<td><div id="toolTranslate" data-active-for="IgeEntity" data-tool="UiToolBox_ToolTranslate" class="tool toolTranslate disabled" title="Translate"><span class="halflings-icon white move"></span></div></td>
+	</tr>
+	<tr>
+		<td><div id="toolRotate" data-active-for="IgeEntity" data-tool="UiToolBox_ToolRotate" class="tool toolRotate disabled" title="Rotate" ondblclick="ige.rotateTo(0, 0, 0);"><span class="halflings-icon white repeat"></span></div></td>
+		<td><div id="toolScale" data-active-for="IgeEntity" data-tool="UiToolBox_ToolScale" class="tool toolScale disabled" title="Scale" ondblclick="ige.scaleTo(1, 1, 1);"><span class="halflings-icon white resize-full"></span></div></td>
+	</tr>
+</table>
+<table id="tileTools" class="toolGroup" cellpadding="0" cellspacing="0">
+	<tr>
+		<th colspan="2">Tiles</th>
+	</tr>
+	<tr>
+		<td><div id="toolPaint" data-active-for="IgeTileMap2d IgeTextureMap" data-tool="UiToolBox_ToolPaint" class="tool toolPaint disabled" title="Paint"></div></td>
+		<td><div id="toolUnPaint" data-active-for="IgeTileMap2d IgeTextureMap" data-tool="UiToolBox_ToolUnPaint" class="tool toolUnPaint disabled" title="Clear"></div></td>
+	</tr>
+</table>

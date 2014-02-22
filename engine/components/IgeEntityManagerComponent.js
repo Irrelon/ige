@@ -202,7 +202,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 			x -= offset.x;
 			y -= offset.y;
 
-			this._areaCenter = new IgePoint(x, y, 0);
+			this._areaCenter = new IgePoint3d(x, y, 0);
 			return this._entity;
 		}
 
@@ -336,7 +336,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 					if (item.aabb) {
 						// Check the entity to see if its bounds are "inside" the
 						// manager's visible area
-						if (!currentArea.rectIntersect(item.aabb())) {
+						if (!currentArea.intersects(item.aabb())) {
 							// The item is outside the manager's area so
 							// ask the removeCheck callback if we should
 							// remove the entity
@@ -401,7 +401,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 				item = arr[arrCount];
 
 				if (!self._removeCheck || self._removeCheck(item)) {
-					if (!currentAreaTiles.rectIntersect(item._occupiedRect)) {
+					if (!currentAreaTiles.intersects(item._occupiedRect)) {
 						// The item is outside the manager's area so
 						// ask the removeCheck callback if we should
 						// remove the entity
@@ -483,7 +483,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	_resizeEvent: function (event) {
 		// Set width / height of scene to match parent
 		if (this._areaRectAutoSize) {
-			var geom = this._entity._parent._geometry,
+			var geom = this._entity._parent._bounds2d,
 				additionX = 0, additionY = 0;
 
 			if (this._areaRectAutoSizeOptions) {

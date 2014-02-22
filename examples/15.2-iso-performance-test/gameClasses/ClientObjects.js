@@ -9,12 +9,10 @@ var ClientObjects = {
 			// Setup the 3d bounds container (this)
 			this.isometric(true)
 				.mount(parent)
-				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
+				.bounds3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
 				.translateToTile(tileX, tileY, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
-				.drawBounds(false)
-				.drawBoundsData(false)
 				.occupyTile(tileX, tileY, 2, 2);
 
 			// Create the "image" entity
@@ -22,8 +20,6 @@ var ClientObjects = {
 				.texture(ige.client.gameTexture.bank)
 				.dimensionsFromCell()
 				.scaleTo(0.3, 0.3, 1)
-				.drawBounds(false)
-				.drawBoundsData(false)
 				.mount(this);
 		},
 		
@@ -42,12 +38,10 @@ var ClientObjects = {
 			// Setup the 3d bounds container (this)
 			this.isometric(true)
 				.mount(parent)
-				.size3d(3 * parent._tileWidth, 4 * parent._tileHeight, parent._tileHeight * 0.8)
+				.bounds3d(3 * parent._tileWidth, 4 * parent._tileHeight, parent._tileHeight * 0.8)
 				.translateToTile(tileX, tileY, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
-				.drawBounds(false)
-				.drawBoundsData(false)
 				.occupyTile(tileX, tileY, 3, 4);
 
 			// Create the "image" entity
@@ -55,8 +49,6 @@ var ClientObjects = {
 				.texture(ige.client.gameTexture.electricals)
 				.dimensionsFromCell()
 				.scaleTo(0.45, 0.45, 1)
-				.drawBounds(false)
-				.drawBoundsData(false)
 				.mount(this);
 		},
 		
@@ -75,12 +67,10 @@ var ClientObjects = {
 			// Setup the 3d bounds container (this)
 			this.isometric(true)
 				.mount(parent)
-				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
+				.bounds3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
 				.translateToTile(tileX, tileY, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
-				.drawBounds(false)
-				.drawBoundsData(false)
 				.occupyTile(tileX, tileY, 2, 2);
 
 			// Create the "image" entity
@@ -90,8 +80,6 @@ var ClientObjects = {
 				.scaleTo(0.3, 0.3, 1)
 				//.anchor(-5, -20)
 				.translateTo(2, 6, 0)
-				.drawBounds(false)
-				.drawBoundsData(false)
 				.mount(this);
 		},
 		
@@ -118,7 +106,7 @@ var ClientObjects = {
 			// Set the skyscraper entity details
 			this.isometric(true)
 				.isometricMounts(true)
-				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
+				.bounds3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
 				.mouseOver(function () { this.highlight(true); this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.highlight(false); this.drawBounds(false); this.drawBoundsData(false); })
 				.drawBounds(false)
@@ -132,7 +120,7 @@ var ClientObjects = {
 			this.data('baseRef', new IgeEntity()
 				.isometric(true)
 				.mount(this)
-				.size3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
+				.bounds3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
 				.translateTo(0, 0, 0)
 				.anchor(0, -1.6 * (parent._tileWidth / 40))
 				.category('skyscraper')
@@ -214,7 +202,7 @@ var ClientObjects = {
 					.isometric(true)
 					.layer(floor)
 					.mount(this)
-					.size3d(2 * this._parent._tileWidth, 2 * this._parent._tileHeight, 25 * (this._parent._tileWidth / 40))
+					.bounds3d(2 * this._parent._tileWidth, 2 * this._parent._tileHeight, 25 * (this._parent._tileWidth / 40))
 					.translateTo(0, 0, 25 * (floor + 1) * (this._parent._tileWidth / 40))
 					.anchor(0, -1.6 * (this._parent._tileWidth / 40))
 					.category('skyscraper')
@@ -247,9 +235,9 @@ var ClientObjects = {
 
 			// Adjust the skyscraper geometry to match the number of floors
 			// so that it will depth-sort against other buildings correctly
-			this.size3d(
-				this._geometry.x,
-				this._geometry.y,
+			this.bounds3d(
+				this._bounds2d.x,
+				this._bounds2d.y,
 				12.5 + (this.data('floors') * 25 * (this._parent._tileWidth / 40))
 			);
 
@@ -279,9 +267,9 @@ var ClientObjects = {
 
 				// Adjust the skyscraper geometry to match the number of floors
 				// so that it will depth-sort against other buildings correctly
-				this.size3d(
-					this._geometry.x,
-					this._geometry.y,
+				this.bounds3d(
+					this._bounds2d.x,
+					this._bounds2d.y,
 					12.5 + (this.data('floors') * 25 * (this._parent._tileWidth / 40))
 				);
 			}
@@ -344,7 +332,7 @@ var ClientObjects = {
 					.isometric(true)
 					.layer(this.data('floors') + 1)
 					.mount(this)
-					.size3d(20, 20, 55)
+					.bounds3d(20, 20, 55)
 					.translateTo(
 						0,
 						0,

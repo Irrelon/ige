@@ -78,132 +78,52 @@ var Client = IgeClass.extend({
 					.isometricMounts(self.isoMode)
 					.tileWidth(40)
 					.tileHeight(40)
-					.drawGrid(3)
+					.gridSize(20, 20)
+					.drawGrid(true)
 					.drawMouse(true)
-					.drawBounds(false)
+					.drawBounds(true)
 					.drawBoundsData(false)
-					.occupyTile(1, 1, 1, 1, 1) // Mark tile as occupied with a value of 1 (x, y, width, height, value)
-					.occupyTile(1, 2, 1, 1, 1)
-					.occupyTile(1, 3, 1, 1, 1)
-					.occupyTile(1, 4, 1, 1, 1)
-					.occupyTile(2, 4, 1, 1, 1)
-					.occupyTile(4, 4, 1, 1, 1)
-					.occupyTile(4, 3, 1, 1, 1)
-					.occupyTile(4, 2, 1, 1, 1)
-					.occupyTile(3, 2, 1, 1, 1)
-					.occupyTile(3, 1, 1, 1, 1)
-					.occupyTile(1, 0, 1, 1, 1)
-					.occupyTile(1, -1, 1, 1, 1)
-					.occupyTile(2, -1, 1, 1, 1)
-					.occupyTile(3, -1, 1, 1, 1)
-					.occupyTile(4, -1, 1, 1, 1)
-					.occupyTile(5, -1, 1, 1, 1)
-					.occupyTile(5, 0, 1, 1, 1)
-					.occupyTile(6, 1, 1, 1, 1)
-					.occupyTile(6, 2, 1, 1, 1)
-					.occupyTile(6, 3, 1, 1, 1)
 					.highlightOccupied(true) // Draws a red tile wherever a tile is "occupied"
 					.mount(self.objectScene);
 
-				// Define a function that will be called when the
-				// mouse cursor moves over one of our entities
-				overFunc = function () {
-					this.highlight(true);
-					this.drawBounds(true);
-					this.drawBoundsData(true);
-				};
-
-				// Define a function that will be called when the
-				// mouse cursor moves away from one of our entities
-				outFunc = function () {
-					this.highlight(false);
-					this.drawBounds(false);
-					this.drawBoundsData(false);
-				};
-
 				// Create the 3d container that the player
 				// entity will be mounted to
-				self.player = new CharacterContainer()
+				self.player = new Character()
 					.id('player')
 					.addComponent(PlayerComponent)
-					.addComponent(IgePathComponent)
-					.mouseOver(overFunc)
-					.mouseOut(outFunc)
 					.drawBounds(false)
 					.drawBoundsData(false)
-					.mount(self.tileMap1);
+					.mount(self.tileMap1)
+					.translateToTile(0, 0, 0);
 
-				// Check if the tileMap1 is is iso mode
-				if (self.tileMap1.isometricMounts()) {
-					// Set the player to move isometrically
+				// Check if we are in iso mode
+				if (self.isoMode) {
 					self.player.isometric(true);
 				}
-
-				// Create a UI entity so we can test if clicking the entity will stop
-				// event propagation down to moving the player. If it's working correctly
-				// the player won't move when the entity is clicked.
-				self.topBar1 = new IgeUiEntity()
-					.id('topBar1')
-					.depth(1)
-					.backgroundColor('#474747')
-					.top(0)
-					.left(0)
-					.width('100%')
-					.height(30)
-					.borderTopColor('#666666')
-					.borderTopWidth(1)
-					.backgroundPosition(0, 0)
-					.mouseDown(function () { ige.input.stopPropagation(); })
-					.mouseOver(function () {this.backgroundColor('#49ceff'); ige.input.stopPropagation(); })
-					.mouseOut(function () {this.backgroundColor('#474747'); ige.input.stopPropagation(); })
-					.mouseMove(function () { ige.input.stopPropagation(); })
-					.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
-					.mount(self.uiScene);
 
 				// Set the camera to track the character with some
 				// tracking smoothing turned on (100)
 				self.vp1.camera.trackTranslate(self.player, 100);
 
-				// Create a path finder and generate a path using
-				// the collision map data
+				// Create a path finder
 				self.pathFinder = new IgePathFinder()
 					.neighbourLimit(100);
 
-				// Generate first path, diagonal enabled
-				var path1, path2, path3, path4;
-
-				path1 = self.pathFinder.aStar(self.tileMap1, new IgePoint(0, 0, 0), new IgePoint(2, 0, 0), function (tileData, tileX, tileY) {
-					// If the map tile data is set to 1, don't allow a path along it
-					return tileData !== 1;
-				}, true, true);
-
-				// Generate first path, diagonal disabled
-				path2 = self.pathFinder.aStar(self.tileMap1, new IgePoint(2, 0, 0), new IgePoint(6, 4, 0), function (tileData, tileX, tileY) {
-					// If the map tile data is set to 1, don't allow a path along it
-					return tileData !== 1;
-				}, true, true);
-
-				// Generate first path, diagonal enabled
-				path3 = self.pathFinder.aStar(self.tileMap1, new IgePoint(6, 4, 0), new IgePoint(7, 0, 0), function (tileData, tileX, tileY) {
-					// If the map tile data is set to 1, don't allow a path along it
-					return tileData !== 1;
-				}, true, true);
-
-				// Generate first path, diagonal disabled
-				path4 = self.pathFinder.aStar(self.tileMap1, new IgePoint(7, 0, 0), new IgePoint(0, 0, 0), function (tileData, tileX, tileY) {
-					// If the map tile data is set to 1, don't allow a path along it
-					return tileData !== 1;
-				}, true, true);
-
-				// Assign the path to the player
-				self.player
-					.path.drawPath(true) // Enable debug drawing the paths
-					.path.drawPathGlow(true) // Enable path glowing (eye candy)
-					.path.drawPathText(true) // Enable path text output
-					.path.add(path1)
-					.path.add(path2)
-					.path.add(path3)
-					.path.add(path4);
+				// Assign the pathfinder to the player
+				self.player.addComponent(IgePathComponent).path
+					.finder(self.pathFinder)
+					.tileMap(ige.$('tileMap1'))
+					.tileChecker(function (tileData, tileX, tileY, node, prevNodeX, prevNodeY, dynamic) {
+						// If the map tile data is set to 1, don't allow a path along it
+						return tileData !== 1;
+					})
+					.lookAheadSteps(3)
+					.dynamic(true)
+					.allowSquare(true) // Allow north, south, east and west movement
+					.allowDiagonal(false) // Allow north-east, north-west, south-east, south-west movement
+					.drawPath(true) // Enable debug drawing the paths
+					.drawPathGlow(true) // Enable path glowing (eye candy)
+					.drawPathText(true); // Enable path text output
 
 				// Register some event listeners for the path
 				self.player.path.on('started', function () { console.log('Pathing started...'); });
@@ -211,7 +131,7 @@ var Client = IgeClass.extend({
 				self.player.path.on('cleared', function () { console.log('Path data cleared.'); });
 				self.player.path.on('pointComplete', function () { console.log('Path point reached...'); });
 				self.player.path.on('pathComplete', function () { console.log('Path completed...'); });
-				self.player.path.on('traversalComplete', function () { this._entity.character.animation.stop(); console.log('Traversal of all paths completed.'); });
+				self.player.path.on('traversalComplete', function () { this._entity.animation.stop(); console.log('Traversal of all paths completed.'); });
 
 				// Some error events from the path finder
 				self.pathFinder.on('noPathFound', function () { console.log('Could not find a path to the destination!'); });
@@ -219,7 +139,10 @@ var Client = IgeClass.extend({
 				self.pathFinder.on('pathFound', function () { console.log('Path to destination calculated...'); });
 
 				// Start traversing the path!
-				self.player.path.start();
+				self.player.path
+					.set(0, 0, 0, 3, 7, 0)
+					.speed(5)
+					.start(1000);
 			}
 		});
 	}

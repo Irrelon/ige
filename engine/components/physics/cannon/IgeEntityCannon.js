@@ -1,5 +1,5 @@
 /**
- * Creates a new isometric 3d entity.
+ * Creates a new entity with CANNON 3d physics integration.
  */
 var IgeEntityCannon = IgeEntity.extend({
 	classId: 'IgeEntityCannon',
@@ -43,7 +43,7 @@ var IgeEntityCannon = IgeEntity.extend({
 			// Translate the body
 			entCannon.position.x = x / scaleRatio;
 			entCannon.position.y = y / scaleRatio;
-			entCannon.position.z = (z + this._geometry.z2) / scaleRatio;
+			entCannon.position.z = (z + this._bounds3d.z2) / scaleRatio;
 		}
 
 		// Now call the original translate method

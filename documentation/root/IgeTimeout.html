@@ -1,0 +1,49 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgeTimeout <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/core/IgeTimeout.js">IgeTimeout.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">Provides an alternative to setTimeout() which works based on the engine's internal time system allowing timeouts to fire correctly, taking into account pausing the game and differences in rendering speed etc.</div>
+</div>
+<!--=if{extends}[-->
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="IgeInterval.html">IgeInterval</a></div>
+</div>
+<!--=if{extends}]-->
+<h2>Methods</h2><a name="init"></a>
+<h3 class="methodTitle">init</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Creates a new timeout that will call the passed method after the number of milliseconds specified by the timeout parameter has been reached.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">init</span>({<span class="argType">Function</span>} <span class="argName">method</span>, {<span class="argType">Number</span>} <span class="argName">timeout</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">method</span> The method to call on timeout.</li><li>{<span class="argType">Number</span>}<span class="argName">timeout</span> The number of milliseconds before the timeout.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="update"></a>
+<h3 class="methodTitle">update</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Checks for a timeout event to see if we should call the timeout method. This is called automatically by the IgeTimeComponent class and does not need to be called manually.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">update</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div>	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>

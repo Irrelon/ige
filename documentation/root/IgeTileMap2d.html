@@ -104,9 +104,9 @@
     <!--=if{desc}[-->
     <div class="methodDesc">Returns the tile co-ordinates of the tile that the point's world co-ordinates reside inside.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">pointToTile</span>({<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>} <span class="argName">point</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint.html">IgePoint</a></span>}<span class="argName">point</span> </li></ul></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} The tile co-ordinates as a point object.</div>
+    <div class="methodDefinition"><span class="methodName">pointToTile</span>({<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>} <span class="argName">point</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>}<span class="argName">point</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} The tile co-ordinates as a point object.</div>
     
 </div><a name="mouseTileWorldXY"></a>
 <h3 class="methodTitle">mouseTileWorldXY</h3>
@@ -116,7 +116,7 @@
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">mouseTileWorldXY</span>()</div>
     <div class="methodArgs"></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} </div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} </div>
     
 </div><a name="mouseToTile"></a>
 <h3 class="methodTitle">mouseToTile</h3>
@@ -126,7 +126,7 @@
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">mouseToTile</span>()</div>
     <div class="methodArgs"></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint</span>} </div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} </div>
     
 </div><a name="scanRects"></a>
 <h3 class="methodTitle">scanRects</h3>
@@ -157,6 +157,26 @@
     <div class="methodDefinition"><span class="methodName">hoverColor</span>({<span class="argType">String</span>} <span class="argName">val</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">val</span> The hex or rbg string color definition e.g. #ff0099.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="loadMap"></a>
+<h3 class="methodTitle">loadMap</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Loads map data from a saved map.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">loadMap</span>({<span class="argType">Object</span>} <span class="argName">map</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">map</span> The map data object.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="saveMap"></a>
+<h3 class="methodTitle">saveMap</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a map JSON string that can be saved to a data file and loaded with the loadMap() method.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">saveMap</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Object</span>} The map data object.</div>
     
 </div>	</div>
     <script type="text/javascript">

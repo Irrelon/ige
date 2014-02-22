@@ -1,0 +1,14 @@
+<div id="igeEditorProperty_{{:id}}" class="igeEditorProperty" data-type="IgeTexture" data-prop="{{:id}}" data-obj-id="{{:obj._id}}">
+	<div class="header">
+		<div class="label">{{:label}}</div>
+	</div>
+	<div class="content">
+		<select class="setTexture span9">
+			{{for availableTextures}}
+			<option {{if selected}}selected{{/if}} value="{{:id}}">{{:url}}</option>
+			{{/for}}
+		</select>
+		<button class="editorBtn btn-primary dimensionsFromTexture">Dimensions From Texture</button>
+		<button class="editorBtn btn-primary dimensionsFromCell">Dimensions From Cell</button>
+	</div>
+</div>

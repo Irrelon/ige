@@ -56,7 +56,7 @@ var PlayerComponent = IgeEntity.extend({
 		}
 		/* CEXCLUDE */
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			if (ige.input.actionState('left')) {
 				if (!this.playerControl.controls.left) {
 					// Record the new state

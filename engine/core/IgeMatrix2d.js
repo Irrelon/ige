@@ -9,8 +9,8 @@ var IgeMatrix2d = function() {
 		0.0,0.0,1.0
 	];
 
-	this._rotateOrigin = new IgePoint(0, 0, 0);
-	this._scaleOrigin = new IgePoint(0, 0, 0);
+	this._rotateOrigin = new IgePoint3d(0, 0, 0);
+	this._scaleOrigin = new IgePoint3d(0, 0, 0);
 };
 
 IgeMatrix2d.prototype = {
@@ -18,8 +18,8 @@ IgeMatrix2d.prototype = {
 
 	/**
 	 * Transform a point by this matrix. The parameter point will be modified with the transformation values.
-	 * @param {IgePoint} point
-	 * @return {IgePoint} The passed point.
+	 * @param {IgePoint3d} point
+	 * @return {IgePoint3d} The passed point.
 	 */
 	transformCoord: function(point, obj) {
 		var x = point.x,
@@ -40,8 +40,8 @@ IgeMatrix2d.prototype = {
 
 	/**
 	 * Transform a point by this matrix in inverse. The parameter point will be modified with the transformation values.
-	 * @param {IgePoint} point.
-	 * @return {IgePoint} The passed point.
+	 * @param {IgePoint3d} point.
+	 * @return {IgePoint3d} The passed point.
 	 */
 	transformCoordInverse: function(point, obj) {
 		var x = point.x,
@@ -437,7 +437,7 @@ IgeMatrix2d.prototype = {
 	 */
 	transformRenderingContext: function(ctx) {
 		var m = this.matrix;
-		ctx.transform (m[0], m[3], m[1], m[4], m[2], m[5]);
+		ctx.transform(m[0], m[3], m[1], m[4], m[2], m[5]);
 		return this;
 	}
 };

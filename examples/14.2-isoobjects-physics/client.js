@@ -55,7 +55,7 @@ var Client = IgeClass.extend({
 						.depth(0)
 						.mount(self.tileMap1)
 						.translateTo(0, 0, 0)
-						.size3d(160, 240, 40)
+						.bounds3d(160, 240, 40)
 						.opacity(0.95)
 						.cannonBody({
 							type: 'static',
@@ -75,7 +75,7 @@ var Client = IgeClass.extend({
 						.depth(15)
 						.mount(self.tileMap1)
 						.translateTo(150, 90, 0)
-						.size3d(40, 40, 10)
+						.bounds3d(40, 40, 10)
 						.opacity(0.95)
 						.cannonBody({
 							type: 'dynamic',

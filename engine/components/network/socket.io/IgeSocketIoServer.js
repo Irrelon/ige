@@ -11,7 +11,8 @@ var IgeSocketIoServer = {
 	start: function (data, callback) {
 		var self = this;
 
-		this._socketById = [];
+		this._socketById = {};
+		this._socketsByRoomId = {};
 
 		if (typeof(data) !== 'undefined') {
 			this._port = data;
@@ -72,13 +73,113 @@ var IgeSocketIoServer = {
 			this.log('Cannot define a network command without a commandName parameter!', 'error');
 		}
 	},
+	
+	/**
+	 * Adds a client to a room by id. All clients are added to room id
+	 * "ige" by default when they connect to the server. 
+	 * @param {String} clientId The id of the client to add to the room.
+	 * @param {String} roomId The id of the room to add the client to.
+	 * @returns {*}
+	 */
+	clientJoinRoom: function (clientId, roomId) {
+		if (clientId !== undefined) {
+			if (roomId !== undefined) {
+				this._clientRooms[clientId] = this._clientRooms[clientId] || [];
+				this._clientRooms[clientId].push(roomId);
+				
+				this._socketsByRoomId[roomId] = this._socketsByRoomId[roomId] || {};
+				this._socketsByRoomId[roomId][clientId] = this._socketById[clientId];
+				
+				if (this.debug()) {
+					this.log('Client ' + clientId + ' joined room ' + roomId);
+				}
+				
+				return this._entity;
+			}
+			
+			this.log('Cannot add client to room because no roomId was provided!', 'warning');
+			return this._entity;
+		}
+		
+		this.log('Cannot add client to room because no clientId was provided!', 'warning');
+		return this._entity;
+	},
+	
+	/**
+	 * Removes a client from a room by id. All clients are added to room id
+	 * "ige" by default when they connect to the server and you can remove
+	 * them from it if your game defines custom rooms etc.
+	 * @param {String} clientId The id of the client to remove from the room.
+	 * @param {String} roomId The id of the room to remove the client from.
+	 * @returns {*}
+	 */
+	clientLeaveRoom: function (clientId, roomId) {
+		if (clientId !== undefined) {
+			if (roomId !== undefined) {
+				if (this._clientRooms[clientId]) {
+					this._clientRooms[clientId].pull(roomId);
+					delete this._socketsByRoomId[roomId][clientId];
+				}
+				
+				return this._entity;
+			}
+			
+			this.log('Cannot remove client from room because no roomId was provided!', 'warning');
+			return this._entity;
+		}
+		
+		this.log('Cannot remove client from room because no clientId was provided!', 'warning');
+		return this._entity;
+	},
+
+	/**
+	 * Removes a client from all rooms that it is a member of.
+	 * @param {String} clientId The client id to remove from all rooms.
+	 * @returns {*}
+	 */
+	clientLeaveAllRooms: function (clientId) {
+		if (clientId !== undefined) {
+			var arr = this._clientRooms[clientId],
+				arrCount = arr.length;
+			
+			while (arrCount--) {
+				this.clientLeaveRoom(clientId, arr[arrCount]);
+			}
+			
+			delete this._clientRooms[clientId];
+			return this._entity;
+		}
+		
+		this.log('Cannot remove client from room because no clientId was provided!', 'warning');
+		return this._entity;
+	},
+
+	/**
+	 * Gets the array of room ids that the client has joined.
+	 * @param clientId
+	 * @returns {Array} An array of string ids for each room the client has joined.
+	 */
+	clientRooms: function (clientId) {
+		if (clientId !== undefined) {
+			return this._clientRooms[clientId] || [];
+		}
+		
+		this.log('Cannot get/set the clientRoom id because no clientId was provided!', 'warning');
+		return [];
+	},
 
 	/**
 	 * Returns an associative array of all connected clients
 	 * by their ID.
+	 * @param {String=} roomId Optional, if provided will only return clients
+	 * that have joined room specified by the passed roomId.
 	 * @return {Array}
 	 */
-	clients: function () {
+	clients: function (roomId) {
+		if (roomId !== undefined) {
+			return this._socketsByRoomId[roomId];
+		}
+		
 		return this._socketById;
 	},
 
@@ -148,7 +249,7 @@ var IgeSocketIoServer = {
 		}
 	},
 	
-		/**
+	/**
 	 * Sends a network request. This is different from a standard
 	 * call to send() because the recipient code will be able to
 	 * respond by calling ige.network.response(). When the response
@@ -235,6 +336,9 @@ var IgeSocketIoServer = {
 				this.log('Accepted connection with id ' + socket.id);
 				this._socketById[socket.id] = socket;
 
+				// Store a rooms array for this client
+				this._clientRooms[socket.id] = this._clientRooms[socket.id] || [];
+				
 				socket.on('message', function (data) {
 					self._onClientMessage(data, socket.id);
 				});
@@ -326,6 +430,9 @@ var IgeSocketIoServer = {
 	_onClientDisconnect: function (data, socket) {
 		this.log('Client disconnected with id ' + socket.id);
 		this.emit('disconnect', socket.id);
+		
+		// Remove them from all rooms
+		this.clientLeaveAllRooms(socket.id);
 
 		delete this._socketById[socket.id];
 	}

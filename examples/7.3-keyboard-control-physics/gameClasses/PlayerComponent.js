@@ -63,55 +63,55 @@ var PlayerComponent = IgeClass.extend({
 
 		switch (direction) {
 			case 'N':
-				this._box2dBody.SetLinearVelocity(new IgePoint(0, -vel, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(0, -vel, 0));
 				this._box2dBody.SetAwake(true);
 				this.animation.select('walkUp');
 				break;
 
 			case 'S':
-				this._box2dBody.SetLinearVelocity(new IgePoint(0, vel, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(0, vel, 0));
 				this._box2dBody.SetAwake(true);
 				this.animation.select('walkDown');
 				break;
 
 			case 'E':
-				this._box2dBody.SetLinearVelocity(new IgePoint(vel, 0, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(vel, 0, 0));
 				this._box2dBody.SetAwake(true);
 				this.animation.select('walkRight');
 				break;
 
 			case 'W':
-				this._box2dBody.SetLinearVelocity(new IgePoint(-vel, 0, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(-vel, 0, 0));
 				this._box2dBody.SetAwake(true);
 				this.animation.select('walkLeft');
 				break;
 
 			case 'NE':
-				this._box2dBody.SetLinearVelocity(new IgePoint(vel, -vel, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(vel, -vel, 0));
 				this._box2dBody.SetAwake(true);
 				this.animation.select('walkRight');
 				break;
 
 			case 'NW':
-				this._box2dBody.SetLinearVelocity(new IgePoint(-vel, -vel, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(-vel, -vel, 0));
 				this._box2dBody.SetAwake(true);
 				this.animation.select('walkLeft');
 				break;
 
 			case 'SE':
-				this._box2dBody.SetLinearVelocity(new IgePoint(vel, vel, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(vel, vel, 0));
 				this._box2dBody.SetAwake(true);
 				this.animation.select('walkRight');
 				break;
 
 			case 'SW':
-				this._box2dBody.SetLinearVelocity(new IgePoint(-vel, vel, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(-vel, vel, 0));
 				this._box2dBody.SetAwake(true);
 				this.animation.select('walkLeft');
 				break;
 
 			default:
-				this._box2dBody.SetLinearVelocity(new IgePoint(0, 0, 0));
+				this._box2dBody.SetLinearVelocity(new IgePoint3d(0, 0, 0));
 				this.animation.stop();
 				break;
 		}

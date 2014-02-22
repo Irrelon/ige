@@ -53,8 +53,8 @@ var Client = IgeClass.extend({
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.walkTo(
-							(Math.random() * ige._geometry.x) - ige._geometry.x2,
-							(Math.random() * ige._geometry.y) - ige._geometry.y2
+							(Math.random() * ige._bounds2d.x) - ige._bounds2d.x2,
+							(Math.random() * ige._bounds2d.y) - ige._bounds2d.y2
 						)
 						.mount(self.scene1);
 				}
@@ -68,8 +68,8 @@ var Client = IgeClass.extend({
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.walkTo(
-							(Math.random() * ige._geometry.x) - ige._geometry.x2,
-							(Math.random() * ige._geometry.y) - ige._geometry.y2
+							(Math.random() * ige._bounds2d.x) - ige._bounds2d.x2,
+							(Math.random() * ige._bounds2d.y) - ige._bounds2d.y2
 						)
 						.mount(self.scene1);
 				

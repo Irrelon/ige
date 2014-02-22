@@ -21,6 +21,7 @@ var IgeEngine = IgeEntity.extend({
 
 		// Determine the environment we are executing in
 		this.isServer = (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined');
+		this.isClient = !this.isServer;
 
 		// Assign ourselves to the global variable
 		ige = this;
@@ -28,14 +29,14 @@ var IgeEngine = IgeEntity.extend({
 		// Output our header
 		console.log('------------------------------------------------------------------------------');
 		console.log('* Powered by the Isogenic Game Engine ' + igeVersion + '                  *');
-		console.log('* (C)opyright 2013 Irrelon Software Limited                                  *');
+		console.log('* (C)opyright ' + new Date().getFullYear() + ' Irrelon Software Limited                                  *');
 		console.log('* http://www.isogenicengine.com                                              *');
 		console.log('------------------------------------------------------------------------------');
 		
 		IgeEntity.prototype.init.call(this);
 
 		// Check if we are running client-side
-		if (!this.isServer) {
+		if (this.isClient) {
 			// Enable cocoonJS support because we are running client-side
 			this.addComponent(IgeCocoonJsComponent);
 		}
@@ -53,7 +54,7 @@ var IgeEngine = IgeEntity.extend({
 		this.addComponent(IgeTweenComponent);
 		this.addComponent(IgeTimeComponent);
 		
-		if (!this.isServer) {
+		if (this.isClient) {
 			// Enable UI element (virtual DOM) support
 			this.addComponent(IgeUiManagerComponent);
 		}
@@ -85,13 +86,13 @@ var IgeEngine = IgeEntity.extend({
 		this._dependencyQueue = []; // Holds an array of functions that must all return true for the engine to start
 		this._drawCount = 0; // Holds the number of draws since the last frame (calls to drawImage)
 		this._dps = 0; // Number of draws that occurred last tick
-		this._dpt = 0;
+		this._dpf = 0;
 		this._frames = 0; // Number of frames looped through since last second tick
 		this._fps = 0; // Number of frames per second
 		this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
 		this._frameAlternator = false; // Is set to the boolean not of itself each frame
 		this._viewportDepth = false;
-		this._mousePos = new IgePoint(0, 0, 0);
+		this._mousePos = new IgePoint3d(0, 0, 0);
 		this._currentViewport = null; // Set in IgeViewport.js tick(), holds the current rendering viewport
 		this._currentCamera = null; // Set in IgeViewport.js tick(), holds the current rendering viewport's camera
 		this._currentTime = 0; // The current engine time
@@ -107,8 +108,9 @@ var IgeEngine = IgeEntity.extend({
 		this._timeSpentInTick = {}; // An object holding time-spent-in-tick (total time spent in this object's tick method)
 		this._timeSpentLastTick = {}; // An object holding time-spent-last-tick (time spent in this object's tick method last tick)
 		this._timeScale = 1; // The default time scaling factor to speed up or slow down engine time
-		this._globalScale = new IgePoint(1, 1, 1);
+		this._globalScale = new IgePoint3d(1, 1, 1);
 		this._graphInstances = []; // Holds an array of instances of graph classes
+		this._spawnQueue = []; // Holds an array of entities that are yet to be born
 
 		// Set the context to a dummy context to start
 		// with in case we are in "headless" mode and
@@ -151,7 +153,7 @@ var IgeEngine = IgeEntity.extend({
 	 * all objects for.
 	 */
 	$$: function (categoryName) {
-		return this._categoryRegister[categoryName] || [];
+		return this._categoryRegister[categoryName] || new IgeArray();
 	},
 
 	/**
@@ -161,7 +163,7 @@ var IgeEngine = IgeEntity.extend({
 	 * all objects for.
 	 */
 	$$$: function (groupName) {
-		return this._groupRegister[groupName] || [];
+		return this._groupRegister[groupName] || new IgeArray();
 	},
 
 	/**
@@ -216,7 +218,7 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	categoryRegister: function (obj) {
 		if (obj !== undefined) {
-			this._categoryRegister[obj._category] = this._categoryRegister[obj._category] || [];
+			this._categoryRegister[obj._category] = this._categoryRegister[obj._category] || new IgeArray();
 			this._categoryRegister[obj._category].push(obj);
 			obj._categoryRegistered = true;
 		}
@@ -252,7 +254,7 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	groupRegister: function (obj, groupName) {
 		if (obj !== undefined) {
-			this._groupRegister[groupName] = this._groupRegister[groupName] || [];
+			this._groupRegister[groupName] = this._groupRegister[groupName] || new IgeArray();
 			this._groupRegister[groupName].push(obj);
 			obj._groupRegistered = true;
 		}
@@ -288,12 +290,51 @@ var IgeEngine = IgeEntity.extend({
 
 		return this;
 	},
+	
+	sync: function (method, attrArr) {
+		if (typeof(attrArr) === 'string') {
+			attrArr = [attrArr];
+		}
+		
+		this._syncArr = this._syncArr || [];
+		this._syncArr.push({method: method, attrArr: attrArr});
+		
+		if (this._syncArr.length === 1) {
+			// Start sync waterfall
+			this._syncIndex = 0;
+			this._processSync();
+		}
+	},
+	
+	_processSync: function () {
+		var syncEntry;
+		
+		if (ige._syncIndex < ige._syncArr.length) {
+			syncEntry = ige._syncArr[ige._syncIndex];
+			
+			// Add the callback to the last attribute
+			syncEntry.attrArr.push(function () {
+				ige._syncIndex++;
+				setTimeout(ige._processSync, 1);
+			});
+			
+			// Call the method
+			syncEntry.method.apply(ige, syncEntry.attrArr);
+		} else {
+			// Reached end of sync cycle
+			delete ige._syncArr;
+			delete ige._syncIndex;
+			
+			ige.emit('syncComplete');
+		}
+	},
 
 	/**
 	 * Load a js script file into memory via a path or url. 
 	 * @param {String} url The file's path or url.
+	 * @param {Function=} callback Optional callback when script loads.
 	 */
-	requireScript: function (url) {
+	requireScript: function (url, callback) {
 		if (url !== undefined) {
 			var self = this;
 			
@@ -305,6 +346,10 @@ var IgeEngine = IgeEntity.extend({
 			var elem = document.createElement('script');
 			elem.addEventListener('load', function () {
 				self._requireScriptLoaded(this);
+				
+				if (callback) {
+					setTimeout(function () { callback(); }, 100);
+				}
 			});
 			
 			// For compatibility with CocoonJS
@@ -314,7 +359,6 @@ var IgeEngine = IgeEntity.extend({
 			elem.src = url;
 			
 			this.log('Loading script from: ' + url);
-			
 			this.emit('requireScriptLoading', url);
 		}
 	},
@@ -333,6 +377,27 @@ var IgeEngine = IgeEntity.extend({
 		if (this._requireScriptLoading === 0) {
 			// All scripts have loaded, fire the engine event
 			this.emit('allRequireScriptsLoaded');
+		}
+	},
+	
+	/**
+	 * Load a css style file into memory via a path or url. 
+	 * @param {String} url The file's path or url.
+	 */
+	requireStylesheet: function (url) {
+		if (url !== undefined) {
+			var self = this;
+			
+			// Load the engine stylesheet
+			var css = document.createElement('link');
+			css.rel = 'stylesheet';
+			css.type = 'text/css';
+			css.media = 'all';
+			css.href = url;
+			
+			document.getElementsByTagName('head')[0].appendChild(css);
+			
+			this.log('Load css stylesheet from: ' + url);
 		}
 	},
 
@@ -533,93 +598,8 @@ var IgeEngine = IgeEntity.extend({
 		}
 	},
 
-	/**
-	 * Gets / sets the stats output mode that is in use. Set to 1 to
-	 * display default stats output at the lower-left of the HTML page.
-	 * @param {Number=} val
-	 * @param {Number=} interval The number of milliseconds between stats
-	 * updates.
-	 */
-	showStats: function (val, interval) {
-		if (val !== undefined && (!ige.cocoonJs || !ige.cocoonJs.detected)) {
-			switch (val) {
-				case 0:
-					clearInterval(this._statsTimer);
-					this._removeStatsDiv();
-					break;
-
-				case 1:
-					this._createStatsDiv();
-					if (interval !== undefined) {
-						this._statsInterval = interval;
-					} else {
-						if (this._statsInterval === undefined) {
-							this._statsInterval = 16;
-						}
-					}
-					this._statsTimer = setInterval(this._statsTick, this._statsInterval);
-					break;
-			}
-
-			this._showStats = val;
-			return this;
-		}
-
-		return this._showStats;
-	},
-
-	/**
-	 * Creates the stats output div on the DOM.
-	 * @private
-	 */
-	_createStatsDiv: function () {
-		if (!ige.isServer) {
-			if (!document.getElementById('igeStats')) {
-				// Create the stats div
-				var div = document.createElement('div');
-				div.id = 'igeStatsFloater';
-				div.className = 'igeStatsFloater';
-				div.style.fontFamily = 'Verdana, Tahoma';
-				div.style.fontSize = "12px";
-				div.style.position = 'absolute';
-				div.style.color = '#ffffff';
-				div.style.textShadow = '1px 1px 3px #000000';
-				div.style.bottom = '4px';
-				div.style.left = '4px';
-				div.style.userSelect = 'none';
-				div.style.webkitUserSelect = 'none';
-				div.style.MozUserSelect = 'none';
-				div.style.zIndex = 100000;
-				div.innerHTML = 'Please wait...';
-
-				// Add div to body
-				if (document && document.readyState === 'complete') {
-					// The page has already loaded so add div now
-					document.body.appendChild(div);
-				} else {
-					// The page is not loaded yet so add a listener
-					window.addEventListener('load', function () {
-						document.body.appendChild(div);
-					});
-				}
-
-				window.addEventListener('unload', function () {});
-
-				this._statsDiv = div;
-			}
-		}
-	},
-
-	/**
-	 * Removes the stats output div from the DOM.
-	 * @private
-	 */
-	_removeStatsDiv: function () {
-		if (this._statsDiv) {
-			document.body.removeChild(this._statsDiv);
-		}
-		
-		delete this._statsDiv;
+	showStats: function () {
+		this.log('showStats has been removed from the ige in favour of the new editor component, please remove this call from your code.');
 	},
 
 	/**
@@ -639,6 +619,15 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	getClass: function (id) {
 		return igeClassStore[id];
+	},
+
+	/**
+	 * Returns true if the class specified has been defined.
+	 * @param {String} id The ID of the class to check for.
+	 * @returns {*}
+	 */
+	classDefined: function (id) {
+		return Boolean(igeClassStore[id]);
 	},
 
 	/**
@@ -893,7 +882,7 @@ var IgeEngine = IgeEntity.extend({
 
 				// Check if we have a DOM, that there is an igeLoading element
 				// and if so, remove it from the DOM now
-				if (!this.isServer) {
+				if (this.isClient) {
 					if (document.getElementsByClassName && document.getElementsByClassName('igeLoading')) {
 						var arr = document.getElementsByClassName('igeLoading'),
 							arrCount = arr.length;
@@ -1009,7 +998,7 @@ var IgeEngine = IgeEntity.extend({
 	 */
 	createFrontBuffer: function (autoSize, dontScale) {
 		var self = this;
-		if (!this.isServer) {
+		if (this.isClient) {
 			if (!this._canvas) {
 				this._createdFrontBuffer = true;
 				this._pixelRatioScaling = !dontScale;
@@ -1222,10 +1211,78 @@ var IgeEngine = IgeEntity.extend({
 	/**
 	 * Returns the mouse position relative to the main front buffer. Mouse
 	 * position is set by the ige.input component (IgeInputComponent)
-	 * @return {IgePoint}
+	 * @return {IgePoint3d}
 	 */
 	mousePos: function () {
 		return this._mousePos.clone();
+	},
+
+	/**
+	 * Walks the scenegraph and returns an array of all entities that the mouse
+	 * is currently over, ordered by their draw order from drawn last (above other
+	 * entities) to first (underneath other entities).
+	 */
+	mouseOverList: function (obj, entArr) {
+		var arr,
+			arrCount,
+			mp,
+			mouseTriggerPoly,
+			first = false;
+		
+		if (!obj) {
+			obj = ige;
+			entArr = [];
+			first = true;
+		}
+		
+		if (obj === ige) {
+			// Loop viewports
+			arr = obj._children;
+	
+			if (arr) {
+				arrCount = arr.length;
+	
+				// Loop our children
+				while (arrCount--) {
+					if (arr[arrCount]._scene) {
+						if (arr[arrCount]._scene._shouldRender) {
+							this.mouseOverList(arr[arrCount]._scene, entArr);
+						}
+					}
+				}
+			}
+		} else {
+			// Check if the mouse is over this entity
+			mp = this.mousePosWorld();
+
+			if (mp && obj.aabb) {
+				// Trigger mode is against the AABB
+				mouseTriggerPoly = obj.aabb(); //this.localAabb();
+				
+				// Check if the current mouse position is inside this aabb
+				if (mouseTriggerPoly.xyInside(mp.x, mp.y)) {
+					entArr.push(obj);
+				}
+			}
+			
+			// Check if the entity has children
+			arr = obj._children;
+
+			if (arr) {
+				arrCount = arr.length;
+
+				// Loop our children
+				while (arrCount--) {
+					this.mouseOverList(arr[arrCount], entArr);
+				}
+			}
+		}
+		
+		if (first) {
+			entArr.reverse();
+		}
+		
+		return entArr;
 	},
 
 	/**
@@ -1269,7 +1326,7 @@ var IgeEngine = IgeEntity.extend({
 				}
 			}
 
-			ige._geometry = new IgePoint(newWidth, newHeight, 0);
+			ige._bounds2d = new IgePoint3d(newWidth, newHeight, 0);
 
 			// Loop any mounted children and check if
 			// they should also get resized
@@ -1278,7 +1335,7 @@ var IgeEngine = IgeEntity.extend({
 			}
 		} else {
 			if (ige._canvas) {
-				ige._geometry = new IgePoint(ige._canvas.width, ige._canvas.height, 0);
+				ige._bounds2d = new IgePoint3d(ige._canvas.width, ige._canvas.height, 0);
 			}
 		}
 
@@ -1289,7 +1346,7 @@ var IgeEngine = IgeEntity.extend({
 			
 			sgTreeElem.style.top = (parseInt(canvasBoundingRect.top) + 5) + 'px';
 			sgTreeElem.style.left = (parseInt(canvasBoundingRect.left) + 5) + 'px';
-			sgTreeElem.style.height = (ige._geometry.y - 30) + 'px';
+			sgTreeElem.style.height = (ige._bounds2d.y - 30) + 'px';
 		}
 
 		ige._resized = true;
@@ -1368,22 +1425,33 @@ var IgeEngine = IgeEntity.extend({
 	 * @param {Number} sampleCount The number of times you
 	 * want the trace to break with the debugger line before
 	 * automatically switching off the trace.
+	 * @param {Function=} callbackEvaluator Optional callback
+	 * that if returns true, will fire debugger. Method is passed
+	 * the setter value as first argument.
 	 */
-	traceSet: function (obj, propName, sampleCount) {
-		obj.___igeTraceCurrentVal = obj[propName];
+	traceSet: function (obj, propName, sampleCount, callbackEvaluator) {
+		obj.___igeTraceCurrentVal = obj.___igeTraceCurrentVal || {};
+		obj.___igeTraceCurrentVal[propName] = obj[propName];
 		obj.___igeTraceMax = sampleCount || 1;
 		obj.___igeTraceCount = 0;
 
 		Object.defineProperty(obj, propName, {
 			get: function () {
-				return this.___igeTraceCurrentVal;
+				return obj.___igeTraceCurrentVal[propName];
 			},
 			set: function (val) {
-				debugger;
-				this.___igeTraceCurrentVal = val;
-				this.___igeTraceCount++;
+				if (callbackEvaluator){ 
+					if (callbackEvaluator(val)) {
+						debugger;
+					}
+				} else {
+					debugger;
+				}
+				
+				obj.___igeTraceCurrentVal[propName] = val;
+				obj.___igeTraceCount++;
 
-				if (this.___igeTraceCount === this.___igeTraceMax) {
+				if (obj.___igeTraceCount === obj.___igeTraceMax) {
 					// Maximum amount of trace samples reached, turn off
 					// the trace system
 					ige.traceSetOff(obj, propName);
@@ -1400,7 +1468,7 @@ var IgeEngine = IgeEntity.extend({
 	 * want to disable the trace for.
 	 */
 	traceSetOff: function (object, propName) {
-		Object.defineProperty(object, propName, {set: function (val) { this.___igeTraceCurrentVal = val; }});
+		Object.defineProperty(object, propName, {set: function (val) { this.___igeTraceCurrentVal[propName] = val; }});
 	},
 
 	/**
@@ -1447,6 +1515,15 @@ var IgeEngine = IgeEntity.extend({
 		
 		return arr;
 	},
+	
+	spawnQueue: function (ent) {
+		if (ent !== undefined) {
+			this._spawnQueue.push(ent);
+			return this;
+		}
+		
+		return this._spawnQueue;
+	},
 
 	/**
 	 * Is called every second and does things like calculate the current FPS.
@@ -1459,305 +1536,25 @@ var IgeEngine = IgeEntity.extend({
 		self._fps = self._frames;
 
 		// Store draws per second
-		self._dps = self._dpt * self._fps;
+		self._dps = self._dpf * self._fps;
 
 		// Zero out counters
 		self._frames = 0;
 		self._drawCount = 0;
 	},
-
-	/**
-	 * Updates the stats HTML overlay with the latest data.
-	 * @private
-	 */
-	_statsTick: function () {
-		var self = ige,
-			i,
-			watchCount,
-			watchItem,
-			itemName,
-			res,
-			html = '';
-
-		// Check if the stats output is enabled
-		if (self._showStats && !self._statsPauseUpdate) {
-			switch (self._showStats) {
-				case 1:
-					if (self._watch && self._watch.length) {
-						watchCount = self._watch.length;
-
-						for (i = 0; i < watchCount; i++) {
-							watchItem = self._watch[i];
-
-							if (typeof(watchItem) === 'string') {
-								itemName = watchItem;
-								try {
-									eval('res = ' + watchItem);
-								} catch (err) {
-									res = '<span style="color:#ff0000;">' + err + '</span>';
-								}
-							} else {
-								itemName = watchItem.name;
-								res = watchItem.value;
-							}
-							html += i + ' (<a href="javascript:ige.watchStop(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">Remove</a>): <span style="color:#7aff80">' + itemName + '</span>: <span style="color:#00c6ff">' + res + '</span><br />';
-						}
-						html += '<br />';
-					}
-					html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowEditor();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Tick">' + self._dpt + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
-
-					if (self.network) {
-						// Add the network latency too
-						html += ' <span class="met" title="Network Latency (Time From Server to This Client)">' + self.network._latency + ' ms\/net</span>';
-					}
-
-					self._statsDiv.innerHTML = html;
-					break;
-			}
-		}
-	},
-
-	toggleShowEditor: function () {
-		this._showSgTree = !this._showSgTree;
-
-		if (this._showSgTree) {
-			// Create the scenegraph tree
-			var self = this,
-				elem1 = document.createElement('div'),
-				elem2,
-				canvasBoundingRect;
-			
-			canvasBoundingRect = ige._canvasPosition();
-
-			elem1.id = 'igeSgTree';
-			elem1.style.top = (parseInt(canvasBoundingRect.top) + 5) + 'px';
-			elem1.style.left = (parseInt(canvasBoundingRect.left) + 5) + 'px';
-			elem1.style.height = (ige._geometry.y - 30) + 'px';
-			elem1.style.overflow = 'auto';
-			elem1.addEventListener('mousemove', function (event) {
-				event.stopPropagation();
-			});
-			elem1.addEventListener('mouseup', function (event) {
-				event.stopPropagation();
-			});
-			elem1.addEventListener('mousedown', function (event) {
-				event.stopPropagation();
-			});
-
-			elem2 = document.createElement('ul');
-			elem2.id = 'sceneGraph_items';
-			elem1.appendChild(elem2);
-
-			document.body.appendChild(elem1);
-			
-			// Create the IGE console
-			var consoleHolderElem = document.createElement('div'),
-				consoleElem = document.createElement('input'),
-				classChainElem = document.createElement('div'),
-				dociFrame = document.createElement('iframe');
-
-			consoleHolderElem.id = 'igeSgConsoleHolder';
-			consoleHolderElem.innerHTML = '<div><b>Console</b>: Double-Click a SceneGraph Object to Script it Here</div>';
-			
-			consoleElem.type = 'text';
-			consoleElem.id = 'igeSgConsole';
-			
-			classChainElem.id = 'igeSgItemClassChain';
-
-			dociFrame.id = 'igeSgDocPage';
-			dociFrame.name = 'igeSgDocPage';
-
-			consoleHolderElem.appendChild(consoleElem);
-			consoleHolderElem.appendChild(classChainElem);
-			consoleHolderElem.appendChild(dociFrame);
-			
-			document.body.appendChild(consoleHolderElem);
-
-			this.sgTreeUpdate();
-			
-			// Now add a refresh button to the scene button
-			var button = document.createElement('input');
-			button.type = 'button';
-			button.id = 'igeSgRefreshTree'
-			button.style.position = 'absolute';
-			button.style.top = '0px';
-			button.style.right = '0px'
-			button.value = 'Refresh';
-			
-			button.addEventListener('click', function () {
-				self.sgTreeUpdate();
-			}, false);
-			
-			document.getElementById('igeSgTree').appendChild(button);
-			
-			// Add basic editor controls
-			var editorRoot = document.createElement('div'),
-				editorModeTranslate = document.createElement('input'),
-				editorModeRotate = document.createElement('input'),
-				editorModeScale = document.createElement('input'),
-				editorStatus = document.createElement('span');
-			
-			editorRoot.id = 'igeSgEditorRoot';
-			editorStatus.id = 'igeSgEditorStatus';
-			
-			editorModeTranslate.type = 'button';
-			editorModeTranslate.id = 'igeSgEditorTranslate';
-			editorModeTranslate.value = 'Translate';
-			editorModeTranslate.addEventListener('click', function () {
-				// Disable other modes
-				ige.editorRotate.enabled(false);
-				
-				if (ige.editorTranslate.enabled()) {
-					ige.editorTranslate.enabled(false);
-					self.log('Editor: Translate mode disabled');
-				} else {
-					ige.editorTranslate.enabled(true);
-					self.log('Editor: Translate mode enabled');
-				}
-			});
-			
-			editorModeRotate.type = 'button';
-			editorModeRotate.id = 'igeSgEditorRotate';
-			editorModeRotate.value = 'Rotate';
-			editorModeRotate.addEventListener('click', function () {
-				// Disable other modes
-				ige.editorTranslate.enabled(false);
-				
-				if (ige.editorRotate.enabled()) {
-					ige.editorRotate.enabled(false);
-					self.log('Editor: Rotate mode disabled');
-				} else {
-					ige.editorRotate.enabled(true);
-					self.log('Editor: Rotate mode enabled');
-				}
-			});
-			
-			editorModeScale.type = 'button';
-			editorModeScale.id = 'igeSgEditorScale';
-			editorModeScale.value = 'Scale';
-			
-			editorRoot.appendChild(editorModeTranslate);
-			editorRoot.appendChild(editorModeRotate);
-			editorRoot.appendChild(editorModeScale);
-			editorRoot.appendChild(editorStatus);
-			
-			document.body.appendChild(editorRoot);
-			
-			// Add the translate component to the ige instance
-			ige.addComponent(IgeEditorTranslateComponent);
-			ige.addComponent(IgeEditorRotateComponent);
-		} else {
-			var child = document.getElementById('igeSgTree');
-			child.parentNode.removeChild(child);
-
-			child = document.getElementById('igeSgConsoleHolder');
-			child.parentNode.removeChild(child);
-			
-			child = document.getElementById('igeSgEditorRoot');
-			child.parentNode.removeChild(child);
-			
-			ige.removeComponent('editorTranslate');
-			ige.removeComponent('editorRotate');
-		}
-	},
 	
-	sgTreeUpdate: function () {
-		// Update the scenegraph tree
-		document.getElementById('sceneGraph_items').innerHTML = '';
-
-		// Get the scenegraph data
-		this.addToSgTree(this.getSceneGraphData(this, true));
-	},
-	
-	addToSgTree: function (item) {
-		var elem = document.createElement('li'),
-			arr,
-			arrCount,
-			i,
-			mouseUp,
-			dblClick,
-			timingString;
-
-		mouseUp = function (event) {
-			event.stopPropagation();
-
-			var elems = document.getElementsByClassName('sgItem selected');
-			for (i = 0; i < elems.length; i++) {
-				elems[i].className = 'sgItem';
-			}
-
-			this.className += ' selected';
-			ige._sgTreeSelected = this.id;
-
-			ige._currentViewport.drawBounds(true);
-			if (this.id !== 'ige') {
-				ige._currentViewport.drawBoundsLimitId(this.id);
-			} else {
-				ige._currentViewport.drawBoundsLimitId('');
-			}
-			
-			ige.emit('sgTreeSelectionChanged', ige._sgTreeSelected);
-		};
-
-		dblClick = function (event) {
-			event.stopPropagation();
-			console.log("ige.$('" + this.id + "')");
-		};
-
-		//elem.addEventListener('mouseover', mouseOver, false);
-		//elem.addEventListener('mouseout', mouseOut, false);
-		elem.addEventListener('mouseup', mouseUp, false);
-		elem.addEventListener('dblclick', dblClick, false);
-
-		elem.id = item.id;
-		elem.innerHTML = item.text;
-		elem.className = 'sgItem';
-
-		if (ige._sgTreeSelected === item.id) {
-			elem.className += ' selected';
-		}
-
-		if (igeConfig.debug._timing) {
-			if (ige._timeSpentInTick[item.id]) {
-				timingString = '<span>' + ige._timeSpentInTick[item.id] + 'ms</span>';
-				/*if (ige._timeSpentLastTick[item.id]) {
-					if (typeof(ige._timeSpentLastTick[item.id].ms) === 'number') {
-						timingString += ' | LastTick: ' + ige._timeSpentLastTick[item.id].ms;
-					}
-				}*/
-
-				elem.innerHTML += ' ' + timingString;
-			}
-		}
-
-		document.getElementById(item.parentId + '_items').appendChild(elem);
-
-		if (item.items) {
-			// Create a ul inside the li
-			elem = document.createElement('ul');
-			elem.id = item.id + '_items';
-			document.getElementById(item.id).appendChild(elem);
-
-			arr = item.items;
-			arrCount = arr.length;
-
-			for (i = 0; i < arrCount; i++) {
-				ige.addToSgTree(arr[i]);
-			}
-		}
-	},
-
 	/**
 	 * Gets / sets the current time scalar value. The engine's internal
 	 * time is multiplied by this value and it's default is 1. You can set it to
-	 * 0.5 to slow down time by half or 1.5 to speed up time by half. Currently
-	 * will not accept a negative value.
+	 * 0.5 to slow down time by half or 1.5 to speed up time by half. Negative
+	 * values will reverse time but not all engine systems handle this well
+	 * at the moment.
 	 * @param {Number=} val The time scale value.
 	 * @returns {*}
 	 */
 	timeScale: function (val) {
 		if (val !== undefined) {
-			this._timeScale = Math.abs(val);
+			this._timeScale = val;
 			return this;
 		}
 
@@ -1876,7 +1673,11 @@ var IgeEngine = IgeEntity.extend({
 			self = ige,
 			ptArr = self._postTick,
 			ptCount = ptArr.length,
-			ptIndex;
+			ptIndex,
+			unbornQueue,
+			unbornCount,
+			unbornIndex,
+			unbornEntity;
 
 		// Scale the timestamp according to the current
 		// engine's time scaling factor
@@ -1924,6 +1725,19 @@ var IgeEngine = IgeEntity.extend({
 				// Calculate the frame delta
 				self._tickDelta = self._tickStart - self.lastTick;
 			}
+			
+			// Check for unborn entities that should be born now
+			unbornQueue = ige._spawnQueue;
+			unbornCount = unbornQueue.length;
+			for (unbornIndex = unbornCount - 1; unbornIndex >= 0; unbornIndex--) {
+				unbornEntity = unbornQueue[unbornIndex];
+				
+				if (ige._currentTime >= unbornEntity._bornTime) {
+					// Now birth this entity
+					unbornEntity.mount(ige.$(unbornEntity._birthMount));
+					unbornQueue.splice(unbornIndex, 1);
+				}
+			}
 
 			// Update the scenegraph
 			if (self._enableUpdates) {
@@ -1969,7 +1783,7 @@ var IgeEngine = IgeEntity.extend({
 			// calculate delta on the next tick
 			self.lastTick = self._tickStart;
 			self._frames++;
-			self._dpt = self._drawCount;
+			self._dpf = self._drawCount;
 			self._drawCount = 0;
 
 			// Call the input system tick to reset any flags etc
@@ -1986,10 +1800,11 @@ var IgeEngine = IgeEntity.extend({
 	
 	updateSceneGraph: function (ctx) {
 		var arr = this._children,
-			arrCount, us, ud;
+			arrCount, us, ud,
+			tickDelta = ige._tickDelta;
 
 		// Process any behaviours assigned to the engine
-		this._processUpdateBehaviours(ctx);
+		this._processUpdateBehaviours(ctx, tickDelta);
 
 		if (arr) {
 			arrCount = arr.length;
@@ -1998,7 +1813,7 @@ var IgeEngine = IgeEntity.extend({
 			if (igeConfig.debug._timing) {
 				while (arrCount--) {
 					us = new Date().getTime();
-					arr[arrCount].update(ctx);
+					arr[arrCount].update(ctx, tickDelta);
 					ud = new Date().getTime() - us;
 					
 					if (arr[arrCount]) {
@@ -2016,7 +1831,7 @@ var IgeEngine = IgeEntity.extend({
 				}
 			} else {
 				while (arrCount--) {
-					arr[arrCount].update(ctx);
+					arr[arrCount].update(ctx, tickDelta);
 				}
 			}
 		}
@@ -2046,7 +1861,7 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		ctx.save();
-		ctx.translate(this._geometry.x2, this._geometry.y2);
+		ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
 		//ctx.scale(this._globalScale.x, this._globalScale.y);
 
 		// Process the current engine tick for all child objects
@@ -2093,8 +1908,8 @@ var IgeEngine = IgeEntity.extend({
 		return this._fps;
 	},
 
-	dpt: function () {
-		return this._dpt;
+	dpf: function () {
+		return this._dpf;
 	},
 
 	dps: function () {
@@ -2345,7 +2160,7 @@ var IgeEngine = IgeEntity.extend({
 		this.stop();
 
 		// Remove the front buffer (canvas) if we created it
-		if (!this.isServer) {
+		if (this.isClient) {
 			this.removeCanvas();
 		}
 

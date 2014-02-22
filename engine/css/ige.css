@@ -1,0 +1,145 @@
+html {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+body {
+    background: #000;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.loadingFloat {
+	position: absolute;
+	left: 50%;
+	top: 48%;
+	width: 80px;
+	height: 80px;
+	margin-left: -35px;
+	margin-top: -35px;
+}
+
+.loadingLogo {
+	position: relative;
+	width: 60px;
+	height: 60px;
+	left: 10px;
+	top: 10px;
+	background-image: url(../assets/irrelon.png);
+}
+
+.loadingCircle {
+	background-color: rgba(0,0,0,0);
+	border:5px solid rgba(0,183,229,0.9);
+	opacity:.9;
+	border-right:5px solid rgba(0,0,0,0);
+	border-left:5px solid rgba(0,0,0,0);
+	border-radius:50px;
+	box-shadow: 0 0 205px #2187e7;
+	width:70px;
+	height:70px;
+	margin:0 auto;
+	position: relative;
+	top:-60px;
+	-moz-animation:spinPulse 2s infinite ease-in-out;
+	-webkit-animation:spinPulse 2s infinite linear;
+}
+.loadingCircleInner {
+	background-color: rgba(0,0,0,0);
+	border:5px solid rgba(0,183,229,0.9);
+	opacity:.9;
+	border-left:5px solid rgba(0,0,0,0);
+	border-right:5px solid rgba(0,0,0,0);
+	border-radius:50px;
+	box-shadow: 0 0 35px #2187e7; 
+	width:55px;
+	height:55px;
+	margin:0 auto;
+	position:relative;
+	top:-132px;
+	left: 0px;
+	-moz-animation:spinoffPulse 1s infinite linear;
+	-webkit-animation:spinoffPulse 1s infinite linear;
+}
+
+.loadingText {
+    position: absolute;
+    top: 90px;
+    color: white;
+    font-family: Verdana, sans-serif;
+    font-size: 14px;
+    text-align: center;
+    width: 250px;
+    font-variant: small-caps;
+    -moz-animation: fadePulse 1s infinite linear;
+    -webkit-animation: fadePulse 1s infinite linear;
+    left: -85px;
+}
+
+#loadingProgress {
+    width: 200px;
+    height: 7px;
+    position: absolute;
+    top: 120px;
+    left: 50%;
+    margin-left: -100px;
+}
+
+#loadingProgressBar {
+    width: 0px;
+    height: 1px;
+    background: rgba(0, 183, 229, 0.9);
+}
+
+.loadingLink {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    color: white;
+    font-family: Verdana, sans-serif;
+    font-size: 12px;
+    font-variant: small-caps;
+    width: 250px;
+    text-align: right;
+    opacity: 1;
+}
+
+.loadingLink a {
+    color: #ffffff;
+    opacity: 0.7;
+}
+
+@-moz-keyframes fadePulse {
+	0% { opacity:0.5; }
+	50% { opacity:1; }
+	100% { opacity:0.5; }
+}
+@-moz-keyframes spinPulse {
+	0% { -moz-transform:rotate(160deg); opacity:0; box-shadow:0 0 1px #2187e7;}
+	50% { -moz-transform:rotate(135deg); opacity:1; }
+	100% { -moz-transform:rotate(-320deg); opacity:0; }
+}
+@-moz-keyframes spinoffPulse {
+	0% { -moz-transform:rotate(0deg); }
+	100% { -moz-transform:rotate(360deg);  }
+}
+@-webkit-keyframes fadePulse {
+	0% { opacity:0.5; }
+	50% { opacity:1; }
+	100% { opacity:0.5; }
+}
+@-webkit-keyframes spinPulse {
+	0% { -webkit-transform:rotate(160deg); opacity:0; box-shadow:0 0 1px #2187e7; }
+	50% { -webkit-transform:rotate(135deg); opacity:1;}
+	100% { -webkit-transform:rotate(-320deg); opacity:0; }
+}
+@-webkit-keyframes spinoffPulse {
+	0% { -webkit-transform:rotate(0deg); }
+	100% { -webkit-transform:rotate(360deg); }
+}

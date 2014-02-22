@@ -57,19 +57,23 @@ var IgePathFinder = IgeEventingClass.extend({
 
 		return this._neighbourLimit;
 	},
+	
+	aStar: function () {
+		this.log('The "IgePathFinder.aStar" method has been renamed to "generate". Please update your code.', 'error');
+	},
 
 	/**
 	 * Uses the A* algorithm to generate path data between two points.
 	 * @param {IgeCollisionMap2d} tileMap The tile map to use when generating the path.
-	 * @param {IgePoint} startPoint The point on the map to start path-finding from.
-	 * @param {IgePoint} endPoint The point on the map to try to path-find to.
+	 * @param {IgePoint3d} startPoint The point on the map to start path-finding from.
+	 * @param {IgePoint3d} endPoint The point on the map to try to path-find to.
 	 * @param {Function} comparisonCallback The callback function that will decide if each tile that is being considered for use in the path is allowed or not based on the tile map's data stored for that tile which is passed to this method as the first parameter. Must return a boolean value.
 	 * @param {Boolean} allowSquare Whether to allow neighboring tiles along a square axis. Defaults to true if undefined.
 	 * @param {Boolean} allowDiagonal Whether to allow neighboring tiles along a diagonal axis. Defaults to false if undefined.
 	 * @param {Boolean=} allowInvalidDestination If the path finder cannot path to the destination tile, if this is true the closest path will be returned instead.
 	 * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
 	 */
-	aStar: function (tileMap, startPoint, endPoint, comparisonCallback, allowSquare, allowDiagonal, allowInvalidDestination) {
+	generate: function (tileMap, startPoint, endPoint, comparisonCallback, allowSquare, allowDiagonal, allowInvalidDestination) {
 		var openList = [],
 			closedList = [],
 			listHash = {},
@@ -103,7 +107,6 @@ var IgePathFinder = IgeEventingClass.extend({
 		}
 
 		// Starting point to open list
-
 		startNode = new IgePathNode(startPoint.x, startPoint.y, 0, 0, this._heuristic(startPoint.x, startPoint.y, endPoint.x, endPoint.y, 10));
 		startNode.link = 1;
 		openList.push(startNode);
@@ -308,12 +311,13 @@ var IgePathFinder = IgeEventingClass.extend({
 	},
 
 	/**
-	 * The heuristic to calculate the rough cost of pathing
-	 * from the x1, y1 to x2, y2.
+	 * The heuristic to calculate the rough cost of pathing from the
+	 * x1, y1 to x2, y2.
 	 * @param {Number} x1 The first x co-ordinate.
 	 * @param {Number} y1 The first y co-ordinate.
 	 * @param {Number} x2 The second x co-ordinate.
 	 * @param {Number} y2 The second y co-ordinate.
+	 * @param {Number} moveCost The cost multiplier to multiply by.
 	 * @return {Number} Returns the heuristic cost between the co-ordinates specified.
 	 * @private
 	 */

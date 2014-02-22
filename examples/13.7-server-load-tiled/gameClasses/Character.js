@@ -8,14 +8,14 @@ var Character = IgeEntityBox2d.extend({
 
 		// Setup the entity
 		self.depth(1)
-			.size3d(20, 20, 40)
+			.bounds3d(20, 20, 40)
 			.isometric(true);
 
 		self.imageEntity = new IgeEntity()
 			.addComponent(IgeAnimationComponent);
 
 		// Load the character texture file
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			this._characterTexture = new IgeCellSheet('../assets/textures/sprites/vx_chara02_c.png', 12, 8);
 
 			// Wait for the texture to load

@@ -200,7 +200,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 			'touchstart': function (event) { event.igeType = 'touch'; self._rationalise(event, true); self._mouseDown(event); },
 			'touchend': function (event) { event.igeType = 'touch'; self._rationalise(event, true); self._mouseUp(event); },
 
-			'contextmenu': function (event) { event.preventDefault(); },
+			'contextmenu': function (event) { event.preventDefault(); event.igeType = 'mouse'; self._rationalise(event); self._contextMenu(event); },
 
 			'keydown': function (event) { event.igeType = 'key'; self._rationalise(event); self._keyDown(event); },
 			'keyup': function (event) { event.igeType = 'key'; self._rationalise(event); self._keyUp(event); }
@@ -255,7 +255,7 @@ var IgeInputComponent = IgeEventingClass.extend({
 	 * occurred on the main canvas, allowing you to pass through events like
 	 * mousedown and mouseup that occurred elsewhere on the DOM but might be
 	 * useful for the engine to be aware of, such as if you are dragging an entity
-	 * and then the mouse goes off-cavnas and the button is released.
+	 * and then the mouse goes off-canvas and the button is released.
 	 * @param {String} eventName The lowercase name of the event to fire e.g. mousedown.
 	 * @param {Object} eventObj The event object that was passed by the DOM.
 	 */
@@ -333,12 +333,9 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.igeX - ige._geometry.x2,
-			my = event.igeY - ige._geometry.y2,
+		var mx = event.igeX - ige._bounds2d.x2,
+			my = event.igeY - ige._bounds2d.y2,
 			self = this;
-
-		event.igeBaseX = mx;
-		event.igeBaseY = my;
 
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = true;
@@ -354,9 +351,11 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		this.mouseDown = event;
 
-		this.queueEvent(this, function () {
-			self.emit('mouseDown', [event, mx, my, event.button + 1]);
-		});
+		if (!self.emit('preMouseDown', [event, mx, my, event.button + 1])) {
+			this.queueEvent(this, function () {
+				self.emit('mouseDown', [event, mx, my, event.button + 1]);
+			});
+		}
 	},
 
 	/**
@@ -371,12 +370,9 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.igeX - ige._geometry.x2,
-			my = event.igeY - ige._geometry.y2,
+		var mx = event.igeX - ige._bounds2d.x2,
+			my = event.igeY - ige._bounds2d.y2,
 			self = this;
-
-		event.igeBaseX = mx;
-		event.igeBaseY = my;
 
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = false;
@@ -391,10 +387,44 @@ var IgeInputComponent = IgeEventingClass.extend({
 		}
 
 		this.mouseUp = event;
+		
+		if (!self.emit('preMouseUp', [event, mx, my, event.button + 1])) {
+			this.queueEvent(this, function () {
+				self.emit('mouseUp', [event, mx, my, event.button + 1]);
+			});
+		}
+	},
+	
+	_contextMenu: function (event) {
+		if (this._debug) {
+			console.log('Context Menu', event);
+		}
+		// Update the mouse position within the viewports
+		this._updateMouseData(event);
 
-		this.queueEvent(this, function () {
-			self.emit('mouseUp', [event, mx, my, event.button + 1]);
-		});
+		var mx = event.igeX - ige._bounds2d.x2,
+			my = event.igeY - ige._bounds2d.y2,
+			self = this;
+
+		if (event.button === 0) {
+			this._state[this.mouse.button1] = false;
+		}
+
+		if (event.button === 1) {
+			this._state[this.mouse.button2] = false;
+		}
+
+		if (event.button === 2) {
+			this._state[this.mouse.button3] = false;
+		}
+
+		this.contextMenu = event;
+		
+		if (!self.emit('preContextMenu', [event, mx, my, event.button + 1])) {
+			this.queueEvent(this, function () {
+				self.emit('contextMenu', [event, mx, my, event.button + 1]);
+			});
+		}
 	},
 
 	/**
@@ -406,21 +436,20 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		ige._mouseOverVp = this._updateMouseData(event);
 
-		var mx = event.igeX - ige._geometry.x2,
-			my = event.igeY - ige._geometry.y2,
+		var mx = event.igeX - ige._bounds2d.x2,
+			my = event.igeY - ige._bounds2d.y2,
 			self = this;
-
-		event.igeBaseX = mx;
-		event.igeBaseY = my;
 
 		this._state[this.mouse.x] = mx;
 		this._state[this.mouse.y] = my;
 
 		this.mouseMove = event;
 
-		this.queueEvent(this, function () {
-			self.emit('mouseMove', [event, mx, my, event.button + 1]);
-		});
+		if (!self.emit('preMouseMove', [event, mx, my, event.button + 1])) {
+			this.queueEvent(this, function () {
+				self.emit('mouseMove', [event, mx, my, event.button + 1]);
+			});
+		}
 	},
 
 	/**
@@ -432,12 +461,9 @@ var IgeInputComponent = IgeEventingClass.extend({
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.igeX - ige._geometry.x2,
-			my = event.igeY - ige._geometry.y2,
+		var mx = event.igeX - ige._bounds2d.x2,
+			my = event.igeY - ige._bounds2d.y2,
 			self = this;
-
-		event.igeBaseX = mx;
-		event.igeBaseY = my;
 
 		this._state[this.mouse.wheel] = event.wheelDelta;
 
@@ -449,9 +475,11 @@ var IgeInputComponent = IgeEventingClass.extend({
 
 		this.mouseWheel = event;
 
-		this.queueEvent(this, function () {
-			self.emit('mouseWheel', [event, mx, my, event.button + 1]);
-		});
+		if (!self.emit('preMouseWheel', [event, mx, my, event.button + 1])) {
+			this.queueEvent(this, function () {
+				self.emit('mouseWheel', [event, mx, my, event.button + 1]);
+			});
+		}
 	},
 
 	/**
@@ -463,9 +491,16 @@ var IgeInputComponent = IgeEventingClass.extend({
 		var self = this;
 
 		this._state[event.keyCode] = true;
-		this.queueEvent(this, function () {
-			self.emit('keyDown', [event, event.keyCode]);
-		});
+		
+		if (this._debug) {
+			console.log('Key Down', event);
+		}
+		
+		if (!self.emit('preKeyDown', [event, event.keyCode])) {
+			this.queueEvent(this, function () {
+				self.emit('keyDown', [event, event.keyCode]);
+			});
+		}
 	},
 
 	/**
@@ -477,9 +512,16 @@ var IgeInputComponent = IgeEventingClass.extend({
 		var self = this;
 
 		this._state[event.keyCode] = false;
-		this.queueEvent(this, function () {
-			self.emit('keyUp', [event, event.keyCode]);
-		});
+		
+		if (this._debug) {
+			console.log('Key Up', event);
+		}
+		
+		if (!self.emit('preKeyUp', [event, event.keyCode])) {
+			this.queueEvent(this, function () {
+				self.emit('keyUp', [event, event.keyCode]);
+			});
+		}
 	},
 
 	/**
@@ -496,8 +538,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 		var arr = ige._children,
 			arrCount = arr.length,
 			vp, vpUpdated,
-			mx = (event.igeX - ige._geometry.x2) - ige._translate.x,
-			my = (event.igeY - ige._geometry.y2) - ige._translate.y;
+			mx = (event.igeX - ige._bounds2d.x2) - ige._translate.x,
+			my = (event.igeY - ige._bounds2d.y2) - ige._translate.y;
 
 		ige._mousePos.x = mx;
 		ige._mousePos.y = my;
@@ -506,10 +548,10 @@ var IgeInputComponent = IgeEventingClass.extend({
 			vp = arr[arr.length - (arrCount + 1)];
 			// Check if the mouse is inside this viewport's bounds
 			// TODO: Update this code to take into account viewport rotation and camera rotation
-			if (mx > vp._translate.x - vp._geometry.x / 2 && mx < vp._translate.x + vp._geometry.x / 2) {
-				if (my > vp._translate.y - vp._geometry.y / 2 && my < vp._translate.y + vp._geometry.y / 2) {
+			if (mx > vp._translate.x - vp._bounds2d.x / 2 && mx < vp._translate.x + vp._bounds2d.x / 2) {
+				if (my > vp._translate.y - vp._bounds2d.y / 2 && my < vp._translate.y + vp._bounds2d.y / 2) {
 					// Mouse is inside this viewport
-					vp._mousePos = new IgePoint(
+					vp._mousePos = new IgePoint3d(
 						Math.floor((mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x),
 						Math.floor((my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y),
 						0

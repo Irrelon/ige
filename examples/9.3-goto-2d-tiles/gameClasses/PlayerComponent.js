@@ -25,7 +25,7 @@ var PlayerComponent = IgeClass.extend({
 	 * @private
 	 */
 	_mouseUp: function (event, x, y, button) {
-		var tilePoint = ige.$('tileMap1').mouseTileWorldXY();
+		var tilePoint = ige.$('tileMap1').mouseTilePoint();
 
 		this._entity.walkTo(
 			tilePoint.x,

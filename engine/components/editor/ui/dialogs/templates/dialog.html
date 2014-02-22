@@ -1,0 +1,19 @@
+<div class="editorElem toggleHide shown dialog {{:dialogClass}}" id="{{:id}}">
+	<div class="header">
+		{{if icon}}
+		<span class="icon {{:icon}}"></span>
+		{{/if}}
+		<div class="title">{{:title}}</div>
+		<div class="controls">
+			{{if !modal}}
+			<div class="control close" title="Close Dialog">
+				<span class="halflings-icon white remove"></span>
+			</div>
+			{{/if}}
+		</div>
+	</div>
+	<div class="content">
+		<div class="loadingCircle"></div>
+		<div class="loadingMsg">Loading Content...</div>
+	</div>
+</div> 

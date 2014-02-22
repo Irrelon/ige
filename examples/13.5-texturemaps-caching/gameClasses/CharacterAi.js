@@ -8,22 +8,29 @@ var CharacterAi = Character.extend({
 
 		Character.prototype.init.call(this);
 
-		this.pathFinder = pathFinder;
 		this.collisionMap = collisionMap;
+		this.tileChecker = function (tileData, tileX, tileY) {
+			// If the map tile data is set, don't path along it
+			return !tileData;
+		};
 
 		// Choose a random character type
 		this.setType(Math.random() * 8 | 0);
 
 		// Add pathing capabilities
-		this.addComponent(IgePathComponent)
-			.path.drawPath(true); // Enable drawing the current path
+		this.addComponent(IgePathComponent).path
+			.speed(2)
+			.finder(pathFinder)
+			.tileMap(this.collisionMap)
+			.tileChecker(this.tileChecker)
+			.drawPath(true); // Enable drawing the current path
 
 		// Hook the path events
 		newPathMethod = function () {
 			self.newPath();
 		};
 
-		this.path.on('traversalComplete', newPathMethod);
+		this.path.on('pathComplete', newPathMethod);
 
 		// Hook when we get mounted
 		this.on('mounted', function (parent) {
@@ -36,16 +43,10 @@ var CharacterAi = Character.extend({
 		var self = this,
 			currentTile,
 			destTileX,
-			destTileY,
-			destTile,
-			path = [],
-			tileChecker = function (tileData, tileX, tileY) {
-				// If the map tile data is set, don't path along it
-				return !tileData;
-			};
+			destTileY;
 
 		// Calculate which tile our character is currently "over"
-		currentTile = this._parent.pointToTile(this._translate.toIso());
+		currentTile = this._parent.pointToTile(this._translate);
 
 		// Pick a random destination tile
 		destTileX = currentTile.x + ((Math.random() * 20 | 0) - 10);
@@ -56,25 +57,18 @@ var CharacterAi = Character.extend({
 			return;
 		}
 
-		if (!this.collisionMap.map._mapData[destTileY] || !tileChecker(this.collisionMap.map._mapData[destTileY][destTileX])) {
+		if (!this.collisionMap.map._mapData[destTileY] || !this.tileChecker(this.collisionMap.map._mapData[destTileY][destTileX])) {
 			self.pathNextTick = true;
 			return;
 		}
 
-		destTile = new IgePoint(destTileX, destTileY, 0);
-		path = self.pathFinder.aStar(self.collisionMap, currentTile, destTile, tileChecker, true, false);
-
-		if (path.length) {
 			// Assign the path to the player and start it
-			self.path.clear()
-				.path.speed(0.15)
-				.path.add(path)
-				.path.start();
+		self.path
+			.clear()
+			.add(destTileX, destTileY, 0)
+			.start();
 
-			self.pathNextTick = false;
-		} else {
-			self.pathNextTick = true;
-		}
+		self.pathNextTick = false;
 	},
 
 	tick: function (ctx) {

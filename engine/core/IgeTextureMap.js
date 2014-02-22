@@ -9,7 +9,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		IgeTileMap2d.prototype.init.call(this, tileWidth, tileHeight);
 		this.map = new IgeMap2d();
 		this._textureList = [];
-		this._renderCenter = new IgePoint(0, 0, 0);
+		this._renderCenter = new IgePoint3d(0, 0, 0);
 		this._cacheDirty = true;
 	},
 
@@ -519,7 +519,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			viewArea = ige._currentViewport.viewArea();
 
 		// Render the map sections
-		ctx.translate(-(this._tileWidth / 2), -(this._tileHeight / 2));
+		//ctx.translate(-(this._tileWidth / 2), -(this._tileHeight / 2));
 
 		sectionWidth = (this._tileWidth * this._autoSection);
 		sectionHeight = (this._tileHeight * this._autoSection);
@@ -610,7 +610,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			sx = tx - ty;
 			sy = (tx + ty) * 0.5;
 
-			finalX = sx;
+			finalX = sx - this._tileWidth / 2;
 			finalY = sy;
 		}
 
@@ -698,7 +698,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		if (this._mountMode === 0) {
 			return {
 				_cell: 1,
-				_geometry: {
+				_bounds2d: {
 					x: this._tileWidth,
 					y: this._tileHeight
 				},
@@ -712,7 +712,7 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		if (this._mountMode === 1) {
 			return {
 				_cell: 1,
-				_geometry: {
+				_bounds2d: {
 					x: this._tileWidth * 2,
 					y: this._tileHeight
 				},

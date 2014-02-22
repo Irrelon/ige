@@ -17,6 +17,12 @@ var IgeObject = IgeEventingClass.extend({
 		this._timeStream = [];
 		this._inView = true;
 		this._managed = 1;
+		
+		this._specialProp = [
+			'_id',
+			'_parent',
+			'_children'
+		];
 	},
 
 	/**
@@ -607,6 +613,50 @@ var IgeObject = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Checks if the object has the specified behaviour already added to it.
+	 * @param {String} id
+	 * @param {Boolean=} duringTick If true will look to remove the behaviour
+	 * from the tick method rather than the update method.
+	 * @example #Check for a behaviour with the id "myBehaviour"
+	 *     var entity = new IgeEntity();
+	 *     entity.addBehaviour('myBehaviour', function () {
+	 *         // Code here will execute during each engine update for
+	 *         // this entity. I can access the entity via the "this"
+	 *         // keyword such as:
+	 *         this._somePropertyOfTheEntity = 'moo';
+	 *     });
+	 *     
+	 *     // Now check for the "myBehaviour" behaviour
+	 *     console.log(entity.hasBehaviour('myBehaviour')); // Will log "true"
+	 * @return {*} Returns this on success or false on failure.
+	 */
+	hasBehaviour: function (id, duringTick) {
+		if (id !== undefined) {
+			var arr,
+				arrCount;
+			
+			if (duringTick) {
+				arr = this._tickBehaviours;
+			} else {
+				arr = this._updateBehaviours;
+			}
+
+			// Find the behaviour
+			if (arr) {
+				arrCount = arr.length;
+
+				while (arrCount--) {
+					if (arr[arrCount].id === id) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	},
+	
+	/**
 	 * Gets / sets the boolean flag determining if this object should have
 	 * it's bounds drawn when the bounds for all objects are being drawn.
 	 * In order for bounds to be drawn the viewport the object is being drawn
@@ -657,8 +707,7 @@ var IgeObject = IgeEventingClass.extend({
 
 	/**
 	 * Gets / sets the boolean flag determining if this object should have
-	 * it's mouse position data drawn when the bounds for all objects are
-	 * being drawn.
+	 * it's mouse position drawn, usually for debug purposes.
 	 * @param {Boolean=} val
 	 * @example #Enable draw mouse position data
 	 *     var entity = new IgeEntity();
@@ -677,6 +726,31 @@ var IgeObject = IgeEventingClass.extend({
 		}
 
 		return this._drawMouse;
+	},
+	
+	/**
+	 * Gets / sets the boolean flag determining if this object should have
+	 * it's extra mouse data drawn for debug purposes. For instance, on tilemaps
+	 * (IgeTileMap2d) instances, when enabled you will see the tile x and y
+	 * co-ordinates currently being hoverered over by the mouse.
+	 * @param {Boolean=} val
+	 * @example #Enable draw mouse data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawMouseData(true);
+	 * @example #Disable draw mouse data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawMouseData(false);
+	 * @example #Get the current flag value
+	 *     console.log(entity.drawMouseData());
+	 * @return {*}
+	 */
+	drawMouseData: function (val) {
+		if (val !== undefined) {
+			this._drawMouseData = val;
+			return this;
+		}
+
+		return this._drawMouseData;
 	},
 
 	/**
@@ -804,6 +878,11 @@ var IgeObject = IgeEventingClass.extend({
 	 */
 	mount: function (obj) {
 		if (obj) {
+			if (obj === this) {
+				this.log('Cannot mount an object to itself!', 'error');
+				return this;
+			}
+			
 			if (obj._children) {
 				// Check that the engine will allow us to register this object
 				this.id(); // Generates a new id if none is currently set, and registers it on the object register!
@@ -829,8 +908,12 @@ var IgeObject = IgeEventingClass.extend({
 					}*/
 				}
 				
+				// Make sure we keep the child's room id in sync with it's parent
+				if (this._parent._streamRoomId) {
+					this._streamRoomId = this._parent._streamRoomId;
+				}
+				
 				obj._children.push(this);
-
 				this._parent._childMounted(this);
 
 				if (obj.updateTransform) {
@@ -1408,7 +1491,7 @@ var IgeObject = IgeEventingClass.extend({
 					if (item.aabb) {
 						// Check the entity to see if its bounds are "inside" the
 						// viewport's visible area
-						if (vpViewArea.rectIntersect(item.aabb(true))) {
+						if (vpViewArea.intersects(item.aabb(true))) {
 							// The entity is inside the viewport visible area
 							item._inView = true;
 						} else {
@@ -1424,7 +1507,7 @@ var IgeObject = IgeEventingClass.extend({
 		return this;
 	},
 	
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		// Check that we are alive before processing further
 		if (this._alive) {
 			if (this._newBorn) { this._newBorn = false; }
@@ -1455,7 +1538,7 @@ var IgeObject = IgeEventingClass.extend({
 				if (igeConfig.debug._timing) {
 					while (arrCount--) {
 						ts = new Date().getTime();
-						arr[arrCount].update(ctx);
+						arr[arrCount].update(ctx, tickDelta);
 						td = new Date().getTime() - ts;
 						if (arr[arrCount]) {
 							if (!ige._timeSpentInTick[arr[arrCount].id()]) {
@@ -1472,7 +1555,7 @@ var IgeObject = IgeEventingClass.extend({
 					}
 				} else {
 					while (arrCount--) {
-						arr[arrCount].update(ctx);
+						arr[arrCount].update(ctx, tickDelta);
 					}
 				}
 			}
@@ -1502,6 +1585,11 @@ var IgeObject = IgeEventingClass.extend({
 				// Loop our children and call their tick methods
 				if (igeConfig.debug._timing) {
 					while (arrCount--) {
+						if (!arr[arrCount]) {
+							this.log('Object _children is undefined for index ' + arrCount + ' and _id: ' + this._id, 'error');
+							continue;
+						}
+						
 						if (!arr[arrCount]._newBorn) {
 							ctx.save();
 							ts = new Date().getTime();
@@ -1524,6 +1612,11 @@ var IgeObject = IgeEventingClass.extend({
 					}
 				} else {
 					while (arrCount--) {
+						if (!arr[arrCount]) {
+							this.log('Object _children is undefined for index ' + arrCount + ' and _id: ' + this._id, 'error');
+							continue;
+						}
+						
 						if (!arr[arrCount]._newBorn) {
 							ctx.save();
 							arr[arrCount].tick(ctx);
@@ -1581,7 +1674,7 @@ var IgeObject = IgeEventingClass.extend({
 	 * Calls each behaviour method for the object.
 	 * @private
 	 */
-	_processUpdateBehaviours: function (ctx) {
+	_processUpdateBehaviours: function (ctx, tickDelta) {
 		var arr = this._updateBehaviours,
 			arrCount;
 
@@ -1677,6 +1770,202 @@ var IgeObject = IgeEventingClass.extend({
 		delete this._eventListeners;
 
 		return this;
+	},
+	
+	objSave: function () {
+		return {igeClass: this.classId(), data: this._objSaveReassign(this, [])};
+	},
+	
+	objLoad: function (obj) {
+		this._objLoadReassign(this, obj.data);
+	},
+	
+	saveSpecialProp: function (obj, i) {
+		switch (i) {
+			case '_id':
+				if (obj._id) {
+					return {_id: obj._id};
+				}
+				break;
+			
+			case '_parent':
+				if (obj._parent) {
+					return {_parent: obj._parent.id()};
+				}
+				break;
+			
+			case '_children':
+				if (obj._children.length) {
+					var childIndex,
+						child,
+						arr = [];
+					
+					for (childIndex = 0; childIndex < obj._children.length; childIndex++) {
+						child = obj._children[childIndex];
+						arr.push(child.objSave());
+					}
+					
+					return {_children: arr};
+				}
+				break;
+		}
+		
+		return undefined;
+	},
+	
+	loadSpecialProp: function (obj, i) {
+		switch (i) {
+			case '_id':
+				return {_id: obj[i]};
+				break;
+			
+			case '_parent':
+				return {_parent: obj[i]};
+				break;
+			
+			case '_children':
+				return {_children: obj[i]};
+				break;
+		}
+		return undefined;
+	},
+	
+	loadGraph: function (obj) {
+		if (obj.igeClass && obj.data) {
+			// Create a new class instance
+			var classInstance = ige.newClassInstance(obj.igeClass),
+				newId,
+				childArr,
+				childIndex,
+				parentId;
+			
+			classInstance.objLoad(obj);
+			
+			if (classInstance._parent) {
+				// Record the id and delete it
+				parentId = classInstance._parent;
+				delete classInstance._parent;
+			}
+			
+			// Process item id
+			if (classInstance._id) {
+				newId = classInstance._id;
+				delete classInstance._id;
+				
+				classInstance.id(newId);
+			}
+			
+			// Check for children and process them if exists
+			if (classInstance._children && classInstance._children.length) {
+				childArr = classInstance._children;
+				classInstance._children = [];
+				
+				for (childIndex = 0; childIndex < childArr.length; childIndex++) {
+					classInstance.loadGraph(childArr[childIndex]);
+				}
+			}
+			
+			// Now mount the instance if it has a parent
+			classInstance.mount(this);
+		}
+	},
+	
+	_objSaveReassign: function (obj, ref) {
+		var copyObj,
+			specialKeys = this._specialProp,
+			refIndex,
+			specProp,
+			specPropKey,
+			i;
+		
+		if (typeof(obj) === 'object' && !(obj instanceof Array)) {
+			copyObj = {};
+			
+			for (i in obj) {
+				if (obj.hasOwnProperty(i)) {
+					if (typeof(obj[i]) === 'object') {
+						if (specialKeys.indexOf(i) === -1) {
+							// Check if the ref already exists
+							refIndex = ref.indexOf(obj[i]);
+							
+							if (refIndex > -1) {
+								copyObj[i] = '{ref:' + refIndex + '}';
+								this.log('Possible circular reference for property ' + i);
+							} else {
+								ref.push(obj[i]);
+								copyObj[i] = this._objSaveReassign(obj[i], ref);
+							}
+						} else {
+							// This is a special property that needs handling via
+							// it's own method to return an appropriate data value
+							// so check if there is a method for it
+							specProp = this.saveSpecialProp(obj, i);
+							
+							if (specProp) {
+								if (typeof(specProp) === 'object' && !(specProp instanceof Array)) {
+									// Process the returned object properties
+									for (specPropKey in specProp) {
+										if (specProp.hasOwnProperty(specPropKey)) {
+											// Copy the special property data to the key in
+											// our return object
+											copyObj[specPropKey] = specProp[specPropKey];
+										}
+									}
+								} else {
+									copyObj[i] = specProp;
+								}
+							}
+						}
+					} else {
+						copyObj[i] = obj[i];
+					}
+				}
+			}
+			
+			return copyObj;
+		} else {
+			return obj;
+		}
+	},
+	
+	_objLoadReassign: function (obj, newProps) {
+		var specialKeys = this._specialProp,
+			specProp,
+			specPropKey,
+			i;
+		
+		for (i in newProps) {
+			if (newProps.hasOwnProperty(i)) {
+				if (specialKeys.indexOf(i) === -1) {
+					if (typeof(newProps[i]) === 'object' && obj[i]) {
+						this._objLoadReassign(obj[i], newProps[i]);
+					} else {
+						// Assign the property value directly
+						obj[i] = newProps[i];
+					}
+				} else {
+					// This is a special property that needs handling via
+					// it's own method to return an appropriate data value
+					// so check if there is a method for it
+					specProp = this.loadSpecialProp(newProps, i);
+					
+					if (specProp) {
+						if (typeof(specProp) === 'object' && !(specProp instanceof Array)) {
+							// Process the returned object properties
+							for (specPropKey in specProp) {
+								if (specProp.hasOwnProperty(specPropKey)) {
+									// Copy the special property data to the key in
+									// our return object
+									obj[specPropKey] = specProp[specPropKey];
+								}
+							}
+						} else {
+							obj[i] = specProp;
+						}
+					}
+				}
+			}
+		}
 	},
 
 	/**

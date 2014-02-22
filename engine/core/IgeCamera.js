@@ -35,7 +35,7 @@ var IgeCamera = IgeEntity.extend({
 	/**
 	 * Pan (tween) the camera to the new specified point in
 	 * the specified time.
-	 * @param {IgePoint} point The point describing the co-ordinates to pan to.
+	 * @param {IgePoint3d} point The point describing the co-ordinates to pan to.
 	 * @param {Number} durationMs The number of milliseconds to span the pan operation over.
 	 * @param {String=} easing Optional easing method name.
 	 */
@@ -58,7 +58,7 @@ var IgeCamera = IgeEntity.extend({
 	/**
 	 * Pan (tween) the camera by the new specified point in
 	 * the specified time.
-	 * @param {IgePoint} point The point describing the co-ordinates to pan by.
+	 * @param {IgePoint3d} point The point describing the co-ordinates to pan by.
 	 * @param {Number} durationMs The number of milliseconds to span the pan operation over.
 	 * @param {String=} easing Optional easing method name.
 	 */
@@ -93,8 +93,14 @@ var IgeCamera = IgeEntity.extend({
 	trackTranslate: function (entity, smoothing, rounding) {
 		if (entity !== undefined) {
 			this.log('Camera on viewport ' + this._entity.id() + ' is now tracking translation target ' + entity.id());
-			this._trackTranslateRounding = rounding;
-			this._trackTranslateSmoothing = smoothing >= 1  ? smoothing : 0;
+			if (rounding !== undefined) {
+				this._trackTranslateRounding = rounding;
+			}
+			
+			if (smoothing !== undefined) {
+				this._trackTranslateSmoothing = smoothing >= 1  ? smoothing : 0;
+			}
+			
 			this._trackTranslateTarget = entity;
 			return this._entity;
 		}
@@ -300,27 +306,8 @@ var IgeCamera = IgeEntity.extend({
 		this._localMatrix.multiply(this._localMatrix._newRotate(this._rotate.z));
 		this._localMatrix.multiply(this._localMatrix._newScale(this._scale.x, this._scale.y));
 
-		if (this._mode === 0) {
-			// 2d translation
-			this._localMatrix.multiply(this._localMatrix._newTranslate(-this._translate.x, -this._translate.y));
-		}
-
-		if (this._mode === 1) {
-			// iso translation
-			var isoPoint = this._translateIso = new IgePoint(
-				this._translate.x,
-				this._translate.y,
-				this._translate.z + this._geometry.z / 2
-			).toIso();
-
-			if (this._parent && this._parent._geometry.z) {
-				// This adjusts the child entity so that 0, 0, 0 inside the
-				// parent is the center of the base of the parent
-				isoPoint.y += this._parent._geometry.z / 1.6;
-			}
-
-			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
-		}
+		// 2d translation - cameras are never in iso mode!
+		this._localMatrix.multiply(this._localMatrix._newTranslate(-this._translate.x, -this._translate.y));
 
 		if (this._parent) {
 			this._worldMatrix.copy(this._parent._worldMatrix);

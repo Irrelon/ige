@@ -1,6 +1,6 @@
 /**
  * Creates a new font entity. A font entity will use a font sheet
- * (IgeFontSheet) and render text based on that font sheet's glyphs.
+ * (IgeFontSheet) or native font and render text.
  */
 var IgeFontEntity = IgeUiEntity.extend({
 	classId: 'IgeFontEntity',
@@ -31,7 +31,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	width: function (val, lockAspect, modifier, noUpdate) {
 		if (val !== undefined) {
-			if (this._geometry.x !== val) {
+			if (this._bounds2d.x !== val) {
 				this.clearCache();
 			}
 		}
@@ -57,7 +57,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	height: function (val, lockAspect, modifier, noUpdate) {
 		if (val !== undefined) {
-			if (this._geometry.y !== val) {
+			if (this._bounds2d.y !== val) {
 				this.clearCache();
 			}
 		}
@@ -82,6 +82,9 @@ var IgeFontEntity = IgeUiEntity.extend({
 	text: function (text) {
 		if (text !== undefined) {
 			var wasDifferent = false;
+			
+			// Ensure we have a string
+			text = String(text);
 			
 			if (this._text !== text) {
 				this.clearCache();
@@ -335,13 +338,16 @@ var IgeFontEntity = IgeUiEntity.extend({
 				// add a line break before the word
 				lineWidth = this.measureTextWidth(currentTextLine);
 				
-				if (lineWidth >= this._geometry.x) {
-					// Add a line break
-					textArray.push('\n');
+				if (lineWidth >= this._bounds2d.x) {
+					// Start a new line
 					currentTextLine = words[wordIndex];
+					
+					// Add a line break
+					textArray.push('\n' + words[wordIndex]);
+				} else {
+					textArray.push(words[wordIndex]);
 				}
 				
-				textArray.push(words[wordIndex]);
 			}
 			
 			this._renderText = textArray.join(' ');

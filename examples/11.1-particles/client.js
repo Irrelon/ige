@@ -45,15 +45,15 @@ var Client = IgeClass.extend({
 							this._emitter = emitter;
 							IgeEntity.prototype.init.call(this);
 
+							this.noAabb(true);
+							
 							// Setup the particle default values
 							this.addComponent(IgeVelocityComponent)
 								.texture(gameTexture[3])
 								.width(50)
 								.height(50)
 								.drawBounds(false)
-								.drawBoundsData(false)
-								.mouseOver(overFunc)
-								.mouseOut(outFunc);
+								.drawBoundsData(false);
 						},
 
 						tick: function (ctx) {
@@ -97,8 +97,8 @@ var Client = IgeClass.extend({
 						.scaleLockAspect(true)
 						.rotateVariance(0, 360)
 						.opacityBase(0.5)
-						.velocityVector(new IgePoint(0, -0.1, 0), new IgePoint(-0.2, -0.1, 0), new IgePoint(0.2, -0.25, 0))
-						.linearForceVector(new IgePoint(0, 0.12, 0), new IgePoint(0, 0, 0), new IgePoint(0, 0, 0))
+						.velocityVector(new IgePoint3d(0, -0.1, 0), new IgePoint3d(-0.2, -0.1, 0), new IgePoint3d(0.2, -0.25, 0))
+						.linearForceVector(new IgePoint3d(0, 0.12, 0), new IgePoint3d(0, 0, 0), new IgePoint3d(0, 0, 0))
 						.deathScaleBaseX(0)
 						.deathScaleVarianceX(0, 1)
 						.deathScaleBaseY(0.7)
@@ -108,7 +108,7 @@ var Client = IgeClass.extend({
 						.depth(1)
 						.width(10)
 						.height(10)
-						.translateTo(0, ige._geometry.y2, 0)
+						.translateTo(0, ige._bounds2d.y2, 0)
 						.particleMountTarget(self.scene1)
 						.mount(self.scene1)
 						.start();

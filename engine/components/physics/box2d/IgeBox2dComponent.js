@@ -181,7 +181,8 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 	/**
 	 * Gets / sets the gravity vector.
-	 * @param val
+	 * @param x
+	 * @param y
 	 * @return {*}
 	 */
 	gravity: function (x, y) {
@@ -203,9 +204,11 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 	/**
 	 * Creates the Box2d world.
+	 * @param {String=} id
+	 * @param {Object=} options
 	 * @return {*}
 	 */
-	createWorld: function () {
+	createWorld: function (id, options) {
 		this._world = new this.b2World(
 			this._gravity,
 			this._sleep
@@ -265,6 +268,10 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			case 'dynamic':
 				tempDef.type = this.b2Body.b2_dynamicBody;
 				break;
+			
+			case 'kinematic':
+                tempDef.type = this.b2Body.b2_kinematicBody;
+                break;
 		}
 
 		// Add the parameters of the body to the new body instance
@@ -327,7 +334,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 											if (fixtureDef.shape.data && typeof(fixtureDef.shape.data.radius) !== 'undefined') {
 												tempShape.SetRadius(fixtureDef.shape.data.radius / this._scaleRatio);
 											} else {
-												tempShape.SetRadius((entity._geometry.x / this._scaleRatio) / 2);
+												tempShape.SetRadius((entity._bounds2d.x / this._scaleRatio) / 2);
 											}
 											
 											if (fixtureDef.shape.data) {
@@ -349,13 +356,13 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 											if (fixtureDef.shape.data) {
 												finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
 												finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
-												finalWidth = fixtureDef.shape.data.width !== undefined ? fixtureDef.shape.data.width : (entity._geometry.x / 2);
-												finalHeight = fixtureDef.shape.data.height !== undefined ? fixtureDef.shape.data.height : (entity._geometry.y / 2);
+												finalWidth = fixtureDef.shape.data.width !== undefined ? fixtureDef.shape.data.width : (entity._bounds2d.x / 2);
+												finalHeight = fixtureDef.shape.data.height !== undefined ? fixtureDef.shape.data.height : (entity._bounds2d.y / 2);
 											} else {
 												finalX = 0;
 												finalY = 0;
-												finalWidth = (entity._geometry.x / 2);
-												finalHeight = (entity._geometry.y / 2);
+												finalWidth = (entity._bounds2d.x / 2);
+												finalHeight = (entity._bounds2d.y / 2);
 											}
 	
 											// Set the polygon as a box
@@ -376,7 +383,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 								}
 	
 								if (fixtureDef.filter && finalFixture) {
-									tempFilterData = new ige.box2d.b2FilterData();
+									tempFilterData = new this._entity.box2d.b2FilterData();
 	
 									if (fixtureDef.filter.categoryBits !== undefined) { tempFilterData.categoryBits = fixtureDef.filter.categoryBits; }
 									if (fixtureDef.filter.maskBits !== undefined) { tempFilterData.maskBits = fixtureDef.filter.maskBits; }
@@ -430,8 +437,8 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			while (rectCount--) {
 				rect = rectArray[rectCount];
 
-				posX = (tileWidth * (rect.width / 2)) - (tileWidth / 2);
-				posY = (tileHeight * (rect.height / 2)) - (tileHeight / 2);
+				posX = (tileWidth * (rect.width / 2));
+				posY = (tileHeight * (rect.height / 2));
 
 				new IgeEntityBox2d()
 					.translateTo(rect.x * tileWidth + posX, rect.y * tileHeight + posY, 0)
@@ -550,7 +557,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 			// Create the debug painter entity and mount
 			// it to the passed scene
-			new igeClassStore.Box2dDebugPainter()
+			new igeClassStore.IgeBox2dDebugPainter(this._entity)
 				.depth(40000) // Set a really high depth
 				.drawBounds(false)
 				.mount(mountScene);
@@ -589,7 +596,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 			if (!this._networkDebugMode) {
 				if (this._mode === 0) {
 					// Add the box2d behaviour to the ige
-					ige.addBehaviour('box2dStep', this._behaviour);
+					this._entity.addBehaviour('box2dStep', this._behaviour);
 				} else {
 					this._intervalTimer = setInterval(this._behaviour, 1000 / 60);
 				}
@@ -603,7 +610,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 			if (this._mode === 0) {
 				// Add the box2d behaviour to the ige
-				ige.removeBehaviour('box2dStep');
+				this._entity.removeBehaviour('box2dStep');
 			} else {
 				clearInterval(this._intervalTimer);
 			}
@@ -616,7 +623,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_behaviour: function (ctx) {
-		var self = ige.box2d,
+		var self = this.box2d,
 			tempBod,
 			entity,
 			entityBox2dBody,
@@ -694,25 +701,10 @@ var IgeBox2dComponent = IgeEventingClass.extend({
 
 	destroy: function () {
 		// Stop processing box2d steps
-		ige.removeBehaviour('box2dStep');
+		this._entity.removeBehaviour('box2dStep');
 
 		// Destroy all box2d world bodies
 
-	}
-});
-
-var Box2dDebugPainter = IgeObject.extend({
-	classId: 'Box2dDebugPainter',
-
-	tick: function (ctx) {
-		if (this._parent && this._parent.isometricMounts() === true) {
-			ctx.scale(1.414, 0.707); // This should be super-accurate now
-			ctx.rotate(45  * Math.PI / 180);
-		}
-		
-		ige.box2d._world.DrawDebugData();
-
-		IgeObject.prototype.tick.call(this, ctx);
 	}
 });
 

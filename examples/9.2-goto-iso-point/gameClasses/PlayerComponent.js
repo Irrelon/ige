@@ -28,7 +28,7 @@ var PlayerComponent = IgeClass.extend({
 		// We get the tile's world XY and then convert it from iso to 2d
 		// with a call to "to2d()" because the tilemap is isometric and
 		// the walkTo method uses 2d co-ordinates!
-		var tilePoint = ige.$('tileMap1').mouseTileWorldXY().to2d();
+		var tilePoint = ige.$('tileMap1').mouseTilePoint();
 
 		this._entity.walkTo(
 			tilePoint.x,

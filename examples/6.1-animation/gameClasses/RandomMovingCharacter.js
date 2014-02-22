@@ -1,15 +1,15 @@
 var RandomMovingCharacter = Character.extend({
 	classId: 'RandomMovingCharacter',
 
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		if (this.data('moving') === false) {
 			this.walkTo(
-				(Math.random() * ige._geometry.x) - ige._geometry.x2,
-				(Math.random() * ige._geometry.y) - ige._geometry.y2
+				(Math.random() * ige._bounds2d.x) - ige._bounds2d.x2,
+				(Math.random() * ige._bounds2d.y) - ige._bounds2d.y2
 			);
 		}
 
-		Character.prototype.update.call(this, ctx);
+		Character.prototype.update.call(this, ctx, tickDelta);
 	}
 });
 

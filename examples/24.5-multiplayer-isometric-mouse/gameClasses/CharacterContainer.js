@@ -6,9 +6,9 @@ var CharacterContainer = IgeEntity.extend({
 		var self = this;
 		IgeEntity.prototype.init.call(this);
 		
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			// Setup the entity 3d bounds
-			self.size3d(20, 20, 40);
+			self.bounds3d(20, 20, 40);
 	
 			// Create a character entity as a child of this container
 			self.character = new Character()
@@ -46,7 +46,7 @@ var CharacterContainer = IgeEntity.extend({
 		if (sectionId === 'direction') {
 			// Check if the server sent us data, if not we are supposed
 			// to return the data instead of set it
-			if (!ige.isServer) {
+			if (ige.isClient) {
 				if (data) {
 					// We have been given new data!
 					this._streamDir = data;
@@ -65,7 +65,7 @@ var CharacterContainer = IgeEntity.extend({
 		}
 	},
 
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		if (ige.isServer) {
 			// Make sure the character is animating in the correct
 			// direction - this variable is actually streamed to the client
@@ -113,7 +113,7 @@ var CharacterContainer = IgeEntity.extend({
 			}
 		}
 		
-		IgeEntity.prototype.update.call(this, ctx);
+		IgeEntity.prototype.update.call(this, ctx, tickDelta);
 	}
 });
 

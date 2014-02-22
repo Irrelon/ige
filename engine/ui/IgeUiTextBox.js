@@ -34,6 +34,7 @@ var IgeUiTextBox = IgeUiElement.extend({
 		};
 		
 		var focusFunc = function () {
+			ige.input.stopPropagation();
 			blurFunc();
 			
 			var input,
@@ -45,9 +46,9 @@ var IgeUiTextBox = IgeUiElement.extend({
 			
 			// Position the infobox and set content
 			input.style.position = 'absolute';
-			input.style.top = (entScreenPos.y - self._geometry.y2) + 'px';
-			input.style.left = (entScreenPos.x - self._geometry.x2) + 'px';
-			input.style.width = self._geometry.x + 'px';
+			input.style.top = (entScreenPos.y - self._bounds2d.y2) + 'px';
+			input.style.left = (entScreenPos.x - self._bounds2d.x2) + 'px';
+			input.style.width = self._bounds2d.x + 'px';
 			input.style.zIndex = -1;
 			input.style.opacity = '0';
 			
@@ -95,6 +96,7 @@ var IgeUiTextBox = IgeUiElement.extend({
 		// On focus, create a temp input element in the DOM and focus to it
 		this.on('focus', focusFunc);
 		this.on('mouseUp', focusFunc);
+		this.on('mouseDown', function () { ige.input.stopPropagation(); });
 		
 		this.on('uiUpdate', function () {
 			if (self._domElement) {
@@ -105,8 +107,8 @@ var IgeUiTextBox = IgeUiElement.extend({
 					entScreenPos = self.screenPosition();
 				
 				// Reposition the dom element
-				input.style.top = (entScreenPos.y - self._geometry.y2) + 'px';
-				input.style.left = (entScreenPos.x - self._geometry.x2) + 'px';
+				input.style.top = (entScreenPos.y - self._bounds2d.y2) + 'px';
+				input.style.left = (entScreenPos.x - self._bounds2d.x2) + 'px';
 			}
 		});
 		

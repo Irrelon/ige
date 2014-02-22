@@ -13,7 +13,7 @@ var Character = IgeEntity.extend({
 			this.addComponent(IgeVelocityComponent);
 		}
 		
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			// Setup the entity
 			self.addComponent(IgeAnimationComponent)
 				.depth(1);
@@ -128,8 +128,8 @@ var Character = IgeEntity.extend({
 		return this;
 	},
 
-	update: function (ctx) {
-		if (!ige.isServer) {
+	update: function (ctx, tickDelta) {
+		if (ige.isClient) {
 			// Set the current animation based on direction
 			var self = this,
 				oldX = this._lastTranslate.x,
@@ -190,7 +190,7 @@ var Character = IgeEntity.extend({
 			this.depth(this._translate.y);
 		}
 		
-		IgeEntity.prototype.update.call(this, ctx);
+		IgeEntity.prototype.update.call(this, ctx, tickDelta);
 	},
 
 	destroy: function () {

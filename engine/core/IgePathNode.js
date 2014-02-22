@@ -1,7 +1,7 @@
 /**
  * Creates a new path node for use with the IgePathFinder class.
  */
-var IgePathNode = IgePoint.extend({
+var IgePathNode = IgePoint3d.extend({
 	classId: 'IgePathNode',
 
 	/**
@@ -15,7 +15,7 @@ var IgePathNode = IgePoint.extend({
 	 * @param {String} direction
 	 */
 	init: function(x, y, g, moveCost, h, parent, direction) {
-		this.z = 0; // Compat with IgePoint
+		this.z = 0; // Compat with IgePoint3d
 		
 		this.x = x;
 		this.y = y;

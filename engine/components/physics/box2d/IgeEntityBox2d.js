@@ -1,15 +1,27 @@
 /**
- * Creates a new isometric 3d entity.
+ * Creates a new entity with box2d integration.
  */
 var IgeEntityBox2d = IgeEntity.extend({
 	classId: 'IgeEntityBox2d',
 
-	init: function () {
+	init: function (world) {
 		IgeEntity.prototype.init.call(this);
+		
+		if (world) {
+			if (typeof(world) === 'string') {
+				// Get world reference
+				world = ige.box2d.world(world);
+			}
+			
+			this._box2dWorld = world;
+			this._b2dRef = world;
+		} else {
+			this._b2dRef = ige.box2d;
+		}
 		
 		// Check if box2d is enabled in the engine
 		if (ige.box2d) {
-			if (!ige.box2d._networkDebugMode) {
+			if (!this._b2dRef._networkDebugMode) {
 				// Store the existing transform methods
 				this._translateToProto = this.translateTo;
 				this._translateByProto = this.translateBy;
@@ -73,7 +85,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 			// Check that the box2d component exists
 			if (ige.box2d) {
 				// Ask the box2d component to create a new body for us
-				this._box2dBody = ige.box2d.createBody(this, def);
+				this._box2dBody = this._b2dRef.createBody(this, def);
 			} else {
 				this.log('You are trying to create a box2d entity but you have not added the box2d component to the ige instance!', 'error');
 			}
@@ -82,6 +94,28 @@ var IgeEntityBox2d = IgeEntity.extend({
 		}
 
 		return this._box2dBodyDef;
+	},
+
+	/**
+	 * Gets / sets the box2d body's gravitic value. If set to false,
+	 * this entity will not be affected by gravity. If set to true it
+	 * will be affected by gravity.
+	 * @param {Boolean=} val True to allow gravity to affect this entity.
+	 * @returns {*}
+	 */
+	gravitic: function (val) {
+		if (this._box2dBody) {
+			if (val !== undefined) {
+				this._box2dBody.m_nonGravitic = !val;
+				this._box2dBodyDef.gravitic = val;
+				
+				// Wake up the body
+				this._box2dBody.SetAwake(true);
+				return this;
+			}
+			
+			return !this._box2dBody.m_nonGravitic;
+		}
 	},
 
 	/**
@@ -106,7 +140,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 			// transform op and take over
 
 			// Translate the body
-			entBox2d.SetPosition({x: x / ige.box2d._scaleRatio, y: y / ige.box2d._scaleRatio});
+			entBox2d.SetPosition({x: x / this._b2dRef._scaleRatio, y: y / this._b2dRef._scaleRatio});
 			entBox2d.SetAwake(true);
 		}
 
@@ -200,7 +234,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 	 */
 	destroy: function () {
 		if (this._box2dBody) {
-			ige.box2d.destroyBody(this._box2dBody);
+			this._b2dRef.destroyBody(this._box2dBody);
 		}
 		IgeEntity.prototype.destroy.call(this);
 	}

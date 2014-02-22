@@ -1,6 +1,21 @@
 // TODO: Add "overflow" with automatic scroll-bars
 var IgeUiStyleExtension = {
 	/**
+	 * Gets / sets the color to use as the font color.
+	 * @param {CSSColor, CanvasGradient, CanvasPattern=} color
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 */
+	color: function (color) {
+		if (color !== undefined) {
+			this._color = color;
+			this.cacheDirty(true);
+			return this;
+		}
+
+		return this._color;
+	},
+	
+	/**
 	 * Sets the current background texture and the repeatType
 	 * to determine in which axis the image should be repeated.
 	 * @param {IgeTexture=} texture
@@ -71,13 +86,13 @@ var IgeUiStyleExtension = {
 			if (typeof(x) === 'string') {
 				// Work out the actual size in pixels
 				// from the percentage
-				x = this._geometry.x / 100 * parseInt(x, 10);
+				x = this._bounds2d.x / 100 * parseInt(x, 10);
 			}
 
 			if (typeof(y) === 'string') {
 				// Work out the actual size in pixels
 				// from the percentage
-				y = this._geometry.y / 100 * parseInt(y, 10);
+				y = this._bounds2d.y / 100 * parseInt(y, 10);
 			}
 			
 			if (x !== 0 && y !== 0) {

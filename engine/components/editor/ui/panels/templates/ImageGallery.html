@@ -1,0 +1,15 @@
+<div id="igeEditorProperty_{{:id}}" class="igeEditorProperty ImageGallery" data-type="ImageGallery" data-prop="{{:id}}" data-obj-id="{{:obj._id}}">
+	<div class="header">
+		<div class="label">{{:label}}</div>
+	</div>
+	<div class="content">
+		{{if images && images.length}}
+			{{for images}}
+			<div class="image {{if selected}}active{{/if}}" {{if id}}id="{{:id}}"{{/if}} data-cell-index="{{:cellIndex}}" style="background-image: url({{:url}}); {{:style}}"></div>
+			{{/for}}
+		{{else}}
+			Not a cell sheet
+		{{/if}}
+		<div class="clearfix"></div>
+	</div>
+</div>

@@ -1,0 +1,22 @@
+<div class="editorElem toggleHide shown menu" oncontextmenu="return false;">
+	{{if header}}
+	<ul class="header">
+		<li><span class="halflings-icon white {{:header.icon}}"></span>{{:header.text}}</li>
+	</ul>
+	{{/if}}
+	{{if search}}
+	<div class="searchForm">
+		<input type="text" class="searchInput" placeholder="Search..." />
+		<div class="searchClear"><span class="halflings-icon white remove"></span></div>
+	</div>
+	{{/if}}
+	<ul class="items">
+		{{for groups}}
+			{{for ~forEach(#data)}}
+				{{for #data}}
+					<li onclick="{{:action}}; ige.editor.ui.menus.closeAll(); ige.editor.ui.menus.toggle();" id="{{:id}}" class="{{if sep}}separator{{/if}}" data-val="{{:text}}"><span class="halflings-icon white {{:icon}}"></span> <span class="text">{{:text}}</span></li>
+				{{/for}}
+			{{/for}}
+		{{/for}}
+	</ul>
+</div>

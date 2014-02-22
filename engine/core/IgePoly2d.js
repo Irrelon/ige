@@ -1,12 +1,12 @@
 /**
- * Creates a new 2d polygon made up of IgePoint instances.
+ * Creates a new 2d polygon made up of IgePoint2d instances.
  */
 var IgePoly2d = IgeClass.extend({
 	classId: 'IgePoly2d',
 
 	init: function () {
 		this._poly = [];
-		this._scale = new IgePoint(1, 1, 1);
+		this._scale = new IgePoint2d(1, 1);
 	},
 
 	scale: function (x, y) {
@@ -66,7 +66,7 @@ var IgePoly2d = IgeClass.extend({
 	 * @param y
 	 */
 	addPoint: function (x, y) {
-		this._poly.push(new IgePoint(x, y, 0));
+		this._poly.push(new IgePoint2d(x, y));
 		return this;
 	},
 
@@ -80,7 +80,7 @@ var IgePoly2d = IgeClass.extend({
 
 	/**
 	 * Check if a point is inside this polygon.
-	 * @param {IgePoint} point
+	 * @param {IgePoint2d} point
 	 * @return {Boolean}
 	 */
 	pointInPoly: function (point) {
@@ -125,6 +125,31 @@ var IgePoly2d = IgeClass.extend({
 		}
 
 		return Boolean(c);
+	},
+	
+	aabb: function () {
+		var minX,
+			minY,
+			maxX,
+			maxY,
+			xArr = [],
+			yArr = [],
+			arr = this._poly,
+			arrIndex,
+			arrCount = arr.length;
+		
+		for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+			xArr.push(arr[arrIndex].x);
+			yArr.push(arr[arrIndex].y);
+		}
+		
+		// Get the extents of the newly transformed poly
+		minX = Math.min.apply(Math, xArr);
+		minY = Math.min.apply(Math, yArr);
+		maxX = Math.max.apply(Math, xArr);
+		maxY = Math.max.apply(Math, yArr);
+	
+		return new IgeRect(minX, minY, maxX - minX, maxY - minY);
 	},
 
 	/**
@@ -365,7 +390,7 @@ var IgePoly2d = IgeClass.extend({
 	 * Draws the polygon bounding lines to the passed context.
 	 * @param {CanvasRenderingContext2D} ctx
 	 */
-	render: function (ctx) {
+	render: function (ctx, fill) {
 		var polyPoints = this._poly,
 			pointCount = polyPoints.length,
 			scaleX = this._scale.x,
@@ -378,6 +403,7 @@ var IgePoly2d = IgeClass.extend({
 			ctx.lineTo(polyPoints[i].x * scaleX, polyPoints[i].y * scaleY);
 		}
 		ctx.lineTo(polyPoints[0].x * scaleX, polyPoints[0].y * scaleY);
+		if (fill) { ctx.fill(); }
 		ctx.stroke();
 
 		return this;

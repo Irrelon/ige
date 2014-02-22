@@ -6,8 +6,8 @@ var IgeVelocityComponent = IgeClass.extend({
 	init: function (entity, options) {
 		this._entity = entity;
 
-		this._velocity = new IgePoint(0, 0, 0);
-		this._friction = new IgePoint(1, 1, 1);
+		this._velocity = new IgePoint3d(0, 0, 0);
+		this._friction = new IgePoint3d(1, 1, 1);
 
 		// Add the velocity behaviour to the entity
 		entity.addBehaviour('velocity', this._behaviour);
@@ -123,7 +123,7 @@ var IgeVelocityComponent = IgeClass.extend({
 			finalFriction = 0;
 		}
 
-		this._friction = new IgePoint(finalFriction, finalFriction, finalFriction);
+		this._friction = new IgePoint3d(finalFriction, finalFriction, finalFriction);
 
 		return this._entity;
 	},
@@ -134,18 +134,18 @@ var IgeVelocityComponent = IgeClass.extend({
 			x = Math.cos(radians) * power,
 			y = Math.sin(radians) * power,
 			z = x * y;
-		this._linearForce = new IgePoint(x, y, z);
+		this._linearForce = new IgePoint3d(x, y, z);
 
 		return this._entity;
 	},
 
 	linearForceXYZ: function (x, y, z) {
-		this._linearForce = new IgePoint(x, y, z);
+		this._linearForce = new IgePoint3d(x, y, z);
 		return this._entity;
 	},
 
 	linearForceVector3: function (vector, power, relative) {
-		var force = this._linearForce = this._linearForce || new IgePoint(0, 0, 0),
+		var force = this._linearForce = this._linearForce || new IgePoint3d(0, 0, 0),
 			x = vector.x / 1000,
 			y = vector.y / 1000,
 			z = vector.z / 1000;

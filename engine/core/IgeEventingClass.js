@@ -48,10 +48,10 @@ var IgeEventingClass = IgeClass.extend({
 			if (typeof eventName === 'string') {
 				// Compose the new listener
 				newListener = {
-					call:call,
-					context:context,
-					oneShot:oneShot,
-					sendEventName:sendEventName
+					call: call,
+					context: context,
+					oneShot: oneShot,
+					sendEventName: sendEventName
 				};
 
 				elArr = this._eventListeners[eventName] = this._eventListeners[eventName] || [];
@@ -123,6 +123,14 @@ var IgeEventingClass = IgeClass.extend({
 	 * @param {Object} evtListener The event listener object to cancel. This object is the one
 	 * returned when calling the on() method. It is NOT the method you passed as the second argument
 	 * to the on() method.
+	 * @param {Function} callback The callback method to call when the event listener has been
+	 * successfully removed. If you attempt to remove a listener during the event firing loop
+	 * then the listener will not immediately be removed but will be queued for removal before
+	 * the next listener loop is fired. In this case you may like to be informed via callback
+	 * when the listener has been fully removed in which case, provide a method for this argument.
+	 * 
+	 * The callback will be passed a single boolean argument denoting if the removal was successful
+	 * (true) or the listener did not exist to remove (false).
 	 * @example #Switch off an Event Listener
 	 *     // Register event lister and store in "evt"
 	 *     var evt = myEntity.on('mouseDown', function () { console.log('down'); });

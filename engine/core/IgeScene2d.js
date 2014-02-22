@@ -14,10 +14,27 @@ var IgeScene2d = IgeEntity.extend({
 
 		// Set the geometry of the scene to the main canvas
 		// width / height - used when positioning UI elements
-		this._geometry.x = ige._geometry.x;
-		this._geometry.y = ige._geometry.y;
+		this._bounds2d.x = ige._bounds2d.x;
+		this._bounds2d.y = ige._bounds2d.y;
 		
 		this.streamSections(['transform', 'ignoreCamera']);
+	},
+
+	/**
+	 * Gets / sets the stream room id. If set, any streaming entities that
+	 * are mounted to this scene will only sync with clients that have been
+	 * assigned to this room id.
+	 * 
+	 * @param {String} id The id of the room. 
+	 * @returns {*}
+	 */
+	streamRoomId: function (id) {
+		if (id !== undefined) {
+			this._streamRoomId = id;
+			return this;
+		}
+		
+		return this._streamRoomId;
 	},
 
 	/**
@@ -97,7 +114,7 @@ var IgeScene2d = IgeEntity.extend({
 		return this._ignoreCamera;
 	},
 	
-	update: function (ctx) {
+	update: function (ctx, tickDelta) {
 		if (this._ignoreCamera) {
 			// Translate the scene so it is always center of the camera
 			var cam = ige._currentCamera;
@@ -107,7 +124,7 @@ var IgeScene2d = IgeEntity.extend({
 			//this._localMatrix.multiply(ige._currentCamera._worldMatrix.getInverse());
 		}
 		
-		IgeEntity.prototype.update.call(this, ctx);
+		IgeEntity.prototype.update.call(this, ctx, tickDelta);
 	},
 
 	/**
@@ -128,7 +145,7 @@ var IgeScene2d = IgeEntity.extend({
 	_resizeEvent: function (event) {
 		// Set width / height of scene to match main ige (SCENES ARE ALWAYS THE FULL IGE SIZE!!)
 		if (this._autoSize) {
-			this._geometry = ige._geometry.clone();
+			this._bounds2d = ige._bounds2d.clone();
 		}
 
 		// Resize any children

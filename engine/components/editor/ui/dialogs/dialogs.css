@@ -1,0 +1,132 @@
+.dialog {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -250px;
+  margin-top: -150px;
+  width: 500px;
+  height: 300px;
+  background-color: #000;
+  font-family: Verdana, Tahoma, sans-serif;
+  font-size: 11px;
+  color: #fff;
+  box-shadow: 0 0 85px 0 rgba(0, 0, 0, 0.5);
+}
+.dialog .header {
+  background-color: #333;
+  height: 32px;
+}
+.dialog .header.secondary {
+  background-color: #222;
+}
+.dialog .header .icon {
+  float: left;
+  margin-top: 9px;
+  margin-left: 9px;
+}
+.dialog .header .title {
+  padding: 9px;
+  font-size: 12px;
+}
+.dialog .header .controls {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+.dialog .header .controls .control {
+  float: right;
+  cursor: pointer;
+  background-color: #686868;
+  width: 32px;
+  height: 32px;
+}
+.dialog .header .controls .control:hover {
+  background-color: #797979;
+}
+.dialog .header .controls .control.sep {
+  width: 5px;
+  background: none;
+}
+.dialog .header .controls .control.sep:hover {
+  background: none;
+}
+.dialog .header .controls .control .halflings-icon {
+  padding: 0;
+  margin: 0;
+  margin-top: 9px;
+  margin-left: 10px;
+}
+.dialog .content {
+  position: absolute;
+  top: 32px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.dialog .content .loadingCircle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -20px;
+  margin-left: -20px;
+}
+.dialog .content .loadingMsg {
+  left: 50%;
+  top: 50%;
+  position: absolute;
+  width: 150px;
+  height: 15px;
+  margin-left: -75px;
+  text-align: center;
+  margin-top: 20px;
+  color: #999;
+  font-family: Verdana, Tahoma, sans-serif;
+  font-size: 10px;
+}
+.dialog.confirm .content .msg,
+.dialog.input .content .msg,
+.dialog.prompt .content .msg {
+  text-align: center;
+  padding: 30px;
+}
+.dialog.confirm .content .msg.paragraphs,
+.dialog.input .content .msg.paragraphs,
+.dialog.prompt .content .msg.paragraphs {
+  padding: 0;
+  padding-left: 10px;
+  padding-right: 10px;
+  text-align: left;
+}
+.dialog.confirm .content .actionButtons,
+.dialog.input .content .actionButtons,
+.dialog.prompt .content .actionButtons {
+  position: absolute;
+  bottom: 10px;
+  left: 30px;
+  right: 30px;
+  height: 30px;
+  text-align: center;
+}
+.dialog.confirm .content .actionButtons .editorBtn,
+.dialog.input .content .actionButtons .editorBtn,
+.dialog.prompt .content .actionButtons .editorBtn {
+  min-width: 100px;
+  text-align: center;
+  margin-right: 10px;
+  display: inline-block;
+}
+.dialog.confirm .content .actionButtons .editorBtn:last-child,
+.dialog.input .content .actionButtons .editorBtn:last-child,
+.dialog.prompt .content .actionButtons .editorBtn:last-child {
+  margin-right: 0;
+}
+.dialogUnderlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 200002;
+}

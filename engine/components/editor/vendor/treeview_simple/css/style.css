@@ -1,0 +1,88 @@
+.tree {
+	box-sizing: border-box;
+	/*padding: 5px;*/
+}
+
+.tree .expandLink {
+	cursor: pointer;
+}
+
+.tree ul {
+	list-style: none outside none;
+	margin: 0;
+	padding: 0;
+}
+
+.tree li .expandLink {
+	line-height: 19px;
+}
+
+.tree > ul > li > .expandLink {
+	display: block;
+	font-weight: normal;
+	position: relative;
+	text-decoration: none;
+}
+
+.tree li.parent > .expandLink {
+	padding: 0 0 0 18px;
+}
+
+.tree li.parent > .expandLink:before {
+	background-image: url("../images/icons3.png");
+	background-position: 10px center;
+	content: "";
+	display: block;
+	height: 16px;
+	left: 0;
+	position: absolute;
+	top: 2px;
+	vertical-align: middle;
+	width: 10px;
+}
+
+.tree ul li.active > .expandLink:before {
+	background-position: 0 center;
+}
+
+.tree ul li ul {
+	display: none;
+	margin: 0 0 0 5px;
+	overflow: hidden;
+	padding: 0 0 0 16px;
+}
+
+.tree ul li ul li {
+	position: relative;
+}
+
+.tree ul li ul li:before {
+	border-left: 1px solid #E2E2E3;
+	border-bottom: 1px solid #E2E2E3;
+	content: "";
+	left: -16px;
+	position: absolute;
+	top: -5px;
+	width: 15px;
+	height: 15px;
+}
+
+.tree ul li ul li:after {
+	border-left: 1px solid #E2E2E3;
+	/*border-bottom: 1px solid #E2E2E3;*/
+	content: "";
+	left: -16px;
+	position: absolute;
+	top: 5px;
+	width: 15px;
+	height: 15px;
+}
+
+.tree li > span {
+	line-height: 19px;
+	margin-left: 2px;
+}
+
+.tree li.parent > span {
+	margin-left: 16px;
+}

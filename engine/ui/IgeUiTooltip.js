@@ -2,7 +2,7 @@
  * Provides a UI tooltip. Change properties (textBox, fonts, backgroundcolor)
  * at free will.
  */
-var IgeUiTooltip = IgeUiEntity.extend({
+var IgeUiTooltip = IgeUiElement.extend({
 	classId: 'IgeUiTooltip',
 
 	/**
@@ -14,10 +14,10 @@ var IgeUiTooltip = IgeUiEntity.extend({
 	 * @param content The content which is set with public method "setContent". Can be string, array(2) or an entity
 	 */
 	init: function (parent, mountEntity, width, height, content) {
-		IgeUiEntity.prototype.init.call(this);
+		IgeUiElement.prototype.init.call(this);
 
 		var self = this;
-		this.titleBox = new IgeUiEntity()
+		this.titleBox = new IgeUiElement()
 			.left(0)
 			.top(0)
 			.width(width)
@@ -26,7 +26,7 @@ var IgeUiTooltip = IgeUiEntity.extend({
 		this.titleBox.borderBottomColor('#ffffff');
 		this.titleBox.borderBottomWidth(1);
 		
-		this.textBox = new IgeUiEntity()
+		this.textBox = new IgeUiElement()
 			.left(0)
 			.top(30)
 			.width(width)
@@ -84,7 +84,7 @@ var IgeUiTooltip = IgeUiEntity.extend({
 		var val;
 
 		// Call the main super class method
-		val = IgeUiEntity.prototype.width.call(this, px, lockAspect, modifier, noUpdate);
+		val = IgeUiElement.prototype.width.call(this, px, lockAspect, modifier, noUpdate);
 
 		// Update the font entity width
 		this.fontEntityTitle.width(px, lockAspect, modifier, noUpdate);
@@ -106,7 +106,7 @@ var IgeUiTooltip = IgeUiEntity.extend({
 		var val;
 
 		// Call the main super class method
-		val = IgeUiEntity.prototype.height.call(this, px, lockAspect, modifier, noUpdate);
+		val = IgeUiElement.prototype.height.call(this, px, lockAspect, modifier, noUpdate);
 
 		// Update the font entity height
 		this.fontEntityTitle.width(px, lockAspect, modifier, noUpdate);
@@ -132,7 +132,7 @@ var IgeUiTooltip = IgeUiEntity.extend({
 			});
 			if (typeof(val) == 'string') {
 				this.textBox.mount(this);
-				this.textBox.height(this._height);
+				this.textBox.height(this._bounds2d.y);
 				this.textBox.top(0);
 				// Set the text of the font entity to the value
 				this.fontEntityText.text(this._value);
@@ -140,8 +140,8 @@ var IgeUiTooltip = IgeUiEntity.extend({
 			else if (typeof(val) == 'object' && typeof(val[0] == 'string') && typeof(val[1] == 'string')) {
 				this.titleBox.mount(this);
 				this.textBox.mount(this);
-				this.textBox.height(this._height - this.titleBox._height);
-				this.textBox.top(this.titleBox._height);
+				this.textBox.height(this._bounds2d.y - this.titleBox._bounds2d.y);
+				this.textBox.top(this.titleBox._bounds2d.y);
 				//title + text
 				this.fontEntityTitle.text(val[0]);
 				this.fontEntityText.text(val[1]);
@@ -180,7 +180,7 @@ var IgeUiTooltip = IgeUiEntity.extend({
 		var tt = this._tooltip;
 		if (tt._hidden) tt.show();
 		var mountPos = tt._mountEntity.worldPosition();
-		tt.translateTo(event.igeBaseX - mountPos.x + tt._width / 2 + 10, event.igeBaseY - mountPos.y + tt._height / 2, 0);
+		tt.translateTo(event.igeX - mountPos.x + tt._bounds2d.x2 + 10, event.igeY - mountPos.y + tt._bounds2d.y2, 0);
 		tt.updateUiChildren();
 	},
 

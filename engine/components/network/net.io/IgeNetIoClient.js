@@ -10,6 +10,14 @@ var IgeNetIoClient = {
 	_state: 0,
 
 	/**
+	 * Gets the current socket id.
+	 * @returns {String} The id of the socket connection to the server.
+	 */
+	id: function () {
+		return this._id || '';
+	},
+	
+	/**
 	 * Starts the network for the client.
 	 * @param {*} url The game server URL.
 	 * @param {Function=} callback A callback method to call once the
@@ -37,8 +45,9 @@ var IgeNetIoClient = {
 				self._state = 1; // Connecting
 
 				// Define connect listener
-				this._io.on('connect', function () {
+				this._io.on('connect', function (clientId) {
 					self._state = 2; // Connected
+					self._id = clientId;
 					self._onConnectToServer.apply(self, arguments);
 				});
 
@@ -241,6 +250,9 @@ var IgeNetIoClient = {
 	},
 
 	_onResponse: function (data) {
+		var id,
+			req;
+		
 		// The message is a network response
 		// to a request we sent earlier
 		id = data.id;

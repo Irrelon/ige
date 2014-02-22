@@ -1,4 +1,10 @@
 var igeCoreConfig = {
+	/* Includes for the main IGE loader. Flags are indicated as:
+	 * c = client
+	 * s = server
+	 * a = 
+	 * p = prototype
+	 */
 	include: [
 		/* Client-Side Stack Trace Support */
 		['c', 'IgeStackTrace', 'components/stackTrace/lib_stack.js'],
@@ -7,7 +13,8 @@ var igeCoreConfig = {
 		['csap', 'IgeClass', 'core/IgeClass.js'],
 		['csap', 'IgeEventingClass', 'core/IgeEventingClass.js'],
 		/* Data Classes */
-		['csap', 'IgePoint', 'core/IgePoint.js'],
+		['csap', 'IgePoint2d', 'core/IgePoint2d.js'],
+		['csap', 'IgePoint3d', 'core/IgePoint3d.js'],
 		['csap', 'IgePoly2d', 'core/IgePoly2d.js'],
 		['csap', 'IgeRect', 'core/IgeRect.js'],
 		['csap', 'IgeMatrix2d', 'core/IgeMatrix2d.js'],
@@ -25,9 +32,6 @@ var igeCoreConfig = {
 		['csap', 'IgeEntityManager', 'components/entityManager/IgeEntityManager.js'],
 		['csap', 'IgeEntityManagerComponent', 'components/IgeEntityManagerComponent.js'],
 		['csap', 'IgeEditorComponent', 'components/editor/IgeEditorComponent.js'],
-		['csap', 'IgeEditorPanelsComponent', 'components/editor/panels/IgeEditorPanelsComponent.js'],
-		['csap', 'IgeEditorTranslateComponent', 'components/editor/IgeEditorTranslateComponent.js'],
-		['csap', 'IgeEditorRotateComponent', 'components/editor/IgeEditorRotateComponent.js'],
 		/* Physics Libraries */
 		['csap', 'Box2D', 'components/physics/box2d/lib_box2d.js', 'Box2D'],
 		['csap', 'Cannon', 'components/physics/cannon/lib_cannon.js'],
@@ -61,6 +65,7 @@ var igeCoreConfig = {
 		['csap', 'IgeUiPositionExtension', 'extensions/IgeUiPositionExtension.js'],
 		['csap', 'IgeUiStyleExtension', 'extensions/IgeUiStyleExtension.js'],
 		/* Main Engine Classes */
+		['csap', 'IgeFSM', 'core/IgeFSM.js'],
 		['csap', 'IgeSceneGraph', 'core/IgeSceneGraph.js'],
 		['csap', 'IgeBaseScene', 'core/IgeBaseScene.js'],
 		['csap', 'IgeDummyCanvas', 'core/IgeDummyCanvas.js'],
@@ -79,10 +84,11 @@ var igeCoreConfig = {
 		['csap', 'IgeUiElement', 'core/IgeUiElement.js'],
 		['csap', 'IgeFontEntity', 'core/IgeFontEntity.js'],
 		['csap', 'IgeParticleEmitter', 'core/IgeParticleEmitter.js'],
+		['csap', 'IgeParticle', 'core/IgeParticle.js'],
 		['csap', 'IgeMap2d', 'core/IgeMap2d.js'],
-		['csap', 'IgeMapStack2d', 'core/IgeMapStack2d.js'],
 		['csap', 'IgeTileMap2d', 'core/IgeTileMap2d.js'],
 		['csap', 'IgeTextureMap', 'core/IgeTextureMap.js'],
+		['csap', 'IgeTileMap2dSmartTexture', 'assets/IgeTileMap2dSmartTexture.js'],
 		['csap', 'IgeCollisionMap2d', 'core/IgeCollisionMap2d.js'],
 		['csap', 'IgeCamera', 'core/IgeCamera.js'],
 		['csap', 'IgeViewport', 'core/IgeViewport.js'],
@@ -92,11 +98,19 @@ var igeCoreConfig = {
 		['csap', 'IgeTimeout', 'core/IgeTimeout.js'],
 		['csap', 'IgeCuboidSmartTexture', 'assets/IgeCuboidSmartTexture.js'],
 		['csap', 'IgeCuboid', 'primitives/IgeCuboid.js'],
+		['csap', 'IgeArray', 'core/IgeArray.js'],
+		/* Audio Components */
+		['csap', 'IgeAudioComponent', 'components/audio/IgeAudioComponent.js'],
+		['csap', 'IgeAudio', 'components/audio/IgeAudio.js'],
 		/* Physics to Entity Components */
 		['csap', 'IgeBox2dComponent', 'components/physics/box2d/IgeBox2dComponent.js'],
+		['csap', 'IgeBox2dMultiWorldComponent', 'components/physics/box2d/IgeBox2dMultiWorldComponent.js'],
+		['csap', 'IgeBox2dWorld', 'components/physics/box2d/IgeBox2dWorld.js'],
+		['csap', 'IgeBox2dDebugPainter', 'components/physics/box2d/IgeBox2dDebugPainter.js'],
 		['csap', 'IgeEntityBox2d', 'components/physics/box2d/IgeEntityBox2d.js'],
 		['csap', 'IgeEntityCannon', 'components/physics/cannon/IgeEntityCannon.js'],
 		/* UI Classes */
+		['csap', 'IgeUiDropDown', 'ui/IgeUiDropDown.js'],
 		['csap', 'IgeUiButton', 'ui/IgeUiButton.js'],
 		['csap', 'IgeUiRadioButton', 'ui/IgeUiRadioButton.js'],
 		['csap', 'IgeUiProgressBar', 'ui/IgeUiProgressBar.js'],

@@ -6,7 +6,7 @@ var Floor = IgeEntityBox2d.extend({
 
 		var self = this;
 
-		if (!ige.isServer) {
+		if (ige.isClient) {
 			// Define the texture this entity will use
 			this._tex = new IgeTexture('./assets/Rect.js');
 

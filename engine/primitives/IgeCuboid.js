@@ -4,7 +4,7 @@ var IgeCuboid = IgeEntity.extend({
 	init: function () {
 		IgeEntity.prototype.init.call(this);
 		
-		this.size3d(40, 40, 40);
+		this.bounds3d(40, 40, 40);
 		
 		var tex = new IgeTexture(IgeCuboidSmartTexture);
 		this.texture(tex);

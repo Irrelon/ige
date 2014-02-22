@@ -1,0 +1,86 @@
+.menu {
+  position: absolute;
+  left: 100px;
+  top: 100px;
+  background: #000;
+  color: #fff;
+  font-family: Verdana, Tahoma, sans-serif;
+  font-size: 11px;
+  min-width: 210px;
+  z-index: 200004;
+}
+.menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 464px;
+}
+.menu ul li {
+  padding: 5px;
+}
+.menu ul.header {
+  font-size: 11px;
+  background-color: #7d00bd;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.menu ul.items {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 414px;
+}
+.menu ul.items li {
+  cursor: pointer;
+}
+.menu ul.items li .halflings-icon {
+  margin-right: 0px;
+}
+.menu ul.items li.separator {
+  border-top: 1px solid #333;
+}
+.menu ul.items li:hover {
+  background-color: #008ea8;
+}
+.menu .searchForm .searchInput {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #222;
+  color: #fff;
+  border: none;
+  padding: 4px;
+  font-size: 11px;
+}
+.menu .searchForm .searchInput:focus {
+  outline: none;
+}
+.menu .searchForm .searchClear {
+  position: absolute;
+  top: 30px;
+  right: -7px;
+  cursor: pointer;
+}
+.menuUnderlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 200002;
+}
+.dropMenuContainer .menuButton {
+  color: #fff;
+  font-family: Verdana, Tahoma, sans-serif;
+  font-size: 11px;
+  padding: 6px;
+  cursor: pointer;
+  display: block;
+  background-color: #333;
+  border-right: 1px solid #222;
+  float: left;
+}
+.dropMenuContainer .menuButton:hover {
+  background-color: #555;
+}
+.dropMenuContainer .menuButton.active {
+  background-color: #777;
+}

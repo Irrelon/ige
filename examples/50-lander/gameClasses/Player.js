@@ -26,10 +26,10 @@ var Player = IgeEntityBox2d.extend({
 		var triangles,
 			fixDefs,
 			collisionPoly = new IgePoly2d()
-			.addPoint(0, -this._geometry.y2)
-			.addPoint(this._geometry.x2, this._geometry.y2)
-			.addPoint(0, this._geometry.y2 - 5)
-			.addPoint(-this._geometry.x2, this._geometry.y2);
+			.addPoint(0, -this._bounds2d.y2)
+			.addPoint(this._bounds2d.x2, this._bounds2d.y2)
+			.addPoint(0, this._bounds2d.y2 - 5)
+			.addPoint(-this._bounds2d.x2, this._bounds2d.y2);
 
 		// Scale the polygon by the box2d scale ratio
 		collisionPoly.divide(ige.box2d._scaleRatio);
@@ -101,7 +101,7 @@ var Player = IgeEntityBox2d.extend({
 			// Set the particle's death opacity to zero so it fades out as it's lifespan runs out
 			.deathOpacityBase(0)
 			// Set velocity vector to y = 0.05, with variance values
-			.velocityVector(new IgePoint(0, 0.05, 0), new IgePoint(-0.04, 0.05, 0), new IgePoint(0.04, 0.15, 0))
+			.velocityVector(new IgePoint3d(0, 0.05, 0), new IgePoint3d(-0.04, 0.05, 0), new IgePoint3d(0.04, 0.15, 0))
 			// Mount new particles to the object scene
 			.particleMountTarget(ige.client.objectScene)
 			// Move the particle emitter to the bottom of the ship
@@ -121,9 +121,9 @@ var Player = IgeEntityBox2d.extend({
 			// Set the particle's death opacity to zero so it fades out as it's lifespan runs out
 			.deathOpacityBase(0)
 			// Set velocity vector to y = 0.05, with variance values
-			.velocityVector(new IgePoint(0, -0.1, 0), new IgePoint(-0.1, -0.1, 0), new IgePoint(0.1, 0.1, 0))
+			.velocityVector(new IgePoint3d(0, -0.1, 0), new IgePoint3d(-0.1, -0.1, 0), new IgePoint3d(0.1, 0.1, 0))
 			// Set a linear force vector so the particles get "dragged" down
-			.linearForceVector(new IgePoint(0, 0.5, 0))
+			.linearForceVector(new IgePoint3d(0, 0.5, 0))
 			// Mount new particles to the object scene
 			.particleMountTarget(ige.client.objectScene)
 			// Set a lifespan so the emitter removes itself
@@ -155,9 +155,9 @@ var Player = IgeEntityBox2d.extend({
 			// Set the particle's death opacity to zero so it fades out as it's lifespan runs out
 			.deathOpacityBase(0)
 			// Set velocity vector to y = 0.05, with variance values
-			.velocityVector(new IgePoint(0, -0.1, 0), new IgePoint(-0.1, -0.1, 0), new IgePoint(0.1, 0.1, 0))
+			.velocityVector(new IgePoint3d(0, -0.1, 0), new IgePoint3d(-0.1, -0.1, 0), new IgePoint3d(0.1, 0.1, 0))
 			// Set a linear force vector so the particles get "dragged" down
-			.linearForceVector(new IgePoint(0, 0.5, 0))
+			.linearForceVector(new IgePoint3d(0, 0.5, 0))
 			// Mount new particles to the object scene
 			.particleMountTarget(ige.client.objectScene)
 			// Set a lifespan so the emitter removes itself
@@ -203,7 +203,7 @@ var Player = IgeEntityBox2d.extend({
 
 		// Reset physics
 		this._box2dBody.SetAngularVelocity(0);
-		this._box2dBody.SetLinearVelocity(new IgePoint(0, 0, 0));
+		this._box2dBody.SetLinearVelocity(new IgePoint3d(0, 0, 0));
 		this._box2dBody.SetActive(true);
 
 		// Reset fuel

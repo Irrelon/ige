@@ -12,8 +12,8 @@ var IgeRect = IgeClass.extend({
 		this.width = width = width !== undefined ? width : 0;
 		this.height = height = height !== undefined ? height : 0;
 
-		/*this.x2 = this.x / 2;
-		this.y2 = this.y / 2;*/
+		this.x2 = this.x / 2;
+		this.y2 = this.y / 2;
 
 		return this;
 	},
@@ -85,7 +85,7 @@ var IgeRect = IgeClass.extend({
 	/**
 	 * Returns boolean indicating if the passed point is
 	 * inside the rectangle.
-	 * @param {IgePoint} point
+	 * @param {IgePoint3d} point
 	 * @return {Boolean}
 	 */
 	pointInside: function (point) {
@@ -99,6 +99,17 @@ var IgeRect = IgeClass.extend({
 	 * @return {Boolean}
 	 */
 	rectIntersect: function (rect) {
+		this.log('rectIntersect has been renamed to "intersects". Please update your code. rectIntersect will be removed in a later version of IGE.', 'warning');
+		return this.intersects(rect);
+	},
+
+	/**
+	 * Returns boolean indicating if the passed IgeRect is
+	 * intersecting the rectangle.
+	 * @param {IgeRect} rect
+	 * @return {Boolean}
+	 */
+	intersects: function (rect) {
 		if (rect) {
 			var sX1 = this.x,
 				sY1 = this.y,
@@ -174,6 +185,18 @@ var IgeRect = IgeClass.extend({
 	toString: function (precision) {
 		if (precision === undefined) { precision = 2; }
 		return this.x.toFixed(precision) + ',' + this.y.toFixed(precision) + ',' + this.width.toFixed(precision) + ',' + this.height.toFixed(precision);
+	},
+	
+	/**
+	 * Draws the polygon bounding lines to the passed context.
+	 * @param {CanvasRenderingContext2D} ctx
+	 */
+	render: function (ctx, fill) {
+		ctx.rect(this.x, this.y, this.width, this.height);
+		if (fill) { ctx.fill(); }
+		ctx.stroke();
+
+		return this;
 	}
 });
 

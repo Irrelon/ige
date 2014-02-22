@@ -646,7 +646,7 @@ var Client = IgeClass.extend({
 	setupEntities: function () {
 		// Create an entity
 		var i, type, x, y;
-		for (i = 0; i < 1000; i++) {
+		for (i = 0; i < 3000; i++) {
 			type = Math.floor(Math.random() * 3);
 			x = Math.floor(Math.random() * 500);
 			y = Math.floor(Math.random() * 500);
