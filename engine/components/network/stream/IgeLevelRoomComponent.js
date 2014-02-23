@@ -1,4 +1,9 @@
-/** * Class you can use together with streaming. Attach to an entity to stream to the room it * is in and the 8 rooms around. Also, just receive streams from these rooms. * Having a large player base this can save you tons of traffic. */var IgeLevelRoomComponent = IgeClass.extend({
+/**
+ * Class you can use together with streaming. Attach to an entity to stream to the room it
+ * is in and the 8 rooms around. Also, just receive streams from these rooms.
+ * Having a large player base this can save you tons of traffic.
+ */
+var IgeLevelRoomComponent = IgeClass.extend({
     classId: 'IgeLevelRoomComponent',
 	componentId: 'levelRoom',
 
@@ -55,7 +60,7 @@
 			//set the stream rooms for the player and all entities
 			this._player.setStreamRooms(streamRooms);
 			for (e in this._attachedEntities) {
-				e.setStreamRooms(streamRooms);
+				this._attachedEntities[e].setStreamRooms(streamRooms);
 			}
 			
 			//save the new level room position
