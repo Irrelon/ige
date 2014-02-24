@@ -909,8 +909,8 @@ var IgeObject = IgeEventingClass.extend({
 				}
 				
 				// Make sure we keep the child's room id in sync with it's parent
-				if (this._parent._streamRoomId) {
-					this._streamRoomId = this._parent._streamRoomId;
+				if (this._parent._streamRoomIds && this._streamRoomIdManuallySet !== true) {
+					this._streamRoomIds = this._parent._streamRoomIds;
 				}
 				
 				obj._children.push(this);
