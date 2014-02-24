@@ -59,6 +59,7 @@ You also require a license if you are using the engine as a registered / limited
 
 ## Intellectual Property, Ownership & Copyright
 (C)opyright 2013 Irrelon Software Limited
+http://www.irrelon.com
 
 * Website: http://www.isogenicengine.com
 * Store: http://www.isogenicengine.com/download.html
