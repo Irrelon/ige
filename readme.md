@@ -15,7 +15,6 @@ http://www.isogenicengine.com/forum/viewforum.php?f=8
 * Tweening support
 * Cell-based animation support
 * Native and font-sheet text support
-* MUCH MORE - see full feature list here: http://www.isogenicengine.com/about/features/
 
 ## Installation
 After downloading or cloning this repository, if you plan to use the multiplayer aspects of the engine you should run
