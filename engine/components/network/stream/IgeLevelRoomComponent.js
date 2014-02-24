@@ -8,8 +8,7 @@ var IgeLevelRoomComponent = IgeClass.extend({
 	componentId: 'levelRoom',
 	
     /**
-     * Called every frame by the engine when this entity is mounted to the
-     * scenegraph.
+     * IgeLevelRoomComponent constructor, a normal component constructor
      * @param player The player object where translate data is taken from to assign room levels
      * @param options Options you can set: {networkLevelRoomCheckInterval, networkLevelRoomSize, clientId}
      */
