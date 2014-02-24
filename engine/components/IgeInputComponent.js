@@ -314,8 +314,8 @@ var IgeInputComponent = IgeEventingClass.extend({
 			event.igePageY = event.pageY;
 		}
 
-		event.igeX = (event.igePageX - this._canvas.offsetLeft);
-		event.igeY = (event.igePageY - this._canvas.offsetTop);
+		event.igeX = (event.igePageX - ige._canvasPosition().left);
+		event.igeY = (event.igePageY - ige._canvasPosition().top);
 
 		this.emit('inputEvent', event);
 	},
