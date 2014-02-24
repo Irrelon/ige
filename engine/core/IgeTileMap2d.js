@@ -13,10 +13,13 @@ var IgeTileMap2d = IgeEntity.extend({
 		tileWidth = tileWidth !== undefined ? tileWidth : 40;
 		tileHeight = tileHeight !== undefined ? tileHeight : 40;
 		
-		var self = this,
-			tex = new IgeTexture(IgeTileMap2dSmartTexture);
+		var self = this;
+
+		if(!ige.isServer) {
+			var tex = new IgeTexture(IgeTileMap2dSmartTexture);
+			self.texture(tex);
+		}
 		
-		self.texture(tex);
 		self.map = new IgeMap2d();
 		self._adjustmentMatrix = new IgeMatrix2d();
 
