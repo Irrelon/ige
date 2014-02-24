@@ -6,9 +6,21 @@
 var IgeLevelRoomComponent = IgeClass.extend({
     classId: 'IgeLevelRoomComponent',
 	componentId: 'levelRoom',
-
+	
+    /**
+     * Called every frame by the engine when this entity is mounted to the
+     * scenegraph.
+     * @param player The player object where translate data is taken from to assign room levels
+     * @param options Options you can set: {networkLevelRoomCheckInterval, networkLevelRoomSize, clientId}
+     */
     init: function (player, options) {
 		this._options = options;
+		//check every 500 miliseconds whether the player is in a new room
+		if (!this._options.networkLevelRoomCheckInterval) this._options.networkLevelRoomCheckInterval = 500;
+		//how large, in translate sizes, is such a stream room? Remember: The player is in the center room but also sees 8 rooms around him
+		if (!this._options.networkLevelRoomSize) this._options.networkLevelRoomSize = 20;
+		//if no clientId is set, assume the player's id is also the network client id (as it's often done in ige contexts)
+		
 		this._player = player;
 		this._tickTimer = this._options.networkLevelRoomCheckInterval;
 		this._attachedEntities = [];
@@ -44,7 +56,7 @@ var IgeLevelRoomComponent = IgeClass.extend({
 		var roomPosX = Math.floor(this._player._translate.x / this._options.networkLevelRoomSize),
 			roomPosY = Math.floor(this._player._translate.z / this._options.networkLevelRoomSize);
 		if (roomPosX != this.clientRoomPosition.x || roomPosY != this.clientRoomPosition.y) {
-			var clientId = this._player._id,
+			var clientId = this._options.clientId || this._player._id,
 				streamRooms = [];
 			
 			if (this.clientRoomPosition.x != undefined && this.clientRoomPosition.y != undefined) this._leaveAbandonedLevelRooms(roomPosX, roomPosY, clientId);
