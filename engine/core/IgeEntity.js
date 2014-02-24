@@ -3475,7 +3475,7 @@ var IgeEntity = IgeObject.extend({
 				this._streamRoomIdManuallySet = false;
 				this._streamRoomIds = this._parent._streamRoomIds;
 			} else if (Array.isArray(streamRoomIds)) {
-				this._streamRoomIdManuallySet = false;
+				this._streamRoomIdManuallySet = true;
 				this._streamRoomIds = streamRoomIds;
 			}
 		}
