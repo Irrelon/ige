@@ -33,7 +33,7 @@ There are a lot of examples in the ./examples folder. Please see the ./examples/
 about running the examples.
 
 ## Documentation
-http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/
+http://www.isogenicengine.com/docs-manual.html
 
 ## Forum
 Head over to the official help & support forum: http://www.isogenicengine.com/forum
@@ -59,12 +59,13 @@ You also require a license if you are using the engine as a registered / limited
 
 ## Intellectual Property, Ownership & Copyright
 (C)opyright 2013 Irrelon Software Limited
+http://www.irrelon.com
 
 * Website: http://www.isogenicengine.com
-* Store: http://store.isogenicengine.com
+* Store: http://www.isogenicengine.com/download.html
 * Forum: http://store.isogenicengine.com/forum
-* API Docs: http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/
-* Video Tutorials: http://www.youtube.com/playlist?list=PL3bbQ5EMaCKgch0gzt8_7D3MQVAOA7zXF
+* API Docs: http://www.isogenicengine.com/docs-reference.html
+* Video Tutorials: http://www.isogenicengine.com/docs-tutorials.html
 * Updates, News & Changelog: http://www.isogenicengine.com/forum/viewforum.php?f=8
 * Twitter: @IsogenicEngine https://twitter.com/IsogenicEngine
 * Youtube: http://www.youtube.com/user/coolbloke1324
