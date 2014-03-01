@@ -41,8 +41,8 @@ var IgeLevelRoomComponent = IgeClass.extend({
     _behaviour: function (ctx) {
 		this.levelRoom._tickTimer += ige._tickDelta;
 		//check for a level change every x miliseconds
-		if (this.levelRoom._tickTimer / this._options.networkLevelRoomCheckInterval > 1) {
-			this.levelRoom._tickTimer -= this._options.networkLevelRoomCheckInterval;
+		if (this.levelRoom._tickTimer / this.levelRoom._options.networkLevelRoomCheckInterval > 1) {
+			this.levelRoom._tickTimer -= this.levelRoom._options.networkLevelRoomCheckInterval;
 			this.levelRoom._clientLevelRoomChangedCheck();
 		}
     },
@@ -58,8 +58,6 @@ var IgeLevelRoomComponent = IgeClass.extend({
 			var clientId = this._options.clientId || this._player._id,
 				streamRooms = [];
 			
-			if (this.clientRoomPosition.x != undefined && this.clientRoomPosition.y != undefined) this._leaveAbandonedLevelRooms(roomPosX, roomPosY, clientId);
-			
 			for (var x = roomPosX - 1; x <= roomPosX + 1; x++) {
 				for (var y = roomPosY - 1; y <= roomPosY + 1; y++) {
 					//set the stream rooms for the actual socket, which is always in sync with the player's stream rooms
@@ -73,6 +71,9 @@ var IgeLevelRoomComponent = IgeClass.extend({
 			for (e in this._attachedEntities) {
 				this._attachedEntities[e].setStreamRooms(streamRooms);
 			}
+
+
+            if (this.clientRoomPosition.x != undefined && this.clientRoomPosition.y != undefined) this._leaveAbandonedLevelRooms(roomPosX, roomPosY, clientId);
 			
 			//save the new level room position
 			this.clientRoomPosition.x = roomPosX;
@@ -93,6 +94,8 @@ var IgeLevelRoomComponent = IgeClass.extend({
 			}
 		}
 
+		/*
+		
         //send a stream destroy command to all clients which listen to one of the rooms abandoned but listen to none
         //of the new rooms
         var clientArr = {};
@@ -131,6 +134,8 @@ var IgeLevelRoomComponent = IgeClass.extend({
                 this._player.streamDestroy(c);
             }
         }
+		
+		*/
 	}
 });
 
