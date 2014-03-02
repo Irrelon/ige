@@ -33,17 +33,17 @@ var IgeEntityStreamComponent = IgeClass.extend({
             }
         });
 
-        entity.addBehaviour("IgeEntityStreamComponent_update", this.update);
-        entity.addBehaviour("IgeEntityStreamComponent_tick", this.tick, true);
+        entity.addBehaviour("IgeEntityStreamComponent_update", this._update);
+        entity.addBehaviour("IgeEntityStreamComponent_tick", this._tick, true);
     },
 
 
     /**
      * Gets / sets the composite stream flag. If set to true, any objects
-     * mounted to this one will have their streamMode() set to the same
-     * value as this entity and will also have their compositeStream flag
-     * set to true. This allows you to easily automatically stream any
-     * objects mounted to a root object and stream them all.
+     * mounted to this component's entity will have their streamMode() set to the
+	 * same value as this component and will also have their compositeStream flag
+     * set to true. This allows you to easily automatically stream any objects 
+	 * mounted to a root object and stream them all.
      * @param val
      * @returns {*}
      */
@@ -63,30 +63,29 @@ var IgeEntityStreamComponent = IgeClass.extend({
      * This differs from the tick() method in that the tick method can be called
      * multiple times during a render frame depending on how many viewports your
      * simulation is being rendered to, whereas the update() method is only called
-     * once. It is therefore the perfect place to put code that will control your
-     * entity's motion, AI etc.
+     * once.
      * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
      */
-    update: function (ctx, tickDelta) {
+    _update: function (ctx, tickDelta) {
         // Note "this" is the entity this component is attached to here due to this function
-        // being called as a result of entity.addBehaviour.
+        // being called as a result of entity.addBehaviour().
 
         delete this.entityStream._streamDataCache;
     },
 
 
     /**
-     * Processes the actions required each render frame.
+     * Processes the actions required each render.
      * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
-     * @param {Boolean} dontTransform If set to true, the tick method will
-     * not transform the context based on the entity's matrices. This is useful
-     * if you have extended the class and want to process down the inheritance
-     * chain but have already transformed the entity in a previous overloaded
-     * method.
+     * @param {Boolean} dontTransform If set to true, the tick method should
+     * not transform the context based on this component's entity's matrices. 
+	 * This is useful if you have extended the class and want to process down
+	 * the inheritance chain but have already transformed the context in a 
+	 * previous overloaded method.
      */
-    tick: function (ctx, dontTransform) {
+    _tick: function (ctx, dontTransform) {
         // Note "this" is the entity this component is attached to here due to this function
-        // being called as a result of entity.addBehaviour.
+        // being called as a result of entity.addBehaviour().
 
         if (!this._hidden && this._inView && (!this._parent || (this._parent._inView)) && !this._streamJustCreated) {
             // Process any automatic-mode stream updating required
@@ -98,13 +97,9 @@ var IgeEntityStreamComponent = IgeClass.extend({
 
 
     /**
-     * Destroys the entity by removing it from the scenegraph,
-     * calling destroy() on any child entities and removing
-     * any active event listeners for the entity. Once an entity
-     * has been destroyed it's this._alive flag is also set to
-     * false.
-     * @example #Destroy the entity
-     *     entity.destroy();
+     * Destroys the component by freeing its stream data.
+     * @example #Destroy the component
+     *     entity.entityStream.destroy();
      */
     destroy: function () {
 
@@ -117,11 +112,11 @@ var IgeEntityStreamComponent = IgeClass.extend({
 
     
     /**
-     * Gets / sets the array of sections that this entity will
+     * Gets / sets the array of sections that this component will
      * encode into its stream data.
      * @param {Array=} sectionArray An array of strings.
-     * @example #Define the sections this entity will use in the network stream. Use the default "transform" section as well as a "custom1" section
-     *     entity.streamSections('transform', 'custom1');
+     * @example #Define the sections this component will use in the network stream. Use the default "transform" section as well as a "custom1" section
+     *     entity.entityStream.streamSections('transform', 'custom1');
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
@@ -157,12 +152,12 @@ var IgeEntityStreamComponent = IgeClass.extend({
      * Gets / sets the data for the specified data section id. This method
      * is usually not called directly and instead is part of the network
      * stream system. General use case is to write your own custom streamSectionData
-     * method in a class that extends IgeEntity so that you can control the
-     * data that the entity will send and receive over the network stream.
+     * method in a class that extends IgeEntityStreamComponent so that you can control the
+     * data that the component will send and receive over the network stream.
      * @param {String} sectionId A string identifying the section to
      * handle data get / set for.
      * @param {*=} data If present, this is the data that has been sent
-     * from the server to the client for this entity.
+     * from the server to the client for this component's entity.
      * @param {Boolean=} bypassTimeStream If true, will assign transform
      * directly to entity instead of adding the values to the time stream.
      * @return {*} "this" when a data argument is passed to allow method
@@ -330,6 +325,15 @@ var IgeEntityStreamComponent = IgeClass.extend({
         }
     },
 
+    /**
+     * Gets / sets the callback handler for the specified data section id.
+     * @param {String} sectionId A string identifying the section to
+     * handle data get / set for.
+     * @param {Function=} handler If present, this is the function that will be
+     * called when streaming data is sent or received.
+     * @return {*} "this" when a handler argument is passed to allow method
+     * chaining or the current value if no handler argument is specified.
+     */
     streamSectionDataHandler: function(sectionId, handler) {
         this._streamSectionDataHandlers = this._streamSectionDataHandlers || {};
 
@@ -369,10 +373,10 @@ var IgeEntityStreamComponent = IgeClass.extend({
 
     /**
      * Gets / sets the stream control callback function that will be called
-     * each time the entity tick method is called and stream-able data is
+     * each time the component tick method is called and stream-able data is
      * updated.
      * @param {Function=} method The stream control method.
-     * @example #Set the entity's stream control method to control when this entity is streamed and when it is not
+     * @example #Set the entity's stream control method to control when an entity is streamed and when it is not
      *     entity.entityStream.streamControl(function (clientId) {
      *         // Let's use an example where we only want this entity to stream
      *         // to one particular client with the id 4039589434
@@ -404,10 +408,10 @@ var IgeEntityStreamComponent = IgeClass.extend({
     /**
      * Gets / sets the stream sync interval. This value
      * is in milliseconds and cannot be lower than 16. It will
-     * determine how often data from this entity is added to the
+     * determine how often data from this component's entity is added to the
      * stream queue.
      * @param {Number=} val Number of milliseconds between adding
-     * stream data for this entity to the stream queue.
+     * stream data for this component's entity to the stream queue.
      * @param {String=} sectionId Optional id of the stream data
      * section you want to set the interval for. If omitted the
      * interval will be applied to all sections.
@@ -484,7 +488,7 @@ var IgeEntityStreamComponent = IgeClass.extend({
 
 
     /**
-     * Queues stream data for this entity to be sent to the
+     * Queues stream data for this component's entity to be sent to the
      * specified client id or array of client ids.
      * @param {Array} clientId An array of string IDs of each
      * client to send the stream data to.
@@ -546,11 +550,11 @@ var IgeEntityStreamComponent = IgeClass.extend({
 
 
     /**
-     * Override this method if your entity should send data through to
-     * the client when it is being created on the client for the first
-     * time through the network stream. The data will be provided as the
-     * first argument in the constructor call to the entity class so
-     * you should expect to receive it as per this example:
+     * Sends data through to the client when it is being created on the 
+	 * client for the first time through the network stream. The data 
+	 * will be provided as the first argument in the constructor call 
+	 * to the entity class so you should expect to receive it as per 
+	 * this example:
      * @example #Using and Receiving Stream Create Data
      *     var MyNewClass = IgeEntity.extend({
      *         classId: 'MyNewClass',
@@ -559,11 +563,13 @@ var IgeEntityStreamComponent = IgeClass.extend({
      *         // data you return in the streamCreateData() method
      *         init: function (myCreateData) {
      *             this._myData = myCreateData;
+	 *
+	 *             if (ige.isServer) {
+	 *                 this.entityStream.streamCreateDataCallback(function () {
+	 *                     return this._myData;
+	 *                 });
+	 *             }
      *         },
-     *
-     *         streamCreateData: function () {
-     *             return this._myData;
-     *         }
      *     });
      *
      * Valid return values must not include circular references!
@@ -575,6 +581,14 @@ var IgeEntityStreamComponent = IgeClass.extend({
     },
 
 
+    /**
+     * Gets / sets the callback handler for creation time stream data.
+     * @param {Function=} callback If present, this is the function that will be
+     * called when this component's entity is being streamed to the client for the
+	 * first time.
+     * @return {*} "this" when a callback argument is passed to allow method
+     * chaining or the current value if no callback argument is specified.
+     */
     streamCreateDataCallback: function(callback) {
         if (callback !== undefined) {
             this._streamCreateDataCallback = callback;
@@ -585,9 +599,9 @@ var IgeEntityStreamComponent = IgeClass.extend({
     },
 
     /**
-     * Gets / sets the stream emit created flag. If set to true this entity
-     * emit a "streamCreated" event when it is created by the stream, but
-     * after the id and initial transform are set.
+     * Gets / sets the stream emit created flag. If set to true this component
+     * emits a "streamCreated" event when its entity is created by the stream,
+	 * but after the entity's id and initial transform are set.
      * @param val
      * @returns {*}
      */
@@ -656,11 +670,11 @@ var IgeEntityStreamComponent = IgeClass.extend({
     },
 
 	/**
-	 * Forces the stream to push this entity's full stream data on the
-	 * next stream sync regardless of what clients have received in the
-	 * past. This should only be used when required rather than every
-	 * tick as it will reduce the overall efficiency of the stream if
-	 * used every tick.
+	 * Forces the stream to push this component's entity's full stream
+	 * data on the next stream sync regardless of what clients have
+	 * received in the past. This should only be used when required
+	 * rather than every tick as it will reduce the overall efficiency
+	 * of the stream if used every tick.
 	 * @returns {*}
 	 */
 	streamForceUpdate: function () {
@@ -778,7 +792,7 @@ var IgeEntityStreamComponent = IgeClass.extend({
 
 
     /**
-     * Generates and returns the current stream data for this entity. The
+     * Generates and returns the current stream data for this component. The
      * data will usually include only properties that have changed since
      * the last time the stream data was generated. The returned data is
      * a string that has been compressed in various ways to reduce network
