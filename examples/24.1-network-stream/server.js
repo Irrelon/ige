@@ -45,9 +45,9 @@ var Server = IgeClass.extend({
 							.id('fairy0')
 							.depth(1)
 							.translateTo(0, 0, 0)
-							.streamMode(1)
-							//.streamSyncInterval(200)
 							.mount(self.scene1);
+                        self.obj[0].entityStream.streamMode(1);
+                        //self.obj[0].entityStream.streamSyncInterval(200);
 
 						// Add a value to the custom property that the
 						// rotator class "custom1" stream section will
@@ -61,8 +61,8 @@ var Server = IgeClass.extend({
 							.id('fairy1')
 							.depth(1)
 							.translateTo(0, 50, 0)
-							.streamMode(1)
 							.mount(self.obj[0]);
+                        self.obj[1].entityStream.streamMode(1);
 
 						// Create a third rotator entity that will only
 						// "live" for 10 seconds - helps to test the stream
@@ -71,24 +71,24 @@ var Server = IgeClass.extend({
 							.id('fairy2')
 							.depth(1)
 							.translateTo(0, 150, 0)
-							.streamMode(1)
 							.lifeSpan(8000) // NOTE THIS ENTITY LIFESPAN MEANS IT WILL BE DESTROYED IN 10 SECONDS :)
 							.mount(self.scene1);
+                        self.obj[2].entityStream.streamMode(1);
 
 						// Create an entity and mount it to the scene
 						self.obj[3] = new Mover()
 							.id('mover0')
 							.depth(1)
 							.translateTo(-300, -100, 0)
-							.streamMode(1)
 							.mount(self.scene1);
+                        self.obj[3].entityStream.streamMode(1);
 
 						self.obj[4] = new Mover()
 							.id('mover1')
 							.depth(1)
 							.translateTo(300, 100, 0)
-							.streamMode(1)
 							.mount(self.scene1);
+                        self.obj[4].entityStream.streamMode(1);
 					}
 				});
 			});

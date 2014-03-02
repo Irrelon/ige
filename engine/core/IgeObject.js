@@ -907,12 +907,7 @@ var IgeObject = IgeEventingClass.extend({
 						this.ignoreCameraComposite(this._parent._ignoreCamera);
 					}*/
 				}
-				
-				// Make sure we keep the child's room id in sync with it's parent
-				if (this._parent._streamRoomId) {
-					this._streamRoomId = this._parent._streamRoomId;
-				}
-				
+								
 				obj._children.push(this);
 				this._parent._childMounted(this);
 

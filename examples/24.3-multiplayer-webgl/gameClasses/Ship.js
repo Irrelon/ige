@@ -39,7 +39,8 @@ var Ship = IgeEntity.extend({
 		}
 
 		// Define the data sections that will be included in the stream
-		this.streamSections(['transform', 'score']);
+		this.entityStream.streamSections(['transform', 'score']);
+        this.entityStream.streamSectionDataHandler('score', this._streamSectionData);
 	},
 
 	/**
@@ -52,7 +53,7 @@ var Ship = IgeEntity.extend({
 	 * from the server to the client for this entity.
 	 * @return {*}
 	 */
-	streamSectionData: function (sectionId, data) {
+	_streamSectionData: function (sectionId, data) {
 		// Check if the section is one that we are handling
 		if (sectionId === 'score') {
 			// Check if the server sent us data, if not we are supposed
@@ -64,11 +65,6 @@ var Ship = IgeEntity.extend({
 				// Return current data
 				return this._score;
 			}
-		} else {
-			// The section was not one that we handle here, so pass this
-			// to the super-class streamSectionData() method - it handles
-			// the "transform" section by itself
-			return IgeEntity.prototype.streamSectionData.call(this, sectionId, data);
 		}
 	},
 

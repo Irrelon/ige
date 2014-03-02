@@ -36,7 +36,7 @@ var Server = IgeClass.extend({
 						ige.addGraph('IgeBaseScene');
 
 						// Create the room boundaries in box2d
-						new Floor()
+						var floor = new Floor()
 							.id('floor')
 							.translateTo(0, 50, 0)
 							.width(880)
@@ -51,8 +51,8 @@ var Server = IgeClass.extend({
 									}
 								}]
 							})
-							.streamMode(1)
 							.mount(ige.$('baseScene'));
+                        floor.entityStream.streamMode(1);
 
 						setInterval(self.newObject, 500);
 					}
@@ -66,7 +66,7 @@ var Server = IgeClass.extend({
 			y = -350;
 
 		if (objType === 0) {
-			new Circle()
+			var circle = new Circle()
 				.translateTo(x, y, 0)
 				.drawBounds(true)
 				.box2dBody({
@@ -86,13 +86,13 @@ var Server = IgeClass.extend({
 						}
 					}]
 				})
-				.streamMode(1)
 				.lifeSpan(10000)
 				.mount(ige.$('baseScene'));
+            circle.entityStream.streamMode(1);
 		}
 
 		if (objType === 1) {
-			new Square()
+			var square = new Square()
 				.translateTo(x, y, 0)
 				.drawBounds(true)
 				.box2dBody({
@@ -112,9 +112,9 @@ var Server = IgeClass.extend({
 						}
 					}]
 				})
-				.streamMode(1)
 				.lifeSpan(10000)
 				.mount(ige.$('baseScene'));
+            square.entityStream.streamMode(1);
 		}
 	}
 });

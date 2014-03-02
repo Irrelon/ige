@@ -17,24 +17,8 @@ var IgeScene2d = IgeEntity.extend({
 		this._bounds2d.x = ige._bounds2d.x;
 		this._bounds2d.y = ige._bounds2d.y;
 		
-		this.streamSections(['transform', 'ignoreCamera']);
-	},
-
-	/**
-	 * Gets / sets the stream room id. If set, any streaming entities that
-	 * are mounted to this scene will only sync with clients that have been
-	 * assigned to this room id.
-	 * 
-	 * @param {String} id The id of the room. 
-	 * @returns {*}
-	 */
-	streamRoomId: function (id) {
-		if (id !== undefined) {
-			this._streamRoomId = id;
-			return this;
-		}
-		
-		return this._streamRoomId;
+		this.entityStream.streamSections(['transform', 'ignoreCamera']);
+		this.entityStream.streamSectionDataHandler('ignoreCamera', this._streamSectionData);
 	},
 
 	/**
@@ -44,7 +28,7 @@ var IgeScene2d = IgeEntity.extend({
 	 * @param data
 	 * @returns {*}
 	 */
-	streamSectionData: function (sectionId, data) {
+ 	_streamSectionData: function (sectionId, data) {
 		switch (sectionId) {
 			case 'ignoreCamera':
 				if (data !== undefined) {
@@ -58,10 +42,6 @@ var IgeScene2d = IgeEntity.extend({
 					// Getter
 					return String(this._ignoreCamera);
 				}
-				break;
-			
-			default:
-				IgeEntity.prototype.streamSectionData.call(this, sectionId, data);
 				break;
 		}
 	},

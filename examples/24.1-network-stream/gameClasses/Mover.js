@@ -21,7 +21,8 @@ var Mover = IgeEntity.extend({
 		}
 
 		// Define the data sections that will be included in the stream
-		this.streamSections(['transform', 'custom1']);
+		this.entityStream.streamSections(['transform', 'custom1']);
+        this.entityStream.streamSectionDataHandler('custom1', this._streamSectionData);
 	},
 
 	/**
@@ -34,7 +35,7 @@ var Mover = IgeEntity.extend({
 	 * from the server to the client for this entity.
 	 * @return {*}
 	 */
-	streamSectionData: function (sectionId, data) {
+	_streamSectionData: function (sectionId, data) {
 		// Check if the section is one that we are handling
 		if (sectionId === 'custom1') {
 			// Check if the server sent us data, if not we are supposed
@@ -46,11 +47,6 @@ var Mover = IgeEntity.extend({
 				// Return current data
 				return this._customProperty;
 			}
-		} else {
-			// The section was not one that we handle here, so pass this
-			// to the super-class streamSectionData() method - it handles
-			// the "transform" section by itself
-			return IgeEntity.prototype.streamSectionData.call(this, sectionId, data);
 		}
 	},
 

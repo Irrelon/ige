@@ -199,14 +199,14 @@ var IgeStreamComponent = IgeEventingClass.extend({
 						.id(entityId)
 						.mount(parent);
 					
-					entity.streamSectionData('transform', transformData, true);
+					entity.entityStream.streamSectionData('transform', transformData, true);
 
 					// Set the just created flag which will stop the renderer
 					// from handling this entity until after the first stream
 					// data has been received for it
 					entity._streamJustCreated = true;
 					
-					if (entity._streamEmitCreated) {
+					if (entity.entityStream.streamEmitCreated()) {
 						entity.emit('streamCreated');
 					}
 
@@ -277,13 +277,13 @@ var IgeStreamComponent = IgeEventingClass.extend({
 			justCreated = entity._streamJustCreated;
 
 			// Get the entity stream section array
-			sectionArr = entity._streamSections;
+			sectionArr = entity.entityStream.streamSections();
 
 			// Now loop the data sections array and compile the rest of the
 			// data string from the data section return data
 			for (sectionIndex = 0; sectionIndex < sectionDataCount; sectionIndex++) {
 				// Tell the entity to handle this section's data
-				entity.streamSectionData(sectionArr[sectionIndex], sectionDataArr[sectionIndex], justCreated);
+				entity.entityStream.streamSectionData(sectionArr[sectionIndex], sectionDataArr[sectionIndex], justCreated);
 			}
 
 			// Now that the entity has had it's first bit of data

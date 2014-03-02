@@ -25,10 +25,11 @@ var ServerNetworkEvents = {
 
 	_onPlayerEntity: function (data, clientId) {
 		if (!ige.server.players[clientId]) {
-			ige.server.players[clientId] = new Character(clientId)
+			var char = new Character(clientId)
 				.addComponent(PlayerComponent)
-				.streamMode(1)
 				.mount(ige.server.foregroundScene);
+			char.entityStream.streamMode(1);
+			ige.server.players[clientId] = char;
 
 			// Tell the client to track their player entity
 			ige.network.send('playerEntity', ige.server.players[clientId].id(), clientId);

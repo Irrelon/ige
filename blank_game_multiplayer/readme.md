@@ -23,7 +23,7 @@ The engine knows which entities to synchronise because a call to the entity's st
 Player class (./gameClasses/Player.js). The streamMode() method accepts a mode integer which tells the engine how
 to handle streaming the entity's updates to connected clients. In this example we do:
 
-    entity.streamMode(1);
+    entity.entityStream.streamMode(1);
 
 This tells the engine to stream all data automatically - in other words whenever the entity's transform data (position,
 rotation, scale etc) is updated all clients are informed. The engine supports much more advanced ways to deal with

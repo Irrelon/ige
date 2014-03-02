@@ -92,14 +92,14 @@ var Server = IgeClass.extend({
 										destTileY = Math.random() * 20 | 0;
 									}
 
-									new CharacterAi(layersById.DirtLayer, self.pathFinder)
+									var ai = new CharacterAi(layersById.DirtLayer, self.pathFinder)
 										.id('aiEntity_' + i)
 										.drawBounds(false)
 										.drawBoundsData(false)
 										.isometric(true) // Set to use isometric movement
 										.mount(self.objectLayer)
-										.streamMode(1)
 										.translateToTile(destTileX, destTileY, 0);
+                                    ai.entityStream.streamMode(1);
 
 									destTileX = -1;
 									destTileY = -1;

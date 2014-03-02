@@ -48,8 +48,8 @@ var Server = IgeClass.extend({
 						.width(100)
 						.height(100)
 						.translateTo(0, 0, 0)
-						.streamMode(1)
 						.mount(self.scene1);
+                    self.obj[i].entityStream.streamMode(1);
 				}
 			}
 		});

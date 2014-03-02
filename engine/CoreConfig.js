@@ -39,6 +39,7 @@ var igeCoreConfig = {
 		/* Network Stream */
 		['csap', 'IgeTimeSyncExtension', 'components/network/IgeTimeSyncExtension.js'],
 		['csap', 'IgeStreamComponent', 'components/network/stream/IgeStreamComponent.js'],
+		['csap', 'IgeEntityStreamComponent', 'components/network/stream/IgeEntityStreamComponent.js'],
 		/* Socket.io */
 		['cap', 'SocketIo', 'components/network/socket.io/client/socket.io.min.js'],
 		['cap', 'IgeSocketIoClient', 'components/network/socket.io/IgeSocketIoClient.js'],
