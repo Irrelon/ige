@@ -583,6 +583,8 @@ var IgePathComponent = IgeEventingClass.extend({
 				path._finished = true;
 				path.emit('pathComplete', [this, pointArr[path._previousPointFrom].x, pointArr[path._previousPointFrom].y]);
 			}
+		} else if(path._active && path._totalDistance == 0 && !path._finished) {
+			path._finished = true;
 		}
 	},
 	
