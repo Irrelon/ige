@@ -26,10 +26,10 @@ var Player = IgeEntityBox2d.extend({
 		var triangles,
 			fixDefs,
 			collisionPoly = new IgePoly2d()
-			.addPoint(0, -this._bounds2d.y2)
-			.addPoint(this._bounds2d.x2, this._bounds2d.y2)
-			.addPoint(0, this._bounds2d.y2 - 5)
-			.addPoint(-this._bounds2d.x2, this._bounds2d.y2);
+			.addPoint(0, -this.bounds.bounds2d().y2)
+			.addPoint(this.bounds.bounds2d().x2, this.bounds.bounds2d().y2)
+			.addPoint(0, this.bounds.bounds2d().y2 - 5)
+			.addPoint(-this.bounds.bounds2d().x2, this.bounds.bounds2d().y2);
 
 		// Scale the polygon by the box2d scale ratio
 		collisionPoly.divide(ige.box2d._scaleRatio);

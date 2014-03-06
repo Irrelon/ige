@@ -11,8 +11,9 @@ var IgeEntity = IgeObject.extend({
 		// Components that all IgeEntities have
 		// HACK: Added in reverse of order that they should be updated-ed, since the components that are updated
 		//       add themselves to the IgeEntity's update Behavior list
+		this.addComponent(IgeBoundsComponent);
 		this.addComponent(IgeEntityStreamComponent);
-		
+
 		// Register the IgeEntity special properties handler for 
 		// serialise and de-serialise support
 		this._specialProp.push('_texture');
@@ -34,7 +35,6 @@ var IgeEntity = IgeObject.extend({
 		this._scale = new IgePoint3d(1, 1, 1);
 		this._origin = new IgePoint3d(0.5, 0.5, 0.5);
 
-		this._bounds2d = new IgePoint2d(40, 40);
 		this._bounds3d = new IgePoint3d(0, 0, 0);
 		
 		this._oldBounds2d = new IgePoint2d(40, 40);
@@ -431,7 +431,7 @@ var IgeEntity = IgeObject.extend({
 			if (lockAspect) {
 				if (this._texture) {
 					// Calculate the height based on the new width
-					ratio = this._texture._sizeX / this._bounds2d.x;
+					ratio = this._texture._sizeX / this.bounds.bounds2d().x;
 					this.height(this._texture._sizeY / ratio);
 				} else {
 					this.log('Cannot set height based on texture aspect ratio and new width because no texture is currently assigned to the entity!', 'error');
@@ -468,7 +468,7 @@ var IgeEntity = IgeObject.extend({
 			if (lockAspect) {
 				if (this._texture) {
 					// Calculate the width based on the new height
-					ratio = this._texture._sizeY / this._bounds2d.y;
+					ratio = this._texture._sizeY / this.bounds.bounds2d().y;
 					this.width(this._texture._sizeX / ratio);
 				} else {
 					this.log('Cannot set width based on texture aspect ratio and new height because no texture is currently assigned to the entity!', 'error');
@@ -596,16 +596,16 @@ var IgeEntity = IgeObject.extend({
 		if (px !== undefined) {
 			if (lockAspect) {
 				// Calculate the height from the change in width
-				var ratio = px / this._bounds2d.x;
-				this.height(this._bounds2d.y * ratio);
+				var ratio = px / this.bounds.bounds2d().x;
+				this.height(this.bounds.bounds2d().y * ratio);
 			}
 
-			this._bounds2d.x = px;
-			this._bounds2d.x2 = (px / 2);
+			this.bounds.bounds2d().x = px;
+			this.bounds.bounds2d().x2 = (px / 2);
 			return this;
 		}
 
-		return this._bounds2d.x;
+		return this.bounds.bounds2d().x;
 	},
 
 	/**
@@ -620,16 +620,16 @@ var IgeEntity = IgeObject.extend({
 		if (px !== undefined) {
 			if (lockAspect) {
 				// Calculate the width from the change in height
-				var ratio = px / this._bounds2d.y;
-				this.width(this._bounds2d.x * ratio);
+				var ratio = px / this.bounds.bounds2d().y;
+				this.width(this.bounds.bounds2d().x * ratio);
 			}
 
-			this._bounds2d.y = px;
-			this._bounds2d.y2 = (px / 2);
+			this.bounds.bounds2d().y = px;
+			this.bounds.bounds2d().y2 = (px / 2);
 			return this;
 		}
 
-		return this._bounds2d.y;
+		return this.bounds.bounds2d().y;
 	},
 	
 	/**
@@ -647,16 +647,16 @@ var IgeEntity = IgeObject.extend({
 	 */
 	bounds2d: function (x, y) {
 		if (x !== undefined && y !== undefined) {
-			this._bounds2d = new IgePoint2d(x, y, 0);
+			this.bounds.bounds2d(new IgePoint2d(x, y, 0));
 			return this;
 		}
 		
 		if (x !== undefined && y === undefined) {
 			// x is considered an IgePoint2d instance
-			this._bounds2d = new IgePoint2d(x.x, x.y);
+			this.bounds.bounds2d(new IgePoint2d(x.x, x.y));
 		}
 
-		return this._bounds2d;
+		return this.bounds.bounds2d();
 	},
 
 	/**
@@ -1027,8 +1027,8 @@ var IgeEntity = IgeObject.extend({
 	 */
 	screenPosition: function () {
 		return new IgePoint3d(
-			Math.floor(((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x) + ige._bounds2d.x2),
-			Math.floor(((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y) + ige._bounds2d.y2),
+			Math.floor(((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x) + ige.bounds.bounds2d().x2),
+			Math.floor(((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y) + ige.bounds.bounds2d().y2),
 			0
 		);
 	},
@@ -1132,7 +1132,7 @@ var IgeEntity = IgeObject.extend({
 				geomY2,
 				x, y;
 
-			geom = this._bounds2d;
+			geom = this.bounds.bounds2d();
 			geomX2 = geom.x2;
 			geomY2 = geom.y2;
 			
@@ -1716,9 +1716,9 @@ var IgeEntity = IgeObject.extend({
 			 */
 			this.emit('compositeReady');
 		} else {
-			if (this._bounds2d.x > 0 && this._bounds2d.y > 0) {
-				_canvas.width = this._bounds2d.x;
-				_canvas.height = this._bounds2d.y;
+			if (this.bounds.bounds2d().x > 0 && this.bounds.bounds2d().y > 0) {
+				_canvas.width = this.bounds.bounds2d().x;
+				_canvas.height = this.bounds.bounds2d().y;
 			} else {
 				// We cannot set a zero size for a canvas, it will
 				// cause the browser to freak out
@@ -1727,7 +1727,7 @@ var IgeEntity = IgeObject.extend({
 			}
 			
 			// Translate to the center of the canvas
-			_ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
+			_ctx.translate(this.bounds.bounds2d().x2, this.bounds.bounds2d().y2);
 			
 			this._cacheDirty = false;
 		}
@@ -1772,9 +1772,9 @@ var IgeEntity = IgeObject.extend({
 
 					// This is the proper way to do this but firefox has a bug which I'm gonna report
 					// so instead I have to use ANOTHER translate call instead. So crap!
-					//ctx.rect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
-					ctx.translate(-this._bounds2d.x2, -this._bounds2d.y2);
-					ctx.rect(0, 0, this._bounds2d.x, this._bounds2d.y);
+					//ctx.rect(-this.bounds.bounds2d().x2, -this.bounds.bounds2d().y2, this.bounds.bounds2d().x, this.bounds.bounds2d().y);
+					ctx.translate(-this.bounds.bounds2d().x2, -this.bounds.bounds2d().y2);
+					ctx.rect(0, 0, this.bounds.bounds2d().x, this.bounds.bounds2d().y);
 					if (this._backgroundPatternTrackCamera) {
 						ctx.translate(-ige._currentCamera._translate.x, -ige._currentCamera._translate.y);
 						ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
@@ -1808,10 +1808,10 @@ var IgeEntity = IgeObject.extend({
 			if (this._compositeCache && ige._currentViewport._drawCompositeBounds) {
 				//console.log('moo');
 				ctx.fillStyle = 'rgba(0, 0, 255, 0.3)';
-				ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x,	this._bounds2d.y);
+				ctx.fillRect(-this.bounds.bounds2d().x2, -this.bounds.bounds2d().y2, this.bounds.bounds2d().x,	this.bounds.bounds2d().y);
 				ctx.fillStyle = '#ffffff';
-				ctx.fillText('Composite Entity', -this._bounds2d.x2, -this._bounds2d.y2 - 15);
-				ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
+				ctx.fillText('Composite Entity', -this.bounds.bounds2d().x2, -this.bounds.bounds2d().y2 - 15);
+				ctx.fillText(this.id(), -this.bounds.bounds2d().x2, -this.bounds.bounds2d().y2 - 5);
 			}
 		}
 	},
@@ -1827,7 +1827,7 @@ var IgeEntity = IgeObject.extend({
 		ctx.save();
 		if (this._compositeCache) {
 			var aabbC = this._compositeAabbCache;
-			ctx.translate(this._bounds2d.x2 + aabbC.x, this._bounds2d.y2 + aabbC.y);
+			ctx.translate(this.bounds.bounds2d().x2 + aabbC.x, this.bounds.bounds2d().y2 + aabbC.y);
 			
 			if (this._parent && this._parent._ignoreCamera) {
 				// Translate the entity back to negate the scene translate
@@ -1841,15 +1841,15 @@ var IgeEntity = IgeObject.extend({
 		// We have a clean cached version so output that
 		ctx.drawImage(
 			this._cacheCanvas,
-			-this._bounds2d.x2, -this._bounds2d.y2
+			-this.bounds.bounds2d().x2, -this.bounds.bounds2d().y2
 		);
 		
 		if (ige._currentViewport._drawCompositeBounds) {
 			ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
-			ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._cacheCanvas.width,	this._cacheCanvas.height);
+			ctx.fillRect(-this.bounds.bounds2d().x2, -this.bounds.bounds2d().y2, this._cacheCanvas.width,	this._cacheCanvas.height);
 			ctx.fillStyle = '#ffffff';
-			ctx.fillText('Composite Cache', -this._bounds2d.x2, -this._bounds2d.y2 - 15);
-			ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
+			ctx.fillText('Composite Cache', -this.bounds.bounds2d().x2, -this.bounds.bounds2d().y2 - 15);
+			ctx.fillText(this.id(), -this.bounds.bounds2d().x2, -this.bounds.bounds2d().y2 - 5);
 		}
 
 		ige._drawCount++;
@@ -1858,7 +1858,7 @@ var IgeEntity = IgeObject.extend({
 			ctx.globalCompositeOperation = 'lighter';
 			ctx.drawImage(
 				this._cacheCanvas,
-				-this._bounds2d.x2, -this._bounds2d.y2
+				-this.bounds.bounds2d().x2, -this.bounds.bounds2d().y2
 			);
 
 			ige._drawCount++;
@@ -3103,8 +3103,8 @@ var IgeEntity = IgeObject.extend({
 		// Adjust local matrix for origin values if not at center
 		if (this._origin.x !== 0.5 || this._origin.y !== 0.5) {
 			this._localMatrix.translateBy(
-				(this._bounds2d.x * (0.5 - this._origin.x)),
-				(this._bounds2d.y * (0.5 - this._origin.y))
+				(this.bounds.bounds2d().x * (0.5 - this._origin.x)),
+				(this.bounds.bounds2d().y * (0.5 - this._origin.y))
 			);
 		}
 		
@@ -3128,11 +3128,11 @@ var IgeEntity = IgeObject.extend({
 		}
 		
 		// Check if the geometry has changed and if so, update the aabb dirty
-		if (!this._oldBounds2d.compare(this._bounds2d)) {
+		if (!this._oldBounds2d.compare(this.bounds.bounds2d())) {
 			this._aabbDirty = true;
 			
 			// Record the new geometry to the oldGeometry data
-			this._oldBounds2d.copy(this._bounds2d);
+			this._oldBounds2d.copy(this.bounds.bounds2d());
 		}
 		
 		if (!this._oldBounds3d.compare(this._bounds3d)) {

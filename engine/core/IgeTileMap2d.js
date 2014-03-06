@@ -310,14 +310,14 @@ var IgeTileMap2d = IgeEntity.extend({
 			point = new IgePoint3d(x, y, 0)
 				.thisMultiply(this._tileWidth, this._tileHeight, 1);
 			
-			point.x -= this._bounds2d.x2 - (this._tileWidth / 2);
-			point.y -= this._bounds2d.y2 - (this._tileHeight / 2);
+			point.x -= this.bounds.bounds2d().x2 - (this._tileWidth / 2);
+			point.y -= this.bounds.bounds2d().y2 - (this._tileHeight / 2);
 		}
 		
 		if (this._mountMode === 1) {
 			point = new IgePoint3d(x * this._tileWidth + this._tileWidth / 2, y * this._tileHeight + this._tileHeight / 2, 0);
-			point.x -= this._bounds2d.x2 / 2;
-			point.y -= this._bounds2d.y2;
+			point.x -= this.bounds.bounds2d().x2 / 2;
+			point.y -= this.bounds.bounds2d().y2;
 		}
 		
 		point.x2 = point.x / 2;
@@ -546,13 +546,13 @@ var IgeTileMap2d = IgeEntity.extend({
 	},
 	
 	_updateAdjustmentMatrix: function () {
-		if (this._bounds2d.x2 && this._bounds2d.y2 && this._tileWidth && this._tileHeight) {
+		if (this.bounds.bounds2d().x2 && this.bounds.bounds2d().y2 && this._tileWidth && this._tileHeight) {
 			if (this._mountMode === 0) {
-				this._adjustmentMatrix.translateTo(this._bounds2d.x2, this._bounds2d.y2);
+				this._adjustmentMatrix.translateTo(this.bounds.bounds2d().x2, this.bounds.bounds2d().y2);
 			}
 			
 			if (this._mountMode === 1) {
-				this._adjustmentMatrix.translateTo(0, this._bounds2d.y2);
+				this._adjustmentMatrix.translateTo(0, this.bounds.bounds2d().y2);
 			}
 		}
 	},

@@ -1326,7 +1326,7 @@ var IgeEngine = IgeEntity.extend({
 				}
 			}
 
-			ige._bounds2d = new IgePoint3d(newWidth, newHeight, 0);
+			ige.bounds.bounds2d(new IgePoint3d(newWidth, newHeight, 0));
 
 			// Loop any mounted children and check if
 			// they should also get resized
@@ -1335,7 +1335,7 @@ var IgeEngine = IgeEntity.extend({
 			}
 		} else {
 			if (ige._canvas) {
-				ige._bounds2d = new IgePoint3d(ige._canvas.width, ige._canvas.height, 0);
+				ige.bounds.bounds2d(new IgePoint3d(ige._canvas.width, ige._canvas.height, 0));
 			}
 		}
 
@@ -1346,7 +1346,7 @@ var IgeEngine = IgeEntity.extend({
 			
 			sgTreeElem.style.top = (parseInt(canvasBoundingRect.top) + 5) + 'px';
 			sgTreeElem.style.left = (parseInt(canvasBoundingRect.left) + 5) + 'px';
-			sgTreeElem.style.height = (ige._bounds2d.y - 30) + 'px';
+			sgTreeElem.style.height = (ige.bounds.bounds2d().y - 30) + 'px';
 		}
 
 		ige._resized = true;
@@ -1861,7 +1861,8 @@ var IgeEngine = IgeEntity.extend({
 		}
 
 		ctx.save();
-		ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
+		var bounds2d = this.bounds.bounds2d();
+		ctx.translate(bounds2d.x2, bounds2d.y2);
 		//ctx.scale(this._globalScale.x, this._globalScale.y);
 
 		// Process the current engine tick for all child objects

@@ -258,7 +258,7 @@ var IgeEntityStreamComponent = IgeClass.extend({
                         this._entity.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
                     }
                 } else {
-                    return String(this._entity._bounds2d.x + ',' + this._entity._bounds2d.y);
+                    return String(this._entity.bounds.bounds2d().x + ',' + this._entity.bounds.bounds2d().y);
                 }
                 break;
 

@@ -4,8 +4,8 @@ var RandomMovingCharacter = Character.extend({
 	update: function (ctx, tickDelta) {
 		if (this.data('moving') === false) {
 			this.walkTo(
-				(Math.random() * ige._bounds2d.x) - ige._bounds2d.x2,
-				(Math.random() * ige._bounds2d.y) - ige._bounds2d.y2
+				(Math.random() * ige.bounds.bounds2d().x) - ige.bounds.bounds2d().x2,
+				(Math.random() * ige.bounds.bounds2d().y) - ige.bounds.bounds2d().y2
 			);
 		}
 

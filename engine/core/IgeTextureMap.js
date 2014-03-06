@@ -695,12 +695,14 @@ var IgeTextureMap = IgeTileMap2d.extend({
 	 * @private
 	 */
 	_newTileEntity: function () {
+		var self = this;
 		if (this._mountMode === 0) {
 			return {
 				_cell: 1,
-				_bounds2d: {
-					x: this._tileWidth,
-					y: this._tileHeight
+				bounds: {
+					bounds2d: function() {
+						return new IgePoint2d(self._tileWidth, self._tileHeight);
+					}
 				},
 				_renderPos: {
 					x: -this._tileWidth / 2,
@@ -712,9 +714,10 @@ var IgeTextureMap = IgeTileMap2d.extend({
 		if (this._mountMode === 1) {
 			return {
 				_cell: 1,
-				_bounds2d: {
-					x: this._tileWidth * 2,
-					y: this._tileHeight
+				bounds: {
+					bounds2d: function() {
+						return new IgePoint2d(self._tileWidth * 2, self._tileHeight);
+					}
 				},
 				_renderPos: {
 					x: -this._tileWidth,

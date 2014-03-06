@@ -6,10 +6,10 @@ var ClientItem = IgeEntity.extend({
 
 		// Store the tile details for this item in
 		// it's internal data object
-		this.data('tileX', tileX)
-			.data('tileY', tileY)
-			.data('tileWidth', tileWidth)
-			.data('tileHeight', tileHeight);
+		this.data('tileX', tileX);
+		this.data('tileY', tileY);
+		this.data('tileWidth', tileWidth);
+		this.data('tileHeight', tileHeight);
 	},
 
 	/**

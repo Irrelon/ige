@@ -32,6 +32,7 @@ var igeCoreConfig = {
 		['csap', 'IgeEntityManager', 'components/entityManager/IgeEntityManager.js'],
 		['csap', 'IgeEntityManagerComponent', 'components/IgeEntityManagerComponent.js'],
 		['csap', 'IgeEditorComponent', 'components/editor/IgeEditorComponent.js'],
+		['csap', 'IgeBoundsComponent', 'components/IgeBoundsComponent.js'],
 		/* Physics Libraries */
 		['csap', 'Box2D', 'components/physics/box2d/lib_box2d.js', 'Box2D'],
 		['csap', 'Cannon', 'components/physics/cannon/lib_cannon.js'],

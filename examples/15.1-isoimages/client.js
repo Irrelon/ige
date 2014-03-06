@@ -620,9 +620,9 @@ var Client = IgeClass.extend({
 	 * @return {*}
 	 */
 	placeItem: function (type, tileX, tileY) {
-		var item = ige.newClassInstance(type)
-			.mount(ige.$('tileMap1'))
-			.translateToTile(tileX, tileY);
+		var item = ige.newClassInstance(type, [ige.$('tileMap1'), tileX, tileY]);
+			//.mount(ige.$('tileMap1'))
+			//.translateToTile(tileX, tileY);
 
 		return item;
 	},

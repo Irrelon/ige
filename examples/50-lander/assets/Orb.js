@@ -4,15 +4,15 @@ var image = {
 		ctx.fillStyle = '#b400ff';
 		ctx.strokeStyle = '#e371ff';
 		ctx.beginPath();
-		ctx.moveTo(-entity._bounds2d.x2, -entity._bounds2d.y2 / 2);
-		ctx.lineTo(-entity._bounds2d.x2 / 2, -entity._bounds2d.y2);
-		ctx.lineTo(entity._bounds2d.x2 / 2, -entity._bounds2d.y2);
-		ctx.lineTo(entity._bounds2d.x2, -entity._bounds2d.y2 / 2);
-		ctx.lineTo(entity._bounds2d.x2, entity._bounds2d.y2 / 2);
-		ctx.lineTo(entity._bounds2d.x2 / 2, entity._bounds2d.y2);
-		ctx.lineTo(-entity._bounds2d.x2 / 2, entity._bounds2d.y2);
-		ctx.lineTo(-entity._bounds2d.x2, entity._bounds2d.y2 / 2);
-		ctx.lineTo(-entity._bounds2d.x2, -entity._bounds2d.y2 / 2);
+		ctx.moveTo(-entity.bounds.bounds2d().x2, -entity.bounds.bounds2d().y2 / 2);
+		ctx.lineTo(-entity.bounds.bounds2d().x2 / 2, -entity.bounds.bounds2d().y2);
+		ctx.lineTo(entity.bounds.bounds2d().x2 / 2, -entity.bounds.bounds2d().y2);
+		ctx.lineTo(entity.bounds.bounds2d().x2, -entity.bounds.bounds2d().y2 / 2);
+		ctx.lineTo(entity.bounds.bounds2d().x2, entity.bounds.bounds2d().y2 / 2);
+		ctx.lineTo(entity.bounds.bounds2d().x2 / 2, entity.bounds.bounds2d().y2);
+		ctx.lineTo(-entity.bounds.bounds2d().x2 / 2, entity.bounds.bounds2d().y2);
+		ctx.lineTo(-entity.bounds.bounds2d().x2, entity.bounds.bounds2d().y2 / 2);
+		ctx.lineTo(-entity.bounds.bounds2d().x2, -entity.bounds.bounds2d().y2 / 2);
 		ctx.fill();
 		ctx.stroke();
 	}

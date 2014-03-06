@@ -291,12 +291,12 @@ var IgeCannonComponent = IgeEventingClass.extend({
 
 			if (self._cannonDebug && this._currentCamera) {
 				// Draw the debug data
-				self._debugCanvas.width = ige._bounds2d.x;
-				self._debugCanvas.height = ige._bounds2d.y;
+				self._debugCanvas.width = ige.bounds.bounds2d().x;
+				self._debugCanvas.height = ige.bounds.bounds2d().y;
 
 				self._debugCtx.save();
 				this._currentCamera._transformContext(self._debugCtx);
-				self._debugCtx.translate(ige._bounds2d.x2, ige._bounds2d.y2);
+				self._debugCtx.translate(ige.bounds.bounds2d().x2, ige.bounds.bounds2d().y2);
 				self._world.DrawDebugData();
 				self._debugCtx.restore();
 			}
