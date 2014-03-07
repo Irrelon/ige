@@ -35,10 +35,6 @@ var IgeEntity = IgeObject.extend({
 		this._scale = new IgePoint3d(1, 1, 1);
 		this._origin = new IgePoint3d(0.5, 0.5, 0.5);
 
-		
-		this._oldBounds2d = new IgePoint2d(40, 40);
-		this._oldBounds3d = new IgePoint3d(0, 0, 0);
-
 		this._highlight = false;
 		this._mouseEventsActive = false;
 		
@@ -3125,22 +3121,7 @@ var IgeEntity = IgeObject.extend({
 		} else {
 			this._transformChanged = false;
 		}
-		
-		// Check if the geometry has changed and if so, update the aabb dirty
-		if (!this._oldBounds2d.compare(this.bounds.bounds2d())) {
-			this._aabbDirty = true;
-			
-			// Record the new geometry to the oldGeometry data
-			this._oldBounds2d.copy(this.bounds.bounds2d());
-		}
-		
-		if (!this._oldBounds3d.compare(this.bounds.bounds3d())) {
-			this._bounds3dPolygonDirty = true;
-			
-			// Record the new geometry to the oldGeometry data
-			this._oldBounds3d.copy(this.bounds.bounds3d());
-		}
-		
+
 		return this;
 	},
 
