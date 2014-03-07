@@ -10,6 +10,7 @@ var IgeBoundsComponent = IgeClass.extend({
         this._entity = entity;
 
         this._bounds2d = new IgePoint2d(40, 40);
+        this._bounds3d = new IgePoint3d(0, 0, 0);
     },
 
     /**
@@ -25,6 +26,22 @@ var IgeBoundsComponent = IgeClass.extend({
         }
 
         return this._bounds2d;
+    },
+
+
+    /**
+     * Gets / sets the 3d bounds of this component.
+     * @param {IgePoint2d=} bounds The new 3d bounds of this component.
+     * @return {*} "this" when a bounds argument is passed to allow method
+     * chaining or the current value if no bounds argument is specified.
+     */
+    bounds3d: function (bounds) {
+        if (bounds !== undefined) {
+            this._bounds3d = bounds;
+            return this;
+        }
+
+        return this._bounds3d;
     },
 
 });

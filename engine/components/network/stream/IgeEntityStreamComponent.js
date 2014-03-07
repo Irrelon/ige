@@ -269,7 +269,7 @@ var IgeEntityStreamComponent = IgeClass.extend({
                         this._entity.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
                     }
                 } else {
-                    return String(this._entity._bounds3d.x + ',' + this._entity._bounds3d.y + ',' + this._entity._bounds3d.z);
+                    return String(this._entity.bounds.bounds3d().x + ',' + this._entity.bounds.bounds3d().y + ',' + this._entity.bounds.bounds3d().z);
                 }
                 break;
 

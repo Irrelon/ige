@@ -35,7 +35,6 @@ var IgeEntity = IgeObject.extend({
 		this._scale = new IgePoint3d(1, 1, 1);
 		this._origin = new IgePoint3d(0.5, 0.5, 0.5);
 
-		this._bounds3d = new IgePoint3d(0, 0, 0);
 		
 		this._oldBounds2d = new IgePoint2d(40, 40);
 		this._oldBounds3d = new IgePoint3d(0, 0, 0);
@@ -674,11 +673,11 @@ var IgeEntity = IgeObject.extend({
 	 */
 	bounds3d: function (x, y, z) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
-			this._bounds3d = new IgePoint3d(x, y, z);
+			this.bounds.bounds3d(new IgePoint3d(x, y, z));
 			return this;
 		}
 
-		return this._bounds3d;
+		return this.bounds.bounds3d();
 	},
 
 	/**
@@ -1040,7 +1039,7 @@ var IgeEntity = IgeObject.extend({
 	
 	localBounds3dPolygon: function (recalculate) {
 		if (this._bounds3dPolygonDirty || !this._localBounds3dPolygon || recalculate) {
-			var geom = this._bounds3d,
+			var geom = this.bounds.bounds3d(),
 				poly = new IgePoly2d(),
 				// Bottom face
 				bf2 = Math.toIso(+(geom.x2), -(geom.y2),  -(geom.z2)),
@@ -1311,7 +1310,7 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	_projectionOverlap: function (otherObject) {
-		var thisG3d = this._bounds3d,
+		var thisG3d = this.bounds.bounds3d(),
 			thisMin = {
 				x: this._translate.x - thisG3d.x / 2,
 				y: this._translate.y - thisG3d.y / 2,
@@ -1322,7 +1321,7 @@ var IgeEntity = IgeObject.extend({
 				y: this._translate.y + thisG3d.y / 2,
 				z: this._translate.z + thisG3d.z
 			},
-			otherG3d = otherObject._bounds3d,
+			otherG3d = otherObject.bounds.bounds3d(),
 			otherMin = {
 				x: otherObject._translate.x - otherG3d.x / 2,
 				y: otherObject._translate.y - otherG3d.y / 2,
@@ -1365,7 +1364,7 @@ var IgeEntity = IgeObject.extend({
 	 * or false if not.
 	 */
 	isBehind: function (otherObject) {
-		var thisG3d = this._bounds3d,
+		var thisG3d = this.bounds.bounds3d(),
 			thisMin = new IgePoint3d(
 				this._translate.x - thisG3d.x / 2,
 				this._translate.y - thisG3d.y / 2,
@@ -1376,7 +1375,7 @@ var IgeEntity = IgeObject.extend({
 				this._translate.y + thisG3d.y / 2,
 				this._translate.z + thisG3d.z
 			),
-			otherG3d = otherObject._bounds3d,
+			otherG3d = otherObject.bounds.bounds3d(),
 			otherMin = new IgePoint3d(
 				otherObject._translate.x - otherG3d.x / 2,
 				otherObject._translate.y - otherG3d.y / 2,
@@ -1988,7 +1987,7 @@ var IgeEntity = IgeObject.extend({
 						}
 						break;
 					case '_bounds3d':
-						str += ".bounds3d(" + this._bounds3d.x + ", " + this._bounds3d.y + ", " + this._bounds3d.z + ")";
+						str += ".bounds3d(" + this.bounds.bounds3d().x + ", " + this.bounds.bounds3d().y + ", " + this.bounds.bounds3d().z + ")";
 						break;
 					case '_deathTime':
 						if (options.deathTime !== false && options.lifeSpan !== false) {
@@ -3085,13 +3084,13 @@ var IgeEntity = IgeObject.extend({
 			var isoPoint = this._translateIso = new IgePoint3d(
 				this._translate.x,
 				this._translate.y,
-				this._translate.z + this._bounds3d.z / 2
+				this._translate.z + this.bounds.bounds3d().z / 2
 			).toIso();
 
-			if (this._parent && this._parent._bounds3d.z) {
+			if (this._parent && this._parent.bounds.bounds3d().z) {
 				// This adjusts the child entity so that 0, 0, 0 inside the
 				// parent is the center of the base of the parent
-				isoPoint.y += this._parent._bounds3d.z / 1.6;
+				isoPoint.y += this._parent.bounds.bounds3d().z / 1.6;
 			}
 
 			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
@@ -3135,11 +3134,11 @@ var IgeEntity = IgeObject.extend({
 			this._oldBounds2d.copy(this.bounds.bounds2d());
 		}
 		
-		if (!this._oldBounds3d.compare(this._bounds3d)) {
+		if (!this._oldBounds3d.compare(this.bounds.bounds3d())) {
 			this._bounds3dPolygonDirty = true;
 			
 			// Record the new geometry to the oldGeometry data
-			this._oldBounds3d.copy(this._bounds3d);
+			this._oldBounds3d.copy(this.bounds.bounds3d());
 		}
 		
 		return this;

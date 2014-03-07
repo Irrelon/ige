@@ -82,8 +82,8 @@ var Client = IgeClass.extend({
 				// Hook mouse events
 				self.mouseMoveHandle = tileMap.on('mouseMove', function (event, evc, data) {
 					var tile = tileMap.mouseToTile(),
-						objectTileWidth = self.cursorObject._bounds3d.x / tileMap._tileWidth,
-						objectTileHeight = self.cursorObject._bounds3d.y / tileMap._tileHeight;
+						objectTileWidth = self.cursorObject.bounds.bounds3d().x / tileMap._tileWidth,
+						objectTileHeight = self.cursorObject.bounds.bounds3d().y / tileMap._tileHeight;
 					
 					// Check that the tiles this object will occupy if moved are
 					// not already occupied
@@ -100,8 +100,8 @@ var Client = IgeClass.extend({
 				});
 				
 				self.mouseUpHandle = tileMap.on('mouseUp', function (event, evc, data) {
-					var objectTileWidth = self.cursorObject._bounds3d.x / tileMap._tileWidth,
-						objectTileHeight = self.cursorObject._bounds3d.y / tileMap._tileHeight;
+					var objectTileWidth = self.cursorObject.bounds.bounds3d().x / tileMap._tileWidth,
+						objectTileHeight = self.cursorObject.bounds.bounds3d().y / tileMap._tileHeight;
 					
 					// Build the cursorObject by releasing it from our control
 					// and switching state
