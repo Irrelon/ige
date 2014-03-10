@@ -2,7 +2,7 @@ var IgeTileMap2dSmartTexture = {
 	render: function (ctx, entity) {
 		var tileWidth = entity._tileWidth,
 			tileHeight = entity._tileHeight,
-			bounds2d = entity.bounds2d(),
+			bounds2d = entity.bounds.bounds2d(),
 			gridSize = entity._gridSize,
 			x = 0, y = 0;
 		

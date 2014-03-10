@@ -33,7 +33,7 @@ var IgeViewport = IgeEntity.extend([
 		}
 
 		// Setup default objects
-		this.bounds.bounds2d(new IgePoint3d(width || ige.bounds.bounds2d().x, height || ige.bounds.bounds2d().y, 0));
+		this.bounds.bounds2d(width || ige.bounds.bounds2d().x, height || ige.bounds.bounds2d().y);
 		this.camera = new IgeCamera(this);
 		this.camera._entity = this;
 		//this._drawMouse = true;

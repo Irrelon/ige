@@ -217,7 +217,7 @@ var IgeThree = IgeEventingClass.extend({
 		// Add canvas element to DOM
 		this.three._canvas = this._threeRenderer.domElement;
 		document.body.appendChild(this.three._canvas);
-		ige.bounds.bounds2d(new IgePoint2d(this.three._canvas.width, this.three._canvas.height));
+		ige.bounds.bounds2d(this.three._canvas.width, this.three._canvas.height);
 
 		/*controls = new THREE.TrackballControls(this._threeObj, this._threeRenderer.domElement);
 		 controls.rotateSpeed = 0.20;*/

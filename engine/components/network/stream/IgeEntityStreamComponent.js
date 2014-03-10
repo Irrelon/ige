@@ -255,7 +255,7 @@ var IgeEntityStreamComponent = IgeClass.extend({
                 if (data !== undefined) {
                     if (ige.isClient) {
                         var geom = data.split(',');
-                        this._entity.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
+                        this._entity.bounds.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
                     }
                 } else {
                     return String(this._entity.bounds.bounds2d().x + ',' + this._entity.bounds.bounds2d().y);

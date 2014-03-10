@@ -1326,7 +1326,7 @@ var IgeEngine = IgeEntity.extend({
 				}
 			}
 
-			ige.bounds.bounds2d(new IgePoint3d(newWidth, newHeight, 0));
+			ige.bounds.bounds2d(newWidth, newHeight);
 
 			// Loop any mounted children and check if
 			// they should also get resized
@@ -1335,7 +1335,7 @@ var IgeEngine = IgeEntity.extend({
 			}
 		} else {
 			if (ige._canvas) {
-				ige.bounds.bounds2d(new IgePoint3d(ige._canvas.width, ige._canvas.height, 0));
+				ige.bounds.bounds2d(ige._canvas.width, ige._canvas.height, 0);
 			}
 		}
 

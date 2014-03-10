@@ -38,16 +38,29 @@ var IgeBoundsComponent = IgeClass.extend({
         });
     },
 
+
     /**
-     * Gets / sets the 2d bounds of this component.
-     * @param {IgePoint2d=} bounds The new 2d bounds of this component.
-     * @return {*} "this" when a bounds argument is passed to allow method
-     * chaining or the current value if no bounds argument is specified.
+     * Gets / sets the 2d geometry of the component. The x and y values are
+     * relative to the center of the component's entity. This geometry is used when
+     * rendering textures for the entity and positioning in world space as
+     * well as UI positioning calculations. It holds no bearing on isometric
+     * positioning.
+     * @param {Number=} x The new x value in pixels.
+     * @param {Number=} y The new y value in pixels.
+     * @example #Set the dimensions of the entity (width and height)
+     *     entity.bounds.bounds2d(40, 40);
+     * @return {*} "this" when arguments are passed to allow method
+     * chaining or the current value if no arguments are specified.
      */
-    bounds2d: function (bounds) {
-        if (bounds !== undefined) {
-            this._bounds2d = bounds;
+    bounds2d: function (x, y) {
+        if (x !== undefined && y !== undefined) {
+            this._bounds2d = new IgePoint2d(x, y, 0);
             return this;
+        }
+
+        if (x !== undefined && y === undefined) {
+            // x is considered an IgePoint2d instance
+            this._bounds2d = new IgePoint2d(x.x, x.y);
         }
 
         return this._bounds2d;

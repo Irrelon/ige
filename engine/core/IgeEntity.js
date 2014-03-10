@@ -626,33 +626,7 @@ var IgeEntity = IgeObject.extend({
 
 		return this.bounds.bounds2d().y;
 	},
-	
-	/**
-	 * Gets / sets the 2d geometry of the entity. The x and y values are
-	 * relative to the center of the entity. This geometry is used when
-	 * rendering textures for the entity and positioning in world space as
-	 * well as UI positioning calculations. It holds no bearing on isometric
-	 * positioning.
-	 * @param {Number=} x The new x value in pixels.
-	 * @param {Number=} y The new y value in pixels.
-	 * @example #Set the dimensions of the entity (width and height)
-	 *     entity.bounds2d(40, 40);
-	 * @return {*} "this" when arguments are passed to allow method
-	 * chaining or the current value if no arguments are specified.
-	 */
-	bounds2d: function (x, y) {
-		if (x !== undefined && y !== undefined) {
-			this.bounds.bounds2d(new IgePoint2d(x, y, 0));
-			return this;
-		}
-		
-		if (x !== undefined && y === undefined) {
-			// x is considered an IgePoint2d instance
-			this.bounds.bounds2d(new IgePoint2d(x.x, x.y));
-		}
 
-		return this.bounds.bounds2d();
-	},
 
 	/**
 	 * Gets / sets the 3d geometry of the entity. The x and y values are
