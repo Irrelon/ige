@@ -11,8 +11,8 @@ var Character = IgeEntity.extend({
 			.addComponent(IgeVelocityComponent)
 			.depth(1)
 			.setType(3)
-			.bounds3d(20, 60, 40)
 			.anchor(0, 0);
+		self.bounds.bounds3d(20, 60, 40);
 
 		// Load the character texture file
 		this._characterTexture = new IgeCellSheet('../assets/textures/sprites/vx_chara02_c.png', 12, 8);

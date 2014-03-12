@@ -141,37 +141,37 @@ var Client = IgeClass.extend({
 						.id(1)
 						.depth(0)
 						.mount(self.tileMap1)
-						.translateTo(x + 0, 0, 0)
-						.bounds3d(160, 240, 40);
+						.translateTo(x + 0, 0, 0);
+					self.obj[0].bounds.bounds3d(160, 240, 40);
 
 					self.obj[1] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(2)
 						.depth(1)
 						.mount(self.tileMap1)
-						.translateTo(x + 0, -60, 40)
-						.bounds3d(40, 40, 40);
+						.translateTo(x + 0, -60, 40);
+					self.obj[1].bounds.bounds3d(40, 40, 40);
 
 					self.obj[2] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(3)
 						.depth(2)
 						.mount(self.tileMap1)
-						.translateTo(x + 0, 60, 40)
-						.bounds3d(40, 40, 40);
+						.translateTo(x + 0, 60, 40);
+					self.obj[2].bounds.bounds3d(40, 40, 40);
 
 					self.obj[3] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(4)
 						.depth(4)
 						.mount(self.tileMap1)
-						.translateTo(x + 0, 0, 80)
-						.bounds3d(40, 160, 40);
+						.translateTo(x + 0, 0, 80);
+					self.obj[3].bounds.bounds3d(40, 160, 40);
 
 					// Center column
 					self.obj[4] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(5)
 						.depth(5)
 						.mount(self.tileMap1)
-						.translateTo(0, 0, 0)
-						.bounds3d(40, 380, 120);
+						.translateTo(0, 0, 0);
+					self.obj[4].bounds.bounds3d(40, 380, 120);
 
 					// Plinth 2
 					x = 140;
@@ -179,70 +179,70 @@ var Client = IgeClass.extend({
 						.id(6)
 						.depth(6)
 						.mount(self.tileMap1)
-						.translateTo(x + 0, 0, 0)
-						.bounds3d(160, 240, 40);
+						.translateTo(x + 0, 0, 0);
+					self.obj[5].bounds.bounds3d(160, 240, 40);
 
 					self.obj[6] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(7)
 						.depth(7)
 						.mount(self.tileMap1)
-						.translateTo(x + 0, -60, 40)
-						.bounds3d(40, 40, 40);
+						.translateTo(x + 0, -60, 40);
+					self.obj[6].bounds.bounds3d(40, 40, 40);
 
 					self.obj[7] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(8)
 						.depth(8)
 						.mount(self.tileMap1)
-						.translateTo(x + 0, 60, 40)
-						.bounds3d(40, 40, 40);
+						.translateTo(x + 0, 60, 40);
+					self.obj[7].bounds.bounds3d(40, 40, 40);
 
 					self.obj[8] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(9)
 						.depth(9)
 						.mount(self.tileMap1)
-						.translateTo(x + 0, 0, 80)
-						.bounds3d(40, 160, 40);
+						.translateTo(x + 0, 0, 80);
+					self.obj[8].bounds.bounds3d(40, 160, 40);
 
 					// Big slab on top
 					self.obj[9] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(10)
 						.depth(10)
 						.mount(self.tileMap1)
-						.bounds3d(360, 10, 20)
 						.translateTo(0, 0, 120);
+					self.obj[9].bounds.bounds3d(360, 10, 20);
 
 					// Building
 					self.obj[10] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(11)
 						.depth(11)
 						.mount(self.tileMap1)
-						.translateTo(0, 300, 0)
-						.bounds3d(80, 80, 40);
+						.translateTo(0, 300, 0);
+					self.obj[10].bounds.bounds3d(80, 80, 40);
 
 					self.obj[11] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(12)
 						.depth(12)
 						.mount(self.tileMap1)
-						.translateTo(0, 300, 40)
-						.bounds3d(70, 70, 40);
+						.translateTo(0, 300, 40);
+					self.obj[11].bounds.bounds3d(70, 70, 40);
 
 					self.obj[12] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(13)
 						.depth(13)
 						.mount(self.tileMap1)
-						.translateTo(0, 300, 80)
-						.bounds3d(10, 10, 120);
+						.translateTo(0, 300, 80);
+					self.obj[12].bounds.bounds3d(10, 10, 120);
 
 					self.obj[13] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.id(14)
 						.depth(14)
 						.mount(self.tileMap1)
 						.translateTo(0, 300, 200)
-						.bounds3d(200, 200, 10)
 						.mouseOver(mouseOverFunc)
 						.mouseOut(mouseOutFunc)
 						.mouseEventsActive(true)
 						.triggerPolygon('bounds3dPolygon');
+					self.obj[13].bounds.bounds3d(200, 200, 10);
 
 					self.obj[14] = new Cuboid(mouseOverFunc, mouseOutFunc)
 						.addComponent(IgeVelocityComponent)
@@ -250,8 +250,9 @@ var Client = IgeClass.extend({
 						.id(15)
 						.depth(15)
 						.mount(self.tileMap1)
-						.translateTo(300, 300, 0)
-						.bounds3d(20, 20, 80);
+						.translateTo(300, 300, 0);
+					self.obj[14].bounds.bounds3d(20, 20, 80);
+
 				}
 			});
 		});

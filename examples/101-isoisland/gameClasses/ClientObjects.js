@@ -10,13 +10,13 @@ var ClientObjects = {
 			this.isometric(true)
 				.triggerPolygon('bounds3dPolygon')
 				.mount(parent)
-				.bounds3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
 				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
 				.drawBounds(false)
 				.drawBoundsData(false)
 				.occupyTile(tileX, tileY, 2, 2);
+			this.bounds.bounds3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25);
 
 			// Create the "image" entity
 			this.imageEntity = new IgeEntity()
@@ -40,13 +40,13 @@ var ClientObjects = {
 			this.isometric(true)
 				.triggerPolygon('bounds3dPolygon')
 				.mount(parent)
-				.bounds3d(3 * parent._tileWidth, 4 * parent._tileHeight, parent._tileHeight * 0.8)
 				.translateToTile((tileX) + 1, (tileY) + 1.5, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
 				.drawBounds(false)
 				.drawBoundsData(false)
 				.occupyTile(tileX, tileY, 3, 4);
+			this.bounds.bounds3d(3 * parent._tileWidth, 4 * parent._tileHeight, parent._tileHeight * 0.8);
 
 			// Create the "image" entity
 			this.imageEntity = new IgeEntity()
@@ -70,13 +70,13 @@ var ClientObjects = {
 			this.isometric(true)
 				.triggerPolygon('bounds3dPolygon')
 				.mount(parent)
-				.bounds3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25)
 				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
 				.mouseOver(function () { this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.drawBounds(false); this.drawBoundsData(false); })
 				.drawBounds(false)
 				.drawBoundsData(false)
 				.occupyTile(tileX, tileY, 2, 2);
+			this.bounds.bounds3d(2 * parent._tileWidth, 2 * parent._tileHeight, parent._tileHeight * 1.25);
 
 			// Create the "image" entity
 			this.imageEntity = new IgeEntity()
@@ -110,7 +110,6 @@ var ClientObjects = {
 			this.isometric(true)
 				.triggerPolygon('bounds3dPolygon')
 				.isometricMounts(true)
-				.bounds3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
 				.mouseOver(function () { this.highlight(true); this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.highlight(false); this.drawBounds(false); this.drawBoundsData(false); })
 				.drawBounds(false)
@@ -119,21 +118,23 @@ var ClientObjects = {
 				.mount(parent)
 				.translateToTile((tileX) + 0.5, (tileY) + 0.5, 0)
 				.occupyTile(tileX, tileY, 2, 2);
+			this.bounds.bounds3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40));
 
 			// Create the base container
-			this.data('baseRef', new IgeEntity()
+			var basRef = new IgeEntity()
 				.isometric(true)
 				.triggerPolygon('bounds3dPolygon')
 				.mount(this)
-				.bounds3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40))
 				.translateTo(0, 0, 0)
 				.anchor(0, -1.6 * (parent._tileWidth / 40))
 				.category('skyscraper')
 				.mouseOver(function () { this.highlight(true); this.drawBounds(true); this.drawBoundsData(true); })
 				.mouseOut(function () { this.highlight(false); this.drawBounds(false); this.drawBoundsData(false); })
 				.drawBounds(false)
-				.drawBoundsData(false)
-			);
+				.drawBoundsData(false);
+			baseRef.bounds.bounds3d(2 * parent._tileWidth, 2 * parent._tileHeight, 25 * (parent._tileWidth / 40));
+			this.data('baseRef', baseRef);
+
 
 			new IgeEntity()
 				.texture(ige.client.gameTexture.base_se)
@@ -208,7 +209,6 @@ var ClientObjects = {
 					.triggerPolygon('bounds3dPolygon')
 					.layer(floor)
 					.mount(this)
-					.bounds3d(2 * this._parent._tileWidth, 2 * this._parent._tileHeight, 25 * (this._parent._tileWidth / 40))
 					.translateTo(0, 0, 25 * (floor + 1) * (this._parent._tileWidth / 40))
 					.anchor(0, -1.6 * (this._parent._tileWidth / 40))
 					.category('skyscraper')
@@ -216,6 +216,7 @@ var ClientObjects = {
 					.mouseOut(function () { this.highlight(false); this.drawBounds(false); this.drawBoundsData(false); })
 					.drawBounds(false)
 					.drawBoundsData(false);
+				this.data('floorRef')[floor].bounds.bounds3d(2 * this._parent._tileWidth, 2 * this._parent._tileHeight, 25 * (this._parent._tileWidth / 40));
 
 				new IgeEntity()
 					.texture(ige.client.gameTexture.stacker_se)
@@ -334,12 +335,11 @@ var ClientObjects = {
 				if (val === 'nw') { levelTextureId = 'crane_nw'; anchorX = -25; anchorY = -10; }
 
 				// Create the crane
-				this.data('craneRef', new IgeEntity()
+				var craneRef = new IgeEntity()
 					.isometric(true)
 					.triggerPolygon('bounds3dPolygon')
 					.layer(this.data('floors') + 1)
 					.mount(this)
-					.bounds3d(20, 20, 55)
 					.translateTo(
 						0,
 						0,
@@ -349,8 +349,9 @@ var ClientObjects = {
 					.mouseOver(function () { this.highlight(true); this.drawBounds(true); this.drawBoundsData(true); })
 					.mouseOut(function () { this.highlight(false); this.drawBounds(false); this.drawBoundsData(false); })
 					.drawBounds(false)
-					.drawBoundsData(false)
-				);
+					.drawBoundsData(false);
+				craneRef.bounds.bounds3d(20, 20, 55);
+				this.data('craneRef', craneRef);
 
 				new IgeEntity()
 					.texture(ige.client.gameTexture[levelTextureId])

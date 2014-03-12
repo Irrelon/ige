@@ -8,8 +8,8 @@ var Character = IgeEntityBox2d.extend({
 
 		// Setup the entity
 		self.depth(1)
-			.bounds3d(20, 20, 40)
 			.isometric(true);
+		self.bounds.bounds3d(20, 20, 40);
 
 		self.imageEntity = new IgeEntity()
 			.addComponent(IgeAnimationComponent);

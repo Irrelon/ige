@@ -55,7 +55,6 @@ var Client = IgeClass.extend({
 						.depth(0)
 						.mount(self.tileMap1)
 						.translateTo(0, 0, 0)
-						.bounds3d(160, 240, 40)
 						.opacity(0.95)
 						.cannonBody({
 							type: 'static',
@@ -66,6 +65,7 @@ var Client = IgeClass.extend({
 								}
 							}]
 						});
+					self.obj[0].bounds.bounds3d(160, 240, 40);
 
 					self.obj[14] = new IgeEntityCannon()
 						.addComponent(IgeVelocityComponent)
@@ -75,7 +75,6 @@ var Client = IgeClass.extend({
 						.depth(15)
 						.mount(self.tileMap1)
 						.translateTo(150, 90, 0)
-						.bounds3d(40, 40, 10)
 						.opacity(0.95)
 						.cannonBody({
 							type: 'dynamic',
@@ -91,6 +90,7 @@ var Client = IgeClass.extend({
 								}
 							}]
 						});
+					self.obj[14].bounds.bounds3d(40, 40, 10);
 				}
 			});
 		});

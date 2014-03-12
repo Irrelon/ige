@@ -629,28 +629,6 @@ var IgeEntity = IgeObject.extend({
 
 
 	/**
-	 * Gets / sets the 3d geometry of the entity. The x and y values are
-	 * relative to the center of the entity and the z value is wholly
-	 * positive from the "floor". Used to define a 3d bounding cuboid for
-	 * the entity used in isometric depth sorting and hit testing.
-	 * @param {Number=} x The new x value in pixels.
-	 * @param {Number=} y The new y value in pixels.
-	 * @param {Number=} z The new z value in pixels.
-	 * @example #Set the dimensions of the entity (width, height and length)
-	 *     entity.bounds3d(40, 40, 20);
-	 * @return {*} "this" when arguments are passed to allow method
-	 * chaining or the current value if no arguments are specified.
-	 */
-	bounds3d: function (x, y, z) {
-		if (x !== undefined && y !== undefined && z !== undefined) {
-			this.bounds.bounds3d(new IgePoint3d(x, y, z));
-			return this;
-		}
-
-		return this.bounds.bounds3d();
-	},
-
-	/**
 	 * @deprecated Use bounds3d instead
 	 * @param x
 	 * @param y

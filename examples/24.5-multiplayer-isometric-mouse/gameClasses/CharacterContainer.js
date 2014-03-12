@@ -8,7 +8,7 @@ var CharacterContainer = IgeEntity.extend({
 		
 		if (ige.isClient) {
 			// Setup the entity 3d bounds
-			self.bounds3d(20, 20, 40);
+			self.bounds.bounds3d(20, 20, 40);
 	
 			// Create a character entity as a child of this container
 			self.character = new Character()

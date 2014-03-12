@@ -9,8 +9,8 @@ var Character = IgeEntityBox2d.extend({
 		// Setup the entity
 		self.addComponent(IgeAnimationComponent)
 			.isometric(true)
-			.depth(1)
-			.bounds3d(20, 20, 40);
+			.depth(1);
+		self.bounds.bounds3d(20, 20, 40);
 
 		// Load the character texture file
 		if (ige.isClient) {

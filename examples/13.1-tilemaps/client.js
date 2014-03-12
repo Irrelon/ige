@@ -133,7 +133,6 @@ var Client = IgeClass.extend({
 					self.obj[2] = new IgeEntity()
 						.id('3d1')
 						.isometric(true)
-						.bounds3d(40, 40, 0)
 						.texture(gameTexture[0])
 						.width(40)
 						.height(40)
@@ -147,11 +146,11 @@ var Client = IgeClass.extend({
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.mouseUp(upFunc);
+					self.obj[2].bounds.bounds3d(40, 40, 0);
 
 					self.obj[3] = new IgeEntity()
 						.id('3d2')
 						.isometric(true)
-						.bounds3d(40, 40, 0)
 						.texture(gameTexture[0])
 						.width(40)
 						.height(40)
@@ -166,6 +165,7 @@ var Client = IgeClass.extend({
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.mouseUp(upFunc);
+					self.obj[3].bounds.bounds3d(40, 40, 0);
 				}
 			});
 		});
