@@ -396,6 +396,7 @@ var IgeEntity = IgeObject.extend({
 			this._backgroundPatternRepeat = repeat || 'repeat';
 			this._backgroundPatternTrackCamera = trackCamera;
 			this._backgroundPatternIsoTile = isoTile;
+			this._backgroundPatternFill = null;
 			return this;
 		}
 
