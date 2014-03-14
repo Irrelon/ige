@@ -400,7 +400,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
         for (var clientId in clients) {
             if (clients.hasOwnProperty(clientId)) {
                 //if it's not been already sent
-                if (this._streamClientCreated[entityId][clientId] != true) {
+                if (!this._streamClientCreated[entityId] || this._streamClientCreated[entityId][clientId] != true) {
                     //send the stream create command!
                     entity.streamCreate(clientId);
                 }

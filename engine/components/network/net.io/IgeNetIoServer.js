@@ -66,6 +66,7 @@ var IgeNetIoServer = {
 	 * "ige" by default when they connect to the server. 
 	 * @param {String} clientId The id of the client to add to the room.
 	 * @param {String} roomId The id of the room to add the client to.
+     * @param {boolean} dontSendStream Don't mark the client to receive stream entity updates for this clientJoinRoom
 	 * @returns {*}
 	 */
 	clientJoinRoom: function (clientId, roomId, dontSendStream) {

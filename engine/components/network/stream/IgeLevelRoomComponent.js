@@ -29,13 +29,14 @@ var IgeLevelRoomComponent = IgeClass.extend({
 		};
         player.addBehaviour('levelRoom', this._behaviour);
         this._clientLevelRoomChangedCheck();
-		//per default we join a stream room "ige" which we'll keep. We will not stream this
-		//unit to "ige" though, "ige" will only be used for global streams.
+
+		// per default entities join a stream room "ige". Since we're using IgeEntity's "setStreamRooms"
+        // this room "ige" is left again immediately.
     },
 	
     /**
      * Called every frame by the engine when this entity is mounted to the
-     * scenegraph.
+     * scenegraph. Checks the level rooms of the entity in a predefined interval.
      * @param ctx The canvas context to render to.
      */
     _behaviour: function (ctx) {
@@ -46,11 +47,23 @@ var IgeLevelRoomComponent = IgeClass.extend({
 			this.levelRoom._clientLevelRoomChangedCheck();
 		}
     },
-	
+
+    /**
+     * Have an entity use the same streamRooms from this component.
+     * Mounted entities with inherited streamRooms have the same stream rooms as well - no need to
+     * explicitely attach them.
+     * @param entity
+     */
 	attachEntity: function(entity) {
 		this._attachedEntities.push(entity);
 	},
-	
+
+    /**
+     * Checks the level rooms. Called regularly by an interval. Adds the new rooms to the client and the entity,
+     * and leaves rooms out of range for the client and the entity.
+     * Also does this for
+     * @private
+     */
 	_clientLevelRoomChangedCheck: function() {
 		var roomPosX = Math.floor(this._player._translate.x / this._options.networkLevelRoomSize),
 			roomPosY = Math.floor(this._player._translate.z / this._options.networkLevelRoomSize);
@@ -80,7 +93,14 @@ var IgeLevelRoomComponent = IgeClass.extend({
 			this.clientRoomPosition.y = roomPosY;
 		}
 	},
-	
+
+    /**
+     * Leaves all rooms which the unit is not in anymore
+     * @param roomPosX new position X
+     * @param roomPosY new position Y
+     * @param clientId The network client id / socket id
+     * @private
+     */
 	_leaveAbandonedLevelRooms: function(roomPosX, roomPosY, clientId) {
         var roomsAbandoned = [];
 		for (var x = this.clientRoomPosition.x - 1; x <= this.clientRoomPosition.x + 1; x++) {
@@ -93,49 +113,6 @@ var IgeLevelRoomComponent = IgeClass.extend({
                 roomsAbandoned.push(x + ':' + y);
 			}
 		}
-
-		/*
-		
-        //send a stream destroy command to all clients which listen to one of the rooms abandoned but listen to none
-        //of the new rooms
-        var clientArr = {};
-        //first, gather all clients of abandoned rooms
-        for (r in roomsAbandoned) {
-            var cArr = ige.network.clients(roomsAbandoned[r]);
-            if (cArr != undefined) {
-                for (c in cArr) {
-                    if (c != undefined && !clientArr.hasOwnProperty(c)) clientArr[c] = cArr[c];
-                }
-            }
-        }
-        //then check whether they listen to one of the new rooms
-        var newRooms = [
-            (roomPosX - 1) + ':' + (roomPosY - 1),
-            (roomPosX - 1) + ':' + roomPosY,
-            (roomPosX - 1) + ':' + (roomPosY + 1),
-            roomPosX + ':' + (roomPosY - 1),
-            roomPosX + ':' + roomPosY,
-            roomPosX + ':' + (roomPosY + 1),
-            (roomPosX + 1) + ':' + (roomPosY - 1),
-            (roomPosX + 1) + ':' + roomPosY,
-            (roomPosX + 1) + ':' + (roomPosY + 1)
-        ];
-        for (c in clientArr) {
-            var cRooms = ige.network.clientRooms(c);
-            var sendDestroy = true;
-            for (cR in cRooms) {
-                if (newRooms.indexOf(cRooms[cR]) != -1) {
-                    sendDestroy = false;
-                    break;
-                }
-            }
-
-            if (sendDestroy) {
-                this._player.streamDestroy(c);
-            }
-        }
-		
-		*/
 	}
 });
 
