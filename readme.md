@@ -62,7 +62,7 @@ http://www.irrelon.com
 
 * Website: http://www.isogenicengine.com
 * Store: http://www.isogenicengine.com/download.html
-* Forum: http://store.isogenicengine.com/forum
+* Forum: http://www.isogenicengine.com/forum
 * API Docs: http://www.isogenicengine.com/docs-reference.html
 * Video Tutorials: http://www.isogenicengine.com/docs-tutorials.html
 * Updates, News & Changelog: http://www.isogenicengine.com/forum/viewforum.php?f=8
