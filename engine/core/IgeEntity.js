@@ -17,6 +17,7 @@ var IgeEntity = IgeObject.extend({
 		this._anchor = new IgePoint2d(0, 0);
 		this._renderPos = {x: 0, y: 0};
 
+		this._computedOpacity = 1;
 		this._opacity = 1;
 		this._cell = 1;
 
@@ -1531,10 +1532,9 @@ var IgeEntity = IgeObject.extend({
 	 */
 	_transformContext: function (ctx, inverse) {
 		if (this._parent) {
-			// TODO: Does this only work one level deep? we need to alter a _worldOpacity property down the chain
-			ctx.globalAlpha = this._parent._opacity * this._opacity;
+			ctx.globalAlpha = this._computedOpacity = this._parent._computedOpacity * this._opacity;
 		} else {
-			ctx.globalAlpha = this._opacity;
+			ctx.globalAlpha = this._computedOpacity = this._opacity;
 		}
 
 		if (!inverse) {
