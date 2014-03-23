@@ -117,6 +117,146 @@ var IgeEntityBox2d = IgeEntity.extend({
 			return !this._box2dBody.m_nonGravitic;
 		}
 	},
+	
+	on: function () {
+		if (arguments.length === 3) {
+			var evName = arguments[0],
+				target = arguments[1],
+				callback = arguments[2],
+				type;
+
+			switch (target.substr(0, 1)) {
+				case '#':
+					type = 0;
+					break;
+
+				case '.':
+					type = 1;
+					break;
+			}
+
+			target = target.substr(1, target.length - 1);
+			
+			switch (evName) {
+				case 'collisionStart':
+					this._collisionStartListeners = this._collisionStartListeners || [];
+					this._collisionStartListeners.push({
+						type: type,
+						target: target,
+						callback: callback
+					});
+					
+					if (!this._contactListener) {
+						// Setup contact listener
+						this._contactListener = this._setupContactListeners();
+					}
+					break;
+				
+				case 'collisionEnd':
+					this._collisionEndListeners = this._collisionEndListeners || [];
+					this._collisionEndListeners.push({
+						type: type,
+						target: target,
+						callback: callback
+					});
+					
+					if (!this._contactListener) {
+						// Setup contact listener
+						this._contactListener = this._setupContactListeners();
+					}
+					break;
+				
+				default:
+					this.log('Cannot add event listener, event type ' + evName + ' not recognised', 'error');
+					break;
+			}
+		} else {
+			IgeEntity.prototype.on.apply(this, arguments);
+		}
+	},
+	
+	off: function () {
+		if (arguments.length === 3) {
+			
+		} else {
+			IgeEntity.prototype.off.apply(this, arguments);
+		}
+	},
+	
+	_setupContactListeners: function () {
+		var self = this;
+		
+		ige.box2d.contactListener(
+			// Listen for when contact's begin
+			function (contact) {
+				//console.log('Contact begins between', contact.igeEntityA()._id, 'and', contact.igeEntityB()._id);
+				
+				// Loop the collision listeners and check for a match
+				var arr = self._collisionStartListeners;
+				
+				if (arr) {
+					self._checkContact(contact, arr);
+				}
+			},
+			// Listen for when contact's end
+			function (contact) {
+				//console.log('Contact ends between', contact.igeEntityA()._id, 'and', contact.igeEntityB()._id);
+				// Loop the collision listeners and check for a match
+				var arr = self._collisionEndListeners;
+				
+				if (arr) {
+					self._checkContact(contact, arr);
+				}
+			}/*,
+			// Handle pre-solver events
+			function (contact) {
+				// If player ship collides with lunar surface, crash!
+				if (contact.igeEitherCategory('orb') && contact.igeEitherCategory('ship')) {
+					// Cancel the contact
+					contact.SetEnabled(false);
+				}
+
+				// You can also check an entity by it's category using igeEitherCategory('categoryName')
+			}*/
+		);
+	},
+	
+	_checkContact: function (contact, arr) {
+		var self = this,
+			arrCount = arr.length,
+			otherEntity,
+			listener,
+			i;
+					
+		if (contact.igeEntityA()._id === self._id) {
+			otherEntity = contact.igeEntityB();
+		} else if (contact.igeEntityB()._id === self._id) {
+			otherEntity = contact.igeEntityA();
+		} else {
+			// This contact has nothing to do with us
+			return;
+		}
+		
+		for (i = 0; i < arrCount; i++) {
+			listener = arr[i];
+			
+			if (listener.type === 0) {
+				// Listener target is an id
+				if (otherEntity._id === listener.target) {
+					// Contact with target established, fire callback
+					listener.callback(contact);
+				}
+			}
+			
+			if (arr[i].type === 1) {
+				// Listener target is a category
+				if (otherEntity._category === listener.target) {
+					// Contact with target established, fire callback
+					listener.callback(contact);
+				}
+			}
+		}
+	},
 
 	/**
 	 * Takes over translateTo calls and processes box2d movement as well.
