@@ -32,8 +32,16 @@ var Player = IgeEntityBox2d.extend({
 	update: function (ctx) {
 		if (ige.gamePad && ige.gamePad.gamepads[0]) {
 			var pad = ige.gamePad.gamepads[0],
-				x = Math.round(pad.axes[0]) * this._trustPower,
-				y = Math.round(pad.axes[1]) * this._trustPower;
+				x = 0,
+				y = 0;
+			
+			if (pad.axes[0] > 0.1 || pad.axes[0] < -0.1) {
+				x = pad.axes[0] * this._trustPower;
+			}
+			
+			if (pad.axes[1] > 0.1 || pad.axes[1] < -0.1) {
+				y = pad.axes[1] * this._trustPower;
+			}
 			
 			this._box2dBody.SetLinearVelocity(new IgePoint3d(x, y, 0));
 			this._box2dBody.SetAwake(true);
@@ -41,24 +49,21 @@ var Player = IgeEntityBox2d.extend({
 		
 		IgeEntityBox2d.prototype.update.call(this, ctx);
 		
-		/*// Check OO bounds
-		if (this._translate.x + this._bounds2d.x2 < ige._bounds2d.x2) {
-			console.log(this._translate.x + this._bounds2d.x2, ige._bounds2d.x2);
-			this.translate().x(ige._bounds2d.x2 - this._bounds2d.x2);
+		// Check OO bounds
+		if (this._translate.x + this._bounds2d.x2 > ige._bounds2d.x2) {
+			this.translateTo(ige._bounds2d.x2 - this._bounds2d.x2, this._translate.y, this._translate.z);
 		}
 		
 		if (this._translate.x - this._bounds2d.x2 < -ige._bounds2d.x2) {
-			this._translate.x = -ige._bounds2d.x2 - this._bounds2d.x2;
+			this.translateTo(-ige._bounds2d.x2 + this._bounds2d.x2, this._translate.y, this._translate.z);
 		}
 		
 		if (this._translate.y + this._bounds2d.y2 > ige._bounds2d.y2) {
-			this._translate.y = ige._bounds2d.y2 - this._bounds2d.y2;
+			this.translateTo(this._translate.x, ige._bounds2d.y2 - this._bounds2d.y2, this._translate.z);
 		}
 		
-		if (this._translate.y + this._bounds2d.y2 > ige._bounds2d.y2) {
-			this._translate.y = ige._bounds2d.y2 - this._bounds2d.y2;
-		}*/
-		
-		
+		if (this._translate.y - this._bounds2d.y2 < -ige._bounds2d.y2) {
+			this.translateTo(this._translate.x, -ige._bounds2d.y2 + this._bounds2d.y2, this._translate.z);
+		}
 	}
 });
