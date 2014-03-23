@@ -25,6 +25,7 @@ var igeCoreConfig = {
 		['csap', 'IgeTweenComponent', 'components/IgeTweenComponent.js'],
 		['csap', 'IgePathComponent', 'components/IgePathComponent.js'],
 		['csap', 'IgeInputComponent', 'components/IgeInputComponent.js'],
+		['csap', 'IgeGamePadComponent', 'components/IgeGamePadComponent.js'],
 		['csap', 'IgeMousePanComponent', 'components/IgeMousePanComponent.js'],
 		['csap', 'IgeMouseZoomComponent', 'components/IgeMouseZoomComponent.js'],
 		['csap', 'IgeTiledComponent', 'components/IgeTiledComponent.js'],
