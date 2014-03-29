@@ -1,1 +1,0 @@
-# Composite Entity Caching Demo
