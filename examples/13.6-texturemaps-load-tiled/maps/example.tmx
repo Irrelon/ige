@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="isometric" width="100" height="100" tilewidth="100" tileheight="50">
+ <tileset firstgid="1" name="grassSheet" tilewidth="100" tileheight="50">
+  <image source="../../assets/textures/tiles/grassSheet.png" width="400" height="50"/>
+ </tileset>
+ <tileset firstgid="5" name="dirtSheet" tilewidth="100" tileheight="50">
+  <image source="../../assets/textures/tiles/dirtSheet.png" width="400" height="50"/>
+ </tileset>
+ <layer name="GrassLayer" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJztwwEJAAAMBKH7/qUHy6Hgqqmqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv8AX0MnEQ==
+  </data>
+ </layer>
+ <layer name="DirtLayer" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJztm+uO4yAMhedX+/5vvBppV2KRbY5v4BB/UqVOmgDhYLAN8/PTNDzfvx+Jz46GXATSp55nWw8aqV+smiDPWbV+Ip/FZ75XwqIJVQ9V7uqesc1P1u9f+6nP3AfIe2r7A9VwbNeqjFWZnvk1G40eP8y1Gel9x/q476u+RO6VrkvvdxqtHui44vpqnFO+098f4TkNkh19hL8roNXjZ/HbXDY670chjQOu/kpY9Jifle5brScaPdD2zKzmtUpriUePuQyOla2h/YH4YdrnbrKPuZzV75x/gNaz0lyqm7p2y/rBlWOtP0IPZM7kNJjf+eT8pYkHJXa9g9a/RX2Km4j2kVZ1UXji10qscgzV3gmNvaN8tpNQ8TIaj+8kyh4r+bkIUX4oWpc27yWBrstP0STS3pF4cLZJb19+gXuQ36uw6sOI8Uxp8E9f73j4Mt+Rdp3AM24s85OUx5hjIO0+Blf26h7p+m6suQcrUn9Q+V2N/XF+B7Wf5slZZ4L4TpH5BKkcTgtvfkATI1bwe5E5ISr/iWqvnaukOhAfDL13F1KeLxLUX/LUa3kPdN2Xno/WUsp/Wsqa5/+d+ZS5zUjdo2+sfecMu6LaYcl1zuVY/GIvVlvX+hCasi1Ie2sIGXsJUh8hcQdyfb5H+w6ZY03bZmpuimzLbGvjmJHiGaS8KLL1QDXJsAcUKteJtP2Jmvxyeo8MYY5VNPNq9JjbMS6foIlnj3jF7AfvzmdQWPZtEaLa7mnbyk60Zy92+5CRmkS23Rs/cs+vzkdQVJ9PKKLX1FP+JrVunfRxOFb5p4z2Zmli2WurZiNSTJKVN4mwOS5HgeDNg2bj3c+w4C2fyu1Ycv7V5quTeOdvKq9YabxT53925wdHZlsb54iItn2m7yffdQbdz9vBrvq4Ne806Ltnz5eV18idWPZkMvqswtg8jbVfs3Lub8Y7N4xrbASV1tMTVOzH1qMeb9Skqha/vFWPqppUbVc2Vd8bPYd7G1XfkToHWnGvIZrIcUfllSw5JuocCffbjUTtJazyX9Z8TMX8UjZePSLsjCuDatsbNPHijfOp57ky3x7Ho3jO4miue+q6BWRtto5by1mI1uP/75ZzTBzWst48Z1FnMRB/yFI2WtabbUQ6ozfaS6R9IHq8VZNV33hiaKt9vNnPyoyNpfVj5T/cCjLWsv4/bXWP5vrTGcfgaj6OPPuhyaFQ125dN7i4mDuLG7HfrikDzaHcghSLUfsQVn/Wuva+TY8n2L0mt3UDWZpknjm5WY8sPz6qTG5Nv5ksPSL6zZJvfDpZ55gzbeR2Kv+v3216oDFUpI1EnpW4SQ/NeY+ovfSb/R8v2vNM1pivdcDg7P0zfcbrKG/OeXtA144e43uIGseUPTU2Iv//pvWIITNebs7QeuxHWm9aj/2MMcocR7Ye+5H2cVuP/bT/VIu2gVq0HrXo+SoX7XhvPfLR5m2bfFB/tfXYC7eP1/HFWcY4vNeMpmmapmmapmk8/AHophXX
+  </data>
+ </layer>
+ <objectgroup name="ObjectLayer1" width="100" height="100">
+  <object gid="5" x="101" y="51"/>
+ </objectgroup>
+</map>
