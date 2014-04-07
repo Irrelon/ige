@@ -15,6 +15,25 @@ var IgeTimeout = IgeInterval.extend({
 	init: function (method, timeout) {
 		IgeInterval.prototype.init.call(this, method, timeout);
 	},
+
+    /**
+     * Cancels the timer, stops the timeout.
+     * @returns {*}
+     */
+    cancel: function () {
+        return IgeInterval.prototype.cancel.call(this);
+    },
+
+    /**
+     * Resets the time and lets the timeout begin anew.
+     * @returns {*}
+     */
+    reset: function() {
+        this._time = 0;
+        if (ige.time._timers.indexOf(this) == -1) {
+            ige.time.addTimer(this);
+        }
+    },
 	
 	/**
 	 * Checks for a timeout event to see if we should call the timeout method. This is
