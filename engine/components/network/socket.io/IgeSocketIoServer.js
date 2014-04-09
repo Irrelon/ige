@@ -79,21 +79,31 @@ var IgeSocketIoServer = {
 	 * "ige" by default when they connect to the server. 
 	 * @param {String} clientId The id of the client to add to the room.
 	 * @param {String} roomId The id of the room to add the client to.
+     * @param {boolean} dontSendStream Don't mark the client to receive stream entity updates for this clientJoinRoom
 	 * @returns {*}
 	 */
-	clientJoinRoom: function (clientId, roomId) {
+	clientJoinRoom: function (clientId, roomId, dontSendStream) {
 		if (clientId !== undefined) {
 			if (roomId !== undefined) {
 				this._clientRooms[clientId] = this._clientRooms[clientId] || [];
-				this._clientRooms[clientId].push(roomId);
+				//if the client's not already in this room
+				if (this._clientRooms[clientId].indexOf(roomId) == -1) {
+					this._clientRooms[clientId].push(roomId);
+					
+					this._socketsByRoomId[roomId] = this._socketsByRoomId[roomId] || {};
+					this._socketsByRoomId[roomId][clientId] = this._socketById[clientId];
+					
+					// create all streamed entities in the room for the newly joined client
+					if (!dontSendStream && ige.network.stream) ige.network.stream._clientsWhichJoinedARoom[clientId] = true;
+					
+					if (this.debug()) {
+						this.log('Client ' + clientId + ' joined room ' + roomId);
+					}
 				
-				this._socketsByRoomId[roomId] = this._socketsByRoomId[roomId] || {};
-				this._socketsByRoomId[roomId][clientId] = this._socketById[clientId];
-				
-				if (this.debug()) {
-					this.log('Client ' + clientId + ' joined room ' + roomId);
+					return this._entity;
 				}
 				
+				//this.log('Cannot add client to room because client is already in that room!', 'warning');
 				return this._entity;
 			}
 			
@@ -119,6 +129,9 @@ var IgeSocketIoServer = {
 				if (this._clientRooms[clientId]) {
 					this._clientRooms[clientId].pull(roomId);
 					delete this._socketsByRoomId[roomId][clientId];
+					
+					// remove all streamed entities in the room for the leaving client
+					if (ige.network.stream) ige.network.stream._clientsWhichLeftARoom[clientId] = true;
 				}
 				
 				return this._entity;
@@ -161,7 +174,7 @@ var IgeSocketIoServer = {
 	 */
 	clientRooms: function (clientId) {
 		if (clientId !== undefined) {
-			return this._clientRooms[clientId] || [];
+			return this._clientRooms[clientId] || ['ige'];
 		}
 		
 		this.log('Cannot get/set the clientRoom id because no clientId was provided!', 'warning');
@@ -171,13 +184,24 @@ var IgeSocketIoServer = {
 	/**
 	 * Returns an associative array of all connected clients
 	 * by their ID.
-	 * @param {String=} roomId Optional, if provided will only return clients
-	 * that have joined room specified by the passed roomId.
+	 * @param {[String]=} roomIds Optional, if provided will only return clients
+	 * that have joined rooms specified by the passed roomIds.
 	 * @return {Array}
 	 */
-	clients: function (roomId) {
-		if (roomId !== undefined) {
-			return this._socketsByRoomId[roomId];
+	clients: function (roomIds) {
+		if (roomIds !== undefined) {
+            if (typeof(roomIds) == 'string') {
+			    return this._socketsByRoomId[roomIds];
+            } else {
+                var clients = {};
+                for (var rId in roomIds) {
+                    var cList = this._socketsByRoomId[roomIds[rId]];
+                    for (var c in cList) {
+                        if (cList.hasOwnProperty(c) && clients[c] == undefined) clients[c] = cList[c];
+                    }
+                }
+                return clients;
+            }
 		}
 		
 		return this._socketById;
@@ -213,7 +237,13 @@ var IgeSocketIoServer = {
 
 		return this._acceptConnections;
 	},
-
+	
+	/**
+	 * Sends a message over the network.
+	 * @param {String} commandName
+	 * @param {Object} data
+	 * @param {*=} clientId If specified, sets the recipient socket id or a array of socket ids to send to.
+	 */
 	send: function (commandName, data, clientId) {
 		var commandIndex = this._networkCommandsLookup[commandName],
 			arrCount,
@@ -332,19 +362,20 @@ var IgeSocketIoServer = {
 		var self = this;
 
 		if (this._acceptConnections) {
+			// Check if any listener cancels this
 			if (!this.emit('connect', socket)) {
 				this.log('Accepted connection with id ' + socket.id);
 				this._socketById[socket.id] = socket;
 
 				// Store a rooms array for this client
-				this._clientRooms[socket.id] = this._clientRooms[socket.id] || [];
+				//this._clientRooms[socket.id] = this._clientRooms[socket.id] || ['ige'];
 				
 				socket.on('message', function (data) {
-					self._onClientMessage(data, socket.id);
+					self._onClientMessage.apply(self, [data, socket.id]);
 				});
 
 				socket.on('disconnect', function (data) {
-					self._onClientDisconnect(data, socket);
+					self._onClientDisconnect.apply(self, [data, socket]);
 				});
 
 				// Send an init message to the client
@@ -352,6 +383,15 @@ var IgeSocketIoServer = {
 					cmd: 'init',
 					ncmds: this._networkCommandsLookup
 				});
+				
+				// Maybe add client to 'ige', and send stream entities
+				if (this._clientRooms[socket.id]) {
+					// Rooms were already set for this client. Use these and don't assign default 'ige' room.
+					if (ige.network.stream) ige.network.stream._clientsWhichJoinedARoom[socket.id] = true; //ige.network.stream._createStreamEntitiesForClient(socket.id);
+				} else {
+					// No rooms were assigned yet. We will add the default room 'ige' to this client.
+					this.clientJoinRoom(socket.id, 'ige');
+				}
 			} else {
 				// Reject the connection
 				socket.disconnect();

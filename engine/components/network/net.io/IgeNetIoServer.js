@@ -81,7 +81,7 @@ var IgeNetIoServer = {
 					this._socketsByRoomId[roomId][clientId] = this._socketById[clientId];
 					
 					// create all streamed entities in the room for the newly joined client
-					if (!dontSendStream && ige.network.stream) ige.network.stream._clientsWhichJoinedARoom[clientId] = true; //ige.network.stream._createStreamEntitiesForClient(clientId);
+					if (!dontSendStream && ige.network.stream) ige.network.stream._clientsWhichJoinedARoom[clientId] = true;
 					
 					if (this.debug()) {
 						this.log('Client ' + clientId + ' joined room ' + roomId);
@@ -118,7 +118,7 @@ var IgeNetIoServer = {
 					delete this._socketsByRoomId[roomId][clientId];
 					
 					// remove all streamed entities in the room for the leaving client
-					if (ige.network.stream) ige.network.stream._clientsWhichLeftARoom[clientId] = true; //ige.network.stream._destroyStreamEntitiesForClient(clientId);
+					if (ige.network.stream) ige.network.stream._clientsWhichLeftARoom[clientId] = true;
 				}
 				
 				return this._entity;
@@ -171,18 +171,18 @@ var IgeNetIoServer = {
 	/**
 	 * Returns an associative array of all connected clients
 	 * by their ID.
-	 * @param {[String]=} roomId Optional, if provided will only return clients
-	 * that have joined room specified by the passed roomId.
+	 * @param {[String]=} roomIds Optional, if provided will only return clients
+	 * that have joined rooms specified by the passed roomIds.
 	 * @return {Array}
 	 */
-	clients: function (roomId) {
-		if (roomId !== undefined) {
-            if (typeof(roomId) == 'string') {
-			    return this._socketsByRoomId[roomId];
+	clients: function (roomIds) {
+		if (roomIds !== undefined) {
+            if (typeof(roomIds) == 'string') {
+			    return this._socketsByRoomId[roomIds];
             } else {
                 var clients = {};
-                for (var rId in roomId) {
-                    var cList = this._socketsByRoomId[roomId[rId]];
+                for (var rId in roomIds) {
+                    var cList = this._socketsByRoomId[roomIds[rId]];
                     for (var c in cList) {
                         if (cList.hasOwnProperty(c) && clients[c] == undefined) clients[c] = cList[c];
                     }
@@ -342,8 +342,6 @@ var IgeNetIoServer = {
 				
 				// Store a rooms array for this client
 				//this._clientRooms[socket.id] = this._clientRooms[socket.id] || ['ige'];
-				
-				//this.clientJoinRoom(socket.id, 'ige');
 
 				socket.on('message', function (data) {
 					self._onClientMessage.apply(self, [data, socket.id]);
