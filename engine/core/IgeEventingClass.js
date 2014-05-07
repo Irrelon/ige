@@ -133,7 +133,7 @@ var IgeEventingClass = IgeClass.extend({
 	 */
 	off: function (eventName, evtListener, callback) {
 		if (this._eventListeners) {
-			if (!this._eventListeners._processing) {
+			if (this._eventListeners._processing !== eventName) {
 				if (this._eventListeners[eventName]) {
 					// Find this listener in the list
 					var evtListIndex = this._eventListeners[eventName].indexOf(evtListener);
@@ -221,7 +221,7 @@ var IgeEventingClass = IgeClass.extend({
 					// Loop and emit!
 					cancelFlag = false;
 
-					this._eventListeners._processing = true;
+					this._eventListeners._processing = eventName;
 					while (eventCount--) {
 						eventIndex = eventCount2 - eventCount;
 						tempEvt = this._eventListeners[eventName][eventIndex];
@@ -253,10 +253,10 @@ var IgeEventingClass = IgeClass.extend({
 					// could have triggered a method that destroyed our object
 					// which would have deleted the array!
 					if (this._eventListeners) {
-						this._eventListeners._processing = false;
+						this._eventListeners._processing = null;
 
 						// Now process any event removal
-						this._processRemovals();
+						this._processRemovals(eventName);
 					}
 
 					if (cancelFlag) {
@@ -282,7 +282,7 @@ var IgeEventingClass = IgeClass.extend({
 	 * each array item.
 	 * @private
 	 */
-	_processRemovals: function () {
+	_processRemovals: function (eventName) {
 		if (this._eventListeners) {
 			var remArr = this._eventListeners._removeQueue,
 				arrCount,
@@ -298,6 +298,11 @@ var IgeEventingClass = IgeClass.extend({
 				while (arrCount--) {
 					item = remArr[arrCount];
 
+					// Only process removals for the specifically stated event
+					if (item[0] !== eventName) {
+						continue;
+					}
+
 					// Call the off() method for this item
 					result = this.off(item[0], item[1]);
 
@@ -308,9 +313,6 @@ var IgeEventingClass = IgeClass.extend({
 					}
 				}
 			}
-
-			// Remove the removal array
-			delete this._eventListeners._removeQueue;
 		}
 	}
 });

@@ -163,6 +163,8 @@ var IgeObject = IgeEventingClass.extend({
 					// The category is different so remove this object
 					// from the current category association
 					ige.categoryUnRegister(this);
+				} else {
+					return this;
 				}
 			}
 			
