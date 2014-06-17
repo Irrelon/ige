@@ -62,7 +62,7 @@ var IgeUiEntity = IgeEntity.extend([
 				ctx.beginPath();
 
 				// Check for early exit if we are rendering a rectangle
-				if (!this._borderTopRightRadius && this._borderBottomRightRadius && !this._borderBottomLeftRadius && !this._borderTopLeftRadius) {
+				if (!this._borderTopRightRadius && !this._borderBottomRightRadius && !this._borderBottomLeftRadius && !this._borderTopLeftRadius) {
 					ctx.rect(left, top, width, height);
 				} else {
 					// Top border
