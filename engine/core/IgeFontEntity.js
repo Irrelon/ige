@@ -83,6 +83,10 @@ var IgeFontEntity = IgeUiEntity.extend({
 		if (text !== undefined) {
 			var wasDifferent = false;
 			
+			if (typeof text === "number"){
+                            text=String(text);
+                        }
+                        
 			if (this._text !== text) {
 				this.clearCache();
 				wasDifferent = true;
