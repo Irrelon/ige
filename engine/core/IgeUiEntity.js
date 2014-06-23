@@ -314,7 +314,6 @@ var IgeUiEntity = IgeEntity.extend([
 				ctx.clip();
 			}
 	
-			ctx.translate(this._paddingLeft, this._paddingTop);
 			IgeEntity.prototype.tick.call(this, ctx, true);
 		}
 	},
