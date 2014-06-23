@@ -27,7 +27,7 @@ var IgeUiPositionExtension = {
 					
 					if (this._parent) {
 						// We have a parent, use it's geometry
-						parentWidth = this._parent._geometry.x;
+						parentWidth = this._parent._geometry.x - (this._parent._paddingLeft||0) - (this._parent._paddingRight||0); 
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
@@ -82,7 +82,7 @@ var IgeUiPositionExtension = {
 					
 					if (this._parent) {
 						// We have a parent, use it's geometry
-						parentWidth = this._parent._geometry.x;
+						parentWidth = this._parent._geometry.x - (this._parent._paddingLeft||0) - (this._parent._paddingRight||0);
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
@@ -139,7 +139,7 @@ var IgeUiPositionExtension = {
 					
 					if (this._parent) {
 						// We have a parent, use it's geometry
-						parentWidth = this._parent._geometry.x2;
+						parentWidth = this._parent._geometry.x2 - (this._parent._paddingLeft||0) - (this._parent._paddingRight||0);
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
@@ -194,7 +194,7 @@ var IgeUiPositionExtension = {
 					
 					if (this._parent) {
 						// We have a parent, use it's geometry
-						parentHeight = this._parent._geometry.y;
+						parentHeight = this._parent._geometry.y - (this._parent._paddingTop||0) - (this._parent._paddingBottom||0);
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
@@ -249,7 +249,7 @@ var IgeUiPositionExtension = {
 					
 					if (this._parent) {
 						// We have a parent, use it's geometry
-						parentHeight = this._parent._geometry.y;
+						parentHeight = this._parent._geometry.y - (this._parent._paddingTop||0) - (this._parent._paddingBottom||0);
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
@@ -306,7 +306,7 @@ var IgeUiPositionExtension = {
 					
 					if (this._parent) {
 						// We have a parent, use it's geometry
-						parentWidth = this._parent._geometry.y2;
+						parentWidth = this._parent._geometry.y2 - (this._parent._paddingTop||0) - (this._parent._paddingBottom||0);
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
@@ -358,7 +358,7 @@ var IgeUiPositionExtension = {
 				if (typeof(px) === 'string') {
 					if (this._parent) {
 						// Percentage
-						var parentWidth = this._parent._geometry.x,
+						var parentWidth = this._parent._geometry.x - (this._parent._paddingLeft||0) - (this._parent._paddingRight||0),
 							val = parseInt(px, 10),
 							newVal,
 							ratio;
@@ -434,7 +434,7 @@ var IgeUiPositionExtension = {
 				if (typeof(px) === 'string') {
 					if (this._parent) {
 						// Percentage
-						var parentHeight = this._parent._geometry.y,
+						var parentHeight = this._parent._geometry.y - (this._parent._paddingTop||0) - (this._parent._paddingBottom||0),
 							val = parseInt(px, 10),
 							newVal,
 							ratio;
@@ -558,7 +558,7 @@ var IgeUiPositionExtension = {
 				percent = parseInt(this._autoScaleX, 10);
 	
 				// Calculate new width from percentage
-				newVal = (parentGeom.x / 100 * percent);
+				newVal = ((parentGeom.x - (this._parent._paddingLeft||0) - (this._parent._paddingRight||0)) / 100 * percent);
 	
 				// Calculate scale ratio
 				ratio = newVal / this._geometry.x;
@@ -576,7 +576,7 @@ var IgeUiPositionExtension = {
 				percent = parseInt(this._autoScaleY, 10);
 
 				// Calculate new height from percentage
-				newVal = (parentGeom.y / 100 * percent);
+				newVal = ((parentGeom.y - (this._parent._paddingTop||0) - (this._parent._paddingBottom||0)) / 100 * percent);
 
 				// Calculate scale ratio
 				ratio = newVal / this._geometry.y;
@@ -606,19 +606,19 @@ var IgeUiPositionExtension = {
 				// The element is not center-aligned, process left and right
 				if (this._uiLeft !== undefined && this._uiRight !== undefined) {
 					// Both left and right values are set, position left and assign width to reach right
-					this.width((parentGeom.x) - this._uiLeft - this._uiRight, false, 0, true);
+					this.width((parentGeom.x) - this._uiLeft - (this._parent._paddingLeft||0) - this._uiRight - (this._parent._paddingRight||0), false, 0, true);
 							
 					// Update translation
-					this._translate.x = Math.floor(this._uiLeft + geomScaled.x2 - (parentGeom.x2));
+					this._translate.x = Math.floor(this._uiLeft + (this._parent._paddingLeft||0) + geomScaled.x2 - (parentGeom.x2));
 				} else {
 					if (this._uiLeft !== undefined) {
 						// Position left aligned
-						this._translate.x = Math.floor(this._uiLeft + geomScaled.x2 - (parentGeom.x2));
+						this._translate.x = Math.floor(this._uiLeft + (this._parent._paddingLeft||0) + geomScaled.x2 - (parentGeom.x2));
 					}
 					
 					if (this._uiRight !== undefined) {
 						// Position right aligned
-						this._translate.x = Math.floor(parentGeom.x2 - geomScaled.x2 - this._uiRight);
+						this._translate.x = Math.floor(parentGeom.x2 - geomScaled.x2 - this._uiRight - (this._parent._paddingRight||0));
 					}
 				}
 			}
@@ -630,19 +630,19 @@ var IgeUiPositionExtension = {
 				// The element is not middle-aligned, process top and bottom
 				if (this._uiTop !== undefined && this._uiBottom !== undefined) {
 					// Both top and bottom values are set, position top and assign height to reach bottom
-					this.height((parentGeom.y) - this._uiTop - this._uiBottom, false, 0, true);
+					this.height((parentGeom.y) - this._uiTop - (this._parent._paddingTop||0) - this._uiBottom - (this._parent._paddingBottom||0), false, 0, true);
 							
 					// Update translation
-					this._translate.y = Math.floor(this._uiTop + geomScaled.y2 - (parentGeom.y2));
+					this._translate.y = Math.floor(this._uiTop + (this._parent._paddingTop||0) + geomScaled.y2 - (parentGeom.y2));
 				} else {
 					if (this._uiTop !== undefined) {
 						// Position top aligned
-						this._translate.y = Math.floor(this._uiTop + geomScaled.y2 - (parentGeom.y2));
+						this._translate.y = Math.floor(this._uiTop + (this._parent._paddingTop||0) + geomScaled.y2 - (parentGeom.y2));
 					}
 					
 					if (this._uiBottom !== undefined) {
 						// Position bottom aligned
-						this._translate.y = Math.floor(parentGeom.y2 - geomScaled.y2 - this._uiBottom);
+						this._translate.y = Math.floor(parentGeom.y2 - geomScaled.y2 - this._uiBottom - (this._parent._paddingBottom||0));
 					}
 				}
 			}
