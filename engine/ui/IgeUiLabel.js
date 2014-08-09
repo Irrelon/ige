@@ -15,7 +15,7 @@ var IgeUiLabel = IgeUiElement.extend({
 		this._value = '';
 
 		this._fontEntity = new IgeFontEntity()
-			.left(5)
+			.left(0)
 			.middle(0)
 			.textAlignX(0)
 			.textAlignY(0)
@@ -37,7 +37,7 @@ var IgeUiLabel = IgeUiElement.extend({
 		// Call the main super class method
 		val = IgeUiElement.prototype.width.call(this, px, lockAspect, modifier, noUpdate);
 
-        this._fontEntity.width(px, lockAspect, modifier, noUpdate);
+        this._fontEntity.width('100%', false, 0, noUpdate);
 
 		return val;
 	},
@@ -58,7 +58,7 @@ var IgeUiLabel = IgeUiElement.extend({
 		val = IgeUiElement.prototype.height.call(this, px, lockAspect, modifier, noUpdate);
 
 		// Update the font entity height
-		this._fontEntity.height(px, lockAspect, modifier, noUpdate);
+		this._fontEntity.height('100%', false, 0, noUpdate);
 
 		return val;
 	},
