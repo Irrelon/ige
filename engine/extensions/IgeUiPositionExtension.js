@@ -601,7 +601,7 @@ var IgeUiPositionExtension = {
 			
 			if (this._uiCenter !== undefined) {
 				// The element is center-aligned
-				this._translate.x = Math.floor(this._uiCenter);
+				this._translate.x = Math.floor(this._uiCenter + (this._parent._paddingLeft||0) / 2 - (this._parent._paddingRight||0) / 2);
 			} else {
 				// The element is not center-aligned, process left and right
 				if (this._uiLeft !== undefined && this._uiRight !== undefined) {
@@ -625,7 +625,7 @@ var IgeUiPositionExtension = {
 			
 			if (this._uiMiddle !== undefined) {
 				// The element is middle-aligned
-				this._translate.y = Math.floor(this._uiMiddle);
+				this._translate.y = Math.floor(this._uiMiddle + (this._parent._paddingTop||0) / 2 - (this._parent._paddingBottom||0) / 2 );
 			} else {
 				// The element is not middle-aligned, process top and bottom
 				if (this._uiTop !== undefined && this._uiBottom !== undefined) {
