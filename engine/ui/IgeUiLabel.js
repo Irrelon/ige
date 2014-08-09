@@ -96,7 +96,53 @@ var IgeUiLabel = IgeUiElement.extend({
 
 		return this._value;
 	},
-	
+
+	/**
+	 * Gets / sets the current horizontal text alignment. Accepts
+	 * a value of 0, 1 or 2 (left, centre, right) respectively.
+	 * @param {Number=} val
+	 * @returns {*}
+	 */
+	textAlignX: function (val) {
+        if (val !== undefined) {
+			this._fontEntity.textAlignX(val);
+			return this;
+		}
+		
+		return this._fontEntity.textAlignX();
+	},
+
+	/**
+	 * Gets / sets the current vertical text alignment. Accepts
+	 * a value of 0, 1 or 2 (top, middle, bottom) respectively.
+	 * @param {Number=} val
+	 * @returns {*}
+	 */
+	textAlignY: function (val) {
+        if (val !== undefined) {
+			this._fontEntity.textAlignY(val);
+			return this;
+		}
+		
+		return this._fontEntity.textAlignY();
+    },
+    
+	/**
+	 * Gets / sets the auto-wrapping mode. If set to true then the
+	 * text this font entity renders will be automatically line-broken
+	 * when a line reaches the width of the entity.
+	 * @param val
+	 * @returns {*}
+	 */
+	autoWrap: function (val) {
+        if (val !== undefined) {
+			this._fontEntity.autoWrap(val);
+			return this;
+		}
+		
+		return this._fontEntity.autoWrap();
+    },
+        
 	/**
 	 * Gets / sets the font sheet (texture) that the text box will
 	 * use when rendering text inside the box.
