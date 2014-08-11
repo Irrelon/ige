@@ -15,7 +15,7 @@ var IgeUiLabel = IgeUiElement.extend({
 		this._value = '';
 
 		this._fontEntity = new IgeFontEntity()
-			.left(5)
+			.left(0)
 			.middle(0)
 			.textAlignX(0)
 			.textAlignY(0)
@@ -37,7 +37,7 @@ var IgeUiLabel = IgeUiElement.extend({
 		// Call the main super class method
 		val = IgeUiElement.prototype.width.call(this, px, lockAspect, modifier, noUpdate);
 
-        this._fontEntity.width(px, lockAspect, modifier, noUpdate);
+        this._fontEntity.width('100%', false, 0, noUpdate);
 
 		return val;
 	},
@@ -58,7 +58,7 @@ var IgeUiLabel = IgeUiElement.extend({
 		val = IgeUiElement.prototype.height.call(this, px, lockAspect, modifier, noUpdate);
 
 		// Update the font entity height
-		this._fontEntity.height(px, lockAspect, modifier, noUpdate);
+		this._fontEntity.height('100%', false, 0, noUpdate);
 
 		return val;
 	},
@@ -96,7 +96,53 @@ var IgeUiLabel = IgeUiElement.extend({
 
 		return this._value;
 	},
-	
+
+	/**
+	 * Gets / sets the current horizontal text alignment. Accepts
+	 * a value of 0, 1 or 2 (left, centre, right) respectively.
+	 * @param {Number=} val
+	 * @returns {*}
+	 */
+	textAlignX: function (val) {
+        if (val !== undefined) {
+			this._fontEntity.textAlignX(val);
+			return this;
+		}
+		
+		return this._fontEntity.textAlignX();
+	},
+
+	/**
+	 * Gets / sets the current vertical text alignment. Accepts
+	 * a value of 0, 1 or 2 (top, middle, bottom) respectively.
+	 * @param {Number=} val
+	 * @returns {*}
+	 */
+	textAlignY: function (val) {
+        if (val !== undefined) {
+			this._fontEntity.textAlignY(val);
+			return this;
+		}
+		
+		return this._fontEntity.textAlignY();
+    },
+    
+	/**
+	 * Gets / sets the auto-wrapping mode. If set to true then the
+	 * text this font entity renders will be automatically line-broken
+	 * when a line reaches the width of the entity.
+	 * @param val
+	 * @returns {*}
+	 */
+	autoWrap: function (val) {
+        if (val !== undefined) {
+			this._fontEntity.autoWrap(val);
+			return this;
+		}
+		
+		return this._fontEntity.autoWrap();
+    },
+        
 	/**
 	 * Gets / sets the font sheet (texture) that the text box will
 	 * use when rendering text inside the box.

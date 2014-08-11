@@ -317,8 +317,8 @@ var IgeFontEntity = IgeUiEntity.extend({
 	 */
 	_applyAutoWrap: function () {
 		if (this._text) {
-			// Un-wrap the text so it is all on one line
-			var oneLineText = this._text.replace(/\n/g, ' '),
+			// Add spaces after line-breaks so text can be split properly into words
+			var textWithSpaces = this._text.replace(/\n/g, '\n '),
 				words,
 				wordIndex,
 				textArray = [],
@@ -326,7 +326,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 				lineWidth;
 			
 			// Break the text into words
-			words = oneLineText.split(' ');
+			words = textWithSpaces.split(' ');
 			
 			// There are multiple words - loop the words
 			for (wordIndex = 0; wordIndex < words.length; wordIndex++) {
@@ -346,9 +346,10 @@ var IgeFontEntity = IgeUiEntity.extend({
 				}
 				
 				textArray.push(words[wordIndex]);
+                if (words[wordIndex] !== '\n') textArray.push(' ');
 			}
 			
-			this._renderText = textArray.join(' ');
+			this._renderText = textArray.join('');
 		}
 	},
 
