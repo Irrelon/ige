@@ -3,6 +3,8 @@ var IgeUiStyleExtension = {
 	/**
 	 * Sets the current background texture and the repeatType
 	 * to determine in which axis the image should be repeated.
+     * Note: This method is just kept for compatibility reasons, 
+     * new code should call backgroundPattern() instead.
 	 * @param {IgeTexture=} texture
 	 * @param {String=} repeatType Accepts "repeat", "repeat-x",
 	 * "repeat-y" and "no-repeat".
@@ -10,7 +12,10 @@ var IgeUiStyleExtension = {
 	 * the current background image if no parameters are specified.
 	 */
 	backgroundImage: function (texture, repeatType) {
-		if (texture && texture.image) {
+        if (repeatType === 'no-repeat') repeatType = 'none';
+        return this.backgroundPattern(texture, repeatType, false, false);
+        
+/*		if (texture && texture.image) {
 			if (!repeatType) { repeatType = 'no-repeat'; }
 
 			// Store the repeatType
@@ -63,10 +68,11 @@ var IgeUiStyleExtension = {
 			return this;
 		}
 
-		return this._patternFill;
+		return this._patternFill; */
 	},
 
-	backgroundSize: function (x, y) {
+    // not supported any more
+/*	backgroundSize: function (x, y) {
 		if (x !== undefined && y !== undefined) {
 			if (typeof(x) === 'string') {
 				// Work out the actual size in pixels
@@ -95,7 +101,7 @@ var IgeUiStyleExtension = {
 		}
 
 		return this._backgroundSize;
-	},
+	},*/
 
 	/**
 	 * Gets / sets the color to use as a background when
@@ -119,7 +125,8 @@ var IgeUiStyleExtension = {
 	 * @param {Number=} y
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	backgroundPosition: function (x, y) {
+    // not supported any more
+	/*backgroundPosition: function (x, y) {
 		if (x !== undefined && y !== undefined) {
 			this._backgroundPosition = {x: x, y: y};
 			this.cacheDirty(true);
@@ -127,7 +134,7 @@ var IgeUiStyleExtension = {
 		}
 
 		return this._backgroundPosition;
-	},
+	},*/ 
 
 	borderColor: function (color) {
 		if (color !== undefined) {

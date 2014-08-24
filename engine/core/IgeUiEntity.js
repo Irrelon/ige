@@ -40,108 +40,87 @@ var IgeUiEntity = IgeEntity.extend([
 		return this._overflow;
 	},
 
-	_renderBackground: function (ctx) {
+	_setClippingRegion: function (ctx) {
 		var geom = this._geometry,
 			left, top, width, height;
 
-		if (this._backgroundColor || this._patternFill) {
-			left = -(geom.x / 2) | 0;
-			top = -(geom.y / 2) | 0;
-			width = geom.x;
-			height = geom.y;
+        left = -(geom.x / 2) | 0;
+        top = -(geom.y / 2) | 0;
+        width = geom.x;
+        height = geom.y;
 
-			ctx.save();
-				ctx.beginPath();
+        ctx.beginPath();
 
-				// Check for early exit if we are rendering a rectangle
-				if (!this._borderTopRightRadius && this._borderBottomRightRadius && !this._borderBottomLeftRadius && !this._borderTopLeftRadius) {
-					ctx.rect(left, top, width, height);
-				} else {
-					// Top border
-					ctx.moveTo(left + this._borderTopLeftRadius, top);
-					ctx.lineTo(left + width - this._borderTopRightRadius, top);
+        // Check for early exit if we are rendering a rectangle
+        if (!this._borderTopRightRadius && !this._borderBottomRightRadius && !this._borderBottomLeftRadius && !this._borderTopLeftRadius) {
+            ctx.rect(left, top, width, height);
+        } else {
+            // Top border
+            ctx.moveTo(left + this._borderTopLeftRadius, top);
+            ctx.lineTo(left + width - this._borderTopRightRadius, top);
 
-					if (this._borderTopRightRadius > 0) {
-						// Top-right corner
-						ctx.arcTo(
-							left + width,
-							top,
-							left + width,
-							top + this._borderTopRightRadius,
-							this._borderTopRightRadius
-						);
-					}
+            if (this._borderTopRightRadius > 0) {
+                // Top-right corner
+                ctx.arcTo(
+                    left + width,
+                    top,
+                    left + width,
+                    top + this._borderTopRightRadius,
+                    this._borderTopRightRadius
+                );
+            }
 
-					// Right border
-					ctx.lineTo(
-						left + width,
-						top + height - this._borderBottomRightRadius
-					);
+            // Right border
+            ctx.lineTo(
+                left + width,
+                top + height - this._borderBottomRightRadius
+            );
 
-					if (this._borderBottomRightRadius > 0) {
-						// Bottom-right corner
-						ctx.arcTo(
-							left + width,
-							top + height,
-							left + width - this._borderBottomRightRadius,
-							top + height, this._borderBottomRightRadius
-						);
-					}
+            if (this._borderBottomRightRadius > 0) {
+                // Bottom-right corner
+                ctx.arcTo(
+                    left + width,
+                    top + height,
+                    left + width - this._borderBottomRightRadius,
+                    top + height, this._borderBottomRightRadius
+                );
+            }
 
-					// Bottom border
-					ctx.lineTo(
-						left + this._borderBottomLeftRadius,
-						top + height
-					);
+            // Bottom border
+            ctx.lineTo(
+                left + this._borderBottomLeftRadius,
+                top + height
+            );
 
-					if (this._borderBottomLeftRadius > 0) {
-						// Bottom-left corner
-						ctx.arcTo(
-							left,
-							top + height,
-							left,
-							top + height - this._borderBottomLeftRadius,
-							this._borderBottomLeftRadius
-						);
-					}
+            if (this._borderBottomLeftRadius > 0) {
+                // Bottom-left corner
+                ctx.arcTo(
+                    left,
+                    top + height,
+                    left,
+                    top + height - this._borderBottomLeftRadius,
+                    this._borderBottomLeftRadius
+                );
+            }
 
-					// Left border
-					ctx.lineTo(
-						left,
-						top + this._borderTopLeftRadius
-					);
+            // Left border
+            ctx.lineTo(
+                left,
+                top + this._borderTopLeftRadius
+            );
 
-					if (this._borderTopLeftRadius > 0) {
-						// Top-left corner
-						ctx.arcTo(
-							left,
-							top,
-							left + this._borderTopLeftRadius,
-							top, this._borderTopLeftRadius
-						);
-					}
+            if (this._borderTopLeftRadius > 0) {
+                // Top-left corner
+                ctx.arcTo(
+                    left,
+                    top,
+                    left + this._borderTopLeftRadius,
+                    top, this._borderTopLeftRadius
+                );
+            }
 
-					ctx.clip();
-				}
-
-				// If there is a background colour, paint it here
-				if (this._backgroundColor) {
-					ctx.fillStyle = this._backgroundColor;
-					ctx.fill();
-				}
-
-				// If there is a background image, paint it here
-				if (this._patternFill) {
-					ctx.translate(
-						-(width / 2 | 0) + this._backgroundPosition.x,
-						-(height / 2 | 0) + this._backgroundPosition.y
-					);
-
-					ctx.fillStyle = this._patternFill;
-					ctx.fill();
-				}
-			ctx.restore();
-		}
+            ctx.clip();
+        }
 	},
 
 	_renderBorder: function (ctx) {
@@ -269,7 +248,11 @@ var IgeUiEntity = IgeEntity.extend([
 	cell: function (val) {
 		var ret = IgeEntity.prototype.cell.call(this, val);
 
-		if (ret === this && this._patternTexture) {
+		// TODO: This functionality is not working yet. If a background pattern
+        // is built from a CellSheet's cell, changing the cell currently doesn't
+        // generate a new pattern. This functionality should probably be implemented
+        // in IgeEntity.
+        if (ret === this && this._patternTexture) {
 			this.backgroundImage(
 				this._patternTexture,
 				this._patternRepeat
@@ -294,12 +277,7 @@ var IgeUiEntity = IgeEntity.extend([
 			if (!dontTransform) {
 				this._transformContext(ctx);
 			}
-			// TODO: Investigate caching expensive background and border calls
-			//if (!this._cache || this._cacheDirty) {
-				this._renderBackground(ctx);
-				this._renderBorder(ctx);
-			//}
-	
+
 			if (this._overflow === 'hidden') {
 				// Limit drawing of child entities to within the bounds
 				// of this one
@@ -317,7 +295,38 @@ var IgeUiEntity = IgeEntity.extend([
 			IgeEntity.prototype.tick.call(this, ctx, true);
 		}
 	},
+    
+	/**
+	 * Draws the entity by filling the background or by calling the 
+     * appropriate texture.render() method. 
+     * If caching is enabled _renderEntity is called to render to an 
+     * off-screen canvas.
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to render
+	 * the entity to.
+	 * @private
+	 */
+	_renderEntity: function (ctx) {
+    
+        ctx.save();   // because we change the clipping region
+        
+        this._setClippingRegion(ctx);
+	
+        // render background
+        if (this._backgroundColor) {
+            ctx.fillStyle = this._backgroundColor;
+            ctx.fill();
+        }
+        IgeEntity.prototype._renderEntity.call(this, ctx);
 
+        // TODO: it might happen that .overflow('hidden') crops thick borders
+        
+        this._renderBorder(ctx);
+        
+        // if drawing of child entities is limited to the bounds of this
+        // entity by overflow('hidden'), this properly restores the clipping region
+        ctx.restore();
+    },
+    
 	/**
 	 * Handles screen resize events.
 	 * @param event
