@@ -12,7 +12,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 		this._text = undefined;
 		this._textAlignX = 1;
 		this._textAlignY = 1;
-		this._textLineSpacing = 0;
+		this._textLineSpacing = 20;
 		this._nativeMode = false;
 
 		// Enable caching by default for font entities!

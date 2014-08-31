@@ -223,6 +223,21 @@ var IgeUiLabel = IgeUiElement.extend({
 		return this._color;
 	},
 	
+	/**
+	 * Gets / sets the current height of a text line in pixels. 
+     * Choose a bigger value for bigger font sizes.
+	 * @param {Number=} val
+	 * @returns {*}
+	 */
+	textLineSpacing: function (val) {
+        if (val !== undefined) {
+			this._fontEntity.textLineSpacing(val);
+			return this;
+		}
+		
+		return this._fontEntity.textLineSpacing();
+    },
+
 	_mounted: function () {
 		// Check if we have a text value
 		if (!this._value && this._placeHolder) {
