@@ -2328,6 +2328,11 @@ var IgeEntity = IgeObject.extend({
 	 * @private
 	 */
 	_handleMouseUp: function (event, evc, data) {
+        // detect clicks (mouseDown and mouseUp on the same entity)
+        if (this._mouseStateDown) {
+            this.emit('mouseClick', [event, evc, data]);
+        }
+            
 		// Reset the mouse-down flag
 		this._mouseStateDown = false;
 		if (this._mouseUp) { this._mouseUp(event, evc, data); }
