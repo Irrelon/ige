@@ -290,6 +290,11 @@ var IgeUiEntity = IgeEntity.extend([
 			if(this._children.length) {
 				this.updateUiChildren();
 			}
+
+			if (this._updateStyle) {
+				this._updateStyle();
+			}
+
 		}
 
 		return ret;
@@ -336,6 +341,10 @@ var IgeUiEntity = IgeEntity.extend([
 			this._updateUiPosition();
 		} else {
 			debugger;
+		}
+
+		if (this._updateStyle) {
+			this._updateStyle();
 		}
 		IgeEntity.prototype._resizeEvent.call(this, event);
 	}
