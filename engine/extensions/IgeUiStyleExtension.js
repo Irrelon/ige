@@ -83,18 +83,38 @@ var IgeUiStyleExtension = {
 
 	backgroundSize: function (x, y) {
 		if (x !== undefined && y !== undefined) {
-			if (typeof(x) === 'string') {
+
+			if (typeof(x) === 'string' && x !== 'auto') {
 				// Work out the actual size in pixels
 				// from the percentage
 				x = this._bounds2d.x / 100 * parseInt(x, 10);
 			}
 
-			if (typeof(y) === 'string') {
+			if (typeof(y) === 'string' && y !== 'auto') {
 				// Work out the actual size in pixels
 				// from the percentage
 				y = this._bounds2d.y / 100 * parseInt(y, 10);
 			}
-			
+
+			if (x === 'auto' && y === 'auto') {
+				this.log('Cannot set background x and y both to auto!', 'error');
+				return this;
+			} else if(x === 'auto') {
+				if(this._patternTexture && this._patternTexture.image) {
+					// find out y change and apply it to the x
+					x = this._patternTexture.image.width * (y / this._patternTexture.image.height);
+				} else {
+					x = this._bounds2d.x * (y / this._bounds2d.y);
+				}
+			} else if(y === 'auto') {
+				if(this._patternTexture && this._patternTexture.image) {
+					// find out x change and apply it to the y
+					y = this._patternTexture.image.height * (x / this._patternTexture.image.width);
+				} else {
+					y = this._bounds2d.y * (x / this._bounds2d.x);
+				}
+			}
+
 			if (x !== 0 && y !== 0) {
 				this._backgroundSize = {x: x, y: y};
 	
