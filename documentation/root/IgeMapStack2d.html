@@ -1,0 +1,99 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgeMapStack2d <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/core/IgeMapStack2d.js">IgeMapStack2d.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">Creates a new map that has two dimensions (x and y) to it's data and allows multiple items to be stored or "stacked" on a single x, y map position.</div>
+</div>
+<!--=if{extends}[-->
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="IgeClass.html">IgeClass</a></div>
+</div>
+<!--=if{extends}]-->
+<h2>Methods</h2><a name="tileData"></a>
+<h3 class="methodTitle">tileData</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the data stored at the specified map tile co-ordinates. If data already exists at the specified co-ordinates, it is replaced with the passed data.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">tileData</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>, {<span class="argType">Array</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Array</span>}<span class="argName">val</span> The array of data items to set at the specified co-ordinates.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} This or an array of data items at the specified co-ordinates.</div>
+    
+</div><a name="tileDataAtIndex"></a>
+<h3 class="methodTitle">tileDataAtIndex</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets the data stored at the specified co-ordinates and index.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">tileDataAtIndex</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>, {<span class="argType">Number</span>} <span class="argName">index</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">Number</span>}<span class="argName">index</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The current data stored at the specified point or undefined if no data exists.</div>
+    
+</div><a name="push"></a>
+<h3 class="methodTitle">push</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Adds a data item to the specified map tile co-ordinates.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">push</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>, {<span class="argType">*</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">*</span>}<span class="argName">val</span> The data to add.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} This on success or false on failure.</div>
+    
+</div><a name="pull"></a>
+<h3 class="methodTitle">pull</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes a data item from the specified map tile co-ordinates.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">pull</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>, {<span class="argType">*</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li><li>{<span class="argType">*</span>}<span class="argName">val</span> The data to remove.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} This on success or false on failure.</div>
+    
+</div><a name="collision"></a>
+<h3 class="methodTitle">collision</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Checks if the tile area passed has any data stored in it. If so, returns true, otherwise false.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">collision</span>({<span class="argType"></span>} <span class="argName">x</span>, {<span class="argType"></span>} <span class="argName">y</span>, {<span class="argType"></span>} <span class="argName">width</span>, {<span class="argType"></span>} <span class="argName">height</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li><li>{<span class="argType"></span>}<span class="argName">width</span> </li><li>{<span class="argType"></span>}<span class="argName">height</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="clearData"></a>
+<h3 class="methodTitle">clearData</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Clears any data set at the specified map tile co-ordinates.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">clearData</span>({<span class="argType"></span>} <span class="argName">x</span>, {<span class="argType"></span>} <span class="argName">y</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} True if data was cleared or false if no data existed.</div>
+    
+</div><a name="mapData"></a>
+<h3 class="methodTitle">mapData</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the map's tile data.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">mapData</span>({<span class="argType">Array</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">val</span> The map data array.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div>	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>

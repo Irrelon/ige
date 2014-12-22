@@ -1,0 +1,12 @@
+{
+	"name": "Isogenic Game Engine API Tool",
+	"version": "1.0",
+	"manifest_version": 2,
+	"description": "An extension to help debug and interact with the Isogenic Game Engine API.",
+	"devtools_page": "devtools.html",
+	"permissions": [
+		"tabs",
+		"http://*/*",
+		"https://*/*"
+	]
+}

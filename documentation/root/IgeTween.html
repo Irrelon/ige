@@ -1,0 +1,229 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgeTween <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/core/IgeTween.js">IgeTween.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">Creates a new tween instance.</div>
+</div>
+<!--=if{extends}[-->
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="IgeClass.html">IgeClass</a></div>
+</div>
+<!--=if{extends}]-->
+<h2>Methods</h2><a name="targetObj"></a>
+<h3 class="methodTitle">targetObj</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the object in which the properties to tween exist.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">targetObj</span>({<span class="argType"></span>} <span class="argName">targetObj</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">targetObj</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="properties"></a>
+<h3 class="methodTitle">properties</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the tween's target properties to tween to.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">properties</span>({<span class="argType"></span>} <span class="argName">propertyObj</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">propertyObj</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="repeatMode"></a>
+<h3 class="methodTitle">repeatMode</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the repeat mode for the tween. If the mode is set to 1 the tween will repeat from the first step. If set to 2 the tween will reverse the order of the steps each time the repeat occurs. The count determines the number of times the tween will be repeated before stopping. Setting the count to -1 will make it repeat infinitely.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">repeatMode</span>({<span class="argType"></span>} <span class="argName">val</span>, {<span class="argType"></span>} <span class="argName">count</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li><li>{<span class="argType"></span>}<span class="argName">count</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="repeatCount"></a>
+<h3 class="methodTitle">repeatCount</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the repeat count. The count determines the number of times the tween will be repeated before stopping. Setting the count to -1 will make it repeat infinitely. This setting is used in conjunction with the repeatMode() method. If you just set a repeat count and no mode then the tween will not repeat.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">repeatCount</span>({<span class="argType"></span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="step"></a>
+<h3 class="methodTitle">step</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">DEPRECIATED, Renamed to stepTo().</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">step</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="stepTo"></a>
+<h3 class="methodTitle">stepTo</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Defines a step in a multi-stage tween. Uses the properties as destination value.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">stepTo</span>({<span class="argType">Object</span>} <span class="argName">propertyObj</span>, {<span class="argType">Number</span>} <span class="argName">durationMs</span>, {<span class="argType">String</span>} <span class="argName">easing</span>, {<span class="argType">Boolean</span>} <span class="argName">delta</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">propertyObj</span> The properties to tween during this step.</li><li>{<span class="argType">Number</span>}<span class="argName">durationMs</span> The number of milliseconds to spend tweening this step, or if not provided uses the current tween durationMs setting.</li><li>{<span class="argType">String</span>}<span class="argName">easing</span> The name of the easing method to use during this step.</li><li>{<span class="argType">Boolean</span>}<span class="argName">delta</span> If true will set the step to use delta values instead of absolute values as the destination.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="stepBy"></a>
+<h3 class="methodTitle">stepBy</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Defines a step in a multi-stage tween. Uses the properties as deltas, not as destination values</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">stepBy</span>({<span class="argType">Object</span>} <span class="argName">propertyObj</span>, {<span class="argType">Number</span>} <span class="argName">durationMs</span>, {<span class="argType">String</span>} <span class="argName">easing</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">propertyObj</span> The properties to tween during this step.</li><li>{<span class="argType">Number</span>}<span class="argName">durationMs</span> The number of milliseconds to spend tweening this step, or if not provided uses the current tween durationMs setting.</li><li>{<span class="argType">String</span>}<span class="argName">easing</span> The name of the easing method to use during this step.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="duration"></a>
+<h3 class="methodTitle">duration</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the duration of the tween in milliseconds.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">duration</span>({<span class="argType"></span>} <span class="argName">durationMs</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">durationMs</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="beforeTween"></a>
+<h3 class="methodTitle">beforeTween</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the method to be called just before the tween has started.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">beforeTween</span>({<span class="argType"></span>} <span class="argName">callback</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">callback</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="afterTween"></a>
+<h3 class="methodTitle">afterTween</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the method to be called just after the tween has ended.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">afterTween</span>({<span class="argType"></span>} <span class="argName">callback</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">callback</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="beforeStep"></a>
+<h3 class="methodTitle">beforeStep</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the method to be called just before a tween step has started.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">beforeStep</span>({<span class="argType"></span>} <span class="argName">callback</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">callback</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="afterStep"></a>
+<h3 class="methodTitle">afterStep</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the method to be called just after a tween step has ended.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">afterStep</span>({<span class="argType"></span>} <span class="argName">callback</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">callback</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="afterChange"></a>
+<h3 class="methodTitle">afterChange</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the method to be called just after a tween has changed the values of the target object every update tick.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">afterChange</span>({<span class="argType"></span>} <span class="argName">callback</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">callback</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="targetObject"></a>
+<h3 class="methodTitle">targetObject</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns the object that this tween is modifying.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">targetObject</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="easing"></a>
+<h3 class="methodTitle">easing</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the name of the easing method to use with the tween.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">easing</span>({<span class="argType"></span>} <span class="argName">methodName</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">methodName</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="startTime"></a>
+<h3 class="methodTitle">startTime</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the timestamp at which the tween should start.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">startTime</span>({<span class="argType"></span>} <span class="argName">timeMs</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">timeMs</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="start"></a>
+<h3 class="methodTitle">start</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Starts the tweening operation.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">start</span>({<span class="argType">Number</span>} <span class="argName">timeMs</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">timeMs</span> If set, the tween will start this many milliseconds in the future.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="stop"></a>
+<h3 class="methodTitle">stop</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Stops the tweening operation.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">stop</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="startAll"></a>
+<h3 class="methodTitle">startAll</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Starts all tweens registered to an object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">startAll</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="stopAll"></a>
+<h3 class="methodTitle">stopAll</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Stops all tweens registered to an object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">stopAll</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div>	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>

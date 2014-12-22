@@ -1,0 +1,277 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgeClass <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/core/IgeClass.js">IgeClass.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">The base class system.</div>
+</div>
+<!---->
+<h2>Methods</h2><a name="log"></a>
+<h3 class="methodTitle">log</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Provides logging capabilities to all IgeClass instances.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">log</span>({<span class="argType">String</span>} <span class="argName">text</span>, {<span class="argType">String</span>} <span class="argName">type</span>, {<span class="argType">Object</span>} <span class="argName">obj</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">text</span> The text to log.</li><li>{<span class="argType">String</span>}<span class="argName">type</span> The type of log to output, can be 'log', 'info', 'warning' or 'error'.</li><li>{<span class="argType">Object</span>}<span class="argName">obj</span> An optional object that will be output before the log text is output.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Log a message</h1>
+
+<pre><code>var entity = new IgeEntity();
+
+// Will output:
+//   IGE *log* [IgeEntity] : hello
+entity.log('Hello');
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Log an info message with an optional parameter</h1>
+
+<pre><code>var entity = new IgeEntity(),
+    param = 'moo';
+
+// Will output:
+//  moo
+//  IGE *log* [IgeEntity] : hello
+entity.log('Hello', 'info', param);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Log a warning message (which will cause a stack trace to be shown)</h1>
+
+<pre><code>var entity = new IgeEntity();
+
+// Will output (stack trace is just an example here, real one will be more useful):
+//  Stack: {anonymous}()@&lt;anonymous&gt;:2:8
+//  ---- Object.InjectedScript._evaluateOn (&lt;anonymous&gt;:444:39)
+//  ---- Object.InjectedScript._evaluateAndWrap (&lt;anonymous&gt;:403:52)
+//  ---- Object.InjectedScript.evaluate (&lt;anonymous&gt;:339:21)
+//  IGE *warning* [IgeEntity] : A test warning
+entity.log('A test warning', 'warning');
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Log an error message (which will cause an exception to be raised and a stack trace to be shown)</h1>
+
+<pre><code>var entity = new IgeEntity();
+
+// Will output (stack trace is just an example here, real one will be more useful):
+//  Stack: {anonymous}()@&lt;anonymous&gt;:2:8
+//  ---- Object.InjectedScript._evaluateOn (&lt;anonymous&gt;:444:39)
+//  ---- Object.InjectedScript._evaluateAndWrap (&lt;anonymous&gt;:403:52)
+//  ---- Object.InjectedScript.evaluate (&lt;anonymous&gt;:339:21)
+//  IGE *error* [IgeEntity] : An error message
+entity.log('An error message', 'error');
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="classId"></a>
+<h3 class="methodTitle">classId</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns the class id. Primarily used to help identify what class an instance was instantiated with and is also output during the ige.scenegraph() method's console logging to show what class an object belongs to.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">classId</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Get the class id of an object</h1>
+
+<pre><code>var entity = new IgeEntity();
+
+// Will output "IgeEntity"
+console.log(entity.classId());
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="addComponent"></a>
+<h3 class="methodTitle">addComponent</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Creates a new instance of the component argument passing the options argument to the component as it is initialised. The new component instance is then added to "this" via a property name that is defined in the component class as "componentId".</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">addComponent</span>({<span class="argType"><a href="./IgeClass.html">IgeClass</a></span>} <span class="argName">component</span>, {<span class="argType">Object</span>} <span class="argName">options</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeClass.html">IgeClass</a></span>}<span class="argName">component</span> The class definition of the component.</li><li>{<span class="argType">Object</span>}<span class="argName">options</span> An options parameter to pass to the component on init.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Add the velocity component to an entity</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addComponent(IgeVelocityComponent);
+
+// Now that the component is added, we can access
+// the component via it's namespace. Call the 
+// "byAngleAndPower" method of the velocity component:
+entity.velocity.byAngleAndPower(Math.radians(20), 0.1);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="removeComponent"></a>
+<h3 class="methodTitle">removeComponent</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes a component by it's id.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">removeComponent</span>({<span class="argType">String</span>} <span class="argName">componentId</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">componentId</span> The id of the component to remove.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Remove a component by it's id (namespace)</h1>
+
+<pre><code>var entity = new IgeEntity();
+
+// Let's add the velocity component
+entity.addComponent(IgeVelocityComponent);
+
+// Now that the component is added, let's remove
+// it via it's id ("velocity")
+entity.removeComponent('velocity');
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="implement"></a>
+<h3 class="methodTitle">implement</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Copies all properties and methods from the classObj object to "this". If the overwrite flag is not set or set to false, only properties and methods that don't already exists in "this" will be copied. If overwrite is true, they will be copied regardless.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">implement</span>({<span class="argType">Function</span>} <span class="argName">classObj</span>, {<span class="argType">Boolean</span>} <span class="argName">overwrite</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">classObj</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">overwrite</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Implement all the methods of an object into another object</h1>
+
+<pre><code>// Create a couple of test entities with ids
+var entity1 = new IgeEntity().id('entity1'),
+    entity2 = new IgeEntity().id('entity2');
+
+// Let's define an object with a couple of methods
+var obj = {
+    newMethod1: function () {
+        console.log('method1 called on object: ' + this.id());
+    },
+
+    newMethod2: function () {
+        console.log('method2 called on object: ' + this.id());
+    }
+};
+
+// Now let's implement the methods on our entities
+entity1.implement(obj);
+entity2.implement(obj);
+
+// The entities now have the newMethod1 and newMethod2
+// methods as part of their instance so we can call them:
+entity1.newMethod1();
+
+// The output to the console is:
+//  method1 called on object: entity1
+
+// Now let's call newMethod2 on entity2:
+entity2.newMethod2();
+
+// The output to the console is:
+//  method2 called on object: entity2
+
+// As you can see, this is a great way to add extra modular
+// functionality to objects / entities at runtime.
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="data"></a>
+<h3 class="methodTitle">data</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets a key / value pair in the object's data object. Useful for storing arbitrary game data in the object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">data</span>({<span class="argType">String</span>} <span class="argName">key</span>, {<span class="argType">*</span>} <span class="argName">value</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">key</span> The key under which the data resides.</li><li>{<span class="argType">*</span>}<span class="argName">value</span> The data to set under the specified key.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Set some arbitrary data key value pair</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.data('playerScore', 100);
+entity.data('playerName', 'iRock');
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get the value of a data key</h1>
+
+<pre><code>console.log(entity.data('playerScore'));
+console.log(entity.data('playerName'));
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="IgeClass.extend"></a>
+<h3 class="methodTitle">IgeClass.extend</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Create a new IgeClass that inherits from this class</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">IgeClass.extend</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Function</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Creating a new class by extending an existing one</h1>
+
+<pre><code>var NewClass = IgeClass.extend({
+    // Init is your constructor
+    init: function () {
+        console.log('I\'m alive!');
+    }
+});
+</code></pre>
+
+<p>Further reading: <a href="http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/manual/engine-fundamentals/classes/extending-classes/">Extending Classes</a></p>
+</div>
+					</div>
+				
+</div><a name="IgeClass.vanilla"></a>
+<h3 class="methodTitle">IgeClass.vanilla</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Test method</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">IgeClass.vanilla</span>({<span class="argType"></span>} <span class="argName">prop</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">prop</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Function</span>} </div>
+    
+</div>	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>

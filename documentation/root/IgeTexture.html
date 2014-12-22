@@ -1,0 +1,269 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgeTexture <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/core/IgeTexture.js">IgeTexture.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">Creates a new texture.</div>
+</div>
+<!--=if{extends}[-->
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="IgeEventingClass.html">IgeEventingClass</a></div>
+</div>
+<!--=if{extends}]-->
+<h2>Methods</h2><a name="init"></a>
+<h3 class="methodTitle">init</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Constructor for a new IgeTexture.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">init</span>({<span class="argType">String, Object</span>} <span class="argName">urlOrObject</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String, Object</span>}<span class="argName">urlOrObject</span> Either a string URL that points to the path of the image or script you wish to use as the texture image, or an object containing a smart texture.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="id"></a>
+<h3 class="methodTitle">id</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the current object id. If no id is currently assigned and no id is passed to the method, it will automatically generate and assign a new id as a 16 character hexadecimal value typed as a string.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">id</span>({<span class="argType">String</span>} <span class="argName">id</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} Returns this when setting the value or the current value if none is specified.</div>
+    
+</div><a name="url"></a>
+<h3 class="methodTitle">url</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the source file for this texture.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">url</span>({<span class="argType">String</span>} <span class="argName">url</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">url</span> "The url used to load the file for this texture.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="_loadImage"></a>
+<h3 class="methodTitle">_loadImage</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Loads an image into an img tag and sets an onload event to capture when the image has finished loading.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_loadImage</span>({<span class="argType">String</span>} <span class="argName">imageUrl</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">imageUrl</span> The image url used to load the image data.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_loadScript"></a>
+<h3 class="methodTitle">_loadScript</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Loads a render script into a script tag and sets an onload event to capture when the script has finished loading.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_loadScript</span>({<span class="argType">String</span>} <span class="argName">scriptUrl</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">scriptUrl</span> The script url used to load the script data.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="assignSmartTextureImage"></a>
+<h3 class="methodTitle">assignSmartTextureImage</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Assigns a render script to the smart texture.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">assignSmartTextureImage</span>({<span class="argType">String</span>} <span class="argName">scriptObj</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">scriptObj</span> The script object.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_setImage"></a>
+<h3 class="methodTitle">_setImage</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the image element that the IgeTexture will use when rendering. This is a special method not designed to be called directly by any game code and is used specifically when assigning an existing canvas element to an IgeTexture.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_setImage</span>({<span class="argType">Image</span>} <span class="argName">imageElement</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Image</span>}<span class="argName">imageElement</span> The canvas / image to use as the image data for the IgeTexture.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="textureFromCell"></a>
+<h3 class="methodTitle">textureFromCell</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Creates a new texture from a cell in the existing texture and returns the new texture.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">textureFromCell</span>({<span class="argType">Number, String</span>} <span class="argName">indexOrId</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number, String</span>}<span class="argName">indexOrId</span> The cell index or id to use.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="_textureFromCell"></a>
+<h3 class="methodTitle">_textureFromCell</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Called by textureFromCell() when the texture is ready to be processed. See textureFromCell() for description.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_textureFromCell</span>({<span class="argType"><a href="./IgeTexture.html">IgeTexture</a></span>} <span class="argName">tex</span>, {<span class="argType">Number, String</span>} <span class="argName">indexOrId</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeTexture.html">IgeTexture</a></span>}<span class="argName">tex</span> The new texture to paint to.</li><li>{<span class="argType">Number, String</span>}<span class="argName">indexOrId</span> The cell index or id to use.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="sizeX"></a>
+<h3 class="methodTitle">sizeX</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the _sizeX property.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">sizeX</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="sizeY"></a>
+<h3 class="methodTitle">sizeY</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the _sizeY property.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">sizeY</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="resize"></a>
+<h3 class="methodTitle">resize</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Resizes the original texture image to a new size. This alters the image that the texture renders so all entities that use this texture will output the newly resized version of the image.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">resize</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>, {<span class="argType">Boolean</span>} <span class="argName">dontDraw</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The new width.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The new height.</li><li>{<span class="argType">Boolean</span>}<span class="argName">dontDraw</span> If true the resized image will not be drawn to the texture canvas. Useful for just resizing the texture canvas and not the output image. Use in conjunction with the applyFilter() and preFilter() methods.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="resizeByPercent"></a>
+<h3 class="methodTitle">resizeByPercent</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Resizes the original texture image to a new size based on percentage. This alters the image that the texture renders so all entities that use this texture will output the newly resized version of the image.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">resizeByPercent</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>, {<span class="argType">Boolean</span>} <span class="argName">dontDraw</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The new width.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The new height.</li><li>{<span class="argType">Boolean</span>}<span class="argName">dontDraw</span> If true the resized image will not be drawn to the texture canvas. Useful for just resizing the texture canvas and not the output image. Use in conjunction with the applyFilter() and preFilter() methods.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="restoreOriginal"></a>
+<h3 class="methodTitle">restoreOriginal</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the texture image back to the original image that the texture first loaded. Useful if you have applied filters or resized the image and now want to revert back to the original.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">restoreOriginal</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="render"></a>
+<h3 class="methodTitle">render</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Renders the texture image to the passed canvas context.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">render</span>({<span class="argType">CanvasRenderingContext2d</span>} <span class="argName">ctx</span>, {<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>} <span class="argName">entity</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2d</span>}<span class="argName">ctx</span> The canvas context to draw to.</li><li>{<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>}<span class="argName">entity</span> The entity that this texture is being drawn for.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="removeFilter"></a>
+<h3 class="methodTitle">removeFilter</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes a certain filter from the texture Useful if you want to keep resizings, etc.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">removeFilter</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="removeFilters"></a>
+<h3 class="methodTitle">removeFilters</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes all filters on the texture Useful if you want to keep resizings, etc.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">removeFilters</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_rerenderFilters"></a>
+<h3 class="methodTitle">_rerenderFilters</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Rerenders image with filter list. Keeps sizings. Useful if you have no preFilters</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_rerenderFilters</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="preFilter"></a>
+<h3 class="methodTitle">preFilter</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the pre-filter method that will be called before the texture is rendered and will allow you to modify the texture image before rendering each tick.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">preFilter</span>({<span class="argType"></span>} <span class="argName">method</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">method</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="applyFilter"></a>
+<h3 class="methodTitle">applyFilter</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Applies a filter to the texture. The filter is a method that will take the canvas, context and originalImage parameters and then use context calls to alter / paint the context with the texture and any filter / adjustments that you want to apply.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">applyFilter</span>({<span class="argType">Function</span>} <span class="argName">method</span>, {<span class="argType">Object</span>} <span class="argName">data</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">method</span> </li><li>{<span class="argType">Object</span>}<span class="argName">data</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="pixelData"></a>
+<h3 class="methodTitle">pixelData</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Retrieves pixel data from x,y texture coordinate (starts from top-left). Important: If the texture has a cross-domain url, the image host must allow cross-origin resource sharing or a security error will be thrown. Reference: http://blog.chromium.org/2011/07/using-cross-domain-images-in-webgl-and.html</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">pixelData</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> </li><li>{<span class="argType">Number</span>}<span class="argName">y</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} [r,g,b,a] Pixel data.</div>
+    
+</div><a name="clone"></a>
+<h3 class="methodTitle">clone</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Creates a clone of the texture.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">clone</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgeTexture</span>} A new, distinct texture with the same attributes as the one being cloned.</div>
+    
+</div><a name="stringify"></a>
+<h3 class="methodTitle">stringify</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">stringify</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
+    
+</div><a name="destroy"></a>
+<h3 class="methodTitle">destroy</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Destroys the item.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">destroy</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div>	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>

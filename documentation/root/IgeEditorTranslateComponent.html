@@ -1,0 +1,97 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgeEditorTranslateComponent <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/components/editor/IgeEditorTranslateComponent.js">IgeEditorTranslateComponent.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">When added to a viewport, automatically adds entity translate capabilities to the selected entity in the scenegraph viewer.</div>
+</div>
+<!--=if{extends}[-->
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="IgeEventingClass.html">IgeEventingClass</a></div>
+</div>
+<!--=if{extends}]-->
+<h2>Methods</h2><a name="init"></a>
+<h3 class="methodTitle">init</h3>
+<div class="methodSection">
+    <!---->
+    <div class="methodDefinition"><span class="methodName">init</span>({<span class="argType"><a href="./IgeObject.html">IgeObject</a></span>} <span class="argName">entity</span>, {<span class="argType">Object</span>} <span class="argName">options</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeObject.html">IgeObject</a></span>}<span class="argName">entity</span> The object that the component is added to.</li><li>{<span class="argType">Object</span>}<span class="argName">options</span> The options object that was passed to the component during the call to addComponent.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="startThreshold"></a>
+<h3 class="methodTitle">startThreshold</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the number of pixels after a mouse down that the mouse must move in order to activate the operation. Defaults to 1.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">startThreshold</span>({<span class="argType"></span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="limit"></a>
+<h3 class="methodTitle">limit</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the rectangle that the operation will be limited to using an IgeRect instance.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">limit</span>({<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>} <span class="argName">rect</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeRect.html">IgeRect</a></span>}<span class="argName">rect</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="enabled"></a>
+<h3 class="methodTitle">enabled</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the enabled flag. If set to true, operations will be processed. If false, no operations will occur.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">enabled</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="_mouseDown"></a>
+<h3 class="methodTitle">_mouseDown</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Handles the mouseDown event. Records the starting position of the operation and the current operation translation.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_mouseDown</span>({<span class="argType"></span>} <span class="argName">event</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_mouseMove"></a>
+<h3 class="methodTitle">_mouseMove</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Handles the mouse move event. Translates the entity as the mouse moves across the screen.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_mouseMove</span>({<span class="argType"></span>} <span class="argName">event</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_mouseUp"></a>
+<h3 class="methodTitle">_mouseUp</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Handles the mouse up event. Finishes the entity translate and removes the starting operation data.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_mouseUp</span>({<span class="argType"></span>} <span class="argName">event</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div>	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>

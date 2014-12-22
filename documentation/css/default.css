@@ -1,0 +1,167 @@
+body {
+    font-family: Verdana, sans-serif;
+    font-size: 12px;
+}
+
+h2 {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+h2 span {
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    background: #eee;
+    font-size: 8px;
+    padding: 2px;
+}
+
+h3 {
+    /*border-bottom: 2px solid #aaaaaa;*/
+}
+
+body .page {
+    position: relative;
+    width: 600px;
+    left: 50%;
+    margin-left: -300px;
+}
+
+.itemBox {
+    list-style: none;
+    list-style-type: none;
+    padding-left: 0px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px #cccccc solid;
+    background-color: #f4f4f4;
+}
+
+.itemBox .header {
+    color: #000000;
+    font-weight: bold;
+    font-variant: small-caps;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.itemBox .content {
+    background-color: #FEFFCE;
+    color: #383838;
+    padding: 5px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border: 1px #cccccc solid;
+    display: block;
+    font-size: 11px;
+}
+
+.itemBox .content ul {
+    list-style: none;
+    display: block;
+    padding: 0;
+    margin: 0;
+}
+
+.argType {
+    font-weight: bold;
+    font-variant: small-caps;
+    padding: 2px;
+}
+
+.argName {
+    color: #06F;
+    font-style: italic;
+}
+
+.argList {
+    list-style-type: square;
+    margin: 0;
+}
+
+.argList li {
+    margin-bottom: 10px;
+}
+
+.argList .argType {
+    font-variant: small-caps;
+    font-weight: bold;
+    padding: 2px;
+}
+
+.argList .argName {
+    color: #06F;
+    border: 1px solid #CCC;
+    background: #F4F4F4;
+    padding: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+    margin-left: 5px;
+}
+
+.methodTitle {
+    font-weight: normal;
+    font-size: 20px;
+    color: white;
+    background: #333;
+    padding-left: 5px;
+    padding-bottom: 5px;
+    display: block;
+    margin: 0;
+}
+
+.methodSection {
+    background: #FEFFCE;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-left: 1px #CCC solid;
+    border-right: 1px #CCC solid;
+    border-bottom: 1px #CCC solid;
+}
+
+.methodName {
+    font-weight: bold;
+}
+
+.methodDesc {
+    margin-bottom: 10px;
+}
+
+.methodDefinition {
+    margin-bottom: 10px;
+}
+
+.methodArgs {
+    margin-bottom: 10px;
+}
+
+.methodReturnDesc {
+    margin-bottom: 10px;
+}
+
+.methodExample {
+    border: 1px #cccccc solid;
+    padding: 10px;
+    background-color: #f4f4f4;
+}
+
+.methodExample h1:before {
+    content: 'Example: ';
+}
+
+.methodExample h1 {
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0;
+    margin-bottom: 5px;
+}
+
+.methodExample pre {
+    margin: 0;
+    padding: 10px;
+    border: #cccccc 1px solid;
+}
+
+.methodExample p {
+    margin-bottom: 0px;
+}

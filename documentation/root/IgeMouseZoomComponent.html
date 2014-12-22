@@ -1,0 +1,77 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgeMouseZoomComponent <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/components/IgeMouseZoomComponent.js">IgeMouseZoomComponent.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">When added to a viewport, automatically adds mouse zooming capabilities to the viewport's camera.</div>
+</div>
+<!--=if{extends}[-->
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="IgeEventingClass.html">IgeEventingClass</a></div>
+</div>
+<!--=if{extends}]-->
+<h2>Methods</h2><a name="init"></a>
+<h3 class="methodTitle">init</h3>
+<div class="methodSection">
+    <!---->
+    <div class="methodDefinition"><span class="methodName">init</span>({<span class="argType"><a href="./IgeObject.html">IgeObject</a></span>} <span class="argName">entity</span>, {<span class="argType">Object</span>} <span class="argName">options</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeObject.html">IgeObject</a></span>}<span class="argName">entity</span> The object that the component is added to.</li><li>{<span class="argType">Object</span>}<span class="argName">options</span> The options object that was passed to the component during the call to addComponent.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="enabled"></a>
+<h3 class="methodTitle">enabled</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets / gets the enabled flag. If set to true, zoom operations will be processed. If false, no zooming will occur.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">enabled</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="_mouseDown"></a>
+<h3 class="methodTitle">_mouseDown</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Handles the mouseDown event. Records the starting position of the camera zoom and the current camera translation.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_mouseDown</span>({<span class="argType"></span>} <span class="argName">event</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_mouseMove"></a>
+<h3 class="methodTitle">_mouseMove</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Handles the mouse move event. Scales the camera as the mouse moves across the screen.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_mouseMove</span>({<span class="argType"></span>} <span class="argName">event</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_mouseUp"></a>
+<h3 class="methodTitle">_mouseUp</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Handles the mouse up event. Finishes the camera scale and removes the starting zoom data.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_mouseUp</span>({<span class="argType"></span>} <span class="argName">event</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div>	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>

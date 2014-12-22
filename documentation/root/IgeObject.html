@@ -1,0 +1,1236 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgeObject <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/core/IgeObject.js">IgeObject.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">Creates a new object.</div>
+</div>
+<!--=if{extends}[-->
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="IgeEventingClass.html">IgeEventingClass</a></div>
+</div>
+<!--=if{extends}]-->
+<h2>Methods</h2><a name="alive"></a>
+<h3 class="methodTitle">alive</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Determines if the object is alive or not. The alive value is automatically set to false when the object's destroy() method is called. Useful for checking if an object that you are holding a reference to has been destroyed.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">alive</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> The value to set the alive flag to.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Get the alive flag value</h1>
+
+<pre><code>var entity = new IgeEntity();
+console.log(entity.alive());
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set the alive flag value</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.alive(true);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="managed"></a>
+<h3 class="methodTitle">managed</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / set the managed mode from 0 to 2. 0 = off, 1 = static, 2 = dynamic.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">managed</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> Set to 0 to switch off managed mode, 1 to set to static managed mode or 2 to dynamic managed mode. When in a managed mode and when the parent of this entity has an entity manager component enabled, the entity will be checked to see if it is inside the visible area of a viewport. If it is deemed not to be in a visible area (via it's AABB non-intersection with viewport view area) then it will either be un-mounted from the parent (mode 1) or marked as no longer in view (mode 2). Mode 2 in view = false will cause the entity to no longer be depth-sorted or rendered but will still have it's update() method called each frame allowing logic processing to occur as normal. The default managed mode is 1.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="id"></a>
+<h3 class="methodTitle">id</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the current object id. If no id is currently assigned and no id is passed to the method, it will automatically generate and assign a new id as a 16 character hexadecimal value typed as a string.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">id</span>({<span class="argType">String</span>} <span class="argName">id</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} Returns this when setting the value or the current value if none is specified.</div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Get the id of an entity</h1>
+
+<pre><code>var entity = new IgeEntity();
+console.log(entity.id());
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set the id of an entity</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.id('myNewId');
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set the id of an entity via chaining</h1>
+
+<pre><code>var entity = new IgeEntity()
+    .id('myNewId');
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="category"></a>
+<h3 class="methodTitle">category</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the arbitrary category name that the object belongs to.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">category</span>({<span class="argType">String</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Get the category of an entity</h1>
+
+<pre><code>var entity = new IgeEntity();
+console.log(entity.category());
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set the category of an entity</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.category('myNewCategory');
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set the category of an entity via chaining</h1>
+
+<pre><code>var entity = new IgeEntity()
+    .category('myNewCategory');
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get all the entities belonging to a category</h1>
+
+<pre><code>var entityArray = ige.$$('categoryName');
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Remove the category of an entity</h1>
+
+<pre><code>// Set category to some name
+var entity = new IgeEntity()
+    .category('myCategory');
+
+// Will output "myCategory"
+console.log(entity.category());
+
+// Now remove the category
+entity.category('');
+
+// Will return ""
+console.log(entity.category());
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="group"></a>
+<h3 class="methodTitle">group</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">DEPRECIATED - Use category() instead. A warning method to help developers move to the new groups system.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">group</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="addGroup"></a>
+<h3 class="methodTitle">addGroup</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Adds this entity to a group or groups passed as arguments.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">addGroup</span>({<span class="argType">*</span>} <span class="argName">groupName</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">groupName</span> A group or array of group names to add the entity to.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Add entity to a single group</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1');
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Add entity to multiple groups</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g2', 'g3');
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Add entity to multiple groups via an array</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup(['g1', 'g2', 'g3']);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Add entity to multiple groups via multiple arrays</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup(['g1', 'g2', 'g3'], ['g4', 'g5']);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="inGroup"></a>
+<h3 class="methodTitle">inGroup</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Checks if the entity is in the group or array of group names passed.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">inGroup</span>({<span class="argType">*</span>} <span class="argName">groupName</span>, {<span class="argType">Boolean</span>} <span class="argName">matchAllGroups</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">groupName</span> A group name or array of names.</li><li>{<span class="argType">Boolean</span>}<span class="argName">matchAllGroups</span> If set to true, will cause the method to check if the entity is in ALL the groups, otherwise the method will check if the entity is in ANY group.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Check if the entity is in a group</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g2');
+
+// Will output true since entity is part of g1 group
+console.log(entity.inGroup('g1', false);
+
+// Will output false since entity is not part of g3 group
+console.log(entity.inGroup('g3', false);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Check if the entity is in an array of groups using ANY and ALL options</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g2');
+
+// Will output true since entity is part of g1 group
+console.log(entity.inGroup(['g1, 'g3'], false);
+
+// Will output false since entity is not part of g3 group
+console.log(entity.inGroup(['g1, 'g3'], true);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="inAllGroups"></a>
+<h3 class="methodTitle">inAllGroups</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Checks if the entity is in the specified group or array of groups. If multiple group names are passed, as an array the method will only return true if the entity is in ALL the passed groups.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">inAllGroups</span>({<span class="argType">*</span>} <span class="argName">groupName</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">groupName</span> The name of the group or array if group names to check if this entity is a member of.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Check if entity belongs to all of the passed groups</h1>
+
+<pre><code>// Add a couple of groups
+var entity = new IgeEntity();
+entity.addGroup(['g1', 'g2']);
+
+// This will output "false" (entity is not part of g3)
+console.log(entity.inAllGroups(['g1', 'g3']));
+
+// This will output "true"
+console.log(entity.inAllGroups('g1'));
+
+// This will output "true"
+console.log(entity.inAllGroups(['g1', 'g2']));
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="inAnyGroup"></a>
+<h3 class="methodTitle">inAnyGroup</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Checks if the entity is in the specified group or array of group names. If multiple group names are passed as an array, the method will return true if the entity is in ANY of the the passed groups.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">inAnyGroup</span>({<span class="argType">*</span>} <span class="argName">groupName</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">groupName</span> The name of the group or array of group names to check if this entity is a member of.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Boolean</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Check if entity belongs to any of the passed groups</h1>
+
+<pre><code>// Add a couple of groups
+var entity = new IgeEntity();
+entity.addGroup('g1', 'g2');
+
+// This will output "false"
+console.log(entity.inAnyGroup('g3'));
+
+// This will output "true"
+console.log(entity.inAnyGroup(['g3', 'g1']));
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="groups"></a>
+<h3 class="methodTitle">groups</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets an array of all groups this entity belongs to.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">groups</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Get array of groups entity belongs to</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g2');
+
+// This will output "['g1', 'g2']"
+console.log(entity.groups());
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="groupCount"></a>
+<h3 class="methodTitle">groupCount</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets the number of groups this entity belongs to.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">groupCount</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Number</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Get number of groups entity belongs to</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g2');
+
+// This will output "2"
+console.log(entity.groupCount());
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="removeGroup"></a>
+<h3 class="methodTitle">removeGroup</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes the entity from the group or groups passed. This method accepts multiple arguments and will remove the entity from all groups passed as arguments.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">removeGroup</span>({<span class="argType">*</span>} <span class="argName">groupName</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">groupName</span> The name of the group or array of group names to remove this entity as a member of.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Remove entity from single group</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g2');
+
+// This will output "['g1', 'g2']"
+console.log(entity.groups());
+
+// Remove entity from a single group
+entity.removeGroup('g1');
+
+// This will output "['g2']"
+console.log(entity.groups());
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Remove entity from multiple groups</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g3', 'g2');
+
+// This will output "['g1', 'g3', 'g2']"
+console.log(entity.groups());
+
+// Remove entity from multiple groups
+entity.removeGroup('g1', 'g3');
+
+// This will output "['g2']"
+console.log(entity.groups());
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Remove entity from multiple groups via an array</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g3', 'g2');
+
+// This will output "['g1', 'g3', 'g2']"
+console.log(entity.groups());
+
+// Remove entity from multiple groups
+entity.removeGroup(['g1', 'g3']);
+
+// This will output "['g2']"
+console.log(entity.groups());
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Remove entity from multiple groups via multiple arrays</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7');
+
+// This will output "['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7']"
+console.log(entity.groups());
+
+// Remove entity from multiple groups
+entity.removeGroup(['g1', 'g3'], ['g5', 'g6', 'g7']);
+
+// This will output "['g2', 'g4']"
+console.log(entity.groups());
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="removeAllGroups"></a>
+<h3 class="methodTitle">removeAllGroups</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes the entity from all groups it is a member of.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">removeAllGroups</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Remove entity from all groups</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addGroup('g1', 'g3', 'g2');
+
+// This will output "['g1', 'g3', 'g2']"
+console.log(entity.groups());
+
+// Remove all the groups
+entity.removeAllGroups();
+
+// This will output "[]"
+console.log(entity.groups());
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="addBehaviour"></a>
+<h3 class="methodTitle">addBehaviour</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Adds a behaviour to the object's active behaviour list.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">addBehaviour</span>({<span class="argType">String</span>} <span class="argName">id</span>, {<span class="argType">Function</span>} <span class="argName">behaviour</span>, {<span class="argType">Boolean</span>} <span class="argName">duringTick</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> </li><li>{<span class="argType">Function</span>}<span class="argName">behaviour</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">duringTick</span> If true, will execute the behaviour during the tick() method instead of the update() method.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} Returns this on success or false on failure.</div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Add a behaviour with the id "myBehaviour"</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addBehaviour('myBehaviour', function () {
+    // Code here will execute during each engine update for
+    // this entity. I can access the entity via the "this"
+    // keyword such as:
+    this._somePropertyOfTheEntity = 'moo';
+});
+
+// Now since each update we are setting _somePropertyOfTheEntity
+// to equal "moo" we can console log the property and get
+// the value as "moo"
+console.log(entity._somePropertyOfTheEntity);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="removeBehaviour"></a>
+<h3 class="methodTitle">removeBehaviour</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes a behaviour to the object's active behaviour list by it's id.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">removeBehaviour</span>({<span class="argType">String</span>} <span class="argName">id</span>, {<span class="argType">Boolean</span>} <span class="argName">duringTick</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> </li><li>{<span class="argType">Boolean</span>}<span class="argName">duringTick</span> If true will look to remove the behaviour from the tick method rather than the update method.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} Returns this on success or false on failure.</div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Remove a behaviour with the id "myBehaviour"</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.addBehaviour('myBehaviour', function () {
+    // Code here will execute during each engine update for
+    // this entity. I can access the entity via the "this"
+    // keyword such as:
+    this._somePropertyOfTheEntity = 'moo';
+});
+
+// Now remove the "myBehaviour" behaviour
+entity.removeBehaviour('myBehaviour');
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="drawBounds"></a>
+<h3 class="methodTitle">drawBounds</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the boolean flag determining if this object should have it's bounds drawn when the bounds for all objects are being drawn. In order for bounds to be drawn the viewport the object is being drawn to must also have draw bounds enabled.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">drawBounds</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Enable draw bounds</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.drawBounds(true);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Disable draw bounds</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.drawBounds(false);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get the current flag value</h1>
+
+<pre><code>console.log(entity.drawBounds());
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="drawBoundsData"></a>
+<h3 class="methodTitle">drawBoundsData</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the boolean flag determining if this object should have it's bounds data drawn when the bounds for all objects are being drawn. Bounds data includes the object ID and it's current depth etc.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">drawBoundsData</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Enable draw bounds data</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.drawBoundsData(true);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Disable draw bounds data</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.drawBoundsData(false);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get the current flag value</h1>
+
+<pre><code>console.log(entity.drawBoundsData());
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="drawMouse"></a>
+<h3 class="methodTitle">drawMouse</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the boolean flag determining if this object should have it's mouse position data drawn when the bounds for all objects are being drawn.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">drawMouse</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Enable draw mouse position data</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.drawMouse(true);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Disable draw mouse position data</h1>
+
+<pre><code>var entity = new IgeEntity();
+entity.drawMouse(false);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get the current flag value</h1>
+
+<pre><code>console.log(entity.drawMouse());
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="$"></a>
+<h3 class="methodTitle">$</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Finds a child entity that matches the id mounted to this or any other child entity down the scenegraph chain. Will only return an object if the entity found has this entity as an ancestor (parent or parent of parent etc).</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">$</span>({<span class="argType">String</span>} <span class="argName">id</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> The id of the entity to find.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The entity or undefined.</div>
+    
+</div><a name="$$"></a>
+<h3 class="methodTitle">$$</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Finds all child entities of this or any child of this entity down the scenegraph who's category matches the category name passed.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">$$</span>({<span class="argType">String</span>} <span class="argName">categoryName</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">categoryName</span> The category name to scan for.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} </div>
+    
+</div><a name="parent"></a>
+<h3 class="methodTitle">parent</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns the object's parent object (the object that it is mounted to).</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">parent</span>({<span class="argType">String</span>} <span class="argName">id</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> Optional, if present will scan up the parent chain until a parent with the matching id is found. If none is found, returns undefined.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Get the object parent</h1>
+
+<pre><code>// Create a couple of entities and give them ids
+var entity1 = new IgeEntity().id('entity1'),
+    entity2 = new IgeEntity().id('entity2');
+
+// Mount entity2 to entity1
+entity2.mount(entity1);
+
+// Get the parent of entity2 (which is entity1)
+var parent = entity2.parent();
+
+// Log the parent's id (will output "entity1")
+console.log(parent.id());
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="children"></a>
+<h3 class="methodTitle">children</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns the object's children as an array of objects.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">children</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} The array of child objects.</div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Get the child objects array</h1>
+
+<pre><code>// Create a couple of entities and give them ids
+var entity1 = new IgeEntity().id('entity1'),
+    entity2 = new IgeEntity().id('entity2');
+
+// Mount entity2 to entity1
+entity2.mount(entity1);
+
+// Get the chilren array entity1
+var childArray = entity1.children();
+
+// Log the child array contents (will contain entity2)
+console.log(childArray);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="mount"></a>
+<h3 class="methodTitle">mount</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Mounts this object to the passed object in the scenegraph.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">mount</span>({<span class="argType"><a href="./IgeObject.html">IgeObject</a></span>} <span class="argName">obj</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeObject.html">IgeObject</a></span>}<span class="argName">obj</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} Returns this on success or false on failure.</div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Mount an entity to another entity</h1>
+
+<pre><code>// Create a couple of entities and give them ids
+var entity1 = new IgeEntity().id('entity1'),
+    entity2 = new IgeEntity().id('entity2');
+
+// Mount entity2 to entity1
+entity2.mount(entity1);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="unMount"></a>
+<h3 class="methodTitle">unMount</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Unmounts this object from it's parent object in the scenegraph.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">unMount</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} Returns this on success or false on failure.</div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Unmount an entity from another entity</h1>
+
+<pre><code>// Create a couple of entities and give them ids
+var entity1 = new IgeEntity().id('entity1'),
+    entity2 = new IgeEntity().id('entity2');
+
+// Mount entity2 to entity1
+entity2.mount(entity1);
+
+// Now unmount entity2 from entity1
+entity2.unMount();
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="hasParent"></a>
+<h3 class="methodTitle">hasParent</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Determines if the object has a parent up the scenegraph whose id matches the one passed. Will traverse each parent object checking if the id matches. This information will be cached when first called and can be refreshed by setting the "fresh" parameter to true.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">hasParent</span>({<span class="argType">String</span>} <span class="argName">parentId</span>, {<span class="argType">Boolean</span>} <span class="argName">fresh</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">parentId</span> The id of the parent to check for.</li><li>{<span class="argType">Boolean</span>}<span class="argName">fresh</span> If true will force a full check instead of using the cached value from an earlier check.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="clone"></a>
+<h3 class="methodTitle">clone</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Clones the object and all it's children and returns a new object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">clone</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="mode"></a>
+<h3 class="methodTitle">mode</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the positioning mode of the entity.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">mode</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> 0 = 2d, 1 = isometric</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Set the positioning mode to 2d</h1>
+
+<pre><code>var entity = new IgeEntity()
+    .mode(0);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set the positioning mode to isometric</h1>
+
+<pre><code>var entity = new IgeEntity()
+    .mode(1);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="isometric"></a>
+<h3 class="methodTitle">isometric</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets if this object should be positioned isometrically or in 2d.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">isometric</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> Set to true to position this object in isometric space or false to position it in 2d space.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Set the positioning mode to isometric</h1>
+
+<pre><code>var entity = new IgeEntity()
+    .isometric(true);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set the positioning mode to 2d</h1>
+
+<pre><code>var entity = new IgeEntity()
+    .isometric(false);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="isometricMounts"></a>
+<h3 class="methodTitle">isometricMounts</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets if objects mounted to this object should be positioned and depth-sorted in an isometric fashion or a 2d fashion.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">isometricMounts</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> Set to true to enabled isometric positioning and depth sorting of objects mounted to this object, or false to enable 2d positioning and depth-sorting of objects mounted to this object.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Set children to be positioned and depth sorted in 2d</h1>
+
+<pre><code>var entity = new IgeEntity()
+    .isometricMounts(false);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set children to be positioned and depth sorted in isometric</h1>
+
+<pre><code>var entity = new IgeEntity()
+    .isometricMounts(true);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="indestructible"></a>
+<h3 class="methodTitle">indestructible</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the indestructible flag. If set to true, the object will not be destroyed even if a call to the destroy() method is made.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">indestructible</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} Returns this when setting the value or the current value if none is specified.</div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Set an entity to indestructible</h1>
+
+<pre><code>var entity = new IgeEntity()
+    .indestructible(true);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Set an entity to destructible</h1>
+
+<pre><code>var entity = new IgeEntity()
+    .indestructible(false);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get an entity's indestructible flag value</h1>
+
+<pre><code>var entity = new IgeEntity()
+console.log(entity.indestructible());
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="layer"></a>
+<h3 class="methodTitle">layer</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the current entity layer. This affects how the entity is depth-sorted against other entities of the same parent. Please note that entities are first sorted by their layer and then by their depth, and only entities of the same layer will be sorted against each other by their depth values.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">layer</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} Returns this when setting the value or the current value if none is specified.</div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Set an entity's layer to 22</h1>
+
+<pre><code>var entity = new IgeEntity()
+    .layer(22);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get an entity's layer value</h1>
+
+<pre><code>var entity = new IgeEntity()
+console.log(entity.layer());
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>How layers and depths are handled together</h1>
+
+<pre><code>var entity1 = new IgeEntity(),
+    entity2 = new IgeEntity(),
+    entity3 = new IgeEntity();
+
+// Set entity1 to at layer zero and depth 100
+entity1.layer(0)
+    .depth(100);
+
+// Set entity2 and 3 to be at layer 1
+entity2.layer(1);
+entity3.layer(1);
+
+// Set entity3 to have a higher depth than entity2
+entity2.depth(0);
+entity3.depth(1);
+
+// The engine sorts first based on layer from lowest to highest
+// and then within each layer, by depth from lowest to highest.
+// This means that entity1 will be drawn before entity 2 and 3
+// because even though it's depth is higher, it is not on the same
+// layer as entity 2 and 3.
+
+// Based on the layers and depths we have assigned, here
+// is how the engine will sort the draw order of the entities
+// entity1
+// entity2
+// entity3
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="depth"></a>
+<h3 class="methodTitle">depth</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the current render depth of the object (higher depths are drawn over lower depths). Please note that entities are first sorted by their layer and then by their depth, and only entities of the same layer will be sorted against each other by their depth values.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">depth</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} Returns this when setting the value or the current value if none is specified.</div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Set an entity's depth to 1</h1>
+
+<pre><code>var entity = new IgeEntity()
+    .depth(1);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Get an entity's depth value</h1>
+
+<pre><code>var entity = new IgeEntity()
+console.log(entity.depth());
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>How layers and depths are handled together</h1>
+
+<pre><code>var entity1 = new IgeEntity(),
+    entity2 = new IgeEntity(),
+    entity3 = new IgeEntity();
+// Set entity1 to at layer zero and depth 100
+entity1.layer(0)
+    .depth(100);
+// Set entity2 and 3 to be at layer 1
+entity2.layer(1);
+entity3.layer(1);
+// Set entity3 to have a higher depth than entity2
+entity2.depth(0);
+entity3.depth(1);
+// The engine sorts first based on layer from lowest to highest
+// and then within each layer, by depth from lowest to highest.
+// This means that entity1 will be drawn before entity 2 and 3
+// because even though it's depth is higher, it is not on the same
+// layer as entity 2 and 3.
+// Based on the layers and depths we have assigned, here
+// is how the engine will sort the draw order of the entities
+// entity1
+// entity2
+// entity3
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="destroyChildren"></a>
+<h3 class="methodTitle">destroyChildren</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Loops through all child objects of this object and destroys them by calling each child's destroy() method then clears the object's internal _children array.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">destroyChildren</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="destroyBehaviours"></a>
+<h3 class="methodTitle">destroyBehaviours</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes all references to any behaviour methods that were added to this object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">destroyBehaviours</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="destroyComponents"></a>
+<h3 class="methodTitle">destroyComponents</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Loops through all components added to this object and calls their destroy() method, then removes any references to the components.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">destroyComponents</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="depthSortMode"></a>
+<h3 class="methodTitle">depthSortMode</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the depth sort mode that is used when depth sorting this object's children against each other. This mode only applies if this object's mount mode is isometric, as set by calling isometricMounts(true). If the mount mode is 2d, the depth sorter will use a very fast 2d depth sort that does not use 3d bounds at all.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">depthSortMode</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The mode to use when depth sorting this object's children, given as an integer value.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Turn off all depth sorting for this object's children</h1>
+
+<pre><code>entity.depthSortMode(-1);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Use 3d bounds when sorting this object's children</h1>
+
+<pre><code>entity.depthSortMode(0);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Use 3d bounds optimised for mostly cube-shaped bounds when sorting this object's children</h1>
+
+<pre><code>entity.depthSortMode(1);
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Use 3d bounds optimised for all cube-shaped bounds when sorting this object's children</h1>
+
+<pre><code>entity.depthSortMode(2);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="depthSortChildren"></a>
+<h3 class="methodTitle">depthSortChildren</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sorts the _children array by the layer and then depth of each object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">depthSortChildren</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="viewChecking"></a>
+<h3 class="methodTitle">viewChecking</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the view checking flag that if set to true will ask the engine to check during each tick if this object is actually "on screen" or not, and bypass it if it is not. The default is this flag set to false.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">viewChecking</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> The boolean flag value.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="viewCheckChildren"></a>
+<h3 class="methodTitle">viewCheckChildren</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">ALPHA CODE DO NOT USE YET. When view checking is enabled, this method is called to determine if this object is within the bounds of an active viewport, essentially determining if the object is "on screen" or not.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">viewCheckChildren</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="tick"></a>
+<h3 class="methodTitle">tick</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Processes the actions required each render frame.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">tick</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_resizeEvent"></a>
+<h3 class="methodTitle">_resizeEvent</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Handles screen resize events. Calls the _resizeEvent method of every child object mounted to this object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_resizeEvent</span>({<span class="argType"></span>} <span class="argName">event</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">event</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_processUpdateBehaviours"></a>
+<h3 class="methodTitle">_processUpdateBehaviours</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Calls each behaviour method for the object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_processUpdateBehaviours</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_processTickBehaviours"></a>
+<h3 class="methodTitle">_processTickBehaviours</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Calls each behaviour method for the object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_processTickBehaviours</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_childMounted"></a>
+<h3 class="methodTitle">_childMounted</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Called when a child object is mounted to this object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_childMounted</span>({<span class="argType"></span>} <span class="argName">obj</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">obj</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_childUnMounted"></a>
+<h3 class="methodTitle">_childUnMounted</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Called when a child object is un-mounted to this object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_childUnMounted</span>({<span class="argType"></span>} <span class="argName">obj</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">obj</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_mounted"></a>
+<h3 class="methodTitle">_mounted</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Called when this object is mounted to another object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_mounted</span>({<span class="argType"></span>} <span class="argName">obj</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">obj</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="_unMounted"></a>
+<h3 class="methodTitle">_unMounted</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Called when this object is un-mounted from it's parent.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_unMounted</span>({<span class="argType"></span>} <span class="argName">obj</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">obj</span> </li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="destroy"></a>
+<h3 class="methodTitle">destroy</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Destroys the object and all it's child objects, removing them from the scenegraph and from memory.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">destroy</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="stringify"></a>
+<h3 class="methodTitle">stringify</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">stringify</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
+    
+</div><a name="_stringify"></a>
+<h3 class="methodTitle">_stringify</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_stringify</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
+    
+</div>	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>

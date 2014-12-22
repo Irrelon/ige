@@ -1,0 +1,69 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgeSpriteSheet <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/core/IgeSpriteSheet.js">IgeSpriteSheet.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">Creates a new sprite sheet that cuts an image up into arbitrary sections.</div>
+</div>
+<!--=if{extends}[-->
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="IgeTexture.html">IgeTexture</a></div>
+</div>
+<!--=if{extends}]-->
+<h2>Methods</h2><a name="detectCells"></a>
+<h3 class="methodTitle">detectCells</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Uses the sprite sheet image pixel data to detect distinct sprite bounds.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">detectCells</span>({<span class="argType"></span>} <span class="argName">img</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">img</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} An array of cell bounds.</div>
+    
+</div><a name="cellCount"></a>
+<h3 class="methodTitle">cellCount</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns the total number of cells in the cell sheet.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">cellCount</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Number</span>} </div>
+    
+</div><a name="cellIdToIndex"></a>
+<h3 class="methodTitle">cellIdToIndex</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns the cell index that the passed cell id corresponds to.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">cellIdToIndex</span>({<span class="argType">String</span>} <span class="argName">id</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Number</span>} The cell index that the cell id corresponds to or -1 if a corresponding index could not be found.</div>
+    
+</div><a name="stringify"></a>
+<h3 class="methodTitle">stringify</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">stringify</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
+    
+</div>	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>

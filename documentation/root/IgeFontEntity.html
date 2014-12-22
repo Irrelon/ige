@@ -1,0 +1,199 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgeFontEntity <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/core/IgeFontEntity.js">IgeFontEntity.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">Creates a new font entity. A font entity will use a font sheet (IgeFontSheet) and render text based on that font sheet's glyphs.</div>
+</div>
+<!--=if{extends}[-->
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="IgeUiEntity.html">IgeUiEntity</a></div>
+</div>
+<!--=if{extends}]-->
+<h2>Methods</h2><a name="width"></a>
+<h3 class="methodTitle">width</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Extends the IgeUiEntity.width() method and if the value being set is different from the current width value then the font's cache is invalidated so it gets redrawn.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">width</span>({<span class="argType"></span>} <span class="argName">val</span>, {<span class="argType"></span>} <span class="argName">lockAspect</span>, {<span class="argType"></span>} <span class="argName">modifier</span>, {<span class="argType"></span>} <span class="argName">noUpdate</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li><li>{<span class="argType"></span>}<span class="argName">lockAspect</span> </li><li>{<span class="argType"></span>}<span class="argName">modifier</span> </li><li>{<span class="argType"></span>}<span class="argName">noUpdate</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="height"></a>
+<h3 class="methodTitle">height</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Extends the IgeUiEntity.height() method and if the value being set is different from the current height value then the font's cache is invalidated so it gets redrawn.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">height</span>({<span class="argType"></span>} <span class="argName">val</span>, {<span class="argType"></span>} <span class="argName">lockAspect</span>, {<span class="argType"></span>} <span class="argName">modifier</span>, {<span class="argType"></span>} <span class="argName">noUpdate</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li><li>{<span class="argType"></span>}<span class="argName">lockAspect</span> </li><li>{<span class="argType"></span>}<span class="argName">modifier</span> </li><li>{<span class="argType"></span>}<span class="argName">noUpdate</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*|number</span>} </div>
+    
+</div><a name="text"></a>
+<h3 class="methodTitle">text</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets the text to render for this font entity. This sets both the private properties "_text" and "_renderText". If auto-wrapping has been enabled then the "_text" remains equal to whatever text you pass into this method but "_renderText" becomes the line-broken text that the auto-wrapper method creates. When the entity renders it's text string it ALWAYS renders from "_renderText" and not the value of "_text". Effectively this means that "_text" contains the unaltered version of your original text and "_renderText" will be either the same as "_text" if auto-wrapping is disable or a wrapped version otherwise.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">text</span>({<span class="argType">String</span>} <span class="argName">text</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">text</span> The text string to render.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="bindData"></a>
+<h3 class="methodTitle">bindData</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Allows you to bind the text output of this font entity to match the value of an object's property so that when it is updated the text will automatically update on this entity. Useful for score, position etc output where data is stored in an object and changes frequently.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">bindData</span>({<span class="argType">Object</span>} <span class="argName">obj</span>, {<span class="argType">String</span>} <span class="argName">propName</span>, {<span class="argType">String</span>} <span class="argName">preText</span>, {<span class="argType">String</span>} <span class="argName">postText</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">obj</span> The object to read the property from.</li><li>{<span class="argType">String</span>}<span class="argName">propName</span> The name of the property to read value from.</li><li>{<span class="argType">String</span>}<span class="argName">preText</span> Text to place before the output.</li><li>{<span class="argType">String</span>}<span class="argName">postText</span> Text to place after the output.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="textAlignX"></a>
+<h3 class="methodTitle">textAlignX</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the current horizontal text alignment. Accepts a value of 0, 1 or 2 (left, centre, right) respectively.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">textAlignX</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="textAlignY"></a>
+<h3 class="methodTitle">textAlignY</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the current vertical text alignment. Accepts a value of 0, 1 or 2 (top, middle, bottom) respectively.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">textAlignY</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="textLineSpacing"></a>
+<h3 class="methodTitle">textLineSpacing</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the amount of spacing between the lines of text being rendered. Accepts negative values as well as positive ones.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">textLineSpacing</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="colorOverlay"></a>
+<h3 class="methodTitle">colorOverlay</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the string hex or rgba value of the colour to use as an overlay when rending this entity's texture.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">colorOverlay</span>({<span class="argType">String</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">val</span> The colour value as hex e.g. '#ff0000' or as rgba e.g. 'rbga(255, 0, 0, 0.5)'. To remove an overlay colour simply passed an empty string.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
+    
+</div><a name="color"></a>
+<h3 class="methodTitle">color</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">A proxy for colorOverlay().</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">color</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="clearCache"></a>
+<h3 class="methodTitle">clearCache</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Clears the texture cache for this entity's text string.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">clearCache</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="nativeFont"></a>
+<h3 class="methodTitle">nativeFont</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">When using native font rendering (canvasContext.fillText()) this sets the font and size as per the canvasContext.font string specification.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">nativeFont</span>({<span class="argType">String</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">val</span> The font style string.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when arguments are passed to allow method chaining or the current value if no arguments are specified.</div>
+    
+</div><a name="nativeStroke"></a>
+<h3 class="methodTitle">nativeStroke</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the text stroke size that applies when using a native font for text rendering.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">nativeStroke</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The size of the text stroke.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="nativeStrokeColor"></a>
+<h3 class="methodTitle">nativeStrokeColor</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the text stroke color that applies when using a native font for text rendering.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">nativeStrokeColor</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> The color of the text stroke.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="autoWrap"></a>
+<h3 class="methodTitle">autoWrap</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the auto-wrapping mode. If set to true then the text this font entity renders will be automatically line-broken when a line reaches the width of the entity.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">autoWrap</span>({<span class="argType"></span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="_applyAutoWrap"></a>
+<h3 class="methodTitle">_applyAutoWrap</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Automatically detects where line-breaks need to occur in the text assigned to the entity and adds them.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_applyAutoWrap</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="measureTextWidth"></a>
+<h3 class="methodTitle">measureTextWidth</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Will measure and return the width in pixels of a line or multiple lines of text. If no text parameter is passed, will use the current text assigned to the font entity.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">measureTextWidth</span>({<span class="argType">String</span>} <span class="argName">text</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">text</span> Optional text to measure, used existing entity text value if none is provided.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">Number</span>} The width of the text in pixels.</div>
+    
+</div><a name="_stringify"></a>
+<h3 class="methodTitle">_stringify</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns a string containing a code fragment that when evaluated will reproduce this object's properties via chained commands. This method will only check for properties that are directly related to this class. Other properties are handled by their own class method.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">_stringify</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">String</span>} </div>
+    
+</div>	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<html>
+<head>
+    <script src="./js/jquery.min.js"></script>
+    <script src="./panel.js"></script>
+    <link href="./css/default.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div class="tabView active" id="igeSceneGraphView">
+    <div class="leftPane">
+        <ul id="sceneGraph_items"></ul>
+    </div>
+    <div class="rightPane">
+        <div id="sceneGraphItem">
+            <div class="drop"></div>
+            <div id="id"></div>
+            <div id="classId"></div>
+            <div id="parentId"></div>
+            <div id="childCount"></div>
+            <div id="transform">
+                <div id="translate">
+                    <input type="number" id="translateX" value="0" />
+                    <input type="number" id="translateY" value="0" />
+                    <input type="number" id="translateZ" value="0" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="tabView" id="igeDebugView"></div>
+<div id="tabStrip">
+    <div class="tab" id="igeSceneGraph">SceneGraph <input id="refreshSceneGraph" type="button" value="Refresh" /></div>
+    <div class="tab" id="igeConfig.debug">Debug</div>
+</div>
+</body>
+</html>
