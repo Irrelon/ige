@@ -1393,45 +1393,25 @@ var IgeEntity = IgeObject.extend({
 	 */
 	isBehind: function (otherObject) {
 		var thisG3d = this._bounds3d,
-			otherG3d = otherObject._bounds3d,
-			thisTranslate = this._translate.clone(),
-			otherTranslate = otherObject._translate.clone();
-
-		// thisTranslate.thisToIso();
-		// otherTranslate.thisToIso();
-
-		if(this._origin.x !== 0.5 || this._origin.y !== 0.5) {
-			thisTranslate.x += this._bounds2d.x * (0.5 - this._origin.x)
-			thisTranslate.y += this._bounds2d.y * (0.5 - this._origin.y)
-		}
-		if(otherObject._origin.x !== 0.5 || otherObject._origin.y !== 0.5) {
-			otherTranslate.x += otherObject._bounds2d.x * (0.5 - otherObject._origin.x)
-			otherTranslate.y += otherObject._bounds2d.y * (0.5 - otherObject._origin.y)
-		}
-
-		var
-			thisX = thisTranslate.x,
-			thisY = thisTranslate.y,
-			otherX = otherTranslate.x,
-			otherY = otherTranslate.y,
 			thisMin = new IgePoint3d(
-				thisX - thisG3d.x / 2,
-				thisY - thisG3d.y / 2,
+				this._translate.x - thisG3d.x / 2,
+				this._translate.y - thisG3d.y / 2,
 				this._translate.z
 			),
 			thisMax = new IgePoint3d(
-				thisX + thisG3d.x / 2,
-				thisY + thisG3d.y / 2,
+				this._translate.x + thisG3d.x / 2,
+				this._translate.y + thisG3d.y / 2,
 				this._translate.z + thisG3d.z
-			),		
+			),
+			otherG3d = otherObject._bounds3d,
 			otherMin = new IgePoint3d(
-				otherX - otherG3d.x / 2,
-				otherY - otherG3d.y / 2,
+				otherObject._translate.x - otherG3d.x / 2,
+				otherObject._translate.y - otherG3d.y / 2,
 				otherObject._translate.z
 			),
 			otherMax = new IgePoint3d(
-				otherX + otherG3d.x / 2,
-				otherY + otherG3d.y / 2,
+				otherObject._translate.x + otherG3d.x / 2,
+				otherObject._translate.y + otherG3d.y / 2,
 				otherObject._translate.z + otherG3d.z
 			);
 
@@ -1459,7 +1439,8 @@ var IgeEntity = IgeObject.extend({
 			return true;
 		}
 
-		return (thisX + thisY + this._translate.z) > (otherX + otherY + otherObject._translate.z);
+		// Entity's are overlapping, calc based on x+y+z
+		return ((this._translate.x + this._translate.y + this._translate.z) > (otherObject._translate.x + otherObject._translate.y + otherObject._translate.z));
 	},
 
 	/**
