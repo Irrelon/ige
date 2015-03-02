@@ -479,11 +479,27 @@ var IgePathComponent = IgeEventingClass.extend({
 			1
 		);
 	},
+
+	dividePoint: function (point) {
+		return point.divide(
+			this._entity._parent._tileWidth,
+			this._entity._parent._tileHeight,
+			1
+		);
+	},
 	
 	transformPoint: function (point) {
 		return new IgePoint3d(
 			point.x + this._entity._parent._tileWidth / 2,
 			point.y + this._entity._parent._tileHeight / 2,
+			point.z
+		);
+	},
+
+	unTransformPoint: function (point) {
+		return new IgePoint3d(
+			point.x - this._entity._parent._tileWidth / 2,
+			point.y - this._entity._parent._tileHeight / 2,
 			point.z
 		);
 	},
@@ -628,10 +644,16 @@ var IgePathComponent = IgeEventingClass.extend({
 	
 	_calculatePathData: function () {
 		var totalDistance = 0,
+			startPoint = this._entity._translate.clone(),
 			pointFrom,
 			pointTo,
 			i;
-		
+
+		// always set the first point to be the current position
+		startPoint = this.unTransformPoint(startPoint);
+		startPoint = this.dividePoint(startPoint);
+		this._points[0] = startPoint;
+
 		// Calculate total distance to travel
 		for (i = 1; i < this._points.length; i++) {
 			pointFrom = this._points[i - 1];
