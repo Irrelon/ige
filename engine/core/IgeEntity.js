@@ -3129,22 +3129,16 @@ var IgeEntity = IgeObject.extend({
 						}
 					}
 				} else {
-					if (this._streamProperty && this._streamPropertyDirty) {
-						var dirtyProp,
-							dirtyData = {},
-							dirtyCount = this._streamPropertyDirty.length;
+					if (this._streamProperty) {
+						var prop,
+							propData = {};
 
 						// Add the dirty data
-						while (dirtyCount--) {
-							dirtyProp = this._streamPropertyDirty[dirtyCount];
-							dirtyData[dirtyProp] = this._streamProperty[dirtyProp].value;
-							this._streamProperty[dirtyProp].dirty = false;
+						for (prop in this._streamProperty) {
+							propData[prop] = this._streamProperty[prop].value;
 						}
 
-						// Reset the dirty properties list
-						this._streamPropertyDirty = [];
-
-						return JSON.stringify(dirtyData);
+						return JSON.stringify(propData);
 					}
 
 					return '';
@@ -3687,7 +3681,6 @@ var IgeEntity = IgeObject.extend({
 			if (value !== propObj.value) {
 				// Value change
 				propObj.value = value;
-				console.log('setting property value: ' + value);
 
 				/* CEXCLUDE */
 				if (ige.isServer) {
