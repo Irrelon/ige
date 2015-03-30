@@ -644,15 +644,19 @@ var IgePathComponent = IgeEventingClass.extend({
 	
 	_calculatePathData: function () {
 		var totalDistance = 0,
-			startPoint = this._entity._translate.clone(),
+			startPoint,
 			pointFrom,
 			pointTo,
 			i;
 
-		// always set the first point to be the current position
-		startPoint = this.unTransformPoint(startPoint);
-		startPoint = this.dividePoint(startPoint);
-		this._points[0] = startPoint;
+
+		if(this._currentPointFrom === 0) {
+			// always set the first point to be the current position
+			startPoint = this._entity._translate.clone();
+			startPoint = this.unTransformPoint(startPoint);
+			startPoint = this.dividePoint(startPoint);
+			this._points[0] = startPoint;
+		}
 
 		// Calculate total distance to travel
 		for (i = 1; i < this._points.length; i++) {
