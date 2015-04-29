@@ -90,25 +90,6 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	},
 
 	/**
-	 * Creates an array of frames starting at the "from" and ending at the "to"
-	 * parameters. Useful for creating linear frame lists instead of having to
-	 * specifiy each frame in between the from and to frame numbers.
-	 * @param {Integer} from The frame to start at.
-	 * @param {Integer} to The frame to end at.
-	 * @returns {Array} The frame array.
-	 */
-	generateFrameArray: function (from, to) {
-		var arr = [];
-
-		while (from < to) {
-			arr.push(from);
-			from++;
-		}
-
-		return arr;
-	},
-
-	/**
 	 * Sets the specified animation's FPS.
 	 * @param {String} id The ID of the animation to alter the FPS for.
 	 * @param {Number=} fps The number of frames per second the animation

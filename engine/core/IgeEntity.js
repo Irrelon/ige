@@ -2927,32 +2927,13 @@ var IgeEntity = IgeObject.extend({
 	 * encode into its stream data.
 	 * @param {Array=} sectionArray An array of strings.
 	 * @example #Define the sections this entity will use in the network stream. Use the default "transform" section as well as a "custom1" section
-	 *     entity.streamSections(['transform', 'custom1']);
+	 *     entity.streamSections('transform', 'custom1');
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
 	streamSections: function (sectionArray) {
 		if (sectionArray !== undefined) {
 			this._streamSections = sectionArray;
-			return this;
-		}
-
-		return this._streamSections;
-	},
-
-	/**
-	 * Pushes a section into the stream sections array that this
-	 * entity will encode into its stream data.
-	 * @param {String} section The section to push into the sections array.
-	 * @example #Push a section to the sections array this entity will use in the network stream.
-	 *     entity.streamSectionsPush('transform');
-	 * @return {*} "this" when arguments are passed to allow method
-	 * chaining or the current value if no arguments are specified.
-	 */
-	streamSectionsPush: function (section) {
-		if (section !== undefined) {
-			this._streamSections = this._streamSections || [];
-			this._streamSections.push(section);
 			return this;
 		}
 
@@ -3112,36 +3093,6 @@ var IgeEntity = IgeObject.extend({
 					}
 				} else {
 					return String(this._origin.x + ',' + this._origin.y + ',' + this._origin.z);
-				}
-				break;
-
-			case 'props':
-				if (data !== undefined) {
-					// Only overwrite values when we receive data on the client from the server
-					if (!ige.isServer) {
-						var propData = JSON.parse(data),
-							propName;
-
-						for (propName in propData) {
-							if (propData.hasOwnProperty(propName)) {
-								this.streamProperty(propName, propData[propName]);
-							}
-						}
-					}
-				} else {
-					if (this._streamProperty) {
-						var prop,
-							propData = {};
-
-						// Add the dirty data
-						for (prop in this._streamProperty) {
-							propData[prop] = this._streamProperty[prop].value;
-						}
-
-						return JSON.stringify(propData);
-					}
-
-					return '';
 				}
 				break;
 		}
@@ -3648,65 +3599,6 @@ var IgeEntity = IgeObject.extend({
 		}
 	},
 	/* CEXCLUDE */
-
-	/**
-	 * Gets / sets a property that will be included in stream updates whenever it's
-	 * value changes. This is useful for defining properties that change randomly
-	 * and so should not be part of the main stream update data but should
-	 * still be streamed when the value changes.
-	 * @param {String} propName The name of the property to define / set / get.
-	 * @param {*=} value The value to set the property to. If this changes the
-	 * existing value of the property then the property will be updated to clients
-	 * on the next stream update.
-	 * @returns {boolean}
-	 */
-	streamProperty: function (propName, value) {
-		if (value !== undefined) {
-			// Ensure the stream property object exists
-			this._streamProperty = this._streamProperty || {};
-
-			/* CEXCLUDE */
-			if (ige.isServer) {
-				this._streamPropertyDirty = this._streamPropertyDirty || [];
-			}
-			/* CEXCLUDE */
-
-			// Get / ensure property is an object else create default
-			var propObj = this._streamProperty[propName] = this._streamProperty[propName] || {
-				dirty: false,
-				value: undefined
-			};
-
-			// Check if the value passed will change the property value
-			if (value !== propObj.value) {
-				// Value change
-				propObj.value = value;
-
-				/* CEXCLUDE */
-				if (ige.isServer) {
-					// Check if this property has already been marked as dirty
-					if (!propObj.dirty) {
-						// Add the property name to the dirty list
-						this._streamPropertyDirty.push(propName);
-
-						// Set the property dirty flag
-						propObj.dirty = true;
-					}
-				}
-				/* CEXCLUDE */
-
-				return true;
-			}
-
-			return false;
-		}
-
-		if (this._streamProperty && this._streamProperty[propName]) {
-			return this._streamProperty[propName].value;
-		}
-
-		return undefined;
-	},
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// INTERPOLATOR

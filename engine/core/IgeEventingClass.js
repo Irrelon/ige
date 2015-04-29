@@ -311,8 +311,6 @@ var IgeEventingClass = IgeClass.extend({
 						// Call the callback with the removal result
 						remArr[2](result);
 					}
-
-					remArr.pull(item);
 				}
 			}
 		}
