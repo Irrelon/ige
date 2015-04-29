@@ -37,6 +37,9 @@ http://www.isogenicengine.com/docs-manual.html
 ## Forum
 Head over to the official help & support forum: http://www.isogenicengine.com/forum
 
+## Font Sheet Generator
+http://www.isogenicengine.com/tools/fontSheetGenerator/
+
 ## Feedback & Support
 If you have any comments, questions, requests etc please don't hesitate to discuss them on the forum!
 
