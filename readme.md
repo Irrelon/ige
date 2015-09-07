@@ -43,16 +43,6 @@ If you have any comments, questions, requests etc please don't hesitate to discu
 ## License
 MIT
 
-### Terms & Conditions
-If you wish to create a game that utilises the IGE and generates income from any source connected to the game via online
-means (this includes in-game purchases, banner adverts in the game or on the page the game runs on, bank transfers that
-were originated offline but were meant for in-game purchases etc) then you need to purchase a license for the engine.
-Examples of income that is not counted as requiring a license are t-shirts featuring the game or game art, accessories
-or other real-world items that are not part of the "digital" game etc. You can purchase a license from our website listed
-below.
-
-You also require a license if you are using the engine as a registered / limited company for any reason.
-
 ## Intellectual Property, Ownership & Copyright
 (C)opyright 2013 Irrelon Software Limited
 http://www.irrelon.com
