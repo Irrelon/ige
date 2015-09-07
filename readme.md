@@ -41,10 +41,7 @@ Head over to the official help & support forum: http://www.isogenicengine.com/fo
 If you have any comments, questions, requests etc please don't hesitate to discuss them on the forum!
 
 ## License
-You may use the IGE for non-commercial, educational or hobbyist purposes for free subject to the terms and conditions
-set forth below.
-
-Premium licenses can be obtained from the official website: http://www.isogenicengine.com
+MIT
 
 ### Terms & Conditions
 If you wish to create a game that utilises the IGE and generates income from any source connected to the game via online
