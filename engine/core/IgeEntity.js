@@ -3279,11 +3279,11 @@ var IgeEntity = IgeObject.extend({
 	 */
 	streamProperty: function (propName, propVal) {
 		this._streamProperty = this._streamProperty || {};
-		this._streamPropertyChange = this._streamPropertyChange || {};
+		//this._streamPropertyChange = this._streamPropertyChange || {};
 
 		if (propName !== undefined) {
 			if (propVal !== undefined) {
-				this._streamPropertyChange[propName] = this._streamProperty[propName] !== propVal;
+				//this._streamPropertyChange[propName] = this._streamProperty[propName] !== propVal;
 				this._streamProperty[propName] = propVal;
 
 				return this;
@@ -3463,7 +3463,8 @@ var IgeEntity = IgeObject.extend({
 				break;
 
 			case 'props':
-				var newData = {},
+				var newData,
+					changed,
 					i;
 
 				if (data !== undefined) {
@@ -3472,18 +3473,26 @@ var IgeEntity = IgeObject.extend({
 
 						// Update properties that have been sent through
 						for (i in props) {
+							changed = false;
 							if (props.hasOwnProperty(i)) {
+								if (this._streamProperty[i] != props[i]) {
+									changed = true;
+								}
 								this._streamProperty[i] = props[i];
+
+								this.emit('streamPropChange', [i, props[i]]);
 							}
 						}
 					}
 				} else {
+					newData = {};
+
 					for (i in this._streamProperty) {
 						if (this._streamProperty.hasOwnProperty(i)) {
-							if (this._streamPropertyChange[i]) {
-								newData[i] = this._streamProperty;
-								this._streamPropertyChange[i] = false;
-							}
+							//if (this._streamPropertyChange[i]) {
+								newData[i] = this._streamProperty[i];
+								//this._streamPropertyChange[i] = false;
+							//}
 						}
 					}
 
