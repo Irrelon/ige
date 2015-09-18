@@ -3245,6 +3245,57 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * Adds a section into the existing streamed sections array.
+	 * @param {String} sectionName The section name to add.
+	 */
+	streamSectionsPush: function (sectionName) {
+		this._streamSections = this._streamSections || [];
+		this._streamSections.push(sectionName);
+
+		return this;
+	},
+
+	/**
+	 * Removes a section into the existing streamed sections array.
+	 * @param {String} sectionName The section name to remove.
+	 */
+	streamSectionsPull: function (sectionName) {
+		if (this._streamSections) {
+			this._streamSections.pull(sectionName);
+		}
+
+		return this;
+	},
+
+	/**
+	 * Gets / sets a streaming property on this entity. If set, the
+	 * property's new value is streamed to clients on the next packet.
+	 *
+	 * @param {String} propName The name of the property to get / set.
+	 * @param {*=} propVal Optional. If provided, the property is set
+	 * to this value.
+	 * @return {*} "this" when a propVal argument is passed to allow method
+	 * chaining or the current value if no propVal argument is specified.
+	 */
+	streamProperty: function (propName, propVal) {
+		this._streamProperty = this._streamProperty || {};
+		this._streamPropertyChange = this._streamPropertyChange || {};
+
+		if (propName !== undefined) {
+			if (propVal !== undefined) {
+				this._streamPropertyChange[propName] = this._streamProperty[propName] !== propVal;
+				this._streamProperty[propName] = propVal;
+
+				return this;
+			}
+
+			return this._streamProperty[propName];
+		}
+
+		return undefined;
+	},
+
+	/**
 	 * Gets / sets the data for the specified data section id. This method
 	 * is usually not called directly and instead is part of the network
 	 * stream system. General use case is to write your own custom streamSectionData
@@ -3408,6 +3459,35 @@ var IgeEntity = IgeObject.extend({
 					}
 				} else {
 					return String(this._origin.x + ',' + this._origin.y + ',' + this._origin.z);
+				}
+				break;
+
+			case 'props':
+				var newData = {},
+					i;
+
+				if (data !== undefined) {
+					if (ige.isClient) {
+						var props = JSON.parse(data);
+
+						// Update properties that have been sent through
+						for (i in props) {
+							if (props.hasOwnProperty(i)) {
+								this._streamProperty[i] = props[i];
+							}
+						}
+					}
+				} else {
+					for (i in this._streamProperty) {
+						if (this._streamProperty.hasOwnProperty(i)) {
+							if (this._streamPropertyChange[i]) {
+								newData[i] = this._streamProperty;
+								this._streamPropertyChange[i] = false;
+							}
+						}
+					}
+
+					return JSON.stringify(newData);
 				}
 				break;
 		}
