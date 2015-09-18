@@ -3464,7 +3464,7 @@ var IgeEntity = IgeObject.extend({
 
 			case 'props':
 				var newData,
-					update = false,
+					changed,
 					i;
 
 				if (data !== undefined) {
@@ -3473,8 +3473,14 @@ var IgeEntity = IgeObject.extend({
 
 						// Update properties that have been sent through
 						for (i in props) {
+							changed = false;
 							if (props.hasOwnProperty(i)) {
+								if (this._streamProperty[i] != props[i]) {
+									changed = true;
+								}
 								this._streamProperty[i] = props[i];
+
+								this.emit('streamPropChange', [i, props[i]]);
 							}
 						}
 					}
