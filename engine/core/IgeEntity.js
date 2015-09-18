@@ -3245,6 +3245,29 @@ var IgeEntity = IgeObject.extend({
 	},
 
 	/**
+	 * Adds a section into the existing streamed sections array.
+	 * @param {String} sectionName The section name to add.
+	 */
+	streamSectionPush: function (sectionName) {
+		this._streamSections = this._streamSections || [];
+		this._streamSections.push(sectionName);
+
+		return this;
+	},
+
+	/**
+	 * Removes a section into the existing streamed sections array.
+	 * @param {String} sectionName The section name to remove.
+	 */
+	streamSectionPull: function (sectionName) {
+		if (this._streamSections) {
+			this._streamSections.pull(sectionName);
+		}
+
+		return this;
+	},
+
+	/**
 	 * Gets / sets the data for the specified data section id. This method
 	 * is usually not called directly and instead is part of the network
 	 * stream system. General use case is to write your own custom streamSectionData
