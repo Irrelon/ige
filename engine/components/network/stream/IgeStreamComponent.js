@@ -7,7 +7,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 
 	/**
 	 * @constructor
-	 * @param entity
+	 * @param entity TODO: The network component usually?
 	 * @param options
 	 */
 	init: function (entity, options) {
@@ -25,7 +25,6 @@ var IgeStreamComponent = IgeEventingClass.extend({
 			this._entity.define('_igeStreamCreate');
 			this._entity.define('_igeStreamDestroy');
 			this._entity.define('_igeStreamData');
-			this._entity.define('_igeStreamTime');
 
 			// Define the object that will hold the stream data queue
 			this._queuedData = {};
@@ -33,6 +32,13 @@ var IgeStreamComponent = IgeEventingClass.extend({
 			// Set some stream data containers
 			this._streamClientData = {};
 			this._streamClientCreated = {};
+
+            // Temp tick-related lists
+            this._clientsWhichJoinedARoom = {};
+            this._clientsWhichLeftARoom = {};
+
+            // Add the behaviour
+            ige.addBehaviour('physiStep', this._streamEntityConsistencyBehaviour, true);
 		}
 		/* CEXCLUDE */
 
@@ -41,7 +47,6 @@ var IgeStreamComponent = IgeEventingClass.extend({
 			this._entity.define('_igeStreamCreate', function () { self._onStreamCreate.apply(self, arguments); });
 			this._entity.define('_igeStreamDestroy', function () { self._onStreamDestroy.apply(self, arguments); });
 			this._entity.define('_igeStreamData', function () { self._onStreamData.apply(self, arguments); });
-			this._entity.define('_igeStreamTime', function () { self._onStreamTime.apply(self, arguments); });
 		}
 
 		// Set some defaults
@@ -113,15 +118,41 @@ var IgeStreamComponent = IgeEventingClass.extend({
 		return this._entity;
 	},
 
+    _streamEntityConsistencyBehaviour: function() {
+        var self = ige.network.stream;
+        //get the current client lists which joined or left a room
+        var clientsWhichJoinedARoom =  self._clientsWhichJoinedARoom;
+        var clientsWhichLeftARoom = self._clientsWhichLeftARoom;
+        self._clientsWhichJoinedARoom = {};
+        self._clientsWhichLeftARoom = {};
+
+        //Execute the room checks
+        for (var clientId in clientsWhichJoinedARoom) {
+            if (clientsWhichJoinedARoom.hasOwnProperty(clientId)) {
+                self._createStreamEntitiesForClient(clientId);
+            }
+        }
+
+        for (var clientId in clientsWhichLeftARoom) {
+            if (clientsWhichLeftARoom.hasOwnProperty(clientId)) {
+                self._destroyStreamEntitiesForClient(clientId);
+            }
+        }
+    },
+
 	/**
 	 * Queues stream data to be sent during the next stream data interval.
 	 * @param {String} id The id of the entity that this data belongs to.
 	 * @param {String} data The data queued for delivery to the client.
-	 * @param {String} clientId The client id this data is queued for.
+	 * @param {String} clientId The clients id this data is queued for.
 	 * @return {*}
 	 */
-	queue: function (id, data, clientId) {
-		this._queuedData[id] = [data, clientId];
+	queue: function (data, clientIds) {
+        for (var x in clientIds) {
+            var clientId = clientIds[x];
+            if (!this._queuedData[clientId]) this._queuedData[clientId] = [];
+            this._queuedData[clientId].push(data);
+        }
 		return this._entity;
 	},
 
@@ -131,30 +162,27 @@ var IgeStreamComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_sendQueue: function () {
+        //TODO: Have _sendQueue send as soon as all entities have gathered their data, not by an interval
 		var st = new Date().getTime(),
 			ct,
 			dt,
 			arr = this._queuedData,
-			arrIndex,
+            clientId,
 			network = this._entity,
 			item, currentTime = ige._currentTime,
 			clientSentTimeData = {};
 
 		// Send the stream data
-		for (arrIndex in arr) {
-			if (arr.hasOwnProperty(arrIndex)) {
-				item = arr[arrIndex];
+		for (clientId in arr) {
+			if (arr.hasOwnProperty(clientId)) {
+				item = arr[clientId];
 
-				// Check if we've already sent this client the starting
-				// time of the stream data
-				if (!clientSentTimeData[item[1]]) {
-					// Send the stream start time
-					network.send('_igeStreamTime', currentTime, item[1]);
-					clientSentTimeData[item[1]] = true;
-				}
-				network.send('_igeStreamData', item[0], item[1]);
+				// Send the starting time of the stream data
+                item.unshift(currentTime);
 
-				delete arr[arrIndex];
+				network.send('_igeStreamData', item, clientId);
+
+				delete arr[clientId];
 			}
 
 			ct = new Date().getTime();
@@ -167,15 +195,6 @@ var IgeStreamComponent = IgeEventingClass.extend({
 		}
 	},
 	/* CEXCLUDE */
-
-	/**
-	 * Handles receiving the start time of the stream data.
-	 * @param data
-	 * @private
-	 */
-	_onStreamTime: function (data) {
-		this._streamDataTime = data;
-	},
 
 	_onStreamCreate: function (data) {
 		var classId = data[0],
@@ -198,13 +217,13 @@ var IgeStreamComponent = IgeEventingClass.extend({
 					entity = new classConstructor(createData)
 						.id(entityId)
 						.mount(parent);
-					
+
 					entity.streamSectionData('transform', transformData, true);
 
 					// Set the just created flag which will stop the renderer
 					// from handling this entity until after the first stream
 					// data has been received for it
-					entity._streamJustCreated = true;
+					//entity._streamJustCreated = true;
 					
 					if (entity._streamEmitCreated) {
 						entity.emit('streamCreated');
@@ -256,43 +275,138 @@ var IgeStreamComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_onStreamData: function (data) {
-		// Read the packet data into variables
-		var entityId,
-			entity,
-			sectionArr,
-			sectionDataArr = data.split(ige.network.stream._sectionDesignator),
-			sectionDataCount = sectionDataArr.length,
-			sectionIndex,
-			justCreated;
+        //data = JSON.parse(data);
 
-		// We know the first bit of data will always be the
-		// target entity's ID
-		entityId = sectionDataArr.shift();
+        // set the time
+        this._streamDataTime = data.shift();
 
-		// Check if the entity with this ID currently exists
-		entity = ige.$(entityId);
+        //now update all entities one by one
+        for (var x = 0; x < data.length; x++) {
+            var entityData = data[x];
 
-		if (entity) {
-			// Hold the entity's just created flag
-			justCreated = entity._streamJustCreated;
+            // Read the packet data into variables
+            var entityId,
+                entity,
+                sectionArr,
+                sectionDataArr = entityData.split(ige.network.stream._sectionDesignator),
+                sectionDataCount = sectionDataArr.length,
+                sectionIndex,
+                justCreated;
 
-			// Get the entity stream section array
-			sectionArr = entity._streamSections;
 
-			// Now loop the data sections array and compile the rest of the
-			// data string from the data section return data
-			for (sectionIndex = 0; sectionIndex < sectionDataCount; sectionIndex++) {
-				// Tell the entity to handle this section's data
-				entity.streamSectionData(sectionArr[sectionIndex], sectionDataArr[sectionIndex], justCreated);
+            // We know the first bit of data will always be the
+            // target entity's ID
+            entityId = sectionDataArr.shift();
+
+            // Check if the entity with this ID currently exists
+            entity = ige.$(entityId);
+
+            if (entity) {
+                // Hold the entity's just created flag
+                justCreated = entity._streamJustCreated;
+
+                // Get the entity stream section array
+                sectionArr = entity._streamSections;
+
+                // Now loop the data sections array and compile the rest of the
+                // data string from the data section return data
+                for (sectionIndex = 0; sectionIndex < sectionDataCount; sectionIndex++) {
+                    // Tell the entity to handle this section's data
+                    entity.streamSectionData(sectionArr[sectionIndex], sectionDataArr[sectionIndex], justCreated);
+                }
+
+                // Now that the entity has had it's first bit of data
+                // reset the just created flag
+                delete entity._streamJustCreated;
+            } else {
+                this.log('+++ Stream: Data received for unknown entity (' + entityId +')');
+            }
+        }
+	},
+	
+	/**
+	 * Creates all non-created stream entities which share a room with the client
+	 */
+	_createStreamEntitiesForClient: function(clientId) {
+		for (var entityId in this._streamClientCreated) {
+			if (this._streamClientCreated.hasOwnProperty(entityId)) {
+				//if it's not been already sent
+				if (this._streamClientCreated[entityId][clientId] != true) {
+					//if the entity is within the same room
+					var entity = ige.$(entityId);
+					if (entity != undefined) {
+						var entityStreamrooms = entity._streamRoomIds;
+                        for (var x in ige.network._clientRooms[clientId]) {
+							if (entityStreamrooms.indexOf( ige.network._clientRooms[clientId][x] ) != -1) {
+								//entity and client have a common room. Stream!
+								entity.streamCreate(clientId);
+								break;
+							}
+						}
+					}
+				}
 			}
-
-			// Now that the entity has had it's first bit of data
-			// reset the just created flag
-			delete entity._streamJustCreated;
-		} else {
-			this.log('+++ Stream: Data received for unknown entity (' + entityId +')');
 		}
-	}
+	},
+	
+	/**
+	 * Removes all streamed entities from the client which do not share a room with it
+	 */
+	_destroyStreamEntitiesForClient: function(clientId) {
+		for (var entityId in this._streamClientCreated) {
+			if (this._streamClientCreated.hasOwnProperty(entityId)) {
+				//if it's actually created for the client
+				if (this._streamClientCreated[entityId][clientId] == true) {
+					//if the entity is within the same room
+					var entity = ige.$(entityId);
+					if (entity != undefined) {
+						var entityStreamrooms = entity._streamRoomIds;
+						var commonRoom = false;
+                        for (var x in ige.network._clientRooms[clientId]) {
+							if (entityStreamrooms.indexOf( ige.network._clientRooms[clientId][x] ) != -1) {
+								//entity and client have a common room. Don't destroy.
+								commonRoom = true;
+								break;
+							}
+						}
+						//if they have no common room, destroy the entity at the client
+						if (!commonRoom) {
+							entity.streamDestroy(clientId);
+						}
+					}
+				}
+			}
+		}
+	},
+
+    _updateStreamEntityForClients: function(entity) {
+        var entityId = entity.id();
+        //get all clients that are in one of the entities' streamRoomIds
+        var clients = ige.network.clients(entity._streamRoomIds);
+        var clientIds = Object.keys(clients);
+
+        //send a stream destroy command to all clients which don't share a room with the entity anymore
+        for (var clientId in this._streamClientCreated[entityId]) {
+            if (this._streamClientCreated[entityId].hasOwnProperty(clientId)) {
+                //if the entity is created for the client but doesn't share a room anymore
+                if (this._streamClientCreated[entityId][clientId] == true && clientIds.indexOf(clientId) == -1) {
+                    //send a stream destroy command!
+                    entity.streamDestroy(clientId);
+                }
+            }
+        }
+
+        //send the stream create command to all clients which share a room with the entity but don't have the entity stream created yet!
+        for (var clientId in clients) {
+            if (clients.hasOwnProperty(clientId)) {
+                //if it's not been already sent
+                if (!this._streamClientCreated[entityId] || this._streamClientCreated[entityId][clientId] != true) {
+                    //send the stream create command!
+                    entity.streamCreate(clientId);
+                }
+            }
+        }
+    }
 });
 
 if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeStreamComponent; }

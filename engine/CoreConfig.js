@@ -34,12 +34,13 @@ var igeCoreConfig = {
 		['csap', 'IgeEntityManagerComponent', 'components/IgeEntityManagerComponent.js'],
 		['csap', 'IgeEditorComponent', 'components/editor/IgeEditorComponent.js'],
 		/* Physics Libraries */
-		['csap', 'Box2D', 'components/physics/box2d/lib_box2d.js', 'Box2D'],
+		//['csap', 'Box2D', 'components/physics/box2d/lib_box2d.js', 'Box2D'],
 		['csap', 'Cannon', 'components/physics/cannon/lib_cannon.js'],
 		['csap', 'IgeCannonComponent', 'components/physics/cannon/IgeCannonComponent.js'],
 		/* Network Stream */
 		['csap', 'IgeTimeSyncExtension', 'components/network/IgeTimeSyncExtension.js'],
 		['csap', 'IgeStreamComponent', 'components/network/stream/IgeStreamComponent.js'],
+		['sap', 'IgeLevelRoomComponent', 'components/network/stream/IgeLevelRoomComponent.js'],
 		/* Socket.io */
 		['cap', 'SocketIo', 'components/network/socket.io/client/socket.io.min.js'],
 		['cap', 'IgeSocketIoClient', 'components/network/socket.io/IgeSocketIoClient.js'],

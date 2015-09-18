@@ -30,11 +30,11 @@ var IgeScene2d = IgeEntity.extend({
 	 */
 	streamRoomId: function (id) {
 		if (id !== undefined) {
-			this._streamRoomId = id;
+			this.setStreamRooms( [id] );
 			return this;
 		}
 		
-		return this._streamRoomId;
+		return this._streamRoomIds;
 	},
 
 	/**
