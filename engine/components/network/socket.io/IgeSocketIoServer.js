@@ -214,38 +214,48 @@ var IgeSocketIoServer = {
 		return this._acceptConnections;
 	},
 
-	send: function (commandName, data, clientId) {
-		var commandIndex = this._networkCommandsLookup[commandName],
-			arrCount,
-			clientSocket;
+	/**
+	 * Sends a message over the network.
+	 * @param {String} commandName
+	 * @param {Object} data
+	 * @param {*=} clientId If specified, sets the recipient socket id or a array of socket ids to send to.
+	 */
+	send: function (commandName, data, clientId, callback) {
+		if (callback) {
+			this.request(commandName, data, clientId, callback);
+		} else {
+			var commandIndex = this._networkCommandsLookup[commandName],
+				arrCount,
+				clientSocket;
 
-		if (commandIndex !== undefined) {
-			if (clientId) {
-				if (typeof(clientId) === 'object') {
-					// The clientId is an array, loop it and send to each client
-					arrCount = clientId.length;
-					while (arrCount--) {
-						clientSocket = this._socketById[clientId[arrCount]];
+			if (commandIndex !== undefined) {
+				if (clientId) {
+					if (typeof(clientId) === 'object') {
+						// The clientId is an array, loop it and send to each client
+						arrCount = clientId.length;
+						while (arrCount--) {
+							clientSocket = this._socketById[clientId[arrCount]];
+							if (clientSocket) {
+								clientSocket.json.send([commandIndex, data]);
+							} else {
+								this.log('Warning, client with ID ' + clientId[arrCount] + ' not found in socket list!')
+							}
+						}
+					} else {
+						// The clientId is a string, send to individual client
+						clientSocket = this._socketById[clientId];
 						if (clientSocket) {
 							clientSocket.json.send([commandIndex, data]);
 						} else {
-							this.log('Warning, client with ID ' + clientId[arrCount] + ' not found in socket list!')
+							this.log('Warning, client with ID ' + clientId + ' not found in socket list!')
 						}
 					}
 				} else {
-					// The clientId is a string, send to individual client
-					clientSocket = this._socketById[clientId];
-					if (clientSocket) {
-						clientSocket.json.send([commandIndex, data]);
-					} else {
-						this.log('Warning, client with ID ' + clientId + ' not found in socket list!')
-					}
+					this._io.sockets.json.send([commandIndex, data]);
 				}
 			} else {
-				this._io.sockets.json.send([commandIndex, data]);
+				this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
 			}
-		} else {
-			this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
 		}
 	},
 	
@@ -259,7 +269,7 @@ var IgeSocketIoServer = {
 	 * @param {Object} data
 	 * @param {Function} callback
 	 */
-	request: function (commandName, data, callback) {
+	request: function (commandName, data, clientId, callback) {
 		// Build the request object
 		var req = {
 			id: this.newIdHex(),
@@ -279,7 +289,8 @@ var IgeSocketIoServer = {
 				id: req.id,
 				cmd: commandName,
 				data: req.data
-			}
+			},
+			clientId
 		);
 	},
 
@@ -332,6 +343,7 @@ var IgeSocketIoServer = {
 		var self = this;
 
 		if (this._acceptConnections) {
+			// Check if any listener cancels this
 			if (!this.emit('connect', socket)) {
 				this.log('Accepted connection with id ' + socket.id);
 				this._socketById[socket.id] = socket;
@@ -379,6 +391,14 @@ var IgeSocketIoServer = {
 	},
 	
 	_onRequest: function (data, clientId) {
+		var self = this,
+			responseCallback = function (err, returnData) {
+				self.response(data.id, {
+					err: err,
+					data: returnData
+				});
+			};
+
 		// The message is a network request so fire
 		// the command event with the request id and
 		// the request data
@@ -392,10 +412,10 @@ var IgeSocketIoServer = {
 		}
 
 		if (this._networkCommands[data.cmd]) {
-			this._networkCommands[data.cmd](data.data, clientId, data.id);
+			this._networkCommands[data.cmd](data.data, clientId, responseCallback);
 		}
 
-		this.emit(data.cmd, [data.id, data.data, clientId]);
+		this.emit(data.cmd, [data.data, clientId, responseCallback]);
 	},
 
 	_onResponse: function (data, clientId) {
@@ -414,7 +434,7 @@ var IgeSocketIoServer = {
 
 		if (req) {
 			// Fire the request callback!
-			req.callback(req.cmd, [data.data, clientId]);
+			req.callback(data.data.err, clientId, data.data.data);
 
 			// Delete the request from memory
 			delete this._requests[id];

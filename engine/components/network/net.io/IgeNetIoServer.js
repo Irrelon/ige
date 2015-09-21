@@ -207,15 +207,19 @@ var IgeNetIoServer = {
 	 * @param {Object} data
 	 * @param {*=} clientId If specified, sets the recipient socket id or a array of socket ids to send to.
 	 */
-	send: function (commandName, data, clientId) {
-		var commandIndex = this._networkCommandsLookup[commandName],
-			ciEncoded;
-
-		if (commandIndex !== undefined) {
-			ciEncoded = String.fromCharCode(commandIndex);
-			this._io.send([ciEncoded, data], clientId);
+	send: function (commandName, data, clientId, callback) {
+		if (callback) {
+			this.request(commandName, data, clientId, callback);
 		} else {
-			this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
+			var commandIndex = this._networkCommandsLookup[commandName],
+				ciEncoded;
+
+			if (commandIndex !== undefined) {
+				ciEncoded = String.fromCharCode(commandIndex);
+				this._io.send([ciEncoded, data], clientId);
+			} else {
+				this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
+			}
 		}
 	},
 
@@ -229,7 +233,7 @@ var IgeNetIoServer = {
 	 * @param {Object} data
 	 * @param {Function} callback
 	 */
-	request: function (commandName, data, callback) {
+	request: function (commandName, data, clientId, callback) {
 		// Build the request object
 		var req = {
 			id: this.newIdHex(),
@@ -249,7 +253,8 @@ var IgeNetIoServer = {
 				id: req.id,
 				cmd: commandName,
 				data: req.data
-			}
+			},
+			clientId
 		);
 	},
 
@@ -276,6 +281,8 @@ var IgeNetIoServer = {
 
 			// Remove the request as we've now responded!
 			delete this._requests[requestId];
+		} else {
+			this.log('Cannot send response to unidentified request ID: ' + requestId, 'warning');
 		}
 	},
 
@@ -365,6 +372,14 @@ var IgeNetIoServer = {
 	},
 	
 	_onRequest: function (data, clientId) {
+		var self = this,
+			responseCallback = function (err, returnData) {
+				self.response(data.id, {
+					err: err,
+					data: returnData
+				});
+			};
+
 		// The message is a network request so fire
 		// the command event with the request id and
 		// the request data
@@ -378,10 +393,10 @@ var IgeNetIoServer = {
 		}
 
 		if (this._networkCommands[data.cmd]) {
-			this._networkCommands[data.cmd](data.data, clientId, data.id);
+			this._networkCommands[data.cmd](data.data, clientId, responseCallback);
 		}
 
-		this.emit(data.cmd, [data.id, data.data, clientId]);
+		this.emit(data.cmd, [data.data, clientId, responseCallback]);
 	},
 
 	_onResponse: function (data, clientId) {
@@ -400,7 +415,7 @@ var IgeNetIoServer = {
 
 		if (req) {
 			// Fire the request callback!
-			req.callback(req.cmd, [data.data, clientId]);
+			req.callback(data.data.err, clientId, data.data.data);
 
 			// Delete the request from memory
 			delete this._requests[id];

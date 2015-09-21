@@ -147,19 +147,24 @@ var IgeNetIoClient = {
 	 * @param commandName
 	 * @param data
 	 */
-	send: function (commandName, data) {
-		var commandIndex = this._networkCommandsLookup[commandName],
-			ciEncoded;
-
-		if (commandIndex !== undefined) {
-			if (this.debug()) {
-				console.log('Sending "' + commandName + '" (index ' + commandIndex + ') with data:', data);
-				this._debugCounter++;
-			}
-			ciEncoded = String.fromCharCode(commandIndex);
-			this._io.send([ciEncoded, data]);
+	send: function (commandName, data, callback) {
+		if (callback) {
+			// Send a network request instead of a command
+			this.request(commandName, data, callback);
 		} else {
-			this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
+			var commandIndex = this._networkCommandsLookup[commandName],
+				ciEncoded;
+
+			if (commandIndex !== undefined) {
+				if (this.debug()) {
+					console.log('Sending "' + commandName + '" (index ' + commandIndex + ') with data:', data);
+					this._debugCounter++;
+				}
+				ciEncoded = String.fromCharCode(commandIndex);
+				this._io.send([ciEncoded, data]);
+			} else {
+				this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
+			}
 		}
 	},
 
@@ -232,6 +237,14 @@ var IgeNetIoClient = {
 	},
 
 	_onRequest: function (data) {
+		var self = this,
+			responseCallback = function (err, returnData) {
+				self.response(data.id, {
+					err: err,
+					data: returnData
+				});
+			};
+
 		// The message is a network request so fire
 		// the command event with the request id and
 		// the request data
@@ -243,10 +256,10 @@ var IgeNetIoClient = {
 		}
 
 		if (this._networkCommands[data.cmd]) {
-			this._networkCommands[data.cmd](data.id, data.data);
+			this._networkCommands[data.cmd](data.data, responseCallback);
 		}
 
-		this.emit(data.cmd, [data.id, data.data]);
+		this.emit(data.cmd, [data.data, responseCallback]);
 	},
 
 	_onResponse: function (data) {
@@ -268,7 +281,9 @@ var IgeNetIoClient = {
 
 		if (req) {
 			// Fire the request callback!
-			req.callback(req.cmd, data.data);
+			if (req.callback) {
+				req.callback(data.data.err, data.data.data);
+			}
 
 			// Delete the request from memory
 			delete this._requests[id];

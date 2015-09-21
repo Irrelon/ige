@@ -118,13 +118,24 @@ var IgeSocketIoClient = {
 		}
 	},
 
-	send: function (commandName, data) {
-		var commandIndex = this._networkCommandsLookup[commandName];
-
-		if (commandIndex !== undefined) {
-			this._io.json.send([commandIndex, data]);
+	/**
+	 * Sends a network message with the given command name
+	 * and data.
+	 * @param commandName
+	 * @param data
+	 */
+	send: function (commandName, data, callback) {
+		if (callback) {
+			// Send a network request instead of a command
+			this.request(commandName, data, callback);
 		} else {
-			this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
+			var commandIndex = this._networkCommandsLookup[commandName];
+
+			if (commandIndex !== undefined) {
+				this._io.json.send([commandIndex, data]);
+			} else {
+				this.log('Cannot send network packet with command "' + commandName + '" because the command has not been defined!', 'error');
+			}
 		}
 	},
 	
@@ -197,6 +208,14 @@ var IgeSocketIoClient = {
 	},
 	
 	_onRequest: function (data) {
+		var self = this,
+			responseCallback = function (err, returnData) {
+				self.response(data.id, {
+					err: err,
+					data: returnData
+				});
+			};
+
 		// The message is a network request so fire
 		// the command event with the request id and
 		// the request data
@@ -208,20 +227,23 @@ var IgeSocketIoClient = {
 		}
 
 		if (this._networkCommands[data.cmd]) {
-			this._networkCommands[data.cmd](data.id, data.data);
+			this._networkCommands[data.cmd](data.data, responseCallback);
 		}
 
-		this.emit(data.cmd, [data.id, data.data]);
+		this.emit(data.cmd, [data.data, responseCallback]);
 	},
 
 	_onResponse: function (data) {
+		var id,
+			req;
+
 		// The message is a network response
 		// to a request we sent earlier
-		var id = data.id;
+		id = data.id;
 
 		// Get the original request object from
 		// the request id
-		var req = this._requests[id];
+		req = this._requests[id];
 
 		if (this.debug()) {
 			console.log('onResponse', data);
@@ -231,7 +253,7 @@ var IgeSocketIoClient = {
 		if (req) {
 			// Fire the request callback!
 			if (req.callback) {
-				req.callback(req.cmd, data.data);
+				req.callback(data.data.err, data.data.data);
 			}
 
 			// Delete the request from memory
