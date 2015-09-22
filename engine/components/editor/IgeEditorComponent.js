@@ -1,6 +1,6 @@
 /**
- * When added to a viewport, automatically adds entity rotate
- * capabilities to the selected entity in the scenegraph viewer.
+ * The IGE interactive editor component. Allows modification of a simulation
+ * in realtime via a GUI.
  */
 var IgeEditorComponent = IgeEventingClass.extend({
 	classId: 'IgeEditorComponent',

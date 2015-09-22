@@ -72,7 +72,11 @@ var IgeAudioComponent = IgeEventingClass.extend({
 			callback(err);
 		});
 	},
-	
+
+	/**
+	 * Plays audio by its assigned id.
+	 * @param {String} id The id of the audio file to play.
+	 */
 	play: function (id) {
 		var audio = ige.$(id);
 		if (audio) {
