@@ -11,6 +11,10 @@ var IgeInterval = IgeEventingClass.extend({
 	 * milliseconds specified by the interval parameter.
 	 * @param {Function} method The method to call each interval.
 	 * @param {Number} interval The number of milliseconds between each interval.
+	 * @example #Create a timer that will call a method every 1 second in engine time
+	 *     var myInterval = new IgeInterval(function () {
+	 *     		console.log('interval fired');
+	 *     }, 1000);
 	 */
 	init: function (method, interval) {
 		var self = this;
@@ -36,6 +40,12 @@ var IgeInterval = IgeEventingClass.extend({
 
 	/**
 	 * Cancels the timer stopping all future method calls.
+	 * @example #Cancel an interval timer #1
+	 *     var myInterval = new IgeInterval(function () {
+	 *     		console.log('interval fired');
+	 *     }, 1000);
+	 *
+	 *     myInterval.cancel();
 	 * @returns {*}
 	 */
 	cancel: function () {
