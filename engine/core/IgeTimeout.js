@@ -11,6 +11,10 @@ var IgeTimeout = IgeInterval.extend({
 	 * milliseconds specified by the timeout parameter has been reached.
 	 * @param {Function} method The method to call on timeout.
 	 * @param {Number} timeout The number of milliseconds before the timeout.
+	 * @example #Create a timer that will call a method after 1 second of engine time
+	 *     var myTimeout = new IgeTimeout(function () {
+	 *     		console.log('interval fired');
+	 *     }, 1000);
 	 */
 	init: function (method, timeout) {
 		IgeInterval.prototype.init.call(this, method, timeout);
@@ -18,6 +22,12 @@ var IgeTimeout = IgeInterval.extend({
 
     /**
      * Cancels the timer, stops the timeout.
+	 * @example #Cancel a timeout timer
+	 *     var myTimeout = new IgeTimeout(function () {
+	 *     		console.log('timeout fired');
+	 *     }, 1000);
+	 *
+	 *     myTimeout.cancel();
      * @returns {*}
      */
     cancel: function () {

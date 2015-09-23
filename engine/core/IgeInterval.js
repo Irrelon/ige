@@ -40,7 +40,7 @@ var IgeInterval = IgeEventingClass.extend({
 
 	/**
 	 * Cancels the timer stopping all future method calls.
-	 * @example #Cancel an interval timer #1
+	 * @example #Cancel an interval timer
 	 *     var myInterval = new IgeInterval(function () {
 	 *     		console.log('interval fired');
 	 *     }, 1000);
