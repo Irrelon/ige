@@ -9,8 +9,8 @@ var IgeEditorComponent = IgeEventingClass.extend({
 	/**
 	 * @constructor
 	 * @param {IgeObject} entity The object that the component is added to.
-	 * @param {Object=} options The options object that was passed to the component during
-	 * the call to addComponent.
+	 * @param {Object=} options The options object that was passed to the
+	 * component during the call to addComponent.
 	 */
 	init: function (entity, options) {
 		var self = this;
