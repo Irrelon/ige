@@ -64,7 +64,9 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 			if (event.button === 0) {
 				ige.editor.ui.menus.closeAll();
 			}
-			
+
+			// If right mouse button and an object is selected, show the
+			// context menu for that object
 			if (event.button === 2 && ige.editor._selectedObject) {
 				var classArr = ige.editor._selectedObjectClassList,
 					i;
@@ -159,6 +161,7 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 	 */
 	_mouseMove: function (event) {
 		var arr = ige.mouseOverList();
+
 		if (arr.length) {
 			if (!ige.editor._selectedObject) {
 				ige._currentViewport.drawBounds(true);
@@ -170,7 +173,7 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 				ige._currentViewport.drawBoundsLimitId([ige.editor._selectedObject.id(), arr[0].id()]);
 			}
 			
-			this._overObject = arr[0];
+			this._overObject = arr;
 		} else {
 			delete this._overObject;
 			
@@ -194,14 +197,76 @@ var UiToolBox_ToolSelect = IgeEventingClass.extend({
 	 * @private
 	 */
 	_mouseUp: function (event) {
+		var body,
+			width,
+			height,
+			left,
+			top,
+			menuOptions,
+			obj;
+
 		if (event.button === 0) {
-			if (this._overObject) {
-				ige.editor.selectObject(this._overObject.id());
-				this.emit('selected', ige.editor._selectedObject);
-				
-				this.emit('mouseUp', event);
+			if (this._overObject && this._overObject.length) {
+				// If overobject has more than one object, display menu allowing
+				// selection
+				if (this._overObject.length > 1) {
+					body = $('body');
+					width = body.width();
+					height = body.height();
+					left = event.pageX;
+					top = event.pageY;
+					menuOptions = [];
+
+					for (i = 0; i < this._overObject.length; i++) {
+						obj = this._overObject[i];
+
+						menuOptions.push({
+							id: 'select',
+							icon: 'th-large',
+							text: '[' + obj.classId() + ']' + ' '  + obj.id(),
+							action: "ige.editor.selectObject('" + obj.id() + "');"
+						});
+					}
+
+					ige.editor.ui.menus.create({
+						header: {
+							icon: 'log_in',
+							text: 'Select Object'
+						},
+						groups: [{
+							'options': menuOptions
+						}]
+					}, function (elem) {
+						// Now position the menu
+						var menuWidth = elem.width(),
+							menuHeight = elem.height();
+
+						if (left + menuWidth > width) {
+							left = width - menuWidth - 10;
+						}
+
+						if (top + menuHeight > height) {
+							top = height - menuHeight - 10;
+						}
+
+						elem.css('left', left)
+							.css('top', top);
+					});
+				} else {
+					ige.editor.selectObject(this._overObject.id());
+					this.emit('selected', ige.editor._selectedObject);
+
+					this.emit('mouseUp', event);
+				}
 			}
 		}
+	},
+
+	_selectObject: function (id) {
+		ige.editor.selectObject(id);
+		this.emit('selected', ige.editor._selectedObject);
+
+		this.emit('mouseUp', event);
 	},
 	
 	destroy: function () {
