@@ -357,6 +357,7 @@ var IgePathComponent = IgeEventingClass.extend({
 			this._startTime = startTime || ige._currentTime;
 			
 			this._calculatePathData();
+			this.emit('started', this._entity);
 		} else {
 			this._finished = false;
 		}
