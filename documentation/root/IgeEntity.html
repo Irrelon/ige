@@ -267,33 +267,6 @@ var mousePos = entity.mousePos();
 </div>
 					</div>
 				
-</div><a name="translateToTile"></a>
-<h3 class="methodTitle">translateToTile</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Translates the object to the tile co-ordinates passed.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">translateToTile</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>, {<span class="argType">Number</span>} <span class="argName">z</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x tile co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y tile co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The z tile co-ordinate.</li></ul></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining.</div>
-    
-					<div class="methodExample">
-						<div class="content"><h1>Translate entity to tile</h1>
-
-<pre><code>// Create a tile map
-var tileMap = new IgeTileMap2d()
-    .tileWidth(40)
-    .tileHeight(40);
-
-// Mount our entity to the tile map
-entity.mount(tileMap);
-
-// Translate the entity to the tile x:10, y:12
-entity.translateToTile(10, 12, 0);
-</code></pre>
-</div>
-					</div>
-				
 </div><a name="backgroundPattern"></a>
 <h3 class="methodTitle">backgroundPattern</h3>
 <div class="methodSection">
@@ -664,7 +637,7 @@ entity.texture(texture)
     [0, 0, 40, 40, 'robotHead'],
     [40, 0, 40, 40, 'humanHead'],
 ]);
-// Assign the texture, set the cell to use and then
+ *   // Assign the texture, set the cell to use and then
 // set the entity to the size of the cell automatically!
 entity.texture(texture)
     .cellById('robotHead')
@@ -984,7 +957,7 @@ console.log(aabb.height);
 <h3 class="methodTitle">newFrame</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Determines if the frame alternator value for this entity matches the engine's frame alternator value. The entity's frame alternator value will be set to match the engine's after each call to the entity.tick() method so the return value of this method can be used to determine if the tick() method has already been run for this entity.  This is useful if you have multiple viewports which will cause the entity tick() method to fire once for each viewport but you only want to execute update code such as movement etc on the first time the tick() method is called.</div>
+    <div class="methodDesc">Determines if the frame alternator value for this entity matches the engine's frame alternator value. The entity's frame alternator value will be set to match the engine's after each call to the entity.tick() method so the return value of this method can be used to determine if the tick() method has already been run for this entity. * This is useful if you have multiple viewports which will cause the entity tick() method to fire once for each viewport but you only want to execute update code such as movement etc on the first time the tick() method is called.</div>
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">newFrame</span>()</div>
     <div class="methodArgs"></div>
@@ -1014,7 +987,7 @@ console.log(aabb.height);
 <pre><code>var canvas = document.createElement('canvas');
 canvas.width = 800;
 canvas.height = 600;
-var ctx = canvas.getContext('2d');
+ *   var ctx = canvas.getContext('2d');
 entity._transformContext(ctx);
 </code></pre>
 </div>
@@ -1119,6 +1092,16 @@ console.log(point);
 </div>
 					</div>
 				
+</div><a name="saveSpecialProp"></a>
+<h3 class="methodTitle">saveSpecialProp</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Fires when the entity has been destroyed.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">saveSpecialProp</span>({<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>} <span class="argName">The</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>}<span class="argName">The</span> entity that has been destroyed.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
 </div><a name="mouseMove"></a>
 <h3 class="methodTitle">mouseMove</h3>
 <div class="methodSection">
@@ -1147,16 +1130,6 @@ console.log(point);
 </div>
 					</div>
 				
-</div><a name="mouseMoveOff"></a>
-<h3 class="methodTitle">mouseMoveOff</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Removes the callback that is fired when a mouse move event is triggered.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">mouseMoveOff</span>()</div>
-    <div class="methodArgs"></div>
-    <div class="methodReturnDesc"></div>
-    
 </div><a name="mouseOver"></a>
 <h3 class="methodTitle">mouseOver</h3>
 <div class="methodSection">
@@ -1185,16 +1158,6 @@ console.log(point);
 </div>
 					</div>
 				
-</div><a name="mouseOverOff"></a>
-<h3 class="methodTitle">mouseOverOff</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Removes the callback that is fired when a mouse over event is triggered.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">mouseOverOff</span>()</div>
-    <div class="methodArgs"></div>
-    <div class="methodReturnDesc"></div>
-    
 </div><a name="mouseOut"></a>
 <h3 class="methodTitle">mouseOut</h3>
 <div class="methodSection">
@@ -1223,16 +1186,6 @@ console.log(point);
 </div>
 					</div>
 				
-</div><a name="mouseOutOff"></a>
-<h3 class="methodTitle">mouseOutOff</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Removes the callback that is fired when a mouse out event is triggered.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">mouseOutOff</span>()</div>
-    <div class="methodArgs"></div>
-    <div class="methodReturnDesc"></div>
-    
 </div><a name="mouseUp"></a>
 <h3 class="methodTitle">mouseUp</h3>
 <div class="methodSection">
@@ -1261,16 +1214,6 @@ console.log(point);
 </div>
 					</div>
 				
-</div><a name="mouseUpOff"></a>
-<h3 class="methodTitle">mouseUpOff</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Removes the callback that is fired when a mouse up event is triggered.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">mouseUpOff</span>()</div>
-    <div class="methodArgs"></div>
-    <div class="methodReturnDesc"></div>
-    
 </div><a name="mouseDown"></a>
 <h3 class="methodTitle">mouseDown</h3>
 <div class="methodSection">
@@ -1299,16 +1242,6 @@ console.log(point);
 </div>
 					</div>
 				
-</div><a name="mouseDownOff"></a>
-<h3 class="methodTitle">mouseDownOff</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Removes the callback that is fired when a mouse down event is triggered if the listener was registered via the mouseDown() method.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">mouseDownOff</span>()</div>
-    <div class="methodArgs"></div>
-    <div class="methodReturnDesc"></div>
-    
 </div><a name="mouseWheel"></a>
 <h3 class="methodTitle">mouseWheel</h3>
 <div class="methodSection">
@@ -1338,6 +1271,56 @@ console.log(point);
 </div>
 					</div>
 				
+</div><a name="mouseMoveOff"></a>
+<h3 class="methodTitle">mouseMoveOff</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes the callback that is fired when a mouse move event is triggered.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">mouseMoveOff</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="mouseOverOff"></a>
+<h3 class="methodTitle">mouseOverOff</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes the callback that is fired when a mouse over event is triggered.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">mouseOverOff</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="mouseOutOff"></a>
+<h3 class="methodTitle">mouseOutOff</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes the callback that is fired when a mouse out event is triggered.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">mouseOutOff</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="mouseUpOff"></a>
+<h3 class="methodTitle">mouseUpOff</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes the callback that is fired when a mouse up event is triggered.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">mouseUpOff</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="mouseDownOff"></a>
+<h3 class="methodTitle">mouseDownOff</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes the callback that is fired when a mouse down event is triggered if the listener was registered via the mouseDown() method.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">mouseDownOff</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
 </div><a name="mouseWheelOff"></a>
 <h3 class="methodTitle">mouseWheelOff</h3>
 <div class="methodSection">
@@ -1382,41 +1365,41 @@ console.log(point);
 <h3 class="methodTitle">_handleMouseWheel</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Handler method that determines if a mouse-wheel event should be fired.</div>
+    <div class="methodDesc">Fires when the mouse moves away from the entity.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">_handleMouseWheel</span>()</div>
-    <div class="methodArgs"></div>
+    <div class="methodDefinition"><span class="methodName">_handleMouseWheel</span>({<span class="argType">Object</span>} <span class="argName">The</span>, {<span class="argType">Object</span>} <span class="argName">The</span>, {<span class="argType">*</span>} <span class="argName">Any</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">The</span> DOM event object.</li><li>{<span class="argType">Object</span>}<span class="argName">The</span> IGE event control object.</li><li>{<span class="argType">*</span>}<span class="argName">Any</span> further event data.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
 </div><a name="_handleMouseUp"></a>
 <h3 class="methodTitle">_handleMouseUp</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Handler method that determines if a mouse-up event should be fired.</div>
+    <div class="methodDesc">Fires when the mouse wheel is moved over the entity.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">_handleMouseUp</span>()</div>
-    <div class="methodArgs"></div>
+    <div class="methodDefinition"><span class="methodName">_handleMouseUp</span>({<span class="argType">Object</span>} <span class="argName">The</span>, {<span class="argType">Object</span>} <span class="argName">The</span>, {<span class="argType">*</span>} <span class="argName">Any</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">The</span> DOM event object.</li><li>{<span class="argType">Object</span>}<span class="argName">The</span> IGE event control object.</li><li>{<span class="argType">*</span>}<span class="argName">Any</span> further event data.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
 </div><a name="_handleMouseDown"></a>
 <h3 class="methodTitle">_handleMouseDown</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Handler method that determines if a mouse-down event should be fired.</div>
+    <div class="methodDesc">Fires when a mouse up occurs on the entity.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">_handleMouseDown</span>()</div>
-    <div class="methodArgs"></div>
+    <div class="methodDefinition"><span class="methodName">_handleMouseDown</span>({<span class="argType">Object</span>} <span class="argName">The</span>, {<span class="argType">Object</span>} <span class="argName">The</span>, {<span class="argType">*</span>} <span class="argName">Any</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">The</span> DOM event object.</li><li>{<span class="argType">Object</span>}<span class="argName">The</span> IGE event control object.</li><li>{<span class="argType">*</span>}<span class="argName">Any</span> further event data.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
-</div><a name="_mouseInTrigger"></a>
-<h3 class="methodTitle">_mouseInTrigger</h3>
+</div><a name="debugTransforms"></a>
+<h3 class="methodTitle">debugTransforms</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Checks mouse input types and fires the correct mouse event handler. This is an internal method that should never be called externally.</div>
+    <div class="methodDesc">Enables tracing calls which inadvertently assign NaN values to transformation properties. When called on an entity this system will break with a debug line when a transform property is set to NaN allowing you to step back through the call stack and determine where the offending value originated.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">_mouseInTrigger</span>({<span class="argType">Object</span>} <span class="argName">evc</span>, {<span class="argType">Object</span>} <span class="argName">data</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">evc</span> The input component event control object.</li><li>{<span class="argType">Object</span>}<span class="argName">data</span> Data passed by the input component into the new event.</li></ul></div>
-    <div class="methodReturnDesc"></div>
+    <div class="methodDefinition"><span class="methodName">debugTransforms</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgeEntity</span>} </div>
     
 </div><a name="translateBy"></a>
 <h3 class="methodTitle">translateBy</h3>
@@ -1471,6 +1454,33 @@ console.log(point);
     entity = new IgeEntity();
 
 entity.translateToPoint(point);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="translateToTile"></a>
+<h3 class="methodTitle">translateToTile</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Translates the object to the tile co-ordinates passed.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">translateToTile</span>({<span class="argType">Number</span>} <span class="argName">x</span>, {<span class="argType">Number</span>} <span class="argName">y</span>, {<span class="argType">Number</span>} <span class="argName">z</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">x</span> The x tile co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">y</span> The y tile co-ordinate.</li><li>{<span class="argType">Number</span>}<span class="argName">z</span> The z tile co-ordinate.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} The object this method was called from to allow method chaining.</div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Translate entity to tile</h1>
+
+<pre><code>// Create a tile map
+var tileMap = new IgeTileMap2d()
+    .tileWidth(40)
+    .tileHeight(40);
+
+// Mount our entity to the tile map
+entity.mount(tileMap);
+
+// Translate the entity to the tile x:10, y:12
+entity.translateToTile(10, 12, 0);
 </code></pre>
 </div>
 					</div>
@@ -1813,6 +1823,36 @@ entity.translateToPoint(point);
 </div>
 					</div>
 				
+</div><a name="streamSectionsPush"></a>
+<h3 class="methodTitle">streamSectionsPush</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Adds a section into the existing streamed sections array.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">streamSectionsPush</span>({<span class="argType">String</span>} <span class="argName">sectionName</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">sectionName</span> The section name to add.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="streamSectionsPull"></a>
+<h3 class="methodTitle">streamSectionsPull</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Removes a section into the existing streamed sections array.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">streamSectionsPull</span>({<span class="argType">String</span>} <span class="argName">sectionName</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">sectionName</span> The section name to remove.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="streamProperty"></a>
+<h3 class="methodTitle">streamProperty</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets a streaming property on this entity. If set, the property's new value is streamed to clients on the next packet. * @param {String} propName The name of the property to get / set.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">streamProperty</span>({<span class="argType">*</span>} <span class="argName">propVal</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">*</span>}<span class="argName">propVal</span> Optional. If provided, the property is set to this value.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} "this" when a propVal argument is passed to allow method chaining or the current value if no propVal argument is specified.</div>
+    
 </div><a name="streamSectionData"></a>
 <h3 class="methodTitle">streamSectionData</h3>
 <div class="methodSection">

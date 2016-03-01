@@ -30,10 +30,10 @@
 <h3 class="methodTitle">renderLatency</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Gets /Sets the amount of milliseconds in the past that the renderer will show updates from the stream. This allows us to interpolate from a previous position to the next position in the stream update. Updates come in and are already in the past when they are received so we need to set this latency value to something greater than the highest level of acceptable network latency. Usually this is a value between 100 and 200ms. If your game requires much tighter latency you will have to reduce the number of players / network updates / data size in order to compensate. A value of 100 in this call is the standard that most triple-A FPS games accept as normal render latency and should be OK for your game.</div>
+    <div class="methodDesc">Gets /Sets the amount of milliseconds in the past that the renderer will show updates from the stream. This allows us to interpolate from a previous position to the next position in the stream update. Updates come in and are already in the past when they are received so we need to set this latency value to something greater than the highest level of acceptable network latency. Usually this is a value between 100 and 200ms. If your game requires much tighter latency you will have to reduce the number of players / network updates / data size in order to compensate. A value of 100 in this call is the standard that most triple-A FPS games accept as normal render latency and should be OK for your game. * @param latency</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">renderLatency</span>({<span class="argType"></span>} <span class="argName">latency</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">latency</span> </li></ul></div>
+    <div class="methodDefinition"><span class="methodName">renderLatency</span>()</div>
+    <div class="methodArgs"></div>
     <div class="methodReturnDesc"></div>
     
 </div><a name="sendInterval"></a>

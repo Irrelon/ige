@@ -18,27 +18,7 @@
 	<div class="content"><a href="IgeEntity.html">IgeEntity</a></div>
 </div>
 <!--=if{extends}]-->
-<h2>Methods</h2><a name="drawGrid"></a>
-<h3 class="methodTitle">drawGrid</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Gets / sets the number of grid cells that the tile map should paint to the context during the tick method.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">drawGrid</span>({<span class="argType"></span>} <span class="argName">val</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-    
-</div><a name="gridColor"></a>
-<h3 class="methodTitle">gridColor</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Gets / sets the color of the grid overlay. It can accepts a string</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">gridColor</span>({<span class="argType"></span>} <span class="argName">val</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-    
-</div><a name="highlightOccupied"></a>
+<h2>Methods</h2><a name="highlightOccupied"></a>
 <h3 class="methodTitle">highlightOccupied</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
@@ -66,6 +46,26 @@
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">tileHeight</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> Tile height.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="drawGrid"></a>
+<h3 class="methodTitle">drawGrid</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets if the tile map should paint a grid to the context during the tick method.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">drawGrid</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> If true, will paint the grid on tick.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="gridColor"></a>
+<h3 class="methodTitle">gridColor</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the color of the grid overlay. It accepts a string color definition with the same specifications as the canvas context strokeStyle property.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">gridColor</span>({<span class="argType">String</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">val</span> The color of the grid.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
 </div><a name="occupyTile"></a>
@@ -108,13 +108,13 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>}<span class="argName">point</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} The tile co-ordinates as a point object.</div>
     
-</div><a name="mouseTileWorldXY"></a>
-<h3 class="methodTitle">mouseTileWorldXY</h3>
+</div><a name="mouseTilePoint"></a>
+<h3 class="methodTitle">mouseTilePoint</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Returns the world co-ordinates of the tile the mouse is currently over.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">mouseTileWorldXY</span>()</div>
+    <div class="methodDefinition"><span class="methodName">mouseTilePoint</span>()</div>
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} </div>
     
@@ -137,16 +137,6 @@
     <div class="methodDefinition"><span class="methodName">scanRects</span>({<span class="argType">Function</span>} <span class="argName">callback</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">callback</span> Returns true or false for the passed map data determining if it should be included in a rectangle or not.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">Array</span>} </div>
-    
-</div><a name="_calculateMousePosition"></a>
-<h3 class="methodTitle">_calculateMousePosition</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Sets the internal mouse position data based on the current mouse position relative to the tile map.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">_calculateMousePosition</span>()</div>
-    <div class="methodArgs"></div>
-    <div class="methodReturnDesc"></div>
     
 </div><a name="hoverColor"></a>
 <h3 class="methodTitle">hoverColor</h3>

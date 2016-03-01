@@ -119,6 +119,10 @@ function parseFile($path) {
 								$descripText = str_replace('<!BN>', "\n", $descripText);
 								$descripText = str_replace('<!BR>', "\r", $descripText);
 
+								if (!strstr($descripText, "\n") && !strstr($descripText, "\r")) {
+									$descripText = "\r\n" . $descripText;
+								}
+
 								$itemText .= $descripText;
 								break;
 

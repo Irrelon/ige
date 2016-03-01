@@ -28,6 +28,16 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">method</span> The method to call each interval.</li><li>{<span class="argType">Number</span>}<span class="argName">interval</span> The number of milliseconds between each interval.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
+					<div class="methodExample">
+						<div class="content"><h1>Create a timer that will call a method every 1 second in engine time</h1>
+
+<pre><code>var myInterval = new IgeInterval(function () {
+        console.log('interval fired');
+}, 1000);
+</code></pre>
+</div>
+					</div>
+				
 </div><a name="addTime"></a>
 <h3 class="methodTitle">addTime</h3>
 <div class="methodSection">
@@ -48,6 +58,17 @@
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
+					<div class="methodExample">
+						<div class="content"><h1>Cancel an interval timer</h1>
+
+<pre><code>var myInterval = new IgeInterval(function () {
+        console.log('interval fired');
+}, 1000);
+ *   myInterval.cancel();
+</code></pre>
+</div>
+					</div>
+				
 </div><a name="update"></a>
 <h3 class="methodTitle">update</h3>
 <div class="methodSection">

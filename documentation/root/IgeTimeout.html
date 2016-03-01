@@ -28,6 +28,47 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">method</span> The method to call on timeout.</li><li>{<span class="argType">Number</span>}<span class="argName">timeout</span> The number of milliseconds before the timeout.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
+					<div class="methodExample">
+						<div class="content"><h1>Create a timer that will call a method after 1 second of engine time</h1>
+
+<pre><code>var myTimeout = new IgeTimeout(function () {
+        console.log('interval fired');
+}, 1000);
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="cancel"></a>
+<h3 class="methodTitle">cancel</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Cancels the timer, stops the timeout.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">cancel</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Cancel a timeout timer</h1>
+
+<pre><code>var myTimeout = new IgeTimeout(function () {
+        console.log('timeout fired');
+}, 1000);
+ *   myTimeout.cancel();
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="reset"></a>
+<h3 class="methodTitle">reset</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Resets the time and lets the timeout begin anew.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">reset</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
 </div><a name="update"></a>
 <h3 class="methodTitle">update</h3>
 <div class="methodSection">

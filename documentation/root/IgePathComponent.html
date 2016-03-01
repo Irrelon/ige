@@ -48,53 +48,83 @@
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">enable</span> If set to true, enables dynamic mode.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><a name="add"></a>
-<h3 class="methodTitle">add</h3>
+</div><a name="tileChecker"></a>
+<h3 class="methodTitle">tileChecker</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Adds a path array containing path points (IgePoint3d instances) to the path queue.</div>
+    <div class="methodDesc">Gets / sets the tile checker method used when calculating paths.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">add</span>({<span class="argType">Array</span>} <span class="argName">path</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">path</span> </li></ul></div>
+    <div class="methodDefinition"><span class="methodName">tileChecker</span>({<span class="argType">Function</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">val</span> The method to call when checking if a tile is valid to traverse when calculating paths.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><a name="current"></a>
-<h3 class="methodTitle">current</h3>
+</div><a name="allowSquare"></a>
+<h3 class="methodTitle">allowSquare</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
-    <div class="methodDesc">Gets / sets the current path index that the pathing system is traversing.</div>
+    <div class="methodDesc">Gets / sets the flag determining if a path can use N, S, E and W movement.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">current</span>({<span class="argType">Number</span>} <span class="argName">index</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">index</span> </li></ul></div>
+    <div class="methodDefinition"><span class="methodName">allowSquare</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> Set to true to allow, false to disallow.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><a name="previousTargetPoint"></a>
-<h3 class="methodTitle">previousTargetPoint</h3>
+</div><a name="allowDiagonal"></a>
+<h3 class="methodTitle">allowDiagonal</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the flag determining if a path can use NW, SW, NE and SE movement.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">allowDiagonal</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> Set to true to allow, false to disallow.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="set"></a>
+<h3 class="methodTitle">set</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Clears any existing path points and sets the path the entity will traverse from start to finish.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">set</span>({<span class="argType">Number</span>} <span class="argName">fromX</span>, {<span class="argType">Number</span>} <span class="argName">fromY</span>, {<span class="argType">Number</span>} <span class="argName">fromZ</span>, {<span class="argType">Number</span>} <span class="argName">toX</span>, {<span class="argType">Number</span>} <span class="argName">toY</span>, {<span class="argType">Number</span>} <span class="argName">toZ</span>, {<span class="argType">Boolean</span>} <span class="argName">findNearest</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">fromX</span> The x tile to path from.</li><li>{<span class="argType">Number</span>}<span class="argName">fromY</span> The y tile to path from.</li><li>{<span class="argType">Number</span>}<span class="argName">fromZ</span> The z tile to path from.</li><li>{<span class="argType">Number</span>}<span class="argName">toX</span> The x tile to path to.</li><li>{<span class="argType">Number</span>}<span class="argName">toY</span> The y tile to path to.</li><li>{<span class="argType">Number</span>}<span class="argName">toZ</span> The z tile to path to.</li><li>{<span class="argType">Boolean</span>}<span class="argName">findNearest</span> If the destination is unreachable, when set to true this option will allow the pathfinder to return the closest path to the destination tile.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="addPoints"></a>
+<h3 class="methodTitle">addPoints</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Adds a path array containing path points (IgePoint3d instances) to the points queue.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">addPoints</span>({<span class="argType">Array</span>} <span class="argName">path</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Array</span>}<span class="argName">path</span> An array of path points.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="getFromPoint"></a>
+<h3 class="methodTitle">getFromPoint</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets the path node point that the entity is travelling from.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">previousTargetPoint</span>()</div>
+    <div class="methodDefinition"><span class="methodName">getFromPoint</span>()</div>
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} A new point representing the travelled from node.</div>
     
-</div><a name="currentTargetPoint"></a>
-<h3 class="methodTitle">currentTargetPoint</h3>
+</div><a name="getToPoint"></a>
+<h3 class="methodTitle">getToPoint</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets the path node point that the entity is travelling to.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">currentTargetPoint</span>()</div>
+    <div class="methodDefinition"><span class="methodName">getToPoint</span>()</div>
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} A new point representing the travelling to node.</div>
     
-</div><a name="currentDirection"></a>
-<h3 class="methodTitle">currentDirection</h3>
+</div><a name="getDirection"></a>
+<h3 class="methodTitle">getDirection</h3>
 <div class="methodSection">
     <!--=if{desc}[-->
     <div class="methodDesc">Gets the current direction.</div>
     <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">currentDirection</span>()</div>
+    <div class="methodDefinition"><span class="methodName">getDirection</span>()</div>
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">String</span>} A string such as N, S, E, W, NW, NE, SW, SE. If there is currently no direction then the return value is a blank string.</div>
     
@@ -133,6 +163,66 @@ var direction = entity.path.currentDirection();
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> If true, will stop at the end of the path.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
+</div><a name="speed"></a>
+<h3 class="methodTitle">speed</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the speed at which the entity will traverse the path in pixels per second (world space).</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">speed</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="start"></a>
+<h3 class="methodTitle">start</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Starts path traversal.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">start</span>({<span class="argType">Number</span>} <span class="argName">startTime</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">startTime</span> The time to start path traversal. Defaults to new Date().getTime() if no value is presented.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="getEndPoint"></a>
+<h3 class="methodTitle">getEndPoint</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns the last point of the last path in the path queue.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">getEndPoint</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} </div>
+    
+</div><a name="pause"></a>
+<h3 class="methodTitle">pause</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Pauses path traversal but does not clear the path queue or any path data.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">pause</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="clear"></a>
+<h3 class="methodTitle">clear</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Clears all path queue and path data.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">clear</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="stop"></a>
+<h3 class="methodTitle">stop</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Stops path traversal but does not clear the path queue or any path data.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">stop</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
 </div><a name="drawPath"></a>
 <h3 class="methodTitle">drawPath</h3>
 <div class="methodSection">
@@ -163,66 +253,6 @@ var direction = entity.path.currentDirection();
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> If true will draw labels on each path point.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
     
-</div><a name="speed"></a>
-<h3 class="methodTitle">speed</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Gets / sets the speed at which the entity will traverse the path.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">speed</span>({<span class="argType">Number</span>} <span class="argName">val</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">val</span> </li></ul></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-    
-</div><a name="start"></a>
-<h3 class="methodTitle">start</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Starts path traversal.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">start</span>({<span class="argType">Number</span>} <span class="argName">startTime</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">startTime</span> The time to start path traversal. Defaults to new Date().getTime() if no value is presented.</li></ul></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-    
-</div><a name="endPoint"></a>
-<h3 class="methodTitle">endPoint</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Returns the last point of the last path in the path queue.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">endPoint</span>()</div>
-    <div class="methodArgs"></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} </div>
-    
-</div><a name="pause"></a>
-<h3 class="methodTitle">pause</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Pauses path traversal but does not clear the path queue or any path data.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">pause</span>()</div>
-    <div class="methodArgs"></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-    
-</div><a name="stop"></a>
-<h3 class="methodTitle">stop</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Stops path traversal but does not clear the path queue or any path data.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">stop</span>()</div>
-    <div class="methodArgs"></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-    
-</div><a name="clear"></a>
-<h3 class="methodTitle">clear</h3>
-<div class="methodSection">
-    <!--=if{desc}[-->
-    <div class="methodDesc">Clears all path queue and path data.</div>
-    <!--=if{desc}]-->
-    <div class="methodDefinition"><span class="methodName">clear</span>()</div>
-    <div class="methodArgs"></div>
-    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-    
 </div><a name="_updateBehaviour"></a>
 <h3 class="methodTitle">_updateBehaviour</h3>
 <div class="methodSection">
@@ -233,6 +263,16 @@ var direction = entity.path.currentDirection();
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">CanvasRenderingContext2d</span>}<span class="argName">ctx</span> The canvas that is currently being rendered to.</li></ul></div>
     <div class="methodReturnDesc"></div>
     
+</div><a name="replacePoints"></a>
+<h3 class="methodTitle">replacePoints</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Replaces a number of points in the current queue with the new points passed.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">replacePoints</span>({<span class="argType">Number</span>} <span class="argName">fromIndex</span>, {<span class="argType">Number</span>} <span class="argName">replaceLength</span>, {<span class="argType">Array</span>} <span class="argName">newPoints</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Number</span>}<span class="argName">fromIndex</span> The from index.</li><li>{<span class="argType">Number</span>}<span class="argName">replaceLength</span> The number of points to replace.</li><li>{<span class="argType">Array</span>}<span class="argName">newPoints</span> The array of new points to insert.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
 </div><a name="_positionAlongVector"></a>
 <h3 class="methodTitle">_positionAlongVector</h3>
 <div class="methodSection">
@@ -240,7 +280,7 @@ var direction = entity.path.currentDirection();
     <div class="methodDesc">Calculates the position of the entity along a vector based on the speed of the entity and the delta time.</div>
     <!--=if{desc}]-->
     <div class="methodDefinition"><span class="methodName">_positionAlongVector</span>({<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>} <span class="argName">p1</span>, {<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>} <span class="argName">p2</span>, {<span class="argType">Number</span>} <span class="argName">speed</span>, {<span class="argType">Number</span>} <span class="argName">deltaTime</span>)</div>
-    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>}<span class="argName">p1</span> Vector starting point</li><li>{<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>}<span class="argName">p2</span> Vevtor ending point</li><li>{<span class="argType">Number</span>}<span class="argName">speed</span> Speed along the vector</li><li>{<span class="argType">Number</span>}<span class="argName">deltaTime</span> The time between the last upadte and now.</li></ul></div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>}<span class="argName">p1</span> Vector start point</li><li>{<span class="argType"><a href="./IgePoint3d.html">IgePoint3d</a></span>}<span class="argName">p2</span> Vector end point</li><li>{<span class="argType">Number</span>}<span class="argName">speed</span> Speed along the vector</li><li>{<span class="argType">Number</span>}<span class="argName">deltaTime</span> The time between the last update and now.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">IgePoint3d</span>} </div>
     
 </div>	</div>

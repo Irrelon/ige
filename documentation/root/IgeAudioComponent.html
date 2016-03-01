@@ -1,0 +1,79 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgeAudioComponent <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/components/audio/IgeAudioComponent.js">IgeAudioComponent.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">Manages audio mixing and output.</div>
+</div>
+<!--=if{extends}[-->
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="IgeEventingClass.html">IgeEventingClass</a></div>
+</div>
+<!--=if{extends}]-->
+<h2>Methods</h2><a name="active"></a>
+<h3 class="methodTitle">active</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the active flag to enable or disable audio support.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">active</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> True to enable audio support.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="getContext"></a>
+<h3 class="methodTitle">getContext</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Returns an audio context.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">getContext</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="load"></a>
+<h3 class="methodTitle">load</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Loads an audio file from the given url and assigns it the id specified.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">load</span>({<span class="argType">String</span>} <span class="argName">url</span>, {<span class="argType">String</span>} <span class="argName">id</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">url</span> The url to load the audio from.</li><li>{<span class="argType">String</span>}<span class="argName">id</span> The id to assign the audio.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="decode"></a>
+<h3 class="methodTitle">decode</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Decodes audio data and calls back with an audio buffer.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">decode</span>({<span class="argType">ArrayBuffer</span>} <span class="argName">data</span>, {<span class="argType">Function</span>} <span class="argName">callback</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">ArrayBuffer</span>}<span class="argName">data</span> The audio data to decode.</li><li>{<span class="argType">Function</span>}<span class="argName">callback</span> The callback to pass the buffer to.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="play"></a>
+<h3 class="methodTitle">play</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Plays audio by its assigned id.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">play</span>({<span class="argType">String</span>} <span class="argName">id</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> The id of the audio file to play.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+</div>	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>

@@ -4,7 +4,9 @@
  * JSDoc comments found in the engine source code.
  */
 require('parser.php');
-include_once("markdown.php");
+require_once('Michelf/Markdown.inc.php');
+use \Michelf\Markdown;
+//include_once("markdown.php");
 
 /**
  * Recursively processes a path and extracts JSDoc comment data from
@@ -74,18 +76,18 @@ function parseTemplate($str, $item, $path, $file) {
 	}
 
 	$paramsHtml = '(' . $paramsHtml . ')';
-	if ($item["returnData"]) {
+	if (isset($item["returnData"])) {
 		$returnHtml = 'Returns {<span class="argType">' . $item["returnData"]["type"] . '</span>} ' . $item["returnData"]["desc"];
 	} else {
 		$returnHtml = '';
 	}
 
 	$examplesHtml = '';
-	if ($item["examples"]) {
+	if (isset($item["examples"])) {
 		foreach ($item['examples'] as $exampleKey => $exampleContent) {
 			if (trim($exampleContent)) {
 				// Parse markdown
-				$exampleContent = Markdown($exampleContent);
+				$exampleContent = Markdown::defaultTransform($exampleContent);
 
 				$examplesHtml .= '
 					<div class="methodExample">

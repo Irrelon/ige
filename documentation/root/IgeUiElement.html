@@ -1,0 +1,101 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="../css/default.css" />
+    <link type="text/css" rel="stylesheet" href="../js/rainbow/themes/sunburst.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<div class="page">
+<h2>IgeUiElement <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/core/IgeUiElement.js">IgeUiElement.js</a></p>
+<div class="itemBox">
+	<div class="header">Description</div>
+	<div class="content">Creates a new UI element. UI elements use more resources and CPU than standard IgeEntity instances but provide a rich set of extra positioning and styling methods as well as reacting to styles defined using the IgeUiManagerComponent.</div>
+</div>
+<!--=if{extends}[-->
+<div class="itemBox">
+	<div class="header">Extends</div>
+	<div class="content"><a href="IgeUiEntity.html">IgeUiEntity</a></div>
+</div>
+<!--=if{extends}]-->
+<h2>Methods</h2><a name="init"></a>
+<h3 class="methodTitle">init</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Constructor</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">init</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="styleClass"></a>
+<h3 class="methodTitle">styleClass</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Gets / sets the applied style by name.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">styleClass</span>({<span class="argType">String</span>} <span class="argName">name</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">name</span> The style name to apply.</li></ul></div>
+    <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
+    
+</div><a name="applyStyle"></a>
+<h3 class="methodTitle">applyStyle</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Apply styles from a style data object. Usually you don't want to call this method directly but rather assign a style by name using the style() method, however it is not illegal practise to apply here if you wish if you have not defined a style by name and simply wish to apply style data directly.  Style property names must correspond to method names in the element class that the style is being applied to. You can see the default ui style methods available in the ./engine/extensions/IgeUi* files.  In the example below showing padding, you can see how the data assigned is passed to the "padding()" method as arguments, which is the same as calling "padding(10, 10, 10, 10);".</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">applyStyle</span>({<span class="argType">Object</span>} <span class="argName">styleData</span>)</div>
+    <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Object</span>}<span class="argName">styleData</span> The style object to apply. This object should contain key/value pairs where the key matches a method name and the value is the parameter to pass it.</li></ul></div>
+    <div class="methodReturnDesc"></div>
+    
+					<div class="methodExample">
+						<div class="content"><h1>Apply a background color</h1>
+
+<pre><code>var elem = new IgeUiElement()
+    .applyStyle({
+        'backgroundColor': '#ffffff' // Set background color to white
+    });
+</code></pre>
+</div>
+					</div>
+				
+					<div class="methodExample">
+						<div class="content"><h1>Apply padding with multiple arguments</h1>
+
+<pre><code>var elem = new IgeUiElement()
+    .applyStyle({
+        'padding': [10, 10, 10, 10] // Set padding using multiple values
+    });
+</code></pre>
+</div>
+					</div>
+				
+</div><a name="focus"></a>
+<h3 class="methodTitle">focus</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Sets global UI focus to this element.</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">focus</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div><a name="destroy"></a>
+<h3 class="methodTitle">destroy</h3>
+<div class="methodSection">
+    <!--=if{desc}[-->
+    <div class="methodDesc">Destructor</div>
+    <!--=if{desc}]-->
+    <div class="methodDefinition"><span class="methodName">destroy</span>()</div>
+    <div class="methodArgs"></div>
+    <div class="methodReturnDesc"></div>
+    
+</div>	</div>
+    <script type="text/javascript">
+        $(function () {
+            $('code').attr('data-language', 'javascript');
+        });
+    </script>
+    <script type="text/javascript" src="../js/rainbow/rainbow-custom.min.js"></script>
+</body>
+</html>
