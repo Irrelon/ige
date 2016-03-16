@@ -25,7 +25,10 @@ var ServerNetworkEvents = {
 
 	_onPlayerEntity: function (data, clientId) {
 		if (!ige.server.players[clientId]) {
-			ige.server.players[clientId] = new Player(clientId)
+			data = data || {};
+			data.color = 'rgba(255, ' + Math.round(Math.random() * 255) + ', ' + Math.round(Math.random() * 255) + ', 1)';
+
+			ige.server.players[clientId] = new Player(data, clientId)
 				.streamMode(1)
 				.mount(ige.server.scene1);
 

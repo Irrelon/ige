@@ -1,32 +1,54 @@
 var Player = IgeEntity.extend({
 	classId: 'Player',
 
-	init: function () {
+	init: function (data, clientId) {
 		IgeEntity.prototype.init.call(this);
+
+		debugger;
 
 		var self = this;
 
-		this.drawBounds(false);
+		if (clientId) {
+			// Set the passed clientId
+			self._clientId = clientId;
+		}
+
+		// Set a default player color if none was provided
+		self._playerColor = data && data.color ? data.color : 'rgba(255, 0, 0, 1)';
+
+		self.log('Player color set to ' + self._playerColor, 'info');
+
+		self.drawBounds(false);
 
 		// Rotate to point upwards
-		this.controls = {
+		self.controls = {
 			left: false,
 			right: false,
 			thrust: false
 		};
 
 		if (ige.isServer) {
-			this.addComponent(IgeVelocityComponent);
+			self.addComponent(IgeVelocityComponent);
 		}
 
 		if (ige.isClient) {
 			self.texture(ige.client.textures.ship)
-			.width(20)
-			.height(20);
+				.width(20)
+				.height(20);
 		}
 
 		// Define the data sections that will be included in the stream
-		this.streamSections(['transform', 'score']);
+		self.streamSections(['transform', 'score']);
+	},
+
+	/**
+	 * Set the data that gets sent to the client on initial creation.
+	 * @returns {*}
+	 */
+	streamCreateData: function () {
+		return {
+			color: this._playerColor
+		};
 	},
 
 	/**
