@@ -1,0 +1,27 @@
+{
+	"name": "isogenic",
+	"version": "1.6.0",
+	"description":"The Isogenic Engine.",
+	"main": "engine/loader.js",
+	"keywords": [
+		"isogenic",
+		"ige"
+	],
+	"license": "MIT",
+	"homepage": "https://github.com/Irrelon/ige",
+	"ignore": [
+		"**/.*",
+		"blank_game",
+		"blank_game_multiplayer",
+		"documentation",
+		"examples",
+		"node_modules",
+		"server",
+		"third-party",
+		"tools"
+	],
+	"authors": [
+		"Rob Evans <rob@irrelon.com>"
+	],
+	"dependencies": {}
+}
