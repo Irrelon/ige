@@ -750,7 +750,13 @@ var IgeEngine = IgeEntity.extend({
 			this.updateProgress();
 			
 			setTimeout(function () {
-				self._allTexturesLoaded();
+				if (document.body)
+					self._allTexturesLoaded();
+				else {
+					$(document).ready(function () {
+						self._allTexturesLoaded();
+					});
+				}
 			}, 100);
 		}
 	},

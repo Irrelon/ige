@@ -73,7 +73,7 @@ var IgeTileMap2dSmartTexture = {
 		}
 		
 		if (entity._highlightOccupied) {
-			ctx.fillStyle = '#ff0000';
+			ctx.fillStyle = entity._highlightOccupiedColor || '#ff0000';
 			for (y in entity.map._mapData) {
 				if (entity.map._mapData[y]) {
 					for (x in entity.map._mapData[y]) {
@@ -111,7 +111,7 @@ var IgeTileMap2dSmartTexture = {
 		}
 
 		if (entity._highlightTileRect) {
-			ctx.fillStyle = '#e4ff00';
+			ctx.fillStyle = entity._highlightTileRectColor || '#e4ff00';
 			for (y = entity._highlightTileRect.y; y < entity._highlightTileRect.y + entity._highlightTileRect.height; y++) {
 				for (x = entity._highlightTileRect.x; x < entity._highlightTileRect.x + entity._highlightTileRect.width; x++) {
 					// Tile is occupied

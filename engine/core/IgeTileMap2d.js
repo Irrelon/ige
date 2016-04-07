@@ -46,6 +46,15 @@ var IgeTileMap2d = IgeEntity.extend({
 		return this._highlightOccupied;
 	},
 
+	highlightOccupiedColor: function (val) {
+		if (val !== undefined) {
+			this._highlightOccupiedColor = val;
+			return this;
+		}
+
+		return this._highlightOccupiedColor;
+	},
+
 	highlightTileRect: function (val) {
 		if (val !== undefined) {
 			this._highlightTileRect = val;
@@ -53,6 +62,15 @@ var IgeTileMap2d = IgeEntity.extend({
 		}
 
 		return this._highlightTileRect;
+	},
+
+	highlightTileRectColor: function (val) {
+		if (val !== undefined) {
+			this._highlightTileRectColor = val;
+			return this;
+		}
+
+		return this._highlightTileRectColor;
 	},
 
 	/**
