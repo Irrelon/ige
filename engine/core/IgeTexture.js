@@ -401,11 +401,9 @@ var IgeTexture = IgeEventingClass.extend({
 			// TODO: track of the value and evaluate first before changing?
 			if (!this._smoothing) {
 				ctx.imageSmoothingEnabled = false;
-				ctx.webkitImageSmoothingEnabled = false;
 				ctx.mozImageSmoothingEnabled = false;
 			} else {
 				ctx.imageSmoothingEnabled = true;
-				ctx.webkitImageSmoothingEnabled = true;
 				ctx.mozImageSmoothingEnabled = true;
 			}
 
@@ -480,11 +478,9 @@ var IgeTexture = IgeEventingClass.extend({
 				// Set smoothing mode
 				if (!this._smoothing) {
 					this._textureCtx.imageSmoothingEnabled = false;
-					this._textureCtx.webkitImageSmoothingEnabled = false;
 					this._textureCtx.mozImageSmoothingEnabled = false;
 				} else {
 					this._textureCtx.imageSmoothingEnabled = true;
-					this._textureCtx.webkitImageSmoothingEnabled = true;
 					this._textureCtx.mozImageSmoothingEnabled = true;
 				}
 
@@ -542,11 +538,9 @@ var IgeTexture = IgeEventingClass.extend({
 				// Set smoothing mode
 				if (!this._smoothing) {
 					this._textureCtx.imageSmoothingEnabled = false;
-					this._textureCtx.webkitImageSmoothingEnabled = false;
 					this._textureCtx.mozImageSmoothingEnabled = false;
 				} else {
 					this._textureCtx.imageSmoothingEnabled = true;
-					this._textureCtx.webkitImageSmoothingEnabled = true;
 					this._textureCtx.mozImageSmoothingEnabled = true;
 				}
 
@@ -612,11 +606,9 @@ var IgeTexture = IgeEventingClass.extend({
 			// TODO: track of the value and evaluate first before changing?
 			if (!this._smoothing) {
 				ige._ctx.imageSmoothingEnabled = false;
-				ige._ctx.webkitImageSmoothingEnabled = false;
 				ige._ctx.mozImageSmoothingEnabled = false;
 			} else {
 				ige._ctx.imageSmoothingEnabled = true;
-				ige._ctx.webkitImageSmoothingEnabled = true;
 				ige._ctx.mozImageSmoothingEnabled = true;
 			}
 
@@ -750,11 +742,9 @@ var IgeTexture = IgeEventingClass.extend({
 					// Set smoothing mode
 					if (!this._smoothing) {
 						this._textureCtx.imageSmoothingEnabled = false;
-						this._textureCtx.webkitImageSmoothingEnabled = false;
 						this._textureCtx.mozImageSmoothingEnabled = false;
 					} else {
 						this._textureCtx.imageSmoothingEnabled = true;
-						this._textureCtx.webkitImageSmoothingEnabled = true;
 						this._textureCtx.mozImageSmoothingEnabled = true;
 					}
 				}
@@ -802,11 +792,9 @@ var IgeTexture = IgeEventingClass.extend({
 						// Set smoothing mode
 						if (!this._smoothing) {
 							this._textureCtx.imageSmoothingEnabled = false;
-							this._textureCtx.webkitImageSmoothingEnabled = false;
 							this._textureCtx.mozImageSmoothingEnabled = false;
 						} else {
 							this._textureCtx.imageSmoothingEnabled = true;
-							this._textureCtx.webkitImageSmoothingEnabled = true;
 							this._textureCtx.mozImageSmoothingEnabled = true;
 						}
 					}
@@ -859,11 +847,9 @@ var IgeTexture = IgeEventingClass.extend({
 					// Set smoothing mode
 					if (!this._smoothing) {
 						this._textureCtx.imageSmoothingEnabled = false;
-						this._textureCtx.webkitImageSmoothingEnabled = false;
 						this._textureCtx.mozImageSmoothingEnabled = false;
 					} else {
 						this._textureCtx.imageSmoothingEnabled = true;
-						this._textureCtx.webkitImageSmoothingEnabled = true;
 						this._textureCtx.mozImageSmoothingEnabled = true;
 					}
 					
