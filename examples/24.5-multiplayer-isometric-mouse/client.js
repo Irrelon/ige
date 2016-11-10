@@ -3,7 +3,7 @@ var Client = IgeClass.extend({
 
 	init: function () {
 		//ige.timeScale(0.1);
-		ige.showStats(1);
+		ige.addComponent(IgeEditorComponent);
 		ige.globalSmoothing(true);
 
 		// Load our textures
