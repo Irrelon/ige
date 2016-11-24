@@ -307,5 +307,11 @@ var IgeUiTextBox = IgeUiElement.extend({
 		}
 		
 		IgeUiElement.prototype._mounted.call(this);
+	},
+
+	destroy: function () {
+		/* The 'blur' function is called to destroy the DOM textbox. */
+		this.blur();
+		IgeUiElement.prototype.destroy.call(this);
 	}
 });
