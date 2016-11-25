@@ -25,6 +25,11 @@ var CharacterContainer = IgeEntity.extend({
 		
 		if (ige.isServer) {
 			this.addComponent(IgePathComponent);
+			this.path.finder(ige.server.pathFinder);
+			this.path.tileMap(ige.server.collisionMap);
+			this.path.tileChecker(function(a,b,c,d) {
+				return true;
+			});
 		}
 		
 		// Define the data sections that will be included in the stream
@@ -70,7 +75,7 @@ var CharacterContainer = IgeEntity.extend({
 			// Make sure the character is animating in the correct
 			// direction - this variable is actually streamed to the client
 			// when it's value changes!
-			this._streamDir = this.path.currentDirection();
+			this._streamDir = this.path.currentDirection;
 		} else {
 			// Set the depth to the y co-ordinate which basically
 			// makes the entity appear further in the foreground
