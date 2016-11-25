@@ -27,8 +27,8 @@ var CharacterContainer = IgeEntity.extend({
 			this.addComponent(IgePathComponent);
 			this.path.finder(ige.server.pathFinder);
 			this.path.tileMap(ige.server.collisionMap);
-			this.path.tileChecker(function(a,b,c,d) {
-				return true;
+			this.path.tileChecker(function(tileData, tileX, tileY) {
+				return tileData !== 1;
 			});
 		}
 		
