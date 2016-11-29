@@ -493,11 +493,9 @@ var IgeTextureMap = IgeTileMap2d.extend({
 			// Ensure the canvas is using the correct image antialiasing mode
 			if (!ige._globalSmoothing) {
 				sectionCtx.imageSmoothingEnabled = false;
-				sectionCtx.webkitImageSmoothingEnabled = false;
 				sectionCtx.mozImageSmoothingEnabled = false;
 			} else {
 				sectionCtx.imageSmoothingEnabled = true;
-				sectionCtx.webkitImageSmoothingEnabled = true;
 				sectionCtx.mozImageSmoothingEnabled = true;
 			}
 

@@ -140,11 +140,9 @@ var IgeEntity = IgeObject.extend({
 				var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
 				if (!smoothing) {
 					this._cacheCtx.imageSmoothingEnabled = false;
-					this._cacheCtx.webkitImageSmoothingEnabled = false;
 					this._cacheCtx.mozImageSmoothingEnabled = false;
 				} else {
 					this._cacheCtx.imageSmoothingEnabled = true;
-					this._cacheCtx.webkitImageSmoothingEnabled = true;
 					this._cacheCtx.mozImageSmoothingEnabled = true;
 				}
 
@@ -212,11 +210,9 @@ var IgeEntity = IgeObject.extend({
 					var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
 					if (!smoothing) {
 						this._cacheCtx.imageSmoothingEnabled = false;
-						this._cacheCtx.webkitImageSmoothingEnabled = false;
 						this._cacheCtx.mozImageSmoothingEnabled = false;
 					} else {
 						this._cacheCtx.imageSmoothingEnabled = true;
-						this._cacheCtx.webkitImageSmoothingEnabled = true;
 						this._cacheCtx.mozImageSmoothingEnabled = true;
 					}
 				}
