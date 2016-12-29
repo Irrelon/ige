@@ -2,7 +2,7 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 
 	init: function () {
-		ige.showStats(1);
+		ige.addComponent(IgeEditorComponent);
 
 		// Setup three.js interaction
 		ige.renderContext('three');
