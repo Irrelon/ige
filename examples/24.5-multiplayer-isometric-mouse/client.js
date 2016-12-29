@@ -96,6 +96,7 @@ var Client = IgeClass.extend({
 							.autoSection(10)
 							.drawSectionBounds(false)
 							.isometricMounts(true)
+							.gridSize(20,20)
 							//.translateTo(300, 300, 0)
 							.mount(self.backgroundScene);
 	
