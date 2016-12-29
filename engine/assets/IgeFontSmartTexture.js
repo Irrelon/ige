@@ -60,7 +60,6 @@ var IgeFontSmartTexture = {
 				i;
 
 			ctx.font = entity._nativeFont;
-			ctx.textBaseline = 'middle';
 
 			if (entity._colorOverlay) {
 				ctx.fillStyle = entity._colorOverlay;
@@ -101,11 +100,32 @@ var IgeFontSmartTexture = {
 				lineArr.push(text);
 			}
 
-			lineHeight = Math.floor(entity._bounds2d.y / lineArr.length);
-			renderStartY = -((lineHeight + (entity._textLineSpacing)) / 2) * (lineArr.length - 1);
+			// vertical text alignment
+			if (entity._textAlignY === 0) {
+				ctx.textBaseline = 'top';
+				renderStartY = -(entity._bounds2d.y / 2);
+			}
+			if (entity._textAlignY === 1) {
+				ctx.textBaseline = 'middle';
+				renderStartY = -(entity._textLineSpacing / 2) * (lineArr.length - 1);
+			}
+			if (entity._textAlignY === 2) {
+				ctx.textBaseline = 'bottom';
+				renderStartY = entity._bounds2d.y / 2 - entity._textLineSpacing * (lineArr.length - 1);
+			}
+			// Justified - lines spaced out evenly according to height
+			if (entity._textAlignY === 3) {
+				ctx.textBaseline = 'middle';
+				lineHeight = Math.floor(entity._bounds2d.y / lineArr.length);
+				renderStartY = -((lineHeight + (entity._textLineSpacing)) / 2) * (lineArr.length - 1);
+			}
 
 			for (i = 0; i < lineArr.length; i++) {
-				renderY = renderStartY + (lineHeight * i) + (entity._textLineSpacing * (i));
+				if (entity._textAlignY === 3) {
+					renderY = renderStartY + (lineHeight * i) + (entity._textLineSpacing * (i));
+				} else {
+					renderY = renderStartY + entity._textLineSpacing * i;
+				}
 
 				// Measure text
 				textSize = ctx.measureText(lineArr[i]);
