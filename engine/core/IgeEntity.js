@@ -4162,7 +4162,7 @@ var IgeEntity = IgeObject.extend({
 	_highlightToGlobalCompositeOperation: function (val) {
 		if (val) {
 			if (val === true) {
-				return 'lighten'
+				return 'lighter'
 			}
 
 			return val;
