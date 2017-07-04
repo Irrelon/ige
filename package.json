@@ -1,0 +1,32 @@
+{
+  "name": "ige",
+  "version": "1.6.0",
+  "description": "HTML5 2D and isometric scenegraph-based game engine written entirely in JavaScript",
+  "main": "./server/ige.js",
+  "directories": {
+    "example": "examples"
+  },
+  "dependencies": {
+    "aliasify": "^2.1.0",
+    "browserify-derequire": "^0.9.4",
+    "derequire": "^2.0.6",
+    "grunt": "^1.0.1",
+    "grunt-browserify": "^5.0.0",
+    "irrelon-appcore": "^1.0.13",
+    "stringify": "^5.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Irrelon/ige.git"
+  },
+  "author": "Rob Evans",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Irrelon/ige/issues"
+  },
+  "homepage": "https://github.com/Irrelon/ige#readme"
+}

@@ -170,4 +170,6 @@ pip-log.txt
 npm-debug.log
 
 # Ignore all node_modules
+# Ignore all node_modules
+node_modules*
 server/node_modules*

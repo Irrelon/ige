@@ -1,21 +1,27 @@
-var IgeCollisionMap2d = IgeEntity.extend({
-	classId: 'IgeCollisionMap2d',
+"use strict";
 
-	init: function (tileWidth, tileHeight) {
-		IgeEntity.prototype.init.call(this);
-		var self = this;
+var appCore = require('irrelon-appcore');
 
-		this.map = new IgeMap2d();
-	},
-
-	mapData: function (val) {
-		if (val !== undefined) {
-			this.map.mapData(val);
-			return this;
+appCore.module('IgeCollisionMap2d', function (IgeEntity, IgeMap2d) {
+	var IgeCollisionMap2d = IgeEntity.extend({
+		classId: 'IgeCollisionMap2d',
+		
+		init: function (tileWidth, tileHeight) {
+			IgeEntity.prototype.init.call(this);
+			var self = this;
+			
+			this.map = new IgeMap2d();
+		},
+		
+		mapData: function (val) {
+			if (val !== undefined) {
+				this.map.mapData(val);
+				return this;
+			}
+			
+			return this.map.mapData();
 		}
-
-		return this.map.mapData();
-	}
+	});
+	
+	return IgeCollisionMap2d;
 });
-
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeCollisionMap2d; }
