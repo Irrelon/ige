@@ -14,6 +14,10 @@ var IgeNode = IgeClass.extend({
 			this.printHelp();
 			process.exit();
 		} else {
+			if (!args['-g'] && !args['-deploy']) {
+				// Make -g default
+				args['-g'] = '.';
+			}
 			// Load a game and run the server for it
 			if (args['-g']) {
 				// Output our header
@@ -71,12 +75,12 @@ var IgeNode = IgeClass.extend({
 		if (typeof(gamePath) !== 'undefined') {
 			if (gamePath.substr(0, 1) === '/') {
 				// Absolute path
-				//this.log('Game path is absolute: ' + gamePath);
 				this._gamePath = gamePath + '/';
+				this.log('Game path is absolute: ' + this._gamePath);
 			} else {
 				// Relative path
-				//this.log('Game path is relative: ' + gamePath);
 				this._gamePath = process.cwd() + '/' + gamePath + '/';
+				this.log('Game path is relative: ' + this._gamePath);
 			}
 
 			// Check that the game's required files exist
