@@ -16,7 +16,7 @@ appCore.module('IgeCuboidSmartTexture', function () {
 	
 	return IgeCuboidSmartTexture;
 });
-},{"irrelon-appcore":64}],2:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],2:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -148,7 +148,7 @@ appCore.module('IgeFontSmartTexture', function () {
 	
 	return IgeFontSmartTexture;
 });
-},{"irrelon-appcore":64}],3:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],3:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -354,7 +354,7 @@ appCore.module('IgeTileMap2dSmartTexture', function (IgePoint2d) {
 	
 	return IgeTileMap2dSmartTexture;
 });
-},{"irrelon-appcore":64}],4:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],4:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -826,7 +826,7 @@ appCore.module('IgeAnimationComponent', function (IgeEventingClass) {
 	
 	return IgeAnimationComponent;
 });
-},{"irrelon-appcore":64}],5:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],5:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -1346,7 +1346,7 @@ appCore.module('IgeEntityManagerComponent', function (IgeClass, IgePoint3d, IgeR
 	
 	return IgeEntityManagerComponent;
 });
-},{"irrelon-appcore":64}],6:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],6:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -1544,7 +1544,7 @@ appCore.module('IgeGamePadComponent', function (IgeEventingClass) {
 	
 	return IgeGamePadComponent;
 });
-},{"irrelon-appcore":64}],7:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],7:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2302,7 +2302,7 @@ appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
 	
 	return IgeInputComponent;
 });
-},{"irrelon-appcore":64}],8:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],8:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2551,7 +2551,7 @@ appCore.module('IgeMousePanComponent', function (IgeEventingClass) {
 	
 	return IgeMousePanComponent;
 });
-},{"irrelon-appcore":64}],9:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],9:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2688,7 +2688,7 @@ appCore.module('IgeMouseZoomComponent', function (IgeEventingClass) {
 	
 	return IgeMouseZoomComponent;
 });
-},{"irrelon-appcore":64}],10:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],10:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3545,7 +3545,7 @@ appCore.module('IgePathComponent', function (IgeEventingClass, IgePoint3d) {
 	
 	return IgePathComponent;
 });
-},{"irrelon-appcore":64}],11:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],11:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3737,7 +3737,7 @@ appCore.module('IgeTiledComponent', function (IgeClass, IgeCellSheet, IgeTileMap
 	
 	return IgeTiledComponent;
 });
-},{"irrelon-appcore":64}],12:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],12:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3841,7 +3841,7 @@ appCore.module('IgeTimeComponent', function (IgeEventingClass) {
 	
 	return IgeTimeComponent;
 });
-},{"irrelon-appcore":64}],13:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],13:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4411,7 +4411,7 @@ appCore.module('IgeTweenComponent', function (IgeClass) {
 	
 	return IgeTweenComponent;
 });
-},{"irrelon-appcore":64}],14:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],14:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4577,7 +4577,7 @@ appCore.module('IgeUiManagerComponent', function (IgeClass) {
 	
 	return IgeUiManagerComponent;
 });
-},{"irrelon-appcore":64}],15:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],15:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4789,7 +4789,7 @@ appCore.module('IgeVelocityComponent', function (IgeClass, IgePoint3d) {
 	
 	return IgeVelocityComponent;
 });
-},{"irrelon-appcore":64}],16:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],16:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4916,7 +4916,7 @@ appCore.module('IgeAudio', function (IgeEventingClass) {
 	
 	return IgeAudio;
 });
-},{"irrelon-appcore":64}],17:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],17:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5015,7 +5015,7 @@ appCore.module('IgeAudioComponent', function (IgeEventingClass, IgeAudio) {
 	
 	return IgeAudioComponent;
 });
-},{"irrelon-appcore":64}],18:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],18:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5082,7 +5082,1183 @@ appCore.module('IgeCocoonJsComponent', function (IgeEventingClass) {
 	
 	return IgeCocoonJsComponent;
 });
-},{"irrelon-appcore":64}],19:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],19:[function(_dereq_,module,exports){
+"use strict";
+
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTranslateComponent, IgeEditorRotateComponent) {
+	/**
+	 * The IGE interactive editor component. Allows modification of a simulation
+	 * in realtime via a GUI.
+	 */
+	var IgeEditorComponent = IgeEventingClass.extend({
+		classId: 'IgeEditorComponent',
+		componentId: 'editor',
+		
+		/**
+		 * @constructor
+		 * @param {IgeObject} entity The object that the component is added to.
+		 * @param {Object=} options The options object that was passed to the
+		 * component during the call to addComponent.
+		 */
+		init: function (entity, options) {
+			var self = this;
+			
+			this._entity = entity;
+			this._options = options;
+			this._showStats = 0;
+			
+			this._templateCache = {};
+			this._cacheTemplates = true;
+			
+			this.ui = {};
+			
+			this._interceptMouse = false;
+			
+			// Hook the input component's keyUp and check for the = symbol... if there, toggle editor
+			this._activateKeyHandle = ige.input.on('keyUp', function (event) {
+				if (event.keyIdentifier === "U+00BB") {
+					// = key pressed, toggle the editor
+					self.toggle();
+					
+					// Return true to stop this event from being emitted by the engine to the scenegraph
+					return true;
+				}
+			});
+			
+			// Hook the input component's keyUp and check for the - symbol... if there, toggle stats
+			this._activateKeyHandle = ige.input.on('keyUp', function (event) {
+				if (event.keyIdentifier === "U+00BD") {
+					// Toggle the stats
+					self.toggleStats();
+					
+					// Return true to stop this event from being emitted by the engine to the scenegraph
+					return true;
+				}
+			});
+			
+			// Hook the engine's input system and take over mouse interaction
+			this._mouseUpHandle = ige.input.on('preMouseUp', function (event) {
+				if (self._enabled && self._interceptMouse) {
+					self.emit('mouseUp', event);
+					
+					// Return true to stop this event from being emitted by the engine to the scenegraph
+					return true;
+				}
+			});
+			
+			this._mouseDownHandle = ige.input.on('preMouseDown', function (event) {
+				if (self._enabled && self._interceptMouse) {
+					self.emit('mouseDown', event);
+					
+					// Return true to stop this event from being emitted by the engine to the scenegraph
+					return true;
+				}
+			});
+			
+			this._mouseMoveHandle = ige.input.on('preMouseMove', function (event) {
+				if (self._enabled && self._interceptMouse) {
+					self.emit('mouseMove', event);
+					
+					// Return true to stop this event from being emitted by the engine to the scenegraph
+					return true;
+				}
+			});
+			
+			this._contextMenuHandle = ige.input.on('preContextMenu', function (event) {
+				if (self._enabled && self._interceptMouse) {
+					self.emit('contextMenu', event);
+					
+					// Return true to stop this event from being emitted by the engine to the scenegraph
+					return true;
+				}
+			});
+			
+			// Load jsRender for HTML template support
+			ige.requireScript(igeRoot + 'components/editor/vendor/jsRender.js');
+			
+			// Load jQuery, the editor will use it for DOM manipulation simplicity
+			ige.requireScript(igeRoot + 'components/editor/vendor/jquery.2.0.3.min.js');
+			
+			ige.on('allRequireScriptsLoaded', function () {
+				// Stop drag-drop of files over the page from doing a redirect and leaving the page
+				$(function () {
+					$('body')
+						.on('dragover', function (e) {
+							e.preventDefault();
+						})
+						.on('drop', function (e) {
+							e.preventDefault();
+						});
+				});
+				
+				// Load editor html into the DOM
+				self.loadHtml(igeRoot + 'components/editor/root.html', function (html) {
+					// Add the html
+					$('body').append($(html));
+					
+					ige.requireScript(igeRoot + 'components/editor/vendor/jsrender-helpers.js');
+					
+					// Object mutation observer polyfill
+					ige.requireScript(igeRoot + 'components/editor/vendor/observe.js');
+					
+					// Load plugin styles
+					ige.requireStylesheet(igeRoot + 'components/editor/vendor/glyphicons/css/halflings.css');
+					ige.requireStylesheet(igeRoot + 'components/editor/vendor/glyphicons/css/glyphicons.css');
+					ige.requireStylesheet(igeRoot + 'components/editor/vendor/treeview_simple/css/style.css');
+					
+					// Load the editor stylesheet
+					ige.requireStylesheet(igeRoot + 'components/editor/css/editor.css');
+					
+					// Listen for scenegraph tree selection updates
+					ige.on('sgTreeSelectionChanged', function (objectId) {
+						self._objectSelected(ige.$(objectId));
+					});
+					
+					// Wait for all required files to finish loading
+					ige.on('allRequireScriptsLoaded', function () {
+						// Load UI scripts
+						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/dialogs/dialogs.js');
+						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/scenegraph/scenegraph.js');
+						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/menu/menu.js');
+						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/toolbox/toolbox.js');
+						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/panels/panels.js');
+						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/textures/textures.js');
+						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/textureEditor/textureEditor.js');
+						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/animationEditor/animationEditor.js');
+						
+						// Load jquery plugins
+						ige.sync(ige.requireScript, igeRoot + 'components/editor/vendor/autoback.jquery.js');
+						ige.sync(ige.requireScript, igeRoot + 'components/editor/vendor/tree/tree.jquery.js');
+						ige.sync(ige.requireScript, igeRoot + 'components/editor/vendor/tabs/tabs.jquery.js');
+						ige.sync(ige.requireScript, igeRoot + 'components/editor/vendor/treeview_simple/treeview_simple.jquery.js');
+						
+						ige.on('syncComplete', function () {
+							// Observe changes to the engine to update our display
+							setInterval(function () {
+								// Update the stats counters
+								$('#editorFps').html(ige._fps + ' fps');
+								$('#editorDps').html(ige._dps + ' dps');
+								$('#editorDpf').html(ige._dpf + ' dpf');
+								$('#editorUd').html(ige._updateTime + ' ud/ms');
+								$('#editorRd').html(ige._renderTime + ' rd/ms');
+								$('#editorTd').html(ige._tickTime + ' td/ms');
+							}, 1000);
+							
+							// Add auto-backing
+							$('.backed').autoback();
+							
+							// Call finished on all ui instances
+							for (var i in self.ui) {
+								if (self.ui.hasOwnProperty(i)) {
+									if (self.ui[i].ready) {
+										self.ui[i].ready();
+									}
+								}
+							}
+							
+							// Enable tabs
+							$('.tabGroup').tabs();
+							
+							// Enable the stats toggle button
+							$('#statsToggle').on('click', function () {
+								ige.editor.toggleStats();
+							});
+							
+							// Enable the editor toggle button
+							$('#editorToggle').on('click', function () {
+								ige.editor.toggle();
+							});
+						}, null, true);
+					}, null, true);
+				});
+			}, null, true);
+			
+			// Set the component to inactive to start with
+			this._enabled = false;
+			this._show = false;
+			
+			// Set object create defaults
+			this.objectDefault = {
+				'IgeTextureMap': {
+					drawGrid: 100
+				}
+			};
+			
+			this.log('Init complete');
+		},
+		
+		interceptMouse: function (val) {
+			this._interceptMouse = val;
+		},
+		
+		/**
+		 * Gets / sets the enabled flag. If set to true,
+		 * operations will be processed. If false, no operations will
+		 * occur.
+		 * @param {Boolean=} val
+		 * @return {*}
+		 */
+		enabled: function (val) {
+			var self = this;
+			
+			if (val !== undefined) {
+				this._enabled = val;
+				return this._entity;
+			}
+			
+			return this._enabled;
+		},
+		
+		toggle: function () {
+			var elem = $('#editorToggle');
+			
+			if (elem.hasClass('active')) {
+				ige.editor.hide();
+			} else {
+				ige.editor.show();
+			}
+		},
+		
+		show: function () {
+			this.enabled(true);
+			this._show = true;
+			
+			$('#editorToggle')
+				.html('Editor On')
+				.removeClass('active')
+				.addClass('active');
+			
+			$('.editorElem.toggleHide').addClass('shown');
+		},
+		
+		hide: function () {
+			this.enabled(false);
+			this._show = false;
+			
+			$('#editorToggle')
+				.html('Editor Off')
+				.removeClass('active');
+			
+			$('.editorElem.toggleHide').removeClass('shown');
+		},
+		
+		toggleStats: function () {
+			var elem = $('#statsToggle');
+			
+			if (elem.hasClass('active')) {
+				ige.editor.hideStats();
+			} else {
+				ige.editor.showStats();
+			}
+		},
+		
+		showStats: function () {
+			$('#statsToggle')
+				.html('Stats On')
+				.removeClass('active')
+				.addClass('active');
+			
+			$('.counter').show();
+		},
+		
+		hideStats: function () {
+			$('#statsToggle')
+				.html('Stats Off')
+				.removeClass('active');
+			
+			$('.counter').hide();
+		},
+		
+		loadHtml: function (url, callback) {
+			$.ajax({
+				url: url,
+				success: callback,
+				dataType: 'html'
+			});
+		},
+		
+		template: function (url, callback) {
+			var self = this;
+			
+			if (!this._cacheTemplates || !this._templateCache[url]) {
+				this.log('Loading template data from: ' + url);
+				$.ajax(url, {
+					async: true,
+					dataType: 'text',
+					complete: function (xhr, status) {
+						if (status === 'success') {
+							// Convert the text into a jsRender template object
+							var template = jsviews.templates(xhr.responseText);
+							
+							if (self._cacheTemplates) {
+								self._templateCache[url] = template;
+							}
+							
+							if (callback) { callback(false, template); }
+						} else {
+							if (callback) { callback(true, status); }
+						}
+					}
+				});
+			} else {
+				if (callback) { callback(false, this._templateCache[url]); }
+			}
+		},
+		
+		renderTemplate: function (url, data, callback) {
+			this.template(url, function (err, template) {
+				if (!err) {
+					callback(err, $($.parseHTML(template.render(data))));
+				} else {
+					callback(err);
+				}
+			});
+		},
+		
+		selectObject: function (id) {
+			if (id !== undefined) {
+				if (id) {
+					this._selectedObject = ige.$(id);
+					this._objectSelected(this._selectedObject);
+				} else {
+					delete this._selectedObject;
+				}
+			}
+		},
+		
+		_objectSelected: function (obj) {
+			if (obj) {
+				ige.editor.ui.panels.showPanelByInstance(obj);
+				this._selectedObjectClassList = ige.getClassDerivedList(obj);
+				
+				// Update active-for selectors
+				$('[data-active-for]')
+					.removeClass('disabled')
+					.addClass('disabled');
+				
+				var classArr = this._selectedObjectClassList,
+					i;
+				
+				for (i = 0; i < classArr.length; i++) {
+					$('[data-active-for~="' + classArr[i] + '"]')
+						.removeClass('disabled');
+				}
+				
+				this.emit('selectedObject', obj.id());
+			}
+		},
+		
+		destroySelected: function () {
+			if (this._selectedObject) {
+				this._selectedObject.destroy();
+				this.selectObject(null);
+			}
+		},
+		
+		createObject: function (classId, select) {
+			if (this._selectedObject) {
+				var newObj = ige.newClassInstance(classId);
+				newObj.mount(this._selectedObject);
+				this.ui.scenegraph.updateSceneGraph();
+				
+				if (select) {
+					this.selectObject(newObj.id());
+					this.ui.toolbox.select('toolSelect');
+				}
+				
+				// Set some object defaults if there are any
+				if (this.objectDefault[classId]) {
+					for (var i in this.objectDefault[classId]) {
+						if (this.objectDefault[classId].hasOwnProperty(i)) {
+							if (this.objectDefault[classId][i] instanceof Array) {
+								newObj[i].apply(newObj, this.objectDefault[classId][i]);
+							} else {
+								newObj[i].call(newObj, this.objectDefault[classId][i]);
+							}
+						}
+					}
+				}
+			}
+		},
+		
+		/**
+		 * Updates the stats HTML overlay with the latest data.
+		 * @private
+		 */
+		_statsTick: function () {
+			var self = ige.editor,
+				i,
+				watchCount,
+				watchItem,
+				itemName,
+				res,
+				html = '';
+			
+			// Check if the stats output is enabled
+			if (self._showStats && !self._statsPauseUpdate) {
+				switch (self._showStats) {
+					case 1:
+						/*if (self._watch && self._watch.length) {
+						 watchCount = self._watch.length;
+						 
+						 for (i = 0; i < watchCount; i++) {
+						 watchItem = self._watch[i];
+						 
+						 if (typeof(watchItem) === 'string') {
+						 itemName = watchItem;
+						 try {
+						 eval('res = ' + watchItem);
+						 } catch (err) {
+						 res = '<span style="color:#ff0000;">' + err + '</span>';
+						 }
+						 } else {
+						 itemName = watchItem.name;
+						 res = watchItem.value;
+						 }
+						 html += i + ' (<a href="javascript:ige.watchStop(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">Remove</a>): <span style="color:#7aff80">' + itemName + '</span>: <span style="color:#00c6ff">' + res + '</span><br />';
+						 }
+						 html += '<br />';
+						 }*/
+						/*html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowEditor();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Frame">' + self._dpf + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
+						 
+						 if (self.network) {
+						 // Add the network latency too
+						 html += ' <span class="met" title="Network Latency (Time From Server to This Client)">' + self.network._latency + ' ms\/net</span>';
+						 }
+						 
+						 self._statsDiv.innerHTML = html;*/
+						
+						
+						break;
+				}
+			}
+		},
+		
+		addToSgTree: function (item) {
+			var elem = document.createElement('li'),
+				arr,
+				arrCount,
+				i,
+				mouseUp,
+				dblClick,
+				timingString;
+			
+			mouseUp = function (event) {
+				event.stopPropagation();
+				
+				var elems = document.getElementsByClassName('sgItem selected');
+				for (i = 0; i < elems.length; i++) {
+					elems[i].className = 'sgItem';
+				}
+				
+				this.className += ' selected';
+				ige._sgTreeSelected = this.id;
+				
+				ige._currentViewport.drawBounds(true);
+				if (this.id !== 'ige') {
+					ige._currentViewport.drawBoundsLimitId(this.id);
+				} else {
+					ige._currentViewport.drawBoundsLimitId('');
+				}
+				
+				ige.emit('sgTreeSelectionChanged', ige._sgTreeSelected);
+			};
+			
+			dblClick = function (event) {
+				event.stopPropagation();
+			};
+			
+			//elem.addEventListener('mouseover', mouseOver, false);
+			//elem.addEventListener('mouseout', mouseOut, false);
+			elem.addEventListener('mouseup', mouseUp, false);
+			elem.addEventListener('dblclick', dblClick, false);
+			
+			elem.id = item.id;
+			elem.innerHTML = item.text;
+			elem.className = 'sgItem';
+			
+			if (ige._sgTreeSelected === item.id) {
+				elem.className += ' selected';
+			}
+			
+			if (igeConfig.debug._timing) {
+				if (ige._timeSpentInTick[item.id]) {
+					timingString = '<span>' + ige._timeSpentInTick[item.id] + 'ms</span>';
+					/*if (ige._timeSpentLastTick[item.id]) {
+					 if (typeof(ige._timeSpentLastTick[item.id].ms) === 'number') {
+					 timingString += ' | LastTick: ' + ige._timeSpentLastTick[item.id].ms;
+					 }
+					 }*/
+					
+					elem.innerHTML += ' ' + timingString;
+				}
+			}
+			
+			document.getElementById(item.parentId + '_items').appendChild(elem);
+			
+			if (item.items) {
+				// Create a ul inside the li
+				elem = document.createElement('ul');
+				elem.id = item.id + '_items';
+				document.getElementById(item.id).appendChild(elem);
+				
+				arr = item.items;
+				arrCount = arr.length;
+				
+				for (i = 0; i < arrCount; i++) {
+					ige.addToSgTree(arr[i]);
+				}
+			}
+		},
+		
+		toggleShowEditor: function () {
+			this._showSgTree = !this._showSgTree;
+			
+			if (this._showSgTree) {
+				// Create the scenegraph tree
+				var self = this,
+					elem1 = document.createElement('div'),
+					elem2,
+					canvasBoundingRect;
+				
+				canvasBoundingRect = ige._canvasPosition();
+				
+				elem1.id = 'igeSgTree';
+				elem1.style.top = (parseInt(canvasBoundingRect.top) + 5) + 'px';
+				elem1.style.left = (parseInt(canvasBoundingRect.left) + 5) + 'px';
+				elem1.style.height = (ige._bounds2d.y - 30) + 'px';
+				elem1.style.overflow = 'auto';
+				elem1.addEventListener('mousemove', function (event) {
+					event.stopPropagation();
+				});
+				elem1.addEventListener('mouseup', function (event) {
+					event.stopPropagation();
+				});
+				elem1.addEventListener('mousedown', function (event) {
+					event.stopPropagation();
+				});
+				
+				elem2 = document.createElement('ul');
+				elem2.id = 'sceneGraph_items';
+				elem1.appendChild(elem2);
+				
+				document.body.appendChild(elem1);
+				
+				// Create the IGE console
+				var consoleHolderElem = document.createElement('div'),
+					consoleElem = document.createElement('input'),
+					classChainElem = document.createElement('div'),
+					dociFrame = document.createElement('iframe');
+				
+				consoleHolderElem.id = 'igeSgConsoleHolder';
+				consoleHolderElem.innerHTML = '<div><b>Console</b>: Double-Click a SceneGraph Object to Script it Here</div>';
+				
+				consoleElem.type = 'text';
+				consoleElem.id = 'igeSgConsole';
+				
+				classChainElem.id = 'igeSgItemClassChain';
+				
+				dociFrame.id = 'igeSgDocPage';
+				dociFrame.name = 'igeSgDocPage';
+				
+				consoleHolderElem.appendChild(consoleElem);
+				consoleHolderElem.appendChild(classChainElem);
+				consoleHolderElem.appendChild(dociFrame);
+				
+				document.body.appendChild(consoleHolderElem);
+				
+				this.sgTreeUpdate();
+				
+				// Now add a refresh button to the scene button
+				var button = document.createElement('input');
+				button.type = 'button';
+				button.id = 'igeSgRefreshTree'
+				button.style.position = 'absolute';
+				button.style.top = '0px';
+				button.style.right = '0px'
+				button.value = 'Refresh';
+				
+				button.addEventListener('click', function () {
+					self.sgTreeUpdate();
+				}, false);
+				
+				document.getElementById('igeSgTree').appendChild(button);
+				
+				// Add basic editor controls
+				var editorRoot = document.createElement('div'),
+					editorModeTranslate = document.createElement('input'),
+					editorModeRotate = document.createElement('input'),
+					editorModeScale = document.createElement('input'),
+					editorStatus = document.createElement('span');
+				
+				editorRoot.id = 'igeSgEditorRoot';
+				editorStatus.id = 'igeSgEditorStatus';
+				
+				editorModeTranslate.type = 'button';
+				editorModeTranslate.id = 'igeSgEditorTranslate';
+				editorModeTranslate.value = 'Translate';
+				editorModeTranslate.addEventListener('click', function () {
+					// Disable other modes
+					ige.editorRotate.enabled(false);
+					
+					if (ige.editorTranslate.enabled()) {
+						ige.editorTranslate.enabled(false);
+						self.log('Editor: Translate mode disabled');
+					} else {
+						ige.editorTranslate.enabled(true);
+						self.log('Editor: Translate mode enabled');
+					}
+				});
+				
+				editorModeRotate.type = 'button';
+				editorModeRotate.id = 'igeSgEditorRotate';
+				editorModeRotate.value = 'Rotate';
+				editorModeRotate.addEventListener('click', function () {
+					// Disable other modes
+					ige.editorTranslate.enabled(false);
+					
+					if (ige.editorRotate.enabled()) {
+						ige.editorRotate.enabled(false);
+						self.log('Editor: Rotate mode disabled');
+					} else {
+						ige.editorRotate.enabled(true);
+						self.log('Editor: Rotate mode enabled');
+					}
+				});
+				
+				editorModeScale.type = 'button';
+				editorModeScale.id = 'igeSgEditorScale';
+				editorModeScale.value = 'Scale';
+				
+				editorRoot.appendChild(editorModeTranslate);
+				editorRoot.appendChild(editorModeRotate);
+				editorRoot.appendChild(editorModeScale);
+				editorRoot.appendChild(editorStatus);
+				
+				document.body.appendChild(editorRoot);
+				
+				// Add the translate component to the ige instance
+				ige.addComponent(IgeEditorTranslateComponent);
+				ige.addComponent(IgeEditorRotateComponent);
+				
+				// Schedule tree updates every second
+				ige._sgTreeUpdateInterval = setInterval(function () { self.sgTreeUpdate(); }, 1000);
+			} else {
+				// Kill interval
+				clearInterval(ige._sgTreeUpdateInterval);
+				
+				var child = document.getElementById('igeSgTree');
+				child.parentNode.removeChild(child);
+				
+				child = document.getElementById('igeSgConsoleHolder');
+				child.parentNode.removeChild(child);
+				
+				child = document.getElementById('igeSgEditorRoot');
+				child.parentNode.removeChild(child);
+				
+				ige.removeComponent('editorTranslate');
+				ige.removeComponent('editorRotate');
+			}
+		},
+		
+		sgTreeUpdate: function () {
+			// Update the scenegraph tree
+			document.getElementById('sceneGraph_items').innerHTML = '';
+			
+			// Get the scenegraph data
+			this.addToSgTree(this.getSceneGraphData(this, true));
+		},
+	});
+	
+	return IgeEditorComponent;
+});
+},{"irrelon-appcore":67}],20:[function(_dereq_,module,exports){
+"use strict";
+
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeEditorRotateComponent', function (IgeEventingClass) {
+	/**
+	 * When added to a viewport, automatically adds entity rotate
+	 * capabilities to the selected entity in the scenegraph viewer.
+	 */
+	var IgeEditorRotateComponent = IgeEventingClass.extend({
+		classId: 'IgeEditorRotateComponent',
+		componentId: 'editorRotate',
+		
+		/**
+		 * @constructor
+		 * @param {IgeObject} entity The object that the component is added to.
+		 * @param {Object=} options The options object that was passed to the component during
+		 * the call to addComponent.
+		 */
+		init: function (entity, options) {
+			this._entity = entity;
+			this._options = options;
+			
+			// Set the rotate component to inactive to start with
+			this._enabled = false;
+			this._startThreshold = 1; // The number of pixels the mouse should move to activate
+		},
+		
+		/**
+		 * Gets / sets the number of pixels after a mouse down that the mouse
+		 * must move in order to activate the operation. Defaults to 1.
+		 * @param val
+		 * @return {*}
+		 */
+		startThreshold: function (val) {
+			if (val !== undefined) {
+				this._startThreshold = val;
+				return this._entity;
+			}
+			
+			return this._startThreshold;
+		},
+		
+		/**
+		 * Gets / sets the rectangle that the operation will be limited
+		 * to using an IgeRect instance.
+		 * @param {IgeRect=} rect
+		 * @return {*}
+		 */
+		limit: function (rect) {
+			if (rect !== undefined) {
+				this._limit = rect;
+				return this._entity;
+			}
+			
+			return this._limit;
+		},
+		
+		/**
+		 * Gets / sets the enabled flag. If set to true,
+		 * operations will be processed. If false, no operations will
+		 * occur.
+		 * @param {Boolean=} val
+		 * @return {*}
+		 */
+		enabled: function (val) {
+			var self = this;
+			
+			if (val !== undefined) {
+				this._enabled = val;
+				
+				// Reset rotate values.
+				// This prevents problems if the component is disabled mid-operation.
+				this._opPreStart = false;
+				this._opStarted  = false;
+				
+				if (this._enabled) {
+					if (ige._sgTreeSelected && ige._sgTreeSelected !== 'ige') {
+						this._targetEntity = ige.$(ige._sgTreeSelected);
+						
+						if (this._targetEntity.classId() == 'IgeViewport') {
+							// Disable translation mode
+							this.log('Editor: Mouse rotate disabled');
+							this.enabled(false);
+						} else {
+							// Listen for the mouse events we need to operate
+							ige.input.on('mouseDown', function (event) { self._mouseDown(event); });
+							ige.input.on('mouseMove', function (event) { self._mouseMove(event); });
+							ige.input.on('mouseUp', function (event) { self._mouseUp(event); });
+							this.log('Editor: Mouse rotate enabled');
+						}
+					}
+				} else {
+					// Remove the operation start data
+					delete this._opStartMouse;
+					delete this._opStartRotate;
+				}
+				
+				return this._entity;
+			}
+			
+			return this._enabled;
+		},
+		
+		/**
+		 * Handles the mouseDown event. Records the starting position of the
+		 * operation and the current operation translation.
+		 * @param event
+		 * @private
+		 */
+		_mouseDown: function (event) {
+			if (!this._opStarted && this._enabled && this._targetEntity) {
+				// Record the mouse down position - pre-start
+				var curMousePos = ige._mousePos;
+				this._opStartMouse = curMousePos.clone();
+				
+				this._opStartRotate = {
+					x: Math.degrees(this._targetEntity._rotate.z)
+				};
+				
+				this._opPreStart = true;
+				this._opStarted = false;
+				
+				document.getElementById('igeSgEditorStatus').innerHTML = 'Degrees: ' + Math.degrees(this._targetEntity._rotate.z);
+			}
+		},
+		
+		/**
+		 * Handles the mouse move event. Rotates the entity as the mouse
+		 * moves across the screen.
+		 * @param event
+		 * @private
+		 */
+		_mouseMove: function (event) {
+			if (this._enabled && this._targetEntity) {
+				// Rotate the camera if the mouse is down
+				if (this._opStartMouse) {
+					var curMousePos = ige._mousePos,
+						rotateCords = {
+							x: this._opStartMouse.x - curMousePos.x
+						},
+						distX = rotateCords.x - this._opStartRotate.x;
+					
+					if (this._opPreStart) {
+						// Check if we've reached the start threshold
+						if (Math.abs(distX) > this._startThreshold) {
+							this._targetEntity.rotateTo(
+								this._targetEntity._rotate.x,
+								this._targetEntity._rotate.y,
+								Math.radians(-distX)
+							);
+							this.emit('rotateStart');
+							this._opPreStart = false;
+							this._opStarted = true;
+							
+							this.emit('rotateMove');
+						}
+					} else {
+						// Rotate has already started
+						this._targetEntity.rotateTo(
+							this._targetEntity._rotate.x,
+							this._targetEntity._rotate.y,
+							Math.radians(-distX)
+						);
+						
+						this.emit('rotateMove');
+					}
+					
+					document.getElementById('igeSgEditorStatus').innerHTML = 'Degrees: ' + Math.degrees(this._targetEntity._rotate.z);
+				}
+			}
+		},
+		
+		/**
+		 * Handles the mouse up event. Finishes the entity rotate and
+		 * removes the starting operation data.
+		 * @param event
+		 * @private
+		 */
+		_mouseUp: function (event) {
+			if (this._enabled && this._targetEntity) {
+				// End the rotate
+				if (this._opStarted) {
+					if (this._opStartMouse) {
+						var curMousePos = ige._mousePos,
+							rotateCords = {
+								x: this._opStartMouse.x - curMousePos.x
+							},
+							distX = rotateCords.x - this._opStartRotate.x;
+						
+						this._targetEntity.rotateTo(
+							this._targetEntity._rotate.x,
+							this._targetEntity._rotate.y,
+							Math.radians(-distX)
+						);
+						
+						document.getElementById('igeSgEditorStatus').innerHTML = 'Degrees: ' + Math.degrees(this._targetEntity._rotate.z);
+						
+						// Remove the rotate start data to end the rotate operation
+						delete this._opStartMouse;
+						delete this._opStartRotate;
+						
+						this.emit('rotateEnd');
+						this._opStarted = false;
+					}
+				} else {
+					delete this._opStartMouse;
+					delete this._opStartRotate;
+					this._opStarted = false;
+				}
+			}
+		}
+	});
+	
+	return IgeEditorRotateComponent;
+});
+},{"irrelon-appcore":67}],21:[function(_dereq_,module,exports){
+"use strict";
+
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
+	/**
+	 * When added to a viewport, automatically adds entity translate
+	 * capabilities to the selected entity in the scenegraph viewer.
+	 */
+	var IgeEditorTranslateComponent = IgeEventingClass.extend({
+		classId: 'IgeEditorTranslateComponent',
+		componentId: 'editorTranslate',
+		
+		/**
+		 * @constructor
+		 * @param {IgeObject} entity The object that the component is added to.
+		 * @param {Object=} options The options object that was passed to the component during
+		 * the call to addComponent.
+		 */
+		init: function (entity, options) {
+			this._entity = entity;
+			this._options = options;
+			
+			// Set the pan component to inactive to start with
+			this._enabled = false;
+			this._startThreshold = 1; // The number of pixels the mouse should move to activate
+		},
+		
+		/**
+		 * Gets / sets the number of pixels after a mouse down that the mouse
+		 * must move in order to activate the operation. Defaults to 1.
+		 * @param val
+		 * @return {*}
+		 */
+		startThreshold: function (val) {
+			if (val !== undefined) {
+				this._startThreshold = val;
+				return this._entity;
+			}
+			
+			return this._startThreshold;
+		},
+		
+		/**
+		 * Gets / sets the rectangle that the operation will be limited
+		 * to using an IgeRect instance.
+		 * @param {IgeRect=} rect
+		 * @return {*}
+		 */
+		limit: function (rect) {
+			if (rect !== undefined) {
+				this._limit = rect;
+				return this._entity;
+			}
+			
+			return this._limit;
+		},
+		
+		/**
+		 * Gets / sets the enabled flag. If set to true,
+		 * operations will be processed. If false, no operations will
+		 * occur.
+		 * @param {Boolean=} val
+		 * @return {*}
+		 */
+		enabled: function (val) {
+			var self = this;
+			
+			if (val !== undefined) {
+				this._enabled = val;
+				
+				// Reset pan values.
+				// This prevents problems if the component is disabled mid-operation.
+				this._opPreStart = false;
+				this._opStarted  = false;
+				
+				if (this._enabled) {
+					if (ige._sgTreeSelected) {
+						this._targetEntity = ige.$(ige._sgTreeSelected);
+						
+						if (this._targetEntity.classId() == 'IgeViewport') {
+							// Disable translation mode
+							this.log('Editor: Mouse translate disabled');
+							this.enabled(false);
+						} else {
+							// Listen for the mouse events we need to operate
+							ige.input.on('mouseDown', function (event) { self._mouseDown(event); });
+							ige.input.on('mouseMove', function (event) { self._mouseMove(event); });
+							ige.input.on('mouseUp', function (event) { self._mouseUp(event); });
+							this.log('Editor: Mouse translate enabled');
+						}
+					}
+				} else {
+					// Remove the operation start data
+					delete this._opStartMouse;
+					delete this._opStartTranslate;
+				}
+				
+				return this._entity;
+			}
+			
+			return this._enabled;
+		},
+		
+		/**
+		 * Handles the mouseDown event. Records the starting position of the
+		 * operation and the current operation translation.
+		 * @param event
+		 * @private
+		 */
+		_mouseDown: function (event) {
+			if (!this._opStarted && this._enabled && this._targetEntity) {
+				// Record the mouse down position - pre-start
+				var curMousePos = ige._mousePos;
+				this._opStartMouse = curMousePos.clone();
+				
+				this._opStartTranslate = {
+					x: this._targetEntity._translate.x,
+					y: this._targetEntity._translate.y
+				};
+				
+				this._opPreStart = true;
+				this._opStarted = false;
+				
+				document.getElementById('igeSgEditorStatus').innerHTML = 'X: ' + this._targetEntity._translate.x + ' Y:' + this._targetEntity._translate.y;
+			}
+		},
+		
+		/**
+		 * Handles the mouse move event. Translates the entity as the mouse
+		 * moves across the screen.
+		 * @param event
+		 * @private
+		 */
+		_mouseMove: function (event) {
+			if (this._enabled && this._targetEntity) {
+				// Pan the camera if the mouse is down
+				if (this._opStartMouse) {
+					var curMousePos = ige._mousePos,
+						panCords = {
+							x: this._opStartMouse.x - curMousePos.x,
+							y: this._opStartMouse.y - curMousePos.y
+						}, distX = Math.abs(panCords.x), distY = Math.abs(panCords.y),
+						panFinalX = this._opStartTranslate.x - (panCords.x / ige._currentViewport.camera._scale.x),
+						panFinalY = this._opStartTranslate.y - (panCords.y / ige._currentViewport.camera._scale.y);
+					
+					// Check if we have a limiter on the rectangle area
+					// that we should allow panning inside.
+					if (this._limit) {
+						// Check the pan co-ordinates against
+						// the limiter rectangle
+						if (panFinalX < this._limit.x) {
+							panFinalX = this._limit.x;
+						}
+						
+						if (panFinalX > this._limit.x + this._limit.width) {
+							panFinalX = this._limit.x + this._limit.width;
+						}
+						
+						if (panFinalY < this._limit.y) {
+							panFinalY = this._limit.y;
+						}
+						
+						if (panFinalY > this._limit.y + this._limit.height) {
+							panFinalY = this._limit.y + this._limit.height;
+						}
+					}
+					
+					if (this._opPreStart) {
+						// Check if we've reached the start threshold
+						if (distX > this._startThreshold || distY > this._startThreshold) {
+							this._targetEntity.translateTo(
+								panFinalX,
+								panFinalY,
+								0
+							);
+							this.emit('panStart');
+							this._opPreStart = false;
+							this._opStarted = true;
+							
+							this.emit('panMove');
+						}
+					} else {
+						// Pan has already started
+						this._targetEntity.translateTo(
+							panFinalX,
+							panFinalY,
+							0
+						);
+						
+						this.emit('panMove');
+					}
+					
+					document.getElementById('igeSgEditorStatus').innerHTML = 'X: ' + panFinalX + ' Y:' + panFinalY;
+				}
+			}
+		},
+		
+		/**
+		 * Handles the mouse up event. Finishes the entity translate and
+		 * removes the starting operation data.
+		 * @param event
+		 * @private
+		 */
+		_mouseUp: function (event) {
+			if (this._enabled && this._targetEntity) {
+				// End the pan
+				if (this._opStarted) {
+					if (this._opStartMouse) {
+						var curMousePos = ige._mousePos,
+							panCords = {
+								x: this._opStartMouse.x - curMousePos.x,
+								y: this._opStartMouse.y - curMousePos.y
+							},
+							panFinalX = this._opStartTranslate.x - (panCords.x / ige._currentViewport.camera._scale.x),
+							panFinalY = this._opStartTranslate.y - (panCords.y / ige._currentViewport.camera._scale.y);
+						
+						// Check if we have a limiter on the rectangle area
+						// that we should allow panning inside.
+						if (this._limit) {
+							// Check the pan co-ordinates against
+							// the limiter rectangle
+							if (panFinalX < this._limit.x) {
+								panFinalX = this._limit.x;
+							}
+							
+							if (panFinalX > this._limit.x + this._limit.width) {
+								panFinalX = this._limit.x + this._limit.width;
+							}
+							
+							if (panFinalY < this._limit.y) {
+								panFinalY = this._limit.y;
+							}
+							
+							if (panFinalY > this._limit.y + this._limit.height) {
+								panFinalY = this._limit.y + this._limit.height;
+							}
+						}
+						
+						this._targetEntity.translateTo(
+							panFinalX,
+							panFinalY,
+							0
+						);
+						
+						document.getElementById('igeSgEditorStatus').innerHTML = 'X: ' + panFinalX + ' Y:' + panFinalY;
+						
+						// Remove the pan start data to end the pan operation
+						delete this._opStartMouse;
+						delete this._opStartTranslate;
+						
+						this.emit('panEnd');
+						this._opStarted = false;
+					}
+				} else {
+					delete this._opStartMouse;
+					delete this._opStartTranslate;
+					this._opStarted = false;
+				}
+			}
+		}
+	});
+	
+	return IgeEditorTranslateComponent;
+});
+
+},{"irrelon-appcore":67}],22:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeArray', function (IgeEntity) {
@@ -5107,7 +6283,7 @@ appCore.module('IgeArray', function (IgeEntity) {
 	
 	return IgeArray;
 });
-},{"irrelon-appcore":64}],20:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],23:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5743,7 +6919,7 @@ appCore.module('igeBase', function () {
 	
 	return new IgeBase();
 });
-},{"irrelon-appcore":64,"util":68}],21:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67,"util":71}],24:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5798,7 +6974,7 @@ appCore.module('IgeBaseScene', function (IgeSceneGraph, IgeScene2d, IgeViewport)
 	
 	return IgeBaseScene;
 });
-},{"irrelon-appcore":64}],22:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],25:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6178,7 +7354,7 @@ appCore.module('IgeCamera', function (IgeEntity) {
 	
 	return IgeCamera;
 });
-},{"irrelon-appcore":64}],23:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],26:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6319,7 +7495,7 @@ appCore.module('IgeCellSheet', function (IgeTexture) {
 	
 	return IgeCellSheet;
 });
-},{"irrelon-appcore":64}],24:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],27:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeClass', function (igeBase) {
@@ -6770,7 +7946,7 @@ appCore.module('IgeClass', function (igeBase) {
 	
 	return IgeClass;
 });
-},{"irrelon-appcore":64}],25:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],28:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6798,7 +7974,7 @@ appCore.module('IgeCollisionMap2d', function (IgeEntity, IgeMap2d) {
 	
 	return IgeCollisionMap2d;
 });
-},{"irrelon-appcore":64}],26:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],29:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6817,7 +7993,7 @@ appCore.module('IgeDummyCanvas', function (IgeDummyContext) {
 	
 	return IgeDummyCanvas;
 });
-},{"irrelon-appcore":64}],27:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],30:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6850,7 +8026,7 @@ appCore.module('IgeDummyContext', function () {
 	
 	return IgeDummyContext;
 });
-},{"irrelon-appcore":64}],28:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],31:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -9042,7 +10218,7 @@ appCore.module('IgeEngine', function (
 		
 		return IgeEngine;
 	});
-},{"irrelon-appcore":64}],29:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],32:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -13219,7 +14395,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 	
 	return IgeEntity;
 });
-},{"irrelon-appcore":64}],30:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],33:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -13552,7 +14728,7 @@ appCore.module('IgeEventingClass', function (IgeClass) {
 	
 	return IgeEventingClass;
 });
-},{"irrelon-appcore":64}],31:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],34:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -13847,7 +15023,7 @@ appCore.module('IgeFSM', function (IgeClass) {
 	
 	return IgeFSM;
 });
-},{"irrelon-appcore":64}],32:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],35:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -13864,7 +15040,7 @@ appCore.module('IgeFilters', function () {
 	
 	return IgeFilters;
 });
-},{"irrelon-appcore":64}],33:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],36:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -14300,7 +15476,7 @@ appCore.module('IgeFontEntity', function (IgeUiEntity, IgeTexture, IgeFontSmartT
 	
 	return IgeFontEntity;
 });
-},{"irrelon-appcore":64}],34:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],37:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -14611,7 +15787,7 @@ appCore.module('IgeFontSheet', function (IgeTexture) {
 	
 	return IgeFontSheet;
 });
-},{"irrelon-appcore":64}],35:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],38:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -14691,7 +15867,7 @@ appCore.module('IgeInterval', function (IgeEventingClass) {
 	
 	return IgeInterval;
 });
-},{"irrelon-appcore":64}],36:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],39:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -14977,7 +16153,7 @@ appCore.module('IgeMap2d', function (IgeClass) {
 	
 	return IgeMap2d;
 });
-},{"irrelon-appcore":64}],37:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],40:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15134,7 +16310,7 @@ appCore.module('IgeMapStack2d', function (IgeClass) {
 	
 	return IgeMapStack2d;
 });
-},{"irrelon-appcore":64}],38:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],41:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15585,7 +16761,7 @@ appCore.module('IgeMatrix2d', function (IgePoint3d) {
 	
 	return IgeMatrix2d;
 });
-},{"irrelon-appcore":64}],39:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],42:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -17644,7 +18820,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 	return IgeObject;
 });
 
-},{"irrelon-appcore":64}],40:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],43:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -17672,7 +18848,7 @@ appCore.module('IgeParticle', function (IgeEntity, IgeVelocityComponent) {
 	
 	return IgeParticle;
 });
-},{"irrelon-appcore":64}],41:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],44:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -18378,7 +19554,7 @@ appCore.module('IgeParticleEmitter', function (IgeUiEntity, IgeTween) {
 	
 	return IgeParticleEmitter;
 });
-},{"irrelon-appcore":64}],42:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],45:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -18728,7 +19904,7 @@ appCore.module('IgePathFinder', function (IgeEventingClass, IgePathNode) {
 	
 	return IgePathFinder;
 });
-},{"irrelon-appcore":64}],43:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],46:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -18784,7 +19960,7 @@ appCore.module('IgePathNode', function (IgePoint3d) {
 	
 	return IgePathNode;
 });
-},{"irrelon-appcore":64}],44:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],47:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -19106,7 +20282,7 @@ appCore.module('IgePoint2d', function (IgeClass) {
 	
 	return IgePoint2d;
 });
-},{"irrelon-appcore":64}],45:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],48:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -19443,7 +20619,7 @@ appCore.module('IgePoint3d', function (IgeClass) {
 	
 	return IgePoint3d;
 });
-},{"irrelon-appcore":64}],46:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],49:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -19863,7 +21039,7 @@ appCore.module('IgePoly2d', function (IgeClass, IgePoint2d, IgeRect) {
 	
 	return IgePoly2d;
 });
-},{"irrelon-appcore":64}],47:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],50:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20230,7 +21406,7 @@ appCore.module('IgeQuest', function (IgeEventingClass) {
 	
 	return IgeQuest;
 });
-},{"irrelon-appcore":64}],48:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],51:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20440,7 +21616,7 @@ appCore.module('IgeRect', function (IgeClass) {
 	
 	return IgeRect;
 });
-},{"irrelon-appcore":64}],49:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],52:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20637,7 +21813,7 @@ appCore.module('IgeScene2d', function (IgeEntity) {
 	
 	return IgeScene2d;
 });
-},{"irrelon-appcore":64}],50:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],53:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20670,7 +21846,7 @@ appCore.module('IgeSceneGraph', function (IgeClass) {
 	
 	return IgeSceneGraph;
 });
-},{"irrelon-appcore":64}],51:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],54:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20939,7 +22115,7 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 	
 	return IgeSpriteSheet;
 });
-},{"irrelon-appcore":64}],52:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],55:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21887,7 +23063,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 	
 	return IgeTexture;
 });
-},{"irrelon-appcore":64}],53:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],56:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21953,7 +23129,7 @@ appCore.module('IgeTextureAtlas', function (IgeTextureMap) {
 	
 	return IgeTextureAtlas;
 });
-},{"irrelon-appcore":64}],54:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],57:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -22688,7 +23864,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 	
 	return IgeTextureMap;
 });
-},{"irrelon-appcore":64}],55:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],58:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -23270,7 +24446,7 @@ appCore.module('IgeTileMap2d', function (IgeEntity, IgeTexture, IgeTileMap2dSmar
 	
 	return IgeTileMap2d;
 });
-},{"irrelon-appcore":64}],56:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],59:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -23342,7 +24518,7 @@ appCore.module('IgeTimeout', function (IgeInterval) {
 	
 	return IgeTimeout;
 });
-},{"irrelon-appcore":64}],57:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],60:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -23686,7 +24862,7 @@ appCore.module('IgeTween', function (IgeClass) {
 	
 	return IgeTween;
 });
-},{"irrelon-appcore":64}],58:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],61:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -23968,7 +25144,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 	
 	return IgeUiElement;
 });
-},{"irrelon-appcore":64}],59:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],62:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -24328,7 +25504,7 @@ appCore.module('IgeUiEntity', function (IgeEntity, IgeUiStyleExtension, IgeUiPos
 	
 	return IgeUiEntity;
 });
-},{"irrelon-appcore":64}],60:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],63:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -24944,7 +26120,7 @@ appCore.module('IgeViewport', function (IgeEntity, IgePoint3d, IgeCamera, IgeUiS
 	
 	return IgeViewport;
 });
-},{"irrelon-appcore":64}],61:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],64:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -25617,7 +26793,7 @@ appCore.module('IgeUiPositionExtension', function () {
 	
 	return IgeUiPositionExtension;
 });
-},{"irrelon-appcore":64}],62:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],65:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -25973,7 +27149,7 @@ appCore.module('IgeUiStyleExtension', function () {
 	
 	return IgeUiStyleExtension;
 });
-},{"irrelon-appcore":64}],63:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],66:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -25989,7 +27165,7 @@ appCore.module('ige', function (IgeEngine) {
 	
 	return ige;
 });
-},{"irrelon-appcore":64}],64:[function(_dereq_,module,exports){
+},{"irrelon-appcore":67}],67:[function(_dereq_,module,exports){
 /**
  * Irrelon AppCore
  *
@@ -26024,6 +27200,8 @@ appCore.module('ige', function (IgeEngine) {
 		// The object that holds a reference to callbacks that
 		// are waiting for a module to become available / loaded
 		this._waiting = {};
+		
+		this._logLevel = 2;
 	};
 	
 	/**
@@ -26170,7 +27348,7 @@ appCore.module('ige', function (IgeEngine) {
 			throw('Cannot redefine module "' + moduleName + '" - it has already been defined!');
 		}
 		
-		console.log('AppCore: ' + moduleName + ': Init...');
+		if (this._logLevel >= 4) { console.log('AppCore: ' + moduleName + ': Init...'); }
 		
 		// Convert dependency list to an array
 		moduleDeps = this._dependencyList(moduleDefinition);
@@ -26179,11 +27357,11 @@ appCore.module('ige', function (IgeEngine) {
 		// Check if the module has dependencies
 		if (!moduleDepsArr.length) {
 			// No dependencies were found, just register the module
-			console.log('AppCore: ' + moduleName + ': Has no dependencies');
+			if (this._logLevel >= 4) { console.log('AppCore: ' + moduleName + ': Has no dependencies'); }
 			return this._registerModule(moduleName, moduleDefinition, []);
 		}
 		
-		console.log('AppCore: ' + moduleName + ': Has ' + moduleDepsArr.length + ' dependenc' + (moduleDepsArr.length > 1 ? 'ies' : 'y') + ' (' + moduleDepsArr.join(', ') + ')');
+		if (this._logLevel >= 4) { console.log('AppCore: ' + moduleName + ': Has ' + moduleDepsArr.length + ' dependenc' + (moduleDepsArr.length > 1 ? 'ies' : 'y') + ' (' + moduleDepsArr.join(', ') + ')'); }
 		
 		// Grab the dependencies we need - this is a really simple way
 		// to check we got our dependencies by how many times this function
@@ -26194,7 +27372,7 @@ appCore.module('ige', function (IgeEngine) {
 			
 			dependenciesSatisfied++;
 			
-			console.log('AppCore: ' + moduleName + ': Found dependency "' + dependencyName + '"');
+			if (self._logLevel >= 4) { console.log('AppCore: ' + moduleName + ': Found dependency "' + dependencyName + '"'); }
 			
 			// Check which index this dependency should be in
 			depArgumentIndex = moduleDepsArr.indexOf(dependencyName);
@@ -26209,7 +27387,7 @@ appCore.module('ige', function (IgeEngine) {
 			// Check if we have all the dependencies we need
 			if (dependenciesSatisfied === moduleDepsArr.length) {
 				// We have our dependencies, load the module! YAY!
-				console.log('AppCore: ' + moduleName + ': Has all required dependencies, loading...');
+				if (self._logLevel >= 4) { console.log('AppCore: ' + moduleName + ': Has all required dependencies, loading...'); }
 				return self._registerModule(moduleName, moduleDefinition, depArgumentArr);
 			}
 		};
@@ -26238,7 +27416,7 @@ appCore.module('ige', function (IgeEngine) {
 	 */
 	AppCore.prototype.generateDependencyTimeout = function (moduleName, dependencyName) {
 		return function () {
-			console.error('AppCore: ' + moduleName + ': Dependency failed to load in time: ' + dependencyName);
+			if (this._logLevel >= 1) { console.error('AppCore: ' + moduleName + ': Dependency failed to load in time: ' + dependencyName); }
 		};
 	};
 	
@@ -26353,7 +27531,7 @@ appCore.module('ige', function (IgeEngine) {
 	 * @private
 	 */
 	AppCore.prototype._registerModule = function (moduleName, func, args) {
-		console.log('AppCore: ' + moduleName + ': Loaded');
+		if (this._logLevel >= 4) { console.log('AppCore: ' + moduleName + ': Loaded'); }
 		this._modules[moduleName] = func.apply(func, args) || null;
 		this._moduleDefs[moduleName] = func;
 		this._moduleLoaded(moduleName);
@@ -26370,7 +27548,7 @@ appCore.module('ige', function (IgeEngine) {
 		window.appCore = singelton;
 	}
 })();
-},{}],65:[function(_dereq_,module,exports){
+},{}],68:[function(_dereq_,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -26556,7 +27734,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],66:[function(_dereq_,module,exports){
+},{}],69:[function(_dereq_,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -26581,14 +27759,14 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],67:[function(_dereq_,module,exports){
+},{}],70:[function(_dereq_,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],68:[function(_dereq_,module,exports){
+},{}],71:[function(_dereq_,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -27178,4 +28356,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,_dereq_('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":67,"_process":65,"inherits":66}]},{},[19,20,21,22,23,24,25,26,27,28,29,30,32,33,34,31,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,1,2,3,61,62,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,63]);
+},{"./support/isBuffer":70,"_process":68,"inherits":69}]},{},[22,23,24,25,26,27,28,29,30,31,32,33,35,36,37,34,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,1,2,3,64,65,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,66]);
