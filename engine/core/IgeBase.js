@@ -51,51 +51,6 @@ appCore.module('igeBase', function () {
 		}
 	};
 	
-	appCore.depends(function (IgeTween) {
-		/**
-		 * Make property non-enumerable.
-		 */
-		Object.defineProperty(Object.prototype, 'tween', {
-			enumerable: false,
-			writable: true,
-			configurable: true
-		});
-		
-		/**
-		 * Augments all objects with the tween() method. Creates a new IgeTween
-		 * with the passed parameters that will act upon the object's properties.
-		 * The returned tween will not start tweening until a call to start() is
-		 * made.
-		 * @param {Object} props
-		 * @param {Number} durationMs
-		 * @param {Object=} options
-		 * @return {IgeTween}
-		 */
-		Object.prototype.tween = function (props, durationMs, options) {
-			var newTween = new IgeTween()
-				.targetObj(this)
-				.properties(props)
-				.duration(durationMs);
-			
-			if (options) {
-				if (options.beforeTween) {
-					newTween.beforeTween(options.beforeTween);
-				}
-				if (options.afterTween) {
-					newTween.afterTween(options.afterTween);
-				}
-				if (options.easing) {
-					newTween.easing(options.easing);
-				}
-				if (options.startTime) {
-					newTween.startTime(options.startTime);
-				}
-			}
-			
-			return newTween;
-		};
-	});
-	
 	/**
 	 * Make property non-enumerable.
 	 */
@@ -632,4 +587,49 @@ appCore.module('igeBase', function () {
 	}
 	
 	return new IgeBase();
+});
+
+appCore.module('igeBase').run(function (IgeTween) {
+	/**
+	 * Make property non-enumerable.
+	 */
+	Object.defineProperty(Object.prototype, 'tween', {
+		enumerable: false,
+		writable: true,
+		configurable: true
+	});
+	
+	/**
+	 * Augments all objects with the tween() method. Creates a new IgeTween
+	 * with the passed parameters that will act upon the object's properties.
+	 * The returned tween will not start tweening until a call to start() is
+	 * made.
+	 * @param {Object} props
+	 * @param {Number} durationMs
+	 * @param {Object=} options
+	 * @return {IgeTween}
+	 */
+	Object.prototype.tween = function (props, durationMs, options) {
+		var newTween = new IgeTween()
+			.targetObj(this)
+			.properties(props)
+			.duration(durationMs);
+		
+		if (options) {
+			if (options.beforeTween) {
+				newTween.beforeTween(options.beforeTween);
+			}
+			if (options.afterTween) {
+				newTween.afterTween(options.afterTween);
+			}
+			if (options.easing) {
+				newTween.easing(options.easing);
+			}
+			if (options.startTime) {
+				newTween.startTime(options.startTime);
+			}
+		}
+		
+		return newTween;
+	};
 });

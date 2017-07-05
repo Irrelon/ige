@@ -21,7 +21,7 @@ appCore.module('IgeBaseScene', function (IgeSceneGraph, IgeScene2d, IgeViewport)
 		addGraph: function (options) {
 			// Clear existing graph data
 			if (ige.$('baseScene')) {
-				this.destroyGraph();
+				this.removeGraph();
 			}
 			
 			// Create the scene

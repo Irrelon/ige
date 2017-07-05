@@ -2171,6 +2171,61 @@ appCore.module('IgeEngine', function (
 				IgeEntity.prototype._childMounted.call(this, child);
 			},
 			
+			route: function (path, definition) {
+				this._route = this._route || {};
+				this._route[path] = definition;
+			},
+			
+			go: function (path) {
+				var self = this,
+					definition = this._route[path],
+					requirements = [];
+				
+				this.log('Navigating to route "' + path + '"...');
+				
+				// Check existing route path and see if we need to remove anything
+				// from the current graph etc
+				
+				
+				// Check for universal route
+				if (!definition.client && !definition.server) {
+					// Definition is for a universal route
+					this.log('Route "' + path + '" is universal');
+				} else {
+					this.log('Route "' + path + '" is non-universal');
+					if (ige.isClient) {
+						definition = definition.client;
+					}
+					
+					if (ige.isServer) {
+						definition = definition.server;
+					}
+				}
+				
+				if (!definition.controller) {
+					this.log('ige.go() encounterd a route that has no controller specified: ' + path, 'error');
+				}
+				
+				this.log('Route "' + path + '" attempting setup...');
+				
+				if (definition.textures) {
+					this.log('Adding route "' + path + '" textures: ' + definition.textures);
+				}
+				
+				appCore.run([definition.textures, definition.sceneGraph, function (textures, sceneGraph) {
+					if (definition.sceneGraph) {
+						self.log('Adding route "' + path + '" sceneGraph: ' + definition.sceneGraph);
+						self.addGraph(definition.sceneGraph);
+					}
+					
+					self.log('Executing route "' + path + '" controller: ' + definition.controller);
+					appCore.run([definition.controller, function (Controller) {
+						self.log('Route "' + path + '" setup complete');
+						this._controller = new Controller()
+					}]);
+				}]);
+			},
+			
 			destroy: function () {
 				// Stop the engine and kill any timers
 				this.stop();

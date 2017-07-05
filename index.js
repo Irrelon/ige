@@ -7,8 +7,6 @@ appCore.module('ige', function (IgeEngine) {
 	
 	if (ige.isClient) {
 		window.ige = ige;
-	} else {
-		
 	}
 	
 	return ige;

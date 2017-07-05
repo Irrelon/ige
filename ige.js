@@ -16,7 +16,7 @@ appCore.module('IgeCuboidSmartTexture', function () {
 	
 	return IgeCuboidSmartTexture;
 });
-},{"irrelon-appcore":67}],2:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],2:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -148,7 +148,7 @@ appCore.module('IgeFontSmartTexture', function () {
 	
 	return IgeFontSmartTexture;
 });
-},{"irrelon-appcore":67}],3:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],3:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -354,7 +354,7 @@ appCore.module('IgeTileMap2dSmartTexture', function (IgePoint2d) {
 	
 	return IgeTileMap2dSmartTexture;
 });
-},{"irrelon-appcore":67}],4:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],4:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -826,7 +826,7 @@ appCore.module('IgeAnimationComponent', function (IgeEventingClass) {
 	
 	return IgeAnimationComponent;
 });
-},{"irrelon-appcore":67}],5:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],5:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -1346,7 +1346,7 @@ appCore.module('IgeEntityManagerComponent', function (IgeClass, IgePoint3d, IgeR
 	
 	return IgeEntityManagerComponent;
 });
-},{"irrelon-appcore":67}],6:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],6:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -1544,7 +1544,7 @@ appCore.module('IgeGamePadComponent', function (IgeEventingClass) {
 	
 	return IgeGamePadComponent;
 });
-},{"irrelon-appcore":67}],7:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],7:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2302,7 +2302,7 @@ appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
 	
 	return IgeInputComponent;
 });
-},{"irrelon-appcore":67}],8:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],8:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2551,7 +2551,7 @@ appCore.module('IgeMousePanComponent', function (IgeEventingClass) {
 	
 	return IgeMousePanComponent;
 });
-},{"irrelon-appcore":67}],9:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],9:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2688,7 +2688,7 @@ appCore.module('IgeMouseZoomComponent', function (IgeEventingClass) {
 	
 	return IgeMouseZoomComponent;
 });
-},{"irrelon-appcore":67}],10:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],10:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3545,7 +3545,7 @@ appCore.module('IgePathComponent', function (IgeEventingClass, IgePoint3d) {
 	
 	return IgePathComponent;
 });
-},{"irrelon-appcore":67}],11:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],11:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3737,7 +3737,7 @@ appCore.module('IgeTiledComponent', function (IgeClass, IgeCellSheet, IgeTileMap
 	
 	return IgeTiledComponent;
 });
-},{"irrelon-appcore":67}],12:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],12:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3841,7 +3841,7 @@ appCore.module('IgeTimeComponent', function (IgeEventingClass) {
 	
 	return IgeTimeComponent;
 });
-},{"irrelon-appcore":67}],13:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],13:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4411,7 +4411,7 @@ appCore.module('IgeTweenComponent', function (IgeClass) {
 	
 	return IgeTweenComponent;
 });
-},{"irrelon-appcore":67}],14:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],14:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4577,7 +4577,7 @@ appCore.module('IgeUiManagerComponent', function (IgeClass) {
 	
 	return IgeUiManagerComponent;
 });
-},{"irrelon-appcore":67}],15:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],15:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4789,7 +4789,7 @@ appCore.module('IgeVelocityComponent', function (IgeClass, IgePoint3d) {
 	
 	return IgeVelocityComponent;
 });
-},{"irrelon-appcore":67}],16:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],16:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4916,7 +4916,7 @@ appCore.module('IgeAudio', function (IgeEventingClass) {
 	
 	return IgeAudio;
 });
-},{"irrelon-appcore":67}],17:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],17:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5015,7 +5015,7 @@ appCore.module('IgeAudioComponent', function (IgeEventingClass, IgeAudio) {
 	
 	return IgeAudioComponent;
 });
-},{"irrelon-appcore":67}],18:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],18:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5082,7 +5082,7 @@ appCore.module('IgeCocoonJsComponent', function (IgeEventingClass) {
 	
 	return IgeCocoonJsComponent;
 });
-},{"irrelon-appcore":67}],19:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],19:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5774,7 +5774,7 @@ appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTransl
 	
 	return IgeEditorComponent;
 });
-},{"irrelon-appcore":67}],20:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],20:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5991,7 +5991,7 @@ appCore.module('IgeEditorRotateComponent', function (IgeEventingClass) {
 	
 	return IgeEditorRotateComponent;
 });
-},{"irrelon-appcore":67}],21:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],21:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6258,7 +6258,57 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 	return IgeEditorTranslateComponent;
 });
 
-},{"irrelon-appcore":67}],22:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],22:[function(_dereq_,module,exports){
+"use strict";
+
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('$textures', function () {
+	var IgeTextureStore = function () {
+		this._store = {};
+	};
+	
+	IgeTextureStore.prototype.add = function (name, texture) {
+		this._store[name] = texture;
+	};
+	
+	IgeTextureStore.prototype.addGroup = function (group) {
+		var i;
+		
+		for (i in group) {
+			if (group.hasOwnProperty(i)) {
+				this.add(i, group[i]);
+			}
+		}
+	};
+	
+	IgeTextureStore.prototype.remove = function (name) {
+		this._store[name].destroy();
+		delete this._store[name];
+	}
+	
+	IgeTextureStore.prototype.removeGroup = function (group) {
+		var i;
+		
+		for (i in group) {
+			if (group.hasOwnProperty(i)) {
+				this.remove(i);
+			}
+		}
+	}
+	
+	IgeTextureStore.prototype.get = function (name) {
+		var tex = this._store[name];
+		if (!tex) {
+			throw('Attempted to get texture that does not exist: ' + name);
+		}
+		
+		return tex;
+	};
+	
+	return new IgeTextureStore();
+});
+},{"irrelon-appcore":83}],23:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeArray', function (IgeEntity) {
@@ -6283,7 +6333,7 @@ appCore.module('IgeArray', function (IgeEntity) {
 	
 	return IgeArray;
 });
-},{"irrelon-appcore":67}],23:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],24:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6336,51 +6386,6 @@ appCore.module('igeBase', function () {
 			this.igeConfig.debug._util = _dereq_('util');
 		}
 	};
-	
-	appCore.depends(function (IgeTween) {
-		/**
-		 * Make property non-enumerable.
-		 */
-		Object.defineProperty(Object.prototype, 'tween', {
-			enumerable: false,
-			writable: true,
-			configurable: true
-		});
-		
-		/**
-		 * Augments all objects with the tween() method. Creates a new IgeTween
-		 * with the passed parameters that will act upon the object's properties.
-		 * The returned tween will not start tweening until a call to start() is
-		 * made.
-		 * @param {Object} props
-		 * @param {Number} durationMs
-		 * @param {Object=} options
-		 * @return {IgeTween}
-		 */
-		Object.prototype.tween = function (props, durationMs, options) {
-			var newTween = new IgeTween()
-				.targetObj(this)
-				.properties(props)
-				.duration(durationMs);
-			
-			if (options) {
-				if (options.beforeTween) {
-					newTween.beforeTween(options.beforeTween);
-				}
-				if (options.afterTween) {
-					newTween.afterTween(options.afterTween);
-				}
-				if (options.easing) {
-					newTween.easing(options.easing);
-				}
-				if (options.startTime) {
-					newTween.startTime(options.startTime);
-				}
-			}
-			
-			return newTween;
-		};
-	});
 	
 	/**
 	 * Make property non-enumerable.
@@ -6919,7 +6924,52 @@ appCore.module('igeBase', function () {
 	
 	return new IgeBase();
 });
-},{"irrelon-appcore":67,"util":71}],24:[function(_dereq_,module,exports){
+
+appCore.module('igeBase').run(function (IgeTween) {
+	/**
+	 * Make property non-enumerable.
+	 */
+	Object.defineProperty(Object.prototype, 'tween', {
+		enumerable: false,
+		writable: true,
+		configurable: true
+	});
+	
+	/**
+	 * Augments all objects with the tween() method. Creates a new IgeTween
+	 * with the passed parameters that will act upon the object's properties.
+	 * The returned tween will not start tweening until a call to start() is
+	 * made.
+	 * @param {Object} props
+	 * @param {Number} durationMs
+	 * @param {Object=} options
+	 * @return {IgeTween}
+	 */
+	Object.prototype.tween = function (props, durationMs, options) {
+		var newTween = new IgeTween()
+			.targetObj(this)
+			.properties(props)
+			.duration(durationMs);
+		
+		if (options) {
+			if (options.beforeTween) {
+				newTween.beforeTween(options.beforeTween);
+			}
+			if (options.afterTween) {
+				newTween.afterTween(options.afterTween);
+			}
+			if (options.easing) {
+				newTween.easing(options.easing);
+			}
+			if (options.startTime) {
+				newTween.startTime(options.startTime);
+			}
+		}
+		
+		return newTween;
+	};
+});
+},{"irrelon-appcore":83,"util":90}],25:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6943,7 +6993,7 @@ appCore.module('IgeBaseScene', function (IgeSceneGraph, IgeScene2d, IgeViewport)
 		addGraph: function (options) {
 			// Clear existing graph data
 			if (ige.$('baseScene')) {
-				this.destroyGraph();
+				this.removeGraph();
 			}
 			
 			// Create the scene
@@ -6974,7 +7024,7 @@ appCore.module('IgeBaseScene', function (IgeSceneGraph, IgeScene2d, IgeViewport)
 	
 	return IgeBaseScene;
 });
-},{"irrelon-appcore":67}],25:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],26:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7354,7 +7404,7 @@ appCore.module('IgeCamera', function (IgeEntity) {
 	
 	return IgeCamera;
 });
-},{"irrelon-appcore":67}],26:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],27:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7495,7 +7545,7 @@ appCore.module('IgeCellSheet', function (IgeTexture) {
 	
 	return IgeCellSheet;
 });
-},{"irrelon-appcore":67}],27:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],28:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeClass', function (igeBase) {
@@ -7946,7 +7996,7 @@ appCore.module('IgeClass', function (igeBase) {
 	
 	return IgeClass;
 });
-},{"irrelon-appcore":67}],28:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],29:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7974,7 +8024,7 @@ appCore.module('IgeCollisionMap2d', function (IgeEntity, IgeMap2d) {
 	
 	return IgeCollisionMap2d;
 });
-},{"irrelon-appcore":67}],29:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],30:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7993,7 +8043,7 @@ appCore.module('IgeDummyCanvas', function (IgeDummyContext) {
 	
 	return IgeDummyCanvas;
 });
-},{"irrelon-appcore":67}],30:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],31:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -8026,7 +8076,7 @@ appCore.module('IgeDummyContext', function () {
 	
 	return IgeDummyContext;
 });
-},{"irrelon-appcore":67}],31:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],32:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -10200,6 +10250,61 @@ appCore.module('IgeEngine', function (
 				IgeEntity.prototype._childMounted.call(this, child);
 			},
 			
+			route: function (path, definition) {
+				this._route = this._route || {};
+				this._route[path] = definition;
+			},
+			
+			go: function (path) {
+				var self = this,
+					definition = this._route[path],
+					requirements = [];
+				
+				this.log('Navigating to route "' + path + '"...');
+				
+				// Check existing route path and see if we need to remove anything
+				// from the current graph etc
+				
+				
+				// Check for universal route
+				if (!definition.client && !definition.server) {
+					// Definition is for a universal route
+					this.log('Route "' + path + '" is universal');
+				} else {
+					this.log('Route "' + path + '" is non-universal');
+					if (ige.isClient) {
+						definition = definition.client;
+					}
+					
+					if (ige.isServer) {
+						definition = definition.server;
+					}
+				}
+				
+				if (!definition.controller) {
+					this.log('ige.go() encounterd a route that has no controller specified: ' + path, 'error');
+				}
+				
+				this.log('Route "' + path + '" attempting setup...');
+				
+				if (definition.textures) {
+					this.log('Adding route "' + path + '" textures: ' + definition.textures);
+				}
+				
+				appCore.run([definition.textures, definition.sceneGraph, function (textures, sceneGraph) {
+					if (definition.sceneGraph) {
+						self.log('Adding route "' + path + '" sceneGraph: ' + definition.sceneGraph);
+						self.addGraph(definition.sceneGraph);
+					}
+					
+					self.log('Executing route "' + path + '" controller: ' + definition.controller);
+					appCore.run([definition.controller, function (Controller) {
+						self.log('Route "' + path + '" setup complete');
+						this._controller = new Controller()
+					}]);
+				}]);
+			},
+			
 			destroy: function () {
 				// Stop the engine and kill any timers
 				this.stop();
@@ -10218,7 +10323,7 @@ appCore.module('IgeEngine', function (
 		
 		return IgeEngine;
 	});
-},{"irrelon-appcore":67}],32:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],33:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -14395,7 +14500,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 	
 	return IgeEntity;
 });
-},{"irrelon-appcore":67}],33:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],34:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -14728,7 +14833,7 @@ appCore.module('IgeEventingClass', function (IgeClass) {
 	
 	return IgeEventingClass;
 });
-},{"irrelon-appcore":67}],34:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],35:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15023,7 +15128,7 @@ appCore.module('IgeFSM', function (IgeClass) {
 	
 	return IgeFSM;
 });
-},{"irrelon-appcore":67}],35:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],36:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15040,7 +15145,7 @@ appCore.module('IgeFilters', function () {
 	
 	return IgeFilters;
 });
-},{"irrelon-appcore":67}],36:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],37:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15476,7 +15581,7 @@ appCore.module('IgeFontEntity', function (IgeUiEntity, IgeTexture, IgeFontSmartT
 	
 	return IgeFontEntity;
 });
-},{"irrelon-appcore":67}],37:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],38:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15787,7 +15892,7 @@ appCore.module('IgeFontSheet', function (IgeTexture) {
 	
 	return IgeFontSheet;
 });
-},{"irrelon-appcore":67}],38:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],39:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15867,7 +15972,7 @@ appCore.module('IgeInterval', function (IgeEventingClass) {
 	
 	return IgeInterval;
 });
-},{"irrelon-appcore":67}],39:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],40:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -16153,7 +16258,7 @@ appCore.module('IgeMap2d', function (IgeClass) {
 	
 	return IgeMap2d;
 });
-},{"irrelon-appcore":67}],40:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],41:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -16310,7 +16415,7 @@ appCore.module('IgeMapStack2d', function (IgeClass) {
 	
 	return IgeMapStack2d;
 });
-},{"irrelon-appcore":67}],41:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],42:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -16761,7 +16866,7 @@ appCore.module('IgeMatrix2d', function (IgePoint3d) {
 	
 	return IgeMatrix2d;
 });
-},{"irrelon-appcore":67}],42:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],43:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -18820,7 +18925,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 	return IgeObject;
 });
 
-},{"irrelon-appcore":67}],43:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],44:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -18848,7 +18953,7 @@ appCore.module('IgeParticle', function (IgeEntity, IgeVelocityComponent) {
 	
 	return IgeParticle;
 });
-},{"irrelon-appcore":67}],44:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],45:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -19554,7 +19659,7 @@ appCore.module('IgeParticleEmitter', function (IgeUiEntity, IgeTween) {
 	
 	return IgeParticleEmitter;
 });
-},{"irrelon-appcore":67}],45:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],46:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -19904,7 +20009,7 @@ appCore.module('IgePathFinder', function (IgeEventingClass, IgePathNode) {
 	
 	return IgePathFinder;
 });
-},{"irrelon-appcore":67}],46:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],47:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -19960,7 +20065,7 @@ appCore.module('IgePathNode', function (IgePoint3d) {
 	
 	return IgePathNode;
 });
-},{"irrelon-appcore":67}],47:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],48:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20282,7 +20387,7 @@ appCore.module('IgePoint2d', function (IgeClass) {
 	
 	return IgePoint2d;
 });
-},{"irrelon-appcore":67}],48:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],49:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20619,7 +20724,7 @@ appCore.module('IgePoint3d', function (IgeClass) {
 	
 	return IgePoint3d;
 });
-},{"irrelon-appcore":67}],49:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],50:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21039,7 +21144,7 @@ appCore.module('IgePoly2d', function (IgeClass, IgePoint2d, IgeRect) {
 	
 	return IgePoly2d;
 });
-},{"irrelon-appcore":67}],50:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],51:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21406,7 +21511,7 @@ appCore.module('IgeQuest', function (IgeEventingClass) {
 	
 	return IgeQuest;
 });
-},{"irrelon-appcore":67}],51:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],52:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21616,7 +21721,7 @@ appCore.module('IgeRect', function (IgeClass) {
 	
 	return IgeRect;
 });
-},{"irrelon-appcore":67}],52:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],53:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21813,7 +21918,7 @@ appCore.module('IgeScene2d', function (IgeEntity) {
 	
 	return IgeScene2d;
 });
-},{"irrelon-appcore":67}],53:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],54:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21846,7 +21951,7 @@ appCore.module('IgeSceneGraph', function (IgeClass) {
 	
 	return IgeSceneGraph;
 });
-},{"irrelon-appcore":67}],54:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],55:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -22115,7 +22220,7 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 	
 	return IgeSpriteSheet;
 });
-},{"irrelon-appcore":67}],55:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],56:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -23063,7 +23168,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 	
 	return IgeTexture;
 });
-},{"irrelon-appcore":67}],56:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],57:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -23129,7 +23234,7 @@ appCore.module('IgeTextureAtlas', function (IgeTextureMap) {
 	
 	return IgeTextureAtlas;
 });
-},{"irrelon-appcore":67}],57:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],58:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -23864,7 +23969,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 	
 	return IgeTextureMap;
 });
-},{"irrelon-appcore":67}],58:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],59:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -24446,7 +24551,7 @@ appCore.module('IgeTileMap2d', function (IgeEntity, IgeTexture, IgeTileMap2dSmar
 	
 	return IgeTileMap2d;
 });
-},{"irrelon-appcore":67}],59:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],60:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -24518,7 +24623,7 @@ appCore.module('IgeTimeout', function (IgeInterval) {
 	
 	return IgeTimeout;
 });
-},{"irrelon-appcore":67}],60:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],61:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -24862,7 +24967,7 @@ appCore.module('IgeTween', function (IgeClass) {
 	
 	return IgeTween;
 });
-},{"irrelon-appcore":67}],61:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],62:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -25144,7 +25249,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 	
 	return IgeUiElement;
 });
-},{"irrelon-appcore":67}],62:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],63:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -25504,7 +25609,7 @@ appCore.module('IgeUiEntity', function (IgeEntity, IgeUiStyleExtension, IgeUiPos
 	
 	return IgeUiEntity;
 });
-},{"irrelon-appcore":67}],63:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],64:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -26120,7 +26225,7 @@ appCore.module('IgeViewport', function (IgeEntity, IgePoint3d, IgeCamera, IgeUiS
 	
 	return IgeViewport;
 });
-},{"irrelon-appcore":67}],64:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],65:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -26793,7 +26898,7 @@ appCore.module('IgeUiPositionExtension', function () {
 	
 	return IgeUiPositionExtension;
 });
-},{"irrelon-appcore":67}],65:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],66:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -27149,7 +27254,1701 @@ appCore.module('IgeUiStyleExtension', function () {
 	
 	return IgeUiStyleExtension;
 });
-},{"irrelon-appcore":67}],66:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],67:[function(_dereq_,module,exports){
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiAutoFlow', function (IgeUiElement) {
+	var IgeUiAutoFlow = IgeUiElement.extend({
+		classId: 'IgeUiAutoFlow',
+		
+		init: function () {
+			IgeUiElement.prototype.init.call(this);
+			
+			this._currentHeight = 0;
+		},
+		
+		tick: function (ctx) {
+			// Loop children and re-position then
+			var arr = this._children,
+				arrCount = arr.length, i,
+				item, itemY, currentY = 0;
+			
+			for (i = 0; i < arrCount; i++) {
+				item = arr[i];
+				itemY = item._bounds2d.y;
+				
+				item.top(currentY);
+				
+				currentY += itemY;
+			}
+			
+			// Now do the super-class tick
+			IgeUiElement.prototype.tick.call(this, ctx);
+		}
+	});
+	
+	return IgeUiAutoFlow;
+});
+},{"irrelon-appcore":83}],68:[function(_dereq_,module,exports){
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiButton', function (IgeUiElement) {
+	var IgeUiButton = IgeUiElement.extend({
+		classId: 'IgeUiButton',
+		
+		init: function () {
+			var self = this;
+			
+			IgeUiElement.prototype.init.call(this);
+			
+			this.on('mouseDown', function () {
+				if (self._autoCell) {
+					// React to the mouse events
+					self.cell(this._cell + 1);
+					self.cacheDirty(true);
+				}
+			});
+			
+			this.on('mouseUp', function () {
+				if (self._autoCell) {
+					// React to the mouse events
+					self.cell(this._cell - 1);
+					self.cacheDirty(true);
+				}
+			});
+		},
+		
+		/**
+		 * Gets / sets the auto cell flag. If true the button will automatically
+		 * react to being clicked on and update the texture cell to +1 when mousedown
+		 * and -1 when mouseup allowing you to define cell sheets of button graphics
+		 * with the up-state on cell 1 and the down-state on cell 2.
+		 * @param {Boolean=} val Either true or false.
+		 * @returns {*}
+		 */
+		autoCell: function (val) {
+			if (val !== undefined) {
+				this._autoCell = val;
+				
+				if (val) {
+					this.mouseEventsActive(true);
+				}
+				return this;
+			}
+			
+			return this._autoCell;
+		},
+		
+		/**
+		 * Fires a mouse-down and a mouse-up event for the entity.
+		 * @returns {*}
+		 */
+		click: function () {
+			if (this._mouseDown) { this._mouseDown(); }
+			if (this._mouseUp) { this._mouseUp(); }
+			
+			return this;
+		},
+		
+		tick: function (ctx) {
+			IgeUiElement.prototype.tick.call(this, ctx);
+			
+			// Now draw any ui overlays
+			
+			// Check for the old way to assign text to the button
+			var uiData = this.data('ui');
+			if (uiData) {
+				// Draw text
+				if (uiData['text']) {
+					ctx.font = uiData['text'].font || "normal 12px Verdana";
+					ctx.textAlign = uiData['text'].align || 'center';
+					ctx.textBaseline = uiData['text'].baseline || 'middle';
+					ctx.fillStyle = uiData['text'].color || '#ffffff';
+					ctx.fillText(uiData['text'].value, 0, 0);
+				}
+			}
+			
+			// Check for the new way to assign text to the button
+			if (this._value) {
+				// Draw text
+				ctx.textAlign = 'center';
+				ctx.textBaseline = 'middle';
+				ctx.fillStyle = this._color;
+				ctx.fillText(this._value, 0, 0);
+			}
+		}
+	});
+	
+	return IgeUiButton;
+});
+},{"irrelon-appcore":83}],69:[function(_dereq_,module,exports){
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiDropDown', function (IgeUiElement) {
+	var IgeUiDropDown = IgeUiElement.extend({
+		classId: 'IgeUiDropDown',
+		
+		init: function () {
+			var self = this;
+			
+			IgeUiElement.prototype.init.call(this);
+			
+			// Define some default styles
+			if (!ige.ui.style('.IgeUiDropDownOption')) {
+				ige.ui.style('.IgeUiDropDownOption', {
+					backgroundColor: null
+				});
+				
+				ige.ui.style('.IgeUiDropDownOption:hover', {
+					backgroundColor: '#00b4ff',
+					color: '#ffffff'
+				});
+			}
+			
+			// Set defaults
+			this.borderColor('#000000');
+			this.borderWidth(1);
+			this.backgroundColor('#ffffff');
+			this.color('#000000');
+			this.width(200);
+			this.height(30);
+			
+			this._options = [];
+			this._toggleState = false;
+			
+			this._label = new IgeUiLabel()
+				.left(0)
+				.right(30)
+				.top(0)
+				.bottom(0)
+				.mount(this);
+			
+			this.on('mouseUp', function () {
+				// Toggle the list drop-down
+				self.toggle();
+			});
+		},
+		
+		options: function (ops) {
+			if (ops !== undefined) {
+				this._options = ops;
+				
+				// Loop the options and check for a selected one
+				var arrCount = ops.length;
+				
+				while (arrCount--) {
+					if (ops[arrCount].selected) {
+						// Set this option as selected
+						this.selectIndex(arrCount);
+						return this;
+					}
+				}
+				
+				// No item selected, select the first option
+				this.selectIndex(0);
+				
+				return this;
+			}
+			
+			return this;
+		},
+		
+		addOption: function (op) {
+			if (op !== undefined) {
+				this._options.push(op);
+				
+				if (op.selected) {
+					// Set this option as selected
+					this.selectIndex(this._options.length - 1);
+					return this;
+				}
+				
+				// No item selected, select the first option
+				this.selectIndex(0);
+				
+				return this;
+			}
+			
+			return this;
+		},
+		
+		removeAllOptions: function () {
+			this._options = [];
+			this.value({
+				text: '',
+				value: ''
+			});
+		},
+		
+		blur: function () {
+			IgeUiElement.prototype.blur.call(this);
+			if (this._toggleState) {
+				this.toggle();
+			}
+		},
+		
+		selectIndex: function (index) {
+			if (this._options[index]) {
+				this.value(this._options[index]);
+				this.emit('change', this.value());
+			}
+		},
+		
+		value: function (val) {
+			if (val !== undefined) {
+				IgeUiElement.prototype.value.call(this, val);
+				this._label.value(val.text);
+				return this;
+			}
+			
+			return this._value.value;
+		},
+		
+		toggle: function () {
+			this._toggleState = !this._toggleState;
+			
+			if (this._toggleState) {
+				var self = this,
+					optionContainer,
+					mainTop = this._bounds2d.y + 5,
+					mainHeight = this._options.length * 30,
+					optionTop = 0,
+					i;
+				
+				optionContainer =new IgeUiElement()
+					.id(this._id + '_options')
+					.backgroundColor(this._backgroundColor)
+					.borderColor(this._borderColor)
+					.borderWidth(this._borderWidth)
+					.top(mainTop)
+					.width(this._bounds2d.x)
+					.height(mainHeight)
+					.mount(this);
+				
+				for (i = 0; i < this._options.length; i++) {
+					ige.ui.style('#' + this._id + '_options_' + i, {
+						color: this._color
+					});
+					
+					new IgeUiLabel()
+						.id(this._id + '_options_' + i)
+						.data('optionIndex', i)
+						.styleClass('IgeUiDropDownOption')
+						.value(this._options[i].text)
+						.top((this._bounds2d.y * i) + 1)
+						.left(1)
+						.width(this._bounds2d.x - 2)
+						.height(this._bounds2d.y - 2)
+						.allowFocus(true)
+						.allowActive(true)
+						.allowHover(true)
+						.mouseUp(function () {
+							self.selectIndex(this.data('optionIndex'));
+						})
+						.mount(optionContainer);
+				}
+			} else {
+				ige.$(this._id + '_options').destroy();
+			}
+		},
+		
+		tick: function (ctx) {
+			IgeUiElement.prototype.tick.call(this, ctx);
+			
+			// Draw drop-down box
+			ctx.fillStyle = '#cccccc';
+			ctx.fillRect(Math.floor(this._bounds2d.x2) - 30, -this._bounds2d.y2 + 1, 30, this._bounds2d.y - 2);
+			
+			// Chevron
+			ctx.strokeStyle = this._color;
+			ctx.beginPath();
+			ctx.moveTo(this._bounds2d.x2 - 18.5, -this._bounds2d.y2 + 14.5);
+			ctx.lineTo(this._bounds2d.x2 - 14.5, 2.5);
+			ctx.lineTo(this._bounds2d.x2 - 10.5, -this._bounds2d.y2 + 14.5);
+			ctx.stroke();
+			
+			this._renderBorder(ctx);
+		}
+	});
+	
+	return IgeUiDropDown;
+});
+},{"irrelon-appcore":83}],70:[function(_dereq_,module,exports){
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiGridPanel', function (IgeUiElement) {
+	var IgeUiGridPanel = IgeUiElement.extend({
+		classId: 'IgeUiGridPanel',
+		
+		init: function (cellWidth, cellHeight) {
+			IgeUiElement.prototype.init.call(this);
+			
+			this._gridCellWidth = cellWidth || 32;
+			this._gridCellHeight = cellHeight || 32;
+		},
+		
+		_childMounted: function (obj) {
+			IgeUiElement.prototype._childMounted.call(this, obj);
+			
+			var gridWidth = Math.floor(this._bounds2d.x / this._gridCellWidth),
+				gridHeight = Math.floor(this._bounds2d.y / this._gridCellHeight),
+				totalChildren = this._children.length - 1, positionX, positionY;
+			
+			// Position this child in the grid
+			positionY = Math.floor(totalChildren / gridWidth);
+			positionX = totalChildren - (gridWidth * positionY);
+			
+			obj.left(this._gridCellWidth * positionX)
+				.top(this._gridCellHeight * positionY);
+		}
+	});
+	
+	return IgeUiGridPanel;
+});
+},{"irrelon-appcore":83}],71:[function(_dereq_,module,exports){
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiInlineFlow', function (IgeUiElement) {
+	var IgeUiInlineFlow = IgeUiElement.extend({
+		classId: 'IgeUiInlineFlow',
+		
+		init: function () {
+			IgeUiElement.prototype.init.call(this);
+		},
+		
+		tick: function (ctx) {
+			// Loop children and re-position them
+			var arr = this._children,
+				arrCount = arr.length, i,
+				item, itemY, currentX = 0;
+			
+			for (i = 0; i < arrCount; i++) {
+				item = arr[i];
+				itemX = item._bounds2d.x;
+				item.left(currentX);
+				currentX += itemX;
+			}
+			
+			// call the super-class tick
+			IgeUiElement.prototype.tick.call(this, ctx);
+		}
+	});
+	
+	return IgeUiInlineFlow;
+});
+},{"irrelon-appcore":83}],72:[function(_dereq_,module,exports){
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiLabel', function (IgeUiElement) {
+	/**
+	 * Provides a UI label entity. Basic on-screen text label.
+	 */
+	var IgeUiLabel = IgeUiElement.extend({
+		classId: 'IgeUiLabel',
+		
+		/**
+		 * @constructor
+		 */
+		init: function () {
+			IgeUiElement.prototype.init.call(this);
+			
+			var self = this;
+			
+			this._value = '';
+			
+			this._fontEntity = new IgeFontEntity()
+				.left(0)
+				.middle(0)
+				.textAlignX(0)
+				.textAlignY(0)
+				.mount(this);
+			
+			// Set defaults
+			this.font('10px Verdana');
+			this.paddingLeft(5);
+			this.allowActive(false);
+			this.allowFocus(false);
+			this.allowHover(false);
+		},
+		
+		/**
+		 * Extended method to auto-update the width of the child
+		 * font entity automatically to fill the text box.
+		 * @param px
+		 * @param lockAspect
+		 * @param modifier
+		 * @param noUpdate
+		 * @return {*}
+		 */
+		width: function (px, lockAspect, modifier, noUpdate) {
+			var val;
+			
+			// Call the main super class method
+			val = IgeUiElement.prototype.width.call(this, px, lockAspect, modifier, noUpdate);
+			
+			// Update the font entity width - 10px for margin
+			this._fontEntity.width(px - 10, lockAspect, modifier, noUpdate);
+			
+			return val;
+		},
+		
+		/**
+		 * Extended method to auto-update the height of the child
+		 * font entity automatically to fill the text box.
+		 * @param px
+		 * @param lockAspect
+		 * @param modifier
+		 * @param noUpdate
+		 * @return {*}
+		 */
+		height: function (px, lockAspect, modifier, noUpdate) {
+			var val;
+			
+			// Call the main super class method
+			val = IgeUiElement.prototype.height.call(this, px, lockAspect, modifier, noUpdate);
+			
+			// Update the font entity height
+			this._fontEntity.height(px, lockAspect, modifier, noUpdate);
+			
+			return val;
+		},
+		
+		/**
+		 * Gets / sets the text value of the input box.
+		 * @param {String=} val The text value.
+		 * @return {*}
+		 */
+		value: function (val) {
+			if (val !== undefined) {
+				if (this._value !== val) {
+					this._value = val;
+					
+					if (!val && this._placeHolder) {
+						// Assign placeholder text and color
+						this._fontEntity.text(this._placeHolder);
+						this._fontEntity.color(this._placeHolderColor);
+					} else {
+						// Set the text of the font entity to the value
+						if (!this._mask) {
+							// Assign text directly
+							this._fontEntity.text(this._value);
+						} else {
+							// Assign a mask value instead
+							this._fontEntity.text(new Array(this._value.length + 1).join(this._mask))
+						}
+						this._fontEntity.color(this._color);
+					}
+					
+					this.emit('change', this._value);
+				}
+				return this;
+			}
+			
+			return this._value;
+		},
+		
+		/**
+		 * Gets / sets the font sheet (texture) that the text box will
+		 * use when rendering text inside the box.
+		 * @param fontSheet
+		 * @return {*}
+		 */
+		fontSheet: function (fontSheet) {
+			if (fontSheet !== undefined) {
+				this._fontSheet = fontSheet;
+				
+				// Set the font sheet as the texture for our font entity
+				this._fontEntity.texture(this._fontSheet);
+				return this;
+			}
+			
+			return this._fontSheet;
+		},
+		
+		font: function (val) {
+			if (val !== undefined) {
+				if (typeof(val) === 'string') {
+					// Native font name
+					return this.nativeFont(val);
+				} else {
+					// Font sheet
+					return this.fontSheet(val);
+				}
+			}
+			
+			if (this._fontEntity._nativeMode) {
+				// Return native font
+				return this.nativeFont();
+			} else {
+				// Return font sheet
+				return this.fontSheet();
+			}
+		},
+		
+		nativeFont: function (val) {
+			if (val !== undefined) {
+				this._fontEntity.nativeFont(val);
+				return this;
+			}
+			
+			return this._fontEntity.nativeFont();
+		},
+		
+		nativeStroke: function (val) {
+			if (val !== undefined) {
+				this._fontEntity.nativeStroke(val);
+				return this;
+			}
+			
+			return this._fontEntity.nativeStroke();
+		},
+		
+		nativeStrokeColor: function (val) {
+			if (val !== undefined) {
+				this._fontEntity.nativeStrokeColor(val);
+				return this;
+			}
+			
+			return this._fontEntity.nativeStrokeColor();
+		},
+		
+		color: function (val) {
+			if (val !== undefined) {
+				this._color = val;
+				
+				if (!this._value && this._placeHolder && this._placeHolderColor) {
+					this._fontEntity.color(this._placeHolderColor);
+				} else {
+					this._fontEntity.color(val);
+				}
+				return this;
+			}
+			
+			return this._color;
+		},
+		
+		_mounted: function () {
+			// Check if we have a text value
+			if (!this._value && this._placeHolder) {
+				// Assign placeholder text and color
+				this._fontEntity.text(this._placeHolder);
+				this._fontEntity.color(this._placeHolderColor);
+			}
+			
+			IgeUiElement.prototype._mounted.call(this);
+		}
+	});
+	
+	return IgeUiLabel;
+});
+},{"irrelon-appcore":83}],73:[function(_dereq_,module,exports){
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiMenu', function (IgeUiElement, IgeUiMenuItem) {
+	/**
+	 * Provides a UI drop-down menu entity.
+	 */
+	var IgeUiMenu = IgeUiElement.extend({
+		classId: 'IgeUiMenu',
+		
+		/**
+		 * Gets / sets the menu definition.
+		 * @param {Object=} val The menu definition object.
+		 * @return {*}
+		 */
+		menuData: function (val) {
+			if (val !== undefined) {
+				this._menuData = val;
+				
+				// Remove all existing children from the menu
+				this.destroyChildren();
+				
+				// Build the new menu
+				this._buildMenu(this._menuData, this);
+				return this;
+			}
+			
+			return this._menuData;
+		},
+		
+		menuMode: function (mode) {
+			if (mode !== undefined) {
+				this._menuMode = mode;
+				return this;
+			}
+			
+			return this._menuMode;
+		},
+		
+		/**
+		 * Gets / sets the font sheet (texture) that the text box will
+		 * use when rendering text inside the box.
+		 * @param fontSheet
+		 * @return {*}
+		 */
+		fontSheet: function (fontSheet) {
+			if (fontSheet !== undefined) {
+				this._fontSheet = fontSheet;
+				return this;
+			}
+			
+			return this._fontSheet;
+		},
+		
+		addItem: function (item) {
+			if (item !== undefined) {
+				
+			}
+		},
+		
+		_buildMenu: function (data, parent) {
+			var arrCount = data.length, i,
+				item, ent, left = 0, top = 0;
+			
+			for (i = 0; i < arrCount; i++) {
+				item = data[i];
+				
+				if (this._menuMode) {
+					top += this.height();
+				}
+				
+				ent = new IgeUiMenuItem()
+					.backgroundColor('#666666')
+					.left(left)
+					.middle(top)
+					.height(this.height())
+					.fontSheet(this._fontSheet)
+					.menuData(item)
+					.mount(parent);
+				
+				if (!this._menuMode) {
+					left += item.width;
+				}
+			}
+		}
+	});
+	
+	return IgeUiMenu;
+});
+
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiMenuItem', function (IgeUiElement) {
+	var IgeUiMenuItem = IgeUiElement.extend({
+		classId: 'IgeUiMenuItem',
+		
+		menuData: function (menuData) {
+			if (menuData !== undefined) {
+				this._menuData = menuData;
+				
+				if (menuData.width) {
+					this.width(menuData.width);
+				}
+				if (menuData.id) {
+					this.id(menuData.id);
+				}
+				if (menuData.mouseUp) {
+					this.mouseUp(menuData.mouseUp);
+				}
+				if (menuData.mouseOver) {
+					this.mouseOver(menuData.mouseOver);
+				}
+				if (menuData.mouseOut) {
+					this.mouseOut(menuData.mouseOut);
+				}
+				
+				this._labelEntity = new IgeFontEntity()
+					.id(this.id() + '_label')
+					.texture(this._fontSheet)
+					.left(5)
+					.middle(0)
+					.width(menuData.width)
+					.height(this.height())
+					.textAlignX(0)
+					.textAlignY(1)
+					.text(menuData.text)
+					.mount(this);
+				
+				return this;
+			}
+			
+			return this._menuData;
+		},
+		
+		/**
+		 * Gets / sets the font sheet (texture) that the menu item will
+		 * use when rendering text.
+		 * @param fontSheet
+		 * @return {*}
+		 */
+		fontSheet: function (fontSheet) {
+			if (fontSheet !== undefined) {
+				this._fontSheet = fontSheet;
+				return this;
+			}
+			
+			return this._fontSheet;
+		},
+		
+		/**
+		 * Opens the menu item so it's child items are visible.
+		 */
+		open: function () {
+			if (this._menuData.items) {
+				this._childMenu = new IgeUiMenu()
+					.id(this.id() + '_childMenu')
+					.depth(this.depth() + 1)
+					.fontSheet(this._fontSheet)
+					.left(0)
+					.top(this.height())
+					.width(100)
+					.height(30)
+					.menuMode(1)
+					.menuData(this._menuData.items)
+					.mount(this);
+			}
+		},
+		
+		/**
+		 * Closes the menu item so it's child items are hidden.
+		 */
+		close: function () {
+			if (this._childMenu) {
+				this._childMenu.destroy();
+			}
+		}
+	});
+	
+	return IgeUiMenuItem;
+});
+},{"irrelon-appcore":83}],74:[function(_dereq_,module,exports){
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiProgressBar', function (IgeUiElement) {
+	// TODO: Document this class
+	var IgeUiProgressBar = IgeUiElement.extend({
+		classId: 'IgeUiProgressBar',
+		
+		init: function () {
+			IgeUiElement.prototype.init.call(this);
+			
+			// Set some defaults
+			this._min = 0;
+			this._max = 100;
+			this._progress = 0;
+			this._barColor = '#fff600';
+			this._barText = {
+				pre: '',
+				post: '',
+				color: ''
+			};
+		},
+		
+		barBackColor: function (val) {
+			if (val !== undefined) {
+				this._barBackColor = val;
+				return this;
+			}
+			
+			return this._barBackColor;
+		},
+		
+		barColor: function (val) {
+			if (val !== undefined) {
+				this._barColor = val;
+				return this;
+			}
+			
+			return this._barColor;
+		},
+		
+		barBorderColor: function (val) {
+			if (val !== undefined) {
+				this._barBorderColor = val;
+				return this;
+			}
+			
+			return this._barBorderColor;
+		},
+		
+		barText: function (pre, post, color) {
+			if (pre !== undefined && post !== undefined && color !== undefined) {
+				this._barText = {
+					pre: pre,
+					post: post,
+					color: color
+				};
+				return this;
+			}
+			
+			return this._barText;
+		},
+		
+		min: function (val) {
+			if (val !== undefined) {
+				this._min = val;
+				return this;
+			}
+			
+			return this._min;
+		},
+		
+		max: function (val) {
+			if (val !== undefined) {
+				this._max = val;
+				return this;
+			}
+			
+			return this._max;
+		},
+		
+		progress: function (val) {
+			if (val !== undefined) {
+				if (val < this._min) {
+					val = this._min;
+				}
+				
+				if (val > this._max) {
+					val = this._max;
+				}
+				
+				this._progress = val;
+				return this;
+			}
+			
+			return this._progress;
+		},
+		
+		bindData: function (obj, propName) {
+			if (obj !== undefined && propName !== undefined) {
+				// Set the object and property to automatically
+				// track progress from
+				this._bindDataObject = obj;
+				this._bindDataProperty = propName;
+			}
+			
+			return this;
+		},
+		
+		render: function (ctx) {
+			// Check for an auto-progress update
+			if (this._bindDataObject && this._bindDataProperty) {
+				if (this._bindDataObject._alive === false) {
+					// The object we have bind data from has been
+					// destroyed so release our reference to it!
+					delete this._bindDataObject;
+				} else {
+					this.progress(parseInt(this._bindDataObject[this._bindDataProperty]));
+				}
+			}
+			
+			var min = this._min,
+				max = this._max,
+				progress = this._progress,
+				interval = this._bounds2d.x / (max - min),
+				barWidth = (progress - min) * interval;
+			
+			// Check the value is not out of range
+			if (progress > max) {
+				progress = max;
+			}
+			
+			if (progress < min) {
+				progress = min;
+			}
+			
+			// Draw bar fill
+			if (this._barBackColor) {
+				ctx.fillStyle = this._barBackColor;
+				ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
+			}
+			
+			// Draw bar
+			if (this._barColor) {
+				ctx.fillStyle = this._barColor;
+				ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, barWidth, this._bounds2d.y);
+			}
+			
+			// Draw bar border
+			if (this._barBorderColor) {
+				ctx.strokeStyle = this._barBorderColor;
+				ctx.strokeRect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
+			}
+			
+			// Draw bar text centered
+			if (this._barText && (this._barText.pre || this._barText.post)) {
+				ctx.textAlign = 'center';
+				ctx.textBaseline = 'middle';
+				
+				ctx.fillStyle = this._barText.color;
+				ctx.fillText(this._barText.pre + String(Math.floor(progress)) + this._barText.post, 0, 0);
+			}
+		},
+		
+		tick: function (ctx) {
+			this._transformContext(ctx);
+			this.render(ctx);
+			IgeUiElement.prototype.tick.call(this, ctx, true);
+		}
+	});
+	
+	return IgeUiProgressBar;
+});
+},{"irrelon-appcore":83}],75:[function(_dereq_,module,exports){
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiRadioButton', function (IgeUiButton) {
+	var IgeUiRadioButton = IgeUiButton.extend({
+		classId: 'IgeUiRadioButton',
+		
+		radioGroup: function (val) {
+			if (val !== undefined) {
+				this._uiRadioGroup = val;
+				return this;
+			}
+			
+			return this._uiRadioGroup;
+		},
+		
+		select: function (val) {
+			if (val !== undefined) {
+				this._uiOnSelect = val;
+				return this;
+			}
+			
+			if (this._parent) {
+				// Loop the parent object's children, find any
+				// radio buttons that belong to this radio group
+				// and then deselect them
+				var arr = this._parent._children,
+					arrCount = arr.length,
+					item;
+				
+				while (arrCount--) {
+					item = arr[arrCount];
+					if (item !== this) {
+						if (item._uiRadioGroup === this._uiRadioGroup) {
+							// The item is part of the same radio group!
+							if (item._uiSelected) {
+								// The item is selected so un-select it!
+								item._uiSelected = false;
+								
+								// Fire the item's onDeSelect method
+								if (item._uiOnDeSelect) {
+									item._uiOnDeSelect();
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			// Now set this item as selected
+			this._uiSelected = true;
+			
+			// Fire this item's onSelect method
+			if (this._uiOnSelect) {
+				this._uiOnSelect();
+			}
+			
+			return this;
+		},
+		
+		deSelect: function (val) {
+			if (val !== undefined) {
+				this._uiOnDeSelect = val;
+				return this;
+			}
+			
+			this._uiSelected = false;
+			
+			if (this._uiOnDeSelect) {
+				this._uiOnDeSelect();
+			}
+			
+			return this;
+		}
+	});
+	
+	return IgeUiRadioButton;
+});
+},{"irrelon-appcore":83}],76:[function(_dereq_,module,exports){
+
+},{}],77:[function(_dereq_,module,exports){
+arguments[4][76][0].apply(exports,arguments)
+},{"dup":76}],78:[function(_dereq_,module,exports){
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiTextBox', function (IgeUiElement) {
+	/**
+	 * Provides a UI text entry box. When provided with focus this UI entity will
+	 * capture keyboard input and display it, similar in usage to the HTML input
+	 * text element.
+	 */
+	//TODO: Make cursor a text entry cursor on hover
+	var IgeUiTextBox = IgeUiElement.extend({
+		classId: 'IgeUiTextBox',
+		
+		/**
+		 * @constructor
+		 */
+		init: function () {
+			IgeUiElement.prototype.init.call(this);
+			
+			var self = this;
+			
+			this._value = '';
+			this._caretStart = 0;
+			this._caretEnd = 0;
+			
+			this._fontEntity = new IgeFontEntity()
+				.left(5)
+				.middle(0)
+				.textAlignX(0)
+				.textAlignY(0)
+				.mount(this);
+			
+			var blurFunc = function () {
+				if (self._domElement) {
+					self._domElement.parentNode.removeChild(self._domElement);
+					delete self._domElement;
+				}
+			};
+			
+			var focusFunc = function () {
+				ige.input.stopPropagation();
+				blurFunc();
+				
+				var input,
+					body,
+					entScreenPos = self.screenPosition();
+				
+				input = document.createElement('input');
+				input.setAttribute('type', 'text');
+				
+				// Position the infobox and set content
+				input.style.position = 'absolute';
+				input.style.top = (entScreenPos.y - self._bounds2d.y2) + 'px';
+				input.style.left = (entScreenPos.x - self._bounds2d.x2) + 'px';
+				input.style.width = self._bounds2d.x + 'px';
+				input.style.zIndex = -1;
+				input.style.opacity = '0';
+				
+				body = document.getElementsByTagName('body')[0];
+				
+				body.appendChild(input);
+				input.focus();
+				
+				// Now add the existing text to the box
+				input.setAttribute('value', self._value);
+				
+				// Set the caret position
+				input.selectionStart = self._value.length;
+				input.selectionEnd = self._value.length;
+				
+				self._caretStart = self._value.length;
+				self._caretEnd = self._value.length;
+				
+				// Listen for events from the temp input element
+				input.addEventListener('keyup', function (event) {
+					self.value(this.value);
+					
+					if (event.keyCode === 13) {
+						// Enter pressed
+						self.emit('enter', self._value);
+					}
+				});
+				
+				input.addEventListener('keydown', function (event) {
+					self.value(this.value);
+				});
+				
+				input.addEventListener('mouseup', function (event) {
+					self._caretStart = this.selectionStart;
+					self._caretEnd = this.selectionEnd;
+				});
+				
+				input.addEventListener('blur', function (event) {
+					this.focus();
+				});
+				
+				self._domElement = input;
+			};
+			
+			// On focus, create a temp input element in the DOM and focus to it
+			this.on('focus', focusFunc);
+			this.on('mouseUp', focusFunc);
+			this.on('mouseDown', function () { ige.input.stopPropagation(); });
+			
+			this.on('uiUpdate', function () {
+				if (self._domElement) {
+					// Update the transformation matrix
+					self.updateTransform();
+					
+					var input = self._domElement,
+						entScreenPos = self.screenPosition();
+					
+					// Reposition the dom element
+					input.style.top = (entScreenPos.y - self._bounds2d.y2) + 'px';
+					input.style.left = (entScreenPos.x - self._bounds2d.x2) + 'px';
+				}
+			});
+			
+			this.on('blur', blurFunc);
+		},
+		
+		/**
+		 * Extended method to auto-update the width of the child
+		 * font entity automatically to fill the text box.
+		 * @param px
+		 * @param lockAspect
+		 * @param modifier
+		 * @param noUpdate
+		 * @return {*}
+		 */
+		width: function (px, lockAspect, modifier, noUpdate) {
+			var val;
+			
+			// Call the main super class method
+			val = IgeUiElement.prototype.width.call(this, px, lockAspect, modifier, noUpdate);
+			
+			// Update the font entity width - 10px for margin
+			this._fontEntity.width(px - 10, lockAspect, modifier, noUpdate);
+			
+			return val;
+		},
+		
+		/**
+		 * Extended method to auto-update the height of the child
+		 * font entity automatically to fill the text box.
+		 * @param px
+		 * @param lockAspect
+		 * @param modifier
+		 * @param noUpdate
+		 * @return {*}
+		 */
+		height: function (px, lockAspect, modifier, noUpdate) {
+			var val;
+			
+			// Call the main super class method
+			val = IgeUiElement.prototype.height.call(this, px, lockAspect, modifier, noUpdate);
+			
+			// Update the font entity height
+			this._fontEntity.height(px, lockAspect, modifier, noUpdate);
+			
+			return val;
+		},
+		
+		/**
+		 * Gets / sets the text value of the input box.
+		 * @param {String=} val The text value.
+		 * @return {*}
+		 */
+		value: function (val) {
+			if (val !== undefined) {
+				if (this._value !== val) {
+					this._value = val;
+					
+					if (!val && this._placeHolder) {
+						// Assign placeholder text and color
+						this._fontEntity.text(this._placeHolder);
+						this._fontEntity.color(this._placeHolderColor);
+					} else {
+						// Set the text of the font entity to the value
+						if (!this._mask) {
+							// Assign text directly
+							this._fontEntity.text(this._value);
+						} else {
+							// Assign a mask value instead
+							this._fontEntity.text(new Array(this._value.length + 1).join(this._mask))
+						}
+						this._fontEntity.color(this._color);
+					}
+					
+					this.emit('change', this._value);
+				}
+				return this;
+			}
+			
+			return this._value;
+		},
+		
+		placeHolder: function (val) {
+			if (val !== undefined) {
+				this._placeHolder = val;
+				return this;
+			}
+			
+			return this._placeHolder;
+		},
+		
+		placeHolderColor: function (val) {
+			if (val !== undefined) {
+				this._placeHolderColor = val;
+				return this;
+			}
+			
+			return this._placeHolderColor;
+		},
+		
+		mask: function (val) {
+			if (val !== undefined) {
+				this._mask = val;
+				return this;
+			}
+			
+			return this._mask;
+		},
+		
+		/**
+		 * Gets / sets the font sheet (texture) that the text box will
+		 * use when rendering text inside the box.
+		 * @param fontSheet
+		 * @return {*}
+		 */
+		fontSheet: function (fontSheet) {
+			if (fontSheet !== undefined) {
+				this._fontSheet = fontSheet;
+				
+				// Set the font sheet as the texture for our font entity
+				this._fontEntity.texture(this._fontSheet);
+				return this;
+			}
+			
+			return this._fontSheet;
+		},
+		
+		font: function (val) {
+			if (val !== undefined) {
+				if (typeof(val) === 'string') {
+					// Native font name
+					return this.nativeFont(val);
+				} else {
+					// Font sheet
+					return this.fontSheet(val);
+				}
+			}
+			
+			if (this._fontEntity._nativeMode) {
+				// Return native font
+				return this.nativeFont();
+			} else {
+				// Return font sheet
+				return this.fontSheet();
+			}
+		},
+		
+		nativeFont: function (val) {
+			if (val !== undefined) {
+				this._fontEntity.nativeFont(val);
+				return this;
+			}
+			
+			return this._fontEntity.nativeFont();
+		},
+		
+		nativeStroke: function (val) {
+			if (val !== undefined) {
+				this._fontEntity.nativeStroke(val);
+				return this;
+			}
+			
+			return this._fontEntity.nativeStroke();
+		},
+		
+		nativeStrokeColor: function (val) {
+			if (val !== undefined) {
+				this._fontEntity.nativeStrokeColor(val);
+				return this;
+			}
+			
+			return this._fontEntity.nativeStrokeColor();
+		},
+		
+		color: function (val) {
+			if (val !== undefined) {
+				this._color = val;
+				
+				if (!this._value && this._placeHolder && this._placeHolderColor) {
+					this._fontEntity.color(this._placeHolderColor);
+				} else {
+					this._fontEntity.color(val);
+				}
+				return this;
+			}
+			
+			return this._color;
+		},
+		
+		_mounted: function () {
+			// Check if we have a text value
+			if (!this._value && this._placeHolder) {
+				// Assign placeholder text and color
+				this._fontEntity.text(this._placeHolder);
+				this._fontEntity.color(this._placeHolderColor);
+			}
+			
+			IgeUiElement.prototype._mounted.call(this);
+		}
+	});
+	
+	return IgeUiTextBox;
+});
+},{"irrelon-appcore":83}],79:[function(_dereq_,module,exports){
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiTimeStream', function (IgeUiElement) {
+	var IgeUiTimeStream = IgeUiElement.extend({
+		classId: 'IgeUiTimeStream',
+		
+		monitor: function (entity) {
+			this._entity = entity;
+		},
+		
+		tick: function (ctx) {
+			// Draw timeline
+			var i, text, xAdjust,
+				arr, arrCount, arrItem,
+				renderTime = ige._tickStart - ige.network.stream._renderLatency,
+				deltaTime;
+			
+			IgeUiElement.prototype.tick.call(this, ctx);
+			
+			ctx.strokeStyle = '#fffc00';
+			ctx.beginPath();
+			ctx.moveTo(-200, -25.5);
+			ctx.lineTo(200, -25.5);
+			ctx.stroke();
+			
+			ctx.font = 'normal 10px Verdana';
+			
+			for (i = 0; i < 9; i++) {
+				ctx.beginPath();
+				if (((i - 2) * 10) === 0) {
+					// This is the render point, change colour for this one
+					ctx.strokeStyle = '#ff6600';
+				} else {
+					ctx.strokeStyle = '#ffffff';
+				}
+				ctx.moveTo(-200.5 + (i * 50), -30);
+				ctx.lineTo(-200.5 + (i * 50), 30);
+				ctx.stroke();
+				
+				text = -ige.network.stream._renderLatency + ((i - 2) * 10) + 'ms';
+				xAdjust = ctx.measureText(text);
+				ctx.strokeText(text, -200 + (i * 50) - (xAdjust.width / 2), -38);
+				
+				if (((i - 2) * 10) === 0) {
+					text = 'Render Point';
+					xAdjust = ctx.measureText(text);
+					ctx.strokeText(text, -200 + (i * 50) - (xAdjust.width / 2), -52);
+				}
+			}
+			
+			if (this._entity) {
+				arr = this._entity._timeStream;
+				
+				// Check if we have a time stream and data
+				if (arr && arr.length) {
+					arrCount = arr.length;
+					
+					for (i = 0; i < arrCount; i++) {
+						arrItem = arr[i];
+						
+						deltaTime = arrItem[0] - renderTime;
+						
+						ctx.strokeRect(-105 + ((deltaTime / 10) * 50), -5, 10, 10);
+					}
+				}
+				
+				ige.client.custom2.value = this._entity._timeStreamDataDelta;
+				ige.client.custom3.value = this._entity._timeStreamOffsetDelta;
+				ige.client.custom4.value = this._entity._timeStreamCurrentInterpolateTime;
+			}
+		}
+	});
+	
+	return IgeUiTimeStream;
+});
+},{"irrelon-appcore":83}],80:[function(_dereq_,module,exports){
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiTogglePanel', function (IgeUiElement) {
+	var IgeUiTogglePanel = IgeUiElement.extend({
+		classId: 'IgeUiTogglePanel',
+		
+		init: function (title, titleTexture, toggleOffTexture, toggleOnTexture) {
+			IgeUiElement.prototype.init.call(this);
+			
+			this.backgroundColor('#222222');
+			
+			this._toggleState = false;
+			
+			this._toggleOffTexture = toggleOffTexture;
+			this._toggleOnTexture = toggleOnTexture;
+			
+			this._panelImage = new IgeUiElement()
+				.id('panelImage')
+				.texture(toggleOffTexture)
+				.left(5)
+				.middle(0.5)
+				.width(16)
+				.height(16)
+				.mount(this);
+			
+			this._panelTitle = new IgeFontEntity()
+				.id('panelTitle')
+				.texture(titleTexture)
+				.left(25)
+				.middle(0.5)
+				.width('100%')
+				.height(20)
+				.textAlignX(0)
+				.textAlignY(1)
+				.text(title)
+				.mount(this);
+			
+			this.mouseOver(function () {
+				this.backgroundColor('#666666');
+			});
+			
+			this.mouseOut(function () {
+				this.backgroundColor('#222222');
+			});
+			
+			this.mouseUp(function () {
+				this._toggleState = !this._toggleState;
+				
+				if (this._toggleState) {
+					this._panelImage.texture(this._toggleOnTexture);
+					if (this._toggleOn) {
+						this._toggleOn.apply(this);
+					}
+				} else {
+					this._panelImage.texture(this._toggleOffTexture);
+					if (this._toggleOff) {
+						this._toggleOff.apply(this);
+					}
+				}
+			});
+		},
+		
+		toggleOn: function (method) {
+			this._toggleOn = method;
+			return this;
+		},
+		
+		toggleOff: function (method) {
+			this._toggleOff = method;
+			return this;
+		}
+	});
+	
+	return IgeUiTogglePanel;
+});
+},{"irrelon-appcore":83}],81:[function(_dereq_,module,exports){
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeUiTooltip', function (IgeUiElement) {
+	/**
+	 * Provides a UI tooltip. Change properties (textBox, fonts, backgroundcolor)
+	 * at free will.
+	 */
+	var IgeUiTooltip = IgeUiElement.extend({
+		classId: 'IgeUiTooltip',
+		
+		/**
+		 * @constructor
+		 * @param parent Where the mousemove is captured i.e. on which element the tooltip should appear
+		 * @param mountEntity Where the tooltip should be mounted. A scene is suggested.
+		 * @param width Width of the tooltip
+		 * @param height Height of the tooltip
+		 * @param content The content which is set with public method "setContent". Can be string, array(2) or an entity
+		 */
+		init: function (parent, mountEntity, width, height, content) {
+			IgeUiElement.prototype.init.call(this);
+			
+			var self = this;
+			this.titleBox = new IgeUiElement()
+				.left(0)
+				.top(0)
+				.width(width)
+				.height(30)
+				.mount(this);
+			this.titleBox.borderBottomColor('#ffffff');
+			this.titleBox.borderBottomWidth(1);
+			
+			this.textBox = new IgeUiElement()
+				.left(0)
+				.top(30)
+				.width(width)
+				.height(height - 30)
+				.mount(this);
+			
+			this.fontEntityTitle = new IgeFontEntity()
+				.left(5)
+				.top(-4)
+				.textAlignX(0)
+				.textAlignY(0)
+				.nativeFont('10pt Arial')
+				.textLineSpacing(-5)
+				.mount(this.titleBox);
+			
+			this.fontEntityText = new IgeFontEntity()
+				.left(5)
+				.top(0)
+				.textAlignX(0)
+				.textAlignY(0)
+				.nativeFont('10pt Arial')
+				.textLineSpacing(-5)
+				.mount(this.textBox);
+			
+			this.setContent(content);
+			this.hide();
+			this._mountEntity = mountEntity;
+			this.mount(mountEntity);
+			this.backgroundColor('#53B2F3');
+			this.depth(10000);
+			this.translateTo(parent._translate.x, parent._translate.y, parent._translate.z);
+			this.width(width);
+			this.height(height);
+			
+			parent._tooltip = this;
+			
+			// Listen for keyboard events to capture text input
+			parent._mouseEventsActive = true;
+			parent.on('mouseMove', self._mousemove);
+			parent.on('mouseOut', self._mouseout);
+			
+			return this;
+		},
+		
+		/**
+		 * Extended method to auto-update the width of the child
+		 * font entity automatically to fill the text box.
+		 * @param px
+		 * @param lockAspect
+		 * @param modifier
+		 * @param noUpdate
+		 * @return {*}
+		 */
+		width: function (px, lockAspect, modifier, noUpdate) {
+			var val;
+			
+			// Call the main super class method
+			val = IgeUiElement.prototype.width.call(this, px, lockAspect, modifier, noUpdate);
+			
+			// Update the font entity width
+			this.fontEntityTitle.width(px, lockAspect, modifier, noUpdate);
+			this.fontEntityText.width(px, lockAspect, modifier, noUpdate);
+			
+			return val;
+		},
+		
+		/**
+		 * Extended method to auto-update the height of the child
+		 * font entity automatically to fill the text box.
+		 * @param px
+		 * @param lockAspect
+		 * @param modifier
+		 * @param noUpdate
+		 * @return {*}
+		 */
+		height: function (px, lockAspect, modifier, noUpdate) {
+			var val;
+			
+			// Call the main super class method
+			val = IgeUiElement.prototype.height.call(this, px, lockAspect, modifier, noUpdate);
+			
+			// Update the font entity height
+			this.fontEntityTitle.width(px, lockAspect, modifier, noUpdate);
+			this.fontEntityText.width(px, lockAspect, modifier, noUpdate);
+			
+			return val;
+		},
+		
+		/**
+		 * Sets the content of the tooltip. Can be a string for
+		 * simple text, an array with two strings for text and title
+		 * or a whole entity
+		 * @param val The content, be it string, array(2) or an entity
+		 * @return {*}
+		 */
+		setContent: function (val) {
+			if (val !== undefined) {
+				this.titleBox.unMount();
+				this.textBox.unMount();
+				this._children.forEach(function(child) {
+					child.unMount();
+					child.destroy();
+				});
+				if (typeof(val) == 'string') {
+					this.textBox.mount(this);
+					this.textBox.height(this._bounds2d.y);
+					this.textBox.top(0);
+					// Set the text of the font entity to the value
+					this.fontEntityText.text(this._value);
+				}
+				else if (typeof(val) == 'object' && typeof(val[0] == 'string') && typeof(val[1] == 'string')) {
+					this.titleBox.mount(this);
+					this.textBox.mount(this);
+					this.textBox.height(this._bounds2d.y - this.titleBox._bounds2d.y);
+					this.textBox.top(this.titleBox._bounds2d.y);
+					//title + text
+					this.fontEntityTitle.text(val[0]);
+					this.fontEntityText.text(val[1]);
+				}
+				else if (typeof(val) == 'object') {
+					val.mount(this);
+				}
+				this.updateUiChildren();
+			}
+			
+			return this;
+		},
+		
+		/**
+		 * Gets / sets the font sheet (texture) that the text box will
+		 * use when rendering text inside the box.
+		 * @param fontSheet
+		 * @return {*}
+		 */
+		fontSheet: function (fontSheet) {
+			if (fontSheet !== undefined) {
+				// Set the font sheet as the texture for our font entity
+				this.fontEntityTitle.texture(fontSheet);
+				this.fontEntityText.texture(fontSheet);
+			}
+			return this;
+		},
+		
+		/**
+		 * Handles mousemove event to show the textbox and adjust its
+		 * position according to the mouse position
+		 * @param event
+		 * @private
+		 */
+		_mousemove: function (event) {
+			var tt = this._tooltip;
+			if (tt._hidden) tt.show();
+			var mountPos = tt._mountEntity.worldPosition();
+			tt.translateTo(event.igeX - mountPos.x + tt._bounds2d.x2 + 10, event.igeY - mountPos.y + tt._bounds2d.y2, 0);
+			tt.updateUiChildren();
+		},
+		
+		/**
+		 * Handles mouseout event to hide the tooltip
+		 * @param event
+		 * @private
+		 */
+		_mouseout: function (event) {
+			this._tooltip.hide();
+		}
+	});
+	
+	return IgeUiTooltip;
+});
+},{"irrelon-appcore":83}],82:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -27159,13 +28958,11 @@ appCore.module('ige', function (IgeEngine) {
 	
 	if (ige.isClient) {
 		window.ige = ige;
-	} else {
-		
 	}
 	
 	return ige;
 });
-},{"irrelon-appcore":67}],67:[function(_dereq_,module,exports){
+},{"irrelon-appcore":83}],83:[function(_dereq_,module,exports){
 /**
  * Irrelon AppCore
  *
@@ -27179,261 +28976,214 @@ appCore.module('ige', function (IgeEngine) {
  * Copyright 2016 Irrelon Software Limited
  * https://www.irrelon.com
  */
-(function () {
-	"use strict";
+"use strict";
+
+var singelton;
+var AppCoreModule = _dereq_('./AppCoreModule');
+var Emitter = _dereq_('irrelon-emitter');
+
+/**
+ * The main application class that ties all the application
+ * modules together and exposes the appCore to the global scope
+ * via window.appCore.
+ * @exports AppCore
+ * @constructor
+ */
+var AppCore = function () {
+	// The object that holds references to all the app's
+	// modules that are defined by appCore.module().
+	this._modules = {};
+	this._moduleDefs = {};
+	this._config = [];
+	this._run = [];
 	
-	var singelton;
+	// The object that holds a reference to callbacks that
+	// are waiting for a module to become available / loaded
+	this._waiting = {};
 	
-	/**
-	 * The main application class that ties all the application
-	 * modules together and exposes the appCore to the global scope
-	 * via window.appCore.
-	 * @exports AppCore
-	 * @constructor
-	 */
-	var AppCore = function () {
-		// The object that holds references to all the app's
-		// modules that are defined by appCore.module().
-		this._modules = {};
-		this._moduleDefs = {};
-		
-		// The object that holds a reference to callbacks that
-		// are waiting for a module to become available / loaded
-		this._waiting = {};
-		
-		this._logLevel = 2;
-	};
+	// Set a log level so we only show warnings (2) and errors (1)
+	// level 3 and 4 are info - lots of console spamming
+	this._logLevel = 2;
 	
-	/**
-	 * Executes the passed function once all it's required dependencies
-	 * have loaded.
-	 * @param {Function} functionDefinition The function to execute once
-	 * all its dependencies have been met.
-	 * @returns {AppCore} Returns "this" to allow chaining.
-	 */
-	AppCore.prototype.depends = function (functionDefinition) {
-		var moduleDeps,
-			moduleDepsArr,
-			depArgumentArr = [],
-			dependenciesSatisfied = 0,
-			gotDependency,
-			depIndex,
-			depTimeout = [];
-		
-		if (!functionDefinition) {
-			throw('You must provide a function as the first argument to appCore.depends()!');
-		}
-		
-		// Convert dependency list to an array
-		moduleDeps = this._dependencyList(functionDefinition);
-		moduleDepsArr = moduleDeps.arr;
-		
-		// Check if the module has dependencies
-		if (!moduleDepsArr.length) {
-			// No dependencies were found
-			return this;
-		}
-		
-		// Grab the dependencies we need - this is a really simple way
-		// to check we got our dependencies by how many times this function
-		// gets called.
-		gotDependency = function (dependencyName, dependency) {
-			var depArgumentIndex;
-			
-			dependenciesSatisfied++;
-			
-			// Check which index this dependency should be in
-			depArgumentIndex = moduleDepsArr.indexOf(dependencyName);
-			
-			// Clear the timeout for the dependency
-			clearTimeout(depTimeout[depArgumentIndex]);
-			depTimeout[depArgumentIndex] = 0;
-			
-			// Assign the dependency to the correct argument index
-			depArgumentArr[depArgumentIndex] = dependency;
-			
-			// Check if we have all the dependencies we need
-			if (dependenciesSatisfied === moduleDepsArr.length) {
-				// We have our dependencies, load the module! YAY!
-				return functionDefinition.apply(functionDefinition, depArgumentArr);
-			}
-		};
-		
-		// Register our dependency handler for each dependency
-		for (depIndex = 0; depIndex < moduleDepsArr.length; depIndex++) {
-			// Create a timeout that will cause a browser error if we are
-			// waiting too long for a dependency to arrive
-			depTimeout[depIndex] = setTimeout(this.generateDependencyTimeout(moduleDeps.func, moduleDepsArr[depIndex]), 3000);
-			
-			// Now ask to wait for the module
-			this._waitForModule(moduleDepsArr[depIndex], gotDependency);
-		}
-		
+	console.log('----------------------------------------------');
+	console.log('| Powered By Irrelon AppCore                 |');
+	console.log('| https://github.com/irrelon/irrelon-appcore |');
+	console.log('----------------------------------------------');
+};
+
+Emitter(AppCore);
+
+/**
+ * Gets / sets the logging level that AppCore will use to explain
+ * what it is doing. Lower levels (1 and 2) are error and warnings,
+ * higher levels (up to 4) are info. Setting to 4 is asking for all
+ * levels 4 and below.
+ * @param {Number=} newLevel If provided, sets the new logging level.
+ * @returns {*}
+ */
+AppCore.prototype.logLevel = function (newLevel) {
+	if (newLevel !== undefined) {
+		this._logLevel = newLevel;
 		return this;
-	};
+	}
 	
-	AppCore.prototype.sanityCheck = function () {
-		var i,
-			moduleDef,
-			moduleDefString,
-			moduleNameRegExp,
-			moduleDeps,
-			moduleNamesArr,
-			nameIndex,
-			moduleName;
-		
-		// Grab all module names
-		moduleNamesArr = Object.keys(this._moduleDefs);
-		
-		// Loop the modules
-		for (i in this._moduleDefs) {
-			if (this._moduleDefs.hasOwnProperty(i)) {
-				moduleDef = this._moduleDefs[i];
-				moduleDefString = moduleDef.toString();
-				
-				// Clean definition
-				moduleDefString = moduleDefString
-					.replace(/(\/\*\*[.\s\S]*?\*\/)/g, '')
-					.replace(/\/\/[.\s\S]*?$/gm, '');
-				
-				moduleDeps = this._dependencyList(moduleDef);
-				
-				// Loop the module names array
-				for (nameIndex = 0; nameIndex < moduleNamesArr.length; nameIndex++) {
-					moduleName = moduleNamesArr[nameIndex];
-					moduleNameRegExp = new RegExp('\\b' + moduleName + '\\b');
-					
-					if (moduleName.toLowerCase() !== i.toLowerCase() && moduleDeps.arr.indexOf(moduleName) === -1) {
-						// Check for module usage without dependency injection
-						if (moduleNameRegExp.test(moduleDefString)) {
-							console.warn('AppCore: Module "' + i + '" might require un-injected module "' + moduleName + '"');
-						}
-					}
-				}
-			}
-		}
-	};
+	return this._logLevel;
+};
+
+/**
+ * Gets / registers a module with the application.
+ * @param {String} moduleName The name of the module to define.
+ * @param {Function=} controllerDefinition Optional. The function to
+ * assign as the module's controller. If omitted we will return the module
+ * specified by the "name" argument if it exists.
+ * @returns {Function|AppCore} If "moduleDefinition" is provided, returns
+ * "this" to allow chaining. If "moduleDefinition" is omitted,
+ * returns the module specified by the "name" argument.
+ */
+AppCore.prototype.module = function (moduleName, controllerDefinition) {
+	var module;
 	
-	/**
-	 * Gets / registers a module with the application and executes the
-	 * module's function once all it's required dependencies
-	 * have loaded.
-	 * @param {String} moduleName The name of the module to define.
-	 * @param {Function=} moduleDefinition Optional. The function that
-	 * returns the module. If omitted we will return the module
-	 * specified by the "name" argument if it exists.
-	 * @returns {Function|AppCore} If "moduleDefinition" is provided, returns
-	 * "this" to allow chaining. If "moduleDefinition" is omitted,
-	 * returns the module specified by the "name" argument.
-	 */
-	AppCore.prototype.module = function (moduleName, moduleDefinition) {
-		var self = this,
-			moduleDeps,
-			moduleDepsArr,
-			depArgumentArr = [],
-			dependenciesSatisfied = 0,
-			gotDependency,
-			depIndex,
-			depTimeout = [];
+	if (!controllerDefinition) {
+		module = this._modules[moduleName];
 		
-		if (!moduleName) {
-			throw('You must name your module!');
+		if (!module) {
+			throw('Module with name "' + moduleName + '" not defined!');
 		}
 		
-		if (!moduleDefinition) {
-			return this._modules[moduleName];
-		}
+		return this._modules[moduleName];
+	}
+	
+	this._modules[moduleName] = new AppCoreModule(this, moduleName);
+	
+	if (controllerDefinition) {
+		this._modules[moduleName].controller(controllerDefinition);
+	}
+	
+	// Now inform any waiting dependants that this module is here
+	this._moduleLoaded(moduleName);
+	
+	// Allow chaining
+	return this._modules[moduleName];
+};
+
+/**
+ * Scans a function definition for dependencies and waits for those
+ * dependencies to become available, then calls back to the waiting
+ * code with the controller return data for each dependency.
+ * @param {String} dependantName The dependant module name (the one
+ * waiting for the dependencies to become available).
+ * @param {Function} definition The function with optional arguments
+ * that represent dependencies to inject.
+ * @param {Function} callback The callback function to call once all
+ * the dependencies are available.
+ * @returns {AppCore}
+ * @private
+ */
+AppCore.prototype._getDependencies = function (dependantName, definition, callback) {
+	var moduleDeps,
+		moduleDepsArr,
+		depArgumentArr = [],
+		dependenciesSatisfied = 0,
+		gotDependency,
+		depIndex,
+		depTimeout = [];
+	
+	if (!definition) {
+		throw('No function provided to AppCoreModule._getDependencies()!');
+	}
+	
+	// Convert dependency list to an array
+	moduleDeps = this._dependencyList(definition);
+	moduleDepsArr = moduleDeps.arr;
+	
+	// Check if the module has dependencies
+	if (!moduleDepsArr.length) {
+		// No dependencies were found
+		if (this._logLevel >= 4) { console.log('AppCore: ' + dependantName + ': Has no dependencies'); }
 		
-		if (this._modules[moduleName] !== undefined) {
-			throw('Cannot redefine module "' + moduleName + '" - it has already been defined!');
-		}
-		
-		if (this._logLevel >= 4) { console.log('AppCore: ' + moduleName + ': Init...'); }
-		
-		// Convert dependency list to an array
-		moduleDeps = this._dependencyList(moduleDefinition);
-		moduleDepsArr = moduleDeps.arr;
-		
-		// Check if the module has dependencies
-		if (!moduleDepsArr.length) {
-			// No dependencies were found, just register the module
-			if (this._logLevel >= 4) { console.log('AppCore: ' + moduleName + ': Has no dependencies'); }
-			return this._registerModule(moduleName, moduleDefinition, []);
-		}
-		
-		if (this._logLevel >= 4) { console.log('AppCore: ' + moduleName + ': Has ' + moduleDepsArr.length + ' dependenc' + (moduleDepsArr.length > 1 ? 'ies' : 'y') + ' (' + moduleDepsArr.join(', ') + ')'); }
-		
-		// Grab the dependencies we need - this is a really simple way
-		// to check we got our dependencies by how many times this function
-		// gets called. Quick and dirty - I'm writing a game of life sim
-		// here rather than a dependency injection lib after all.
-		gotDependency = function (dependencyName, dependency) {
-			var depArgumentIndex;
-			
-			dependenciesSatisfied++;
-			
-			if (self._logLevel >= 4) { console.log('AppCore: ' + moduleName + ': Found dependency "' + dependencyName + '"'); }
-			
-			// Check which index this dependency should be in
-			depArgumentIndex = moduleDepsArr.indexOf(dependencyName);
-			
-			// Clear the timeout for the dependency
-			clearTimeout(depTimeout[depArgumentIndex]);
-			depTimeout[depArgumentIndex] = 0;
-			
-			// Assign the dependency to the correct argument index
-			depArgumentArr[depArgumentIndex] = dependency;
-			
-			// Check if we have all the dependencies we need
-			if (dependenciesSatisfied === moduleDepsArr.length) {
-				// We have our dependencies, load the module! YAY!
-				if (self._logLevel >= 4) { console.log('AppCore: ' + moduleName + ': Has all required dependencies, loading...'); }
-				return self._registerModule(moduleName, moduleDefinition, depArgumentArr);
-			}
-		};
-		
-		// Register our dependency handler for each dependency
-		for (depIndex = 0; depIndex < moduleDepsArr.length; depIndex++) {
-			// Create a timeout that will cause a browser error if we are
-			// waiting too long for a dependency to arrive
-			depTimeout[depIndex] = setTimeout(this.generateDependencyTimeout(moduleName, moduleDepsArr[depIndex]), 3000);
-			
-			// Now ask to wait for the module
-			this._waitForModule(moduleDepsArr[depIndex], gotDependency);
-		}
-		
+		// We have our dependencies, send them back
+		callback(false, depArgumentArr);
 		return this;
-	};
+	}
 	
-	/**
-	 * Generates a function that will be called by a timeout when a
-	 * dependency does not load in the given time.
-	 * @param {String} moduleName The name of the module that is waiting
-	 * for a module to load.
-	 * @param {String} dependencyName The name of the dependency module
-	 * that we are waiting for.
-	 * @returns {Function}
-	 */
-	AppCore.prototype.generateDependencyTimeout = function (moduleName, dependencyName) {
-		return function () {
-			if (this._logLevel >= 1) { console.error('AppCore: ' + moduleName + ': Dependency failed to load in time: ' + dependencyName); }
-		};
-	};
-	
-	/**
-	 * Reads a function's definition and finds argument dependencies.
-	 * @param moduleDefinition
-	 * @returns {Array} An array of dependency names.
-	 * @private
-	 */
-	AppCore.prototype._dependencyList = function (moduleDefinition) {
-		var moduleString,
-			moduleDeps,
-			moduleDepsArr,
-			moduleRegExp = /^function(.*?)\((.*?)\)/gi;
+	// Grab the dependencies we need - this is a really simple way
+	// to check we got our dependencies by how many times this function
+	// gets called.
+	gotDependency = function (dependencyName, dependency) {
+		var depArgumentIndex;
 		
+		dependenciesSatisfied++;
+		
+		// Check which index this dependency should be in
+		depArgumentIndex = moduleDepsArr.indexOf(dependencyName);
+		
+		// Clear the timeout for the dependency
+		clearTimeout(depTimeout[depArgumentIndex]);
+		depTimeout[depArgumentIndex] = 0;
+		
+		// Assign the dependency to the correct argument index
+		depArgumentArr[depArgumentIndex] = dependency;
+		
+		// Check if we have all the dependencies we need
+		if (dependenciesSatisfied === moduleDepsArr.length) {
+			// We have our dependencies, send them back
+			return callback(false, depArgumentArr);
+		}
+	};
+	
+	// Register our dependency handler for each dependency
+	if (this._logLevel >= 4) { console.log('AppCore: ' + dependantName + ': Getting dependencies', moduleDepsArr); }
+	for (depIndex = 0; depIndex < moduleDepsArr.length; depIndex++) {
+		// Create a timeout that will cause a browser error if we are
+		// waiting too long for a dependency to arrive
+		depTimeout[depIndex] = setTimeout(this.generateDependencyTimeout(dependantName, moduleDepsArr[depIndex]), 3000);
+		
+		// Now ask to wait for the module
+		this._waitForModule(dependantName, moduleDepsArr[depIndex], gotDependency);
+	}
+	
+	return this;
+};
+
+/**
+ * Gets an array of dependency names.
+ * @param {Function} definition The function to get dependency
+ * names for.
+ * @returns {{arr: Array, name: *}}
+ * @private
+ */
+AppCore.prototype._dependencyList = function (definition) {
+	var moduleString,
+		moduleDeps,
+		moduleDepsArr = [],
+		moduleRegExp = /^function(.*?)\((.*?)\)/gi;
+	
+	// Handle array style
+	if (definition instanceof Array) {
+		// We have been given a list of dependencies already
+		moduleDepsArr = definition.slice(0, definition.length - 1);
+		moduleString = definition[definition.length - 1].toString();
+		
+		// Loop the array and remove any undefined's
+		while (moduleDepsArr.indexOf(undefined) > -1) {
+			moduleDepsArr.splice(moduleDepsArr.indexOf(undefined), 1);
+		}
+		
+		moduleString = moduleString
+			.replace(/\n/g, '')
+			.replace(/\r/g, '')
+			.replace(/\t/g, '');
+		
+		moduleDeps = moduleRegExp.exec(moduleString);
+		
+		if (moduleDeps && moduleDeps.length) {
+			// Clean the function name and dependency list by removing whitespace
+			moduleDeps[1] = moduleDeps[1].replace(/ /gi, '');
+			moduleDeps[2] = moduleDeps[2].replace(/ /gi, '');
+		}
+	} else {
 		// Stringify the module function
-		moduleString = moduleDefinition.toString();
+		moduleString = definition.toString();
 		moduleString = moduleString
 			.replace(/\n/g, '')
 			.replace(/\r/g, '')
@@ -27445,110 +29195,1306 @@ appCore.module('ige', function (IgeEngine) {
 		// if any dependencies were provided.
 		moduleDeps = moduleRegExp.exec(moduleString);
 		
-		// Check if the module has dependencies
-		if (!moduleDeps || !moduleDeps.length || moduleDeps[2] === "") {
-			// No dependencies were found
-			return {
-				arr: []
-			};
+		if (moduleDeps && moduleDeps.length) {
+			// Clean the function name and dependency list by removing whitespace
+			moduleDeps[1] = moduleDeps[1].replace(/ /gi, '');
+			moduleDeps[2] = moduleDeps[2].replace(/ /gi, '');
+			
+			if (moduleDeps[2] !== "") {
+				// Convert dependency list to an array
+				moduleDepsArr = moduleDeps[2].split(',');
+			}
 		}
-		
-		// Clean the dependency list by removing whitespace
-		moduleDeps[2] = moduleDeps[2].replace(/ /gi, '');
-		
-		// Convert dependency list to an array
-		moduleDepsArr = moduleDeps[2].split(',');
-		
-		return {
-			arr: moduleDepsArr,
-			func: moduleDeps[0]
-		};
-	};
+	}
 	
-	/**
-	 * Adds the passed callback function to an array that will be
-	 * processed once the named module has loaded.
-	 * @param {String} moduleName The name of the module to wait for.
-	 * @param {Function} callback The function to call once the
-	 * named module has loaded.
-	 * @returns {AppCore} Returns "this" for method chaining.
-	 * @private
-	 */
-	AppCore.prototype._waitForModule = function (moduleName, callback) {
-		// Check if the module we are waiting for already exists
-		if (this._modules[moduleName] !== undefined) {
-			// The module is already loaded, callback now
-			callback(moduleName, this._modules[moduleName]);
-			return this;
-		}
-		
-		// Add the callback to the waiting list for this module
-		this._waiting[moduleName] = this._waiting[moduleName] || [];
-		this._waiting[moduleName].push(callback);
-		
+	return {
+		arr: moduleDepsArr,
+		name: moduleDeps[1] || moduleDeps[0] || 'anonymous'
+	};
+};
+
+/**
+ * Generates a function that will be called by a timeout when a
+ * dependency does not load in the given time.
+ * @param {String} moduleName The name of the module that is waiting
+ * for a module to load.
+ * @param {String} dependencyName The name of the dependency module
+ * that we are waiting for.
+ * @returns {Function}
+ */
+AppCore.prototype.generateDependencyTimeout = function (moduleName, dependencyName) {
+	var self = this;
+	
+	return function () {
+		if (self._logLevel >= 1) { console.error('AppCore: ' + moduleName + ': Dependency failed to load in time: ' + dependencyName); }
+	};
+};
+
+/**
+ * Adds the passed callback function to an array that will be
+ * processed once the named module has loaded.
+ * @param {String} dependantName The name of the module waiting
+ * for the dependency.
+ * @param {String} moduleName The name of the module to wait for.
+ * @param {Function} callback The function to call once the
+ * named module has loaded.
+ * @returns {AppCore} Returns "this" for method chaining.
+ * @private
+ */
+AppCore.prototype._waitForModule = function (dependantName, moduleName, callback) {
+	var self = this;
+	
+	// Check if the module we are waiting for already exists
+	if (this._modules[moduleName] !== undefined) {
+		if (this._logLevel >= 4) { console.log('AppCore: ' + dependantName + ': Dependency "' + moduleName + '" exists'); }
+		// The module is already loaded, ask for it
+		this._modules[moduleName].config();
+		this._modules[moduleName].controller(undefined, function (err, value) {
+			self._modules[moduleName].run();
+			if (self._logLevel >= 4) { console.log('AppCore: ' + dependantName + ': Dependency "' + moduleName + '" loaded'); }
+			callback(moduleName, value);
+		});
 		return this;
-	};
+	}
 	
-	/**
-	 * Called when a module has loaded and will loop the array of
-	 * waiting functions that have registered to be called when the
-	 * named module has loaded, telling them the module is now
-	 * available to use.
-	 * @param {String} moduleName The name of the module that has loaded.
-	 * @private
-	 */
-	AppCore.prototype._moduleLoaded = function (moduleName) {
-		var waitingArr,
-			waitingIndex;
-		
-		// Tell any modules waiting for this one that we are
-		// loaded and ready
-		waitingArr = this._waiting[moduleName] || null;
-		
-		if (!waitingArr || !waitingArr.length) {
-			// Nothing is waiting for us, exit
-			return;
-		}
-		
+	// Add the callback to the waiting list for this module
+	if (this._logLevel >= 4) { console.log('AppCore: ' + dependantName + ': Dependency "' + moduleName + '" does not yet exist'); }
+	this._waiting[moduleName] = this._waiting[moduleName] || [];
+	this._waiting[moduleName].push(function (moduleName, value) {
+		if (self._logLevel >= 4) { console.log('AppCore: ' + dependantName + ': Dependency "' + moduleName + '" now exists'); }
+		callback(moduleName, value);
+	});
+	
+	return this;
+};
+
+/**
+ * Called when a module has loaded and will loop the array of
+ * waiting functions that have registered to be called when the
+ * named module has loaded, telling them the module is now
+ * available to use.
+ * @param {String} moduleName The name of the module that has loaded.
+ * @private
+ */
+AppCore.prototype._moduleLoaded = function (moduleName) {
+	var self = this,
+		waitingArr,
+		waitingIndex;
+	
+	// Tell any modules waiting for this one that we are
+	// loaded and ready
+	waitingArr = this._waiting[moduleName] || null;
+	
+	if (!waitingArr || !waitingArr.length) {
+		// Nothing is waiting for us, exit
+		return;
+	}
+	
+	// Now get the module's controller result by executing it
+	if (self._logLevel >= 4) { console.log('AppCore: ' + moduleName + ': ' + waitingArr.length + ' Dependants are waiting for "' + moduleName + '" and it now exists, executing...'); }
+	this._modules[moduleName].config();
+	this._modules[moduleName].controller(undefined, function (err, value) {
+		self._modules[moduleName].run();
 		// Loop the waiting array and tell the receiver that
 		// this module has loaded
 		for (waitingIndex = 0; waitingIndex < waitingArr.length; waitingIndex++) {
-			waitingArr[waitingIndex](moduleName, this._modules[moduleName]);
+			waitingArr[waitingIndex](moduleName, value);
 		}
 		
 		// Clear the waiting array for this module
-		delete this._waiting[moduleName];
+		delete self._waiting[moduleName];
+	});
+};
+
+/**
+ * Takes an array of functions and waits for each function's
+ * dependencies to be resolved and then executes the function.
+ * This is done in order, one at a time.
+ * @param {Array} arr An array of functions.
+ * @param {Function} callback Callback to call when complete.
+ * @private
+ */
+AppCore.prototype._executeQueue = function (arr, callback) {
+	var self = this,
+		definition,
+		nextItem,
+		valueArr;
+	
+	valueArr = [];
+	
+	nextItem = function () {
+		var deps;
+		
+		definition = arr.shift();
+		
+		if (!definition) {
+			return callback(false, valueArr);
+		}
+		
+		deps = self._dependencyList(definition);
+		
+		self._getDependencies(deps.name, definition, function (err, argsArr) {
+			definition = self._getFinalFunc(definition);
+			
+			// Execute the item function passing the dependencies
+			// and store the return value in the valueArr
+			valueArr.push(definition.apply(self, argsArr));
+			
+			if (arr.length) {
+				// Process the next item
+				return nextItem();
+			}
+			
+			// All processing finished, callback now
+			callback(false, valueArr);
+		});
 	};
+	
+	// Now start the processing
+	nextItem();
+};
+
+/**
+ * Config functions are checked for dependencies and run as
+ * soon as they are declared.
+ * @param definition
+ */
+AppCore.prototype.config = function (definition, callback) {
+	var i;
+	
+	if (definition) {
+		this._config.push(definition);
+		return this;
+	}
+	
+	// Execute all config blocks
+	this._executeQueue(this._config, function (err, valueArr) {
+		if (callback) { callback(err, valueArr); }
+	});
+	
+	return this;
+};
+
+/**
+ * Run functions are executed once the AppCore is bootstrapped.
+ * @param definition
+ */
+AppCore.prototype.run = function (definition, callback) {
+	if (definition) {
+		this._run.push(definition);
+	}
+	
+	if (definition && !this._initialised) {
+		return this;
+	}
+	
+	this._initialised = true;
+	
+	// Execute all run blocks
+	this._executeQueue(this._run, function (err, valueArr) {
+		if (callback) { callback(err, valueArr); }
+	});
+	
+	return this;
+};
+
+/**
+ * Starts the app core - this defines the entry point into
+ * your application by the passed function.
+ * @param {Function} definition The function to call to start
+ * the application. Will wait for all the function's dependencies
+ * to become available before calling it.
+ */
+AppCore.prototype.bootstrap = function (definition) {
+	var self = this,
+		deps;
+	
+	if (self._logLevel >= 4) { console.log('AppCore: Bootstrapping...'); }
+	
+	// Execute any config blocks
+	self.config(undefined, function () {
+		// Get the dependencies for the bootstrap function
+		deps = self._dependencyList(definition);
+		
+		self._getDependencies(deps.name, definition, function (err, depArr) {
+			definition = self._getFinalFunc(definition);
+			
+			// Execute any run blocks
+			self.run(undefined, function () {
+				// Now execute the bootstrap function
+				if (self._logLevel >= 4) { console.log('AppCore: Bootstrap complete, executing bootstrap callback...'); }
+				definition.apply(definition, depArr);
+			});
+		});
+	});
+};
+
+AppCore.prototype.sanityCheck = function () {
+	var i,
+		moduleDef,
+		moduleDefString,
+		moduleNameRegExp,
+		moduleDeps,
+		moduleNamesArr,
+		nameIndex,
+		moduleName;
+	
+	// Grab all module names
+	moduleNamesArr = Object.keys(this._moduleDefs);
+	
+	// Loop the modules
+	for (i in this._moduleDefs) {
+		if (this._moduleDefs.hasOwnProperty(i)) {
+			moduleDef = this._moduleDefs[i];
+			moduleDefString = moduleDef.toString();
+			
+			// Clean definition
+			moduleDefString = moduleDefString
+				.replace(/(\/\*\*[.\s\S]*?\*\/)/g, '')
+				.replace(/\/\/[.\s\S]*?$/gm, '');
+			
+			moduleDeps = this._dependencyList(moduleDef);
+			
+			// Loop the module names array
+			for (nameIndex = 0; nameIndex < moduleNamesArr.length; nameIndex++) {
+				moduleName = moduleNamesArr[nameIndex];
+				moduleNameRegExp = new RegExp('\\b' + moduleName + '\\b');
+				
+				if (moduleName.toLowerCase() !== i.toLowerCase() && moduleDeps.arr.indexOf(moduleName) === -1) {
+					// Check for module usage without dependency injection
+					if (moduleNameRegExp.test(moduleDefString)) {
+						console.warn('AppCore: Module "' + i + '" might require un-injected module "' + moduleName + '"');
+					}
+				}
+			}
+		}
+	}
+};
+
+AppCore.prototype._getFinalFunc = function (data) {
+	if (data instanceof Array) {
+		return data[data.length - 1];
+	}
+	
+	return data;
+};
+
+singelton = new AppCore();
+
+// Create the appCore instance and add to global scope
+if (typeof module  !== 'undefined' && typeof module.exports !== 'undefined') {
+	module.exports = singelton;
+}
+
+if (typeof window !== 'undefined') {
+	window.appCore = singelton;
+}
+},{"./AppCoreModule":84,"irrelon-emitter":85}],84:[function(_dereq_,module,exports){
+var Emitter = _dereq_('irrelon-emitter');
+
+/**
+ * A class that encapsulates a module's lifecycle.
+ * @param {AppCore} appCore The AppCore instance that this module
+ * belongs to.
+ * @param {String} moduleName The module name.
+ * @constructor
+ */
+var AppCoreModule = function (appCore, moduleName) {
+	this._appCore = appCore;
+	this._moduleName = moduleName;
+	this._config = [];
+	this._run = [];
+	
+	this._initialised = false;
+	
+	if (this._appCore._logLevel >= 4) { console.log('AppCore: ' + this._moduleName + ': Init...'); }
+};
+
+Emitter(AppCoreModule);
+
+/**
+ * Config functions are checked for dependencies and run as
+ * soon as they are declared.
+ * @param definition
+ */
+AppCoreModule.prototype.config = function (definition, callback) {
+	if (definition) {
+		this._config.push(definition);
+		return this;
+	}
+	
+	// Execute all config blocks
+	this._appCore._executeQueue(this._config, function (err, valueArr) {
+		if (callback) { callback(err, valueArr); }
+	});
+	
+	return this;
+};
+
+/**
+ * Run functions are executed once the AppCore is bootstrapped.
+ * @param definition
+ */
+AppCoreModule.prototype.run = function (definition, callback) {
+	if (definition) {
+		this._run.push(definition);
+	}
+	
+	if (definition && !this._initialised) {
+		return this;
+	}
+	
+	this._initialised = true;
+	
+	// Execute all run blocks
+	this._appCore._executeQueue(this._run, function (err, valueArr) {
+		if (callback) { callback(err, valueArr); }
+	});
+	
+	return this;
+};
+
+/**
+ * Controller functions are executed as they are requested from
+ * a dependency injection. If a controller has already been
+ * injected previously then the existing return value is returned
+ * unless the controller has been destroyed using module.destroy()
+ * in which case it is executed again and its return value stored
+ * against it again.
+ * @param definition
+ */
+AppCoreModule.prototype.controller = function (definition, callback) {
+	var self = this;
+	
+	// Check if we were passed a controller function
+	if (definition) {
+		this._controller = definition;
+		if (this._appCore._logLevel >= 4) { console.log('AppCore: ' + this._moduleName + ': Controller defined'); }
+		return this;
+	}
+	
+	// Check if we have a pre-cached controller return value
+	if (this._value) {
+		if (this._appCore._logLevel >= 4) { console.log('AppCore: ' + this._moduleName + ': Returning cached value'); }
+		if (callback) { callback(false, self._value); }
+		return this._value;
+	}
+	
+	// Resolve dependencies, execute the controller and store the
+	// return value
+	self._appCore._getDependencies(self._moduleName, self._controller, function (err, argsArr) {
+		var definition = self._appCore._getFinalFunc(self._controller);
+		
+		if (self._appCore._logLevel >= 4) { console.log('AppCore: ' + self._moduleName + ': All dependencies found, executing controller...'); }
+		self._value = definition.apply(self, argsArr);
+		
+		if (self._appCore._logLevel >= 4) { console.log('AppCore: ' + self._moduleName + ': Controller executed'); }
+		if (callback) { callback(false, self._value); }
+	});
+};
+
+/**
+ * Destroys a module's cached controller return data which
+ * means next time the module is requested the controller will
+ * be re-executed.
+ */
+AppCoreModule.prototype.destroy = function () {
+	// Fire destroy event
+	this.emit('destroy');
+	if (this._appCore._logLevel >= 4) { console.log('AppCore: ' + this._moduleName + ': Destroying controller instance'); }
+	delete this._value;
+	this._initialised = false;
+	if (this._appCore._logLevel >= 4) { console.log('AppCore: ' + this._moduleName + ': Controller instance destroyed'); }
+	this.emit('destroyed');
+};
+
+module.exports = AppCoreModule;
+},{"irrelon-emitter":85}],85:[function(_dereq_,module,exports){
+/*
+ The MIT License (MIT)
+
+ Copyright (c) 2014 Irrelon Software Limited
+ http://www.irrelon.com
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice, url and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+
+ Source: https://github.com/irrelon/emitter
+
+ Changelog:
+ 	Version 2.0.1:
+ 		Bug fix in this._emitters usage
+ 	Version 2.0.0:
+ 		Big update to bring in line with latest developments in other projects. Event emitter can
+ 		now use deferEmit(), emitId(), emitStatic(), emitStaticId(), willEmit(), willEmitId().
+ 	Version 1.1.9:
+ 		Updated changelog correctly
+ 	Version 1.1.8:
+ 		Removed tons of dependencies wrongly included in main dependencies, have moved to devDependencies section of package.json
+ 	Version 1.1.0:
+ 		Added support for overloaded methods
+ 		Added support for events with ids
+ 	Version 1.0.2:
+ 		Removed AMD support, added browserify support
+ 		Added package.json
+ 		Added once() method
+ 		Added hasListener() method
+ 		Published to NPM as irrelon-emitter
+ 	Version 1.0.1:
+ 		Added ability to extend any object with eventing capability
+ 		Added AMD / Require.js support
+		 Added Node.js support
+	Version 1.0.0:
+		First commit
+ */
+"use strict";
+
+var Overload = _dereq_('irrelon-overload');
+
+var EventMethods = {
+	on: new Overload({
+		/**
+		 * Attach an event listener to the passed event.
+		 * @param {String} event The name of the event to listen for.
+		 * @param {Function} listener The method to call when the event is fired.
+		 */
+		'string, function': function (event, listener) {
+			return this.$main(event, '*', listener);
+		},
+		
+		/**
+		 * Attach an event listener to the passed event only if the passed
+		 * id matches the document id for the event being fired.
+		 * @param {String} event The name of the event to listen for.
+		 * @param {*} id The document id to match against.
+		 * @param {Function} listener The method to call when the event is fired.
+		 */
+		'string, *, function': function (event, id, listener) {
+			return this.$main(event, id, listener);
+		},
+		
+		'$main': function (event, id, listener) {
+			var self = this,
+				generateTimeout,
+				emitter,
+				i;
+			
+			generateTimeout = function (emitter) {
+				setTimeout(function () {
+					listener.apply(self, emitter.args);
+				}, 1);
+			};
+			
+			this._listeners = this._listeners || {};
+			this._listeners[event] = this._listeners[event] || {};
+			this._listeners[event][id] = this._listeners[event][id] || [];
+			this._listeners[event][id].push(listener);
+			
+			// Check for any static emitters, and fire the event if any exist
+			if (this._emitters && this._emitters[event] && this._emitters[event].length) {
+				// Emit events for each emitter
+				for (i = 0; i < this._emitters[event].length; i++) {
+					emitter = this._emitters[event];
+					
+					if (id === '*' || emitter.id === id) {
+						// Call the listener out of process so that any code that expects a listener
+						// to be called at some point in the future rather than immediately on registration
+						// will not fail
+						generateTimeout(emitter);
+					}
+				}
+			}
+			
+			return this;
+		}
+	}),
+	
+	once: new Overload({
+		/**
+		 * Attach an event listener to the passed event which will only fire once.
+		 * @param {String} event The name of the event to listen for.
+		 * @param {Function} listener The method to call when the event is fired.
+		 */
+		'string, function': function (event, listener) {
+			var self = this,
+				fired = false,
+				internalCallback = function () {
+					if (!fired) {
+						fired = true;
+						self.off(event, internalCallback);
+						listener.apply(self, arguments);
+					}
+				};
+			
+			return this.on(event, internalCallback);
+		},
+		
+		/**
+		 * Attach an event listener to the passed event only if the passed
+		 * id matches the document id for the event being fired.
+		 * @param {String} event The name of the event to listen for.
+		 * @param {*} id The document id to match against.
+		 * @param {Function} listener The method to call when the event is fired.
+		 */
+		'string, *, function': function (event, id, listener) {
+			var self = this,
+				fired = false,
+				internalCallback = function () {
+					if (!fired) {
+						fired = true;
+						self.off(event, id, internalCallback);
+						listener.apply(self, arguments);
+					}
+				};
+			
+			return this.on(event, id, internalCallback);
+		}
+	}),
+	
+	off: new Overload({
+		/**
+		 * Cancels all event listeners for the passed event.
+		 * @param {String} event The name of the event.
+		 * @returns {*}
+		 */
+		'string': function (event) {
+			var self = this;
+			
+			if (this._emitting) {
+				this._eventRemovalQueue = this._eventRemovalQueue || [];
+				this._eventRemovalQueue.push(function () {
+					self.off(event);
+				});
+			} else {
+				if (this._listeners && this._listeners[event]) {
+					delete this._listeners[event];
+				}
+			}
+			
+			return this;
+		},
+		
+		/**
+		 * Cancels the event listener for the passed event and listener function.
+		 * @param {String} event The event to cancel listener for.
+		 * @param {Function} listener The event listener function used in the on()
+		 * or once() call to cancel.
+		 * @returns {*}
+		 */
+		'string, function': function (event, listener) {
+			var self = this,
+				arr,
+				index;
+			
+			if (this._emitting) {
+				this._eventRemovalQueue = this._eventRemovalQueue || [];
+				this._eventRemovalQueue.push(function () {
+					self.off(event, listener);
+				});
+			} else {
+				if (typeof(listener) === 'string') {
+					if (this._listeners && this._listeners[event] && this._listeners[event][listener]) {
+						delete this._listeners[event][listener];
+					}
+				} else {
+					if (this._listeners && this._listeners[event]) {
+						arr = this._listeners[event]['*'];
+						index = arr.indexOf(listener);
+						
+						if (index > -1) {
+							arr.splice(index, 1);
+						}
+					}
+				}
+			}
+			
+			return this;
+		},
+		
+		/**
+		 * Cancels an event listener based on an event name, id and listener function.
+		 * @param {String} event The event to cancel listener for.
+		 * @param {String} id The ID of the event to cancel listening for.
+		 * @param {Function} listener The event listener function used in the on()
+		 * or once() call to cancel.
+		 */
+		'string, *, function': function (event, id, listener) {
+			var self = this;
+			
+			if (this._emitting) {
+				this._eventRemovalQueue = this._eventRemovalQueue || [];
+				this._eventRemovalQueue.push(function () {
+					self.off(event, id, listener);
+				});
+			} else {
+				if (this._listeners && this._listeners[event] && this._listeners[event][id]) {
+					var arr = this._listeners[event][id],
+						index = arr.indexOf(listener);
+					
+					if (index > -1) {
+						arr.splice(index, 1);
+					}
+				}
+			}
+		},
+		
+		/**
+		 * Cancels all listeners for an event based on the passed event name and id.
+		 * @param {String} event The event name to cancel listeners for.
+		 * @param {*} id The ID to cancel all listeners for.
+		 */
+		'string, *': function (event, id) {
+			var self = this;
+			
+			if (this._emitting) {
+				this._eventRemovalQueue = this._eventRemovalQueue || [];
+				this._eventRemovalQueue.push(function () {
+					self.off(event, id);
+				});
+			} else {
+				if (this._listeners && this._listeners[event] && this._listeners[event][id]) {
+					// Kill all listeners for this event id
+					delete this._listeners[event][id];
+				}
+			}
+		}
+	}),
+	
+	emit: new Overload({
+		/**
+		 * Emit an event.
+		 * @param {String} event The event to emit.
+		 * @returns {*}
+		 */
+		'string': function (event) {
+			// Fire global listeners
+			return this.$main(event);
+		},
+		
+		/**
+		 * Emit an event with data.
+		 * @param {String} event The event to emit.
+		 * @param {*} data Data to emit with the event.
+		 * @returns {*}
+		 */
+		'string, ...': function (event, data) {
+			// Fire global listeners first
+			this.$main.apply(this, arguments);
+			
+			return this;
+		},
+		
+		/**
+		 * Handles emitting events, is an internal method not called directly.
+		 * @param {String} event The name of the event to emit.
+		 * @param {*} data The data to emit with the event.
+		 * @returns {*}
+		 * @private
+		 */
+		'$main': function (event, data) {
+			var id = '*';
+			this._listeners = this._listeners || {};
+			this._emitting = true;
+			
+			if (this._listeners[event]) {
+				var arrIndex,
+					arrCount,
+					tmpFunc,
+					arr;
+				
+				// Handle global emit
+				if (this._listeners[event][id]) {
+					arr = this._listeners[event][id];
+					arrCount = arr.length;
+					
+					for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+						// Check we have a function to execute
+						tmpFunc = arr[arrIndex];
+						
+						if (typeof tmpFunc === 'function') {
+							tmpFunc.apply(this, Array.prototype.slice.call(arguments, 1));
+						}
+					}
+				}
+			}
+			
+			this._emitting = false;
+			this._processRemovalQueue();
+			
+			return this;
+		}
+	}),
+	
+	emitId: new Overload({
+		'string': function (event) {
+			throw('Missing id from emitId call!');
+		},
+		
+		'string, *': function (event, id) {
+			return this.$main(event, id);
+		},
+		
+		'string, *, ...': function (event, id) {
+			// Fire global listeners first
+			this.$main.apply(this, arguments);
+			
+			return this;
+		},
+		
+		'$main': function (event, id, data) {
+			this._listeners = this._listeners || {};
+			this._emitting = true;
+			
+			if (this._listeners[event]) {
+				var arrIndex,
+					arrCount,
+					tmpFunc,
+					arr;
+				
+				// Handle global emit
+				if (this._listeners[event]['*']) {
+					arr = this._listeners[event]['*'];
+					arrCount = arr.length;
+					
+					for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+						// Check we have a function to execute
+						tmpFunc = arr[arrIndex];
+						
+						if (typeof tmpFunc === 'function') {
+							tmpFunc.apply(this, Array.prototype.slice.call(arguments, 2));
+						}
+					}
+				}
+				
+				// Handle id emit
+				if (this._listeners[event][id]) {
+					arr = this._listeners[event][id];
+					arrCount = arr.length;
+					
+					for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+						// Check we have a function to execute
+						tmpFunc = arr[arrIndex];
+						
+						if (typeof tmpFunc === 'function') {
+							tmpFunc.apply(this, Array.prototype.slice.call(arguments, 2));
+						}
+					}
+				}
+			}
+			
+			this._emitting = false;
+			this._processRemovalQueue();
+			
+			return this;
+		}
+	}),
+	
+	emitStatic: new Overload({
+		/**
+		 * Emit an event that will fire on listeners even when the listener
+		 * is registered AFTER the event has been emitted.
+		 *
+		 * @param {String} event The event to emit.
+		 * @returns {*}
+		 */
+		'string': function (event) {
+			// Fire global listeners
+			return this.$main(event);
+		},
+		
+		/**
+		 * Emit an event with data that will fire on listeners even when the listener
+		 * is registered AFTER the event has been emitted.
+		 *
+		 * @param {String} event The event to emit.
+		 * @param {*} data Data to emit with the event.
+		 * @returns {*}
+		 */
+		'string, ...': function (event, data) {
+			// Fire global listeners first
+			this.$main.apply(this, arguments);
+			
+			return this;
+		},
+		
+		/**
+		 * Handles emitting events, is an internal method not called directly.
+		 * @param {String} event The name of the event to emit.
+		 * @param {*} data The data to emit with the event.
+		 * @returns {*}
+		 * @private
+		 */
+		'$main': function (event, data) {
+			var id = '*';
+			this._listeners = this._listeners || {};
+			this._emitting = true;
+			
+			if (this._listeners[event]) {
+				var arrIndex,
+					arrCount,
+					tmpFunc,
+					arr;
+				
+				// Handle global emit
+				if (this._listeners[event][id]) {
+					arr = this._listeners[event][id];
+					arrCount = arr.length;
+					
+					for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+						// Check we have a function to execute
+						tmpFunc = arr[arrIndex];
+						
+						if (typeof tmpFunc === 'function') {
+							tmpFunc.apply(this, Array.prototype.slice.call(arguments, 1));
+						}
+					}
+				}
+			}
+			
+			this._emitting = false;
+			
+			this._emitters = this._emitters || {};
+			this._emitters[event] = this._emitters[event] || [];
+			this._emitters[event].push({
+				id: '*',
+				args: Array.prototype.slice.call(arguments, 1)
+			});
+			
+			this._processRemovalQueue();
+			
+			return this;
+		}
+	}),
+	
+	emitStaticId: new Overload({
+		/**
+		 * Require an id to emit.
+		 * @param event
+		 */
+		'string': function (event) {
+			throw('Missing id from emitId call!');
+		},
+		
+		/**
+		 * Emit an event that will fire on listeners even when the listener
+		 * is registered AFTER the event has been emitted.
+		 *
+		 * @param {String} event The event to emit.
+		 * @param {String} id The id of the event to emit.
+		 * @returns {*}
+		 */
+		'string, *': function (event, id) {
+			return this.$main(event, id);
+		},
+		
+		/**
+		 * Emit an event that will fire on listeners even when the listener
+		 * is registered AFTER the event has been emitted.
+		 *
+		 * @param {String} event The event to emit.
+		 * @param {String} id The id of the event to emit.
+		 * @param {*=} data The data to emit with the event.
+		 * @returns {*}
+		 */
+		'string, *, ...': function (event, id, data) {
+			// Fire global listeners first
+			this.$main.apply(this, arguments);
+			
+			return this;
+		},
+		
+		/**
+		 * Handles emitting events, is an internal method not called directly.
+		 * @param {String} event The name of the event to emit.
+		 * @param {String} id The id of the event to emit.
+		 * @param {*} data The data to emit with the event.
+		 * @returns {*}
+		 * @private
+		 */
+		'$main': function (event, id, data) {
+			this._listeners = this._listeners || {};
+			this._emitting = true;
+			
+			if (this._listeners[event]) {
+				var arrIndex,
+					arrCount,
+					tmpFunc,
+					arr;
+				
+				// Handle global emit
+				if (this._listeners[event]['*']) {
+					arr = this._listeners[event]['*'];
+					arrCount = arr.length;
+					
+					for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+						// Check we have a function to execute
+						tmpFunc = arr[arrIndex];
+						
+						if (typeof tmpFunc === 'function') {
+							tmpFunc.apply(this, Array.prototype.slice.call(arguments, 2));
+						}
+					}
+				}
+				
+				// Handle id emit
+				if (this._listeners[event][id]) {
+					arr = this._listeners[event][id];
+					arrCount = arr.length;
+					
+					for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+						// Check we have a function to execute
+						tmpFunc = arr[arrIndex];
+						
+						if (typeof tmpFunc === 'function') {
+							tmpFunc.apply(this, Array.prototype.slice.call(arguments, 2));
+						}
+					}
+				}
+			}
+			
+			this._emitting = false;
+			
+			this._emitters = this._emitters || {};
+			this._emitters[event] = this._emitters[event] || [];
+			this._emitters[event].push({
+				id: id,
+				args: Array.prototype.slice.call(arguments, 2)
+			});
+			
+			this._processRemovalQueue();
+			
+			return this;
+		}
+	}),
 	
 	/**
-	 * Registers a module by executing the module function and
-	 * storing the result under the _modules object by name.
-	 * @param {String} moduleName The name of the module to store.
-	 * @param {Function} func The module function to execute and
-	 * store the return value of.
-	 * @param {Array} args The array of modules that this module
-	 * asked for as dependencies.
+	 * Checks if an event has any event listeners or not.
+	 * @param {String} event The name of the event to check for.
+	 * @returns {boolean} True if one or more event listeners are registered for
+	 * the event. False if none are found.
+	 */
+	willEmit: function (event) {
+		var id = '*';
+		
+		if (this._listeners && this._listeners[event]) {
+			var arrIndex,
+				arrCount,
+				tmpFunc,
+				arr;
+			
+			// Handle global emit
+			if (this._listeners[event][id]) {
+				arr = this._listeners[event][id];
+				arrCount = arr.length;
+				
+				for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+					// Check we have a function to execute
+					tmpFunc = arr[arrIndex];
+					
+					if (typeof tmpFunc === 'function') {
+						return true;
+					}
+				}
+			}
+		}
+		
+		return false;
+	},
+	
+	/**
+	 * Checks if an event has any event listeners or not based on the passed id.
+	 * @param {String} event The name of the event to check for.
+	 * @param {String} id The event ID to check for.
+	 * @returns {boolean} True if one or more event listeners are registered for
+	 * the event. False if none are found.
+	 */
+	willEmitId: function (event, id) {
+		if (this._listeners && this._listeners[event]) {
+			var arrIndex,
+				arrCount,
+				tmpFunc,
+				arr;
+			
+			// Handle global emit
+			if (this._listeners[event]['*']) {
+				arr = this._listeners[event]['*'];
+				arrCount = arr.length;
+				
+				for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+					// Check we have a function to execute
+					tmpFunc = arr[arrIndex];
+					
+					if (typeof tmpFunc === 'function') {
+						return true;
+					}
+				}
+			}
+			
+			// Handle id emit
+			if (this._listeners[event][id]) {
+				arr = this._listeners[event][id];
+				arrCount = arr.length;
+				
+				for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+					// Check we have a function to execute
+					tmpFunc = arr[arrIndex];
+					
+					if (typeof tmpFunc === 'function') {
+						return true;
+					}
+				}
+			}
+		}
+		
+		return false;
+	},
+	
+	/**
+	 * If events are cleared with the off() method while the event emitter is
+	 * actively processing any events then the off() calls get added to a
+	 * queue to be executed after the event emitter is finished. This stops
+	 * errors that might occur by potentially modifying the event queue while
+	 * the emitter is running through them. This method is called after the
+	 * event emitter is finished processing.
 	 * @private
 	 */
-	AppCore.prototype._registerModule = function (moduleName, func, args) {
-		if (this._logLevel >= 4) { console.log('AppCore: ' + moduleName + ': Loaded'); }
-		this._modules[moduleName] = func.apply(func, args) || null;
-		this._moduleDefs[moduleName] = func;
-		this._moduleLoaded(moduleName);
-	};
+	_processRemovalQueue: function () {
+		var i;
+		
+		if (this._eventRemovalQueue && this._eventRemovalQueue.length) {
+			// Execute each removal call
+			for (i = 0; i < this._eventRemovalQueue.length; i++) {
+				this._eventRemovalQueue[i]();
+			}
+			
+			// Clear the removal queue
+			this._eventRemovalQueue = [];
+		}
+	},
 	
-	singelton = new AppCore();
-	
-	// Create the appCore instance and add to global scope
-	if (typeof module  !== 'undefined' && typeof module.exports !== 'undefined') {
-		module.exports = singelton;
+	/**
+	 * Queues an event to be fired. This has automatic de-bouncing so that any
+	 * events of the same type that occur within 100 milliseconds of a previous
+	 * one will all be wrapped into a single emit rather than emitting tons of
+	 * events for lots of chained inserts etc. Only the data from the last
+	 * de-bounced event will be emitted.
+	 * @param {String} eventName The name of the event to emit.
+	 * @param {*=} data Optional data to emit with the event.
+	 */
+	deferEmit: function (eventName, data) {
+		var self = this,
+			args;
+		
+		if (!this._noEmitDefer && (!this._db || (this._db && !this._db._noEmitDefer))) {
+			args = arguments;
+			
+			// Check for an existing timeout
+			this._deferTimeout = this._deferTimeout || {};
+			if (this._deferTimeout[eventName]) {
+				clearTimeout(this._deferTimeout[eventName]);
+			}
+			
+			// Set a timeout
+			this._deferTimeout[eventName] = setTimeout(function () {
+				self.emit.apply(self, args);
+			}, 1);
+		} else {
+			this.emit.apply(this, arguments);
+		}
+		
+		return this;
 	}
-	
-	if (typeof window !== 'undefined') {
-		window.appCore = singelton;
+};
+
+var Emitter = function (obj) {
+	if (obj) {
+		// Convert the object prototype to have eventing capability
+		obj.prototype.on = EventMethods.on;
+		obj.prototype.off = EventMethods.off;
+		obj.prototype.once = EventMethods.once;
+		obj.prototype.emit = EventMethods.emit;
+		obj.prototype.emitId = EventMethods.emitId;
+		obj.prototype.emitStatic = EventMethods.emitStatic;
+		obj.prototype.emitStaticId = EventMethods.emitStaticId;
+		obj.prototype.deferEmit = EventMethods.deferEmit;
+		obj.prototype.willEmit = EventMethods.willEmit;
+		obj.prototype.willEmitId = EventMethods.willEmitId;
+		obj.prototype._processRemovalQueue = EventMethods._processRemovalQueue;
 	}
-})();
-},{}],68:[function(_dereq_,module,exports){
+};
+
+module.exports = Emitter;
+},{"irrelon-overload":86}],86:[function(_dereq_,module,exports){
+"use strict";
+
+/**
+ * Allows a method to accept overloaded calls with different parameters controlling
+ * which passed overload function is called.
+ * @param {Object} def
+ * @returns {Function}
+ * @constructor
+ */
+var Overload = function (def) {
+	if (def) {
+		var self = this,
+			index,
+			count,
+			tmpDef,
+			defNewKey,
+			sigIndex,
+			signatures;
+
+		if (!(def instanceof Array)) {
+			tmpDef = {};
+
+			// Def is an object, make sure all prop names are devoid of spaces
+			for (index in def) {
+				if (def.hasOwnProperty(index)) {
+					defNewKey = index.replace(/ /g, '');
+
+					// Check if the definition array has a * string in it
+					if (defNewKey.indexOf('*') === -1) {
+						// No * found
+						tmpDef[defNewKey] = def[index];
+					} else {
+						// A * was found, generate the different signatures that this
+						// definition could represent
+						signatures = this.generateSignaturePermutations(defNewKey);
+
+						for (sigIndex = 0; sigIndex < signatures.length; sigIndex++) {
+							if (!tmpDef[signatures[sigIndex]]) {
+								tmpDef[signatures[sigIndex]] = def[index];
+							}
+						}
+					}
+				}
+			}
+
+			def = tmpDef;
+		}
+
+		return function () {
+			var arr = [],
+				lookup,
+				type;
+
+			// Check if we are being passed a key/function object or an array of functions
+			if (def instanceof Array) {
+				// We were passed an array of functions
+				count = def.length;
+				for (index = 0; index < count; index++) {
+					if (def[index].length === arguments.length) {
+						return self.callExtend(this, '$main', def, def[index], arguments);
+					}
+				}
+			} else {
+				// Generate lookup key from arguments
+				// Copy arguments to an array
+				for (index = 0; index < arguments.length; index++) {
+					type = typeof arguments[index];
+
+					// Handle detecting arrays
+					if (type === 'object' && arguments[index] instanceof Array) {
+						type = 'array';
+					}
+
+					// Add the type to the argument types array
+					arr.push(type);
+				}
+
+				lookup = arr.join(',');
+
+				// Check for an exact lookup match
+				if (def[lookup]) {
+					return self.callExtend(this, '$main', def, def[lookup], arguments);
+				} else {
+					for (index = arr.length; index >= 0; index--) {
+						// Get the closest match
+						lookup = arr.slice(0, index).join(',');
+
+						if (def[lookup + ',...']) {
+							// Matched against arguments + "any other"
+							return self.callExtend(this, '$main', def, def[lookup + ',...'], arguments);
+						}
+					}
+				}
+			}
+
+			throw('ForerunnerDB.Overload "' + this.name() + '": Overloaded method does not have a matching signature for the passed arguments: ' + JSON.stringify(arr));
+		};
+	}
+
+	return function () {};
+};
+
+/**
+ * Generates an array of all the different definition signatures that can be
+ * created from the passed string with a catch-all wildcard *. E.g. it will
+ * convert the signature: string,*,string to all potentials:
+ * string,string,string
+ * string,number,string
+ * string,object,string,
+ * string,function,string,
+ * string,undefined,string
+ *
+ * @param {String} str Signature string with a wildcard in it.
+ * @returns {Array} An array of signature strings that are generated.
+ */
+Overload.prototype.generateSignaturePermutations = function (str) {
+	var signatures = [],
+		newSignature,
+		types = ['string', 'object', 'number', 'function', 'undefined'],
+		index;
+
+	if (str.indexOf('*') > -1) {
+		// There is at least one "any" type, break out into multiple keys
+		// We could do this at query time with regular expressions but
+		// would be significantly slower
+		for (index = 0; index < types.length; index++) {
+			newSignature = str.replace('*', types[index]);
+			signatures = signatures.concat(this.generateSignaturePermutations(newSignature));
+		}
+	} else {
+		signatures.push(str);
+	}
+
+	return signatures;
+};
+
+Overload.prototype.callExtend = function (context, prop, propContext, func, args) {
+	var tmp,
+		ret;
+
+	if (context && propContext[prop]) {
+		tmp = context[prop];
+
+		context[prop] = propContext[prop];
+		ret = func.apply(context, args);
+		context[prop] = tmp;
+
+		return ret;
+	} else {
+		return func.apply(context, args);
+	}
+};
+
+module.exports = Overload;
+},{}],87:[function(_dereq_,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -27734,7 +30680,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],69:[function(_dereq_,module,exports){
+},{}],88:[function(_dereq_,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -27759,14 +30705,14 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],70:[function(_dereq_,module,exports){
+},{}],89:[function(_dereq_,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],71:[function(_dereq_,module,exports){
+},{}],90:[function(_dereq_,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -28356,4 +31302,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,_dereq_('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":70,"_process":68,"inherits":69}]},{},[22,23,24,25,26,27,28,29,30,31,32,33,35,36,37,34,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,1,2,3,64,65,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,66]);
+},{"./support/isBuffer":89,"_process":87,"inherits":88}]},{},[22,23,24,25,26,27,28,29,30,31,32,33,34,36,37,38,35,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,1,2,3,65,66,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82]);

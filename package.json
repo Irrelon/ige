@@ -12,7 +12,7 @@
     "derequire": "^2.0.6",
     "grunt": "^1.0.1",
     "grunt-browserify": "^5.0.0",
-    "irrelon-appcore": "^1.0.14",
+    "irrelon-appcore": "^1.0.25",
     "stringify": "^5.1.0"
   },
   "devDependencies": {},
