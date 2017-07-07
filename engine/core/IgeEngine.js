@@ -2178,10 +2178,11 @@ appCore.module('IgeEngine', function (
 			
 			go: function (path) {
 				var self = this,
-					definition = this._route[path],
-					requirements = [];
+					definition = self._route[path],
+					requirements = [],
+					routeSteps = [];
 				
-				this.log('Navigating to route "' + path + '"...');
+				self.log('Navigating to route "' + path + '"...');
 				
 				// Check existing route path and see if we need to remove anything
 				// from the current graph etc
@@ -2190,9 +2191,9 @@ appCore.module('IgeEngine', function (
 				// Check for universal route
 				if (!definition.client && !definition.server) {
 					// Definition is for a universal route
-					this.log('Route "' + path + '" is universal');
+					self.log('Route "' + path + '" is universal');
 				} else {
-					this.log('Route "' + path + '" is non-universal');
+					self.log('Route "' + path + '" is non-universal');
 					if (ige.isClient) {
 						definition = definition.client;
 					}
@@ -2203,27 +2204,49 @@ appCore.module('IgeEngine', function (
 				}
 				
 				if (!definition.controller) {
-					this.log('ige.go() encounterd a route that has no controller specified: ' + path, 'error');
+					self.log('ige.go() encounterd a route that has no controller specified: ' + path, 'error');
 				}
-				
-				this.log('Route "' + path + '" attempting setup...');
 				
 				if (definition.textures) {
-					this.log('Adding route "' + path + '" textures: ' + definition.textures);
+					routeSteps.push(function (finished) {
+						self.log('Adding route "' + path + '" textures: ' + definition.textures);
+						appCore.run([definition.textures, function (textures) {
+							if (!ige.texturesLoaded()) {
+								ige.on('texturesLoaded', function () {
+									finished(false);
+								});
+								return;
+							}
+							
+							return finished(false);
+						}]);
+					});
 				}
 				
-				appCore.run([definition.textures, definition.sceneGraph, function (textures, sceneGraph) {
-					if (definition.sceneGraph) {
-						self.log('Adding route "' + path + '" sceneGraph: ' + definition.sceneGraph);
-						self.addGraph(definition.sceneGraph);
-					}
-					
+				routeSteps.push(function (finished) {
 					self.log('Executing route "' + path + '" controller: ' + definition.controller);
 					appCore.run([definition.controller, function (Controller) {
-						self.log('Route "' + path + '" setup complete');
-						this._controller = new Controller()
+						self._controller = new Controller();
+						
+						finished(false);
 					}]);
-				}]);
+				});
+				
+				if (definition.sceneGraph) {
+					routeSteps.push(function (finished) {
+						appCore.run([definition.sceneGraph, function (sceneGraph) {
+							self.log('Adding route "' + path + '" sceneGraph: ' + definition.sceneGraph);
+							self.addGraph(definition.sceneGraph);
+							
+							finished(false);
+						}]);
+					});
+				}
+				
+				self.log('Route "' + path + '" attempting setup...');
+				routeSteps.series(function () {
+					self.log('Route "' + path + '" setup complete');
+				});
 			},
 			
 			destroy: function () {
