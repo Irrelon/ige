@@ -185,6 +185,9 @@ appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTransl
 							$('#editorToggle').on('click', function () {
 								ige.editor.toggle();
 							});
+							
+							self._ready = true;
+							self.emit('ready');
 						}, null, true);
 					}, null, true);
 				});
@@ -202,6 +205,18 @@ appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTransl
 			};
 			
 			this.log('Init complete');
+		},
+		
+		ready: function (callback) {
+			if (callback) {
+				if (this._ready) {
+					returncallback();
+				}
+				
+				this.on('ready', callback);
+			}
+			
+			return this._ready;
 		},
 		
 		interceptMouse: function (val) {
@@ -260,30 +275,36 @@ appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTransl
 		},
 		
 		toggleStats: function () {
-			var elem = $('#statsToggle');
-			
-			if (elem.hasClass('active')) {
-				ige.editor.hideStats();
-			} else {
-				ige.editor.showStats();
-			}
+			this.ready(function () {
+				var elem = $('#statsToggle');
+				
+				if (elem.hasClass('active')) {
+					ige.editor.hideStats();
+				} else {
+					ige.editor.showStats();
+				}
+			});
 		},
 		
 		showStats: function () {
-			$('#statsToggle')
-				.html('Stats On')
-				.removeClass('active')
-				.addClass('active');
-			
-			$('.counter').show();
+			this.ready(function () {
+				$('#statsToggle')
+					.html('Stats On')
+					.removeClass('active')
+					.addClass('active');
+				
+				$('.counter').show();
+			});
 		},
 		
 		hideStats: function () {
-			$('#statsToggle')
-				.html('Stats Off')
-				.removeClass('active');
-			
-			$('.counter').hide();
+			this.ready(function () {
+				$('#statsToggle')
+					.html('Stats Off')
+					.removeClass('active');
+				
+				$('.counter').hide();
+			});
 		},
 		
 		loadHtml: function (url, callback) {
