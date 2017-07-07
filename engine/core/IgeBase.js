@@ -258,6 +258,57 @@ appCore.module('igeBase', function () {
 	/**
 	 * Make property non-enumerable.
 	 */
+	Object.defineProperty(Array.prototype, 'series', {
+		enumerable: false,
+		writable: true,
+		configurable: true
+	});
+	
+	/**
+	 * Basically the same functionality as async.series without
+	 * importing the entire async library. Calls each function
+	 * in the array one at a time passing in a callback and waiting
+	 * for the callback to be called before proceeding to call
+	 * the next function in the array. When all functions have
+	 * been called, calls the function specified by "complete".
+	 * @param {Function=} complete Optional callback to call once
+	 * all functions in the series have been executed.
+	 * @return {*}
+	 */
+	Array.prototype.series = function (complete) {
+		var callArr = this.clone(),
+			callFunc;
+		
+		if  (!callArr.length) {
+			if (complete) {
+				complete();
+			}
+			return;
+		}
+		
+		callFunc = function () {
+			var func = callArr.shift();
+			
+			if (!func) {
+				if (complete) {
+					complete();
+				}
+				return;
+			}
+			
+			func(function (err) {
+				setTimeout(function () {
+					callFunc();
+				}, 1);
+			});
+		}
+		
+		callFunc();
+	};
+	
+	/**
+	 * Make property non-enumerable.
+	 */
 	Object.defineProperty(Math, 'PI180', {
 		enumerable: false,
 		writable: true,
