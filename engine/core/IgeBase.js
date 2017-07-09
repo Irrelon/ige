@@ -275,11 +275,21 @@ appCore.module('igeBase', function () {
 	 * all functions in the series have been executed.
 	 * @return {*}
 	 */
-	Array.prototype.series = function (complete) {
-		var callArr = this.clone(),
+	Array.prototype.series = function (complete, reference) {
+		var self = this,
+			callArr,
 			callFunc;
 		
-		if  (!callArr.length) {
+		if (this._executingSeries) {
+			return;
+		}
+		
+		callArr = reference ? this : this.clone();
+		this._executingSeries = true;
+		
+		if (!callArr.length) {
+			delete self._executingSeries;
+			
 			if (complete) {
 				complete();
 			}
@@ -290,6 +300,8 @@ appCore.module('igeBase', function () {
 			var func = callArr.shift();
 			
 			if (!func) {
+				delete self._executingSeries;
+				
 				if (complete) {
 					complete();
 				}
@@ -301,6 +313,64 @@ appCore.module('igeBase', function () {
 					callFunc();
 				}, 1);
 			});
+		}
+		
+		callFunc();
+	};
+	
+	/**
+	 * Basically the same functionality as async.waterfall without
+	 * importing the entire async library. Calls each function
+	 * in the array one at a time passing in a callback and waiting
+	 * for the callback to be called before proceeding to call
+	 * the next function in the array. When all functions have
+	 * been called, calls the function specified by "complete".
+	 * @param {Function=} complete Optional callback to call once
+	 * all functions in the series have been executed.
+	 * @return {*}
+	 */
+	Array.prototype.waterfall = function (complete) {
+		var callArr = this.clone(),
+			callFunc;
+		
+		if  (!callArr.length) {
+			if (complete) {
+				complete();
+			}
+			return;
+		}
+		
+		callFunc = function (waterfallArgs) {
+			var func = callArr.shift();
+			
+			if (!func) {
+				if (complete) {
+					complete(false);
+				}
+				return;
+			}
+			
+			waterfallArgs = waterfallArgs || [];
+			waterfallArgs.push(function (err) {
+				var args = [],
+					i;
+				
+				if (err) {
+					complete(err);
+					return;
+				}
+				
+				// Skip the error argument and copy the rest
+				for (i = 1; i < arguments.length; i++) {
+					args.push(arguments[i]);
+				}
+				
+				setTimeout(function () {
+					callFunc(args);
+				}, 1);
+			});
+			
+			func.apply(func, waterfallArgs);
 		}
 		
 		callFunc();
