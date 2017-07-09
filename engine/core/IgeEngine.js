@@ -33,6 +33,8 @@ appCore.module('IgeEngine', function (
 				
 				this._id = 'ige';
 				this.basePath = '';
+				this._currentRoutePath = '';
+				this._routeQueue = [];
 				
 				// Determine the environment we are executing in
 				this.isServer = (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined' && typeof window === 'undefined');
@@ -2172,81 +2174,242 @@ appCore.module('IgeEngine', function (
 			},
 			
 			route: function (path, definition) {
-				this._route = this._route || {};
-				this._route[path] = definition;
+				if (path !== undefined) {
+					if (definition !== undefined) {
+						this._route = this._route || {};
+						this._route[path] = definition;
+						
+						return this;
+					}
+					
+					return this._route[path];
+				}
+				
+				return this._route;
+			},
+			
+			/**
+			 * Gets / sets route data by path.
+			 * @param {String} path The path to get / set data for.
+			 * @param {*=} data The data to set for the path.
+			 * @returns {*}
+			 */
+			routeData: function (path, data) {
+				if (path !== undefined) {
+					this._routeData = this._routeData || {};
+					
+					if (data !== undefined) {
+						this._routeData[path] = data;
+						return this;
+					}
+					
+					return this._routeData[path];
+				}
+				
+				return this._routeData;
 			},
 			
 			go: function (path) {
 				var self = this,
-					definition = self._route[path],
 					requirements = [],
-					routeSteps = [];
+					routeSteps,
+					currentRoutePath,
+					rootPathString,
+					currentPathParts,
+					newPathParts,
+					tempPath,
+					routeData,
+					i;
 				
-				self.log('Navigating to route "' + path + '"...');
+				// Check for a route definition first
+				if (!this._route[path]) {
+					throw('Attempt to navigate to undefined route: ' + path);
+					return;
+				}
 				
-				// Check existing route path and see if we need to remove anything
-				// from the current graph etc
+				currentRoutePath = self._currentRoutePath;
+				rootPathString = '';
+				currentPathParts = currentRoutePath.split('.');
+				newPathParts = path.split('.');
 				
-				
-				// Check for universal route
-				if (!definition.client && !definition.server) {
-					// Definition is for a universal route
-					self.log('Route "' + path + '" is universal');
-				} else {
-					self.log('Route "' + path + '" is non-universal');
-					if (ige.isClient) {
-						definition = definition.client;
+				// Check current path
+				if (self._currentRoutePath) {
+					// Remove duplicate beginning parts from arrays
+					while(currentPathParts.length && newPathParts.length && currentPathParts[0] === newPathParts[0]) {
+						rootPathString += '.' + currentPathParts.shift();
+						newPathParts.shift();
 					}
 					
-					if (ige.isServer) {
-						definition = definition.server;
+					// Inform routes that they are being destroyed
+					if (currentPathParts.length) {
+						tempPath = rootPathString;
+						currentPathParts.reverse();
+						
+						for (i = 0; i < currentPathParts.length; i++) {
+							self._routeRemove(currentPathParts[i]);
+						}
 					}
 				}
 				
-				if (!definition.controller) {
-					self.log('ige.go() encounterd a route that has no controller specified: ' + path, 'error');
+				// Now route to the new path
+				if (newPathParts.length) {
+					tempPath = rootPathString;
+					
+					for (i = 0; i < newPathParts.length; i++) {
+						self._routeAdd(newPathParts[i]);
+					}
 				}
+			},
+			
+			_routeRemove: function (path) {
+				var self = this,
+					routeData,
+					thisFullPath,
+					definition,
+					queue;
 				
-				if (definition.textures) {
-					routeSteps.push(function (finished) {
-						self.log('Adding route "' + path + '" textures: ' + definition.textures);
-						appCore.run([definition.textures, function (textures) {
-							if (!ige.texturesLoaded()) {
-								ige.on('texturesLoaded', function () {
-									finished(false);
-								});
-								return;
-							}
-							
-							return finished(false);
-						}]);
-					});
-				}
+				thisFullPath = self._currentRoutePath;
+				queue = this._routeQueue;
 				
-				routeSteps.push(function (finished) {
-					self.log('Executing route "' + path + '" controller: ' + definition.controller);
-					appCore.run([definition.controller, function (Controller) {
-						self._controller = new Controller();
+				console.log('+++++++++++++++++++++++++++ Queuing path remove: ' + thisFullPath);
+				
+				queue.push(function (finished) {
+					console.log('------------------------------ Leaving path: ' + thisFullPath);
+					routeData = self.routeData(thisFullPath);
+					definition = self._route[thisFullPath];
+					
+					if (!routeData) {
+						throw('Attempting to routeRemove() a path that has no routeData: ' + thisFullPath);
+					}
+					
+					if (routeData.sceneGraphModule) {
+						routeData.sceneGraphModule.emit('destroy');
+						self.removeGraph(definition.sceneGraph);
+					}
+					
+					if (routeData.texturesModule) {
+						routeData.texturesModule.emit('destroy');
+					}
+					routeData.controllerModule.emit('destroy');
+					
+					if (routeData.sceneGraphModule) {
+						routeData.sceneGraphModule.emit('destroyed');
+					}
+					
+					if (routeData.texturesModule) {
+						routeData.texturesModule.emit('destroyed');
+					}
+					routeData.controllerModule.emit('destroyed');
+					
+					self._currentRoutePath = self._currentRoutePath.replace(new RegExp('[\.]*?' + path + '$'), '');
+					
+					finished();
+				});
+				
+				queue.series(function () {}, true);
+			},
+			
+			_routeAdd: function (path) {
+				var self = this,
+					definition,
+					requirements,
+					routeSteps,
+					thisFullPath,
+					queue;
+				
+				self._currentRoutePath += self._currentRoutePath ? '.' + path : path;
+				thisFullPath = self._currentRoutePath;
+				
+				queue = this._routeQueue;
+				
+				console.log('+++++++++++++++++++++++++++ Queuing path add: ' + thisFullPath);
+				
+				queue.push(function (finished) {
+					console.log('+++++++++++++++++++++++++++ Entering path: ' + thisFullPath);
+					
+					definition = self._route[thisFullPath];
+					routeSteps = [];
+					
+					// Check for universal route
+					if (!definition.client && !definition.server) {
+						// Definition is for a universal route
+						self.log('Route "' + thisFullPath + '" is universal');
+					} else {
+						self.log('Route "' + thisFullPath + '" is non-universal');
+						if (ige.isClient) {
+							definition = definition.client;
+						}
 						
-						finished(false);
-					}]);
-				});
-				
-				if (definition.sceneGraph) {
+						if (ige.isServer) {
+							definition = definition.server;
+						}
+					}
+					
+					self.log('Navigating to route "' + thisFullPath + '"...');
+					
+					if (!definition.controller) {
+						self.log('ige._routeAdd() encounterd a route that has no controller specified: ' + thisFullPath, 'error');
+					}
+					
+					self.routeData(thisFullPath, {
+						controllerModule: appCore.module(definition.controller),
+						texturesModule: definition.textures ? appCore.module(definition.textures) : undefined,
+						sceneGraphModule: definition.sceneGraph ? appCore.module(definition.sceneGraph) : undefined
+					});
+					
+					if (definition.textures) {
+						routeSteps.push(function (finished) {
+							self.log('Adding route "' + thisFullPath + '" textures: ' + definition.textures);
+							appCore.run([definition.textures, function (textures) {
+								if (!ige.texturesLoaded()) {
+									ige.on('texturesLoaded', function () {
+										finished(false);
+									});
+									return;
+								}
+								
+								return finished(false);
+							}]);
+						});
+					}
+					
 					routeSteps.push(function (finished) {
-						appCore.run([definition.sceneGraph, function (sceneGraph) {
-							self.log('Adding route "' + path + '" sceneGraph: ' + definition.sceneGraph);
-							self.addGraph(definition.sceneGraph);
+						self.log('Executing route "' + thisFullPath + '" controller: ' + definition.controller);
+						appCore.run([definition.controller, function (Controller) {
+							var controller = new Controller();
 							
-							finished(false);
+							self.routeData(thisFullPath).controllerModuleInstance = controller;
+							finished(false, controller);
 						}]);
 					});
-				}
-				
-				self.log('Route "' + path + '" attempting setup...');
-				routeSteps.series(function () {
-					self.log('Route "' + path + '" setup complete');
+					
+					if (definition.sceneGraph) {
+						routeSteps.push(function (controller, finished) {
+							appCore.module('$controller', function () {
+								return controller;
+							});
+							
+							appCore
+								.module(definition.sceneGraph)
+								.$controller = controller;
+							
+							appCore.run([definition.sceneGraph, function (sceneGraph) {
+								self.log('Adding route "' + thisFullPath + '" sceneGraph: ' + definition.sceneGraph);
+								self.addGraph(definition.sceneGraph);
+								
+								finished(false);
+							}]);
+						});
+					}
+					
+					self.log('Route "' + thisFullPath + '" attempting setup...');
+					routeSteps.waterfall(function () {
+						self.log('Route "' + thisFullPath + '" setup complete');
+						finished();
+					});
 				});
+				
+				queue.series(function () {}, true);
 			},
 			
 			destroy: function () {
