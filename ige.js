@@ -16,7 +16,7 @@ appCore.module('IgeCuboidSmartTexture', function () {
 	
 	return IgeCuboidSmartTexture;
 });
-},{"irrelon-appcore":83}],2:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],2:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -148,7 +148,7 @@ appCore.module('IgeFontSmartTexture', function () {
 	
 	return IgeFontSmartTexture;
 });
-},{"irrelon-appcore":83}],3:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],3:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -354,7 +354,7 @@ appCore.module('IgeTileMap2dSmartTexture', function (IgePoint2d) {
 	
 	return IgeTileMap2dSmartTexture;
 });
-},{"irrelon-appcore":83}],4:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],4:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -826,7 +826,7 @@ appCore.module('IgeAnimationComponent', function (IgeEventingClass) {
 	
 	return IgeAnimationComponent;
 });
-},{"irrelon-appcore":83}],5:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],5:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -1346,7 +1346,7 @@ appCore.module('IgeEntityManagerComponent', function (IgeClass, IgePoint3d, IgeR
 	
 	return IgeEntityManagerComponent;
 });
-},{"irrelon-appcore":83}],6:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],6:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -1544,7 +1544,7 @@ appCore.module('IgeGamePadComponent', function (IgeEventingClass) {
 	
 	return IgeGamePadComponent;
 });
-},{"irrelon-appcore":83}],7:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],7:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2302,7 +2302,7 @@ appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
 	
 	return IgeInputComponent;
 });
-},{"irrelon-appcore":83}],8:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],8:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2551,7 +2551,7 @@ appCore.module('IgeMousePanComponent', function (IgeEventingClass) {
 	
 	return IgeMousePanComponent;
 });
-},{"irrelon-appcore":83}],9:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],9:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2688,7 +2688,7 @@ appCore.module('IgeMouseZoomComponent', function (IgeEventingClass) {
 	
 	return IgeMouseZoomComponent;
 });
-},{"irrelon-appcore":83}],10:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],10:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3545,7 +3545,7 @@ appCore.module('IgePathComponent', function (IgeEventingClass, IgePoint3d) {
 	
 	return IgePathComponent;
 });
-},{"irrelon-appcore":83}],11:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],11:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3737,7 +3737,7 @@ appCore.module('IgeTiledComponent', function (IgeClass, IgeCellSheet, IgeTileMap
 	
 	return IgeTiledComponent;
 });
-},{"irrelon-appcore":83}],12:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],12:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3841,7 +3841,7 @@ appCore.module('IgeTimeComponent', function (IgeEventingClass) {
 	
 	return IgeTimeComponent;
 });
-},{"irrelon-appcore":83}],13:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],13:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4411,7 +4411,7 @@ appCore.module('IgeTweenComponent', function (IgeClass) {
 	
 	return IgeTweenComponent;
 });
-},{"irrelon-appcore":83}],14:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],14:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4577,7 +4577,7 @@ appCore.module('IgeUiManagerComponent', function (IgeClass) {
 	
 	return IgeUiManagerComponent;
 });
-},{"irrelon-appcore":83}],15:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],15:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4789,7 +4789,7 @@ appCore.module('IgeVelocityComponent', function (IgeClass, IgePoint3d) {
 	
 	return IgeVelocityComponent;
 });
-},{"irrelon-appcore":83}],16:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],16:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4916,7 +4916,7 @@ appCore.module('IgeAudio', function (IgeEventingClass) {
 	
 	return IgeAudio;
 });
-},{"irrelon-appcore":83}],17:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],17:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5015,7 +5015,7 @@ appCore.module('IgeAudioComponent', function (IgeEventingClass, IgeAudio) {
 	
 	return IgeAudioComponent;
 });
-},{"irrelon-appcore":83}],18:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],18:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5082,7 +5082,7 @@ appCore.module('IgeCocoonJsComponent', function (IgeEventingClass) {
 	
 	return IgeCocoonJsComponent;
 });
-},{"irrelon-appcore":83}],19:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],19:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5270,6 +5270,9 @@ appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTransl
 							$('#editorToggle').on('click', function () {
 								ige.editor.toggle();
 							});
+							
+							self._ready = true;
+							self.emit('ready');
 						}, null, true);
 					}, null, true);
 				});
@@ -5287,6 +5290,18 @@ appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTransl
 			};
 			
 			this.log('Init complete');
+		},
+		
+		ready: function (callback) {
+			if (callback) {
+				if (this._ready) {
+					returncallback();
+				}
+				
+				this.on('ready', callback);
+			}
+			
+			return this._ready;
 		},
 		
 		interceptMouse: function (val) {
@@ -5345,30 +5360,36 @@ appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTransl
 		},
 		
 		toggleStats: function () {
-			var elem = $('#statsToggle');
-			
-			if (elem.hasClass('active')) {
-				ige.editor.hideStats();
-			} else {
-				ige.editor.showStats();
-			}
+			this.ready(function () {
+				var elem = $('#statsToggle');
+				
+				if (elem.hasClass('active')) {
+					ige.editor.hideStats();
+				} else {
+					ige.editor.showStats();
+				}
+			});
 		},
 		
 		showStats: function () {
-			$('#statsToggle')
-				.html('Stats On')
-				.removeClass('active')
-				.addClass('active');
-			
-			$('.counter').show();
+			this.ready(function () {
+				$('#statsToggle')
+					.html('Stats On')
+					.removeClass('active')
+					.addClass('active');
+				
+				$('.counter').show();
+			});
 		},
 		
 		hideStats: function () {
-			$('#statsToggle')
-				.html('Stats Off')
-				.removeClass('active');
-			
-			$('.counter').hide();
+			this.ready(function () {
+				$('#statsToggle')
+					.html('Stats Off')
+					.removeClass('active');
+				
+				$('.counter').hide();
+			});
 		},
 		
 		loadHtml: function (url, callback) {
@@ -5774,7 +5795,7 @@ appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTransl
 	
 	return IgeEditorComponent;
 });
-},{"irrelon-appcore":83}],20:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],20:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5991,7 +6012,7 @@ appCore.module('IgeEditorRotateComponent', function (IgeEventingClass) {
 	
 	return IgeEditorRotateComponent;
 });
-},{"irrelon-appcore":83}],21:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],21:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6258,7 +6279,16 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 	return IgeEditorTranslateComponent;
 });
 
-},{"irrelon-appcore":83}],22:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],22:[function(_dereq_,module,exports){
+"use strict";
+
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('$game', function () {
+	// Return a blank object that can be shared around the application
+	return {};
+});
+},{"irrelon-appcore":84}],23:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6283,8 +6313,12 @@ appCore.module('$textures', function () {
 	};
 	
 	IgeTextureStore.prototype.remove = function (name) {
-		this._store[name].destroy();
-		delete this._store[name];
+		var texture = this._store[name];
+		
+		if (texture) {
+			texture.destroy();
+			delete this._store[name];
+		}
 	}
 	
 	IgeTextureStore.prototype.removeGroup = function (group) {
@@ -6308,7 +6342,7 @@ appCore.module('$textures', function () {
 	
 	return new IgeTextureStore();
 });
-},{"irrelon-appcore":83}],23:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],24:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeArray', function (IgeEntity) {
@@ -6333,7 +6367,7 @@ appCore.module('IgeArray', function (IgeEntity) {
 	
 	return IgeArray;
 });
-},{"irrelon-appcore":83}],24:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],25:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6611,11 +6645,21 @@ appCore.module('igeBase', function () {
 	 * all functions in the series have been executed.
 	 * @return {*}
 	 */
-	Array.prototype.series = function (complete) {
-		var callArr = this.clone(),
+	Array.prototype.series = function (complete, reference) {
+		var self = this,
+			callArr,
 			callFunc;
 		
-		if  (!callArr.length) {
+		if (this._executingSeries) {
+			return;
+		}
+		
+		callArr = reference ? this : this.clone();
+		this._executingSeries = true;
+		
+		if (!callArr.length) {
+			delete self._executingSeries;
+			
 			if (complete) {
 				complete();
 			}
@@ -6626,6 +6670,8 @@ appCore.module('igeBase', function () {
 			var func = callArr.shift();
 			
 			if (!func) {
+				delete self._executingSeries;
+				
 				if (complete) {
 					complete();
 				}
@@ -6637,6 +6683,64 @@ appCore.module('igeBase', function () {
 					callFunc();
 				}, 1);
 			});
+		}
+		
+		callFunc();
+	};
+	
+	/**
+	 * Basically the same functionality as async.waterfall without
+	 * importing the entire async library. Calls each function
+	 * in the array one at a time passing in a callback and waiting
+	 * for the callback to be called before proceeding to call
+	 * the next function in the array. When all functions have
+	 * been called, calls the function specified by "complete".
+	 * @param {Function=} complete Optional callback to call once
+	 * all functions in the series have been executed.
+	 * @return {*}
+	 */
+	Array.prototype.waterfall = function (complete) {
+		var callArr = this.clone(),
+			callFunc;
+		
+		if  (!callArr.length) {
+			if (complete) {
+				complete();
+			}
+			return;
+		}
+		
+		callFunc = function (waterfallArgs) {
+			var func = callArr.shift();
+			
+			if (!func) {
+				if (complete) {
+					complete(false);
+				}
+				return;
+			}
+			
+			waterfallArgs = waterfallArgs || [];
+			waterfallArgs.push(function (err) {
+				var args = [],
+					i;
+				
+				if (err) {
+					complete(err);
+					return;
+				}
+				
+				// Skip the error argument and copy the rest
+				for (i = 1; i < arguments.length; i++) {
+					args.push(arguments[i]);
+				}
+				
+				setTimeout(function () {
+					callFunc(args);
+				}, 1);
+			});
+			
+			func.apply(func, waterfallArgs);
 		}
 		
 		callFunc();
@@ -7020,7 +7124,7 @@ appCore.module('igeBase').run(function (IgeTween) {
 		return newTween;
 	};
 });
-},{"irrelon-appcore":83,"util":90}],25:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84,"util":91}],26:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7075,7 +7179,7 @@ appCore.module('IgeBaseScene', function (IgeSceneGraph, IgeScene2d, IgeViewport)
 	
 	return IgeBaseScene;
 });
-},{"irrelon-appcore":83}],26:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],27:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7455,7 +7559,7 @@ appCore.module('IgeCamera', function (IgeEntity) {
 	
 	return IgeCamera;
 });
-},{"irrelon-appcore":83}],27:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],28:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7596,7 +7700,7 @@ appCore.module('IgeCellSheet', function (IgeTexture) {
 	
 	return IgeCellSheet;
 });
-},{"irrelon-appcore":83}],28:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],29:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeClass', function (igeBase) {
@@ -8047,7 +8151,7 @@ appCore.module('IgeClass', function (igeBase) {
 	
 	return IgeClass;
 });
-},{"irrelon-appcore":83}],29:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],30:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -8075,7 +8179,7 @@ appCore.module('IgeCollisionMap2d', function (IgeEntity, IgeMap2d) {
 	
 	return IgeCollisionMap2d;
 });
-},{"irrelon-appcore":83}],30:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],31:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -8094,7 +8198,7 @@ appCore.module('IgeDummyCanvas', function (IgeDummyContext) {
 	
 	return IgeDummyCanvas;
 });
-},{"irrelon-appcore":83}],31:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],32:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -8127,7 +8231,7 @@ appCore.module('IgeDummyContext', function () {
 	
 	return IgeDummyContext;
 });
-},{"irrelon-appcore":83}],32:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],33:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -8163,6 +8267,8 @@ appCore.module('IgeEngine', function (
 				
 				this._id = 'ige';
 				this.basePath = '';
+				this._currentRoutePath = '';
+				this._routeQueue = [];
 				
 				// Determine the environment we are executing in
 				this.isServer = (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined' && typeof window === 'undefined');
@@ -10302,81 +10408,242 @@ appCore.module('IgeEngine', function (
 			},
 			
 			route: function (path, definition) {
-				this._route = this._route || {};
-				this._route[path] = definition;
+				if (path !== undefined) {
+					if (definition !== undefined) {
+						this._route = this._route || {};
+						this._route[path] = definition;
+						
+						return this;
+					}
+					
+					return this._route[path];
+				}
+				
+				return this._route;
+			},
+			
+			/**
+			 * Gets / sets route data by path.
+			 * @param {String} path The path to get / set data for.
+			 * @param {*=} data The data to set for the path.
+			 * @returns {*}
+			 */
+			routeData: function (path, data) {
+				if (path !== undefined) {
+					this._routeData = this._routeData || {};
+					
+					if (data !== undefined) {
+						this._routeData[path] = data;
+						return this;
+					}
+					
+					return this._routeData[path];
+				}
+				
+				return this._routeData;
 			},
 			
 			go: function (path) {
 				var self = this,
-					definition = self._route[path],
 					requirements = [],
-					routeSteps = [];
+					routeSteps,
+					currentRoutePath,
+					rootPathString,
+					currentPathParts,
+					newPathParts,
+					tempPath,
+					routeData,
+					i;
 				
-				self.log('Navigating to route "' + path + '"...');
+				// Check for a route definition first
+				if (!this._route[path]) {
+					throw('Attempt to navigate to undefined route: ' + path);
+					return;
+				}
 				
-				// Check existing route path and see if we need to remove anything
-				// from the current graph etc
+				currentRoutePath = self._currentRoutePath;
+				rootPathString = '';
+				currentPathParts = currentRoutePath.split('.');
+				newPathParts = path.split('.');
 				
-				
-				// Check for universal route
-				if (!definition.client && !definition.server) {
-					// Definition is for a universal route
-					self.log('Route "' + path + '" is universal');
-				} else {
-					self.log('Route "' + path + '" is non-universal');
-					if (ige.isClient) {
-						definition = definition.client;
+				// Check current path
+				if (self._currentRoutePath) {
+					// Remove duplicate beginning parts from arrays
+					while(currentPathParts.length && newPathParts.length && currentPathParts[0] === newPathParts[0]) {
+						rootPathString += '.' + currentPathParts.shift();
+						newPathParts.shift();
 					}
 					
-					if (ige.isServer) {
-						definition = definition.server;
+					// Inform routes that they are being destroyed
+					if (currentPathParts.length) {
+						tempPath = rootPathString;
+						currentPathParts.reverse();
+						
+						for (i = 0; i < currentPathParts.length; i++) {
+							self._routeRemove(currentPathParts[i]);
+						}
 					}
 				}
 				
-				if (!definition.controller) {
-					self.log('ige.go() encounterd a route that has no controller specified: ' + path, 'error');
+				// Now route to the new path
+				if (newPathParts.length) {
+					tempPath = rootPathString;
+					
+					for (i = 0; i < newPathParts.length; i++) {
+						self._routeAdd(newPathParts[i]);
+					}
 				}
+			},
+			
+			_routeRemove: function (path) {
+				var self = this,
+					routeData,
+					thisFullPath,
+					definition,
+					queue;
 				
-				if (definition.textures) {
-					routeSteps.push(function (finished) {
-						self.log('Adding route "' + path + '" textures: ' + definition.textures);
-						appCore.run([definition.textures, function (textures) {
-							if (!ige.texturesLoaded()) {
-								ige.on('texturesLoaded', function () {
-									finished(false);
-								});
-								return;
-							}
-							
-							return finished(false);
-						}]);
-					});
-				}
+				thisFullPath = self._currentRoutePath;
+				queue = this._routeQueue;
 				
-				routeSteps.push(function (finished) {
-					self.log('Executing route "' + path + '" controller: ' + definition.controller);
-					appCore.run([definition.controller, function (Controller) {
-						self._controller = new Controller();
+				console.log('+++++++++++++++++++++++++++ Queuing path remove: ' + thisFullPath);
+				
+				queue.push(function (finished) {
+					console.log('------------------------------ Leaving path: ' + thisFullPath);
+					routeData = self.routeData(thisFullPath);
+					definition = self._route[thisFullPath];
+					
+					if (!routeData) {
+						throw('Attempting to routeRemove() a path that has no routeData: ' + thisFullPath);
+					}
+					
+					if (routeData.sceneGraphModule) {
+						routeData.sceneGraphModule.emit('destroy');
+						self.removeGraph(definition.sceneGraph);
+					}
+					
+					if (routeData.texturesModule) {
+						routeData.texturesModule.emit('destroy');
+					}
+					routeData.controllerModule.emit('destroy');
+					
+					if (routeData.sceneGraphModule) {
+						routeData.sceneGraphModule.emit('destroyed');
+					}
+					
+					if (routeData.texturesModule) {
+						routeData.texturesModule.emit('destroyed');
+					}
+					routeData.controllerModule.emit('destroyed');
+					
+					self._currentRoutePath = self._currentRoutePath.replace(new RegExp('[\.]*?' + path + '$'), '');
+					
+					finished();
+				});
+				
+				queue.series(function () {}, true);
+			},
+			
+			_routeAdd: function (path) {
+				var self = this,
+					definition,
+					requirements,
+					routeSteps,
+					thisFullPath,
+					queue;
+				
+				self._currentRoutePath += self._currentRoutePath ? '.' + path : path;
+				thisFullPath = self._currentRoutePath;
+				
+				queue = this._routeQueue;
+				
+				console.log('+++++++++++++++++++++++++++ Queuing path add: ' + thisFullPath);
+				
+				queue.push(function (finished) {
+					console.log('+++++++++++++++++++++++++++ Entering path: ' + thisFullPath);
+					
+					definition = self._route[thisFullPath];
+					routeSteps = [];
+					
+					// Check for universal route
+					if (!definition.client && !definition.server) {
+						// Definition is for a universal route
+						self.log('Route "' + thisFullPath + '" is universal');
+					} else {
+						self.log('Route "' + thisFullPath + '" is non-universal');
+						if (ige.isClient) {
+							definition = definition.client;
+						}
 						
-						finished(false);
-					}]);
-				});
-				
-				if (definition.sceneGraph) {
+						if (ige.isServer) {
+							definition = definition.server;
+						}
+					}
+					
+					self.log('Navigating to route "' + thisFullPath + '"...');
+					
+					if (!definition.controller) {
+						self.log('ige._routeAdd() encounterd a route that has no controller specified: ' + thisFullPath, 'error');
+					}
+					
+					self.routeData(thisFullPath, {
+						controllerModule: appCore.module(definition.controller),
+						texturesModule: definition.textures ? appCore.module(definition.textures) : undefined,
+						sceneGraphModule: definition.sceneGraph ? appCore.module(definition.sceneGraph) : undefined
+					});
+					
+					if (definition.textures) {
+						routeSteps.push(function (finished) {
+							self.log('Adding route "' + thisFullPath + '" textures: ' + definition.textures);
+							appCore.run([definition.textures, function (textures) {
+								if (!ige.texturesLoaded()) {
+									ige.on('texturesLoaded', function () {
+										finished(false);
+									});
+									return;
+								}
+								
+								return finished(false);
+							}]);
+						});
+					}
+					
 					routeSteps.push(function (finished) {
-						appCore.run([definition.sceneGraph, function (sceneGraph) {
-							self.log('Adding route "' + path + '" sceneGraph: ' + definition.sceneGraph);
-							self.addGraph(definition.sceneGraph);
+						self.log('Executing route "' + thisFullPath + '" controller: ' + definition.controller);
+						appCore.run([definition.controller, function (Controller) {
+							var controller = new Controller();
 							
-							finished(false);
+							self.routeData(thisFullPath).controllerModuleInstance = controller;
+							finished(false, controller);
 						}]);
 					});
-				}
-				
-				self.log('Route "' + path + '" attempting setup...');
-				routeSteps.series(function () {
-					self.log('Route "' + path + '" setup complete');
+					
+					if (definition.sceneGraph) {
+						routeSteps.push(function (controller, finished) {
+							appCore.module('$controller', function () {
+								return controller;
+							});
+							
+							appCore
+								.module(definition.sceneGraph)
+								.$controller = controller;
+							
+							appCore.run([definition.sceneGraph, function (sceneGraph) {
+								self.log('Adding route "' + thisFullPath + '" sceneGraph: ' + definition.sceneGraph);
+								self.addGraph(definition.sceneGraph);
+								
+								finished(false);
+							}]);
+						});
+					}
+					
+					self.log('Route "' + thisFullPath + '" attempting setup...');
+					routeSteps.waterfall(function () {
+						self.log('Route "' + thisFullPath + '" setup complete');
+						finished();
+					});
 				});
+				
+				queue.series(function () {}, true);
 			},
 			
 			destroy: function () {
@@ -10397,7 +10664,7 @@ appCore.module('IgeEngine', function (
 		
 		return IgeEngine;
 	});
-},{"irrelon-appcore":83}],33:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],34:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -14574,7 +14841,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 	
 	return IgeEntity;
 });
-},{"irrelon-appcore":83}],34:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],35:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -14907,7 +15174,7 @@ appCore.module('IgeEventingClass', function (IgeClass) {
 	
 	return IgeEventingClass;
 });
-},{"irrelon-appcore":83}],35:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],36:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15202,7 +15469,7 @@ appCore.module('IgeFSM', function (IgeClass) {
 	
 	return IgeFSM;
 });
-},{"irrelon-appcore":83}],36:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],37:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15219,7 +15486,7 @@ appCore.module('IgeFilters', function () {
 	
 	return IgeFilters;
 });
-},{"irrelon-appcore":83}],37:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],38:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15655,7 +15922,7 @@ appCore.module('IgeFontEntity', function (IgeUiEntity, IgeTexture, IgeFontSmartT
 	
 	return IgeFontEntity;
 });
-},{"irrelon-appcore":83}],38:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],39:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15966,7 +16233,7 @@ appCore.module('IgeFontSheet', function (IgeTexture) {
 	
 	return IgeFontSheet;
 });
-},{"irrelon-appcore":83}],39:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],40:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -16046,7 +16313,7 @@ appCore.module('IgeInterval', function (IgeEventingClass) {
 	
 	return IgeInterval;
 });
-},{"irrelon-appcore":83}],40:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],41:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -16332,7 +16599,7 @@ appCore.module('IgeMap2d', function (IgeClass) {
 	
 	return IgeMap2d;
 });
-},{"irrelon-appcore":83}],41:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],42:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -16489,7 +16756,7 @@ appCore.module('IgeMapStack2d', function (IgeClass) {
 	
 	return IgeMapStack2d;
 });
-},{"irrelon-appcore":83}],42:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],43:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -16940,7 +17207,7 @@ appCore.module('IgeMatrix2d', function (IgePoint3d) {
 	
 	return IgeMatrix2d;
 });
-},{"irrelon-appcore":83}],43:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],44:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -18999,7 +19266,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 	return IgeObject;
 });
 
-},{"irrelon-appcore":83}],44:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],45:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -19027,7 +19294,7 @@ appCore.module('IgeParticle', function (IgeEntity, IgeVelocityComponent) {
 	
 	return IgeParticle;
 });
-},{"irrelon-appcore":83}],45:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],46:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -19733,7 +20000,7 @@ appCore.module('IgeParticleEmitter', function (IgeUiEntity, IgeTween) {
 	
 	return IgeParticleEmitter;
 });
-},{"irrelon-appcore":83}],46:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],47:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20083,7 +20350,7 @@ appCore.module('IgePathFinder', function (IgeEventingClass, IgePathNode) {
 	
 	return IgePathFinder;
 });
-},{"irrelon-appcore":83}],47:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],48:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20139,7 +20406,7 @@ appCore.module('IgePathNode', function (IgePoint3d) {
 	
 	return IgePathNode;
 });
-},{"irrelon-appcore":83}],48:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],49:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20461,7 +20728,7 @@ appCore.module('IgePoint2d', function (IgeClass) {
 	
 	return IgePoint2d;
 });
-},{"irrelon-appcore":83}],49:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],50:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20798,7 +21065,7 @@ appCore.module('IgePoint3d', function (IgeClass) {
 	
 	return IgePoint3d;
 });
-},{"irrelon-appcore":83}],50:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],51:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21218,7 +21485,7 @@ appCore.module('IgePoly2d', function (IgeClass, IgePoint2d, IgeRect) {
 	
 	return IgePoly2d;
 });
-},{"irrelon-appcore":83}],51:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],52:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21585,7 +21852,7 @@ appCore.module('IgeQuest', function (IgeEventingClass) {
 	
 	return IgeQuest;
 });
-},{"irrelon-appcore":83}],52:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],53:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21795,7 +22062,7 @@ appCore.module('IgeRect', function (IgeClass) {
 	
 	return IgeRect;
 });
-},{"irrelon-appcore":83}],53:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],54:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21992,7 +22259,7 @@ appCore.module('IgeScene2d', function (IgeEntity) {
 	
 	return IgeScene2d;
 });
-},{"irrelon-appcore":83}],54:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],55:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -22025,7 +22292,7 @@ appCore.module('IgeSceneGraph', function (IgeClass) {
 	
 	return IgeSceneGraph;
 });
-},{"irrelon-appcore":83}],55:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],56:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -22294,7 +22561,7 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 	
 	return IgeSpriteSheet;
 });
-},{"irrelon-appcore":83}],56:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],57:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -23242,7 +23509,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 	
 	return IgeTexture;
 });
-},{"irrelon-appcore":83}],57:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],58:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -23308,7 +23575,7 @@ appCore.module('IgeTextureAtlas', function (IgeTextureMap) {
 	
 	return IgeTextureAtlas;
 });
-},{"irrelon-appcore":83}],58:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],59:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -24043,7 +24310,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 	
 	return IgeTextureMap;
 });
-},{"irrelon-appcore":83}],59:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],60:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -24625,7 +24892,7 @@ appCore.module('IgeTileMap2d', function (IgeEntity, IgeTexture, IgeTileMap2dSmar
 	
 	return IgeTileMap2d;
 });
-},{"irrelon-appcore":83}],60:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],61:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -24697,7 +24964,7 @@ appCore.module('IgeTimeout', function (IgeInterval) {
 	
 	return IgeTimeout;
 });
-},{"irrelon-appcore":83}],61:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],62:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -25041,7 +25308,7 @@ appCore.module('IgeTween', function (IgeClass) {
 	
 	return IgeTween;
 });
-},{"irrelon-appcore":83}],62:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],63:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -25323,7 +25590,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 	
 	return IgeUiElement;
 });
-},{"irrelon-appcore":83}],63:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],64:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -25683,7 +25950,7 @@ appCore.module('IgeUiEntity', function (IgeEntity, IgeUiStyleExtension, IgeUiPos
 	
 	return IgeUiEntity;
 });
-},{"irrelon-appcore":83}],64:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],65:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -26299,7 +26566,7 @@ appCore.module('IgeViewport', function (IgeEntity, IgePoint3d, IgeCamera, IgeUiS
 	
 	return IgeViewport;
 });
-},{"irrelon-appcore":83}],65:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],66:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -26972,7 +27239,7 @@ appCore.module('IgeUiPositionExtension', function () {
 	
 	return IgeUiPositionExtension;
 });
-},{"irrelon-appcore":83}],66:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],67:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -27328,7 +27595,7 @@ appCore.module('IgeUiStyleExtension', function () {
 	
 	return IgeUiStyleExtension;
 });
-},{"irrelon-appcore":83}],67:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],68:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiAutoFlow', function (IgeUiElement) {
@@ -27363,7 +27630,7 @@ appCore.module('IgeUiAutoFlow', function (IgeUiElement) {
 	
 	return IgeUiAutoFlow;
 });
-},{"irrelon-appcore":83}],68:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],69:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiButton', function (IgeUiElement) {
@@ -27455,7 +27722,7 @@ appCore.module('IgeUiButton', function (IgeUiElement) {
 	
 	return IgeUiButton;
 });
-},{"irrelon-appcore":83}],69:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],70:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiDropDown', function (IgeUiElement) {
@@ -27647,7 +27914,7 @@ appCore.module('IgeUiDropDown', function (IgeUiElement) {
 	
 	return IgeUiDropDown;
 });
-},{"irrelon-appcore":83}],70:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],71:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiGridPanel', function (IgeUiElement) {
@@ -27679,7 +27946,7 @@ appCore.module('IgeUiGridPanel', function (IgeUiElement) {
 	
 	return IgeUiGridPanel;
 });
-},{"irrelon-appcore":83}],71:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],72:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiInlineFlow', function (IgeUiElement) {
@@ -27710,7 +27977,7 @@ appCore.module('IgeUiInlineFlow', function (IgeUiElement) {
 	
 	return IgeUiInlineFlow;
 });
-},{"irrelon-appcore":83}],72:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],73:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiLabel', function (IgeUiElement) {
@@ -27915,7 +28182,7 @@ appCore.module('IgeUiLabel', function (IgeUiElement) {
 	
 	return IgeUiLabel;
 });
-},{"irrelon-appcore":83}],73:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],74:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiMenu', function (IgeUiElement, IgeUiMenuItem) {
@@ -28095,7 +28362,7 @@ appCore.module('IgeUiMenuItem', function (IgeUiElement) {
 	
 	return IgeUiMenuItem;
 });
-},{"irrelon-appcore":83}],74:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],75:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiProgressBar', function (IgeUiElement) {
@@ -28268,7 +28535,7 @@ appCore.module('IgeUiProgressBar', function (IgeUiElement) {
 	
 	return IgeUiProgressBar;
 });
-},{"irrelon-appcore":83}],75:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],76:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiRadioButton', function (IgeUiButton) {
@@ -28346,11 +28613,11 @@ appCore.module('IgeUiRadioButton', function (IgeUiButton) {
 	
 	return IgeUiRadioButton;
 });
-},{"irrelon-appcore":83}],76:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],77:[function(_dereq_,module,exports){
 
-},{}],77:[function(_dereq_,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"dup":76}],78:[function(_dereq_,module,exports){
+},{}],78:[function(_dereq_,module,exports){
+arguments[4][77][0].apply(exports,arguments)
+},{"dup":77}],79:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTextBox', function (IgeUiElement) {
@@ -28668,7 +28935,7 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 	
 	return IgeUiTextBox;
 });
-},{"irrelon-appcore":83}],79:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],80:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTimeStream', function (IgeUiElement) {
@@ -28744,7 +29011,7 @@ appCore.module('IgeUiTimeStream', function (IgeUiElement) {
 	
 	return IgeUiTimeStream;
 });
-},{"irrelon-appcore":83}],80:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],81:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTogglePanel', function (IgeUiElement) {
@@ -28820,7 +29087,7 @@ appCore.module('IgeUiTogglePanel', function (IgeUiElement) {
 	
 	return IgeUiTogglePanel;
 });
-},{"irrelon-appcore":83}],81:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],82:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTooltip', function (IgeUiElement) {
@@ -29022,7 +29289,7 @@ appCore.module('IgeUiTooltip', function (IgeUiElement) {
 	
 	return IgeUiTooltip;
 });
-},{"irrelon-appcore":83}],82:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],83:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -29036,7 +29303,7 @@ appCore.module('ige', function (IgeEngine) {
 	
 	return ige;
 });
-},{"irrelon-appcore":83}],83:[function(_dereq_,module,exports){
+},{"irrelon-appcore":84}],84:[function(_dereq_,module,exports){
 /**
  * Irrelon AppCore
  *
@@ -29563,7 +29830,7 @@ if (typeof module  !== 'undefined' && typeof module.exports !== 'undefined') {
 if (typeof window !== 'undefined') {
 	window.appCore = singelton;
 }
-},{"./AppCoreModule":84,"irrelon-emitter":85}],84:[function(_dereq_,module,exports){
+},{"./AppCoreModule":85,"irrelon-emitter":86}],85:[function(_dereq_,module,exports){
 var Emitter = _dereq_('irrelon-emitter');
 
 /**
@@ -29683,7 +29950,7 @@ AppCoreModule.prototype.destroy = function () {
 };
 
 module.exports = AppCoreModule;
-},{"irrelon-emitter":85}],85:[function(_dereq_,module,exports){
+},{"irrelon-emitter":86}],86:[function(_dereq_,module,exports){
 /*
  The MIT License (MIT)
 
@@ -30413,7 +30680,7 @@ var Emitter = function (obj) {
 };
 
 module.exports = Emitter;
-},{"irrelon-overload":86}],86:[function(_dereq_,module,exports){
+},{"irrelon-overload":87}],87:[function(_dereq_,module,exports){
 "use strict";
 
 /**
@@ -30568,7 +30835,7 @@ Overload.prototype.callExtend = function (context, prop, propContext, func, args
 };
 
 module.exports = Overload;
-},{}],87:[function(_dereq_,module,exports){
+},{}],88:[function(_dereq_,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -30754,7 +31021,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],88:[function(_dereq_,module,exports){
+},{}],89:[function(_dereq_,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -30779,14 +31046,14 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],89:[function(_dereq_,module,exports){
+},{}],90:[function(_dereq_,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],90:[function(_dereq_,module,exports){
+},{}],91:[function(_dereq_,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -31376,4 +31643,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,_dereq_('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":89,"_process":87,"inherits":88}]},{},[22,23,24,25,26,27,28,29,30,31,32,33,34,36,37,38,35,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,1,2,3,65,66,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82]);
+},{"./support/isBuffer":90,"_process":88,"inherits":89}]},{},[22,23,24,25,26,27,28,29,30,31,32,33,34,35,37,38,39,36,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,1,2,3,66,67,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83]);
