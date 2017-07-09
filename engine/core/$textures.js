@@ -22,8 +22,12 @@ appCore.module('$textures', function () {
 	};
 	
 	IgeTextureStore.prototype.remove = function (name) {
-		this._store[name].destroy();
-		delete this._store[name];
+		var texture = this._store[name];
+		
+		if (texture) {
+			texture.destroy();
+			delete this._store[name];
+		}
 	}
 	
 	IgeTextureStore.prototype.removeGroup = function (group) {
