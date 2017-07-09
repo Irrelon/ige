@@ -3,7 +3,7 @@ var Client = IgeClass.extend({
 
 	init: function () {
 		//ige.timeScale(0.1);
-		ige.showStats(1);
+		ige.addComponent(IgeEditorComponent);
 		ige.globalSmoothing(true);
 
 		// Load our textures
@@ -96,6 +96,7 @@ var Client = IgeClass.extend({
 							.autoSection(10)
 							.drawSectionBounds(false)
 							.isometricMounts(true)
+							.gridSize(20,20)
 							//.translateTo(300, 300, 0)
 							.mount(self.backgroundScene);
 	

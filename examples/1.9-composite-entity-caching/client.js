@@ -2,7 +2,7 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
 		var self = this;
-		ige.showStats(1);
+		ige.addComponent(IgeEditorComponent);
 		ige.input.debug(true);
 		ige.globalSmoothing(true);
 

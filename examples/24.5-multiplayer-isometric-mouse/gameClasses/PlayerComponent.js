@@ -13,9 +13,12 @@ var PlayerComponent = IgeEntity.extend({
 		
 		if (!ige.isServer) {
 			// Listen for mouse events on the texture map
-			ige.client.textureMap1.mouseUp(function (tileX, tileY, event) {
+			ige.client.textureMap1.mouseUp(function (mouseEvent) {
+				
+				var tilePos = this.mouseToTile();
+
 				// Send a message to the server asking to path to this tile
-				ige.network.send('playerControlToTile', [tileX, tileY]);
+				ige.network.send('playerControlToTile', [tilePos.x, tilePos.y]);
 			});
 		}
 	}

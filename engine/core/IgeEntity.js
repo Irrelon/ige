@@ -140,11 +140,9 @@ var IgeEntity = IgeObject.extend({
 				var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
 				if (!smoothing) {
 					this._cacheCtx.imageSmoothingEnabled = false;
-					this._cacheCtx.webkitImageSmoothingEnabled = false;
 					this._cacheCtx.mozImageSmoothingEnabled = false;
 				} else {
 					this._cacheCtx.imageSmoothingEnabled = true;
-					this._cacheCtx.webkitImageSmoothingEnabled = true;
 					this._cacheCtx.mozImageSmoothingEnabled = true;
 				}
 
@@ -212,11 +210,9 @@ var IgeEntity = IgeObject.extend({
 					var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
 					if (!smoothing) {
 						this._cacheCtx.imageSmoothingEnabled = false;
-						this._cacheCtx.webkitImageSmoothingEnabled = false;
 						this._cacheCtx.mozImageSmoothingEnabled = false;
 					} else {
 						this._cacheCtx.imageSmoothingEnabled = true;
-						this._cacheCtx.webkitImageSmoothingEnabled = true;
 						this._cacheCtx.mozImageSmoothingEnabled = true;
 					}
 				}
@@ -941,9 +937,12 @@ var IgeEntity = IgeObject.extend({
 
 	/**
 	 * Gets / sets the highlight mode. True is on false is off.
-	 * @param {Boolean} val The highlight mode true or false.
+	 * @param {Boolean} val The highlight mode true, false or optionally a string representing a globalCompositeOperation.
+	 * https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing
 	 * @example #Set the entity to render highlighted
 	 *     entity.highlight(true);
+	 * @example #Set the entity to render highlighted using 'screen' globalCompositeOperation
+	 *     entity.highlight('screen');
 	 * @example #Get the current highlight state
 	 *     var isHighlighted = entity.highlight();
 	 * @return {*} "this" when arguments are passed to allow method
@@ -1853,7 +1852,7 @@ var IgeEntity = IgeObject.extend({
 				texture.render(ctx, this, ige._tickDelta);
 
 				if (this._highlight) {
-					ctx.globalCompositeOperation = 'lighter';
+					ctx.globalCompositeOperation = this._highlightToGlobalCompositeOperation(this._highlight);
 					texture.render(ctx, this);
 				}
 			}
@@ -1908,7 +1907,7 @@ var IgeEntity = IgeObject.extend({
 		ige._drawCount++;
 
 		if (this._highlight) {
-			ctx.globalCompositeOperation = 'lighter';
+			ctx.globalCompositeOperation = this._highlightToGlobalCompositeOperation(this._highlight);
 			ctx.drawImage(
 				this._cacheCanvas,
 				-this._bounds2d.x2, -this._bounds2d.y2
@@ -4158,6 +4157,15 @@ var IgeEntity = IgeObject.extend({
 			// that arrive and are before this timestamp (not applicable in TCP but will
 			// apply if we ever get UDP in websockets)
 			this._lastUpdate = new Date().getTime();
+		}
+	},
+	_highlightToGlobalCompositeOperation: function (val) {
+		if (val) {
+			if (val === true) {
+				return 'lighter'
+			}
+
+			return val;
 		}
 	}
 });

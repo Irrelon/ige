@@ -24,7 +24,7 @@ var CharacterAi = Character.extend({
 				self.newPath();
 			};
 
-			this.path.on('traversalComplete', newPathMethod);
+			this.path.on('pathComplete', newPathMethod);
 
 			// Hook when we get mounted
 			this.on('mounted', function (parent) {
@@ -69,8 +69,8 @@ var CharacterAi = Character.extend({
 		if (path.length) {
 			// Assign the path to the player and start it
 			self.path.clear()
-				.path.add(path)
-				.path.start();
+				.addPoints(path)
+				.start();
 
 			self.pathNextTick = false;
 		} else {

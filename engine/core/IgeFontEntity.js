@@ -11,7 +11,7 @@ var IgeFontEntity = IgeUiEntity.extend({
 		this._renderText = undefined;
 		this._text = undefined;
 		this._textAlignX = 1;
-		this._textAlignY = 1;
+		this._textAlignY = 3;
 		this._textLineSpacing = 0;
 		this._nativeMode = false;
 
@@ -148,8 +148,9 @@ var IgeFontEntity = IgeUiEntity.extend({
 
 	/**
 	 * Gets / sets the current vertical text alignment. Accepts
-	 * a value of 0, 1 or 2 (top, middle, bottom) respectively.
-	 * @param {Number=} val
+	 * a value of 0, 1, 2, 3 (top, middle, bottom, justified) respectively.
+	 * Defaults to 3 (justified)
+	 * @param {Number} [val=3] val
 	 * @returns {*}
 	 */
 	textAlignY: function (val) {
