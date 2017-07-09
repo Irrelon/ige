@@ -3,13 +3,13 @@
 var appCore = require('irrelon-appcore');
 
 appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
-// TODO: Implement the _stringify() method for this class
+	// TODO: Implement the _stringify() method for this class
 	/**
 	 * Texture maps provide a way to display textures / cells across a tile map.
 	 */
 	var IgeTextureMap = IgeTileMap2d.extend({
 		classId: 'IgeTextureMap',
-		
+	
 		init: function (tileWidth, tileHeight) {
 			IgeTileMap2d.prototype.init.call(this, tileWidth, tileHeight);
 			this.map = new IgeMap2d();
@@ -17,7 +17,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 			this._renderCenter = new IgePoint3d(0, 0, 0);
 			this._cacheDirty = true;
 		},
-		
+	
 		/**
 		 * Gets / sets the auto sectioning mode. If enabled the texture map
 		 * will render to off-screen canvases in sections denoted by the
@@ -31,10 +31,10 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 				this._autoSection = val;
 				return this;
 			}
-			
+	
 			return this._autoSection;
 		},
-		
+	
 		/**
 		 * Gets / sets the draw sections flag. If true the texture map will
 		 * output debug lines between each section of the map when using the
@@ -47,17 +47,17 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 				this._drawSectionBounds = val;
 				return this;
 			}
-			
+	
 			return this._drawSectionBounds;
 		},
-		
+	
 		/**
 		 * Forces a cache redraw on the next tick.
 		 */
 		cacheForceFrame: function () {
 			this._cacheDirty = true;
 		},
-		
+	
 		/**
 		 * Takes another map and removes any data from this map where data already
 		 * exists in the other.
@@ -69,7 +69,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 				var x, y,
 					entityMapData = entity.map._mapData,
 					thisMapData = this.map._mapData;
-				
+	
 				for (y in entityMapData) {
 					if (entityMapData.hasOwnProperty(y)) {
 						for (x in entityMapData[y]) {
@@ -84,10 +84,10 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 					}
 				}
 			}
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Adds a texture to the texture map's internal texture list so
 		 * that it can be referenced via an index so that the texture map's
@@ -103,7 +103,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 			}
 			return this._textureList.length - 1;
 		},
-		
+	
 		/**
 		 * Checks the status of all the textures that have been added to
 		 * this texture map and returns true if they are all loaded.
@@ -114,18 +114,18 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 			if (!this._allTexturesLoaded) {
 				var arr = this._textureList,
 					arrCount = arr.length;
-				
+	
 				while (arrCount--) {
 					if (!arr[arrCount]._loaded) {
 						return false;
 					}
 				}
 			}
-			
+	
 			this._allTexturesLoaded = true;
 			return true;
 		},
-		
+	
 		/**
 		 * Sets the specified tile's texture index and cell that will be used
 		 * when rendering the texture map.
@@ -142,7 +142,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 				this.map.tileData(x, y, [textureIndex, cell]);
 			}
 		},
-		
+	
 		/**
 		 * Clears any previous tile texture and cell data for the specified
 		 * tile co-ordinates.
@@ -152,7 +152,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 		clearTile: function (x, y) {
 			this.map.clearData(x, y);
 		},
-		
+	
 		/**
 		 * Reads the map data from a standard map object and fills the map
 		 * with the data found.
@@ -162,27 +162,27 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 			if (map.textures) {
 				// Empty the existing array
 				this._textureList = [];
-				
+	
 				var tex = [], i,
 					self = this;
-				
+	
 				// Loop the texture list and create each texture object
 				for (i = 0; i < map.textures.length; i++) {
 					// Load each texture
 					eval('tex[' + i + '] = ' + map.textures[i]);
 					self.addTexture(tex[i]);
 				}
-				
+	
 				// Fill in the map data
 				self.map.mapData(map.data);
 			} else {
 				// Just fill in the map data
 				this.map.mapData(map.data);
 			}
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Returns a map JSON string that can be saved to a data file and loaded
 		 * with the loadMap() method.
@@ -194,12 +194,12 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 				x, y,
 				dataX = 0, dataY = 0,
 				mapData = this.map._mapData;
-			
+	
 			// Grab all the texture definitions
 			for (i = 0; i < this._textureList.length; i++) {
 				textures.push(this._textureList[i].stringify());
 			}
-			
+	
 			// Get the lowest x, y
 			for (y in mapData) {
 				if (mapData.hasOwnProperty(y)) {
@@ -208,7 +208,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 							if (x < dataX) {
 								dataX = x;
 							}
-							
+	
 							if (y < dataY) {
 								dataY = y;
 							}
@@ -216,14 +216,14 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 					}
 				}
 			}
-			
+	
 			return JSON.stringify({
 				textures: textures,
 				data: this.map.mapData(),
 				dataXY: [dataX, dataY]
 			});
 		},
-		
+	
 		/**
 		 * Clears the tile data from the map effectively wiping it clean. All
 		 * existing map data will be removed. The textures assigned to the texture
@@ -234,7 +234,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 			this.map.mapData([]);
 			return this;
 		},
-		
+	
 		/**
 		 * Clears tile data from the map and also removes any textures from the
 		 * map that were previously assigned to it. This is useful for reverting
@@ -247,7 +247,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 			
 			return this;
 		},
-		
+	
 		/**
 		 * Gets / sets the specified tile's texture index.
 		 * @param {Number} x The tile x co-ordinate.
@@ -265,7 +265,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 				}
 			}
 		},
-		
+	
 		/**
 		 * Gets / sets the specified tile's texture cell.
 		 * @param {Number} x The tile x co-ordinate.
@@ -283,7 +283,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 				}
 			}
 		},
-		
+	
 		/**
 		 * Converts data that is saved in the format [x][y] to the IGE standard
 		 * of [y][x] and then returns the data.
@@ -293,7 +293,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 		convertHorizontalData: function (mapData) {
 			var newData = [],
 				x, y;
-			
+	
 			for (x in mapData) {
 				if (mapData.hasOwnProperty(x)) {
 					for (y in mapData[x]) {
@@ -305,10 +305,10 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 					}
 				}
 			}
-			
+	
 			return newData;
 		},
-		
+	
 		/**
 		 * Handles rendering the texture map during engine tick events.
 		 * @param {CanvasRenderingContext2d} ctx
@@ -317,7 +317,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 			// TODO: This is being called at the wrong time, drawing children before this parent! FIX THIS
 			// Run the IgeTileMap2d tick method
 			IgeTileMap2d.prototype.tick.call(this, ctx);
-			
+	
 			// Draw each image that has been defined on the map
 			var mapData = this.map._mapData,
 				x, y,
@@ -330,7 +330,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 				tempSectionX, tempSectionY,
 				_ctx,
 				regions, region, i;
-			
+	
 			if (this._autoSection > 0) {
 				if (this._cacheDirty) {
 					// Check that all the textures we need to use are loaded
@@ -343,7 +343,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 						this._sectionCtx = []; //this._sectionCtx || [];
 						// TODO: This isn't ideal because we are almost certainly dropping sections that are still relevant,
 						// TODO: so we should scan and garbage collect I think, instead.
-						
+	
 						// Loop the map data
 						for (y in mapData) {
 							if (mapData.hasOwnProperty(y)) {
@@ -351,7 +351,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 									if (mapData[y].hasOwnProperty(x)) {
 										xInt = parseInt(x);
 										yInt = parseInt(y);
-										
+	
 										// Calculate the tile's final resting position in absolute
 										// co-ordinates so we can work out which section canvas to
 										// paint the tile to
@@ -360,7 +360,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 											finalX = xInt;
 											finalY = yInt;
 										}
-										
+	
 										if (this._mountMode === 1) {
 											// We're rendering an iso map
 											// Convert the tile x, y to isometric
@@ -369,10 +369,10 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 											finalX = (tx - ty) / this._tileWidth;
 											finalY = ((tx + ty) * 0.5) / this._tileHeight;
 										}
-										
+	
 										// Grab the tile data to paint
 										tileData = mapData[y][x];
-										
+	
 										// Work out which section to paint to
 										sectionX = Math.floor(finalX / this._autoSection);
 										sectionY = Math.floor(finalY / this._autoSection);
@@ -383,7 +383,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 										
 										// Grab the drawing context for the section
 										_ctx = this._sectionCtx[sectionX][sectionY];
-										
+	
 										if (tileData) {
 											regions = this._renderTile(
 												_ctx,
@@ -395,36 +395,36 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 												sectionX,
 												sectionY
 											);
-											
+	
 											// Check if the tile overlapped another section
 											if (regions) {
 												// Loop the regions and re-render the tile on the
 												// other sections that it overlaps
 												for (i = 0; i < regions.length; i++) {
 													region = regions[i];
-													
+	
 													tempSectionX = sectionX;
 													tempSectionY = sectionY;
-													
+	
 													if (region.x) {
 														tempSectionX += region.x;
 													}
-													
+	
 													if (region.y) {
 														tempSectionY += region.y;
 													}
-													
+	
 													this._ensureSectionExists(tempSectionX, tempSectionY);
 													_ctx = this._sectionCtx[tempSectionX][tempSectionY];
-													
+	
 													this._sectionTileRegion = this._sectionTileRegion || [];
 													this._sectionTileRegion[tempSectionX] = this._sectionTileRegion[tempSectionX] || [];
 													this._sectionTileRegion[tempSectionX][tempSectionY] = this._sectionTileRegion[tempSectionX][tempSectionY] || [];
 													this._sectionTileRegion[tempSectionX][tempSectionY][xInt] = this._sectionTileRegion[tempSectionX][tempSectionY][xInt] || [];
-													
+	
 													if (!this._sectionTileRegion[tempSectionX][tempSectionY][xInt][yInt]) {
 														this._sectionTileRegion[tempSectionX][tempSectionY][xInt][yInt] = true;
-														
+	
 														this._renderTile(
 															_ctx,
 															xInt,
@@ -443,15 +443,15 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 								}
 							}
 						}
-						
+	
 						// Set the cache to clean!
 						this._cacheDirty = false;
-						
+	
 						// Remove the temporary section tile painted data
 						delete this._sectionTileRegion;
 					}
 				}
-				
+	
 				this._drawSectionsToCtx(ctx);
 			} else {
 				// Check that all the textures we need to use are loaded
@@ -463,7 +463,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 								if (mapData[y].hasOwnProperty(x)) {
 									// Grab the tile data to paint
 									tileData = mapData[y][x];
-									
+		
 									if (tileData) {
 										this._renderTile(ctx, x, y, tileData, tileEntity);
 									}
@@ -474,7 +474,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 				}
 			}
 		},
-		
+	
 		/**
 		 * Private method, checks if the specified section currently exists in the cache
 		 * and if not, creates it.
@@ -484,33 +484,31 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 		 */
 		_ensureSectionExists: function (sectionX, sectionY) {
 			var sectionCtx;
-			
+	
 			this._sections[sectionX] = this._sections[sectionX] || [];
 			this._sectionCtx[sectionX] = this._sectionCtx[sectionX] || [];
-			
+	
 			if (!this._sections[sectionX][sectionY]) {
 				this._sections[sectionX][sectionY] = document.createElement('canvas');
 				this._sections[sectionX][sectionY].width = (this._tileWidth * this._autoSection);
 				this._sections[sectionX][sectionY].height = (this._tileHeight * this._autoSection);
-				
+	
 				sectionCtx = this._sectionCtx[sectionX][sectionY] = this._sections[sectionX][sectionY].getContext('2d');
-				
+	
 				// Ensure the canvas is using the correct image antialiasing mode
 				if (!ige._globalSmoothing) {
 					sectionCtx.imageSmoothingEnabled = false;
-					sectionCtx.webkitImageSmoothingEnabled = false;
 					sectionCtx.mozImageSmoothingEnabled = false;
 				} else {
 					sectionCtx.imageSmoothingEnabled = true;
-					sectionCtx.webkitImageSmoothingEnabled = true;
 					sectionCtx.mozImageSmoothingEnabled = true;
 				}
-				
+	
 				// One-time translate the context
 				sectionCtx.translate(this._tileWidth / 2, this._tileHeight / 2);
 			}
 		},
-		
+	
 		/**
 		 * Private method, draws cached image sections to the canvas context.
 		 * @param {CanvasRenderingContext2d} ctx
@@ -522,13 +520,13 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 				sectionAbsX, sectionAbsY,
 				sectionWidth, sectionHeight,
 				viewArea = ige._currentViewport.viewArea();
-			
+	
 			// Render the map sections
 			//ctx.translate(-(this._tileWidth / 2), -(this._tileHeight / 2));
-			
+	
 			sectionWidth = (this._tileWidth * this._autoSection);
 			sectionHeight = (this._tileHeight * this._autoSection);
-			
+	
 			for (x in this._sections) {
 				if (this._sections.hasOwnProperty(x)) {
 					for (y in this._sections[x]) {
@@ -537,18 +535,18 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 							sectionRenderY = y * (this._tileHeight * this._autoSection);
 							sectionAbsX = this._translate.x + sectionRenderX - ige._currentCamera._translate.x;
 							sectionAbsY = this._translate.y + sectionRenderY - ige._currentCamera._translate.y;
-							
+	
 							// Check if we are drawing isometrically and adjust
 							if (this._mountMode === 1) {
 								sectionAbsX -= (this._tileWidth / 2);
 								sectionAbsY -= (this._tileHeight / 2);
 							}
-							
+	
 							// Check if the section is "on screen"
 							if ((sectionAbsX + sectionWidth + (this._tileHeight / 2) >= -(viewArea.width / 2) && sectionAbsX - (this._tileWidth / 2) <= (viewArea.width / 2)) && (sectionAbsY + sectionHeight + (this._tileHeight / 2) >= -(viewArea.height / 2) && sectionAbsY <= (viewArea.height / 2))) {
 								// Grab the canvas to paint
 								tileData = this._sections[x][y];
-								
+	
 								ctx.drawImage(
 									tileData,
 									0, 0,
@@ -559,9 +557,9 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 									sectionWidth,
 									sectionHeight
 								);
-								
+	
 								ige._drawCount++;
-								
+	
 								if (this._drawSectionBounds) {
 									// Draw a bounding rectangle around the section
 									ctx.strokeStyle = '#ff00f6';
@@ -578,7 +576,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 				}
 			}
 		},
-		
+	
 		/**
 		 * Private method, renders a tile texture based on data from the texture map,
 		 * to a cached section.
@@ -607,25 +605,25 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 				finalX = x * this._tileWidth;
 				finalY = y * this._tileHeight;
 			}
-			
+	
 			if (this._mountMode === 1) {
 				// Convert the tile x, y to isometric
 				tx = x * this._tileWidth;
 				ty = y * this._tileHeight;
 				sx = tx - ty;
 				sy = (tx + ty) * 0.5;
-				
+	
 				finalX = sx - this._tileWidth / 2;
 				finalY = sy;
 			}
-			
+	
 			if (sectionX !== undefined) {
 				finalX -= sectionX * this._autoSection * this._tileWidth;
 			}
 			if (sectionY !== undefined) {
 				finalY -= sectionY * this._autoSection * this._tileHeight;
 			}
-			
+	
 			// If we have a rectangle region we are limiting to...
 			if (rect) {
 				// Check the bounds first
@@ -634,63 +632,63 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 					return;
 				}
 			}
-			
+	
 			if (finalX - (xAdjust) < 0) {
 				regions = regions || [];
 				regions.push({x: -1});
 				xm1 = true;
-				
+	
 				regObj = regObj || {};
 				regObj.x = -1;
 			}
-			
+	
 			if (finalX + (xAdjust) > (ctx.canvas.width - (this._tileWidth))) {
 				regions = regions || [];
 				regions.push({x: 1});
 				xp1 = true;
-				
+	
 				regObj = regObj || {};
 				regObj.x = 1;
 			}
-			
+	
 			if (finalY - (0) < 0) {
 				regions = regions || [];
 				regions.push({y: -1});
 				ym1 = true;
-				
+	
 				regObj = regObj || {};
 				regObj.y = -1;
 			}
-			
+	
 			if (finalY + (0) > (ctx.canvas.height - (this._tileHeight))) {
 				regions = regions || [];
 				regions.push({y: 1});
 				yp1 = true;
-				
+	
 				regObj = regObj || {};
 				regObj.y = 1;
 			}
-			
+	
 			if (xm1 || ym1 || xp1 || yp1) {
 				regions.push(regObj);
 			}
-			
+	
 			ctx.save();
 			ctx.translate(finalX, finalY);
 			
 			// Set the correct texture data
 			texture = this._textureList[tileData[0]];
 			tileEntity._cell = tileData[1];
-			
+	
 			// Paint the texture
 			if (texture) {
 				texture.render(ctx, tileEntity, ige._tickDelta);
 			}
 			ctx.restore();
-			
+	
 			return regions;
 		},
-		
+	
 		/**
 		 * Private method, creates an entity object that a texture can use to render
 		 * itself. This is basically a dummy object that has the minimum amount of data
@@ -713,7 +711,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 					}
 				};
 			}
-			
+	
 			if (this._mountMode === 1) {
 				return {
 					_cell: 1,

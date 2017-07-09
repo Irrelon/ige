@@ -40,29 +40,17 @@ var ServerNetworkEvents = {
 			newPath,
 			currentPosition = playerEntity._translate,
 			startTile;
-		
+
 		console.log('Path to: ', data);
 		
-		// Calculate the start tile from the current position by using the collision map
-		// as a tile map (any map will do with the same tileWidth and height).
 		startTile = playerEntity._parent.pointToTile(currentPosition.toIso());
-		
 		console.log('startTile', startTile);
-		
-		// Generate a path to the destination tile and then start movement
-		// along the path
-		newPath = ige.server.pathFinder.generate(ige.server.collisionMap, startTile, new IgePoint3d(parseInt(data[0]), parseInt(data[1]), 0), function (tileData, tileX, tileY) {
-			// If the map tile data is set to 1, don't allow a path along it
-			return tileData !== 1;
-		}, true, false);
-		
-		//console.log(newPath);
-		
+				
 		// Start movement along the new path
-		playerEntity
-			.path.clear()
-			.path.add(newPath)
-			.path.start();
+		playerEntity.path
+			.clear()
+			.add(parseInt(data[0]), parseInt(data[1]), 0)
+			.start();
 	}
 };
 

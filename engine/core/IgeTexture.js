@@ -9,7 +9,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 	var IgeTexture = IgeEventingClass.extend({
 		classId: 'IgeTexture',
 		IgeTexture: true,
-		
+	
 		/**
 		 * Constructor for a new IgeTexture.
 		 * @param {String, Object} urlOrObject Either a string URL that
@@ -27,7 +27,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 				return this;
 			}
 			/* CEXCLUDE */
-			
+	
 			// Create an array that is used to store cell dimensions
 			this._cells = [];
 			this._smoothing = ige._globalSmoothing;
@@ -37,22 +37,22 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 			this._applyFiltersData = [];
 			this._preFilters = [];
 			this._preFiltersData = [];
-			
+	
 			var type = typeof(urlOrObject);
-			
+	
 			if (type === 'string') {
 				// Load the texture URL
 				if (urlOrObject) {
 					this.url(urlOrObject);
 				}
 			}
-			
+	
 			if (type === 'object') {
 				// Assign the texture script object
 				this.assignSmartTextureImage(urlOrObject);
 			}
 		},
-		
+	
 		/**
 		 * Gets / sets the current object id. If no id is currently assigned and no
 		 * id is passed to the method, it will automatically generate and assign a
@@ -77,16 +77,16 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 						// Unregister the old ID before setting this new one
 						ige.unRegister(this);
 					}
-					
+	
 					this._id = id;
-					
+	
 					// Now register this object with the object register
 					ige.register(this);
-					
+	
 					return this;
 				}
 			}
-			
+	
 			if (!this._id) {
 				// The item has no id so generate one automatically
 				if (this._url) {
@@ -100,10 +100,10 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 				}
 				ige.register(this);
 			}
-			
+	
 			return this._id;
 		},
-		
+	
 		/**
 		 * Gets / sets the source file for this texture.
 		 * @param {String=} url "The url used to load the file for this texture.
@@ -112,7 +112,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 		url: function (url) {
 			if (url !== undefined) {
 				this._url = url;
-				
+	
 				if (url.substr(url.length - 2, 2) === 'js') {
 					// This is a script-based texture, load the script
 					this._loadScript(url);
@@ -120,13 +120,13 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 					// This is an image-based texture, load the image
 					this._loadImage(url);
 				}
-				
+	
 				return this;
 			}
-			
+	
 			return this._url;
 		},
-		
+	
 		/**
 		 * Loads an image into an img tag and sets an onload event
 		 * to capture when the image has finished loading.
@@ -137,80 +137,80 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 		_loadImage: function (imageUrl) {
 			var image,
 				self = this;
-			
+	
 			if (ige.isClient) {
 				// Increment the texture load count
 				ige.textureLoadStart(imageUrl, this);
-				
+	
 				// Check if the image url already exists in the image cache
 				if (!ige._textureImageStore[imageUrl]) {
 					// Image not in cache, create the image object
 					image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new Image();
 					image._igeTextures = image._igeTextures || [];
-					
+	
 					// Add this texture to the textures that are using this image
 					image._igeTextures.push(this);
-					
+	
 					image.onload = function () {
 						// Mark the image as loaded
 						image._loaded = true;
-						
+	
 						// Log success
 						ige.log('Texture image (' + imageUrl + ') loaded successfully');
-						
+	
 						/*if (image.width % 2) {
-						 self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
-						 }
-						 
-						 if (image.height % 2) {
-						 self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
-						 }*/
-						
+							self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
+						}
+	
+						if (image.height % 2) {
+							self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
+						}*/
+	
 						// Loop textures that are using this image
 						var arr = image._igeTextures,
 							arrCount = arr.length, i,
 							item;
-						
+	
 						for (i = 0; i < arrCount; i++) {
 							item = arr[i];
-							
+	
 							item._mode = 0;
-							
+	
 							item.sizeX(image.width);
 							item.sizeY(image.height);
-							
+	
 							item._cells[1] = [0, 0, item._sizeX, item._sizeY];
 							
 							// Mark texture as loaded
 							item._textureLoaded();
 						}
 					};
-					
+	
 					// Start the image loading by setting the source url
 					image.src = imageUrl;
 				} else {
 					// Grab the cached image object
 					image = this.image = this._originalImage = ige._textureImageStore[imageUrl];
-					
+	
 					// Add this texture to the textures that are using this image
 					image._igeTextures.push(this);
-					
+	
 					if (image._loaded) {
 						// The cached image object is already loaded so
 						// fire off the relevant events
 						self._mode = 0;
-						
+	
 						self.sizeX(image.width);
 						self.sizeY(image.height);
-						
+	
 						if (image.width % 2) {
 							this.log('This texture\'s width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning');
 						}
-						
+	
 						if (image.height % 2) {
 							this.log('This texture\'s height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: ' + this._url, 'warning');
 						}
-						
+	
 						self._cells[1] = [0, 0, self._sizeX, self._sizeY];
 						
 						// Mark texture as loaded
@@ -230,12 +230,12 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 			setTimeout(function () {
 				self._loaded = true;
 				self.emit('loaded');
-				
+	
 				// Inform the engine that this image has loaded
 				ige.textureLoadEnd(self.image.src, self);
 			}, 5);
 		},
-		
+	
 		/**
 		 * Loads a render script into a script tag and sets an onload
 		 * event to capture when the script has finished loading.
@@ -248,44 +248,44 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 				rs_sandboxContext,
 				self = this,
 				scriptElem;
-			
+	
 			ige.textureLoadStart(scriptUrl, this);
-			
+	
 			if (ige.isClient) {
 				scriptElem = document.createElement('script');
 				scriptElem.onload = function(data) {
 					self.log('Texture script "' + scriptUrl + '" loaded successfully');
 					// Parse the JS with evil eval and store the result in the asset
 					eval(data);
-					
+	
 					// Store the eval data (the "image" variable is declared
 					// by the texture script and becomes available in this scope
 					// because we evaluated it above)
 					self._mode = 1;
 					self.script = image;
-					
+	
 					// Run the asset script init method
 					if (typeof(image.init) === 'function') {
 						image.init.apply(image, [self]);
 					}
-					
+	
 					//self.sizeX(image.width);
 					//self.sizeY(image.height);
-					
+	
 					self._loaded = true;
 					self.emit('loaded');
 					ige.textureLoadEnd(scriptUrl, self);
 				};
-				
+	
 				scriptElem.addEventListener('error', function () {
 					self.log('Error loading smart texture script file: ' + scriptUrl, 'error');
 				}, true);
-				
+	
 				scriptElem.src = scriptUrl;
 				document.getElementsByTagName('head')[0].appendChild(scriptElem);
 			}
 		},
-		
+	
 		/**
 		 * Assigns a render script to the smart texture.
 		 * @param {String} scriptObj The script object.
@@ -300,19 +300,19 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 			// Check the object has a render method
 			if (typeof(scriptObj.render) === 'function') {
 				//ige.textureLoadStart(scriptUrl, this);
-				
+		
 				// Store the script data
 				self._mode = 1;
 				self.script = scriptObj;
-				
+		
 				// Run the asset script init method
 				if (typeof(scriptObj.init) === 'function') {
 					scriptObj.init.apply(scriptObj, [self]);
 				}
-				
+		
 				//self.sizeX(image.width);
 				//self.sizeY(image.height);
-				
+		
 				self._loaded = true;
 				self.emit('loaded');
 				//ige.textureLoadEnd(scriptUrl, self);
@@ -320,7 +320,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 				this.log('Cannot assign smart texture because it doesn\'t have a render() method!', 'error');
 			}
 		},
-		
+	
 		/**
 		 * Sets the image element that the IgeTexture will use when
 		 * rendering. This is a special method not designed to be called
@@ -333,24 +333,24 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 		_setImage: function (imageElement) {
 			var image,
 				self = this;
-			
+	
 			if (ige.isClient) {
 				// Create the image object
 				image = this.image = this._originalImage = imageElement;
 				image._igeTextures = image._igeTextures || [];
-				
+	
 				// Mark the image as loaded
 				image._loaded = true;
-				
+	
 				this._mode = 0;
-				
+	
 				this.sizeX(image.width);
 				this.sizeY(image.height);
-				
+	
 				this._cells[1] = [0, 0, this._sizeX, this._sizeY];
 			}
 		},
-		
+	
 		/**
 		 * Creates a new texture from a cell in the existing texture
 		 * and returns the new texture.
@@ -360,7 +360,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 		textureFromCell: function (indexOrId) {
 			var tex = new IgeTexture(),
 				self = this;
-			
+	
 			if (this._loaded) {
 				this._textureFromCell(tex, indexOrId);
 			} else {
@@ -370,10 +370,10 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 					self._textureFromCell(tex, indexOrId);
 				})
 			}
-			
+	
 			return tex;
 		},
-		
+	
 		/**
 		 * Called by textureFromCell() when the texture is ready
 		 * to be processed. See textureFromCell() for description.
@@ -387,36 +387,34 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 				cell,
 				canvas,
 				ctx;
-			
+	
 			if (typeof(indexOrId) === 'string') {
 				index = this.cellIdToIndex(indexOrId);
 			} else {
 				index = indexOrId;
 			}
-			
+	
 			if (this._cells[index]) {
 				// Create a new IgeTexture, then draw the existing cell
 				// to it's internal canvas
 				cell = this._cells[index];
 				canvas = document.createElement('canvas');
 				ctx = canvas.getContext('2d');
-				
+	
 				// Set smoothing mode
 				// TODO: Does this cause a costly context change? If so maybe we set a global value to keep
 				// TODO: track of the value and evaluate first before changing?
 				if (!this._smoothing) {
 					ctx.imageSmoothingEnabled = false;
-					ctx.webkitImageSmoothingEnabled = false;
 					ctx.mozImageSmoothingEnabled = false;
 				} else {
 					ctx.imageSmoothingEnabled = true;
-					ctx.webkitImageSmoothingEnabled = true;
 					ctx.mozImageSmoothingEnabled = true;
 				}
-				
+	
 				canvas.width = cell[2];
 				canvas.height = cell[3];
-				
+	
 				// Draw the cell to the canvas
 				ctx.drawImage(
 					this._originalImage,
@@ -429,11 +427,11 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 					cell[2],
 					cell[3]
 				);
-				
+	
 				// Set the new texture's image to the canvas
 				tex._setImage(canvas);
 				tex._loaded = true;
-				
+	
 				// Fire the loaded event
 				setTimeout(function () {
 					tex.emit('loaded');
@@ -442,7 +440,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 				this.log('Unable to create new texture from passed cell index (' + indexOrId + ') because the cell does not exist!', 'warning');
 			}
 		},
-		
+	
 		/**
 		 * Sets the _sizeX property.
 		 * @param {Number} val
@@ -450,7 +448,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 		sizeX: function (val) {
 			this._sizeX = val;
 		},
-		
+	
 		/**
 		 * Sets the _sizeY property.
 		 * @param {Number} val
@@ -458,7 +456,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 		sizeY: function (val) {
 			this._sizeY = val;
 		},
-		
+	
 		/**
 		 * Resizes the original texture image to a new size. This alters
 		 * the image that the texture renders so all entities that use
@@ -477,22 +475,20 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 						// Create a new canvas
 						this._textureCanvas = document.createElement('canvas');
 					}
-					
+	
 					this._textureCanvas.width = x;
 					this._textureCanvas.height = y;
 					this._textureCtx = this._textureCanvas.getContext('2d');
-					
+	
 					// Set smoothing mode
 					if (!this._smoothing) {
 						this._textureCtx.imageSmoothingEnabled = false;
-						this._textureCtx.webkitImageSmoothingEnabled = false;
 						this._textureCtx.mozImageSmoothingEnabled = false;
 					} else {
 						this._textureCtx.imageSmoothingEnabled = true;
-						this._textureCtx.webkitImageSmoothingEnabled = true;
 						this._textureCtx.mozImageSmoothingEnabled = true;
 					}
-					
+	
 					if (!dontDraw) {
 						// Draw the original image to the new canvas
 						// scaled as required
@@ -508,7 +504,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 							y
 						);
 					}
-					
+	
 					// Swap the current image for this new canvas
 					this.image = this._textureCanvas;
 				} else {
@@ -516,7 +512,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 				}
 			}
 		},
-		
+	
 		/**
 		 * Resizes the original texture image to a new size based on percentage.
 		 * This alters the image that the texture renders so all entities that use
@@ -534,27 +530,25 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 					// Calc final x/y values
 					x = Math.floor((this.image.width / 100) * x);
 					y = Math.floor((this.image.height / 100) * y);
-					
+	
 					if (!this._textureCtx) {
 						// Create a new canvas
 						this._textureCanvas = document.createElement('canvas');
 					}
-					
+	
 					this._textureCanvas.width = x;
 					this._textureCanvas.height = y;
 					this._textureCtx = this._textureCanvas.getContext('2d');
-					
+	
 					// Set smoothing mode
 					if (!this._smoothing) {
 						this._textureCtx.imageSmoothingEnabled = false;
-						this._textureCtx.webkitImageSmoothingEnabled = false;
 						this._textureCtx.mozImageSmoothingEnabled = false;
 					} else {
 						this._textureCtx.imageSmoothingEnabled = true;
-						this._textureCtx.webkitImageSmoothingEnabled = true;
 						this._textureCtx.mozImageSmoothingEnabled = true;
 					}
-					
+	
 					if (!dontDraw) {
 						// Draw the original image to the new canvas
 						// scaled as required
@@ -570,7 +564,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 							y
 						);
 					}
-					
+	
 					// Swap the current image for this new canvas
 					this.image = this._textureCanvas;
 				} else {
@@ -578,7 +572,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 				}
 			}
 		},
-		
+	
 		/**
 		 * Sets the texture image back to the original image that the
 		 * texture first loaded. Useful if you have applied filters
@@ -592,16 +586,16 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 			
 			this.removeFilters();
 		},
-		
+	
 		smoothing: function (val) {
 			if (val !== undefined) {
 				this._smoothing = val;
 				return this;
 			}
-			
+	
 			return this._smoothing;
 		},
-		
+	
 		/**
 		 * Renders the texture image to the passed canvas context.
 		 * @param {CanvasRenderingContext2d} ctx The canvas context to draw to.
@@ -617,20 +611,18 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 				// TODO: track of the value and evaluate first before changing?
 				if (!this._smoothing) {
 					ige._ctx.imageSmoothingEnabled = false;
-					ige._ctx.webkitImageSmoothingEnabled = false;
 					ige._ctx.mozImageSmoothingEnabled = false;
 				} else {
 					ige._ctx.imageSmoothingEnabled = true;
-					ige._ctx.webkitImageSmoothingEnabled = true;
 					ige._ctx.mozImageSmoothingEnabled = true;
 				}
-				
+	
 				if (this._mode === 0) {
 					// This texture is image-based
 					var cell = this._cells[entity._cell],
 						geom = entity._bounds2d,
 						poly = entity._renderPos; // Render pos is calculated in the IgeEntity.aabb() method
-					
+	
 					if (cell) {
 						if (this._preFilters.length > 0 && this._textureCtx) {
 							// Call the drawing of the original image
@@ -650,7 +642,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 								self._textureCtx.restore();
 							});
 						}
-						
+	
 						ctx.drawImage(
 							this.image,
 							cell[0], // texture x
@@ -662,19 +654,19 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 							geom.x, // render width
 							geom.y // render height
 						);
-						
+	
 						ige._drawCount++;
 					} else {
 						this.log('Cannot render texture using cell ' + entity._cell + ' because the cell does not exist in the assigned texture!', 'error');
 					}
 				}
-				
+	
 				if (this._mode === 1) {
 					// This texture is script-based (a "smart texture")
 					ctx.save();
-					this.script.render(ctx, entity, this);
+						this.script.render(ctx, entity, this);
 					ctx.restore();
-					
+	
 					ige._drawCount++;
 				}
 			}
@@ -733,7 +725,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 				self._textureCtx.restore();
 			});
 		},
-		
+	
 		/**
 		 * Gets / sets the pre-filter method that will be called before
 		 * the texture is rendered and will allow you to modify the texture
@@ -747,11 +739,11 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 					if (!this._textureCtx) {
 						// Create a new canvas
 						this._textureCanvas = document.createElement('canvas');
-						
+	
 						this._textureCanvas.width = this._originalImage.width;
 						this._textureCanvas.height = this._originalImage.height;
 						this._textureCtx = this._textureCanvas.getContext('2d');
-						
+	
 						// Set smoothing mode
 						if (!this._smoothing) {
 							this._textureCtx.imageSmoothingEnabled = false;
@@ -763,10 +755,10 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 							this._textureCtx.mozImageSmoothingEnabled = true;
 						}
 					}
-					
+	
 					// Swap the current image for this new canvas
 					this.image = this._textureCanvas;
-					
+	
 					// Save filter in active preFilter list
 					this._preFilters[this._preFilters.length] = method;
 					this._preFiltersData[this._preFiltersData.length] = !data ? {} : data;
@@ -775,10 +767,10 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 			} else {
 				this.log('Cannot use pre-filter, no filter method was passed!', 'warning');
 			}
-			
+	
 			return this._preFilters[this._preFilters.length - 1];
 		},
-		
+	
 		/**
 		 * Applies a filter to the texture. The filter is a method that will
 		 * take the canvas, context and originalImage parameters and then
@@ -795,7 +787,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 						if (!this._textureCtx) {
 							// Create a new canvas
 							this._textureCanvas = document.createElement('canvas');
-							
+		
 							this._textureCanvas.width = this._originalImage.width;
 							this._textureCanvas.height = this._originalImage.height;
 							this._textureCtx = this._textureCanvas.getContext('2d');
@@ -803,7 +795,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 							// Draw the basic image
 							this._textureCtx.clearRect(0, 0, this._textureCanvas.width, this._textureCanvas.height);
 							this._textureCtx.drawImage(this._originalImage, 0, 0);
-							
+		
 							// Set smoothing mode
 							if (!this._smoothing) {
 								this._textureCtx.imageSmoothingEnabled = false;
@@ -815,10 +807,10 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 								this._textureCtx.mozImageSmoothingEnabled = true;
 							}
 						}
-						
+		
 						// Swap the current image for this new canvas
 						this.image = this._textureCanvas;
-						
+		
 						// Call the passed method
 						if (this._preFilters.length <= 0) {
 							this._textureCtx.save();
@@ -836,7 +828,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 			} else {
 				this.log('Cannot apply filter, the texture you are trying to apply the filter to has not yet loaded!', 'error');
 			}
-			
+	
 			return this;
 		},
 		
@@ -856,11 +848,11 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 					if (!this._textureCtx) {
 						// Create a new canvas
 						this._textureCanvas = document.createElement('canvas');
-						
+	
 						this._textureCanvas.width = this.image.width;
 						this._textureCanvas.height = this.image.height;
 						this._textureCtx = this._textureCanvas.getContext('2d');
-						
+	
 						// Set smoothing mode
 						if (!this._smoothing) {
 							this._textureCtx.imageSmoothingEnabled = false;
@@ -877,16 +869,16 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 					} else {
 						this._textureCtx = this._textureCtx;
 					}
-					
+	
 					return this._textureCtx.getImageData(x, y, 1, 1).data;
 				}
 			} else {
 				this.log('Cannot read pixel data, the texture you are trying to read data from has not yet loaded!', 'error');
 			}
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Creates a clone of the texture.
 		 * @return {IgeTexture} A new, distinct texture with the same attributes
@@ -895,7 +887,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 		clone: function () {
 			return this.textureFromCell(1);
 		},
-		
+	
 		/**
 		 * Returns a string containing a code fragment that when
 		 * evaluated will reproduce this object.
@@ -903,42 +895,42 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 		 */
 		stringify: function () {
 			var str = "new " + this.classId() + "('" + this._url + "')";
-			
+	
 			// Every object has an ID, assign that first
 			// We've commented this because ids for textures are actually generated
 			// from their asset so will ALWAYS produce the same ID as long as the asset
 			// is the same path.
 			//str += ".id('" + this.id() + "')";
-			
+	
 			// Now get all other properties
 			str += this._stringify();
-			
+	
 			return str;
 		},
 		
 		_stringify: function () {
 			return '';
 		},
-		
+	
 		/**
 		 * Destroys the item.
 		 */
 		destroy: function () {
 			delete this._eventListeners;
-			
+	
 			// Remove us from the image store reference array
 			if (this.image && this.image._igeTextures) {
 				this.image._igeTextures.pull(this);
 			}
-			
+	
 			// Remove the texture from the texture store
 			ige._textureStore.pull(this);
-			
+	
 			delete this.image;
 			delete this.script;
 			delete this._textureCanvas;
 			delete this._textureCtx;
-			
+	
 			this._destroyed = true;
 		}
 	});

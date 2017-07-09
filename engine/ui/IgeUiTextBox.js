@@ -9,19 +9,19 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 	//TODO: Make cursor a text entry cursor on hover
 	var IgeUiTextBox = IgeUiElement.extend({
 		classId: 'IgeUiTextBox',
-		
+	
 		/**
 		 * @constructor
 		 */
 		init: function () {
 			IgeUiElement.prototype.init.call(this);
-			
+	
 			var self = this;
-			
+	
 			this._value = '';
 			this._caretStart = 0;
 			this._caretEnd = 0;
-			
+	
 			this._fontEntity = new IgeFontEntity()
 				.left(5)
 				.middle(0)
@@ -117,7 +117,7 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 			
 			this.on('blur', blurFunc);
 		},
-		
+	
 		/**
 		 * Extended method to auto-update the width of the child
 		 * font entity automatically to fill the text box.
@@ -129,16 +129,16 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 		 */
 		width: function (px, lockAspect, modifier, noUpdate) {
 			var val;
-			
+	
 			// Call the main super class method
 			val = IgeUiElement.prototype.width.call(this, px, lockAspect, modifier, noUpdate);
-			
+	
 			// Update the font entity width - 10px for margin
 			this._fontEntity.width(px - 10, lockAspect, modifier, noUpdate);
-			
+	
 			return val;
 		},
-		
+	
 		/**
 		 * Extended method to auto-update the height of the child
 		 * font entity automatically to fill the text box.
@@ -150,16 +150,16 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 		 */
 		height: function (px, lockAspect, modifier, noUpdate) {
 			var val;
-			
+	
 			// Call the main super class method
 			val = IgeUiElement.prototype.height.call(this, px, lockAspect, modifier, noUpdate);
-			
+	
 			// Update the font entity height
 			this._fontEntity.height(px, lockAspect, modifier, noUpdate);
-			
+	
 			return val;
 		},
-		
+	
 		/**
 		 * Gets / sets the text value of the input box.
 		 * @param {String=} val The text value.
@@ -169,7 +169,7 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 			if (val !== undefined) {
 				if (this._value !== val) {
 					this._value = val;
-					
+		
 					if (!val && this._placeHolder) {
 						// Assign placeholder text and color
 						this._fontEntity.text(this._placeHolder);
@@ -190,7 +190,7 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 				}
 				return this;
 			}
-			
+	
 			return this._value;
 		},
 		
@@ -220,7 +220,7 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 			
 			return this._mask;
 		},
-		
+	
 		/**
 		 * Gets / sets the font sheet (texture) that the text box will
 		 * use when rendering text inside the box.
@@ -230,12 +230,12 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 		fontSheet: function (fontSheet) {
 			if (fontSheet !== undefined) {
 				this._fontSheet = fontSheet;
-				
+	
 				// Set the font sheet as the texture for our font entity
 				this._fontEntity.texture(this._fontSheet);
 				return this;
 			}
-			
+	
 			return this._fontSheet;
 		},
 		
@@ -310,6 +310,12 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 			}
 			
 			IgeUiElement.prototype._mounted.call(this);
+		},
+	
+		destroy: function () {
+			/* The 'blur' function is called to destroy the DOM textbox. */
+			this.blur();
+			IgeUiElement.prototype.destroy.call(this);
 		}
 	});
 	

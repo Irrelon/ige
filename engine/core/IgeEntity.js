@@ -9,7 +9,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 	 */
 	var IgeEntity = IgeObject.extend({
 		classId: 'IgeEntity',
-		
+	
 		init: function () {
 			IgeObject.prototype.init.call(this);
 			
@@ -18,54 +18,54 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			this._specialProp.push('_texture');
 			this._specialProp.push('_eventListeners');
 			this._specialProp.push('_aabb');
-			
+	
 			this._anchor = new IgePoint2d(0, 0);
 			this._renderPos = {x: 0, y: 0};
-			
+	
 			this._computedOpacity = 1;
 			this._opacity = 1;
 			this._cell = 1;
-			
+	
 			this._deathTime = undefined;
-			this._bornTime = typeof ige !== 'undefined' ? ige._currentTime : 0;
-			
+			this._bornTime = ige._currentTime;
+	
 			this._translate = new IgePoint3d(0, 0, 0);
 			this._oldTranslate = new IgePoint3d(0, 0, 0);
 			this._rotate = new IgePoint3d(0, 0, 0);
 			this._scale = new IgePoint3d(1, 1, 1);
 			this._origin = new IgePoint3d(0.5, 0.5, 0.5);
-			
+	
 			this._bounds2d = new IgePoint2d(40, 40);
 			this._bounds3d = new IgePoint3d(0, 0, 0);
 			
 			this._oldBounds2d = new IgePoint2d(40, 40);
 			this._oldBounds3d = new IgePoint3d(0, 0, 0);
-			
+	
 			this._highlight = false;
 			this._mouseEventsActive = false;
 			
 			this._velocity = new IgePoint3d(0, 0, 0);
-			
+	
 			this._localMatrix = new IgeMatrix2d();
 			this._worldMatrix = new IgeMatrix2d();
 			this._oldWorldMatrix = new IgeMatrix2d();
-			
+	
 			this._inView = true;
 			this._hidden = false;
 			
 			//this._mouseEventTrigger = 0;
-			
+	
 			/* CEXCLUDE */
 			if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') {
 				// Set the stream floating point precision to 2 as default
 				this.streamFloatPrecision(2);
 			}
 			/* CEXCLUDE */
-			
+	
 			// Set the default stream sections as just the transform data
 			this.streamSections(['transform']);
 		},
-		
+	
 		/**
 		 * Sets the entity as visible and able to be interacted with.
 		 * @example #Show a hidden entity
@@ -77,7 +77,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			this._hidden = false;
 			return this;
 		},
-		
+	
 		/**
 		 * Sets the entity as hidden and cannot be interacted with.
 		 * @example #Hide a visible entity
@@ -89,7 +89,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			this._hidden = true;
 			return this;
 		},
-		
+	
 		/**
 		 * Checks if the entity is visible.
 		 * @returns {boolean} True if the entity is visible.
@@ -105,7 +105,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		isHidden: function () {
 			return this._hidden === true;
 		},
-		
+	
 		/**
 		 * Gets / sets the cache flag that determines if the entity's
 		 * texture rendering output should be stored on an off-screen
@@ -145,14 +145,12 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
 					if (!smoothing) {
 						this._cacheCtx.imageSmoothingEnabled = false;
-						this._cacheCtx.webkitImageSmoothingEnabled = false;
 						this._cacheCtx.mozImageSmoothingEnabled = false;
 					} else {
 						this._cacheCtx.imageSmoothingEnabled = true;
-						this._cacheCtx.webkitImageSmoothingEnabled = true;
 						this._cacheCtx.mozImageSmoothingEnabled = true;
 					}
-					
+	
 					// Switch off composite caching
 					if (this.compositeCache()) {
 						this.compositeCache(false);
@@ -161,13 +159,13 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					// Remove the off-screen canvas
 					delete this._cacheCanvas;
 				}
-				
+	
 				return this;
 			}
-			
+	
 			return this._cache;
 		},
-		
+	
 		/**
 		 * When using the caching system, this boolean determines if the
 		 * cache canvas should have image smoothing enabled or not. If
@@ -183,7 +181,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			
 			return this._cacheSmoothing;
 		},
-		
+	
 		/**
 		 * Gets / sets composite caching. Composite caching draws this entity
 		 * and all of it's children (and their children etc) to a single off
@@ -217,11 +215,9 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 						var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
 						if (!smoothing) {
 							this._cacheCtx.imageSmoothingEnabled = false;
-							this._cacheCtx.webkitImageSmoothingEnabled = false;
 							this._cacheCtx.mozImageSmoothingEnabled = false;
 						} else {
 							this._cacheCtx.imageSmoothingEnabled = true;
-							this._cacheCtx.webkitImageSmoothingEnabled = true;
 							this._cacheCtx.mozImageSmoothingEnabled = true;
 						}
 					}
@@ -244,7 +240,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				return this;
 			}
 		},
-		
+	
 		/**
 		 * Gets / sets the cache dirty flag. If set to true this will
 		 * instruct the entity to re-draw it's cached image from the
@@ -275,10 +271,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				
 				return this;
 			}
-			
+	
 			return this._cacheDirty;
 		},
-		
+	
 		/**
 		 * Gets the position of the mouse relative to this entity's
 		 * center point.
@@ -297,12 +293,12 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			if (viewport) {
 				var mp = viewport._mousePos.clone(),
 					cam;
-				
+	
 				if (this._ignoreCamera) {
 					/*cam = ige._currentCamera;
-					 mp.thisMultiply(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
-					 //mp.thisRotate(-cam._rotate.z);
-					 mp.thisAddPoint(cam._translate);*/
+					mp.thisMultiply(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
+					//mp.thisRotate(-cam._rotate.z);
+					mp.thisAddPoint(cam._translate);*/
 				}
 				
 				mp.x += viewport._translate.x;
@@ -313,7 +309,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				return new IgePoint3d(0, 0, 0);
 			}
 		},
-		
+	
 		/**
 		 * Gets the position of the mouse relative to this entity not
 		 * taking into account viewport translation.
@@ -333,10 +329,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._transformPoint(mp);
 				return mp;
 			}
-			
+	
 			return new IgePoint3d(0, 0, 0);
 		},
-		
+	
 		/**
 		 * Gets the position of the mouse in world co-ordinates.
 		 * @param {IgeViewport=} viewport The viewport to use as the
@@ -352,14 +348,14 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			viewport = viewport || ige._currentViewport;
 			var mp = this.mousePos(viewport);
 			this.localToWorldPoint(mp, viewport);
-			
+	
 			if (this._ignoreCamera) {
 				//viewport.camera._worldMatrix.getInverse().transform([mp]);
 			}
-			
+	
 			return mp;
 		},
-		
+	
 		/**
 		 * Rotates the entity to point at the target point around the z axis.
 		 * @param {IgePoint3d} point The point in world co-ordinates to
@@ -379,10 +375,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._rotate.y,
 				(Math.atan2(worldPos.y - point.y, worldPos.x - point.x) - this._parent._rotate.z) + Math.radians(270)
 			);
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Gets / sets the texture to use as the background
 		 * pattern for this entity.
@@ -412,10 +408,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._backgroundPatternFill = null;
 				return this;
 			}
-			
+	
 			return this._backgroundPattern;
 		},
-		
+	
 		/**
 		 * Set the object's width to the number of tile width's specified.
 		 * @param {Number} val Number of tiles.
@@ -434,9 +430,9 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
 				var tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2,
 					ratio;
-				
+	
 				this.width(val * tileSize);
-				
+	
 				if (lockAspect) {
 					if (this._texture) {
 						// Calculate the height based on the new width
@@ -449,10 +445,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this.log('Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.', 'warning');
 			}
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Set the object's height to the number of tile height's specified.
 		 * @param {Number} val Number of tiles.
@@ -471,9 +467,9 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
 				var tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2,
 					ratio;
-				
+	
 				this.height(val * tileSize);
-				
+	
 				if (lockAspect) {
 					if (this._texture) {
 						// Calculate the width based on the new height
@@ -486,7 +482,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this.log('Cannot set height by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.', 'warning');
 			}
-			
+	
 			return this;
 		},
 		
@@ -508,11 +504,11 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					// Occupy tiles based upon tile point and tile width/height
 					var trPoint = new IgePoint3d(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
 						tilePoint = this._parent.pointToTile(trPoint);
-					
+		
 					if (this._parent._mountMode === 1) {
 						tilePoint.thisToIso();
 					}
-					
+		
 					this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
 				}
 			}
@@ -538,11 +534,11 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					// Un-occupy tiles based upon tile point and tile width/height
 					var trPoint = new IgePoint3d(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
 						tilePoint = this._parent.pointToTile(trPoint);
-					
+		
 					if (this._parent._mountMode === 1) {
 						tilePoint.thisToIso();
 					}
-					
+		
 					this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
 				}
 			}
@@ -565,17 +561,17 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					tileHeight = this._tileHeight || 1,
 					tile = this._parent.pointToTile(this._translate),
 					tileArr = [];
-				
+		
 				for (x = 0; x < tileWidth; x++) {
 					for (y = 0; y < tileHeight; y++) {
 						tileArr.push(new IgePoint3d(tile.x + x, tile.y + y, 0));
 					}
 				}
-				
+		
 				return tileArr;
 			}
 		},
-		
+	
 		/**
 		 * Gets / sets the anchor position that this entity's texture
 		 * will be adjusted by.
@@ -589,10 +585,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._anchor = new IgePoint2d(x, y);
 				return this;
 			}
-			
+	
 			return this._anchor;
 		},
-		
+	
 		/**
 		 * Gets / sets the geometry x value.
 		 * @param {Number=} px The new x value in pixels.
@@ -608,15 +604,15 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					var ratio = px / this._bounds2d.x;
 					this.height(this._bounds2d.y * ratio);
 				}
-				
+	
 				this._bounds2d.x = px;
 				this._bounds2d.x2 = (px / 2);
 				return this;
 			}
-			
+	
 			return this._bounds2d.x;
 		},
-		
+	
 		/**
 		 * Gets / sets the geometry y value.
 		 * @param {Number=} px The new y value in pixels.
@@ -632,12 +628,12 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					var ratio = px / this._bounds2d.y;
 					this.width(this._bounds2d.x * ratio);
 				}
-				
+	
 				this._bounds2d.y = px;
 				this._bounds2d.y2 = (px / 2);
 				return this;
 			}
-			
+	
 			return this._bounds2d.y;
 		},
 		
@@ -664,10 +660,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				// x is considered an IgePoint2d instance
 				this._bounds2d = new IgePoint2d(x.x, x.y);
 			}
-			
+	
 			return this._bounds2d;
 		},
-		
+	
 		/**
 		 * Gets / sets the 3d geometry of the entity. The x and y values are
 		 * relative to the center of the entity and the z value is wholly
@@ -686,10 +682,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._bounds3d = new IgePoint3d(x, y, z);
 				return this;
 			}
-			
+	
 			return this._bounds3d;
 		},
-		
+	
 		/**
 		 * @deprecated Use bounds3d instead
 		 * @param x
@@ -699,7 +695,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		size3d: function (x, y, z) {
 			this.log('size3d has been renamed to bounds3d but is exactly the same so please search/replace your code to update calls.', 'warning');
 		},
-		
+	
 		/**
 		 * Gets / sets the life span of the object in milliseconds. The life
 		 * span is how long the object will exist for before being automatically
@@ -718,10 +714,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this.deathTime(ige._currentTime + milliseconds, deathCallback);
 				return this;
 			}
-			
+	
 			return this.deathTime() - ige._currentTime;
 		},
-		
+	
 		/**
 		 * Gets / sets the timestamp in milliseconds that denotes the time
 		 * that the entity will be destroyed. The object checks it's own death
@@ -747,10 +743,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				}
 				return this;
 			}
-			
+	
 			return this._deathTime;
 		},
-		
+	
 		/**
 		 * Gets / sets the entity opacity from 0.0 to 1.0.
 		 * @param {Number=} val The opacity value.
@@ -766,10 +762,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._opacity = val;
 				return this;
 			}
-			
+	
 			return this._opacity;
 		},
-		
+	
 		/**
 		 * Gets / sets the noAabb flag that determines if the entity's axis
 		 * aligned bounding box should be calculated every tick or not. If
@@ -785,10 +781,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._noAabb = val;
 				return this;
 			}
-			
+	
 			return this._noAabb;
 		},
-		
+	
 		/**
 		 * Gets / sets the texture to use when rendering the entity.
 		 * @param {IgeTexture=} texture The texture object.
@@ -803,10 +799,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._texture = texture;
 				return this;
 			}
-			
+	
 			return this._texture;
 		},
-		
+	
 		/**
 		 * Gets / sets the current texture cell used when rendering the game
 		 * object's texture. If the texture is not cell-based, this value is
@@ -824,10 +820,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._cell = val;
 				return this;
 			}
-			
+	
 			return this._cell;
 		},
-		
+	
 		/**
 		 * Gets / sets the current texture cell used when rendering the game
 		 * object's texture. If the texture is not cell-based, this value is
@@ -855,7 +851,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					var i,
 						tex = this._texture,
 						cells = tex._cells;
-					
+	
 					for (i = 1; i < cells.length; i++) {
 						if (cells[i][4] === val) {
 							// Found the cell id so assign this cell index
@@ -863,7 +859,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 							return this;
 						}
 					}
-					
+	
 					// We were unable to find the cell index from the cell
 					// id so produce an error
 					this.log('Could not find the cell id "' + val + '" in the assigned entity texture ' + tex.id() + ', please check your sprite sheet (texture) cell definition to ensure the cell id "' + val + '" has been assigned to a cell!', 'error');
@@ -871,10 +867,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					this.log('Cannot assign cell index from cell ID until an IgeSpriteSheet has been set as the texture for this entity. Please set the texture before calling cellById().', 'error');
 				}
 			}
-			
+	
 			return this._cell;
 		},
-		
+	
 		/**
 		 * Sets the geometry of the entity to match the width and height
 		 * of the assigned texture.
@@ -898,14 +894,14 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					this.width(Math.floor(this._texture._sizeX / 100 * percent));
 					this.height(Math.floor(this._texture._sizeY / 100 * percent));
 				}
-				
+	
 				// Recalculate localAabb
 				this.localAabb(true);
 			}
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Sets the geometry of the entity to match the width and height
 		 * of the assigned texture cell. If the texture is not cell-based
@@ -940,15 +936,18 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					this.localAabb(true);
 				}
 			}
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Gets / sets the highlight mode. True is on false is off.
-		 * @param {Boolean} val The highlight mode true or false.
+		 * @param {Boolean} val The highlight mode true, false or optionally a string representing a globalCompositeOperation.
+		 * https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing
 		 * @example #Set the entity to render highlighted
 		 *     entity.highlight(true);
+		 * @example #Set the entity to render highlighted using 'screen' globalCompositeOperation
+		 *     entity.highlight('screen');
 		 * @example #Get the current highlight state
 		 *     var isHighlighted = entity.highlight();
 		 * @return {*} "this" when arguments are passed to allow method
@@ -959,10 +958,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._highlight = val;
 				return this;
 			}
-			
+	
 			return this._highlight;
 		},
-		
+	
 		/**
 		 * Returns the absolute world position of the entity as an
 		 * IgePoint3d.
@@ -974,7 +973,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		worldPosition: function () {
 			return new IgePoint3d(this._worldMatrix.matrix[2], this._worldMatrix.matrix[5], 0);
 		},
-		
+	
 		/**
 		 * Returns the absolute world rotation z of the entity as a
 		 * value in radians.
@@ -986,7 +985,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		worldRotationZ: function () {
 			return this._worldMatrix.rotationRadians();
 		},
-		
+	
 		/**
 		 * Converts an array of points from local space to this entity's
 		 * world space using it's world transform matrix. This will alter
@@ -1007,12 +1006,12 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._localMatrix.transform(points, this);
 				//this._worldMatrix.getInverse().transform(points, this);
 			}
-			
+	
 			if (this._ignoreCamera) {
 				//viewport.camera._worldMatrix.transform(points, this);
 			}
 		},
-		
+	
 		/**
 		 * Converts a point from local space to this entity's world space
 		 * using it's world transform matrix. This will alter the point's
@@ -1092,7 +1091,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			
 			return this._bounds3dPolygon;
 		},
-		
+	
 		/**
 		 * @deprecated Use mouseInBounds3d instead
 		 */
@@ -1104,7 +1103,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			
 			return poly.pointInside(mp);
 		},
-		
+	
 		/**
 		 * Calculates and returns the current axis-aligned bounding box in
 		 * world co-ordinates.
@@ -1140,24 +1139,24 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					geomX2,
 					geomY2,
 					x, y;
-				
+	
 				geom = this._bounds2d;
 				geomX2 = geom.x2;
 				geomY2 = geom.y2;
 				
 				x = geomX2;
 				y = geomY2;
-				
+	
 				poly.addPoint(-x + ancX, -y + ancY);
 				poly.addPoint(x + ancX, -y + ancY);
 				poly.addPoint(x + ancX, y + ancY);
 				poly.addPoint(-x + ancX, y + ancY);
-				
+	
 				this._renderPos = {x: -x + ancX, y: -y + ancY};
-				
+	
 				// Convert the poly's points from local space to world space
 				this.localToWorld(poly._poly, null, inverse);
-				
+	
 				// Get the extents of the newly transformed poly
 				minX = Math.min(
 					poly._poly[0].x,
@@ -1165,37 +1164,37 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					poly._poly[2].x,
 					poly._poly[3].x
 				);
-				
+	
 				minY = Math.min(
 					poly._poly[0].y,
 					poly._poly[1].y,
 					poly._poly[2].y,
 					poly._poly[3].y
 				);
-				
+	
 				maxX = Math.max(
 					poly._poly[0].x,
 					poly._poly[1].x,
 					poly._poly[2].x,
 					poly._poly[3].x
 				);
-				
+	
 				maxY = Math.max(
 					poly._poly[0].y,
 					poly._poly[1].y,
 					poly._poly[2].y,
 					poly._poly[3].y
 				);
-				
+	
 				box = new IgeRect(minX, minY, maxX - minX, maxY - minY);
-				
+	
 				this._aabb = box;
 				this._aabbDirty = false;
 			}
-			
+	
 			return this._aabb;
 		},
-		
+	
 		/**
 		 * Calculates and returns the local axis-aligned bounding box
 		 * for the entity. This is the AABB relative to the entity's
@@ -1224,10 +1223,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				var aabb = this.aabb();
 				this._localAabb = new IgeRect(-Math.floor(aabb.width / 2), -Math.floor(aabb.height / 2), Math.floor(aabb.width), Math.floor(aabb.height));
 			}
-			
+	
 			return this._localAabb;
 		},
-		
+	
 		/**
 		 * Calculates the axis-aligned bounding box for this entity, including
 		 * all child entity bounding boxes and returns the final composite
@@ -1241,26 +1240,26 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			var arr = this._children,
 				arrCount,
 				rect;
-			
+		
 			if (inverse) {
 				rect = this.aabb(true, inverse).clone();
 			} else {
 				rect = this.aabb().clone();
 			}
-			
+	
 			// Now loop all children and get the aabb for each of them
 			// them add those bounds to the current rect
 			if (arr) {
 				arrCount = arr.length;
-				
+	
 				while (arrCount--) {
 					rect.thisCombineRect(arr[arrCount].compositeAabb(inverse));
 				}
 			}
-			
+	
 			return rect;
 		},
-		
+	
 		/**
 		 * Gets / sets the composite stream flag. If set to true, any objects
 		 * mounted to this one will have their streamMode() set to the same
@@ -1278,7 +1277,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			
 			return this._compositeStream;
 		},
-		
+	
 		/**
 		 * Override the _childMounted method and apply entity-based flags.
 		 * @param {IgeEntity} child
@@ -1293,7 +1292,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			}
 			
 			IgeObject.prototype._childMounted.call(this, child);
-			
+					
 			// Check if we are compositeCached and update the cache
 			if (this.compositeCache()) {
 				this.cacheDirty(true);
@@ -1313,35 +1312,35 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		_swapVars: function (x, y) {
 			return [y, x];
 		},
-		
+	
 		_internalsOverlap: function (x0, x1, y0, y1) {
 			var tempSwap;
-			
+	
 			if (x0 > x1) {
 				tempSwap = this._swapVars(x0, x1);
 				x0 = tempSwap[0];
 				x1 = tempSwap[1];
 			}
-			
+	
 			if (y0 > y1) {
 				tempSwap = this._swapVars(y0, y1);
 				y0 = tempSwap[0];
 				y1 = tempSwap[1];
 			}
-			
+	
 			if (x0 > y0) {
 				tempSwap = this._swapVars(x0, y0);
 				x0 = tempSwap[0];
 				y0 = tempSwap[1];
-				
+	
 				tempSwap = this._swapVars(x1, y1);
 				x1 = tempSwap[0];
 				y1 = tempSwap[1];
 			}
-			
+	
 			return y0 < x1;
 		},
-		
+	
 		_projectionOverlap: function (otherObject) {
 			var thisG3d = this._bounds3d,
 				thisMin = {
@@ -1365,25 +1364,25 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					y: otherObject._translate.y + otherG3d.y / 2,
 					z: otherObject._translate.z + otherG3d.z
 				};
-			
+	
 			return this._internalsOverlap(
-					thisMin.x - thisMax.y,
-					thisMax.x - thisMin.y,
-					otherMin.x - otherMax.y,
-					otherMax.x - otherMin.y
-				) && this._internalsOverlap(
-					thisMin.x - thisMax.z,
-					thisMax.x - thisMin.z,
-					otherMin.x - otherMax.z,
-					otherMax.x - otherMin.z
-				) && this._internalsOverlap(
-					thisMin.z - thisMax.y,
-					thisMax.z - thisMin.y,
-					otherMin.z - otherMax.y,
-					otherMax.z - otherMin.y
-				);
+				thisMin.x - thisMax.y,
+				thisMax.x - thisMin.y,
+				otherMin.x - otherMax.y,
+				otherMax.x - otherMin.y
+			) && this._internalsOverlap(
+				thisMin.x - thisMax.z,
+				thisMax.x - thisMin.z,
+				otherMin.x - otherMax.z,
+				otherMax.x - otherMin.z
+			) && this._internalsOverlap(
+				thisMin.z - thisMax.y,
+				thisMax.z - thisMin.y,
+				otherMin.z - otherMax.y,
+				otherMax.z - otherMin.y
+			);
 		},
-		
+	
 		/**
 		 * Compares the current entity's 3d bounds to the passed entity and
 		 * determines if the current entity is "behind" the passed one. If an
@@ -1401,10 +1400,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				otherG3d = otherObject._bounds3d,
 				thisTranslate = this._translate.clone(),
 				otherTranslate = otherObject._translate.clone();
-			
+	
 			// thisTranslate.thisToIso();
 			// otherTranslate.thisToIso();
-			
+	
 			if(this._origin.x !== 0.5 || this._origin.y !== 0.5) {
 				thisTranslate.x += this._bounds2d.x * (0.5 - this._origin.x)
 				thisTranslate.y += this._bounds2d.y * (0.5 - this._origin.y)
@@ -1413,7 +1412,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				otherTranslate.x += otherObject._bounds2d.x * (0.5 - otherObject._origin.x)
 				otherTranslate.y += otherObject._bounds2d.y * (0.5 - otherObject._origin.y)
 			}
-			
+	
 			var
 				thisX = thisTranslate.x,
 				thisY = thisTranslate.y,
@@ -1439,34 +1438,34 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					otherY + otherG3d.y / 2,
 					otherObject._translate.z + otherG3d.z
 				);
-			
+	
 			if (thisMax.x <= otherMin.x) {
 				return false;
 			}
-			
+	
 			if (otherMax.x <= thisMin.x) {
 				return true;
 			}
-			
+	
 			if (thisMax.y <= otherMin.y) {
 				return false;
 			}
-			
+	
 			if (otherMax.y <= thisMin.y) {
 				return true;
 			}
-			
+	
 			if (thisMax.z <= otherMin.z) {
 				return false;
 			}
-			
+	
 			if (otherMax.z <= thisMin.z) {
 				return true;
 			}
-			
+	
 			return (thisX + thisY + this._translate.z) > (otherX + otherY + otherObject._translate.z);
 		},
-		
+	
 		/**
 		 * Get / set the flag determining if this entity will respond
 		 * to mouse interaction or not. When you set a mouse* event e.g.
@@ -1487,10 +1486,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._mouseEventsActive = val;
 				return this;
 			}
-			
+	
 			return this._mouseEventsActive;
 		},
-		
+	
 		/**
 		 * Sets the _ignoreCamera internal flag to the value passed for this
 		 * and all child entities down the scenegraph.
@@ -1509,7 +1508,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				}
 			}
 		},
-		
+	
 		/**
 		 * Determines if the frame alternator value for this entity
 		 * matches the engine's frame alternator value. The entity's
@@ -1531,7 +1530,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		newFrame: function () {
 			return ige._frameAlternator !== this._frameAlternatorCurrent;
 		},
-		
+	
 		/**
 		 * Sets the canvas context transform properties to match the the game
 		 * object's current transform values.
@@ -1552,7 +1551,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				ctx.globalAlpha = this._computedOpacity = this._opacity;
 			}
-			
+	
 			if (!inverse) {
 				this._localMatrix.transformRenderingContext(ctx);
 			} else {
@@ -1595,7 +1594,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				if (this._bornTime === undefined || ige._currentTime >= this._bornTime) {
 					// Remove the stream data cache
 					delete this._streamDataCache;
-					
+		
 					// Process any behaviours assigned to the entity
 					this._processUpdateBehaviours(ctx, tickDelta);
 					
@@ -1604,23 +1603,23 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 						this._translate.x += (this._velocity.x / 16) * tickDelta;
 						this._translate.y += (this._velocity.y / 16) * tickDelta;
 					}
-					
+		
 					if (this._timeStream.length) {
 						// Process any interpolation
 						this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
 					}
-					
+		
 					// Check for changes to the transform values
 					// directly without calling the transform methods
 					this.updateTransform();
-					
+		
 					if (!this._noAabb && this._aabbDirty) {
 						// Update the aabb
 						this.aabb();
 					}
-					
+		
 					this._oldTranslate = this._translate.clone();
-					
+		
 					// Update this object's current frame alternator value
 					// which allows us to determine if we are still on the
 					// same frame
@@ -1633,11 +1632,11 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					ige.spawnQueue(this);
 				}
 			}
-			
+	
 			// Process super class
 			IgeObject.prototype.update.call(this, ctx, tickDelta);
 		},
-		
+	
 		/**
 		 * Processes the actions required each render frame.
 		 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
@@ -1666,7 +1665,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 						}
 					}
 				}
-				
+	
 				if (!this._dontRender) {
 					// Check for cached version
 					if (this._cache || this._compositeCache) {
@@ -1689,12 +1688,12 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 						this._renderEntity(ctx, dontTransform);
 					}
 				}
-				
+	
 				// Process any automatic-mode stream updating required
 				if (this._streamMode === 1) {
 					this.streamSync();
 				}
-				
+	
 				if (this._compositeCache) {
 					if (this._cacheDirty) {
 						// Process children
@@ -1711,11 +1710,11 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		
 		_processTriggerHitTests: function () {
 			var mp, mouseTriggerPoly;
-			
+	
 			if (ige._currentViewport) {
 				if (!this._mouseAlwaysInside) {
 					mp = this.mousePosWorld();
-					
+		
 					if (mp) {
 						// Use the trigger polygon if defined
 						if (this._triggerPolygon && this[this._triggerPolygon]) {
@@ -1747,7 +1746,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			// Render the entity to the cache
 			var _canvas = this._cacheCanvas,
 				_ctx = this._cacheCtx;
-			
+	
 			if (this._compositeCache) {
 				// Get the composite entity AABB and alter the internal canvas
 				// to the composite size so we can render the entire entity
@@ -1767,7 +1766,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				
 				// Translate to the center of the canvas
 				_ctx.translate(-aabbC.x, -aabbC.y);
-				
+	
 				/**
 				 * Fires when the entity's composite cache is ready.
 				 * @event IgeEntity#compositeReady
@@ -1797,7 +1796,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			
 			this._renderEntity(_ctx, dontTransform);
 		},
-		
+	
 		/**
 		 * Handles calling the texture.render() method if a texture
 		 * is applied to the entity. This part of the tick process has
@@ -1820,14 +1819,14 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 							this._backgroundPatternFill = ctx.createPattern(this._backgroundPattern.image, this._backgroundPatternRepeat);
 						}
 					}
-					
+	
 					if (this._backgroundPatternFill) {
 						// Draw the fill
 						ctx.save();
 						ctx.fillStyle = this._backgroundPatternFill;
-						
+	
 						// TODO: When firefox has fixed their bug regarding negative rect co-ordinates, revert this change
-						
+	
 						// This is the proper way to do this but firefox has a bug which I'm gonna report
 						// so instead I have to use ANOTHER translate call instead. So crap!
 						//ctx.rect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
@@ -1839,26 +1838,26 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 						}
 						ctx.fill();
 						ige._drawCount++;
-						
+	
 						if (this._backgroundPatternIsoTile) {
 							ctx.translate(-Math.floor(this._backgroundPattern.image.width) / 2, -Math.floor(this._backgroundPattern.image.height / 2));
 							ctx.fill();
 							ige._drawCount++;
 						}
-						
+	
 						ctx.restore();
 					}
 				}
-				
+	
 				var texture = this._texture;
-				
+	
 				// Check if the entity is visible based upon its opacity
 				if (texture && texture._loaded) {
 					// Draw the entity image
 					texture.render(ctx, this, ige._tickDelta);
-					
+	
 					if (this._highlight) {
-						ctx.globalCompositeOperation = 'lighter';
+						ctx.globalCompositeOperation = this._highlightToGlobalCompositeOperation(this._highlight);
 						texture.render(ctx, this);
 					}
 				}
@@ -1873,7 +1872,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				}
 			}
 		},
-		
+	
 		/**
 		 * Draws the cached off-screen canvas image data to the passed canvas
 		 * context.
@@ -1892,7 +1891,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					var cam = ige._currentCamera;
 					//ctx.translate(-cam._translate.x, -cam._translate.y);
 					/*this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
-					 this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
+					this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
 				}
 			}
 			
@@ -1909,21 +1908,21 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				ctx.fillText('Composite Cache', -this._bounds2d.x2, -this._bounds2d.y2 - 15);
 				ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
 			}
-			
+	
 			ige._drawCount++;
-			
+	
 			if (this._highlight) {
-				ctx.globalCompositeOperation = 'lighter';
+				ctx.globalCompositeOperation = this._highlightToGlobalCompositeOperation(this._highlight);
 				ctx.drawImage(
 					this._cacheCanvas,
 					-this._bounds2d.x2, -this._bounds2d.y2
 				);
-				
+	
 				ige._drawCount++;
 			}
 			ctx.restore();
 		},
-		
+	
 		/**
 		 * Transforms a point by the entity's parent world matrix and
 		 * it's own local matrix transforming the point to this entity's
@@ -1949,7 +1948,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this._localMatrix.transformCoord(point, this);
 			}
-			
+	
 			return point;
 		},
 		
@@ -1976,7 +1975,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				}
 			}
 		},
-		
+	
 		/**
 		 * Generates a string containing a code fragment that when
 		 * evaluated will reproduce this object's properties via
@@ -1992,7 +1991,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			
 			// Get the properties for all the super-classes
 			var str = IgeObject.prototype._stringify.call(this, options), i;
-			
+	
 			// Loop properties and add property assignment code to string
 			for (i in this) {
 				if (this.hasOwnProperty(i) && this[i] !== undefined) {
@@ -2059,10 +2058,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					}
 				}
 			}
-			
+	
 			return str;
 		},
-		
+	
 		/**
 		 * Destroys the entity by removing it from the scenegraph,
 		 * calling destroy() on any child entities and removing
@@ -2089,7 +2088,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			 * @param {IgeEntity} The entity that has been destroyed.
 			 */
 			this.emit('destroyed', this);
-			
+	
 			// Call IgeObject.destroy()
 			IgeObject.prototype.destroy.call(this);
 		},
@@ -2125,7 +2124,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			
 			return undefined;
 		},
-		
+	
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// INTERACTION
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2135,16 +2134,16 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		 * @param {Function=} callback
 		 * @example #Hook the mouse move event and stop it propagating further down the scenegraph
 		 *     entity.mouseMove(function (event, control) {
-	 *         // Mouse moved with button
-	 *         console.log('Mouse move button: ' + event.button);
-	 *
-	 *         // Stop the event propagating further down the scenegraph
-	 *         control.stopPropagation();
-	 *
-	 *         // You can ALSO stop propagation without the control object
-	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
-	 *     });
+		 *         // Mouse moved with button
+		 *         console.log('Mouse move button: ' + event.button);
+		 *
+		 *         // Stop the event propagating further down the scenegraph
+		 *         control.stopPropagation();
+		 *
+		 *         // You can ALSO stop propagation without the control object
+		 *         // reference via the global reference:
+		 *         ige.input.stopPropagation();
+		 *     });
 		 * @return {*}
 		 */
 		mouseMove: function (callback) {
@@ -2153,26 +2152,26 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._mouseEventsActive = true;
 				return this;
 			}
-			
+	
 			return this._mouseMove;
 		},
-		
+	
 		/**
 		 * Gets / sets the callback that is fired when a mouse
 		 * over event is triggered.
 		 * @param {Function=} callback
 		 * @example #Hook the mouse over event and stop it propagating further down the scenegraph
 		 *     entity.mouseOver(function (event, control) {
-	 *         // Mouse over with button
-	 *         console.log('Mouse over button: ' + event.button);
-	 *
-	 *         // Stop the event propagating further down the scenegraph
-	 *         control.stopPropagation();
-	 *
-	 *         // You can ALSO stop propagation without the control object
-	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
-	 *     });
+		 *         // Mouse over with button
+		 *         console.log('Mouse over button: ' + event.button);
+		 *
+		 *         // Stop the event propagating further down the scenegraph
+		 *         control.stopPropagation();
+		 *
+		 *         // You can ALSO stop propagation without the control object
+		 *         // reference via the global reference:
+		 *         ige.input.stopPropagation();
+		 *     });
 		 * @return {*}
 		 */
 		mouseOver: function (callback) {
@@ -2181,26 +2180,26 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._mouseEventsActive = true;
 				return this;
 			}
-			
+	
 			return this._mouseOver;
 		},
-		
+	
 		/**
 		 * Gets / sets the callback that is fired when a mouse
 		 * out event is triggered.
 		 * @param {Function=} callback
 		 * @example #Hook the mouse out event and stop it propagating further down the scenegraph
 		 *     entity.mouseOut(function (event, control) {
-	 *         // Mouse out with button
-	 *         console.log('Mouse out button: ' + event.button);
-	 *
-	 *         // Stop the event propagating further down the scenegraph
-	 *         control.stopPropagation();
-	 *
-	 *         // You can ALSO stop propagation without the control object
-	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
-	 *     });
+		 *         // Mouse out with button
+		 *         console.log('Mouse out button: ' + event.button);
+		 *
+		 *         // Stop the event propagating further down the scenegraph
+		 *         control.stopPropagation();
+		 *
+		 *         // You can ALSO stop propagation without the control object
+		 *         // reference via the global reference:
+		 *         ige.input.stopPropagation();
+		 *     });
 		 * @return {*}
 		 */
 		mouseOut: function (callback) {
@@ -2209,26 +2208,26 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._mouseEventsActive = true;
 				return this;
 			}
-			
+	
 			return this._mouseOut;
 		},
-		
+	
 		/**
 		 * Gets / sets the callback that is fired when a mouse
 		 * up event is triggered.
 		 * @param {Function=} callback
 		 * @example #Hook the mouse up event and stop it propagating further down the scenegraph
 		 *     entity.mouseUp(function (event, control) {
-	 *         // Mouse up with button
-	 *         console.log('Mouse up button: ' + event.button);
-	 *
-	 *         // Stop the event propagating further down the scenegraph
-	 *         control.stopPropagation();
-	 *
-	 *         // You can ALSO stop propagation without the control object
-	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
-	 *     });
+		 *         // Mouse up with button
+		 *         console.log('Mouse up button: ' + event.button);
+		 *
+		 *         // Stop the event propagating further down the scenegraph
+		 *         control.stopPropagation();
+		 *
+		 *         // You can ALSO stop propagation without the control object
+		 *         // reference via the global reference:
+		 *         ige.input.stopPropagation();
+		 *     });
 		 * @return {*}
 		 */
 		mouseUp: function (callback) {
@@ -2237,26 +2236,26 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._mouseEventsActive = true;
 				return this;
 			}
-			
+	
 			return this._mouseUp;
 		},
-		
+	
 		/**
 		 * Gets / sets the callback that is fired when a mouse
 		 * down event is triggered.
 		 * @param {Function=} callback
 		 * @example #Hook the mouse down event and stop it propagating further down the scenegraph
 		 *     entity.mouseDown(function (event, control) {
-	 *         // Mouse down with button
-	 *         console.log('Mouse down button: ' + event.button);
-	 *
-	 *         // Stop the event propagating further down the scenegraph
-	 *         control.stopPropagation();
-	 *
-	 *         // You can ALSO stop propagation without the control object
-	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
-	 *     });
+		 *         // Mouse down with button
+		 *         console.log('Mouse down button: ' + event.button);
+		 *
+		 *         // Stop the event propagating further down the scenegraph
+		 *         control.stopPropagation();
+		 *
+		 *         // You can ALSO stop propagation without the control object
+		 *         // reference via the global reference:
+		 *         ige.input.stopPropagation();
+		 *     });
 		 * @return {*}
 		 */
 		mouseDown: function (callback) {
@@ -2265,7 +2264,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._mouseEventsActive = true;
 				return this;
 			}
-			
+	
 			return this._mouseDown;
 		},
 		
@@ -2275,17 +2274,17 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		 * @param {Function=} callback
 		 * @example #Hook the mouse wheel event and stop it propagating further down the scenegraph
 		 *     entity.mouseWheel(function (event, control) {
-	 *         // Mouse wheel with button
-	 *         console.log('Mouse wheel button: ' + event.button);
-	 *         console.log('Mouse wheel delta: ' + event.wheelDelta);
-	 *
-	 *         // Stop the event propagating further down the scenegraph
-	 *         control.stopPropagation();
-	 *
-	 *         // You can ALSO stop propagation without the control object
-	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
-	 *     });
+		 *         // Mouse wheel with button
+		 *         console.log('Mouse wheel button: ' + event.button);
+		 *         console.log('Mouse wheel delta: ' + event.wheelDelta);
+		 *
+		 *         // Stop the event propagating further down the scenegraph
+		 *         control.stopPropagation();
+		 *
+		 *         // You can ALSO stop propagation without the control object
+		 *         // reference via the global reference:
+		 *         ige.input.stopPropagation();
+		 *     });
 		 * @return {*}
 		 */
 		mouseWheel: function (callback) {
@@ -2294,7 +2293,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._mouseEventsActive = true;
 				return this;
 			}
-			
+	
 			return this._mouseWheel;
 		},
 		
@@ -2304,17 +2303,17 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		 */
 		mouseMoveOff: function () {
 			delete this._mouseMove;
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Removes the callback that is fired when a mouse
 		 * over event is triggered.
 		 */
 		mouseOverOff: function () {
 			delete this._mouseOver;
-			
+	
 			return this;
 		},
 		
@@ -2324,17 +2323,17 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		 */
 		mouseOutOff: function () {
 			delete this._mouseOut;
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Removes the callback that is fired when a mouse
 		 * up event is triggered.
 		 */
 		mouseUpOff: function () {
 			delete this._mouseUp;
-			
+	
 			return this;
 		},
 		
@@ -2345,17 +2344,17 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		 */
 		mouseDownOff: function () {
 			delete this._mouseDown;
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Removes the callback that is fired when a mouse
 		 * wheel event is triggered.
 		 */
 		mouseWheelOff: function () {
 			delete this._mouseWheel;
-			
+	
 			return this;
 		},
 		
@@ -2367,7 +2366,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			
 			return this._triggerPolygon;
 		},
-		
+	
 		/**
 		 * Gets / sets the shape / polygon that the mouse events
 		 * are triggered against. There are two options, 'aabb' and
@@ -2379,28 +2378,28 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		mouseEventTrigger: function (val) {
 			this.log('mouseEventTrigger is no longer in use. Please see triggerPolygon() instead.', 'warning');
 			/*if (val !== undefined) {
-			 // Set default value
-			 this._mouseEventTrigger = 0;
-			 
-			 switch (val) {
-			 case 'isoBounds':
-			 this._mouseEventTrigger = 1;
-			 break;
-			 
-			 case 'custom':
-			 this._mouseEventTrigger = 2;
-			 break;
-			 
-			 case 'aabb':
-			 this._mouseEventTrigger = 0;
-			 break;
-			 }
-			 return this;
-			 }
-			 
-			 return this._mouseEventTrigger === 0 ? 'aabb' : 'isoBounds';*/
+				// Set default value
+				this._mouseEventTrigger = 0;
+				
+				switch (val) {
+					case 'isoBounds':
+						this._mouseEventTrigger = 1;
+						break;
+					
+					case 'custom':
+						this._mouseEventTrigger = 2;
+						break;
+					
+					case 'aabb':
+						this._mouseEventTrigger = 0;
+						break;
+				}
+				return this;
+			}
+			
+			return this._mouseEventTrigger === 0 ? 'aabb' : 'isoBounds';*/
 		},
-		
+	
 		/**
 		 * Handler method that determines which mouse-move event
 		 * to fire, a mouse-over or a mouse-move.
@@ -2421,11 +2420,11 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				 */
 				this.emit('mouseOver', [event, evc, data]);
 			}
-			
+	
 			if (this._mouseMove) { this._mouseMove(event, evc, data); }
 			this.emit('mouseMove', [event, evc, data]);
 		},
-		
+	
 		/**
 		 * Handler method that determines if a mouse-out event
 		 * should be fired.
@@ -2435,7 +2434,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			// The mouse went away from this entity so
 			// set mouse-down to false, regardless of the situation
 			this._mouseStateDown = false;
-			
+	
 			// Check if the mouse move is a mouse out
 			if (this._mouseStateOver) {
 				this._mouseStateOver = false;
@@ -2469,7 +2468,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			 */
 			this.emit('mouseWheel', [event, evc, data]);
 		},
-		
+	
 		/**
 		 * Handler method that determines if a mouse-up event
 		 * should be fired.
@@ -2489,7 +2488,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			 */
 			this.emit('mouseUp', [event, evc, data]);
 		},
-		
+	
 		/**
 		 * Handler method that determines if a mouse-down event
 		 * should be fired.
@@ -2525,12 +2524,12 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				// There is a mouse move event
 				this._handleMouseIn(ige.input.mouseMove, evc, data);
 			}
-			
+	
 			if (ige.input.mouseDown) {
 				// There is a mouse down event
 				this._handleMouseDown(ige.input.mouseDown, evc, data);
 			}
-			
+	
 			if (ige.input.mouseUp) {
 				// There is a mouse up event
 				this._handleMouseUp(ige.input.mouseUp, evc, data);
@@ -2601,7 +2600,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this.log('velocityTo() called with a missing or undefined x, y or z parameter!', 'error');
 			}
-			
+	
 			return this._entity || this;
 		},
 		
@@ -2613,7 +2612,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this.log('velocityBy() called with a missing or undefined x, y or z parameter!', 'error');
 			}
-			
+	
 			return this._entity || this;
 		},
 		
@@ -2635,10 +2634,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this.log('translateBy() called with a missing or undefined x, y or z parameter!', 'error');
 			}
-			
+	
 			return this._entity || this;
 		},
-		
+	
 		/**
 		 * Translates the entity to the passed values.
 		 * @param {Number} x The x co-ordinate.
@@ -2656,10 +2655,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this.log('translateTo() called with a missing or undefined x, y or z parameter!', 'error');
 			}
-			
+	
 			return this._entity || this;
 		},
-		
+	
 		/**
 		 * Translates the entity to the passed point.
 		 * @param {IgePoint3d} point The point with co-ordinates.
@@ -2678,7 +2677,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this.log('translateToPoint() called with a missing or undefined point parameter!', 'error');
 			}
-			
+	
 			return this._entity || this;
 		},
 		
@@ -2704,22 +2703,22 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		translateToTile: function (x, y, z) {
 			if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
 				var finalZ;
-				
+	
 				// Handle being passed a z co-ordinate
 				if (z !== undefined) {
 					finalZ = z * this._parent._tileWidth;
 				} else {
 					finalZ = this._translate.z;
 				}
-				
+	
 				this.translateTo((x * this._parent._tileWidth) + this._parent._tileWidth / 2, (y * this._parent._tileHeight) + this._parent._tileWidth / 2, finalZ);
 			} else {
 				this.log('Cannot translate to tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.', 'warning');
 			}
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Gets the translate accessor object.
 		 * @example #Use the translate accessor object to alter the y co-ordinate of the entity to 10
@@ -2730,14 +2729,14 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			if (arguments.length) {
 				this.log('You called translate with arguments, did you mean translateTo or translateBy instead of translate?', 'warning');
 			}
-			
+	
 			this.x = this._translateAccessorX;
 			this.y = this._translateAccessorY;
 			this.z = this._translateAccessorZ;
-			
+	
 			return this._entity || this;
 		},
-		
+	
 		/**
 		 * The translate accessor method for the x axis. This
 		 * method is not called directly but is accessed through
@@ -2751,10 +2750,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._translate.x = val;
 				return this._entity || this;
 			}
-			
+	
 			return this._translate.x;
 		},
-		
+	
 		/**
 		 * The translate accessor method for the y axis. This
 		 * method is not called directly but is accessed through
@@ -2768,10 +2767,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._translate.y = val;
 				return this._entity || this;
 			}
-			
+	
 			return this._translate.y;
 		},
-		
+	
 		/**
 		 * The translate accessor method for the z axis. This
 		 * method is not called directly but is accessed through
@@ -2787,10 +2786,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._translate.z = val;
 				return this._entity || this;
 			}
-			
+	
 			return this._translate.z;
 		},
-		
+	
 		/**
 		 * Rotates the entity by adding the passed values to
 		 * the current rotation values.
@@ -2809,10 +2808,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this.log('rotateBy() called with a missing or undefined x, y or z parameter!', 'error');
 			}
-			
+	
 			return this._entity || this;
 		},
-		
+	
 		/**
 		 * Rotates the entity to the passed values.
 		 * @param {Number} x The x co-ordinate.
@@ -2830,10 +2829,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this.log('rotateTo() called with a missing or undefined x, y or z parameter!', 'error');
 			}
-			
+	
 			return this._entity || this;
 		},
-		
+	
 		/**
 		 * Gets the translate accessor object.
 		 * @example #Use the rotate accessor object to rotate the entity about the z axis 10 degrees
@@ -2848,10 +2847,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			this.x = this._rotateAccessorX;
 			this.y = this._rotateAccessorY;
 			this.z = this._rotateAccessorZ;
-			
+	
 			return this._entity || this;
 		},
-		
+	
 		/**
 		 * The rotate accessor method for the x axis. This
 		 * method is not called directly but is accessed through
@@ -2865,10 +2864,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._rotate.x = val;
 				return this._entity || this;
 			}
-			
+	
 			return this._rotate.x;
 		},
-		
+	
 		/**
 		 * The rotate accessor method for the y axis. This
 		 * method is not called directly but is accessed through
@@ -2882,10 +2881,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._rotate.y = val;
 				return this._entity || this;
 			}
-			
+	
 			return this._rotate.y;
 		},
-		
+	
 		/**
 		 * The rotate accessor method for the z axis. This
 		 * method is not called directly but is accessed through
@@ -2899,10 +2898,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._rotate.z = val;
 				return this._entity || this;
 			}
-			
+	
 			return this._rotate.z;
 		},
-		
+	
 		/**
 		 * Scales the entity by adding the passed values to
 		 * the current scale values.
@@ -2921,10 +2920,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this.log('scaleBy() called with a missing or undefined x, y or z parameter!', 'error');
 			}
-			
+	
 			return this._entity || this;
 		},
-		
+	
 		/**
 		 * Scale the entity to the passed values.
 		 * @param {Number} x The x co-ordinate.
@@ -2942,10 +2941,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this.log('scaleTo() called with a missing or undefined x, y or z parameter!', 'error');
 			}
-			
+	
 			return this._entity || this;
 		},
-		
+	
 		/**
 		 * Gets the scale accessor object.
 		 * @example #Use the scale accessor object to set the scale of the entity on the x axis to 1
@@ -2960,10 +2959,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			this.x = this._scaleAccessorX;
 			this.y = this._scaleAccessorY;
 			this.z = this._scaleAccessorZ;
-			
+	
 			return this._entity || this;
 		},
-		
+	
 		/**
 		 * The scale accessor method for the x axis. This
 		 * method is not called directly but is accessed through
@@ -2977,10 +2976,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._scale.x = val;
 				return this._entity || this;
 			}
-			
+	
 			return this._scale.x;
 		},
-		
+	
 		/**
 		 * The scale accessor method for the y axis. This
 		 * method is not called directly but is accessed through
@@ -2994,10 +2993,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._scale.y = val;
 				return this._entity || this;
 			}
-			
+	
 			return this._scale.y;
 		},
-		
+	
 		/**
 		 * The scale accessor method for the z axis. This
 		 * method is not called directly but is accessed through
@@ -3011,10 +3010,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._scale.z = val;
 				return this._entity || this;
 			}
-			
+	
 			return this._scale.z;
 		},
-		
+	
 		/**
 		 * Sets the origin of the entity by adding the passed values to
 		 * the current origin values.
@@ -3033,10 +3032,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this.log('originBy() called with a missing or undefined x, y or z parameter!', 'error');
 			}
-			
+	
 			return this._entity || this;
 		},
-		
+	
 		/**
 		 * Set the origin of the entity to the passed values.
 		 * @param {Number} x The x co-ordinate.
@@ -3054,10 +3053,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				this.log('originTo() called with a missing or undefined x, y or z parameter!', 'error');
 			}
-			
+	
 			return this._entity || this;
 		},
-		
+	
 		/**
 		 * Gets the origin accessor object.
 		 * @example #Use the origin accessor object to set the origin of the entity on the x axis to 1
@@ -3068,10 +3067,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			this.x = this._originAccessorX;
 			this.y = this._originAccessorY;
 			this.z = this._originAccessorZ;
-			
+	
 			return this._entity || this;
 		},
-		
+	
 		/**
 		 * The origin accessor method for the x axis. This
 		 * method is not called directly but is accessed through
@@ -3085,10 +3084,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._origin.x = val;
 				return this._entity || this;
 			}
-			
+	
 			return this._origin.x;
 		},
-		
+	
 		/**
 		 * The origin accessor method for the y axis. This
 		 * method is not called directly but is accessed through
@@ -3102,10 +3101,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._origin.y = val;
 				return this._entity || this;
 			}
-			
+	
 			return this._origin.y;
 		},
-		
+	
 		/**
 		 * The origin accessor method for the z axis. This
 		 * method is not called directly but is accessed through
@@ -3119,20 +3118,20 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._origin.z = val;
 				return this._entity || this;
 			}
-			
+	
 			return this._origin.z;
 		},
-		
+	
 		_rotatePoint: function (point, radians, origin) {
 			var cosAngle = Math.cos(radians),
 				sinAngle = Math.sin(radians);
-			
+	
 			return {
 				x: origin.x + (point.x - origin.x) * cosAngle + (point.y - origin.y) * sinAngle,
 				y: origin.y - (point.x - origin.x) * sinAngle + (point.y - origin.y) * cosAngle
 			};
 		},
-		
+	
 		/**
 		 * Checks the current transform values against the previous ones. If
 		 * any value is different, the appropriate method is called which will
@@ -3145,7 +3144,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				// 2d translation
 				this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
 			}
-			
+	
 			if (this._mode === 1) {
 				// iso translation
 				var isoPoint = this._translateIso = new IgePoint3d(
@@ -3153,13 +3152,13 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					this._translate.y,
 					this._translate.z + this._bounds3d.z / 2
 				).toIso();
-				
+	
 				if (this._parent && this._parent._bounds3d.z) {
 					// This adjusts the child entity so that 0, 0, 0 inside the
 					// parent is the center of the base of the parent
 					isoPoint.y += this._parent._bounds3d.z / 1.6;
 				}
-				
+	
 				this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
 			}
 			
@@ -3210,7 +3209,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			
 			return this;
 		},
-		
+	
 		/**
 		 * Gets / sets the disable interpolation flag. If set to true then
 		 * stream data being received by the client will not be interpolated
@@ -3227,7 +3226,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			
 			return this._disableInterpolation;
 		},
-		
+	
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// STREAM
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3236,7 +3235,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		 * encode into its stream data.
 		 * @param {Array=} sectionArray An array of strings.
 		 * @example #Define the sections this entity will use in the network stream. Use the default "transform" section as well as a "custom1" section
-		 *     entity.streamSections(['transform', 'custom1']);
+		 *     entity.streamSections('transform', 'custom1');
 		 * @return {*} "this" when arguments are passed to allow method
 		 * chaining or the current value if no arguments are specified.
 		 */
@@ -3245,7 +3244,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._streamSections = sectionArray;
 				return this;
 			}
-			
+	
 			return this._streamSections;
 		},
 		
@@ -3261,10 +3260,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		streamSectionsPush: function (sectionName) {
 			this._streamSections = this._streamSections || [];
 			this._streamSections.push(sectionName);
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Removes a section into the existing streamed sections array.
 		 * @param {String} sectionName The section name to remove.
@@ -3273,10 +3272,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			if (this._streamSections) {
 				this._streamSections.pull(sectionName);
 			}
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Gets / sets a streaming property on this entity. If set, the
 		 * property's new value is streamed to clients on the next packet.
@@ -3290,21 +3289,21 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		streamProperty: function (propName, propVal) {
 			this._streamProperty = this._streamProperty || {};
 			//this._streamPropertyChange = this._streamPropertyChange || {};
-			
+	
 			if (propName !== undefined) {
 				if (propVal !== undefined) {
 					//this._streamPropertyChange[propName] = this._streamProperty[propName] !== propVal;
 					this._streamProperty[propName] = propVal;
-					
+	
 					return this;
 				}
-				
+	
 				return this._streamProperty[propName];
 			}
-			
+	
 			return undefined;
 		},
-		
+	
 		/**
 		 * Gets / sets the data for the specified data section id. This method
 		 * is usually not called directly and instead is part of the network
@@ -3326,26 +3325,26 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					if (data) {
 						// We have received updated data
 						var dataArr = data.split(',');
-						
+		
 						if (!this._disableInterpolation && !bypassTimeStream && !this._streamJustCreated) {
 							// Translate
 							if (dataArr[0]) { dataArr[0] = parseFloat(dataArr[0]); }
 							if (dataArr[1]) { dataArr[1] = parseFloat(dataArr[1]); }
 							if (dataArr[2]) { dataArr[2] = parseFloat(dataArr[2]); }
-							
+		
 							// Scale
 							if (dataArr[3]) { dataArr[3] = parseFloat(dataArr[3]); }
 							if (dataArr[4]) { dataArr[4] = parseFloat(dataArr[4]); }
 							if (dataArr[5]) { dataArr[5] = parseFloat(dataArr[5]); }
-							
+		
 							// Rotate
 							if (dataArr[6]) { dataArr[6] = parseFloat(dataArr[6]); }
 							if (dataArr[7]) { dataArr[7] = parseFloat(dataArr[7]); }
 							if (dataArr[8]) { dataArr[8] = parseFloat(dataArr[8]); }
-							
+		
 							// Add it to the time stream
 							this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
-							
+		
 							// Check stream length, don't allow higher than 10 items
 							if (this._timeStream.length > 10) {
 								// Remove the first item
@@ -3356,12 +3355,12 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 							if (dataArr[0]) { this._translate.x = parseFloat(dataArr[0]); }
 							if (dataArr[1]) { this._translate.y = parseFloat(dataArr[1]); }
 							if (dataArr[2]) { this._translate.z = parseFloat(dataArr[2]); }
-							
+		
 							// Scale
 							if (dataArr[3]) { this._scale.x = parseFloat(dataArr[3]); }
 							if (dataArr[4]) { this._scale.y = parseFloat(dataArr[4]); }
 							if (dataArr[5]) { this._scale.z = parseFloat(dataArr[5]); }
-							
+		
 							// Rotate
 							if (dataArr[6]) { this._rotate.x = parseFloat(dataArr[6]); }
 							if (dataArr[7]) { this._rotate.y = parseFloat(dataArr[7]); }
@@ -3381,15 +3380,15 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					break;
 				
 				case 'depth':
-					if (data !== undefined) {
-						if (ige.isClient) {
-							this.depth(parseInt(data));
+						if (data !== undefined) {
+							if (ige.isClient) {
+								this.depth(parseInt(data));
+							}
+						} else {
+							return String(this.depth());
 						}
-					} else {
-						return String(this.depth());
-					}
-					break;
-				
+						break;
+					
 				case 'layer':
 					if (data !== undefined) {
 						if (ige.isClient) {
@@ -3471,16 +3470,16 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 						return String(this._origin.x + ',' + this._origin.y + ',' + this._origin.z);
 					}
 					break;
-				
+	
 				case 'props':
 					var newData,
 						changed,
 						i;
-					
+	
 					if (data !== undefined) {
 						if (ige.isClient) {
 							var props = JSON.parse(data);
-							
+	
 							// Update properties that have been sent through
 							for (i in props) {
 								changed = false;
@@ -3489,29 +3488,29 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 										changed = true;
 									}
 									this._streamProperty[i] = props[i];
-									
+	
 									this.emit('streamPropChange', [i, props[i]]);
 								}
 							}
 						}
 					} else {
 						newData = {};
-						
+	
 						for (i in this._streamProperty) {
 							if (this._streamProperty.hasOwnProperty(i)) {
 								//if (this._streamPropertyChange[i]) {
-								newData[i] = this._streamProperty[i];
-								//this._streamPropertyChange[i] = false;
+									newData[i] = this._streamProperty[i];
+									//this._streamPropertyChange[i] = false;
 								//}
 							}
 						}
-						
+	
 						return JSON.stringify(newData);
 					}
 					break;
 			}
 		},
-		
+	
 		/* CEXCLUDE */
 		/**
 		 * Gets / sets the stream mode that the stream system will use when
@@ -3533,10 +3532,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				}
 				return this;
 			}
-			
+	
 			return this._streamMode;
 		},
-		
+	
 		/**
 		 * Gets / sets the stream control callback function that will be called
 		 * each time the entity tick method is called and stream-able data is
@@ -3544,18 +3543,18 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		 * @param {Function=} method The stream control method.
 		 * @example #Set the entity's stream control method to control when this entity is streamed and when it is not
 		 *     entity.streamControl(function (clientId) {
-	 *         // Let's use an example where we only want this entity to stream
-	 *         // to one particular client with the id 4039589434
-	 *         if (clientId === '4039589434') {
-	 *             // Returning true tells the network stream to send data
-	 *             // about this entity to the client
-	 *             return true;
-	 *         } else {
-	 *             // Returning false tells the network stream NOT to send
-	 *             // data about this entity to the client
-	 *             return false;
-	 *         }
-	 *     });
+		 *         // Let's use an example where we only want this entity to stream
+		 *         // to one particular client with the id 4039589434
+		 *         if (clientId === '4039589434') {
+		 *             // Returning true tells the network stream to send data
+		 *             // about this entity to the client
+		 *             return true;
+		 *         } else {
+		 *             // Returning false tells the network stream NOT to send
+		 *             // data about this entity to the client
+		 *             return false;
+		 *         }
+		 *     });
 		 *
 		 * Further reading: [Controlling Streaming](http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/manual/networking-multiplayer/realtime-network-streaming/stream-modes-and-controlling-streaming/)
 		 * @return {*} "this" when arguments are passed to allow method
@@ -3566,10 +3565,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this._streamControl = method;
 				return this;
 			}
-			
+	
 			return this._streamControl;
 		},
-		
+	
 		/**
 		 * Gets / sets the stream sync interval. This value
 		 * is in milliseconds and cannot be lower than 16. It will
@@ -3608,10 +3607,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				}
 				return this;
 			}
-			
+	
 			return this._streamSyncInterval;
 		},
-		
+	
 		/**
 		 * Gets / sets the precision by which floating-point values will
 		 * be encoded and sent when packaged into stream data.
@@ -3630,26 +3629,26 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		streamFloatPrecision: function (val) {
 			if (val !== undefined) {
 				this._streamFloatPrecision = val;
-				
+	
 				var i, floatRemove = '\\.';
-				
+	
 				// Update the floatRemove regular expression pattern
 				for (i = 0; i < this._streamFloatPrecision; i++) {
 					floatRemove += '0';
 				}
-				
+	
 				// Add the trailing comma
 				floatRemove += ',';
-				
+	
 				// Create the new regexp
 				this._floatRemoveRegExp = new RegExp(floatRemove, 'g');
-				
+	
 				return this;
 			}
-			
+	
 			return this._streamFloatPrecision;
 		},
-		
+	
 		/**
 		 * Queues stream data for this entity to be sent to the
 		 * specified client id or array of client ids.
@@ -3662,7 +3661,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				// Check if we have a stream sync interval
 				if (this._streamSyncInterval) {
 					this._streamSyncDelta += ige._tickDelta;
-					
+	
 					if (this._streamSyncDelta < this._streamSyncInterval) {
 						// The stream sync interval is still higher than
 						// the stream sync delta so exit without calling the
@@ -3674,7 +3673,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 						this._streamSyncDelta = 0;
 					}
 				}
-				
+	
 				// Grab an array of connected clients from the network
 				// system
 				var recipientArr = [],
@@ -3696,21 +3695,21 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 						}
 					}
 				}
-				
+	
 				this._streamSync(recipientArr);
 				return this;
 			}
-			
+	
 			if (this._streamMode === 2) {
 				// Stream mode is advanced
 				this._streamSync(clientId, this._streamRoomId);
-				
+	
 				return this;
 			}
-			
+	
 			return this;
 		},
-		
+	
 		/**
 		 * Override this method if your entity should send data through to
 		 * the client when it is being created on the client for the first
@@ -3719,23 +3718,23 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		 * you should expect to receive it as per this example:
 		 * @example #Using and Receiving Stream Create Data
 		 *     var MyNewClass = IgeEntity.extend({
-	 *         classId: 'MyNewClass',
-	 *
-	 *         // Define the init with the parameter to receive the
-	 *         // data you return in the streamCreateData() method
-	 *         init: function (myCreateData) {
-	 *             this._myData = myCreateData;
-	 *         },
-	 *
-	 *         streamCreateData: function () {
-	 *             return this._myData;
-	 *         }
-	 *     });
+		 *         classId: 'MyNewClass',
+		 *
+		 *         // Define the init with the parameter to receive the
+		 *         // data you return in the streamCreateData() method
+		 *         init: function (myCreateData) {
+		 *             this._myData = myCreateData;
+		 *         },
+		 *
+		 *         streamCreateData: function () {
+		 *             return this._myData;
+		 *         }
+		 *     });
 		 *
 		 * Valid return values must not include circular references!
 		 */
 		streamCreateData: function () {},
-		
+	
 		/**
 		 * Gets / sets the stream emit created flag. If set to true this entity
 		 * emit a "streamCreated" event when it is created by the stream, but
@@ -3770,32 +3769,32 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				thisId = this.id(),
 				filteredArr = [],
 				createResult = true; // We set this to true by default
-			
+	
 			// Loop the recipient array
 			for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
 				clientId = recipientArr[arrIndex];
-				
+	
 				// Check if the client has already received a create
 				// command for this entity
 				stream._streamClientCreated[thisId] = stream._streamClientCreated[thisId] || {};
 				if (!stream._streamClientCreated[thisId][clientId]) {
 					createResult = this.streamCreate(clientId);
 				}
-				
+	
 				// Make sure that if we had to create the entity for
 				// this client that the create worked before bothering
 				// to waste bandwidth on stream updates
 				if (createResult) {
 					// Get the stream data
 					var data = this._streamData();
-					
+	
 					// Is the data different from the last data we sent
 					// this client?
 					stream._streamClientData[thisId] = stream._streamClientData[thisId] || {};
 					
 					if (stream._streamClientData[thisId][clientId] != data) {
 						filteredArr.push(clientId);
-						
+	
 						// Store the new data for later comparison
 						stream._streamClientData[thisId][clientId] = data;
 					}
@@ -3806,7 +3805,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				stream.queue(thisId, data, filteredArr);
 			}
 		},
-		
+	
 		/**
 		 * Forces the stream to push this entity's full stream data on the
 		 * next stream sync regardless of what clients have received in the
@@ -3828,7 +3827,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			
 			return this;
 		},
-		
+	
 		/**
 		 * Issues a create entity command to the passed client id
 		 * or array of ids. If no id is passed it will issue the
@@ -3849,7 +3848,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				var thisId = this.id(),
 					arr,
 					i;
-				
+	
 				// Send the client an entity create command first
 				ige.network.send('_igeStreamCreate', [
 					this.classId(),
@@ -3860,7 +3859,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				], clientId);
 				
 				ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
-				
+	
 				if (clientId) {
 					// Mark the client as having received a create
 					// command for this entity
@@ -3868,20 +3867,20 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				} else {
 					// Mark all clients as having received this create
 					arr = ige.network.clients();
-					
+	
 					for (i in arr) {
 						if (arr.hasOwnProperty(i)) {
 							ige.network.stream._streamClientCreated[thisId][i] = true;
 						}
 					}
 				}
-				
+	
 				return true;
 			}
-			
+	
 			return false;
 		},
-		
+	
 		/**
 		 * Issues a destroy entity command to the passed client id
 		 * or array of ids. If no id is passed it will issue the
@@ -3901,13 +3900,13 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			var thisId = this.id(),
 				arr,
 				i;
-			
+	
 			// Send clients the stream destroy command for this entity
 			ige.network.send('_igeStreamDestroy', [ige._currentTime, thisId], clientId);
 			
 			ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
 			ige.network.stream._streamClientData[thisId] = ige.network.stream._streamClientData[thisId] || {};
-			
+	
 			if (clientId) {
 				// Mark the client as having received a destroy
 				// command for this entity
@@ -3916,7 +3915,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			} else {
 				// Mark all clients as having received this destroy
 				arr = ige.network.clients();
-				
+	
 				for (i in arr) {
 					if (arr.hasOwnProperty(i)) {
 						ige.network.stream._streamClientCreated[thisId][i] = false;
@@ -3927,7 +3926,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			
 			return true;
 		},
-		
+	
 		/**
 		 * Generates and returns the current stream data for this entity. The
 		 * data will usually include only properties that have changed since
@@ -3951,10 +3950,10 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					sectionData,
 					sectionIndex,
 					sectionId;
-				
+	
 				// Add the entity id
 				streamData += this.id();
-				
+	
 				// Only send further data if the entity is still "alive"
 				if (this._alive) {
 					// Now loop the data sections array and compile the rest of the
@@ -3971,11 +3970,11 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 						if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
 							// Check if the section interval has been reached
 							this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
-							
+	
 							if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
 								// Get the section data for this section id
 								sectionData = this.streamSectionData(sectionId);
-								
+	
 								// Reset the section delta
 								this._streamSyncSectionDelta[sectionId] = 0;
 							}
@@ -3983,39 +3982,39 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 							// Get the section data for this section id
 							sectionData = this.streamSectionData(sectionId);
 						}
-						
+	
 						// Add the section start designator character. We do this
 						// regardless of if there is actually any section data because
 						// we want to be able to identify sections in a serial fashion
 						// on receipt of the data string on the client
 						sectionDataString += ige.network.stream._sectionDesignator;
-						
+	
 						// Check if we were returned any data
 						if (sectionData !== undefined) {
 							// Add the data to the section string
 							sectionDataString += sectionData;
 						}
 					}
-					
+	
 					// Add any custom data to the stream string at this point
 					if (sectionDataString) {
 						streamData += sectionDataString;
 					}
-					
+	
 					// Remove any .00 from the string since we don't need that data
 					// TODO: What about if a property is a string with something.00 and it should be kept?
 					streamData = streamData.replace(this._floatRemoveRegExp, ',');
 				}
-				
+	
 				// Store the data in cache in case we are asked for it again this tick
 				// the update() method of the IgeEntity class clears this every tick
 				this._streamDataCache = streamData;
-				
+	
 				return streamData;
 			}
 		},
 		/* CEXCLUDE */
-		
+	
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// INTERPOLATOR
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4034,13 +4033,13 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				dataDelta = endTime - startTime,
 				offsetDelta = currentTime - startTime,
 				deltaTime = offsetDelta / dataDelta;
-			
+	
 			// Clamp the current time from 0 to 1
 			if (deltaTime < 0) { deltaTime = 0; } else if (deltaTime > 1) { deltaTime = 1; }
-			
+	
 			return (totalValue * deltaTime) + startValue;
 		},
-		
+	
 		/**
 		 * Processes the time stream for the entity.
 		 * @param {Number} renderTime The time that the time stream is
@@ -4052,7 +4051,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		_processInterpolate: function (renderTime, maxLerp) {
 			// Set the maximum lerp to 200 if none is present
 			if (!maxLerp) { maxLerp = 200; }
-			
+	
 			var maxLerpSquared = maxLerp * maxLerp,
 				previousData,
 				nextData,
@@ -4064,7 +4063,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				nextTransform,
 				currentTransform = [],
 				i = 1;
-			
+	
 			// Find the point in the time stream that is
 			// closest to the render time and assign the
 			// previous and next data points
@@ -4078,7 +4077,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				}
 				i++;
 			}
-			
+	
 			// Check if we have some data to use
 			if (!nextData && !previousData) {
 				// No in-time data was found, check for lagging data
@@ -4102,36 +4101,36 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				// We have some new data so clear the old data
 				timeStream.splice(0, i - 1);
 			}
-			
+	
 			// If we have data to use
 			if (nextData && previousData) {
 				// Check if the previous data has a timestamp and if not,
 				// use the next data's timestamp
 				if (isNaN(previousData[0])) { previousData[0] = nextData[0]; }
-				
+	
 				// Store the data so outside systems can access them
 				this._timeStreamPreviousData = previousData;
 				this._timeStreamNextData = nextData;
-				
+	
 				// Calculate the delta times
 				dataDelta = nextData[0] - previousData[0];
 				offsetDelta = renderTime - previousData[0];
-				
+	
 				this._timeStreamDataDelta = Math.floor(dataDelta);
 				this._timeStreamOffsetDelta = Math.floor(offsetDelta);
-				
+	
 				// Calculate the current time between the two data points
 				currentTime = offsetDelta / dataDelta;
-				
+	
 				this._timeStreamCurrentInterpolateTime = currentTime;
-				
+	
 				// Clamp the current time from 0 to 1
 				//if (currentTime < 0) { currentTime = 0.0; } else if (currentTime > 1) { currentTime = 1.0; }
-				
+	
 				// Set variables up to store the previous and next data
 				previousTransform = previousData[1];
 				nextTransform = nextData[1];
-				
+	
 				// Translate
 				currentTransform[0] = this.interpolateValue(previousTransform[0], nextTransform[0], previousData[0], renderTime, nextData[0]);
 				currentTransform[1] = this.interpolateValue(previousTransform[1], nextTransform[1], previousData[0], renderTime, nextData[0]);
@@ -4144,30 +4143,39 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				currentTransform[6] = this.interpolateValue(previousTransform[6], nextTransform[6], previousData[0], renderTime, nextData[0]);
 				currentTransform[7] = this.interpolateValue(previousTransform[7], nextTransform[7], previousData[0], renderTime, nextData[0]);
 				currentTransform[8] = this.interpolateValue(previousTransform[8], nextTransform[8], previousData[0], renderTime, nextData[0]);
-				
+	
 				this.translateTo(parseFloat(currentTransform[0]), parseFloat(currentTransform[1]), parseFloat(currentTransform[2]));
 				this.scaleTo(parseFloat(currentTransform[3]), parseFloat(currentTransform[4]), parseFloat(currentTransform[5]));
 				this.rotateTo(parseFloat(currentTransform[6]), parseFloat(currentTransform[7]), parseFloat(currentTransform[8]));
-				
+	
 				/*// Calculate the squared distance between the previous point and next point
 				 dist = this.distanceSquared(previousTransform.x, previousTransform.y, nextTransform.x, nextTransform.y);
-				 
+	
 				 // Check that the distance is not higher than the maximum lerp and if higher,
 				 // set the current time to 1 to snap to the next position immediately
 				 if (dist > maxLerpSquared) { currentTime = 1; }
-				 
+	
 				 // Interpolate the entity position by multiplying the Delta times T, and adding the previous position
 				 currentPosition = {};
 				 currentPosition.x = ( (nextTransform.x - previousTransform.x) * currentTime ) + previousTransform.x;
 				 currentPosition.y = ( (nextTransform.y - previousTransform.y) * currentTime ) + previousTransform.y;
-				 
+	
 				 // Now actually transform the entity
 				 this.translate(entity, currentPosition.x, currentPosition.y);*/
-				
+	
 				// Record the last time we updated the entity so we can disregard any updates
 				// that arrive and are before this timestamp (not applicable in TCP but will
 				// apply if we ever get UDP in websockets)
 				this._lastUpdate = new Date().getTime();
+			}
+		},
+		_highlightToGlobalCompositeOperation: function (val) {
+			if (val) {
+				if (val === true) {
+					return 'lighter'
+				}
+
+				return val;
 			}
 		}
 	});

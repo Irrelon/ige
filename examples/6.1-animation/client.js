@@ -1,7 +1,7 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
-		ige.showStats(1);
+		ige.addComponent(IgeEditorComponent);
 		//ige.debugEnabled(false);
 		//ige.debugTiming(false);
 
