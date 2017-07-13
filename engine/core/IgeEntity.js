@@ -1389,12 +1389,13 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 			// otherTranslate.thisToIso();
 	
 			if(this._origin.x !== 0.5 || this._origin.y !== 0.5) {
-				thisTranslate.x += this._bounds2d.x * (0.5 - this._origin.x)
-				thisTranslate.y += this._bounds2d.y * (0.5 - this._origin.y)
+				thisTranslate.x += this._bounds2d.x * (0.5 - this._origin.x);
+				thisTranslate.y += this._bounds2d.y * (0.5 - this._origin.y);
 			}
+			
 			if(otherObject._origin.x !== 0.5 || otherObject._origin.y !== 0.5) {
-				otherTranslate.x += otherObject._bounds2d.x * (0.5 - otherObject._origin.x)
-				otherTranslate.y += otherObject._bounds2d.y * (0.5 - otherObject._origin.y)
+				otherTranslate.x += otherObject._bounds2d.x * (0.5 - otherObject._origin.x);
+				otherTranslate.y += otherObject._bounds2d.y * (0.5 - otherObject._origin.y);
 			}
 	
 			var
@@ -1869,14 +1870,6 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 			if (this._compositeCache) {
 				var aabbC = this._compositeAabbCache;
 				ctx.translate(this._bounds2d.x2 + aabbC.x, this._bounds2d.y2 + aabbC.y);
-				
-				if (this._parent && this._parent._ignoreCamera) {
-					// Translate the entity back to negate the scene translate
-					var cam = ige._currentCamera;
-					//ctx.translate(-cam._translate.x, -cam._translate.y);
-					/*this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
-					this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
-				}
 			}
 			
 			// We have a clean cached version so output that
