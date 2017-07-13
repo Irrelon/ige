@@ -229,7 +229,7 @@ appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 						// data, inform any interested listeners
 						this.emit('entityCreated', entity);
 					} else {
-						$ige.network.stop();
+						$ige.engine.network.stop();
 						$ige.engine.stop();
 						
 						this.log('Network stream cannot create entity with class ' + classId + ' because the class has not been defined! The engine will now stop.', 'error');
@@ -248,7 +248,7 @@ appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 				// Calculate how much time we have left before the entity
 				// should be removed from the simulation given the render
 				// latency setting and the current time
-				var destroyDelta = $ige.network.stream._renderLatency + ($time._currentTime - data[0]);
+				var destroyDelta = $ige.engine.network.stream._renderLatency + ($time._currentTime - data[0]);
 				
 				if (destroyDelta > 0) {
 					// Give the entity a lifespan to destroy it in x ms
@@ -275,7 +275,7 @@ appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 			var entityId,
 				entity,
 				sectionArr,
-				sectionDataArr = data.split($ige.network.stream._sectionDesignator),
+				sectionDataArr = data.split($ige.engine.network.stream._sectionDesignator),
 				sectionDataCount = sectionDataArr.length,
 				sectionIndex,
 				justCreated;

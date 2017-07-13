@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeMousePanComponent', function (IgeEventingClass) {
+appCore.module('IgeMousePanComponent', function ($ige, IgeEventingClass) {
 	/**
 	 * When added to a viewport, automatically adds mouse panning
 	 * capabilities to the viewport's camera.

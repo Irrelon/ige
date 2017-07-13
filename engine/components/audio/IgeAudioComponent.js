@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeAudioComponent', function (IgeEventingClass, IgeAudio) {
+appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass, IgeAudio) {
 	/**
 	 * Manages audio mixing and output.
 	 */

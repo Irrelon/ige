@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeUiManagerComponent', function (IgeClass) {
+appCore.module('IgeUiManagerComponent', function ($ige, IgeClass) {
 	var IgeUiManagerComponent = IgeClass.extend({
 		classId: 'IgeUiManagerComponent',
 		componentId: 'ui',

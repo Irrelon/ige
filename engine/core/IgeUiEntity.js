@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeUiEntity', function (IgeEntity, IgeUiStyleExtension, IgeUiPositionExtension) {
+appCore.module('IgeUiEntity', function ($ige, IgeEntity, IgeUiStyleExtension, IgeUiPositionExtension) {
 // TODO: Implement the _stringify() method for this class
 	/**
 	 * Creates a new UI entity. UI entities use more resources and CPU

@@ -26,6 +26,20 @@ module.exports = function(grunt) {
 					]
 				}
 			},
+			"extensions": {
+				"files": {
+					"src": [
+						"engine/extensions/*.js"
+					]
+				}
+			},
+			"filters": {
+				"files": {
+					"src": [
+						"engine/filters/*.js"
+					]
+				}
+			},
 			options: {
 				jshintrc: '.jshintrc'
 			}
@@ -37,13 +51,14 @@ module.exports = function(grunt) {
 					"./engine/core/*.js",
 					"./engine/assets/*.js",
 					"./engine/extensions/*.js",
-					"./engine/components/*.js",
-					"./engine/components/audio/*.js",
-					"./engine/components/cocoonjs/*.js",
-					"./engine/components/editor/*.js",
-					"./engine/components/stackTrace/*.js",
+					"./engine/filters/*.js",
+					"./engine/components/**/*.js",
 					"./engine/ui/*.js",
-					"./index.js"
+					"./index.js",
+					"!./engine/components/editor/**/*.js",
+					"!./engine/components/three/*.js",
+					"!./engine/components/three/**/*.js",
+					"./engine/components/editor/*.js"
 				],
 				dest: "./ige.js",
 				options: {

@@ -18,6 +18,8 @@
 	"browser": true,
 	"futurehostile": true,
 	"predef": [
-		"ImageData"
+		"ImageData",
+		"io",
+		"ioNoDom"
 	]
 }

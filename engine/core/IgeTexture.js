@@ -245,8 +245,7 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 		 */
 		_loadScript: function (scriptUrl) {
 			var self = this,
-				scriptElem,
-				image;
+				scriptElem;
 	
 			$textures.textureLoadStart(scriptUrl, this);
 	

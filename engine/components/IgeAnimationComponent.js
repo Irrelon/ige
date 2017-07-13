@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeAnimationComponent', function ($time, IgeEventingClass) {
+appCore.module('IgeAnimationComponent', function ($ige, $time, IgeEventingClass) {
 	/**
 	 * The animation component class. Handles defining and controlling
 	 * frame-based animations based on cells from a texture.

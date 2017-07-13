@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTweenComponent', function ($time, IgeClass) {
+appCore.module('IgeTweenComponent', function ($ige, $time, IgeClass) {
 	/**
 	 * This component is already included in the IgeEngine (ige)
 	 * instance and is not designed for use in any other way!

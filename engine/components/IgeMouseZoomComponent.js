@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeMouseZoomComponent', function (IgeEventingClass) {
+appCore.module('IgeMouseZoomComponent', function ($ige, IgeEventingClass) {
 	/**
 	 * When added to a viewport, automatically adds mouse zooming
 	 * capabilities to the viewport's camera.

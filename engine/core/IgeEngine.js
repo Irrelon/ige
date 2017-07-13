@@ -7,7 +7,7 @@ appCore.module('IgeEngine', function (
 	$ige,
 	$textures,
 	$time,
-	requestAnimFrame,
+	$requestAnimFrame,
 	IgeEntity,
 	IgeCocoonJsComponent,
 	IgeInputComponent,
@@ -44,7 +44,7 @@ appCore.module('IgeEngine', function (
 				// Expose appCore instance
 				this.appCore = appCore;
 				
-				if (this.isClient) {
+				if ($ige.isClient) {
 					window.ige = this;
 				}
 				
@@ -73,7 +73,7 @@ appCore.module('IgeEngine', function (
 				this.addComponent(IgeTweenComponent);
 				this.addComponent(IgeTimeComponent);
 				
-				if (this.isClient) {
+				if ($ige.isClient) {
 					// Enable UI element (virtual DOM) support
 					this.addComponent(IgeUiManagerComponent);
 				}
@@ -587,14 +587,14 @@ appCore.module('IgeEngine', function (
 				if (fpsRate !== undefined) {
 					// Override the default requestAnimFrame handler and set
 					// our own method up so that we can control the frame rate
-					if (this.isServer) {
+					if ($ige.isServer) {
 						// Server-side implementation
-						requestAnimFrame = function(callback, element){
+						$requestAnimFrame = function(callback, element){
 							setTimeout(function () { callback(new Date().getTime()); }, 1000 / fpsRate);
 						};
 					} else {
 						// Client-side implementation
-						window.requestAnimFrame = function(callback, element){
+						window.$requestAnimFrame = function(callback, element){
 							setTimeout(function () { callback(new Date().getTime()); }, 1000 / fpsRate);
 						};
 					}
@@ -723,7 +723,7 @@ appCore.module('IgeEngine', function (
 			 * @return {Boolean}
 			 */
 			canvasReady: function () {
-				return (this._canvas !== undefined || this.isServer);
+				return (this._canvas !== undefined || $ige.isServer);
 			},
 			
 			/**
@@ -790,7 +790,7 @@ appCore.module('IgeEngine', function (
 						
 						// Check if we have a DOM, that there is an igeLoading element
 						// and if so, remove it from the DOM now
-						if (this.isClient) {
+						if ($ige.isClient) {
 							if (document.getElementsByClassName && document.getElementsByClassName('igeLoading')) {
 								var arr = document.getElementsByClassName('igeLoading'),
 									arrCount = arr.length;
@@ -801,7 +801,7 @@ appCore.module('IgeEngine', function (
 							}
 						}
 						
-						requestAnimFrame(this.engineStep.bind(this));
+						$requestAnimFrame(this.engineStep.bind(this));
 						
 						this.log('Engine started');
 						
@@ -905,7 +905,7 @@ appCore.module('IgeEngine', function (
 			 * those whose pixel ratio is different from 1 to 1.
 			 */
 			createFrontBuffer: function (autoSize, dontScale) {
-				if (this.isClient) {
+				if ($ige.isClient) {
 					if (!this._canvas) {
 						this._createdFrontBuffer = true;
 						this._pixelRatioScaling = !dontScale;
@@ -1529,7 +1529,7 @@ appCore.module('IgeEngine', function (
 			manualTick: function () {
 				if (this._manualFrameAlternator !== this._frameAlternator) {
 					this._manualFrameAlternator = this._frameAlternator;
-					requestAnimFrame(this.engineStep.bind(this));
+					$requestAnimFrame(this.engineStep.bind(this));
 				}
 			},
 			
@@ -1610,7 +1610,7 @@ appCore.module('IgeEngine', function (
 					// If the engine is not in manual tick mode...
 					if (!self._useManualTicks) {
 						// Schedule a new frame
-						requestAnimFrame(self.engineStep.bind(self));
+						$requestAnimFrame(self.engineStep.bind(self));
 					} else {
 						self._manualFrameAlternator = !self._frameAlternator;
 					}

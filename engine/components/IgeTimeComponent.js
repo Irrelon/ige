@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTimeComponent', function ($time, IgeEventingClass) {
+appCore.module('IgeTimeComponent', function ($ige, $time, IgeEventingClass) {
 	var IgeTimeComponent = IgeEventingClass.extend({
 		classId: 'IgeTimeComponent',
 		componentId: 'time',

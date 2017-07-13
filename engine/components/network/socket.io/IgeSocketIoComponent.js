@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeSocketIoComponent', function ($ige, IgeEventingClass) {
+appCore.module('IgeSocketIoComponent', function ($ige, IgeEventingClass, IgeTimeSyncExtension) {
 	var IgeSocketIoComponent = IgeEventingClass.extend([
 		{extension: IgeTimeSyncExtension, overwrite: false}
 	], {

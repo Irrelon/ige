@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('requestAnimFrame', function () {
+appCore.module('$requestAnimFrame', function () {
 	var requestAnimFrame;
 	
 	if (typeof window !== 'undefined') {

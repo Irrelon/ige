@@ -1591,7 +1591,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		
 					if (this._timeStream.length) {
 						// Process any interpolation
-						this._processInterpolate($time._tickStart - $ige.network.stream._renderLatency);
+						this._processInterpolate($time._tickStart - $ige.engine.network.stream._renderLatency);
 					}
 		
 					// Check for changes to the transform values
@@ -3326,7 +3326,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 							if (dataArr[8]) { dataArr[8] = parseFloat(dataArr[8]); }
 		
 							// Add it to the time stream
-							this._timeStream.push([$ige.network.stream._streamDataTime + $ige.network._latency, dataArr]);
+							this._timeStream.push([$ige.engine.network.stream._streamDataTime + $ige.engine.network._latency, dataArr]);
 		
 							// Check stream length, don't allow higher than 10 items
 							if (this._timeStream.length > 10) {
@@ -3658,7 +3658,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 				// Grab an array of connected clients from the network
 				// system
 				var recipientArr = [],
-					clientArr = $ige.network.clients(this._streamRoomId),
+					clientArr = $ige.engine.network.clients(this._streamRoomId),
 					i;
 				
 				for (i in clientArr) {
@@ -3747,7 +3747,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 				arrIndex,
 				clientId,
 				data,
-				stream = $ige.network.stream,
+				stream = $ige.engine.network.stream,
 				thisId = this.id(),
 				filteredArr = [],
 				createResult = true; // We set this to true by default
@@ -3802,8 +3802,8 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 				
 				// Invalidate the stream client data lookup to ensure
 				// the latest data will be pushed on the next stream sync
-				if ($ige.network && $ige.network.stream && $ige.network.stream._streamClientData && $ige.network.stream._streamClientData[thisId]) {
-					$ige.network.stream._streamClientData[thisId] = {};
+				if ($ige.engine.network && $ige.engine.network.stream && $ige.engine.network.stream._streamClientData && $ige.engine.network.stream._streamClientData[thisId]) {
+					$ige.engine.network.stream._streamClientData[thisId] = {};
 				}
 			}
 			
@@ -3832,7 +3832,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 					i;
 	
 				// Send the client an entity create command first
-				$ige.network.send('_igeStreamCreate', [
+				$ige.engine.network.send('_igeStreamCreate', [
 					this.classId(),
 					thisId,
 					this._parent.id(),
@@ -3840,19 +3840,19 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 					this.streamCreateData()
 				], clientId);
 				
-				$ige.network.stream._streamClientCreated[thisId] = $ige.network.stream._streamClientCreated[thisId] || {};
+				$ige.engine.network.stream._streamClientCreated[thisId] = $ige.engine.network.stream._streamClientCreated[thisId] || {};
 	
 				if (clientId) {
 					// Mark the client as having received a create
 					// command for this entity
-					$ige.network.stream._streamClientCreated[thisId][clientId] = true;
+					$ige.engine.network.stream._streamClientCreated[thisId][clientId] = true;
 				} else {
 					// Mark all clients as having received this create
-					arr = $ige.network.clients();
+					arr = $ige.engine.network.clients();
 	
 					for (i in arr) {
 						if (arr.hasOwnProperty(i)) {
-							$ige.network.stream._streamClientCreated[thisId][i] = true;
+							$ige.engine.network.stream._streamClientCreated[thisId][i] = true;
 						}
 					}
 				}
@@ -3884,24 +3884,24 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 				i;
 	
 			// Send clients the stream destroy command for this entity
-			$ige.network.send('_igeStreamDestroy', [$time._currentTime, thisId], clientId);
+			$ige.engine.network.send('_igeStreamDestroy', [$time._currentTime, thisId], clientId);
 			
-			$ige.network.stream._streamClientCreated[thisId] = $ige.network.stream._streamClientCreated[thisId] || {};
-			$ige.network.stream._streamClientData[thisId] = $ige.network.stream._streamClientData[thisId] || {};
+			$ige.engine.network.stream._streamClientCreated[thisId] = $ige.engine.network.stream._streamClientCreated[thisId] || {};
+			$ige.engine.network.stream._streamClientData[thisId] = $ige.engine.network.stream._streamClientData[thisId] || {};
 	
 			if (clientId) {
 				// Mark the client as having received a destroy
 				// command for this entity
-				$ige.network.stream._streamClientCreated[thisId][clientId] = false;
-				$ige.network.stream._streamClientData[thisId][clientId] = undefined;
+				$ige.engine.network.stream._streamClientCreated[thisId][clientId] = false;
+				$ige.engine.network.stream._streamClientData[thisId][clientId] = undefined;
 			} else {
 				// Mark all clients as having received this destroy
-				arr = $ige.network.clients();
+				arr = $ige.engine.network.clients();
 	
 				for (i in arr) {
 					if (arr.hasOwnProperty(i)) {
-						$ige.network.stream._streamClientCreated[thisId][i] = false;
-						$ige.network.stream._streamClientData[thisId][i] = undefined;
+						$ige.engine.network.stream._streamClientCreated[thisId][i] = false;
+						$ige.engine.network.stream._streamClientData[thisId][i] = undefined;
 					}
 				}
 			}
@@ -3969,7 +3969,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 						// regardless of if there is actually any section data because
 						// we want to be able to identify sections in a serial fashion
 						// on receipt of the data string on the client
-						sectionDataString += $ige.network.stream._sectionDesignator;
+						sectionDataString += $ige.engine.network.stream._sectionDesignator;
 	
 						// Check if we were returned any data
 						if (sectionData !== undefined) {

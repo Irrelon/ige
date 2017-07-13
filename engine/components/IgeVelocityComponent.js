@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeVelocityComponent', function ($time, IgeClass, IgePoint3d) {
+appCore.module('IgeVelocityComponent', function ($ige, $time, IgeClass, IgePoint3d) {
 	// TODO: Doc this class!
 	var IgeVelocityComponent = IgeClass.extend({
 		classId: 'IgeVelocityComponent',

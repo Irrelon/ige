@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeUiElement', function (IgeUiEntity) {
+appCore.module('IgeUiElement', function ($ige, IgeUiEntity) {
 	/**
 	 * Creates a new UI element. UI elements use more resources and CPU
 	 * than standard IgeEntity instances but provide a rich set of extra

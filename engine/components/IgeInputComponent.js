@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
+appCore.module('IgeInputComponent', function ($ige, IgeEventingClass, IgePoint3d) {
 	var IgeInputComponent = IgeEventingClass.extend({
 		classId: 'IgeInputComponent',
 		componentId: 'input',

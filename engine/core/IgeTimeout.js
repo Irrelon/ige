@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTimeout', function ($time, IgeInterval) {
+appCore.module('IgeTimeout', function ($ige, $time, IgeInterval) {
 	/**
 	 * Provides an alternative to setTimeout() which works based on the engine's internal
 	 * time system allowing timeouts to fire correctly, taking into account pausing the

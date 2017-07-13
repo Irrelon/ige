@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeEntityManagerComponent', function (IgeClass, IgePoint3d, IgeRect) {
+appCore.module('IgeEntityManagerComponent', function ($ige, IgeClass, IgePoint3d, IgeRect) {
 	var IgeEntityManagerComponent = IgeClass.extend({
 		classId: 'IgeEntityManagerComponent',
 		componentId: 'entityManager',

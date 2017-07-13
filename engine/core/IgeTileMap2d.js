@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTileMap2d', function (IgeEntity, IgeTexture, IgeTileMap2dSmartTexture, IgeMap2d, IgeMatrix2d, IgePoint2d, IgePoint3d, IgePoly2d, IgeRect) {
+appCore.module('IgeTileMap2d', function ($ige, IgeEntity, IgeTexture, IgeTileMap2dSmartTexture, IgeMap2d, IgeMatrix2d, IgePoint2d, IgePoint3d, IgePoly2d, IgeRect) {
 	/**
 	 * Tile maps provide a way to align mounted child objects to a tile-based grid.
 	 * NOTE: These are not to be confused with IgeTextureMap's which allow you to

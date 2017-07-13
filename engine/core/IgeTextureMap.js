@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTextureMap', function ($time, IgeTileMap2d, IgeMap2d, IgePoint3d) {
+appCore.module('IgeTextureMap', function ($ige, $time, IgeTileMap2d, IgeMap2d, IgePoint3d) {
 	// TODO: Implement the _stringify() method for this class
 	/**
 	 * Texture maps provide a way to display textures / cells across a tile map.

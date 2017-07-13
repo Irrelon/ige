@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTextureAtlas', function (IgeTextureMap) {
+appCore.module('IgeTextureAtlas', function ($ige, IgeTextureMap) {
 	/**
 	 * Texture maps provide a way to display textures across a tile map.
 	 */
