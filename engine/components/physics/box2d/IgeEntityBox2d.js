@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeEntityBox2d', function (IgeEntity) {
+appCore.module('IgeEntityBox2d', function ($ige, IgeEntity) {
 	/**
 	 * Creates a new entity with box2d integration.
 	 */

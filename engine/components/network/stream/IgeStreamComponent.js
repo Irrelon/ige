@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
+appCore.module('IgeStreamComponent', function ($ige, $time, igeBase, IgeEventingClass) {
 	/**
 	 * Adds stream capabilities to the network system.
 	 */
@@ -16,7 +16,7 @@ appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 		 * @param options
 		 */
 		init: function (entity, options) {
-			this._entity = entity;
+			this._network = entity;
 			this._options = options;
 			
 			var self = this;
@@ -27,10 +27,10 @@ appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 			/* CEXCLUDE */
 			if ($ige.isServer) {
 				// Define the network stream command
-				this._entity.define('_igeStreamCreate');
-				this._entity.define('_igeStreamDestroy');
-				this._entity.define('_igeStreamData');
-				this._entity.define('_igeStreamTime');
+				this._network.define('_igeStreamCreate');
+				this._network.define('_igeStreamDestroy');
+				this._network.define('_igeStreamData');
+				this._network.define('_igeStreamTime');
 				
 				// Define the object that will hold the stream data queue
 				this._queuedData = {};
@@ -43,16 +43,16 @@ appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 			
 			if ($ige.isClient) {
 				// Define the network stream command
-				this._entity.define('_igeStreamCreate', function () {
+				this._network.define('_igeStreamCreate', function () {
 					self._onStreamCreate.apply(self, arguments);
 				});
-				this._entity.define('_igeStreamDestroy', function () {
+				this._network.define('_igeStreamDestroy', function () {
 					self._onStreamDestroy.apply(self, arguments);
 				});
-				this._entity.define('_igeStreamData', function () {
+				this._network.define('_igeStreamData', function () {
 					self._onStreamData.apply(self, arguments);
 				});
-				this._entity.define('_igeStreamTime', function () {
+				this._network.define('_igeStreamTime', function () {
 					self._onStreamTime.apply(self, arguments);
 				});
 			}
@@ -79,7 +79,7 @@ appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 		renderLatency: function (latency) {
 			if (latency !== undefined) {
 				this._renderLatency = latency;
-				return this._entity;
+				return this._network;
 			}
 			
 			return this._renderLatency;
@@ -96,7 +96,7 @@ appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 			if (ms !== undefined) {
 				this.log('Setting delta stream interval to ' + (ms / $ige.engine._timeScale) + 'ms');
 				this._streamInterval = ms / $ige.engine._timeScale;
-				return this._entity;
+				return this._network;
 			}
 			
 			return this._streamInterval;
@@ -113,7 +113,7 @@ appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 				self._sendQueue();
 			}, this._streamInterval);
 			
-			return this._entity;
+			return this._network;
 		},
 		
 		/**
@@ -125,7 +125,7 @@ appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 			this.log('Stopping delta stream...');
 			clearInterval(this._streamTimer);
 			
-			return this._entity;
+			return this._network;
 		},
 		
 		/**
@@ -137,7 +137,7 @@ appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 		 */
 		queue: function (id, data, clientId) {
 			this._queuedData[id] = [data, clientId];
-			return this._entity;
+			return this._network;
 		},
 		
 		/**
@@ -151,7 +151,7 @@ appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 				dt,
 				arr = this._queuedData,
 				arrIndex,
-				network = this._entity,
+				network = this._network,
 				item, currentTime = $time._currentTime,
 				clientSentTimeData = {};
 			
@@ -193,41 +193,50 @@ appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 		},
 		
 		_onStreamCreate: function (data) {
-			var classId = data[0],
+			var self = this,
+				classId = data[0],
 				entityId = data[1],
 				parentId = data[2],
 				transformData = data[3],
 				createData = data[4],
 				parent = $ige.engine.$(parentId),
 				classConstructor,
+				controller,
 				entity;
 			
 			// Check the required class exists
 			if (parent) {
 				// Check that the entity doesn't already exist
 				if (!$ige.engine.$(entityId)) {
-					classConstructor = igeClassStore[classId];
+					debugger;
+					classConstructor = appCore.module(classId);
 					
 					if (classConstructor) {
-						// The entity does not currently exist so create it!
-						entity = new classConstructor(createData)
-							.id(entityId)
-							.mount(parent);
-						
-						entity.streamSectionData('transform', transformData, true);
-						
-						// Set the just created flag which will stop the renderer
-						// from handling this entity until after the first stream
-						// data has been received for it
-						entity._streamJustCreated = true;
-						
-						if (entity._streamEmitCreated) {
-							entity.emit('streamCreated');
-						}
-						
-						// Since we just created an entity through receiving stream
-						// data, inform any interested listeners
-						this.emit('entityCreated', entity);
+						classConstructor.controller(undefined, function (err, controller) {
+							if (err) {
+								return;
+							}
+							
+							// The entity does not currently exist so create it!
+							entity = new controller(createData)
+								.id(entityId)
+								.mount(parent);
+							
+							entity.streamSectionData('transform', transformData, true);
+							
+							// Set the just created flag which will stop the renderer
+							// from handling this entity until after the first stream
+							// data has been received for it
+							entity._streamJustCreated = true;
+							
+							if (entity._streamEmitCreated) {
+								entity.emit('streamCreated');
+							}
+							
+							// Since we just created an entity through receiving stream
+							// data, inform any interested listeners
+							self.emit('entityCreated', entity);
+						});
 					} else {
 						$ige.engine.network.stop();
 						$ige.engine.stop();

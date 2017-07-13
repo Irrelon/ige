@@ -93,7 +93,7 @@ appCore.module('IgeClass', function ($ige, igeBase, printStackTrace) {
 					
 					if (type === 'error') {
 						console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + thisId + '] : ' + 'Error encountered, stopping engine to prevent console spamming...');
-						$ige.stop();
+						$ige.engine.stop();
 						
 						if (igeBase.igeConfig.debug._throwErrors) {
 							throw(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + thisId + '] : ' + text);

@@ -134,11 +134,11 @@ appCore.module('IgeNetIoClient', function ($ige, $time, NetIo) {
 		define: function (commandName, callback) {
 			if (commandName !== undefined && callback !== undefined) {
 				// Check if this command has been defined by the server
-				if (this._networkCommandsLookup[commandName] !== undefined) {
+				//if (this._networkCommandsLookup[commandName] !== undefined) {
 					this._networkCommands[commandName] = callback;
-				} else {
+				/*} else {
 					this.log('Cannot define network command "' + commandName + '" because it does not exist on the server. Please edit your server code and define the network command there before trying to define it on the client!', 'error');
-				}
+				}*/
 				
 				return this._entity;
 			} else {
