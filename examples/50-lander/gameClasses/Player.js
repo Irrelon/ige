@@ -221,7 +221,7 @@ var Player = IgeEntityBox2d.extend({
 	tick: function (ctx) {
 		if (this._landed) {
 			if (this._fuel < 100) {
-				this._fuel += 0.05 * ige._tickDelta;
+				this._fuel += 0.05 * igeTime._tickDelta;
 
 				if (this._fuel > 100) {
 					this._fuel = 100;
@@ -254,7 +254,7 @@ var Player = IgeEntityBox2d.extend({
 
 		ige.$('scoreText').text(this._score + ' points');
 
-		if (this._dropTime < this._currentTime - 2000) {
+		if (this._dropTime < igeTime._currentTime - 2000) {
 			// Remove the old orb from memory so we can pick
 			// it up again if required
 			debugger;
@@ -290,7 +290,7 @@ var Player = IgeEntityBox2d.extend({
 			ige.box2d._world.DestroyJoint(this._orbRope);
 
 			this._oldOrb = this._orb;
-			this._dropTime = ige._currentTime;
+			this._dropTime = igeTime._currentTime;
 
 			delete this._orbRope;
 			delete this._orb;

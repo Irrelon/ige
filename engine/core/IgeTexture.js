@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTexture', function (IgeEventingClass) {
+appCore.module('IgeTexture', function (igeTime, IgeEventingClass) {
 	/**
 	 * Creates a new texture.
 	 */
@@ -654,8 +654,8 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 							geom.x, // render width
 							geom.y // render height
 						);
-	
-						ige._drawCount++;
+						
+						igeTime._drawCount++;
 					} else {
 						this.log('Cannot render texture using cell ' + entity._cell + ' because the cell does not exist in the assigned texture!', 'error');
 					}
@@ -666,8 +666,8 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 					ctx.save();
 						this.script.render(ctx, entity, this);
 					ctx.restore();
-	
-					ige._drawCount++;
+					
+					igeTime._drawCount++;
 				}
 			}
 		},

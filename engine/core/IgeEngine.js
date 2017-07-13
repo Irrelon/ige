@@ -4,6 +4,8 @@ var appCore = require('irrelon-appcore');
 
 appCore.module('IgeEngine', function (
 	igeBase,
+	igeTime,
+	requestAnimFrame,
 	IgeEntity,
 	IgeCocoonJsComponent,
 	IgeInputComponent,
@@ -20,6 +22,8 @@ appCore.module('IgeEngine', function (
 			classId: 'IgeEngine',
 			
 			init: function () {
+				var self = this;
+				
 				// Deal with some debug settings first
 				if (igeBase.igeConfig.debug) {
 					if (!igeBase.igeConfig.debug._enabled) {
@@ -35,6 +39,10 @@ appCore.module('IgeEngine', function (
 				this.basePath = '';
 				this._currentRoutePath = '';
 				this._routeQueue = [];
+				this._route = {};
+				
+				// Expose appCore instance
+				this.appCore = appCore;
 				
 				// Determine the environment we are executing in
 				this.isServer = (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined' && typeof window === 'undefined');
@@ -46,7 +54,7 @@ appCore.module('IgeEngine', function (
 				
 				// Output our header
 				console.log('------------------------------------------------------------------------------');
-				console.log('* Powered by the Isogenic Game Engine ' + igeBase.igeVersion + '                  *');
+				console.log('* Powered by the Isogenic Game Engine ' + igeBase.version() + '                  *');
 				console.log('* (C)opyright ' + new Date().getFullYear() + ' Irrelon Software Limited                                  *');
 				console.log('* http://www.isogenicengine.com                                              *');
 				console.log('------------------------------------------------------------------------------');
@@ -92,28 +100,16 @@ appCore.module('IgeEngine', function (
 				this._debugEvents = {}; // Holds debug event booleans for named events
 				this._renderContext = '2d'; // The rendering context, default is 2d
 				this._renderMode = this._renderModes[this._renderContext]; // Integer representation of the render context
-				this._tickTime = 'NA'; // The time the tick took to process
-				this._updateTime = 'NA'; // The time the tick update section took to process
-				this._renderTime = 'NA'; // The time the tick render section took to process
-				this._tickDelta = 0; // The time between the last tick and the current one
-				this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 				this._state = 0; // Currently stopped
 				this._textureImageStore = {};
 				this._texturesLoading = 0; // Holds a count of currently loading textures
 				this._texturesTotal = 0; // Holds total number of textures loading / loaded
 				this._dependencyQueue = []; // Holds an array of functions that must all return true for the engine to start
-				this._drawCount = 0; // Holds the number of draws since the last frame (calls to drawImage)
-				this._dps = 0; // Number of draws that occurred last tick
-				this._dpf = 0;
-				this._frames = 0; // Number of frames looped through since last second tick
-				this._fps = 0; // Number of frames per second
-				this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
 				this._frameAlternator = false; // Is set to the boolean not of itself each frame
 				this._viewportDepth = false;
 				this._mousePos = new IgePoint3d(0, 0, 0);
 				this._currentViewport = null; // Set in IgeViewport.js tick(), holds the current rendering viewport
 				this._currentCamera = null; // Set in IgeViewport.js tick(), holds the current rendering viewport's camera
-				this._currentTime = 0; // The current engine time
 				this._globalSmoothing = false; // Determines the default smoothing setting for new textures
 				this._register = {
 					'ige': this
@@ -139,11 +135,11 @@ appCore.module('IgeEngine', function (
 				this.dependencyTimeout(30000); // Wait 30 seconds to load all dependencies then timeout
 				
 				// Add the textures loaded dependency
-				this._dependencyQueue.push(this.texturesLoaded);
+				this._dependencyQueue.push(this.texturesLoaded.bind(self));
 				//this._dependencyQueue.push(this.canvasReady);
 				
 				// Start a timer to record every second of execution
-				this._secondTimer = setInterval(this._secondTick, 1000);
+				this._secondTimer = setInterval(this._secondTick.bind(self), 1000);
 			},
 			
 			/**
@@ -545,7 +541,7 @@ appCore.module('IgeEngine', function (
 			},
 			
 			debug: function (eventName) {
-				if (this._debugEvents[eventName] === true || this._debugEvents[eventName] === ige._frames) {
+				if (this._debugEvents[eventName] === true || this._debugEvents[eventName] === igeTime._frames) {
 					debugger;
 				}
 			},
@@ -559,7 +555,7 @@ appCore.module('IgeEngine', function (
 			},
 			
 			triggerDebugEventFrame: function (eventName) {
-				this._debugEvents[eventName] = ige._frames;
+				this._debugEvents[eventName] = igeTime._frames;
 			},
 			
 			/**
@@ -670,6 +666,7 @@ appCore.module('IgeEngine', function (
 				
 				while (arrCount--) {
 					if (!this._dependencyQueue[arrCount]()) {
+						console.log(this._dependencyQueue[arrCount].toString());
 						return false;
 					}
 				}
@@ -796,7 +793,7 @@ appCore.module('IgeEngine', function (
 			 * @return {Boolean}
 			 */
 			texturesLoaded: function () {
-				return ige._texturesLoading === 0;
+				return this._texturesLoading === 0;
 			},
 			
 			/**
@@ -891,12 +888,14 @@ appCore.module('IgeEngine', function (
 			 * @param callback
 			 */
 			start: function (callback) {
-				if (!ige._state) {
+				var self = this;
+				
+				if (!this._state) {
 					// Check if we are able to start based upon any registered dependencies
-					if (ige.dependencyCheck()) {
+					if (this.dependencyCheck()) {
 						// Start the engine
-						ige.log('Starting engine...');
-						ige._state = 1;
+						this.log('Starting engine...');
+						this._state = 1;
 						
 						// Check if we have a DOM, that there is an igeLoading element
 						// and if so, remove it from the DOM now
@@ -911,9 +910,9 @@ appCore.module('IgeEngine', function (
 							}
 						}
 						
-						requestAnimFrame(ige.engineStep);
+						requestAnimFrame(this.engineStep.bind(this));
 						
-						ige.log('Engine started');
+						this.log('Engine started');
 						
 						// Fire the callback method if there was one
 						if (typeof(callback) === 'function') {
@@ -924,19 +923,19 @@ appCore.module('IgeEngine', function (
 						var curTime = new Date().getTime();
 						
 						// Record when we first started checking for dependencies
-						if (!ige._dependencyCheckStart) {
-							ige._dependencyCheckStart = curTime;
+						if (!this._dependencyCheckStart) {
+							this._dependencyCheckStart = curTime;
 						}
 						
 						// Check if we have timed out
-						if (curTime - ige._dependencyCheckStart > this._dependencyCheckTimeout) {
+						if (curTime - this._dependencyCheckStart > this._dependencyCheckTimeout) {
 							this.log('Engine start failed because the dependency check timed out after ' + (this._dependencyCheckTimeout / 1000) + ' seconds', 'error');
 							if (typeof(callback) === 'function') {
 								callback(false);
 							}
 						} else {
 							// Start a timer to keep checking dependencies
-							setTimeout(function () { ige.start(callback); }, 200);
+							setTimeout(function () { self.start(callback); }, 200);
 						}
 					}
 				}
@@ -1548,17 +1547,17 @@ appCore.module('IgeEngine', function (
 			 * @private
 			 */
 			_secondTick: function () {
-				var self = ige;
+				var self = this;
 				
 				// Store frames per second
-				self._fps = self._frames;
+				igeTime._fps = igeTime._frames;
 				
 				// Store draws per second
-				self._dps = self._dpf * self._fps;
+				igeTime._dps = igeTime._dpf * igeTime._fps;
 				
 				// Zero out counters
-				self._frames = 0;
-				self._drawCount = 0;
+				igeTime._frames = 0;
+				igeTime._drawCount = 0;
 			},
 			
 			/**
@@ -1589,9 +1588,9 @@ appCore.module('IgeEngine', function (
 			incrementTime: function (val, lastVal) {
 				if (!this._pause) {
 					if (!lastVal) { lastVal = val; }
-					this._currentTime += ((val - lastVal) * this._timeScale);
+					igeTime._currentTime += ((val - lastVal) * this._timeScale);
 				}
-				return this._currentTime;
+				return igeTime._currentTime;
 			},
 			
 			/**
@@ -1599,7 +1598,7 @@ appCore.module('IgeEngine', function (
 			 * @return {Number} The current time.
 			 */
 			currentTime: function () {
-				return this._currentTime;
+				return igeTime._currentTime;
 			},
 			
 			/**
@@ -1639,7 +1638,7 @@ appCore.module('IgeEngine', function (
 			manualTick: function () {
 				if (this._manualFrameAlternator !== this._frameAlternator) {
 					this._manualFrameAlternator = this._frameAlternator;
-					requestAnimFrame(this.engineStep);
+					requestAnimFrame(this.engineStep.bind(this));
 				}
 			},
 			
@@ -1684,11 +1683,11 @@ appCore.module('IgeEngine', function (
 				 then process updates and ticks. This will also allow a layered rendering system that can render the
 				 first x number of entities then stop, allowing a step through of the renderer in realtime.
 				 */
-				var st,
+				var self = this,
+					st,
 					et,
 					updateStart,
 					renderStart,
-					self = ige,
 					ptArr = self._postTick,
 					ptCount = ptArr.length,
 					ptIndex,
@@ -1702,7 +1701,7 @@ appCore.module('IgeEngine', function (
 				self.incrementTime(timeStamp, self._timeScaleLastTimestamp);
 				
 				self._timeScaleLastTimestamp = timeStamp;
-				timeStamp = Math.floor(self._currentTime);
+				timeStamp = Math.floor(igeTime._currentTime);
 				
 				if (igeBase.igeConfig.debug._timing) {
 					st = new Date().getTime();
@@ -1718,41 +1717,41 @@ appCore.module('IgeEngine', function (
 					self._frameAlternator = !self._frameAlternator;
 					
 					// If the engine is not in manual tick mode...
-					if (!ige._useManualTicks) {
+					if (!self._useManualTicks) {
 						// Schedule a new frame
-						requestAnimFrame(self.engineStep);
+						requestAnimFrame(self.engineStep.bind(self));
 					} else {
 						self._manualFrameAlternator = !self._frameAlternator;
 					}
 					
 					// Get the current time in milliseconds
-					self._tickStart = timeStamp;
+					igeTime._tickStart = timeStamp;
 					
 					// Adjust the tickStart value by the difference between
 					// the server and the client clocks (this is only applied
 					// when running as the client - the server always has a
 					// clientNetDiff of zero)
-					self._tickStart -= self._clientNetDiff;
+					igeTime._tickStart -= igeTime._clientNetDiff;
 					
-					if (!self.lastTick) {
+					if (!igeTime._lastTick) {
 						// This is the first time we've run so set some
 						// default values and set the delta to zero
-						self.lastTick = 0;
-						self._tickDelta = 0;
+						igeTime._lastTick = 0;
+						igeTime._tickDelta = 0;
 					} else {
 						// Calculate the frame delta
-						self._tickDelta = self._tickStart - self.lastTick;
+						igeTime._tickDelta = igeTime._tickStart - igeTime._lastTick;
 					}
 					
 					// Check for unborn entities that should be born now
-					unbornQueue = ige._spawnQueue;
+					unbornQueue = self._spawnQueue;
 					unbornCount = unbornQueue.length;
 					for (unbornIndex = unbornCount - 1; unbornIndex >= 0; unbornIndex--) {
 						unbornEntity = unbornQueue[unbornIndex];
 						
-						if (ige._currentTime >= unbornEntity._bornTime) {
+						if (igeTime._currentTime >= unbornEntity._bornTime) {
 							// Now birth this entity
-							unbornEntity.mount(ige.$(unbornEntity._birthMount));
+							unbornEntity.mount(self.$(unbornEntity._birthMount));
 							unbornQueue.splice(unbornIndex, 1);
 						}
 					}
@@ -1762,7 +1761,7 @@ appCore.module('IgeEngine', function (
 						if (igeBase.igeConfig.debug._timing) {
 							updateStart = new Date().getTime();
 							self.updateSceneGraph(ctx);
-							ige._updateTime = new Date().getTime() - updateStart;
+							igeTime._updateTime = new Date().getTime() - updateStart;
 						} else {
 							self.updateSceneGraph(ctx);
 						}
@@ -1774,7 +1773,7 @@ appCore.module('IgeEngine', function (
 							if (igeBase.igeConfig.debug._timing) {
 								renderStart = new Date().getTime();
 								self.renderSceneGraph(ctx);
-								ige._renderTime = new Date().getTime() - renderStart;
+								igeTime._renderTime = new Date().getTime() - renderStart;
 							} else {
 								self.renderSceneGraph(ctx);
 							}
@@ -1783,7 +1782,7 @@ appCore.module('IgeEngine', function (
 								if (igeBase.igeConfig.debug._timing) {
 									renderStart = new Date().getTime();
 									self.renderSceneGraph(ctx);
-									ige._renderTime = new Date().getTime() - renderStart;
+									igeTime._renderTime = new Date().getTime() - renderStart;
 								} else {
 									self.renderSceneGraph(ctx);
 								}
@@ -1799,10 +1798,10 @@ appCore.module('IgeEngine', function (
 					
 					// Record the lastTick value so we can
 					// calculate delta on the next tick
-					self.lastTick = self._tickStart;
-					self._frames++;
-					self._dpf = self._drawCount;
-					self._drawCount = 0;
+					igeTime._lastTick = igeTime._tickStart;
+					igeTime._frames++;
+					igeTime._dpf = igeTime._drawCount;
+					igeTime._drawCount = 0;
 					
 					// Call the input system tick to reset any flags etc
 					self.input.tick();
@@ -1812,14 +1811,14 @@ appCore.module('IgeEngine', function (
 				
 				if (igeBase.igeConfig.debug._timing) {
 					et = new Date().getTime();
-					ige._tickTime = et - st;
+					igeTime._tickTime = et - st;
 				}
 			},
 			
 			updateSceneGraph: function (ctx) {
 				var arr = this._children,
 					arrCount, us, ud,
-					tickDelta = ige._tickDelta;
+					tickDelta = igeTime._tickDelta;
 				
 				// Process any behaviours assigned to the engine
 				this._processUpdateBehaviours(ctx, tickDelta);
@@ -1923,15 +1922,15 @@ appCore.module('IgeEngine', function (
 			},
 			
 			fps: function () {
-				return this._fps;
+				return igeTime._fps;
 			},
 			
 			dpf: function () {
-				return this._dpf;
+				return igeTime._dpf;
 			},
 			
 			dps: function () {
-				return this._dps;
+				return igeTime._dps;
 			},
 			
 			analyseTiming: function () {
@@ -1981,7 +1980,7 @@ appCore.module('IgeEngine', function (
 				
 				if (!obj) {
 					// Set the obj to the main ige instance
-					obj = ige;
+					obj = this;
 				}
 				
 				for (di = 0; di < currentDepth; di++) {
@@ -1991,14 +1990,14 @@ appCore.module('IgeEngine', function (
 				if (igeBase.igeConfig.debug._timing) {
 					timingString = '';
 					
-					timingString += 'T: ' + ige._timeSpentInTick[obj.id()];
-					if (ige._timeSpentLastTick[obj.id()]) {
-						if (typeof(ige._timeSpentLastTick[obj.id()].ms) === 'number') {
-							timingString += ' | LastTick: ' + ige._timeSpentLastTick[obj.id()].ms;
+					timingString += 'T: ' + this._timeSpentInTick[obj.id()];
+					if (this._timeSpentLastTick[obj.id()]) {
+						if (typeof(this._timeSpentLastTick[obj.id()].ms) === 'number') {
+							timingString += ' | LastTick: ' + this._timeSpentLastTick[obj.id()].ms;
 						}
 						
-						if (typeof(ige._timeSpentLastTick[obj.id()].depthSortChildren) === 'number') {
-							timingString += ' | ChildDepthSort: ' + ige._timeSpentLastTick[obj.id()].depthSortChildren;
+						if (typeof(this._timeSpentLastTick[obj.id()].depthSortChildren) === 'number') {
+							timingString += ' | ChildDepthSort: ' + this._timeSpentLastTick[obj.id()].depthSortChildren;
 						}
 					}
 					
@@ -2009,7 +2008,7 @@ appCore.module('IgeEngine', function (
 				
 				currentDepth++;
 				
-				if (obj === ige) {
+				if (obj === this) {
 					// Loop the viewports
 					arr = obj._children;
 					
@@ -2023,14 +2022,14 @@ appCore.module('IgeEngine', function (
 									if (igeBase.igeConfig.debug._timing) {
 										timingString = '';
 										
-										timingString += 'T: ' + ige._timeSpentInTick[arr[arrCount].id()];
-										if (ige._timeSpentLastTick[arr[arrCount].id()]) {
-											if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].ms) === 'number') {
-												timingString += ' | LastTick: ' + ige._timeSpentLastTick[arr[arrCount].id()].ms;
+										timingString += 'T: ' + this._timeSpentInTick[arr[arrCount].id()];
+										if (this._timeSpentLastTick[arr[arrCount].id()]) {
+											if (typeof(this._timeSpentLastTick[arr[arrCount].id()].ms) === 'number') {
+												timingString += ' | LastTick: ' + this._timeSpentLastTick[arr[arrCount].id()].ms;
 											}
 											
-											if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren) === 'number') {
-												timingString += ' | ChildDepthSort: ' + ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren;
+											if (typeof(this._timeSpentLastTick[arr[arrCount].id()].depthSortChildren) === 'number') {
+												timingString += ' | ChildDepthSort: ' + this._timeSpentLastTick[arr[arrCount].id()].depthSortChildren;
 											}
 										}
 										
@@ -2066,7 +2065,7 @@ appCore.module('IgeEngine', function (
 				
 				if (!obj) {
 					// Set the obj to the main ige instance
-					obj = ige;
+					obj = this;
 				}
 				
 				item = {
@@ -2086,7 +2085,7 @@ appCore.module('IgeEngine', function (
 					}
 				}
 				
-				if (obj === ige) {
+				if (obj === this) {
 					// Loop the viewports
 					arr = obj._children;
 					
@@ -2174,9 +2173,9 @@ appCore.module('IgeEngine', function (
 				if (child.IgeViewport) {
 					// The first mounted viewport gets set as the current
 					// one before any rendering is done
-					if (!ige._currentViewport) {
-						ige._currentViewport = child;
-						ige._currentCamera = child.camera;
+					if (!this._currentViewport) {
+						this._currentViewport = child;
+						this._currentCamera = child.camera;
 					}
 				}
 				
@@ -2312,11 +2311,11 @@ appCore.module('IgeEngine', function (
 					// Check for non-universal route (both client and server have different
 					// definitions for the same route)
 					if (definition.client && definition.server) {
-						if (ige.isClient) {
+						if (self.isClient) {
 							definition = definition.client;
 						}
 						
-						if (ige.isServer) {
+						if (self.isServer) {
 							definition = definition.server;
 						}
 					}
@@ -2337,8 +2336,8 @@ appCore.module('IgeEngine', function (
 						routeSteps.push(function (finished) {
 							routeData.texturesModule.emit('loading');
 							appCore.run([definition.textures, function (textures) {
-								if (!ige.texturesLoaded()) {
-									ige.on('texturesLoaded', function () {
+								if (!self.texturesLoaded()) {
+									self.on('texturesLoaded', function () {
 										routeData.texturesModule.emit('loaded');
 										finished(false);
 									});

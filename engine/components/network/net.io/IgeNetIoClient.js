@@ -82,7 +82,7 @@ var IgeNetIoClient = {
 
 							// Setup time scale and current time
 							ige.timeScale(parseFloat(data.ts));
-							ige._currentTime = parseInt(data.ct);
+							igeTime._currentTime = parseInt(data.ct);
 
 							// Now fire the start() callback
 							if (typeof(self._startCallback) === 'function') {

@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTranslateComponent, IgeEditorRotateComponent) {
+appCore.module('IgeEditorComponent', function (igeTime, IgeEventingClass, IgeEditorTranslateComponent, IgeEditorRotateComponent) {
 	/**
 	 * The IGE interactive editor component. Allows modification of a simulation
 	 * in realtime via a GUI.
@@ -153,12 +153,12 @@ appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTransl
 							// Observe changes to the engine to update our display
 							setInterval(function () {
 								// Update the stats counters
-								$('#editorFps').html(ige._fps + ' fps');
-								$('#editorDps').html(ige._dps + ' dps');
-								$('#editorDpf').html(ige._dpf + ' dpf');
-								$('#editorUd').html(ige._updateTime + ' ud/ms');
-								$('#editorRd').html(ige._renderTime + ' rd/ms');
-								$('#editorTd').html(ige._tickTime + ' td/ms');
+								$('#editorFps').html(igeTime._fps + ' fps');
+								$('#editorDps').html(igeTime._dps + ' dps');
+								$('#editorDpf').html(igeTime._dpf + ' dpf');
+								$('#editorUd').html(igeTime._updateTime + ' ud/ms');
+								$('#editorRd').html(igeTime._renderTime + ' rd/ms');
+								$('#editorTd').html(igeTime._tickTime + ' td/ms');
 							}, 1000);
 							
 							// Add auto-backing

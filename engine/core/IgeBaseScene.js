@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeBaseScene', function (IgeSceneGraph, IgeScene2d, IgeViewport) {
+appCore.module('IgeBaseScene', function (ige, IgeSceneGraph, IgeScene2d, IgeViewport) {
 	/**
 	 * When loaded into memory using ige.addGraph('IgeBaseScene') will create
 	 * the scene "baseScene" and the viewport "vp1" that are used in almost all

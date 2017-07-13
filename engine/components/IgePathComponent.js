@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgePathComponent', function (IgeEventingClass, IgePoint3d) {
+appCore.module('IgePathComponent', function (igeTime, IgeEventingClass, IgePoint3d) {
 	/**
 	 * Handles entity path traversal.
 	 */
@@ -359,7 +359,7 @@ appCore.module('IgePathComponent', function (IgeEventingClass, IgePoint3d) {
 			if (!this._active) {
 				this._active = true;
 				this._finished = false;
-				this._startTime = startTime || ige._currentTime;
+				this._startTime = startTime || igeTime._currentTime;
 				
 				this._calculatePathData();
 				this.emit('started', this._entity);
@@ -385,7 +385,7 @@ appCore.module('IgePathComponent', function (IgeEventingClass, IgePoint3d) {
 		pause: function () {
 			this._active = false;
 			this._paused = true;
-			this._pauseTime = ige._currentTime;
+			this._pauseTime = igeTime._currentTime;
 			
 			this.emit('paused', this._entity);
 			return this;
@@ -518,7 +518,7 @@ appCore.module('IgePathComponent', function (IgeEventingClass, IgePoint3d) {
 		 */
 		_updateBehaviour: function (ctx) {
 			var path = this.path,
-				currentTime = ige._currentTime,
+				currentTime = igeTime._currentTime,
 				progressTime = currentTime - path._startTime;
 			
 			// Check if we should be processing paths

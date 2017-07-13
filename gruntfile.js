@@ -7,8 +7,30 @@ var util = require('util'),
 
 module.exports = function(grunt) {
 	grunt.loadNpmTasks("grunt-browserify");
+	grunt.loadNpmTasks('grunt-contrib-jshint');
 
 	grunt.initConfig({
+		"jshint": {
+			"core": {
+				"files": {
+					"src": [
+						"engine/core/*.js"
+					]
+				}
+			},
+			"components": {
+				"files": {
+					"src": [
+						"engine/components/**/*.js",
+						"engine/ui/**/*.js"
+					]
+				}
+			},
+			options: {
+				jshintrc: '.jshintrc'
+			}
+		},
+		
 		"browserify": {
 			"all": {
 				src: [

@@ -10,6 +10,7 @@ var igeCoreConfig = {
 		['c', 'IgeStackTrace', 'components/stackTrace/lib_stack.js'],
 		/* The IGE Core Files */
 		['csap', 'IgeBase', 'core/IgeBase.js'],
+		['csap', 'IgeTime', 'core/IgeTime.js'],
 		['csap', 'IgeClass', 'core/IgeClass.js'],
 		['csap', 'IgeEventingClass', 'core/IgeEventingClass.js'],
 		/* Data Classes */
@@ -66,6 +67,7 @@ var igeCoreConfig = {
 		['csap', 'IgeUiPositionExtension', 'extensions/IgeUiPositionExtension.js'],
 		['csap', 'IgeUiStyleExtension', 'extensions/IgeUiStyleExtension.js'],
 		/* Main Engine Classes */
+		['sap', 'requestAnimFrame', 'core/RequestAnimFrame.js'],
 		['csap', 'IgeFSM', 'core/IgeFSM.js'],
 		['csap', 'IgeSceneGraph', 'core/IgeSceneGraph.js'],
 		['csap', 'IgeBaseScene', 'core/IgeBaseScene.js'],

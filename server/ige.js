@@ -1,3 +1,16 @@
+"use strict";
+
+var appCore = require('irrelon-appcore'),
+	modulePath,
+	igeCoreConfig,
+	arr,
+	arrCount,
+	arrIndex,
+	arrItem,
+	itemJs,
+	argParse,
+	args;
+
 console.log('Executing IGE Under Node.js Version ' + process.version);
 
 // Set a global variable for the location of
@@ -7,15 +20,12 @@ modulePath = '../server/node_modules/';
 // Load the CoreConfig.js file
 igeCoreConfig = require('../engine/CoreConfig.js');
 
-var arr = igeCoreConfig.include,
-	arrCount = arr.length,
-	arrIndex,
-	arrItem,
-	itemJs;
+arr = igeCoreConfig.include;
+arrCount = arr.length;
 
 // Check if we are deploying, if so don't include core modules
-var argParse = require("node-arguments").process,
-	args = argParse(process.argv, {separator:'-'});
+argParse = require("node-arguments").process;
+args = argParse(process.argv, {separator: '-'});
 
 if (!args['-deploy']) {
 	// Loop the igeCoreConfig object's include array
@@ -23,7 +33,7 @@ if (!args['-deploy']) {
 	for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
 		arrItem = arr[arrIndex];
 		if (arrItem[0].indexOf('s') > -1) {
-			itemJs = arrItem[1] + ' = ' + 'require("../engine/' + arrItem[2] + '")';
+			itemJs = 'var ' + arrItem[1] + ' = ' + 'require("../engine/' + arrItem[2] + '")';
 			// Check if there is a specific object we want to use from the
 			// module we are loading
 			if (arrItem[3]) {
@@ -31,17 +41,17 @@ if (!args['-deploy']) {
 			} else {
 				itemJs += ';';
 			}
+			console.log('Executing: ' + itemJs);
+			
 			eval(itemJs);
 		}
 	}
-} else {
-	// Just include the basics to run IgeNode
-	IgeBase = require('../engine/core/IgeBase');
-	IgeClass = require('../engine/core/IgeClass');
 }
 
-// Include the control class
-IgeNode = require('./IgeNode');
+appCore.module('ige', function (IgeEngine) {
+	return new IgeEngine();
+});
 
-// Start the app
-var igeNode = new IgeNode();
+if (typeof module !== 'undefined') {
+	module.exports = appCore;
+}

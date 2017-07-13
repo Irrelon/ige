@@ -11,3 +11,7 @@ appCore.module('ige', function (IgeEngine) {
 	
 	return ige;
 });
+
+if (typeof module !== undefined) {
+	module.exports = appCore;
+}

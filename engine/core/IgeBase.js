@@ -2,6 +2,12 @@
 
 var appCore = require('irrelon-appcore');
 
+/**
+ * IgeBase is a module that configures a bunch of JS native type
+ * extensions and must never have any other module dependencies
+ * so that you can be absolutely sure if you include it, you will
+ * not have circular dependency issues.
+ */
 appCore.module('igeBase', function () {
 	var IgeBase = function () {
 		// When setting a new version please use this format:
@@ -10,7 +16,7 @@ appCore.module('igeBase', function () {
 		// For example, to tag version 1.1.2 on 25th April 2013
 		// as the third revision of the day:
 		// v1.1.2@2013-04-25.003
-		this.igeVersion = 'v2.0.0@2017-07-10.001';
+		this._version = 'v2.0.0@2017-07-10.001';
 		
 		// Define the global storage object for classes
 		this.igeClassStore = {};
@@ -28,16 +34,6 @@ appCore.module('igeBase', function () {
 					if (val !== undefined) {
 						this._enabled = val;
 						
-						if (!val) {
-							this._timing = false;
-							
-							// Check if the engine exists
-							if (ige) {
-								// Turn off stats display in the engine
-								ige.showStats(0);
-							}
-						}
-						
 						return this;
 					}
 					
@@ -49,6 +45,14 @@ appCore.module('igeBase', function () {
 		if (this.igeConfig.debug._node) {
 			this.igeConfig.debug._util = require('util');
 		}
+	};
+	
+	/**
+	 * Gets the engine build version.
+	 * @returns {String}
+	 */
+	IgeBase.prototype.version = function () {
+		return this._version;
 	};
 	
 	/**
@@ -313,7 +317,7 @@ appCore.module('igeBase', function () {
 					callFunc();
 				}, 1);
 			});
-		}
+		};
 		
 		callFunc();
 	};
@@ -371,7 +375,7 @@ appCore.module('igeBase', function () {
 			});
 			
 			func.apply(func, waterfallArgs);
-		}
+		};
 		
 		callFunc();
 	};
@@ -606,7 +610,7 @@ appCore.module('igeBase', function () {
 	 * Turn off the right-click default behaviour in the browser for the passed element.
 	 * @param obj
 	 */
-	var disableContextMenu = function (obj) {
+	IgeBase.prototype.disableContextMenu = function (obj) {
 		if (obj !== null) {
 			//this.log('Disabling context menus for ' + obj, 'info');
 			obj.oncontextmenu = function () {
@@ -643,41 +647,6 @@ appCore.module('igeBase', function () {
 			}
 			return -1;
 		};
-	}
-	
-	if (typeof(window) !== 'undefined') {
-		/**
-		 * A cross-browser/platform requestAnimationFrame method.
-		 */
-		/*window.requestAnimFrame = (function(){
-		 return function(callback, element){
-		 setTimeout(function () { callback(new Date().getTime()); }, 1000 / 60);
-		 };
-		 }());*/
-		
-		window.requestAnimFrame = (function () {
-			return window.requestAnimationFrame ||
-				window.webkitRequestAnimationFrame ||
-				window.mozRequestAnimationFrame ||
-				window.oRequestAnimationFrame ||
-				window.msRequestAnimationFrame ||
-				function (callback, element) {
-					setTimeout(function () {
-						callback(new Date().getTime());
-					}, 1000 / 60);
-				};
-		}());
-	} else {
-		/**
-		 * A cross-browser/platform requestAnimationFrame method.
-		 */
-		window.requestAnimFrame = (function () {
-			return function (callback, element) {
-				setTimeout(function () {
-					callback(new Date().getTime());
-				}, 1000 / 60);
-			};
-		}());
 	}
 	
 	// Check console method existence

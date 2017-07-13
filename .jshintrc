@@ -1,0 +1,23 @@
+{
+	"browserify": true,
+	"node": true,
+	"white": true,
+	"onevar": true,
+	"nonew": true,
+	"jquery": true,
+	"curly": true,
+	"latedef": true,
+	"unused": "vars",
+	"noarg": true,
+	"forin": true,
+	"noempty": true,
+	"eqeqeq": true,
+	"strict": true,
+	"undef": true,
+	"bitwise": true,
+	"browser": true,
+	"futurehostile": true,
+	"predef": [
+		"ImageData"
+	]
+}

@@ -65,7 +65,7 @@ var Client = IgeClass.extend({
 								console.log('afterStep', step);
 							})
 							.repeatMode(1, -1)
-							.startTime(ige._currentTime + i)
+							.startTime(igeTime._currentTime + i)
 							.start();
 
 						self.obj[i].tween()

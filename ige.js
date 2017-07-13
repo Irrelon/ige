@@ -16,7 +16,7 @@ appCore.module('IgeCuboidSmartTexture', function () {
 	
 	return IgeCuboidSmartTexture;
 });
-},{"irrelon-appcore":84}],2:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],2:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -168,7 +168,7 @@ appCore.module('IgeFontSmartTexture', function () {
 	
 	return IgeFontSmartTexture;
 });
-},{"irrelon-appcore":84}],3:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],3:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -374,12 +374,12 @@ appCore.module('IgeTileMap2dSmartTexture', function (IgePoint2d) {
 	
 	return IgeTileMap2dSmartTexture;
 });
-},{"irrelon-appcore":84}],4:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],4:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeAnimationComponent', function (IgeEventingClass) {
+appCore.module('IgeAnimationComponent', function (igeTime, IgeEventingClass) {
 	/**
 	 * The animation component class. Handles defining and controlling
 	 * frame-based animations based on cells from a texture.
@@ -681,7 +681,7 @@ appCore.module('IgeAnimationComponent', function (IgeEventingClass) {
 				if (anim) {
 					anim.currentDelta = 0;
 					anim.currentLoop = 0;
-					anim.startTime = ige._currentTime;
+					anim.startTime = igeTime._currentTime;
 					
 					this._anim = anim;
 					this._animId = animId;
@@ -768,7 +768,7 @@ appCore.module('IgeAnimationComponent', function (IgeEventingClass) {
 			var self = this.animation;
 			
 			// Just in case someone forgets to pass it in their update call!
-			tickDelta = tickDelta || ige._tickDelta;
+			tickDelta = tickDelta || igeTime._tickDelta;
 			
 			if (self._anim) {
 				var anim = self._anim,
@@ -846,7 +846,7 @@ appCore.module('IgeAnimationComponent', function (IgeEventingClass) {
 	
 	return IgeAnimationComponent;
 });
-},{"irrelon-appcore":84}],5:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],5:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -1366,7 +1366,7 @@ appCore.module('IgeEntityManagerComponent', function (IgeClass, IgePoint3d, IgeR
 	
 	return IgeEntityManagerComponent;
 });
-},{"irrelon-appcore":84}],6:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],6:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -1564,7 +1564,7 @@ appCore.module('IgeGamePadComponent', function (IgeEventingClass) {
 	
 	return IgeGamePadComponent;
 });
-},{"irrelon-appcore":84}],7:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],7:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2322,7 +2322,7 @@ appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
 	
 	return IgeInputComponent;
 });
-},{"irrelon-appcore":84}],8:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],8:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2571,7 +2571,7 @@ appCore.module('IgeMousePanComponent', function (IgeEventingClass) {
 	
 	return IgeMousePanComponent;
 });
-},{"irrelon-appcore":84}],9:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],9:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2708,12 +2708,12 @@ appCore.module('IgeMouseZoomComponent', function (IgeEventingClass) {
 	
 	return IgeMouseZoomComponent;
 });
-},{"irrelon-appcore":84}],10:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],10:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgePathComponent', function (IgeEventingClass, IgePoint3d) {
+appCore.module('IgePathComponent', function (igeTime, IgeEventingClass, IgePoint3d) {
 	/**
 	 * Handles entity path traversal.
 	 */
@@ -3070,7 +3070,7 @@ appCore.module('IgePathComponent', function (IgeEventingClass, IgePoint3d) {
 			if (!this._active) {
 				this._active = true;
 				this._finished = false;
-				this._startTime = startTime || ige._currentTime;
+				this._startTime = startTime || igeTime._currentTime;
 				
 				this._calculatePathData();
 				this.emit('started', this._entity);
@@ -3096,7 +3096,7 @@ appCore.module('IgePathComponent', function (IgeEventingClass, IgePoint3d) {
 		pause: function () {
 			this._active = false;
 			this._paused = true;
-			this._pauseTime = ige._currentTime;
+			this._pauseTime = igeTime._currentTime;
 			
 			this.emit('paused', this._entity);
 			return this;
@@ -3229,7 +3229,7 @@ appCore.module('IgePathComponent', function (IgeEventingClass, IgePoint3d) {
 		 */
 		_updateBehaviour: function (ctx) {
 			var path = this.path,
-				currentTime = ige._currentTime,
+				currentTime = igeTime._currentTime,
 				progressTime = currentTime - path._startTime;
 			
 			// Check if we should be processing paths
@@ -3565,7 +3565,7 @@ appCore.module('IgePathComponent', function (IgeEventingClass, IgePoint3d) {
 	
 	return IgePathComponent;
 });
-},{"irrelon-appcore":84}],11:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],11:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3757,12 +3757,12 @@ appCore.module('IgeTiledComponent', function (IgeClass, IgeCellSheet, IgeTileMap
 	
 	return IgeTiledComponent;
 });
-},{"irrelon-appcore":84}],12:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],12:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeTimeComponent', function (IgeEventingClass) {
+appCore.module('IgeTimeComponent', function (igeTime, IgeEventingClass) {
 	var IgeTimeComponent = IgeEventingClass.extend({
 		classId: 'IgeTimeComponent',
 		componentId: 'time',
@@ -3805,11 +3805,12 @@ appCore.module('IgeTimeComponent', function (IgeEventingClass) {
 			
 			return this;
 		},
-		
+		// TODO cannot use ige here - need to use appCore instead and ige.time === this?
+		// perhaps we need to brak timing out into its own module?
 		_update: function () {
 			// Get the ige tick delta and tell our timers / intervals that an update has occurred
 			var self = ige.time,
-				delta = ige._tickDelta,
+				delta = igeTime._tickDelta,
 				arr = self._timers,
 				arrCount = arr.length;
 			
@@ -3861,12 +3862,12 @@ appCore.module('IgeTimeComponent', function (IgeEventingClass) {
 	
 	return IgeTimeComponent;
 });
-},{"irrelon-appcore":84}],13:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],13:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeTweenComponent', function (IgeClass) {
+appCore.module('IgeTweenComponent', function (igeTime, IgeClass) {
 	/**
 	 * This component is already included in the IgeEngine (ige)
 	 * instance and is not designed for use in any other way!
@@ -3893,7 +3894,7 @@ appCore.module('IgeTweenComponent', function (IgeClass) {
 		 * @return {Number} The index of the added tween or -1 on error.
 		 */
 		start: function (tween) {
-			if (tween._startTime > ige._currentTime) {
+			if (tween._startTime > igeTime._currentTime) {
 				// The tween is scheduled for later
 				// Push the tween into the IgeTweenComponent's _tweens array
 				this._tweens.push(tween);
@@ -3934,12 +3935,12 @@ appCore.module('IgeTweenComponent', function (IgeClass) {
 				if (tween._currentStep === 0 && !newTime) {
 					// Because we are on step zero we can check for a start time
 					if (tween._startTime === undefined) {
-						tween._startTime = ige._currentTime;
+						tween._startTime = igeTime._currentTime;
 					}
 				} else {
 					// We're not on step zero anymore so the new step start time
 					// is NOW!
-					tween._startTime = ige._currentTime;
+					tween._startTime = igeTime._currentTime;
 				}
 				
 				durationMs = step.durationMs ? step.durationMs : tween._durationMs;
@@ -4031,7 +4032,7 @@ appCore.module('IgeTweenComponent', function (IgeClass) {
 		update: function (ctx) {
 			var thisTween = this.tween;
 			if (thisTween._tweens && thisTween._tweens.length) {
-				var currentTime = ige._tickStart,
+				var currentTime = igeTime._tickStart,
 					tweens = thisTween._tweens,
 					tweenCount = tweens.length,
 					tween,
@@ -4431,7 +4432,7 @@ appCore.module('IgeTweenComponent', function (IgeClass) {
 	
 	return IgeTweenComponent;
 });
-},{"irrelon-appcore":84}],14:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],14:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4597,12 +4598,12 @@ appCore.module('IgeUiManagerComponent', function (IgeClass) {
 	
 	return IgeUiManagerComponent;
 });
-},{"irrelon-appcore":84}],15:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],15:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeVelocityComponent', function (IgeClass, IgePoint3d) {
+appCore.module('IgeVelocityComponent', function (igeTime, IgeClass, IgePoint3d) {
 	// TODO: Doc this class!
 	var IgeVelocityComponent = IgeClass.extend({
 		classId: 'IgeVelocityComponent',
@@ -4788,7 +4789,7 @@ appCore.module('IgeVelocityComponent', function (IgeClass, IgePoint3d) {
 		},
 		
 		tick: function (ctx) {
-			var delta = ige._tickDelta,
+			var delta = igeTime._tickDelta,
 				vel = this._velocity,
 				x, y, z;
 			
@@ -4809,7 +4810,7 @@ appCore.module('IgeVelocityComponent', function (IgeClass, IgePoint3d) {
 	
 	return IgeVelocityComponent;
 });
-},{"irrelon-appcore":84}],16:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],16:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4936,7 +4937,7 @@ appCore.module('IgeAudio', function (IgeEventingClass) {
 	
 	return IgeAudio;
 });
-},{"irrelon-appcore":84}],17:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],17:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5035,7 +5036,7 @@ appCore.module('IgeAudioComponent', function (IgeEventingClass, IgeAudio) {
 	
 	return IgeAudioComponent;
 });
-},{"irrelon-appcore":84}],18:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],18:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5102,12 +5103,12 @@ appCore.module('IgeCocoonJsComponent', function (IgeEventingClass) {
 	
 	return IgeCocoonJsComponent;
 });
-},{"irrelon-appcore":84}],19:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],19:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTranslateComponent, IgeEditorRotateComponent) {
+appCore.module('IgeEditorComponent', function (igeTime, IgeEventingClass, IgeEditorTranslateComponent, IgeEditorRotateComponent) {
 	/**
 	 * The IGE interactive editor component. Allows modification of a simulation
 	 * in realtime via a GUI.
@@ -5258,12 +5259,12 @@ appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTransl
 							// Observe changes to the engine to update our display
 							setInterval(function () {
 								// Update the stats counters
-								$('#editorFps').html(ige._fps + ' fps');
-								$('#editorDps').html(ige._dps + ' dps');
-								$('#editorDpf').html(ige._dpf + ' dpf');
-								$('#editorUd').html(ige._updateTime + ' ud/ms');
-								$('#editorRd').html(ige._renderTime + ' rd/ms');
-								$('#editorTd').html(ige._tickTime + ' td/ms');
+								$('#editorFps').html(igeTime._fps + ' fps');
+								$('#editorDps').html(igeTime._dps + ' dps');
+								$('#editorDpf').html(igeTime._dpf + ' dpf');
+								$('#editorUd').html(igeTime._updateTime + ' ud/ms');
+								$('#editorRd').html(igeTime._renderTime + ' rd/ms');
+								$('#editorTd').html(igeTime._tickTime + ' td/ms');
 							}, 1000);
 							
 							// Add auto-backing
@@ -5815,7 +5816,7 @@ appCore.module('IgeEditorComponent', function (IgeEventingClass, IgeEditorTransl
 	
 	return IgeEditorComponent;
 });
-},{"irrelon-appcore":84}],20:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],20:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6032,7 +6033,7 @@ appCore.module('IgeEditorRotateComponent', function (IgeEventingClass) {
 	
 	return IgeEditorRotateComponent;
 });
-},{"irrelon-appcore":84}],21:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],21:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6299,7 +6300,7 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 	return IgeEditorTranslateComponent;
 });
 
-},{"irrelon-appcore":84}],22:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],22:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6308,7 +6309,7 @@ appCore.module('$game', function () {
 	// Return a blank object that can be shared around the application
 	return {};
 });
-},{"irrelon-appcore":84}],23:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],23:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6339,7 +6340,7 @@ appCore.module('$textures', function () {
 			texture.destroy();
 			delete this._store[name];
 		}
-	}
+	};
 	
 	IgeTextureStore.prototype.removeGroup = function (group) {
 		var i;
@@ -6349,7 +6350,7 @@ appCore.module('$textures', function () {
 				this.remove(i);
 			}
 		}
-	}
+	};
 	
 	IgeTextureStore.prototype.get = function (name) {
 		var tex = this._store[name];
@@ -6362,7 +6363,9 @@ appCore.module('$textures', function () {
 	
 	return new IgeTextureStore();
 });
-},{"irrelon-appcore":84}],24:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],24:[function(_dereq_,module,exports){
+"use strict";
+
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeArray', function (IgeEntity) {
@@ -6379,7 +6382,7 @@ appCore.module('IgeArray', function (IgeEntity) {
 						for (var i = 0; i < c; i++) {
 							this[i][methodName].apply(this[i], arguments);
 						}
-					}
+					};
 				}(methodName);
 			}
 		}
@@ -6387,11 +6390,17 @@ appCore.module('IgeArray', function (IgeEntity) {
 	
 	return IgeArray;
 });
-},{"irrelon-appcore":84}],25:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],25:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
+/**
+ * IgeBase is a module that configures a bunch of JS native type
+ * extensions and must never have any other module dependencies
+ * so that you can be absolutely sure if you include it, you will
+ * not have circular dependency issues.
+ */
 appCore.module('igeBase', function () {
 	var IgeBase = function () {
 		// When setting a new version please use this format:
@@ -6400,7 +6409,7 @@ appCore.module('igeBase', function () {
 		// For example, to tag version 1.1.2 on 25th April 2013
 		// as the third revision of the day:
 		// v1.1.2@2013-04-25.003
-		this.igeVersion = 'v1.6.0@2015-04-29.001';
+		this._version = 'v2.0.0@2017-07-10.001';
 		
 		// Define the global storage object for classes
 		this.igeClassStore = {};
@@ -6418,16 +6427,6 @@ appCore.module('igeBase', function () {
 					if (val !== undefined) {
 						this._enabled = val;
 						
-						if (!val) {
-							this._timing = false;
-							
-							// Check if the engine exists
-							if (ige) {
-								// Turn off stats display in the engine
-								ige.showStats(0);
-							}
-						}
-						
 						return this;
 					}
 					
@@ -6439,6 +6438,14 @@ appCore.module('igeBase', function () {
 		if (this.igeConfig.debug._node) {
 			this.igeConfig.debug._util = _dereq_('util');
 		}
+	};
+	
+	/**
+	 * Gets the engine build version.
+	 * @returns {String}
+	 */
+	IgeBase.prototype.version = function () {
+		return this._version;
 	};
 	
 	/**
@@ -6703,7 +6710,7 @@ appCore.module('igeBase', function () {
 					callFunc();
 				}, 1);
 			});
-		}
+		};
 		
 		callFunc();
 	};
@@ -6761,7 +6768,7 @@ appCore.module('igeBase', function () {
 			});
 			
 			func.apply(func, waterfallArgs);
-		}
+		};
 		
 		callFunc();
 	};
@@ -6996,7 +7003,7 @@ appCore.module('igeBase', function () {
 	 * Turn off the right-click default behaviour in the browser for the passed element.
 	 * @param obj
 	 */
-	var disableContextMenu = function (obj) {
+	IgeBase.prototype.disableContextMenu = function (obj) {
 		if (obj !== null) {
 			//this.log('Disabling context menus for ' + obj, 'info');
 			obj.oncontextmenu = function () {
@@ -7033,41 +7040,6 @@ appCore.module('igeBase', function () {
 			}
 			return -1;
 		};
-	}
-	
-	if (typeof(window) !== 'undefined') {
-		/**
-		 * A cross-browser/platform requestAnimationFrame method.
-		 */
-		/*window.requestAnimFrame = (function(){
-		 return function(callback, element){
-		 setTimeout(function () { callback(new Date().getTime()); }, 1000 / 60);
-		 };
-		 }());*/
-		
-		window.requestAnimFrame = (function () {
-			return window.requestAnimationFrame ||
-				window.webkitRequestAnimationFrame ||
-				window.mozRequestAnimationFrame ||
-				window.oRequestAnimationFrame ||
-				window.msRequestAnimationFrame ||
-				function (callback, element) {
-					setTimeout(function () {
-						callback(new Date().getTime());
-					}, 1000 / 60);
-				};
-		}());
-	} else {
-		/**
-		 * A cross-browser/platform requestAnimationFrame method.
-		 */
-		window.requestAnimFrame = (function () {
-			return function (callback, element) {
-				setTimeout(function () {
-					callback(new Date().getTime());
-				}, 1000 / 60);
-			};
-		}());
 	}
 	
 	// Check console method existence
@@ -7144,12 +7116,12 @@ appCore.module('igeBase').run(function (IgeTween) {
 		return newTween;
 	};
 });
-},{"irrelon-appcore":84,"util":91}],26:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86,"util":93}],26:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeBaseScene', function (IgeSceneGraph, IgeScene2d, IgeViewport) {
+appCore.module('IgeBaseScene', function (ige, IgeSceneGraph, IgeScene2d, IgeViewport) {
 	/**
 	 * When loaded into memory using ige.addGraph('IgeBaseScene') will create
 	 * the scene "baseScene" and the viewport "vp1" that are used in almost all
@@ -7199,7 +7171,7 @@ appCore.module('IgeBaseScene', function (IgeSceneGraph, IgeScene2d, IgeViewport)
 	
 	return IgeBaseScene;
 });
-},{"irrelon-appcore":84}],27:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],27:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7579,7 +7551,7 @@ appCore.module('IgeCamera', function (IgeEntity) {
 	
 	return IgeCamera;
 });
-},{"irrelon-appcore":84}],28:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],28:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7720,7 +7692,7 @@ appCore.module('IgeCellSheet', function (IgeTexture) {
 	
 	return IgeCellSheet;
 });
-},{"irrelon-appcore":84}],29:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],29:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeClass', function (igeBase) {
@@ -8171,7 +8143,7 @@ appCore.module('IgeClass', function (igeBase) {
 	
 	return IgeClass;
 });
-},{"irrelon-appcore":84}],30:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],30:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -8199,7 +8171,7 @@ appCore.module('IgeCollisionMap2d', function (IgeEntity, IgeMap2d) {
 	
 	return IgeCollisionMap2d;
 });
-},{"irrelon-appcore":84}],31:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],31:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -8218,7 +8190,7 @@ appCore.module('IgeDummyCanvas', function (IgeDummyContext) {
 	
 	return IgeDummyCanvas;
 });
-},{"irrelon-appcore":84}],32:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],32:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -8251,13 +8223,15 @@ appCore.module('IgeDummyContext', function () {
 	
 	return IgeDummyContext;
 });
-},{"irrelon-appcore":84}],33:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],33:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeEngine', function (
 	igeBase,
+	igeTime,
+	requestAnimFrame,
 	IgeEntity,
 	IgeCocoonJsComponent,
 	IgeInputComponent,
@@ -8274,6 +8248,8 @@ appCore.module('IgeEngine', function (
 			classId: 'IgeEngine',
 			
 			init: function () {
+				var self = this;
+				
 				// Deal with some debug settings first
 				if (igeBase.igeConfig.debug) {
 					if (!igeBase.igeConfig.debug._enabled) {
@@ -8289,6 +8265,10 @@ appCore.module('IgeEngine', function (
 				this.basePath = '';
 				this._currentRoutePath = '';
 				this._routeQueue = [];
+				this._route = {};
+				
+				// Expose appCore instance
+				this.appCore = appCore;
 				
 				// Determine the environment we are executing in
 				this.isServer = (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined' && typeof window === 'undefined');
@@ -8300,7 +8280,7 @@ appCore.module('IgeEngine', function (
 				
 				// Output our header
 				console.log('------------------------------------------------------------------------------');
-				console.log('* Powered by the Isogenic Game Engine ' + igeBase.igeVersion + '                  *');
+				console.log('* Powered by the Isogenic Game Engine ' + igeBase.version() + '                  *');
 				console.log('* (C)opyright ' + new Date().getFullYear() + ' Irrelon Software Limited                                  *');
 				console.log('* http://www.isogenicengine.com                                              *');
 				console.log('------------------------------------------------------------------------------');
@@ -8346,28 +8326,16 @@ appCore.module('IgeEngine', function (
 				this._debugEvents = {}; // Holds debug event booleans for named events
 				this._renderContext = '2d'; // The rendering context, default is 2d
 				this._renderMode = this._renderModes[this._renderContext]; // Integer representation of the render context
-				this._tickTime = 'NA'; // The time the tick took to process
-				this._updateTime = 'NA'; // The time the tick update section took to process
-				this._renderTime = 'NA'; // The time the tick render section took to process
-				this._tickDelta = 0; // The time between the last tick and the current one
-				this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 				this._state = 0; // Currently stopped
 				this._textureImageStore = {};
 				this._texturesLoading = 0; // Holds a count of currently loading textures
 				this._texturesTotal = 0; // Holds total number of textures loading / loaded
 				this._dependencyQueue = []; // Holds an array of functions that must all return true for the engine to start
-				this._drawCount = 0; // Holds the number of draws since the last frame (calls to drawImage)
-				this._dps = 0; // Number of draws that occurred last tick
-				this._dpf = 0;
-				this._frames = 0; // Number of frames looped through since last second tick
-				this._fps = 0; // Number of frames per second
-				this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
 				this._frameAlternator = false; // Is set to the boolean not of itself each frame
 				this._viewportDepth = false;
 				this._mousePos = new IgePoint3d(0, 0, 0);
 				this._currentViewport = null; // Set in IgeViewport.js tick(), holds the current rendering viewport
 				this._currentCamera = null; // Set in IgeViewport.js tick(), holds the current rendering viewport's camera
-				this._currentTime = 0; // The current engine time
 				this._globalSmoothing = false; // Determines the default smoothing setting for new textures
 				this._register = {
 					'ige': this
@@ -8393,11 +8361,11 @@ appCore.module('IgeEngine', function (
 				this.dependencyTimeout(30000); // Wait 30 seconds to load all dependencies then timeout
 				
 				// Add the textures loaded dependency
-				this._dependencyQueue.push(this.texturesLoaded);
+				this._dependencyQueue.push(this.texturesLoaded.bind(self));
 				//this._dependencyQueue.push(this.canvasReady);
 				
 				// Start a timer to record every second of execution
-				this._secondTimer = setInterval(this._secondTick, 1000);
+				this._secondTimer = setInterval(this._secondTick.bind(self), 1000);
 			},
 			
 			/**
@@ -8799,7 +8767,7 @@ appCore.module('IgeEngine', function (
 			},
 			
 			debug: function (eventName) {
-				if (this._debugEvents[eventName] === true || this._debugEvents[eventName] === ige._frames) {
+				if (this._debugEvents[eventName] === true || this._debugEvents[eventName] === igeTime._frames) {
 					debugger;
 				}
 			},
@@ -8813,7 +8781,7 @@ appCore.module('IgeEngine', function (
 			},
 			
 			triggerDebugEventFrame: function (eventName) {
-				this._debugEvents[eventName] = ige._frames;
+				this._debugEvents[eventName] = igeTime._frames;
 			},
 			
 			/**
@@ -8924,6 +8892,7 @@ appCore.module('IgeEngine', function (
 				
 				while (arrCount--) {
 					if (!this._dependencyQueue[arrCount]()) {
+						console.log(this._dependencyQueue[arrCount].toString());
 						return false;
 					}
 				}
@@ -9050,7 +9019,7 @@ appCore.module('IgeEngine', function (
 			 * @return {Boolean}
 			 */
 			texturesLoaded: function () {
-				return ige._texturesLoading === 0;
+				return this._texturesLoading === 0;
 			},
 			
 			/**
@@ -9145,12 +9114,14 @@ appCore.module('IgeEngine', function (
 			 * @param callback
 			 */
 			start: function (callback) {
-				if (!ige._state) {
+				var self = this;
+				
+				if (!this._state) {
 					// Check if we are able to start based upon any registered dependencies
-					if (ige.dependencyCheck()) {
+					if (this.dependencyCheck()) {
 						// Start the engine
-						ige.log('Starting engine...');
-						ige._state = 1;
+						this.log('Starting engine...');
+						this._state = 1;
 						
 						// Check if we have a DOM, that there is an igeLoading element
 						// and if so, remove it from the DOM now
@@ -9165,9 +9136,9 @@ appCore.module('IgeEngine', function (
 							}
 						}
 						
-						requestAnimFrame(ige.engineStep);
+						requestAnimFrame(this.engineStep.bind(this));
 						
-						ige.log('Engine started');
+						this.log('Engine started');
 						
 						// Fire the callback method if there was one
 						if (typeof(callback) === 'function') {
@@ -9178,19 +9149,19 @@ appCore.module('IgeEngine', function (
 						var curTime = new Date().getTime();
 						
 						// Record when we first started checking for dependencies
-						if (!ige._dependencyCheckStart) {
-							ige._dependencyCheckStart = curTime;
+						if (!this._dependencyCheckStart) {
+							this._dependencyCheckStart = curTime;
 						}
 						
 						// Check if we have timed out
-						if (curTime - ige._dependencyCheckStart > this._dependencyCheckTimeout) {
+						if (curTime - this._dependencyCheckStart > this._dependencyCheckTimeout) {
 							this.log('Engine start failed because the dependency check timed out after ' + (this._dependencyCheckTimeout / 1000) + ' seconds', 'error');
 							if (typeof(callback) === 'function') {
 								callback(false);
 							}
 						} else {
 							// Start a timer to keep checking dependencies
-							setTimeout(function () { ige.start(callback); }, 200);
+							setTimeout(function () { self.start(callback); }, 200);
 						}
 					}
 				}
@@ -9802,17 +9773,17 @@ appCore.module('IgeEngine', function (
 			 * @private
 			 */
 			_secondTick: function () {
-				var self = ige;
+				var self = this;
 				
 				// Store frames per second
-				self._fps = self._frames;
+				igeTime._fps = igeTime._frames;
 				
 				// Store draws per second
-				self._dps = self._dpf * self._fps;
+				igeTime._dps = igeTime._dpf * igeTime._fps;
 				
 				// Zero out counters
-				self._frames = 0;
-				self._drawCount = 0;
+				igeTime._frames = 0;
+				igeTime._drawCount = 0;
 			},
 			
 			/**
@@ -9843,9 +9814,9 @@ appCore.module('IgeEngine', function (
 			incrementTime: function (val, lastVal) {
 				if (!this._pause) {
 					if (!lastVal) { lastVal = val; }
-					this._currentTime += ((val - lastVal) * this._timeScale);
+					igeTime._currentTime += ((val - lastVal) * this._timeScale);
 				}
-				return this._currentTime;
+				return igeTime._currentTime;
 			},
 			
 			/**
@@ -9853,7 +9824,7 @@ appCore.module('IgeEngine', function (
 			 * @return {Number} The current time.
 			 */
 			currentTime: function () {
-				return this._currentTime;
+				return igeTime._currentTime;
 			},
 			
 			/**
@@ -9893,7 +9864,7 @@ appCore.module('IgeEngine', function (
 			manualTick: function () {
 				if (this._manualFrameAlternator !== this._frameAlternator) {
 					this._manualFrameAlternator = this._frameAlternator;
-					requestAnimFrame(this.engineStep);
+					requestAnimFrame(this.engineStep.bind(this));
 				}
 			},
 			
@@ -9938,11 +9909,11 @@ appCore.module('IgeEngine', function (
 				 then process updates and ticks. This will also allow a layered rendering system that can render the
 				 first x number of entities then stop, allowing a step through of the renderer in realtime.
 				 */
-				var st,
+				var self = this,
+					st,
 					et,
 					updateStart,
 					renderStart,
-					self = ige,
 					ptArr = self._postTick,
 					ptCount = ptArr.length,
 					ptIndex,
@@ -9956,7 +9927,7 @@ appCore.module('IgeEngine', function (
 				self.incrementTime(timeStamp, self._timeScaleLastTimestamp);
 				
 				self._timeScaleLastTimestamp = timeStamp;
-				timeStamp = Math.floor(self._currentTime);
+				timeStamp = Math.floor(igeTime._currentTime);
 				
 				if (igeBase.igeConfig.debug._timing) {
 					st = new Date().getTime();
@@ -9972,41 +9943,41 @@ appCore.module('IgeEngine', function (
 					self._frameAlternator = !self._frameAlternator;
 					
 					// If the engine is not in manual tick mode...
-					if (!ige._useManualTicks) {
+					if (!self._useManualTicks) {
 						// Schedule a new frame
-						requestAnimFrame(self.engineStep);
+						requestAnimFrame(self.engineStep.bind(self));
 					} else {
 						self._manualFrameAlternator = !self._frameAlternator;
 					}
 					
 					// Get the current time in milliseconds
-					self._tickStart = timeStamp;
+					igeTime._tickStart = timeStamp;
 					
 					// Adjust the tickStart value by the difference between
 					// the server and the client clocks (this is only applied
 					// when running as the client - the server always has a
 					// clientNetDiff of zero)
-					self._tickStart -= self._clientNetDiff;
+					igeTime._tickStart -= igeTime._clientNetDiff;
 					
-					if (!self.lastTick) {
+					if (!igeTime._lastTick) {
 						// This is the first time we've run so set some
 						// default values and set the delta to zero
-						self.lastTick = 0;
-						self._tickDelta = 0;
+						igeTime._lastTick = 0;
+						igeTime._tickDelta = 0;
 					} else {
 						// Calculate the frame delta
-						self._tickDelta = self._tickStart - self.lastTick;
+						igeTime._tickDelta = igeTime._tickStart - igeTime._lastTick;
 					}
 					
 					// Check for unborn entities that should be born now
-					unbornQueue = ige._spawnQueue;
+					unbornQueue = self._spawnQueue;
 					unbornCount = unbornQueue.length;
 					for (unbornIndex = unbornCount - 1; unbornIndex >= 0; unbornIndex--) {
 						unbornEntity = unbornQueue[unbornIndex];
 						
-						if (ige._currentTime >= unbornEntity._bornTime) {
+						if (igeTime._currentTime >= unbornEntity._bornTime) {
 							// Now birth this entity
-							unbornEntity.mount(ige.$(unbornEntity._birthMount));
+							unbornEntity.mount(self.$(unbornEntity._birthMount));
 							unbornQueue.splice(unbornIndex, 1);
 						}
 					}
@@ -10016,7 +9987,7 @@ appCore.module('IgeEngine', function (
 						if (igeBase.igeConfig.debug._timing) {
 							updateStart = new Date().getTime();
 							self.updateSceneGraph(ctx);
-							ige._updateTime = new Date().getTime() - updateStart;
+							igeTime._updateTime = new Date().getTime() - updateStart;
 						} else {
 							self.updateSceneGraph(ctx);
 						}
@@ -10028,7 +9999,7 @@ appCore.module('IgeEngine', function (
 							if (igeBase.igeConfig.debug._timing) {
 								renderStart = new Date().getTime();
 								self.renderSceneGraph(ctx);
-								ige._renderTime = new Date().getTime() - renderStart;
+								igeTime._renderTime = new Date().getTime() - renderStart;
 							} else {
 								self.renderSceneGraph(ctx);
 							}
@@ -10037,7 +10008,7 @@ appCore.module('IgeEngine', function (
 								if (igeBase.igeConfig.debug._timing) {
 									renderStart = new Date().getTime();
 									self.renderSceneGraph(ctx);
-									ige._renderTime = new Date().getTime() - renderStart;
+									igeTime._renderTime = new Date().getTime() - renderStart;
 								} else {
 									self.renderSceneGraph(ctx);
 								}
@@ -10053,10 +10024,10 @@ appCore.module('IgeEngine', function (
 					
 					// Record the lastTick value so we can
 					// calculate delta on the next tick
-					self.lastTick = self._tickStart;
-					self._frames++;
-					self._dpf = self._drawCount;
-					self._drawCount = 0;
+					igeTime._lastTick = igeTime._tickStart;
+					igeTime._frames++;
+					igeTime._dpf = igeTime._drawCount;
+					igeTime._drawCount = 0;
 					
 					// Call the input system tick to reset any flags etc
 					self.input.tick();
@@ -10066,14 +10037,14 @@ appCore.module('IgeEngine', function (
 				
 				if (igeBase.igeConfig.debug._timing) {
 					et = new Date().getTime();
-					ige._tickTime = et - st;
+					igeTime._tickTime = et - st;
 				}
 			},
 			
 			updateSceneGraph: function (ctx) {
 				var arr = this._children,
 					arrCount, us, ud,
-					tickDelta = ige._tickDelta;
+					tickDelta = igeTime._tickDelta;
 				
 				// Process any behaviours assigned to the engine
 				this._processUpdateBehaviours(ctx, tickDelta);
@@ -10177,15 +10148,15 @@ appCore.module('IgeEngine', function (
 			},
 			
 			fps: function () {
-				return this._fps;
+				return igeTime._fps;
 			},
 			
 			dpf: function () {
-				return this._dpf;
+				return igeTime._dpf;
 			},
 			
 			dps: function () {
-				return this._dps;
+				return igeTime._dps;
 			},
 			
 			analyseTiming: function () {
@@ -10235,7 +10206,7 @@ appCore.module('IgeEngine', function (
 				
 				if (!obj) {
 					// Set the obj to the main ige instance
-					obj = ige;
+					obj = this;
 				}
 				
 				for (di = 0; di < currentDepth; di++) {
@@ -10245,14 +10216,14 @@ appCore.module('IgeEngine', function (
 				if (igeBase.igeConfig.debug._timing) {
 					timingString = '';
 					
-					timingString += 'T: ' + ige._timeSpentInTick[obj.id()];
-					if (ige._timeSpentLastTick[obj.id()]) {
-						if (typeof(ige._timeSpentLastTick[obj.id()].ms) === 'number') {
-							timingString += ' | LastTick: ' + ige._timeSpentLastTick[obj.id()].ms;
+					timingString += 'T: ' + this._timeSpentInTick[obj.id()];
+					if (this._timeSpentLastTick[obj.id()]) {
+						if (typeof(this._timeSpentLastTick[obj.id()].ms) === 'number') {
+							timingString += ' | LastTick: ' + this._timeSpentLastTick[obj.id()].ms;
 						}
 						
-						if (typeof(ige._timeSpentLastTick[obj.id()].depthSortChildren) === 'number') {
-							timingString += ' | ChildDepthSort: ' + ige._timeSpentLastTick[obj.id()].depthSortChildren;
+						if (typeof(this._timeSpentLastTick[obj.id()].depthSortChildren) === 'number') {
+							timingString += ' | ChildDepthSort: ' + this._timeSpentLastTick[obj.id()].depthSortChildren;
 						}
 					}
 					
@@ -10263,7 +10234,7 @@ appCore.module('IgeEngine', function (
 				
 				currentDepth++;
 				
-				if (obj === ige) {
+				if (obj === this) {
 					// Loop the viewports
 					arr = obj._children;
 					
@@ -10277,14 +10248,14 @@ appCore.module('IgeEngine', function (
 									if (igeBase.igeConfig.debug._timing) {
 										timingString = '';
 										
-										timingString += 'T: ' + ige._timeSpentInTick[arr[arrCount].id()];
-										if (ige._timeSpentLastTick[arr[arrCount].id()]) {
-											if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].ms) === 'number') {
-												timingString += ' | LastTick: ' + ige._timeSpentLastTick[arr[arrCount].id()].ms;
+										timingString += 'T: ' + this._timeSpentInTick[arr[arrCount].id()];
+										if (this._timeSpentLastTick[arr[arrCount].id()]) {
+											if (typeof(this._timeSpentLastTick[arr[arrCount].id()].ms) === 'number') {
+												timingString += ' | LastTick: ' + this._timeSpentLastTick[arr[arrCount].id()].ms;
 											}
 											
-											if (typeof(ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren) === 'number') {
-												timingString += ' | ChildDepthSort: ' + ige._timeSpentLastTick[arr[arrCount].id()].depthSortChildren;
+											if (typeof(this._timeSpentLastTick[arr[arrCount].id()].depthSortChildren) === 'number') {
+												timingString += ' | ChildDepthSort: ' + this._timeSpentLastTick[arr[arrCount].id()].depthSortChildren;
 											}
 										}
 										
@@ -10320,7 +10291,7 @@ appCore.module('IgeEngine', function (
 				
 				if (!obj) {
 					// Set the obj to the main ige instance
-					obj = ige;
+					obj = this;
 				}
 				
 				item = {
@@ -10340,7 +10311,7 @@ appCore.module('IgeEngine', function (
 					}
 				}
 				
-				if (obj === ige) {
+				if (obj === this) {
 					// Loop the viewports
 					arr = obj._children;
 					
@@ -10414,19 +10385,37 @@ appCore.module('IgeEngine', function (
 				return item;
 			},
 			
+			/**
+			 * Called in IgeObject when a child is mounted to the engine
+			 * instance. Checks if the item is an IgeViewport and if so
+			 * checks if an existing viewport has been set as current.
+			 * If no viewport has been set as current, the child is set
+			 * as current viewport by default.
+			 * @param {IgeObject} child The child that has been mounted
+			 * to this entity.
+			 * @private
+			 */
 			_childMounted: function (child) {
 				if (child.IgeViewport) {
 					// The first mounted viewport gets set as the current
 					// one before any rendering is done
-					if (!ige._currentViewport) {
-						ige._currentViewport = child;
-						ige._currentCamera = child.camera;
+					if (!this._currentViewport) {
+						this._currentViewport = child;
+						this._currentCamera = child.camera;
 					}
 				}
 				
 				IgeEntity.prototype._childMounted.call(this, child);
 			},
 			
+			/**
+			 * Gets / sets a route for the engine routing system.
+			 * @param {String=} path The path for the route being get or set.
+			 * @param {Object=} definition The definition to set to the
+			 * specified path. If not passed, returns the current definition
+			 * for the path.
+			 * @returns {*}
+			 */
 			route: function (path, definition) {
 				if (path !== undefined) {
 					if (definition !== undefined) {
@@ -10463,6 +10452,11 @@ appCore.module('IgeEngine', function (
 				return this._routeData;
 			},
 			
+			/**
+			 * Tells the engine to navigate to the passed path. The current
+			 * path will be exited before the new path is navigated to.
+			 * @param {String} path The new path to navigate to.
+			 */
 			go: function (path) {
 				var self = this,
 					requirements = [],
@@ -10515,6 +10509,123 @@ appCore.module('IgeEngine', function (
 				}
 			},
 			
+			/**
+			 * Adds a path section to the current path and executes the
+			 * various parts of the path definition such as the designated
+			 * scene graph, textures and controller.
+			 * @param {String} path The path section to navigate to.
+			 * @private
+			 */
+			_routeAdd: function (path) {
+				var self = this,
+					definition,
+					requirements,
+					routeSteps,
+					routeData,
+					thisFullPath,
+					queue;
+				
+				self._currentRoutePath += self._currentRoutePath ? '.' + path : path;
+				thisFullPath = self._currentRoutePath;
+				
+				queue = this._routeQueue;
+				
+				queue.push(function (finished) {
+					definition = self._route[thisFullPath];
+					routeSteps = [];
+					
+					// Check for non-universal route (both client and server have different
+					// definitions for the same route)
+					if (definition.client && definition.server) {
+						if (self.isClient) {
+							definition = definition.client;
+						}
+						
+						if (self.isServer) {
+							definition = definition.server;
+						}
+					}
+					
+					if (!definition.controller) {
+						self.log('ige._routeAdd() encounterd a route that has no controller specified: ' + thisFullPath, 'error');
+					}
+					
+					routeData = {
+						controllerModule: appCore.module(definition.controller),
+						texturesModule: definition.textures ? appCore.module(definition.textures) : undefined,
+						sceneGraphModule: definition.sceneGraph ? appCore.module(definition.sceneGraph) : undefined
+					};
+					
+					self.routeData(thisFullPath, routeData);
+					
+					if (definition.textures) {
+						routeSteps.push(function (finished) {
+							routeData.texturesModule.emit('loading');
+							appCore.run([definition.textures, function (textures) {
+								if (!self.texturesLoaded()) {
+									self.on('texturesLoaded', function () {
+										routeData.texturesModule.emit('loaded');
+										finished(false);
+									});
+									return;
+								}
+								
+								routeData.texturesModule.emit('loaded');
+								return finished(false);
+							}]);
+						});
+					}
+					
+					routeSteps.push(function (finished) {
+						routeData.controllerModule.emit('loading');
+						appCore.run([definition.controller, function (Controller) {
+							var controller = new Controller();
+							
+							self.routeData(thisFullPath).controllerModuleInstance = controller;
+							routeData.controllerModule.emit('loaded');
+							finished(false, controller);
+						}]);
+					});
+					
+					if (definition.sceneGraph) {
+						routeSteps.push(function (controller, finished) {
+							appCore.module('$controller', function () {
+								return controller;
+							});
+							
+							appCore
+								.module(definition.sceneGraph)
+								.$controller = controller;
+							
+							routeData.sceneGraphModule.emit('loading');
+							appCore.run([definition.sceneGraph, function (sceneGraph) {
+								self.addGraph(definition.sceneGraph);
+								
+								routeData.sceneGraphModule.emit('loaded');
+								finished(false);
+							}]);
+						});
+					}
+					
+					routeSteps.waterfall(function () {
+						routeData.texturesModule.emit('ready');
+						routeData.controllerModule.emit('ready');
+						routeData.sceneGraphModule.emit('ready');
+						
+						finished();
+					});
+				});
+				
+				queue.series(function () {}, true);
+			},
+			
+			/**
+			 * Removes a path section from the current path and fires the
+			 * "destroying" and finally "destroyed" events for any textures,
+			 * scene graph and controller.
+			 * @param {String} path The path section to navigate from.
+			 * @private
+			 */
 			_routeRemove: function (path) {
 				var self = this,
 					routeData,
@@ -10525,10 +10636,7 @@ appCore.module('IgeEngine', function (
 				thisFullPath = self._currentRoutePath;
 				queue = this._routeQueue;
 				
-				console.log('+++++++++++++++++++++++++++ Queuing path remove: ' + thisFullPath);
-				
 				queue.push(function (finished) {
-					console.log('------------------------------ Leaving path: ' + thisFullPath);
 					routeData = self.routeData(thisFullPath);
 					definition = self._route[thisFullPath];
 					
@@ -10537,14 +10645,14 @@ appCore.module('IgeEngine', function (
 					}
 					
 					if (routeData.sceneGraphModule) {
-						routeData.sceneGraphModule.emit('destroy');
+						routeData.sceneGraphModule.emit('destroying');
 						self.removeGraph(definition.sceneGraph);
 					}
 					
 					if (routeData.texturesModule) {
-						routeData.texturesModule.emit('destroy');
+						routeData.texturesModule.emit('destroying');
 					}
-					routeData.controllerModule.emit('destroy');
+					routeData.controllerModule.emit('destroying');
 					
 					if (routeData.sceneGraphModule) {
 						routeData.sceneGraphModule.emit('destroyed');
@@ -10563,109 +10671,10 @@ appCore.module('IgeEngine', function (
 				queue.series(function () {}, true);
 			},
 			
-			_routeAdd: function (path) {
-				var self = this,
-					definition,
-					requirements,
-					routeSteps,
-					thisFullPath,
-					queue;
-				
-				self._currentRoutePath += self._currentRoutePath ? '.' + path : path;
-				thisFullPath = self._currentRoutePath;
-				
-				queue = this._routeQueue;
-				
-				console.log('+++++++++++++++++++++++++++ Queuing path add: ' + thisFullPath);
-				
-				queue.push(function (finished) {
-					console.log('+++++++++++++++++++++++++++ Entering path: ' + thisFullPath);
-					
-					definition = self._route[thisFullPath];
-					routeSteps = [];
-					
-					// Check for universal route
-					if (!definition.client && !definition.server) {
-						// Definition is for a universal route
-						self.log('Route "' + thisFullPath + '" is universal');
-					} else {
-						self.log('Route "' + thisFullPath + '" is non-universal');
-						if (ige.isClient) {
-							definition = definition.client;
-						}
-						
-						if (ige.isServer) {
-							definition = definition.server;
-						}
-					}
-					
-					self.log('Navigating to route "' + thisFullPath + '"...');
-					
-					if (!definition.controller) {
-						self.log('ige._routeAdd() encounterd a route that has no controller specified: ' + thisFullPath, 'error');
-					}
-					
-					self.routeData(thisFullPath, {
-						controllerModule: appCore.module(definition.controller),
-						texturesModule: definition.textures ? appCore.module(definition.textures) : undefined,
-						sceneGraphModule: definition.sceneGraph ? appCore.module(definition.sceneGraph) : undefined
-					});
-					
-					if (definition.textures) {
-						routeSteps.push(function (finished) {
-							self.log('Adding route "' + thisFullPath + '" textures: ' + definition.textures);
-							appCore.run([definition.textures, function (textures) {
-								if (!ige.texturesLoaded()) {
-									ige.on('texturesLoaded', function () {
-										finished(false);
-									});
-									return;
-								}
-								
-								return finished(false);
-							}]);
-						});
-					}
-					
-					routeSteps.push(function (finished) {
-						self.log('Executing route "' + thisFullPath + '" controller: ' + definition.controller);
-						appCore.run([definition.controller, function (Controller) {
-							var controller = new Controller();
-							
-							self.routeData(thisFullPath).controllerModuleInstance = controller;
-							finished(false, controller);
-						}]);
-					});
-					
-					if (definition.sceneGraph) {
-						routeSteps.push(function (controller, finished) {
-							appCore.module('$controller', function () {
-								return controller;
-							});
-							
-							appCore
-								.module(definition.sceneGraph)
-								.$controller = controller;
-							
-							appCore.run([definition.sceneGraph, function (sceneGraph) {
-								self.log('Adding route "' + thisFullPath + '" sceneGraph: ' + definition.sceneGraph);
-								self.addGraph(definition.sceneGraph);
-								
-								finished(false);
-							}]);
-						});
-					}
-					
-					self.log('Route "' + thisFullPath + '" attempting setup...');
-					routeSteps.waterfall(function () {
-						self.log('Route "' + thisFullPath + '" setup complete');
-						finished();
-					});
-				});
-				
-				queue.series(function () {}, true);
-			},
-			
+			/**
+			 * Destroys the engine instance and all scenegraph elements
+			 * mounted to it.
+			 */
 			destroy: function () {
 				// Stop the engine and kill any timers
 				this.stop();
@@ -10684,12 +10693,12 @@ appCore.module('IgeEngine', function (
 		
 		return IgeEngine;
 	});
-},{"irrelon-appcore":84}],34:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],34:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatrix2d, IgeDummyCanvas, IgePoly2d, IgeRect) {
+appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d, IgeMatrix2d, IgeDummyCanvas, IgePoly2d, IgeRect) {
 	/**
 	 * Creates an entity and handles the entity's life cycle and
 	 * all related entity actions / methods.
@@ -10714,7 +10723,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			this._cell = 1;
 	
 			this._deathTime = undefined;
-			this._bornTime = ige._currentTime;
+			this._bornTime = igeTime._currentTime;
 	
 			this._translate = new IgePoint3d(0, 0, 0);
 			this._oldTranslate = new IgePoint3d(0, 0, 0);
@@ -11398,11 +11407,11 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		 */
 		lifeSpan: function (milliseconds, deathCallback) {
 			if (milliseconds !== undefined) {
-				this.deathTime(ige._currentTime + milliseconds, deathCallback);
+				this.deathTime(igeTime._currentTime + milliseconds, deathCallback);
 				return this;
 			}
 	
-			return this.deathTime() - ige._currentTime;
+			return this.deathTime() - igeTime._currentTime;
 		},
 	
 		/**
@@ -12267,7 +12276,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		 */
 		update: function (ctx, tickDelta) {
 			// Check if the entity should still exist
-			if (this._deathTime !== undefined && this._deathTime <= ige._tickStart) {
+			if (this._deathTime !== undefined && this._deathTime <= igeTime._tickStart) {
 				// Check if the deathCallBack was set
 				if (this._deathCallBack) {
 					this._deathCallBack.apply(this);
@@ -12278,7 +12287,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this.destroy();
 			} else {
 				// Check that the entity has been born
-				if (this._bornTime === undefined || ige._currentTime >= this._bornTime) {
+				if (this._bornTime === undefined || igeTime._currentTime >= this._bornTime) {
 					// Remove the stream data cache
 					delete this._streamDataCache;
 		
@@ -12293,7 +12302,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		
 					if (this._timeStream.length) {
 						// Process any interpolation
-						this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
+						this._processInterpolate(igeTime._tickStart - ige.network.stream._renderLatency);
 					}
 		
 					// Check for changes to the transform values
@@ -12524,12 +12533,12 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 							ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
 						}
 						ctx.fill();
-						ige._drawCount++;
+						igeTime._drawCount++;
 	
 						if (this._backgroundPatternIsoTile) {
 							ctx.translate(-Math.floor(this._backgroundPattern.image.width) / 2, -Math.floor(this._backgroundPattern.image.height / 2));
 							ctx.fill();
-							ige._drawCount++;
+							igeTime._drawCount++;
 						}
 	
 						ctx.restore();
@@ -12541,7 +12550,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				// Check if the entity is visible based upon its opacity
 				if (texture && texture._loaded) {
 					// Draw the entity image
-					texture.render(ctx, this, ige._tickDelta);
+					texture.render(ctx, this, igeTime._tickDelta);
 	
 					if (this._highlight) {
 						ctx.globalCompositeOperation = this._highlightToGlobalCompositeOperation(this._highlight);
@@ -12595,8 +12604,8 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				ctx.fillText('Composite Cache', -this._bounds2d.x2, -this._bounds2d.y2 - 15);
 				ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
 			}
-	
-			ige._drawCount++;
+			
+			igeTime._drawCount++;
 	
 			if (this._highlight) {
 				ctx.globalCompositeOperation = this._highlightToGlobalCompositeOperation(this._highlight);
@@ -12604,8 +12613,8 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					this._cacheCanvas,
 					-this._bounds2d.x2, -this._bounds2d.y2
 				);
-	
-				ige._drawCount++;
+				
+				igeTime._drawCount++;
 			}
 			ctx.restore();
 		},
@@ -14347,7 +14356,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			if (this._streamMode === 1) {
 				// Check if we have a stream sync interval
 				if (this._streamSyncInterval) {
-					this._streamSyncDelta += ige._tickDelta;
+					this._streamSyncDelta += igeTime._tickDelta;
 	
 					if (this._streamSyncDelta < this._streamSyncInterval) {
 						// The stream sync interval is still higher than
@@ -14589,7 +14598,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				i;
 	
 			// Send clients the stream destroy command for this entity
-			ige.network.send('_igeStreamDestroy', [ige._currentTime, thisId], clientId);
+			ige.network.send('_igeStreamDestroy', [igeTime._currentTime, thisId], clientId);
 			
 			ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
 			ige.network.stream._streamClientData[thisId] = ige.network.stream._streamClientData[thisId] || {};
@@ -14656,7 +14665,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 						// not that important compared to updated transformation data
 						if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
 							// Check if the section interval has been reached
-							this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
+							this._streamSyncSectionDelta[sectionId] += igeTime._tickDelta;
 	
 							if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
 								// Get the section data for this section id
@@ -14869,7 +14878,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 	
 	return IgeEntity;
 });
-},{"irrelon-appcore":84}],35:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],35:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15202,7 +15211,7 @@ appCore.module('IgeEventingClass', function (IgeClass) {
 	
 	return IgeEventingClass;
 });
-},{"irrelon-appcore":84}],36:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],36:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15497,7 +15506,7 @@ appCore.module('IgeFSM', function (IgeClass) {
 	
 	return IgeFSM;
 });
-},{"irrelon-appcore":84}],37:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],37:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15514,7 +15523,7 @@ appCore.module('IgeFilters', function () {
 	
 	return IgeFilters;
 });
-},{"irrelon-appcore":84}],38:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],38:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15950,12 +15959,12 @@ appCore.module('IgeFontEntity', function (IgeUiEntity, IgeTexture, IgeFontSmartT
 	
 	return IgeFontEntity;
 });
-},{"irrelon-appcore":84}],39:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],39:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeFontSheet', function (IgeTexture) {
+appCore.module('IgeFontSheet', function (igeTime, IgeTexture) {
 	/* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
 	 * so that bottom-right aligns to the lower-right point of the bounding box of the entity
 	 * whilst maintaining the current text-alignment as well
@@ -16245,7 +16254,7 @@ appCore.module('IgeFontSheet', function (IgeTexture) {
 						
 						renderX += measuredWidthMap[charIndex] || 0;
 						
-						ige._drawCount++;
+						igeTime._drawCount++;
 					}
 					
 					renderX = 0;
@@ -16261,12 +16270,12 @@ appCore.module('IgeFontSheet', function (IgeTexture) {
 	
 	return IgeFontSheet;
 });
-},{"irrelon-appcore":84}],40:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],40:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeInterval', function (IgeEventingClass) {
+appCore.module('IgeInterval', function (igeTime, IgeEventingClass) {
 	/**
 	 * Provides an alternative to setInterval() which works based on the engine's internal
 	 * time system allowing intervals to fire correctly, taking into account pausing the
@@ -16291,7 +16300,7 @@ appCore.module('IgeInterval', function (IgeEventingClass) {
 			this._method = method;
 			this._interval = interval;
 			this._time = 0;
-			this._started = ige._currentTime;
+			this._started = igeTime._currentTime;
 			
 			// Attach ourselves to the time system
 			ige.time.addTimer(this);
@@ -16331,7 +16340,7 @@ appCore.module('IgeInterval', function (IgeEventingClass) {
 		update: function () {
 			if (this._time > this._interval) {
 				// Fire an interval
-				this._method(ige._currentTime);
+				this._method(igeTime._currentTime);
 				this._time -= this._interval;
 			}
 			
@@ -16341,7 +16350,7 @@ appCore.module('IgeInterval', function (IgeEventingClass) {
 	
 	return IgeInterval;
 });
-},{"irrelon-appcore":84}],41:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],41:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -16627,7 +16636,7 @@ appCore.module('IgeMap2d', function (IgeClass) {
 	
 	return IgeMap2d;
 });
-},{"irrelon-appcore":84}],42:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],42:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -16784,7 +16793,7 @@ appCore.module('IgeMapStack2d', function (IgeClass) {
 	
 	return IgeMapStack2d;
 });
-},{"irrelon-appcore":84}],43:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],43:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -17235,7 +17244,7 @@ appCore.module('IgeMatrix2d', function (IgePoint3d) {
 	
 	return IgeMatrix2d;
 });
-},{"irrelon-appcore":84}],44:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],44:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -19294,7 +19303,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 	return IgeObject;
 });
 
-},{"irrelon-appcore":84}],45:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],45:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -19322,7 +19331,7 @@ appCore.module('IgeParticle', function (IgeEntity, IgeVelocityComponent) {
 	
 	return IgeParticle;
 });
-},{"irrelon-appcore":84}],46:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],46:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -19720,7 +19729,7 @@ appCore.module('IgeParticleEmitter', function (IgeUiEntity, IgeTween) {
 		 * @param ctx
 		 */
 		tick: function (ctx) {
-			this._currentDelta += ige._tickDelta;
+			this._currentDelta += igeTime._tickDelta;
 			
 			// Check if the emitter is mounted to anything and started, if not
 			// then don't bother creating particles!
@@ -20028,7 +20037,7 @@ appCore.module('IgeParticleEmitter', function (IgeUiEntity, IgeTween) {
 	
 	return IgeParticleEmitter;
 });
-},{"irrelon-appcore":84}],47:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],47:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20378,7 +20387,7 @@ appCore.module('IgePathFinder', function (IgeEventingClass, IgePathNode) {
 	
 	return IgePathFinder;
 });
-},{"irrelon-appcore":84}],48:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],48:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20434,7 +20443,7 @@ appCore.module('IgePathNode', function (IgePoint3d) {
 	
 	return IgePathNode;
 });
-},{"irrelon-appcore":84}],49:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],49:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20756,7 +20765,7 @@ appCore.module('IgePoint2d', function (IgeClass) {
 	
 	return IgePoint2d;
 });
-},{"irrelon-appcore":84}],50:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],50:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21093,7 +21102,7 @@ appCore.module('IgePoint3d', function (IgeClass) {
 	
 	return IgePoint3d;
 });
-},{"irrelon-appcore":84}],51:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],51:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21513,7 +21522,7 @@ appCore.module('IgePoly2d', function (IgeClass, IgePoint2d, IgeRect) {
 	
 	return IgePoly2d;
 });
-},{"irrelon-appcore":84}],52:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],52:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21880,7 +21889,7 @@ appCore.module('IgeQuest', function (IgeEventingClass) {
 	
 	return IgeQuest;
 });
-},{"irrelon-appcore":84}],53:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],53:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -22090,7 +22099,7 @@ appCore.module('IgeRect', function (IgeClass) {
 	
 	return IgeRect;
 });
-},{"irrelon-appcore":84}],54:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],54:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -22287,7 +22296,7 @@ appCore.module('IgeScene2d', function (IgeEntity) {
 	
 	return IgeScene2d;
 });
-},{"irrelon-appcore":84}],55:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],55:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -22320,7 +22329,7 @@ appCore.module('IgeSceneGraph', function (IgeClass) {
 	
 	return IgeSceneGraph;
 });
-},{"irrelon-appcore":84}],56:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],56:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -22589,12 +22598,12 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 	
 	return IgeSpriteSheet;
 });
-},{"irrelon-appcore":84}],57:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],57:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeTexture', function (IgeEventingClass) {
+appCore.module('IgeTexture', function (igeTime, IgeEventingClass) {
 	/**
 	 * Creates a new texture.
 	 */
@@ -23246,8 +23255,8 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 							geom.x, // render width
 							geom.y // render height
 						);
-	
-						ige._drawCount++;
+						
+						igeTime._drawCount++;
 					} else {
 						this.log('Cannot render texture using cell ' + entity._cell + ' because the cell does not exist in the assigned texture!', 'error');
 					}
@@ -23258,8 +23267,8 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 					ctx.save();
 						this.script.render(ctx, entity, this);
 					ctx.restore();
-	
-					ige._drawCount++;
+					
+					igeTime._drawCount++;
 				}
 			}
 		},
@@ -23529,7 +23538,7 @@ appCore.module('IgeTexture', function (IgeEventingClass) {
 	
 	return IgeTexture;
 });
-},{"irrelon-appcore":84}],58:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],58:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -23595,12 +23604,12 @@ appCore.module('IgeTextureAtlas', function (IgeTextureMap) {
 	
 	return IgeTextureAtlas;
 });
-},{"irrelon-appcore":84}],59:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],59:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
+appCore.module('IgeTextureMap', function (igeTime, IgeTileMap2d, IgeMap2d, IgePoint3d) {
 	// TODO: Implement the _stringify() method for this class
 	/**
 	 * Texture maps provide a way to display textures / cells across a tile map.
@@ -24155,8 +24164,8 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 									sectionWidth,
 									sectionHeight
 								);
-	
-								ige._drawCount++;
+								
+								igeTime._drawCount++;
 	
 								if (this._drawSectionBounds) {
 									// Draw a bounding rectangle around the section
@@ -24280,7 +24289,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 	
 			// Paint the texture
 			if (texture) {
-				texture.render(ctx, tileEntity, ige._tickDelta);
+				texture.render(ctx, tileEntity, igeTime._tickDelta);
 			}
 			ctx.restore();
 	
@@ -24329,7 +24338,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 	return IgeTextureMap;
 });
 
-},{"irrelon-appcore":84}],60:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],60:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -24911,12 +24920,37 @@ appCore.module('IgeTileMap2d', function (IgeEntity, IgeTexture, IgeTileMap2dSmar
 	
 	return IgeTileMap2d;
 });
-},{"irrelon-appcore":84}],61:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],61:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeTimeout', function (IgeInterval) {
+appCore.module('igeTime', function () {
+	var IgeTime = function () {
+		this._tickStart = 0;
+		this._lastTick = 0;
+		this._tickTime = 'NA'; // The time the tick took to process
+		this._updateTime = 'NA'; // The time the tick update section took to process
+		this._renderTime = 'NA'; // The time the tick render section took to process
+		this._tickDelta = 0; // The time between the last tick and the current one
+		this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
+		this._drawCount = 0; // Holds the number of draws since the last frame (calls to drawImage)
+		this._dps = 0; // Number of draws that occurred last tick
+		this._dpf = 0;
+		this._frames = 0; // Number of frames looped through since last second tick
+		this._fps = 0; // Number of achieved frames per second
+		this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
+		this._currentTime = 0; // The current engine time
+	};
+	
+	return new IgeTime();
+});
+},{"irrelon-appcore":86}],62:[function(_dereq_,module,exports){
+"use strict";
+
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeTimeout', function (igeTime, IgeInterval) {
 	/**
 	 * Provides an alternative to setTimeout() which works based on the engine's internal
 	 * time system allowing timeouts to fire correctly, taking into account pausing the
@@ -24973,7 +25007,7 @@ appCore.module('IgeTimeout', function (IgeInterval) {
 		update: function () {
 			if (this._time > this._interval) {
 				// Fire an interval
-				this._method(ige._currentTime);
+				this._method(igeTime._currentTime);
 				ige.time.removeTimer(this);
 			}
 			
@@ -24983,12 +25017,12 @@ appCore.module('IgeTimeout', function (IgeInterval) {
 	
 	return IgeTimeout;
 });
-},{"irrelon-appcore":84}],62:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],63:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeTween', function (IgeClass) {
+appCore.module('IgeTween', function (igeTime, IgeClass) {
 	/**
 	 * Creates a new tween instance.
 	 */
@@ -25272,7 +25306,7 @@ appCore.module('IgeTween', function (IgeClass) {
 		 */
 		start: function (timeMs) {
 			if (timeMs !== undefined) {
-				this.startTime(timeMs + ige._currentTime);
+				this.startTime(timeMs + igeTime._currentTime);
 			}
 			
 			ige.tween.start(this);
@@ -25327,7 +25361,7 @@ appCore.module('IgeTween', function (IgeClass) {
 	
 	return IgeTween;
 });
-},{"irrelon-appcore":84}],63:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],64:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -25609,7 +25643,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 	
 	return IgeUiElement;
 });
-},{"irrelon-appcore":84}],64:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],65:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -25969,7 +26003,7 @@ appCore.module('IgeUiEntity', function (IgeEntity, IgeUiStyleExtension, IgeUiPos
 	
 	return IgeUiEntity;
 });
-},{"irrelon-appcore":84}],65:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],66:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -26585,7 +26619,46 @@ appCore.module('IgeViewport', function (IgeEntity, IgePoint3d, IgeCamera, IgeUiS
 	
 	return IgeViewport;
 });
-},{"irrelon-appcore":84}],66:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],67:[function(_dereq_,module,exports){
+"use strict";
+
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('requestAnimFrame', function () {
+	var requestAnimFrame;
+	
+	if (typeof window !== 'undefined') {
+		/**
+		 * A cross-browser/platform requestAnimationFrame method.
+		 */
+		requestAnimFrame = (function () {
+			return window.requestAnimationFrame ||
+				window.webkitRequestAnimationFrame ||
+				window.mozRequestAnimationFrame ||
+				window.oRequestAnimationFrame ||
+				window.msRequestAnimationFrame ||
+				function (callback, element) {
+					setTimeout(function () {
+						callback(new Date().getTime());
+					}, 1000 / 60);
+				};
+		}());
+	} else {
+		/**
+		 * A node.js requestAnimationFrame method.
+		 */
+		requestAnimFrame = (function () {
+			return function (callback, element) {
+				setTimeout(function () {
+					callback(new Date().getTime());
+				}, 1000 / 60);
+			};
+		}());
+	}
+	
+	return requestAnimFrame;
+});
+},{"irrelon-appcore":86}],68:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -27258,7 +27331,7 @@ appCore.module('IgeUiPositionExtension', function () {
 	
 	return IgeUiPositionExtension;
 });
-},{"irrelon-appcore":84}],67:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],69:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -27614,7 +27687,7 @@ appCore.module('IgeUiStyleExtension', function () {
 	
 	return IgeUiStyleExtension;
 });
-},{"irrelon-appcore":84}],68:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],70:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiAutoFlow', function (IgeUiElement) {
@@ -27649,7 +27722,7 @@ appCore.module('IgeUiAutoFlow', function (IgeUiElement) {
 	
 	return IgeUiAutoFlow;
 });
-},{"irrelon-appcore":84}],69:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],71:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiButton', function (IgeUiElement) {
@@ -27741,7 +27814,7 @@ appCore.module('IgeUiButton', function (IgeUiElement) {
 	
 	return IgeUiButton;
 });
-},{"irrelon-appcore":84}],70:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],72:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiDropDown', function (IgeUiElement) {
@@ -27933,7 +28006,7 @@ appCore.module('IgeUiDropDown', function (IgeUiElement) {
 	
 	return IgeUiDropDown;
 });
-},{"irrelon-appcore":84}],71:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],73:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiGridPanel', function (IgeUiElement) {
@@ -27965,7 +28038,7 @@ appCore.module('IgeUiGridPanel', function (IgeUiElement) {
 	
 	return IgeUiGridPanel;
 });
-},{"irrelon-appcore":84}],72:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],74:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiInlineFlow', function (IgeUiElement) {
@@ -27996,7 +28069,7 @@ appCore.module('IgeUiInlineFlow', function (IgeUiElement) {
 	
 	return IgeUiInlineFlow;
 });
-},{"irrelon-appcore":84}],73:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],75:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiLabel', function (IgeUiElement) {
@@ -28201,7 +28274,7 @@ appCore.module('IgeUiLabel', function (IgeUiElement) {
 	
 	return IgeUiLabel;
 });
-},{"irrelon-appcore":84}],74:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],76:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiMenu', function (IgeUiElement, IgeUiMenuItem) {
@@ -28381,7 +28454,7 @@ appCore.module('IgeUiMenuItem', function (IgeUiElement) {
 	
 	return IgeUiMenuItem;
 });
-},{"irrelon-appcore":84}],75:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],77:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiProgressBar', function (IgeUiElement) {
@@ -28554,7 +28627,7 @@ appCore.module('IgeUiProgressBar', function (IgeUiElement) {
 	
 	return IgeUiProgressBar;
 });
-},{"irrelon-appcore":84}],76:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],78:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiRadioButton', function (IgeUiButton) {
@@ -28632,11 +28705,11 @@ appCore.module('IgeUiRadioButton', function (IgeUiButton) {
 	
 	return IgeUiRadioButton;
 });
-},{"irrelon-appcore":84}],77:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],79:[function(_dereq_,module,exports){
 
-},{}],78:[function(_dereq_,module,exports){
-arguments[4][77][0].apply(exports,arguments)
-},{"dup":77}],79:[function(_dereq_,module,exports){
+},{}],80:[function(_dereq_,module,exports){
+arguments[4][79][0].apply(exports,arguments)
+},{"dup":79}],81:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTextBox', function (IgeUiElement) {
@@ -28960,7 +29033,7 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 	
 	return IgeUiTextBox;
 });
-},{"irrelon-appcore":84}],80:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],82:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTimeStream', function (IgeUiElement) {
@@ -28975,7 +29048,7 @@ appCore.module('IgeUiTimeStream', function (IgeUiElement) {
 			// Draw timeline
 			var i, text, xAdjust,
 				arr, arrCount, arrItem,
-				renderTime = ige._tickStart - ige.network.stream._renderLatency,
+				renderTime = igeTime._tickStart - ige.network.stream._renderLatency,
 				deltaTime;
 			
 			IgeUiElement.prototype.tick.call(this, ctx);
@@ -29036,7 +29109,7 @@ appCore.module('IgeUiTimeStream', function (IgeUiElement) {
 	
 	return IgeUiTimeStream;
 });
-},{"irrelon-appcore":84}],81:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],83:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTogglePanel', function (IgeUiElement) {
@@ -29112,7 +29185,7 @@ appCore.module('IgeUiTogglePanel', function (IgeUiElement) {
 	
 	return IgeUiTogglePanel;
 });
-},{"irrelon-appcore":84}],82:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],84:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTooltip', function (IgeUiElement) {
@@ -29314,7 +29387,7 @@ appCore.module('IgeUiTooltip', function (IgeUiElement) {
 	
 	return IgeUiTooltip;
 });
-},{"irrelon-appcore":84}],83:[function(_dereq_,module,exports){
+},{"irrelon-appcore":86}],85:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -29328,7 +29401,11 @@ appCore.module('ige', function (IgeEngine) {
 	
 	return ige;
 });
-},{"irrelon-appcore":84}],84:[function(_dereq_,module,exports){
+
+if (typeof module !== undefined) {
+	module.exports = appCore;
+}
+},{"irrelon-appcore":86}],86:[function(_dereq_,module,exports){
 /**
  * Irrelon AppCore
  *
@@ -29362,6 +29439,7 @@ var AppCore = function () {
 	this._moduleDefs = {};
 	this._config = [];
 	this._run = [];
+	this.data = {};
 	
 	// The object that holds a reference to callbacks that
 	// are waiting for a module to become available / loaded
@@ -29372,7 +29450,8 @@ var AppCore = function () {
 	this._logLevel = 2;
 	
 	console.log('----------------------------------------------');
-	console.log('| Powered By Irrelon AppCore                 |');
+	console.log('| Powered by Irrelon AppCore                 |');
+	console.log('| (C)opyright ' + new Date().getFullYear() + ' Irrelon Software Limited  |');
 	console.log('| https://github.com/irrelon/irrelon-appcore |');
 	console.log('----------------------------------------------');
 };
@@ -29855,7 +29934,7 @@ if (typeof module  !== 'undefined' && typeof module.exports !== 'undefined') {
 if (typeof window !== 'undefined') {
 	window.appCore = singelton;
 }
-},{"./AppCoreModule":85,"irrelon-emitter":86}],85:[function(_dereq_,module,exports){
+},{"./AppCoreModule":87,"irrelon-emitter":88}],87:[function(_dereq_,module,exports){
 var Emitter = _dereq_('irrelon-emitter');
 
 /**
@@ -29975,7 +30054,7 @@ AppCoreModule.prototype.destroy = function () {
 };
 
 module.exports = AppCoreModule;
-},{"irrelon-emitter":86}],86:[function(_dereq_,module,exports){
+},{"irrelon-emitter":88}],88:[function(_dereq_,module,exports){
 /*
  The MIT License (MIT)
 
@@ -30705,7 +30784,7 @@ var Emitter = function (obj) {
 };
 
 module.exports = Emitter;
-},{"irrelon-overload":87}],87:[function(_dereq_,module,exports){
+},{"irrelon-overload":89}],89:[function(_dereq_,module,exports){
 "use strict";
 
 /**
@@ -30860,7 +30939,7 @@ Overload.prototype.callExtend = function (context, prop, propContext, func, args
 };
 
 module.exports = Overload;
-},{}],88:[function(_dereq_,module,exports){
+},{}],90:[function(_dereq_,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -31046,7 +31125,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],89:[function(_dereq_,module,exports){
+},{}],91:[function(_dereq_,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -31071,14 +31150,14 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],90:[function(_dereq_,module,exports){
+},{}],92:[function(_dereq_,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],91:[function(_dereq_,module,exports){
+},{}],93:[function(_dereq_,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -31668,4 +31747,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,_dereq_('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":90,"_process":88,"inherits":89}]},{},[22,23,24,25,26,27,28,29,30,31,32,33,34,35,37,38,39,36,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,1,2,3,66,67,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83]);
+},{"./support/isBuffer":92,"_process":90,"inherits":91}]},{},[22,23,24,25,26,27,28,29,30,31,32,33,34,35,37,38,39,36,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,1,2,3,68,69,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85]);

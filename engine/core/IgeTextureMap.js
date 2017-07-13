@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
+appCore.module('IgeTextureMap', function (igeTime, IgeTileMap2d, IgeMap2d, IgePoint3d) {
 	// TODO: Implement the _stringify() method for this class
 	/**
 	 * Texture maps provide a way to display textures / cells across a tile map.
@@ -557,8 +557,8 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 									sectionWidth,
 									sectionHeight
 								);
-	
-								ige._drawCount++;
+								
+								igeTime._drawCount++;
 	
 								if (this._drawSectionBounds) {
 									// Draw a bounding rectangle around the section
@@ -682,7 +682,7 @@ appCore.module('IgeTextureMap', function (IgeTileMap2d, IgeMap2d, IgePoint3d) {
 	
 			// Paint the texture
 			if (texture) {
-				texture.render(ctx, tileEntity, ige._tickDelta);
+				texture.render(ctx, tileEntity, igeTime._tickDelta);
 			}
 			ctx.restore();
 	

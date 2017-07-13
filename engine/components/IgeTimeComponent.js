@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTimeComponent', function (IgeEventingClass) {
+appCore.module('IgeTimeComponent', function (igeTime, IgeEventingClass) {
 	var IgeTimeComponent = IgeEventingClass.extend({
 		classId: 'IgeTimeComponent',
 		componentId: 'time',
@@ -45,11 +45,12 @@ appCore.module('IgeTimeComponent', function (IgeEventingClass) {
 			
 			return this;
 		},
-		
+		// TODO cannot use ige here - need to use appCore instead and ige.time === this?
+		// perhaps we need to brak timing out into its own module?
 		_update: function () {
 			// Get the ige tick delta and tell our timers / intervals that an update has occurred
 			var self = ige.time,
-				delta = ige._tickDelta,
+				delta = igeTime._tickDelta,
 				arr = self._timers,
 				arrCount = arr.length;
 			

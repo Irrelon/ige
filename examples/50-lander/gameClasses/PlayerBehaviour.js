@@ -58,7 +58,7 @@ var PlayerBehaviour = function () {
 		this.thrustEmitter.start();
 
 		// Use some fuel
-		this._fuel -= 0.005 * ige._tickDelta;
+		this._fuel -= 0.005 * igeTime._tickDelta;
 	} else {
 		// Disable the particle emitter
 		this.thrustEmitter.stop();

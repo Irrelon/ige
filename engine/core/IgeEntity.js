@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatrix2d, IgeDummyCanvas, IgePoly2d, IgeRect) {
+appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d, IgeMatrix2d, IgeDummyCanvas, IgePoly2d, IgeRect) {
 	/**
 	 * Creates an entity and handles the entity's life cycle and
 	 * all related entity actions / methods.
@@ -27,7 +27,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			this._cell = 1;
 	
 			this._deathTime = undefined;
-			this._bornTime = ige._currentTime;
+			this._bornTime = igeTime._currentTime;
 	
 			this._translate = new IgePoint3d(0, 0, 0);
 			this._oldTranslate = new IgePoint3d(0, 0, 0);
@@ -711,11 +711,11 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		 */
 		lifeSpan: function (milliseconds, deathCallback) {
 			if (milliseconds !== undefined) {
-				this.deathTime(ige._currentTime + milliseconds, deathCallback);
+				this.deathTime(igeTime._currentTime + milliseconds, deathCallback);
 				return this;
 			}
 	
-			return this.deathTime() - ige._currentTime;
+			return this.deathTime() - igeTime._currentTime;
 		},
 	
 		/**
@@ -1580,7 +1580,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		 */
 		update: function (ctx, tickDelta) {
 			// Check if the entity should still exist
-			if (this._deathTime !== undefined && this._deathTime <= ige._tickStart) {
+			if (this._deathTime !== undefined && this._deathTime <= igeTime._tickStart) {
 				// Check if the deathCallBack was set
 				if (this._deathCallBack) {
 					this._deathCallBack.apply(this);
@@ -1591,7 +1591,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				this.destroy();
 			} else {
 				// Check that the entity has been born
-				if (this._bornTime === undefined || ige._currentTime >= this._bornTime) {
+				if (this._bornTime === undefined || igeTime._currentTime >= this._bornTime) {
 					// Remove the stream data cache
 					delete this._streamDataCache;
 		
@@ -1606,7 +1606,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 		
 					if (this._timeStream.length) {
 						// Process any interpolation
-						this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
+						this._processInterpolate(igeTime._tickStart - ige.network.stream._renderLatency);
 					}
 		
 					// Check for changes to the transform values
@@ -1837,12 +1837,12 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 							ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
 						}
 						ctx.fill();
-						ige._drawCount++;
+						igeTime._drawCount++;
 	
 						if (this._backgroundPatternIsoTile) {
 							ctx.translate(-Math.floor(this._backgroundPattern.image.width) / 2, -Math.floor(this._backgroundPattern.image.height / 2));
 							ctx.fill();
-							ige._drawCount++;
+							igeTime._drawCount++;
 						}
 	
 						ctx.restore();
@@ -1854,7 +1854,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				// Check if the entity is visible based upon its opacity
 				if (texture && texture._loaded) {
 					// Draw the entity image
-					texture.render(ctx, this, ige._tickDelta);
+					texture.render(ctx, this, igeTime._tickDelta);
 	
 					if (this._highlight) {
 						ctx.globalCompositeOperation = this._highlightToGlobalCompositeOperation(this._highlight);
@@ -1908,8 +1908,8 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				ctx.fillText('Composite Cache', -this._bounds2d.x2, -this._bounds2d.y2 - 15);
 				ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
 			}
-	
-			ige._drawCount++;
+			
+			igeTime._drawCount++;
 	
 			if (this._highlight) {
 				ctx.globalCompositeOperation = this._highlightToGlobalCompositeOperation(this._highlight);
@@ -1917,8 +1917,8 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 					this._cacheCanvas,
 					-this._bounds2d.x2, -this._bounds2d.y2
 				);
-	
-				ige._drawCount++;
+				
+				igeTime._drawCount++;
 			}
 			ctx.restore();
 		},
@@ -3660,7 +3660,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 			if (this._streamMode === 1) {
 				// Check if we have a stream sync interval
 				if (this._streamSyncInterval) {
-					this._streamSyncDelta += ige._tickDelta;
+					this._streamSyncDelta += igeTime._tickDelta;
 	
 					if (this._streamSyncDelta < this._streamSyncInterval) {
 						// The stream sync interval is still higher than
@@ -3902,7 +3902,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 				i;
 	
 			// Send clients the stream destroy command for this entity
-			ige.network.send('_igeStreamDestroy', [ige._currentTime, thisId], clientId);
+			ige.network.send('_igeStreamDestroy', [igeTime._currentTime, thisId], clientId);
 			
 			ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
 			ige.network.stream._streamClientData[thisId] = ige.network.stream._streamClientData[thisId] || {};
@@ -3969,7 +3969,7 @@ appCore.module('IgeEntity', function (IgeObject, IgePoint2d, IgePoint3d, IgeMatr
 						// not that important compared to updated transformation data
 						if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
 							// Check if the section interval has been reached
-							this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
+							this._streamSyncSectionDelta[sectionId] += igeTime._tickDelta;
 	
 							if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
 								// Get the section data for this section id

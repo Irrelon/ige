@@ -69,7 +69,7 @@ var Rotator = IgeEntity.extend({
 		// transform updates to the client automatically
 		if (ige.isServer) {
 			// Rotate this entity by 0.1 degrees.
-			this.rotateBy(0, 0, (this._rotateSpeed * ige._tickDelta) * Math.PI / 180);
+			this.rotateBy(0, 0, (this._rotateSpeed * igeTime._tickDelta) * Math.PI / 180);
 		}
 
 		// Call the IgeEntity (super-class) tick() method

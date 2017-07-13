@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeAnimationComponent', function (IgeEventingClass) {
+appCore.module('IgeAnimationComponent', function (igeTime, IgeEventingClass) {
 	/**
 	 * The animation component class. Handles defining and controlling
 	 * frame-based animations based on cells from a texture.
@@ -304,7 +304,7 @@ appCore.module('IgeAnimationComponent', function (IgeEventingClass) {
 				if (anim) {
 					anim.currentDelta = 0;
 					anim.currentLoop = 0;
-					anim.startTime = ige._currentTime;
+					anim.startTime = igeTime._currentTime;
 					
 					this._anim = anim;
 					this._animId = animId;
@@ -391,7 +391,7 @@ appCore.module('IgeAnimationComponent', function (IgeEventingClass) {
 			var self = this.animation;
 			
 			// Just in case someone forgets to pass it in their update call!
-			tickDelta = tickDelta || ige._tickDelta;
+			tickDelta = tickDelta || igeTime._tickDelta;
 			
 			if (self._anim) {
 				var anim = self._anim,

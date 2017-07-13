@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTweenComponent', function (IgeClass) {
+appCore.module('IgeTweenComponent', function (igeTime, IgeClass) {
 	/**
 	 * This component is already included in the IgeEngine (ige)
 	 * instance and is not designed for use in any other way!
@@ -29,7 +29,7 @@ appCore.module('IgeTweenComponent', function (IgeClass) {
 		 * @return {Number} The index of the added tween or -1 on error.
 		 */
 		start: function (tween) {
-			if (tween._startTime > ige._currentTime) {
+			if (tween._startTime > igeTime._currentTime) {
 				// The tween is scheduled for later
 				// Push the tween into the IgeTweenComponent's _tweens array
 				this._tweens.push(tween);
@@ -70,12 +70,12 @@ appCore.module('IgeTweenComponent', function (IgeClass) {
 				if (tween._currentStep === 0 && !newTime) {
 					// Because we are on step zero we can check for a start time
 					if (tween._startTime === undefined) {
-						tween._startTime = ige._currentTime;
+						tween._startTime = igeTime._currentTime;
 					}
 				} else {
 					// We're not on step zero anymore so the new step start time
 					// is NOW!
-					tween._startTime = ige._currentTime;
+					tween._startTime = igeTime._currentTime;
 				}
 				
 				durationMs = step.durationMs ? step.durationMs : tween._durationMs;
@@ -167,7 +167,7 @@ appCore.module('IgeTweenComponent', function (IgeClass) {
 		update: function (ctx) {
 			var thisTween = this.tween;
 			if (thisTween._tweens && thisTween._tweens.length) {
-				var currentTime = ige._tickStart,
+				var currentTime = igeTime._tickStart,
 					tweens = thisTween._tweens,
 					tweenCount = tweens.length,
 					tween,

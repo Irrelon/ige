@@ -28,7 +28,7 @@ appCore.module('$textures', function () {
 			texture.destroy();
 			delete this._store[name];
 		}
-	}
+	};
 	
 	IgeTextureStore.prototype.removeGroup = function (group) {
 		var i;
@@ -38,7 +38,7 @@ appCore.module('$textures', function () {
 				this.remove(i);
 			}
 		}
-	}
+	};
 	
 	IgeTextureStore.prototype.get = function (name) {
 		var tex = this._store[name];

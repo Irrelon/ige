@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeFontSheet', function (IgeTexture) {
+appCore.module('IgeFontSheet', function (igeTime, IgeTexture) {
 	/* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
 	 * so that bottom-right aligns to the lower-right point of the bounding box of the entity
 	 * whilst maintaining the current text-alignment as well
@@ -292,7 +292,7 @@ appCore.module('IgeFontSheet', function (IgeTexture) {
 						
 						renderX += measuredWidthMap[charIndex] || 0;
 						
-						ige._drawCount++;
+						igeTime._drawCount++;
 					}
 					
 					renderX = 0;

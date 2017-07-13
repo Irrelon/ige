@@ -1,3 +1,5 @@
+"use strict";
+
 var appCore = require('irrelon-appcore');
 
 appCore.module('IgeArray', function (IgeEntity) {
@@ -14,7 +16,7 @@ appCore.module('IgeArray', function (IgeEntity) {
 						for (var i = 0; i < c; i++) {
 							this[i][methodName].apply(this[i], arguments);
 						}
-					}
+					};
 				}(methodName);
 			}
 		}
