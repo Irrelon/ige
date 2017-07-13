@@ -1,13 +1,13 @@
 "use strict";
 
-var appCore = require('irrelon-appcore'),
+var fs = require('fs'),
+	appCore = require('irrelon-appcore'),
 	modulePath,
 	igeCoreConfig,
 	arr,
 	arrCount,
 	arrIndex,
 	arrItem,
-	itemJs,
 	argParse,
 	args;
 
@@ -33,17 +33,9 @@ if (!args['-deploy']) {
 	for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
 		arrItem = arr[arrIndex];
 		if (arrItem[0].indexOf('s') > -1) {
-			itemJs = 'var ' + arrItem[1] + ' = ' + 'require("../engine/' + arrItem[2] + '")';
-			// Check if there is a specific object we want to use from the
-			// module we are loading
-			if (arrItem[3]) {
-				itemJs += '.' + arrItem[3] + ';';
-			} else {
-				itemJs += ';';
-			}
-			console.log('Executing: ' + itemJs);
 			
-			eval(itemJs);
+			console.log('Requiring: ' + arrItem[2]);
+			require('../engine/' + arrItem[2]);
 		}
 	}
 }

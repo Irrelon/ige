@@ -210,7 +210,7 @@ appCore.module('IgeEditorComponent', function ($ige, $time, IgeEventingClass, Ig
 		ready: function (callback) {
 			if (callback) {
 				if (this._ready) {
-					returncallback();
+					return callback();
 				}
 				
 				this.on('ready', callback);

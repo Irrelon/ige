@@ -52,13 +52,13 @@ module.exports = function(grunt) {
 					"./engine/assets/*.js",
 					"./engine/extensions/*.js",
 					"./engine/filters/*.js",
-					"./engine/components/**/*.js",
+					"./engine/components/*.js",
+					"./engine/components/audio/*.js",
+					"./engine/components/cocoonjs/*.js",
+					"./engine/components/editor/*.js",
+					"./engine/components/stackTrace/*.js",
 					"./engine/ui/*.js",
-					"./index.js",
-					"!./engine/components/editor/**/*.js",
-					"!./engine/components/three/*.js",
-					"!./engine/components/three/**/*.js",
-					"./engine/components/editor/*.js"
+					"./index.js"
 				],
 				dest: "./ige.js",
 				options: {
@@ -71,6 +71,33 @@ module.exports = function(grunt) {
 				}
 			}
 		}
+	});
+	
+	grunt.registerTask('buildClientDependenciesFile', 'Build Client Deps', function () {
+		var fs = require('fs'),
+			dependencies = require('./engine/dependencies.js'),
+			clientDepsLine,
+			arr,
+			arrCount,
+			arrIndex,
+			arrItem;
+		
+		clientDepsLine = [];
+		
+		arr = dependencies.include;
+		arrCount = arr.length;
+
+		// Loop the igeCoreConfig object's include array
+		// and load the required files
+		for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+			arrItem = arr[arrIndex];
+			
+			if (arrItem[0].indexOf('c') > -1) {
+				clientDepsLine.push("require('./" + arrItem[2] + "');");
+			}
+		}
+		
+		fs.writeFileSync('./engine/clientDependencies.js', clientDepsLine.join('\n'));
 	});
 	
 	grunt.registerTask("1: Build Source File", ["browserify"]);

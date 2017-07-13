@@ -2,7 +2,12 @@
   "name": "ige",
   "version": "1.6.0",
   "description": "HTML5 2D and isometric scenegraph-based game engine written entirely in JavaScript",
-  "main": "./server/ige.js",
+  "main": "./index.js",
+  "browser": {
+    "./index.js": "./index.js",
+    "./engine/serverDependencies.js": "./engine/clientDependencies.js",
+    "./engine/components/network/net.io/IgeNetIoServerComponent.js": "./engine/components/network/net.io/IgeNetIoClientComponent.js"
+  },
   "directories": {
     "example": "examples"
   },
@@ -13,7 +18,7 @@
     "grunt": "^1.0.1",
     "grunt-browserify": "^5.0.0",
     "grunt-contrib-jshint": "^1.1.0",
-    "irrelon-appcore": "^1.0.28",
+    "irrelon-appcore": "^1.0.29",
     "irrelon-emitter": "^2.0.2",
     "stringify": "^5.1.0"
   },

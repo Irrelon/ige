@@ -30,18 +30,9 @@ appCore.module('IgeNetIoComponent', function ($ige, IgeEventingClass, IgeTimeSyn
 			this._timeSyncLog = {};
 			this._latency = 0;
 			
-			/* CEXCLUDE */
-			if ($ige.isServer) {
-				this.implement(IgeNetIoServer);
-				this._netio = require('net.io-server').Server;
-				this._acceptConnections = false;
-			}
-			/* CEXCLUDE */
-			
-			if ($ige.isClient) {
-				this._netio = IgeNetIoClient;
-				this.implement(IgeNetIoClient);
-			}
+			this.implement(IgeNetIoServer);
+			this._netio = require('net.io-server').Server;
+			this._acceptConnections = false;
 			
 			this.log('Network component initiated with Net.IO version: ' + this._netio.version);
 		},

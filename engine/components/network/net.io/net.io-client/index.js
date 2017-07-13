@@ -2,8 +2,8 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeNetIoClient', function ($ige, IgeClass) {
-// Our namespace
+appCore.module('NetIo', function ($ige, IgeClass, IgeEventingClass) {
+	// Our namespace
 	var NetIo = {};
 	
 	/**

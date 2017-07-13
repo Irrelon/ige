@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeNetIoClient', function ($ige) {
+appCore.module('IgeNetIoClient', function ($ige, $time, NetIo) {
 	/**
 	 * The client-side net.io component. Handles all client-side
 	 * networking systems.

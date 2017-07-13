@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeNetIoServer', function () {
+appCore.module('IgeNetIoServer', function ($ige, $time) {
 	var IgeNetIoServer = {
 		_idCounter: 0,
 		_requests: {},
