@@ -12,7 +12,7 @@ var Client = IgeClass.extend({
 		gameTexture[0] = new IgeCellSheet('../assets/textures/sprites/vx_chara02_c.png', 12, 8);
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 

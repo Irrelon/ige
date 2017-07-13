@@ -232,7 +232,7 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 				self.emit('loaded');
 	
 				// Inform the engine that this image has loaded
-				ige.textureLoadEnd(self.image.src, self);
+				$textures.textureLoadEnd(self.image.src, self);
 			}, 5);
 		},
 	
@@ -274,7 +274,7 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 	
 					self._loaded = true;
 					self.emit('loaded');
-					$ige.textureLoadEnd(scriptUrl, self);
+					$textures.textureLoadEnd(scriptUrl, self);
 				};
 	
 				scriptElem.addEventListener('error', function () {
@@ -299,7 +299,7 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 			
 			// Check the object has a render method
 			if (typeof(scriptObj.render) === 'function') {
-				//ige.textureLoadStart(scriptUrl, this);
+				//$texutes.textureLoadStart(scriptUrl, this);
 		
 				// Store the script data
 				self._mode = 1;
@@ -315,7 +315,7 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 		
 				self._loaded = true;
 				self.emit('loaded');
-				//ige.textureLoadEnd(scriptUrl, self);
+				//$textures.textureLoadEnd(scriptUrl, self);
 			} else {
 				this.log('Cannot assign smart texture because it doesn\'t have a render() method!', 'error');
 			}

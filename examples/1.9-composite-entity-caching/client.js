@@ -4,7 +4,7 @@ var Client = IgeClass.extend({
 		var self = this;
 		ige.addComponent(IgeEditorComponent);
 		ige.input.debug(true);
-		ige.globalSmoothing(true);
+		$textures.globalSmoothing(true);
 
 		// Load our textures
 		self.obj = [];
@@ -17,7 +17,7 @@ var Client = IgeClass.extend({
 		self.gameTexture.simpleBox = new IgeTexture('./assets/textures/smartTextures/simpleBox.js');
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 

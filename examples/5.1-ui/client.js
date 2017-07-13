@@ -19,7 +19,7 @@ var Client = IgeClass.extend({
 		this.gameTexture.metronic = new IgeTexture('../assets/textures/ui/metronic.png');
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 

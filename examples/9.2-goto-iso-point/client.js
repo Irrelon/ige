@@ -1,7 +1,7 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
-		ige.globalSmoothing(true);
+		$textures.globalSmoothing(true);
 
 		// Load our textures
 		var self = this;

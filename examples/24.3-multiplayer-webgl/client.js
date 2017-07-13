@@ -22,7 +22,7 @@ var Client = IgeClass.extend({
 			ship: new IgeTexture('./assets/PlayerTexture.js')
 		};
 
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 

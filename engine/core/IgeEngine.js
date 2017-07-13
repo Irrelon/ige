@@ -122,7 +122,7 @@ appCore.module('IgeEngine', function (
 				this.dependencyTimeout(30000); // Wait 30 seconds to load all dependencies then timeout
 				
 				// Add the textures loaded dependency
-				this._dependencyQueue.push(this.texturesLoaded.bind(self));
+				this._dependencyQueue.push($texures.texturesLoaded.bind($texures));
 				//this._dependencyQueue.push(this.canvasReady);
 				
 				// Start a timer to record every second of execution
@@ -2220,8 +2220,8 @@ appCore.module('IgeEngine', function (
 						routeSteps.push(function (finished) {
 							routeData.texturesModule.emit('loading');
 							appCore.run([definition.textures, function (textures) {
-								if (!self.texturesLoaded()) {
-									self.on('texturesLoaded', function () {
+								if (!$textures.texturesLoaded()) {
+									$textures.on('texturesLoaded', function () {
 										routeData.texturesModule.emit('loaded');
 										finished(false);
 									});

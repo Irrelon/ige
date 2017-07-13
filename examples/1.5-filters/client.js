@@ -30,7 +30,7 @@ var Client = IgeClass.extend({
 		gameTexture[15] = new IgeTexture('../assets/textures/sprites/tronGlowMask.png');
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 

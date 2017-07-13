@@ -22,7 +22,7 @@ var Client = IgeClass.extend({
 		this.gameTexture.rect = new IgeTexture('./assets/Rect.js');
 		this.gameTexture.circle = new IgeTexture('./assets/Circle.js');
 
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Ask the engine to start
 			ige.start(function (success) {
 				// Check if the engine started successfully

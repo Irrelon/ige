@@ -15,7 +15,7 @@ var Client = IgeClass.extend({
 		gameTexture[0] = new IgeTexture('../assets/textures/backgrounds/grassTile.png');
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			gameTexture[0].resize(100, 50);
 
 			// Create the HTML canvas

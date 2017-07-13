@@ -4,7 +4,7 @@ var Client = IgeClass.extend({
 		ige.addComponent(IgeEditorComponent);
 
 		// Enabled texture smoothing when scaling textures
-		ige.globalSmoothing(true);
+		$textures.globalSmoothing(true);
 
 		// Enable networking
 		ige.addComponent(IgeNetIoComponent);
@@ -23,7 +23,7 @@ var Client = IgeClass.extend({
 		gameTexture[2] = new IgeCellSheet('../assets/textures/tiles/tilea5b.png', 8, 16);
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 			ige.viewportDepth(true);

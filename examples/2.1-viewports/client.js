@@ -21,7 +21,7 @@ var Client = IgeClass.extend({
 		gameTexture[0] = new IgeTexture('./assets/textures/sprites/fairy.png');
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 

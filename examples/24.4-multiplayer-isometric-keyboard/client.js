@@ -4,7 +4,7 @@ var Client = IgeClass.extend({
 	init: function () {
 		//ige.timeScale(0.1);
 		ige.addComponent(IgeEditorComponent);
-		ige.globalSmoothing(true);
+		$textures.globalSmoothing(true);
 
 		// Load our textures
 		var self = this;
@@ -23,7 +23,7 @@ var Client = IgeClass.extend({
 			grassSheet: new IgeCellSheet('../assets/textures/tiles/grassSheet.png', 4, 1)
 		};
 
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Ask the engine to start
 			ige.start(function (success) {
 				// Check if the engine started successfully

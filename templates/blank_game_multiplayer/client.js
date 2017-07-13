@@ -19,7 +19,7 @@ var Client = IgeClass.extend({
 			ship: new IgeTexture('./assets/PlayerTexture.js')
 		};
 
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Ask the engine to start
 			ige.start(function (success) {
 				// Check if the engine started successfully

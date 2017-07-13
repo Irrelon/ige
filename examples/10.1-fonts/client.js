@@ -14,7 +14,7 @@ var Client = IgeClass.extend({
 		gameTexture[1] = new IgeFontSheet('../assets/textures/fonts/verdana_10px.png');
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 

@@ -16,7 +16,7 @@ var Client = IgeClass.extend({
 		gameTexture[1] = new IgeTexture('../assets/textures/smartTextures/simpleBox.js');
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 

@@ -2,7 +2,7 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
-		ige.globalSmoothing(true);
+		$textures.globalSmoothing(true);
 
 		var self = this;
 		self.obj = [];
@@ -13,7 +13,7 @@ var Client = IgeClass.extend({
 		self.gameTexture.grassSheet = new IgeCellSheet('../assets/textures/tiles/grassSheet.png', 4, 1);
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 

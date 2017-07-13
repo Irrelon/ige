@@ -3,7 +3,7 @@ var Client = IgeClass.extend({
 
 	init: function () {
 		// Enabled texture smoothing when scaling textures
-		ige.globalSmoothing(true);
+		$textures.globalSmoothing(true);
 
 		var self = this;
 
@@ -18,7 +18,7 @@ var Client = IgeClass.extend({
 		var self = this;
 		
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 

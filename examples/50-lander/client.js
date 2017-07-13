@@ -24,7 +24,7 @@ var Client = IgeClass.extend({
 			.box2d.start();
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 

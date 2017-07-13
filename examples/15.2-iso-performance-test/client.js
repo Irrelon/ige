@@ -5,7 +5,7 @@ var Client = IgeClass.extend({
 		ige.addComponent(IgeEditorComponent);
 
 		// Enabled texture smoothing when scaling textures
-		ige.globalSmoothing(true);
+		$textures.globalSmoothing(true);
 
 		// Load our textures
 		var self = this;
@@ -20,7 +20,7 @@ var Client = IgeClass.extend({
 		this.implement(ClientObjects);
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 

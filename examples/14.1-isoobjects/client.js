@@ -15,7 +15,7 @@ var Client = IgeClass.extend({
 		ige.addComponent(IgeEditorComponent);
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		$textures.on('texturesLoaded', function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 
