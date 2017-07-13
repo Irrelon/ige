@@ -1,12 +1,14 @@
+//"use strict"; // We use arguments.callee in here, cannot have strict mode on this module
+
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeClass', function (igeBase) {
+appCore.module('IgeClass', function ($ige, igeBase, printStackTrace) {
 	/**
 	 * The base class system.
 	 */
 	var IgeClass = (function () {
 		var initializing = false,
-			fnTest = /xyz/.test(function () {xyz;}) ? /\b_super\b/ : /.*/,
+			//fnTest = /xyz/.test(function (xyz) { xyz = null; }) ? /\b_super\b/ : /.*/,
 			
 			// The base Class implementation (does nothing)
 			IgeClass = function () {},
@@ -90,10 +92,8 @@ appCore.module('IgeClass', function (igeBase) {
 					}
 					
 					if (type === 'error') {
-						if (typeof(ige) !== 'undefined') {
-							console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + thisId + '] : ' + 'Error encountered, stopping engine to prevent console spamming...');
-							ige.stop();
-						}
+						console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + thisId + '] : ' + 'Error encountered, stopping engine to prevent console spamming...');
+						$ige.stop();
 						
 						if (igeBase.igeConfig.debug._throwErrors) {
 							throw(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + thisId + '] : ' + text);
@@ -359,7 +359,7 @@ appCore.module('IgeClass', function (igeBase) {
 			IgeClass.prototype.constructor = IgeClass;
 			
 			// And make this class extensible
-			IgeClass.extend = arguments.callee; // jshint:ignore line
+			IgeClass.extend = arguments.callee; // jshint ignore:line
 			
 			// Add log capability
 			IgeClass.prototype.log = log;

@@ -16,7 +16,7 @@ appCore.module('IgeCuboidSmartTexture', function () {
 	
 	return IgeCuboidSmartTexture;
 });
-},{"irrelon-appcore":86}],2:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],2:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -168,7 +168,7 @@ appCore.module('IgeFontSmartTexture', function () {
 	
 	return IgeFontSmartTexture;
 });
-},{"irrelon-appcore":86}],3:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],3:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -374,7 +374,7 @@ appCore.module('IgeTileMap2dSmartTexture', function (IgePoint2d) {
 	
 	return IgeTileMap2dSmartTexture;
 });
-},{"irrelon-appcore":86}],4:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],4:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -846,7 +846,7 @@ appCore.module('IgeAnimationComponent', function (igeTime, IgeEventingClass) {
 	
 	return IgeAnimationComponent;
 });
-},{"irrelon-appcore":86}],5:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],5:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -1366,7 +1366,7 @@ appCore.module('IgeEntityManagerComponent', function (IgeClass, IgePoint3d, IgeR
 	
 	return IgeEntityManagerComponent;
 });
-},{"irrelon-appcore":86}],6:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],6:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -1564,7 +1564,7 @@ appCore.module('IgeGamePadComponent', function (IgeEventingClass) {
 	
 	return IgeGamePadComponent;
 });
-},{"irrelon-appcore":86}],7:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],7:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2322,7 +2322,7 @@ appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
 	
 	return IgeInputComponent;
 });
-},{"irrelon-appcore":86}],8:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],8:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2571,7 +2571,7 @@ appCore.module('IgeMousePanComponent', function (IgeEventingClass) {
 	
 	return IgeMousePanComponent;
 });
-},{"irrelon-appcore":86}],9:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],9:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2708,7 +2708,7 @@ appCore.module('IgeMouseZoomComponent', function (IgeEventingClass) {
 	
 	return IgeMouseZoomComponent;
 });
-},{"irrelon-appcore":86}],10:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],10:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3565,7 +3565,7 @@ appCore.module('IgePathComponent', function (igeTime, IgeEventingClass, IgePoint
 	
 	return IgePathComponent;
 });
-},{"irrelon-appcore":86}],11:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],11:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3757,7 +3757,7 @@ appCore.module('IgeTiledComponent', function (IgeClass, IgeCellSheet, IgeTileMap
 	
 	return IgeTiledComponent;
 });
-},{"irrelon-appcore":86}],12:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],12:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3862,7 +3862,7 @@ appCore.module('IgeTimeComponent', function (igeTime, IgeEventingClass) {
 	
 	return IgeTimeComponent;
 });
-},{"irrelon-appcore":86}],13:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],13:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4432,7 +4432,7 @@ appCore.module('IgeTweenComponent', function (igeTime, IgeClass) {
 	
 	return IgeTweenComponent;
 });
-},{"irrelon-appcore":86}],14:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],14:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4598,7 +4598,7 @@ appCore.module('IgeUiManagerComponent', function (IgeClass) {
 	
 	return IgeUiManagerComponent;
 });
-},{"irrelon-appcore":86}],15:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],15:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4810,7 +4810,7 @@ appCore.module('IgeVelocityComponent', function (igeTime, IgeClass, IgePoint3d) 
 	
 	return IgeVelocityComponent;
 });
-},{"irrelon-appcore":86}],16:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],16:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4937,7 +4937,7 @@ appCore.module('IgeAudio', function (IgeEventingClass) {
 	
 	return IgeAudio;
 });
-},{"irrelon-appcore":86}],17:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],17:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5036,7 +5036,7 @@ appCore.module('IgeAudioComponent', function (IgeEventingClass, IgeAudio) {
 	
 	return IgeAudioComponent;
 });
-},{"irrelon-appcore":86}],18:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],18:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5103,7 +5103,7 @@ appCore.module('IgeCocoonJsComponent', function (IgeEventingClass) {
 	
 	return IgeCocoonJsComponent;
 });
-},{"irrelon-appcore":86}],19:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],19:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5816,7 +5816,7 @@ appCore.module('IgeEditorComponent', function (igeTime, IgeEventingClass, IgeEdi
 	
 	return IgeEditorComponent;
 });
-},{"irrelon-appcore":86}],20:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],20:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6033,7 +6033,7 @@ appCore.module('IgeEditorRotateComponent', function (IgeEventingClass) {
 	
 	return IgeEditorRotateComponent;
 });
-},{"irrelon-appcore":86}],21:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],21:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6300,7 +6300,353 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 	return IgeEditorTranslateComponent;
 });
 
-},{"irrelon-appcore":86}],22:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],22:[function(_dereq_,module,exports){
+//"use strict"; // We use arguments.callee in here, cannot have strict mode on this module
+
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('printStackTrace', function () {
+	// Domain Public by Eric Wendelin http://eriwen.com/ (2008)
+	//                  Luke Smith http://lucassmith.name/ (2008)
+	//                  Loic Dachary <loic@dachary.org> (2008)
+	//                  Johan Euphrosine <proppy@aminche.com> (2008)
+	//                  Oyvind Sean Kinsey http://kinsey.no/blog (2010)
+	//                  Victor Homyakov <victor-homyakov@users.sourceforge.net> (2010)
+	
+	/**
+	 * Main function giving a function stack trace with a forced or passed in Error
+	 *
+	 * @cfg {Error} e The error to create a stacktrace from (optional)
+	 * @cfg {Boolean} guess If we should try to resolve the names of anonymous functions
+	 * @return {Array} of Strings with functions, lines, files, and arguments where possible
+	 */
+	function printStackTrace(options) {
+		options = options || {guess: true};
+		var ex = options.e || null, guess = !!options.guess;
+		var p = new printStackTrace.implementation(), result = p.run(ex);
+		var res = (guess) ? p.guessAnonymousFunctions(result) : result;
+		for (var k = 0; k < 4; k++) {
+			res.shift();
+		}
+		return res;
+	}
+	
+	printStackTrace.implementation = function() {};
+	
+	printStackTrace.implementation.prototype = {
+		run: function(ex) {
+			ex = ex || this.createException();
+			// Do not use the stored mode: different exceptions in Chrome
+			// may or may not have arguments or stack
+			var mode = this.mode(ex);
+			// Use either the stored mode, or resolve it
+			//var mode = this._mode || this.mode(ex);
+			if (mode === 'other') {
+				return this.other(arguments.callee);
+			} else {
+				return this[mode](ex);
+			}
+		},
+		
+		createException: function() {
+			try {
+				this.undef();
+				return null;
+			} catch (e) {
+				return e;
+			}
+		},
+		
+		/**
+		 * @return {String} mode of operation for the environment in question.
+		 */
+		mode: function(e) {
+			if (e['arguments'] && e.stack) {
+				return (this._mode = 'chrome');
+			} else if (e.message && typeof window !== 'undefined' && window.opera) {
+				return (this._mode = e.stacktrace ? 'opera10' : 'opera');
+			} else if (e.stack) {
+				return (this._mode = 'firefox');
+			}
+			return (this._mode = 'other');
+		},
+		
+		/**
+		 * Given a context, function name, and callback function, overwrite it so that it calls
+		 * printStackTrace() first with a callback and then runs the rest of the body.
+		 *
+		 * @param {Object} context of execution (e.g. window)
+		 * @param {String} functionName to instrument
+		 * @param {Function} function to call with a stack trace on invocation
+		 */
+		instrumentFunction: function(context, functionName, callback) {
+			context = context || window;
+			var original = context[functionName];
+			context[functionName] = function instrumented() {
+				callback.call(this, printStackTrace().slice(4));
+				return context[functionName]._instrumented.apply(this, arguments);
+			};
+			context[functionName]._instrumented = original;
+		},
+		
+		/**
+		 * Given a context and function name of a function that has been
+		 * instrumented, revert the function to it's original (non-instrumented)
+		 * state.
+		 *
+		 * @param {Object} context of execution (e.g. window)
+		 * @param {String} functionName to de-instrument
+		 */
+		deinstrumentFunction: function(context, functionName) {
+			if (context[functionName].constructor === Function &&
+				context[functionName]._instrumented &&
+				context[functionName]._instrumented.constructor === Function) {
+				context[functionName] = context[functionName]._instrumented;
+			}
+		},
+		
+		/**
+		 * Given an Error object, return a formatted Array based on Chrome's stack string.
+		 *
+		 * @param e - Error object to inspect
+		 * @return Array<String> of function calls, files and line numbers
+		 */
+		chrome: function(e) {
+			var stack = (e.stack + '\n').replace(/^\S[^\(]+?[\n$]/gm, '').
+			replace(/^\s+at\s+/gm, '').
+			replace(/^([^\(]+?)([\n$])/gm, '{anonymous}()@$1$2').
+			replace(/^Object.<anonymous>\s*\(([^\)]+)\)/gm, '{anonymous}()@$1').split('\n');
+			stack.pop();
+			return stack;
+		},
+		
+		/**
+		 * Given an Error object, return a formatted Array based on Firefox's stack string.
+		 *
+		 * @param e - Error object to inspect
+		 * @return Array<String> of function calls, files and line numbers
+		 */
+		firefox: function(e) {
+			return e.stack.replace(/(?:\n@:0)?\s+$/m, '').replace(/^\(/gm, '{anonymous}(').split('\n');
+		},
+		
+		/**
+		 * Given an Error object, return a formatted Array based on Opera 10's stacktrace string.
+		 *
+		 * @param e - Error object to inspect
+		 * @return Array<String> of function calls, files and line numbers
+		 */
+		opera10: function(e) {
+			var stack = e.stacktrace;
+			var lines = stack.split('\n'), ANON = '{anonymous}', lineRE = /.*line (\d+), column (\d+) in ((<anonymous function\:?\s*(\S+))|([^\(]+)\([^\)]*\))(?: in )?(.*)\s*$/i, i, j, len;
+			for (i = 2, j = 0, len = lines.length; i < len - 2; i++) {
+				if (lineRE.test(lines[i])) {
+					var location = RegExp.$6 + ':' + RegExp.$1 + ':' + RegExp.$2;
+					var fnName = RegExp.$3;
+					fnName = fnName.replace(/<anonymous function\:?\s?(\S+)?>/g, ANON);
+					lines[j++] = fnName + '@' + location;
+				}
+			}
+			
+			lines.splice(j, lines.length - j);
+			return lines;
+		},
+		
+		// Opera 7.x-9.x only!
+		opera: function(e) {
+			var lines = e.message.split('\n'), ANON = '{anonymous}', lineRE = /Line\s+(\d+).*script\s+(http\S+)(?:.*in\s+function\s+(\S+))?/i, i, j, len;
+			
+			for (i = 4, j = 0, len = lines.length; i < len; i += 2) {
+				//TODO: RegExp.exec() would probably be cleaner here
+				if (lineRE.test(lines[i])) {
+					lines[j++] = (RegExp.$3 ? RegExp.$3 + '()@' + RegExp.$2 + RegExp.$1 : ANON + '()@' + RegExp.$2 + ':' + RegExp.$1) + ' -- ' + lines[i + 1].replace(/^\s+/, '');
+				}
+			}
+			
+			lines.splice(j, lines.length - j);
+			return lines;
+		},
+		
+		// Safari, IE, and others
+		other: function(curr) {
+			var ANON = '{anonymous}', fnRE = /function\s*([\w\-$]+)?\s*\(/i, stack = [], fn, args, maxStackSize = 10;
+			while (curr && stack.length < maxStackSize) {
+				fn = fnRE.test(curr.toString()) ? RegExp.$1 || ANON : ANON;
+				args = Array.prototype.slice.call(curr['arguments'] || []);
+				stack[stack.length] = fn + '(' + this.stringifyArguments(args) + ')';
+				curr = curr.caller;
+			}
+			return stack;
+		},
+		
+		/**
+		 * Given arguments array as a String, subsituting type names for non-string types.
+		 *
+		 * @param {Arguments} object
+		 * @return {Array} of Strings with stringified arguments
+		 */
+		stringifyArguments: function(args) {
+			var slice = Array.prototype.slice;
+			for (var i = 0; i < args.length; ++i) {
+				var arg = args[i];
+				if (arg === undefined) {
+					args[i] = 'undefined';
+				} else if (arg === null) {
+					args[i] = 'null';
+				} else if (arg.constructor) {
+					if (arg.constructor === Array) {
+						if (arg.length < 3) {
+							args[i] = '[' + this.stringifyArguments(arg) + ']';
+						} else {
+							args[i] = '[' + this.stringifyArguments(slice.call(arg, 0, 1)) + '...' + this.stringifyArguments(slice.call(arg, -1)) + ']';
+						}
+					} else if (arg.constructor === Object) {
+						args[i] = '#object';
+					} else if (arg.constructor === Function) {
+						args[i] = '#function';
+					} else if (arg.constructor === String) {
+						args[i] = '"' + arg + '"';
+					}
+				}
+			}
+			return args.join(',');
+		},
+		
+		sourceCache: {},
+		
+		/**
+		 * @return {*} the text from a given URL.
+		 */
+		ajax: function(url) {
+			var req = this.createXMLHTTPObject();
+			if (!req) {
+				return;
+			}
+			req.open('GET', url, false);
+			//req.setRequestHeader('User-Agent', 'XMLHTTP/1.0');
+			req.send('');
+			return req.responseText;
+		},
+		
+		/**
+		 * Try XHR methods in order and store XHR factory.
+		 *
+		 * @return <Function> XHR function or equivalent
+		 */
+		createXMLHTTPObject: function() {
+			var xmlhttp, XMLHttpFactories = [
+				function() {
+					return new XMLHttpRequest();
+				}, function() {
+					return new ActiveXObject('Msxml2.XMLHTTP');
+				}, function() {
+					return new ActiveXObject('Msxml3.XMLHTTP');
+				}, function() {
+					return new ActiveXObject('Microsoft.XMLHTTP');
+				}
+			];
+			for (var i = 0; i < XMLHttpFactories.length; i++) {
+				try {
+					xmlhttp = XMLHttpFactories[i]();
+					// Use memoization to cache the factory
+					this.createXMLHTTPObject = XMLHttpFactories[i];
+					return xmlhttp;
+				} catch (e) {
+				}
+			}
+		},
+		
+		/**
+		 * Given a URL, check if it is in the same domain (so we can get the source
+		 * via Ajax).
+		 *
+		 * @param url <String> source url
+		 * @return False if we need a cross-domain request
+		 */
+		isSameDomain: function(url) {
+			return url.indexOf(location.hostname) !== -1;
+		},
+		
+		/**
+		 * Get source code from given URL if in the same domain.
+		 *
+		 * @param url <String> JS source URL
+		 * @return <Array> Array of source code lines
+		 */
+		getSource: function(url) {
+			if (!(url in this.sourceCache)) {
+				this.sourceCache[url] = this.ajax(url).split('\n');
+			}
+			return this.sourceCache[url];
+		},
+		
+		guessAnonymousFunctions: function(stack) {
+			for (var i = 0; i < stack.length; ++i) {
+				var reStack = /\{anonymous\}\(.*\)@(\w+:\/\/([\-\w\.]+)+(:\d+)?[^:]+):(\d+):?(\d+)?/;
+				var frame = stack[i], m = reStack.exec(frame);
+				if (m) {
+					var file = m[1], lineno = m[4], charno = m[7] || 0; //m[7] is character position in Chrome
+					if (file && this.isSameDomain(file) && lineno) {
+						var functionName = this.guessAnonymousFunction(file, lineno, charno);
+						stack[i] = frame.replace('{anonymous}', functionName);
+					}
+				}
+			}
+			return stack;
+		},
+		
+		guessAnonymousFunction: function(url, lineNo, charNo) {
+			var ret;
+			try {
+				ret = this.findFunctionName(this.getSource(url), lineNo);
+			} catch (e) {
+				ret = 'getSource failed with url: ' + url + ', exception: ' + e.toString();
+			}
+			return ret;
+		},
+		
+		findFunctionName: function(source, lineNo) {
+			// FIXME findFunctionName fails for compressed source
+			// (more than one function on the same line)
+			// TODO use captured args
+			// function {name}({args}) m[1]=name m[2]=args
+			var reFunctionDeclaration = /function\s+([^(]*?)\s*\(([^)]*)\)/;
+			// {name} = function ({args}) TODO args capture
+			// /['"]?([0-9A-Za-z_]+)['"]?\s*[:=]\s*function(?:[^(]*)/
+			var reFunctionExpression = /['"]?([0-9A-Za-z_]+)['"]?\s*[:=]\s*function\b/;
+			// {name} = eval()
+			var reFunctionEvaluation = /['"]?([0-9A-Za-z_]+)['"]?\s*[:=]\s*(?:eval|new Function)\b/;
+			// Walk backwards in the source lines until we find
+			// the line which matches one of the patterns above
+			var code = "", line, maxLines = 10, m;
+			for (var i = 0; i < maxLines; ++i) {
+				// FIXME lineNo is 1-based, source[] is 0-based
+				line = source[lineNo - i];
+				if (line) {
+					code = line + code;
+					
+					m = reFunctionExpression.exec(code);
+					if (m && m[1]) {
+						return m[1];
+					}
+					m = reFunctionDeclaration.exec(code);
+					if (m && m[1]) {
+						//return m[1] + "(" + (m[2] || "") + ")";
+						return m[1];
+					}
+					m = reFunctionEvaluation.exec(code);
+					if (m && m[1]) {
+						return m[1];
+					}
+				}
+			}
+			return '(?)';
+		}
+	};
+	
+	return printStackTrace;
+});
+},{"irrelon-appcore":89}],23:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6309,7 +6655,16 @@ appCore.module('$game', function () {
 	// Return a blank object that can be shared around the application
 	return {};
 });
-},{"irrelon-appcore":86}],23:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],24:[function(_dereq_,module,exports){
+"use strict";
+
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('$ige', function () {
+	// Return a blank object that can be shared around the application
+	return {};
+});
+},{"irrelon-appcore":89}],25:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6363,7 +6718,7 @@ appCore.module('$textures', function () {
 	
 	return new IgeTextureStore();
 });
-},{"irrelon-appcore":86}],24:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],26:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6390,7 +6745,7 @@ appCore.module('IgeArray', function (IgeEntity) {
 	
 	return IgeArray;
 });
-},{"irrelon-appcore":86}],25:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],27:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7116,7 +7471,7 @@ appCore.module('igeBase').run(function (IgeTween) {
 		return newTween;
 	};
 });
-},{"irrelon-appcore":86,"util":93}],26:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89,"util":96}],28:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7171,7 +7526,7 @@ appCore.module('IgeBaseScene', function (ige, IgeSceneGraph, IgeScene2d, IgeView
 	
 	return IgeBaseScene;
 });
-},{"irrelon-appcore":86}],27:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],29:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7551,7 +7906,7 @@ appCore.module('IgeCamera', function (IgeEntity) {
 	
 	return IgeCamera;
 });
-},{"irrelon-appcore":86}],28:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],30:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7692,16 +8047,18 @@ appCore.module('IgeCellSheet', function (IgeTexture) {
 	
 	return IgeCellSheet;
 });
-},{"irrelon-appcore":86}],29:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],31:[function(_dereq_,module,exports){
+//"use strict"; // We use arguments.callee in here, cannot have strict mode on this module
+
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeClass', function (igeBase) {
+appCore.module('IgeClass', function ($ige, igeBase, printStackTrace) {
 	/**
 	 * The base class system.
 	 */
 	var IgeClass = (function () {
 		var initializing = false,
-			fnTest = /xyz/.test(function () {xyz;}) ? /\b_super\b/ : /.*/,
+			//fnTest = /xyz/.test(function (xyz) { xyz = null; }) ? /\b_super\b/ : /.*/,
 			
 			// The base Class implementation (does nothing)
 			IgeClass = function () {},
@@ -7785,10 +8142,8 @@ appCore.module('IgeClass', function (igeBase) {
 					}
 					
 					if (type === 'error') {
-						if (typeof(ige) !== 'undefined') {
-							console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + thisId + '] : ' + 'Error encountered, stopping engine to prevent console spamming...');
-							ige.stop();
-						}
+						console.log(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + thisId + '] : ' + 'Error encountered, stopping engine to prevent console spamming...');
+						$ige.stop();
 						
 						if (igeBase.igeConfig.debug._throwErrors) {
 							throw(indent + 'IGE *' + type + '* [' + (this._classId || this.prototype._classId) + thisId + '] : ' + text);
@@ -8054,7 +8409,7 @@ appCore.module('IgeClass', function (igeBase) {
 			IgeClass.prototype.constructor = IgeClass;
 			
 			// And make this class extensible
-			IgeClass.extend = arguments.callee; // jshint:ignore line
+			IgeClass.extend = arguments.callee; // jshint ignore:line
 			
 			// Add log capability
 			IgeClass.prototype.log = log;
@@ -8143,7 +8498,7 @@ appCore.module('IgeClass', function (igeBase) {
 	
 	return IgeClass;
 });
-},{"irrelon-appcore":86}],30:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],32:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -8154,8 +8509,6 @@ appCore.module('IgeCollisionMap2d', function (IgeEntity, IgeMap2d) {
 		
 		init: function (tileWidth, tileHeight) {
 			IgeEntity.prototype.init.call(this);
-			var self = this;
-			
 			this.map = new IgeMap2d();
 		},
 		
@@ -8171,14 +8524,13 @@ appCore.module('IgeCollisionMap2d', function (IgeEntity, IgeMap2d) {
 	
 	return IgeCollisionMap2d;
 });
-},{"irrelon-appcore":86}],31:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],33:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeDummyCanvas', function (IgeDummyContext) {
-	var nullMethod = function () {},
-		IgeDummyCanvas = function () {
+	var IgeDummyCanvas = function () {
 			this.dummy = true;
 			this.width = 0;
 			this.height = 0;
@@ -8190,7 +8542,7 @@ appCore.module('IgeDummyCanvas', function (IgeDummyContext) {
 	
 	return IgeDummyCanvas;
 });
-},{"irrelon-appcore":86}],32:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],34:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -8223,7 +8575,7 @@ appCore.module('IgeDummyContext', function () {
 	
 	return IgeDummyContext;
 });
-},{"irrelon-appcore":86}],33:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],35:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -8547,25 +8899,26 @@ appCore.module('IgeEngine', function (
 			},
 			
 			_processSync: function () {
-				var syncEntry;
+				var self = this,
+					syncEntry;
 				
-				if (ige._syncIndex < ige._syncArr.length) {
-					syncEntry = ige._syncArr[ige._syncIndex];
+				if (this._syncIndex < this._syncArr.length) {
+					syncEntry = this._syncArr[this._syncIndex];
 					
 					// Add the callback to the last attribute
 					syncEntry.attrArr.push(function () {
-						ige._syncIndex++;
-						setTimeout(ige._processSync, 1);
+						self._syncIndex++;
+						setTimeout(self._processSync.bind(self), 1);
 					});
 					
 					// Call the method
-					syncEntry.method.apply(ige, syncEntry.attrArr);
+					syncEntry.method.apply(self, syncEntry.attrArr);
 				} else {
 					// Reached end of sync cycle
-					delete ige._syncArr;
-					delete ige._syncIndex;
+					delete this._syncArr;
+					delete this._syncIndex;
 					
-					ige.emit('syncComplete');
+					this.emit('syncComplete');
 				}
 			},
 			
@@ -8626,7 +8979,6 @@ appCore.module('IgeEngine', function (
 			 */
 			requireStylesheet: function (url) {
 				if (url !== undefined) {
-					var self = this;
 					
 					// Load the engine stylesheet
 					var css = document.createElement('link');
@@ -8768,7 +9120,7 @@ appCore.module('IgeEngine', function (
 			
 			debug: function (eventName) {
 				if (this._debugEvents[eventName] === true || this._debugEvents[eventName] === igeTime._frames) {
-					debugger;
+					debugger; // jshint ignore:line
 				}
 			},
 			
@@ -8808,7 +9160,9 @@ appCore.module('IgeEngine', function (
 					arr = this._register;
 				
 				for (i in arr) {
-					arr[i].show();
+					if (arr.hasOwnProperty(i)) {
+						arr[i].show();
+					}
 				}
 			},
 			
@@ -9058,7 +9412,7 @@ appCore.module('IgeEngine', function (
 			 * @return {Boolean}
 			 */
 			canvasReady: function () {
-				return (ige._canvas !== undefined || ige.isServer);
+				return (this._canvas !== undefined || this.isServer);
 			},
 			
 			/**
@@ -9100,7 +9454,7 @@ appCore.module('IgeEngine', function (
 					id = (val).toString(16);
 					
 					// Check if the ID is already in use
-					while (ige.$(id)) {
+					while (this.$(id)) {
 						val += Math.pow(10, 17);
 						id = (val).toString(16);
 					}
@@ -9240,7 +9594,6 @@ appCore.module('IgeEngine', function (
 			 * those whose pixel ratio is different from 1 to 1.
 			 */
 			createFrontBuffer: function (autoSize, dontScale) {
-				var self = this;
 				if (this.isClient) {
 					if (!this._canvas) {
 						this._createdFrontBuffer = true;
@@ -9300,7 +9653,7 @@ appCore.module('IgeEngine', function (
 						}
 						
 						// Add some event listeners even if autosize is off
-						window.addEventListener('resize', this._resizeEvent);
+						window.addEventListener('resize', this._resizeEvent.bind(this));
 						
 						// Fire the resize event for the first time
 						// which sets up initial canvas dimensions
@@ -9364,9 +9717,9 @@ appCore.module('IgeEngine', function (
 			openUrl: function (url) {
 				if (url !== undefined) {
 					
-					if (ige.cocoonJs && ige.cocoonJs.detected) {
+					if (this.cocoonJs && this.cocoonJs.detected) {
 						// Open URL via CocoonJS webview
-						ige.cocoonJs.openUrl(url);
+						this.cocoonJs.openUrl(url);
 					} else {
 						// Open via standard JS open window
 						window.open(url);
@@ -9387,9 +9740,9 @@ appCore.module('IgeEngine', function (
 			 * @param {String=} url
 			 */
 			showWebView: function (url) {
-				if (ige.cocoonJs && ige.cocoonJs.detected) {
+				if (this.cocoonJs && this.cocoonJs.detected) {
 					// Open URL via CocoonJS webview
-					ige.cocoonJs.showWebView(url);
+					this.cocoonJs.showWebView(url);
 				} else {
 					// Load the iFrame url
 					var overlay = document.getElementById('igeOverlay');
@@ -9428,9 +9781,9 @@ appCore.module('IgeEngine', function (
 			 * @return {*}
 			 */
 			hideWebView: function () {
-				if (ige.cocoonJs && ige.cocoonJs.detected) {
+				if (this.cocoonJs && this.cocoonJs.detected) {
 					// Hide the cocoonJS webview
-					ige.cocoonJs.hideWebView();
+					this.cocoonJs.hideWebView();
 				} else {
 					var overlay = document.getElementById('igeOverlay');
 					if (overlay) {
@@ -9442,12 +9795,13 @@ appCore.module('IgeEngine', function (
 			},
 			
 			/**
-			 * Evaluates javascript sent from another frame.
+			 * Evaluates javascript sent from another frame, usually used
+			 * when operating with a wrapper system like cocoonjs.
 			 * @param js
 			 */
 			layerCall: function (js) {
 				if (js !== undefined) {
-					eval(js);
+					eval(js); // jshint ignore:line
 				}
 			},
 			
@@ -9473,12 +9827,12 @@ appCore.module('IgeEngine', function (
 					first = false;
 				
 				if (!obj) {
-					obj = ige;
+					obj = this;
 					entArr = [];
 					first = true;
 				}
 				
-				if (obj === ige) {
+				if (obj === this) {
 					// Loop viewports
 					arr = obj._children;
 					
@@ -9536,16 +9890,16 @@ appCore.module('IgeEngine', function (
 			_resizeEvent: function (event) {
 				var canvasBoundingRect;
 				
-				if (ige._autoSize) {
+				if (this._autoSize) {
 					var newWidth = window.innerWidth,
 						newHeight = window.innerHeight,
-						arr = ige._children,
+						arr = this._children,
 						arrCount = arr.length;
 					
 					// Only update canvas dimensions if it exists
-					if (ige._canvas) {
+					if (this._canvas) {
 						// Check if we can get the position of the canvas
-						canvasBoundingRect = ige._canvasPosition();
+						canvasBoundingRect = this._canvasPosition();
 						
 						// Adjust the newWidth and newHeight by the canvas offset
 						newWidth -= parseInt(canvasBoundingRect.left);
@@ -9557,19 +9911,19 @@ appCore.module('IgeEngine', function (
 						if (newWidth % 2) { newWidth--; }
 						if (newHeight % 2) { newHeight--; }
 						
-						ige._canvas.width = newWidth * ige._deviceFinalDrawRatio;
-						ige._canvas.height = newHeight * ige._deviceFinalDrawRatio;
+						this._canvas.width = newWidth * this._deviceFinalDrawRatio;
+						this._canvas.height = newHeight * this._deviceFinalDrawRatio;
 						
-						if (ige._deviceFinalDrawRatio !== 1) {
-							ige._canvas.style.width = newWidth + 'px';
-							ige._canvas.style.height = newHeight + 'px';
+						if (this._deviceFinalDrawRatio !== 1) {
+							this._canvas.style.width = newWidth + 'px';
+							this._canvas.style.height = newHeight + 'px';
 							
 							// Scale the canvas context to account for the change
-							ige._ctx.scale(ige._deviceFinalDrawRatio, ige._deviceFinalDrawRatio);
+							this._ctx.scale(this._deviceFinalDrawRatio, this._deviceFinalDrawRatio);
 						}
 					}
 					
-					ige._bounds2d = new IgePoint3d(newWidth, newHeight, 0);
+					this._bounds2d = new IgePoint3d(newWidth, newHeight, 0);
 					
 					// Loop any mounted children and check if
 					// they should also get resized
@@ -9577,22 +9931,22 @@ appCore.module('IgeEngine', function (
 						arr[arrCount]._resizeEvent(event);
 					}
 				} else {
-					if (ige._canvas) {
-						ige._bounds2d = new IgePoint3d(ige._canvas.width, ige._canvas.height, 0);
+					if (this._canvas) {
+						this._bounds2d = new IgePoint3d(this._canvas.width, this._canvas.height, 0);
 					}
 				}
 				
-				if (ige._showSgTree) {
+				if (this._showSgTree) {
 					var sgTreeElem = document.getElementById('igeSgTree');
 					
-					canvasBoundingRect = ige._canvasPosition();
+					canvasBoundingRect = this._canvasPosition();
 					
 					sgTreeElem.style.top = (parseInt(canvasBoundingRect.top) + 5) + 'px';
 					sgTreeElem.style.left = (parseInt(canvasBoundingRect.left) + 5) + 'px';
-					sgTreeElem.style.height = (ige._bounds2d.y - 30) + 'px';
+					sgTreeElem.style.height = (this._bounds2d.y - 30) + 'px';
 				}
 				
-				ige._resized = true;
+				this._resized = true;
 			},
 			
 			/**
@@ -9603,11 +9957,11 @@ appCore.module('IgeEngine', function (
 			 */
 			_canvasPosition: function () {
 				try {
-					return ige._canvas.getBoundingClientRect();
+					return this._canvas.getBoundingClientRect();
 				} catch (e) {
 					return {
-						top: ige._canvas.offsetTop,
-						left: ige._canvas.offsetLeft
+						top: this._canvas.offsetTop,
+						left: this._canvas.offsetLeft
 					};
 				}
 			},
@@ -9673,6 +10027,8 @@ appCore.module('IgeEngine', function (
 			 * the setter value as first argument.
 			 */
 			traceSet: function (obj, propName, sampleCount, callbackEvaluator) {
+				var self = this;
+				
 				obj.___igeTraceCurrentVal = obj.___igeTraceCurrentVal || {};
 				obj.___igeTraceCurrentVal[propName] = obj[propName];
 				obj.___igeTraceMax = sampleCount || 1;
@@ -9685,10 +10041,10 @@ appCore.module('IgeEngine', function (
 					set: function (val) {
 						if (callbackEvaluator){
 							if (callbackEvaluator(val)) {
-								debugger;
+								debugger; // jshint ignore:line
 							}
 						} else {
-							debugger;
+							debugger; // jshint ignore:line
 						}
 						
 						obj.___igeTraceCurrentVal[propName] = val;
@@ -9697,7 +10053,7 @@ appCore.module('IgeEngine', function (
 						if (obj.___igeTraceCount === obj.___igeTraceMax) {
 							// Maximum amount of trace samples reached, turn off
 							// the trace system
-							ige.traceSetOff(obj, propName);
+							self.traceSetOff(obj, propName);
 						}
 					}
 				});
@@ -9725,8 +10081,8 @@ appCore.module('IgeEngine', function (
 					if (obj._classId.substr(0, 3) === 'Ige') {
 						return obj._classId;
 					} else {
-						if (obj.__proto__._classId) {
-							return this.findBaseClass(obj.__proto__);
+						if (Object.getPrototypeOf(obj)._classId) {
+							return this.findBaseClass(Object.getPrototypeOf(obj));
 						} else {
 							return '';
 						}
@@ -9752,8 +10108,8 @@ appCore.module('IgeEngine', function (
 					}
 				}
 				
-				if (obj.__proto__._classId) {
-					this.getClassDerivedList(obj.__proto__, arr);
+				if (Object.getPrototypeOf(obj)._classId) {
+					this.getClassDerivedList(Object.getPrototypeOf(obj), arr);
 				}
 				
 				return arr;
@@ -9773,8 +10129,6 @@ appCore.module('IgeEngine', function (
 			 * @private
 			 */
 			_secondTick: function () {
-				var self = this;
-				
 				// Store frames per second
 				igeTime._fps = igeTime._frames;
 				
@@ -10060,16 +10414,16 @@ appCore.module('IgeEngine', function (
 							ud = new Date().getTime() - us;
 							
 							if (arr[arrCount]) {
-								if (!ige._timeSpentInUpdate[arr[arrCount].id()]) {
-									ige._timeSpentInUpdate[arr[arrCount].id()] = 0;
+								if (!this._timeSpentInUpdate[arr[arrCount].id()]) {
+									this._timeSpentInUpdate[arr[arrCount].id()] = 0;
 								}
 								
-								if (!ige._timeSpentLastUpdate[arr[arrCount].id()]) {
-									ige._timeSpentLastUpdate[arr[arrCount].id()] = {};
+								if (!this._timeSpentLastUpdate[arr[arrCount].id()]) {
+									this._timeSpentLastUpdate[arr[arrCount].id()] = {};
 								}
 								
-								ige._timeSpentInUpdate[arr[arrCount].id()] += ud;
-								ige._timeSpentLastUpdate[arr[arrCount].id()].ms = ud;
+								this._timeSpentInUpdate[arr[arrCount].id()] += ud;
+								this._timeSpentLastUpdate[arr[arrCount].id()].ms = ud;
 							}
 						}
 					} else {
@@ -10093,11 +10447,11 @@ appCore.module('IgeEngine', function (
 						this.depthSortChildren();
 						td = new Date().getTime() - ts;
 						
-						if (!ige._timeSpentLastTick[this.id()]) {
-							ige._timeSpentLastTick[this.id()] = {};
+						if (!this._timeSpentLastTick[this.id()]) {
+							this._timeSpentLastTick[this.id()] = {};
 						}
 						
-						ige._timeSpentLastTick[this.id()].depthSortChildren = td;
+						this._timeSpentLastTick[this.id()].depthSortChildren = td;
 					} else {
 						this.depthSortChildren();
 					}
@@ -10122,16 +10476,16 @@ appCore.module('IgeEngine', function (
 							arr[arrCount].tick(ctx);
 							td = new Date().getTime() - ts;
 							if (arr[arrCount]) {
-								if (!ige._timeSpentInTick[arr[arrCount].id()]) {
-									ige._timeSpentInTick[arr[arrCount].id()] = 0;
+								if (!this._timeSpentInTick[arr[arrCount].id()]) {
+									this._timeSpentInTick[arr[arrCount].id()] = 0;
 								}
 								
-								if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
-									ige._timeSpentLastTick[arr[arrCount].id()] = {};
+								if (!this._timeSpentLastTick[arr[arrCount].id()]) {
+									this._timeSpentLastTick[arr[arrCount].id()] = {};
 								}
 								
-								ige._timeSpentInTick[arr[arrCount].id()] += td;
-								ige._timeSpentLastTick[arr[arrCount].id()].ms = td;
+								this._timeSpentInTick[arr[arrCount].id()] += td;
+								this._timeSpentLastTick[arr[arrCount].id()].ms = td;
 							}
 							ctx.restore();
 						}
@@ -10160,9 +10514,7 @@ appCore.module('IgeEngine', function (
 			},
 			
 			analyseTiming: function () {
-				if (igeBase.igeConfig.debug._timing) {
-					
-				} else {
+				if (!igeBase.igeConfig.debug._timing) {
 					this.log('Cannot analyse timing because the igeBase.igeConfig.debug._timing flag is not enabled so no timing data has been recorded!', 'warning');
 				}
 			},
@@ -10459,20 +10811,16 @@ appCore.module('IgeEngine', function (
 			 */
 			go: function (path) {
 				var self = this,
-					requirements = [],
-					routeSteps,
 					currentRoutePath,
 					rootPathString,
 					currentPathParts,
 					newPathParts,
 					tempPath,
-					routeData,
 					i;
 				
 				// Check for a route definition first
 				if (!this._route[path]) {
 					throw('Attempt to navigate to undefined route: ' + path);
-					return;
 				}
 				
 				currentRoutePath = self._currentRoutePath;
@@ -10519,7 +10867,6 @@ appCore.module('IgeEngine', function (
 			_routeAdd: function (path) {
 				var self = this,
 					definition,
-					requirements,
 					routeSteps,
 					routeData,
 					thisFullPath,
@@ -10693,7 +11040,7 @@ appCore.module('IgeEngine', function (
 		
 		return IgeEngine;
 	});
-},{"irrelon-appcore":86}],34:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],36:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -14878,7 +15225,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 	
 	return IgeEntity;
 });
-},{"irrelon-appcore":86}],35:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],37:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15211,7 +15558,7 @@ appCore.module('IgeEventingClass', function (IgeClass) {
 	
 	return IgeEventingClass;
 });
-},{"irrelon-appcore":86}],36:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],38:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15506,7 +15853,7 @@ appCore.module('IgeFSM', function (IgeClass) {
 	
 	return IgeFSM;
 });
-},{"irrelon-appcore":86}],37:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],39:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15523,7 +15870,7 @@ appCore.module('IgeFilters', function () {
 	
 	return IgeFilters;
 });
-},{"irrelon-appcore":86}],38:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],40:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -15959,7 +16306,7 @@ appCore.module('IgeFontEntity', function (IgeUiEntity, IgeTexture, IgeFontSmartT
 	
 	return IgeFontEntity;
 });
-},{"irrelon-appcore":86}],39:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],41:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -16270,7 +16617,7 @@ appCore.module('IgeFontSheet', function (igeTime, IgeTexture) {
 	
 	return IgeFontSheet;
 });
-},{"irrelon-appcore":86}],40:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],42:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -16350,7 +16697,7 @@ appCore.module('IgeInterval', function (igeTime, IgeEventingClass) {
 	
 	return IgeInterval;
 });
-},{"irrelon-appcore":86}],41:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],43:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -16636,7 +16983,7 @@ appCore.module('IgeMap2d', function (IgeClass) {
 	
 	return IgeMap2d;
 });
-},{"irrelon-appcore":86}],42:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],44:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -16793,7 +17140,7 @@ appCore.module('IgeMapStack2d', function (IgeClass) {
 	
 	return IgeMapStack2d;
 });
-},{"irrelon-appcore":86}],43:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],45:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -17244,7 +17591,7 @@ appCore.module('IgeMatrix2d', function (IgePoint3d) {
 	
 	return IgeMatrix2d;
 });
-},{"irrelon-appcore":86}],44:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],46:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -19303,7 +19650,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 	return IgeObject;
 });
 
-},{"irrelon-appcore":86}],45:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],47:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -19331,7 +19678,7 @@ appCore.module('IgeParticle', function (IgeEntity, IgeVelocityComponent) {
 	
 	return IgeParticle;
 });
-},{"irrelon-appcore":86}],46:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],48:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20037,7 +20384,7 @@ appCore.module('IgeParticleEmitter', function (IgeUiEntity, IgeTween) {
 	
 	return IgeParticleEmitter;
 });
-},{"irrelon-appcore":86}],47:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],49:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20387,7 +20734,7 @@ appCore.module('IgePathFinder', function (IgeEventingClass, IgePathNode) {
 	
 	return IgePathFinder;
 });
-},{"irrelon-appcore":86}],48:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],50:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20443,7 +20790,7 @@ appCore.module('IgePathNode', function (IgePoint3d) {
 	
 	return IgePathNode;
 });
-},{"irrelon-appcore":86}],49:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],51:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -20765,7 +21112,7 @@ appCore.module('IgePoint2d', function (IgeClass) {
 	
 	return IgePoint2d;
 });
-},{"irrelon-appcore":86}],50:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],52:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21102,7 +21449,7 @@ appCore.module('IgePoint3d', function (IgeClass) {
 	
 	return IgePoint3d;
 });
-},{"irrelon-appcore":86}],51:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],53:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21522,7 +21869,7 @@ appCore.module('IgePoly2d', function (IgeClass, IgePoint2d, IgeRect) {
 	
 	return IgePoly2d;
 });
-},{"irrelon-appcore":86}],52:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],54:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21889,7 +22236,7 @@ appCore.module('IgeQuest', function (IgeEventingClass) {
 	
 	return IgeQuest;
 });
-},{"irrelon-appcore":86}],53:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],55:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -22099,7 +22446,7 @@ appCore.module('IgeRect', function (IgeClass) {
 	
 	return IgeRect;
 });
-},{"irrelon-appcore":86}],54:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],56:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -22296,7 +22643,7 @@ appCore.module('IgeScene2d', function (IgeEntity) {
 	
 	return IgeScene2d;
 });
-},{"irrelon-appcore":86}],55:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],57:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -22329,7 +22676,7 @@ appCore.module('IgeSceneGraph', function (IgeClass) {
 	
 	return IgeSceneGraph;
 });
-},{"irrelon-appcore":86}],56:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],58:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -22598,7 +22945,25 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 	
 	return IgeSpriteSheet;
 });
-},{"irrelon-appcore":86}],57:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],59:[function(_dereq_,module,exports){
+"use strict";
+
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('igeState', function (Emitter) {
+	var IgeState = function () {
+		this._state = 0;
+	};
+	
+	IgeState.prototype.start = function () {
+		
+	};
+	
+	IgeState.prototype.stop = function () {
+		
+	};
+});
+},{"irrelon-appcore":89}],60:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -23538,7 +23903,7 @@ appCore.module('IgeTexture', function (igeTime, IgeEventingClass) {
 	
 	return IgeTexture;
 });
-},{"irrelon-appcore":86}],58:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],61:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -23604,7 +23969,7 @@ appCore.module('IgeTextureAtlas', function (IgeTextureMap) {
 	
 	return IgeTextureAtlas;
 });
-},{"irrelon-appcore":86}],59:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],62:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -24338,7 +24703,7 @@ appCore.module('IgeTextureMap', function (igeTime, IgeTileMap2d, IgeMap2d, IgePo
 	return IgeTextureMap;
 });
 
-},{"irrelon-appcore":86}],60:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],63:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -24920,7 +25285,7 @@ appCore.module('IgeTileMap2d', function (IgeEntity, IgeTexture, IgeTileMap2dSmar
 	
 	return IgeTileMap2d;
 });
-},{"irrelon-appcore":86}],61:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],64:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -24945,7 +25310,7 @@ appCore.module('igeTime', function () {
 	
 	return new IgeTime();
 });
-},{"irrelon-appcore":86}],62:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],65:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -25017,7 +25382,7 @@ appCore.module('IgeTimeout', function (igeTime, IgeInterval) {
 	
 	return IgeTimeout;
 });
-},{"irrelon-appcore":86}],63:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],66:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -25361,7 +25726,7 @@ appCore.module('IgeTween', function (igeTime, IgeClass) {
 	
 	return IgeTween;
 });
-},{"irrelon-appcore":86}],64:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],67:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -25643,7 +26008,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 	
 	return IgeUiElement;
 });
-},{"irrelon-appcore":86}],65:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],68:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -26003,7 +26368,7 @@ appCore.module('IgeUiEntity', function (IgeEntity, IgeUiStyleExtension, IgeUiPos
 	
 	return IgeUiEntity;
 });
-},{"irrelon-appcore":86}],66:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],69:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -26619,7 +26984,7 @@ appCore.module('IgeViewport', function (IgeEntity, IgePoint3d, IgeCamera, IgeUiS
 	
 	return IgeViewport;
 });
-},{"irrelon-appcore":86}],67:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],70:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -26658,7 +27023,7 @@ appCore.module('requestAnimFrame', function () {
 	
 	return requestAnimFrame;
 });
-},{"irrelon-appcore":86}],68:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],71:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -27331,7 +27696,7 @@ appCore.module('IgeUiPositionExtension', function () {
 	
 	return IgeUiPositionExtension;
 });
-},{"irrelon-appcore":86}],69:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],72:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -27687,7 +28052,7 @@ appCore.module('IgeUiStyleExtension', function () {
 	
 	return IgeUiStyleExtension;
 });
-},{"irrelon-appcore":86}],70:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],73:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiAutoFlow', function (IgeUiElement) {
@@ -27722,7 +28087,7 @@ appCore.module('IgeUiAutoFlow', function (IgeUiElement) {
 	
 	return IgeUiAutoFlow;
 });
-},{"irrelon-appcore":86}],71:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],74:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiButton', function (IgeUiElement) {
@@ -27814,7 +28179,7 @@ appCore.module('IgeUiButton', function (IgeUiElement) {
 	
 	return IgeUiButton;
 });
-},{"irrelon-appcore":86}],72:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],75:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiDropDown', function (IgeUiElement) {
@@ -28006,7 +28371,7 @@ appCore.module('IgeUiDropDown', function (IgeUiElement) {
 	
 	return IgeUiDropDown;
 });
-},{"irrelon-appcore":86}],73:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],76:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiGridPanel', function (IgeUiElement) {
@@ -28038,7 +28403,7 @@ appCore.module('IgeUiGridPanel', function (IgeUiElement) {
 	
 	return IgeUiGridPanel;
 });
-},{"irrelon-appcore":86}],74:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],77:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiInlineFlow', function (IgeUiElement) {
@@ -28069,7 +28434,7 @@ appCore.module('IgeUiInlineFlow', function (IgeUiElement) {
 	
 	return IgeUiInlineFlow;
 });
-},{"irrelon-appcore":86}],75:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],78:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiLabel', function (IgeUiElement) {
@@ -28274,7 +28639,7 @@ appCore.module('IgeUiLabel', function (IgeUiElement) {
 	
 	return IgeUiLabel;
 });
-},{"irrelon-appcore":86}],76:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],79:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiMenu', function (IgeUiElement, IgeUiMenuItem) {
@@ -28454,7 +28819,7 @@ appCore.module('IgeUiMenuItem', function (IgeUiElement) {
 	
 	return IgeUiMenuItem;
 });
-},{"irrelon-appcore":86}],77:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],80:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiProgressBar', function (IgeUiElement) {
@@ -28627,7 +28992,7 @@ appCore.module('IgeUiProgressBar', function (IgeUiElement) {
 	
 	return IgeUiProgressBar;
 });
-},{"irrelon-appcore":86}],78:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],81:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiRadioButton', function (IgeUiButton) {
@@ -28705,11 +29070,11 @@ appCore.module('IgeUiRadioButton', function (IgeUiButton) {
 	
 	return IgeUiRadioButton;
 });
-},{"irrelon-appcore":86}],79:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],82:[function(_dereq_,module,exports){
 
-},{}],80:[function(_dereq_,module,exports){
-arguments[4][79][0].apply(exports,arguments)
-},{"dup":79}],81:[function(_dereq_,module,exports){
+},{}],83:[function(_dereq_,module,exports){
+arguments[4][82][0].apply(exports,arguments)
+},{"dup":82}],84:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTextBox', function (IgeUiElement) {
@@ -29033,7 +29398,7 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 	
 	return IgeUiTextBox;
 });
-},{"irrelon-appcore":86}],82:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],85:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTimeStream', function (IgeUiElement) {
@@ -29109,7 +29474,7 @@ appCore.module('IgeUiTimeStream', function (IgeUiElement) {
 	
 	return IgeUiTimeStream;
 });
-},{"irrelon-appcore":86}],83:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],86:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTogglePanel', function (IgeUiElement) {
@@ -29185,7 +29550,7 @@ appCore.module('IgeUiTogglePanel', function (IgeUiElement) {
 	
 	return IgeUiTogglePanel;
 });
-},{"irrelon-appcore":86}],84:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],87:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTooltip', function (IgeUiElement) {
@@ -29387,7 +29752,7 @@ appCore.module('IgeUiTooltip', function (IgeUiElement) {
 	
 	return IgeUiTooltip;
 });
-},{"irrelon-appcore":86}],85:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],88:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -29405,7 +29770,7 @@ appCore.module('ige', function (IgeEngine) {
 if (typeof module !== undefined) {
 	module.exports = appCore;
 }
-},{"irrelon-appcore":86}],86:[function(_dereq_,module,exports){
+},{"irrelon-appcore":89}],89:[function(_dereq_,module,exports){
 /**
  * Irrelon AppCore
  *
@@ -29934,7 +30299,7 @@ if (typeof module  !== 'undefined' && typeof module.exports !== 'undefined') {
 if (typeof window !== 'undefined') {
 	window.appCore = singelton;
 }
-},{"./AppCoreModule":87,"irrelon-emitter":88}],87:[function(_dereq_,module,exports){
+},{"./AppCoreModule":90,"irrelon-emitter":91}],90:[function(_dereq_,module,exports){
 var Emitter = _dereq_('irrelon-emitter');
 
 /**
@@ -30054,7 +30419,7 @@ AppCoreModule.prototype.destroy = function () {
 };
 
 module.exports = AppCoreModule;
-},{"irrelon-emitter":88}],88:[function(_dereq_,module,exports){
+},{"irrelon-emitter":91}],91:[function(_dereq_,module,exports){
 /*
  The MIT License (MIT)
 
@@ -30784,7 +31149,7 @@ var Emitter = function (obj) {
 };
 
 module.exports = Emitter;
-},{"irrelon-overload":89}],89:[function(_dereq_,module,exports){
+},{"irrelon-overload":92}],92:[function(_dereq_,module,exports){
 "use strict";
 
 /**
@@ -30939,7 +31304,7 @@ Overload.prototype.callExtend = function (context, prop, propContext, func, args
 };
 
 module.exports = Overload;
-},{}],90:[function(_dereq_,module,exports){
+},{}],93:[function(_dereq_,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -31125,7 +31490,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],91:[function(_dereq_,module,exports){
+},{}],94:[function(_dereq_,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -31150,14 +31515,14 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],92:[function(_dereq_,module,exports){
+},{}],95:[function(_dereq_,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],93:[function(_dereq_,module,exports){
+},{}],96:[function(_dereq_,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -31747,4 +32112,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,_dereq_('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":92,"_process":90,"inherits":91}]},{},[22,23,24,25,26,27,28,29,30,31,32,33,34,35,37,38,39,36,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,1,2,3,68,69,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85]);
+},{"./support/isBuffer":95,"_process":93,"inherits":94}]},{},[23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,39,40,41,38,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,1,2,3,71,72,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88]);

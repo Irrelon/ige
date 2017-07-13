@@ -8,8 +8,6 @@ appCore.module('IgeCollisionMap2d', function (IgeEntity, IgeMap2d) {
 		
 		init: function (tileWidth, tileHeight) {
 			IgeEntity.prototype.init.call(this);
-			var self = this;
-			
 			this.map = new IgeMap2d();
 		},
 		

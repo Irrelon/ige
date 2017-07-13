@@ -41,6 +41,7 @@ module.exports = function(grunt) {
 					"./engine/components/audio/*.js",
 					"./engine/components/cocoonjs/*.js",
 					"./engine/components/editor/*.js",
+					"./engine/components/stackTrace/*.js",
 					"./engine/ui/*.js",
 					"./index.js"
 				],

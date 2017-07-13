@@ -3,8 +3,7 @@
 var appCore = require('irrelon-appcore');
 
 appCore.module('IgeDummyCanvas', function (IgeDummyContext) {
-	var nullMethod = function () {},
-		IgeDummyCanvas = function () {
+	var IgeDummyCanvas = function () {
 			this.dummy = true;
 			this.width = 0;
 			this.height = 0;

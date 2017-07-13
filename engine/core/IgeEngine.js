@@ -321,25 +321,26 @@ appCore.module('IgeEngine', function (
 			},
 			
 			_processSync: function () {
-				var syncEntry;
+				var self = this,
+					syncEntry;
 				
-				if (ige._syncIndex < ige._syncArr.length) {
-					syncEntry = ige._syncArr[ige._syncIndex];
+				if (this._syncIndex < this._syncArr.length) {
+					syncEntry = this._syncArr[this._syncIndex];
 					
 					// Add the callback to the last attribute
 					syncEntry.attrArr.push(function () {
-						ige._syncIndex++;
-						setTimeout(ige._processSync, 1);
+						self._syncIndex++;
+						setTimeout(self._processSync.bind(self), 1);
 					});
 					
 					// Call the method
-					syncEntry.method.apply(ige, syncEntry.attrArr);
+					syncEntry.method.apply(self, syncEntry.attrArr);
 				} else {
 					// Reached end of sync cycle
-					delete ige._syncArr;
-					delete ige._syncIndex;
+					delete this._syncArr;
+					delete this._syncIndex;
 					
-					ige.emit('syncComplete');
+					this.emit('syncComplete');
 				}
 			},
 			
@@ -400,7 +401,6 @@ appCore.module('IgeEngine', function (
 			 */
 			requireStylesheet: function (url) {
 				if (url !== undefined) {
-					var self = this;
 					
 					// Load the engine stylesheet
 					var css = document.createElement('link');
@@ -542,7 +542,7 @@ appCore.module('IgeEngine', function (
 			
 			debug: function (eventName) {
 				if (this._debugEvents[eventName] === true || this._debugEvents[eventName] === igeTime._frames) {
-					debugger;
+					debugger; // jshint ignore:line
 				}
 			},
 			
@@ -582,7 +582,9 @@ appCore.module('IgeEngine', function (
 					arr = this._register;
 				
 				for (i in arr) {
-					arr[i].show();
+					if (arr.hasOwnProperty(i)) {
+						arr[i].show();
+					}
 				}
 			},
 			
@@ -832,7 +834,7 @@ appCore.module('IgeEngine', function (
 			 * @return {Boolean}
 			 */
 			canvasReady: function () {
-				return (ige._canvas !== undefined || ige.isServer);
+				return (this._canvas !== undefined || this.isServer);
 			},
 			
 			/**
@@ -874,7 +876,7 @@ appCore.module('IgeEngine', function (
 					id = (val).toString(16);
 					
 					// Check if the ID is already in use
-					while (ige.$(id)) {
+					while (this.$(id)) {
 						val += Math.pow(10, 17);
 						id = (val).toString(16);
 					}
@@ -1014,7 +1016,6 @@ appCore.module('IgeEngine', function (
 			 * those whose pixel ratio is different from 1 to 1.
 			 */
 			createFrontBuffer: function (autoSize, dontScale) {
-				var self = this;
 				if (this.isClient) {
 					if (!this._canvas) {
 						this._createdFrontBuffer = true;
@@ -1074,7 +1075,7 @@ appCore.module('IgeEngine', function (
 						}
 						
 						// Add some event listeners even if autosize is off
-						window.addEventListener('resize', this._resizeEvent);
+						window.addEventListener('resize', this._resizeEvent.bind(this));
 						
 						// Fire the resize event for the first time
 						// which sets up initial canvas dimensions
@@ -1138,9 +1139,9 @@ appCore.module('IgeEngine', function (
 			openUrl: function (url) {
 				if (url !== undefined) {
 					
-					if (ige.cocoonJs && ige.cocoonJs.detected) {
+					if (this.cocoonJs && this.cocoonJs.detected) {
 						// Open URL via CocoonJS webview
-						ige.cocoonJs.openUrl(url);
+						this.cocoonJs.openUrl(url);
 					} else {
 						// Open via standard JS open window
 						window.open(url);
@@ -1161,9 +1162,9 @@ appCore.module('IgeEngine', function (
 			 * @param {String=} url
 			 */
 			showWebView: function (url) {
-				if (ige.cocoonJs && ige.cocoonJs.detected) {
+				if (this.cocoonJs && this.cocoonJs.detected) {
 					// Open URL via CocoonJS webview
-					ige.cocoonJs.showWebView(url);
+					this.cocoonJs.showWebView(url);
 				} else {
 					// Load the iFrame url
 					var overlay = document.getElementById('igeOverlay');
@@ -1202,9 +1203,9 @@ appCore.module('IgeEngine', function (
 			 * @return {*}
 			 */
 			hideWebView: function () {
-				if (ige.cocoonJs && ige.cocoonJs.detected) {
+				if (this.cocoonJs && this.cocoonJs.detected) {
 					// Hide the cocoonJS webview
-					ige.cocoonJs.hideWebView();
+					this.cocoonJs.hideWebView();
 				} else {
 					var overlay = document.getElementById('igeOverlay');
 					if (overlay) {
@@ -1216,12 +1217,13 @@ appCore.module('IgeEngine', function (
 			},
 			
 			/**
-			 * Evaluates javascript sent from another frame.
+			 * Evaluates javascript sent from another frame, usually used
+			 * when operating with a wrapper system like cocoonjs.
 			 * @param js
 			 */
 			layerCall: function (js) {
 				if (js !== undefined) {
-					eval(js);
+					eval(js); // jshint ignore:line
 				}
 			},
 			
@@ -1247,12 +1249,12 @@ appCore.module('IgeEngine', function (
 					first = false;
 				
 				if (!obj) {
-					obj = ige;
+					obj = this;
 					entArr = [];
 					first = true;
 				}
 				
-				if (obj === ige) {
+				if (obj === this) {
 					// Loop viewports
 					arr = obj._children;
 					
@@ -1310,16 +1312,16 @@ appCore.module('IgeEngine', function (
 			_resizeEvent: function (event) {
 				var canvasBoundingRect;
 				
-				if (ige._autoSize) {
+				if (this._autoSize) {
 					var newWidth = window.innerWidth,
 						newHeight = window.innerHeight,
-						arr = ige._children,
+						arr = this._children,
 						arrCount = arr.length;
 					
 					// Only update canvas dimensions if it exists
-					if (ige._canvas) {
+					if (this._canvas) {
 						// Check if we can get the position of the canvas
-						canvasBoundingRect = ige._canvasPosition();
+						canvasBoundingRect = this._canvasPosition();
 						
 						// Adjust the newWidth and newHeight by the canvas offset
 						newWidth -= parseInt(canvasBoundingRect.left);
@@ -1331,19 +1333,19 @@ appCore.module('IgeEngine', function (
 						if (newWidth % 2) { newWidth--; }
 						if (newHeight % 2) { newHeight--; }
 						
-						ige._canvas.width = newWidth * ige._deviceFinalDrawRatio;
-						ige._canvas.height = newHeight * ige._deviceFinalDrawRatio;
+						this._canvas.width = newWidth * this._deviceFinalDrawRatio;
+						this._canvas.height = newHeight * this._deviceFinalDrawRatio;
 						
-						if (ige._deviceFinalDrawRatio !== 1) {
-							ige._canvas.style.width = newWidth + 'px';
-							ige._canvas.style.height = newHeight + 'px';
+						if (this._deviceFinalDrawRatio !== 1) {
+							this._canvas.style.width = newWidth + 'px';
+							this._canvas.style.height = newHeight + 'px';
 							
 							// Scale the canvas context to account for the change
-							ige._ctx.scale(ige._deviceFinalDrawRatio, ige._deviceFinalDrawRatio);
+							this._ctx.scale(this._deviceFinalDrawRatio, this._deviceFinalDrawRatio);
 						}
 					}
 					
-					ige._bounds2d = new IgePoint3d(newWidth, newHeight, 0);
+					this._bounds2d = new IgePoint3d(newWidth, newHeight, 0);
 					
 					// Loop any mounted children and check if
 					// they should also get resized
@@ -1351,22 +1353,22 @@ appCore.module('IgeEngine', function (
 						arr[arrCount]._resizeEvent(event);
 					}
 				} else {
-					if (ige._canvas) {
-						ige._bounds2d = new IgePoint3d(ige._canvas.width, ige._canvas.height, 0);
+					if (this._canvas) {
+						this._bounds2d = new IgePoint3d(this._canvas.width, this._canvas.height, 0);
 					}
 				}
 				
-				if (ige._showSgTree) {
+				if (this._showSgTree) {
 					var sgTreeElem = document.getElementById('igeSgTree');
 					
-					canvasBoundingRect = ige._canvasPosition();
+					canvasBoundingRect = this._canvasPosition();
 					
 					sgTreeElem.style.top = (parseInt(canvasBoundingRect.top) + 5) + 'px';
 					sgTreeElem.style.left = (parseInt(canvasBoundingRect.left) + 5) + 'px';
-					sgTreeElem.style.height = (ige._bounds2d.y - 30) + 'px';
+					sgTreeElem.style.height = (this._bounds2d.y - 30) + 'px';
 				}
 				
-				ige._resized = true;
+				this._resized = true;
 			},
 			
 			/**
@@ -1377,11 +1379,11 @@ appCore.module('IgeEngine', function (
 			 */
 			_canvasPosition: function () {
 				try {
-					return ige._canvas.getBoundingClientRect();
+					return this._canvas.getBoundingClientRect();
 				} catch (e) {
 					return {
-						top: ige._canvas.offsetTop,
-						left: ige._canvas.offsetLeft
+						top: this._canvas.offsetTop,
+						left: this._canvas.offsetLeft
 					};
 				}
 			},
@@ -1447,6 +1449,8 @@ appCore.module('IgeEngine', function (
 			 * the setter value as first argument.
 			 */
 			traceSet: function (obj, propName, sampleCount, callbackEvaluator) {
+				var self = this;
+				
 				obj.___igeTraceCurrentVal = obj.___igeTraceCurrentVal || {};
 				obj.___igeTraceCurrentVal[propName] = obj[propName];
 				obj.___igeTraceMax = sampleCount || 1;
@@ -1459,10 +1463,10 @@ appCore.module('IgeEngine', function (
 					set: function (val) {
 						if (callbackEvaluator){
 							if (callbackEvaluator(val)) {
-								debugger;
+								debugger; // jshint ignore:line
 							}
 						} else {
-							debugger;
+							debugger; // jshint ignore:line
 						}
 						
 						obj.___igeTraceCurrentVal[propName] = val;
@@ -1471,7 +1475,7 @@ appCore.module('IgeEngine', function (
 						if (obj.___igeTraceCount === obj.___igeTraceMax) {
 							// Maximum amount of trace samples reached, turn off
 							// the trace system
-							ige.traceSetOff(obj, propName);
+							self.traceSetOff(obj, propName);
 						}
 					}
 				});
@@ -1499,8 +1503,8 @@ appCore.module('IgeEngine', function (
 					if (obj._classId.substr(0, 3) === 'Ige') {
 						return obj._classId;
 					} else {
-						if (obj.__proto__._classId) {
-							return this.findBaseClass(obj.__proto__);
+						if (Object.getPrototypeOf(obj)._classId) {
+							return this.findBaseClass(Object.getPrototypeOf(obj));
 						} else {
 							return '';
 						}
@@ -1526,8 +1530,8 @@ appCore.module('IgeEngine', function (
 					}
 				}
 				
-				if (obj.__proto__._classId) {
-					this.getClassDerivedList(obj.__proto__, arr);
+				if (Object.getPrototypeOf(obj)._classId) {
+					this.getClassDerivedList(Object.getPrototypeOf(obj), arr);
 				}
 				
 				return arr;
@@ -1547,8 +1551,6 @@ appCore.module('IgeEngine', function (
 			 * @private
 			 */
 			_secondTick: function () {
-				var self = this;
-				
 				// Store frames per second
 				igeTime._fps = igeTime._frames;
 				
@@ -1834,16 +1836,16 @@ appCore.module('IgeEngine', function (
 							ud = new Date().getTime() - us;
 							
 							if (arr[arrCount]) {
-								if (!ige._timeSpentInUpdate[arr[arrCount].id()]) {
-									ige._timeSpentInUpdate[arr[arrCount].id()] = 0;
+								if (!this._timeSpentInUpdate[arr[arrCount].id()]) {
+									this._timeSpentInUpdate[arr[arrCount].id()] = 0;
 								}
 								
-								if (!ige._timeSpentLastUpdate[arr[arrCount].id()]) {
-									ige._timeSpentLastUpdate[arr[arrCount].id()] = {};
+								if (!this._timeSpentLastUpdate[arr[arrCount].id()]) {
+									this._timeSpentLastUpdate[arr[arrCount].id()] = {};
 								}
 								
-								ige._timeSpentInUpdate[arr[arrCount].id()] += ud;
-								ige._timeSpentLastUpdate[arr[arrCount].id()].ms = ud;
+								this._timeSpentInUpdate[arr[arrCount].id()] += ud;
+								this._timeSpentLastUpdate[arr[arrCount].id()].ms = ud;
 							}
 						}
 					} else {
@@ -1867,11 +1869,11 @@ appCore.module('IgeEngine', function (
 						this.depthSortChildren();
 						td = new Date().getTime() - ts;
 						
-						if (!ige._timeSpentLastTick[this.id()]) {
-							ige._timeSpentLastTick[this.id()] = {};
+						if (!this._timeSpentLastTick[this.id()]) {
+							this._timeSpentLastTick[this.id()] = {};
 						}
 						
-						ige._timeSpentLastTick[this.id()].depthSortChildren = td;
+						this._timeSpentLastTick[this.id()].depthSortChildren = td;
 					} else {
 						this.depthSortChildren();
 					}
@@ -1896,16 +1898,16 @@ appCore.module('IgeEngine', function (
 							arr[arrCount].tick(ctx);
 							td = new Date().getTime() - ts;
 							if (arr[arrCount]) {
-								if (!ige._timeSpentInTick[arr[arrCount].id()]) {
-									ige._timeSpentInTick[arr[arrCount].id()] = 0;
+								if (!this._timeSpentInTick[arr[arrCount].id()]) {
+									this._timeSpentInTick[arr[arrCount].id()] = 0;
 								}
 								
-								if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
-									ige._timeSpentLastTick[arr[arrCount].id()] = {};
+								if (!this._timeSpentLastTick[arr[arrCount].id()]) {
+									this._timeSpentLastTick[arr[arrCount].id()] = {};
 								}
 								
-								ige._timeSpentInTick[arr[arrCount].id()] += td;
-								ige._timeSpentLastTick[arr[arrCount].id()].ms = td;
+								this._timeSpentInTick[arr[arrCount].id()] += td;
+								this._timeSpentLastTick[arr[arrCount].id()].ms = td;
 							}
 							ctx.restore();
 						}
@@ -1934,9 +1936,7 @@ appCore.module('IgeEngine', function (
 			},
 			
 			analyseTiming: function () {
-				if (igeBase.igeConfig.debug._timing) {
-					
-				} else {
+				if (!igeBase.igeConfig.debug._timing) {
 					this.log('Cannot analyse timing because the igeBase.igeConfig.debug._timing flag is not enabled so no timing data has been recorded!', 'warning');
 				}
 			},
@@ -2233,20 +2233,16 @@ appCore.module('IgeEngine', function (
 			 */
 			go: function (path) {
 				var self = this,
-					requirements = [],
-					routeSteps,
 					currentRoutePath,
 					rootPathString,
 					currentPathParts,
 					newPathParts,
 					tempPath,
-					routeData,
 					i;
 				
 				// Check for a route definition first
 				if (!this._route[path]) {
 					throw('Attempt to navigate to undefined route: ' + path);
-					return;
 				}
 				
 				currentRoutePath = self._currentRoutePath;
@@ -2293,7 +2289,6 @@ appCore.module('IgeEngine', function (
 			_routeAdd: function (path) {
 				var self = this,
 					definition,
-					requirements,
 					routeSteps,
 					routeData,
 					thisFullPath,
