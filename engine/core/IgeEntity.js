@@ -291,8 +291,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		mousePos: function (viewport) {
 			viewport = viewport || ige._currentViewport;
 			if (viewport) {
-				var mp = viewport._mousePos.clone(),
-					cam;
+				var mp = viewport._mousePos.clone();
 				
 				mp.x += viewport._translate.x;
 				mp.y += viewport._translate.y;
@@ -341,10 +340,6 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 			viewport = viewport || ige._currentViewport;
 			var mp = this.mousePos(viewport);
 			this.localToWorldPoint(mp, viewport);
-	
-			if (this._ignoreCamera) {
-				//viewport.camera._worldMatrix.getInverse().transform([mp]);
-			}
 	
 			return mp;
 		},
@@ -998,10 +993,6 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 			} else {
 				this._localMatrix.transform(points, this);
 				//this._worldMatrix.getInverse().transform(points, this);
-			}
-	
-			if (this._ignoreCamera) {
-				//viewport.camera._worldMatrix.transform(points, this);
 			}
 		},
 	
