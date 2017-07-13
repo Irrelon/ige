@@ -788,9 +788,6 @@ appCore.module('IgeEngine', function (
 						this.log('Starting engine...');
 						this._state = 1;
 						
-						// Make sure our canvas is sized correctly
-						this._resizeEvent();
-						
 						// Check if we have a DOM, that there is an igeLoading element
 						// and if so, remove it from the DOM now
 						if ($ige.isClient) {

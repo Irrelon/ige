@@ -6,6 +6,10 @@ html {
     overflow: hidden;
 }
 
+object[type="application/x-shockwave-flash"] {
+	display: none;
+}
+
 body {
     background: #000;
     width: 100%;
