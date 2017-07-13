@@ -239,9 +239,9 @@ appCore.module('$ige', function () {
 			}
 			
 			routeSteps.waterfall(function () {
-				routeData.texturesModule.emit('ready');
+				if (routeData.texturesModule) { routeData.texturesModule.emit('ready'); }
 				routeData.controllerModule.emit('ready');
-				routeData.sceneGraphModule.emit('ready');
+				if (routeData.sceneGraphModule) { routeData.sceneGraphModule.emit('ready'); }
 				
 				finished();
 			});

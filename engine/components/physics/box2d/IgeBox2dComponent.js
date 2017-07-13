@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeBox2dComponent', function ($time, IgeEventingClass) {
+appCore.module('IgeBox2dComponent', function ($ige, $time, Box2D, IgeEventingClass) {
 	/**
 	 * The engine's box2d component class.
 	 */
