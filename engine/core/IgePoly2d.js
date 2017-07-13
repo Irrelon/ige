@@ -200,8 +200,7 @@ appCore.module('IgePoly2d', function (IgeClass, IgePoint2d, IgeRect) {
 		makeClockWiseTriangle: function () {
 			// If our data is already clockwise exit
 			if (!this.clockWiseTriangle()) {
-				var p0 = this._poly[0],
-					p1 = this._poly[1],
+				var p1 = this._poly[1],
 					p2 = this._poly[2];
 				
 				this._poly[2] = p1;
@@ -347,7 +346,7 @@ appCore.module('IgePoly2d', function (IgeClass, IgePoint2d, IgeRect) {
 			}
 			
 			for (p = 0; p < n; p++) {
-				if ((p == u) || (p == v) || (p == w)) {
+				if ((p === u) || (p === v) || (p === w)) {
 					continue;
 				}
 				

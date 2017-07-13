@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeAudio', function (IgeEventingClass) {
+appCore.module('IgeAudio', function ($ige, IgeEventingClass) {
 	var IgeAudio = IgeEventingClass.extend({
 		classId: 'IgeAudio',
 		
@@ -22,8 +22,8 @@ appCore.module('IgeAudio', function (IgeEventingClass) {
 		id: function (id) {
 			if (id !== undefined) {
 				// Check if this ID already exists in the object register
-				if (ige._register[id]) {
-					if (ige._register[id] === this) {
+				if ($ige.engine._register[id]) {
+					if ($ige.engine._register[id] === this) {
 						// We are already registered as this id
 						return this;
 					}
@@ -32,15 +32,15 @@ appCore.module('IgeAudio', function (IgeEventingClass) {
 					this.log('Cannot set ID of object to "' + id + '" because that ID is already in use by another object!', 'error');
 				} else {
 					// Check if we already have an id assigned
-					if (this._id && ige._register[this._id]) {
+					if (this._id && $ige.engine._register[this._id]) {
 						// Unregister the old ID before setting this new one
-						ige.unRegister(this);
+						$ige.engine.unRegister(this);
 					}
 					
 					this._id = id;
 					
 					// Now register this object with the object register
-					ige.register(this);
+					$ige.engine.register(this);
 					
 					return this;
 				}
@@ -52,12 +52,12 @@ appCore.module('IgeAudio', function (IgeEventingClass) {
 					// Generate an ID from the URL string of the audio file
 					// this instance is using. Useful for always reproducing
 					// the same ID for the same file :)
-					this._id = ige.newIdFromString(this._url);
+					this._id = $ige.engine.newIdFromString(this._url);
 				} else {
 					// We don't have a URL so generate a random ID
-					this._id = ige.newIdHex();
+					this._id = $ige.engine.newIdHex();
 				}
-				ige.register(this);
+				$ige.engine.register(this);
 			}
 			
 			return this._id;
@@ -93,10 +93,10 @@ appCore.module('IgeAudio', function (IgeEventingClass) {
 		_loaded: function (callback) {
 			var self = this;
 			
-			ige.audio.decode(self._data, function(err, buffer) {
+			$ige.engine.audio.decode(self._data, function(err, buffer) {
 				if (!err) {
 					self._buffer = buffer;
-					ige.audio.log('Audio file (' + self._url + ') loaded successfully');
+					$ige.engine.audio.log('Audio file (' + self._url + ') loaded successfully');
 					
 					if (callback) { callback.apply(self, [false]); }
 				} else {
@@ -114,9 +114,9 @@ appCore.module('IgeAudio', function (IgeEventingClass) {
 				bufferSource;
 			
 			if (self._buffer) {
-				bufferSource = ige.audio._ctx.createBufferSource();
+				bufferSource = $ige.engine.audio._ctx.createBufferSource();
 				bufferSource.buffer = self._buffer;
-				bufferSource.connect(ige.audio._ctx.destination);
+				bufferSource.connect($ige.engine.audio._ctx.destination);
 				bufferSource.start(0);
 			}
 		}

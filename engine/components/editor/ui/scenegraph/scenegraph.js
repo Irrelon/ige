@@ -7,7 +7,7 @@ appCore.module('UiSceneGraph', function (IgeEventingClass) {
 		init: function () {
 			var self = this;
 			
-			ige.requireStylesheet(igeRoot + 'components/editor/ui/scenegraph/scenegraph.css');
+			$ige.engine.requireStylesheet(igeRoot + 'components/editor/ui/scenegraph/scenegraph.css');
 			
 			// Add tab to tabs
 			$('<div class="tab" data-content="scenegraphContent" title="Scene Graph"><span class="icon graph"></span></div>')
@@ -20,7 +20,7 @@ appCore.module('UiSceneGraph', function (IgeEventingClass) {
 			// Add controls
 			$('<div class="control" title="Refresh SceneGraph Tree"><span id="refreshSceneGraph" class="halflings-icon white refresh"></span></div>')
 				.on('click', function () {
-					ige.editor.ui.scenegraph.updateSceneGraph();
+					$ige.engine.editor.ui.scenegraph.updateSceneGraph();
 				})
 				.appendTo('#scenegraphContent .header .controls');
 		},
@@ -30,8 +30,8 @@ appCore.module('UiSceneGraph', function (IgeEventingClass) {
 			this.updateSceneGraph();
 			
 			// Hook editor select object updates so we can keep in sync
-			ige.editor.on('selectedObject', function (id) {
-				ige.editor.ui.scenegraph.selectObjectById(id);
+			$ige.engine.editor.on('selectedObject', function (id) {
+				$ige.engine.editor.ui.scenegraph.selectObjectById(id);
 			});
 		},
 		
@@ -46,7 +46,7 @@ appCore.module('UiSceneGraph', function (IgeEventingClass) {
 			
 			sgContent.html('')
 				.tree({
-					data: ige.getSceneGraphData()
+					data: $ige.engine.getSceneGraphData()
 				});
 			
 			$(sgContent.find('ul')[0]).treeview();
@@ -54,18 +54,18 @@ appCore.module('UiSceneGraph', function (IgeEventingClass) {
 			// Hook click events on the scenegraph tree
 			sgContent.find('.igeObject').click(function () {
 				var elem = $(this);
-				ige.editor.selectObject(elem.attr('data-id'));
+				$ige.engine.editor.selectObject(elem.attr('data-id'));
 			});
 			
 			// Make sure we have the current selection highlighted
-			if (ige.editor._selectedObject) {
-				this.selectObjectById(ige.editor._selectedObject.id());
+			if ($ige.engine.editor._selectedObject) {
+				this.selectObjectById($ige.engine.editor._selectedObject.id());
 			}
 		}
 	});
 
 	// Init
-	ige.editor.ui.scenegraph = new UiSceneGraph();
+	$ige.engine.editor.ui.scenegraph = new UiSceneGraph();
 	
 	return UiSceneGraph;
 });

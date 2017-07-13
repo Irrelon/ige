@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeScene2d', function (IgeEntity) {
+appCore.module('IgeScene2d', function ($ige, IgeEntity) {
 	/**
 	 * Creates a new 2d scene.
 	 */
@@ -19,8 +19,8 @@ appCore.module('IgeScene2d', function (IgeEntity) {
 			
 			// Set the geometry of the scene to the main canvas
 			// width / height - used when positioning UI elements
-			this._bounds2d.x = ige._bounds2d.x;
-			this._bounds2d.y = ige._bounds2d.y;
+			this._bounds2d.x = $ige.engine._bounds2d.x;
+			this._bounds2d.y = $ige.engine._bounds2d.y;
 			
 			this.streamSections(['transform', 'ignoreCamera']);
 		},
@@ -150,7 +150,7 @@ appCore.module('IgeScene2d', function (IgeEntity) {
 		_resizeEvent: function (event) {
 			// Set width / height of scene to match main ige (SCENES ARE ALWAYS THE FULL IGE SIZE!!)
 			if (this._autoSize) {
-				this._bounds2d = ige._bounds2d.clone();
+				this._bounds2d = $ige.engine._bounds2d.clone();
 			}
 			
 			// Resize any children

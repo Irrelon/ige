@@ -73,7 +73,6 @@ appCore.module('IgeFontSheet', function ($time, IgeTexture) {
 		},
 		
 		_decode: function (canvas, x, y, maxX) {
-			"use strict";
 			var ctx = canvas.getContext('2d'),
 				imageData = ctx.getImageData(x, y, maxX, canvas.height).data,
 				run = true,

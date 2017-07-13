@@ -11,8 +11,8 @@ var IgeChatServer = {
      * @return {String} The new room's ID.
      */
     createRoom: function (roomName, options, roomId) {
-		var self = ige.chat,
-			newRoomId = roomId || ige.newIdHex();
+		var self = $ige.engine.chat,
+			newRoomId = roomId || $ige.engine.newIdHex();
 
        self._rooms[roomId] = {
             id: newRoomId,
@@ -33,7 +33,7 @@ var IgeChatServer = {
 	 * @return {Boolean}
 	 */
     removeRoom: function (roomId) {
-		var self = ige.chat;
+		var self = $ige.engine.chat;
 
         if (self._rooms[roomId]) {
 			// Inform all users that the room was removed
@@ -54,7 +54,7 @@ var IgeChatServer = {
 	 * @param {String} from The id of the user that sent the message.
 	 */
 	sendToRoom: function (roomId, message, to, from) {
-		var self = ige.chat;
+		var self = $ige.engine.chat;
 
 		if (self._rooms[roomId]) {
 			var room = self._rooms[roomId],
@@ -89,7 +89,7 @@ var IgeChatServer = {
 	},
 
     _onMessageFromClient: function (msg, clientId) {
-		var self = ige.chat,
+		var self = $ige.engine.chat,
 			room;
 
         // Emit the event and if it wasn't cancelled (by returning true) then
@@ -123,7 +123,7 @@ var IgeChatServer = {
     },
 
     _onJoinRoomRequestFromClient: function (roomId, clientId) {
-		var self = ige.chat;
+		var self = $ige.engine.chat;
 
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
@@ -138,7 +138,7 @@ var IgeChatServer = {
 				if (!room.users[clientId]) {
 					// Add the user to the room
 					room.users.push(clientId);
-					ige.network.send('igeChatJoinRoom', {roomId: roomId, joined: true}, clientId);
+					$ige.network.send('igeChatJoinRoom', {roomId: roomId, joined: true}, clientId);
 					console.log('User "' + clientId + '" joined room ' + roomId);
 				} else {
 					// User is already in the room!

@@ -38,7 +38,7 @@ appCore.module('IgeViewport', function ($ige, IgeEntity, IgePoint3d, IgeCamera, 
 			}
 			
 			// Setup default objects
-			this._bounds2d = new IgePoint3d(width || ige._bounds2d.x, height || ige._bounds2d.y, 0);
+			this._bounds2d = new IgePoint3d(width || $ige.engine._bounds2d.x, height || $ige.engine._bounds2d.y, 0);
 			this.camera = new IgeCamera(this);
 			this.camera._entity = this;
 			//this._drawMouse = true;
@@ -180,7 +180,7 @@ appCore.module('IgeViewport', function ($ige, IgeEntity, IgePoint3d, IgeCamera, 
 				// Clip the context so we only draw "inside" the viewport area
 				if (this._clipping || this._borderColor) {
 					ctx.beginPath();
-					ctx.rect(0, 0, this._bounds2d.x / ige._scale.x, this._bounds2d.y / ige._scale.x);
+					ctx.rect(0, 0, this._bounds2d.x / $ige.engine._scale.x, this._bounds2d.y / $ige.engine._scale.x);
 					
 					// Paint a border if required
 					if (this._borderColor) {
@@ -194,10 +194,10 @@ appCore.module('IgeViewport', function ($ige, IgeEntity, IgePoint3d, IgeCamera, 
 				}
 				
 				// Translate back to the center of the viewport
-				ctx.translate(((this._bounds2d.x / 2) | 0) + ige._translate.x, ((this._bounds2d.y / 2) | 0) + ige._translate.y);
-				/*ctx.translate(ige._translate.x, ige._translate.y);*/
-				if (ige._scale.x !== 1 || ige._scale.y !== 1) {
-					ctx.scale(ige._scale.x, ige._scale.y);
+				ctx.translate(((this._bounds2d.x / 2) | 0) + $ige.engine._translate.x, ((this._bounds2d.y / 2) | 0) + $ige.engine._translate.y);
+				/*ctx.translate($ige.engine._translate.x, $ige.engine._translate.y);*/
+				if ($ige.engine._scale.x !== 1 || $ige.engine._scale.y !== 1) {
+					ctx.scale($ige.engine._scale.x, $ige.engine._scale.y);
 				}
 				
 				// Transform the context to the center of the viewport
@@ -210,7 +210,7 @@ appCore.module('IgeViewport', function ($ige, IgeEntity, IgePoint3d, IgeCamera, 
 				ctx.restore();
 				
 				// Check if we should draw guides
-				if (this._drawGuides && ctx === ige._ctx) {
+				if (this._drawGuides && ctx === $ige.engine._ctx) {
 					ctx.save();
 					ctx.translate(-this._translate.x, -this._translate.y);
 					this.paintGuides(ctx);
@@ -219,7 +219,7 @@ appCore.module('IgeViewport', function ($ige, IgeEntity, IgePoint3d, IgeCamera, 
 				
 				// Check if we should draw bounds on this viewport
 				// (usually for debug purposes)
-				if (this._drawBounds && ctx === ige._ctx) {
+				if (this._drawBounds && ctx === $ige.engine._ctx) {
 					// Traverse the scenegraph and draw axis-aligned
 					// bounding boxes for every object
 					ctx.save();
@@ -230,7 +230,7 @@ appCore.module('IgeViewport', function ($ige, IgeEntity, IgePoint3d, IgeCamera, 
 				
 				// Check if we should draw the mouse position on this
 				// viewport (usually for debug purposes)
-				if (this._drawMouse && ctx === ige._ctx) {
+				if (this._drawMouse && ctx === $ige.engine._ctx) {
 					ctx.save();
 					var mp = this.mousePos(),
 						text,
@@ -282,8 +282,8 @@ appCore.module('IgeViewport', function ($ige, IgeEntity, IgePoint3d, IgeCamera, 
 		 */
 		screenPosition: function () {
 			return new IgePoint3d(
-				Math.floor(this._worldMatrix.matrix[2] + ige._bounds2d.x2),
-				Math.floor(this._worldMatrix.matrix[5] + ige._bounds2d.y2),
+				Math.floor(this._worldMatrix.matrix[2] + $ige.engine._bounds2d.x2),
+				Math.floor(this._worldMatrix.matrix[5] + $ige.engine._bounds2d.y2),
 				0
 			);
 		},
@@ -334,7 +334,7 @@ appCore.module('IgeViewport', function ($ige, IgeEntity, IgePoint3d, IgeCamera, 
 		},
 		
 		paintGuides: function (ctx) {
-			var geom = ige._bounds2d;
+			var geom = $ige.engine._bounds2d;
 			
 			// Check draw-guides setting
 			if (this._drawGuides) {
@@ -601,7 +601,7 @@ appCore.module('IgeViewport', function ($ige, IgeEntity, IgePoint3d, IgeCamera, 
 							str += ".autoSize(" + this._autoSize + ")";
 							break;
 						case '_scene':
-							str += ".scene(ige.$('" + this.scene().id() + "'))";
+							str += ".scene($ige.engine.$('" + this.scene().id() + "'))";
 							break;
 					}
 				}

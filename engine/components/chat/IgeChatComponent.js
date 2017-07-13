@@ -14,7 +14,7 @@ appCore.module('IgeChatComponent', function ($ige, IgeEventingClass) {
 			this._rooms = {};
 			
 			/* CEXCLUDE */
-			if (ige.isServer) {
+			if ($ige.isServer) {
 				this.implement(IgeChatServer);
 				
 				// Define the chat system network commands

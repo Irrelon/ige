@@ -11,9 +11,9 @@ appCore.module('IgeSceneGraph', function (IgeClass) {
 		],
 		
 		/**
-		 * Called when loading the graph data via ige.addGraph().
+		 * Called when loading the graph data via $ige.engine.addGraph().
 		 * @param {Object=} options The options that were passed with the call
-		 * to ige.addGraph().
+		 * to $ige.engine.addGraph().
 		 */
 		addGraph: function (options) {
 			

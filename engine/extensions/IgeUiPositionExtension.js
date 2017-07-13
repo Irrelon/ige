@@ -36,7 +36,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						} else {
 							// We don't have a parent so use the main canvas
 							// as a reference
-							parentWidth = ige._bounds2d.x;
+							parentWidth = $ige.engine._bounds2d.x;
 						}
 						
 						// Calculate real width from percentage
@@ -91,7 +91,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						} else {
 							// We don't have a parent so use the main canvas
 							// as a reference
-							parentWidth = ige._bounds2d.x;
+							parentWidth = $ige.engine._bounds2d.x;
 						}
 						
 						// Calculate real width from percentage
@@ -148,7 +148,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						} else {
 							// We don't have a parent so use the main canvas
 							// as a reference
-							parentWidth = ige._bounds2d.x2;
+							parentWidth = $ige.engine._bounds2d.x2;
 						}
 						
 						// Calculate real width from percentage
@@ -203,7 +203,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						} else {
 							// We don't have a parent so use the main canvas
 							// as a reference
-							parentHeight = ige._bounds2d.y;
+							parentHeight = $ige.engine._bounds2d.y;
 						}
 						
 						// Calculate real width from percentage
@@ -258,7 +258,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						} else {
 							// We don't have a parent so use the main canvas
 							// as a reference
-							parentHeight = ige._bounds2d.y;
+							parentHeight = $ige.engine._bounds2d.y;
 						}
 						
 						// Calculate real width from percentage
@@ -315,7 +315,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						} else {
 							// We don't have a parent so use the main canvas
 							// as a reference
-							parentWidth = ige._bounds2d.y2;
+							parentWidth = $ige.engine._bounds2d.y2;
 						}
 						
 						// Calculate real width from percentage
@@ -381,7 +381,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						} else {
 							// We don't have a parent so use the main canvas
 							// as a reference
-							var parentWidth = ige._bounds2d.x,
+							var parentWidth = $ige.engine._bounds2d.x,
 								val = parseInt(px, 10);
 							
 							// Calculate real height from percentage
@@ -453,7 +453,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						} else {
 							// We don't have a parent so use the main canvas
 							// as a reference
-							var parentHeight = ige._bounds2d.y,
+							var parentHeight = $ige.engine._bounds2d.y,
 								val = parseInt(px, 10);
 							
 							// Calculate real height from percentage

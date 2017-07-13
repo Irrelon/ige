@@ -29,7 +29,7 @@ appCore.module('UiToolBox_ToolCreate', function (igeBase, IgeEventingClass) {
 					id: sortArr[i],
 					icon: 'none',
 					text: sortArr[i],
-					action: "ige.editor.createObject('" + sortArr[i] + "', true);"
+					action: "$ige.engine.editor.createObject('" + sortArr[i] + "', true);"
 				});
 			}
 		},
@@ -44,7 +44,7 @@ appCore.module('UiToolBox_ToolCreate', function (igeBase, IgeEventingClass) {
 					top = position.top,
 					height = $('body').height();
 				
-				ige.editor.ui.menus.create({
+				$ige.engine.editor.ui.menus.create({
 					header: {
 						icon: 'log_in',
 						text: 'Create Object'
@@ -69,7 +69,7 @@ appCore.module('UiToolBox_ToolCreate', function (igeBase, IgeEventingClass) {
 						.css('top', top);
 				});
 			} else {
-				ige.editor.ui.menus.closeAll();
+				$ige.engine.editor.ui.menus.closeAll();
 			}
 		}
 	});

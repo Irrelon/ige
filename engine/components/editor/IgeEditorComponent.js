@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEditorTranslateComponent, IgeEditorRotateComponent) {
+appCore.module('IgeEditorComponent', function ($ige, $time, IgeEventingClass, IgeEditorTranslateComponent, IgeEditorRotateComponent) {
 	/**
 	 * The IGE interactive editor component. Allows modification of a simulation
 	 * in realtime via a GUI.
@@ -32,7 +32,7 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 			this._interceptMouse = false;
 			
 			// Hook the input component's keyUp and check for the = symbol... if there, toggle editor
-			this._activateKeyHandle = ige.input.on('keyUp', function (event) {
+			this._activateKeyHandle = $ige.engine.input.on('keyUp', function (event) {
 				if (event.keyIdentifier === "U+00BB") {
 					// = key pressed, toggle the editor
 					self.toggle();
@@ -43,7 +43,7 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 			});
 			
 			// Hook the input component's keyUp and check for the - symbol... if there, toggle stats
-			this._activateKeyHandle = ige.input.on('keyUp', function (event) {
+			this._activateKeyHandle = $ige.engine.input.on('keyUp', function (event) {
 				if (event.keyIdentifier === "U+00BD") {
 					// Toggle the stats
 					self.toggleStats();
@@ -54,7 +54,7 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 			});
 			
 			// Hook the engine's input system and take over mouse interaction
-			this._mouseUpHandle = ige.input.on('preMouseUp', function (event) {
+			this._mouseUpHandle = $ige.engine.input.on('preMouseUp', function (event) {
 				if (self._enabled && self._interceptMouse) {
 					self.emit('mouseUp', event);
 					
@@ -63,7 +63,7 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 				}
 			});
 			
-			this._mouseDownHandle = ige.input.on('preMouseDown', function (event) {
+			this._mouseDownHandle = $ige.engine.input.on('preMouseDown', function (event) {
 				if (self._enabled && self._interceptMouse) {
 					self.emit('mouseDown', event);
 					
@@ -72,7 +72,7 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 				}
 			});
 			
-			this._mouseMoveHandle = ige.input.on('preMouseMove', function (event) {
+			this._mouseMoveHandle = $ige.engine.input.on('preMouseMove', function (event) {
 				if (self._enabled && self._interceptMouse) {
 					self.emit('mouseMove', event);
 					
@@ -81,7 +81,7 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 				}
 			});
 			
-			this._contextMenuHandle = ige.input.on('preContextMenu', function (event) {
+			this._contextMenuHandle = $ige.engine.input.on('preContextMenu', function (event) {
 				if (self._enabled && self._interceptMouse) {
 					self.emit('contextMenu', event);
 					
@@ -91,12 +91,12 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 			});
 			
 			// Load jsRender for HTML template support
-			ige.requireScript(igeRoot + 'components/editor/vendor/jsRender.js');
+			$ige.engine.requireScript(igeRoot + 'components/editor/vendor/jsRender.js');
 			
 			// Load jQuery, the editor will use it for DOM manipulation simplicity
-			ige.requireScript(igeRoot + 'components/editor/vendor/jquery.2.0.3.min.js');
+			$ige.engine.requireScript(igeRoot + 'components/editor/vendor/jquery.2.0.3.min.js');
 			
-			ige.on('allRequireScriptsLoaded', function () {
+			$ige.engine.on('allRequireScriptsLoaded', function () {
 				// Stop drag-drop of files over the page from doing a redirect and leaving the page
 				$(function () {
 					$('body')
@@ -113,43 +113,43 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 					// Add the html
 					$('body').append($(html));
 					
-					ige.requireScript(igeRoot + 'components/editor/vendor/jsrender-helpers.js');
+					$ige.engine.requireScript(igeRoot + 'components/editor/vendor/jsrender-helpers.js');
 					
 					// Object mutation observer polyfill
-					ige.requireScript(igeRoot + 'components/editor/vendor/observe.js');
+					$ige.engine.requireScript(igeRoot + 'components/editor/vendor/observe.js');
 					
 					// Load plugin styles
-					ige.requireStylesheet(igeRoot + 'components/editor/vendor/glyphicons/css/halflings.css');
-					ige.requireStylesheet(igeRoot + 'components/editor/vendor/glyphicons/css/glyphicons.css');
-					ige.requireStylesheet(igeRoot + 'components/editor/vendor/treeview_simple/css/style.css');
+					$ige.engine.requireStylesheet(igeRoot + 'components/editor/vendor/glyphicons/css/halflings.css');
+					$ige.engine.requireStylesheet(igeRoot + 'components/editor/vendor/glyphicons/css/glyphicons.css');
+					$ige.engine.requireStylesheet(igeRoot + 'components/editor/vendor/treeview_simple/css/style.css');
 					
 					// Load the editor stylesheet
-					ige.requireStylesheet(igeRoot + 'components/editor/css/editor.css');
+					$ige.engine.requireStylesheet(igeRoot + 'components/editor/css/editor.css');
 					
 					// Listen for scenegraph tree selection updates
-					ige.on('sgTreeSelectionChanged', function (objectId) {
-						self._objectSelected(ige.$(objectId));
+					$ige.engine.on('sgTreeSelectionChanged', function (objectId) {
+						self._objectSelected($ige.engine.$(objectId));
 					});
 					
 					// Wait for all required files to finish loading
-					ige.on('allRequireScriptsLoaded', function () {
+					$ige.engine.on('allRequireScriptsLoaded', function () {
 						// Load UI scripts
-						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/dialogs/dialogs.js');
-						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/scenegraph/scenegraph.js');
-						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/menu/menu.js');
-						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/toolbox/toolbox.js');
-						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/panels/panels.js');
-						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/textures/textures.js');
-						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/textureEditor/textureEditor.js');
-						ige.sync(ige.requireScript, igeRoot + 'components/editor/ui/animationEditor/animationEditor.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/dialogs/dialogs.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/scenegraph/scenegraph.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/menu/menu.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/toolbox/toolbox.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/panels/panels.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/textures/textures.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/textureEditor/textureEditor.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/animationEditor/animationEditor.js');
 						
 						// Load jquery plugins
-						ige.sync(ige.requireScript, igeRoot + 'components/editor/vendor/autoback.jquery.js');
-						ige.sync(ige.requireScript, igeRoot + 'components/editor/vendor/tree/tree.jquery.js');
-						ige.sync(ige.requireScript, igeRoot + 'components/editor/vendor/tabs/tabs.jquery.js');
-						ige.sync(ige.requireScript, igeRoot + 'components/editor/vendor/treeview_simple/treeview_simple.jquery.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/vendor/autoback.jquery.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/vendor/tree/tree.jquery.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/vendor/tabs/tabs.jquery.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/vendor/treeview_simple/treeview_simple.jquery.js');
 						
-						ige.on('syncComplete', function () {
+						$ige.engine.on('syncComplete', function () {
 							// Observe changes to the engine to update our display
 							setInterval(function () {
 								// Update the stats counters
@@ -178,12 +178,12 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 							
 							// Enable the stats toggle button
 							$('#statsToggle').on('click', function () {
-								ige.editor.toggleStats();
+								$ige.engine.editor.toggleStats();
 							});
 							
 							// Enable the editor toggle button
 							$('#editorToggle').on('click', function () {
-								ige.editor.toggle();
+								$ige.engine.editor.toggle();
 							});
 							
 							self._ready = true;
@@ -245,9 +245,9 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 			var elem = $('#editorToggle');
 			
 			if (elem.hasClass('active')) {
-				ige.editor.hide();
+				$ige.engine.editor.hide();
 			} else {
-				ige.editor.show();
+				$ige.engine.editor.show();
 			}
 		},
 		
@@ -279,9 +279,9 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 				var elem = $('#statsToggle');
 				
 				if (elem.hasClass('active')) {
-					ige.editor.hideStats();
+					$ige.engine.editor.hideStats();
 				} else {
-					ige.editor.showStats();
+					$ige.engine.editor.showStats();
 				}
 			});
 		},
@@ -356,7 +356,7 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 		selectObject: function (id) {
 			if (id !== undefined) {
 				if (id) {
-					this._selectedObject = ige.$(id);
+					this._selectedObject = $ige.engine.$(id);
 					this._objectSelected(this._selectedObject);
 				} else {
 					delete this._selectedObject;
@@ -366,8 +366,8 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 		
 		_objectSelected: function (obj) {
 			if (obj) {
-				ige.editor.ui.panels.showPanelByInstance(obj);
-				this._selectedObjectClassList = ige.getClassDerivedList(obj);
+				$ige.engine.editor.ui.panels.showPanelByInstance(obj);
+				this._selectedObjectClassList = $ige.engine.getClassDerivedList(obj);
 				
 				// Update active-for selectors
 				$('[data-active-for]')
@@ -395,7 +395,7 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 		
 		createObject: function (classId, select) {
 			if (this._selectedObject) {
-				var newObj = ige.newClassInstance(classId);
+				var newObj = $ige.engine.newClassInstance(classId);
 				newObj.mount(this._selectedObject);
 				this.ui.scenegraph.updateSceneGraph();
 				
@@ -424,7 +424,7 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 		 * @private
 		 */
 		_statsTick: function () {
-			var self = ige.editor,
+			var self = $ige.engine.editor,
 				i,
 				watchCount,
 				watchItem,
@@ -453,11 +453,11 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 						 itemName = watchItem.name;
 						 res = watchItem.value;
 						 }
-						 html += i + ' (<a href="javascript:ige.watchStop(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">Remove</a>): <span style="color:#7aff80">' + itemName + '</span>: <span style="color:#00c6ff">' + res + '</span><br />';
+						 html += i + ' (<a href="javascript:$ige.engine.watchStop(' + i + '); $ige.engine._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="$ige.engine._statsPauseUpdate = true;" onmouseout="$ige.engine._statsPauseUpdate = false;">Remove</a>): <span style="color:#7aff80">' + itemName + '</span>: <span style="color:#00c6ff">' + res + '</span><br />';
 						 }
 						 html += '<br />';
 						 }*/
-						/*html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowEditor();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Frame">' + self._dpf + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
+						/*html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="$ige.engine.toggleShowEditor();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Frame">' + self._dpf + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
 						 
 						 if (self.network) {
 						 // Add the network latency too
@@ -490,7 +490,7 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 				}
 				
 				this.className += ' selected';
-				ige._sgTreeSelected = this.id;
+				$ige.engine._sgTreeSelected = this.id;
 				
 				$ige._currentViewport.drawBounds(true);
 				if (this.id !== 'ige') {
@@ -499,7 +499,7 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 					$ige._currentViewport.drawBoundsLimitId('');
 				}
 				
-				ige.emit('sgTreeSelectionChanged', ige._sgTreeSelected);
+				$ige.engine.emit('sgTreeSelectionChanged', $ige.engine._sgTreeSelected);
 			};
 			
 			dblClick = function (event) {
@@ -515,16 +515,16 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 			elem.innerHTML = item.text;
 			elem.className = 'sgItem';
 			
-			if (ige._sgTreeSelected === item.id) {
+			if ($ige.engine._sgTreeSelected === item.id) {
 				elem.className += ' selected';
 			}
 			
 			if (igeConfig.debug._timing) {
-				if (ige._timeSpentInTick[item.id]) {
-					timingString = '<span>' + ige._timeSpentInTick[item.id] + 'ms</span>';
-					/*if (ige._timeSpentLastTick[item.id]) {
-					 if (typeof(ige._timeSpentLastTick[item.id].ms) === 'number') {
-					 timingString += ' | LastTick: ' + ige._timeSpentLastTick[item.id].ms;
+				if ($ige.engine._timeSpentInTick[item.id]) {
+					timingString = '<span>' + $ige.engine._timeSpentInTick[item.id] + 'ms</span>';
+					/*if ($ige.engine._timeSpentLastTick[item.id]) {
+					 if (typeof($ige.engine._timeSpentLastTick[item.id].ms) === 'number') {
+					 timingString += ' | LastTick: ' + $ige.engine._timeSpentLastTick[item.id].ms;
 					 }
 					 }*/
 					
@@ -544,7 +544,7 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 				arrCount = arr.length;
 				
 				for (i = 0; i < arrCount; i++) {
-					ige.addToSgTree(arr[i]);
+					$ige.engine.addToSgTree(arr[i]);
 				}
 			}
 		},
@@ -559,12 +559,12 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 					elem2,
 					canvasBoundingRect;
 				
-				canvasBoundingRect = ige._canvasPosition();
+				canvasBoundingRect = $ige.engine._canvasPosition();
 				
 				elem1.id = 'igeSgTree';
 				elem1.style.top = (parseInt(canvasBoundingRect.top) + 5) + 'px';
 				elem1.style.left = (parseInt(canvasBoundingRect.left) + 5) + 'px';
-				elem1.style.height = (ige._bounds2d.y - 30) + 'px';
+				elem1.style.height = ($ige.engine._bounds2d.y - 30) + 'px';
 				elem1.style.overflow = 'auto';
 				elem1.addEventListener('mousemove', function (event) {
 					event.stopPropagation();
@@ -637,13 +637,13 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 				editorModeTranslate.value = 'Translate';
 				editorModeTranslate.addEventListener('click', function () {
 					// Disable other modes
-					ige.editorRotate.enabled(false);
+					$ige.engine.editorRotate.enabled(false);
 					
-					if (ige.editorTranslate.enabled()) {
-						ige.editorTranslate.enabled(false);
+					if ($ige.engine.editorTranslate.enabled()) {
+						$ige.engine.editorTranslate.enabled(false);
 						self.log('Editor: Translate mode disabled');
 					} else {
-						ige.editorTranslate.enabled(true);
+						$ige.engine.editorTranslate.enabled(true);
 						self.log('Editor: Translate mode enabled');
 					}
 				});
@@ -653,13 +653,13 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 				editorModeRotate.value = 'Rotate';
 				editorModeRotate.addEventListener('click', function () {
 					// Disable other modes
-					ige.editorTranslate.enabled(false);
+					$ige.engine.editorTranslate.enabled(false);
 					
-					if (ige.editorRotate.enabled()) {
-						ige.editorRotate.enabled(false);
+					if ($ige.engine.editorRotate.enabled()) {
+						$ige.engine.editorRotate.enabled(false);
 						self.log('Editor: Rotate mode disabled');
 					} else {
-						ige.editorRotate.enabled(true);
+						$ige.engine.editorRotate.enabled(true);
 						self.log('Editor: Rotate mode enabled');
 					}
 				});
@@ -676,14 +676,14 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 				document.body.appendChild(editorRoot);
 				
 				// Add the translate component to the ige instance
-				ige.addComponent(IgeEditorTranslateComponent);
-				ige.addComponent(IgeEditorRotateComponent);
+				$ige.engine.addComponent(IgeEditorTranslateComponent);
+				$ige.engine.addComponent(IgeEditorRotateComponent);
 				
 				// Schedule tree updates every second
-				ige._sgTreeUpdateInterval = setInterval(function () { self.sgTreeUpdate(); }, 1000);
+				$ige.engine._sgTreeUpdateInterval = setInterval(function () { self.sgTreeUpdate(); }, 1000);
 			} else {
 				// Kill interval
-				clearInterval(ige._sgTreeUpdateInterval);
+				clearInterval($ige.engine._sgTreeUpdateInterval);
 				
 				var child = document.getElementById('igeSgTree');
 				child.parentNode.removeChild(child);
@@ -694,8 +694,8 @@ appCore.module('IgeEditorComponent', function ($time, IgeEventingClass, IgeEdito
 				child = document.getElementById('igeSgEditorRoot');
 				child.parentNode.removeChild(child);
 				
-				ige.removeComponent('editorTranslate');
-				ige.removeComponent('editorRotate');
+				$ige.engine.removeComponent('editorTranslate');
+				$ige.engine.removeComponent('editorRotate');
 			}
 		},
 		

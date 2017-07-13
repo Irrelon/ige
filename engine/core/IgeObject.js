@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
+appCore.module('IgeObject', function ($ige, igeBase, IgeEventingClass) {
 	/**
 	 * Creates a new object.
 	 */
@@ -100,22 +100,22 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 				// Check if we're changing the id
 				if (id !== this._id) {
 					// Check if this ID already exists in the object register
-					if (ige._register[id]) {
+					if ($ige.engine._register[id]) {
 						// Already an object with this ID!
-						if (ige._register[id] !== this) {
+						if ($ige.engine._register[id] !== this) {
 							this.log('Cannot set ID of object to "' + id + '" because that ID is already in use by another object!', 'error');
 						}
 					} else {
 						// Check if we already have an id assigned
-						if (this._id && ige._register[this._id]) {
+						if (this._id && $ige.engine._register[this._id]) {
 							// Unregister the old ID before setting this new one
-							ige.unRegister(this);
+							$ige.engine.unRegister(this);
 						}
 						
 						this._id = id;
 						
 						// Now register this object with the object register
-						ige.register(this);
+						$ige.engine.register(this);
 						
 						return this;
 					}
@@ -128,8 +128,8 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 			
 			if (!this._id) {
 				// The item has no id so generate one automatically
-				this._id = ige.newIdHex();
-				ige.register(this);
+				this._id = $ige.engine.newIdHex();
+				$ige.engine.register(this);
 			}
 			
 			return this._id;
@@ -148,7 +148,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 		 *     var entity = new IgeEntity()
 		 *         .category('myNewCategory');
 		 * @example #Get all the entities belonging to a category
-		 *     var entityArray = ige.$$('categoryName');
+		 *     var entityArray = $ige.engine.$$('categoryName');
 		 * @example #Remove the category of an entity
 		 *     // Set category to some name
 		 *     var entity = new IgeEntity()
@@ -173,7 +173,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 					if (this._category !== val) {
 						// The category is different so remove this object
 						// from the current category association
-						ige.categoryUnRegister(this);
+						$ige.engine.categoryUnRegister(this);
 					}
 				}
 				
@@ -182,7 +182,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 				// Check the category is not a blank string
 				if (val) {
 					// Now register this object with the category it has been assigned
-					ige.categoryRegister(this);
+					$ige.engine.categoryRegister(this);
 				}
 				return this;
 			}
@@ -236,7 +236,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 							this._groups.push(groupName[groupItemCount]);
 							
 							// Now register this object with the group it has been assigned
-							ige.groupRegister(this, groupName[groupItemCount]);
+							$ige.engine.groupRegister(this, groupName[groupItemCount]);
 						}
 					}
 				} else {
@@ -245,7 +245,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 						this._groups.push(groupName);
 						
 						// Now register this object with the group it has been assigned
-						ige.groupRegister(this, groupName);
+						$ige.engine.groupRegister(this, groupName);
 					}
 				}
 			}
@@ -477,13 +477,13 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 							this._groups.pull(groupName[groupNameCount]);
 							
 							// Now un-register this object with the group it has been assigned
-							ige.groupUnRegister(this, groupName[groupNameCount]);
+							$ige.engine.groupUnRegister(this, groupName[groupNameCount]);
 						}
 					} else {
 						this._groups.pull(groupName);
 						
 						// Now un-register this object with the group it has been assigned
-						ige.groupUnRegister(this, groupName);
+						$ige.engine.groupUnRegister(this, groupName);
 					}
 				}
 			}
@@ -514,7 +514,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 					arrCount = arr.length;
 				
 				while (arrCount--) {
-					ige.groupUnRegister(this, arr[arrCount]);
+					$ige.engine.groupUnRegister(this, arr[arrCount]);
 				}
 				
 				delete this._groups;
@@ -767,7 +767,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 		 * @returns {*} The entity or undefined.
 		 */
 		$: function (id) {
-			var obj = ige.$(id);
+			var obj = $ige.engine.$(id);
 			
 			if (obj._parent === this) {
 				// We found a child and it's parent is this object so return it
@@ -793,7 +793,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 		 * @returns {Array}
 		 */
 		$$: function (categoryName) {
-			var objArr = ige.$$(categoryName),
+			var objArr = $ige.engine.$$(categoryName),
 				arrCount = objArr.length,
 				obj,
 				finalArr = [],
@@ -1524,16 +1524,16 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 					arrCount = arr.length;
 					
 					// Depth sort all child objects
-					if (arrCount && !ige._headless) {
+					if (arrCount && !$ige.engine._headless) {
 						if (igeBase.igeConfig.debug._timing) {
-							if (!ige._timeSpentLastTick[this.id()]) {
-								ige._timeSpentLastTick[this.id()] = {};
+							if (!$ige.engine._timeSpentLastTick[this.id()]) {
+								$ige.engine._timeSpentLastTick[this.id()] = {};
 							}
 							
 							ts = new Date().getTime();
 							this.depthSortChildren();
 							td = new Date().getTime() - ts;
-							ige._timeSpentLastTick[this.id()].depthSortChildren = td;
+							$ige.engine._timeSpentLastTick[this.id()].depthSortChildren = td;
 						} else {
 							this.depthSortChildren();
 						}
@@ -1546,16 +1546,16 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 							arr[arrCount].update(ctx, tickDelta);
 							td = new Date().getTime() - ts;
 							if (arr[arrCount]) {
-								if (!ige._timeSpentInTick[arr[arrCount].id()]) {
-									ige._timeSpentInTick[arr[arrCount].id()] = 0;
+								if (!$ige.engine._timeSpentInTick[arr[arrCount].id()]) {
+									$ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
 								}
 								
-								if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
-									ige._timeSpentLastTick[arr[arrCount].id()] = {};
+								if (!$ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
+									$ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
 								}
 								
-								ige._timeSpentInTick[arr[arrCount].id()] += td;
-								ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
+								$ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
+								$ige.engine._timeSpentLastTick[arr[arrCount].id()].tick = td;
 							}
 						}
 					} else {
@@ -1601,16 +1601,16 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 								arr[arrCount].tick(ctx);
 								td = new Date().getTime() - ts;
 								if (arr[arrCount]) {
-									if (!ige._timeSpentInTick[arr[arrCount].id()]) {
-										ige._timeSpentInTick[arr[arrCount].id()] = 0;
+									if (!$ige.engine._timeSpentInTick[arr[arrCount].id()]) {
+										$ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
 									}
 									
-									if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
-										ige._timeSpentLastTick[arr[arrCount].id()] = {};
+									if (!$ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
+										$ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
 									}
 									
-									ige._timeSpentInTick[arr[arrCount].id()] += td;
-									ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
+									$ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
+									$ige.engine._timeSpentLastTick[arr[arrCount].id()].tick = td;
 								}
 								ctx.restore();
 							}
@@ -1761,9 +1761,9 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 			this.destroyBehaviours();
 			
 			// Remove the object from the lookup system
-			ige.unRegister(this);
-			ige.categoryUnRegister(this);
-			ige.groupUnRegister(this);
+			$ige.engine.unRegister(this);
+			$ige.engine.categoryUnRegister(this);
+			$ige.engine.groupUnRegister(this);
 			
 			// Set a flag in case a reference to this object
 			// has been held somewhere, shows that the object
@@ -1822,15 +1822,12 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 			switch (i) {
 				case '_id':
 					return {_id: obj[i]};
-					break;
 				
 				case '_parent':
 					return {_parent: obj[i]};
-					break;
 				
 				case '_children':
 					return {_children: obj[i]};
-					break;
 			}
 			return undefined;
 		},
@@ -1838,7 +1835,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 		loadGraph: function (obj) {
 			if (obj.igeClass && obj.data) {
 				// Create a new class instance
-				var classInstance = ige.newClassInstance(obj.igeClass),
+				var classInstance = $ige.engine.newClassInstance(obj.igeClass),
 					newId,
 					childArr,
 					childIndex,
@@ -1979,6 +1976,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 		 * @return {String}
 		 */
 		stringify: function (options) {
+			// TODO : Use the advanced serialiser system from ForerunnerDB
 			// Make sure we have an options object
 			if (options === undefined) { options = {}; }
 			
@@ -1991,7 +1989,7 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 			
 			// Now check if there is a parent and mount that
 			if (options.mount !== false && this.parent()) {
-				str += ".mount(ige.$('" + this.parent().id() + "'))";
+				str += ".mount($ige.engine.$('" + this.parent().id() + "'))";
 			}
 			
 			// Now get all other properties

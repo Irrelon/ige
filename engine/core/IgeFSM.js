@@ -10,8 +10,6 @@ appCore.module('IgeFSM', function (IgeClass) {
 		classId: 'IgeFSM',
 		
 		init: function () {
-			var self = this;
-			
 			this._states = {};
 			this._transitions = {};
 			

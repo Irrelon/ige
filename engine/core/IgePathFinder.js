@@ -331,17 +331,10 @@ appCore.module('IgePathFinder', function (IgeEventingClass, IgePathNode) {
 		},
 		
 		as: function (map, fromNode, toNode) {
-			var openList = [],
-				closedList = [];
+			var openList = [];
 			
 			// Add start point to open list
 			openList.push(fromNode);
-			
-			
-		},
-		
-		_as: function (openList, closedList, currentNode, toNode) {
-			
 		}
 	});
 	

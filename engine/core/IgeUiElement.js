@@ -19,7 +19,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 			var self = this;
 			
 			IgeUiEntity.prototype.init.call(this);
-			ige.ui.registerElement(this);
+			$ige.engine.ui.registerElement(this);
 			
 			this._focused = false;
 			this._allowHover = true;
@@ -33,7 +33,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 			this.on('mouseOver', function () {
 				if (this._allowHover) {
 					updateStyleFunc();
-					ige.input.stopPropagation();
+					$ige.engine.input.stopPropagation();
 				} else {
 					this._mouseStateOver = false;
 				}
@@ -41,7 +41,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 			this.on('mouseOut', function () {
 				if (this._allowHover) {
 					updateStyleFunc();
-					ige.input.stopPropagation();
+					$ige.engine.input.stopPropagation();
 				} else {
 					this._mouseStateOver = false;
 				}
@@ -49,7 +49,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 			this.on('mouseDown', function () {
 				if (this._allowActive) {
 					updateStyleFunc();
-					ige.input.stopPropagation();
+					$ige.engine.input.stopPropagation();
 				} else {
 					this._mouseStateDown = false;
 				}
@@ -60,7 +60,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 					if (!self.focus()) {
 						updateStyleFunc();
 					} else {
-						ige.input.stopPropagation();
+						$ige.engine.input.stopPropagation();
 					}
 				} else if (this._allowActive) {
 					updateStyleFunc();
@@ -111,14 +111,14 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 				// Check for existing assigned style
 				if (this._styleClass && this._styleClass !== name) {
 					// Unregister this element from the style
-					ige.ui.unRegisterElementStyle(this);
+					$ige.engine.ui.unRegisterElementStyle(this);
 				}
 				
 				// Assign the new style
 				this._styleClass = name;
 				
 				// Register the element for this style
-				ige.ui.registerElementStyle(this);
+				$ige.engine.ui.registerElementStyle(this);
 				
 				// Update the element style
 				this._updateStyle();
@@ -164,7 +164,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 				//this.log('Checking for styles with selector: ' + styleName);
 				
 				// Basic
-				var styleData = ige.ui.style(styleName);
+				var styleData = $ige.engine.ui.style(styleName);
 				if (styleData) {
 					//this.log('Applying styles with selector "' + styleName + '"');
 					this.applyStyle(styleData);
@@ -232,7 +232,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 		 * Sets global UI focus to this element.
 		 */
 		focus: function () {
-			if (ige.ui.focus(this)) {
+			if ($ige.engine.ui.focus(this)) {
 				// Re-apply styles since the change
 				this._updateStyle();
 				return true;
@@ -242,7 +242,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 		},
 		
 		blur: function () {
-			if (ige.ui.blur(this)) {
+			if ($ige.engine.ui.blur(this)) {
 				// Re-apply styles since the change
 				this._updateStyle();
 				return true;
@@ -272,7 +272,7 @@ appCore.module('IgeUiElement', function (IgeUiEntity) {
 		 * Destructor
 		 */
 		destroy: function () {
-			ige.ui.unRegisterElement(this);
+			$ige.engine.ui.unRegisterElement(this);
 			IgeUiEntity.prototype.destroy.call(this);
 		}
 	});

@@ -157,7 +157,7 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 					pixels.makeTransparent(currentPixel.x - 1, currentPixel.y - 1);
 					
 					// Add pixel position to queue
-					pixArr.push({x: currentPixel.x - 1, y: currentPixel.y - 1})
+					pixArr.push({x: currentPixel.x - 1, y: currentPixel.y - 1});
 				}
 				
 				if (!pixels.isTransparent(currentPixel.x, currentPixel.y - 1)) {
@@ -165,7 +165,7 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 					pixels.makeTransparent(currentPixel.x, currentPixel.y - 1);
 					
 					// Add pixel position to queue
-					pixArr.push({x: currentPixel.x, y: currentPixel.y - 1})
+					pixArr.push({x: currentPixel.x, y: currentPixel.y - 1});
 				}
 				
 				if (!pixels.isTransparent(currentPixel.x + 1, currentPixel.y - 1)) {
@@ -173,7 +173,7 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 					pixels.makeTransparent(currentPixel.x + 1, currentPixel.y - 1);
 					
 					// Add pixel position to queue
-					pixArr.push({x: currentPixel.x + 1, y: currentPixel.y - 1})
+					pixArr.push({x: currentPixel.x + 1, y: currentPixel.y - 1});
 				}
 				
 				if (!pixels.isTransparent(currentPixel.x - 1, currentPixel.y)) {
@@ -181,7 +181,7 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 					pixels.makeTransparent(currentPixel.x - 1, currentPixel.y);
 					
 					// Add pixel position to queue
-					pixArr.push({x: currentPixel.x - 1, y: currentPixel.y})
+					pixArr.push({x: currentPixel.x - 1, y: currentPixel.y});
 				}
 				
 				if (!pixels.isTransparent(currentPixel.x + 1, currentPixel.y)) {
@@ -189,7 +189,7 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 					pixels.makeTransparent(currentPixel.x + 1, currentPixel.y);
 					
 					// Add pixel position to queue
-					pixArr.push({x: currentPixel.x + 1, y: currentPixel.y})
+					pixArr.push({x: currentPixel.x + 1, y: currentPixel.y});
 				}
 				
 				if (!pixels.isTransparent(currentPixel.x - 1, currentPixel.y + 1)) {
@@ -197,7 +197,7 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 					pixels.makeTransparent(currentPixel.x - 1, currentPixel.y + 1);
 					
 					// Add pixel position to queue
-					pixArr.push({x: currentPixel.x - 1, y: currentPixel.y + 1})
+					pixArr.push({x: currentPixel.x - 1, y: currentPixel.y + 1});
 				}
 				
 				if (!pixels.isTransparent(currentPixel.x, currentPixel.y + 1)) {
@@ -205,7 +205,7 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 					pixels.makeTransparent(currentPixel.x, currentPixel.y + 1);
 					
 					// Add pixel position to queue
-					pixArr.push({x: currentPixel.x, y: currentPixel.y + 1})
+					pixArr.push({x: currentPixel.x, y: currentPixel.y + 1});
 				}
 				
 				if (!pixels.isTransparent(currentPixel.x + 1, currentPixel.y + 1)) {
@@ -213,7 +213,7 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 					pixels.makeTransparent(currentPixel.x + 1, currentPixel.y + 1);
 					
 					// Add pixel position to queue
-					pixArr.push({x: currentPixel.x + 1, y: currentPixel.y + 1})
+					pixArr.push({x: currentPixel.x + 1, y: currentPixel.y + 1});
 				}
 			}
 			

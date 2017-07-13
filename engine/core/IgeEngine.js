@@ -4,6 +4,8 @@ var appCore = require('irrelon-appcore');
 
 appCore.module('IgeEngine', function (
 	igeBase,
+	$ige,
+	$textures,
 	$time,
 	requestAnimFrame,
 	IgeEntity,
@@ -24,6 +26,8 @@ appCore.module('IgeEngine', function (
 			init: function () {
 				var self = this;
 				
+				$ige.engine = self;
+				
 				// Deal with some debug settings first
 				if (igeBase.igeConfig.debug) {
 					if (!igeBase.igeConfig.debug._enabled) {
@@ -36,10 +40,6 @@ appCore.module('IgeEngine', function (
 				this._alwaysInView = true;
 				
 				this._id = 'ige';
-				this.basePath = '';
-				this._currentRoutePath = '';
-				this._routeQueue = [];
-				this._route = {};
 				
 				// Expose appCore instance
 				this.appCore = appCore;
@@ -58,7 +58,7 @@ appCore.module('IgeEngine', function (
 				IgeEntity.prototype.init.call(this);
 				
 				// Check if we are running client-side
-				if (this.isClient) {
+				if ($ige.isClient) {
 					// Enable cocoonJS support because we are running client-side
 					this.addComponent(IgeCocoonJsComponent);
 				}
@@ -122,7 +122,7 @@ appCore.module('IgeEngine', function (
 				this.dependencyTimeout(30000); // Wait 30 seconds to load all dependencies then timeout
 				
 				// Add the textures loaded dependency
-				this._dependencyQueue.push($texures.texturesLoaded.bind($texures));
+				this._dependencyQueue.push($textures.texturesLoaded.bind($textures));
 				//this._dependencyQueue.push(this.canvasReady);
 				
 				// Start a timer to record every second of execution
@@ -170,7 +170,7 @@ appCore.module('IgeEngine', function (
 			/**
 			 * Register an object with the engine object register. The
 			 * register allows you to access an object by it's id with
-			 * a call to ige.$(objectId).
+			 * a call to $ige.engine.$(objectId).
 			 * @param {Object} obj The object to register.
 			 * @return {*}
 			 */
@@ -194,7 +194,7 @@ appCore.module('IgeEngine', function (
 			
 			/**
 			 * Un-register an object with the engine object register. The
-			 * object will no longer be accessible via ige.$().
+			 * object will no longer be accessible via $ige.engine.$().
 			 * @param {Object} obj The object to un-register.
 			 * @return {*}
 			 */
@@ -213,7 +213,7 @@ appCore.module('IgeEngine', function (
 			/**
 			 * Register an object with the engine category register. The
 			 * register allows you to access an object by it's category with
-			 * a call to ige.$$(categoryName).
+			 * a call to $ige.engine.$$(categoryName).
 			 * @param {Object} obj The object to register.
 			 * @return {*}
 			 */
@@ -229,7 +229,7 @@ appCore.module('IgeEngine', function (
 			
 			/**
 			 * Un-register an object with the engine category register. The
-			 * object will no longer be accessible via ige.$$().
+			 * object will no longer be accessible via $ige.engine.$$().
 			 * @param {Object} obj The object to un-register.
 			 * @return {*}
 			 */
@@ -247,7 +247,7 @@ appCore.module('IgeEngine', function (
 			/**
 			 * Register an object with the engine group register. The
 			 * register allows you to access an object by it's groups with
-			 * a call to ige.$$$(groupName).
+			 * a call to $ige.engine.$$$(groupName).
 			 * @param {Object} obj The object to register.
 			 * @param {String} groupName The name of the group to register
 			 * the object in.
@@ -265,7 +265,7 @@ appCore.module('IgeEngine', function (
 			
 			/**
 			 * Un-register an object with the engine group register. The
-			 * object will no longer be accessible via ige.$$$().
+			 * object will no longer be accessible via $ige.engine.$$$().
 			 * @param {Object} obj The object to un-register.
 			 * @param {String} groupName The name of the group to un-register
 			 * the object from.
@@ -454,7 +454,7 @@ appCore.module('IgeEngine', function (
 						// Now remove the graph instance from the graph instance array
 						delete this._graphInstances[className];
 					} else {
-						this.log('Cannot remove graph for class name "' + className + '" because the class instance could not be found. Did you add it via ige.addGraph() ?', 'error');
+						this.log('Cannot remove graph for class name "' + className + '" because the class instance could not be found. Did you add it via $ige.engine.addGraph() ?', 'error');
 					}
 				}
 				
@@ -701,7 +701,7 @@ appCore.module('IgeEngine', function (
 					if (elem) {
 						// Calculate the width from progress
 						var totalWidth = parseInt(elem.parentNode.offsetWidth),
-							currentWidth = Math.floor((totalWidth / this._texturesTotal) * (this._texturesTotal - this._texturesLoading));
+							currentWidth = Math.floor((totalWidth / $textures._texturesTotal) * ($textures._texturesTotal - $textures._texturesLoading));
 						
 						// Set the current bar width
 						elem.style.width = currentWidth + 'px';
@@ -711,7 +711,7 @@ appCore.module('IgeEngine', function (
 								// Fill the text to use
 								this._loadingPreText = textElem.innerHTML;
 							}
-							textElem.innerHTML = this._loadingPreText + ' ' + Math.floor((100 / this._texturesTotal) * (this._texturesTotal - this._texturesLoading)) + '%';
+							textElem.innerHTML = this._loadingPreText + ' ' + Math.floor((100 / $textures._texturesTotal) * ($textures._texturesTotal - $textures._texturesLoading)) + '%';
 						}
 					}
 				}
@@ -1118,11 +1118,11 @@ appCore.module('IgeEngine', function (
 			
 			/**
 			 * Returns the mouse position relative to the main front buffer. Mouse
-			 * position is set by the ige.input component (IgeInputComponent)
+			 * position is set by the $ige.engine.input component (IgeInputComponent)
 			 * @return {IgePoint3d}
 			 */
 			mousePos: function () {
-				return this._mousePos.clone();
+				return $ige._mousePos.clone();
 			},
 			
 			/**
@@ -1551,7 +1551,7 @@ appCore.module('IgeEngine', function (
 			
 			/**
 			 * Manually render a frame on demand. This is used in conjunction
-			 * with the ige.useManualRender(true) call which will cause the
+			 * with the $ige.engine.useManualRender(true) call which will cause the
 			 * engine to only render new graphics frames from the scenegraph
 			 * once this method is called. You must call this method every time
 			 * you wish to update the graphical output on screen.
@@ -2072,264 +2072,6 @@ appCore.module('IgeEngine', function (
 			},
 			
 			/**
-			 * Gets / sets a route for the engine routing system.
-			 * @param {String=} path The path for the route being get or set.
-			 * @param {Object=} definition The definition to set to the
-			 * specified path. If not passed, returns the current definition
-			 * for the path.
-			 * @returns {*}
-			 */
-			route: function (path, definition) {
-				if (path !== undefined) {
-					if (definition !== undefined) {
-						this._route = this._route || {};
-						this._route[path] = definition;
-						
-						return this;
-					}
-					
-					return this._route[path];
-				}
-				
-				return this._route;
-			},
-			
-			/**
-			 * Gets / sets route data by path.
-			 * @param {String} path The path to get / set data for.
-			 * @param {*=} data The data to set for the path.
-			 * @returns {*}
-			 */
-			routeData: function (path, data) {
-				if (path !== undefined) {
-					this._routeData = this._routeData || {};
-					
-					if (data !== undefined) {
-						this._routeData[path] = data;
-						return this;
-					}
-					
-					return this._routeData[path];
-				}
-				
-				return this._routeData;
-			},
-			
-			/**
-			 * Tells the engine to navigate to the passed path. The current
-			 * path will be exited before the new path is navigated to.
-			 * @param {String} path The new path to navigate to.
-			 */
-			go: function (path) {
-				var self = this,
-					currentRoutePath,
-					rootPathString,
-					currentPathParts,
-					newPathParts,
-					tempPath,
-					i;
-				
-				// Check for a route definition first
-				if (!this._route[path]) {
-					throw('Attempt to navigate to undefined route: ' + path);
-				}
-				
-				currentRoutePath = self._currentRoutePath;
-				rootPathString = '';
-				currentPathParts = currentRoutePath.split('.');
-				newPathParts = path.split('.');
-				
-				// Check current path
-				if (self._currentRoutePath) {
-					// Remove duplicate beginning parts from arrays
-					while(currentPathParts.length && newPathParts.length && currentPathParts[0] === newPathParts[0]) {
-						rootPathString += '.' + currentPathParts.shift();
-						newPathParts.shift();
-					}
-					
-					// Inform routes that they are being destroyed
-					if (currentPathParts.length) {
-						tempPath = rootPathString;
-						currentPathParts.reverse();
-						
-						for (i = 0; i < currentPathParts.length; i++) {
-							self._routeRemove(currentPathParts[i]);
-						}
-					}
-				}
-				
-				// Now route to the new path
-				if (newPathParts.length) {
-					tempPath = rootPathString;
-					
-					for (i = 0; i < newPathParts.length; i++) {
-						self._routeAdd(newPathParts[i]);
-					}
-				}
-			},
-			
-			/**
-			 * Adds a path section to the current path and executes the
-			 * various parts of the path definition such as the designated
-			 * scene graph, textures and controller.
-			 * @param {String} path The path section to navigate to.
-			 * @private
-			 */
-			_routeAdd: function (path) {
-				var self = this,
-					definition,
-					routeSteps,
-					routeData,
-					thisFullPath,
-					queue;
-				
-				self._currentRoutePath += self._currentRoutePath ? '.' + path : path;
-				thisFullPath = self._currentRoutePath;
-				
-				queue = this._routeQueue;
-				
-				queue.push(function (finished) {
-					definition = self._route[thisFullPath];
-					routeSteps = [];
-					
-					// Check for non-universal route (both client and server have different
-					// definitions for the same route)
-					if (definition.client && definition.server) {
-						if (self.isClient) {
-							definition = definition.client;
-						}
-						
-						if (self.isServer) {
-							definition = definition.server;
-						}
-					}
-					
-					if (!definition.controller) {
-						self.log('ige._routeAdd() encounterd a route that has no controller specified: ' + thisFullPath, 'error');
-					}
-					
-					routeData = {
-						controllerModule: appCore.module(definition.controller),
-						texturesModule: definition.textures ? appCore.module(definition.textures) : undefined,
-						sceneGraphModule: definition.sceneGraph ? appCore.module(definition.sceneGraph) : undefined
-					};
-					
-					self.routeData(thisFullPath, routeData);
-					
-					if (definition.textures) {
-						routeSteps.push(function (finished) {
-							routeData.texturesModule.emit('loading');
-							appCore.run([definition.textures, function (textures) {
-								if (!$textures.texturesLoaded()) {
-									$textures.on('texturesLoaded', function () {
-										routeData.texturesModule.emit('loaded');
-										finished(false);
-									});
-									return;
-								}
-								
-								routeData.texturesModule.emit('loaded');
-								return finished(false);
-							}]);
-						});
-					}
-					
-					routeSteps.push(function (finished) {
-						routeData.controllerModule.emit('loading');
-						appCore.run([definition.controller, function (Controller) {
-							var controller = new Controller();
-							
-							self.routeData(thisFullPath).controllerModuleInstance = controller;
-							routeData.controllerModule.emit('loaded');
-							finished(false, controller);
-						}]);
-					});
-					
-					if (definition.sceneGraph) {
-						routeSteps.push(function (controller, finished) {
-							appCore.module('$controller', function () {
-								return controller;
-							});
-							
-							appCore
-								.module(definition.sceneGraph)
-								.$controller = controller;
-							
-							routeData.sceneGraphModule.emit('loading');
-							appCore.run([definition.sceneGraph, function (sceneGraph) {
-								self.addGraph(definition.sceneGraph);
-								
-								routeData.sceneGraphModule.emit('loaded');
-								finished(false);
-							}]);
-						});
-					}
-					
-					routeSteps.waterfall(function () {
-						routeData.texturesModule.emit('ready');
-						routeData.controllerModule.emit('ready');
-						routeData.sceneGraphModule.emit('ready');
-						
-						finished();
-					});
-				});
-				
-				queue.series(function () {}, true);
-			},
-			
-			/**
-			 * Removes a path section from the current path and fires the
-			 * "destroying" and finally "destroyed" events for any textures,
-			 * scene graph and controller.
-			 * @param {String} path The path section to navigate from.
-			 * @private
-			 */
-			_routeRemove: function (path) {
-				var self = this,
-					routeData,
-					thisFullPath,
-					definition,
-					queue;
-				
-				thisFullPath = self._currentRoutePath;
-				queue = this._routeQueue;
-				
-				queue.push(function (finished) {
-					routeData = self.routeData(thisFullPath);
-					definition = self._route[thisFullPath];
-					
-					if (!routeData) {
-						throw('Attempting to routeRemove() a path that has no routeData: ' + thisFullPath);
-					}
-					
-					if (routeData.sceneGraphModule) {
-						routeData.sceneGraphModule.emit('destroying');
-						self.removeGraph(definition.sceneGraph);
-					}
-					
-					if (routeData.texturesModule) {
-						routeData.texturesModule.emit('destroying');
-					}
-					routeData.controllerModule.emit('destroying');
-					
-					if (routeData.sceneGraphModule) {
-						routeData.sceneGraphModule.emit('destroyed');
-					}
-					
-					if (routeData.texturesModule) {
-						routeData.texturesModule.emit('destroyed');
-					}
-					routeData.controllerModule.emit('destroyed');
-					
-					self._currentRoutePath = self._currentRoutePath.replace(new RegExp('[\.]*?' + path + '$'), '');
-					
-					finished();
-				});
-				
-				queue.series(function () {}, true);
-			},
-			
-			/**
 			 * Destroys the engine instance and all scenegraph elements
 			 * mounted to it.
 			 */
@@ -2338,7 +2080,7 @@ appCore.module('IgeEngine', function (
 				this.stop();
 				
 				// Remove the front buffer (canvas) if we created it
-				if (this.isClient) {
+				if ($ige.isClient) {
 					this.removeCanvas();
 				}
 				

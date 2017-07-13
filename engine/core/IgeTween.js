@@ -256,10 +256,10 @@ appCore.module('IgeTween', function ($time, IgeClass) {
 		 */
 		easing: function (methodName) {
 			if (methodName !== undefined) {
-				if (ige.tween.easing[methodName]) {
+				if ($ige.engine.tween.easing[methodName]) {
 					this._easing = methodName;
 				} else {
-					this.log('The easing method you have selected does not exist, please use a valid easing method. For a list of easing methods please inspect ige.tween.easing from your console.', 'error', ige.tween.easing);
+					this.log('The easing method you have selected does not exist, please use a valid easing method. For a list of easing methods please inspect $ige.engine.tween.easing from your console.', 'error', $ige.engine.tween.easing);
 				}
 			}
 			
@@ -289,7 +289,7 @@ appCore.module('IgeTween', function ($time, IgeClass) {
 				this.startTime(timeMs + $time._currentTime);
 			}
 			
-			ige.tween.start(this);
+			$ige.engine.tween.start(this);
 			
 			// Add the tween to the target object's tween array
 			this._targetObj._tweenArr = this._targetObj._tweenArr || [];
@@ -302,7 +302,7 @@ appCore.module('IgeTween', function ($time, IgeClass) {
 		 * Stops the tweening operation.
 		 */
 		stop: function () {
-			ige.tween.stop(this);
+			$ige.engine.tween.stop(this);
 			if (this._targetObj._tweenArr) {
 				this._targetObj._tweenArr.pull(this);
 			}

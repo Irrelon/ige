@@ -81,7 +81,7 @@ var IgeNetIoClient = {
 							self.log('Received network command list with count: ' + commandCount);
 
 							// Setup time scale and current time
-							ige.timeScale(parseFloat(data.ts));
+							$ige.engine.timeScale(parseFloat(data.ts));
 							$time._currentTime = parseInt(data.ct);
 
 							// Now fire the start() callback
@@ -171,7 +171,7 @@ var IgeNetIoClient = {
 	/**
 	 * Sends a network request. This is different from a standard
 	 * call to send() because the recipient code will be able to
-	 * respond by calling ige.network.response(). When the response
+	 * respond by calling $ige.network.response(). When the response
 	 * is received, the callback method that was passed in the
 	 * callback parameter will be fired with the response data.
 	 * @param {String} commandName

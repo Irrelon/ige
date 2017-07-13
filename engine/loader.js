@@ -7,7 +7,7 @@ window.igeLoader = (function () {
 	css.rel = 'stylesheet';
 	css.type = 'text/css';
 	css.media = 'all';
-	css.href = igeRoot + 'css/ige.css';
+	css.href = igeRoot + 'css/$ige.engine.css';
 	
 	document.getElementsByTagName('head')[0].appendChild(css);
 	

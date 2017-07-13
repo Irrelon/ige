@@ -15,17 +15,17 @@ appCore.module('IgeEntityBox2d', function (IgeEntity) {
 			if (world) {
 				if (typeof(world) === 'string') {
 					// Get world reference
-					world = ige.box2d.world(world);
+					world = $ige.engine.box2d.world(world);
 				}
 				
 				this._box2dWorld = world;
 				this._b2dRef = world;
 			} else {
-				this._b2dRef = ige.box2d;
+				this._b2dRef = $ige.engine.box2d;
 			}
 			
 			// Check if box2d is enabled in the engine
-			if (ige.box2d) {
+			if ($ige.engine.box2d) {
 				if (!this._b2dRef._networkDebugMode) {
 					// Store the existing transform methods
 					this._translateToProto = this.translateTo;
@@ -92,7 +92,7 @@ appCore.module('IgeEntityBox2d', function (IgeEntity) {
 				this._box2dBodyDef = def;
 				
 				// Check that the box2d component exists
-				if (ige.box2d) {
+				if ($ige.engine.box2d) {
 					// Ask the box2d component to create a new body for us
 					this._box2dBody = this._b2dRef.createBody(this, def);
 				} else {
@@ -195,7 +195,7 @@ appCore.module('IgeEntityBox2d', function (IgeEntity) {
 		_setupContactListeners: function () {
 			var self = this;
 			
-			ige.box2d.contactListener(
+			$ige.engine.box2d.contactListener(
 				// Listen for when contact's begin
 				function (contact) {
 					//console.log('Contact begins between', contact.igeEntityA()._id, 'and', contact.igeEntityB()._id);

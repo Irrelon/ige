@@ -8,7 +8,7 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 			var self = this;
 			
 			// Hook editor select object updates so we can keep in sync
-			ige.editor.on('selectedObject', function (id) {
+			$ige.engine.editor.on('selectedObject', function (id) {
 				$ige._currentViewport.drawBounds(true);
 				$ige._currentViewport.drawBoundsLimitId(id);
 			});
@@ -19,29 +19,29 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 						id: 'select',
 						icon: 'hand-top',
 						text: 'Select',
-						action: "ige.editor.ui.toolbox.select('toolSelect');"
+						action: "$ige.engine.editor.ui.toolbox.select('toolSelect');"
 					}],
 					'transform': [{
 						sep: true,
 						id: 'transform',
 						icon: 'th',
 						text: 'Transform',
-						action: "ige.editor.ui.toolbox.select('toolTransform');"
+						action: "$ige.engine.editor.ui.toolbox.select('toolTransform');"
 					}, {
 						id: 'translate',
 						icon: 'move',
 						text: 'Translate',
-						action: "ige.editor.ui.toolbox.select('toolTranslate');"
+						action: "$ige.engine.editor.ui.toolbox.select('toolTranslate');"
 					}, {
 						id: 'rotate',
 						icon: 'repeat',
 						text: 'Rotate',
-						action: "ige.editor.ui.toolbox.select('toolRotate');"
+						action: "$ige.engine.editor.ui.toolbox.select('toolRotate');"
 					}, {
 						id: 'scale',
 						icon: 'resize-full',
 						text: 'Scale',
-						action: "ige.editor.ui.toolbox.select('toolRotate');"
+						action: "$ige.engine.editor.ui.toolbox.select('toolRotate');"
 					}],
 					'export': [{
 						sep: true,
@@ -58,20 +58,20 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 						id: 'destroy',
 						icon: 'certificate',
 						text: 'Destroy',
-						action: "ige.editor.destroySelected();"
+						action: "$ige.engine.editor.destroySelected();"
 					}]
 				}]
 			};
 			
-			ige.editor.on('mouseUp', function (event) {
+			$ige.engine.editor.on('mouseUp', function (event) {
 				if (event.button === 0) {
-					ige.editor.ui.menus.closeAll();
+					$ige.engine.editor.ui.menus.closeAll();
 				}
 				
 				// If right mouse button and an object is selected, show the
 				// context menu for that object
-				if (event.button === 2 && ige.editor._selectedObject) {
-					var classArr = ige.editor._selectedObjectClassList,
+				if (event.button === 2 && $ige.engine.editor._selectedObject) {
+					var classArr = $ige.engine.editor._selectedObjectClassList,
 						i;
 					
 					for (i = 0; i < classArr.length; i++) {
@@ -84,10 +84,10 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 						left = event.pageX,
 						top = event.pageY;
 					
-					ige.editor.ui.menus.create({
+					$ige.engine.editor.ui.menus.create({
 						header: {
 							icon: 'th-large',
-							text: '[' + ige.editor._selectedObject.classId() + ']' + ' '  + ige.editor._selectedObject.id()
+							text: '[' + $ige.engine.editor._selectedObject.classId() + ']' + ' '  + $ige.engine.editor._selectedObject.id()
 						},
 						groups: self.menuDefinition.IgeEntity
 					}, function (elem) {
@@ -115,31 +115,31 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 				this._enabled = val;
 				
 				if (val) {
-					ige.editor.interceptMouse(true);
+					$ige.engine.editor.interceptMouse(true);
 					
 					var self = this;
 					
 					// Hook the engine's input system and take over mouse interaction
-					this._mouseUpHandle = ige.editor.on('mouseUp', function (event) {
+					this._mouseUpHandle = $ige.engine.editor.on('mouseUp', function (event) {
 						self._mouseUp(event);
 					});
 					
-					this._mouseDownHandle = ige.editor.on('mouseDown', function (event) {
+					this._mouseDownHandle = $ige.engine.editor.on('mouseDown', function (event) {
 						self._mouseDown(event);
 					});
 					
-					this._mouseMoveHandle = ige.editor.on('mouseMove', function (event) {
+					this._mouseMoveHandle = $ige.engine.editor.on('mouseMove', function (event) {
 						self._mouseMove(event);
 					});
 				} else {
-					ige.editor.interceptMouse(false);
-					ige.editor.off('mouseUp', this._mouseUpHandle);
-					ige.editor.off('mouseDown', this._mouseDownHandle);
-					ige.editor.off('mouseMove', this._mouseMoveHandle);
+					$ige.engine.editor.interceptMouse(false);
+					$ige.engine.editor.off('mouseUp', this._mouseUpHandle);
+					$ige.engine.editor.off('mouseDown', this._mouseDownHandle);
+					$ige.engine.editor.off('mouseMove', this._mouseMoveHandle);
 					
-					if (ige.editor._selectedObject) {
+					if ($ige.engine.editor._selectedObject) {
 						$ige._currentViewport.drawBoundsData(true);
-						$ige._currentViewport.drawBoundsLimitId(ige.editor._selectedObject.id());
+						$ige._currentViewport.drawBoundsLimitId($ige.engine.editor._selectedObject.id());
 					} else {
 						$ige._currentViewport.drawBounds(false);
 						$ige._currentViewport.drawBoundsLimitId('');
@@ -163,31 +163,31 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 		 * @private
 		 */
 		_mouseMove: function (event) {
-			var arr = ige.mouseOverList();
+			var arr = $ige.engine.mouseOverList();
 			
 			if (arr.length) {
-				if (!ige.editor._selectedObject) {
+				if (!$ige.engine.editor._selectedObject) {
 					$ige._currentViewport.drawBounds(true);
 					$ige._currentViewport.drawBoundsData(true);
 					$ige._currentViewport.drawBoundsLimitId(arr[0].id());
 				} else {
 					$ige._currentViewport.drawBounds(true);
 					$ige._currentViewport.drawBoundsData(true);
-					$ige._currentViewport.drawBoundsLimitId([ige.editor._selectedObject.id(), arr[0].id()]);
+					$ige._currentViewport.drawBoundsLimitId([$ige.engine.editor._selectedObject.id(), arr[0].id()]);
 				}
 				
 				this._overObject = arr;
 			} else {
 				delete this._overObject;
 				
-				if (!ige.editor._selectedObject) {
+				if (!$ige.engine.editor._selectedObject) {
 					$ige._currentViewport.drawBounds(false);
 					$ige._currentViewport.drawBoundsData(false);
 					$ige._currentViewport.drawBoundsLimitId('');
 				} else {
 					$ige._currentViewport.drawBounds(true);
 					$ige._currentViewport.drawBoundsData(true);
-					$ige._currentViewport.drawBoundsLimitId(ige.editor._selectedObject.id());
+					$ige._currentViewport.drawBoundsLimitId($ige.engine.editor._selectedObject.id());
 				}
 			}
 			
@@ -228,11 +228,11 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 								id: 'select',
 								icon: 'th-large',
 								text: '[' + obj.classId() + ']' + ' '  + obj.id(),
-								action: "ige.editor.selectObject('" + obj.id() + "');"
+								action: "$ige.engine.editor.selectObject('" + obj.id() + "');"
 							});
 						}
 						
-						ige.editor.ui.menus.create({
+						$ige.engine.editor.ui.menus.create({
 							header: {
 								icon: 'log_in',
 								text: 'Select Object'
@@ -257,8 +257,8 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 								.css('top', top);
 						});
 					} else {
-						ige.editor.selectObject(this._overObject.id());
-						this.emit('selected', ige.editor._selectedObject);
+						$ige.engine.editor.selectObject(this._overObject.id());
+						this.emit('selected', $ige.engine.editor._selectedObject);
 						
 						this.emit('mouseUp', event);
 					}
@@ -267,8 +267,8 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 		},
 		
 		_selectObject: function (id) {
-			ige.editor.selectObject(id);
-			this.emit('selected', ige.editor._selectedObject);
+			$ige.engine.editor.selectObject(id);
+			this.emit('selected', $ige.engine.editor._selectedObject);
 			
 			this.emit('mouseUp', event);
 		},

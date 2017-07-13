@@ -193,9 +193,9 @@ appCore.module('UiPanels', function ($textures, IgeEventingClass, IgePoint3d, Ig
 									panel.find('.setTexture').on('change', function () {
 										var textureId = $(this).val();
 										
-										if (textureId && ige.$(textureId)) {
+										if (textureId && $ige.engine.$(textureId)) {
 											// Set the object's texture to the newly selected one
-											obj.texture(ige.$(textureId));
+											obj.texture($ige.engine.$(textureId));
 										} else {
 											// Set texture to none
 											delete obj._texture;
@@ -1460,7 +1460,7 @@ appCore.module('UiPanels', function ($textures, IgeEventingClass, IgePoint3d, Ig
 		
 		showPanelByInstance: function (obj) {
 			if (obj) {
-				var classArr = ige.getClassDerivedList(obj),
+				var classArr = $ige.engine.getClassDerivedList(obj),
 					classIndex,
 					className;
 				
@@ -1500,7 +1500,7 @@ appCore.module('UiPanels', function ($textures, IgeEventingClass, IgePoint3d, Ig
 							
 							(function (groupData) {
 								// Generate HTML for this group from the template
-								ige.editor.template(igeRoot + 'components/editor/ui/panels/templates/group.html', function (err, template) {
+								$ige.engine.editor.template(igeRoot + 'components/editor/ui/panels/templates/group.html', function (err, template) {
 									if (!err) {
 										var groupSelector = $($.parseHTML(template.render(groupData))),
 											propName,
@@ -1525,7 +1525,7 @@ appCore.module('UiPanels', function ($textures, IgeEventingClass, IgePoint3d, Ig
 														
 														if (propData.obj[propData.id] && typeof(propData.obj[propData.id]) === 'object') {
 															// Get the IGE class that this property derives from
-															igeClass = ige.findBaseClass(propData.obj[propData.id]);
+															igeClass = $ige.engine.findBaseClass(propData.obj[propData.id]);
 															propertyTemplateUrl = propData.templateUrl || igeRoot + 'components/editor/ui/panels/templates/' + igeClass + '.html';
 														} else {
 															propertyTemplateUrl = propData.templateUrl
@@ -1533,7 +1533,7 @@ appCore.module('UiPanels', function ($textures, IgeEventingClass, IgePoint3d, Ig
 														
 														if (propertyTemplateUrl) {
 															// Generate HTML for this property from the template
-															ige.editor.template(propertyTemplateUrl, function (err, template) {
+															$ige.engine.editor.template(propertyTemplateUrl, function (err, template) {
 																if (!err) {
 																	var propSelector,
 																		updateMethod;
@@ -1604,7 +1604,7 @@ appCore.module('UiPanels', function ($textures, IgeEventingClass, IgePoint3d, Ig
 	});
 	
 	// Init
-	ige.editor.ui.panels = new UiPanels();
+	$ige.engine.editor.ui.panels = new UiPanels();
 	
 	return UiPanels;
 });

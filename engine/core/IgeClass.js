@@ -111,7 +111,7 @@ appCore.module('IgeClass', function ($ige, igeBase, printStackTrace) {
 			/**
 			 * Returns the class id. Primarily used to help identify
 			 * what class an instance was instantiated with and is also
-			 * output during the ige.scenegraph() method's console logging
+			 * output during the $ige.engine.scenegraph() method's console logging
 			 * to show what class an object belongs to.
 			 * @example #Get the class id of an object
 			 *     var entity = new IgeEntity();

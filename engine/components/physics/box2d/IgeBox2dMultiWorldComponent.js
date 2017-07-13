@@ -132,7 +132,7 @@ appCore.module('IgeBox2dMultiWorldComponent', function (IgeEventingClass) {
 			var world;
 			
 			options = options || {};
-			options.id = options.id || ige.newIdHex();
+			options.id = options.id || $ige.engine.newIdHex();
 			options.gravity = options.gravity || new this.b2Vec2(0, 0);
 			options.sleep = options.sleep !== undefined ? options.sleep : true;
 			

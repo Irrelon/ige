@@ -121,8 +121,8 @@ var IgeThree = IgeEventingClass.extend({
 			this._scene.tick(ctx, scene);
 
 			// Draw the scene
-			ige._threeRenderer.clear();
-			ige._threeRenderer.render(this._scene._threeObj, this.camera._threeObj);
+			$ige.engine._threeRenderer.clear();
+			$ige.engine._threeRenderer.render(this._scene._threeObj, this.camera._threeObj);
 		}
 	},
 
@@ -217,7 +217,7 @@ var IgeThree = IgeEventingClass.extend({
 		// Add canvas element to DOM
 		this.three._canvas = this._threeRenderer.domElement;
 		document.body.appendChild(this.three._canvas);
-		ige._bounds2d = new IgePoint2d(this.three._canvas.width, this.three._canvas.height);
+		$ige.engine._bounds2d = new IgePoint2d(this.three._canvas.width, this.three._canvas.height);
 
 		/*controls = new THREE.TrackballControls(this._threeObj, this._threeRenderer.domElement);
 		 controls.rotateSpeed = 0.20;*/
@@ -242,13 +242,13 @@ var IgeThree = IgeEventingClass.extend({
 		 this._threeComposer.addPass( effectFilm );*/
 
 		/*this._postTick.push(function () {
-		 //ige._threeRenderer.clear();
-		 //ige._threeRenderer.render( ige._threeObj, ige._threeObj );
+		 //$ige.engine._threeRenderer.clear();
+		 //$ige.engine._threeRenderer.render( $ige.engine._threeObj, $ige.engine._threeObj );
 
-		 //ige._threeRenderer.setViewport(10, 10, 400, 200);
-		 //ige._threeRenderer.render( ige._threeObj, ige._threeObj );
-		 //ige._threeRenderer.setViewport(400, 10, 400, 200);
-		 //ige._threeComposer.render(0.1);
+		 //$ige.engine._threeRenderer.setViewport(10, 10, 400, 200);
+		 //$ige.engine._threeRenderer.render( $ige.engine._threeObj, $ige.engine._threeObj );
+		 //$ige.engine._threeRenderer.setViewport(400, 10, 400, 200);
+		 //$ige.engine._threeComposer.render(0.1);
 		 });*/
 	},
 
@@ -291,9 +291,9 @@ var IgeThree = IgeEventingClass.extend({
 
 	IgeEntity_model: function(model) {
 		if (model !== undefined) {
-			ige.three._geometryLoader.path = './models';
+			$ige.engine.three._geometryLoader.path = './models';
 			this._threeObj = new THREE.Mesh(
-				ige.three._geometryLoader.parse(model),
+				$ige.engine.three._geometryLoader.parse(model),
 				this._material || new THREE.MeshFaceMaterial()
 			);
 

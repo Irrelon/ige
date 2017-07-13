@@ -10,25 +10,25 @@ appCore.module('UiToolBox_ToolTranslate', function (IgeEventingClass, IgePoint3d
 		
 		enabled: function (val) {
 			if (val !== undefined) {
-				if (ige.editor._selectedObject) {
+				if ($ige.engine.editor._selectedObject) {
 					this._enabled = val;
 					
 					if (val) {
-						ige.editor.interceptMouse(true);
+						$ige.engine.editor.interceptMouse(true);
 						var self = this;
 						
-						this._targetEntity = ige.editor._selectedObject;
+						this._targetEntity = $ige.engine.editor._selectedObject;
 						
 						// Hook the engine's input system and take over mouse interaction
-						this._mouseUpHandle = ige.editor.on('mouseUp', function (event) {
+						this._mouseUpHandle = $ige.engine.editor.on('mouseUp', function (event) {
 							self._mouseUp(event);
 						});
 						
-						this._mouseDownHandle = ige.editor.on('mouseDown', function (event) {
+						this._mouseDownHandle = $ige.engine.editor.on('mouseDown', function (event) {
 							self._mouseDown(event);
 						});
 						
-						this._mouseMoveHandle = ige.editor.on('mouseMove', function (event) {
+						this._mouseMoveHandle = $ige.engine.editor.on('mouseMove', function (event) {
 							self._mouseMove(event);
 						});
 						
@@ -37,10 +37,10 @@ appCore.module('UiToolBox_ToolTranslate', function (IgeEventingClass, IgePoint3d
 						this._opStarted  = false;
 						this._startThreshold = 1; // The number of pixels the mouse should move to activate
 					} else {
-						ige.editor.interceptMouse(false);
-						ige.editor.off('mouseUp', this._mouseUpHandle);
-						ige.editor.off('mouseDown', this._mouseDownHandle);
-						ige.editor.off('mouseMove', this._mouseMoveHandle);
+						$ige.engine.editor.interceptMouse(false);
+						$ige.engine.editor.off('mouseUp', this._mouseUpHandle);
+						$ige.engine.editor.off('mouseDown', this._mouseDownHandle);
+						$ige.engine.editor.off('mouseMove', this._mouseMoveHandle);
 					}
 				}
 			}
@@ -55,8 +55,8 @@ appCore.module('UiToolBox_ToolTranslate', function (IgeEventingClass, IgePoint3d
 		_mouseDown: function (event) {
 			if (!this._opStarted) {
 				// Record the mouse down position - pre-start
-				var mx = (event.igeX - ige._bounds2d.x2),
-					my = (event.igeY - ige._bounds2d.y2),
+				var mx = (event.igeX - $ige.engine._bounds2d.x2),
+					my = (event.igeY - $ige.engine._bounds2d.y2),
 					curMousePos = new IgePoint3d(mx, my, 0);
 				
 				this._opStartMouse = curMousePos.clone();
@@ -68,7 +68,7 @@ appCore.module('UiToolBox_ToolTranslate', function (IgeEventingClass, IgePoint3d
 				
 				this._opPreStart = true;
 				this._opStarted = false;
-				//document.getElementById('igeSgEditorStatus').innerHTML = 'X: ' + ige._translate.x + ' Y:' + ige._translate.y;
+				//document.getElementById('igeSgEditorStatus').innerHTML = 'X: ' + $ige.engine._translate.x + ' Y:' + $ige.engine._translate.y;
 			}
 		},
 		
@@ -82,8 +82,8 @@ appCore.module('UiToolBox_ToolTranslate', function (IgeEventingClass, IgePoint3d
 			if (this._enabled && this._targetEntity) {
 				// Pan the camera if the mouse is down
 				if (this._opStartMouse) {
-					var mx = (event.igeX - ige._bounds2d.x2),
-						my = (event.igeY - ige._bounds2d.y2),
+					var mx = (event.igeX - $ige.engine._bounds2d.x2),
+						my = (event.igeY - $ige.engine._bounds2d.y2),
 						curMousePos = {x: mx, y: my},
 						panCords = {
 							x: this._opStartMouse.x - curMousePos.x,
@@ -134,8 +134,8 @@ appCore.module('UiToolBox_ToolTranslate', function (IgeEventingClass, IgePoint3d
 				// End the pan
 				if (this._opStarted) {
 					if (this._opStartMouse) {
-						var mx = (event.igeX - ige._bounds2d.x2),
-							my = (event.igeY - ige._bounds2d.y2),
+						var mx = (event.igeX - $ige.engine._bounds2d.x2),
+							my = (event.igeY - $ige.engine._bounds2d.y2),
 							curMousePos = {x: mx, y: my},
 							panCords = {
 								x: this._opStartMouse.x - curMousePos.x,

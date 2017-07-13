@@ -83,7 +83,7 @@ appCore.module('IgeAudioComponent', function (IgeEventingClass, IgeAudio) {
 		 * @param {String} id The id of the audio file to play.
 		 */
 		play: function (id) {
-			var audio = ige.$(id);
+			var audio = $ige.engine.$(id);
 			if (audio) {
 				if (audio.prototype.play) {
 					audio.play();

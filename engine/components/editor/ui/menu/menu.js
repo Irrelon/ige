@@ -7,10 +7,10 @@ appCore.module('UiMenu', function (IgeEventingClass) {
 		init: function () {
 			var self = this;
 			self._menus = {};
-			ige.requireStylesheet(igeRoot + 'components/editor/ui/menu/menu.css');
+			$ige.engine.requireStylesheet(igeRoot + 'components/editor/ui/menu/menu.css');
 			
 			// Pre-load the template we need
-			ige.editor.template(
+			$ige.engine.editor.template(
 				igeRoot + 'components/editor/ui/menu/templates/menuButton.html',
 				function () {
 					self.add({
@@ -51,7 +51,7 @@ appCore.module('UiMenu', function (IgeEventingClass) {
 			
 			self.closeAll();
 			
-			ige.editor.renderTemplate(
+			$ige.engine.editor.renderTemplate(
 				igeRoot + 'components/editor/ui/menu/templates/menu.html',
 				menuData,
 				function (err, htmlElem) {
@@ -68,7 +68,7 @@ appCore.module('UiMenu', function (IgeEventingClass) {
 								.appendTo('body');
 						}
 						
-						htmlElem.attr('id', 'menu_' + (menuData.id || ige.newIdHex()));
+						htmlElem.attr('id', 'menu_' + (menuData.id || $ige.engine.newIdHex()));
 						
 						if (menuData.left !== undefined) {
 							htmlElem.css('left', menuData.left);
@@ -122,7 +122,7 @@ appCore.module('UiMenu', function (IgeEventingClass) {
 			
 			self._menus[obj.id] = obj;
 			
-			ige.editor.renderTemplate(
+			$ige.engine.editor.renderTemplate(
 				igeRoot + 'components/editor/ui/menu/templates/menuButton.html',
 				obj,
 				function (err, htmlElem) {
@@ -154,10 +154,10 @@ appCore.module('UiMenu', function (IgeEventingClass) {
 			if (menuButton.hasClass('active')) {
 				// Deactivate the menu
 				$('.dropMenuContainer .menuButton').removeClass('active');
-				ige.editor.ui.menus.closeAll();
+				$ige.engine.editor.ui.menus.closeAll();
 				
 				if (self._editorTool) {
-					ige.editor.ui.toolbox.select(self._editorTool);
+					$ige.engine.editor.ui.toolbox.select(self._editorTool);
 					delete self._editorTool;
 				}
 			}
@@ -169,12 +169,12 @@ appCore.module('UiMenu', function (IgeEventingClass) {
 				menuButton = $('.dropMenuContainer #' + id);
 			
 			// Store the current selected editor tool and then deactivate the tool
-			self._editorTool = ige.editor.ui.toolbox._currentTool ? ige.editor.ui.toolbox._currentTool : self._editorTool;
-			ige.editor.ui.toolbox.deselect();
+			self._editorTool = $ige.engine.editor.ui.toolbox._currentTool ? $ige.engine.editor.ui.toolbox._currentTool : self._editorTool;
+			$ige.engine.editor.ui.toolbox.deselect();
 			
 			// Toggle all other menus off
 			$('.dropMenuContainer .menuButton').removeClass('active');
-			ige.editor.ui.menus.closeAll();
+			$ige.engine.editor.ui.menus.closeAll();
 			
 			// Activate the menu
 			if (obj) {
@@ -186,7 +186,7 @@ appCore.module('UiMenu', function (IgeEventingClass) {
 					top = position.top,
 					height = $('body').height();
 				
-				ige.editor.ui.menus.create({
+				$ige.engine.editor.ui.menus.create({
 					groups: obj.menu,
 					search: false,
 					blur: function (underlayElem) {
@@ -241,7 +241,7 @@ appCore.module('UiMenu', function (IgeEventingClass) {
 		}
 	});
 
-	ige.editor.ui.menus = new UiMenu();
+	$ige.engine.editor.ui.menus = new UiMenu();
 	
 	return UiMenu;
 });

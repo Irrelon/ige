@@ -43,8 +43,7 @@ appCore.module('IgeEventingClass', function (IgeClass) {
 				eventIndex,
 				eventData,
 				eventObj,
-				multiEventName,
-				i;
+				multiEventName;
 			
 			// Check that we have an event listener object
 			this._eventListeners = this._eventListeners || {};

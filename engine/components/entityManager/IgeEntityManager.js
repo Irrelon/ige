@@ -39,9 +39,9 @@ appCore.module('IgeEntityManager', function (IgeEventingClass) {
 			 .id('visArea')
 			 .texture(this.gameTexture.simpleBox)
 			 .opacity(0.5)
-			 .mount(ige.$('objectScene'));*/
+			 .mount($ige.engine.$('objectScene'));*/
 			
-			/*ige.$('visArea')
+			/*$ige.engine.$('visArea')
 			 .translateTo(rect.x + (rect.width / 2), rect.y + (rect.height / 2), 0)
 			 .height(rect.height)
 			 .width(rect.width);*/
@@ -65,7 +65,7 @@ appCore.module('IgeEntityManager', function (IgeEventingClass) {
 		_updateOrphans: function () {
 			var arr = this._entity._children,
 				arrCount = arr.length,
-				viewportArr = ige._children,
+				viewportArr = $ige.engine._children,
 				vpCount = viewportArr.length,
 				item,
 				itemAabb,
@@ -124,7 +124,7 @@ appCore.module('IgeEntityManager', function (IgeEventingClass) {
 		_updateChildren: function () {
 			var arr = this._entity._orphans,
 				arrCount = arr.length,
-				viewportArr = ige._children,
+				viewportArr = $ige.engine._children,
 				vpCount = viewportArr.length,
 				item,
 				itemAabb,

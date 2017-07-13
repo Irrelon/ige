@@ -75,8 +75,8 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 				this._opStarted  = false;
 				
 				if (this._enabled) {
-					if (ige._sgTreeSelected) {
-						this._targetEntity = ige.$(ige._sgTreeSelected);
+					if ($ige.engine._sgTreeSelected) {
+						this._targetEntity = $ige.engine.$($ige.engine._sgTreeSelected);
 						
 						if (this._targetEntity.classId() == 'IgeViewport') {
 							// Disable translation mode
@@ -84,9 +84,9 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 							this.enabled(false);
 						} else {
 							// Listen for the mouse events we need to operate
-							ige.input.on('mouseDown', function (event) { self._mouseDown(event); });
-							ige.input.on('mouseMove', function (event) { self._mouseMove(event); });
-							ige.input.on('mouseUp', function (event) { self._mouseUp(event); });
+							$ige.engine.input.on('mouseDown', function (event) { self._mouseDown(event); });
+							$ige.engine.input.on('mouseMove', function (event) { self._mouseMove(event); });
+							$ige.engine.input.on('mouseUp', function (event) { self._mouseUp(event); });
 							this.log('Editor: Mouse translate enabled');
 						}
 					}
@@ -111,7 +111,7 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 		_mouseDown: function (event) {
 			if (!this._opStarted && this._enabled && this._targetEntity) {
 				// Record the mouse down position - pre-start
-				var curMousePos = ige._mousePos;
+				var curMousePos = $ige.engine._mousePos;
 				this._opStartMouse = curMousePos.clone();
 				
 				this._opStartTranslate = {
@@ -136,7 +136,7 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 			if (this._enabled && this._targetEntity) {
 				// Pan the camera if the mouse is down
 				if (this._opStartMouse) {
-					var curMousePos = ige._mousePos,
+					var curMousePos = $ige.engine._mousePos,
 						panCords = {
 							x: this._opStartMouse.x - curMousePos.x,
 							y: this._opStartMouse.y - curMousePos.y
@@ -207,7 +207,7 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 				// End the pan
 				if (this._opStarted) {
 					if (this._opStartMouse) {
-						var curMousePos = ige._mousePos,
+						var curMousePos = $ige.engine._mousePos,
 							panCords = {
 								x: this._opStartMouse.x - curMousePos.x,
 								y: this._opStartMouse.y - curMousePos.y

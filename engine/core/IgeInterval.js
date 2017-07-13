@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeInterval', function ($time, IgeEventingClass) {
+appCore.module('IgeInterval', function ($ige, $time, IgeEventingClass) {
 	/**
 	 * Provides an alternative to setInterval() which works based on the engine's internal
 	 * time system allowing intervals to fire correctly, taking into account pausing the
@@ -22,15 +22,13 @@ appCore.module('IgeInterval', function ($time, IgeEventingClass) {
 	 *     }, 1000);
 		 */
 		init: function (method, interval) {
-			var self = this;
-			
 			this._method = method;
 			this._interval = interval;
 			this._time = 0;
 			this._started = $time._currentTime;
 			
 			// Attach ourselves to the time system
-			ige.time.addTimer(this);
+			$ige.engine.time.addTimer(this);
 		},
 		
 		/**
@@ -54,7 +52,7 @@ appCore.module('IgeInterval', function ($time, IgeEventingClass) {
 		 * @returns {*}
 		 */
 		cancel: function () {
-			ige.time.removeTimer(this);
+			$ige.engine.time.removeTimer(this);
 			return this;
 		},
 		

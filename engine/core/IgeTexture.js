@@ -22,8 +22,8 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 			
 			/* CEXCLUDE */
 			// If on a server, error
-			if (ige.isServer) {
-				this.log('Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don\'t try to load a texture on the server-side using something like an if statement around your texture laoding such as "if (ige.isClient) {}".', 'error');
+			if ($ige.isServer) {
+				this.log('Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don\'t try to load a texture on the server-side using something like an if statement around your texture laoding such as "if ($ige.isClient) {}".', 'error');
 				return this;
 			}
 			/* CEXCLUDE */
@@ -63,8 +63,8 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 		id: function (id) {
 			if (id !== undefined) {
 				// Check if this ID already exists in the object register
-				if (ige._register[id]) {
-					if (ige._register[id] === this) {
+				if ($ige.engine._register[id]) {
+					if ($ige.engine._register[id] === this) {
 						// We are already registered as this id
 						return this;
 					}
@@ -73,15 +73,15 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 					this.log('Cannot set ID of object to "' + id + '" because that ID is already in use by another object!', 'error');
 				} else {
 					// Check if we already have an id assigned
-					if (this._id && ige._register[this._id]) {
+					if (this._id && $ige.engine._register[this._id]) {
 						// Unregister the old ID before setting this new one
-						ige.unRegister(this);
+						$ige.engine.unRegister(this);
 					}
 	
 					this._id = id;
 	
 					// Now register this object with the object register
-					ige.register(this);
+					$ige.engine.register(this);
 	
 					return this;
 				}
@@ -93,12 +93,12 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 					// Generate an ID from the URL string of the image
 					// this texture is using. Useful for always reproducing
 					// the same ID for the same texture :)
-					this._id = ige.newIdFromString(this._url);
+					this._id = $ige.engine.newIdFromString(this._url);
 				} else {
 					// We don't have a URL so generate a random ID
-					this._id = ige.newIdHex();
+					this._id = $ige.engine.newIdHex();
 				}
-				ige.register(this);
+				$ige.engine.register(this);
 			}
 	
 			return this._id;
@@ -140,12 +140,12 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 	
 			if ($ige.isClient) {
 				// Increment the texture load count
-				$ige.textureLoadStart(imageUrl, this);
+				$textures.textureLoadStart(imageUrl, this);
 	
 				// Check if the image url already exists in the image cache
-				if (!ige._textureImageStore[imageUrl]) {
+				if (!$textures._textureImageStore[imageUrl]) {
 					// Image not in cache, create the image object
-					image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new Image();
+					image = $textures._textureImageStore[imageUrl] = this.image = this._originalImage = new Image();
 					image._igeTextures = image._igeTextures || [];
 	
 					// Add this texture to the textures that are using this image
@@ -156,7 +156,7 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 						image._loaded = true;
 	
 						// Log success
-						ige.log('Texture image (' + imageUrl + ') loaded successfully');
+						$ige.engine.log('Texture image (' + imageUrl + ') loaded successfully');
 	
 						/*if (image.width % 2) {
 							self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
@@ -190,7 +190,7 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 					image.src = imageUrl;
 				} else {
 					// Grab the cached image object
-					image = this.image = this._originalImage = ige._textureImageStore[imageUrl];
+					image = this.image = this._originalImage = $textures._textureImageStore[imageUrl];
 	
 					// Add this texture to the textures that are using this image
 					image._igeTextures.push(this);
@@ -244,19 +244,18 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 		 * @private
 		 */
 		_loadScript: function (scriptUrl) {
-			var textures = ige.textures,
-				rs_sandboxContext,
-				self = this,
-				scriptElem;
+			var self = this,
+				scriptElem,
+				image;
 	
-			$ige.textureLoadStart(scriptUrl, this);
+			$textures.textureLoadStart(scriptUrl, this);
 	
 			if ($ige.isClient) {
 				scriptElem = document.createElement('script');
 				scriptElem.onload = function(data) {
 					self.log('Texture script "' + scriptUrl + '" loaded successfully');
 					// Parse the JS with evil eval and store the result in the asset
-					eval(data);
+					eval(data); // jshint ignore:line
 	
 					// Store the eval data (the "image" variable is declared
 					// by the texture script and becomes available in this scope
@@ -292,10 +291,7 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 		 * @private
 		 */
 		assignSmartTextureImage: function (scriptObj) {
-			var textures = ige.textures,
-				rs_sandboxContext,
-				self = this,
-				scriptElem;
+			var self = this;
 			
 			// Check the object has a render method
 			if (typeof(scriptObj.render) === 'function') {
@@ -331,8 +327,7 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 		 * @private
 		 */
 		_setImage: function (imageElement) {
-			var image,
-				self = this;
+			var image;
 	
 			if ($ige.isClient) {
 				// Create the image object
@@ -368,7 +363,7 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 				// when this texture has loaded so we can assign the texture's image properly
 				this.on('loaded', function () {
 					self._textureFromCell(tex, indexOrId);
-				})
+				});
 			}
 	
 			return tex;
@@ -610,11 +605,11 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 				// TODO: Does this cause a costly context change? If so maybe we set a global value to keep
 				// TODO: track of the value and evaluate first before changing?
 				if (!this._smoothing) {
-					ige._ctx.imageSmoothingEnabled = false;
-					ige._ctx.mozImageSmoothingEnabled = false;
+					$ige.engine._ctx.imageSmoothingEnabled = false;
+					$ige.engine._ctx.mozImageSmoothingEnabled = false;
 				} else {
-					ige._ctx.imageSmoothingEnabled = true;
-					ige._ctx.mozImageSmoothingEnabled = true;
+					$ige.engine._ctx.imageSmoothingEnabled = true;
+					$ige.engine._ctx.mozImageSmoothingEnabled = true;
 				}
 	
 				if (this._mode === 0) {
@@ -712,13 +707,16 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 		 * Useful if you have no preFilters
 		 */
 		_rerenderFilters: function() {
-			if (!this._textureCanvas) return;
+			var self = this;
+			
+			if (!this._textureCanvas) { return; }
+			
 			// Rerender applyFilters from scratch:
 			// Draw the basic image
 			// resize it to the old boundaries
 			this.resize(this._textureCanvas.width, this._textureCanvas.height, false);
+			
 			// Draw applyFilter layers upon it
-			var self = this;
 			this._applyFilters.forEach(function(method, index) {
 				self._textureCtx.save();
 				method(self._textureCanvas, self._textureCtx, self._originalImage, self, self._applyFiltersData[index]);

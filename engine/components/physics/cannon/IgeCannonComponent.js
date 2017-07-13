@@ -36,7 +36,7 @@ appCore.module('IgeCannonComponent', function (IgeEventingClass) {
 			);
 			
 			// Add the cannon behaviour to the ige
-			ige.addBehaviour('cannonStep', this._behaviour);
+			$ige.engine.addBehaviour('cannonStep', this._behaviour);
 		},
 		
 		/**
@@ -219,7 +219,7 @@ appCore.module('IgeCannonComponent', function (IgeEventingClass) {
 	 category:"method",
 	 } **/
 		_behaviour: function (ctx) {
-			var self = ige.cannon,
+			var self = $ige.engine.cannon,
 				bodiesArr = self._world.bodies,
 				bodyCount = bodiesArr.length,
 				tempBod, entity;
@@ -266,7 +266,7 @@ appCore.module('IgeCannonComponent', function (IgeEventingClass) {
 				 while (tempBod) {
 				 if (tempBod._entity) {
 				 // Body has an entity assigned to it
-				 entity = tempBod._entity; //self.ige.entities.read(tempBod.m_userData);
+				 entity = tempBod._entity; //self.$ige.engine.entities.read(tempBod.m_userData);
 				 entityCannonBody = entity._cannonBody;
 				 
 				 // Check if the body is awake and is dynamic (we don't transform static bodies)
@@ -296,12 +296,12 @@ appCore.module('IgeCannonComponent', function (IgeEventingClass) {
 				 
 				 if (self._cannonDebug && this._currentCamera) {
 				 // Draw the debug data
-				 self._debugCanvas.width = ige._bounds2d.x;
-				 self._debugCanvas.height = ige._bounds2d.y;
+				 self._debugCanvas.width = $ige.engine._bounds2d.x;
+				 self._debugCanvas.height = $ige.engine._bounds2d.y;
 				 
 				 self._debugCtx.save();
 				 this._currentCamera._transformContext(self._debugCtx);
-				 self._debugCtx.translate(ige._bounds2d.x2, ige._bounds2d.y2);
+				 self._debugCtx.translate($ige.engine._bounds2d.x2, $ige.engine._bounds2d.y2);
 				 self._world.DrawDebugData();
 				 self._debugCtx.restore();
 				 }

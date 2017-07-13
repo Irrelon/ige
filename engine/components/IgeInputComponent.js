@@ -319,8 +319,8 @@ appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
 				event.igePageY = event.pageY;
 			}
 			
-			event.igeX = (event.igePageX - ige._canvasPosition().left);
-			event.igeY = (event.igePageY - ige._canvasPosition().top);
+			event.igeX = (event.igePageX - $ige.engine._canvasPosition().left);
+			event.igeY = (event.igePageY - $ige.engine._canvasPosition().top);
 			
 			this.emit('inputEvent', event);
 		},
@@ -338,8 +338,8 @@ appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
 			// Update the mouse position within the viewports
 			this._updateMouseData(event);
 			
-			var mx = event.igeX - ige._bounds2d.x2,
-				my = event.igeY - ige._bounds2d.y2,
+			var mx = event.igeX - $ige.engine._bounds2d.x2,
+				my = event.igeY - $ige.engine._bounds2d.y2,
 				self = this;
 			
 			if (event.button === 0) {
@@ -375,8 +375,8 @@ appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
 			// Update the mouse position within the viewports
 			this._updateMouseData(event);
 			
-			var mx = event.igeX - ige._bounds2d.x2,
-				my = event.igeY - ige._bounds2d.y2,
+			var mx = event.igeX - $ige.engine._bounds2d.x2,
+				my = event.igeY - $ige.engine._bounds2d.y2,
 				self = this;
 			
 			if (event.button === 0) {
@@ -407,8 +407,8 @@ appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
 			// Update the mouse position within the viewports
 			this._updateMouseData(event);
 			
-			var mx = event.igeX - ige._bounds2d.x2,
-				my = event.igeY - ige._bounds2d.y2,
+			var mx = event.igeX - $ige.engine._bounds2d.x2,
+				my = event.igeY - $ige.engine._bounds2d.y2,
 				self = this;
 			
 			if (event.button === 0) {
@@ -439,10 +439,10 @@ appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
 		 */
 		_mouseMove: function (event) {
 			// Update the mouse position within the viewports
-			ige._mouseOverVp = this._updateMouseData(event);
+			$ige.engine._mouseOverVp = this._updateMouseData(event);
 			
-			var mx = event.igeX - ige._bounds2d.x2,
-				my = event.igeY - ige._bounds2d.y2,
+			var mx = event.igeX - $ige.engine._bounds2d.x2,
+				my = event.igeY - $ige.engine._bounds2d.y2,
 				self = this;
 			
 			this._state[this.mouse.x] = mx;
@@ -466,8 +466,8 @@ appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
 			// Update the mouse position within the viewports
 			this._updateMouseData(event);
 			
-			var mx = event.igeX - ige._bounds2d.x2,
-				my = event.igeY - ige._bounds2d.y2,
+			var mx = event.igeX - $ige.engine._bounds2d.x2,
+				my = event.igeY - $ige.engine._bounds2d.y2,
 				self = this;
 			
 			this._state[this.mouse.wheel] = event.wheelDelta;
@@ -540,14 +540,14 @@ appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
 		 */
 		_updateMouseData: function (event) {
 			// Loop the viewports and check if the mouse is inside
-			var arr = ige._children,
+			var arr = $ige.engine._children,
 				arrCount = arr.length,
 				vp, vpUpdated,
-				mx = (event.igeX - ige._bounds2d.x2) - ige._translate.x,
-				my = (event.igeY - ige._bounds2d.y2) - ige._translate.y;
+				mx = (event.igeX - $ige.engine._bounds2d.x2) - $ige.engine._translate.x,
+				my = (event.igeY - $ige.engine._bounds2d.y2) - $ige.engine._translate.y;
 			
-			ige._mousePos.x = mx;
-			ige._mousePos.y = my;
+			$ige.engine._mousePos.x = mx;
+			$ige.engine._mousePos.y = my;
 			
 			while (arrCount--) {
 				vp = arr[arr.length - (arrCount + 1)];
@@ -676,7 +676,7 @@ appCore.module('IgeInputComponent', function (IgeEventingClass, IgePoint3d) {
 		
 		/**
 		 * Emit an event by name. Overrides the IgeEventingClass emit method and
-		 * checks for propagation stopped by calling ige.input.stopPropagation().
+		 * checks for propagation stopped by calling $ige.engine.input.stopPropagation().
 		 * @param {Object} eventName The name of the event to emit.
 		 * @param {Object || Array} args The arguments to send to any listening methods.
 		 * If you are sending multiple arguments, use an array containing each argument.

@@ -12,7 +12,7 @@ appCore.module('IgeUiTimeStream', function (IgeUiElement) {
 			// Draw timeline
 			var i, text, xAdjust,
 				arr, arrCount, arrItem,
-				renderTime = $time._tickStart - ige.network.stream._renderLatency,
+				renderTime = $time._tickStart - $ige.network.stream._renderLatency,
 				deltaTime;
 			
 			IgeUiElement.prototype.tick.call(this, ctx);
@@ -37,7 +37,7 @@ appCore.module('IgeUiTimeStream', function (IgeUiElement) {
 				ctx.lineTo(-200.5 + (i * 50), 30);
 				ctx.stroke();
 				
-				text = -ige.network.stream._renderLatency + ((i - 2) * 10) + 'ms';
+				text = -$ige.network.stream._renderLatency + ((i - 2) * 10) + 'ms';
 				xAdjust = ctx.measureText(text);
 				ctx.strokeText(text, -200 + (i * 50) - (xAdjust.width / 2), -38);
 				
@@ -64,9 +64,9 @@ appCore.module('IgeUiTimeStream', function (IgeUiElement) {
 					}
 				}
 				
-				ige.client.custom2.value = this._entity._timeStreamDataDelta;
-				ige.client.custom3.value = this._entity._timeStreamOffsetDelta;
-				ige.client.custom4.value = this._entity._timeStreamCurrentInterpolateTime;
+				$ige.engine.client.custom2.value = this._entity._timeStreamDataDelta;
+				$ige.engine.client.custom3.value = this._entity._timeStreamOffsetDelta;
+				$ige.engine.client.custom4.value = this._entity._timeStreamCurrentInterpolateTime;
 			}
 		}
 	});

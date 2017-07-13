@@ -2,9 +2,9 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeBaseScene', function (ige, IgeSceneGraph, IgeScene2d, IgeViewport) {
+appCore.module('IgeBaseScene', function ($ige, IgeSceneGraph, IgeScene2d, IgeViewport) {
 	/**
-	 * When loaded into memory using ige.addGraph('IgeBaseScene') will create
+	 * When loaded into memory using $ige.engine.addGraph('IgeBaseScene') will create
 	 * the scene "baseScene" and the viewport "vp1" that are used in almost all
 	 * examples and can be used as the base for your scenegraph as well.
 	 */
@@ -15,12 +15,12 @@ appCore.module('IgeBaseScene', function (ige, IgeSceneGraph, IgeScene2d, IgeView
 		},
 		
 		/**
-		 * Called when loading the graph data via ige.addGraph().
+		 * Called when loading the graph data via $ige.engine.addGraph().
 		 * @param options
 		 */
 		addGraph: function (options) {
 			// Clear existing graph data
-			if (ige.$('baseScene')) {
+			if ($ige.engine.$('baseScene')) {
 				this.removeGraph();
 			}
 			
@@ -34,7 +34,7 @@ appCore.module('IgeBaseScene', function (ige, IgeSceneGraph, IgeScene2d, IgeView
 				.autoSize(true)
 				.scene(baseScene)
 				.drawBounds(false)
-				.mount(ige);
+				.mount($ige.engine);
 		},
 		
 		/**
@@ -43,10 +43,10 @@ appCore.module('IgeBaseScene', function (ige, IgeSceneGraph, IgeScene2d, IgeView
 		 */
 		removeGraph: function () {
 			// Destroy the viewport
-			ige.$('vp1').destroy();
+			$ige.engine.$('vp1').destroy();
 			
 			// Destroy the baseScene
-			ige.$('baseScene').destroy();
+			$ige.engine.$('baseScene').destroy();
 		}
 	});
 	

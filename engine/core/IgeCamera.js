@@ -362,10 +362,10 @@ appCore.module('IgeCamera', function (IgeEntity) {
 				if (this.hasOwnProperty(i) && this[i] !== undefined) {
 					switch (i) {
 						case '_trackTranslateTarget':
-							str += ".trackTranslate(ige.$('" + this._trackTranslateTarget.id() + "'), " + this.trackTranslateSmoothing() + ")";
+							str += ".trackTranslate($ige.engine.$('" + this._trackTranslateTarget.id() + "'), " + this.trackTranslateSmoothing() + ")";
 							break;
 						case '_trackRotateTarget':
-							str += ".trackRotate(ige.$('" + this._trackRotateTarget.id() + "'), " + this.trackRotateSmoothing() + ")";
+							str += ".trackRotate($ige.engine.$('" + this._trackRotateTarget.id() + "'), " + this.trackRotateSmoothing() + ")";
 							break;
 					}
 				}

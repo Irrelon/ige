@@ -74,10 +74,10 @@ appCore.module('IgeUiStyleExtension', function () {
 					);
 					
 					// Create the pattern from the texture cell
-					this._patternFill = ige._ctx.createPattern(canvas, repeatType);
+					this._patternFill = $ige.engine._ctx.createPattern(canvas, repeatType);
 				} else {
 					// Create the pattern from the texture
-					this._patternFill = ige._ctx.createPattern(texture.image, repeatType);
+					this._patternFill = $ige.engine._ctx.createPattern(texture.image, repeatType);
 				}
 				
 				texture.restoreOriginal();

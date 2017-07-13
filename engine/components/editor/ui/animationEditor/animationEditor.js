@@ -6,7 +6,7 @@ appCore.module('UiAnimationEditor', function (IgeEventingClass, IgeEntity, IgeAn
 		
 		init: function () {
 			var self = this;
-			ige.requireStylesheet(igeRoot + 'components/editor/ui/animationEditor/animationEditor.css');
+			$ige.engine.requireStylesheet(igeRoot + 'components/editor/ui/animationEditor/animationEditor.css');
 			self.reset();
 		},
 		
@@ -27,12 +27,12 @@ appCore.module('UiAnimationEditor', function (IgeEventingClass, IgeEntity, IgeAn
 		ready: function () {
 			var self = this;
 			
-			ige.editor.ui.menus.addMenuGroup('toolsMenu', 'textures');
-			ige.editor.ui.menus.addMenuItem('toolsMenu', 'textures', {
+			$ige.engine.editor.ui.menus.addMenuGroup('toolsMenu', 'textures');
+			$ige.engine.editor.ui.menus.addMenuItem('toolsMenu', 'textures', {
 				id: 'animationEditor',
 				icon: 'none',
 				text: 'Animation Editor...',
-				action: "ige.editor.ui.animationEditor.show();"
+				action: "$ige.engine.editor.ui.animationEditor.show();"
 			});
 		},
 		
@@ -46,13 +46,13 @@ appCore.module('UiAnimationEditor', function (IgeEventingClass, IgeEntity, IgeAn
 				self._cellHeight = settings.cellHeight;
 			}
 			
-			ige.editor.ui.dialogs.create({
+			$ige.engine.editor.ui.dialogs.create({
 				id: 'animationEditorDialog',
 				icon: 'halflings-icon white film',
 				title: 'Animation Editor',
 				contentTemplate: igeRoot + 'components/editor/ui/animationEditor/templates/animationEditor.html',
 				blur: function () {
-					ige.editor.ui.dialogs.confirm({
+					$ige.engine.editor.ui.dialogs.confirm({
 						title: 'Exit Animation Editor',
 						width: 400,
 						height: 150,
@@ -63,7 +63,7 @@ appCore.module('UiAnimationEditor', function (IgeEventingClass, IgeEntity, IgeAn
 						},
 						positive: function () {
 							self.destroy();
-							ige.editor.ui.dialogs.close('animationEditorDialog');
+							$ige.engine.editor.ui.dialogs.close('animationEditorDialog');
 						}
 					});
 				},
@@ -352,7 +352,7 @@ appCore.module('UiAnimationEditor', function (IgeEventingClass, IgeEntity, IgeAn
 	});
 	
 	// Init
-	ige.editor.ui.animationEditor = new UiAnimationEditor();
+	$ige.engine.editor.ui.animationEditor = new UiAnimationEditor();
 	
 	return UiAnimationEditor;
 });

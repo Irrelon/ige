@@ -8,7 +8,7 @@ var IgeChatClient = {
 	 * @param {String} roomId The room id of the room to join.
 	 */
 	joinRoom: function (roomId) {
-		ige.network.send('igeChatJoinRoom', roomId);
+		$ige.network.send('igeChatJoinRoom', roomId);
 	},
 
 	sendToRoom: function (roomId, message, to) {
@@ -19,12 +19,12 @@ var IgeChatClient = {
 				to: to
 			};
 
-			ige.network.send('igeChatMsg', msg);
+			$ige.network.send('igeChatMsg', msg);
 		}
 	},
 
 	_onMessageFromServer: function (data) {
-		var self = ige.chat;
+		var self = $ige.engine.chat;
 
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
@@ -34,7 +34,7 @@ var IgeChatClient = {
 	},
 
 	_onJoinedRoom: function (data) {
-		var self = ige.chat;
+		var self = $ige.engine.chat;
 
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
@@ -48,7 +48,7 @@ var IgeChatClient = {
 	},
 
 	_onLeftRoom: function (data) {
-		var self = ige.chat;
+		var self = $ige.engine.chat;
 
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
@@ -58,7 +58,7 @@ var IgeChatClient = {
 	},
 
 	_onServerSentRoomList: function (data) {
-		var self = ige.chat;
+		var self = $ige.engine.chat;
 
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
@@ -68,7 +68,7 @@ var IgeChatClient = {
 	},
 
 	_onServerSentRoomUserList: function (data) {
-		var self = ige.chat;
+		var self = $ige.engine.chat;
 
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
@@ -78,7 +78,7 @@ var IgeChatClient = {
 	},
 
 	_onRoomCreated: function (data) {
-		var self = ige.chat;
+		var self = $ige.engine.chat;
 
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
@@ -88,7 +88,7 @@ var IgeChatClient = {
 	},
 
 	_onRoomRemoved: function (data) {
-		var self = ige.chat;
+		var self = $ige.engine.chat;
 		
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves

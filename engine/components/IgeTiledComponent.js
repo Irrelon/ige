@@ -49,7 +49,7 @@ appCore.module('IgeTiledComponent', function ($ige, IgeClass, IgeCellSheet, IgeT
 		},
 		
 		_processData: function (data, callback) {
-			var mapClass = ige.isServer === true ? IgeTileMap2d : IgeTextureMap,
+			var mapClass = $ige.isServer === true ? IgeTileMap2d : IgeTextureMap,
 				mapWidth = data.width,
 				mapHeight = data.height,
 				layerArray = data.layers,

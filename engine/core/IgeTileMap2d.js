@@ -20,7 +20,7 @@ appCore.module('IgeTileMap2d', function (IgeEntity, IgeTexture, IgeTileMap2dSmar
 			
 			var self = this;
 			
-			if (!ige.isServer) {
+			if (!$ige.isServer) {
 				var tex = new IgeTexture(IgeTileMap2dSmartTexture);
 				self.texture(tex);
 			}

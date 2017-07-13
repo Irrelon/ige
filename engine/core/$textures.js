@@ -1,9 +1,12 @@
 "use strict";
 
-var appCore = require('irrelon-appcore');
+var appCore = require('irrelon-appcore'),
+	emitter = require('irrelon-emitter');
 
-appCore.module('$textures', function () {
+appCore.module('$textures', function ($ige) {
 	var $textures = function () {
+		$ige.$textures = this;
+		
 		this._store = {};
 		this._arr = [];
 		this._textureImageStore = {};
@@ -61,7 +64,7 @@ appCore.module('$textures', function () {
 		this._texturesLoading++;
 		this._texturesTotal++;
 		
-		this.updateProgress();
+		$ige.engine.updateProgress();
 		
 		this.emit('textureLoadStart', textureObj);
 	};
@@ -81,14 +84,14 @@ appCore.module('$textures', function () {
 		// Decrement the overall loading number
 		this._texturesLoading--;
 		
-		this.updateProgress();
+		$ige.engine.updateProgress();
 		
 		this.emit('textureLoadEnd', textureObj);
 		
 		// If we've finished...
 		if (this._texturesLoading === 0) {
 			// All textures have finished loading
-			this.updateProgress();
+			$ige.engine.updateProgress();
 			
 			setTimeout(function () {
 				self._allTexturesLoaded();
@@ -129,7 +132,7 @@ appCore.module('$textures', function () {
 	$textures.prototype._allTexturesLoaded = function () {
 		if (!this._loggedATL) {
 			this._loggedATL = true;
-			this.log('All textures have loaded');
+			$ige.engine.log('All textures have loaded');
 		}
 		
 		// Fire off an event about this
@@ -151,6 +154,9 @@ appCore.module('$textures', function () {
 		
 		return this._globalSmoothing;
 	};
+	
+	// Add event emitter functionality to the class
+	emitter($textures);
 	
 	return new $textures();
 });

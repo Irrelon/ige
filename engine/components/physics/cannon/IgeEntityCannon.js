@@ -26,7 +26,7 @@ appCore.module('IgeEntityCannon', function (IgeEntity) {
 				this._cannonBodyDef = def;
 				
 				// Ask the cannon component to create a new body for us
-				this._cannonBody = ige.cannon.createBody(this, def);
+				this._cannonBody = $ige.engine.cannon.createBody(this, def);
 				
 				return this;
 			}
@@ -36,7 +36,7 @@ appCore.module('IgeEntityCannon', function (IgeEntity) {
 		
 		_translateTo: function (x, y, z) {
 			var entCannon = this._cannonBody,
-				scaleRatio = ige.cannon._scaleRatio;
+				scaleRatio = $ige.engine.cannon._scaleRatio;
 			
 			// Check if the entity has a cannon body attached
 			// and if so, is it updating or not

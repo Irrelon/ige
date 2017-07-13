@@ -75,8 +75,8 @@ appCore.module('IgeEditorRotateComponent', function (IgeEventingClass) {
 				this._opStarted  = false;
 				
 				if (this._enabled) {
-					if (ige._sgTreeSelected && ige._sgTreeSelected !== 'ige') {
-						this._targetEntity = ige.$(ige._sgTreeSelected);
+					if ($ige.engine._sgTreeSelected && $ige.engine._sgTreeSelected !== 'ige') {
+						this._targetEntity = $ige.engine.$($ige.engine._sgTreeSelected);
 						
 						if (this._targetEntity.classId() == 'IgeViewport') {
 							// Disable translation mode
@@ -84,9 +84,9 @@ appCore.module('IgeEditorRotateComponent', function (IgeEventingClass) {
 							this.enabled(false);
 						} else {
 							// Listen for the mouse events we need to operate
-							ige.input.on('mouseDown', function (event) { self._mouseDown(event); });
-							ige.input.on('mouseMove', function (event) { self._mouseMove(event); });
-							ige.input.on('mouseUp', function (event) { self._mouseUp(event); });
+							$ige.engine.input.on('mouseDown', function (event) { self._mouseDown(event); });
+							$ige.engine.input.on('mouseMove', function (event) { self._mouseMove(event); });
+							$ige.engine.input.on('mouseUp', function (event) { self._mouseUp(event); });
 							this.log('Editor: Mouse rotate enabled');
 						}
 					}
@@ -111,7 +111,7 @@ appCore.module('IgeEditorRotateComponent', function (IgeEventingClass) {
 		_mouseDown: function (event) {
 			if (!this._opStarted && this._enabled && this._targetEntity) {
 				// Record the mouse down position - pre-start
-				var curMousePos = ige._mousePos;
+				var curMousePos = $ige.engine._mousePos;
 				this._opStartMouse = curMousePos.clone();
 				
 				this._opStartRotate = {
@@ -135,7 +135,7 @@ appCore.module('IgeEditorRotateComponent', function (IgeEventingClass) {
 			if (this._enabled && this._targetEntity) {
 				// Rotate the camera if the mouse is down
 				if (this._opStartMouse) {
-					var curMousePos = ige._mousePos,
+					var curMousePos = $ige.engine._mousePos,
 						rotateCords = {
 							x: this._opStartMouse.x - curMousePos.x
 						},
@@ -182,7 +182,7 @@ appCore.module('IgeEditorRotateComponent', function (IgeEventingClass) {
 				// End the rotate
 				if (this._opStarted) {
 					if (this._opStartMouse) {
-						var curMousePos = ige._mousePos,
+						var curMousePos = $ige.engine._mousePos,
 							rotateCords = {
 								x: this._opStartMouse.x - curMousePos.x
 							},

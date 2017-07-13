@@ -13,7 +13,7 @@ appCore.module('IgeBox2dComponent', function ($time, IgeEventingClass) {
 		init: function (entity, options) {
 			// Check that the engine has not already started
 			// as this will mess everything up if it has
-			if (ige._state !== 0) {
+			if ($ige.engine._state !== 0) {
 				this.log('Cannot add box2d component to the ige instance once the engine has started!', 'error');
 			}
 			
@@ -553,7 +553,7 @@ appCore.module('IgeBox2dComponent', function ($time, IgeEventingClass) {
 				var debugDraw = new this.b2DebugDraw();
 				this._box2dDebug = true;
 				
-				debugDraw.SetSprite(ige._ctx);
+				debugDraw.SetSprite($ige.engine._ctx);
 				debugDraw.SetDrawScale(this._scaleRatio);
 				debugDraw.SetFillAlpha(0.3);
 				debugDraw.SetLineThickness(1.0);
@@ -673,7 +673,7 @@ appCore.module('IgeBox2dComponent', function ($time, IgeEventingClass) {
 				while (tempBod) {
 					if (tempBod._entity) {
 						// Body has an entity assigned to it
-						entity = tempBod._entity; //self.ige.entities.read(tempBod.m_userData);
+						entity = tempBod._entity; //self.$ige.engine.entities.read(tempBod.m_userData);
 						entityBox2dBody = entity._box2dBody;
 						
 						// Check if the body is awake and is dynamic (we don't transform static bodies)

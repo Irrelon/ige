@@ -10,12 +10,12 @@ appCore.module('IgeUiDropDown', function (IgeUiElement) {
 			IgeUiElement.prototype.init.call(this);
 			
 			// Define some default styles
-			if (!ige.ui.style('.IgeUiDropDownOption')) {
-				ige.ui.style('.IgeUiDropDownOption', {
+			if (!$ige.engine.ui.style('.IgeUiDropDownOption')) {
+				$ige.engine.ui.style('.IgeUiDropDownOption', {
 					backgroundColor: null
 				});
 				
-				ige.ui.style('.IgeUiDropDownOption:hover', {
+				$ige.engine.ui.style('.IgeUiDropDownOption:hover', {
 					backgroundColor: '#00b4ff',
 					color: '#ffffff'
 				});
@@ -142,7 +142,7 @@ appCore.module('IgeUiDropDown', function (IgeUiElement) {
 					.mount(this);
 				
 				for (i = 0; i < this._options.length; i++) {
-					ige.ui.style('#' + this._id + '_options_' + i, {
+					$ige.engine.ui.style('#' + this._id + '_options_' + i, {
 						color: this._color
 					});
 					
@@ -164,7 +164,7 @@ appCore.module('IgeUiDropDown', function (IgeUiElement) {
 						.mount(optionContainer);
 				}
 			} else {
-				ige.$(this._id + '_options').destroy();
+				$ige.engine.$(this._id + '_options').destroy();
 			}
 		},
 		

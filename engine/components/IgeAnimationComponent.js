@@ -385,7 +385,7 @@ appCore.module('IgeAnimationComponent', function ($time, IgeEventingClass) {
 		/**
 		 * Handles the animation processing each update.
 		 * @param {CanvasRenderingContext2D} ctx The rendering context to use when doing draw operations.
-		 * @param {Number} tickDelta The current ige._tickDelta passed down the scenegraph.
+		 * @param {Number} tickDelta The current $ige.engine._tickDelta passed down the scenegraph.
 		 */
 		_update: function (ctx, tickDelta) {
 			var self = this.animation;

@@ -7,7 +7,7 @@ appCore.module('UiTextures', function (IgeEventingClass) {
 		init: function () {
 			var self = this;
 			
-			ige.requireStylesheet(igeRoot + 'components/editor/ui/textures/textures.css');
+			$ige.engine.requireStylesheet(igeRoot + 'components/editor/ui/textures/textures.css');
 			
 			// Add tab to tabs
 			$('<div class="tab" data-content="texturesContent" title="Textures"><div class="icon"><span class="halflings-icon white picture"></span></div></div>')
@@ -24,5 +24,5 @@ appCore.module('UiTextures', function (IgeEventingClass) {
 	});
 	
 	// Init
-	ige.editor.ui.textures = new UiTextures();
+	$ige.engine.editor.ui.textures = new UiTextures();
 });

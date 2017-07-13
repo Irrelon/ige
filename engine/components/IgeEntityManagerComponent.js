@@ -317,7 +317,7 @@ appCore.module('IgeEntityManagerComponent', function (IgeClass, IgePoint3d, IgeR
 				renderSize,
 				ratio;
 			
-			if ((!self._areaRect || ige._resized) && self._areaRectAutoSize) {
+			if ((!self._areaRect || $ige.engine._resized) && self._areaRectAutoSize) {
 				self._resizeEvent();
 			}
 			

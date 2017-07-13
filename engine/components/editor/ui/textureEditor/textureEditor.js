@@ -6,7 +6,7 @@ appCore.module('UiTextureEditor', function (IgeEventingClass) {
 		
 		init: function () {
 			var self = this;
-			ige.requireStylesheet(igeRoot + 'components/editor/ui/textureEditor/textureEditor.css');
+			$ige.engine.requireStylesheet(igeRoot + 'components/editor/ui/textureEditor/textureEditor.css');
 			
 			self.reset();
 		},
@@ -14,12 +14,12 @@ appCore.module('UiTextureEditor', function (IgeEventingClass) {
 		ready: function () {
 			var self = this;
 			
-			ige.editor.ui.menus.addMenuGroup('toolsMenu', 'textures');
-			ige.editor.ui.menus.addMenuItem('toolsMenu', 'textures', {
+			$ige.engine.editor.ui.menus.addMenuGroup('toolsMenu', 'textures');
+			$ige.engine.editor.ui.menus.addMenuItem('toolsMenu', 'textures', {
 				id: 'textureEditor',
 				icon: 'none',
 				text: 'Texture Editor...',
-				action: "ige.editor.ui.textureEditor.show();"
+				action: "$ige.engine.editor.ui.textureEditor.show();"
 			});
 		},
 		
@@ -45,13 +45,13 @@ appCore.module('UiTextureEditor', function (IgeEventingClass) {
 			var self = this;
 			self.reset();
 			
-			ige.editor.ui.dialogs.create({
+			$ige.engine.editor.ui.dialogs.create({
 				id: 'textureEditorDialog',
 				icon: 'halflings-icon white picture',
 				title: 'Texture Editor',
 				contentTemplate: igeRoot + 'components/editor/ui/textureEditor/templates/textureEditor.html',
 				blur: function () {
-					ige.editor.ui.dialogs.confirm({
+					$ige.engine.editor.ui.dialogs.confirm({
 						title: 'Exit Texture Editor',
 						width: 400,
 						height: 150,
@@ -62,7 +62,7 @@ appCore.module('UiTextureEditor', function (IgeEventingClass) {
 						},
 						
 						positive: function () {
-							ige.editor.ui.dialogs.close('textureEditorDialog');
+							$ige.engine.editor.ui.dialogs.close('textureEditorDialog');
 						}
 					});
 				},
@@ -75,14 +75,14 @@ appCore.module('UiTextureEditor', function (IgeEventingClass) {
 				ready: function (err) {
 					if (!err) {
 						// Add dialog controls
-						ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control sep"></div>'));
-						ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control download" title="Download as Image..."><span class="halflings-icon white download-alt"></span></div>'));
-						ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control split" title="Split Image Into Cells"><span class="halflings-icon white th"></span></div>'));
-						ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control clear" title="Clear"><span class="halflings-icon white file"></span></div>'));
-						ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control sep"></div>'));
-						ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control animate" title="Test as Animation..."><span class="halflings-icon white film"></span></div>'));
-						ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control sep"></div>'));
-						ige.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control help" title="Help..."><span class="halflings-icon white question-sign"></span></div>'));
+						$ige.engine.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control sep"></div>'));
+						$ige.engine.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control download" title="Download as Image..."><span class="halflings-icon white download-alt"></span></div>'));
+						$ige.engine.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control split" title="Split Image Into Cells"><span class="halflings-icon white th"></span></div>'));
+						$ige.engine.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control clear" title="Clear"><span class="halflings-icon white file"></span></div>'));
+						$ige.engine.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control sep"></div>'));
+						$ige.engine.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control animate" title="Test as Animation..."><span class="halflings-icon white film"></span></div>'));
+						$ige.engine.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control sep"></div>'));
+						$ige.engine.editor.ui.dialogs.addControl('textureEditorDialog', $('<div class="control help" title="Help..."><span class="halflings-icon white question-sign"></span></div>'));
 						
 						$('.control.download').on('click', function () {
 							self.downloadImage();
@@ -161,7 +161,7 @@ appCore.module('UiTextureEditor', function (IgeEventingClass) {
 						}
 						
 						// Show multi-file input dialog
-						ige.editor.ui.dialogs.input({
+						$ige.engine.editor.ui.dialogs.input({
 							id: 'multiFileInput',
 							title: 'Multi-File Import',
 							contentTemplate: igeRoot + 'components/editor/ui/textureEditor/templates/multiFiles.html',
@@ -348,7 +348,7 @@ appCore.module('UiTextureEditor', function (IgeEventingClass) {
 				rows = self._cellRows;
 			
 			// Show split image dialog to select rows and columns
-			ige.editor.ui.dialogs.input({
+			$ige.engine.editor.ui.dialogs.input({
 				title: 'Split Image Into Cells',
 				width: 400,
 				height: 250,
@@ -558,7 +558,7 @@ appCore.module('UiTextureEditor', function (IgeEventingClass) {
 		clearImage: function () {
 			var self = this;
 			
-			ige.editor.ui.dialogs.confirm({
+			$ige.engine.editor.ui.dialogs.confirm({
 				title: 'Clear Texture',
 				width: 400,
 				height: 150,
@@ -579,7 +579,7 @@ appCore.module('UiTextureEditor', function (IgeEventingClass) {
 			var self = this;
 			
 			// Show the animation dialog with the texture and settings already filled in
-			ige.editor.ui.animationEditor.show({
+			$ige.engine.editor.ui.animationEditor.show({
 				textureImage: self.getFinalTexture(),
 				cellWidth: self._cellWidth,
 				cellHeight: self._cellHeight
@@ -589,7 +589,7 @@ appCore.module('UiTextureEditor', function (IgeEventingClass) {
 		help: function () {
 			var self = this;
 			
-			ige.editor.ui.dialogs.prompt({
+			$ige.engine.editor.ui.dialogs.prompt({
 				icon: 'halflings-icon white question-sign',
 				title: 'Texture Editor Help',
 				width: 400,
@@ -679,7 +679,7 @@ appCore.module('UiTextureEditor', function (IgeEventingClass) {
 	});
 	
 	// Init
-	ige.editor.ui.textureEditor = new UiTextureEditor();
+	$ige.engine.editor.ui.textureEditor = new UiTextureEditor();
 	
 	return UiTextureEditor;
 });

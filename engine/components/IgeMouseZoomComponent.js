@@ -64,7 +64,7 @@ appCore.module('IgeMouseZoomComponent', function (IgeEventingClass) {
 		_mouseDown: function (event) {
 			if (this._enabled && event.igeViewport.id() === this._entity.id()) {
 				// Record the mouse down position - zoom starting
-				var curMousePos = ige._mousePos;
+				var curMousePos = $ige.engine._mousePos;
 				this._zoomStartMouse = {
 					x: curMousePos.x,
 					y: curMousePos.y
@@ -87,7 +87,7 @@ appCore.module('IgeMouseZoomComponent', function (IgeEventingClass) {
 			if (this._enabled) {
 				// Zoom the camera if the mouse is down
 				if (this._zoomStartMouse) {
-					var curMousePos = ige._mousePos,
+					var curMousePos = $ige.engine._mousePos,
 						zoomCords = {
 							x: -(this._zoomStartMouse.x - curMousePos.x) / 100,
 							y: -(this._zoomStartMouse.y - curMousePos.y) / 100
@@ -112,7 +112,7 @@ appCore.module('IgeMouseZoomComponent', function (IgeEventingClass) {
 			if (this._enabled) {
 				// End the zoom
 				if (this._zoomStartMouse) {
-					var curMousePos = ige._mousePos,
+					var curMousePos = $ige.engine._mousePos,
 						zoomCords = {
 							x: -(this._zoomStartMouse.x - curMousePos.x) / 100,
 							y: -(this._zoomStartMouse.y - curMousePos.y) / 100

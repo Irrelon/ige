@@ -7,7 +7,7 @@ appCore.module('UiDialogs', function (IgeEventingClass) {
 		init: function () {
 			var self = this;
 			self._dialogOrder = 200010;
-			ige.requireStylesheet(igeRoot + 'components/editor/ui/dialogs/dialogs.css');
+			$ige.engine.requireStylesheet(igeRoot + 'components/editor/ui/dialogs/dialogs.css');
 		},
 		
 		ready: function () {
@@ -18,11 +18,11 @@ appCore.module('UiDialogs', function (IgeEventingClass) {
 			var self = this;
 			self._dialogOrder += 2;
 			
-			dialogData.id = dialogData.id || ige.newIdHex();
+			dialogData.id = dialogData.id || $ige.engine.newIdHex();
 			dialogData.title = dialogData.title || 'Dialog';
 			
 			// Create a dialog and show as loading
-			ige.editor.renderTemplate(
+			$ige.engine.editor.renderTemplate(
 				igeRoot + 'components/editor/ui/dialogs/templates/dialog.html',
 				dialogData,
 				function (err, dialogElem) {
@@ -49,7 +49,7 @@ appCore.module('UiDialogs', function (IgeEventingClass) {
 								if (dialogData.blur) {
 									dialogData.blur($(this));
 								} else {
-									ige.editor.ui.dialogs.close(dialogData.id);
+									$ige.engine.editor.ui.dialogs.close(dialogData.id);
 								}
 							});
 						} else {
@@ -62,13 +62,13 @@ appCore.module('UiDialogs', function (IgeEventingClass) {
 								if (dialogData.blur) {
 									dialogData.blur($(this));
 								} else {
-									ige.editor.ui.dialogs.close(dialogData.id);
+									$ige.engine.editor.ui.dialogs.close(dialogData.id);
 								}
 							});
 						}
 						
 						if (dialogData.contentTemplate) {
-							ige.editor.renderTemplate(
+							$ige.engine.editor.renderTemplate(
 								dialogData.contentTemplate,
 								dialogData.contentData || {},
 								function (err, contentElem) {
@@ -118,7 +118,7 @@ appCore.module('UiDialogs', function (IgeEventingClass) {
 		},
 		
 		confirm: function (dialogOptions) {
-			dialogOptions.id = dialogOptions.id || ige.newIdHex();
+			dialogOptions.id = dialogOptions.id || $ige.engine.newIdHex();
 			if (dialogOptions.dialogClass) {
 				dialogOptions.dialogClass += ' confirm';
 			} else {
@@ -142,14 +142,14 @@ appCore.module('UiDialogs', function (IgeEventingClass) {
 						if (dialogOptions.negative) {
 							dialogOptions.negative.apply(dialogElem);
 						}
-						ige.editor.ui.dialogs.close(dialogOptions.id);
+						$ige.engine.editor.ui.dialogs.close(dialogOptions.id);
 					});
 					
 					buttons.find('.positive').on('click', function () {
 						if (dialogOptions.positive) {
 							dialogOptions.positive.apply(dialogElem);
 						}
-						ige.editor.ui.dialogs.close(dialogOptions.id);
+						$ige.engine.editor.ui.dialogs.close(dialogOptions.id);
 					});
 					
 					if (dialogOptions.ready) {
@@ -162,7 +162,7 @@ appCore.module('UiDialogs', function (IgeEventingClass) {
 		},
 		
 		input: function (dialogOptions) {
-			dialogOptions.id = dialogOptions.id || ige.newIdHex();
+			dialogOptions.id = dialogOptions.id || $ige.engine.newIdHex();
 			if (dialogOptions.dialogClass) {
 				dialogOptions.dialogClass += ' input';
 			} else {
@@ -187,14 +187,14 @@ appCore.module('UiDialogs', function (IgeEventingClass) {
 						if (dialogOptions.negative) {
 							dialogOptions.negative.apply(dialogElem);
 						}
-						ige.editor.ui.dialogs.close(dialogOptions.id);
+						$ige.engine.editor.ui.dialogs.close(dialogOptions.id);
 					});
 					
 					buttons.find('.positive').on('click', function () {
 						if (dialogOptions.positive) {
 							dialogOptions.positive.apply(dialogElem);
 						}
-						ige.editor.ui.dialogs.close(dialogOptions.id);
+						$ige.engine.editor.ui.dialogs.close(dialogOptions.id);
 					});
 					
 					if (dialogOptions.ready) {
@@ -207,7 +207,7 @@ appCore.module('UiDialogs', function (IgeEventingClass) {
 		},
 		
 		prompt: function (dialogOptions) {
-			dialogOptions.id = dialogOptions.id || ige.newIdHex();
+			dialogOptions.id = dialogOptions.id || $ige.engine.newIdHex();
 			if (dialogOptions.dialogClass) {
 				dialogOptions.dialogClass += ' prompt';
 			} else {
@@ -230,7 +230,7 @@ appCore.module('UiDialogs', function (IgeEventingClass) {
 						if (dialogOptions.positive) {
 							dialogOptions.positive.apply(dialogElem);
 						}
-						ige.editor.ui.dialogs.close(dialogOptions.id);
+						$ige.engine.editor.ui.dialogs.close(dialogOptions.id);
 					});
 					
 					if (dialogOptions.ready) {
@@ -251,7 +251,7 @@ appCore.module('UiDialogs', function (IgeEventingClass) {
 	});
 
 	// Init
-	ige.editor.ui.dialogs = new UiDialogs();
+	$ige.engine.editor.ui.dialogs = new UiDialogs();
 	
 	return UiDialogs;
 });

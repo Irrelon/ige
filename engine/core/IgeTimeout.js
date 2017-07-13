@@ -45,8 +45,8 @@ appCore.module('IgeTimeout', function ($time, IgeInterval) {
 		 */
 		reset: function() {
 			this._time = 0;
-			if (ige.time._timers.indexOf(this) == -1) {
-				ige.time.addTimer(this);
+			if ($ige.engine.time._timers.indexOf(this) == -1) {
+				$ige.engine.time.addTimer(this);
 			}
 		},
 		
@@ -60,7 +60,7 @@ appCore.module('IgeTimeout', function ($time, IgeInterval) {
 			if (this._time > this._interval) {
 				// Fire an interval
 				this._method($time._currentTime);
-				ige.time.removeTimer(this);
+				$ige.engine.time.removeTimer(this);
 			}
 			
 			return this;

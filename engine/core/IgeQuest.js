@@ -152,8 +152,7 @@ appCore.module('IgeQuest', function (IgeEventingClass) {
 		 */
 		start: function () {
 			if (!this._started) {
-				var self = this,
-					arr = this._items,
+				var arr = this._items,
 					arrCount = arr.length,
 					i;
 				

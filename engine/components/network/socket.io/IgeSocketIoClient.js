@@ -142,7 +142,7 @@ var IgeSocketIoClient = {
 	/**
 	 * Sends a network request. This is different from a standard
 	 * call to send() because the recipient code will be able to
-	 * respond by calling ige.network.response(). When the response
+	 * respond by calling $ige.network.response(). When the response
 	 * is received, the callback method that was passed in the
 	 * callback parameter will be fired with the response data.
 	 * @param {String} commandName

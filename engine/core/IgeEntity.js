@@ -1019,8 +1019,8 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		 */
 		screenPosition: function () {
 			return new IgePoint3d(
-				Math.floor(((this._worldMatrix.matrix[2] - $ige._currentCamera._translate.x) * $ige._currentCamera._scale.x) + ige._bounds2d.x2),
-				Math.floor(((this._worldMatrix.matrix[5] - $ige._currentCamera._translate.y) * $ige._currentCamera._scale.y) + ige._bounds2d.y2),
+				Math.floor(((this._worldMatrix.matrix[2] - $ige._currentCamera._translate.x) * $ige._currentCamera._scale.x) + $ige.engine._bounds2d.x2),
+				Math.floor(((this._worldMatrix.matrix[5] - $ige._currentCamera._translate.y) * $ige._currentCamera._scale.y) + $ige.engine._bounds2d.y2),
 				0
 			);
 		},
@@ -1513,7 +1513,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		 * not yet been processed for this tick.
 		 */
 		newFrame: function () {
-			return ige._frameAlternator !== this._frameAlternatorCurrent;
+			return $ige.engine._frameAlternator !== this._frameAlternatorCurrent;
 		},
 	
 		/**
@@ -1591,7 +1591,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		
 					if (this._timeStream.length) {
 						// Process any interpolation
-						this._processInterpolate($time._tickStart - ige.network.stream._renderLatency);
+						this._processInterpolate($time._tickStart - $ige.network.stream._renderLatency);
 					}
 		
 					// Check for changes to the transform values
@@ -1608,13 +1608,13 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 					// Update this object's current frame alternator value
 					// which allows us to determine if we are still on the
 					// same frame
-					this._frameAlternatorCurrent = ige._frameAlternator;
+					this._frameAlternatorCurrent = $ige.engine._frameAlternator;
 				} else {
 					// The entity is not yet born, unmount it and add to the spawn queue
 					this._birthMount = this._parent.id();
 					this.unMount();
 					
-					ige.spawnQueue(this);
+					$ige.engine.spawnQueue(this);
 				}
 			}
 	
@@ -1640,13 +1640,13 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 				if (this._mouseEventsActive) {
 					if (this._processTriggerHitTests()) {
 						// Point is inside the trigger bounds
-						ige.input.queueEvent(this, this._mouseInTrigger, null);
+						$ige.engine.input.queueEvent(this, this._mouseInTrigger, null);
 					} else {
-						if (ige.input.mouseMove) {
+						if ($ige.engine.input.mouseMove) {
 							// There is a mouse move event but we are not inside the entity
 							// so fire a mouse out event (_handleMouseOut will check if the
 							// mouse WAS inside before firing an out event).
-							this._handleMouseOut(ige.input.mouseMove);
+							this._handleMouseOut($ige.engine.input.mouseMove);
 						}
 					}
 				}
@@ -1977,7 +1977,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 							str += ".opacity(" + this.opacity() + ")";
 							break;
 						case '_texture':
-							str += ".texture(ige.$('" + this.texture().id() + "'))";
+							str += ".texture($ige.engine.$('" + this.texture().id() + "'))";
 							break;
 						case '_cell':
 							str += ".cell(" + this.cell() + ")";
@@ -2089,7 +2089,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		loadSpecialProp: function (obj, i) {
 			switch (i) {
 				case '_texture':
-					return {_texture: ige.$(obj[i])};
+					return {_texture: $ige.engine.$(obj[i])};
 				
 				default:
 					// Call super-class loadSpecialProp
@@ -2116,7 +2116,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		 *
 		 *         // You can ALSO stop propagation without the control object
 		 *         // reference via the global reference:
-		 *         ige.input.stopPropagation();
+		 *         $ige.engine.input.stopPropagation();
 		 *     });
 		 * @return {*}
 		 */
@@ -2144,7 +2144,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		 *
 		 *         // You can ALSO stop propagation without the control object
 		 *         // reference via the global reference:
-		 *         ige.input.stopPropagation();
+		 *         $ige.engine.input.stopPropagation();
 		 *     });
 		 * @return {*}
 		 */
@@ -2172,7 +2172,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		 *
 		 *         // You can ALSO stop propagation without the control object
 		 *         // reference via the global reference:
-		 *         ige.input.stopPropagation();
+		 *         $ige.engine.input.stopPropagation();
 		 *     });
 		 * @return {*}
 		 */
@@ -2200,7 +2200,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		 *
 		 *         // You can ALSO stop propagation without the control object
 		 *         // reference via the global reference:
-		 *         ige.input.stopPropagation();
+		 *         $ige.engine.input.stopPropagation();
 		 *     });
 		 * @return {*}
 		 */
@@ -2228,7 +2228,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		 *
 		 *         // You can ALSO stop propagation without the control object
 		 *         // reference via the global reference:
-		 *         ige.input.stopPropagation();
+		 *         $ige.engine.input.stopPropagation();
 		 *     });
 		 * @return {*}
 		 */
@@ -2257,7 +2257,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		 *
 		 *         // You can ALSO stop propagation without the control object
 		 *         // reference via the global reference:
-		 *         ige.input.stopPropagation();
+		 *         $ige.engine.input.stopPropagation();
 		 *     });
 		 * @return {*}
 		 */
@@ -2494,24 +2494,24 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		 * @private
 		 */
 		_mouseInTrigger: function (evc, data) {
-			if (ige.input.mouseMove) {
+			if ($ige.engine.input.mouseMove) {
 				// There is a mouse move event
-				this._handleMouseIn(ige.input.mouseMove, evc, data);
+				this._handleMouseIn($ige.engine.input.mouseMove, evc, data);
 			}
 	
-			if (ige.input.mouseDown) {
+			if ($ige.engine.input.mouseDown) {
 				// There is a mouse down event
-				this._handleMouseDown(ige.input.mouseDown, evc, data);
+				this._handleMouseDown($ige.engine.input.mouseDown, evc, data);
 			}
 	
-			if (ige.input.mouseUp) {
+			if ($ige.engine.input.mouseUp) {
 				// There is a mouse up event
-				this._handleMouseUp(ige.input.mouseUp, evc, data);
+				this._handleMouseUp($ige.engine.input.mouseUp, evc, data);
 			}
 			
-			if (ige.input.mouseWheel) {
+			if ($ige.engine.input.mouseWheel) {
 				// There is a mouse wheel event
-				this._handleMouseWheel(ige.input.mouseWheel, evc, data);
+				this._handleMouseWheel($ige.engine.input.mouseWheel, evc, data);
 			}
 		},
 		
@@ -2527,39 +2527,39 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		 * @returns {IgeEntity}
 		 */
 		debugTransforms: function () {
-			ige.traceSet(this._translate, 'x', 1, function (val) {
+			$ige.engine.traceSet(this._translate, 'x', 1, function (val) {
 				return isNaN(val);
 			});
 			
-			ige.traceSet(this._translate, 'y', 1, function (val) {
+			$ige.engine.traceSet(this._translate, 'y', 1, function (val) {
 				return isNaN(val);
 			});
 			
-			ige.traceSet(this._translate, 'z', 1, function (val) {
+			$ige.engine.traceSet(this._translate, 'z', 1, function (val) {
 				return isNaN(val);
 			});
 			
-			ige.traceSet(this._rotate, 'x', 1, function (val) {
+			$ige.engine.traceSet(this._rotate, 'x', 1, function (val) {
 				return isNaN(val);
 			});
 			
-			ige.traceSet(this._rotate, 'y', 1, function (val) {
+			$ige.engine.traceSet(this._rotate, 'y', 1, function (val) {
 				return isNaN(val);
 			});
 			
-			ige.traceSet(this._rotate, 'z', 1, function (val) {
+			$ige.engine.traceSet(this._rotate, 'z', 1, function (val) {
 				return isNaN(val);
 			});
 			
-			ige.traceSet(this._scale, 'x', 1, function (val) {
+			$ige.engine.traceSet(this._scale, 'x', 1, function (val) {
 				return isNaN(val);
 			});
 			
-			ige.traceSet(this._scale, 'y', 1, function (val) {
+			$ige.engine.traceSet(this._scale, 'y', 1, function (val) {
 				return isNaN(val);
 			});
 			
-			ige.traceSet(this._scale, 'z', 1, function (val) {
+			$ige.engine.traceSet(this._scale, 'z', 1, function (val) {
 				return isNaN(val);
 			});
 			
@@ -3326,7 +3326,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 							if (dataArr[8]) { dataArr[8] = parseFloat(dataArr[8]); }
 		
 							// Add it to the time stream
-							this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
+							this._timeStream.push([$ige.network.stream._streamDataTime + $ige.network._latency, dataArr]);
 		
 							// Check stream length, don't allow higher than 10 items
 							if (this._timeStream.length > 10) {
@@ -3422,7 +3422,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 					if (data !== undefined) {
 						if ($ige.isClient) {
 							if (data) {
-								newParent = ige.$(data);
+								newParent = $ige.engine.$(data);
 								
 								if (newParent) {
 									this.mount(newParent);
@@ -3658,7 +3658,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 				// Grab an array of connected clients from the network
 				// system
 				var recipientArr = [],
-					clientArr = ige.network.clients(this._streamRoomId),
+					clientArr = $ige.network.clients(this._streamRoomId),
 					i;
 				
 				for (i in clientArr) {
@@ -3747,7 +3747,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 				arrIndex,
 				clientId,
 				data,
-				stream = ige.network.stream,
+				stream = $ige.network.stream,
 				thisId = this.id(),
 				filteredArr = [],
 				createResult = true; // We set this to true by default
@@ -3802,8 +3802,8 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 				
 				// Invalidate the stream client data lookup to ensure
 				// the latest data will be pushed on the next stream sync
-				if (ige.network && ige.network.stream && ige.network.stream._streamClientData && ige.network.stream._streamClientData[thisId]) {
-					ige.network.stream._streamClientData[thisId] = {};
+				if ($ige.network && $ige.network.stream && $ige.network.stream._streamClientData && $ige.network.stream._streamClientData[thisId]) {
+					$ige.network.stream._streamClientData[thisId] = {};
 				}
 			}
 			
@@ -3832,7 +3832,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 					i;
 	
 				// Send the client an entity create command first
-				ige.network.send('_igeStreamCreate', [
+				$ige.network.send('_igeStreamCreate', [
 					this.classId(),
 					thisId,
 					this._parent.id(),
@@ -3840,19 +3840,19 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 					this.streamCreateData()
 				], clientId);
 				
-				ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
+				$ige.network.stream._streamClientCreated[thisId] = $ige.network.stream._streamClientCreated[thisId] || {};
 	
 				if (clientId) {
 					// Mark the client as having received a create
 					// command for this entity
-					ige.network.stream._streamClientCreated[thisId][clientId] = true;
+					$ige.network.stream._streamClientCreated[thisId][clientId] = true;
 				} else {
 					// Mark all clients as having received this create
-					arr = ige.network.clients();
+					arr = $ige.network.clients();
 	
 					for (i in arr) {
 						if (arr.hasOwnProperty(i)) {
-							ige.network.stream._streamClientCreated[thisId][i] = true;
+							$ige.network.stream._streamClientCreated[thisId][i] = true;
 						}
 					}
 				}
@@ -3884,24 +3884,24 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 				i;
 	
 			// Send clients the stream destroy command for this entity
-			ige.network.send('_igeStreamDestroy', [$time._currentTime, thisId], clientId);
+			$ige.network.send('_igeStreamDestroy', [$time._currentTime, thisId], clientId);
 			
-			ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
-			ige.network.stream._streamClientData[thisId] = ige.network.stream._streamClientData[thisId] || {};
+			$ige.network.stream._streamClientCreated[thisId] = $ige.network.stream._streamClientCreated[thisId] || {};
+			$ige.network.stream._streamClientData[thisId] = $ige.network.stream._streamClientData[thisId] || {};
 	
 			if (clientId) {
 				// Mark the client as having received a destroy
 				// command for this entity
-				ige.network.stream._streamClientCreated[thisId][clientId] = false;
-				ige.network.stream._streamClientData[thisId][clientId] = undefined;
+				$ige.network.stream._streamClientCreated[thisId][clientId] = false;
+				$ige.network.stream._streamClientData[thisId][clientId] = undefined;
 			} else {
 				// Mark all clients as having received this destroy
-				arr = ige.network.clients();
+				arr = $ige.network.clients();
 	
 				for (i in arr) {
 					if (arr.hasOwnProperty(i)) {
-						ige.network.stream._streamClientCreated[thisId][i] = false;
-						ige.network.stream._streamClientData[thisId][i] = undefined;
+						$ige.network.stream._streamClientCreated[thisId][i] = false;
+						$ige.network.stream._streamClientData[thisId][i] = undefined;
 					}
 				}
 			}
@@ -3969,7 +3969,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 						// regardless of if there is actually any section data because
 						// we want to be able to identify sections in a serial fashion
 						// on receipt of the data string on the client
-						sectionDataString += ige.network.stream._sectionDesignator;
+						sectionDataString += $ige.network.stream._sectionDesignator;
 	
 						// Check if we were returned any data
 						if (sectionData !== undefined) {

@@ -19,7 +19,7 @@ appCore.module('IgeUiManagerComponent', function (IgeClass) {
 			this._styles = {};
 			this._elementsByStyle = {};
 			
-			ige.input.on('keyDown', function (event) { self._keyDown(event); });
+			$ige.engine.input.on('keyDown', function (event) { self._keyDown(event); });
 		},
 		
 		/**
@@ -148,7 +148,7 @@ appCore.module('IgeUiManagerComponent', function (IgeClass) {
 			// Direct the key event to the focused element
 			if (this._focus) {
 				this._focus.emit('keyUp', event);
-				ige.input.stopPropagation();
+				$ige.engine.input.stopPropagation();
 			}
 		},
 		
@@ -156,7 +156,7 @@ appCore.module('IgeUiManagerComponent', function (IgeClass) {
 			// Direct the key event to the focused element
 			if (this._focus) {
 				this._focus.emit('keyDown', event);
-				ige.input.stopPropagation();
+				$ige.engine.input.stopPropagation();
 			}
 		}
 	});

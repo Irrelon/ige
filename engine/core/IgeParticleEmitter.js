@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeParticleEmitter', function (IgeUiEntity, IgeTween) {
+appCore.module('IgeParticleEmitter', function ($time, IgeUiEntity, IgeTween) {
 	/**
 	 * Creates a new particle emitter.
 	 */
