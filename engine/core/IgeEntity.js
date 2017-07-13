@@ -2081,7 +2081,6 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				default:
 					// Call super-class saveSpecialProp
 					return IgeObject.prototype.saveSpecialProp.call(this, obj, i);
-					break;
 			}
 			
 			return undefined;
@@ -2091,12 +2090,10 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 			switch (i) {
 				case '_texture':
 					return {_texture: ige.$(obj[i])};
-					break;
 				
 				default:
 					// Call super-class loadSpecialProp
 					return IgeObject.prototype.loadSpecialProp.call(this, obj, i);
-					break;
 			}
 			
 			return undefined;
@@ -3297,11 +3294,20 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		 * chaining or the current value if no data argument is specified.
 		 */
 		streamSectionData: function (sectionId, data, bypassTimeStream) {
+			var geom,
+				dataArr,
+				newData,
+				changed,
+				newParent,
+				parent,
+				props,
+				i;
+			
 			switch (sectionId) {
 				case 'transform':
 					if (data) {
 						// We have received updated data
-						var dataArr = data.split(',');
+						dataArr = data.split(',');
 		
 						if (!this._disableInterpolation && !bypassTimeStream && !this._streamJustCreated) {
 							// Translate
@@ -3379,7 +3385,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				case 'bounds2d':
 					if (data !== undefined) {
 						if (ige.isClient) {
-							var geom = data.split(',');
+							geom = data.split(',');
 							this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
 						}
 					} else {
@@ -3390,7 +3396,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				case 'bounds3d':
 					if (data !== undefined) {
 						if (ige.isClient) {
-							var geom = data.split(',');
+							geom = data.split(',');
 							this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 						}
 					} else {
@@ -3401,7 +3407,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				case 'hidden':
 					if (data !== undefined) {
 						if (ige.isClient) {
-							if (data == 'true') {
+							if (data === 'true') {
 								this.hide();
 							} else {
 								this.show();
@@ -3416,7 +3422,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 					if (data !== undefined) {
 						if (ige.isClient) {
 							if (data) {
-								var newParent = ige.$(data);
+								newParent = ige.$(data);
 								
 								if (newParent) {
 									this.mount(newParent);
@@ -3427,7 +3433,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 							}
 						}
 					} else {
-						var parent = this.parent();
+						parent = this.parent();
 						
 						if (parent) {
 							return this.parent().id();
@@ -3440,7 +3446,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				case 'origin':
 					if (data !== undefined) {
 						if (ige.isClient) {
-							var geom = data.split(',');
+							geom = data.split(',');
 							this.origin(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 						}
 					} else {
@@ -3449,24 +3455,22 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 					break;
 	
 				case 'props':
-					var newData,
-						changed,
-						i;
-	
 					if (data !== undefined) {
 						if (ige.isClient) {
-							var props = JSON.parse(data);
+							props = JSON.parse(data);
 	
 							// Update properties that have been sent through
 							for (i in props) {
-								changed = false;
 								if (props.hasOwnProperty(i)) {
-									if (this._streamProperty[i] != props[i]) {
-										changed = true;
+									changed = false;
+									if (props.hasOwnProperty(i)) {
+										if (this._streamProperty[i] !== props[i]) {
+											changed = true;
+										}
+										this._streamProperty[i] = props[i];
+										
+										this.emit('streamPropChange', [i, props[i]]);
 									}
-									this._streamProperty[i] = props[i];
-	
-									this.emit('streamPropChange', [i, props[i]]);
 								}
 							}
 						}
@@ -3742,6 +3746,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 			var arrCount = recipientArr.length,
 				arrIndex,
 				clientId,
+				data,
 				stream = ige.network.stream,
 				thisId = this.id(),
 				filteredArr = [],
@@ -3763,13 +3768,13 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				// to waste bandwidth on stream updates
 				if (createResult) {
 					// Get the stream data
-					var data = this._streamData();
+					data = this._streamData();
 	
 					// Is the data different from the last data we sent
 					// this client?
 					stream._streamClientData[thisId] = stream._streamClientData[thisId] || {};
 					
-					if (stream._streamClientData[thisId][clientId] != data) {
+					if (stream._streamClientData[thisId][clientId] !== data) {
 						filteredArr.push(clientId);
 	
 						// Store the new data for later comparison
@@ -4029,7 +4034,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 			// Set the maximum lerp to 200 if none is present
 			if (!maxLerp) { maxLerp = 200; }
 	
-			var maxLerpSquared = maxLerp * maxLerp,
+			var //maxLerpSquared = maxLerp * maxLerp,
 				previousData,
 				nextData,
 				timeStream = this._timeStream,
@@ -4146,10 +4151,11 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				this._lastUpdate = new Date().getTime();
 			}
 		},
+		
 		_highlightToGlobalCompositeOperation: function (val) {
 			if (val) {
 				if (val === true) {
-					return 'lighter'
+					return 'lighter';
 				}
 
 				return val;
