@@ -293,13 +293,6 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 			if (viewport) {
 				var mp = viewport._mousePos.clone(),
 					cam;
-	
-				if (this._ignoreCamera) {
-					/*cam = ige._currentCamera;
-					mp.thisMultiply(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
-					//mp.thisRotate(-cam._rotate.z);
-					mp.thisAddPoint(cam._translate);*/
-				}
 				
 				mp.x += viewport._translate.x;
 				mp.y += viewport._translate.y;
