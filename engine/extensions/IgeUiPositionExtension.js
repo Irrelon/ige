@@ -546,9 +546,9 @@ appCore.module('IgeUiPositionExtension', function () {
 					newVal,
 					ratio;
 				
-				/*if (this._ignoreCamera && ige._currentCamera) {
+				/*if (this._ignoreCamera && $ige._currentCamera) {
 				 // Handle cam ignore when calculating
-				 parentGeom = parentGeom.dividePoint(ige._currentCamera._scale);
+				 parentGeom = parentGeom.dividePoint($ige._currentCamera._scale);
 				 }*/
 				
 				if (this._autoScaleX) {

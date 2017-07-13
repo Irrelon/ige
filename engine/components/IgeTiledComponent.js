@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTiledComponent', function (IgeClass, IgeCellSheet, IgeTileMap2d, IgeTextureMap) {
+appCore.module('IgeTiledComponent', function ($ige, IgeClass, IgeCellSheet, IgeTileMap2d, IgeTextureMap) {
 	/**
 	 * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
 	 */
@@ -32,7 +32,7 @@ appCore.module('IgeTiledComponent', function (IgeClass, IgeCellSheet, IgeTileMap
 				scriptElem;
 			
 			if (typeof(url) === 'string') {
-				if (ige.isClient) {
+				if ($ige.isClient) {
 					scriptElem = document.createElement('script');
 					scriptElem.src = url;
 					scriptElem.onload = function () {
@@ -102,7 +102,7 @@ appCore.module('IgeTiledComponent', function (IgeClass, IgeCellSheet, IgeTileMap
 						layersById[layer.name] = maps[i];
 						tileSetCount = tileSetArray.length;
 						
-						if (ige.isClient) {
+						if ($ige.isClient) {
 							for (k = 0; k < tileSetCount; k++) {
 								maps[i].addTexture(textures[k]);
 							}
@@ -116,7 +116,7 @@ appCore.module('IgeTiledComponent', function (IgeClass, IgeCellSheet, IgeTileMap
 								z = x + (y * mapWidth);
 								
 								if (layerData[z] > 0 && layerData[z] !== 2147483712) {
-									if (ige.isClient) {
+									if ($ige.isClient) {
 										// Paint the tile
 										currentTexture = textureCellLookup[layerData[z]];
 										if (currentTexture) {
@@ -144,7 +144,7 @@ appCore.module('IgeTiledComponent', function (IgeClass, IgeCellSheet, IgeTileMap
 				callback(maps, layersById);
 			};
 			
-			if (ige.isClient) {
+			if ($ige.isClient) {
 				onLoadFunc = function (textures, tileSetCount, tileSetItem) {
 					return function () {
 						var i, cc,

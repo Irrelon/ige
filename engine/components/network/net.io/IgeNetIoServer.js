@@ -344,7 +344,7 @@ appCore.module('IgeNetIoServer', function () {
 						cmd: 'init',
 						ncmds: this._networkCommandsLookup,
 						ts: ige._timeScale,
-						ct: igeTime._currentTime
+						ct: $time._currentTime
 					});
 					
 					// Send a clock sync command

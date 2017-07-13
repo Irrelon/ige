@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTextureMap', function (igeTime, IgeTileMap2d, IgeMap2d, IgePoint3d) {
+appCore.module('IgeTextureMap', function ($time, IgeTileMap2d, IgeMap2d, IgePoint3d) {
 	// TODO: Implement the _stringify() method for this class
 	/**
 	 * Texture maps provide a way to display textures / cells across a tile map.
@@ -496,7 +496,7 @@ appCore.module('IgeTextureMap', function (igeTime, IgeTileMap2d, IgeMap2d, IgePo
 				sectionCtx = this._sectionCtx[sectionX][sectionY] = this._sections[sectionX][sectionY].getContext('2d');
 	
 				// Ensure the canvas is using the correct image antialiasing mode
-				if (!ige._globalSmoothing) {
+				if (!$textures._globalSmoothing) {
 					sectionCtx.imageSmoothingEnabled = false;
 					sectionCtx.mozImageSmoothingEnabled = false;
 				} else {
@@ -519,7 +519,7 @@ appCore.module('IgeTextureMap', function (igeTime, IgeTileMap2d, IgeMap2d, IgePo
 				sectionRenderX, sectionRenderY,
 				sectionAbsX, sectionAbsY,
 				sectionWidth, sectionHeight,
-				viewArea = ige._currentViewport.viewArea();
+				viewArea = $ige._currentViewport.viewArea();
 	
 			// Render the map sections
 			//ctx.translate(-(this._tileWidth / 2), -(this._tileHeight / 2));
@@ -533,8 +533,8 @@ appCore.module('IgeTextureMap', function (igeTime, IgeTileMap2d, IgeMap2d, IgePo
 						if (this._sections[x].hasOwnProperty(y)) {
 							sectionRenderX = x * (this._tileWidth * this._autoSection);
 							sectionRenderY = y * (this._tileHeight * this._autoSection);
-							sectionAbsX = this._translate.x + sectionRenderX - ige._currentCamera._translate.x;
-							sectionAbsY = this._translate.y + sectionRenderY - ige._currentCamera._translate.y;
+							sectionAbsX = this._translate.x + sectionRenderX - $ige._currentCamera._translate.x;
+							sectionAbsY = this._translate.y + sectionRenderY - $ige._currentCamera._translate.y;
 	
 							// Check if we are drawing isometrically and adjust
 							if (this._mountMode === 1) {
@@ -558,7 +558,7 @@ appCore.module('IgeTextureMap', function (igeTime, IgeTileMap2d, IgeMap2d, IgePo
 									sectionHeight
 								);
 								
-								igeTime._drawCount++;
+								$time._drawCount++;
 	
 								if (this._drawSectionBounds) {
 									// Draw a bounding rectangle around the section
@@ -682,7 +682,7 @@ appCore.module('IgeTextureMap', function (igeTime, IgeTileMap2d, IgeMap2d, IgePo
 	
 			// Paint the texture
 			if (texture) {
-				texture.render(ctx, tileEntity, igeTime._tickDelta);
+				texture.render(ctx, tileEntity, $time._tickDelta);
 			}
 			ctx.restore();
 	

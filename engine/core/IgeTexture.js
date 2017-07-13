@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTexture', function (igeTime, IgeEventingClass) {
+appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass) {
 	/**
 	 * Creates a new texture.
 	 */
@@ -30,7 +30,7 @@ appCore.module('IgeTexture', function (igeTime, IgeEventingClass) {
 	
 			// Create an array that is used to store cell dimensions
 			this._cells = [];
-			this._smoothing = ige._globalSmoothing;
+			this._smoothing = $textures._globalSmoothing;
 			
 			// Instantiate filter lists for filter combinations
 			this._applyFilters = [];
@@ -138,9 +138,9 @@ appCore.module('IgeTexture', function (igeTime, IgeEventingClass) {
 			var image,
 				self = this;
 	
-			if (ige.isClient) {
+			if ($ige.isClient) {
 				// Increment the texture load count
-				ige.textureLoadStart(imageUrl, this);
+				$ige.textureLoadStart(imageUrl, this);
 	
 				// Check if the image url already exists in the image cache
 				if (!ige._textureImageStore[imageUrl]) {
@@ -249,9 +249,9 @@ appCore.module('IgeTexture', function (igeTime, IgeEventingClass) {
 				self = this,
 				scriptElem;
 	
-			ige.textureLoadStart(scriptUrl, this);
+			$ige.textureLoadStart(scriptUrl, this);
 	
-			if (ige.isClient) {
+			if ($ige.isClient) {
 				scriptElem = document.createElement('script');
 				scriptElem.onload = function(data) {
 					self.log('Texture script "' + scriptUrl + '" loaded successfully');
@@ -274,7 +274,7 @@ appCore.module('IgeTexture', function (igeTime, IgeEventingClass) {
 	
 					self._loaded = true;
 					self.emit('loaded');
-					ige.textureLoadEnd(scriptUrl, self);
+					$ige.textureLoadEnd(scriptUrl, self);
 				};
 	
 				scriptElem.addEventListener('error', function () {
@@ -334,7 +334,7 @@ appCore.module('IgeTexture', function (igeTime, IgeEventingClass) {
 			var image,
 				self = this;
 	
-			if (ige.isClient) {
+			if ($ige.isClient) {
 				// Create the image object
 				image = this.image = this._originalImage = imageElement;
 				image._igeTextures = image._igeTextures || [];
@@ -655,7 +655,7 @@ appCore.module('IgeTexture', function (igeTime, IgeEventingClass) {
 							geom.y // render height
 						);
 						
-						igeTime._drawCount++;
+						$time._drawCount++;
 					} else {
 						this.log('Cannot render texture using cell ' + entity._cell + ' because the cell does not exist in the assigned texture!', 'error');
 					}
@@ -667,7 +667,7 @@ appCore.module('IgeTexture', function (igeTime, IgeEventingClass) {
 						this.script.render(ctx, entity, this);
 					ctx.restore();
 					
-					igeTime._drawCount++;
+					$time._drawCount++;
 				}
 			}
 		},
@@ -924,7 +924,7 @@ appCore.module('IgeTexture', function (igeTime, IgeEventingClass) {
 			}
 	
 			// Remove the texture from the texture store
-			ige._textureStore.pull(this);
+			$textures._arr.pull(this);
 	
 			delete this.image;
 			delete this.script;

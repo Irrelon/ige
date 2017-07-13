@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTimeSyncExtension', function (ige, igeTime) {
+appCore.module('IgeTimeSyncExtension', function ($ige, $time) {
 	/**
 	 * Adds client/server time sync capabilities to the network system.
 	 * This handles calculating the time difference between the clock
@@ -30,7 +30,7 @@ appCore.module('IgeTimeSyncExtension', function (ige, igeTime) {
 		
 		/* CEXCLUDE */
 		timeSyncStart: function () {
-			if (ige.isServer) {
+			if ($ige.isServer) {
 				this._timeSyncStarted = true;
 				
 				// Send a time sync request now so we
@@ -59,7 +59,7 @@ appCore.module('IgeTimeSyncExtension', function (ige, igeTime) {
 		
 		_sendTimeSync: function (data, clientId) {
 			if (!data) {
-				data = igeTime._currentTime;
+				data = $time._currentTime;
 			}
 			
 			// Send the time sync command
@@ -73,7 +73,7 @@ appCore.module('IgeTimeSyncExtension', function (ige, igeTime) {
 		 * and the server.
 		 * @param {Number} time The client timestamp (usually
 		 * the result of new Date().getTime() or
-		 * ige.currentTime()).
+		 * $time.currentTime()).
 		 */
 		timeToServerTime: function (time) {
 			if (time !== undefined) {
@@ -84,12 +84,12 @@ appCore.module('IgeTimeSyncExtension', function (ige, igeTime) {
 		},
 		
 		_onTimeSync: function (data, clientId) {
-			var localTime = Math.floor(igeTime._currentTime),
+			var localTime = Math.floor($time._currentTime),
 				sendTime,
 				roundTrip,
 				direction;
 			
-			if (ige.isClient) {
+			if ($ige.isClient) {
 				sendTime = parseInt(data, 10);
 				
 				this._latency = localTime - sendTime;
@@ -109,7 +109,7 @@ appCore.module('IgeTimeSyncExtension', function (ige, igeTime) {
 			}
 			
 			/* CEXCLUDE */
-			if (ige.isServer) {
+			if ($ige.isServer) {
 				sendTime = parseInt(data[1], 10);
 				roundTrip = (localTime - parseInt(data[0], 10));
 				

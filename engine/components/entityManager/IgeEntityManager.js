@@ -33,7 +33,7 @@ appCore.module('IgeEntityManager', function (IgeEventingClass) {
 		 */
 		_updateBehaviour: function (ctx) {
 			// Draw visible area rect
-			var rect = ige._currentViewport.viewArea();
+			var rect = $ige._currentViewport.viewArea();
 			
 			/*new IgeEntity()
 			 .id('visArea')

@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeBox2dWorld', function (igeTime, IgeEventingClass) {
+appCore.module('IgeBox2dWorld', function ($time, IgeEventingClass) {
 	var IgeBox2dWorld = IgeEventingClass.extend({
 		classId: 'IgeBox2dWorld',
 		
@@ -492,7 +492,7 @@ appCore.module('IgeBox2dWorld', function (igeTime, IgeEventingClass) {
 				
 				// Call the world step; frame-rate, velocity iterations, position iterations
 				if (self._mode === 0) {
-					self._world.Step(igeTime._tickDelta / 1000, 8, 3);
+					self._world.Step($time._tickDelta / 1000, 8, 3);
 				} else {
 					self._world.Step(1 / 60, 8, 3);
 				}

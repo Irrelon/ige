@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTween', function (igeTime, IgeClass) {
+appCore.module('IgeTween', function ($time, IgeClass) {
 	/**
 	 * Creates a new tween instance.
 	 */
@@ -286,7 +286,7 @@ appCore.module('IgeTween', function (igeTime, IgeClass) {
 		 */
 		start: function (timeMs) {
 			if (timeMs !== undefined) {
-				this.startTime(timeMs + igeTime._currentTime);
+				this.startTime(timeMs + $time._currentTime);
 			}
 			
 			ige.tween.start(this);

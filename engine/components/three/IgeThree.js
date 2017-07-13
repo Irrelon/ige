@@ -106,8 +106,8 @@ var IgeThree = IgeEventingClass.extend({
 			// Store the viewport camera in the main ige so that
 			// down the scenegraph we can choose to negate the camera
 			// transform effects
-			ige._currentCamera = this.camera;
-			ige._currentViewport = this;
+			$ige._currentCamera = this.camera;
+			$ige._currentViewport = this;
 
 			this._scene._parent = this;
 

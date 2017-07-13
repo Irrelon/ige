@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeGamePadComponent', function (IgeEventingClass) {
+appCore.module('IgeGamePadComponent', function ($ige, IgeEventingClass) {
 	var IgeGamePadComponent = IgeEventingClass.extend({
 		classId: 'IgeGamePadComponent',
 		componentId: 'gamePad',
@@ -39,7 +39,7 @@ appCore.module('IgeGamePadComponent', function (IgeEventingClass) {
 			// as last time).
 			this.prevTimestamps = [];
 			
-			if (ige.isClient) {
+			if ($ige.isClient) {
 				// As of writing, it seems impossible to detect Gamepad API support
 				// in Firefox, hence we need to hardcode it in the third clause.
 				// (The preceding two clauses are for Chrome.)

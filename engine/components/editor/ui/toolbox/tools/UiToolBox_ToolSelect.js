@@ -9,8 +9,8 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 			
 			// Hook editor select object updates so we can keep in sync
 			ige.editor.on('selectedObject', function (id) {
-				ige._currentViewport.drawBounds(true);
-				ige._currentViewport.drawBoundsLimitId(id);
+				$ige._currentViewport.drawBounds(true);
+				$ige._currentViewport.drawBoundsLimitId(id);
 			});
 			
 			this.menuDefinition = {
@@ -138,11 +138,11 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 					ige.editor.off('mouseMove', this._mouseMoveHandle);
 					
 					if (ige.editor._selectedObject) {
-						ige._currentViewport.drawBoundsData(true);
-						ige._currentViewport.drawBoundsLimitId(ige.editor._selectedObject.id());
+						$ige._currentViewport.drawBoundsData(true);
+						$ige._currentViewport.drawBoundsLimitId(ige.editor._selectedObject.id());
 					} else {
-						ige._currentViewport.drawBounds(false);
-						ige._currentViewport.drawBoundsLimitId('');
+						$ige._currentViewport.drawBounds(false);
+						$ige._currentViewport.drawBoundsLimitId('');
 					}
 				}
 			}
@@ -167,13 +167,13 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 			
 			if (arr.length) {
 				if (!ige.editor._selectedObject) {
-					ige._currentViewport.drawBounds(true);
-					ige._currentViewport.drawBoundsData(true);
-					ige._currentViewport.drawBoundsLimitId(arr[0].id());
+					$ige._currentViewport.drawBounds(true);
+					$ige._currentViewport.drawBoundsData(true);
+					$ige._currentViewport.drawBoundsLimitId(arr[0].id());
 				} else {
-					ige._currentViewport.drawBounds(true);
-					ige._currentViewport.drawBoundsData(true);
-					ige._currentViewport.drawBoundsLimitId([ige.editor._selectedObject.id(), arr[0].id()]);
+					$ige._currentViewport.drawBounds(true);
+					$ige._currentViewport.drawBoundsData(true);
+					$ige._currentViewport.drawBoundsLimitId([ige.editor._selectedObject.id(), arr[0].id()]);
 				}
 				
 				this._overObject = arr;
@@ -181,13 +181,13 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 				delete this._overObject;
 				
 				if (!ige.editor._selectedObject) {
-					ige._currentViewport.drawBounds(false);
-					ige._currentViewport.drawBoundsData(false);
-					ige._currentViewport.drawBoundsLimitId('');
+					$ige._currentViewport.drawBounds(false);
+					$ige._currentViewport.drawBoundsData(false);
+					$ige._currentViewport.drawBoundsLimitId('');
 				} else {
-					ige._currentViewport.drawBounds(true);
-					ige._currentViewport.drawBoundsData(true);
-					ige._currentViewport.drawBoundsLimitId(ige.editor._selectedObject.id());
+					$ige._currentViewport.drawBounds(true);
+					$ige._currentViewport.drawBoundsData(true);
+					$ige._currentViewport.drawBoundsLimitId(ige.editor._selectedObject.id());
 				}
 			}
 			

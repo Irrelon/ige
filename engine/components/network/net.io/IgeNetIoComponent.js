@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeNetIoComponent', function (ige, IgeEventingClass, IgeTimeSyncExtension, IgeNetIoServer) {
+appCore.module('IgeNetIoComponent', function ($ige, IgeEventingClass, IgeTimeSyncExtension, IgeNetIoServer) {
 	var IgeNetIoComponent = IgeEventingClass.extend([
 		{extension: IgeTimeSyncExtension, overwrite: false}
 	], {
@@ -31,14 +31,14 @@ appCore.module('IgeNetIoComponent', function (ige, IgeEventingClass, IgeTimeSync
 			this._latency = 0;
 			
 			/* CEXCLUDE */
-			if (ige.isServer) {
+			if ($ige.isServer) {
 				this.implement(IgeNetIoServer);
 				this._netio = require('net.io-server').Server;
 				this._acceptConnections = false;
 			}
 			/* CEXCLUDE */
 			
-			if (ige.isClient) {
+			if ($ige.isClient) {
 				this._netio = IgeNetIoClient;
 				this.implement(IgeNetIoClient);
 			}

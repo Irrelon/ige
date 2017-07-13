@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiPanels', function (IgeEventingClass, IgePoint3d, IgeEntity, IgeTexture, IgeTileMap2d, IgeParticleEmitter) {
+appCore.module('UiPanels', function ($textures, IgeEventingClass, IgePoint3d, IgeEntity, IgeTexture, IgeTileMap2d, IgeParticleEmitter) {
 	var UiPanels = IgeEventingClass.extend({
 		classId: 'UiPanels',
 		
@@ -162,7 +162,7 @@ appCore.module('UiPanels', function (IgeEventingClass, IgePoint3d, IgeEntity, Ig
 								templateUrl: igeRoot + 'components/editor/ui/panels/templates/IgeTexture.html',
 								// Setup the data the template needs to render correctly
 								beforeRender: function (obj, propItem) {
-									var textureArr = ige._textureStore,
+									var textureArr = $textures._arr,
 										textureIndex,
 										tex;
 									
@@ -317,7 +317,7 @@ appCore.module('UiPanels', function (IgeEventingClass, IgePoint3d, IgeEntity, Ig
 								templateUrl: igeRoot + 'components/editor/ui/panels/templates/List.html',
 								// Setup the data the template needs to render correctly
 								beforeRender: function (obj, propItem) {
-									var textureArr = ige._textureStore,
+									var textureArr = $textures._arr,
 										textureIndex,
 										tex;
 									
@@ -362,7 +362,7 @@ appCore.module('UiPanels', function (IgeEventingClass, IgePoint3d, IgeEntity, Ig
 								templateUrl: igeRoot + 'components/editor/ui/panels/templates/List.html',
 								// Setup the data the template needs to render correctly
 								beforeRender: function (obj, propItem) {
-									var textureArr = ige._textureStore,
+									var textureArr = $textures._arr,
 										textureIndex,
 										tex;
 									

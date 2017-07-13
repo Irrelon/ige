@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeBox2dComponent', function (igeTime, IgeEventingClass) {
+appCore.module('IgeBox2dComponent', function ($time, IgeEventingClass) {
 	/**
 	 * The engine's box2d component class.
 	 */
@@ -663,7 +663,7 @@ appCore.module('IgeBox2dComponent', function (igeTime, IgeEventingClass) {
 				
 				// Call the world step; frame-rate, velocity iterations, position iterations
 				if (self._mode === 0) {
-					self._world.Step(igeTime._tickDelta / 1000, 8, 3);
+					self._world.Step($time._tickDelta / 1000, 8, 3);
 				} else {
 					self._world.Step(1 / 60, 8, 3);
 				}

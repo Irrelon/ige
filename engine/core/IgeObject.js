@@ -1481,10 +1481,10 @@ appCore.module('IgeObject', function (igeBase, IgeEventingClass) {
 		 * "on screen" or not.
 		 */
 		viewCheckChildren: function () {
-			if (ige._currentViewport) {
+			if ($ige._currentViewport) {
 				var arr = this._children,
 					arrCount = arr.length,
-					vpViewArea = ige._currentViewport.viewArea(),
+					vpViewArea = $ige._currentViewport.viewArea(),
 					item;
 				
 				while (arrCount--) {

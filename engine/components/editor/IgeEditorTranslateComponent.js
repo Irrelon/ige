@@ -141,8 +141,8 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 							x: this._opStartMouse.x - curMousePos.x,
 							y: this._opStartMouse.y - curMousePos.y
 						}, distX = Math.abs(panCords.x), distY = Math.abs(panCords.y),
-						panFinalX = this._opStartTranslate.x - (panCords.x / ige._currentViewport.camera._scale.x),
-						panFinalY = this._opStartTranslate.y - (panCords.y / ige._currentViewport.camera._scale.y);
+						panFinalX = this._opStartTranslate.x - (panCords.x / $ige._currentViewport.camera._scale.x),
+						panFinalY = this._opStartTranslate.y - (panCords.y / $ige._currentViewport.camera._scale.y);
 					
 					// Check if we have a limiter on the rectangle area
 					// that we should allow panning inside.
@@ -212,8 +212,8 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 								x: this._opStartMouse.x - curMousePos.x,
 								y: this._opStartMouse.y - curMousePos.y
 							},
-							panFinalX = this._opStartTranslate.x - (panCords.x / ige._currentViewport.camera._scale.x),
-							panFinalY = this._opStartTranslate.y - (panCords.y / ige._currentViewport.camera._scale.y);
+							panFinalX = this._opStartTranslate.x - (panCords.x / $ige._currentViewport.camera._scale.x),
+							panFinalY = this._opStartTranslate.y - (panCords.y / $ige._currentViewport.camera._scale.y);
 						
 						// Check if we have a limiter on the rectangle area
 						// that we should allow panning inside.

@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeTimeComponent', function (igeTime, IgeEventingClass) {
+appCore.module('IgeTimeComponent', function ($time, IgeEventingClass) {
 	var IgeTimeComponent = IgeEventingClass.extend({
 		classId: 'IgeTimeComponent',
 		componentId: 'time',
@@ -50,7 +50,7 @@ appCore.module('IgeTimeComponent', function (igeTime, IgeEventingClass) {
 		_update: function () {
 			// Get the ige tick delta and tell our timers / intervals that an update has occurred
 			var self = ige.time,
-				delta = igeTime._tickDelta,
+				delta = $time._tickDelta,
 				arr = self._timers,
 				arrCount = arr.length;
 			

@@ -395,7 +395,7 @@ appCore.module('IgeParticleEmitter', function (IgeUiEntity, IgeTween) {
 		 * @param ctx
 		 */
 		tick: function (ctx) {
-			this._currentDelta += igeTime._tickDelta;
+			this._currentDelta += $time._tickDelta;
 			
 			// Check if the emitter is mounted to anything and started, if not
 			// then don't bother creating particles!

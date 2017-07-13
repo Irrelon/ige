@@ -2,8 +2,8 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('igeTime', function () {
-	var IgeTime = function () {
+appCore.module('$time', function () {
+	var $time = function () {
 		this._tickStart = 0;
 		this._lastTick = 0;
 		this._tickTime = 'NA'; // The time the tick took to process
@@ -20,5 +20,5 @@ appCore.module('igeTime', function () {
 		this._currentTime = 0; // The current engine time
 	};
 	
-	return new IgeTime();
+	return new $time();
 });

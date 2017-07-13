@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeChatComponent', function (IgeEventingClass) {
+appCore.module('IgeChatComponent', function ($ige, IgeEventingClass) {
 	var IgeChatComponent = IgeEventingClass.extend({
 		classId: 'IgeChatComponent',
 		componentId: 'chat',
@@ -29,7 +29,7 @@ appCore.module('IgeChatComponent', function (IgeEventingClass) {
 			}
 			/* CEXCLUDE */
 			
-			if (ige.isClient) {
+			if ($ige.isClient) {
 				this.implement(IgeChatClient);
 				
 				// Define the chat system network command listeners

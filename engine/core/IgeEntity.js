@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d, IgeMatrix2d, IgeDummyCanvas, IgePoly2d, IgeRect) {
+appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoint2d, IgePoint3d, IgeMatrix2d, IgeDummyCanvas, IgePoly2d, IgeRect) {
 	/**
 	 * Creates an entity and handles the entity's life cycle and
 	 * all related entity actions / methods.
@@ -27,7 +27,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 			this._cell = 1;
 	
 			this._deathTime = undefined;
-			this._bornTime = igeTime._currentTime;
+			this._bornTime = $time._currentTime;
 	
 			this._translate = new IgePoint3d(0, 0, 0);
 			this._oldTranslate = new IgePoint3d(0, 0, 0);
@@ -130,7 +130,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				
 				if (val) {
 					// Create the off-screen canvas
-					if (ige.isClient) {
+					if ($ige.isClient) {
 						// Use a real canvas
 						this._cacheCanvas = document.createElement('canvas');
 					} else {
@@ -142,7 +142,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 					this._cacheDirty = true;
 					
 					// Set smoothing mode
-					var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
+					var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : $textures._globalSmoothing;
 					if (!smoothing) {
 						this._cacheCtx.imageSmoothingEnabled = false;
 						this._cacheCtx.mozImageSmoothingEnabled = false;
@@ -200,7 +200,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		 * @return {*}
 		 */
 		compositeCache: function (val) {
-			if (ige.isClient) {
+			if ($ige.isClient) {
 				if (val !== undefined) {
 					if (val) {
 						// Switch off normal caching
@@ -212,7 +212,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 						this._cacheDirty = true;
 						
 						// Set smoothing mode
-						var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
+						var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : $textures._globalSmoothing;
 						if (!smoothing) {
 							this._cacheCtx.imageSmoothingEnabled = false;
 							this._cacheCtx.mozImageSmoothingEnabled = false;
@@ -289,7 +289,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		 * center.
 		 */
 		mousePos: function (viewport) {
-			viewport = viewport || ige._currentViewport;
+			viewport = viewport || $ige._currentViewport;
 			if (viewport) {
 				var mp = viewport._mousePos.clone();
 				
@@ -315,7 +315,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		 * center.
 		 */
 		mousePosAbsolute: function (viewport) {
-			viewport = viewport || ige._currentViewport;
+			viewport = viewport || $ige._currentViewport;
 			if (viewport) {
 				var mp = viewport._mousePos.clone();
 				this._transformPoint(mp);
@@ -337,7 +337,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		 * center.
 		 */
 		mousePosWorld: function (viewport) {
-			viewport = viewport || ige._currentViewport;
+			viewport = viewport || $ige._currentViewport;
 			var mp = this.mousePos(viewport);
 			this.localToWorldPoint(mp, viewport);
 	
@@ -351,7 +351,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		 * @example #Point the entity at another entity
 		 *     entity.rotateToPoint(otherEntity.worldPosition());
 		 * @example #Point the entity at mouse
-		 *     entity.rotateToPoint(ige._currentViewport.mousePos());
+		 *     entity.rotateToPoint($ige._currentViewport.mousePos());
 		 * @example #Point the entity at an arbitrary point x, y
 		 *     entity.rotateToPoint(new IgePoint3d(x, y, 0));
 		 * @return {*}
@@ -699,11 +699,11 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		 */
 		lifeSpan: function (milliseconds, deathCallback) {
 			if (milliseconds !== undefined) {
-				this.deathTime(igeTime._currentTime + milliseconds, deathCallback);
+				this.deathTime($time._currentTime + milliseconds, deathCallback);
 				return this;
 			}
 	
-			return this.deathTime() - igeTime._currentTime;
+			return this.deathTime() - $time._currentTime;
 		},
 	
 		/**
@@ -981,7 +981,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		 * @param {Array} points The array of IgePoints to convert.
 		 */
 		localToWorld: function (points, viewport, inverse) {
-			viewport = viewport || ige._currentViewport;
+			viewport = viewport || $ige._currentViewport;
 			
 			if (this._adjustmentMatrix) {
 				// Apply the optional adjustment matrix
@@ -1003,7 +1003,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		 * @param {IgePoint3d} point The IgePoint3d to convert.
 		 */
 		localToWorldPoint: function (point, viewport) {
-			viewport = viewport || ige._currentViewport;
+			viewport = viewport || $ige._currentViewport;
 			this._worldMatrix.transform([point], this);
 		},
 		
@@ -1019,8 +1019,8 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		 */
 		screenPosition: function () {
 			return new IgePoint3d(
-				Math.floor(((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x) + ige._bounds2d.x2),
-				Math.floor(((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y) + ige._bounds2d.y2),
+				Math.floor(((this._worldMatrix.matrix[2] - $ige._currentCamera._translate.x) * $ige._currentCamera._scale.x) + ige._bounds2d.x2),
+				Math.floor(((this._worldMatrix.matrix[5] - $ige._currentCamera._translate.y) * $ige._currentCamera._scale.y) + ige._bounds2d.y2),
 				0
 			);
 		},
@@ -1565,7 +1565,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		 */
 		update: function (ctx, tickDelta) {
 			// Check if the entity should still exist
-			if (this._deathTime !== undefined && this._deathTime <= igeTime._tickStart) {
+			if (this._deathTime !== undefined && this._deathTime <= $time._tickStart) {
 				// Check if the deathCallBack was set
 				if (this._deathCallBack) {
 					this._deathCallBack.apply(this);
@@ -1576,7 +1576,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				this.destroy();
 			} else {
 				// Check that the entity has been born
-				if (this._bornTime === undefined || igeTime._currentTime >= this._bornTime) {
+				if (this._bornTime === undefined || $time._currentTime >= this._bornTime) {
 					// Remove the stream data cache
 					delete this._streamDataCache;
 		
@@ -1591,7 +1591,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		
 					if (this._timeStream.length) {
 						// Process any interpolation
-						this._processInterpolate(igeTime._tickStart - ige.network.stream._renderLatency);
+						this._processInterpolate($time._tickStart - ige.network.stream._renderLatency);
 					}
 		
 					// Check for changes to the transform values
@@ -1696,7 +1696,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		_processTriggerHitTests: function () {
 			var mp, mouseTriggerPoly;
 	
-			if (ige._currentViewport) {
+			if ($ige._currentViewport) {
 				if (!this._mouseAlwaysInside) {
 					mp = this.mousePosWorld();
 		
@@ -1818,16 +1818,16 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 						ctx.translate(-this._bounds2d.x2, -this._bounds2d.y2);
 						ctx.rect(0, 0, this._bounds2d.x, this._bounds2d.y);
 						if (this._backgroundPatternTrackCamera) {
-							ctx.translate(-ige._currentCamera._translate.x, -ige._currentCamera._translate.y);
-							ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
+							ctx.translate(-$ige._currentCamera._translate.x, -$ige._currentCamera._translate.y);
+							ctx.scale($ige._currentCamera._scale.x, $ige._currentCamera._scale.y);
 						}
 						ctx.fill();
-						igeTime._drawCount++;
+						$time._drawCount++;
 	
 						if (this._backgroundPatternIsoTile) {
 							ctx.translate(-Math.floor(this._backgroundPattern.image.width) / 2, -Math.floor(this._backgroundPattern.image.height / 2));
 							ctx.fill();
-							igeTime._drawCount++;
+							$time._drawCount++;
 						}
 	
 						ctx.restore();
@@ -1839,7 +1839,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				// Check if the entity is visible based upon its opacity
 				if (texture && texture._loaded) {
 					// Draw the entity image
-					texture.render(ctx, this, igeTime._tickDelta);
+					texture.render(ctx, this, $time._tickDelta);
 	
 					if (this._highlight) {
 						ctx.globalCompositeOperation = this._highlightToGlobalCompositeOperation(this._highlight);
@@ -1847,7 +1847,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 					}
 				}
 				
-				if (this._compositeCache && ige._currentViewport._drawCompositeBounds) {
+				if (this._compositeCache && $ige._currentViewport._drawCompositeBounds) {
 					//console.log('moo');
 					ctx.fillStyle = 'rgba(0, 0, 255, 0.3)';
 					ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x,	this._bounds2d.y);
@@ -1878,7 +1878,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				-this._bounds2d.x2, -this._bounds2d.y2
 			);
 			
-			if (ige._currentViewport._drawCompositeBounds) {
+			if ($ige._currentViewport._drawCompositeBounds) {
 				ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
 				ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._cacheCanvas.width,	this._cacheCanvas.height);
 				ctx.fillStyle = '#ffffff';
@@ -1886,7 +1886,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
 			}
 			
-			igeTime._drawCount++;
+			$time._drawCount++;
 	
 			if (this._highlight) {
 				ctx.globalCompositeOperation = this._highlightToGlobalCompositeOperation(this._highlight);
@@ -1895,7 +1895,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 					-this._bounds2d.x2, -this._bounds2d.y2
 				);
 				
-				igeTime._drawCount++;
+				$time._drawCount++;
 			}
 			ctx.restore();
 		},
@@ -3364,7 +3364,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				
 				case 'depth':
 						if (data !== undefined) {
-							if (ige.isClient) {
+							if ($ige.isClient) {
 								this.depth(parseInt(data));
 							}
 						} else {
@@ -3374,7 +3374,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 					
 				case 'layer':
 					if (data !== undefined) {
-						if (ige.isClient) {
+						if ($ige.isClient) {
 							this.layer(parseInt(data));
 						}
 					} else {
@@ -3384,7 +3384,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				
 				case 'bounds2d':
 					if (data !== undefined) {
-						if (ige.isClient) {
+						if ($ige.isClient) {
 							geom = data.split(',');
 							this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
 						}
@@ -3395,7 +3395,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				
 				case 'bounds3d':
 					if (data !== undefined) {
-						if (ige.isClient) {
+						if ($ige.isClient) {
 							geom = data.split(',');
 							this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 						}
@@ -3406,7 +3406,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				
 				case 'hidden':
 					if (data !== undefined) {
-						if (ige.isClient) {
+						if ($ige.isClient) {
 							if (data === 'true') {
 								this.hide();
 							} else {
@@ -3420,7 +3420,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				
 				case 'mount':
 					if (data !== undefined) {
-						if (ige.isClient) {
+						if ($ige.isClient) {
 							if (data) {
 								newParent = ige.$(data);
 								
@@ -3445,7 +3445,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				
 				case 'origin':
 					if (data !== undefined) {
-						if (ige.isClient) {
+						if ($ige.isClient) {
 							geom = data.split(',');
 							this.origin(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 						}
@@ -3456,7 +3456,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 	
 				case 'props':
 					if (data !== undefined) {
-						if (ige.isClient) {
+						if ($ige.isClient) {
 							props = JSON.parse(data);
 	
 							// Update properties that have been sent through
@@ -3508,7 +3508,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		 */
 		streamMode: function (val) {
 			if (val !== undefined) {
-				if (ige.isServer) {
+				if ($ige.isServer) {
 					this._streamMode = val;
 				}
 				return this;
@@ -3641,7 +3641,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 			if (this._streamMode === 1) {
 				// Check if we have a stream sync interval
 				if (this._streamSyncInterval) {
-					this._streamSyncDelta += igeTime._tickDelta;
+					this._streamSyncDelta += $time._tickDelta;
 	
 					if (this._streamSyncDelta < this._streamSyncInterval) {
 						// The stream sync interval is still higher than
@@ -3797,7 +3797,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 		 * @returns {*}
 		 */
 		streamForceUpdate: function () {
-			if (ige.isServer) {
+			if ($ige.isServer) {
 				var thisId = this.id();
 				
 				// Invalidate the stream client data lookup to ensure
@@ -3884,7 +3884,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 				i;
 	
 			// Send clients the stream destroy command for this entity
-			ige.network.send('_igeStreamDestroy', [igeTime._currentTime, thisId], clientId);
+			ige.network.send('_igeStreamDestroy', [$time._currentTime, thisId], clientId);
 			
 			ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
 			ige.network.stream._streamClientData[thisId] = ige.network.stream._streamClientData[thisId] || {};
@@ -3951,7 +3951,7 @@ appCore.module('IgeEntity', function (igeTime, IgeObject, IgePoint2d, IgePoint3d
 						// not that important compared to updated transformation data
 						if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
 							// Check if the section interval has been reached
-							this._streamSyncSectionDelta[sectionId] += igeTime._tickDelta;
+							this._streamSyncSectionDelta[sectionId] += $time._tickDelta;
 	
 							if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
 								// Get the section data for this section id

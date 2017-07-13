@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeStreamComponent', function (igeTime, IgeEventingClass) {
+appCore.module('IgeStreamComponent', function ($ige, $time, IgeEventingClass) {
 	/**
 	 * Adds stream capabilities to the network system.
 	 */
@@ -41,7 +41,7 @@ appCore.module('IgeStreamComponent', function (igeTime, IgeEventingClass) {
 			}
 			/* CEXCLUDE */
 			
-			if (ige.isClient) {
+			if ($ige.isClient) {
 				// Define the network stream command
 				this._entity.define('_igeStreamCreate', function () {
 					self._onStreamCreate.apply(self, arguments);
@@ -152,7 +152,7 @@ appCore.module('IgeStreamComponent', function (igeTime, IgeEventingClass) {
 				arr = this._queuedData,
 				arrIndex,
 				network = this._entity,
-				item, currentTime = igeTime._currentTime,
+				item, currentTime = $time._currentTime,
 				clientSentTimeData = {};
 			
 			// Send the stream data
@@ -248,7 +248,7 @@ appCore.module('IgeStreamComponent', function (igeTime, IgeEventingClass) {
 				// Calculate how much time we have left before the entity
 				// should be removed from the simulation given the render
 				// latency setting and the current time
-				var destroyDelta = ige.network.stream._renderLatency + (igeTime._currentTime - data[0]);
+				var destroyDelta = ige.network.stream._renderLatency + ($time._currentTime - data[0]);
 				
 				if (destroyDelta > 0) {
 					// Give the entity a lifespan to destroy it in x ms

@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeViewport', function (IgeEntity, IgePoint3d, IgeCamera, IgeUiStyleExtension, IgeUiPositionExtension, IgeRect) {
+appCore.module('IgeViewport', function ($ige, IgeEntity, IgePoint3d, IgeCamera, IgeUiStyleExtension, IgeUiPositionExtension, IgeRect) {
 	/**
 	 * Creates a new viewport.
 	 */
@@ -56,7 +56,7 @@ appCore.module('IgeViewport', function (IgeEntity, IgePoint3d, IgeCamera, IgeUiS
 		minimumVisibleArea: function (width, height) {
 			// Store the w/h we want to lock to
 			this._lockDimension = new IgePoint3d(width, height, 0);
-			if (ige.isClient) {
+			if ($ige.isClient) {
 				this._resizeEvent({});
 			}
 			
@@ -136,8 +136,8 @@ appCore.module('IgeViewport', function (IgeEntity, IgePoint3d, IgeCamera, IgeUiS
 				// Store the viewport camera in the main ige so that
 				// down the scenegraph we can choose to negate the camera
 				// transform effects
-				ige._currentCamera = this.camera;
-				ige._currentViewport = this;
+				$ige._currentCamera = this.camera;
+				$ige._currentViewport = this;
 				
 				this._scene._parent = this;
 				
@@ -159,8 +159,8 @@ appCore.module('IgeViewport', function (IgeEntity, IgePoint3d, IgeCamera, IgeUiS
 				// Store the viewport camera in the main ige so that
 				// down the scenegraph we can choose to negate the camera
 				// transform effects
-				ige._currentCamera = this.camera;
-				ige._currentViewport = this;
+				$ige._currentCamera = this.camera;
+				$ige._currentViewport = this;
 				
 				this._scene._parent = this;
 				

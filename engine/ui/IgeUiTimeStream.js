@@ -12,7 +12,7 @@ appCore.module('IgeUiTimeStream', function (IgeUiElement) {
 			// Draw timeline
 			var i, text, xAdjust,
 				arr, arrCount, arrItem,
-				renderTime = igeTime._tickStart - ige.network.stream._renderLatency,
+				renderTime = $time._tickStart - ige.network.stream._renderLatency,
 				deltaTime;
 			
 			IgeUiElement.prototype.tick.call(this, ctx);

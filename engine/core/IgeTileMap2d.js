@@ -534,7 +534,7 @@ appCore.module('IgeTileMap2d', function (IgeEntity, IgeTexture, IgeTileMap2dSmar
 		
 		_processTriggerHitTests: function () {
 			// This method overrides the one in IgeEntity
-			if (this._mouseEventsActive && ige._currentViewport) {
+			if (this._mouseEventsActive && $ige._currentViewport) {
 				if (!this._mouseAlwaysInside) {
 					var mouseTile = this.mouseToTile();
 					if (mouseTile.x >= 0 && mouseTile.y >= 0 && mouseTile.x < this._gridSize.x && mouseTile.y < this._gridSize.y) {
