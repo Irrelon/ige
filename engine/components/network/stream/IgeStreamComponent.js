@@ -208,7 +208,6 @@ appCore.module('IgeStreamComponent', function ($ige, $time, igeBase, IgeEventing
 			if (parent) {
 				// Check that the entity doesn't already exist
 				if (!$ige.engine.$(entityId)) {
-					debugger;
 					classConstructor = appCore.module(classId);
 					
 					if (classConstructor) {
