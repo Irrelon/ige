@@ -284,13 +284,14 @@ appCore.module('IgeStreamComponent', function ($ige, $time, igeBase, IgeEventing
 				entity,
 				sectionArr,
 				sectionDataArr = data.split($ige.engine.network.stream._sectionDesignator),
-				sectionDataCount = sectionDataArr.length,
+				sectionDataCount,
 				sectionIndex,
 				justCreated;
 			
 			// We know the first bit of data will always be the
 			// target entity's ID
 			entityId = sectionDataArr.shift();
+			sectionDataCount = sectionDataArr.length;
 			
 			// Check if the entity with this ID currently exists
 			entity = $ige.engine.$(entityId);
