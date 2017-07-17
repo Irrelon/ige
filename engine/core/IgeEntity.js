@@ -3264,12 +3264,17 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		 * chaining or the current value if no propVal argument is specified.
 		 */
 		streamProperty: function (propName, propVal) {
+			var stream = $ige.engine.network.stream;
+			
 			this._streamProperty = this._streamProperty || {};
-			//this._streamPropertyChange = this._streamPropertyChange || {};
+			stream._streamPropertyChange = stream._streamPropertyChange || {};
 	
 			if (propName !== undefined) {
 				if (propVal !== undefined) {
-					//this._streamPropertyChange[propName] = this._streamProperty[propName] !== propVal;
+					if (this._streamProperty[propName] !== propVal) {
+						stream._streamPropertyChange[propName] = true;
+					}
+					
 					this._streamProperty[propName] = propVal;
 	
 					return this;
@@ -3293,11 +3298,17 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		 * from the server to the client for this entity.
 		 * @param {Boolean=} bypassTimeStream If true, will assign transform
 		 * directly to entity instead of adding the values to the time stream.
+		 * @param {Boolean=} bypassChangeDetection If set to true, bypasses
+		 * any change detection on stream data (useful especially when we are
+		 * sending stream data to a client for the first time even if the data
+		 * has existed on the server for a while - ensuring that even unchanged
+		 * data makes it to the new client).
 		 * @return {*} "this" when a data argument is passed to allow method
 		 * chaining or the current value if no data argument is specified.
 		 */
-		streamSectionData: function (sectionId, data, bypassTimeStream) {
-			var geom,
+		streamSectionData: function (sectionId, data, bypassTimeStream, bypassChangeDetection) {
+			var stream,
+				geom,
 				dataArr,
 				newData,
 				changed,
@@ -3468,6 +3479,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 									changed = false;
 									if (props.hasOwnProperty(i)) {
 										if (this._streamProperty[i] !== props[i]) {
+											console.log('Updated stream property ' + i + ' to', props[i]);
 											changed = true;
 										}
 										this._streamProperty[i] = props[i];
@@ -3478,14 +3490,14 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 							}
 						}
 					} else {
+						stream = $ige.engine.network.stream;
 						newData = {};
 	
 						for (i in this._streamProperty) {
 							if (this._streamProperty.hasOwnProperty(i)) {
-								//if (this._streamPropertyChange[i]) {
+								if (stream._streamPropertyChange[i] || bypassChangeDetection) {
 									newData[i] = this._streamProperty[i];
-									//this._streamPropertyChange[i] = false;
-								//}
+								}
 							}
 						}
 	
@@ -3779,9 +3791,6 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 					
 					if (stream._streamClientData[thisId][clientId] !== data) {
 						filteredArr.push(clientId);
-	
-						// Store the new data for later comparison
-						stream._streamClientData[thisId][clientId] = data;
 					}
 				}
 			}
@@ -3926,77 +3935,77 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 			// Check if we already have a cached version of the streamData
 			if (this._streamDataCache) {
 				return this._streamDataCache;
-			} else {
-				// Let's generate our stream data
-				var streamData = '',
-					sectionDataString = '',
-					sectionArr = this._streamSections,
-					sectionCount = sectionArr.length,
-					sectionData,
-					sectionIndex,
-					sectionId;
-	
-				// Add the entity id
-				streamData += this.id();
-	
-				// Only send further data if the entity is still "alive"
-				if (this._alive) {
-					// Now loop the data sections array and compile the rest of the
-					// data string from the data section return data
-					for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
-						sectionData = '';
-						sectionId = sectionArr[sectionIndex];
-						
-						// Stream section sync intervals allow individual stream sections
-						// to be streamed at different (usually longer) intervals than other
-						// sections so you could for instance reduce the number of updates
-						// a particular section sends out in a second because the data is
-						// not that important compared to updated transformation data
-						if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
-							// Check if the section interval has been reached
-							this._streamSyncSectionDelta[sectionId] += $time._tickDelta;
-	
-							if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
-								// Get the section data for this section id
-								sectionData = this.streamSectionData(sectionId);
-	
-								// Reset the section delta
-								this._streamSyncSectionDelta[sectionId] = 0;
-							}
-						} else {
+			}
+			
+			// Let's generate our stream data
+			var streamData = '',
+				sectionDataString = '',
+				sectionArr = this._streamSections,
+				sectionCount = sectionArr.length,
+				sectionData,
+				sectionIndex,
+				sectionId;
+
+			// Add the entity id
+			streamData += this.id();
+
+			// Only send further data if the entity is still "alive"
+			if (this._alive) {
+				// Now loop the data sections array and compile the rest of the
+				// data string from the data section return data
+				for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
+					sectionData = '';
+					sectionId = sectionArr[sectionIndex];
+					
+					// Stream section sync intervals allow individual stream sections
+					// to be streamed at different (usually longer) intervals than other
+					// sections so you could for instance reduce the number of updates
+					// a particular section sends out in a second because the data is
+					// not that important compared to updated transformation data
+					if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
+						// Check if the section interval has been reached
+						this._streamSyncSectionDelta[sectionId] += $time._tickDelta;
+
+						if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
 							// Get the section data for this section id
 							sectionData = this.streamSectionData(sectionId);
+
+							// Reset the section delta
+							this._streamSyncSectionDelta[sectionId] = 0;
 						}
-	
-						// Add the section start designator character. We do this
-						// regardless of if there is actually any section data because
-						// we want to be able to identify sections in a serial fashion
-						// on receipt of the data string on the client
-						sectionDataString += $ige.engine.network.stream._sectionDesignator;
-	
-						// Check if we were returned any data
-						if (sectionData !== undefined) {
-							// Add the data to the section string
-							sectionDataString += sectionData;
-						}
+					} else {
+						// Get the section data for this section id
+						sectionData = this.streamSectionData(sectionId);
 					}
-	
-					// Add any custom data to the stream string at this point
-					if (sectionDataString) {
-						streamData += sectionDataString;
+
+					// Add the section start designator character. We do this
+					// regardless of if there is actually any section data because
+					// we want to be able to identify sections in a serial fashion
+					// on receipt of the data string on the client
+					sectionDataString += $ige.engine.network.stream._sectionDesignator;
+
+					// Check if we were returned any data
+					if (sectionData !== undefined) {
+						// Add the data to the section string
+						sectionDataString += sectionData;
 					}
-	
-					// Remove any .00 from the string since we don't need that data
-					// TODO: What about if a property is a string with something.00 and it should be kept?
-					streamData = streamData.replace(this._floatRemoveRegExp, ',');
 				}
-	
-				// Store the data in cache in case we are asked for it again this tick
-				// the update() method of the IgeEntity class clears this every tick
-				this._streamDataCache = streamData;
-	
-				return streamData;
+
+				// Add any custom data to the stream string at this point
+				if (sectionDataString) {
+					streamData += sectionDataString;
+				}
+
+				// Remove any .00 from the string since we don't need that data
+				// TODO: What about if a property is a string with something.00 and it should be kept?
+				streamData = streamData.replace(this._floatRemoveRegExp, ',');
 			}
+
+			// Store the data in cache in case we are asked for it again this tick
+			// the update() method of the IgeEntity class clears this every tick
+			this._streamDataCache = streamData;
+			
+			return streamData;
 		},
 		/* CEXCLUDE */
 	

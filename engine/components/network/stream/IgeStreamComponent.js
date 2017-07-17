@@ -150,15 +150,16 @@ appCore.module('IgeStreamComponent', function ($ige, $time, igeBase, IgeEventing
 				ct,
 				dt,
 				arr = this._queuedData,
-				arrIndex,
+				entityId,
 				network = this._network,
+				stream = network.stream,
 				item, currentTime = $time._currentTime,
 				clientSentTimeData = {};
 			
 			// Send the stream data
-			for (arrIndex in arr) {
-				if (arr.hasOwnProperty(arrIndex)) {
-					item = arr[arrIndex];
+			for (entityId in arr) {
+				if (arr.hasOwnProperty(entityId)) {
+					item = arr[entityId];
 					
 					// Check if we've already sent this client the starting
 					// time of the stream data
@@ -167,9 +168,14 @@ appCore.module('IgeStreamComponent', function ($ige, $time, igeBase, IgeEventing
 						network.send('_igeStreamTime', currentTime, item[1]);
 						clientSentTimeData[item[1]] = true;
 					}
+					
 					network.send('_igeStreamData', item[0], item[1]);
 					
-					delete arr[arrIndex];
+					// Store the new data for later comparison
+					stream._streamClientData[entityId][item[1]] = item[0];
+					delete stream._streamPropertyChange;
+					
+					delete arr[entityId];
 				}
 				
 				ct = new Date().getTime();
@@ -221,7 +227,7 @@ appCore.module('IgeStreamComponent', function ($ige, $time, igeBase, IgeEventing
 								.id(entityId)
 								.mount(parent);
 							
-							entity.streamSectionData('transform', transformData, true);
+							entity.streamSectionData('transform', transformData, true, true);
 							
 							// Set the just created flag which will stop the renderer
 							// from handling this entity until after the first stream
