@@ -1562,6 +1562,9 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 		 * once. It is therefore the perfect place to put code that will control your
 		 * entity's motion, AI etc.
 		 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
+		 * @param {Number} tickDelta The diffence in milliseconds between now and the
+		 * last time update was called. Useful for calculating time-based effects on
+		 * the entity such as how far it moved etc.
 		 */
 		update: function (ctx, tickDelta) {
 			// Check if the entity should still exist
