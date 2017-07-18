@@ -3479,7 +3479,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 									changed = false;
 									if (props.hasOwnProperty(i)) {
 										if (this._streamProperty[i] !== props[i]) {
-											console.log('Updated stream property ' + i + ' to', props[i]);
+											//console.log('Updated stream property ' + i + ' to', props[i]);
 											changed = true;
 										}
 										this._streamProperty[i] = props[i];
