@@ -3495,7 +3495,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 	
 						for (i in this._streamProperty) {
 							if (this._streamProperty.hasOwnProperty(i)) {
-								if (stream._streamPropertyChange[i] || bypassChangeDetection) {
+								if ((stream._streamPropertyChange && stream._streamPropertyChange[i]) || bypassChangeDetection) {
 									newData[i] = this._streamProperty[i];
 								}
 							}
