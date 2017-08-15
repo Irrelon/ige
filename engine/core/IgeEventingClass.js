@@ -24,8 +24,8 @@ appCore.module('IgeEventingClass', function (IgeClass) {
 		 *     // Set a listener to listen for the data (multiple values emitted
 		 *     // from an event are passed as function arguments)
 		 *     myEntity.on('hello', function (arg1, arg2) {
-	 *         console.log(arg1, arg2);
-	 *     }
+	 	 *         console.log(arg1, arg2);
+	 	 *     }
 		 *
 		 *     // Emit the event named "hello"
 		 *     myEntity.emit('hello', ['data1', 'data2']);
@@ -198,8 +198,8 @@ appCore.module('IgeEventingClass', function (IgeClass) {
 		 *     // Set a listener to listen for the data (multiple values emitted
 		 *     // from an event are passed as function arguments)
 		 *     myEntity.on('hello', function (arg1, arg2) {
-	 *         console.log(arg1, arg2);
-	 *     }
+	 	 *         console.log(arg1, arg2);
+		 *     }
 		 *
 		 *     // Emit the event named "hello"
 		 *     myEntity.emit('hello', ['data1', 'data2']);
