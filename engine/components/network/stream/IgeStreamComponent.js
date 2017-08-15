@@ -174,7 +174,6 @@ appCore.module('IgeStreamComponent', function ($ige, $time, igeBase, IgeEventing
 					// Store the new data for later comparison
 					stream._streamClientData[entityId][item[1]] = item[0];
 					delete stream._streamPropertyChange;
-					
 					delete arr[entityId];
 				}
 				
