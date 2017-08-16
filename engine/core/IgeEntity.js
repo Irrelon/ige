@@ -3268,11 +3268,12 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 			
 			this._streamProperty = this._streamProperty || {};
 			stream._streamPropertyChange = stream._streamPropertyChange || {};
+			stream._streamPropertyChange[this._id] = stream._streamPropertyChange[this._id] || {};
 	
 			if (propName !== undefined) {
 				if (propVal !== undefined) {
 					if (this._streamProperty[propName] !== propVal) {
-						stream._streamPropertyChange[propName] = true;
+						stream._streamPropertyChange[this._id][propName] = true;
 					}
 					
 					this._streamProperty[propName] = propVal;
@@ -3495,7 +3496,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 	
 						for (i in this._streamProperty) {
 							if (this._streamProperty.hasOwnProperty(i)) {
-								if ((stream._streamPropertyChange && stream._streamPropertyChange[i]) || bypassChangeDetection) {
+								if ((stream._streamPropertyChange && stream._streamPropertyChange[this._id] && stream._streamPropertyChange[this._id][i]) || bypassChangeDetection) {
 									newData[i] = this._streamProperty[i];
 								}
 							}
