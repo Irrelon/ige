@@ -175,14 +175,14 @@ appCore.module('IgeStreamComponent', function ($ige, $time, igeBase, IgeEventing
 					stream._streamClientData[entityId][item[1]] = item[0];
 					delete stream._streamPropertyChange;
 					delete arr[entityId];
-				}
-				
-				ct = new Date().getTime();
-				dt = ct - st;
-				
-				if (dt > this._streamInterval) {
-					console.log('WARNING, Stream send is taking too long: ' + dt + 'ms');
-					break;
+					
+					ct = new Date().getTime();
+					dt = ct - st;
+					
+					if (dt > this._streamInterval) {
+						console.log('WARNING, Stream send is taking too long: ' + dt + 'ms');
+						break;
+					}
 				}
 			}
 		},
