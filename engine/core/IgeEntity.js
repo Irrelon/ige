@@ -3912,8 +3912,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 	
 				for (i in arr) {
 					if (arr.hasOwnProperty(i)) {
-						$ige.engine.network.stream._streamClientCreated[thisId][i] = false;
-						$ige.engine.network.stream._streamClientData[thisId][i] = undefined;
+						$ige.engine.network.stream._streamClientCreated[thisId] = {};
 					}
 				}
 			}
