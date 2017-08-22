@@ -112,6 +112,7 @@ appCore.module('IgeEngine', function (
 				this._globalScale = new IgePoint3d(1, 1, 1);
 				this._graphInstances = []; // Holds an array of instances of graph classes
 				this._spawnQueue = []; // Holds an array of entities that are yet to be born
+				this._minimumDrawRatio = 1; // Determines what the minimum acceptable pixel draw ratio is for the canvas
 				
 				// Set the context to a dummy context to start
 				// with in case we are in "headless" mode and
@@ -864,6 +865,12 @@ appCore.module('IgeEngine', function (
 				return this._autoSize;
 			},
 			
+			/**
+			 * Set to true if you want the canvas to automatically scale rendering for
+			 * high definition screens (and screens with pixel ratios other than 1).
+			 * @param {Boolean} val True or false. Defaults to true.
+			 * @returns {*}
+			 */
 			pixelRatioScaling: function (val) {
 				if (val !== undefined) {
 					this._pixelRatioScaling = val;
@@ -871,6 +878,21 @@ appCore.module('IgeEngine', function (
 				}
 				
 				return this._pixelRatioScaling;
+			},
+			
+			/**
+			 * Sets the minimum draw ratio (pixels) that the canvas should accept.
+			 * Defaults to 1 so that lower ratios don't look crap.
+			 * @param {Number} val Your minimum ratio.
+			 * @returns {*}
+			 */
+			minimumDrawRatio: function (val) {
+				if (val !== undefined) {
+					this._minimumDrawRatio = val;
+					return this;
+				}
+				
+				return this._minimumDrawRatio;
 			},
 			
 			/**
@@ -908,7 +930,10 @@ appCore.module('IgeEngine', function (
 				if ($ige.isClient) {
 					if (!this._canvas) {
 						this._createdFrontBuffer = true;
-						this._pixelRatioScaling = !dontScale;
+						
+						if (this._pixelRatioScaling === undefined) {
+							this._pixelRatioScaling = !dontScale;
+						}
 						
 						this._frontBufferSetup(autoSize, dontScale);
 					}
@@ -952,6 +977,9 @@ appCore.module('IgeEngine', function (
 								this._ctx.backingStorePixelRatio || 1;
 							
 							this._deviceFinalDrawRatio = this._devicePixelRatio / this._backingStoreRatio;
+							if (this._deviceFinalDrawRatio < this._minimumDrawRatio) {
+								this._deviceFinalDrawRatio = this._minimumDrawRatio;
+							}
 						} else {
 							// No auto-scaling
 							this._devicePixelRatio = 1;
