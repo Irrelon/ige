@@ -1,6 +1,8 @@
+"use strict";
+
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeUiLabel', function (IgeUiElement) {
+appCore.module('IgeUiLabel', function (IgeUiElement, IgeFontEntity) {
 	/**
 	 * Provides a UI label entity. Basic on-screen text label.
 	 */
@@ -13,10 +15,7 @@ appCore.module('IgeUiLabel', function (IgeUiElement) {
 		init: function () {
 			IgeUiElement.prototype.init.call(this);
 			
-			var self = this;
-			
 			this._value = '';
-			
 			this._fontEntity = new IgeFontEntity()
 				.left(0)
 				.middle(0)
@@ -95,7 +94,7 @@ appCore.module('IgeUiLabel', function (IgeUiElement) {
 							this._fontEntity.text(this._value);
 						} else {
 							// Assign a mask value instead
-							this._fontEntity.text(new Array(this._value.length + 1).join(this._mask))
+							this._fontEntity.text(new Array(this._value.length + 1).join(this._mask));
 						}
 						this._fontEntity.color(this._color);
 					}
