@@ -190,14 +190,14 @@ appCore.module('IgeUiElement', function ($ige, IgeUiEntity) {
 		 * @example #Apply a background color
 		 *     var elem = new IgeUiElement()
 		 *         .applyStyle({
-	 *             'backgroundColor': '#ffffff' // Set background color to white
-	 *         });
+	 	 *             'backgroundColor': '#ffffff' // Set background color to white
+	 	 *         });
 		 *
 		 * @example #Apply padding with multiple arguments
 		 *     var elem = new IgeUiElement()
 		 *         .applyStyle({
-	 *             'padding': [10, 10, 10, 10] // Set padding using multiple values
-	 *         });
+	  	 *             'padding': [10, 10, 10, 10] // Set padding using multiple values
+	 	 *         });
 		 *
 		 * @param {Object} styleData The style object to apply. This object should
 		 * contain key/value pairs where the key matches a method name and the value
