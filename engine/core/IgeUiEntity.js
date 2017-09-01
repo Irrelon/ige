@@ -178,10 +178,6 @@ appCore.module('IgeUiEntity', function ($ige, IgeEntity, IgeUiStyleExtension, Ig
 				ctx.lineWidth = this._borderWidth;
 				ctx.strokeRect(left, top, width, height);
 			} else {
-				var startNewStroke = function () {
-					ctx.stroke();
-					ctx.beginPath();
-				};
 				rad = Math.PI / 180;
 				
 				ctx.beginPath();
@@ -205,8 +201,11 @@ appCore.module('IgeUiEntity', function ($ige, IgeEntity, IgeUiStyleExtension, Ig
 					}
 				}
 				
-				if (!this._borderRightWidth || this._borderTopColor != this._borderRightColor || this._borderTopWidth != this._borderRightWidth)
-					startNewStroke();
+				if (!this._borderRightWidth || this._borderTopColor != this._borderRightColor || this._borderTopWidth != this._borderRightWidth) {
+					ctx.stroke();
+					ctx.beginPath();
+				}
+				
 				if (this._borderRightWidth) {
 					// Top-right corner bottom-half
 					ctx.strokeStyle = this._borderRightColor;
@@ -226,8 +225,11 @@ appCore.module('IgeUiEntity', function ($ige, IgeEntity, IgeUiStyleExtension, Ig
 					}
 				}
 				
-				if (!this._borderBottomWidth || this._borderRightColor != this._borderBottomColor || this._borderRightWidth != this._borderBottomWidth)
-					startNewStroke();
+				if (!this._borderBottomWidth || this._borderRightColor != this._borderBottomColor || this._borderRightWidth != this._borderBottomWidth) {
+					ctx.stroke();
+					ctx.beginPath();
+				}
+				
 				if (this._borderBottomWidth) {
 					// Bottom-right corner bottom-half
 					ctx.strokeStyle = this._borderBottomColor;
@@ -247,8 +249,11 @@ appCore.module('IgeUiEntity', function ($ige, IgeEntity, IgeUiStyleExtension, Ig
 					}
 				}
 				
-				if (!this._borderLeftWidth || this._borderBottomColor != this._borderLeftColor || this._borderBottomWidth != this._borderLeftWidth)
-					startNewStroke();
+				if (!this._borderLeftWidth || this._borderBottomColor != this._borderLeftColor || this._borderBottomWidth != this._borderLeftWidth) {
+					ctx.stroke();
+					ctx.beginPath();
+				}
+				
 				if (this._borderLeftWidth) {
 					// Bottom-left corner top-half
 					ctx.strokeStyle = this._borderLeftColor;
