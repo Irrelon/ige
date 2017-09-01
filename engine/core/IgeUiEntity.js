@@ -166,11 +166,14 @@ appCore.module('IgeUiEntity', function ($ige, IgeEntity, IgeUiStyleExtension, Ig
 				height = geom.y - 1;
 			
 			// Check for early exit if we are rendering a rectangle
-			if (!this._borderTopRightRadius && !this._borderBottomRightRadius && !this._borderBottomLeftRadius && !this._borderTopLeftRadius
-				&& this._borderLeftWidth === this._borderWidth
-				&& this._borderTopWidth === this._borderWidth
-				&& this._borderRightWidth === this._borderWidth
-				&& this._borderBottomWidth === this._borderWidth) {
+			if (!this._borderTopRightRadius &&
+				!this._borderBottomRightRadius &&
+				!this._borderBottomLeftRadius &&
+				!this._borderTopLeftRadius &&
+				this._borderLeftWidth === this._borderWidth &&
+				this._borderTopWidth === this._borderWidth &&
+				this._borderRightWidth === this._borderWidth &&
+				this._borderBottomWidth === this._borderWidth) {
 				ctx.strokeStyle = this._borderColor;
 				ctx.lineWidth = this._borderWidth;
 				ctx.strokeRect(left, top, width, height);
