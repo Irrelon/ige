@@ -201,7 +201,7 @@ appCore.module('IgeUiEntity', function ($ige, IgeEntity, IgeUiStyleExtension, Ig
 					}
 				}
 				
-				if (!this._borderRightWidth || this._borderTopColor != this._borderRightColor || this._borderTopWidth != this._borderRightWidth) {
+				if (!this._borderRightWidth || this._borderTopColor !== this._borderRightColor || this._borderTopWidth !== this._borderRightWidth) {
 					ctx.stroke();
 					ctx.beginPath();
 				}
@@ -225,7 +225,7 @@ appCore.module('IgeUiEntity', function ($ige, IgeEntity, IgeUiStyleExtension, Ig
 					}
 				}
 				
-				if (!this._borderBottomWidth || this._borderRightColor != this._borderBottomColor || this._borderRightWidth != this._borderBottomWidth) {
+				if (!this._borderBottomWidth || this._borderRightColor !== this._borderBottomColor || this._borderRightWidth !== this._borderBottomWidth) {
 					ctx.stroke();
 					ctx.beginPath();
 				}
@@ -249,7 +249,7 @@ appCore.module('IgeUiEntity', function ($ige, IgeEntity, IgeUiStyleExtension, Ig
 					}
 				}
 				
-				if (!this._borderLeftWidth || this._borderBottomColor != this._borderLeftColor || this._borderBottomWidth != this._borderLeftWidth) {
+				if (!this._borderLeftWidth || this._borderBottomColor !== this._borderLeftColor || this._borderBottomWidth !== this._borderLeftWidth) {
 					ctx.stroke();
 					ctx.beginPath();
 				}
@@ -349,16 +349,14 @@ appCore.module('IgeUiEntity', function ($ige, IgeEntity, IgeUiStyleExtension, Ig
 		 * @private
 		 */
 		_resizeEvent: function (event) {
-			
 			if (this._updateUiPosition) {
 				this._updateUiPosition();
-			} else {
-				debugger;
 			}
 			
 			if (this._updateStyle) {
 				this._updateStyle();
 			}
+			
 			IgeEntity.prototype._resizeEvent.call(this, event);
 		}
 	});
