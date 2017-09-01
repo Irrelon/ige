@@ -1,3 +1,5 @@
+"use strict";
+
 var appCore = require('irrelon-appcore');
 
 appCore.module('IgeUiMenu', function (IgeUiElement, IgeUiMenuItem) {
