@@ -21,6 +21,7 @@ appCore.module('IgeUiLabel', function (IgeUiElement, IgeFontEntity) {
 				.middle(0)
 				.textAlignX(0)
 				.textAlignY(0)
+				.textLineSpacing(10)
 				.mount(this);
 			
 			// Set defaults
@@ -29,6 +30,26 @@ appCore.module('IgeUiLabel', function (IgeUiElement, IgeFontEntity) {
 			this.allowActive(false);
 			this.allowFocus(false);
 			this.allowHover(false);
+		},
+		
+		textAlignX: function () {
+			this._fontEntity.textAlignX.apply(this._fontEntity, arguments);
+			return this;
+		},
+		
+		textAlignY: function () {
+			this._fontEntity.textAlignY.apply(this._fontEntity, arguments);
+			return this;
+		},
+		
+		textLineSpacing: function () {
+			this._fontEntity.textLineSpacing.apply(this._fontEntity, arguments);
+			return this;
+		},
+		
+		autoWrap: function () {
+			this._fontEntity.autoWrap.apply(this._fontEntity, arguments);
+			return this;
 		},
 		
 		/**
