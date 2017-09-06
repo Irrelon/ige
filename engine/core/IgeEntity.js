@@ -3203,6 +3203,19 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 			
 			return this._disableInterpolation;
 		},
+		
+		/**
+		 * Calculates the distance to the passed entity from this one.
+		 * @param {IgeEntity} entity The entity to calculate distance
+		 * to.
+		 * @returns {Number} Distance.
+		 */
+		distanceTo: function (entity) {
+			var a = this._translate.x - entity._translate.x,
+				b = this._translate.y - entity._translate.y;
+			
+			return Math.sqrt(a * a + b * b);
+		},
 	
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// STREAM
