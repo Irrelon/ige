@@ -1,6 +1,6 @@
 {
   "name": "ige",
-  "version": "1.6.0",
+  "version": "2.0.0",
   "description": "HTML5 2D and isometric scenegraph-based game engine written entirely in JavaScript",
   "main": "./index.js",
   "browser": {

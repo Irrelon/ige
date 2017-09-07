@@ -16,7 +16,7 @@ appCore.module('igeBase', function () {
 		// For example, to tag version 1.1.2 on 25th April 2013
 		// as the third revision of the day:
 		// v1.1.2@2013-04-25.003
-		this._version = 'v2.0.0@2017-07-10.001';
+		this._version = 'v2.0.0@2017-09-07.002';
 		
 		// Define the global storage object for classes
 		this.igeClassStore = {};
