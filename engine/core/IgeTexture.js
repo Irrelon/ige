@@ -604,11 +604,16 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 				// TODO: Does this cause a costly context change? If so maybe we set a global value to keep
 				// TODO: track of the value and evaluate first before changing?
 				if (!this._smoothing) {
-					$ige.engine._ctx.imageSmoothingEnabled = false;
-					$ige.engine._ctx.mozImageSmoothingEnabled = false;
+					// Added if() here to try to mitigate above TODO
+					if ($ige.engine._ctx.imageSmoothingEnabled) {
+						$ige.engine._ctx.imageSmoothingEnabled = false;
+						$ige.engine._ctx.mozImageSmoothingEnabled = false;
+					}
 				} else {
-					$ige.engine._ctx.imageSmoothingEnabled = true;
-					$ige.engine._ctx.mozImageSmoothingEnabled = true;
+					if (!$ige.engine._ctx.imageSmoothingEnabled) {
+						$ige.engine._ctx.imageSmoothingEnabled = true;
+						$ige.engine._ctx.mozImageSmoothingEnabled = true;
+					}
 				}
 	
 				if (this._mode === 0) {
