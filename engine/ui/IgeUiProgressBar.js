@@ -48,6 +48,17 @@ appCore.module('IgeUiProgressBar', function (IgeUiElement) {
 		},
 		
 		barText: function (pre, post, color, percent) {
+			if (typeof post === 'function') {
+				this._barText = {
+					color: pre,
+					func: post,
+					pre: this._barText.pre,
+					post: this._barText.post
+				};
+				
+				return this;
+			}
+			
 			if (pre !== undefined && post !== undefined && color !== undefined) {
 				this._barText = {
 					pre: pre,
@@ -55,6 +66,7 @@ appCore.module('IgeUiProgressBar', function (IgeUiElement) {
 					color: color,
 					percent: percent !== undefined ? percent : false
 				};
+				
 				return this;
 			}
 			
@@ -154,13 +166,20 @@ appCore.module('IgeUiProgressBar', function (IgeUiElement) {
 			}
 			
 			// Draw bar text centered
-			if (this._barText && (this._barText.pre || this._barText.post)) {
-				if (this._barText.percent) {
-					valText = String(Math.floor((100 / max) * progress));
-				} else {
-					valText = String(Math.floor(progress));
+			if (this._barText) {
+				if (this._barText.func) {
+					// Custom formatting function
+					valText = this._barText.func(progress, max);
+				} else if (this._barText.pre || this._barText.post) {
+					if (this._barText.percent) {
+						valText = String(Math.floor((100 / max) * progress));
+					} else {
+						valText = String(Math.floor(progress));
+					}
 				}
-				
+			}
+			
+			if (valText) {
 				ctx.textAlign = 'center';
 				ctx.textBaseline = 'middle';
 				
