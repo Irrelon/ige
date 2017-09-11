@@ -1150,7 +1150,7 @@ appCore.module('IgeEngine', function (
 			 * @return {IgePoint3d}
 			 */
 			mousePos: function () {
-				return $ige._mousePos.clone();
+				return this._mousePos.clone();
 			},
 			
 			/**
