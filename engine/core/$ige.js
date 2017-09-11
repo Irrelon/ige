@@ -178,7 +178,7 @@ appCore.module('$ige', function () {
 			}
 			
 			if (!definition.controller) {
-				self.log('$ige.engine._routeAdd() encounterd a route that has no controller specified: ' + thisFullPath, 'error');
+				self.log('$ige.engine._routeAdd() encountered a route that has no controller specified: ' + thisFullPath, 'error');
 			}
 			
 			routeData = {
