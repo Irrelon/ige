@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiToolBox', function (IgeEventingClass) {
+appCore.module('UiToolBox', function ($ige, IgeEventingClass, UiToolBox_ToolCreate, UiToolBox_ToolSelect, UiToolBox_ToolPan, UiToolBox_ToolTranslate) {
 	var UiToolBox = IgeEventingClass.extend({
 		classId: 'UiToolBox',
 		
@@ -8,24 +8,12 @@ appCore.module('UiToolBox', function (IgeEventingClass) {
 			var self = this;
 			
 			this.tools = {};
+			self.tools.UiToolBox_ToolCreate = UiToolBox_ToolCreate();
+			self.tools.UiToolBox_ToolSelect = UiToolBox_ToolSelect();
+			self.tools.UiToolBox_ToolPan = UiToolBox_ToolPan();
+			self.tools.UiToolBox_ToolTranslate = UiToolBox_ToolTranslate();
 			
-			// Load tool scripts
-			$ige.engine.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolCreate.js', function () {
-				self.tools['UiToolBox_ToolCreate'] = $ige.engine.newClassInstance('UiToolBox_ToolCreate');
-			});
-			
-			$ige.engine.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolSelect.js', function () {
-				self.tools['UiToolBox_ToolSelect'] = $ige.engine.newClassInstance('UiToolBox_ToolSelect');
-				self.select('toolSelect');
-			});
-			
-			$ige.engine.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolPan.js', function () {
-				self.tools['UiToolBox_ToolSelect'] = $ige.engine.newClassInstance('UiToolBox_ToolSelect');
-			});
-			
-			$ige.engine.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolTranslate.js', function () {
-				self.tools['UiToolBox_ToolTranslate'] = $ige.engine.newClassInstance('UiToolBox_ToolTranslate');
-			});
+			self.select('toolSelect');
 			
 			// Load the toolbox html into the editor DOM
 			$ige.engine.editor.loadHtml(igeRoot + 'components/editor/ui/toolbox/toolbox.html', function (html) {

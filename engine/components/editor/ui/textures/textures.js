@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiTextures', function (IgeEventingClass) {
+appCore.module('UiTextures', function ($ige, IgeEventingClass) {
 	var UiTextures = IgeEventingClass.extend({
 		classId: 'UiTextures',
 		

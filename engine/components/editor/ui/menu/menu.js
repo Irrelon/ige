@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiMenu', function (IgeEventingClass) {
+appCore.module('UiMenu', function ($ige, IgeEventingClass) {
 	var UiMenu = IgeEventingClass.extend({
 		classId: 'UiMenu',
 		

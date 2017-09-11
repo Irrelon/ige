@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiTextureEditor', function (IgeEventingClass) {
+appCore.module('UiTextureEditor', function ($ige, IgeEventingClass) {
 	var UiTextureEditor = IgeEventingClass.extend({
 		classId: 'UiTextureEditor',
 		
@@ -19,7 +19,7 @@ appCore.module('UiTextureEditor', function (IgeEventingClass) {
 				id: 'insertDialog',
 				icon: 'none',
 				text: 'Insert Object...',
-				action: "$ige.engine.editor.ui.insert.show();"
+				action: "ige.editor.ui.insert.show();"
 			});
 		},
 		

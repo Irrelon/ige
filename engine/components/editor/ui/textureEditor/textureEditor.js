@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiTextureEditor', function (IgeEventingClass) {
+appCore.module('UiTextureEditor', function ($ige, IgeEventingClass) {
 	var UiTextureEditor = IgeEventingClass.extend({
 		classId: 'UiTextureEditor',
 		
@@ -19,7 +19,7 @@ appCore.module('UiTextureEditor', function (IgeEventingClass) {
 				id: 'textureEditor',
 				icon: 'none',
 				text: 'Texture Editor...',
-				action: "$ige.engine.editor.ui.textureEditor.show();"
+				action: "ige.editor.ui.textureEditor.show();"
 			});
 		},
 		

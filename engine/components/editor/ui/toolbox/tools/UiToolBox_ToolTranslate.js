@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiToolBox_ToolTranslate', function (IgeEventingClass, IgePoint3d) {
+appCore.module('UiToolBox_ToolTranslate', function ($ige, IgeEventingClass, IgePoint3d) {
 	var UiToolBox_ToolTranslate = IgeEventingClass.extend({
 		classId: 'UiToolBox_ToolTranslate',
 		

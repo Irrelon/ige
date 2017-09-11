@@ -142,6 +142,10 @@ appCore.module('IgeEditorComponent', function ($ige, $time, IgeEventingClass, Ig
 						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/textures/textures.js');
 						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/textureEditor/textureEditor.js');
 						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/animationEditor/animationEditor.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolCreate.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolSelect.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolPan.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolTranslate.js');
 						
 						// Load jquery plugins
 						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/vendor/autoback.jquery.js');
@@ -184,6 +188,10 @@ appCore.module('IgeEditorComponent', function ($ige, $time, IgeEventingClass, Ig
 							// Enable the editor toggle button
 							$('#editorToggle').on('click', function () {
 								$ige.engine.editor.toggle();
+							});
+							
+							appCore.run(function (UiDialogs, UiSceneGraph, UiMenu, UiToolBox, UiPanels, UiTextures, UiTextureEditor, UiAnimationEditor) {
+							
 							});
 							
 							self._ready = true;

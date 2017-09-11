@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiSceneGraph', function (IgeEventingClass) {
+appCore.module('UiSceneGraph', function ($ige, IgeEventingClass) {
 	var UiSceneGraph = IgeEventingClass.extend({
 		classId: 'UiSceneGraph',
 		

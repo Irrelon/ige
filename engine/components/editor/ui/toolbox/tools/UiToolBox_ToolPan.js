@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiToolBox_ToolPan', function (IgeEventingClass, IgePoint3d) {
+appCore.module('UiToolBox_ToolPan', function ($ige, IgeEventingClass, IgePoint3d) {
 	var UiToolBox_ToolPan = IgeEventingClass.extend({
 		classId: 'UiToolBox_ToolPan',
 		

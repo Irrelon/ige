@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiDialogs', function (IgeEventingClass) {
+appCore.module('UiDialogs', function ($ige, IgeEventingClass) {
 	var UiDialogs = IgeEventingClass.extend({
 		classId: 'UiDialogs',
 		

@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiAnimationEditor', function (IgeEventingClass, IgeEntity, IgeAnimationComponent) {
+appCore.module('UiAnimationEditor', function ($ige, IgeEventingClass, IgeEntity, IgeAnimationComponent) {
 	var UiAnimationEditor = IgeEventingClass.extend({
 		classId: 'UiAnimationEditor',
 		
@@ -32,7 +32,7 @@ appCore.module('UiAnimationEditor', function (IgeEventingClass, IgeEntity, IgeAn
 				id: 'animationEditor',
 				icon: 'none',
 				text: 'Animation Editor...',
-				action: "$ige.engine.editor.ui.animationEditor.show();"
+				action: "ige.editor.ui.animationEditor.show();"
 			});
 		},
 		

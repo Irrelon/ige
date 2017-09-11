@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
+appCore.module('UiToolBox_ToolSelect', function ($ige, IgeEventingClass) {
 	var UiToolBox_ToolSelect = IgeEventingClass.extend({
 		classId: 'UiToolBox_ToolSelect',
 		
@@ -19,29 +19,29 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 						id: 'select',
 						icon: 'hand-top',
 						text: 'Select',
-						action: "$ige.engine.editor.ui.toolbox.select('toolSelect');"
+						action: "ige.editor.ui.toolbox.select('toolSelect');"
 					}],
 					'transform': [{
 						sep: true,
 						id: 'transform',
 						icon: 'th',
 						text: 'Transform',
-						action: "$ige.engine.editor.ui.toolbox.select('toolTransform');"
+						action: "ige.editor.ui.toolbox.select('toolTransform');"
 					}, {
 						id: 'translate',
 						icon: 'move',
 						text: 'Translate',
-						action: "$ige.engine.editor.ui.toolbox.select('toolTranslate');"
+						action: "ige.editor.ui.toolbox.select('toolTranslate');"
 					}, {
 						id: 'rotate',
 						icon: 'repeat',
 						text: 'Rotate',
-						action: "$ige.engine.editor.ui.toolbox.select('toolRotate');"
+						action: "ige.editor.ui.toolbox.select('toolRotate');"
 					}, {
 						id: 'scale',
 						icon: 'resize-full',
 						text: 'Scale',
-						action: "$ige.engine.editor.ui.toolbox.select('toolRotate');"
+						action: "ige.editor.ui.toolbox.select('toolRotate');"
 					}],
 					'export': [{
 						sep: true,
@@ -58,7 +58,7 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 						id: 'destroy',
 						icon: 'certificate',
 						text: 'Destroy',
-						action: "$ige.engine.editor.destroySelected();"
+						action: "ige.editor.destroySelected();"
 					}]
 				}]
 			};
@@ -228,7 +228,7 @@ appCore.module('UiToolBox_ToolSelect', function (IgeEventingClass) {
 								id: 'select',
 								icon: 'th-large',
 								text: '[' + obj.classId() + ']' + ' '  + obj.id(),
-								action: "$ige.engine.editor.selectObject('" + obj.id() + "');"
+								action: "ige.editor.selectObject('" + obj.id() + "');"
 							});
 						}
 						

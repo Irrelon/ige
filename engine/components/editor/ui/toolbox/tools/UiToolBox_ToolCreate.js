@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiToolBox_ToolCreate', function (igeBase, IgeEventingClass) {
+appCore.module('UiToolBox_ToolCreate', function ($ige, igeBase, IgeEventingClass) {
 	var UiToolBox_ToolCreate = IgeEventingClass.extend({
 		classId: 'UiToolBox_ToolCreate',
 		editorOptions: {
@@ -29,7 +29,7 @@ appCore.module('UiToolBox_ToolCreate', function (igeBase, IgeEventingClass) {
 					id: sortArr[i],
 					icon: 'none',
 					text: sortArr[i],
-					action: "$ige.engine.editor.createObject('" + sortArr[i] + "', true);"
+					action: "ige.editor.createObject('" + sortArr[i] + "', true);"
 				});
 			}
 		},

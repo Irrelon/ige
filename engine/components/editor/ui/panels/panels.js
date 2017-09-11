@@ -1,6 +1,6 @@
 "use strict";
 
-appCore.module('UiPanels', function ($textures, IgeEventingClass, IgePoint3d, IgeEntity, IgeTexture, IgeTileMap2d, IgeParticleEmitter) {
+appCore.module('UiPanels', function ($ige, $textures, IgeEventingClass, IgePoint3d, IgeEntity, IgeTexture, IgeTileMap2d, IgeParticleEmitter) {
 	var UiPanels = IgeEventingClass.extend({
 		classId: 'UiPanels',
 		
