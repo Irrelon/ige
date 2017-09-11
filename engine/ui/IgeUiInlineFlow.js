@@ -12,7 +12,7 @@ appCore.module('IgeUiInlineFlow', function (IgeUiElement) {
 			// Loop children and re-position them
 			var arr = this._children,
 				arrCount = arr.length, i,
-				item, itemY, currentX = 0;
+				item, itemX, currentX = 0;
 			
 			for (i = 0; i < arrCount; i++) {
 				item = arr[i];
@@ -21,7 +21,7 @@ appCore.module('IgeUiInlineFlow', function (IgeUiElement) {
 				currentX += itemX;
 			}
 			
-			// call the super-class tick
+			// Call the super-class tick
 			IgeUiElement.prototype.tick.call(this, ctx);
 		}
 	});
