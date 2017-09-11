@@ -67,12 +67,12 @@ appCore.module('IgeUiButton', function (IgeUiElement) {
 			var uiData = this.data('ui');
 			if (uiData) {
 				// Draw text
-				if (uiData['text']) {
-					ctx.font = uiData['text'].font || "normal 12px Verdana";
-					ctx.textAlign = uiData['text'].align || 'center';
-					ctx.textBaseline = uiData['text'].baseline || 'middle';
-					ctx.fillStyle = uiData['text'].color || '#ffffff';
-					ctx.fillText(uiData['text'].value, 0, 0);
+				if (uiData.text) {
+					ctx.font = uiData.text.font || "normal 12px Verdana";
+					ctx.textAlign = uiData.text.align || 'center';
+					ctx.textBaseline = uiData.text.baseline || 'middle';
+					ctx.fillStyle = uiData.text.color || '#ffffff';
+					ctx.fillText(uiData.text.value, 0, 0);
 				}
 			}
 			
