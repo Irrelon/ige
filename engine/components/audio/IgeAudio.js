@@ -73,6 +73,8 @@ appCore.module('IgeAudio', function ($ige, IgeEventingClass) {
 			var self = this,
 				request = new XMLHttpRequest();
 			
+			self._url = url;
+			
 			request.open('GET', url, true);
 			request.responseType = 'arraybuffer';
 			
@@ -98,26 +100,62 @@ appCore.module('IgeAudio', function ($ige, IgeEventingClass) {
 					self._buffer = buffer;
 					$ige.engine.audio.log('Audio file (' + self._url + ') loaded successfully');
 					
+					if (self._playWhenReady) {
+						self.play();
+					}
+					
 					if (callback) { callback.apply(self, [false]); }
 				} else {
-					self.log('Failed to decode audio data from: ' + self._url, 'warning');
+					self.log('Failed to decode audio (' + self._url + '): ' + err, 'warning');
 					if (callback) { callback.apply(self, [err]); }
 				}
 			});
 		},
 		
 		/**
+		 * Gets / sets the current audio buffer.
+		 * @param buffer
+		 * @returns {*}
+		 */
+		buffer: function (buffer) {
+			if (buffer !== undefined) {
+				this._buffer = buffer;
+				return this;
+			}
+			
+			return this._buffer;
+		},
+		
+		/**
 		 * Plays the audio.
 		 */
-		play: function () {
-			var self = this,
-				bufferSource;
+		play: function (loop) {
+			var self = this;
 			
 			if (self._buffer) {
-				bufferSource = $ige.engine.audio._ctx.createBufferSource();
-				bufferSource.buffer = self._buffer;
-				bufferSource.connect($ige.engine.audio._ctx.destination);
-				bufferSource.start(0);
+				self._bufferSource = $ige.engine.audio._ctx.createBufferSource();
+				self._bufferSource.buffer = self._buffer;
+				self._bufferSource.connect($ige.engine.audio._ctx.destination);
+				self._bufferSource.loop = loop;
+				self._bufferSource.start(0);
+				
+				self.log('Audio file (' + self._url + ') playing...');
+			} else {
+				// Wait for a buffer
+				this._playWhenReady = true;
+				self.log('Audio file (' + self._url + ') waiting to play...');
+			}
+		},
+		
+		stop: function () {
+			var self = this;
+			
+			if (self._bufferSource) {
+				self.log('Audio file (' + self._url + ') stopping...');
+				self._bufferSource.stop();
+			} else {
+				this._playWhenReady = false;
+				self.log('Audio file (' + self._url + ') waiting to stop...');
 			}
 		}
 	});
