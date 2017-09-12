@@ -80,6 +80,7 @@ require('./primitives/IgeCuboid.js');
 require('./core/IgeArray.js');
 require('./components/audio/IgeAudioComponent.js');
 require('./components/audio/IgeAudio.js');
+require('./components/audio/IgeAudioEntity.js');
 require('./components/physics/box2d/IgeBox2dComponent.js');
 require('./components/physics/box2d/IgeBox2dMultiWorldComponent.js');
 require('./components/physics/box2d/IgeBox2dWorld.js');

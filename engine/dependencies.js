@@ -125,6 +125,7 @@ module.exports = {
 		/* Audio Components */
 		['cs', 'IgeAudioComponent', 'components/audio/IgeAudioComponent.js'],
 		['cs', 'IgeAudio', 'components/audio/IgeAudio.js'],
+		['cs', 'IgeAudioEntity', 'components/audio/IgeAudioEntity.js'],
 		
 		/* Physics to Entity Components */
 		['cs', 'IgeBox2dComponent', 'components/physics/box2d/IgeBox2dComponent.js'],
