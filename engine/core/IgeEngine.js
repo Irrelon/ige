@@ -50,9 +50,9 @@ appCore.module('IgeEngine', function (
 				
 				// Output our header
 				console.log('------------------------------------------------------------------------------');
-				console.log('* Powered by the Isogenic Game Engine ' + igeBase.version() + '                  *');
-				console.log('* (C)opyright ' + new Date().getFullYear() + ' Irrelon Software Limited                                  *');
-				console.log('* http://www.isogenicengine.com                                              *');
+				console.log('| Powered by the Isogenic Game Engine ' + igeBase.version() + '                  |');
+				console.log('| (C)opyright ' + new Date().getFullYear() + ' Irrelon Software Limited                                  |');
+				console.log('| http://www.isogenicengine.com                                              |');
 				console.log('------------------------------------------------------------------------------');
 				
 				IgeEntity.prototype.init.call(this);
