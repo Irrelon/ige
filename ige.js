@@ -16,7 +16,7 @@ appCore.module('IgeCuboidSmartTexture', function () {
 	
 	return IgeCuboidSmartTexture;
 });
-},{"irrelon-appcore":125}],2:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],2:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -168,7 +168,7 @@ appCore.module('IgeFontSmartTexture', function () {
 	
 	return IgeFontSmartTexture;
 });
-},{"irrelon-appcore":125}],3:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],3:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -374,7 +374,7 @@ appCore.module('IgeTileMap2dSmartTexture', function (IgePoint2d) {
 	
 	return IgeTileMap2dSmartTexture;
 });
-},{"irrelon-appcore":125}],4:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],4:[function(_dereq_,module,exports){
 _dereq_('./components/stackTrace/lib_stack.js');
 _dereq_('./core/IgeBase.js');
 _dereq_('./core/$ige.js');
@@ -457,6 +457,7 @@ _dereq_('./primitives/IgeCuboid.js');
 _dereq_('./core/IgeArray.js');
 _dereq_('./components/audio/IgeAudioComponent.js');
 _dereq_('./components/audio/IgeAudio.js');
+_dereq_('./components/audio/IgeAudioEntity.js');
 _dereq_('./components/physics/box2d/IgeBox2dComponent.js');
 _dereq_('./components/physics/box2d/IgeBox2dMultiWorldComponent.js');
 _dereq_('./components/physics/box2d/IgeBox2dWorld.js');
@@ -488,7 +489,7 @@ _dereq_('./filters/sobel.js');
 _dereq_('./filters/invert.js');
 _dereq_('./filters/glowMask.js');
 _dereq_('./core/IgeEngine.js');
-},{"./assets/IgeCuboidSmartTexture.js":1,"./assets/IgeFontSmartTexture.js":2,"./assets/IgeTileMap2dSmartTexture.js":3,"./components/IgeAnimationComponent.js":5,"./components/IgeEntityManagerComponent.js":6,"./components/IgeGamePadComponent.js":7,"./components/IgeInputComponent.js":8,"./components/IgeMousePanComponent.js":9,"./components/IgeMouseZoomComponent.js":10,"./components/IgePathComponent.js":11,"./components/IgeTiledComponent.js":12,"./components/IgeTimeComponent.js":13,"./components/IgeTweenComponent.js":14,"./components/IgeUiManagerComponent.js":15,"./components/IgeVelocityComponent.js":16,"./components/audio/IgeAudio.js":17,"./components/audio/IgeAudioComponent.js":18,"./components/chat/IgeChatClient.js":19,"./components/chat/IgeChatComponent.js":20,"./components/cocoonjs/IgeCocoonJsComponent.js":21,"./components/editor/IgeEditorComponent.js":22,"./components/editor/IgeEditorRotateComponent.js":23,"./components/editor/IgeEditorTranslateComponent.js":24,"./components/entityManager/IgeEntityManager.js":25,"./components/network/IgeTimeSyncExtension.js":26,"./components/network/net.io/IgeNetIoClient.js":27,"./components/network/net.io/IgeNetIoClientComponent.js":28,"./components/network/net.io/net.io-client/index.js":29,"./components/network/socket.io/IgeSocketIoClient.js":30,"./components/network/socket.io/IgeSocketIoComponent.js":31,"./components/network/socket.io/client/socket.io.min.js":32,"./components/network/stream/IgeStreamComponent.js":33,"./components/physics/box2d/IgeBox2dComponent.js":34,"./components/physics/box2d/IgeBox2dDebugPainter.js":35,"./components/physics/box2d/IgeBox2dMultiWorldComponent.js":36,"./components/physics/box2d/IgeBox2dWorld.js":37,"./components/physics/box2d/IgeEntityBox2d.js":38,"./components/physics/box2d/lib_box2d.js":39,"./components/physics/cannon/IgeCannonComponent.js":40,"./components/physics/cannon/IgeEntityCannon.js":41,"./components/physics/cannon/lib_cannon.js":42,"./components/stackTrace/lib_stack.js":43,"./core/$game.js":44,"./core/$ige.js":45,"./core/$requestAnimFrame.js":46,"./core/$textures.js":47,"./core/$time.js":48,"./core/IgeArray.js":49,"./core/IgeBase.js":50,"./core/IgeBaseScene.js":51,"./core/IgeCamera.js":52,"./core/IgeCellSheet.js":53,"./core/IgeClass.js":54,"./core/IgeCollisionMap2d.js":55,"./core/IgeDummyCanvas.js":56,"./core/IgeDummyContext.js":57,"./core/IgeEngine.js":58,"./core/IgeEntity.js":59,"./core/IgeEventingClass.js":60,"./core/IgeFSM.js":61,"./core/IgeFilters.js":62,"./core/IgeFontEntity.js":63,"./core/IgeFontSheet.js":64,"./core/IgeInterval.js":65,"./core/IgeMap2d.js":66,"./core/IgeMatrix2d.js":68,"./core/IgeObject.js":69,"./core/IgeParticle.js":70,"./core/IgeParticleEmitter.js":71,"./core/IgePathFinder.js":72,"./core/IgePathNode.js":73,"./core/IgePoint2d.js":74,"./core/IgePoint3d.js":75,"./core/IgePoly2d.js":76,"./core/IgeQuest.js":77,"./core/IgeRect.js":78,"./core/IgeScene2d.js":79,"./core/IgeSceneGraph.js":80,"./core/IgeSpriteSheet.js":81,"./core/IgeTexture.js":83,"./core/IgeTextureMap.js":85,"./core/IgeTileMap2d.js":86,"./core/IgeTimeout.js":87,"./core/IgeTween.js":88,"./core/IgeUiElement.js":89,"./core/IgeUiEntity.js":90,"./core/IgeViewport.js":91,"./extensions/IgeUiPositionExtension.js":92,"./extensions/IgeUiStyleExtension.js":93,"./filters/blur.js":94,"./filters/brighten.js":95,"./filters/colorOverlay.js":96,"./filters/convolute.js":97,"./filters/edgeDetect.js":98,"./filters/edgeEnhance.js":99,"./filters/emboss.js":100,"./filters/glowMask.js":101,"./filters/greyScale.js":102,"./filters/invert.js":103,"./filters/outlineDetect.js":104,"./filters/sharpen.js":105,"./filters/sobel.js":106,"./filters/threshold.js":107,"./primitives/IgeCuboid.js":108,"./ui/IgeUiButton.js":110,"./ui/IgeUiDropDown.js":111,"./ui/IgeUiLabel.js":114,"./ui/IgeUiMenu.js":115,"./ui/IgeUiProgressBar.js":116,"./ui/IgeUiRadioButton.js":117,"./ui/IgeUiTextBox.js":120,"./ui/IgeUiTimeStream.js":121,"./ui/IgeUiTooltip.js":123}],5:[function(_dereq_,module,exports){
+},{"./assets/IgeCuboidSmartTexture.js":1,"./assets/IgeFontSmartTexture.js":2,"./assets/IgeTileMap2dSmartTexture.js":3,"./components/IgeAnimationComponent.js":5,"./components/IgeEntityManagerComponent.js":6,"./components/IgeGamePadComponent.js":7,"./components/IgeInputComponent.js":8,"./components/IgeMousePanComponent.js":9,"./components/IgeMouseZoomComponent.js":10,"./components/IgePathComponent.js":11,"./components/IgeTiledComponent.js":12,"./components/IgeTimeComponent.js":13,"./components/IgeTweenComponent.js":14,"./components/IgeUiManagerComponent.js":15,"./components/IgeVelocityComponent.js":16,"./components/audio/IgeAudio.js":17,"./components/audio/IgeAudioComponent.js":18,"./components/audio/IgeAudioEntity.js":19,"./components/chat/IgeChatClient.js":20,"./components/chat/IgeChatComponent.js":21,"./components/cocoonjs/IgeCocoonJsComponent.js":22,"./components/editor/IgeEditorComponent.js":23,"./components/editor/IgeEditorRotateComponent.js":24,"./components/editor/IgeEditorTranslateComponent.js":25,"./components/entityManager/IgeEntityManager.js":26,"./components/network/IgeTimeSyncExtension.js":27,"./components/network/net.io/IgeNetIoClient.js":28,"./components/network/net.io/IgeNetIoClientComponent.js":29,"./components/network/net.io/net.io-client/index.js":30,"./components/network/socket.io/IgeSocketIoClient.js":31,"./components/network/socket.io/IgeSocketIoComponent.js":32,"./components/network/socket.io/client/socket.io.min.js":33,"./components/network/stream/IgeStreamComponent.js":34,"./components/physics/box2d/IgeBox2dComponent.js":35,"./components/physics/box2d/IgeBox2dDebugPainter.js":36,"./components/physics/box2d/IgeBox2dMultiWorldComponent.js":37,"./components/physics/box2d/IgeBox2dWorld.js":38,"./components/physics/box2d/IgeEntityBox2d.js":39,"./components/physics/box2d/lib_box2d.js":40,"./components/physics/cannon/IgeCannonComponent.js":41,"./components/physics/cannon/IgeEntityCannon.js":42,"./components/physics/cannon/lib_cannon.js":43,"./components/stackTrace/lib_stack.js":44,"./core/$game.js":45,"./core/$ige.js":46,"./core/$requestAnimFrame.js":47,"./core/$textures.js":48,"./core/$time.js":49,"./core/IgeArray.js":50,"./core/IgeBase.js":51,"./core/IgeBaseScene.js":52,"./core/IgeCamera.js":53,"./core/IgeCellSheet.js":54,"./core/IgeClass.js":55,"./core/IgeCollisionMap2d.js":56,"./core/IgeDummyCanvas.js":57,"./core/IgeDummyContext.js":58,"./core/IgeEngine.js":59,"./core/IgeEntity.js":60,"./core/IgeEventingClass.js":61,"./core/IgeFSM.js":62,"./core/IgeFilters.js":63,"./core/IgeFontEntity.js":64,"./core/IgeFontSheet.js":65,"./core/IgeInterval.js":66,"./core/IgeMap2d.js":67,"./core/IgeMatrix2d.js":69,"./core/IgeObject.js":70,"./core/IgeParticle.js":71,"./core/IgeParticleEmitter.js":72,"./core/IgePathFinder.js":73,"./core/IgePathNode.js":74,"./core/IgePoint2d.js":75,"./core/IgePoint3d.js":76,"./core/IgePoly2d.js":77,"./core/IgeQuest.js":78,"./core/IgeRect.js":79,"./core/IgeScene2d.js":80,"./core/IgeSceneGraph.js":81,"./core/IgeSpriteSheet.js":82,"./core/IgeTexture.js":84,"./core/IgeTextureMap.js":86,"./core/IgeTileMap2d.js":87,"./core/IgeTimeout.js":88,"./core/IgeTween.js":89,"./core/IgeUiElement.js":90,"./core/IgeUiEntity.js":91,"./core/IgeViewport.js":92,"./extensions/IgeUiPositionExtension.js":93,"./extensions/IgeUiStyleExtension.js":94,"./filters/blur.js":95,"./filters/brighten.js":96,"./filters/colorOverlay.js":97,"./filters/convolute.js":98,"./filters/edgeDetect.js":99,"./filters/edgeEnhance.js":100,"./filters/emboss.js":101,"./filters/glowMask.js":102,"./filters/greyScale.js":103,"./filters/invert.js":104,"./filters/outlineDetect.js":105,"./filters/sharpen.js":106,"./filters/sobel.js":107,"./filters/threshold.js":108,"./primitives/IgeCuboid.js":109,"./ui/IgeUiButton.js":111,"./ui/IgeUiDropDown.js":112,"./ui/IgeUiLabel.js":115,"./ui/IgeUiMenu.js":116,"./ui/IgeUiProgressBar.js":117,"./ui/IgeUiRadioButton.js":118,"./ui/IgeUiTextBox.js":121,"./ui/IgeUiTimeStream.js":122,"./ui/IgeUiTooltip.js":124}],5:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -960,7 +961,7 @@ appCore.module('IgeAnimationComponent', function ($ige, $time, IgeEventingClass)
 	
 	return IgeAnimationComponent;
 });
-},{"irrelon-appcore":125}],6:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],6:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -1480,7 +1481,7 @@ appCore.module('IgeEntityManagerComponent', function ($ige, IgeClass, IgePoint3d
 	
 	return IgeEntityManagerComponent;
 });
-},{"irrelon-appcore":125}],7:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],7:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -1678,7 +1679,7 @@ appCore.module('IgeGamePadComponent', function ($ige, IgeEventingClass) {
 	
 	return IgeGamePadComponent;
 });
-},{"irrelon-appcore":125}],8:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],8:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2436,7 +2437,7 @@ appCore.module('IgeInputComponent', function ($ige, IgeEventingClass, IgePoint3d
 	
 	return IgeInputComponent;
 });
-},{"irrelon-appcore":125}],9:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],9:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2685,7 +2686,7 @@ appCore.module('IgeMousePanComponent', function ($ige, IgeEventingClass) {
 	
 	return IgeMousePanComponent;
 });
-},{"irrelon-appcore":125}],10:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],10:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -2822,7 +2823,7 @@ appCore.module('IgeMouseZoomComponent', function ($ige, IgeEventingClass) {
 	
 	return IgeMouseZoomComponent;
 });
-},{"irrelon-appcore":125}],11:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],11:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3679,7 +3680,7 @@ appCore.module('IgePathComponent', function ($ige, $time, IgeEventingClass, IgeP
 	
 	return IgePathComponent;
 });
-},{"irrelon-appcore":125}],12:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],12:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3871,7 +3872,7 @@ appCore.module('IgeTiledComponent', function ($ige, IgeClass, IgeCellSheet, IgeT
 	
 	return IgeTiledComponent;
 });
-},{"irrelon-appcore":125}],13:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],13:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -3976,7 +3977,7 @@ appCore.module('IgeTimeComponent', function ($ige, $time, IgeEventingClass) {
 	
 	return IgeTimeComponent;
 });
-},{"irrelon-appcore":125}],14:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],14:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4035,8 +4036,6 @@ appCore.module('IgeTweenComponent', function ($ige, $time, IgeClass) {
 				step = tween._steps[tween._currentStep],
 				propertyNameAndValue, // = tween._propertyObj
 				durationMs,
-				endTime,
-				easing,
 				propertyIndex,
 				targetData = [];
 			
@@ -4235,8 +4234,8 @@ appCore.module('IgeTweenComponent', function ($ige, $time, IgeClass) {
 									targetPropVal += currentDelta - item.oldDelta;
 									
 									// Round the value to correct floating point operation imprecision
-									var roundingPrecision = Math.pow(10, 15-(targetPropVal.toFixed(0).toString().length));
-									targetProp[item.propName] = Math.round(targetPropVal * roundingPrecision)/roundingPrecision;
+									var roundingPrecision = Math.pow(10, 15 - (targetPropVal.toFixed(0).toString().length));
+									targetProp[item.propName] = Math.round(targetPropVal * roundingPrecision) / roundingPrecision;
 								}
 							}
 							
@@ -4346,7 +4345,7 @@ appCore.module('IgeTweenComponent', function ($ige, $time, IgeClass) {
 							for (targetIndex in targets) {
 								if (targets.hasOwnProperty(targetIndex)) {
 									item = targets[targetIndex];
-									var currentDelta = thisTween.easing[easing](
+									currentDelta = thisTween.easing[easing](
 										deltaTime,
 										item.deltaVal,
 										destTime
@@ -4365,188 +4364,264 @@ appCore.module('IgeTweenComponent', function ($ige, $time, IgeClass) {
 			}
 		},
 		
-		/** tweenEasing - Contains all the tween easing functions. {
-		category:"property",
-		type:"object",
-	} **/
+		/**
+		 * Contains all the tween easing functions.
+		 */
 		easing: {
 			// Easing equations converted from AS to JS from original source at
 			// http://robertpenner.com/easing/
-			none: function(t, c, d) {
-				return c*t/d;
+			none: function (t, c, d) {
+				return c * t / d;
 			},
-			inQuad: function(t, c, d) {
-				return c*(t/=d)*t;
+			inQuad: function (t, c, d) {
+				return c * (t /= d) * t;
 			},
-			outQuad: function(t, c, d) {
-				return -c *(t/=d)*(t-2);
+			outQuad: function (t, c, d) {
+				return -c * (t /= d) * (t - 2);
 			},
-			inOutQuad: function(t, c, d) {
-				if((t/=d/2) < 1) { return c/2*t*t; }
-				return -c/2 *((--t)*(t-2) - 1);
+			inOutQuad: function (t, c, d) {
+				if ((t /= d / 2) < 1) {
+					return c / 2 * t * t;
+				}
+				return -c / 2 * ((--t) * (t - 2) - 1);
 			},
-			inCubic: function(t, c, d) {
-				return c*(t/=d)*t*t;
+			inCubic: function (t, c, d) {
+				return c * (t /= d) * t * t;
 			},
-			outCubic: function(t, c, d) {
-				return c*((t=t/d-1)*t*t + 1);
+			outCubic: function (t, c, d) {
+				return c * ((t = t / d - 1) * t * t + 1);
 			},
-			inOutCubic: function(t, c, d) {
-				if((t/=d/2) < 1) { return c/2*t*t*t; }
-				return c/2*((t-=2)*t*t + 2);
+			inOutCubic: function (t, c, d) {
+				if ((t /= d / 2) < 1) {
+					return c / 2 * t * t * t;
+				}
+				return c / 2 * ((t -= 2) * t * t + 2);
 			},
-			outInCubic: function(t, c, d) {
-				if(t < d/2) { return this.outCubic(t*2, c/2, d); }
-				return this.inCubic((t*2)-d, c/2, c/2, d);
+			outInCubic: function (t, c, d) {
+				if (t < d / 2) {
+					return this.outCubic(t * 2, c / 2, d);
+				}
+				return this.inCubic((t * 2) - d, c / 2, c / 2, d);
 			},
-			inQuart: function(t, c, d) {
-				return c*(t/=d)*t*t*t;
+			inQuart: function (t, c, d) {
+				return c * (t /= d) * t * t * t;
 			},
-			outQuart: function(t, c, d) {
-				return -c *((t=t/d-1)*t*t*t - 1);
+			outQuart: function (t, c, d) {
+				return -c * ((t = t / d - 1) * t * t * t - 1);
 			},
-			inOutQuart: function(t, c, d) {
-				if((t/=d/2) < 1) { return c/2*t*t*t*t; }
-				return -c/2 *((t-=2)*t*t*t - 2);
+			inOutQuart: function (t, c, d) {
+				if ((t /= d / 2) < 1) {
+					return c / 2 * t * t * t * t;
+				}
+				return -c / 2 * ((t -= 2) * t * t * t - 2);
 			},
-			outInQuart: function(t, c, d) {
-				if(t < d/2) { return this.outQuart(t*2, c/2, d); }
-				return this.inQuart((t*2)-d, c/2, c/2, d);
+			outInQuart: function (t, c, d) {
+				if (t < d / 2) {
+					return this.outQuart(t * 2, c / 2, d);
+				}
+				return this.inQuart((t * 2) - d, c / 2, c / 2, d);
 			},
-			inQuint: function(t, c, d) {
-				return c*(t/=d)*t*t*t*t;
+			inQuint: function (t, c, d) {
+				return c * (t /= d) * t * t * t * t;
 			},
-			outQuint: function(t, c, d) {
-				return c*((t=t/d-1)*t*t*t*t + 1);
+			outQuint: function (t, c, d) {
+				return c * ((t = t / d - 1) * t * t * t * t + 1);
 			},
-			inOutQuint: function(t, c, d) {
-				if((t/=d/2) < 1) { return c/2*t*t*t*t*t; }
-				return c/2*((t-=2)*t*t*t*t + 2);
+			inOutQuint: function (t, c, d) {
+				if ((t /= d / 2) < 1) {
+					return c / 2 * t * t * t * t * t;
+				}
+				return c / 2 * ((t -= 2) * t * t * t * t + 2);
 			},
-			outInQuint: function(t, c, d) {
-				if(t < d/2) { return this.outQuint(t*2, c/2, d); }
-				return this.inQuint((t*2)-d, c/2, c/2, d);
+			outInQuint: function (t, c, d) {
+				if (t < d / 2) {
+					return this.outQuint(t * 2, c / 2, d);
+				}
+				return this.inQuint((t * 2) - d, c / 2, c / 2, d);
 			},
-			inSine: function(t, c, d) {
-				return -c * Math.cos(t/d *(Math.PI/2)) + c;
+			inSine: function (t, c, d) {
+				return -c * Math.cos(t / d * (Math.PI / 2)) + c;
 			},
-			outSine: function(t, c, d) {
-				return c * Math.sin(t/d *(Math.PI/2));
+			outSine: function (t, c, d) {
+				return c * Math.sin(t / d * (Math.PI / 2));
 			},
-			inOutSine: function(t, c, d) {
-				return -c/2 *(Math.cos(Math.PI*t/d) - 1);
+			inOutSine: function (t, c, d) {
+				return -c / 2 * (Math.cos(Math.PI * t / d) - 1);
 			},
-			outInSine: function(t, c, d) {
-				if(t < d/2) { return this.outSine(t*2, c/2, d); }
-				return this.inSine((t*2)-d, c/2, c/2, d);
+			outInSine: function (t, c, d) {
+				if (t < d / 2) {
+					return this.outSine(t * 2, c / 2, d);
+				}
+				return this.inSine((t * 2) - d, c / 2, c / 2, d);
 			},
-			inExpo: function(t, c, d) {
-				return(t === 0) ? 0 : c * Math.pow(2, 10 *(t/d - 1)) - c * 0.001;
+			inExpo: function (t, c, d) {
+				return (t === 0) ? 0 : c * Math.pow(2, 10 * (t / d - 1)) - c * 0.001;
 			},
-			outExpo: function(t, c, d) {
-				return(t === d) ? c : c * 1.001 *(-Math.pow(2, -10 * t/d) + 1);
+			outExpo: function (t, c, d) {
+				return (t === d) ? c : c * 1.001 * (-Math.pow(2, -10 * t / d) + 1);
 			},
-			inOutExpo: function(t, c, d) {
-				if(t === 0) { return 0; }
-				if(t === d) { return c; }
-				if((t/=d/2) < 1) { return c/2 * Math.pow(2, 10 *(t - 1)) - c * 0.0005; }
-				return c/2 * 1.0005 *(-Math.pow(2, -10 * --t) + 2);
+			inOutExpo: function (t, c, d) {
+				if (t === 0) {
+					return 0;
+				}
+				if (t === d) {
+					return c;
+				}
+				if ((t /= d / 2) < 1) {
+					return c / 2 * Math.pow(2, 10 * (t - 1)) - c * 0.0005;
+				}
+				return c / 2 * 1.0005 * (-Math.pow(2, -10 * --t) + 2);
 			},
-			outInExpo: function(t, c, d) {
-				if(t < d/2) { return this.outExpo(t*2, c/2, d); }
-				return this.inExpo((t*2)-d, c/2, c/2, d);
+			outInExpo: function (t, c, d) {
+				if (t < d / 2) {
+					return this.outExpo(t * 2, c / 2, d);
+				}
+				return this.inExpo((t * 2) - d, c / 2, c / 2, d);
 			},
-			inCirc: function(t, c, d) {
-				return -c *(Math.sqrt(1 -(t/=d)*t) - 1);
+			inCirc: function (t, c, d) {
+				return -c * (Math.sqrt(1 - (t /= d) * t) - 1);
 			},
-			outCirc: function(t, c, d) {
-				return c * Math.sqrt(1 -(t=t/d-1)*t);
+			outCirc: function (t, c, d) {
+				return c * Math.sqrt(1 - (t = t / d - 1) * t);
 			},
-			inOutCirc: function(t, c, d) {
-				if((t/=d/2) < 1) { return -c/2 *(Math.sqrt(1 - t*t) - 1); }
-				return c/2 *(Math.sqrt(1 -(t-=2)*t) + 1);
+			inOutCirc: function (t, c, d) {
+				if ((t /= d / 2) < 1) {
+					return -c / 2 * (Math.sqrt(1 - t * t) - 1);
+				}
+				return c / 2 * (Math.sqrt(1 - (t -= 2) * t) + 1);
 			},
-			outInCirc: function(t, c, d) {
-				if(t < d/2) { return this.outCirc(t*2, c/2, d); }
-				return this.inCirc((t*2)-d, c/2, c/2, d);
+			outInCirc: function (t, c, d) {
+				if (t < d / 2) {
+					return this.outCirc(t * 2, c / 2, d);
+				}
+				return this.inCirc((t * 2) - d, c / 2, c / 2, d);
 			},
-			inElastic: function(t, c, d, a, p) {
+			inElastic: function (t, c, d, a, p) {
 				var s;
-				if(t===0) {return 0;}
-				if((t/=d)===1) { return c; }
-				if(!p) { p=d*0.3; }
-				if(!a || a < Math.abs(c)) { a=c; s=p/4; } else { s = p/(2*Math.PI) * Math.asin(c/a); }
-				return -(a*Math.pow(2,10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p ));
-			},
-			outElastic: function(t, c, d, a, p) {
-				var s;
-				if(t===0) { return 0; }
-				if((t/=d)===1) { return c; }
-				if(!p) { p=d*0.3; }
-				if(!a || a < Math.abs(c)) { a=c; s=p/4; } else { s = p/(2*Math.PI) * Math.asin(c/a); }
-				return(a*Math.pow(2,-10*t) * Math.sin((t*d-s)*(2*Math.PI)/p ) + c);
-			},
-			inOutElastic: function(t, c, d, a, p) {
-				var s;
-				if(t===0) { return 0; }
-				if((t/=d/2)===2) { return c; }
-				if(!p) { p=d*(0.3*1.5); }
-				if(!a || a < Math.abs(c)) { a=c; s=p/4; } else { s = p/(2*Math.PI) * Math.asin(c/a); }
-				if(t < 1) { return -0.5*(a*Math.pow(2,10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p)); }
-				return a*Math.pow(2,-10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p )*0.5 + c;
-			},
-			outInElastic: function(t, c, d, a, p) {
-				if(t < d/2) { return this.outElastic(t*2, c/2, d, a, p); }
-				return this.inElastic((t*2)-d, c/2, c/2, d, a, p);
-			},
-			inBack: function(t, c, d, s) {
-				if(s === undefined) { s = 1.70158; }
-				return c*(t/=d)*t*((s+1)*t - s);
-			},
-			outBack: function(t, c, d, s) {
-				if(s === undefined) { s = 1.70158; }
-				return c*((t=t/d-1)*t*((s+1)*t + s) + 1);
-			},
-			inOutBack: function(t, c, d, s) {
-				if(s === undefined) { s = 1.70158; }
-				if((t/=d/2) < 1) { return c/2*(t*t*(((s*=(1.525))+1)*t - s)); }
-				return c/2*((t-=2)*t*(((s*=(1.525))+1)*t + s) + 2);
-			},
-			outInBack: function(t, c, d, s) {
-				if(t < d/2) { return this.outBack(t*2, c/2, d, s); }
-				return this.inBack((t*2)-d, c/2, c/2, d, s);
-			},
-			inBounce: function(t, c, d) {
-				return c - this.outBounce(d-t, 0, c, d);
-			},
-			outBounce: function(t, c, d) {
-				if((t/=d) <(1/2.75)) {
-					return c*(7.5625*t*t);
-				} else if(t <(2/2.75)) {
-					return c*(7.5625*(t-=(1.5/2.75))*t + 0.75);
-				} else if(t <(2.5/2.75)) {
-					return c*(7.5625*(t-=(2.25/2.75))*t + 0.9375);
+				if (t === 0) {
+					return 0;
+				}
+				if ((t /= d) === 1) {
+					return c;
+				}
+				if (!p) {
+					p = d * 0.3;
+				}
+				if (!a || a < Math.abs(c)) {
+					a = c;
+					s = p / 4;
 				} else {
-					return c*(7.5625*(t-=(2.625/2.75))*t + 0.984375);
+					s = p / (2 * Math.PI) * Math.asin(c / a);
+				}
+				return -(a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p));
+			},
+			outElastic: function (t, c, d, a, p) {
+				var s;
+				if (t === 0) {
+					return 0;
+				}
+				if ((t /= d) === 1) {
+					return c;
+				}
+				if (!p) {
+					p = d * 0.3;
+				}
+				if (!a || a < Math.abs(c)) {
+					a = c;
+					s = p / 4;
+				} else {
+					s = p / (2 * Math.PI) * Math.asin(c / a);
+				}
+				return (a * Math.pow(2, -10 * t) * Math.sin((t * d - s) * (2 * Math.PI) / p) + c);
+			},
+			inOutElastic: function (t, c, d, a, p) {
+				var s;
+				if (t === 0) {
+					return 0;
+				}
+				if ((t /= d / 2) === 2) {
+					return c;
+				}
+				if (!p) {
+					p = d * (0.3 * 1.5);
+				}
+				if (!a || a < Math.abs(c)) {
+					a = c;
+					s = p / 4;
+				} else {
+					s = p / (2 * Math.PI) * Math.asin(c / a);
+				}
+				if (t < 1) {
+					return -0.5 * (a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p));
+				}
+				return a * Math.pow(2, -10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p) * 0.5 + c;
+			},
+			outInElastic: function (t, c, d, a, p) {
+				if (t < d / 2) {
+					return this.outElastic(t * 2, c / 2, d, a, p);
+				}
+				return this.inElastic((t * 2) - d, c / 2, c / 2, d, a, p);
+			},
+			inBack: function (t, c, d, s) {
+				if (s === undefined) {
+					s = 1.70158;
+				}
+				return c * (t /= d) * t * ((s + 1) * t - s);
+			},
+			outBack: function (t, c, d, s) {
+				if (s === undefined) {
+					s = 1.70158;
+				}
+				return c * ((t = t / d - 1) * t * ((s + 1) * t + s) + 1);
+			},
+			inOutBack: function (t, c, d, s) {
+				if (s === undefined) {
+					s = 1.70158;
+				}
+				if ((t /= d / 2) < 1) {
+					return c / 2 * (t * t * (((s *= (1.525)) + 1) * t - s));
+				}
+				return c / 2 * ((t -= 2) * t * (((s *= (1.525)) + 1) * t + s) + 2);
+			},
+			outInBack: function (t, c, d, s) {
+				if (t < d / 2) {
+					return this.outBack(t * 2, c / 2, d, s);
+				}
+				return this.inBack((t * 2) - d, c / 2, c / 2, d, s);
+			},
+			inBounce: function (t, c, d) {
+				return c - this.outBounce(d - t, 0, c, d);
+			},
+			outBounce: function (t, c, d) {
+				if ((t /= d) < (1 / 2.75)) {
+					return c * (7.5625 * t * t);
+				} else if (t < (2 / 2.75)) {
+					return c * (7.5625 * (t -= (1.5 / 2.75)) * t + 0.75);
+				} else if (t < (2.5 / 2.75)) {
+					return c * (7.5625 * (t -= (2.25 / 2.75)) * t + 0.9375);
+				} else {
+					return c * (7.5625 * (t -= (2.625 / 2.75)) * t + 0.984375);
 				}
 			},
-			inOutBounce: function(t, c, d) {
-				if(t < d/2) {
-					return this.inBounce(t*2, 0, c, d) * 0.5;
+			inOutBounce: function (t, c, d) {
+				if (t < d / 2) {
+					return this.inBounce(t * 2, 0, c, d) * 0.5;
 				} else {
-					return this.outBounce(t*2-d, 0, c, d) * 0.5 + c*0.5;
+					return this.outBounce(t * 2 - d, 0, c, d) * 0.5 + c * 0.5;
 				}
 			},
-			outInBounce: function(t, c, d) {
-				if(t < d/2) { return this.outBounce(t*2, c/2, d); }
-				return this.inBounce((t*2)-d, c/2, c/2, d);
+			outInBounce: function (t, c, d) {
+				if (t < d / 2) {
+					return this.outBounce(t * 2, c / 2, d);
+				}
+				return this.inBounce((t * 2) - d, c / 2, c / 2, d);
 			}
 		}
 	});
 	
 	return IgeTweenComponent;
 });
-},{"irrelon-appcore":125}],15:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],15:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4712,7 +4787,7 @@ appCore.module('IgeUiManagerComponent', function ($ige, IgeClass) {
 	
 	return IgeUiManagerComponent;
 });
-},{"irrelon-appcore":125}],16:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],16:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -4924,7 +4999,7 @@ appCore.module('IgeVelocityComponent', function ($ige, $time, IgeClass, IgePoint
 	
 	return IgeVelocityComponent;
 });
-},{"irrelon-appcore":125}],17:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],17:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5000,6 +5075,8 @@ appCore.module('IgeAudio', function ($ige, IgeEventingClass) {
 			var self = this,
 				request = new XMLHttpRequest();
 			
+			self._url = url;
+			
 			request.open('GET', url, true);
 			request.responseType = 'arraybuffer';
 			
@@ -5025,38 +5102,74 @@ appCore.module('IgeAudio', function ($ige, IgeEventingClass) {
 					self._buffer = buffer;
 					$ige.engine.audio.log('Audio file (' + self._url + ') loaded successfully');
 					
+					if (self._playWhenReady) {
+						self.play();
+					}
+					
 					if (callback) { callback.apply(self, [false]); }
 				} else {
-					self.log('Failed to decode audio data from: ' + self._url, 'warning');
+					self.log('Failed to decode audio (' + self._url + '): ' + err, 'warning');
 					if (callback) { callback.apply(self, [err]); }
 				}
 			});
 		},
 		
 		/**
+		 * Gets / sets the current audio buffer.
+		 * @param buffer
+		 * @returns {*}
+		 */
+		buffer: function (buffer) {
+			if (buffer !== undefined) {
+				this._buffer = buffer;
+				return this;
+			}
+			
+			return this._buffer;
+		},
+		
+		/**
 		 * Plays the audio.
 		 */
-		play: function () {
-			var self = this,
-				bufferSource;
+		play: function (loop) {
+			var self = this;
 			
 			if (self._buffer) {
-				bufferSource = $ige.engine.audio._ctx.createBufferSource();
-				bufferSource.buffer = self._buffer;
-				bufferSource.connect($ige.engine.audio._ctx.destination);
-				bufferSource.start(0);
+				self._bufferSource = $ige.engine.audio._ctx.createBufferSource();
+				self._bufferSource.buffer = self._buffer;
+				self._bufferSource.connect($ige.engine.audio._ctx.destination);
+				self._bufferSource.loop = loop;
+				self._bufferSource.start(0);
+				
+				self.log('Audio file (' + self._url + ') playing...');
+			} else {
+				// Wait for a buffer
+				this._playWhenReady = true;
+				self.log('Audio file (' + self._url + ') waiting to play...');
+			}
+		},
+		
+		stop: function () {
+			var self = this;
+			
+			if (self._bufferSource) {
+				self.log('Audio file (' + self._url + ') stopping...');
+				self._bufferSource.stop();
+			} else {
+				this._playWhenReady = false;
+				self.log('Audio file (' + self._url + ') waiting to stop...');
 			}
 		}
 	});
 	
 	return IgeAudio;
 });
-},{"irrelon-appcore":125}],18:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],18:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass, IgeAudio) {
+appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass, IgeAudio, IgeAudioEntity) {
 	/**
 	 * Manages audio mixing and output.
 	 */
@@ -5150,7 +5263,52 @@ appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass, IgeAudio) 
 	
 	return IgeAudioComponent;
 });
-},{"irrelon-appcore":125}],19:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],19:[function(_dereq_,module,exports){
+"use strict";
+
+var appCore = _dereq_('irrelon-appcore');
+
+appCore.module('IgeAudioEntity', function ($game, IgeEntity, IgeAudio) {
+	var IgeAudioEntity = IgeEntity.extend({
+		classId: 'IgeAudioEntity',
+		
+		init: function (options) {
+			IgeEntity.prototype.init.call(this);
+			this._options = options;
+			
+			// Select the audio from the $game.audio object
+			// TODO: This should be changed to a global engine-based audio register with each audio file having an id
+			this._audioData = $game.audio[options.audioId];
+			
+			if (this._audioData) {
+				this._audio = new IgeAudio();
+				this._audio.buffer(this._audioData.buffer());
+				
+				// TODO: Does this get affected by streaming not sending intial translation?
+				// e.g. !this._streamJustCreated ?
+				this._audio.play(options.loop);
+			}
+		},
+		
+		streamCreateData: function () {
+			return this._options;
+		},
+		
+		destroy: function () {
+			if (this._audio) {
+				this._audio.stop();
+				
+				delete this._audio;
+				delete this._audioData;
+			}
+			
+			IgeEntity.prototype.destroy.call(this);
+		}
+	});
+	
+	return IgeAudioEntity;
+});
+},{"irrelon-appcore":126}],20:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5260,7 +5418,7 @@ appCore.module('IgeChatClient', function ($ige) {
 	
 	return IgeChatClient;
 });
-},{"irrelon-appcore":125}],20:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],21:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5312,7 +5470,7 @@ appCore.module('IgeChatComponent', function ($ige, IgeEventingClass) {
 	
 	return IgeChatComponent;
 });
-},{"irrelon-appcore":125}],21:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],22:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5379,7 +5537,7 @@ appCore.module('IgeCocoonJsComponent', function (IgeEventingClass) {
 	
 	return IgeCocoonJsComponent;
 });
-},{"irrelon-appcore":125}],22:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],23:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -5524,6 +5682,10 @@ appCore.module('IgeEditorComponent', function ($ige, $time, IgeEventingClass, Ig
 						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/textures/textures.js');
 						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/textureEditor/textureEditor.js');
 						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/animationEditor/animationEditor.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolCreate.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolSelect.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolPan.js');
+						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolTranslate.js');
 						
 						// Load jquery plugins
 						$ige.engine.sync($ige.engine.requireScript, igeRoot + 'components/editor/vendor/autoback.jquery.js');
@@ -5566,6 +5728,10 @@ appCore.module('IgeEditorComponent', function ($ige, $time, IgeEventingClass, Ig
 							// Enable the editor toggle button
 							$('#editorToggle').on('click', function () {
 								$ige.engine.editor.toggle();
+							});
+							
+							appCore.run(function (UiDialogs, UiSceneGraph, UiMenu, UiToolBox, UiPanels, UiTextures, UiTextureEditor, UiAnimationEditor) {
+							
 							});
 							
 							self._ready = true;
@@ -5835,11 +6001,11 @@ appCore.module('IgeEditorComponent', function ($ige, $time, IgeEventingClass, Ig
 						 itemName = watchItem.name;
 						 res = watchItem.value;
 						 }
-						 html += i + ' (<a href="javascript:$ige.engine.watchStop(' + i + '); $ige.engine._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="$ige.engine._statsPauseUpdate = true;" onmouseout="$ige.engine._statsPauseUpdate = false;">Remove</a>): <span style="color:#7aff80">' + itemName + '</span>: <span style="color:#00c6ff">' + res + '</span><br />';
+						 html += i + ' (<a href="javascript:ige.watchStop(' + i + '); ige._statsPauseUpdate = false;" style="color:#cccccc;" onmouseover="ige._statsPauseUpdate = true;" onmouseout="ige._statsPauseUpdate = false;">Remove</a>): <span style="color:#7aff80">' + itemName + '</span>: <span style="color:#00c6ff">' + res + '</span><br />';
 						 }
 						 html += '<br />';
 						 }*/
-						/*html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="$ige.engine.toggleShowEditor();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Frame">' + self._dpf + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
+						/*html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowEditor();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Frame">' + self._dpf + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
 						 
 						 if (self.network) {
 						 // Add the network latency too
@@ -6092,7 +6258,7 @@ appCore.module('IgeEditorComponent', function ($ige, $time, IgeEventingClass, Ig
 	
 	return IgeEditorComponent;
 });
-},{"irrelon-appcore":125}],23:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],24:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6309,7 +6475,7 @@ appCore.module('IgeEditorRotateComponent', function (IgeEventingClass) {
 	
 	return IgeEditorRotateComponent;
 });
-},{"irrelon-appcore":125}],24:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],25:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6576,7 +6742,7 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 	return IgeEditorTranslateComponent;
 });
 
-},{"irrelon-appcore":125}],25:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],26:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6792,7 +6958,7 @@ appCore.module('IgeEntityManager', function (IgeEventingClass) {
 	
 	return IgeEntityManager;
 });
-},{"irrelon-appcore":125}],26:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],27:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -6926,7 +7092,7 @@ appCore.module('IgeTimeSyncExtension', function ($ige, $time) {
 	
 	return IgeTimeSyncExtension;
 });
-},{"irrelon-appcore":125}],27:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],28:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7280,7 +7446,7 @@ appCore.module('IgeNetIoClient', function ($ige, $time, NetIo) {
 	
 	return IgeNetIoClient;
 });
-},{"irrelon-appcore":125}],28:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],29:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7364,7 +7530,7 @@ appCore.module('IgeNetIoComponent', function ($ige, IgeEventingClass, IgeTimeSyn
 	
 	return IgeNetIoComponent;
 });
-},{"irrelon-appcore":125}],29:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],30:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7565,7 +7731,7 @@ appCore.module('NetIo', function ($ige, IgeClass, IgeEventingClass) {
 	
 	return NetIo;
 });
-},{"irrelon-appcore":125}],30:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],31:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7873,7 +8039,7 @@ appCore.module('IgeSocketIoClient', function ($ige) {
 	
 	return IgeSocketIoClient;
 });
-},{"irrelon-appcore":125}],31:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],32:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -7966,10 +8132,10 @@ appCore.module('IgeSocketIoComponent', function ($ige, IgeEventingClass, IgeTime
 	
 	return IgeSocketIoComponent;
 });
-},{"irrelon-appcore":125}],32:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],33:[function(_dereq_,module,exports){
 /*! Socket.IO.min.js build:0.9.11, production. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
 var io="undefined"==typeof module?{}:module.exports;(function(){(function(a,b){var c=a;c.version="0.9.11",c.protocol=1,c.transports=[],c.j=[],c.sockets={},c.connect=function(a,d){var e=c.util.parseUri(a),f,g;b&&b.location&&(e.protocol=e.protocol||b.location.protocol.slice(0,-1),e.host=e.host||(b.document?b.document.domain:b.location.hostname),e.port=e.port||b.location.port),f=c.util.uniqueUri(e);var h={host:e.host,secure:"https"==e.protocol,port:e.port||("https"==e.protocol?443:80),query:e.query||""};c.util.merge(h,d);if(h["force new connection"]||!c.sockets[f])g=new c.Socket(h);return!h["force new connection"]&&g&&(c.sockets[f]=g),g=g||c.sockets[f],g.of(e.path.length>1?e.path:"")}})("object"==typeof module?module.exports:this.io={},this),function(a,b){var c=a.util={},d=/^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/,e=["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"];c.parseUri=function(a){var b=d.exec(a||""),c={},f=14;while(f--)c[e[f]]=b[f]||"";return c},c.uniqueUri=function(a){var c=a.protocol,d=a.host,e=a.port;return"document"in b?(d=d||document.domain,e=e||(c=="https"&&document.location.protocol!=="https:"?443:document.location.port)):(d=d||"localhost",!e&&c=="https"&&(e=443)),(c||"http")+"://"+d+":"+(e||80)},c.query=function(a,b){var d=c.chunkQuery(a||""),e=[];c.merge(d,c.chunkQuery(b||""));for(var f in d)d.hasOwnProperty(f)&&e.push(f+"="+d[f]);return e.length?"?"+e.join("&"):""},c.chunkQuery=function(a){var b={},c=a.split("&"),d=0,e=c.length,f;for(;d<e;++d)f=c[d].split("="),f[0]&&(b[f[0]]=f[1]);return b};var f=!1;c.load=function(a){if("document"in b&&document.readyState==="complete"||f)return a();c.on(b,"load",a,!1)},c.on=function(a,b,c,d){a.attachEvent?a.attachEvent("on"+b,c):a.addEventListener&&a.addEventListener(b,c,d)},c.request=function(a){if(a&&"undefined"!=typeof XDomainRequest&&!c.ua.hasCORS)return new XDomainRequest;if("undefined"!=typeof XMLHttpRequest&&(!a||c.ua.hasCORS))return new XMLHttpRequest;if(!a)try{return new(window[["Active"].concat("Object").join("X")])("Microsoft.XMLHTTP")}catch(b){}return null},"undefined"!=typeof window&&c.load(function(){f=!0}),c.defer=function(a){if(!c.ua.webkit||"undefined"!=typeof importScripts)return a();c.load(function(){setTimeout(a,100)})},c.merge=function(b,d,e,f){var g=f||[],h=typeof e=="undefined"?2:e,i;for(i in d)d.hasOwnProperty(i)&&c.indexOf(g,i)<0&&(typeof b[i]!="object"||!h?(b[i]=d[i],g.push(d[i])):c.merge(b[i],d[i],h-1,g));return b},c.mixin=function(a,b){c.merge(a.prototype,b.prototype)},c.inherit=function(a,b){function c(){}c.prototype=b.prototype,a.prototype=new c},c.isArray=Array.isArray||function(a){return Object.prototype.toString.call(a)==="[object Array]"},c.intersect=function(a,b){var d=[],e=a.length>b.length?a:b,f=a.length>b.length?b:a;for(var g=0,h=f.length;g<h;g++)~c.indexOf(e,f[g])&&d.push(f[g]);return d},c.indexOf=function(a,b,c){for(var d=a.length,c=c<0?c+d<0?0:c+d:c||0;c<d&&a[c]!==b;c++);return d<=c?-1:c},c.toArray=function(a){var b=[];for(var c=0,d=a.length;c<d;c++)b.push(a[c]);return b},c.ua={},c.ua.hasCORS="undefined"!=typeof XMLHttpRequest&&function(){try{var a=new XMLHttpRequest}catch(b){return!1}return a.withCredentials!=undefined}(),c.ua.webkit="undefined"!=typeof navigator&&/webkit/i.test(navigator.userAgent),c.ua.iDevice="undefined"!=typeof navigator&&/iPad|iPhone|iPod/i.test(navigator.userAgent)}("undefined"!=typeof io?io:module.exports,this),function(a,b){function c(){}a.EventEmitter=c,c.prototype.on=function(a,c){return this.$events||(this.$events={}),this.$events[a]?b.util.isArray(this.$events[a])?this.$events[a].push(c):this.$events[a]=[this.$events[a],c]:this.$events[a]=c,this},c.prototype.addListener=c.prototype.on,c.prototype.once=function(a,b){function d(){c.removeListener(a,d),b.apply(this,arguments)}var c=this;return d.listener=b,this.on(a,d),this},c.prototype.removeListener=function(a,c){if(this.$events&&this.$events[a]){var d=this.$events[a];if(b.util.isArray(d)){var e=-1;for(var f=0,g=d.length;f<g;f++)if(d[f]===c||d[f].listener&&d[f].listener===c){e=f;break}if(e<0)return this;d.splice(e,1),d.length||delete this.$events[a]}else(d===c||d.listener&&d.listener===c)&&delete this.$events[a]}return this},c.prototype.removeAllListeners=function(a){return a===undefined?(this.$events={},this):(this.$events&&this.$events[a]&&(this.$events[a]=null),this)},c.prototype.listeners=function(a){return this.$events||(this.$events={}),this.$events[a]||(this.$events[a]=[]),b.util.isArray(this.$events[a])||(this.$events[a]=[this.$events[a]]),this.$events[a]},c.prototype.emit=function(a){if(!this.$events)return!1;var c=this.$events[a];if(!c)return!1;var d=Array.prototype.slice.call(arguments,1);if("function"==typeof c)c.apply(this,d);else{if(!b.util.isArray(c))return!1;var e=c.slice();for(var f=0,g=e.length;f<g;f++)e[f].apply(this,d)}return!0}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(exports,nativeJSON){function f(a){return a<10?"0"+a:a}function date(a,b){return isFinite(a.valueOf())?a.getUTCFullYear()+"-"+f(a.getUTCMonth()+1)+"-"+f(a.getUTCDate())+"T"+f(a.getUTCHours())+":"+f(a.getUTCMinutes())+":"+f(a.getUTCSeconds())+"Z":null}function quote(a){return escapable.lastIndex=0,escapable.test(a)?'"'+a.replace(escapable,function(a){var b=meta[a];return typeof b=="string"?b:"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)})+'"':'"'+a+'"'}function str(a,b){var c,d,e,f,g=gap,h,i=b[a];i instanceof Date&&(i=date(a)),typeof rep=="function"&&(i=rep.call(b,a,i));switch(typeof i){case"string":return quote(i);case"number":return isFinite(i)?String(i):"null";case"boolean":case"null":return String(i);case"object":if(!i)return"null";gap+=indent,h=[];if(Object.prototype.toString.apply(i)==="[object Array]"){f=i.length;for(c=0;c<f;c+=1)h[c]=str(c,i)||"null";return e=h.length===0?"[]":gap?"[\n"+gap+h.join(",\n"+gap)+"\n"+g+"]":"["+h.join(",")+"]",gap=g,e}if(rep&&typeof rep=="object"){f=rep.length;for(c=0;c<f;c+=1)typeof rep[c]=="string"&&(d=rep[c],e=str(d,i),e&&h.push(quote(d)+(gap?": ":":")+e))}else for(d in i)Object.prototype.hasOwnProperty.call(i,d)&&(e=str(d,i),e&&h.push(quote(d)+(gap?": ":":")+e));return e=h.length===0?"{}":gap?"{\n"+gap+h.join(",\n"+gap)+"\n"+g+"}":"{"+h.join(",")+"}",gap=g,e}}"use strict";if(nativeJSON&&nativeJSON.parse)return exports.JSON={parse:nativeJSON.parse,stringify:nativeJSON.stringify};var JSON=exports.JSON={},cx=/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,escapable=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,gap,indent,meta={"\b":"\\b","\t":"\\t","\n":"\\n","\f":"\\f","\r":"\\r",'"':'\\"',"\\":"\\\\"},rep;JSON.stringify=function(a,b,c){var d;gap="",indent="";if(typeof c=="number")for(d=0;d<c;d+=1)indent+=" ";else typeof c=="string"&&(indent=c);rep=b;if(!b||typeof b=="function"||typeof b=="object"&&typeof b.length=="number")return str("",{"":a});throw new Error("JSON.stringify")},JSON.parse=function(text,reviver){function walk(a,b){var c,d,e=a[b];if(e&&typeof e=="object")for(c in e)Object.prototype.hasOwnProperty.call(e,c)&&(d=walk(e,c),d!==undefined?e[c]=d:delete e[c]);return reviver.call(a,b,e)}var j;text=String(text),cx.lastIndex=0,cx.test(text)&&(text=text.replace(cx,function(a){return"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)}));if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,"@").replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,"]").replace(/(?:^|:|,)(?:\s*\[)+/g,"")))return j=eval("("+text+")"),typeof reviver=="function"?walk({"":j},""):j;throw new SyntaxError("JSON.parse")}}("undefined"!=typeof io?io:module.exports,typeof JSON!="undefined"?JSON:undefined),function(a,b){var c=a.parser={},d=c.packets=["disconnect","connect","heartbeat","message","json","event","ack","error","noop"],e=c.reasons=["transport not supported","client not handshaken","unauthorized"],f=c.advice=["reconnect"],g=b.JSON,h=b.util.indexOf;c.encodePacket=function(a){var b=h(d,a.type),c=a.id||"",i=a.endpoint||"",j=a.ack,k=null;switch(a.type){case"error":var l=a.reason?h(e,a.reason):"",m=a.advice?h(f,a.advice):"";if(l!==""||m!=="")k=l+(m!==""?"+"+m:"");break;case"message":a.data!==""&&(k=a.data);break;case"event":var n={name:a.name};a.args&&a.args.length&&(n.args=a.args),k=g.stringify(n);break;case"json":k=g.stringify(a.data);break;case"connect":a.qs&&(k=a.qs);break;case"ack":k=a.ackId+(a.args&&a.args.length?"+"+g.stringify(a.args):"")}var o=[b,c+(j=="data"?"+":""),i];return k!==null&&k!==undefined&&o.push(k),o.join(":")},c.encodePayload=function(a){var b="";if(a.length==1)return a[0];for(var c=0,d=a.length;c<d;c++){var e=a[c];b+="\ufffd"+e.length+"\ufffd"+a[c]}return b};var i=/([^:]+):([0-9]+)?(\+)?:([^:]+)?:?([\s\S]*)?/;c.decodePacket=function(a){var b=a.match(i);if(!b)return{};var c=b[2]||"",a=b[5]||"",h={type:d[b[1]],endpoint:b[4]||""};c&&(h.id=c,b[3]?h.ack="data":h.ack=!0);switch(h.type){case"error":var b=a.split("+");h.reason=e[b[0]]||"",h.advice=f[b[1]]||"";break;case"message":h.data=a||"";break;case"event":try{var j=g.parse(a);h.name=j.name,h.args=j.args}catch(k){}h.args=h.args||[];break;case"json":try{h.data=g.parse(a)}catch(k){}break;case"connect":h.qs=a||"";break;case"ack":var b=a.match(/^([0-9]+)(\+)?(.*)/);if(b){h.ackId=b[1],h.args=[];if(b[3])try{h.args=b[3]?g.parse(b[3]):[]}catch(k){}}break;case"disconnect":case"heartbeat":}return h},c.decodePayload=function(a){if(a.charAt(0)=="\ufffd"){var b=[];for(var d=1,e="";d<a.length;d++)a.charAt(d)=="\ufffd"?(b.push(c.decodePacket(a.substr(d+1).substr(0,e))),d+=Number(e)+1,e=""):e+=a.charAt(d);return b}return[c.decodePacket(a)]}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(a,b){function c(a,b){this.socket=a,this.sessid=b}a.Transport=c,b.util.mixin(c,b.EventEmitter),c.prototype.heartbeats=function(){return!0},c.prototype.onData=function(a){this.clearCloseTimeout(),(this.socket.connected||this.socket.connecting||this.socket.reconnecting)&&this.setCloseTimeout();if(a!==""){var c=b.parser.decodePayload(a);if(c&&c.length)for(var d=0,e=c.length;d<e;d++)this.onPacket(c[d])}return this},c.prototype.onPacket=function(a){return this.socket.setHeartbeatTimeout(),a.type=="heartbeat"?this.onHeartbeat():(a.type=="connect"&&a.endpoint==""&&this.onConnect(),a.type=="error"&&a.advice=="reconnect"&&(this.isOpen=!1),this.socket.onPacket(a),this)},c.prototype.setCloseTimeout=function(){if(!this.closeTimeout){var a=this;this.closeTimeout=setTimeout(function(){a.onDisconnect()},this.socket.closeTimeout)}},c.prototype.onDisconnect=function(){return this.isOpen&&this.close(),this.clearTimeouts(),this.socket.onDisconnect(),this},c.prototype.onConnect=function(){return this.socket.onConnect(),this},c.prototype.clearCloseTimeout=function(){this.closeTimeout&&(clearTimeout(this.closeTimeout),this.closeTimeout=null)},c.prototype.clearTimeouts=function(){this.clearCloseTimeout(),this.reopenTimeout&&clearTimeout(this.reopenTimeout)},c.prototype.packet=function(a){this.send(b.parser.encodePacket(a))},c.prototype.onHeartbeat=function(a){this.packet({type:"heartbeat"})},c.prototype.onOpen=function(){this.isOpen=!0,this.clearCloseTimeout(),this.socket.onOpen()},c.prototype.onClose=function(){var a=this;this.isOpen=!1,this.socket.onClose(),this.onDisconnect()},c.prototype.prepareUrl=function(){var a=this.socket.options;return this.scheme()+"://"+a.host+":"+a.port+"/"+a.resource+"/"+b.protocol+"/"+this.name+"/"+this.sessid},c.prototype.ready=function(a,b){b.call(this)}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(a,b,c){function d(a){this.options={port:80,secure:!1,document:"document"in c?document:!1,resource:"socket.io",transports:b.transports,"connect timeout":1e4,"try multiple transports":!0,reconnect:!0,"reconnection delay":500,"reconnection limit":Infinity,"reopen delay":3e3,"max reconnection attempts":10,"sync disconnect on unload":!1,"auto connect":!0,"flash policy port":10843,manualFlush:!1},b.util.merge(this.options,a),this.connected=!1,this.open=!1,this.connecting=!1,this.reconnecting=!1,this.namespaces={},this.buffer=[],this.doBuffer=!1;if(this.options["sync disconnect on unload"]&&(!this.isXDomain()||b.util.ua.hasCORS)){var d=this;b.util.on(c,"beforeunload",function(){d.disconnectSync()},!1)}this.options["auto connect"]&&this.connect()}function e(){}a.Socket=d,b.util.mixin(d,b.EventEmitter),d.prototype.of=function(a){return this.namespaces[a]||(this.namespaces[a]=new b.SocketNamespace(this,a),a!==""&&this.namespaces[a].packet({type:"connect"})),this.namespaces[a]},d.prototype.publish=function(){this.emit.apply(this,arguments);var a;for(var b in this.namespaces)this.namespaces.hasOwnProperty(b)&&(a=this.of(b),a.$emit.apply(a,arguments))},d.prototype.handshake=function(a){function f(b){b instanceof Error?(c.connecting=!1,c.onError(b.message)):a.apply(null,b.split(":"))}var c=this,d=this.options,g=["http"+(d.secure?"s":"")+":/",d.host+":"+d.port,d.resource,b.protocol,b.util.query(this.options.query,"t="+ +(new Date))].join("/");if(this.isXDomain()&&!b.util.ua.hasCORS){var h=document.getElementsByTagName("script")[0],i=document.createElement("script");i.src=g+"&jsonp="+b.j.length,h.parentNode.insertBefore(i,h),b.j.push(function(a){f(a),i.parentNode.removeChild(i)})}else{var j=b.util.request();j.open("GET",g,!0),this.isXDomain()&&(j.withCredentials=!0),j.onreadystatechange=function(){j.readyState==4&&(j.onreadystatechange=e,j.status==200?f(j.responseText):j.status==403?c.onError(j.responseText):(c.connecting=!1,!c.reconnecting&&c.onError(j.responseText)))},j.send(null)}},d.prototype.getTransport=function(a){var c=a||this.transports,d;for(var e=0,f;f=c[e];e++)if(b.Transport[f]&&b.Transport[f].check(this)&&(!this.isXDomain()||b.Transport[f].xdomainCheck(this)))return new b.Transport[f](this,this.sessionid);return null},d.prototype.connect=function(a){if(this.connecting)return this;var c=this;return c.connecting=!0,this.handshake(function(d,e,f,g){function h(a){c.transport&&c.transport.clearTimeouts(),c.transport=c.getTransport(a);if(!c.transport)return c.publish("connect_failed");c.transport.ready(c,function(){c.connecting=!0,c.publish("connecting",c.transport.name),c.transport.open(),c.options["connect timeout"]&&(c.connectTimeoutTimer=setTimeout(function(){if(!c.connected){c.connecting=!1;if(c.options["try multiple transports"]){var a=c.transports;while(a.length>0&&a.splice(0,1)[0]!=c.transport.name);a.length?h(a):c.publish("connect_failed")}}},c.options["connect timeout"]))})}c.sessionid=d,c.closeTimeout=f*1e3,c.heartbeatTimeout=e*1e3,c.transports||(c.transports=c.origTransports=g?b.util.intersect(g.split(","),c.options.transports):c.options.transports),c.setHeartbeatTimeout(),h(c.transports),c.once("connect",function(){clearTimeout(c.connectTimeoutTimer),a&&typeof a=="function"&&a()})}),this},d.prototype.setHeartbeatTimeout=function(){clearTimeout(this.heartbeatTimeoutTimer);if(this.transport&&!this.transport.heartbeats())return;var a=this;this.heartbeatTimeoutTimer=setTimeout(function(){a.transport.onClose()},this.heartbeatTimeout)},d.prototype.packet=function(a){return this.connected&&!this.doBuffer?this.transport.packet(a):this.buffer.push(a),this},d.prototype.setBuffer=function(a){this.doBuffer=a,!a&&this.connected&&this.buffer.length&&(this.options.manualFlush||this.flushBuffer())},d.prototype.flushBuffer=function(){this.transport.payload(this.buffer),this.buffer=[]},d.prototype.disconnect=function(){if(this.connected||this.connecting)this.open&&this.of("").packet({type:"disconnect"}),this.onDisconnect("booted");return this},d.prototype.disconnectSync=function(){var a=b.util.request(),c=["http"+(this.options.secure?"s":"")+":/",this.options.host+":"+this.options.port,this.options.resource,b.protocol,"",this.sessionid].join("/")+"/?disconnect=1";a.open("GET",c,!1),a.send(null),this.onDisconnect("booted")},d.prototype.isXDomain=function(){var a=c.location.port||("https:"==c.location.protocol?443:80);return this.options.host!==c.location.hostname||this.options.port!=a},d.prototype.onConnect=function(){this.connected||(this.connected=!0,this.connecting=!1,this.doBuffer||this.setBuffer(!1),this.emit("connect"))},d.prototype.onOpen=function(){this.open=!0},d.prototype.onClose=function(){this.open=!1,clearTimeout(this.heartbeatTimeoutTimer)},d.prototype.onPacket=function(a){this.of(a.endpoint).onPacket(a)},d.prototype.onError=function(a){a&&a.advice&&a.advice==="reconnect"&&(this.connected||this.connecting)&&(this.disconnect(),this.options.reconnect&&this.reconnect()),this.publish("error",a&&a.reason?a.reason:a)},d.prototype.onDisconnect=function(a){var b=this.connected,c=this.connecting;this.connected=!1,this.connecting=!1,this.open=!1;if(b||c)this.transport.close(),this.transport.clearTimeouts(),b&&(this.publish("disconnect",a),"booted"!=a&&this.options.reconnect&&!this.reconnecting&&this.reconnect())},d.prototype.reconnect=function(){function e(){if(a.connected){for(var b in a.namespaces)a.namespaces.hasOwnProperty(b)&&""!==b&&a.namespaces[b].packet({type:"connect"});a.publish("reconnect",a.transport.name,a.reconnectionAttempts)}clearTimeout(a.reconnectionTimer),a.removeListener("connect_failed",f),a.removeListener("connect",f),a.reconnecting=!1,delete a.reconnectionAttempts,delete a.reconnectionDelay,delete a.reconnectionTimer,delete a.redoTransports,a.options["try multiple transports"]=c}function f(){if(!a.reconnecting)return;if(a.connected)return e();if(a.connecting&&a.reconnecting)return a.reconnectionTimer=setTimeout(f,1e3);a.reconnectionAttempts++>=b?a.redoTransports?(a.publish("reconnect_failed"),e()):(a.on("connect_failed",f),a.options["try multiple transports"]=!0,a.transports=a.origTransports,a.transport=a.getTransport(),a.redoTransports=!0,a.connect()):(a.reconnectionDelay<d&&(a.reconnectionDelay*=2),a.connect(),a.publish("reconnecting",a.reconnectionDelay,a.reconnectionAttempts),a.reconnectionTimer=setTimeout(f,a.reconnectionDelay))}this.reconnecting=!0,this.reconnectionAttempts=0,this.reconnectionDelay=this.options["reconnection delay"];var a=this,b=this.options["max reconnection attempts"],c=this.options["try multiple transports"],d=this.options["reconnection limit"];this.options["try multiple transports"]=!1,this.reconnectionTimer=setTimeout(f,this.reconnectionDelay),this.on("connect",f)}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),function(a,b){function c(a,b){this.socket=a,this.name=b||"",this.flags={},this.json=new d(this,"json"),this.ackPackets=0,this.acks={}}function d(a,b){this.namespace=a,this.name=b}a.SocketNamespace=c,b.util.mixin(c,b.EventEmitter),c.prototype.$emit=b.EventEmitter.prototype.emit,c.prototype.of=function(){return this.socket.of.apply(this.socket,arguments)},c.prototype.packet=function(a){return a.endpoint=this.name,this.socket.packet(a),this.flags={},this},c.prototype.send=function(a,b){var c={type:this.flags.json?"json":"message",data:a};return"function"==typeof b&&(c.id=++this.ackPackets,c.ack=!0,this.acks[c.id]=b),this.packet(c)},c.prototype.emit=function(a){var b=Array.prototype.slice.call(arguments,1),c=b[b.length-1],d={type:"event",name:a};return"function"==typeof c&&(d.id=++this.ackPackets,d.ack="data",this.acks[d.id]=c,b=b.slice(0,b.length-1)),d.args=b,this.packet(d)},c.prototype.disconnect=function(){return this.name===""?this.socket.disconnect():(this.packet({type:"disconnect"}),this.$emit("disconnect")),this},c.prototype.onPacket=function(a){function d(){c.packet({type:"ack",args:b.util.toArray(arguments),ackId:a.id})}var c=this;switch(a.type){case"connect":this.$emit("connect");break;case"disconnect":this.name===""?this.socket.onDisconnect(a.reason||"booted"):this.$emit("disconnect",a.reason);break;case"message":case"json":var e=["message",a.data];a.ack=="data"?e.push(d):a.ack&&this.packet({type:"ack",ackId:a.id}),this.$emit.apply(this,e);break;case"event":var e=[a.name].concat(a.args);a.ack=="data"&&e.push(d),this.$emit.apply(this,e);break;case"ack":this.acks[a.ackId]&&(this.acks[a.ackId].apply(this,a.args),delete this.acks[a.ackId]);break;case"error":a.advice?this.socket.onError(a):a.reason=="unauthorized"?this.$emit("connect_failed",a.reason):this.$emit("error",a.reason)}},d.prototype.send=function(){this.namespace.flags[this.name]=!0,this.namespace.send.apply(this.namespace,arguments)},d.prototype.emit=function(){this.namespace.flags[this.name]=!0,this.namespace.emit.apply(this.namespace,arguments)}}("undefined"!=typeof io?io:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(a,b,c){function d(a){b.Transport.apply(this,arguments)}a.websocket=d,b.util.inherit(d,b.Transport),d.prototype.name="websocket",d.prototype.open=function(){var a=b.util.query(this.socket.options.query),d=this,e;return e||(e=c.MozWebSocket||c.WebSocket),this.websocket=new e(this.prepareUrl()+a),this.websocket.onopen=function(){d.onOpen(),d.socket.setBuffer(!1)},this.websocket.onmessage=function(a){d.onData(a.data)},this.websocket.onclose=function(){d.onClose(),d.socket.setBuffer(!0)},this.websocket.onerror=function(a){d.onError(a)},this},b.util.ua.iDevice?d.prototype.send=function(a){var b=this;return setTimeout(function(){b.websocket.send(a)},0),this}:d.prototype.send=function(a){return this.websocket.send(a),this},d.prototype.payload=function(a){for(var b=0,c=a.length;b<c;b++)this.packet(a[b]);return this},d.prototype.close=function(){return this.websocket.close(),this},d.prototype.onError=function(a){this.socket.onError(a)},d.prototype.scheme=function(){return this.socket.options.secure?"wss":"ws"},d.check=function(){return"WebSocket"in c&&!("__addTask"in WebSocket)||"MozWebSocket"in c},d.xdomainCheck=function(){return!0},b.transports.push("websocket")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),function(a,b){function c(){b.Transport.websocket.apply(this,arguments)}a.flashsocket=c,b.util.inherit(c,b.Transport.websocket),c.prototype.name="flashsocket",c.prototype.open=function(){var a=this,c=arguments;return WebSocket.__addTask(function(){b.Transport.websocket.prototype.open.apply(a,c)}),this},c.prototype.send=function(){var a=this,c=arguments;return WebSocket.__addTask(function(){b.Transport.websocket.prototype.send.apply(a,c)}),this},c.prototype.close=function(){return WebSocket.__tasks.length=0,b.Transport.websocket.prototype.close.call(this),this},c.prototype.ready=function(a,d){function e(){var b=a.options,e=b["flash policy port"],g=["http"+(b.secure?"s":"")+":/",b.host+":"+b.port,b.resource,"static/flashsocket","WebSocketMain"+(a.isXDomain()?"Insecure":"")+".swf"];c.loaded||(typeof WEB_SOCKET_SWF_LOCATION=="undefined"&&(WEB_SOCKET_SWF_LOCATION=g.join("/")),e!==843&&WebSocket.loadFlashPolicyFile("xmlsocket://"+b.host+":"+e),WebSocket.__initialize(),c.loaded=!0),d.call(f)}var f=this;if(document.body)return e();b.util.load(e)},c.check=function(){return typeof WebSocket!="undefined"&&"__initialize"in WebSocket&&!!swfobject?swfobject.getFlashPlayerVersion().major>=10:!1},c.xdomainCheck=function(){return!0},typeof window!="undefined"&&(WEB_SOCKET_DISABLE_AUTO_INITIALIZATION=!0),b.transports.push("flashsocket")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports);if("undefined"!=typeof window)var swfobject=function(){function A(){if(t)return;try{var a=i.getElementsByTagName("body")[0].appendChild(Q("span"));a.parentNode.removeChild(a)}catch(b){return}t=!0;var c=l.length;for(var d=0;d<c;d++)l[d]()}function B(a){t?a():l[l.length]=a}function C(b){if(typeof h.addEventListener!=a)h.addEventListener("load",b,!1);else if(typeof i.addEventListener!=a)i.addEventListener("load",b,!1);else if(typeof h.attachEvent!=a)R(h,"onload",b);else if(typeof h.onload=="function"){var c=h.onload;h.onload=function(){c(),b()}}else h.onload=b}function D(){k?E():F()}function E(){var c=i.getElementsByTagName("body")[0],d=Q(b);d.setAttribute("type",e);var f=c.appendChild(d);if(f){var g=0;(function(){if(typeof f.GetVariable!=a){var b=f.GetVariable("$version");b&&(b=b.split(" ")[1].split(","),y.pv=[parseInt(b[0],10),parseInt(b[1],10),parseInt(b[2],10)])}else if(g<10){g++,setTimeout(arguments.callee,10);return}c.removeChild(d),f=null,F()})()}else F()}function F(){var b=m.length;if(b>0)for(var c=0;c<b;c++){var d=m[c].id,e=m[c].callbackFn,f={success:!1,id:d};if(y.pv[0]>0){var g=P(d);if(g)if(S(m[c].swfVersion)&&!(y.wk&&y.wk<312))U(d,!0),e&&(f.success=!0,f.ref=G(d),e(f));else if(m[c].expressInstall&&H()){var h={};h.data=m[c].expressInstall,h.width=g.getAttribute("width")||"0",h.height=g.getAttribute("height")||"0",g.getAttribute("class")&&(h.styleclass=g.getAttribute("class")),g.getAttribute("align")&&(h.align=g.getAttribute("align"));var i={},j=g.getElementsByTagName("param"),k=j.length;for(var l=0;l<k;l++)j[l].getAttribute("name").toLowerCase()!="movie"&&(i[j[l].getAttribute("name")]=j[l].getAttribute("value"));I(h,i,d,e)}else J(g),e&&e(f)}else{U(d,!0);if(e){var n=G(d);n&&typeof n.SetVariable!=a&&(f.success=!0,f.ref=n),e(f)}}}}function G(c){var d=null,e=P(c);if(e&&e.nodeName=="OBJECT")if(typeof e.SetVariable!=a)d=e;else{var f=e.getElementsByTagName(b)[0];f&&(d=f)}return d}function H(){return!u&&S("6.0.65")&&(y.win||y.mac)&&!(y.wk&&y.wk<312)}function I(b,c,d,e){u=!0,r=e||null,s={success:!1,id:d};var g=P(d);if(g){g.nodeName=="OBJECT"?(p=K(g),q=null):(p=g,q=d),b.id=f;if(typeof b.width==a||!/%$/.test(b.width)&&parseInt(b.width,10)<310)b.width="310";if(typeof b.height==a||!/%$/.test(b.height)&&parseInt(b.height,10)<137)b.height="137";i.title=i.title.slice(0,47)+" - Flash Player Installation";var j=y.ie&&y.win?["Active"].concat("").join("X"):"PlugIn",k="MMredirectURL="+h.location.toString().replace(/&/g,"%26")+"&MMplayerType="+j+"&MMdoctitle="+i.title;typeof c.flashvars!=a?c.flashvars+="&"+k:c.flashvars=k;if(y.ie&&y.win&&g.readyState!=4){var l=Q("div");d+="SWFObjectNew",l.setAttribute("id",d),g.parentNode.insertBefore(l,g),g.style.display="none",function(){g.readyState==4?g.parentNode.removeChild(g):setTimeout(arguments.callee,10)}()}L(b,c,d)}}function J(a){if(y.ie&&y.win&&a.readyState!=4){var b=Q("div");a.parentNode.insertBefore(b,a),b.parentNode.replaceChild(K(a),b),a.style.display="none",function(){a.readyState==4?a.parentNode.removeChild(a):setTimeout(arguments.callee,10)}()}else a.parentNode.replaceChild(K(a),a)}function K(a){var c=Q("div");if(y.win&&y.ie)c.innerHTML=a.innerHTML;else{var d=a.getElementsByTagName(b)[0];if(d){var e=d.childNodes;if(e){var f=e.length;for(var g=0;g<f;g++)(e[g].nodeType!=1||e[g].nodeName!="PARAM")&&e[g].nodeType!=8&&c.appendChild(e[g].cloneNode(!0))}}}return c}function L(c,d,f){var g,h=P(f);if(y.wk&&y.wk<312)return g;if(h){typeof c.id==a&&(c.id=f);if(y.ie&&y.win){var i="";for(var j in c)c[j]!=Object.prototype[j]&&(j.toLowerCase()=="data"?d.movie=c[j]:j.toLowerCase()=="styleclass"?i+=' class="'+c[j]+'"':j.toLowerCase()!="classid"&&(i+=" "+j+'="'+c[j]+'"'));var k="";for(var l in d)d[l]!=Object.prototype[l]&&(k+='<param name="'+l+'" value="'+d[l]+'" />');h.outerHTML='<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'+i+">"+k+"</object>",n[n.length]=c.id,g=P(c.id)}else{var m=Q(b);m.setAttribute("type",e);for(var o in c)c[o]!=Object.prototype[o]&&(o.toLowerCase()=="styleclass"?m.setAttribute("class",c[o]):o.toLowerCase()!="classid"&&m.setAttribute(o,c[o]));for(var p in d)d[p]!=Object.prototype[p]&&p.toLowerCase()!="movie"&&M(m,p,d[p]);h.parentNode.replaceChild(m,h),g=m}}return g}function M(a,b,c){var d=Q("param");d.setAttribute("name",b),d.setAttribute("value",c),a.appendChild(d)}function N(a){var b=P(a);b&&b.nodeName=="OBJECT"&&(y.ie&&y.win?(b.style.display="none",function(){b.readyState==4?O(a):setTimeout(arguments.callee,10)}()):b.parentNode.removeChild(b))}function O(a){var b=P(a);if(b){for(var c in b)typeof b[c]=="function"&&(b[c]=null);b.parentNode.removeChild(b)}}function P(a){var b=null;try{b=i.getElementById(a)}catch(c){}return b}function Q(a){return i.createElement(a)}function R(a,b,c){a.attachEvent(b,c),o[o.length]=[a,b,c]}function S(a){var b=y.pv,c=a.split(".");return c[0]=parseInt(c[0],10),c[1]=parseInt(c[1],10)||0,c[2]=parseInt(c[2],10)||0,b[0]>c[0]||b[0]==c[0]&&b[1]>c[1]||b[0]==c[0]&&b[1]==c[1]&&b[2]>=c[2]?!0:!1}function T(c,d,e,f){if(y.ie&&y.mac)return;var g=i.getElementsByTagName("head")[0];if(!g)return;var h=e&&typeof e=="string"?e:"screen";f&&(v=null,w=null);if(!v||w!=h){var j=Q("style");j.setAttribute("type","text/css"),j.setAttribute("media",h),v=g.appendChild(j),y.ie&&y.win&&typeof i.styleSheets!=a&&i.styleSheets.length>0&&(v=i.styleSheets[i.styleSheets.length-1]),w=h}y.ie&&y.win?v&&typeof v.addRule==b&&v.addRule(c,d):v&&typeof i.createTextNode!=a&&v.appendChild(i.createTextNode(c+" {"+d+"}"))}function U(a,b){if(!x)return;var c=b?"visible":"hidden";t&&P(a)?P(a).style.visibility=c:T("#"+a,"visibility:"+c)}function V(b){var c=/[\\\"<>\.;]/,d=c.exec(b)!=null;return d&&typeof encodeURIComponent!=a?encodeURIComponent(b):b}var a="undefined",b="object",c="Shockwave Flash",d="ShockwaveFlash.ShockwaveFlash",e="application/x-shockwave-flash",f="SWFObjectExprInst",g="onreadystatechange",h=window,i=document,j=navigator,k=!1,l=[D],m=[],n=[],o=[],p,q,r,s,t=!1,u=!1,v,w,x=!0,y=function(){var f=typeof i.getElementById!=a&&typeof i.getElementsByTagName!=a&&typeof i.createElement!=a,g=j.userAgent.toLowerCase(),l=j.platform.toLowerCase(),m=l?/win/.test(l):/win/.test(g),n=l?/mac/.test(l):/mac/.test(g),o=/webkit/.test(g)?parseFloat(g.replace(/^.*webkit\/(\d+(\.\d+)?).*$/,"$1")):!1,p=!1,q=[0,0,0],r=null;if(typeof j.plugins!=a&&typeof j.plugins[c]==b)r=j.plugins[c].description,r&&(typeof j.mimeTypes==a||!j.mimeTypes[e]||!!j.mimeTypes[e].enabledPlugin)&&(k=!0,p=!1,r=r.replace(/^.*\s+(\S+\s+\S+$)/,"$1"),q[0]=parseInt(r.replace(/^(.*)\..*$/,"$1"),10),q[1]=parseInt(r.replace(/^.*\.(.*)\s.*$/,"$1"),10),q[2]=/[a-zA-Z]/.test(r)?parseInt(r.replace(/^.*[a-zA-Z]+(.*)$/,"$1"),10):0);else if(typeof h[["Active"].concat("Object").join("X")]!=a)try{var s=new(window[["Active"].concat("Object").join("X")])(d);s&&(r=s.GetVariable("$version"),r&&(p=!0,r=r.split(" ")[1].split(","),q=[parseInt(r[0],10),parseInt(r[1],10),parseInt(r[2],10)]))}catch(t){}return{w3:f,pv:q,wk:o,ie:p,win:m,mac:n}}(),z=function(){if(!y.w3)return;(typeof i.readyState!=a&&i.readyState=="complete"||typeof i.readyState==a&&(i.getElementsByTagName("body")[0]||i.body))&&A(),t||(typeof i.addEventListener!=a&&i.addEventListener("DOMContentLoaded",A,!1),y.ie&&y.win&&(i.attachEvent(g,function(){i.readyState=="complete"&&(i.detachEvent(g,arguments.callee),A())}),h==top&&function(){if(t)return;try{i.documentElement.doScroll("left")}catch(a){setTimeout(arguments.callee,0);return}A()}()),y.wk&&function(){if(t)return;if(!/loaded|complete/.test(i.readyState)){setTimeout(arguments.callee,0);return}A()}(),C(A))}(),W=function(){y.ie&&y.win&&window.attachEvent("onunload",function(){var a=o.length;for(var b=0;b<a;b++)o[b][0].detachEvent(o[b][1],o[b][2]);var c=n.length;for(var d=0;d<c;d++)N(n[d]);for(var e in y)y[e]=null;y=null;for(var f in swfobject)swfobject[f]=null;swfobject=null})}();return{registerObject:function(a,b,c,d){if(y.w3&&a&&b){var e={};e.id=a,e.swfVersion=b,e.expressInstall=c,e.callbackFn=d,m[m.length]=e,U(a,!1)}else d&&d({success:!1,id:a})},getObjectById:function(a){if(y.w3)return G(a)},embedSWF:function(c,d,e,f,g,h,i,j,k,l){var m={success:!1,id:d};y.w3&&!(y.wk&&y.wk<312)&&c&&d&&e&&f&&g?(U(d,!1),B(function(){e+="",f+="";var n={};if(k&&typeof k===b)for(var o in k)n[o]=k[o];n.data=c,n.width=e,n.height=f;var p={};if(j&&typeof j===b)for(var q in j)p[q]=j[q];if(i&&typeof i===b)for(var r in i)typeof p.flashvars!=a?p.flashvars+="&"+r+"="+i[r]:p.flashvars=r+"="+i[r];if(S(g)){var s=L(n,p,d);n.id==d&&U(d,!0),m.success=!0,m.ref=s}else{if(h&&H()){n.data=h,I(n,p,d,l);return}U(d,!0)}l&&l(m)})):l&&l(m)},switchOffAutoHideShow:function(){x=!1},ua:y,getFlashPlayerVersion:function(){return{major:y.pv[0],minor:y.pv[1],release:y.pv[2]}},hasFlashPlayerVersion:S,createSWF:function(a,b,c){return y.w3?L(a,b,c):undefined},showExpressInstall:function(a,b,c,d){y.w3&&H()&&I(a,b,c,d)},removeSWF:function(a){y.w3&&N(a)},createCSS:function(a,b,c,d){y.w3&&T(a,b,c,d)},addDomLoadEvent:B,addLoadEvent:C,getQueryParamValue:function(a){var b=i.location.search||i.location.hash;if(b){/\?/.test(b)&&(b=b.split("?")[1]);if(a==null)return V(b);var c=b.split("&");for(var d=0;d<c.length;d++)if(c[d].substring(0,c[d].indexOf("="))==a)return V(c[d].substring(c[d].indexOf("=")+1))}return""},expressInstallCallback:function(){if(u){var a=P(f);a&&p&&(a.parentNode.replaceChild(p,a),q&&(U(q,!0),y.ie&&y.win&&(p.style.display="block")),r&&r(s)),u=!1}}}}();(function(){if("undefined"==typeof window||window.WebSocket)return;var a=window.console;if(!a||!a.log||!a.error)a={log:function(){},error:function(){}};if(!swfobject.hasFlashPlayerVersion("10.0.0")){a.error("Flash Player >= 10.0.0 is required.");return}location.protocol=="file:"&&a.error("WARNING: web-socket-js doesn't work in file:///... URL unless you set Flash Security Settings properly. Open the page via Web server i.e. http://..."),WebSocket=function(a,b,c,d,e){var f=this;f.__id=WebSocket.__nextId++,WebSocket.__instances[f.__id]=f,f.readyState=WebSocket.CONNECTING,f.bufferedAmount=0,f.__events={},b?typeof b=="string"&&(b=[b]):b=[],setTimeout(function(){WebSocket.__addTask(function(){WebSocket.__flash.create(f.__id,a,b,c||null,d||0,e||null)})},0)},WebSocket.prototype.send=function(a){if(this.readyState==WebSocket.CONNECTING)throw"INVALID_STATE_ERR: Web Socket connection has not been established";var b=WebSocket.__flash.send(this.__id,encodeURIComponent(a));return b<0?!0:(this.bufferedAmount+=b,!1)},WebSocket.prototype.close=function(){if(this.readyState==WebSocket.CLOSED||this.readyState==WebSocket.CLOSING)return;this.readyState=WebSocket.CLOSING,WebSocket.__flash.close(this.__id)},WebSocket.prototype.addEventListener=function(a,b,c){a in this.__events||(this.__events[a]=[]),this.__events[a].push(b)},WebSocket.prototype.removeEventListener=function(a,b,c){if(!(a in this.__events))return;var d=this.__events[a];for(var e=d.length-1;e>=0;--e)if(d[e]===b){d.splice(e,1);break}},WebSocket.prototype.dispatchEvent=function(a){var b=this.__events[a.type]||[];for(var c=0;c<b.length;++c)b[c](a);var d=this["on"+a.type];d&&d(a)},WebSocket.prototype.__handleEvent=function(a){"readyState"in a&&(this.readyState=a.readyState),"protocol"in a&&(this.protocol=a.protocol);var b;if(a.type=="open"||a.type=="error")b=this.__createSimpleEvent(a.type);else if(a.type=="close")b=this.__createSimpleEvent("close");else{if(a.type!="message")throw"unknown event type: "+a.type;var c=decodeURIComponent(a.message);b=this.__createMessageEvent("message",c)}this.dispatchEvent(b)},WebSocket.prototype.__createSimpleEvent=function(a){if(document.createEvent&&window.Event){var b=document.createEvent("Event");return b.initEvent(a,!1,!1),b}return{type:a,bubbles:!1,cancelable:!1}},WebSocket.prototype.__createMessageEvent=function(a,b){if(document.createEvent&&window.MessageEvent&&!window.opera){var c=document.createEvent("MessageEvent");return c.initMessageEvent("message",!1,!1,b,null,null,window,null),c}return{type:a,data:b,bubbles:!1,cancelable:!1}},WebSocket.CONNECTING=0,WebSocket.OPEN=1,WebSocket.CLOSING=2,WebSocket.CLOSED=3,WebSocket.__flash=null,WebSocket.__instances={},WebSocket.__tasks=[],WebSocket.__nextId=0,WebSocket.loadFlashPolicyFile=function(a){WebSocket.__addTask(function(){WebSocket.__flash.loadManualPolicyFile(a)})},WebSocket.__initialize=function(){if(WebSocket.__flash)return;WebSocket.__swfLocation&&(window.WEB_SOCKET_SWF_LOCATION=WebSocket.__swfLocation);if(!window.WEB_SOCKET_SWF_LOCATION){a.error("[WebSocket] set WEB_SOCKET_SWF_LOCATION to location of WebSocketMain.swf");return}var b=document.createElement("div");b.id="webSocketContainer",b.style.position="absolute",WebSocket.__isFlashLite()?(b.style.left="0px",b.style.top="0px"):(b.style.left="-100px",b.style.top="-100px");var c=document.createElement("div");c.id="webSocketFlash",b.appendChild(c),document.body.appendChild(b),swfobject.embedSWF(WEB_SOCKET_SWF_LOCATION,"webSocketFlash","1","1","10.0.0",null,null,{hasPriority:!0,swliveconnect:!0,allowScriptAccess:"always"},null,function(b){b.success||a.error("[WebSocket] swfobject.embedSWF failed")})},WebSocket.__onFlashInitialized=function(){setTimeout(function(){WebSocket.__flash=document.getElementById("webSocketFlash"),WebSocket.__flash.setCallerUrl(location.href),WebSocket.__flash.setDebug(!!window.WEB_SOCKET_DEBUG);for(var a=0;a<WebSocket.__tasks.length;++a)WebSocket.__tasks[a]();WebSocket.__tasks=[]},0)},WebSocket.__onFlashEvent=function(){return setTimeout(function(){try{var b=WebSocket.__flash.receiveEvents();for(var c=0;c<b.length;++c)WebSocket.__instances[b[c].webSocketId].__handleEvent(b[c])}catch(d){a.error(d)}},0),!0},WebSocket.__log=function(b){a.log(decodeURIComponent(b))},WebSocket.__error=function(b){a.error(decodeURIComponent(b))},WebSocket.__addTask=function(a){WebSocket.__flash?a():WebSocket.__tasks.push(a)},WebSocket.__isFlashLite=function(){if(!window.navigator||!window.navigator.mimeTypes)return!1;var a=window.navigator.mimeTypes["application/x-shockwave-flash"];return!a||!a.enabledPlugin||!a.enabledPlugin.filename?!1:a.enabledPlugin.filename.match(/flashlite/i)?!0:!1},window.WEB_SOCKET_DISABLE_AUTO_INITIALIZATION||(window.addEventListener?window.addEventListener("load",function(){WebSocket.__initialize()},!1):window.attachEvent("onload",function(){WebSocket.__initialize()}))})(),function(a,b,c){function d(a){if(!a)return;b.Transport.apply(this,arguments),this.sendBuffer=[]}function e(){}a.XHR=d,b.util.inherit(d,b.Transport),d.prototype.open=function(){return this.socket.setBuffer(!1),this.onOpen(),this.get(),this.setCloseTimeout(),this},d.prototype.payload=function(a){var c=[];for(var d=0,e=a.length;d<e;d++)c.push(b.parser.encodePacket(a[d]));this.send(b.parser.encodePayload(c))},d.prototype.send=function(a){return this.post(a),this},d.prototype.post=function(a){function d(){this.readyState==4&&(this.onreadystatechange=e,b.posting=!1,this.status==200?b.socket.setBuffer(!1):b.onClose())}function f(){this.onload=e,b.socket.setBuffer(!1)}var b=this;this.socket.setBuffer(!0),this.sendXHR=this.request("POST"),c.XDomainRequest&&this.sendXHR instanceof XDomainRequest?this.sendXHR.onload=this.sendXHR.onerror=f:this.sendXHR.onreadystatechange=d,this.sendXHR.send(a)},d.prototype.close=function(){return this.onClose(),this},d.prototype.request=function(a){var c=b.util.request(this.socket.isXDomain()),d=b.util.query(this.socket.options.query,"t="+ +(new Date));c.open(a||"GET",this.prepareUrl()+d,!0);if(a=="POST")try{c.setRequestHeader?c.setRequestHeader("Content-type","text/plain;charset=UTF-8"):c.contentType="text/plain"}catch(e){}return c},d.prototype.scheme=function(){return this.socket.options.secure?"https":"http"},d.check=function(a,d){try{var e=b.util.request(d),f=c.XDomainRequest&&e instanceof XDomainRequest,g=a&&a.options&&a.options.secure?"https:":"http:",h=c.location&&g!=c.location.protocol;if(e&&(!f||!h))return!0}catch(i){}return!1},d.xdomainCheck=function(a){return d.check(a,!0)}}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),function(a,b){function c(a){b.Transport.XHR.apply(this,arguments)}a.htmlfile=c,b.util.inherit(c,b.Transport.XHR),c.prototype.name="htmlfile",c.prototype.get=function(){this.doc=new(window[["Active"].concat("Object").join("X")])("htmlfile"),this.doc.open(),this.doc.write("<html></html>"),this.doc.close(),this.doc.parentWindow.s=this;var a=this.doc.createElement("div");a.className="socketio",this.doc.body.appendChild(a),this.iframe=this.doc.createElement("iframe"),a.appendChild(this.iframe);var c=this,d=b.util.query(this.socket.options.query,"t="+ +(new Date));this.iframe.src=this.prepareUrl()+d,b.util.on(window,"unload",function(){c.destroy()})},c.prototype._=function(a,b){this.onData(a);try{var c=b.getElementsByTagName("script")[0];c.parentNode.removeChild(c)}catch(d){}},c.prototype.destroy=function(){if(this.iframe){try{this.iframe.src="about:blank"}catch(a){}this.doc=null,this.iframe.parentNode.removeChild(this.iframe),this.iframe=null,CollectGarbage()}},c.prototype.close=function(){return this.destroy(),b.Transport.XHR.prototype.close.call(this)},c.check=function(a){if(typeof window!="undefined"&&["Active"].concat("Object").join("X")in window)try{var c=new(window[["Active"].concat("Object").join("X")])("htmlfile");return c&&b.Transport.XHR.check(a)}catch(d){}return!1},c.xdomainCheck=function(){return!1},b.transports.push("htmlfile")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports),function(a,b,c){function d(){b.Transport.XHR.apply(this,arguments)}function e(){}a["xhr-polling"]=d,b.util.inherit(d,b.Transport.XHR),b.util.merge(d,b.Transport.XHR),d.prototype.name="xhr-polling",d.prototype.heartbeats=function(){return!1},d.prototype.open=function(){var a=this;return b.Transport.XHR.prototype.open.call(a),!1},d.prototype.get=function(){function b(){this.readyState==4&&(this.onreadystatechange=e,this.status==200?(a.onData(this.responseText),a.get()):a.onClose())}function d(){this.onload=e,this.onerror=e,a.retryCounter=1,a.onData(this.responseText),a.get()}function f(){a.retryCounter++,!a.retryCounter||a.retryCounter>3?a.onClose():a.get()}if(!this.isOpen)return;var a=this;this.xhr=this.request(),c.XDomainRequest&&this.xhr instanceof XDomainRequest?(this.xhr.onload=d,this.xhr.onerror=f):this.xhr.onreadystatechange=b,this.xhr.send(null)},d.prototype.onClose=function(){b.Transport.XHR.prototype.onClose.call(this);if(this.xhr){this.xhr.onreadystatechange=this.xhr.onload=this.xhr.onerror=e;try{this.xhr.abort()}catch(a){}this.xhr=null}},d.prototype.ready=function(a,c){var d=this;b.util.defer(function(){c.call(d)})},b.transports.push("xhr-polling")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),function(a,b,c){function e(a){b.Transport["xhr-polling"].apply(this,arguments),this.index=b.j.length;var c=this;b.j.push(function(a){c._(a)})}var d=c.document&&"MozAppearance"in c.document.documentElement.style;a["jsonp-polling"]=e,b.util.inherit(e,b.Transport["xhr-polling"]),e.prototype.name="jsonp-polling",e.prototype.post=function(a){function i(){j(),c.socket.setBuffer(!1)}function j(){c.iframe&&c.form.removeChild(c.iframe);try{h=document.createElement('<iframe name="'+c.iframeId+'">')}catch(a){h=document.createElement("iframe"),h.name=c.iframeId}h.id=c.iframeId,c.form.appendChild(h),c.iframe=h}var c=this,d=b.util.query(this.socket.options.query,"t="+ +(new Date)+"&i="+this.index);if(!this.form){var e=document.createElement("form"),f=document.createElement("textarea"),g=this.iframeId="socketio_iframe_"+this.index,h;e.className="socketio",e.style.position="absolute",e.style.top="0px",e.style.left="0px",e.style.display="none",e.target=g,e.method="POST",e.setAttribute("accept-charset","utf-8"),f.name="d",e.appendChild(f),document.body.appendChild(e),this.form=e,this.area=f}this.form.action=this.prepareUrl()+d,j(),this.area.value=b.JSON.stringify(a);try{this.form.submit()}catch(k){}this.iframe.attachEvent?h.onreadystatechange=function(){c.iframe.readyState=="complete"&&i()}:this.iframe.onload=i,this.socket.setBuffer(!0)},e.prototype.get=function(){var a=this,c=document.createElement("script"),e=b.util.query(this.socket.options.query,"t="+ +(new Date)+"&i="+this.index);this.script&&(this.script.parentNode.removeChild(this.script),this.script=null),c.async=!0,c.src=this.prepareUrl()+e,c.onerror=function(){a.onClose()};var f=document.getElementsByTagName("script")[0];f.parentNode.insertBefore(c,f),this.script=c,d&&setTimeout(function(){var a=document.createElement("iframe");document.body.appendChild(a),document.body.removeChild(a)},100)},e.prototype._=function(a){return this.onData(a),this.isOpen&&this.get(),this},e.prototype.ready=function(a,c){var e=this;if(!d)return c.call(this);b.util.load(function(){c.call(e)})},e.check=function(){return"document"in c},e.xdomainCheck=function(){return!0},b.transports.push("jsonp-polling")}("undefined"!=typeof io?io.Transport:module.exports,"undefined"!=typeof io?io:module.parent.exports,this),typeof define=="function"&&define.amd&&define([],function(){return io})})()
-},{}],33:[function(_dereq_,module,exports){
+},{}],34:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -8299,7 +8465,7 @@ appCore.module('IgeStreamComponent', function ($ige, $time, igeBase, IgeEventing
 	
 	return IgeStreamComponent;
 });
-},{"irrelon-appcore":125}],34:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],35:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -9026,7 +9192,7 @@ appCore.module('IgeBox2dComponent', function ($ige, $time, Box2D, IgeEventingCla
 	
 	return IgeBox2dComponent;
 });
-},{"irrelon-appcore":125}],35:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],36:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -9056,7 +9222,7 @@ appCore.module('IgeBox2dDebugPainter', function (IgeObject) {
 	
 	return IgeBox2dDebugPainter;
 });
-},{"irrelon-appcore":125}],36:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],37:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -9204,7 +9370,7 @@ appCore.module('IgeBox2dMultiWorldComponent', function (IgeEventingClass) {
 	
 	return IgeBox2dMultiWorldComponent;
 });
-},{"irrelon-appcore":125}],37:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],38:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -9760,7 +9926,7 @@ appCore.module('IgeBox2dWorld', function ($time, IgeEventingClass) {
 	
 	return IgeBox2dWorld;
 });
-},{"irrelon-appcore":125}],38:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],39:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -10154,7 +10320,7 @@ appCore.module('IgeEntityBox2d', function ($ige, IgeEntity) {
 	
 	return IgeEntityBox2d;
 });
-},{"irrelon-appcore":125}],39:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],40:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21121,7 +21287,7 @@ appCore.module('Box2D', function () {
 	
 	return Box2D;
 });
-},{"irrelon-appcore":125}],40:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],41:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21446,7 +21612,7 @@ appCore.module('IgeCannonComponent', function (IgeEventingClass) {
 	return IgeCannonComponent;
 });
 
-},{"irrelon-appcore":125}],41:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],42:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -21513,7 +21679,7 @@ appCore.module('IgeEntityCannon', function (IgeEntity) {
 	
 	return IgeEntityCannon;
 });
-},{"irrelon-appcore":125}],42:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],43:[function(_dereq_,module,exports){
 /**
  * Copyright (c) 2012 cannon.js Authors
  *
@@ -26240,7 +26406,7 @@ appCore.module('IgeEntityCannon', function (IgeEntity) {
 	}
 
 }).apply(this);
-},{}],43:[function(_dereq_,module,exports){
+},{}],44:[function(_dereq_,module,exports){
 //"use strict"; // We use arguments.callee in here, cannot have strict mode on this module
 
 var appCore = _dereq_('irrelon-appcore');
@@ -26586,7 +26752,7 @@ appCore.module('printStackTrace', function () {
 	
 	return printStackTrace;
 });
-},{"irrelon-appcore":125}],44:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],45:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -26596,11 +26762,14 @@ appCore.module('$game', function () {
 		// Determine the environment we are executing in
 		this.isServer = (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined' && typeof window === 'undefined');
 		this.isClient = !this.isServer;
+		
+		this.scene = {};
+		this.audio = {};
 	};
 	
 	return new $game();
 });
-},{"irrelon-appcore":125}],45:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],46:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -26781,7 +26950,7 @@ appCore.module('$ige', function () {
 			}
 			
 			if (!definition.controller) {
-				self.log('$ige.engine._routeAdd() encounterd a route that has no controller specified: ' + thisFullPath, 'error');
+				self.log('$ige.engine._routeAdd() encountered a route that has no controller specified: ' + thisFullPath, 'error');
 			}
 			
 			routeData = {
@@ -26907,7 +27076,7 @@ appCore.module('$ige', function () {
 	
 	return new $ige();
 });
-},{"irrelon-appcore":125}],46:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],47:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -26946,7 +27115,7 @@ appCore.module('$requestAnimFrame', function () {
 	
 	return requestAnimFrame;
 });
-},{"irrelon-appcore":125}],47:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],48:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore'),
@@ -27109,7 +27278,7 @@ appCore.module('$textures', function ($ige) {
 	
 	return new $textures();
 });
-},{"irrelon-appcore":125,"irrelon-emitter":127}],48:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126,"irrelon-emitter":128}],49:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -27134,7 +27303,7 @@ appCore.module('$time', function () {
 	
 	return new $time();
 });
-},{"irrelon-appcore":125}],49:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],50:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -27161,7 +27330,7 @@ appCore.module('IgeArray', function (IgeEntity) {
 	
 	return IgeArray;
 });
-},{"irrelon-appcore":125}],50:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],51:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -27887,7 +28056,7 @@ appCore.module('igeBase').run(function (IgeTween) {
 		return newTween;
 	};
 });
-},{"irrelon-appcore":125,"util":132}],51:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126,"util":133}],52:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -27942,7 +28111,7 @@ appCore.module('IgeBaseScene', function ($ige, IgeSceneGraph, IgeScene2d, IgeVie
 	
 	return IgeBaseScene;
 });
-},{"irrelon-appcore":125}],52:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],53:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -28322,7 +28491,7 @@ appCore.module('IgeCamera', function (IgeEntity) {
 	
 	return IgeCamera;
 });
-},{"irrelon-appcore":125}],53:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],54:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -28463,7 +28632,7 @@ appCore.module('IgeCellSheet', function (IgeTexture) {
 	
 	return IgeCellSheet;
 });
-},{"irrelon-appcore":125}],54:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],55:[function(_dereq_,module,exports){
 //"use strict"; // We use arguments.callee in here, cannot have strict mode on this module
 
 var appCore = _dereq_('irrelon-appcore');
@@ -28914,7 +29083,7 @@ appCore.module('IgeClass', function ($ige, igeBase, printStackTrace) {
 	
 	return IgeClass;
 });
-},{"irrelon-appcore":125}],55:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],56:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -28940,7 +29109,7 @@ appCore.module('IgeCollisionMap2d', function (IgeEntity, IgeMap2d) {
 	
 	return IgeCollisionMap2d;
 });
-},{"irrelon-appcore":125}],56:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],57:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -28958,7 +29127,7 @@ appCore.module('IgeDummyCanvas', function (IgeDummyContext) {
 	
 	return IgeDummyCanvas;
 });
-},{"irrelon-appcore":125}],57:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],58:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -28991,7 +29160,7 @@ appCore.module('IgeDummyContext', function () {
 	
 	return IgeDummyContext;
 });
-},{"irrelon-appcore":125}],58:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],59:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -29044,9 +29213,9 @@ appCore.module('IgeEngine', function (
 				
 				// Output our header
 				console.log('------------------------------------------------------------------------------');
-				console.log('* Powered by the Isogenic Game Engine ' + igeBase.version() + '                  *');
-				console.log('* (C)opyright ' + new Date().getFullYear() + ' Irrelon Software Limited                                  *');
-				console.log('* http://www.isogenicengine.com                                              *');
+				console.log('| Powered by the Isogenic Game Engine ' + igeBase.version() + '                  |');
+				console.log('| (C)opyright ' + new Date().getFullYear() + ' Irrelon Software Limited                                  |');
+				console.log('| http://www.isogenicengine.com                                              |');
 				console.log('------------------------------------------------------------------------------');
 				
 				IgeEntity.prototype.init.call(this);
@@ -30144,7 +30313,7 @@ appCore.module('IgeEngine', function (
 			 * @return {IgePoint3d}
 			 */
 			mousePos: function () {
-				return $ige._mousePos.clone();
+				return this._mousePos.clone();
 			},
 			
 			/**
@@ -31115,7 +31284,7 @@ appCore.module('IgeEngine', function (
 		
 		return IgeEngine;
 	});
-},{"irrelon-appcore":125}],59:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],60:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -35308,7 +35477,7 @@ appCore.module('IgeEntity', function ($ige, $textures, $time, IgeObject, IgePoin
 	
 	return IgeEntity;
 });
-},{"irrelon-appcore":125}],60:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],61:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -35640,7 +35809,7 @@ appCore.module('IgeEventingClass', function (IgeClass) {
 	
 	return IgeEventingClass;
 });
-},{"irrelon-appcore":125}],61:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],62:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -35933,7 +36102,7 @@ appCore.module('IgeFSM', function (IgeClass) {
 	
 	return IgeFSM;
 });
-},{"irrelon-appcore":125}],62:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],63:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -35950,7 +36119,7 @@ appCore.module('IgeFilters', function () {
 	
 	return IgeFilters;
 });
-},{"irrelon-appcore":125}],63:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],64:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -36386,7 +36555,7 @@ appCore.module('IgeFontEntity', function (IgeUiEntity, IgeTexture, IgeFontSmartT
 	
 	return IgeFontEntity;
 });
-},{"irrelon-appcore":125}],64:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],65:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -36696,7 +36865,7 @@ appCore.module('IgeFontSheet', function ($time, IgeTexture) {
 	
 	return IgeFontSheet;
 });
-},{"irrelon-appcore":125}],65:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],66:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -36774,7 +36943,7 @@ appCore.module('IgeInterval', function ($ige, $time, IgeEventingClass) {
 	
 	return IgeInterval;
 });
-},{"irrelon-appcore":125}],66:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],67:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -37060,7 +37229,7 @@ appCore.module('IgeMap2d', function (IgeClass) {
 	
 	return IgeMap2d;
 });
-},{"irrelon-appcore":125}],67:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],68:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -37217,7 +37386,7 @@ appCore.module('IgeMapStack2d', function (IgeClass) {
 	
 	return IgeMapStack2d;
 });
-},{"irrelon-appcore":125}],68:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],69:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -37668,7 +37837,7 @@ appCore.module('IgeMatrix2d', function (IgePoint3d) {
 	
 	return IgeMatrix2d;
 });
-},{"irrelon-appcore":125}],69:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],70:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -39725,7 +39894,7 @@ appCore.module('IgeObject', function ($ige, igeBase, IgeEventingClass) {
 	return IgeObject;
 });
 
-},{"irrelon-appcore":125}],70:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],71:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -39753,7 +39922,7 @@ appCore.module('IgeParticle', function (IgeEntity, IgeVelocityComponent) {
 	
 	return IgeParticle;
 });
-},{"irrelon-appcore":125}],71:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],72:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -40459,7 +40628,7 @@ appCore.module('IgeParticleEmitter', function ($time, IgeUiEntity, IgeTween) {
 	
 	return IgeParticleEmitter;
 });
-},{"irrelon-appcore":125}],72:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],73:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -40802,7 +40971,7 @@ appCore.module('IgePathFinder', function (IgeEventingClass, IgePathNode) {
 	
 	return IgePathFinder;
 });
-},{"irrelon-appcore":125}],73:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],74:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -40858,7 +41027,7 @@ appCore.module('IgePathNode', function (IgePoint3d) {
 	
 	return IgePathNode;
 });
-},{"irrelon-appcore":125}],74:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],75:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -41180,7 +41349,7 @@ appCore.module('IgePoint2d', function (IgeClass) {
 	
 	return IgePoint2d;
 });
-},{"irrelon-appcore":125}],75:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],76:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -41517,7 +41686,7 @@ appCore.module('IgePoint3d', function (IgeClass) {
 	
 	return IgePoint3d;
 });
-},{"irrelon-appcore":125}],76:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],77:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -41936,7 +42105,7 @@ appCore.module('IgePoly2d', function (IgeClass, IgePoint2d, IgeRect) {
 	
 	return IgePoly2d;
 });
-},{"irrelon-appcore":125}],77:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],78:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -42302,7 +42471,7 @@ appCore.module('IgeQuest', function (IgeEventingClass) {
 	
 	return IgeQuest;
 });
-},{"irrelon-appcore":125}],78:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],79:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -42512,7 +42681,7 @@ appCore.module('IgeRect', function (IgeClass) {
 	
 	return IgeRect;
 });
-},{"irrelon-appcore":125}],79:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],80:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -42709,7 +42878,7 @@ appCore.module('IgeScene2d', function ($ige, IgeEntity) {
 	
 	return IgeScene2d;
 });
-},{"irrelon-appcore":125}],80:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],81:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -42742,7 +42911,7 @@ appCore.module('IgeSceneGraph', function (IgeClass) {
 	
 	return IgeSceneGraph;
 });
-},{"irrelon-appcore":125}],81:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],82:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -43011,7 +43180,7 @@ appCore.module('IgeSpriteSheet', function (IgeTexture) {
 	
 	return IgeSpriteSheet;
 });
-},{"irrelon-appcore":125}],82:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],83:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -43029,7 +43198,7 @@ appCore.module('igeState', function (Emitter) {
 		
 	};
 });
-},{"irrelon-appcore":125}],83:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],84:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -43636,7 +43805,7 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 				// TODO: Does this cause a costly context change? If so maybe we set a global value to keep
 				// TODO: track of the value and evaluate first before changing?
 				if (!this._smoothing) {
-					// Added if here to try to mitigate above TODO
+					// Added if() here to try to mitigate above TODO
 					if ($ige.engine._ctx.imageSmoothingEnabled) {
 						$ige.engine._ctx.imageSmoothingEnabled = false;
 						$ige.engine._ctx.mozImageSmoothingEnabled = false;
@@ -43971,7 +44140,7 @@ appCore.module('IgeTexture', function ($ige, $textures, $time, IgeEventingClass)
 	
 	return IgeTexture;
 });
-},{"irrelon-appcore":125}],84:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],85:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -44037,7 +44206,7 @@ appCore.module('IgeTextureAtlas', function ($ige, IgeTextureMap) {
 	
 	return IgeTextureAtlas;
 });
-},{"irrelon-appcore":125}],85:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],86:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -44771,7 +44940,7 @@ appCore.module('IgeTextureMap', function ($ige, $time, $textures, IgeTileMap2d, 
 	return IgeTextureMap;
 });
 
-},{"irrelon-appcore":125}],86:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],87:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -45353,7 +45522,7 @@ appCore.module('IgeTileMap2d', function ($ige, IgeEntity, IgeTexture, IgeTileMap
 	
 	return IgeTileMap2d;
 });
-},{"irrelon-appcore":125}],87:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],88:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -45425,7 +45594,7 @@ appCore.module('IgeTimeout', function ($ige, $time, IgeInterval) {
 	
 	return IgeTimeout;
 });
-},{"irrelon-appcore":125}],88:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],89:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -45769,7 +45938,7 @@ appCore.module('IgeTween', function ($ige, $time, IgeClass) {
 	
 	return IgeTween;
 });
-},{"irrelon-appcore":125}],89:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],90:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -46051,7 +46220,7 @@ appCore.module('IgeUiElement', function ($ige, IgeUiEntity) {
 	
 	return IgeUiElement;
 });
-},{"irrelon-appcore":125}],90:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],91:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -46417,7 +46586,7 @@ appCore.module('IgeUiEntity', function ($ige, IgeEntity, IgeUiStyleExtension, Ig
 	
 	return IgeUiEntity;
 });
-},{"irrelon-appcore":125}],91:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],92:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -47033,7 +47202,7 @@ appCore.module('IgeViewport', function ($ige, IgeEntity, IgePoint3d, IgeCamera, 
 	
 	return IgeViewport;
 });
-},{"irrelon-appcore":125}],92:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],93:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -47706,7 +47875,7 @@ appCore.module('IgeUiPositionExtension', function () {
 	
 	return IgeUiPositionExtension;
 });
-},{"irrelon-appcore":125}],93:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],94:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48062,7 +48231,7 @@ appCore.module('IgeUiStyleExtension', function () {
 	
 	return IgeUiStyleExtension;
 });
-},{"irrelon-appcore":125}],94:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],95:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48104,7 +48273,7 @@ appCore.module('IgeFilters.blur', function (IgeFilters) {
 		);
 	};
 });
-},{"irrelon-appcore":125}],95:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],96:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48145,7 +48314,7 @@ appCore.module('IgeFilters.brighten', function (IgeFilters) {
 		return imageData;
 	};
 });
-},{"irrelon-appcore":125}],96:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],97:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48159,7 +48328,7 @@ appCore.module('IgeFilters.colorOverlay', function (IgeFilters) {
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 	};
 });
-},{"irrelon-appcore":125}],97:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],98:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48213,7 +48382,7 @@ appCore.module('IgeFilters.createImageData', function (IgeFilters) {
 		return output;
 	};
 });
-},{"irrelon-appcore":125}],98:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],99:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48267,7 +48436,7 @@ appCore.module('IgeFilters.edgeDetect', function (IgeFilters) {
 		);
 	};
 });
-},{"irrelon-appcore":125}],99:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],100:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48301,7 +48470,7 @@ appCore.module('IgeFilters.edgeEnhance', function (IgeFilters) {
 		);
 	};
 });
-},{"irrelon-appcore":125}],100:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],101:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48328,7 +48497,7 @@ appCore.module('IgeFilters.emboss', function (IgeFilters) {
 		);
 	};
 });
-},{"irrelon-appcore":125}],101:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],102:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48388,7 +48557,7 @@ appCore.module('IgeFilters.glowMask', function (IgeFilters) {
 		}
 	};
 });
-},{"irrelon-appcore":125}],102:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],103:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48435,7 +48604,7 @@ appCore.module('IgeFilters.greyScale', function (IgeFilters) {
 		return imageData;
 	};
 });
-},{"irrelon-appcore":125}],103:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],104:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48457,7 +48626,7 @@ appCore.module('IgeFilters.invert', function (IgeFilters) {
 		ctx.putImageData(canvasData, 0, 0);
 	};
 });
-},{"irrelon-appcore":125}],104:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],105:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48484,7 +48653,7 @@ appCore.module('IgeFilters.outlineDetect', function (IgeFilters) {
 		);
 	};
 });
-},{"irrelon-appcore":125}],105:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],106:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48518,7 +48687,7 @@ appCore.module('IgeFilters.sharpen', function (IgeFilters) {
 		}
 	};
 });
-},{"irrelon-appcore":125}],106:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],107:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48573,7 +48742,7 @@ appCore.module('IgeFilters.sobel', function (IgeFilters) {
 		ctx.putImageData(canvasData, 0, 0);
 	};
 });
-},{"irrelon-appcore":125}],107:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],108:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48617,7 +48786,7 @@ appCore.module('IgeFilters.threshold', function (IgeFilters) {
 		return imageData;
 	};
 });
-},{"irrelon-appcore":125}],108:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],109:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -48638,7 +48807,7 @@ appCore.module('IgeCuboid', function (IgeEntity, IgeTexture, IgeCuboidSmartTextu
 	
 	return IgeCuboid;
 });
-},{"irrelon-appcore":125}],109:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],110:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiAutoFlow', function (IgeUiElement) {
@@ -48673,7 +48842,7 @@ appCore.module('IgeUiAutoFlow', function (IgeUiElement) {
 	
 	return IgeUiAutoFlow;
 });
-},{"irrelon-appcore":125}],110:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],111:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiButton', function (IgeUiElement) {
@@ -48743,12 +48912,12 @@ appCore.module('IgeUiButton', function (IgeUiElement) {
 			var uiData = this.data('ui');
 			if (uiData) {
 				// Draw text
-				if (uiData['text']) {
-					ctx.font = uiData['text'].font || "normal 12px Verdana";
-					ctx.textAlign = uiData['text'].align || 'center';
-					ctx.textBaseline = uiData['text'].baseline || 'middle';
-					ctx.fillStyle = uiData['text'].color || '#ffffff';
-					ctx.fillText(uiData['text'].value, 0, 0);
+				if (uiData.text) {
+					ctx.font = uiData.text.font || "normal 12px Verdana";
+					ctx.textAlign = uiData.text.align || 'center';
+					ctx.textBaseline = uiData.text.baseline || 'middle';
+					ctx.fillStyle = uiData.text.color || '#ffffff';
+					ctx.fillText(uiData.text.value, 0, 0);
 				}
 			}
 			
@@ -48765,7 +48934,7 @@ appCore.module('IgeUiButton', function (IgeUiElement) {
 	
 	return IgeUiButton;
 });
-},{"irrelon-appcore":125}],111:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],112:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiDropDown', function (IgeUiElement) {
@@ -48957,7 +49126,7 @@ appCore.module('IgeUiDropDown', function (IgeUiElement) {
 	
 	return IgeUiDropDown;
 });
-},{"irrelon-appcore":125}],112:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],113:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiGridPanel', function (IgeUiElement) {
@@ -48989,7 +49158,7 @@ appCore.module('IgeUiGridPanel', function (IgeUiElement) {
 	
 	return IgeUiGridPanel;
 });
-},{"irrelon-appcore":125}],113:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],114:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiInlineFlow', function (IgeUiElement) {
@@ -49004,7 +49173,7 @@ appCore.module('IgeUiInlineFlow', function (IgeUiElement) {
 			// Loop children and re-position them
 			var arr = this._children,
 				arrCount = arr.length, i,
-				item, itemY, currentX = 0;
+				item, itemX, currentX = 0;
 			
 			for (i = 0; i < arrCount; i++) {
 				item = arr[i];
@@ -49013,14 +49182,14 @@ appCore.module('IgeUiInlineFlow', function (IgeUiElement) {
 				currentX += itemX;
 			}
 			
-			// call the super-class tick
+			// Call the super-class tick
 			IgeUiElement.prototype.tick.call(this, ctx);
 		}
 	});
 	
 	return IgeUiInlineFlow;
 });
-},{"irrelon-appcore":125}],114:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],115:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -49245,7 +49414,7 @@ appCore.module('IgeUiLabel', function (IgeUiElement, IgeFontEntity) {
 	
 	return IgeUiLabel;
 });
-},{"irrelon-appcore":125}],115:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],116:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -49427,7 +49596,7 @@ appCore.module('IgeUiMenuItem', function (IgeUiElement) {
 	
 	return IgeUiMenuItem;
 });
-},{"irrelon-appcore":125}],116:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],117:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiProgressBar', function (IgeUiElement) {
@@ -49478,6 +49647,17 @@ appCore.module('IgeUiProgressBar', function (IgeUiElement) {
 		},
 		
 		barText: function (pre, post, color, percent) {
+			if (typeof post === 'function') {
+				this._barText = {
+					color: pre,
+					func: post,
+					pre: this._barText.pre,
+					post: this._barText.post
+				};
+				
+				return this;
+			}
+			
 			if (pre !== undefined && post !== undefined && color !== undefined) {
 				this._barText = {
 					pre: pre,
@@ -49485,6 +49665,7 @@ appCore.module('IgeUiProgressBar', function (IgeUiElement) {
 					color: color,
 					percent: percent !== undefined ? percent : false
 				};
+				
 				return this;
 			}
 			
@@ -49584,13 +49765,20 @@ appCore.module('IgeUiProgressBar', function (IgeUiElement) {
 			}
 			
 			// Draw bar text centered
-			if (this._barText && (this._barText.pre || this._barText.post)) {
-				if (this._barText.percent) {
-					valText = String(Math.floor((100 / max) * progress));
-				} else {
-					valText = String(Math.floor(progress));
+			if (this._barText) {
+				if (this._barText.func) {
+					// Custom formatting function
+					valText = this._barText.func(progress, max);
+				} else if (this._barText.pre || this._barText.post) {
+					if (this._barText.percent) {
+						valText = String(Math.floor((100 / max) * progress));
+					} else {
+						valText = String(Math.floor(progress));
+					}
 				}
-				
+			}
+			
+			if (valText) {
 				ctx.textAlign = 'center';
 				ctx.textBaseline = 'middle';
 				
@@ -49608,7 +49796,7 @@ appCore.module('IgeUiProgressBar', function (IgeUiElement) {
 	
 	return IgeUiProgressBar;
 });
-},{"irrelon-appcore":125}],117:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],118:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiRadioButton', function (IgeUiButton) {
@@ -49686,11 +49874,11 @@ appCore.module('IgeUiRadioButton', function (IgeUiButton) {
 	
 	return IgeUiRadioButton;
 });
-},{"irrelon-appcore":125}],118:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],119:[function(_dereq_,module,exports){
 
-},{}],119:[function(_dereq_,module,exports){
-arguments[4][118][0].apply(exports,arguments)
-},{"dup":118}],120:[function(_dereq_,module,exports){
+},{}],120:[function(_dereq_,module,exports){
+arguments[4][119][0].apply(exports,arguments)
+},{"dup":119}],121:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTextBox', function (IgeUiElement) {
@@ -50014,7 +50202,7 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 	
 	return IgeUiTextBox;
 });
-},{"irrelon-appcore":125}],121:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],122:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTimeStream', function (IgeUiElement) {
@@ -50090,7 +50278,7 @@ appCore.module('IgeUiTimeStream', function (IgeUiElement) {
 	
 	return IgeUiTimeStream;
 });
-},{"irrelon-appcore":125}],122:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],123:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTogglePanel', function (IgeUiElement) {
@@ -50166,7 +50354,7 @@ appCore.module('IgeUiTogglePanel', function (IgeUiElement) {
 	
 	return IgeUiTogglePanel;
 });
-},{"irrelon-appcore":125}],123:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],124:[function(_dereq_,module,exports){
 var appCore = _dereq_('irrelon-appcore');
 
 appCore.module('IgeUiTooltip', function (IgeUiElement) {
@@ -50368,7 +50556,7 @@ appCore.module('IgeUiTooltip', function (IgeUiElement) {
 	
 	return IgeUiTooltip;
 });
-},{"irrelon-appcore":125}],124:[function(_dereq_,module,exports){
+},{"irrelon-appcore":126}],125:[function(_dereq_,module,exports){
 "use strict";
 
 var appCore = _dereq_('irrelon-appcore');
@@ -50387,7 +50575,7 @@ appCore.module('ige', function (IgeEngine) {
 if (typeof module !== undefined) {
 	module.exports = appCore;
 }
-},{"./engine/serverDependencies.js":4,"irrelon-appcore":125}],125:[function(_dereq_,module,exports){
+},{"./engine/serverDependencies.js":4,"irrelon-appcore":126}],126:[function(_dereq_,module,exports){
 /**
  * Irrelon AppCore
  *
@@ -50935,7 +51123,7 @@ if (typeof module  !== 'undefined' && typeof module.exports !== 'undefined') {
 if (typeof window !== 'undefined') {
 	window.appCore = singleton;
 }
-},{"./AppCoreModule":126,"irrelon-emitter":127}],126:[function(_dereq_,module,exports){
+},{"./AppCoreModule":127,"irrelon-emitter":128}],127:[function(_dereq_,module,exports){
 var Emitter = _dereq_('irrelon-emitter');
 
 /**
@@ -51055,7 +51243,7 @@ AppCoreModule.prototype.destroy = function () {
 };
 
 module.exports = AppCoreModule;
-},{"irrelon-emitter":127}],127:[function(_dereq_,module,exports){
+},{"irrelon-emitter":128}],128:[function(_dereq_,module,exports){
 /*
  The MIT License (MIT)
 
@@ -51785,7 +51973,7 @@ var Emitter = function (obj) {
 };
 
 module.exports = Emitter;
-},{"irrelon-overload":128}],128:[function(_dereq_,module,exports){
+},{"irrelon-overload":129}],129:[function(_dereq_,module,exports){
 "use strict";
 
 /**
@@ -51940,7 +52128,7 @@ Overload.prototype.callExtend = function (context, prop, propContext, func, args
 };
 
 module.exports = Overload;
-},{}],129:[function(_dereq_,module,exports){
+},{}],130:[function(_dereq_,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -52126,7 +52314,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],130:[function(_dereq_,module,exports){
+},{}],131:[function(_dereq_,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -52151,14 +52339,14 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],131:[function(_dereq_,module,exports){
+},{}],132:[function(_dereq_,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],132:[function(_dereq_,module,exports){
+},{}],133:[function(_dereq_,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -52748,4 +52936,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,_dereq_('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":131,"_process":129,"inherits":130}]},{},[44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,62,63,64,61,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,1,2,3,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,5,6,7,8,9,10,11,12,13,14,15,16,17,18,21,22,23,24,43,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124]);
+},{"./support/isBuffer":132,"_process":130,"inherits":131}]},{},[45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,63,64,65,62,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,1,2,3,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,22,23,24,25,44,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125]);
