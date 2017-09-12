@@ -7,6 +7,9 @@ appCore.module('$game', function () {
 		// Determine the environment we are executing in
 		this.isServer = (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined' && typeof window === 'undefined');
 		this.isClient = !this.isServer;
+		
+		this.scene = {};
+		this.audio = {};
 	};
 	
 	return new $game();
