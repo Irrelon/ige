@@ -24,6 +24,12 @@ appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass) {
 				return;
 			}
 			
+			this._masterVolume = this._ctx.createGain();
+			this._masterVolume.connect(this._ctx.destination);
+			
+			// Set listener orientation to match our 2d plane
+			this._ctx.listener.setOrientation(Math.cos(0.10), 0, Math.sin(0.10), 0, 1, 0);
+			
 			this.log('Web audio API connected successfully');
 		},
 		
@@ -92,7 +98,7 @@ appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass) {
 				bufferSource = self._ctx.createBufferSource();
 				
 				bufferSource.buffer = self.register(id);
-				bufferSource.connect(self._ctx.destination);
+				bufferSource.connect(self._masterVolume);
 				bufferSource.loop = loop;
 				bufferSource.start(0);
 				
@@ -125,8 +131,6 @@ appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass) {
 			var self = this,
 				request = new XMLHttpRequest();
 			
-			self._url = url;
-			
 			request.open('GET', url, true);
 			request.responseType = 'arraybuffer';
 			
@@ -134,9 +138,9 @@ appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass) {
 			request.onload = function() {
 				self._decode(request.response, function(err, buffer) {
 					if (!err) {
-						self.log('Audio file (' + self._url + ') loaded successfully');
+						self.log('Audio file (' + url + ') loaded successfully');
 					} else {
-						self.log('Failed to decode audio (' + self._url + '): ' + err, 'warning');
+						self.log('Failed to decode audio (' + url + '): ' + err, 'warning');
 					}
 					
 					callback(err, buffer);

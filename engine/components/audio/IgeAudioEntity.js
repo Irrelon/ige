@@ -5,13 +5,13 @@ var appCore = require('irrelon-appcore'),
 
 // Set default data for any audio panner node
 defaultPanner = {
-	panningModel: 'equalpower',
+	panningModel: 'HRTF',
 	distanceModel: 'inverse',
 	refDistance: 100,
-	maxDistance: 1000,
 	rolloffFactor: 1,
+	maxDistance: 10000,
+	coneOuterAngle: 360,
 	coneInnerAngle: 360,
-	coneOuterAngle: 0,
 	coneOuterGain: 0
 };
 
@@ -187,15 +187,14 @@ appCore.module('IgeAudioEntity', function ($ige, IgeEntity, IgeAudio) {
 		
 		update: function () {
 			if (this._relativeTo && this._panner) {
-				// Update the panner
-				this._panner.positionX.value = this._translate.x;
-				this._panner.positionY.value = this._translate.y;
-				this._panner.positionZ.value = this._translate.z;
+				var audioWorldPos = this.worldPosition(),
+					relativeToWorldPos = this._relativeTo.worldPosition();
+				
+				// Update the audio origin position
+				this._panner.setPosition(audioWorldPos.x, -audioWorldPos.y, audioWorldPos.z);
 				
 				// Update the listener
-				this._listener.positionX.value = this._relativeTo._translate.x;
-				this._listener.positionY.value = this._relativeTo._translate.y;
-				this._listener.positionZ.value = this._relativeTo._translate.z;
+				this._listener.setPosition(relativeToWorldPos.x, -relativeToWorldPos.y, relativeToWorldPos.z);
 			}
 			
 			IgeEntity.prototype.update.apply(this, arguments);

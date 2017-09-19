@@ -5008,110 +5008,46 @@ appCore.module('IgeAudio', function ($ige, IgeEventingClass) {
 	var IgeAudio = IgeEventingClass.extend({
 		classId: 'IgeAudio',
 		
-		init: function (url) {
-			if (url) {
-				this.load(url);
+		init: function (audioId) {
+			this._playing = false;
+			
+			if (audioId) {
+				this.audioId(audioId);
 			}
 		},
 		
-		/**
-		 * Gets / sets the current object id. If no id is currently assigned and no
-		 * id is passed to the method, it will automatically generate and assign a
-		 * new id as a 16 character hexadecimal value typed as a string.
-		 * @param {String=} id The id to set to.
-		 * @return {*} Returns this when setting the value or the current value if none is specified.
-		 */
-		id: function (id) {
-			if (id !== undefined) {
-				// Check if this ID already exists in the object register
-				if ($ige.engine._register[id]) {
-					if ($ige.engine._register[id] === this) {
-						// We are already registered as this id
-						return this;
-					}
-					
-					// Already an object with this ID!
-					this.log('Cannot set ID of object to "' + id + '" because that ID is already in use by another object!', 'error');
-				} else {
-					// Check if we already have an id assigned
-					if (this._id && $ige.engine._register[this._id]) {
-						// Unregister the old ID before setting this new one
-						$ige.engine.unRegister(this);
-					}
-					
-					this._id = id;
-					
-					// Now register this object with the object register
-					$ige.engine.register(this);
-					
-					return this;
-				}
+		playing: function (val) {
+			if (val !== undefined) {
+				this._playing = val;
+				return this;
 			}
 			
-			if (!this._id) {
-				// The item has no id so generate one automatically
-				if (this._url) {
-					// Generate an ID from the URL string of the audio file
-					// this instance is using. Useful for always reproducing
-					// the same ID for the same file :)
-					this._id = $ige.engine.newIdFromString(this._url);
-				} else {
-					// We don't have a URL so generate a random ID
-					this._id = $ige.engine.newIdHex();
-				}
-				$ige.engine.register(this);
+			return this._playing;
+		},
+		
+		audioId: function (audioId) {
+			if (audioId !== undefined) {
+				this._audioId = audioId;
+				this.buffer($ige.engine.audio.register(audioId));
+				
+				return this;
 			}
 			
-			return this._id;
+			return this._audioId;
 		},
 		
-		/**
-		 * Loads an audio file from the given url.
-		 * @param {String} url The url to load the audio file from.
-		 * @param {Function=} callback Optional callback method to call when the audio
-		 * file has loaded or on error.
-		 */
-		load: function (url, callback) {
-			var self = this,
-				request = new XMLHttpRequest();
-			
-			self._url = url;
-			
-			request.open('GET', url, true);
-			request.responseType = 'arraybuffer';
-			
-			// Decode asynchronously
-			request.onload = function() {
-				self._data = request.response;
-				self._url = url;
-				self._loaded(callback);
-			};
-			
-			request.onerror = function (err) {
-				callback.apply(self, [err]);
-			};
-			
-			request.send();
-		},
-		
-		_loaded: function (callback) {
+		url: function (url) {
 			var self = this;
 			
-			$ige.engine.audio.decode(self._data, function(err, buffer) {
-				if (!err) {
-					self._buffer = buffer;
-					$ige.engine.audio.log('Audio file (' + self._url + ') loaded successfully');
-					
-					if (self._playWhenReady) {
-						self.play();
+			if (url !== undefined) {
+				$ige.engine.audio._load(url, function (err, buffer) {
+					if (err || !buffer) {
+						return;
 					}
 					
-					if (callback) { callback.apply(self, [false]); }
-				} else {
-					self.log('Failed to decode audio (' + self._url + '): ' + err, 'warning');
-					if (callback) { callback.apply(self, [err]); }
-				}
-			});
+					self.buffer(buffer);
+				});
+			}
 		},
 		
 		/**
@@ -5122,10 +5058,31 @@ appCore.module('IgeAudio', function ($ige, IgeEventingClass) {
 		buffer: function (buffer) {
 			if (buffer !== undefined) {
 				this._buffer = buffer;
+				
+				if (this._playWhenReady) {
+					this.play(this._loop);
+				}
+				
 				return this;
 			}
 			
 			return this._buffer;
+		},
+		
+		panner: function (val) {
+			if (val !== undefined) {
+				this._panner = val;
+				
+				if (this._bufferSource) {
+					// Make sure we include the panner in the connections
+					this._bufferSource.connect(this._panner);
+					this._panner.connect($ige.engine.audio._masterVolume);
+				}
+				
+				return this;
+			}
+			
+			return this._panner;
 		},
 		
 		/**
@@ -5137,18 +5094,31 @@ appCore.module('IgeAudio', function ($ige, IgeEventingClass) {
 			if (self._buffer) {
 				self._bufferSource = $ige.engine.audio._ctx.createBufferSource();
 				self._bufferSource.buffer = self._buffer;
-				self._bufferSource.connect($ige.engine.audio._ctx.destination);
+				
+				if (self._panner) {
+					// Connect through the panner
+					self._bufferSource.connect(self._panner);
+					self._panner.connect($ige.engine.audio._masterVolume);
+				} else {
+					// Connect directly to the destination
+					self._bufferSource.connect($ige.engine.audio._masterVolume);
+				}
+				
 				self._bufferSource.loop = loop;
 				self._bufferSource.start(0);
 				
 				self.log('Audio file (' + self._url + ') playing...');
 			} else {
-				// Wait for a buffer
-				this._playWhenReady = true;
-				self.log('Audio file (' + self._url + ') waiting to play...');
+				self._playWhenReady = true;
+				self._loop = loop;
 			}
+			
+			self._playing = true;
 		},
 		
+		/**
+		 * Stops the currently playing audio.
+		 */
 		stop: function () {
 			var self = this;
 			
@@ -5156,9 +5126,10 @@ appCore.module('IgeAudio', function ($ige, IgeEventingClass) {
 				self.log('Audio file (' + self._url + ') stopping...');
 				self._bufferSource.stop();
 			} else {
-				this._playWhenReady = false;
-				self.log('Audio file (' + self._url + ') waiting to stop...');
+				self._playWhenReady = false;
 			}
+			
+			self._playing = false;
 		}
 	});
 	
@@ -5169,7 +5140,7 @@ appCore.module('IgeAudio', function ($ige, IgeEventingClass) {
 
 var appCore = _dereq_('irrelon-appcore');
 
-appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass, IgeAudio, IgeAudioEntity) {
+appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass) {
 	/**
 	 * Manages audio mixing and output.
 	 */
@@ -5178,9 +5149,12 @@ appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass, IgeAudio, 
 		componentId: 'audio',
 		
 		init: function (entity, options) {
+			this._entity = entity;
+			this._options = options;
 			this._active = false;
 			this._disabled = false;
 			this._ctx = this.getContext();
+			this._register = {};
 			
 			if (!this._ctx) {
 				this.log('No web audio API support, cannot play sounds!', 'warning');
@@ -5188,21 +5162,10 @@ appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass, IgeAudio, 
 				return;
 			}
 			
-			this.log('Web audio API connected successfully');
-		},
-		
-		/**
-		 * Gets / sets the active flag to enable or disable audio support.
-		 * @param {Boolean=} val True to enable audio support.
-		 * @returns {*}
-		 */
-		active: function (val) {
-			if (val !== undefined && !this._disabled) {
-				this._active = val;
-				return this;
-			}
+			this._masterVolume = this._ctx.createGain();
+			this._masterVolume.connect(this._ctx.destination);
 			
-			return this._active;
+			this.log('Web audio API connected successfully');
 		},
 		
 		/**
@@ -5220,44 +5183,124 @@ appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass, IgeAudio, 
 		},
 		
 		/**
-		 * Loads an audio file from the given url and assigns it the id specified.
-		 * @param {String} url The url to load the audio from.
-		 * @param {String=} id The id to assign the audio.
+		 * Gets / loads an audio file from the given url and assigns it the id specified
+		 * in the global audio register.
+		 * @param {String} id The id to assign the audio in the register.
+		 * @param {String=} url The url to load the audio from.
 		 */
-		load: function (url, id) {
-			var audio = new IgeAudio(url);
+		register: function (id, url) {
+			var self = this;
 			
 			if (id) {
-				audio.id(id);
+				if (url) {
+					// Assign new audio to register
+					self._load(url, function (err, buffer) {
+						if (err) {
+							return;
+						}
+						
+						self._register[id] = buffer;
+					});
+					
+					return self;
+				}
+				
+				return self._register[id];
 			}
+			
+			return this._register;
+		},
+		
+		/**
+		 * Plays audio by its assigned id.
+		 * @param {String} id The id of the audio file to play.
+		 * @param {Boolean} loop If true, will loop the audio until
+		 * it is explicitly stopped.
+		 */
+		play: function (id, loop) {
+			var self = this,
+				buffer,
+				bufferSource;
+			
+			if ($ige.isClient) {
+				buffer = this.register(id);
+				
+				if (!buffer) {
+					self.log('Audio file (' + id + ') could not play, no buffer exists in register for:' + id, 'warning');
+					return;
+				}
+				
+				bufferSource = self._ctx.createBufferSource();
+				
+				bufferSource.buffer = self.register(id);
+				bufferSource.connect(self._masterVolume);
+				bufferSource.loop = loop;
+				bufferSource.start(0);
+				
+				self.log('Audio file (' + id + ') playing...');
+			}
+		},
+		
+		/**
+		 * Gets / sets the active flag to enable or disable audio support.
+		 * @param {Boolean=} val True to enable audio support.
+		 * @returns {*}
+		 */
+		active: function (val) {
+			if (val !== undefined && !this._disabled) {
+				this._active = val;
+				return this;
+			}
+			
+			return this._active;
+		},
+		
+		/**
+		 * Loads an audio file from the given url.
+		 * @param {String} url The url to load the audio file from.
+		 * @param {Function=} callback Optional callback method to call when the audio
+		 * file has loaded or on error.
+		 * @private
+		 */
+		_load: function (url, callback) {
+			var self = this,
+				request = new XMLHttpRequest();
+			
+			request.open('GET', url, true);
+			request.responseType = 'arraybuffer';
+			
+			// Decode asynchronously
+			request.onload = function() {
+				self._decode(request.response, function(err, buffer) {
+					if (!err) {
+						self.log('Audio file (' + url + ') loaded successfully');
+					} else {
+						self.log('Failed to decode audio (' + url + '): ' + err, 'warning');
+					}
+					
+					callback(err, buffer);
+				});
+			};
+			
+			request.onerror = function (err) {
+				callback(err);
+			};
+			
+			request.send();
 		},
 		
 		/**
 		 * Decodes audio data and calls back with an audio buffer.
 		 * @param {ArrayBuffer} data The audio data to decode.
 		 * @param {Function} callback The callback to pass the buffer to.
+		 * @private
 		 */
-		decode: function (data, callback) {
+		_decode: function (data, callback) {
 			this._ctx.decodeAudioData(data, function (buffer) {
 				callback(false, buffer);
 			}, function (err) {
 				callback(err);
 			});
-		},
-		
-		/**
-		 * Plays audio by its assigned id.
-		 * @param {String} id The id of the audio file to play.
-		 */
-		play: function (id) {
-			var audio = $ige.engine.$(id);
-			if (audio) {
-				if (audio.prototype.play) {
-					audio.play();
-				} else {
-					this.log('Trying to play audio with id "" but object with this id is not an IgeAudio instance, or does not implement the .play() method!', 'warnign');
-				}
-			}
 		}
 	});
 	
@@ -5266,40 +5309,216 @@ appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass, IgeAudio, 
 },{"irrelon-appcore":126}],19:[function(_dereq_,module,exports){
 "use strict";
 
-var appCore = _dereq_('irrelon-appcore');
+var appCore = _dereq_('irrelon-appcore'),
+	defaultPanner;
 
-appCore.module('IgeAudioEntity', function ($game, IgeEntity, IgeAudio) {
+// Set default data for any audio panner node
+defaultPanner = {
+	panningModel: 'HRTF',
+	distanceModel: 'inverse',
+	refDistance: 100,
+	maxDistance: 300,
+	coneOuterAngle: 360,
+	coneInnerAngle: 360,
+	coneOuterGain: 0
+};
+
+appCore.module('IgeAudioEntity', function ($ige, IgeEntity, IgeAudio) {
 	var IgeAudioEntity = IgeEntity.extend({
 		classId: 'IgeAudioEntity',
 		
 		init: function (options) {
+			var self = this;
+			
 			IgeEntity.prototype.init.call(this);
-			this._options = options;
 			
-			// Select the audio from the $game.audio object
-			// TODO: This should be changed to a global engine-based audio register with each audio file having an id
-			this._audioData = $game.audio[options.audioId];
-			
-			if (this._audioData) {
-				this._audio = new IgeAudio();
-				this._audio.buffer(this._audioData.buffer());
+			if ($ige.isClient) {
+				// Create a new IgeAudio instance that will handle the
+				// internals of audio playback for us
+				this.audioInterface(new IgeAudio());
 				
-				// TODO: Does this get affected by streaming not sending intial translation?
-				// e.g. !this._streamJustCreated ?
-				this._audio.play(options.loop);
+				// Set some default options
+				this._options = {
+					started: false,
+					relativeTo: undefined,
+					panner: defaultPanner,
+					gain: 1
+				};
+				
+				// Handle being given an audio id as the second argument
+				// instead of an options object
+				if (typeof options === 'object') {
+					this._options = options;
+				} else if (typeof options === 'string') {
+					this._options.audioId = options;
+					options = undefined;
+				}
+				
+				if (this._options) {
+					// Select the audio from the audio register
+					this._audioInterface.audioId(this._options.audioId);
+					
+					if (this._options.relativeTo) {
+						this.relativeTo(this._options.relativeTo);
+					}
+					
+					if (this._options.started) {
+						// We take this out of process so that there is time
+						// to handle other calls that may modify the audio
+						// before playback starts
+						setTimeout(function () {
+							self._audioInterface.play(self._options.loop);
+						}, 1);
+					}
+				}
 			}
 		},
 		
+		relativeTo: function (val) {
+			var self = this,
+				i;
+			
+			if (val !== undefined) {
+				this._relativeTo = val;
+				this._listener = $ige.engine.audio._ctx.listener;
+				
+				// Check if we have a panner node yet or not
+				if (!this.audioInterface().panner()) {
+					// Create a panner node for the audio output
+					this._panner = new PannerNode($ige.engine.audio._ctx, self._options.panner);
+					
+					// Run through options and apply to panner
+					for (i in self._options.panner) {
+						if (self._options.panner.hasOwnProperty(i)) {
+							this._panner[i] = self._options.panner[i];
+						}
+					}
+					
+					this.audioInterface()
+						.panner(this._panner);
+				}
+				
+				return this;
+			}
+			
+			return this._relativeTo;
+		},
+		
+		/**
+		 * Gets the playing boolean flag state.
+		 * @returns {Boolean} True if playing, false if not.
+		 */
+		playing: function () {
+			return this.audioInterface().playing();
+		},
+		
+		/**
+		 * Gets / sets the url the audio is playing from.
+		 * @param {String} url The url that serves the audio file.
+		 * @returns {IgeAudioEntity}
+		 */
+		url: function (url) {
+			if (url !== undefined) {
+				this.audioInterface().url(url);
+				return this;
+			}
+			
+			return this.audioInterface().url();
+		},
+		
+		/**
+		 * Gets / sets the id of the audio stream to use for
+		 * playback.
+		 * @param {String=} audioId The audio id. Must match
+		 * a previously registered audio stream that was
+		 * registered via IgeAudioComponent.register(). You can
+		 * access the audio component via $ige.engine.audio
+		 * once you have added it as a component to use in the
+		 * engine.
+		 * @returns {*}
+		 */
+		audioId: function (audioId) {
+			if (audioId !== undefined) {
+				this.audioInterface()
+					.audioId(audioId);
+				
+				return this;
+			}
+			
+			return this.audioInterface().audioId();
+		},
+		
+		/**
+		 * Starts playback of the audio.
+		 * @param {Boolean} loop If true, loops the audio until
+		 * explicitly stopped by calling stop() or the entity
+		 * being destroyed.
+		 * @returns {IgeAudioEntity}
+		 */
+		play: function (loop) {
+			this.audioInterface().play(loop);
+			return this;
+		},
+		
+		/**
+		 * Stops playback of the audio.
+		 * @returns {IgeAudioEntity}
+		 */
+		stop: function () {
+			this.audioInterface().stop();
+			return this;
+		},
+		
+		/**
+		 * Gets / sets the IgeAudio instance used to control
+		 * playback of the audio stream.
+		 * @param {IgeAudio=} audio
+		 * @returns {*}
+		 */
+		audioInterface: function (audio) {
+			if (audio !== undefined) {
+				this._audioInterface = audio;
+				return this;
+			}
+			
+			return this._audioInterface;
+		},
+		
+		/**
+		 * Returns the data sent to each client when the entity
+		 * is created via the network stream.
+		 * @returns {*}
+		 */
 		streamCreateData: function () {
 			return this._options;
 		},
 		
-		destroy: function () {
-			if (this._audio) {
-				this._audio.stop();
+		update: function () {
+			if (this._relativeTo && this._panner) {
+				// Update the panner
+				var audioWorldPos = this.worldPosition(),
+					relativeToWorldPos = this._relativeTo.worldPosition();
 				
-				delete this._audio;
-				delete this._audioData;
+				this._panner.positionX.value = audioWorldPos.x;
+				this._panner.positionY.value = audioWorldPos.z;
+				this._panner.positionZ.value = audioWorldPos.y;
+				
+				// Update the listener
+				this._listener.positionX.value = relativeToWorldPos.x;
+				this._listener.positionY.value = relativeToWorldPos.z;
+				this._listener.positionZ.value = relativeToWorldPos.y;
+			}
+			
+			IgeEntity.prototype.update.apply(this, arguments);
+		},
+		
+		/**
+		 * Called when the entity is to be destroyed. Stops any
+		 * current audio stream playback.
+		 */
+		destroy: function () {
+			if ($ige.isClient) {
+				this.audioInterface().stop();
 			}
 			
 			IgeEntity.prototype.destroy.call(this);
@@ -30352,11 +30571,11 @@ appCore.module('IgeEngine', function (
 					}
 				} else {
 					// Check if the mouse is over this entity
-					mp = this.mousePosWorld();
+					mp = obj.mousePosWorld();
 					
 					if (mp && obj.aabb) {
 						// Trigger mode is against the AABB
-						mouseTriggerPoly = obj.aabb(); //this.localAabb();
+						mouseTriggerPoly = obj.aabb();
 						
 						// Check if the current mouse position is inside this aabb
 						if (mouseTriggerPoly.xyInside(mp.x, mp.y)) {
