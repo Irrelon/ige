@@ -1193,7 +1193,7 @@ appCore.module('IgeEngine', function (
 					
 					if (mp && obj.aabb) {
 						// Trigger mode is against the AABB
-						mouseTriggerPoly = obj.aabb(); //this.localAabb();
+						mouseTriggerPoly = obj.aabb();
 						
 						// Check if the current mouse position is inside this aabb
 						if (mouseTriggerPoly.xyInside(mp.x, mp.y)) {
