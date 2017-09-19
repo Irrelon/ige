@@ -1189,7 +1189,7 @@ appCore.module('IgeEngine', function (
 					}
 				} else {
 					// Check if the mouse is over this entity
-					mp = this.mousePosWorld();
+					mp = obj.mousePosWorld();
 					
 					if (mp && obj.aabb) {
 						// Trigger mode is against the AABB
