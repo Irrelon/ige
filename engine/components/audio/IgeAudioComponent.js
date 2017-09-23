@@ -24,13 +24,27 @@ appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass) {
 				return;
 			}
 			
-			this._masterVolume = this._ctx.createGain();
-			this._masterVolume.connect(this._ctx.destination);
+			this._masterVolumeNode = this._ctx.createGain();
+			this._masterVolumeNode.connect(this._ctx.destination);
 			
 			// Set listener orientation to match our 2d plane
 			this._ctx.listener.setOrientation(Math.cos(0.10), 0, Math.sin(0.10), 0, 1, 0);
 			
 			this.log('Web audio API connected successfully');
+		},
+		
+		/**
+		 * Gets / sets the master volume for sound output.
+		 * @param val
+		 * @returns {*}
+		 */
+		masterVolume: function (val) {
+			if (val !== undefined) {
+				this._masterVolumeNode.gain.value = val;
+				return this;
+			}
+			
+			return this._masterVolumeNode.gain.value;
 		},
 		
 		/**
