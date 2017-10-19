@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeUiStyleExtension', function () {
+appCore.module('IgeUiStyleExtension', function ($ige) {
 	// TODO: Add "overflow" with automatic scroll-bars
 	var IgeUiStyleExtension = {
 		/**
