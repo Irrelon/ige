@@ -37,6 +37,7 @@ appCore.module('IgeUiDropDown', function ($ige, IgeUiElement, IgeUiLabel) {
 				.right(30)
 				.top(0)
 				.bottom(0)
+				.textAlignY(1)
 				.mount(this);
 			
 			this.on('mouseUp', function () {
@@ -154,6 +155,7 @@ appCore.module('IgeUiDropDown', function ($ige, IgeUiElement, IgeUiLabel) {
 						.left(1)
 						.width(this._bounds2d.x - 2)
 						.height(this._bounds2d.y - 2)
+						.textAlignY(1)
 						.allowFocus(true)
 						.allowActive(true)
 						.allowHover(true)
