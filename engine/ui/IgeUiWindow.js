@@ -39,8 +39,10 @@ appCore.module('IgeUiWindow', function ($ige, IgeUiElement, IgeUiLabel, IgeUiBut
 				.bottom(0)
 				.paddingLeft(5)
 				.textAlignY(1)
-				.color('#ffffff')
 				.mount(this._topNav);
+			
+			this._label.color('#ffffff')
+				.value('Window Title');
 			
 			this._closeButton = new IgeUiButton()
 				.backgroundColor('#cccccc')
@@ -52,6 +54,13 @@ appCore.module('IgeUiWindow', function ($ige, IgeUiElement, IgeUiLabel, IgeUiBut
 				.top(8)
 				.value('X')
 				.color('#000000')
+				.mouseUp(function () {
+					if (!self.emit('beforeClose')) {
+						self.destroy();
+					}
+					
+					$ige.engine.input.stopPropagation();
+				})
 				.mount(this._topNav);
 			
 			this.on('mouseUp', function () {
@@ -65,11 +74,20 @@ appCore.module('IgeUiWindow', function ($ige, IgeUiElement, IgeUiLabel, IgeUiBut
 		
 		title: function (val) {
 			if (val !== undefined) {
-				this._label.value(val.text);
+				this._label.value(val);
 				return this;
 			}
 			
 			return this._label.value();
+		},
+		
+		titleColor: function (val) {
+			if (val !== undefined) {
+				this._label.color(val);
+				return this;
+			}
+			
+			return this._label.color();
 		}/*,
 		
 		tick: function (ctx) {
