@@ -164,7 +164,7 @@ appCore.module('IgeInputComponent', function ($ige, IgeEventingClass, IgePoint3d
 				'z': 90
 			};
 			
-			this._controlMap = [];
+			this._controlMap = {};
 			this._state = [];
 			
 			// Set default values for the mouse position
@@ -594,18 +594,18 @@ appCore.module('IgeInputComponent', function ($ige, IgeEventingClass, IgePoint3d
 		},
 		
 		/**
-		 * Returns true if the passed action's input is pressed or it's state
+		 * Returns true if the passed action's input is active or it's state
 		 * is not zero.
 		 * @param actionName
 		 */
 		actionState: function (actionName) {
 			var val = this._state[this._controlMap[actionName]];
-			return !!val; // "Not not" to convert to boolean true/false
+			return Boolean(val);
 		},
 		
 		/**
 		 * Returns an input's current value.
-		 * @param actionName
+		 * @param inputId
 		 * @return {*}
 		 */
 		val: function (inputId) {
@@ -614,11 +614,11 @@ appCore.module('IgeInputComponent', function ($ige, IgeEventingClass, IgePoint3d
 		
 		/**
 		 * Returns an input's current state as a boolean.
-		 * @param stateId
+		 * @param inputId
 		 * @return {Boolean}
 		 */
 		state: function (inputId) {
-			return !!this._state[inputId];
+			return Boolean(this._state[inputId]);
 		},
 		
 		/**
