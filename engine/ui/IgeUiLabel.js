@@ -21,8 +21,9 @@ appCore.module('IgeUiLabel', function (IgeUiElement, IgeFontEntity) {
 				.middle(0)
 				.textAlignX(0)
 				.textAlignY(0)
-				.textLineSpacing(10)
-				.mount(this);
+				.textLineSpacing(10);
+			
+			this._fontEntity.mount(this);
 			
 			// Set defaults
 			this.font('10px Verdana');
