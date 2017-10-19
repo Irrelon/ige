@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeUiPositionExtension', function () {
+appCore.module('IgeUiPositionExtension', function ($ige) {
 	var IgeUiPositionExtension = {
 		/**
 		 * Gets / sets the entity's x position relative to the left of
@@ -40,7 +40,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						}
 						
 						// Calculate real width from percentage
-						newVal = (parentWidth / 100 * val) | 0;
+						newVal = (parentWidth / 100 * val) | 0; // jshint ignore: line
 						
 						this._uiLeft = newVal;
 					} else {
@@ -95,7 +95,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						}
 						
 						// Calculate real width from percentage
-						newVal = (parentWidth / 100 * val) | 0;
+						newVal = (parentWidth / 100 * val) | 0; // jshint ignore: line
 						
 						this._uiRight = newVal;
 					} else {
@@ -152,7 +152,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						}
 						
 						// Calculate real width from percentage
-						newVal = (parentWidth / 100 * val) | 0;
+						newVal = (parentWidth / 100 * val) | 0; // jshint ignore: line
 						
 						this._uiCenter = newVal;
 					} else {
@@ -207,7 +207,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						}
 						
 						// Calculate real width from percentage
-						newVal = (parentHeight / 100 * val) | 0;
+						newVal = (parentHeight / 100 * val) | 0; // jshint ignore: line
 						
 						this._uiTop = newVal;
 					} else {
@@ -262,7 +262,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						}
 						
 						// Calculate real width from percentage
-						newVal = (parentHeight / 100 * val) | 0;
+						newVal = (parentHeight / 100 * val) | 0; // jshint ignore: line
 						
 						this._uiBottom = newVal;
 					} else {
@@ -319,7 +319,7 @@ appCore.module('IgeUiPositionExtension', function () {
 						}
 						
 						// Calculate real width from percentage
-						newVal = (parentWidth / 100 * val) | 0;
+						newVal = (parentWidth / 100 * val) | 0; // jshint ignore: line
 						
 						this._uiMiddle = newVal;
 					} else {
@@ -368,7 +368,7 @@ appCore.module('IgeUiPositionExtension', function () {
 								ratio;
 							
 							// Calculate real width from percentage
-							newVal = (parentWidth / 100 * val) + this._widthModifier | 0;
+							newVal = (parentWidth / 100 * val) + this._widthModifier | 0; // jshint ignore: line
 							
 							if (lockAspect) {
 								// Calculate the height from the change in width
@@ -385,7 +385,7 @@ appCore.module('IgeUiPositionExtension', function () {
 								val = parseInt(px, 10);
 							
 							// Calculate real height from percentage
-							this._bounds2d.x = (parentWidth / 100 * val) + this._widthModifier | 0;
+							this._bounds2d.x = (parentWidth / 100 * val) + this._widthModifier | 0; // jshint ignore: line
 							this._bounds2d.x2 = Math.floor(this._bounds2d.x / 2);
 						}
 					} else {
@@ -440,7 +440,7 @@ appCore.module('IgeUiPositionExtension', function () {
 							
 							// Calculate real height from percentage
 							// Calculate real width from percentage
-							newVal = (parentHeight / 100 * val) + this._heightModifier | 0;
+							newVal = (parentHeight / 100 * val) + this._heightModifier | 0; // jshint ignore: line
 							
 							if (lockAspect) {
 								// Calculate the height from the change in width
@@ -457,7 +457,7 @@ appCore.module('IgeUiPositionExtension', function () {
 								val = parseInt(px, 10);
 							
 							// Calculate real height from percentage
-							this._bounds2d.y = (parentHeight / 100 * val) + this._heightModifier | 0;
+							this._bounds2d.y = (parentHeight / 100 * val) + this._heightModifier | 0; // jshint ignore: line
 							this._bounds2d.y2 = Math.floor(this._bounds2d.y / 2);
 						}
 					} else {
