@@ -74,7 +74,7 @@ appCore.module('IgeAudio', function ($ige, IgeEventingClass) {
 				if (this._bufferSource) {
 					// Make sure we include the panner in the connections
 					this._bufferSource.connect(this._panner);
-					this._panner.connect($ige.engine.audio._masterVolume);
+					this._panner.connect($ige.engine.audio._masterVolumeNode);
 				}
 				
 				return this;
@@ -96,10 +96,10 @@ appCore.module('IgeAudio', function ($ige, IgeEventingClass) {
 				if (self._panner) {
 					// Connect through the panner
 					self._bufferSource.connect(self._panner);
-					self._panner.connect($ige.engine.audio._masterVolume);
+					self._panner.connect($ige.engine.audio._masterVolumeNode);
 				} else {
 					// Connect directly to the destination
-					self._bufferSource.connect($ige.engine.audio._masterVolume);
+					self._bufferSource.connect($ige.engine.audio._masterVolumeNode);
 				}
 				
 				self._bufferSource.loop = loop;

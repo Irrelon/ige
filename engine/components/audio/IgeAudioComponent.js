@@ -112,7 +112,7 @@ appCore.module('IgeAudioComponent', function ($ige, IgeEventingClass) {
 				bufferSource = self._ctx.createBufferSource();
 				
 				bufferSource.buffer = self.register(id);
-				bufferSource.connect(self._masterVolume);
+				bufferSource.connect(self._masterVolumeNode);
 				bufferSource.loop = loop;
 				bufferSource.start(0);
 				
