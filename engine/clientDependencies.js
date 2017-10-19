@@ -87,6 +87,7 @@ require('./components/physics/box2d/IgeBox2dWorld.js');
 require('./components/physics/box2d/IgeBox2dDebugPainter.js');
 require('./components/physics/box2d/IgeEntityBox2d.js');
 require('./components/physics/cannon/IgeEntityCannon.js');
+require('./ui/IgeUiWindow.js');
 require('./ui/IgeUiDropDown.js');
 require('./ui/IgeUiButton.js');
 require('./ui/IgeUiRadioButton.js');

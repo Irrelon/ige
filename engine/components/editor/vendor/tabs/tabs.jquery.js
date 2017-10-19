@@ -1,7 +1,7 @@
 (function ($) {
 	$.fn.tabs = function (options) {
-		this.find('.tab').click(function () {
-			var elem = $(this),
+		this.on('click', '.tab', function (event) {
+			var elem = $(event.currentTarget),
 				contentId;
 			
 			if (elem.hasClass('active')) {
