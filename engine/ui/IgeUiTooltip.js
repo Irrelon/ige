@@ -1,6 +1,6 @@
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeUiTooltip', function (IgeUiElement) {
+appCore.module('IgeUiTooltip', function (IgeUiElement, IgeFontEntity) {
 	/**
 	 * Provides a UI tooltip. Change properties (textBox, fonts, backgroundcolor)
 	 * at free will.
@@ -129,18 +129,18 @@ appCore.module('IgeUiTooltip', function (IgeUiElement) {
 			if (val !== undefined) {
 				this.titleBox.unMount();
 				this.textBox.unMount();
-				this._children.forEach(function(child) {
+				this._children.forEach(function (child) {
 					child.unMount();
 					child.destroy();
 				});
-				if (typeof(val) == 'string') {
+				
+				if (typeof val === 'string') {
 					this.textBox.mount(this);
 					this.textBox.height(this._bounds2d.y);
 					this.textBox.top(0);
 					// Set the text of the font entity to the value
 					this.fontEntityText.text(this._value);
-				}
-				else if (typeof(val) == 'object' && typeof(val[0] == 'string') && typeof(val[1] == 'string')) {
+				} else if (typeof val === 'object' && typeof(val[0] === 'string') && typeof(val[1] === 'string')) {
 					this.titleBox.mount(this);
 					this.textBox.mount(this);
 					this.textBox.height(this._bounds2d.y - this.titleBox._bounds2d.y);
@@ -148,10 +148,10 @@ appCore.module('IgeUiTooltip', function (IgeUiElement) {
 					//title + text
 					this.fontEntityTitle.text(val[0]);
 					this.fontEntityText.text(val[1]);
-				}
-				else if (typeof(val) == 'object') {
+				} else if (typeof val === 'object') {
 					val.mount(this);
 				}
+				
 				this.updateUiChildren();
 			}
 			
@@ -180,11 +180,17 @@ appCore.module('IgeUiTooltip', function (IgeUiElement) {
 		 * @private
 		 */
 		_mousemove: function (event) {
-			var tt = this._tooltip;
-			if (tt._hidden) tt.show();
-			var mountPos = tt._mountEntity.worldPosition();
-			tt.translateTo(event.igeX - mountPos.x + tt._bounds2d.x2 + 10, event.igeY - mountPos.y + tt._bounds2d.y2, 0);
-			tt.updateUiChildren();
+			var toolTip = this._tooltip,
+				mountPos;
+			
+			if (toolTip._hidden) {
+				toolTip.show();
+			}
+			
+			mountPos = toolTip._mountEntity.worldPosition();
+			
+			toolTip.translateTo(event.igeX - mountPos.x + toolTip._bounds2d.x2 + 10, event.igeY - mountPos.y + toolTip._bounds2d.y2, 0);
+			toolTip.updateUiChildren();
 		},
 		
 		/**

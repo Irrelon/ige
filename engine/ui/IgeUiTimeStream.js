@@ -1,6 +1,6 @@
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeUiTimeStream', function (IgeUiElement) {
+appCore.module('IgeUiTimeStream', function ($ige, $time, IgeUiElement) {
 	var IgeUiTimeStream = IgeUiElement.extend({
 		classId: 'IgeUiTimeStream',
 		

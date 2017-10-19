@@ -1,6 +1,6 @@
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeUiTogglePanel', function (IgeUiElement) {
+appCore.module('IgeUiTogglePanel', function (IgeUiElement, IgeFontEntity) {
 	var IgeUiTogglePanel = IgeUiElement.extend({
 		classId: 'IgeUiTogglePanel',
 		

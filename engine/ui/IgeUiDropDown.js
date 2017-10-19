@@ -1,6 +1,6 @@
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeUiDropDown', function (IgeUiElement) {
+appCore.module('IgeUiDropDown', function ($ige, IgeUiElement, IgeUiLabel) {
 	var IgeUiDropDown = IgeUiElement.extend({
 		classId: 'IgeUiDropDown',
 		
@@ -128,10 +128,9 @@ appCore.module('IgeUiDropDown', function (IgeUiElement) {
 					optionContainer,
 					mainTop = this._bounds2d.y + 5,
 					mainHeight = this._options.length * 30,
-					optionTop = 0,
 					i;
 				
-				optionContainer =new IgeUiElement()
+				optionContainer = new IgeUiElement()
 					.id(this._id + '_options')
 					.backgroundColor(this._backgroundColor)
 					.borderColor(this._borderColor)

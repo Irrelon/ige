@@ -91,7 +91,7 @@ appCore.module('IgeUiMenu', function (IgeUiElement, IgeUiMenuItem) {
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeUiMenuItem', function (IgeUiElement) {
+appCore.module('IgeUiMenuItem', function (IgeUiElement, IgeFontEntity, IgeUiMenu) {
 	var IgeUiMenuItem = IgeUiElement.extend({
 		classId: 'IgeUiMenuItem',
 		

@@ -1,6 +1,6 @@
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeUiTextBox', function (IgeUiElement) {
+appCore.module('IgeUiTextBox', function ($ige, IgeUiElement, IgeFontEntity) {
 	/**
 	 * Provides a UI text entry box. When provided with focus this UI entity will
 	 * capture keyboard input and display it, similar in usage to the HTML input
@@ -181,7 +181,7 @@ appCore.module('IgeUiTextBox', function (IgeUiElement) {
 							this._fontEntity.text(this._value);
 						} else {
 							// Assign a mask value instead
-							this._fontEntity.text(new Array(this._value.length + 1).join(this._mask))
+							this._fontEntity.text(new Array(this._value.length + 1).join(this._mask));
 						}
 						this._fontEntity.color(this._color);
 					}
