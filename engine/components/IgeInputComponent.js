@@ -579,10 +579,51 @@ appCore.module('IgeInputComponent', function ($ige, IgeEventingClass, IgePoint3d
 		 * Defines an action that will be emitted when the specified event type
 		 * occurs.
 		 * @param actionName
-		 * @param eventCode
+		 * @param inputIds
 		 */
-		mapAction: function (actionName, eventCode) {
-			this._controlMap[actionName] = eventCode;
+		mapAction: function (actionName, inputIds) {
+			var self = this,
+				i;
+			
+			this._controlMap[actionName] = this._controlMap[actionName] || {
+				inputIds: [],
+				state: function () {
+					var i;
+					
+					if (this.inputIds.length === 1) {
+						return Boolean(self._state[this.inputIds[0]]);
+					}
+					
+					for (i = 0; i < this.inputIds.length; i++) {
+						if (self._state[this.inputIds[i]]) {
+							return true;
+						}
+					}
+				},
+				val: function () {
+					var i;
+					
+					if (this.inputIds.length === 1) {
+						return self._state[this.inputIds[0]];
+					}
+					
+					for (i = 0; i < this.inputIds.length; i++) {
+						if (self._state[this.inputIds[i]]) {
+							return self._state[this.inputIds[i]];
+						}
+					}
+				}
+			};
+			
+			if (inputIds instanceof Array) {
+				// Multiple codes
+				for (i = 0; i < inputIds.length; i++) {
+					this._controlMap[actionName].inputIds.pushUnique(inputIds[i]);
+				}
+			} else {
+				// Single code
+				this._controlMap[actionName].inputIds.pushUnique(inputIds);
+			}
 		},
 		
 		/**
@@ -590,7 +631,7 @@ appCore.module('IgeInputComponent', function ($ige, IgeEventingClass, IgePoint3d
 		 * @param actionName
 		 */
 		actionVal: function (actionName) {
-			return this._state[this._controlMap[actionName]];
+			return this._controlMap[actionName].val();
 		},
 		
 		/**
@@ -599,8 +640,7 @@ appCore.module('IgeInputComponent', function ($ige, IgeEventingClass, IgePoint3d
 		 * @param actionName
 		 */
 		actionState: function (actionName) {
-			var val = this._state[this._controlMap[actionName]];
-			return Boolean(val);
+			return this._controlMap[actionName].state();
 		},
 		
 		/**
