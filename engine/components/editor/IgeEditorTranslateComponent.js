@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
+appCore.module('IgeEditorTranslateComponent', function ($ige, IgeEventingClass) {
 	/**
 	 * When added to a viewport, automatically adds entity translate
 	 * capabilities to the selected entity in the scenegraph viewer.
@@ -78,7 +78,7 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 					if ($ige.engine._sgTreeSelected) {
 						this._targetEntity = $ige.engine.$($ige.engine._sgTreeSelected);
 						
-						if (this._targetEntity.classId() == 'IgeViewport') {
+						if (this._targetEntity.classId() === 'IgeViewport') {
 							// Disable translation mode
 							this.log('Editor: Mouse translate disabled');
 							this.enabled(false);
@@ -140,9 +140,11 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 						panCords = {
 							x: this._opStartMouse.x - curMousePos.x,
 							y: this._opStartMouse.y - curMousePos.y
-						}, distX = Math.abs(panCords.x), distY = Math.abs(panCords.y),
-						panFinalX = this._opStartTranslate.x - (panCords.x / $ige._currentViewport.camera._scale.x),
-						panFinalY = this._opStartTranslate.y - (panCords.y / $ige._currentViewport.camera._scale.y);
+						},
+						distX = Math.abs(panCords.x),
+						distY = Math.abs(panCords.y),
+						panFinalX = this._opStartTranslate.x - (panCords.x / $ige.engine._currentViewport.camera._scale.x),
+						panFinalY = this._opStartTranslate.y - (panCords.y / $ige.engine._currentViewport.camera._scale.y);
 					
 					// Check if we have a limiter on the rectangle area
 					// that we should allow panning inside.
@@ -212,8 +214,8 @@ appCore.module('IgeEditorTranslateComponent', function (IgeEventingClass) {
 								x: this._opStartMouse.x - curMousePos.x,
 								y: this._opStartMouse.y - curMousePos.y
 							},
-							panFinalX = this._opStartTranslate.x - (panCords.x / $ige._currentViewport.camera._scale.x),
-							panFinalY = this._opStartTranslate.y - (panCords.y / $ige._currentViewport.camera._scale.y);
+							panFinalX = this._opStartTranslate.x - (panCords.x / $ige.engine._currentViewport.camera._scale.x),
+							panFinalY = this._opStartTranslate.y - (panCords.y / $ige.engine._currentViewport.camera._scale.y);
 						
 						// Check if we have a limiter on the rectangle area
 						// that we should allow panning inside.

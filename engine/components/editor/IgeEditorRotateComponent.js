@@ -2,7 +2,7 @@
 
 var appCore = require('irrelon-appcore');
 
-appCore.module('IgeEditorRotateComponent', function (IgeEventingClass) {
+appCore.module('IgeEditorRotateComponent', function ($ige, IgeEventingClass) {
 	/**
 	 * When added to a viewport, automatically adds entity rotate
 	 * capabilities to the selected entity in the scenegraph viewer.
@@ -78,7 +78,7 @@ appCore.module('IgeEditorRotateComponent', function (IgeEventingClass) {
 					if ($ige.engine._sgTreeSelected && $ige.engine._sgTreeSelected !== 'ige') {
 						this._targetEntity = $ige.engine.$($ige.engine._sgTreeSelected);
 						
-						if (this._targetEntity.classId() == 'IgeViewport') {
+						if (this._targetEntity.classId() === 'IgeViewport') {
 							// Disable translation mode
 							this.log('Editor: Mouse rotate disabled');
 							this.enabled(false);
