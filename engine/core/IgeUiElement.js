@@ -26,44 +26,43 @@ appCore.module('IgeUiElement', function ($ige, IgeUiEntity) {
 			this._allowFocus = true;
 			this._allowActive = true;
 			
-			var updateStyleFunc = function () {
-				self._updateStyle();
-			};
-			
 			this.on('mouseOver', function () {
 				if (this._allowHover) {
-					updateStyleFunc();
+					self._updateStyle();
 					$ige.engine.input.stopPropagation();
 				} else {
 					this._mouseStateOver = false;
 				}
 			});
+			
 			this.on('mouseOut', function () {
 				if (this._allowHover) {
-					updateStyleFunc();
+					self._updateStyle();
 					$ige.engine.input.stopPropagation();
 				} else {
 					this._mouseStateOver = false;
 				}
 			});
+			
 			this.on('mouseDown', function () {
 				if (this._allowActive) {
-					updateStyleFunc();
+					self._updateStyle();
 					$ige.engine.input.stopPropagation();
 				} else {
 					this._mouseStateDown = false;
 				}
 			});
+			
 			this.on('mouseUp', function () {
 				if (this._allowFocus) {
 					// Try to focus the entity
 					if (!self.focus()) {
-						updateStyleFunc();
+						self._updateStyle();
 					} else {
 						$ige.engine.input.stopPropagation();
 					}
 				} else if (this._allowActive) {
-					updateStyleFunc();
+					self._updateStyle();
 				}
 			});
 			
@@ -132,9 +131,9 @@ appCore.module('IgeUiElement', function ($ige, IgeUiEntity) {
 		_updateStyle: function () {
 			// Apply styles in order of class, class:focus, class:hover, class:active,
 			// id, id:focus, id:hover, id:active
-			this._processStyle(this._classId);
-			this._processStyle(this._styleClass);
-			this._processStyle('#' + this._id);
+			this._processStyle(this._classId); // Get styles by element type (e.g. "IgeUiButton")
+			this._processStyle(this._styleClass); // Get styles by class name (e.g. ".helpButton")
+			this._processStyle('#' + this._id); // Get styles by element id (e.g. "#myHelpButton")
 			
 			if (this._focused) {
 				this._processStyle(this._classId, 'focus');
@@ -170,6 +169,56 @@ appCore.module('IgeUiElement', function ($ige, IgeUiEntity) {
 					this.applyStyle(styleData);
 				}
 			}
+		},
+		
+		/**
+		 * Gets / sets a style for this individual element.
+		 * @param {String=} property The property to get / set.
+		 * @param {*=} value The value to set for the property.
+		 * @return {*}
+		 */
+		style: function (property, value) {
+			var elementStyles,
+				classStyles,
+				idStyles,
+				allStyles = {},
+				i;
+			
+			elementStyles = $ige.engine.ui.style(this._classId) || {}; // Get styles by element type (e.g. "IgeUiButton")
+			classStyles = $ige.engine.ui.style(this._styleClass) || {}; // Get styles by class name (e.g. ".helpButton")
+			idStyles = $ige.engine.ui.style('#' + this._id) || {}; // Get styles by element id (e.g. "#myHelpButton")
+			
+			for (i in elementStyles) {
+				if (elementStyles.hasOwnProperty(i)) {
+					allStyles[i] = elementStyles[i];
+				}
+			}
+			
+			for (i in classStyles) {
+				if (classStyles.hasOwnProperty(i)) {
+					allStyles[i] = classStyles[i];
+				}
+			}
+			
+			for (i in idStyles) {
+				if (idStyles.hasOwnProperty(i)) {
+					allStyles[i] = idStyles[i];
+				}
+			}
+			
+			if (property !== undefined) {
+				if (value !== undefined) {
+					// Assign property value to our idStyles object and
+					// assign it back to the style management component
+					idStyles[property] = value;
+					$ige.engine.ui.style('#' + this._id, idStyles);
+					return this;
+				}
+				
+				return allStyles[property];
+			}
+			
+			return allStyles;
 		},
 		
 		/**
