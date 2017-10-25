@@ -24,6 +24,9 @@ appCore.module('IgeUiWindow', function ($ige, IgeUiElement, IgeUiLabel, IgeUiBut
 			this.width(200);
 			this.height(30);
 			
+			this._draggable = false;
+			this._dragging = false;
+			
 			this._topNav = new IgeUiElement()
 				.backgroundColor('#212121')
 				.top(0)
@@ -62,10 +65,76 @@ appCore.module('IgeUiWindow', function ($ige, IgeUiElement, IgeUiLabel, IgeUiBut
 					$ige.engine.input.stopPropagation();
 				})
 				.mount(this._topNav);
+		},
+		
+		_dragStart: function () {
+			var self = this;
 			
-			this.on('mouseUp', function () {
+			if (self._draggable) {
+				self._dragging = true;
+				self._opStartMouse = $ige.engine._mousePos.clone();
+				self._opStartTranslate = {
+					x: self._translate.x,
+					y: self._translate.y
+				};
+				
+				return true;
+			}
+		},
+		
+		_dragMove: function () {
+			var self = this,
+				curMousePos,
+				panCordsX,
+				panCordsY,
+				panFinalX,
+				panFinalY;
 			
-			});
+			if (self._draggable && self._dragging) {
+				// Update window co-ordinates
+				curMousePos = $ige.engine._mousePos;
+				
+				panCordsX = self._opStartMouse.x - curMousePos.x;
+				panCordsY = self._opStartMouse.y - curMousePos.y;
+				
+				panFinalX = self._opStartTranslate.x - (panCordsX / $ige._currentViewport.camera._scale.x);
+				panFinalY = self._opStartTranslate.y - (panCordsY / $ige._currentViewport.camera._scale.y);
+				
+				self.style('left', panFinalX);
+				self.style('top', panFinalY);
+				
+				// Cancel further propagation
+				return true;
+			}
+		},
+		
+		_dragEnd: function () {
+			var self = this;
+			
+			if (self._draggable && self._dragging) {
+				self._dragging = false;
+				
+				// Cancel further propagation
+				return true;
+			}
+		},
+		
+		draggable: function (val) {
+			var self = this;
+			
+			if (val) {
+				self._draggable = true;
+				
+				this._topNav.on('mouseDown', self._dragStart);
+				$ige.engine.input.on('preMouseUp', self._dragEnd);
+				$ige.engine.input.on('preMouseMove', self._dragMove);
+			} else {
+				self._draggable = false;
+				
+				this._topNav.off('mouseDown', self._dragStart);
+				$ige.engine.input.off('preMouseUp', self._dragEnd);
+				$ige.engine.input.off('preMouseMove', self._dragMove);
+			}
 		},
 		
 		blur: function () {
@@ -88,25 +157,16 @@ appCore.module('IgeUiWindow', function ($ige, IgeUiElement, IgeUiLabel, IgeUiBut
 			}
 			
 			return this._label.color();
-		}/*,
+		},
 		
-		tick: function (ctx) {
-			IgeUiElement.prototype.tick.call(this, ctx);
+		titleFont: function (val) {
+			if (val !== undefined) {
+				this._label.style('font', val);
+				return this;
+			}
 			
-			// Draw drop-down box
-			ctx.fillStyle = '#cccccc';
-			ctx.fillRect(Math.floor(this._bounds2d.x2) - 30, -this._bounds2d.y2 + 1, 30, this._bounds2d.y - 2);
-			
-			// Chevron
-			ctx.strokeStyle = this._color;
-			ctx.beginPath();
-			ctx.moveTo(this._bounds2d.x2 - 18.5, -this._bounds2d.y2 + 14.5);
-			ctx.lineTo(this._bounds2d.x2 - 14.5, 2.5);
-			ctx.lineTo(this._bounds2d.x2 - 10.5, -this._bounds2d.y2 + 14.5);
-			ctx.stroke();
-			
-			this._renderBorder(ctx);
-		}*/
+			return this._label.style('font');
+		}
 	});
 	
 	return IgeUiWindow;
