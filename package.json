@@ -16,7 +16,7 @@
     "browserify-derequire": "^0.9.4",
     "derequire": "^2.0.6",
     "grunt": "^1.0.1",
-    "grunt-browserify": "^5.0.0",
+    "grunt-browserify": "^5.2.0",
     "grunt-contrib-jshint": "^1.1.0",
     "irrelon-appcore": "^1.0.30",
     "irrelon-emitter": "^2.0.2",

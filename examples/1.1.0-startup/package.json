@@ -1,0 +1,23 @@
+{
+	"name": "1.1.0-startup",
+	"version": "1.0.0",
+	"description": "This demo shows how to load a texture, ask the engine to tell us when all textures have loaded into memory, create a scene, viewport and a custom entity class that is defined in the gameClasses/Rotator.js class which we use to make a couple of fairy entities from.",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node server.js"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"aliasify": "^2.1.0",
+		"browserify-derequire": "^0.9.4",
+		"derequire": "^2.0.6",
+		"grunt": "^1.0.1",
+		"grunt-browserify": "^5.2.0",
+		"grunt-contrib-jshint": "^1.1.0",
+		"irrelon-appcore": "^1.0.30",
+		"irrelon-emitter": "^2.0.2",
+		"stringify": "^5.1.0"
+	}
+}

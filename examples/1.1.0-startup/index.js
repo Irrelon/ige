@@ -1,18 +1,38 @@
-var Game = IgeClass.extend({
-	classId: 'Game',
+"use strict";
 
-	init: function (App, options) {
-		// Create the engine
-		ige = new IgeEngine();
+// In normal development you'd just do require('ige'). Since we are *inside* the ige folder, we do relative path instead
+var appCore = require('../../index');
 
-		if (ige.isClient) {
-			ige.client = new App();
-		}
+require('./app/_route');
 
-		if (ige.isServer) {
-			ige.server = new App(options);
-		}
-	}
+// Config functions are called before appCore bootstraps
+appCore.config(function ($game) {
+	// Setup an object to hold a reference to all our
+	// scene objects - you can add anything you want to
+	// $game. It is a module that you can require via
+	// dependency injection everywhere you need a shared
+	// game state in your modules.
+	$game.scene = {};
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Game; } else { var game = new Game(Client); }
+// The appCore entry point, calling bootstrap() starts appCore
+appCore.bootstrap(function ($ige, $game, ige, IgeEditorComponent) {
+	if (appCore.isClient) {
+		window.addEventListener('load', function () {
+			// Create the HTML canvas
+			ige.createFrontBuffer(true);
+			
+			// Start the engine
+			ige.start(function (success) {
+				// Check if the engine started successfully
+				if (success) {
+					ige.addComponent(IgeEditorComponent);
+					ige.editor.showStats();
+					
+					// Navigate to the app's main route
+					$ige.go('app.splash');
+				}
+			});
+		});
+	}
+});
