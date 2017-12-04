@@ -1,3 +1,25 @@
+# App Core Branch
+This branch holds a re-write of some of the core areas of the engine to allow it to
+operate using the latest version of Node.js, as well as bringing some modern web application fundamentals to IGE.
+
+Borrowing ideas from various SPA framewors like AngularJS, this branch includes some new functionality like automatic
+dependency injection, easy router-based navigation around your game (think of each scene as a page in
+an SPA) etc.
+
+**Some things to note**:
+* Literally none of the examples will work in this branch. We have done away with the old loader.js which loaded all
+the engine files into memory on the browser. The new dependency injection system being used is far superior and allows
+both ahead-of-time and just-in-time game compilation, but that means modifying the existing examples to use this new
+way of bootstrapping the engine. Can be done, just gonna take time.
+
+* This branch uses Irrelon AppCore to handle module definition and dependency injection.
+See https://github.com/Irrelon/irrelon-appcore for some more info. If you are familiar with defining modules using
+AngularJS, this will look very similar.
+
+* WORK IN PROGRESS - This branch is usable - I know this because I am creating a production-ready game using it, however
+it may have some rough edges including NO DOCUMENTATION OR EXAMPLES which is by far the largest issue with using this
+branch right now for your own development.
+
 # Isogenic Game Engine
 HTML5 2D and isometric scenegraph-based game engine written entirely in JavaScript.
 
