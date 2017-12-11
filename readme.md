@@ -1,3 +1,16 @@
+# PLEASE READ FIRST - 11th December 2017
+Isogenic Game Engine was a labour of love that has sorely lacked updates and better documentation for quite some time. While I believe it holds academic value if you are looking to see how the internals of a game engine works, if you are looking to create production-ready games, I would go and check out Unity3D instead.
+
+It sadens me to have to make that recommendation because IGE is pretty solid, but lacks extensive documentation, a fully-fledged GUI editor, proper WebGL support and also probably most importantly, it lacks starter games that a developer could use to reverse engineer stuff even if the above was not available.
+
+If you want a back story, you can check out this thread: https://github.com/Irrelon/ige/issues/460#issuecomment-350717484
+
+P.S. There is a new branch called "appCore" in this repo that has updates, and I'm using that to code my own game "Starflight", however my recommendation to use Unity3D over IGE still stands, unless you are only coding your game for desktop browsers and don't mind reading engine code to figure stuff out. The engine code is very well doc-commented with JSDoc at least.
+
+All the best,
+
+Rob Evans
+
 # Isogenic Game Engine
 HTML5 2D and isometric scenegraph-based game engine written entirely in JavaScript.
 
