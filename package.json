@@ -20,6 +20,7 @@
     "grunt-contrib-jshint": "^1.1.0",
     "irrelon-appcore": "^1.0.30",
     "irrelon-emitter": "^2.0.2",
+    "net.io-server": "^1.0.2",
     "stringify": "^5.1.0"
   },
   "devDependencies": {},
