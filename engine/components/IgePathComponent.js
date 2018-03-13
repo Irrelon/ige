@@ -351,6 +351,8 @@ var IgePathComponent = IgeEventingClass.extend({
 	 * @return {*}
 	 */
 	start: function (startTime) {
+		var startPoint;
+		
 		if (!this._active) {
 			this._active = true;
 			this._finished = false;
@@ -359,7 +361,7 @@ var IgePathComponent = IgeEventingClass.extend({
 			this._calculatePathData();
 
 			if (this._points.length > 0) {
-				var startPoint = this._points[0];
+				startPoint = this._points[0];
 				this.emit("started", [this._entity, startPoint.x, startPoint.y]);
 			}
 		} else {
