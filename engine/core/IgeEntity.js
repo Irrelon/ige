@@ -407,6 +407,15 @@ var IgeEntity = IgeObject.extend({
 		return this._backgroundPattern;
 	},
 
+	smartBackground: function (renderMethod) {
+		if (renderMethod !== undefined) {
+			this._smartBackground = renderMethod;
+			return this;
+		}
+
+		return this._smartBackground
+	},
+
 	/**
 	 * Set the object's width to the number of tile width's specified.
 	 * @param {Number} val Number of tiles.
@@ -1820,24 +1829,28 @@ var IgeEntity = IgeObject.extend({
 					ctx.save();
 					ctx.fillStyle = this._backgroundPatternFill;
 
-					// TODO: When firefox has fixed their bug regarding negative rect co-ordinates, revert this change
+					if (this._smartBackground) {
+						this._smartBackground(ctx, this);
+					} else {
+						// TODO: When firefox has fixed their bug regarding negative rect co-ordinates, revert this change
 
-					// This is the proper way to do this but firefox has a bug which I'm gonna report
-					// so instead I have to use ANOTHER translate call instead. So crap!
-					//ctx.rect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
-					ctx.translate(-this._bounds2d.x2, -this._bounds2d.y2);
-					ctx.rect(0, 0, this._bounds2d.x, this._bounds2d.y);
-					if (this._backgroundPatternTrackCamera) {
-						ctx.translate(-ige._currentCamera._translate.x, -ige._currentCamera._translate.y);
-						ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
-					}
-					ctx.fill();
-					ige._drawCount++;
-
-					if (this._backgroundPatternIsoTile) {
-						ctx.translate(-Math.floor(this._backgroundPattern.image.width) / 2, -Math.floor(this._backgroundPattern.image.height / 2));
+						// This is the proper way to do this but firefox has a bug which I'm gonna report
+						// so instead I have to use ANOTHER translate call instead. So crap!
+						//ctx.rect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
+						ctx.translate(-this._bounds2d.x2, -this._bounds2d.y2);
+						ctx.rect(0, 0, this._bounds2d.x, this._bounds2d.y);
+						if (this._backgroundPatternTrackCamera) {
+							ctx.translate(-ige._currentCamera._translate.x, -ige._currentCamera._translate.y);
+							ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
+						}
 						ctx.fill();
 						ige._drawCount++;
+
+						if (this._backgroundPatternIsoTile) {
+							ctx.translate(-Math.floor(this._backgroundPattern.image.width) / 2, -Math.floor(this._backgroundPattern.image.height / 2));
+							ctx.fill();
+							ige._drawCount++;
+						}
 					}
 
 					ctx.restore();
