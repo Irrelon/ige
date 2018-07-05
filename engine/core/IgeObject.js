@@ -23,6 +23,11 @@ var IgeObject = IgeEventingClass.extend({
 			'_parent',
 			'_children'
 		];
+
+		// Default sorting behavior
+		this._sortChildren = function (compareFn) {
+			return this._children.sort(compareFn);
+		}
 	},
 
 	/**
@@ -1375,7 +1380,7 @@ var IgeObject = IgeEventingClass.extend({
 								arr[sortObj.order[i]].depth(i);
 							}
 
-							this._children.sort(function (a, b) {
+							this._sortChildren(function (a, b) {
 								var layerIndex = b._layer - a._layer;
 
 								if (layerIndex === 0) {
@@ -1390,7 +1395,7 @@ var IgeObject = IgeEventingClass.extend({
 
 						if (this._depthSortMode === 1) { // Medium speed, optimised for almost-cube shaped 3d bounds
 							// Now sort the entities by depth
-							this._children.sort(function (a, b) {
+							this._sortChildren(function (a, b) {
 								var layerIndex = b._layer - a._layer;
 
 								if (layerIndex === 0) {
@@ -1420,7 +1425,7 @@ var IgeObject = IgeEventingClass.extend({
 							}
 
 							// Now sort the entities by depth
-							this._children.sort(function (a, b) {
+							this._sortChildren(function (a, b) {
 								var layerIndex = b._layer - a._layer;
 
 								if (layerIndex === 0) {
@@ -1434,7 +1439,7 @@ var IgeObject = IgeEventingClass.extend({
 						}
 					} else { // 2d mode
 						// Now sort the entities by depth
-						this._children.sort(function (a, b) {
+						this._sortChildren(function (a, b) {
 							var layerIndex = b._layer - a._layer;
 
 							if (layerIndex === 0) {
@@ -1966,6 +1971,25 @@ var IgeObject = IgeEventingClass.extend({
 				}
 			}
 		}
+	},
+
+	/**
+	 * Gets or sets the function used to sort children for example in depth sorting. This allows us to optionally use
+	 * a stable sort (for browsers where the native implementation is not stable) or something more specific such as
+	 * insertion sort for a speedup when we know data is going to be already mostly sorted.
+	 * @param {Function=} val Sorting function - must operate on this._children and sort the array in place.
+	 * @example #Set the child sorting algorthm
+	 *     var entity = new IgeEntity();
+	 *     entity.childSortingAlgorithm(function (compareFn) { this._children.sort(compareFn); });
+	 * @return {*}
+	 */
+	childSortingAlgorithm: function (val) {
+		if (val !== undefined) {
+			this._sortChildren = val;
+			return this;
+		}
+
+		return this._sortChildren;
 	},
 
 	/**
