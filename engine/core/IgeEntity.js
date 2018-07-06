@@ -1243,13 +1243,7 @@ var IgeEntity = IgeObject.extend({
 	compositeAabb: function (inverse) {
 		var arr = this._children,
 			arrCount,
-			rect;
-	
-		if (inverse) {
 			rect = this.aabb(true, inverse).clone();
-		} else {
-			rect = this.aabb().clone();	
-		}
 
 		// Now loop all children and get the aabb for each of them
 		// them add those bounds to the current rect
@@ -1754,8 +1748,7 @@ var IgeEntity = IgeObject.extend({
 		if (this._compositeCache) {
 			// Get the composite entity AABB and alter the internal canvas
 			// to the composite size so we can render the entire entity
-			var aabbC = this.compositeAabb(true);
-			
+			var aabbC = this.compositeAabb();
 			this._compositeAabbCache = aabbC;
 			
 			if (aabbC.width > 0 && aabbC.height > 0) {
