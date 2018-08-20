@@ -24,7 +24,8 @@ var IgeUiTextBox = IgeUiElement.extend({
 			.middle(0)
 			.textAlignX(0)
 			.textAlignY(0)
-			.mount(this);
+
+		this._fontEntity.mount(self);
 		
 		var blurFunc = function () {
 			if (self._domElement) {

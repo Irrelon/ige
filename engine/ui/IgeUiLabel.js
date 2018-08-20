@@ -18,9 +18,10 @@ var IgeUiLabel = IgeUiElement.extend({
 			.left(0)
 			.middle(0)
 			.textAlignX(0)
-			.textAlignY(0)
-			.mount(this);
-		
+			.textAlignY(0);
+
+		this._fontEntity.mount(self);
+
 		// Set defaults
 		this.font('10px Verdana');
 		this.paddingLeft(5);
@@ -145,7 +146,7 @@ var IgeUiLabel = IgeUiElement.extend({
 	
 	nativeFont: function (val) {
 		if (val !== undefined) {
-			this._fontEntity.nativeFont(val);
+			// this._fontEntity.nativeFont(val);
 			return this;
 		}
 		
