@@ -146,7 +146,7 @@ var IgeUiLabel = IgeUiElement.extend({
 	
 	nativeFont: function (val) {
 		if (val !== undefined) {
-			// this._fontEntity.nativeFont(val);
+			this._fontEntity.nativeFont(val);
 			return this;
 		}
 		
