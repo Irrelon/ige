@@ -18,9 +18,10 @@ var IgeUiLabel = IgeUiElement.extend({
 			.left(0)
 			.middle(0)
 			.textAlignX(0)
-			.textAlignY(0)
-			.mount(this);
-		
+			.textAlignY(0);
+
+		this._fontEntity.mount(self);
+
 		// Set defaults
 		this.font('10px Verdana');
 		this.paddingLeft(5);
