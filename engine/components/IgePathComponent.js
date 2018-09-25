@@ -196,6 +196,44 @@ var IgePathComponent = IgeEventingClass.extend({
 	},
 
 	/**
+	 * Sets a new destination for a path including the point currently being traversed if a path is active
+	 * This creates a smooth transition and flow of pointComplete events between the old and new paths
+	 * @param {Number} x The x tile to path to.
+	 * @param {Number} y The y tile to path to.
+	 * @param {Number} z The z tile to path to.
+	 * @param {Boolean=} findNearest If the destination is unreachable, when set to
+	 * true this option will allow the pathfinder to return the closest path to the
+	 * destination tile.
+	 * @returns {*}
+	 */
+	reRoute: function (x, y, z, findNearest) {
+		// Get the endPoint of the current path
+		var toPoint = this.getToPoint(),
+			fromPoint = this.getFromPoint();
+
+		if (!toPoint) {
+			// There is no existing path, detect current tile position
+			toPoint = this._entity._parent.pointToTile(this._entity._translate);
+		}
+
+		// Create a new path, making sure we include the points that we're currently working between
+		var prePath = fromPoint ? [fromPoint] : [];
+		var path = this._finder.generate(
+			this._tileMap,
+			toPoint,
+			new IgePoint3d(x, y, z),
+			this._tileChecker,
+			this._allowSquare,
+			this._allowDiagonal,
+			findNearest
+		);
+
+		this.clear();
+		this.addPoints(prePath.concat(path));
+		return this;
+	},
+
+	/**
 	 * Adds a path array containing path points (IgePoint3d instances) to the points queue.
 	 * @param {Array} path An array of path points.
 	 * @return {*}
