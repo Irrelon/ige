@@ -381,8 +381,9 @@ var IgePathComponent = IgeEventingClass.extend({
 				restartPoint = this._points[this._nextPointToProcess];
 				endPoint = this.getEndPoint();
 
-				this.stop();
-				this.set(restartPoint.x, restartPoint.y, restartPoint.z, endPoint.x, endPoint.y, endPoint.z);
+				// Need to round the restart co-ordinates as the speed could have changed with an entity halfway between
+				// points and this upsets the tile checker
+				this.set(Math.round(restartPoint.x), Math.round(restartPoint.y), restartPoint.z, endPoint.x, endPoint.y, endPoint.z);
 				this.restart(startTime || ige._currentTime);
 			}
 			return this;
