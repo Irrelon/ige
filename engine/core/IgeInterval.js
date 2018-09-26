@@ -11,14 +11,18 @@ var IgeInterval = IgeEventingClass.extend({
 	 * milliseconds specified by the interval parameter.
 	 * @param {Function} method The method to call each interval.
 	 * @param {Number} interval The number of milliseconds between each interval.
+	 * @param {Boolean} catchup If true, the interval will fire multiple times 
+	 * retrospectively when the engine jumps in time. If false, the interval will 
+	 * only fire a single time even if a large period of engine time has elapsed 
 	 */
-	init: function (method, interval) {
+	init: function (method, interval, catchup = true) {
 		var self = this;
 		
 		this._method = method;
 		this._interval = interval;
 		this._time = 0;
 		this._started = ige._currentTime;
+		this._catchup = catchup;
 		
 		// Attach ourselves to the time system
 		ige.time.addTimer(this);
@@ -50,12 +54,23 @@ var IgeInterval = IgeEventingClass.extend({
 	 * @returns {*}
 	 */
 	update: function () {
-		if (this._time > this._interval) {
+		var intendedTime;
+		var overTime = this._time - this._interval;
+
+		if (overTime > 0) {
+			intendedTime = ige._currentTime - overTime;
+
 			// Fire an interval
-			this._method(ige._currentTime);
-			this._time -= this._interval;
+			this._method(ige._currentTime, intendedTime);
+
+			if (this._catchup) {
+				this._time -= this._interval;
+			}
+			else {
+				this._time = 0;
+			}
 		}
-		
+
 		return this;
 	}
 });
