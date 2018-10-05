@@ -42,9 +42,14 @@ var IgeTimeout = IgeInterval.extend({
 	 * @returns {*}
 	 */
 	update: function () {
-		if (this._time > this._interval) {
+		var intendedTime;
+		var overTime = this._time - this._interval;
+
+		if (overTime > 0) {
+			intendedTime = ige._currentTime - overTime;
+
 			// Fire an interval
-			this._method(ige._currentTime);
+			this._method(ige._currentTime, intendedTime);
 			ige.time.removeTimer(this);
 		}
 		
