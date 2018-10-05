@@ -9,7 +9,8 @@ var IgePathComponent = IgeEventingClass.extend({
 		this._entity = entity;
 		this._points = [];
 		this._speed = 1 / 1000;
-		
+
+		this._nextPointToProcess = 0;
 		this._previousPointFrom = 0;
 		this._currentPointFrom = 0;
 		this._previousPointTo = 0;
@@ -81,7 +82,10 @@ var IgePathComponent = IgeEventingClass.extend({
 		if (val !== undefined) {
 			var self = this;
 			
-			this._tileChecker = function () { return val.apply(self._entity, arguments); };
+			this._tileChecker = function () {
+				return val.apply(self._entity, arguments);
+			};
+
 			return this;
 		}
 		
@@ -362,7 +366,8 @@ var IgePathComponent = IgeEventingClass.extend({
 
 			if (this._points.length > 0) {
 				startPoint = this._points[0];
-				this.emit("started", [this._entity, startPoint.x, startPoint.y]);
+				this._nextPointToProcess = 0;
+				this.emit("started", [this._entity, startPoint.x, startPoint.y, this._startTime]);
 			}
 		} else {
 			this._finished = false;
@@ -400,7 +405,8 @@ var IgePathComponent = IgeEventingClass.extend({
 		if (this._active) {
 			this.stop();
 		}
-		
+
+		this._nextPointToProcess = 0;
 		this._previousPointFrom = 0;
 		this._currentPointFrom = 0;
 		this._previousPointTo = 0;
@@ -532,8 +538,9 @@ var IgePathComponent = IgeEventingClass.extend({
 				pointFrom,
 				pointTo,
 				newPoint,
-				dynamicResult;
-			
+				dynamicResult,
+				effectiveTime;
+
 			// Loop points along the path and determine which points we are traversing between
 			for (pointIndex = 0; pointIndex < pointCount; pointIndex++) {
 				totalDistance += pointArr[pointIndex]._distanceToNext;
@@ -552,8 +559,27 @@ var IgePathComponent = IgeEventingClass.extend({
 			// Check if we have points to traverse between
 			if (pointFrom && pointTo) {
 				if (path._currentPointFrom !== path._previousPointFrom) {
-					// Emit point complete
-					path.emit('pointComplete', [this, pointArr[path._previousPointFrom].x, pointArr[path._previousPointFrom].y, pointArr[path._currentPointFrom].x, pointArr[path._currentPointFrom].y]);
+					var pointNext, p;
+
+					// Emit points complete
+					while (path._nextPointToProcess < path._currentPointFrom) {
+						p = path._nextPointToProcess++;
+						effectiveTime = path._startTime + pointArr[p]._absoluteTimeToNext;
+
+						pointNext = pointArr[p + 1];
+						newPoint = path.multiplyPoint(pointNext);
+						newPoint = path.transformPoint(newPoint);
+
+						// We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
+						this.translateToPoint(newPoint);
+
+						path.emit('pointComplete', [this, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime]);
+
+						if (path._nextPointToProcess <= p) {
+							// The path has restarted so bomb out and catch up next tick
+							return;
+						}
+					}
 				}
 				
 				// Check if we are in dynamic mode and if so, ensure our path is still valid
@@ -591,22 +617,39 @@ var IgePathComponent = IgeEventingClass.extend({
 				path._previousPointFrom = path._currentPointFrom;
 				path._previousPointTo = path._currentPointTo;
 			} else {
-				pointTo = pointArr[pointCount - 1];
-				
-				newPoint = path.multiplyPoint(pointTo);
-				newPoint = path.transformPoint(newPoint);
-				
-				path._previousPointFrom = pointCount - 1;
-				path._previousPointTo = pointCount - 1;
+				var pointNext, p;
+
 				path._currentPointFrom = pointCount - 1;
 				path._currentPointTo = pointCount - 1;
-				
-				this.translateToPoint(newPoint);
-				
+
+				// Emit final points complete if remaining
+				while (path._nextPointToProcess < path._currentPointFrom) {
+					p = path._nextPointToProcess++;
+					effectiveTime = path._startTime + pointArr[p]._absoluteTimeToNext;
+
+					pointNext = pointArr[p + 1];
+					newPoint = path.multiplyPoint(pointNext);
+					newPoint = path.transformPoint(newPoint);
+
+					// We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
+					this.translateToPoint(newPoint);
+
+					path.emit('pointComplete', [this, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime]);
+
+					if (path._nextPointToProcess <= p) {
+						// The path has restarted so bomb out and catch up next tick
+						return;
+					}
+				}
+
+				path._previousPointFrom = pointCount - 1;
+				path._previousPointTo = pointCount - 1;
+
 				path._finished = true;
-				path.emit('pathComplete', [this, pointArr[path._previousPointFrom].x, pointArr[path._previousPointFrom].y]);
+				effectiveTime = path._startTime + path._totalTime;
+				path.emit('pathComplete', [this, pointArr[path._previousPointFrom].x, pointArr[path._previousPointFrom].y, effectiveTime]);
 			}
-		} else if(path._active && path._totalDistance == 0 && !path._finished) {
+		} else if (path._active && path._totalDistance == 0 && !path._finished) {
 			path._finished = true;
 		}
 	},
@@ -656,8 +699,7 @@ var IgePathComponent = IgeEventingClass.extend({
 			pointTo,
 			i;
 
-
-		if(this._currentPointFrom === 0) {
+		if (this._currentPointFrom === 0) {
 			// always set the first point to be the current position
 			startPoint = this._entity._translate.clone();
 			startPoint = this.unTransformPoint(startPoint);
