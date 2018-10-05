@@ -333,13 +333,19 @@ var IgePathComponent = IgeEventingClass.extend({
 	 * @param {Number=} val
 	 * @return {*}
 	 */
-	speed: function (val) {
+	speed: function (val, startTime) {
+		var endPoint, restartPoint;
+
 		if (val !== undefined) {
 			this._speed = val / 1000;
-			
+
 			if (this._active) {
+				restartPoint = this._points[this._nextPointToProcess];
+				endPoint = this.getEndPoint();
+
 				this.stop();
-				this.start(this._startTime);
+				this.set(restartPoint.x, restartPoint.y, restartPoint.z, endPoint.x, endPoint.y, endPoint.z);
+				this.restart(startTime || ige._currentTime);
 			}
 			return this;
 		}
@@ -372,7 +378,27 @@ var IgePathComponent = IgeEventingClass.extend({
 		} else {
 			this._finished = false;
 		}
-		
+
+		return this;
+	},
+
+	/**
+	 * Restarts an existing path traversal, for example after we have changed the speed or given it a new set of points
+	 * but don't want to consider it a new path and raise a new start event
+	 * @param {Number=} startTime The time to start path traversal. Defaults
+	 * to ige._currentTime if no value is presented.
+	 * @return {*}
+	 */
+	restart: function (startTime) {
+		if (this._points.length > this._nextPointToProcess) {
+			this._finished = false;
+
+			if (!this._active) {
+				this._active = true;
+				this._startTime = startTime || ige._currentTime;
+			}
+		}
+
 		return this;
 	},
 
