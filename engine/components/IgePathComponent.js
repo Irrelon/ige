@@ -228,8 +228,16 @@ var IgePathComponent = IgeEventingClass.extend({
 			findNearest
 		);
 
-		this.clear();
-		this.addPoints(prePath.concat(path));
+		// Do nothing if the new path is empty or invalid
+		if (path.length > 0) {
+			this.clear();
+			this.addPoints(prePath.concat(path));
+		}
+		else
+		{
+			this.log('Cannot reroute to an empty path!', 'warning');
+		}
+
 		return this;
 	},
 
