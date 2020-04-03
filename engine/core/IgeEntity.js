@@ -3189,6 +3189,8 @@ var IgeEntity = IgeObject.extend({
 			this._transformChanged = true;
 			this._aabbDirty = true;
 			this._bounds3dPolygonDirty = true;
+
+			this.cacheDirty(true);
 		} else {
 			this._transformChanged = false;
 		}
