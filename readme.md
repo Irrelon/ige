@@ -2,7 +2,7 @@
 HTML5 2D and isometric scenegraph-based game engine written entirely in JavaScript.
 
 ## Latest Updates & Changelog
-http://www.isogenicengine.com/forum/viewforum.php?f=8
+https://www.isogenicengine.com/forum/viewforum.php?f=8
 
 ## Main Features
 * Full un-obfuscated source code
@@ -32,10 +32,10 @@ There are a lot of examples in the ./examples folder. Please see the ./examples/
 about running the examples.
 
 ## Documentation
-http://www.isogenicengine.com/docs-manual.html
+https://www.isogenicengine.com/docs-manual.html
 
 ## Forum
-Head over to the official help & support forum: http://www.isogenicengine.com/forum
+Head over to the official help & support forum: https://www.isogenicengine.com/forum
 
 ## Feedback & Support
 If you have any comments, questions, requests etc please don't hesitate to discuss them on the forum!
@@ -47,12 +47,12 @@ MIT
 (C)opyright 2013 Irrelon Software Limited
 http://www.irrelon.com
 
-* Website: http://www.isogenicengine.com
-* Store: http://www.isogenicengine.com/download.html
-* Forum: http://www.isogenicengine.com/forum
-* API Docs: http://www.isogenicengine.com/docs-reference.html
-* Video Tutorials: http://www.isogenicengine.com/docs-tutorials.html
-* Updates, News & Changelog: http://www.isogenicengine.com/forum/viewforum.php?f=8
+* Website: https://www.isogenicengine.com
+* Store: https://www.isogenicengine.com/download.html
+* Forum: https://www.isogenicengine.com/forum
+* API Docs: https://www.isogenicengine.com/docs-reference.html
+* Video Tutorials: https://www.isogenicengine.com/docs-tutorials.html
+* Updates, News & Changelog: https://www.isogenicengine.com/forum/viewforum.php?f=8
 * Twitter: @IsogenicEngine https://twitter.com/IsogenicEngine
 * Youtube: http://www.youtube.com/user/coolbloke1324
 

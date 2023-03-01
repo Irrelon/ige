@@ -30,7 +30,7 @@ var IgeEngine = IgeEntity.extend({
 		console.log('------------------------------------------------------------------------------');
 		console.log('* Powered by the Isogenic Game Engine ' + igeVersion + '                  *');
 		console.log('* (C)opyright ' + new Date().getFullYear() + ' Irrelon Software Limited                                  *');
-		console.log('* http://www.isogenicengine.com                                              *');
+		console.log('* https://www.isogenicengine.com                                              *');
 		console.log('------------------------------------------------------------------------------');
 		
 		IgeEntity.prototype.init.call(this);

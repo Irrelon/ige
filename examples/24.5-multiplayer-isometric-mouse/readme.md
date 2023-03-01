@@ -30,4 +30,4 @@ rotation, scale etc) is updated all clients are informed. The engine supports mu
 streaming data to clients but this is the simplest way to handle it. A single method call is all that is required
 to get the server-side simulation to send sync data to clients :)
 
-You can find out much more about the network stream system here: http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/manual/networking-multiplayer/realtime-network-streaming/
+You can find out much more about the network stream system here: https://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/manual/networking-multiplayer/realtime-network-streaming/

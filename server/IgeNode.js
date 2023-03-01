@@ -20,7 +20,7 @@ var IgeNode = IgeClass.extend({
 				console.log('------------------------------------------------------------------------------');
 				console.log('* Isogenic Game Engine Server ' + igeVersion + '                                          *');
 				console.log('* (C)opyright 2012 Irrelon Software Limited                                  *');
-				console.log('* http://www.isogenicengine.com                                              *');
+				console.log('* https://www.isogenicengine.com                                              *');
 				console.log('------------------------------------------------------------------------------');
 				this.log('Starting pre-init process. IGE Game Server loading...');
 				this.log('Current working directory is: ' + process.cwd());
@@ -53,7 +53,7 @@ var IgeNode = IgeClass.extend({
 		console.log('------------------------------------------------------------------------------');
 		console.log('* Isogenic Game Engine Server ' + igeVersion + '                                          *');
 		console.log('* (C)opyright 2012 Irrelon Software Limited                                  *');
-		console.log('* http://www.isogenicengine.com                                              *');
+		console.log('* https://www.isogenicengine.com                                              *');
 		console.log('------------------------------------------------------------------------------');
 
 		console.log('Usage:');

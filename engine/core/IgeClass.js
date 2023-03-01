@@ -277,7 +277,7 @@ var IgeClass = (function () {
 	 *         }
 	 *     });
 	 * 
-	 * Further reading: [Extending Classes](http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/manual/engine-fundamentals/classes/extending-classes/)
+	 * Further reading: [Extending Classes](https://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/manual/engine-fundamentals/classes/extending-classes/)
 	 * @return {Function}
 	 */
 	IgeClass.extend = function () {
