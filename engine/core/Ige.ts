@@ -1,19 +1,88 @@
 import {version} from "../../package.json";
 import igeConfig from "./config";
 
-import {IgeRoot} from "./IgeRoot";
-import {IgePoint3d} from "./IgePoint3d";
-import {IgeBaseClass} from "./IgeBaseClass";
-import {IgeDummyContext} from "./IgeDummyContext";
+import IgeRoot from "./IgeRoot";
+import IgePoint3d from "./IgePoint3d";
+import IgeBaseClass from "./IgeBaseClass";
+import IgeDummyContext from "./IgeDummyContext";
 
-import {IgeInputComponent} from "../components/IgeInputComponent";
-import {IgeTweenComponent} from "../components/IgeTweenComponent";
-import {IgeTimeComponent} from "../components/IgeTimeComponent";
-import {IgeUiManagerComponent} from "../components/IgeUiManagerComponent";
-import {IgeAudioComponent} from "../components/audio/IgeAudioComponent";
+import IgeInputComponent from "../components/IgeInputComponent";
+import IgeTweenComponent from "../components/IgeTweenComponent";
+import IgeTimeComponent from "../components/IgeTimeComponent";
+import IgeUiManagerComponent from "../components/IgeUiManagerComponent";
+import IgeAudioComponent from "../components/audio/IgeAudioComponent";
+import {EventListenerRegister} from "./IgeEventingClass";
+import IgeTexture from "./IgeTexture";
+import IgeViewport from "./IgeViewport";
+import IgeCamera from "./IgeCamera";
+import IgeEntity from "./IgeEntity";
+import IgeObject from "./IgeObject";
 
 class Ige {
-	constructor (canvas) {
+	_eventListeners: EventListenerRegister = {};
+	isServer: boolean;
+	isClient: boolean;
+	igeClassStore: Record<string, any>;
+	_textureStore: IgeTexture[];
+	_idCounter: number;
+	_renderModes: string[];
+	_pixelRatioScaling: boolean;
+	_requireScriptTotal: number;
+	_requireScriptLoading: number;
+	_loadingPreText?: string;
+	_enableUpdates: boolean;
+	_enableRenders: boolean;
+	_showSgTree: boolean;
+	_debugEvents: Record<string, boolean>;
+	_renderContext: "2d" | "three";
+	_renderMode: number;
+	_tickTime: string;
+	_updateTime: string;
+	_renderTime: string;
+	_tickDelta: number;
+	_fpsRate: number;
+	_state: number;
+	_textureImageStore: Record<string, HTMLImageElement | HTMLCanvasElement>;
+	_texturesLoading: number;
+	_texturesTotal: number;
+	_drawCount: number;
+	_dps: number;
+	_dpf: number;
+	_frames: number;
+	_fps: number;
+	_clientNetDiff: number;
+	_frameAlternator: boolean;
+	_viewportDepth: boolean;
+	_mousePos: IgePoint3d;
+	_currentViewport: IgeViewport | null;
+	_currentCamera: IgeCamera | null;
+	_currentTime: number;
+	_globalSmoothing: boolean;
+	_register: Record<string, IgeObject | IgeEntity | Ige>;
+	_categoryRegister
+	_groupRegister
+	_postTick
+	_timeSpentInUpdate
+	_timeSpentLastUpdate
+	_timeSpentInTick
+	_timeSpentLastTick
+	_timeScale
+	_globalScale
+	_graphInstances
+	_spawnQueue
+	_dependencyQueue
+	_dependencyCheckTimeout
+	_webFonts
+	_cssFonts
+	_ctx
+	_headless: boolean;
+	_idCounter
+	root
+	isClient
+	_dependencyQueue
+	_secondTimer
+
+	constructor (canvas: HTMLCanvasElement) {
 		this._eventListeners = {};
 		this.isServer = false;
 		this.isClient = true;
@@ -244,7 +313,7 @@ class Ige {
 	 *     // it via it's id ("velocity")
 	 *     entity.removeComponent('velocity');
 	 */
-	removeComponent (componentId) {
+	removeComponent (componentId: string) {
 		// If the component has a destroy method, call it
 		if (this[componentId] && this[componentId].destroy) {
 			this[componentId].destroy();
@@ -268,7 +337,7 @@ class Ige {
 	 * @param {String || Object} item The id of the item to return,
 	 * or if an object, returns the object as-is.
 	 */
-	$ (item) {
+	$ (item: string) {
 		if (typeof(item) === "string") {
 			return this._register[item];
 		} else if (typeof(item) === "object") {
@@ -284,7 +353,7 @@ class Ige {
 	 * @param {String} categoryName The name of the category to return
 	 * all objects for.
 	 */
-	$$ (categoryName) {
+	$$ (categoryName: string) {
 		return this._categoryRegister[categoryName] || [];
 	}
 
@@ -294,7 +363,7 @@ class Ige {
 	 * @param {String} groupName The name of the group to return
 	 * all objects for.
 	 */
-	$$$ (groupName) {
+	$$$ (groupName: string) {
 		return this._groupRegister[groupName] || [];
 	}
 
