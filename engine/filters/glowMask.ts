@@ -1,53 +1,51 @@
-IgeFilters.glowMask = function (canvas, ctx, originalImage, texture, data) {
-	var oneNinth = 1 / 9,
-		pixelData,
-		tempCanvas,
-		tempCtx,
-		i;
+import { IgeSmartFilter } from "../../types/IgeSmartFilter";
+import igeFilters from "../../services/igeFilters";
+import { convoluteHelper } from "./convolute";
 
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+export const glowMask: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
+    const oneNinth = 1 / 9;
+    let pixelData, tempCanvas, tempCtx, i;
 
-	if (data.blurPasses) {
-		ctx.drawImage(data.glowMask.image, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-		pixelData = ctx.getImageData(
-			0,
-			0,
-			canvas.width,
-			canvas.height
-		);
+    if (data.blurPasses) {
+        ctx.drawImage(data.glowMask.image, 0, 0);
 
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-		for (i = 0; i < data.blurPasses; i++) {
-			pixelData = IgeFilters._convolute(
-				pixelData,
-				[
-					oneNinth, oneNinth,  oneNinth,
-					oneNinth, oneNinth,  oneNinth,
-					oneNinth, oneNinth,  oneNinth
-				],
-				false
-			);
-		}
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-		tempCanvas = document.createElement("canvas");
-		tempCtx = tempCanvas.getContext('2d');
+        for (i = 0; i < data.blurPasses; i++) {
+            if (!pixelData) return;
 
-		tempCanvas.width = canvas.width;
-		tempCanvas.height = canvas.height;
+            pixelData = convoluteHelper(
+                pixelData,
+                [oneNinth, oneNinth, oneNinth, oneNinth, oneNinth, oneNinth, oneNinth, oneNinth, oneNinth],
+                false
+            );
+        }
 
-		tempCtx.putImageData(pixelData, 0, 0);
-	} else {
-		tempCanvas = data.glowMask.image;
-	}
+        if (!pixelData) return;
 
-	ctx.drawImage(originalImage, 0, 0);
+        tempCanvas = document.createElement("canvas");
+        tempCtx = tempCanvas.getContext("2d");
 
-	ctx.globalCompositeOperation = "lighter";
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
 
-	for (i = 0; i < data.glowPasses; i++) {
-		// Apply the filter and then put the new pixel data
-		ctx.drawImage(tempCanvas, 0, 0);
-	}
+        tempCtx?.putImageData(pixelData, 0, 0);
+    } else {
+        tempCanvas = data.glowMask.image;
+    }
+
+    ctx.drawImage(originalImage, 0, 0);
+
+    ctx.globalCompositeOperation = "lighter";
+
+    for (i = 0; i < data.glowPasses; i++) {
+        // Apply the filter and then put the new pixel data
+        ctx.drawImage(tempCanvas, 0, 0);
+    }
 };
+
+igeFilters.registerFilter("glowMask", glowMask);

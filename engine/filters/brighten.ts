@@ -1,34 +1,27 @@
-IgeFilters.brighten = function (canvas, ctx, originalImage, texture, data) {
-	// Apply the filter and then put the new pixel data
-	ctx.putImageData(
-		IgeFilters._brighten(
-			ctx.getImageData(
-				0,
-				0,
-				canvas.width,
-				canvas.height
-			),
-			texture,
-			data
-		),
-		0,
-		0
-	);
+import igeFilters from "../../services/igeFilters";
+import { IgeSmartFilter } from "../../types/IgeSmartFilter";
+
+export const brighten: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
+    // Apply the filter and then put the new pixel data
+    ctx.putImageData(igeFilters.helper.brightenHelper(ctx.getImageData(0, 0, canvas.width, canvas.height), texture, data), 0, 0);
 };
 
-IgeFilters._brighten = function (imageData, texture, data) {
-	var arr,
-		arrCount,
-		i, adjustment = texture.data('IgeFilters.brighten.value') || data.value;
+igeFilters.registerFilter("brighten", brighten);
 
-	arr = imageData.data;
-	arrCount = arr.length;
+igeFilters.registerHelper("brightenHelper", function (imageData, texture, data) {
+    let arr,
+        arrCount,
+        i,
+        adjustment = texture.data("IgeFilters.brighten.value") || data.value;
 
-	for (i = 0; i < arrCount; i += 4) {
-		arr[i] += adjustment;
-		arr[i + 1] += adjustment;
-		arr[i + 2] += adjustment;
-	}
+    arr = imageData.data;
+    arrCount = arr.length;
 
-	return imageData;
-};
+    for (i = 0; i < arrCount; i += 4) {
+        arr[i] += adjustment;
+        arr[i + 1] += adjustment;
+        arr[i + 2] += adjustment;
+    }
+
+    return imageData;
+});

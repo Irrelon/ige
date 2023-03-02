@@ -1,47 +1,41 @@
-IgeFilters.edgeDetect = function (canvas, ctx, originalImage, texture, data) {
-	if (!texture._filterImageDrawn || !data || !data.cumulative) {
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		ctx.drawImage(originalImage, 0, 0);
-		texture._filterImageDrawn = true;
-	}
+import { IgeSmartFilter } from "../../types/IgeSmartFilter";
+import { convoluteHelper } from "./convolute";
+import igeFilters from "../../services/igeFilters";
 
-	var newData = IgeFilters._convolute(
-			ctx.getImageData(
-				0,
-				0,
-				canvas.width,
-				canvas.height
-			),
-			[
-				-1,	-1,	-1,	-1,	-1,
-				-1,	2,	2,	2,	-1,
-				-1,	2,	0,	2,	-1,
-				-1,	2,	2,	2,	-1,
-				-1,	-1,	-1,	-1,	-1
-			],
-			true
-		),
-		arr = newData.data,
-		arrCount = arr.length,
-		i, r, g, b, v;
+export const edgeDetect: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
+    if (!texture._filterImageDrawn || !data || !data.cumulative) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(originalImage, 0, 0);
+        texture._filterImageDrawn = true;
+    }
 
-	for (i = 0; i < arrCount; i += 4) {
-		r = arr[i];
-		g = arr[i+1];
-		b = arr[i+2];
+    const newData = convoluteHelper(
+        ctx.getImageData(0, 0, canvas.width, canvas.height),
+        [-1, -1, -1, -1, -1, -1, 2, 2, 2, -1, -1, 2, 0, 2, -1, -1, 2, 2, 2, -1, -1, -1, -1, -1, -1],
+        true
+    );
 
-		v = (r + g + b) / 3;
-		v *= 1.1;
+    if (!newData) return;
 
-		v = v >= data.value ? 255 : 0;
+    const arr = newData.data;
+    const arrCount = arr.length;
+    let i, r, g, b, v;
 
-		arr[i] = arr[i+1] = arr[i+2] = v;
-	}
+    for (i = 0; i < arrCount; i += 4) {
+        r = arr[i];
+        g = arr[i + 1];
+        b = arr[i + 2];
 
-	// Apply the filter and then put the new pixel data
-	ctx.putImageData(
-		newData,
-		0,
-		0
-	);
+        v = (r + g + b) / 3;
+        v *= 1.1;
+
+        v = v >= data.value ? 255 : 0;
+
+        arr[i] = arr[i + 1] = arr[i + 2] = v;
+    }
+
+    // Apply the filter and then put the new pixel data
+    ctx.putImageData(newData, 0, 0);
 };
+
+igeFilters.registerFilter("edgeDetect", edgeDetect);

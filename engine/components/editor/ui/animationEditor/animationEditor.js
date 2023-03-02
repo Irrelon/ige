@@ -87,13 +87,13 @@ class UiAnimationEditor extends IgeEventingClass {
 		var self = this;
 
 		self._outputCanvas = dialogElem.find('.viewArea').find('canvas');
-		self._outputCtx = self._outputCanvas[0].getContext('2d');
+		self._outputCtx = self._outputCanvas[0].getContext("2d");
 
 		self._framesCanvas = dialogElem.find('.framesArea').find('canvas');
-		self._framesCtx = self._framesCanvas[0].getContext('2d');
+		self._framesCtx = self._framesCanvas[0].getContext("2d");
 
 		self._cellsCanvas = dialogElem.find('.cellArea').find('canvas');
-		self._cellsCtx = self._cellsCanvas[0].getContext('2d');
+		self._cellsCtx = self._cellsCanvas[0].getContext("2d");
 
 		// When moving over the canvas, highlight the cell
 		self._framesCanvas.on('mousemove', function (e) {

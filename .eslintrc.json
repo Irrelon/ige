@@ -15,6 +15,7 @@
     "@typescript-eslint/no-empty-interface": "off",
     "@typescript-eslint/no-empty-arrow-function": "off",
     "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-inferrable-types": "off",
     "@typescript-eslint/strict-boolean-expressions": "off",
     "@typescript-eslint/ban-ts-comment": "off",
     "unused-imports/no-unused-imports": "warn",
@@ -25,7 +26,7 @@
     ],
     "max-depth": [
       "warn",
-      2
+      3
     ],
     "prefer-rest-params": "off"
   }

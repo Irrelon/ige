@@ -32,7 +32,7 @@ class UiTextureEditor extends IgeEventingClass {
 		self._cells = [];
 
 		self._backBuffer = document.createElement('canvas');
-		self._backBufferCtx = self._backBuffer.getContext('2d');
+		self._backBufferCtx = self._backBuffer.getContext("2d");
 
 		self._backBuffer.width = 1;
 		self._backBuffer.height = 1;
@@ -100,7 +100,7 @@ class UiTextureEditor extends IgeEventingClass {
 			dropFunc;
 
 		self._canvas = $('#textureEditorDialog').find('canvas');
-		self._ctx = self._canvas[0].getContext('2d');
+		self._ctx = self._canvas[0].getContext("2d");
 
 		// When moving over the canvas, highlight the cell
 		self._canvas.on('mousemove', function (e) {

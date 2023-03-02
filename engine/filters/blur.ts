@@ -1,35 +1,35 @@
-IgeFilters.blur = function (canvas, ctx, originalImage, texture, data) {
-	var strength = 1,
-		loop,
-		oneNinth = 1 / 9,
-		pixelData;
+import { IgeSmartFilter } from "../../types/IgeSmartFilter";
+import igeFilters from "../../services/igeFilters";
 
-	pixelData = ctx.getImageData(
-		0,
-		0,
-		canvas.width,
-		canvas.height
-	);
+export const blur: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
+    const oneNinth = 1 / 9;
 
-	if (data && data.value) {
-		strength = data.value;
-	}
+    let strength = 1,
+        loop,
+        pixelData;
 
-	for (loop = 0; loop < strength; loop++) {
-		pixelData = IgeFilters._convolute(
-			pixelData,
-			[
-				oneNinth, oneNinth, oneNinth,
-				oneNinth, oneNinth, oneNinth,
-				oneNinth, oneNinth, oneNinth
-			]
-		);
-	}
+    pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-	// Put the new pixel data
-	ctx.putImageData(
-		pixelData,
-		0,
-		0
-	);
+    if (data && data.value) {
+        strength = data.value;
+    }
+
+    for (loop = 0; loop < strength; loop++) {
+        pixelData = igeFilters.helper._convolute(pixelData, [
+            oneNinth,
+            oneNinth,
+            oneNinth,
+            oneNinth,
+            oneNinth,
+            oneNinth,
+            oneNinth,
+            oneNinth,
+            oneNinth
+        ]);
+    }
+
+    // Put the new pixel data
+    ctx.putImageData(pixelData, 0, 0);
 };
+
+igeFilters.registerFilter("blur", blur);
