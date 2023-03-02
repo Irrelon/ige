@@ -5,6 +5,7 @@ import { IgeEventingClass } from "./IgeEventingClass";
 import { BehaviourDefinition } from "../../types/BehaviourDefinition";
 import { IgeEntity } from "./IgeEntity";
 import { IgeClassProps } from "./IgeClass";
+import { arrPull } from "../../services/utils";
 
 export class IgeObject extends IgeEventingClass {
     _classId = "IgeObject";
@@ -25,7 +26,10 @@ export class IgeObject extends IgeEventingClass {
     _inView: boolean;
     _managed: number;
     _specialProp: string[];
+    _registered: boolean;
     _groups: string[];
+    _groupRegistered: boolean;
+    _categoryRegistered: boolean;
     _tickBehaviours: BehaviourDefinition[];
     _updateBehaviours: BehaviourDefinition[];
     _drawBounds: boolean;
@@ -240,12 +244,12 @@ export class IgeObject extends IgeEventingClass {
      * @return {*}
      */
     addGroup() {
-        let arrCount = arguments.length;
+        let arrIndex = arguments.length;
         let groupName;
         let groupItemCount;
 
-        while (arrCount--) {
-            groupName = arguments[arrCount];
+        while (arrIndex--) {
+            groupName = arguments[arrIndex];
 
             // Check if the argument is an array
             if (groupName instanceof Array) {
@@ -483,24 +487,24 @@ export class IgeObject extends IgeEventingClass {
      */
     removeGroup() {
         if (this._groups) {
-            let arrCount = arguments.length,
+            let arrIndex = arguments.length,
                 groupName,
                 groupNameCount;
 
-            while (arrCount--) {
-                groupName = arguments[arrCount];
+            while (arrIndex--) {
+                groupName = arguments[arrIndex];
 
                 if (groupName instanceof Array) {
                     groupNameCount = groupName.length;
 
                     while (groupNameCount--) {
-                        this._groups.pull(groupName[groupNameCount]);
+                        arrPull(this._groups, groupName[groupNameCount]);
 
                         // Now un-register this object with the group it has been assigned
                         this._ige.groupUnRegister(this, groupName[groupNameCount]);
                     }
                 } else {
-                    this._groups.pull(groupName);
+                    arrPull(this._groups, groupName);
 
                     // Now un-register this object with the group it has been assigned
                     this._ige.groupUnRegister(this, groupName);
@@ -698,7 +702,7 @@ export class IgeObject extends IgeEventingClass {
      *     console.log(entity.drawBounds());
      * @return {*}
      */
-    drawBounds(val) {
+    drawBounds(val?: boolean) {
         if (val !== undefined) {
             this._drawBounds = val;
             return this;
@@ -709,7 +713,7 @@ export class IgeObject extends IgeEventingClass {
 
     /**
      * Gets / sets the boolean flag determining if this object should have
-     * it's bounds data drawn when the bounds for all objects are being drawn.
+     * its bounds data drawn when the bounds for all objects are being drawn.
      * Bounds data includes the object ID and it's current depth etc.
      * @param {Boolean} val
      * @example #Enable draw bounds data
@@ -722,7 +726,7 @@ export class IgeObject extends IgeEventingClass {
      *     console.log(entity.drawBoundsData());
      * @return {*}
      */
-    drawBoundsData(val) {
+    drawBoundsData(val?: boolean) {
         if (val !== undefined) {
             this._drawBoundsData = val;
             return this;
@@ -745,7 +749,7 @@ export class IgeObject extends IgeEventingClass {
      *     console.log(entity.drawMouse());
      * @return {*}
      */
-    drawMouse(val) {
+    drawMouse(val?: boolean) {
         if (val !== undefined) {
             this._drawMouse = val;
             return this;
@@ -770,7 +774,7 @@ export class IgeObject extends IgeEventingClass {
      *     console.log(entity.drawMouseData());
      * @return {*}
      */
-    drawMouseData(val) {
+    drawMouseData(val?: boolean) {
         if (val !== undefined) {
             this._drawMouseData = val;
             return this;
@@ -814,16 +818,17 @@ export class IgeObject extends IgeEventingClass {
      * @returns {Array}
      */
     $$(categoryName) {
-        let objArr = this._ige.$$(categoryName),
-            arrCount = objArr.length,
-            obj,
-            finalArr = [],
-            thisId = this.id();
+        const objArr = this._ige.$$(categoryName);
+        const finalArr = [];
+        const thisId = this.id();
+
+        let arrIndex = objArr.length;
+        let obj;
 
         // Scan all objects that have the specified category
         // and see if we are it's parent or an ancestor
-        while (arrCount--) {
-            obj = objArr[arrCount];
+        while (arrIndex--) {
+            obj = objArr[arrIndex];
             if (obj._parent === this || obj.parent(thisId)) {
                 finalArr.push(obj);
             }
@@ -853,7 +858,7 @@ export class IgeObject extends IgeEventingClass {
      *     console.log(parent.id());
      * @return {*}
      */
-    parent(id) {
+    parent(id?: string) {
         if (!id) {
             return this._parent;
         }
@@ -953,18 +958,18 @@ export class IgeObject extends IgeEventingClass {
         obj._children.push(this);
         this._parent._childMounted(this);
 
-        if ("updateTransform" in obj && obj.updateTransform) {
-            obj.updateTransform();
-            obj.aabb(true);
+        if ((obj as IgeEntity).updateTransform) {
+            (obj as IgeEntity).updateTransform();
+            (obj as IgeEntity).aabb(true);
         }
 
-        if ("_compositeCache" in obj && obj._compositeCache) {
+        if ((obj as IgeEntity)._compositeCache) {
             this._compositeParent = true;
         } else {
             delete this._compositeParent;
         }
 
-        this._mounted(this._parent);
+        this._mounted(this._parent as IgeObject);
 
         this.emit("mounted", this._parent);
 
@@ -1005,7 +1010,7 @@ export class IgeObject extends IgeEventingClass {
         this._parent._childUnMounted(this);
         this._parent = null;
 
-        this._unMounted(oldParent);
+        this._unMounted(oldParent as IgeObject);
 
         return this;
     }
@@ -1307,11 +1312,10 @@ export class IgeObject extends IgeEventingClass {
      * @return {*}
      */
     destroyComponents() {
-        let arr = this._components,
-            arrCount;
+        const arr = this._components;
 
         if (arr) {
-            arrCount = arr.length;
+            let arrCount = arr.length;
 
             while (arrCount--) {
                 if (arr[arrCount].destroy) {
@@ -1361,11 +1365,9 @@ export class IgeObject extends IgeEventingClass {
             return;
         }
 
-        let arr = this._children,
-            arrCount,
-            sortObj,
-            i,
-            j;
+        const arr = this._children;
+
+        let arrCount, sortObj, i, j;
 
         if (!arr) {
             return;
@@ -1391,16 +1393,18 @@ export class IgeObject extends IgeEventingClass {
                 };
 
                 for (i = 0; i < arrCount; ++i) {
+                    const itemA = arr[i] as IgeEntity;
                     sortObj.c[i] = 0;
                     sortObj.p[i] = -1;
 
                     for (j = i + 1; j < arrCount; ++j) {
+                        const itemB = arr[j] as IgeEntity;
                         sortObj.adj[i] = sortObj.adj[i] || [];
                         sortObj.adj[j] = sortObj.adj[j] || [];
 
-                        if (arr[i]._inView && arr[j]._inView && arr[i]._projectionOverlap && arr[j]._projectionOverlap) {
-                            if (arr[i]._projectionOverlap(arr[j])) {
-                                if (arr[i].isBehind(arr[j])) {
+                        if (itemA._inView && itemB._inView && itemA._projectionOverlap && itemB._projectionOverlap) {
+                            if (itemA._projectionOverlap(itemB)) {
+                                if (itemA.isBehind(itemB)) {
                                     sortObj.adj[j].push(i);
                                 } else {
                                     sortObj.adj[i].push(j);
@@ -1523,10 +1527,10 @@ export class IgeObject extends IgeEventingClass {
     viewCheckChildren() {
         if (!this._ige._currentViewport) return this;
 
-        let arr = this._children,
-            arrCount = arr.length,
-            vpViewArea = this._ige._currentViewport.viewArea(),
-            item;
+        const arr = this._children;
+        const vpViewArea = this._ige._currentViewport.viewArea();
+        let arrCount = arr.length;
+        let item;
 
         while (arrCount--) {
             item = arr[arrCount];
@@ -1552,7 +1556,7 @@ export class IgeObject extends IgeEventingClass {
         return this;
     }
 
-    update(ctx, tickDelta) {
+    update(ctx: CanvasRenderingContext2D, tickDelta: number) {
         // Check that we are alive before processing further
         if (this._alive) {
             if (this._newBorn) {
@@ -1568,26 +1572,27 @@ export class IgeObject extends IgeEventingClass {
 
                 // Depth sort all child objects
                 if (arrCount && !this._ige._headless) {
-                    if (igeConfig.debug._timing) {
-                        if (!this._ige._timeSpentLastTick[this.id()]) {
-                            this._ige._timeSpentLastTick[this.id()] = {};
+                    if (this._igeConfig.debug._timing) {
+                        if (!this._ige._timeSpentLastTick[this.id() as string]) {
+                            this._ige._timeSpentLastTick[this.id() as string] = {};
                         }
 
                         ts = new Date().getTime();
                         this.depthSortChildren();
                         td = new Date().getTime() - ts;
-                        this._ige._timeSpentLastTick[this.id()].depthSortChildren = td;
+                        this._ige._timeSpentLastTick[this.id() as string].depthSortChildren = td;
                     } else {
                         this.depthSortChildren();
                     }
                 }
 
                 // Loop our children and call their update methods
-                if (igeConfig.debug._timing) {
+                if (this._igeConfig.debug._timing) {
                     while (arrCount--) {
                         ts = new Date().getTime();
                         arr[arrCount].update(ctx, tickDelta);
                         td = new Date().getTime() - ts;
+
                         if (arr[arrCount]) {
                             if (!this._ige._timeSpentInTick[arr[arrCount].id()]) {
                                 this._ige._timeSpentInTick[arr[arrCount].id()] = 0;
@@ -1616,10 +1621,8 @@ export class IgeObject extends IgeEventingClass {
     tick(ctx) {
         // Check that we are alive before processing further
         if (this._alive) {
-            let arr = this._children,
-                arrCount,
-                ts,
-                td;
+            const arr = this._children;
+            let arrCount, ts, td;
 
             if (this._viewChecking) {
                 // Set the in-scene flag for each child based on
@@ -1632,7 +1635,7 @@ export class IgeObject extends IgeEventingClass {
                 arrCount = arr.length;
 
                 // Loop our children and call their tick methods
-                if (igeConfig.debug._timing) {
+                if (this._igeConfig.debug._timing) {
                     while (arrCount--) {
                         if (!arr[arrCount]) {
                             this.log("Object _children is undefined for index " + arrCount + " and _id: " + this._id, "error");
@@ -1641,9 +1644,11 @@ export class IgeObject extends IgeEventingClass {
 
                         if (!arr[arrCount]._newBorn) {
                             ctx.save();
+
                             ts = new Date().getTime();
                             arr[arrCount].tick(ctx);
                             td = new Date().getTime() - ts;
+
                             if (arr[arrCount]) {
                                 if (!this._ige._timeSpentInTick[arr[arrCount].id()]) {
                                     this._ige._timeSpentInTick[arr[arrCount].id()] = 0;
@@ -1656,6 +1661,7 @@ export class IgeObject extends IgeEventingClass {
                                 this._ige._timeSpentInTick[arr[arrCount].id()] += td;
                                 this._ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
                             }
+
                             ctx.restore();
                         }
                     }
@@ -1678,10 +1684,9 @@ export class IgeObject extends IgeEventingClass {
     }
 
     _depthSortVisit(u, sortObj) {
-        let arr = sortObj.adj[u],
-            arrCount = arr.length,
-            i,
-            v;
+        const arr = sortObj.adj[u];
+        const arrCount = arr.length;
+        let i, v;
 
         sortObj.c[u] = 1;
 
@@ -1706,11 +1711,10 @@ export class IgeObject extends IgeEventingClass {
      * @private
      */
     _resizeEvent(event) {
-        let arr = this._children,
-            arrCount;
+        const arr = this._children;
 
         if (arr) {
-            arrCount = arr.length;
+            let arrCount = arr.length;
 
             while (arrCount--) {
                 arr[arrCount]._resizeEvent(event);
@@ -1753,7 +1757,7 @@ export class IgeObject extends IgeEventingClass {
      * @param obj
      * @private
      */
-    _childMounted(obj) {
+    _childMounted(obj: IgeObject) {
         this._resizeEvent(null);
     }
 
@@ -1762,21 +1766,21 @@ export class IgeObject extends IgeEventingClass {
      * @param obj
      * @private
      */
-    _childUnMounted(obj) {}
+    _childUnMounted(obj: IgeObject) {}
 
     /**
      * Called when this object is mounted to another object.
      * @param obj
      * @private
      */
-    _mounted(obj) {}
+    _mounted(obj: IgeObject) {}
 
     /**
      * Called when this object is un-mounted from it's parent.
      * @param obj
      * @private
      */
-    _unMounted(obj) {}
+    _unMounted(obj: IgeObject) {}
 
     /**
      * Destroys the object and all it's child objects, removing them from the
@@ -1838,9 +1842,8 @@ export class IgeObject extends IgeEventingClass {
 
             case "_children":
                 if (obj._children.length) {
-                    let childIndex,
-                        child,
-                        arr = [];
+                    const arr = [];
+                    let childIndex, child;
 
                     for (childIndex = 0; childIndex < obj._children.length; childIndex++) {
                         child = obj._children[childIndex];
@@ -1859,66 +1862,60 @@ export class IgeObject extends IgeEventingClass {
         switch (i) {
             case "_id":
                 return { _id: obj[i] };
-                break;
 
             case "_parent":
                 return { _parent: obj[i] };
-                break;
 
             case "_children":
                 return { _children: obj[i] };
-                break;
         }
         return undefined;
     }
 
-    loadGraph(obj) {
-        if (obj.igeClass && obj.data) {
-            // Create a new class instance
-            let classInstance = this._ige.newClassInstance(obj.igeClass),
-                newId,
-                childArr,
-                childIndex,
-                parentId;
-
-            classInstance.objLoad(obj);
-
-            if (classInstance._parent) {
-                // Record the id and delete it
-                parentId = classInstance._parent;
-                delete classInstance._parent;
-            }
-
-            // Process item id
-            if (classInstance._id) {
-                newId = classInstance._id;
-                delete classInstance._id;
-
-                classInstance.id(newId);
-            }
-
-            // Check for children and process them if exists
-            if (classInstance._children && classInstance._children.length) {
-                childArr = classInstance._children;
-                classInstance._children = [];
-
-                for (childIndex = 0; childIndex < childArr.length; childIndex++) {
-                    classInstance.loadGraph(childArr[childIndex]);
-                }
-            }
-
-            // Now mount the instance if it has a parent
-            classInstance.mount(this);
-        }
-    }
+    // This doesn't appear to be used in any examples
+    // loadGraph(obj) {
+    //     if (obj.igeClass && obj.data) {
+    //         // Create a new class instance
+    //         let classInstance = this._ige.newClassInstance(obj.igeClass),
+    //             newId,
+    //             childArr,
+    //             childIndex,
+    //             parentId;
+    //
+    //         classInstance.objLoad(obj);
+    //
+    //         if (classInstance._parent) {
+    //             // Record the id and delete it
+    //             parentId = classInstance._parent;
+    //             delete classInstance._parent;
+    //         }
+    //
+    //         // Process item id
+    //         if (classInstance._id) {
+    //             newId = classInstance._id;
+    //             delete classInstance._id;
+    //
+    //             classInstance.id(newId);
+    //         }
+    //
+    //         // Check for children and process them if exists
+    //         if (classInstance._children && classInstance._children.length) {
+    //             childArr = classInstance._children;
+    //             classInstance._children = [];
+    //
+    //             for (childIndex = 0; childIndex < childArr.length; childIndex++) {
+    //                 classInstance.loadGraph(childArr[childIndex]);
+    //             }
+    //         }
+    //
+    //         // Now mount the instance if it has a parent
+    //         classInstance.mount(this);
+    //     }
+    // }
 
     _objSaveReassign(obj, ref) {
-        let copyObj,
-            specialKeys = this._specialProp,
-            refIndex,
-            specProp,
-            specPropKey,
-            i;
+        const specialKeys = this._specialProp;
+        let copyObj, refIndex, specProp, specPropKey, i;
 
         if (typeof obj === "object" && !(obj instanceof Array)) {
             copyObj = {};
@@ -1939,7 +1936,7 @@ export class IgeObject extends IgeEventingClass {
                             }
                         } else {
                             // This is a special property that needs handling via
-                            // it's own method to return an appropriate data value
+                            // its own method to return an appropriate data value
                             // so check if there is a method for it
                             specProp = this.saveSpecialProp(obj, i);
 
@@ -1971,10 +1968,8 @@ export class IgeObject extends IgeEventingClass {
     }
 
     _objLoadReassign(obj, newProps) {
-        let specialKeys = this._specialProp,
-            specProp,
-            specPropKey,
-            i;
+        const specialKeys = this._specialProp;
+        let specProp, specPropKey, i;
 
         for (i in newProps) {
             if (newProps.hasOwnProperty(i)) {

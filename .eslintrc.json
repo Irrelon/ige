@@ -26,6 +26,7 @@
     "max-depth": [
       "warn",
       2
-    ]
+    ],
+    "prefer-rest-params": "off"
   }
 }

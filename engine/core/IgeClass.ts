@@ -3,6 +3,8 @@
  */
 import type { IgeConfig } from "../../types/IgeConfig";
 import { IgeEngine } from "./IgeEngine";
+import { IgeEntity } from "./IgeEntity";
+import { arrPull } from "../../services/utils";
 
 // var IgeClass = (function () {
 // 	var initializing = false,
@@ -460,8 +462,7 @@ export class IgeClass {
             _enabled: true
         }
     };
-    _components: IgeClass[] = [];
-    destroy?: () => void;
+    _components: IgeEntity[] = [];
 
     constructor({ ige, igeConfig }: IgeClassProps) {
         this._ige = ige;
@@ -601,7 +602,7 @@ export class IgeClass {
      *     // "byAngleAndPower" method of the velocity component:
      *     entity.velocity.byAngleAndPower(Math.radians(20), 0.1);
      */
-    addComponent(component: typeof IgeClass, options: Record<string, never>) {
+    addComponent(component: typeof IgeEntity, options: Record<string, never>) {
         const newComponent = new component({ ige: this._ige, igeConfig: this._igeConfig, parent: this, options });
         this[newComponent.componentId] = newComponent;
 
@@ -633,7 +634,7 @@ export class IgeClass {
 
         // Remove the component from the class component array
         if (this._components) {
-            this._components.pull(this[componentId]);
+            arrPull(this._components, this[componentId]);
         }
 
         // Remove the component namespace from the class object
