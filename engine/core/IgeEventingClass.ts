@@ -1,8 +1,11 @@
 /**
  * Creates a new class with the capability to emit events.
  */
-var IgeEventingClass = IgeClass.extend({
-	classId: 'IgeEventingClass',
+import {IgeClass} from "./IgeClass";
+
+export class IgeEventingClass extends IgeClass {
+	_classId = 'IgeEventingClass';
+	_eventListeners: {};
 
 	/**
 	 * Add an event listener method for an event.
@@ -28,8 +31,8 @@ var IgeEventingClass = IgeClass.extend({
 	 *     // The console output is:
 	 *     //    data1, data2
 	 */
-	on: function (eventName, call, context, oneShot, sendEventName) {
-		var self = this,
+	on (eventName, call, context, oneShot, sendEventName) {
+		let self = this,
 			newListener,
 			addListener,
 			existingIndex,
@@ -38,8 +41,7 @@ var IgeEventingClass = IgeClass.extend({
 			eventIndex,
 			eventData,
 			eventObj,
-			multiEventName,
-			i;
+			multiEventName;
 
 		// Check that we have an event listener object
 		this._eventListeners = this._eventListeners || {};
@@ -112,7 +114,7 @@ var IgeEventingClass = IgeClass.extend({
 			}
 			this.log('Cannot register event listener for event "' + eventName + '" because the passed callback is not a function!', 'error');
 		}
-	},
+	}
 	
 	/**
 	 * Remove an event listener. If the _processing flag is true
@@ -139,7 +141,7 @@ var IgeEventingClass = IgeClass.extend({
 	 *     myEntity.off('mouseDown', evt);
 	 * @return {Boolean}
 	 */
-	off: function (eventName, evtListener, callback) {
+	off (eventName, evtListener, callback) {
 		if (this._eventListeners) {
 			if (!this._eventListeners._processing) {
 				if (this._eventListeners[eventName]) {
@@ -173,7 +175,7 @@ var IgeEventingClass = IgeClass.extend({
 			callback(false);
 		}
 		return false;
-	},
+	}
 
 	/**
 	 * Emit an event by name.
@@ -203,7 +205,7 @@ var IgeEventingClass = IgeClass.extend({
 	 *     // The console output is:
 	 *     //    data1, data2
 	 */
-	emit: function (eventName, args) {
+	emit (eventName, args) {
 		if (this._eventListeners) {
 			// Check if the event has any listeners
 			if (this._eventListeners[eventName]) {
@@ -275,22 +277,22 @@ var IgeEventingClass = IgeClass.extend({
 
 			}
 		}
-	},
+	}
 
 	/**
 	 * Returns an object containing the current event listeners.
 	 * @return {Object}
 	 */
-	eventList: function () {
+	eventList () {
 		return this._eventListeners;
-	},
+	}
 	
 	/**
 	 * Loops the removals array and processes off() calls for
 	 * each array item.
 	 * @private
 	 */
-	_processRemovals: function () {
+	_processRemovals () {
 		if (this._eventListeners) {
 			var remArr = this._eventListeners._removeQueue,
 				arrCount,
@@ -321,6 +323,4 @@ var IgeEventingClass = IgeClass.extend({
 			delete this._eventListeners._removeQueue;
 		}
 	}
-});
-
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeEventingClass; }
+}

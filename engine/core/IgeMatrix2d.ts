@@ -1,27 +1,33 @@
-// TODO: Clean up the variable declarations in this file so they all run on the same var call at the top of the method.
+import {IgePoint3d} from "./IgePoint3d";
+import {IgeClass} from "./IgeClass";
+
 /**
  * Creates a new transformation matrix.
  */
-var IgeMatrix2d = function() {
-	this.matrix = [
-		1.0,0.0,0.0,
-		0.0,1.0,0.0,
-		0.0,0.0,1.0
-	];
+export class IgeMatrix2d extends IgeClass {
+	matrix: number[];
+	_rotateOrigin: IgePoint3d;
+	_scaleOrigin: IgePoint3d;
+	
+	constructor({ige, igeConfig}) {
+		super({ige, igeConfig});
 
-	this._rotateOrigin = new IgePoint3d(0, 0, 0);
-	this._scaleOrigin = new IgePoint3d(0, 0, 0);
-};
+		this.matrix = [
+			1.0,0.0,0.0,
+			0.0,1.0,0.0,
+			0.0,0.0,1.0
+		];
 
-IgeMatrix2d.prototype = {
-	matrix:	null,
-
+		this._rotateOrigin = new IgePoint3d({ige, igeConfig}, 0, 0, 0);
+		this._scaleOrigin = new IgePoint3d({ige, igeConfig}, 0, 0, 0);
+	}
+	
 	/**
 	 * Transform a point by this matrix. The parameter point will be modified with the transformation values.
 	 * @param {IgePoint3d} point
 	 * @return {IgePoint3d} The passed point.
 	 */
-	transformCoord: function(point, obj) {
+	transformCoord (point, obj) {
 		var x = point.x,
 			y = point.y,
 			tm = this.matrix;
@@ -36,14 +42,14 @@ IgeMatrix2d.prototype = {
 		/* DEXCLUDE */
 
 		return point;
-	},
+	}
 
 	/**
 	 * Transform a point by this matrix in inverse. The parameter point will be modified with the transformation values.
 	 * @param {IgePoint3d} point.
 	 * @return {IgePoint3d} The passed point.
 	 */
-	transformCoordInverse: function(point, obj) {
+	transformCoordInverse (point, obj) {
 		var x = point.x,
 			y = point.y,
 			tm = this.matrix;
@@ -58,9 +64,9 @@ IgeMatrix2d.prototype = {
 		/* DEXCLUDE */
 
 		return point;
-	},
+	}
 
-	transform: function (points, obj) {
+	transform (points, obj) {
 		var pointIndex,
 			pointCount = points.length;
 
@@ -69,21 +75,21 @@ IgeMatrix2d.prototype = {
 		}
 
 		return points;
-	},
+	}
 
 	/**
 	 * Create a new rotation matrix and set it up for the specified angle in radians.
 	 * @param {Number} angle
 	 * @return {IgeMatrix2d} A new matrix object.
 	 */
-	_newRotate: function(angle) {
-		var m = new IgeMatrix2d();
+	_newRotate (angle) {
+		var m = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig});
 		m.rotateTo(angle);
 		return m;
-	},
+	}
 
-	rotateBy: function(angle) {
-		var m = new IgeMatrix2d();
+	rotateBy (angle) {
+		var m = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig});
 
 		m.translateBy(this._rotateOrigin.x, this._rotateOrigin.y);
 		m.rotateTo(angle);
@@ -92,9 +98,9 @@ IgeMatrix2d.prototype = {
 		this.multiply(m);
 
 		return this;
-	},
+	}
 
-	rotateTo: function (angle) {
+	rotateTo (angle) {
 		var tm = this.matrix,
 			c = Math.cos(angle),
 			s = Math.sin(angle);
@@ -111,25 +117,25 @@ IgeMatrix2d.prototype = {
 		/* DEXCLUDE */
 
 		return this;
-	},
+	}
 
 	/**
 	 * Gets the rotation from the matrix and returns it in
 	 * radians.
 	 * @return {Number}
 	 */
-	rotationRadians: function () {
+	rotationRadians () {
 		return Math.asin(this.matrix[3]);
-	},
+	}
 
 	/**
 	 * Gets the rotation from the matrix and returns it in
 	 * degrees.
 	 * @return {Number}
 	 */
-	rotationDegrees: function () {
+	rotationDegrees () {
 		return Math.degrees(Math.acos(this.matrix[0]));
-	},
+	}
 
 	/**
 	 * Create a scale matrix.
@@ -140,17 +146,17 @@ IgeMatrix2d.prototype = {
 	 *
 	 * @static
 	 */
-	_newScale: function(x, y) {
-		var m = new IgeMatrix2d();
+	_newScale (x, y) {
+		var m = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig});
 
 		m.matrix[0] = x;
 		m.matrix[4] = y;
 
 		return m;
-	},
+	}
 
-	scaleBy: function(x, y) {
-		var m = new IgeMatrix2d();
+	scaleBy (x, y) {
+		var m = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig});
 
 		m.matrix[0] = x;
 		m.matrix[4] = y;
@@ -158,9 +164,9 @@ IgeMatrix2d.prototype = {
 		this.multiply(m);
 
 		return this;
-	},
+	}
 
-	scaleTo: function(x, y) {
+	scaleTo (x, y) {
 		var tm = this.matrix;
 		//this.identity();
 		tm[0] = x;
@@ -173,7 +179,7 @@ IgeMatrix2d.prototype = {
 		/* DEXCLUDE */
 
 		return this;
-	},
+	}
 
 	/**
 	 * Create a translation matrix.
@@ -181,17 +187,17 @@ IgeMatrix2d.prototype = {
 	 * @param {Number} y Y translation magnitude.
 	 * @return {IgeMatrix2d} A new matrix object.
 	 */
-	_newTranslate: function (x, y) {
-		var m = new IgeMatrix2d();
+	_newTranslate (x, y) {
+		var m = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig});
 
 		m.matrix[2] = x;
 		m.matrix[5] = y;
 
 		return m;
-	},
+	}
 
-	translateBy: function (x, y) {
-		var m = new IgeMatrix2d();
+	translateBy (x, y) {
+		var m = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig});
 
 		m.matrix[2] = x;
 		m.matrix[5] = y;
@@ -199,14 +205,14 @@ IgeMatrix2d.prototype = {
 		this.multiply(m);
 
 		return this;
-	},
+	}
 
 	/**
 	 * Sets this matrix as a translation matrix.
 	 * @param x
 	 * @param y
 	 */
-	translateTo: function (x, y) {
+	translateTo (x, y) {
 		var tm = this.matrix;
 		
 		tm[2] = x;
@@ -219,14 +225,14 @@ IgeMatrix2d.prototype = {
 		/* DEXCLUDE */
 
 		return this;
-	},
+	}
 
 	/**
 	 * Copy into this matrix the given matrix values.
 	 * @param {IgeMatrix2d} matrix 
 	 * @return {Object} "this".
 	 */
-	copy: function (matrix) {
+	copy (matrix) {
 		matrix = matrix.matrix;
 
 		var tmatrix = this.matrix;
@@ -241,9 +247,9 @@ IgeMatrix2d.prototype = {
 		tmatrix[8] = matrix[8];
 
 		return this;
-	},
+	}
 	
-	compare: function (matrix) {
+	compare (matrix) {
 		var thisMatrix = this.matrix,
 			thatMatrix = matrix.matrix;
 		
@@ -254,13 +260,13 @@ IgeMatrix2d.prototype = {
 		}
 		
 		return true;
-	},
+	}
 
 	/**
 	 * Set this matrix to the identity matrix.
 	 * @return {Object} "this".
 	 */
-	identity: function() {
+	identity () {
 
 		var m = this.matrix;
 		m[0] = 1.0;
@@ -276,7 +282,7 @@ IgeMatrix2d.prototype = {
 		m[8] = 1.0;
 
 		return this;
-	},
+	}
 
 	/**
 	 * Multiply this matrix by a given matrix.
@@ -284,7 +290,7 @@ IgeMatrix2d.prototype = {
 	 * current matrix by.
 	 * @return {Object} "this".
 	 */
-	multiply: function (m) {
+	multiply (m) {
 		var tm = this.matrix,
 			mm = m.matrix,
 
@@ -319,7 +325,7 @@ IgeMatrix2d.prototype = {
 		tm[8] = tm6*mm2 + tm7*mm5 + tm8*mm8;
 
 		return this;
-	},
+	}
 
 	/**
 	 * Premultiply this matrix by a given matrix.
@@ -327,7 +333,7 @@ IgeMatrix2d.prototype = {
 	 * current matrix by.
 	 * @return {Object} "this".
 	 */
-	premultiply: function(m) {
+	premultiply (m) {
 
 		var m00 = m.matrix[0]*this.matrix[0] + m.matrix[1]*this.matrix[3] + m.matrix[2]*this.matrix[6];
 		var m01 = m.matrix[0]*this.matrix[1] + m.matrix[1]*this.matrix[4] + m.matrix[2]*this.matrix[7];
@@ -355,13 +361,13 @@ IgeMatrix2d.prototype = {
 
 
 		return this;
-	},
+	}
 
 	/**
 	 * Creates a new inverse matrix from this matrix.
 	 * @return {IgeMatrix2d} An inverse matrix.
 	 */
-	getInverse: function() {
+	getInverse () {
 		var tm = this.matrix;
 
 		var m00 = tm[0],
@@ -374,7 +380,7 @@ IgeMatrix2d.prototype = {
 			m21 = tm[7],
 			m22 = tm[8],
 
-			newMatrix = new IgeMatrix2d(),
+			newMatrix = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig}),
 			determinant = m00* (m11*m22 - m21*m12) - m10*(m01*m22 - m21*m02) + m20 * (m01*m12 - m11*m02);
 
 		if  (determinant===0) {
@@ -398,14 +404,14 @@ IgeMatrix2d.prototype = {
 		newMatrix.multiplyScalar (1/determinant);
 
 		return newMatrix;
-	},
+	}
 
 	/**
 	 * Multiply this matrix by a scalar.
 	 * @param scalar {number} Scalar value.
 	 * @return this
 	 */
-	multiplyScalar: function (scalar) {
+	multiplyScalar (scalar) {
 		var i;
 
 		for (i=0; i<9; i++) {
@@ -413,7 +419,7 @@ IgeMatrix2d.prototype = {
 		}
 
 		return this;
-	},
+	}
 
 	/**
 	 * Transforms the passed rendering context by the current matrix
@@ -422,11 +428,11 @@ IgeMatrix2d.prototype = {
 	 * @param {CanvasRenderingContext2d} ctx The rendering context to
 	 * set the transform matrix for.
 	 */
-	transformRenderingContextSet: function(ctx) {
+	transformRenderingContextSet (ctx) {
 		var m = this.matrix;
 		ctx.setTransform (m[0], m[3], m[1], m[4], m[2], m[5]);
 		return this;
-	},
+	}
 
 	/**
 	 * Transforms the passed rendering context by the current matrix
@@ -435,11 +441,9 @@ IgeMatrix2d.prototype = {
 	 * @param {CanvasRenderingContext2d} ctx The rendering context to
 	 * set the transform matrix for.
 	 */
-	transformRenderingContext: function(ctx) {
+	transformRenderingContext (ctx) {
 		var m = this.matrix;
 		ctx.transform(m[0], m[3], m[1], m[4], m[2], m[5]);
 		return this;
 	}
-};
-
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeMatrix2d; }
+}

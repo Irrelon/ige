@@ -1,0 +1,31 @@
+{
+  "extends": [
+    "prettier",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "plugins": [
+    "prettier",
+    "@typescript-eslint",
+    "unused-imports",
+    "tree-shaking"
+  ],
+  "rules": {
+    "@typescript-eslint/no-unnecessary-type-assertion": "off",
+    "@typescript-eslint/consistent-type-definitions": "off",
+    "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/no-empty-arrow-function": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/strict-boolean-expressions": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "unused-imports/no-unused-imports": "warn",
+    "no-shadow": "error",
+    "complexity": [
+      "warn",
+      10
+    ],
+    "max-depth": [
+      "warn",
+      2
+    ]
+  }
+}

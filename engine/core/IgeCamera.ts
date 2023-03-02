@@ -1,11 +1,23 @@
+import {IgeEntity} from "./IgeEntity";
+import { IgeClassProps } from "./IgeClass";
+import { IgeRect } from "./IgeRect";
+import { IgePoint3d } from "./IgePoint3d";
+
 /**
  * Creates a new camera that will be attached to a viewport.
  */
-var IgeCamera = IgeEntity.extend({
-	classId: 'IgeCamera',
-
-	init: function (entity) {
-		IgeEntity.prototype.init.call(this);
+export class IgeCamera extends IgeEntity {
+	_classId =  'IgeCamera';
+	_entity: IgeEntity;
+	_limit: IgeRect;
+	_trackRotateTarget: IgeEntity;
+	_trackTranslateTarget: IgeEntity;
+	_trackRotateSmoothing: IgeEntity;
+	_trackTranslateSmoothing: number;
+	_trackTranslateRounding: boolean;
+	
+	constructor (props: IgeClassProps, entity: IgeEntity) {
+		super(props);
 
 		this._trackRotateTarget = undefined;
 		this._trackTranslateTarget = undefined;
@@ -14,7 +26,7 @@ var IgeCamera = IgeEntity.extend({
 
 		// Store the viewport this camera is attached to
 		this._entity = entity;
-	},
+	}
 
 	/**
 	 * Gets / sets the rectangle that the camera translate
@@ -22,7 +34,7 @@ var IgeCamera = IgeEntity.extend({
 	 * @param {IgeRect=} rect
 	 * @return {*}
 	 */
-	limit: function (rect) {
+	limit (rect?: IgeRect) {
 		// TODO: Write the usage of this limit data, currently does nothing
 		if (rect !== undefined) {
 			this._limit = rect;
@@ -30,53 +42,54 @@ var IgeCamera = IgeEntity.extend({
 		}
 
 		return this._limit;
-	},
+	}
 
 	/**
 	 * Pan (tween) the camera to the new specified point in
 	 * the specified time.
 	 * @param {IgePoint3d} point The point describing the co-ordinates to pan to.
-	 * @param {Number} durationMs The number of milliseconds to span the pan operation over.
+	 * @param {Number=} durationMs The number of milliseconds to span the pan operation over.
 	 * @param {String=} easing Optional easing method name.
 	 */
-	panTo: function (point, durationMs, easing) {
-		if (point !== undefined) {
-			this._translate.tween()
-				.properties({
-					x: point.x,
-					y: point.y,
-					z: point.z
-				})
-				.duration(durationMs)
-				.easing(easing)
-				.start();
-		}
+	panTo (point?: IgePoint3d, durationMs?: number, easing?: string) {
+		if (point === undefined) return this._entity;
+
+		this._translate.tween()
+			.properties({
+				x: point.x,
+				y: point.y,
+				z: point.z
+			})
+			.duration(durationMs)
+			.easing(easing)
+			.start();
+
 
 		return this._entity;
-	},
+	}
 
 	/**
 	 * Pan (tween) the camera by the new specified point in
 	 * the specified time.
 	 * @param {IgePoint3d} point The point describing the co-ordinates to pan by.
-	 * @param {Number} durationMs The number of milliseconds to span the pan operation over.
+	 * @param {Number=} durationMs The number of milliseconds to span the pan operation over.
 	 * @param {String=} easing Optional easing method name.
 	 */
-	panBy: function (point, durationMs, easing) {
-		if (point !== undefined) {
-			this._translate.tween()
-				.properties({
-					x: point.x + this._translate.x,
-					y: point.y + this._translate.y,
-					z: point.z + this._translate.z
-				})
-				.duration(durationMs)
-				.easing(easing)
-				.start();
-		}
+	panBy (point?: IgePoint3d, durationMs?: number, easing?: string) {
+		if (point === undefined) return this._entity;
+
+		this._translate.tween()
+			.properties({
+				x: point.x + this._translate.x,
+				y: point.y + this._translate.y,
+				z: point.z + this._translate.z
+			})
+			.duration(durationMs)
+			.easing(easing)
+			.start();
 
 		return this._entity;
-	},
+	}
 
 	/**
 	 * Tells the camera to track the movement of the specified
@@ -90,7 +103,7 @@ var IgeCamera = IgeEntity.extend({
 	 * it will not use floating point values.
 	 * @return {*}
 	 */
-	trackTranslate: function (entity, smoothing, rounding) {
+	trackTranslate (entity?: IgeEntity, smoothing = 0, rounding = false) {
 		if (entity !== undefined) {
 			this.log('Camera on viewport ' + this._entity.id() + ' is now tracking translation target ' + entity.id());
 			if (rounding !== undefined) {
@@ -106,21 +119,21 @@ var IgeCamera = IgeEntity.extend({
 		}
 
 		return this._trackTranslateTarget;
-	},
+	}
 
 	/**
 	 * Gets / sets the translate tracking smoothing value.
 	 * @param {Number=} val
 	 * @return {*}
 	 */
-	trackTranslateSmoothing: function (val) {
+	trackTranslateSmoothing (val) {
 		if (val !== undefined) {
 			this._trackTranslateSmoothing = val;
 			return this;
 		}
 
 		return this._trackTranslateSmoothing;
-	},
+	}
 
 	/**
 	 * Gets / sets the translate tracking smoothing rounding
@@ -133,21 +146,21 @@ var IgeCamera = IgeEntity.extend({
 	 * @param {Boolean=} val
 	 * @return {*}
 	 */
-	trackTranslateRounding: function (val) {
+	trackTranslateRounding (val) {
 		if (val !== undefined) {
 			this._trackTranslateRounding = val;
 			return this;
 		}
 
 		return this._trackTranslateRounding;
-	},
+	}
 
 	/**
 	 * Stops tracking the current tracking target's translation.
 	 */
-	unTrackTranslate: function () {
+	unTrackTranslate () {
 		delete this._trackTranslateTarget;
-	},
+	}
 
 	/**
 	 * Tells the camera to track the rotation of the specified
@@ -158,7 +171,7 @@ var IgeCamera = IgeEntity.extend({
 	 * tracking will be.
 	 * @return {*}
 	 */
-	trackRotate: function (entity, smoothing) {
+	trackRotate (entity, smoothing) {
 		if (entity !== undefined) {
 			this.log('Camera on viewport ' + this._entity.id() + ' is now tracking rotation of target ' + entity.id());
 			this._trackRotateSmoothing = smoothing >= 1 ? smoothing : 0;
@@ -167,28 +180,28 @@ var IgeCamera = IgeEntity.extend({
 		}
 
 		return this._trackRotateTarget;
-	},
+	}
 
 	/**
 	 * Gets / sets the rotate tracking smoothing value.
 	 * @param {Number=} val
 	 * @return {*}
 	 */
-	trackRotateSmoothing: function (val) {
+	trackRotateSmoothing (val) {
 		if (val !== undefined) {
 			this._trackRotateSmoothing = val;
 			return this;
 		}
 
 		return this._trackRotateSmoothing;
-	},
+	}
 
 	/**
 	 * Stops tracking the current tracking target.
 	 */
-	unTrackRotate: function () {
+	unTrackRotate () {
 		delete this._trackRotateTarget;
-	},
+	}
 
 	/**
 	 * Translates the camera to the center of the specified entity so
@@ -201,7 +214,7 @@ var IgeCamera = IgeEntity.extend({
 	 * tweening by duration.
 	 * @return {*}
 	 */
-	lookAt: function (entity, durationMs, easing) {
+	lookAt (entity?: IgeEntity, durationMs = 0, easing?: string) {
 		if (entity !== undefined) {
 			entity.updateTransform();
 
@@ -225,9 +238,9 @@ var IgeCamera = IgeEntity.extend({
 		}
 
 		return this;
-	},
+	}
 	
-	update: function (ctx) {
+	update (ctx) {
 		// Process any behaviours assigned to the camera
 		this._processUpdateBehaviours(ctx);
 					
@@ -301,19 +314,19 @@ var IgeCamera = IgeEntity.extend({
 		}
 
 		this.updateTransform();
-	},
+	}
 
 	/**
 	 * Process operations during the engine tick.
 	 * @param {CanvasRenderingContext2D} ctx
 	 */
-	tick: function (ctx) {
+	tick (ctx) {
 		// Process any behaviours assigned to the camera
 		this._processTickBehaviours(ctx);
 		
 		// Updated local transform matrix and then transform the context
 		this._localMatrix.transformRenderingContext(ctx);
-	},
+	}
 
 	/**
 	 * Checks the current transform values against the previous ones. If
@@ -321,7 +334,7 @@ var IgeCamera = IgeEntity.extend({
 	 * update the transformation matrix accordingly. This version of the
 	 * method is specifically designed for cameras!
 	 */
-	updateTransform: function () {
+	updateTransform () {
 		this._localMatrix.identity();
 
 		// On cameras we do the rotation and scaling FIRST
@@ -337,7 +350,7 @@ var IgeCamera = IgeEntity.extend({
 		} else {
 			this._worldMatrix.copy(this._localMatrix);
 		}
-	},
+	}
 
 	/**
 	 * Returns a string containing a code fragment that when
@@ -348,7 +361,7 @@ var IgeCamera = IgeEntity.extend({
 	 * @private
 	 * @return {String}
 	 */
-	_stringify: function () {
+	_stringify () {
 		// Get the properties for all the super-classes
 		var str = IgeEntity.prototype._stringify.call(this), i;
 

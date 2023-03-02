@@ -1,22 +1,27 @@
 /**
  * Creates a new 3d point (x, y, z).
  */
-var IgePoint3d = IgeClass.extend({
-	classId: 'IgePoint3d',
+import {IgeClass} from "./IgeClass";
 
-	init: function (x, y, z, floor) {
-		// Set values to the passed parameters or
-		// zero if they are undefined
-		// Commented for increase performance over stability checks
-		/*if (x === undefined) { debugger; }
-		if (y === undefined) { debugger; }
-		if (z === undefined) { debugger; }*/
-		this.x = x = x !== undefined ? x : 0;
-		this.y = y = y !== undefined ? y : 0;
-		this.z = z = z !== undefined ? z : 0;
-		
-		this._floor = floor !== undefined;
-		
+export class IgePoint3d extends IgeClass {
+	_classId = 'IgePoint3d';
+	x: number;
+	y: number;
+	z: number;
+	x2: number;
+	y2: number;
+	z2: number;
+	_floor: boolean;
+
+	constructor({ige, igeConfig}, x = 0, y = 0, z = 0, floor = false) {
+		super({ige, igeConfig});
+
+		this.x = x;
+		this.y = y;
+		this.z = z;
+
+		this._floor = floor;
+
 		if (this._floor) {
 			this.x2 = Math.floor(x / 2);
 			this.y2 = Math.floor(y / 2);
@@ -28,7 +33,7 @@ var IgePoint3d = IgeClass.extend({
 		}
 
 		return this;
-	},
+	}
 
 	/**
 	 * Gets / sets the floor mode of this point. If set to true the point's
@@ -36,14 +41,14 @@ var IgePoint3d = IgeClass.extend({
 	 * @param val
 	 * @return {*}
 	 */
-	floor: function (val) {
+	floor(val) {
 		if (val !== undefined) {
 			this._floor = val;
 			return this;
 		}
 
 		return this._floor;
-	},
+	}
 
 	/**
 	 * Compares this point's x, y, z data with the passed point and returns
@@ -51,9 +56,9 @@ var IgePoint3d = IgeClass.extend({
 	 * @param {IgePoint3d} point The point to compare data with.
 	 * @return {Boolean}
 	 */
-	compare: function (point) {
+	compare(point) {
 		return point && this.x === point.x && this.y === point.y && this.z === point.z;
-	},
+	}
 
 	/**
 	 * Copies the x, y, z data from the passed point and overwrites this
@@ -61,64 +66,66 @@ var IgePoint3d = IgeClass.extend({
 	 * @param {IgePoint3d} point The point to copy values from.
 	 * @returns {*}
 	 */
-	copy: function (point) {
+	copy(point) {
 		this.x = point.x;
 		this.y = point.y;
 		this.z = point.z;
-		
+
 		return this;
-	},
+	}
 
 	/**
 	 * Converts the point's x, y, z to an isometric x, y 2d co-ordinate
 	 * and returns an object whose x, y values are the result.
 	 * @return {Object}
 	 */
-	toIso: function () {
-		var sx = this.x - this.y,
-			sy = (-this.z) * 1.2247 + (this.x + this.y) * 0.5;
+	toIso() {
+		const sx = this.x - this.y;
+		const sy = (-this.z) * 1.2247 + (this.x + this.y) * 0.5;
 
 		return {x: sx, y: sy};
-	},
+	}
 
 	/**
 	 * Converts this point's x, y, z data into isometric co-ordinate space
 	 * and overwrites the previous x, y, z values with the result.
 	 * @return {*}
 	 */
-	thisToIso: function () {
-		var val = this.toIso();
+	thisToIso() {
+		const val = this.toIso();
+
 		this.x = val.x;
 		this.y = val.y;
 
 		return this;
-	},
+	}
 
 	/**
 	 * Converts this point's x, y, z data into 2d co-ordinate space
 	 * and returns an object whose x, y values are the result.
 	 * @return {Object}
 	 */
-	to2d: function () {
-		var sx = this.y + this.x / 2,
-			sy = this.y - this.x / 2;
+	to2d() {
+		const sx = this.y + this.x / 2;
+		const sy = this.y - this.x / 2;
 
 		return {x: sx, y: sy};
-	},
+	}
 
 	/**
 	 * Converts this point's x, y, z data into 2d co-ordinate space
 	 * and overwrites the previous x, y, z values with the result.
 	 * @return {*}
 	 */
-	thisTo2d: function () {
-		var val = this.to2d();
+	thisTo2d() {
+		const val = this.to2d();
+
 		this.x = val.x;
 		this.y = val.y;
 		this.z = 0;
 
 		return this;
-	},
+	}
 
 	/**
 	 * Adds this point's data by the x, y, z, values specified
@@ -126,9 +133,9 @@ var IgePoint3d = IgeClass.extend({
 	 * @param point
 	 * @return {*}
 	 */
-	addPoint: function (point) {
+	addPoint(point) {
 		return new IgePoint3d(this.x + point.x, this.y + point.y, this.z + point.z);
-	},
+	}
 
 	/**
 	 * Adds this point's data by the x, y, z values specified and
@@ -136,13 +143,13 @@ var IgePoint3d = IgeClass.extend({
 	 * @param point
 	 * @return {*}
 	 */
-	thisAddPoint: function (point) {
+	thisAddPoint(point) {
 		this.x += point.x;
 		this.y += point.y;
 		this.z += point.z;
 
 		return this;
-	},
+	}
 
 	/**
 	 * Minuses this point's data by the x, y, z, values specified
@@ -150,9 +157,9 @@ var IgePoint3d = IgeClass.extend({
 	 * @param point
 	 * @return {*}
 	 */
-	minusPoint: function (point) {
-		return new IgePoint3d(this.x - point.x, this.y - point.y, this.z - point.z);
-	},
+	minusPoint(point) {
+		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, this.x - point.x, this.y - point.y, this.z - point.z);
+	}
 
 	/**
 	 * Minuses this point's data by the x, y, z values specified and
@@ -160,13 +167,13 @@ var IgePoint3d = IgeClass.extend({
 	 * @param point
 	 * @return {*}
 	 */
-	thisMinusPoint: function (point) {
+	thisMinusPoint(point) {
 		this.x -= point.x;
 		this.y -= point.y;
 		this.z -= point.z;
 
 		return this;
-	},
+	}
 
 	/**
 	 * Multiplies this point's data by the x, y, z, values specified
@@ -176,9 +183,9 @@ var IgePoint3d = IgeClass.extend({
 	 * @param z
 	 * @return {*}
 	 */
-	multiply: function (x, y, z) {
-		return new IgePoint3d(this.x * x, this.y * y, this.z * z);
-	},
+	multiply(x, y, z) {
+		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, this.x * x, this.y * y, this.z * z);
+	}
 
 	/**
 	 * Multiplies this point's data by the point specified
@@ -186,9 +193,9 @@ var IgePoint3d = IgeClass.extend({
 	 * @param {IgePoint3d} point
 	 * @return {*}
 	 */
-	multiplyPoint: function (point) {
-		return new IgePoint3d(this.x * point.x, this.y * point.y, this.z * point.z);
-	},
+	multiplyPoint(point) {
+		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, this.x * point.x, this.y * point.y, this.z * point.z);
+	}
 
 	/**
 	 * Multiplies this point's data by the x, y, z values specified and
@@ -198,13 +205,13 @@ var IgePoint3d = IgeClass.extend({
 	 * @param z
 	 * @return {*}
 	 */
-	thisMultiply: function (x, y, z) {
+	thisMultiply(x, y, z) {
 		this.x *= x;
 		this.y *= y;
 		this.z *= z;
 
 		return this;
-	},
+	}
 
 	/**
 	 * Divides this point's data by the x, y, z, values specified
@@ -214,27 +221,33 @@ var IgePoint3d = IgeClass.extend({
 	 * @param z
 	 * @return {*}
 	 */
-	divide: function (x, y, z) {
-		return new IgePoint3d(this.x / x, this.y / y, this.z / z);
-	},
-	
+	divide(x, y, z) {
+		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, this.x / x, this.y / y, this.z / z);
+	}
+
 	/**
 	 * Divides this point's data by the point specified
 	 * and returns a new IgePoint3d whose values are the result.
 	 * @param {IgePoint3d} point
 	 * @return {*}
 	 */
-	dividePoint: function (point) {
-		var newX = this.x,
-			newY = this.y,
-			newZ = this.z;
-		
-		if (point.x) { newX = this.x / point.x; }
-		if (point.y) { newY = this.y / point.y; }
-		if (point.z) { newZ = this.z / point.z; }
-		
-		return new IgePoint3d(newX, newY, newZ);
-	},
+	dividePoint(point) {
+		let newX = this.x;
+		let newY = this.y;
+		let newZ = this.z;
+
+		if (point.x) {
+			newX = this.x / point.x;
+		}
+		if (point.y) {
+			newY = this.y / point.y;
+		}
+		if (point.z) {
+			newZ = this.z / point.z;
+		}
+
+		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, newX, newY, newZ);
+	}
 
 	/**
 	 * Divides this point's data by the x, y, z values specified and
@@ -244,21 +257,21 @@ var IgePoint3d = IgeClass.extend({
 	 * @param z
 	 * @return {*}
 	 */
-	thisDivide: function (x, y, z) {
+	thisDivide(x, y, z) {
 		this.x /= x;
 		this.y /= y;
 		this.z /= z;
 
 		return this;
-	},
+	}
 
 	/**
 	 * Returns a clone of this IgePoint3d's data as a new instance.
 	 * @return {*}
 	 */
-	clone: function () {
-		return new IgePoint3d(this.x, this.y, this.z);
-	},
+	clone() {
+		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, this.x, this.y, this.z);
+	}
 
 	/**
 	 * Interpolates the x, y, z values of this point towards the endPoint's
@@ -270,48 +283,48 @@ var IgePoint3d = IgeClass.extend({
 	 * @param endTime
 	 * @return {*}
 	 */
-	interpolate: function (endPoint, startTime, currentTime, endTime) {
-		var totalX = endPoint.x - this.x,
-			totalY = endPoint.y - this.y,
-			totalZ = endPoint.z - this.z,
-			totalTime = endTime - startTime,
-			deltaTime = totalTime - (currentTime - startTime),
-			timeRatio = deltaTime / totalTime;
+	interpolate(endPoint, startTime, currentTime, endTime) {
+		const totalX = endPoint.x - this.x;
+		const totalY = endPoint.y - this.y;
+		const totalZ = endPoint.z - this.z;
+		const totalTime = endTime - startTime;
+		const deltaTime = totalTime - (currentTime - startTime);
+		const timeRatio = deltaTime / totalTime;
 
-		return new IgePoint3d(endPoint.x - (totalX * timeRatio), endPoint.y - (totalY * timeRatio), endPoint.z - (totalZ * timeRatio));
-	},
+		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, endPoint.x - (totalX * timeRatio), endPoint.y - (totalY * timeRatio), endPoint.z - (totalZ * timeRatio));
+	}
 
 	/**
 	 * Rotates the point by the given radians.
 	 * @param {Number} radians Radians to rotate by.
 	 * @return {IgePoint3d} A new point with the rotated x, y.
 	 */
-	rotate: function (radians) {
-		var s = Math.sin(radians),
-			c = Math.cos(radians),
-			x = c * this.x - s * this.y,
-			y = s * this.x - c * this.y;
-		
-		return new IgePoint3d(x, y, this.z);
-	},
-	
+	rotate(radians) {
+		const s = Math.sin(radians);
+		const c = Math.cos(radians);
+		const x = c * this.x - s * this.y;
+		const y = s * this.x - c * this.y;
+
+		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, x, y, this.z);
+	}
+
 	/**
 	 * Rotates the point by the given radians and updates this point
 	 * to the new x, y values.
 	 * @param {Number} radians Radians to rotate by.
 	 * @return {IgePoint3d} This point.
 	 */
-	thisRotate: function (radians) {
-		var s = Math.sin(radians),
-			c = Math.cos(radians),
-			x = this.x,
-			y = this.y;
-		
+	thisRotate(radians) {
+		const s = Math.sin(radians);
+		const c = Math.cos(radians);
+		const x = this.x;
+		const y = this.y;
+
 		this.x = c * x - s * y;
 		this.y = s * x - c * y;
-		
+
 		return this;
-	},
+	}
 
 	/**
 	 * Returns a string representation of the point's x, y, z
@@ -321,10 +334,11 @@ var IgePoint3d = IgeClass.extend({
 	 * @param {Number=} precision
 	 * @return {String}
 	 */
-	toString: function (precision) {
-		if (precision === undefined) { precision = 2; }
+	toString(precision) {
+		if (precision === undefined) {
+			precision = 2;
+		}
+
 		return this.x.toFixed(precision) + ',' + this.y.toFixed(precision) + ',' + this.z.toFixed(precision);
 	}
-});
-
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgePoint3d; }
+}

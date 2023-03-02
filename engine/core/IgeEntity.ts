@@ -1,20 +1,66 @@
+import {IgeObject} from "./IgeObject";
+import {IgePoint2d} from "./IgePoint2d";
+import {IgePoint3d} from "./IgePoint3d";
+import {IgeMatrix2d} from "./IgeMatrix2d";
+import {IgeRect} from "./IgeRect";
+import {IgeClassProps} from "./IgeClass";
+import {IgePoly2d} from "./IgePoly2d";
+
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
  */
-var IgeEntity = IgeObject.extend({
-	classId: 'IgeEntity',
+export class IgeEntity extends IgeObject {
+	_classId = 'IgeEntity';
+	_aabbDirty: boolean;
+	_aabb: IgeRect;
+	_anchor: IgePoint2d;
+	_renderPos: { x: number, y: number };
+	_computedOpacity: number;
+	_opacity: number;
+	_cache: boolean;
+	_cacheCanvas: HTMLCanvasElement;
+	_cacheCtx: CanvasRenderingContext2D;
+	_cacheDirty: boolean;
+	_cacheSmoothing: boolean;
+	_compositeParent: boolean;
+	_compositeCache: boolean;
+	_cell: number;
+	_deathTime: number;
+	_bornTime: number;
+	_translate: IgePoint3d;
+	_oldTranslate: IgePoint3d;
+	_rotate: IgePoint3d;
+	_scale: IgePoint3d;
+	_origin: IgePoint3d;
+	_bounds2d: IgePoint2d;
+	_bounds3d: IgePoint3d;
+	_oldBounds2d: IgePoint2d;
+	_oldBounds3d: IgePoint3d;
+	_mousePos: IgePoint3d;
+	_highlight: boolean;
+	_overflow: string;
+	_clipping: boolean;
+	_mouseEventsActive: boolean;
+	_velocity: IgePoint3d;
+	_localMatrix: IgeMatrix2d;
+	_worldMatrix: IgeMatrix2d;
+	_oldWorldMatrix: IgeMatrix2d;
+	_hidden: boolean;
+	_alwaysInView: boolean;
+	_mouseAlwaysInside: boolean;
+	_borderColor?: string;
 
-	init: function () {
-		IgeObject.prototype.init.call(this);
-		
+	constructor(props: IgeClassProps) {
+		super(props);
+
 		// Register the IgeEntity special properties handler for 
 		// serialise and de-serialise support
 		this._specialProp.push('_texture');
 		this._specialProp.push('_eventListeners');
 		this._specialProp.push('_aabb');
 
-		this._anchor = new IgePoint2d(0, 0);
+		this._anchor = new IgePoint2d(props, 0, 0);
 		this._renderPos = {x: 0, y: 0};
 
 		this._computedOpacity = 1;
@@ -22,36 +68,36 @@ var IgeEntity = IgeObject.extend({
 		this._cell = 1;
 
 		this._deathTime = undefined;
-		this._bornTime = ige._currentTime;
+		this._bornTime = this._ige._currentTime;
 
-		this._translate = new IgePoint3d(0, 0, 0);
-		this._oldTranslate = new IgePoint3d(0, 0, 0);
-		this._rotate = new IgePoint3d(0, 0, 0);
-		this._scale = new IgePoint3d(1, 1, 1);
-		this._origin = new IgePoint3d(0.5, 0.5, 0.5);
+		this._translate = new IgePoint3d(props, 0, 0, 0);
+		this._oldTranslate = new IgePoint3d(props, 0, 0, 0);
+		this._rotate = new IgePoint3d(props, 0, 0, 0);
+		this._scale = new IgePoint3d(props, 1, 1, 1);
+		this._origin = new IgePoint3d(props, 0.5, 0.5, 0.5);
 
-		this._bounds2d = new IgePoint2d(40, 40);
-		this._bounds3d = new IgePoint3d(0, 0, 0);
-		
-		this._oldBounds2d = new IgePoint2d(40, 40);
-		this._oldBounds3d = new IgePoint3d(0, 0, 0);
+		this._bounds2d = new IgePoint2d(props, 40, 40);
+		this._bounds3d = new IgePoint3d(props, 0, 0, 0);
+
+		this._oldBounds2d = new IgePoint2d(props, 40, 40);
+		this._oldBounds3d = new IgePoint3d(props, 0, 0, 0);
 
 		this._highlight = false;
 		this._mouseEventsActive = false;
-		
-		this._velocity = new IgePoint3d(0, 0, 0);
 
-		this._localMatrix = new IgeMatrix2d();
-		this._worldMatrix = new IgeMatrix2d();
-		this._oldWorldMatrix = new IgeMatrix2d();
+		this._velocity = new IgePoint3d(props, 0, 0, 0);
+
+		this._localMatrix = new IgeMatrix2d(props);
+		this._worldMatrix = new IgeMatrix2d(props);
+		this._oldWorldMatrix = new IgeMatrix2d(props);
 
 		this._inView = true;
 		this._hidden = false;
-		
+
 		//this._mouseEventTrigger = 0;
 
 		/* CEXCLUDE */
-		if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') {
+		if (typeof (module) !== 'undefined' && typeof (module.exports) !== 'undefined') {
 			// Set the stream floating point precision to 2 as default
 			this.streamFloatPrecision(2);
 		}
@@ -59,7 +105,7 @@ var IgeEntity = IgeObject.extend({
 
 		// Set the default stream sections as just the transform data
 		this.streamSections(['transform']);
-	},
+	}
 
 	/**
 	 * Sets the entity as visible and able to be interacted with.
@@ -68,10 +114,10 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
-	show: function () {
+	show() {
 		this._hidden = false;
 		return this;
-	},
+	}
 
 	/**
 	 * Sets the entity as hidden and cannot be interacted with.
@@ -80,26 +126,26 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
-	hide: function () {
+	hide() {
 		this._hidden = true;
 		return this;
-	},
+	}
 
 	/**
 	 * Checks if the entity is visible.
 	 * @returns {boolean} True if the entity is visible.
 	 */
-	isVisible: function () {
+	isVisible() {
 		return this._hidden === false;
-	},
-	
+	}
+
 	/**
 	 * Checks if the entity is hidden.
 	 * @returns {boolean} True if the entity is hidden.
 	 */
-	isHidden: function () {
+	isHidden() {
 		return this._hidden === true;
-	},
+	}
 
 	/**
 	 * Gets / sets the cache flag that determines if the entity's
@@ -119,47 +165,41 @@ var IgeEntity = IgeObject.extend({
 	 *     var val = entity.cache();
 	 * @return {*}
 	 */
-	cache: function (val) {
-		if (val !== undefined) {
-			this._cache = val;
-			
-			if (val) {
-				// Create the off-screen canvas
-				if (ige.isClient) {
-					// Use a real canvas
-					this._cacheCanvas = document.createElement('canvas');
-				} else {
-					// Use dummy objects for canvas and context
-					this._cacheCanvas = new IgeDummyCanvas();
-				}
-				
-				this._cacheCtx = this._cacheCanvas.getContext('2d');
-				this._cacheDirty = true;
-				
-				// Set smoothing mode
-				var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
-				if (!smoothing) {
-					this._cacheCtx.imageSmoothingEnabled = false;
-					this._cacheCtx.mozImageSmoothingEnabled = false;
-				} else {
-					this._cacheCtx.imageSmoothingEnabled = true;
-					this._cacheCtx.mozImageSmoothingEnabled = true;
-				}
-
-				// Switch off composite caching
-				if (this.compositeCache()) {
-					this.compositeCache(false);
-				}
-			} else {
-				// Remove the off-screen canvas
-				delete this._cacheCanvas;
-			}
-
-			return this;
+	cache(val) {
+		if (val === undefined) {
+			return this._cache;
 		}
 
-		return this._cache;
-	},
+		this._cache = val;
+
+		if (val) {
+			// Create the off-screen canvas
+			if (this._ige.isClient) {
+				// Use a real canvas
+				this._cacheCanvas = document.createElement('canvas');
+			} else {
+				// Use dummy objects for canvas and context
+				this._cacheCanvas = new IgeDummyCanvas();
+			}
+
+			this._cacheCtx = this._cacheCanvas.getContext('2d');
+			this._cacheDirty = true;
+
+			// Set smoothing mode
+			const smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : this._ige._globalSmoothing;
+			this._cacheCtx.imageSmoothingEnabled = smoothing;
+
+			// Switch off composite caching
+			if (this.compositeCache()) {
+				this.compositeCache(false);
+			}
+		} else {
+			// Remove the off-screen canvas
+			delete this._cacheCanvas;
+		}
+
+		return this;
+	}
 
 	/**
 	 * When using the caching system, this boolean determines if the
@@ -168,18 +208,18 @@ var IgeEntity = IgeObject.extend({
 	 * @param {Boolean=} val True to enable smoothing, false to disable.
 	 * @returns {*}
 	 */
-	cacheSmoothing: function (val) {
-		if (val !== undefined) {
-			this._cacheSmoothing = val;
-			return this;
+	cacheSmoothing(val) {
+		if (val === undefined) {
+			return this._cacheSmoothing;
 		}
-		
-		return this._cacheSmoothing;
-	},
+
+		this._cacheSmoothing = val;
+		return this;
+	}
 
 	/**
 	 * Gets / sets composite caching. Composite caching draws this entity
-	 * and all of it's children (and their children etc) to a single off
+	 * and all of its children (and their children etc) to a single off
 	 * screen canvas so that the entity does not need to be redrawn with
 	 * all it's children every tick. For composite entities where little
 	 * change occurs this will massively increase rendering performance.
@@ -194,47 +234,39 @@ var IgeEntity = IgeObject.extend({
 	 *     var val = entity.cache();
 	 * @return {*}
 	 */
-	compositeCache: function (val) {
-		if (ige.isClient) {
-			if (val !== undefined) {
-				if (val) {
-					// Switch off normal caching
-					this.cache(false);
-					
-					// Create the off-screen canvas
-					this._cacheCanvas = document.createElement('canvas');
-					this._cacheCtx = this._cacheCanvas.getContext('2d');
-					this._cacheDirty = true;
-					
-					// Set smoothing mode
-					var smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : ige._globalSmoothing;
-					if (!smoothing) {
-						this._cacheCtx.imageSmoothingEnabled = false;
-						this._cacheCtx.mozImageSmoothingEnabled = false;
-					} else {
-						this._cacheCtx.imageSmoothingEnabled = true;
-						this._cacheCtx.mozImageSmoothingEnabled = true;
-					}
-				}
-				
-				// Loop children and set _compositeParent to the correct value
-				this._children.each(function () {
-					if (val) {
-						this._compositeParent = true;
-					} else {
-						delete this._compositeParent;
-					}
-				});
-				
-				this._compositeCache = val;
-				return this;
-			}
-			
+	compositeCache(val?: boolean) {
+		if (!this._ige.isClient) return this;
+
+		if (val === undefined) {
 			return this._compositeCache;
-		} else {
-			return this;
 		}
-	},
+
+		if (val) {
+			// Switch off normal caching
+			this.cache(false);
+
+			// Create the off-screen canvas
+			this._cacheCanvas = document.createElement('canvas');
+			this._cacheCtx = this._cacheCanvas.getContext('2d');
+			this._cacheDirty = true;
+
+			// Set smoothing mode
+			const smoothing = this._cacheSmoothing !== undefined ? this._cacheSmoothing : this._ige._globalSmoothing;
+			this._cacheCtx.imageSmoothingEnabled = smoothing;
+		}
+
+		// Loop children and set _compositeParent to the correct value
+		this._children.forEach(() => {
+			if (val) {
+				this._compositeParent = true;
+			} else {
+				delete this._compositeParent;
+			}
+		});
+
+		this._compositeCache = val;
+		return this;
+	}
 
 	/**
 	 * Gets / sets the cache dirty flag. If set to true this will
@@ -249,26 +281,26 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.cacheDirty(true);
 	 * @return {*}
 	 */
-	cacheDirty: function (val) {
-		if (val !== undefined) {
-			this._cacheDirty = val;
-			
-			// Check if the entity is a child of a composite or composite
-			// entity chain and propagate the dirty cache up the chain
-			if (val && this._compositeParent && this._parent) {
-				this._parent.cacheDirty(val);
-				
-				if (!this._cache && !this._compositeCache) {
-					// Set clean immediately as no caching is enabled on this child
-					this._cacheDirty = false;
-				}
-			}
-			
-			return this;
+	cacheDirty(val) {
+		if (val === undefined) {
+			return this._cacheDirty;
 		}
 
-		return this._cacheDirty;
-	},
+		this._cacheDirty = val;
+
+		// Check if the entity is a child of a composite or composite
+		// entity chain and propagate the dirty cache up the chain
+		if (val && this._compositeParent && this._parent) {
+			this._parent.cacheDirty(val);
+
+			if (!this._cache && !this._compositeCache) {
+				// Set clean immediately as no caching is enabled on this child
+				this._cacheDirty = false;
+			}
+		}
+
+		return this;
+	}
 
 	/**
 	 * Gets the position of the mouse relative to this entity's
@@ -283,19 +315,19 @@ var IgeEntity = IgeObject.extend({
 	 * @return {IgePoint3d} The mouse point relative to the entity
 	 * center.
 	 */
-	mousePos: function (viewport) {
-		viewport = viewport || ige._currentViewport;
+	mousePos(viewport) {
+		viewport = viewport || this._ige._currentViewport;
 		if (viewport) {
-			var mp = viewport._mousePos.clone(),
+			let mp = viewport._mousePos.clone(),
 				cam;
 
 			if (this._ignoreCamera) {
-				/*cam = ige._currentCamera;
+				/*cam = this._ige._currentCamera;
 				mp.thisMultiply(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
 				//mp.thisRotate(-cam._rotate.z);
 				mp.thisAddPoint(cam._translate);*/
 			}
-			
+
 			mp.x += viewport._translate.x;
 			mp.y += viewport._translate.y;
 			this._transformPoint(mp);
@@ -303,7 +335,7 @@ var IgeEntity = IgeObject.extend({
 		} else {
 			return new IgePoint3d(0, 0, 0);
 		}
-	},
+	}
 
 	/**
 	 * Gets the position of the mouse relative to this entity not
@@ -317,16 +349,16 @@ var IgeEntity = IgeObject.extend({
 	 * @return {IgePoint3d} The mouse point relative to the entity
 	 * center.
 	 */
-	mousePosAbsolute: function (viewport) {
-		viewport = viewport || ige._currentViewport;
+	mousePosAbsolute(viewport) {
+		viewport = viewport || this._ige._currentViewport;
 		if (viewport) {
-			var mp = viewport._mousePos.clone();
+			const mp = viewport._mousePos.clone();
 			this._transformPoint(mp);
 			return mp;
 		}
 
 		return new IgePoint3d(0, 0, 0);
-	},
+	}
 
 	/**
 	 * Gets the position of the mouse in world co-ordinates.
@@ -339,9 +371,9 @@ var IgeEntity = IgeObject.extend({
 	 * @return {IgePoint3d} The mouse point relative to the world
 	 * center.
 	 */
-	mousePosWorld: function (viewport) {
-		viewport = viewport || ige._currentViewport;
-		var mp = this.mousePos(viewport);
+	mousePosWorld(viewport) {
+		viewport = viewport || this._ige._currentViewport;
+		const mp = this.mousePos(viewport);
 		this.localToWorldPoint(mp, viewport);
 
 		if (this._ignoreCamera) {
@@ -349,7 +381,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return mp;
-	},
+	}
 
 	/**
 	 * Rotates the entity to point at the target point around the z axis.
@@ -358,13 +390,13 @@ var IgeEntity = IgeObject.extend({
 	 * @example #Point the entity at another entity
 	 *     entity.rotateToPoint(otherEntity.worldPosition());
 	 * @example #Point the entity at mouse
-	 *     entity.rotateToPoint(ige._currentViewport.mousePos());
+	 *     entity.rotateToPoint(this._ige._currentViewport.mousePos());
 	 * @example #Point the entity at an arbitrary point x, y
 	 *     entity.rotateToPoint(new IgePoint3d(x, y, 0));
 	 * @return {*}
 	 */
-	rotateToPoint: function (point) {
-		var worldPos = this.worldPosition();
+	rotateToPoint(point) {
+		const worldPos = this.worldPosition();
 		this.rotateTo(
 			this._rotate.x,
 			this._rotate.y,
@@ -372,7 +404,7 @@ var IgeEntity = IgeObject.extend({
 		);
 
 		return this;
-	},
+	}
 
 	/**
 	 * Gets / sets the texture to use as the background
@@ -394,7 +426,7 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.backgroundPattern(texture, 'repeat', true, true);
 	 * @return {*}
 	 */
-	backgroundPattern: function (texture, repeat, trackCamera, isoTile) {
+	backgroundPattern(texture, repeat, trackCamera, isoTile) {
 		if (texture !== undefined) {
 			this._backgroundPattern = texture;
 			this._backgroundPatternRepeat = repeat || 'repeat';
@@ -405,16 +437,16 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._backgroundPattern;
-	},
+	}
 
-	smartBackground: function (renderMethod) {
+	smartBackground(renderMethod) {
 		if (renderMethod !== undefined) {
 			this._smartBackground = renderMethod;
 			return this;
 		}
 
 		return this._smartBackground
-	},
+	}
 
 	/**
 	 * Set the object's width to the number of tile width's specified.
@@ -430,9 +462,9 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
-	widthByTile: function (val, lockAspect) {
+	widthByTile(val, lockAspect) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
-			var tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2,
+			let tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2,
 				ratio;
 
 			this.width(val * tileSize);
@@ -451,7 +483,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this;
-	},
+	}
 
 	/**
 	 * Set the object's height to the number of tile height's specified.
@@ -467,9 +499,9 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
-	heightByTile: function (val, lockAspect) {
+	heightByTile(val, lockAspect) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
-			var tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2,
+			let tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2,
 				ratio;
 
 			this.height(val * tileSize);
@@ -488,8 +520,8 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this;
-	},
-	
+	}
+
 	/**
 	 * Adds the object to the tile map at the passed tile co-ordinates. If
 	 * no tile co-ordinates are passed, will use the current tile position
@@ -499,26 +531,26 @@ var IgeEntity = IgeObject.extend({
 	 * @param {Number=} width Number of tiles along the x-axis to occupy.
 	 * @param {Number=} height Number of tiles along the y-axis to occupy.
 	 */
-	occupyTile: function (x, y, width, height) {
+	occupyTile(x, y, width, height) {
 		// Check that the entity is mounted to a tile map
 		if (this._parent && this._parent.IgeTileMap2d) {
 			if (x !== undefined && y !== undefined) {
 				this._parent.occupyTile(x, y, width, height, this);
 			} else {
 				// Occupy tiles based upon tile point and tile width/height
-				var trPoint = new IgePoint3d(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
+				const trPoint = new IgePoint3d(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
 					tilePoint = this._parent.pointToTile(trPoint);
-	
+
 				if (this._parent._mountMode === 1) {
 					tilePoint.thisToIso();
 				}
-	
+
 				this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
 			}
 		}
 		return this;
-	},
-	
+	}
+
 	/**
 	 * Removes the object from the tile map at the passed tile co-ordinates.
 	 * If no tile co-ordinates are passed, will use the current tile position
@@ -529,26 +561,26 @@ var IgeEntity = IgeObject.extend({
 	 * @param {Number=} height Number of tiles along the y-axis to un-occupy.
 	 * @private
 	 */
-	unOccupyTile: function (x, y, width, height) {
+	unOccupyTile(x, y, width, height) {
 		// Check that the entity is mounted to a tile map
 		if (this._parent && this._parent.IgeTileMap2d) {
 			if (x !== undefined && y !== undefined) {
 				this._parent.unOccupyTile(x, y, width, height);
 			} else {
 				// Un-occupy tiles based upon tile point and tile width/height
-				var trPoint = new IgePoint3d(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
+				const trPoint = new IgePoint3d(this._translate.x - (((this._tileWidth / 2) - 0.5) * this._parent._tileWidth), this._translate.y - (((this._tileHeight / 2) - 0.5) * this._parent._tileHeight), 0),
 					tilePoint = this._parent.pointToTile(trPoint);
-	
+
 				if (this._parent._mountMode === 1) {
 					tilePoint.thisToIso();
 				}
-	
+
 				this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
 			}
 		}
 		return this;
-	},
-	
+	}
+
 	/**
 	 * Returns an array of tile co-ordinates that the object is currently
 	 * over, calculated using the current world co-ordinates of the object
@@ -556,25 +588,25 @@ var IgeEntity = IgeObject.extend({
 	 * @private
 	 * @return {Array} The array of tile co-ordinates as IgePoint3d instances.
 	 */
-	overTiles: function () {
+	overTiles() {
 		// Check that the entity is mounted to a tile map
 		if (this._parent && this._parent.IgeTileMap2d) {
-			var x,
+			let x,
 				y,
 				tileWidth = this._tileWidth || 1,
 				tileHeight = this._tileHeight || 1,
 				tile = this._parent.pointToTile(this._translate),
 				tileArr = [];
-	
+
 			for (x = 0; x < tileWidth; x++) {
 				for (y = 0; y < tileHeight; y++) {
 					tileArr.push(new IgePoint3d(tile.x + x, tile.y + y, 0));
 				}
 			}
-	
+
 			return tileArr;
 		}
-	},
+	}
 
 	/**
 	 * Gets / sets the anchor position that this entity's texture
@@ -584,14 +616,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	anchor: function (x, y) {
+	anchor(x, y) {
 		if (x !== undefined && y !== undefined) {
 			this._anchor = new IgePoint2d(x, y);
 			return this;
 		}
 
 		return this._anchor;
-	},
+	}
 
 	/**
 	 * Gets / sets the geometry x value.
@@ -601,11 +633,11 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	width: function (px, lockAspect) {
+	width(px, lockAspect) {
 		if (px !== undefined) {
 			if (lockAspect) {
 				// Calculate the height from the change in width
-				var ratio = px / this._bounds2d.x;
+				const ratio = px / this._bounds2d.x;
 				this.height(this._bounds2d.y * ratio);
 			}
 
@@ -615,7 +647,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._bounds2d.x;
-	},
+	}
 
 	/**
 	 * Gets / sets the geometry y value.
@@ -625,11 +657,11 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	height: function (px, lockAspect) {
+	height(px, lockAspect) {
 		if (px !== undefined) {
 			if (lockAspect) {
 				// Calculate the width from the change in height
-				var ratio = px / this._bounds2d.y;
+				const ratio = px / this._bounds2d.y;
 				this.width(this._bounds2d.x * ratio);
 			}
 
@@ -639,8 +671,8 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._bounds2d.y;
-	},
-	
+	}
+
 	/**
 	 * Gets / sets the 2d geometry of the entity. The x and y values are
 	 * relative to the center of the entity. This geometry is used when
@@ -654,19 +686,19 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	bounds2d: function (x, y) {
+	bounds2d(x, y) {
 		if (x !== undefined && y !== undefined) {
 			this._bounds2d = new IgePoint2d(x, y, 0);
 			return this;
 		}
-		
+
 		if (x !== undefined && y === undefined) {
 			// x is considered an IgePoint2d instance
 			this._bounds2d = new IgePoint2d(x.x, x.y);
 		}
 
 		return this._bounds2d;
-	},
+	}
 
 	/**
 	 * Gets / sets the 3d geometry of the entity. The x and y values are
@@ -681,14 +713,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	bounds3d: function (x, y, z) {
+	bounds3d(x, y, z) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._bounds3d = new IgePoint3d(x, y, z);
 			return this;
 		}
 
 		return this._bounds3d;
-	},
+	}
 
 	/**
 	 * @deprecated Use bounds3d instead
@@ -696,9 +728,9 @@ var IgeEntity = IgeObject.extend({
 	 * @param y
 	 * @param z
 	 */
-	size3d: function (x, y, z) {
+	size3d(x, y, z) {
 		this.log('size3d has been renamed to bounds3d but is exactly the same so please search/replace your code to update calls.', 'warning');
-	},
+	}
 
 	/**
 	 * Gets / sets the life span of the object in milliseconds. The life
@@ -713,14 +745,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	lifeSpan: function (milliseconds, deathCallback) {
+	lifeSpan(milliseconds, deathCallback) {
 		if (milliseconds !== undefined) {
-			this.deathTime(ige._currentTime + milliseconds, deathCallback);
+			this.deathTime(this._ige._currentTime + milliseconds, deathCallback);
 			return this;
 		}
 
-		return this.deathTime() - ige._currentTime;
-	},
+		return this.deathTime() - this._ige._currentTime;
+	}
 
 	/**
 	 * Gets / sets the timestamp in milliseconds that denotes the time
@@ -738,10 +770,10 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	deathTime: function (val, deathCallback) {
+	deathTime(val, deathCallback) {
 		if (val !== undefined) {
 			this._deathTime = val;
-			
+
 			if (deathCallback !== undefined) {
 				this._deathCallBack = deathCallback;
 			}
@@ -749,7 +781,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._deathTime;
-	},
+	}
 
 	/**
 	 * Gets / sets the entity opacity from 0.0 to 1.0.
@@ -761,33 +793,33 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	opacity: function (val) {
+	opacity(val) {
 		if (val !== undefined) {
 			this._opacity = val;
 			return this;
 		}
 
 		return this._opacity;
-	},
+	}
 
 	/**
 	 * Gets / sets the noAabb flag that determines if the entity's axis
 	 * aligned bounding box should be calculated every tick or not. If
 	 * you don't need the AABB data (for instance if you don't need to
 	 * detect mouse events on this entity or you DO want the AABB to be
-	 * updated but want to control it manually by calling aabb(true) 
+	 * updated but want to control it manually by calling aabb(true)
 	 * yourself as needed).
 	 * @param {Boolean=} val If set to true will turn off AABB calculation.
 	 * @returns {*}
 	 */
-	noAabb: function (val) {
+	noAabb(val) {
 		if (val !== undefined) {
 			this._noAabb = val;
 			return this;
 		}
 
 		return this._noAabb;
-	},
+	}
 
 	/**
 	 * Gets / sets the texture to use when rendering the entity.
@@ -798,14 +830,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	texture: function (texture) {
+	texture(texture) {
 		if (texture !== undefined) {
 			this._texture = texture;
 			return this;
 		}
 
 		return this._texture;
-	},
+	}
 
 	/**
 	 * Gets / sets the current texture cell used when rendering the game
@@ -819,14 +851,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	cell: function (val) {
+	cell(val) {
 		if (val > 0 || val === null) {
 			this._cell = val;
 			return this;
 		}
 
 		return this._cell;
-	},
+	}
 
 	/**
 	 * Gets / sets the current texture cell used when rendering the game
@@ -839,7 +871,7 @@ var IgeEntity = IgeObject.extend({
 	 *         [0, 0, 40, 40, 'robotHead'],
 	 *         [40, 0, 40, 40, 'humanHead'],
 	 *     ]);
-	 *     
+	 *
 	 *     // Assign the texture, set the cell to use and then
 	 *     // set the entity to the size of the cell automatically!
 	 *     entity.texture(texture)
@@ -848,11 +880,11 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	cellById: function (val) {
+	cellById(val) {
 		if (val !== undefined) {
 			if (this._texture) {
 				// Find the cell index this id corresponds to
-				var i,
+				let i,
 					tex = this._texture,
 					cells = tex._cells;
 
@@ -873,7 +905,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._cell;
-	},
+	}
 
 	/**
 	 * Sets the geometry of the entity to match the width and height
@@ -881,7 +913,7 @@ var IgeEntity = IgeObject.extend({
 	 * @param {Number=} percent The percentage size to resize to.
 	 * @example #Set the entity dimensions based on the assigned texture
 	 *     var texture = new IgeTexture('path/to/some/texture.png');
-	 *	
+	 *
 	 *     // Assign the texture, and then set the entity to the
 	 *     // size of the texture automatically!
 	 *     entity.texture(texture)
@@ -889,7 +921,7 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
-	dimensionsFromTexture: function (percent) {
+	dimensionsFromTexture(percent) {
 		if (this._texture) {
 			if (percent === undefined) {
 				this.width(this._texture._sizeX);
@@ -904,7 +936,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this;
-	},
+	}
 
 	/**
 	 * Sets the geometry of the entity to match the width and height
@@ -925,7 +957,7 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} The object this method was called from to allow
 	 * method chaining
 	 */
-	dimensionsFromCell: function (percent) {
+	dimensionsFromCell(percent) {
 		if (this._texture) {
 			if (this._texture._cells && this._texture._cells.length) {
 				if (percent === undefined) {
@@ -935,14 +967,14 @@ var IgeEntity = IgeObject.extend({
 					this.width(Math.floor(this._texture._cells[this._cell][2] / 100 * percent));
 					this.height(Math.floor(this._texture._cells[this._cell][3] / 100 * percent));
 				}
-				
+
 				// Recalculate localAabb
 				this.localAabb(true);
 			}
 		}
 
 		return this;
-	},
+	}
 
 	/**
 	 * Gets / sets the highlight mode. True is on false is off.
@@ -957,7 +989,7 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	highlight: function (val, highlightChildEntities = true) {
+	highlight(val, highlightChildEntities = true) {
 		if (val !== undefined) {
 			this._highlight = val;
 
@@ -972,7 +1004,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._highlight;
-	},
+	}
 
 	/**
 	 * Returns the absolute world position of the entity as an
@@ -982,9 +1014,9 @@ var IgeEntity = IgeObject.extend({
 	 * @return {IgePoint3d} The absolute world position of the
 	 * entity.
 	 */
-	worldPosition: function () {
+	worldPosition() {
 		return new IgePoint3d(this._worldMatrix.matrix[2], this._worldMatrix.matrix[5], 0);
-	},
+	}
 
 	/**
 	 * Returns the absolute world rotation z of the entity as a
@@ -994,9 +1026,9 @@ var IgeEntity = IgeObject.extend({
 	 * @return {Number} The absolute world rotation z of the
 	 * entity.
 	 */
-	worldRotationZ: function () {
+	worldRotationZ() {
 		return this._worldMatrix.rotationRadians();
-	},
+	}
 
 	/**
 	 * Converts an array of points from local space to this entity's
@@ -1004,14 +1036,14 @@ var IgeEntity = IgeObject.extend({
 	 * the points passed in the array directly.
 	 * @param {Array} points The array of IgePoints to convert.
 	 */
-	localToWorld: function (points, viewport, inverse) {
-		viewport = viewport || ige._currentViewport;
-		
+	localToWorld(points, viewport, inverse) {
+		viewport = viewport || this._ige._currentViewport;
+
 		if (this._adjustmentMatrix) {
 			// Apply the optional adjustment matrix
 			this._worldMatrix.multiply(this._adjustmentMatrix);
 		}
-		
+
 		if (!inverse) {
 			this._worldMatrix.transform(points, this);
 		} else {
@@ -1022,7 +1054,7 @@ var IgeEntity = IgeObject.extend({
 		if (this._ignoreCamera) {
 			//viewport.camera._worldMatrix.transform(points, this);
 		}
-	},
+	}
 
 	/**
 	 * Converts a point from local space to this entity's world space
@@ -1030,11 +1062,11 @@ var IgeEntity = IgeObject.extend({
 	 * data directly.
 	 * @param {IgePoint3d} point The IgePoint3d to convert.
 	 */
-	localToWorldPoint: function (point, viewport) {
-		viewport = viewport || ige._currentViewport;
+	localToWorldPoint(point, viewport) {
+		viewport = viewport || this._ige._currentViewport;
 		this._worldMatrix.transform([point], this);
-	},
-	
+	}
+
 	/**
 	 * Returns the screen position of the entity as an IgePoint3d where x is the
 	 * "left" and y is the "top", useful for positioning HTML elements at the
@@ -1045,32 +1077,33 @@ var IgeEntity = IgeObject.extend({
 	 *     var screenPos = entity.screenPosition();
 	 * @return {IgePoint3d} The screen position of the entity.
 	 */
-	screenPosition: function () {
+	screenPosition() {
 		return new IgePoint3d(
-			Math.floor(((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x) + ige._bounds2d.x2),
-			Math.floor(((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y) + ige._bounds2d.y2),
+			Math.floor(((this._worldMatrix.matrix[2] - this._ige._currentCamera._translate.x) * this._ige._currentCamera._scale.x) + this._ige._bounds2d.x2),
+			Math.floor(((this._worldMatrix.matrix[5] - this._ige._currentCamera._translate.y) * this._ige._currentCamera._scale.y) + this._ige._bounds2d.y2),
 			0
 		);
-	},
-	
+	}
+
 	/**
 	 * @deprecated Use bounds3dPolygon instead
 	 */
-	localIsoBoundsPoly: function () {},
-	
-	localBounds3dPolygon: function (recalculate) {
+	localIsoBoundsPoly() {
+	}
+
+	localBounds3dPolygon(recalculate) {
 		if (this._bounds3dPolygonDirty || !this._localBounds3dPolygon || recalculate) {
-			var geom = this._bounds3d,
+			const geom = this._bounds3d,
 				poly = new IgePoly2d(),
 				// Bottom face
-				bf2 = Math.toIso(+(geom.x2), -(geom.y2),  -(geom.z2)),
-				bf3 = Math.toIso(+(geom.x2), +(geom.y2),  -(geom.z2)),
-				bf4 = Math.toIso(-(geom.x2), +(geom.y2),  -(geom.z2)),
+				bf2 = Math.toIso(+(geom.x2), -(geom.y2), -(geom.z2)),
+				bf3 = Math.toIso(+(geom.x2), +(geom.y2), -(geom.z2)),
+				bf4 = Math.toIso(-(geom.x2), +(geom.y2), -(geom.z2)),
 				// Top face
-				tf1 = Math.toIso(-(geom.x2), -(geom.y2),  (geom.z2)),
-				tf2 = Math.toIso(+(geom.x2), -(geom.y2),  (geom.z2)),
-				tf4 = Math.toIso(-(geom.x2), +(geom.y2),  (geom.z2));
-			
+				tf1 = Math.toIso(-(geom.x2), -(geom.y2), (geom.z2)),
+				tf2 = Math.toIso(+(geom.x2), -(geom.y2), (geom.z2)),
+				tf4 = Math.toIso(-(geom.x2), +(geom.y2), (geom.z2));
+
 			poly.addPoint(tf1.x, tf1.y)
 				.addPoint(tf2.x, tf2.y)
 				.addPoint(bf2.x, bf2.y)
@@ -1078,86 +1111,82 @@ var IgeEntity = IgeObject.extend({
 				.addPoint(bf4.x, bf4.y)
 				.addPoint(tf4.x, tf4.y)
 				.addPoint(tf1.x, tf1.y);
-			
+
 			this._localBounds3dPolygon = poly;
 			this._bounds3dPolygonDirty = false;
 		}
-		
+
 		return this._localBounds3dPolygon;
-	},
-	
+	}
+
 	/**
 	 * @deprecated Use bounds3dPolygon instead
 	 */
-	isoBoundsPoly: function () {},
-	
-	bounds3dPolygon: function (recalculate) {
+	isoBoundsPoly() {
+	}
+
+	bounds3dPolygon(recalculate) {
 		if (this._bounds3dPolygonDirty || !this._bounds3dPolygon || recalculate) {
-			var poly = this.localBounds3dPolygon(recalculate).clone();
-			
+			const poly = this.localBounds3dPolygon(recalculate).clone();
+
 			// Convert local co-ordinates to world based on entities world matrix
 			this.localToWorld(poly._poly);
-			
+
 			this._bounds3dPolygon = poly;
 		}
-		
+
 		return this._bounds3dPolygon;
-	},
+	}
 
 	/**
 	 * @deprecated Use mouseInBounds3d instead
 	 */
-	mouseInIsoBounds: function () {},
-	
-	mouseInBounds3d: function (recalculate) {
-		var poly = this.localBounds3dPolygon(recalculate),
+	mouseInIsoBounds() {
+	}
+
+	mouseInBounds3d(recalculate) {
+		const poly = this.localBounds3dPolygon(recalculate),
 			mp = this.mousePos();
-		
+
 		return poly.pointInside(mp);
-	},
+	}
 
 	/**
 	 * Calculates and returns the current axis-aligned bounding box in
 	 * world co-ordinates.
-	 * @param {Boolean=} recalculate If true this will force the
+	 * @param {boolean=} recalculate If true this will force the
 	 * recalculation of the AABB instead of returning a cached
 	 * value.
+	 * @param {boolean=} inverse
 	 * @example #Get the entity axis-aligned bounding box dimensions
 	 *     var aabb = entity.aabb();
-	 *     
+	 *
 	 *     console.log(aabb.x);
 	 *     console.log(aabb.y);
 	 *     console.log(aabb.width);
 	 *     console.log(aabb.height);
 	 * @example #Get the entity axis-aligned bounding box dimensions forcing the engine to update the values first
 	 *     var aabb = entity.aabb(true); // Call with true to force update
-	 *     
+	 *
 	 *     console.log(aabb.x);
 	 *     console.log(aabb.y);
 	 *     console.log(aabb.width);
 	 *     console.log(aabb.height);
 	 * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
 	 */
-	aabb: function (recalculate, inverse) {
+	aabb(recalculate = false, inverse = false) {
 		if (this._aabbDirty || !this._aabb || recalculate) { //  && this.newFrame()
-			var poly = new IgePoly2d(),
-				minX, minY,
-				maxX, maxY,
-				box,
+			const poly = new IgePoly2d({ige: this._ige, igeConfig: this._igeConfig}),
 				anc = this._anchor,
 				ancX = anc.x,
-				ancY = anc.y,
-				geom,
-				geomX2,
-				geomY2,
-				x, y;
+				ancY = anc.y;
 
-			geom = this._bounds2d;
-			geomX2 = geom.x2;
-			geomY2 = geom.y2;
-			
-			x = geomX2;
-			y = geomY2;
+			const geom = this._bounds2d;
+			const geomX2 = geom.x2;
+			const geomY2 = geom.y2;
+
+			const x = geomX2;
+			const y = geomY2;
 
 			poly.addPoint(-x + ancX, -y + ancY);
 			poly.addPoint(x + ancX, -y + ancY);
@@ -1170,42 +1199,40 @@ var IgeEntity = IgeObject.extend({
 			this.localToWorld(poly._poly, null, inverse);
 
 			// Get the extents of the newly transformed poly
-			minX = Math.min(
+			const minX = Math.min(
 				poly._poly[0].x,
 				poly._poly[1].x,
 				poly._poly[2].x,
 				poly._poly[3].x
 			);
 
-			minY = Math.min(
+			const minY = Math.min(
 				poly._poly[0].y,
 				poly._poly[1].y,
 				poly._poly[2].y,
 				poly._poly[3].y
 			);
 
-			maxX = Math.max(
+			const maxX = Math.max(
 				poly._poly[0].x,
 				poly._poly[1].x,
 				poly._poly[2].x,
 				poly._poly[3].x
 			);
 
-			maxY = Math.max(
+			const maxY = Math.max(
 				poly._poly[0].y,
 				poly._poly[1].y,
 				poly._poly[2].y,
 				poly._poly[3].y
 			);
 
-			box = new IgeRect(minX, minY, maxX - minX, maxY - minY);
-
-			this._aabb = box;
+			this._aabb = new IgeRect({ige: this._ige, igeConfig: this._igeConfig}, minX, minY, maxX - minX, maxY - minY);
 			this._aabbDirty = false;
 		}
 
 		return this._aabb;
-	},
+	}
 
 	/**
 	 * Calculates and returns the local axis-aligned bounding box
@@ -1216,28 +1243,28 @@ var IgeEntity = IgeObject.extend({
 	 * value.
 	 * @example #Get the entity local axis-aligned bounding box dimensions
 	 *     var aabb = entity.localAabb();
-	 *	
+	 *
 	 *     console.log(aabb.x);
 	 *     console.log(aabb.y);
 	 *     console.log(aabb.width);
 	 *     console.log(aabb.height);
 	 * @example #Get the entity local axis-aligned bounding box dimensions forcing the engine to update the values first
 	 *     var aabb = entity.localAabb(true); // Call with true to force update
-	 *	
+	 *
 	 *     console.log(aabb.x);
 	 *     console.log(aabb.y);
 	 *     console.log(aabb.width);
 	 *     console.log(aabb.height);
 	 * @return {IgeRect} The local AABB.
 	 */
-	localAabb: function (recalculate) {
+	localAabb(recalculate) {
 		if (!this._localAabb || recalculate) {
-			var aabb = this.aabb();
+			const aabb = this.aabb();
 			this._localAabb = new IgeRect(-Math.floor(aabb.width / 2), -Math.floor(aabb.height / 2), Math.floor(aabb.width), Math.floor(aabb.height));
 		}
 
 		return this._localAabb;
-	},
+	}
 
 	/**
 	 * Calculates the axis-aligned bounding box for this entity, including
@@ -1248,8 +1275,8 @@ var IgeEntity = IgeObject.extend({
 	 *         aabb = entity.compositeAabb();
 	 * @return {IgeRect}
 	 */
-	compositeAabb: function (inverse) {
-		var arr = this._children,
+	compositeAabb(inverse = false) {
+		let arr = this._children,
 			arrCount,
 			rect = this.aabb(true, inverse).clone();
 
@@ -1264,7 +1291,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return rect;
-	},
+	}
 
 	/**
 	 * Gets / sets the composite stream flag. If set to true, any objects
@@ -1275,36 +1302,36 @@ var IgeEntity = IgeObject.extend({
 	 * @param val
 	 * @returns {*}
 	 */
-	compositeStream: function (val) {
+	compositeStream(val) {
 		if (val !== undefined) {
 			this._compositeStream = val;
 			return this;
 		}
-		
+
 		return this._compositeStream;
-	},
+	}
 
 	/**
 	 * Override the _childMounted method and apply entity-based flags.
 	 * @param {IgeEntity} child
 	 * @private
 	 */
-	_childMounted: function (child) {
+	_childMounted(child) {
 		// Check if we need to set the compositeStream and streamMode
 		if (this.compositeStream()) {
 			child.compositeStream(true);
 			child.streamMode(this.streamMode());
 			child.streamControl(this.streamControl());
 		}
-		
+
 		IgeObject.prototype._childMounted.call(this, child);
-				
+
 		// Check if we are compositeCached and update the cache
 		if (this.compositeCache()) {
 			this.cacheDirty(true);
 		}
-	},
-	
+	}
+
 	/**
 	 * Takes two values and returns them as an array where index [0]
 	 * is the y argument and index[1] is the x argument. This method
@@ -1315,12 +1342,12 @@ var IgeEntity = IgeObject.extend({
 	 * @return {Array} The swapped arguments.
 	 * @private
 	 */
-	_swapVars: function (x, y) {
+	_swapVars(x, y) {
 		return [y, x];
-	},
+	}
 
-	_internalsOverlap: function (x0, x1, y0, y1) {
-		var tempSwap;
+	_internalsOverlap(x0, x1, y0, y1) {
+		let tempSwap;
 
 		if (x0 > x1) {
 			tempSwap = this._swapVars(x0, x1);
@@ -1345,31 +1372,31 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return y0 < x1;
-	},
+	}
 
-	_projectionOverlap: function (otherObject) {
-		var thisG3d = this._bounds3d,
+	_projectionOverlap(otherObject) {
+		const thisG3d = this._bounds3d,
 			thisMin = {
 				x: this._translate.x - thisG3d.x / 2,
 				y: this._translate.y - thisG3d.y / 2,
 				z: this._translate.z - thisG3d.z
-			},
-			thisMax = {
-				x: this._translate.x + thisG3d.x / 2,
-				y: this._translate.y + thisG3d.y / 2,
-				z: this._translate.z + thisG3d.z
-			},
-			otherG3d = otherObject._bounds3d,
+			}
+		thisMax = {
+			x: this._translate.x + thisG3d.x / 2,
+			y: this._translate.y + thisG3d.y / 2,
+			z: this._translate.z + thisG3d.z
+		}
+		otherG3d = otherObject._bounds3d,
 			otherMin = {
 				x: otherObject._translate.x - otherG3d.x / 2,
 				y: otherObject._translate.y - otherG3d.y / 2,
 				z: otherObject._translate.z - otherG3d.z
-			},
-			otherMax = {
-				x: otherObject._translate.x + otherG3d.x / 2,
-				y: otherObject._translate.y + otherG3d.y / 2,
-				z: otherObject._translate.z + otherG3d.z
-			};
+			}
+		otherMax = {
+			x: otherObject._translate.x + otherG3d.x / 2,
+			y: otherObject._translate.y + otherG3d.y / 2,
+			z: otherObject._translate.z + otherG3d.z
+		};
 
 		return this._internalsOverlap(
 			thisMin.x - thisMax.y,
@@ -1387,7 +1414,7 @@ var IgeEntity = IgeObject.extend({
 			otherMin.z - otherMax.y,
 			otherMax.z - otherMin.y
 		);
-	},
+	}
 
 	/**
 	 * Compares the current entity's 3d bounds to the passed entity and
@@ -1396,13 +1423,13 @@ var IgeEntity = IgeObject.extend({
 	 * render phase.
 	 * @param {IgeEntity} otherObject The other entity to check this
 	 * entity's 3d bounds against.
-	 * @example #Determine if this entity is "behind" another entity based on the current depth-sort 
+	 * @example #Determine if this entity is "behind" another entity based on the current depth-sort
 	 *     var behind = entity.isBehind(otherEntity);
 	 * @return {Boolean} If true this entity is "behind" the passed entity
 	 * or false if not.
 	 */
-	isBehind: function (otherObject) {
-		var thisG3d = this._bounds3d,
+	isBehind(otherObject) {
+		const thisG3d = this._bounds3d,
 			otherG3d = otherObject._bounds3d,
 			thisTranslate = this._translate.clone(),
 			otherTranslate = otherObject._translate.clone();
@@ -1410,16 +1437,16 @@ var IgeEntity = IgeObject.extend({
 		// thisTranslate.thisToIso();
 		// otherTranslate.thisToIso();
 
-		if(this._origin.x !== 0.5 || this._origin.y !== 0.5) {
+		if (this._origin.x !== 0.5 || this._origin.y !== 0.5) {
 			thisTranslate.x += this._bounds2d.x * (0.5 - this._origin.x)
 			thisTranslate.y += this._bounds2d.y * (0.5 - this._origin.y)
 		}
-		if(otherObject._origin.x !== 0.5 || otherObject._origin.y !== 0.5) {
+		if (otherObject._origin.x !== 0.5 || otherObject._origin.y !== 0.5) {
 			otherTranslate.x += otherObject._bounds2d.x * (0.5 - otherObject._origin.x)
 			otherTranslate.y += otherObject._bounds2d.y * (0.5 - otherObject._origin.y)
 		}
 
-		var
+		const
 			thisX = thisTranslate.x,
 			thisY = thisTranslate.y,
 			otherX = otherTranslate.x,
@@ -1433,7 +1460,7 @@ var IgeEntity = IgeObject.extend({
 				thisX + thisG3d.x / 2,
 				thisY + thisG3d.y / 2,
 				this._translate.z + thisG3d.z
-			),		
+			),
 			otherMin = new IgePoint3d(
 				otherX - otherG3d.x / 2,
 				otherY - otherG3d.y / 2,
@@ -1470,7 +1497,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return (thisX + thisY + this._translate.z) > (otherX + otherY + otherObject._translate.z);
-	},
+	}
 
 	/**
 	 * Get / set the flag determining if this entity will respond
@@ -1487,33 +1514,33 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	mouseEventsActive: function (val) {
+	mouseEventsActive(val) {
 		if (val !== undefined) {
 			this._mouseEventsActive = val;
 			return this;
 		}
 
 		return this._mouseEventsActive;
-	},
+	}
 
 	/**
 	 * Sets the _ignoreCamera internal flag to the value passed for this
 	 * and all child entities down the scenegraph.
 	 * @param val
 	 */
-	ignoreCameraComposite: function (val) {
-		var i,
+	ignoreCameraComposite(val) {
+		let i,
 			arr = this._children,
 			arrCount = arr.length;
-		
+
 		this._ignoreCamera = val;
-		
+
 		for (i = 0; i < arrCount; i++) {
 			if (arr[i].ignoreCameraComposite) {
 				arr[i].ignoreCameraComposite(val);
 			}
 		}
-	},
+	}
 
 	/**
 	 * Determines if the frame alternator value for this entity
@@ -1527,15 +1554,15 @@ var IgeEntity = IgeObject.extend({
 	 * cause the entity tick() method to fire once for each viewport
 	 * but you only want to execute update code such as movement etc
 	 * on the first time the tick() method is called.
-	 * 
+	 *
 	 * @example #Determine if the entity has already had it's tick method called
 	 *     var tickAlreadyCalled = entity.newFrame();
 	 * @return {Boolean} If false, the entity's tick method has
 	 * not yet been processed for this tick.
 	 */
-	newFrame: function () {
-		return ige._frameAlternator !== this._frameAlternatorCurrent;
-	},
+	newFrame() {
+		return this._ige._frameAlternator !== this._frameAlternatorCurrent;
+	}
 
 	/**
 	 * Sets the canvas context transform properties to match the the game
@@ -1551,7 +1578,7 @@ var IgeEntity = IgeObject.extend({
 	 *     entity._transformContext(ctx);
 	 * @private
 	 */
-	_transformContext: function (ctx, inverse) {
+	_transformContext(ctx, inverse) {
 		if (this._parent) {
 			ctx.globalAlpha = this._computedOpacity = this._parent._computedOpacity * this._opacity;
 		} else {
@@ -1563,17 +1590,17 @@ var IgeEntity = IgeObject.extend({
 		} else {
 			this._localMatrix.getInverse().transformRenderingContext(ctx);
 		}
-	},
-	
-	mouseAlwaysInside: function (val) {
+	}
+
+	mouseAlwaysInside(val) {
 		if (val !== undefined) {
 			this._mouseAlwaysInside = val;
 			return this;
 		}
-		
+
 		return this._mouseAlwaysInside;
-	},
-	
+	}
+
 	/**
 	 * Processes the updates required each render frame. Any code in the update()
 	 * method will be called ONCE for each render frame BEFORE the tick() method.
@@ -1584,64 +1611,64 @@ var IgeEntity = IgeObject.extend({
 	 * entity's motion, AI etc.
 	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
 	 */
-	update: function (ctx, tickDelta) {
+	update(ctx, tickDelta) {
 		// Check if the entity should still exist
-		if (this._deathTime !== undefined && this._deathTime <= ige._tickStart) {
+		if (this._deathTime !== undefined && this._deathTime <= this._ige._tickStart) {
 			// Check if the deathCallBack was set
 			if (this._deathCallBack) {
 				this._deathCallBack.apply(this);
 				delete this._deathCallback;
 			}
-			
+
 			// The entity should be removed because it has died
 			this.destroy();
 		} else {
 			// Check that the entity has been born
-			if (this._bornTime === undefined || ige._currentTime >= this._bornTime) {
+			if (this._bornTime === undefined || this._ige._currentTime >= this._bornTime) {
 				// Remove the stream data cache
 				delete this._streamDataCache;
-	
+
 				// Process any behaviours assigned to the entity
 				this._processUpdateBehaviours(ctx, tickDelta);
-				
+
 				// Process velocity
 				if (this._velocity.x || this._velocity.y) {
 					this._translate.x += (this._velocity.x / 16) * tickDelta;
 					this._translate.y += (this._velocity.y / 16) * tickDelta;
 				}
-	
+
 				if (this._timeStream.length) {
 					// Process any interpolation
-					this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
+					this._processInterpolate(this._ige._tickStart - this._ige.network.stream._renderLatency);
 				}
-	
+
 				// Check for changes to the transform values
 				// directly without calling the transform methods
 				this.updateTransform();
-	
+
 				if (!this._noAabb && this._aabbDirty) {
 					// Update the aabb
 					this.aabb();
 				}
-	
+
 				this._oldTranslate = this._translate.clone();
-	
+
 				// Update this object's current frame alternator value
 				// which allows us to determine if we are still on the
 				// same frame
-				this._frameAlternatorCurrent = ige._frameAlternator;
+				this._frameAlternatorCurrent = this._ige._frameAlternator;
 			} else {
 				// The entity is not yet born, unmount it and add to the spawn queue
 				this._birthMount = this._parent.id();
 				this.unMount();
-				
-				ige.spawnQueue(this);
+
+				this._ige.spawnQueue(this);
 			}
 		}
 
 		// Process super class
 		IgeObject.prototype.update.call(this, ctx, tickDelta);
-	},
+	}
 
 	/**
 	 * Processes the actions required each render frame.
@@ -1652,22 +1679,22 @@ var IgeEntity = IgeObject.extend({
 	 * chain but have already transformed the entity in a previous overloaded
 	 * method.
 	 */
-	tick: function (ctx, dontTransform) {
+	tick(ctx, dontTransform) {
 		if (!this._hidden && this._inView && (!this._parent || (this._parent._inView)) && !this._streamJustCreated) {
 			// Process any behaviours assigned to the entity
 			this._processTickBehaviours(ctx);
-			
+
 			// Process any mouse events we need to do
 			if (this._mouseEventsActive) {
 				if (this._processTriggerHitTests()) {
 					// Point is inside the trigger bounds
-					ige.input.queueEvent(this, this._mouseInTrigger, null);
+					this._ige.input.queueEvent(this, this._mouseInTrigger, null);
 				} else {
-					if (ige.input.mouseMove) {
+					if (this._ige.input.mouseMove) {
 						// There is a mouse move event but we are not inside the entity
 						// so fire a mouse out event (_handleMouseOut will check if the
 						// mouse WAS inside before firing an out event).
-						this._handleMouseOut(ige.input.mouseMove);
+						this._handleMouseOut(this._ige.input.mouseMove);
 					}
 				}
 			}
@@ -1680,7 +1707,7 @@ var IgeEntity = IgeObject.extend({
 						// The cache is dirty, redraw it
 						this._refreshCache(dontTransform);
 					}
-					
+
 					// Now render the cached image data to the main canvas
 					this._renderCache(ctx);
 				} else {
@@ -1689,7 +1716,7 @@ var IgeEntity = IgeObject.extend({
 					if (!dontTransform) {
 						this._transformContext(ctx);
 					}
-					
+
 					// Render the entity
 					this._renderEntity(ctx, dontTransform);
 				}
@@ -1712,15 +1739,15 @@ var IgeEntity = IgeObject.extend({
 				IgeObject.prototype.tick.call(this, ctx);
 			}
 		}
-	},
-	
-	_processTriggerHitTests: function () {
-		var mp, mouseTriggerPoly;
+	}
 
-		if (ige._currentViewport) {
+	_processTriggerHitTests() {
+		let mp, mouseTriggerPoly;
+
+		if (this._ige._currentViewport) {
 			if (!this._mouseAlwaysInside) {
 				mp = this.mousePosWorld();
-	
+
 				if (mp) {
 					// Use the trigger polygon if defined
 					if (this._triggerPolygon && this[this._triggerPolygon]) {
@@ -1735,7 +1762,7 @@ var IgeEntity = IgeObject.extend({
 							mouseTriggerPoly = this.aabb();
 						}
 					}
-					
+
 					// Check if the current mouse position is inside this aabb
 					return mouseTriggerPoly.xyInside(mp.x, mp.y);
 				}
@@ -1743,22 +1770,22 @@ var IgeEntity = IgeObject.extend({
 				return true;
 			}
 		}
-		
+
 		return false;
-	},
-	
-	_refreshCache: function (dontTransform) {
+	}
+
+	_refreshCache(dontTransform) {
 		// The cache is not clean so re-draw it
 		// Render the entity to the cache
-		var _canvas = this._cacheCanvas,
+		const _canvas = this._cacheCanvas,
 			_ctx = this._cacheCtx;
 
 		if (this._compositeCache) {
 			// Get the composite entity AABB and alter the internal canvas
 			// to the composite size so we can render the entire entity
-			var aabbC = this.compositeAabb();
+			const aabbC = this.compositeAabb();
 			this._compositeAabbCache = aabbC;
-			
+
 			if (aabbC.width > 0 && aabbC.height > 0) {
 				_canvas.width = Math.ceil(aabbC.width);
 				_canvas.height = Math.ceil(aabbC.height);
@@ -1768,7 +1795,7 @@ var IgeEntity = IgeObject.extend({
 				_canvas.width = 2;
 				_canvas.height = 2;
 			}
-			
+
 			// Translate to the center of the canvas
 			_ctx.translate(-aabbC.x, -aabbC.y);
 
@@ -1787,20 +1814,20 @@ var IgeEntity = IgeObject.extend({
 				_canvas.width = 1;
 				_canvas.height = 1;
 			}
-			
+
 			// Translate to the center of the canvas
 			_ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
-			
+
 			this._cacheDirty = false;
 		}
-		
+
 		// Transform the context by the current transform settings
 		if (!dontTransform) {
 			this._transformContext(_ctx);
 		}
-		
+
 		this._renderEntity(_ctx, dontTransform);
-	},
+	}
 
 	/**
 	 * Handles calling the texture.render() method if a texture
@@ -1811,7 +1838,7 @@ var IgeEntity = IgeObject.extend({
 	 * the entity to.
 	 * @private
 	 */
-	_renderEntity: function (ctx) {
+	_renderEntity(ctx) {
 		if (this._opacity > 0) {
 			// Check if the entity has a background pattern
 			if (this._backgroundPattern) {
@@ -1841,16 +1868,16 @@ var IgeEntity = IgeObject.extend({
 						ctx.translate(-this._bounds2d.x2, -this._bounds2d.y2);
 						ctx.rect(0, 0, this._bounds2d.x, this._bounds2d.y);
 						if (this._backgroundPatternTrackCamera) {
-							ctx.translate(-ige._currentCamera._translate.x, -ige._currentCamera._translate.y);
-							ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
+							ctx.translate(-this._ige._currentCamera._translate.x, -this._ige._currentCamera._translate.y);
+							ctx.scale(this._ige._currentCamera._scale.x, this._ige._currentCamera._scale.y);
 						}
 						ctx.fill();
-						ige._drawCount++;
+						this._ige._drawCount++;
 
 						if (this._backgroundPatternIsoTile) {
 							ctx.translate(-Math.floor(this._backgroundPattern.image.width) / 2, -Math.floor(this._backgroundPattern.image.height / 2));
 							ctx.fill();
-							ige._drawCount++;
+							this._ige._drawCount++;
 						}
 					}
 
@@ -1858,12 +1885,12 @@ var IgeEntity = IgeObject.extend({
 				}
 			}
 
-			var texture = this._texture;
+			const texture = this._texture;
 
 			// Check if the entity is visible based upon its opacity
 			if (texture && texture._loaded) {
 				// Draw the entity image
-				texture.render(ctx, this, ige._tickDelta);
+				texture.render(ctx, this, this._ige._tickDelta);
 
 				if (this._highlight) {
 					ctx.save();
@@ -1872,17 +1899,17 @@ var IgeEntity = IgeObject.extend({
 					ctx.restore();
 				}
 			}
-			
-			if (this._compositeCache && ige._currentViewport._drawCompositeBounds) {
+
+			if (this._compositeCache && this._ige._currentViewport._drawCompositeBounds) {
 				//console.log('moo');
 				ctx.fillStyle = 'rgba(0, 0, 255, 0.3)';
-				ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x,	this._bounds2d.y);
+				ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
 				ctx.fillStyle = '#ffffff';
 				ctx.fillText('Composite Entity', -this._bounds2d.x2, -this._bounds2d.y2 - 15);
 				ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
 			}
 		}
-	},
+	}
 
 	/**
 	 * Draws the cached off-screen canvas image data to the passed canvas
@@ -1891,38 +1918,38 @@ var IgeEntity = IgeObject.extend({
 	 * the entity to.
 	 * @private
 	 */
-	_renderCache: function (ctx) {
+	_renderCache(ctx) {
 		ctx.save();
 		if (this._compositeCache) {
-			var aabbC = this._compositeAabbCache;
+			const aabbC = this._compositeAabbCache;
 			ctx.translate(this._bounds2d.x2 + aabbC.x, this._bounds2d.y2 + aabbC.y);
-			
+
 			if (this._parent && this._parent._ignoreCamera) {
 				// Translate the entity back to negate the scene translate
-				var cam = ige._currentCamera;
+				const cam = this._ige._currentCamera;
 				//ctx.translate(-cam._translate.x, -cam._translate.y);
 				/*this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
 				this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
 			}
 		}
-		
+
 		// We have a clean cached version so output that
 		ctx.drawImage(
 			this._cacheCanvas,
 			-this._bounds2d.x2, -this._bounds2d.y2
 		);
-		
-		if (ige._currentViewport._drawCompositeBounds) {
+
+		if (this._ige._currentViewport._drawCompositeBounds) {
 			ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
-			ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._cacheCanvas.width,	this._cacheCanvas.height);
+			ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._cacheCanvas.width, this._cacheCanvas.height);
 			ctx.fillStyle = '#ffffff';
 			ctx.fillText('Composite Cache', -this._bounds2d.x2, -this._bounds2d.y2 - 15);
 			ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
 		}
 
-		ige._drawCount++;
+		this._ige._drawCount++;
 		ctx.restore();
-	},
+	}
 
 	/**
 	 * Transforms a point by the entity's parent world matrix and
@@ -1932,14 +1959,14 @@ var IgeEntity = IgeObject.extend({
 	 * @example #Transform a point by the entity's world matrix values
 	 *     var point = new IgePoint3d(0, 0, 0);
 	 *     entity._transformPoint(point);
-	 *     
+	 *
 	 *     console.log(point);
 	 * @return {IgePoint3d} The transformed point.
 	 * @private
 	 */
-	_transformPoint: function (point) {
+	_transformPoint(point) {
 		if (this._parent) {
-			var tempMat = new IgeMatrix2d();
+			const tempMat = new IgeMatrix2d();
 			// Copy the parent world matrix
 			tempMat.copy(this._parent._worldMatrix);
 			// Apply any local transforms
@@ -1951,20 +1978,20 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return point;
-	},
-	
+	}
+
 	/**
 	 * Helper method to transform an array of points using _transformPoint.
 	 * @param {Array} points The points array to transform.
 	 * @private
 	 */
-	_transformPoints: function (points) {
-		var point, pointCount = points.length;
-		
+	_transformPoints(points) {
+		let point, pointCount = points.length;
+
 		while (pointCount--) {
 			point = points[pointCount];
 			if (this._parent) {
-				var tempMat = new IgeMatrix2d();
+				const tempMat = new IgeMatrix2d();
 				// Copy the parent world matrix
 				tempMat.copy(this._parent._worldMatrix);
 				// Apply any local transforms
@@ -1975,7 +2002,7 @@ var IgeEntity = IgeObject.extend({
 				this._localMatrix.transformCoord(point, this);
 			}
 		}
-	},
+	}
 
 	/**
 	 * Generates a string containing a code fragment that when
@@ -1986,12 +2013,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {String} The string code fragment that will
 	 * reproduce this entity when evaluated.
 	 */
-	_stringify: function (options) {
+	_stringify(options) {
 		// Make sure we have an options object
-		if (options === undefined) { options = {}; }
-		
+		if (options === undefined) {
+			options = {};
+		}
+
 		// Get the properties for all the super-classes
-		var str = IgeObject.prototype._stringify.call(this, options), i;
+		let str = IgeObject.prototype._stringify.call(this, options), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
@@ -2001,7 +2030,7 @@ var IgeEntity = IgeObject.extend({
 						str += ".opacity(" + this.opacity() + ")";
 						break;
 					case '_texture':
-						str += ".texture(ige.$('" + this.texture().id() + "'))";
+						str += ".texture(this._ige.$('" + this.texture().id() + "'))";
 						break;
 					case '_cell':
 						str += ".cell(" + this.cell() + ")";
@@ -2032,14 +2061,14 @@ var IgeEntity = IgeObject.extend({
 						}
 						break;
 					case '_width':
-						if (typeof(this.width()) === 'string') {
+						if (typeof (this.width()) === 'string') {
 							str += ".width('" + this.width() + "')";
 						} else {
 							str += ".width(" + this.width() + ")";
 						}
 						break;
 					case '_height':
-						if (typeof(this.height()) === 'string') {
+						if (typeof (this.height()) === 'string') {
 							str += ".height('" + this.height() + "')";
 						} else {
 							str += ".height(" + this.height() + ")";
@@ -2061,7 +2090,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return str;
-	},
+	}
 
 	/**
 	 * Destroys the entity by removing it from the scenegraph,
@@ -2072,9 +2101,9 @@ var IgeEntity = IgeObject.extend({
 	 * @example #Destroy the entity
 	 *     entity.destroy();
 	 */
-	destroy: function () {
+	destroy() {
 		this._alive = false;
-		
+
 		/* CEXCLUDE */
 		// Check if the entity is streaming
 		if (this._streamMode === 1) {
@@ -2082,49 +2111,49 @@ var IgeEntity = IgeObject.extend({
 			this.streamDestroy();
 		}
 		/* CEXCLUDE */
-		
+
 		/**
 		 * Fires when the entity has been destroyed.
 		 * @event IgeEntity#destroyed
-		 * @param {IgeEntity} The entity that has been destroyed. 
+		 * @param {IgeEntity} The entity that has been destroyed.
 		 */
 		this.emit('destroyed', this);
 
 		// Call IgeObject.destroy()
 		IgeObject.prototype.destroy.call(this);
-	},
-	
-	saveSpecialProp: function (obj, i) {
+	}
+
+	saveSpecialProp(obj, i) {
 		switch (i) {
 			case '_texture':
 				if (obj._texture) {
 					return {_texture: obj._texture.id()};
 				}
 				break;
-			
+
 			default:
 				// Call super-class saveSpecialProp
 				return IgeObject.prototype.saveSpecialProp.call(this, obj, i);
 				break;
 		}
-		
+
 		return undefined;
-	},
-	
-	loadSpecialProp: function (obj, i) {
+	}
+
+	loadSpecialProp(obj, i) {
 		switch (i) {
 			case '_texture':
-				return {_texture: ige.$(obj[i])};
+				return {_texture: this._ige.$(obj[i])};
 				break;
-			
+
 			default:
 				// Call super-class loadSpecialProp
 				return IgeObject.prototype.loadSpecialProp.call(this, obj, i);
 				break;
 		}
-		
+
 		return undefined;
-	},
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// INTERACTION
@@ -2143,11 +2172,11 @@ var IgeEntity = IgeObject.extend({
 	 *         
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         this._ige.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
-	mouseMove: function (callback) {
+	mouseMove(callback) {
 		if (callback) {
 			this._mouseMove = callback;
 			this._mouseEventsActive = true;
@@ -2155,7 +2184,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._mouseMove;
-	},
+	}
 
 	/**
 	 * Gets / sets the callback that is fired when a mouse
@@ -2171,11 +2200,11 @@ var IgeEntity = IgeObject.extend({
 	 *         
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         this._ige.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
-	mouseOver: function (callback) {
+	mouseOver(callback) {
 		if (callback) {
 			this._mouseOver = callback;
 			this._mouseEventsActive = true;
@@ -2183,7 +2212,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._mouseOver;
-	},
+	}
 
 	/**
 	 * Gets / sets the callback that is fired when a mouse
@@ -2199,11 +2228,11 @@ var IgeEntity = IgeObject.extend({
 	 *         
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         this._ige.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
-	mouseOut: function (callback) {
+	mouseOut(callback) {
 		if (callback) {
 			this._mouseOut = callback;
 			this._mouseEventsActive = true;
@@ -2211,7 +2240,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._mouseOut;
-	},
+	}
 
 	/**
 	 * Gets / sets the callback that is fired when a mouse
@@ -2227,11 +2256,11 @@ var IgeEntity = IgeObject.extend({
 	 *         
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         this._ige.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
-	mouseUp: function (callback) {
+	mouseUp(callback) {
 		if (callback) {
 			this._mouseUp = callback;
 			this._mouseEventsActive = true;
@@ -2239,7 +2268,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._mouseUp;
-	},
+	}
 
 	/**
 	 * Gets / sets the callback that is fired when a mouse
@@ -2255,11 +2284,11 @@ var IgeEntity = IgeObject.extend({
 	 *         
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         this._ige.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
-	mouseDown: function (callback) {
+	mouseDown(callback) {
 		if (callback) {
 			this._mouseDown = callback;
 			this._mouseEventsActive = true;
@@ -2267,8 +2296,8 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._mouseDown;
-	},
-	
+	}
+
 	/**
 	 * Gets / sets the callback that is fired when a mouse
 	 * wheel event is triggered.
@@ -2284,11 +2313,11 @@ var IgeEntity = IgeObject.extend({
 	 *         
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         this._ige.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
-	mouseWheel: function (callback) {
+	mouseWheel(callback) {
 		if (callback) {
 			this._mouseWheel = callback;
 			this._mouseEventsActive = true;
@@ -2296,77 +2325,77 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._mouseWheel;
-	},
-	
+	}
+
 	/**
 	 * Removes the callback that is fired when a mouse
 	 * move event is triggered.
 	 */
-	mouseMoveOff: function () {
+	mouseMoveOff() {
 		delete this._mouseMove;
 
 		return this;
-	},
+	}
 
 	/**
 	 * Removes the callback that is fired when a mouse
 	 * over event is triggered.
 	 */
-	mouseOverOff: function () {
+	mouseOverOff() {
 		delete this._mouseOver;
 
 		return this;
-	},
-	
+	}
+
 	/**
 	 * Removes the callback that is fired when a mouse
 	 * out event is triggered.
 	 */
-	mouseOutOff: function () {
+	mouseOutOff() {
 		delete this._mouseOut;
 
 		return this;
-	},
+	}
 
 	/**
 	 * Removes the callback that is fired when a mouse
 	 * up event is triggered.
 	 */
-	mouseUpOff: function () {
+	mouseUpOff() {
 		delete this._mouseUp;
 
 		return this;
-	},
-	
+	}
+
 	/**
 	 * Removes the callback that is fired when a mouse
 	 * down event is triggered if the listener was registered
 	 * via the mouseDown() method.
 	 */
-	mouseDownOff: function () {
+	mouseDownOff() {
 		delete this._mouseDown;
 
 		return this;
-	},
+	}
 
 	/**
 	 * Removes the callback that is fired when a mouse
 	 * wheel event is triggered.
 	 */
-	mouseWheelOff: function () {
+	mouseWheelOff() {
 		delete this._mouseWheel;
 
 		return this;
-	},
-	
-	triggerPolygon: function (poly) {
+	}
+
+	triggerPolygon(poly) {
 		if (poly !== undefined) {
 			this._triggerPolygon = poly;
 			return this;
 		}
-		
+
 		return this._triggerPolygon;
-	},
+	}
 
 	/**
 	 * Gets / sets the shape / polygon that the mouse events
@@ -2376,7 +2405,7 @@ var IgeEntity = IgeObject.extend({
 	 * @returns {*}
 	 * @deprecated
 	 */
-	mouseEventTrigger: function (val) {
+	mouseEventTrigger(val) {
 		this.log('mouseEventTrigger is no longer in use. Please see triggerPolygon() instead.', 'warning');
 		/*if (val !== undefined) {
 			// Set default value
@@ -2399,19 +2428,21 @@ var IgeEntity = IgeObject.extend({
 		}
 		
 		return this._mouseEventTrigger === 0 ? 'aabb' : 'isoBounds';*/
-	},
+	}
 
 	/**
 	 * Handler method that determines which mouse-move event
 	 * to fire, a mouse-over or a mouse-move.
 	 * @private
 	 */
-	_handleMouseIn: function (event, evc, data) {
+	_handleMouseIn(event, evc, data) {
 		// Check if the mouse move is a mouse over
 		if (!this._mouseStateOver) {
 			this._mouseStateOver = true;
-			if (this._mouseOver) { this._mouseOver(event, evc, data); }
-			
+			if (this._mouseOver) {
+				this._mouseOver(event, evc, data);
+			}
+
 			/**
 			 * Fires when the mouse moves over the entity.
 			 * @event IgeEntity#mouseOver
@@ -2422,16 +2453,18 @@ var IgeEntity = IgeObject.extend({
 			this.emit('mouseOver', [event, evc, data]);
 		}
 
-		if (this._mouseMove) { this._mouseMove(event, evc, data); }
+		if (this._mouseMove) {
+			this._mouseMove(event, evc, data);
+		}
 		this.emit('mouseMove', [event, evc, data]);
-	},
+	}
 
 	/**
 	 * Handler method that determines if a mouse-out event
 	 * should be fired.
 	 * @private
 	 */
-	_handleMouseOut: function (event, evc, data) {
+	_handleMouseOut(event, evc, data) {
 		// The mouse went away from this entity so
 		// set mouse-down to false, regardless of the situation
 		this._mouseStateDown = false;
@@ -2439,8 +2472,10 @@ var IgeEntity = IgeObject.extend({
 		// Check if the mouse move is a mouse out
 		if (this._mouseStateOver) {
 			this._mouseStateOver = false;
-			if (this._mouseOut) { this._mouseOut(event, evc, data); }
-			
+			if (this._mouseOut) {
+				this._mouseOut(event, evc, data);
+			}
+
 			/**
 			 * Fires when the mouse moves away from the entity.
 			 * @event IgeEntity#mouseOut
@@ -2450,16 +2485,18 @@ var IgeEntity = IgeObject.extend({
 			 */
 			this.emit('mouseOut', [event, evc, data]);
 		}
-	},
-	
+	}
+
 	/**
 	 * Handler method that determines if a mouse-wheel event
 	 * should be fired.
 	 * @private
 	 */
-	_handleMouseWheel: function (event, evc, data) {
-		if (this._mouseWheel) { this._mouseWheel(event, evc, data); }
-		
+	_handleMouseWheel(event, evc, data) {
+		if (this._mouseWheel) {
+			this._mouseWheel(event, evc, data);
+		}
+
 		/**
 		 * Fires when the mouse wheel is moved over the entity.
 		 * @event IgeEntity#mouseWheel
@@ -2468,18 +2505,20 @@ var IgeEntity = IgeObject.extend({
 		 * @param {*} Any further event data.
 		 */
 		this.emit('mouseWheel', [event, evc, data]);
-	},
+	}
 
 	/**
 	 * Handler method that determines if a mouse-up event
 	 * should be fired.
 	 * @private
 	 */
-	_handleMouseUp: function (event, evc, data) {
+	_handleMouseUp(event, evc, data) {
 		// Reset the mouse-down flag
 		this._mouseStateDown = false;
-		if (this._mouseUp) { this._mouseUp(event, evc, data); }
-		
+		if (this._mouseUp) {
+			this._mouseUp(event, evc, data);
+		}
+
 		/**
 		 * Fires when a mouse up occurs on the entity.
 		 * @event IgeEntity#mouseUp
@@ -2488,18 +2527,20 @@ var IgeEntity = IgeObject.extend({
 		 * @param {*} Any further event data.
 		 */
 		this.emit('mouseUp', [event, evc, data]);
-	},
+	}
 
 	/**
 	 * Handler method that determines if a mouse-down event
 	 * should be fired.
 	 * @private
 	 */
-	_handleMouseDown: function (event, evc, data) {
+	_handleMouseDown(event, evc, data) {
 		if (!this._mouseStateDown) {
 			this._mouseStateDown = true;
-			if (this._mouseDown) { this._mouseDown(event, evc, data); }
-			
+			if (this._mouseDown) {
+				this._mouseDown(event, evc, data);
+			}
+
 			/**
 			 * Fires when a mouse down occurs on the entity.
 			 * @event IgeEntity#mouseDown
@@ -2509,8 +2550,8 @@ var IgeEntity = IgeObject.extend({
 			 */
 			this.emit('mouseDown', [event, evc, data]);
 		}
-	},
-	
+	}
+
 	/**
 	 * Checks mouse input types and fires the correct mouse event
 	 * handler. This is an internal method that should never be
@@ -2520,28 +2561,28 @@ var IgeEntity = IgeObject.extend({
 	 * the new event.
 	 * @private
 	 */
-	_mouseInTrigger: function (evc, data) {
-		if (ige.input.mouseMove) {
+	_mouseInTrigger(evc, data) {
+		if (this._ige.input.mouseMove) {
 			// There is a mouse move event
-			this._handleMouseIn(ige.input.mouseMove, evc, data);
+			this._handleMouseIn(this._ige.input.mouseMove, evc, data);
 		}
 
-		if (ige.input.mouseDown) {
+		if (this._ige.input.mouseDown) {
 			// There is a mouse down event
-			this._handleMouseDown(ige.input.mouseDown, evc, data);
+			this._handleMouseDown(this._ige.input.mouseDown, evc, data);
 		}
 
-		if (ige.input.mouseUp) {
+		if (this._ige.input.mouseUp) {
 			// There is a mouse up event
-			this._handleMouseUp(ige.input.mouseUp, evc, data);
+			this._handleMouseUp(this._ige.input.mouseUp, evc, data);
 		}
-		
-		if (ige.input.mouseWheel) {
+
+		if (this._ige.input.mouseWheel) {
 			// There is a mouse wheel event
-			this._handleMouseWheel(ige.input.mouseWheel, evc, data);
+			this._handleMouseWheel(this._ige.input.mouseWheel, evc, data);
 		}
-	},
-	
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// TRANSFORM
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2549,52 +2590,52 @@ var IgeEntity = IgeObject.extend({
 	 * Enables tracing calls which inadvertently assign NaN values to
 	 * transformation properties. When called on an entity this system
 	 * will break with a debug line when a transform property is set
-	 * to NaN allowing you to step back through the call stack and 
+	 * to NaN allowing you to step back through the call stack and
 	 * determine where the offending value originated.
 	 * @returns {IgeEntity}
 	 */
-	debugTransforms: function () {
-		ige.traceSet(this._translate, 'x', 1, function (val) {
+	debugTransforms() {
+		this._ige.traceSet(this._translate, 'x', 1, function (val) {
 			return isNaN(val);
 		});
-		
-		ige.traceSet(this._translate, 'y', 1, function (val) {
+
+		this._ige.traceSet(this._translate, 'y', 1, function (val) {
 			return isNaN(val);
 		});
-		
-		ige.traceSet(this._translate, 'z', 1, function (val) {
+
+		this._ige.traceSet(this._translate, 'z', 1, function (val) {
 			return isNaN(val);
 		});
-		
-		ige.traceSet(this._rotate, 'x', 1, function (val) {
+
+		this._ige.traceSet(this._rotate, 'x', 1, function (val) {
 			return isNaN(val);
 		});
-		
-		ige.traceSet(this._rotate, 'y', 1, function (val) {
+
+		this._ige.traceSet(this._rotate, 'y', 1, function (val) {
 			return isNaN(val);
 		});
-		
-		ige.traceSet(this._rotate, 'z', 1, function (val) {
+
+		this._ige.traceSet(this._rotate, 'z', 1, function (val) {
 			return isNaN(val);
 		});
-		
-		ige.traceSet(this._scale, 'x', 1, function (val) {
+
+		this._ige.traceSet(this._scale, 'x', 1, function (val) {
 			return isNaN(val);
 		});
-		
-		ige.traceSet(this._scale, 'y', 1, function (val) {
+
+		this._ige.traceSet(this._scale, 'y', 1, function (val) {
 			return isNaN(val);
 		});
-		
-		ige.traceSet(this._scale, 'z', 1, function (val) {
+
+		this._ige.traceSet(this._scale, 'z', 1, function (val) {
 			return isNaN(val);
 		});
-		
+
 		return this;
-	},
-	
-	velocityTo: function (x, y, z) {
-		if (x !== undefined && y!== undefined && z !== undefined) {
+	}
+
+	velocityTo(x, y, z) {
+		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._velocity.x = x;
 			this._velocity.y = y;
 			this._velocity.z = z;
@@ -2603,10 +2644,10 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._entity || this;
-	},
-	
-	velocityBy: function (x, y, z) {
-		if (x !== undefined && y!== undefined && z !== undefined) {
+	}
+
+	velocityBy(x, y, z) {
+		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._velocity.x += x;
 			this._velocity.y += y;
 			this._velocity.z += z;
@@ -2615,8 +2656,8 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._entity || this;
-	},
-	
+	}
+
 	/**
 	 * Translates the entity by adding the passed values to
 	 * the current translation values.
@@ -2627,8 +2668,8 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.translateBy(10, 0, 0);
 	 * @return {*}
 	 */
-	translateBy: function (x, y, z) {
-		if (x !== undefined && y!== undefined && z !== undefined) {
+	translateBy(x, y, z) {
+		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._translate.x += x;
 			this._translate.y += y;
 			this._translate.z += z;
@@ -2637,7 +2678,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._entity || this;
-	},
+	}
 
 	/**
 	 * Translates the entity to the passed values.
@@ -2648,8 +2689,8 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.translateTo(10, 0, 0);
 	 * @return {*}
 	 */
-	translateTo: function (x, y, z) {
-		if (x !== undefined && y!== undefined && z !== undefined) {
+	translateTo(x, y, z) {
+		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._translate.x = x;
 			this._translate.y = y;
 			this._translate.z = z;
@@ -2658,7 +2699,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._entity || this;
-	},
+	}
 
 	/**
 	 * Translates the entity to the passed point.
@@ -2666,11 +2707,11 @@ var IgeEntity = IgeObject.extend({
 	 * @example #Translate the entity to 10, 0, 0
 	 *     var point = new IgePoint3d(10, 0, 0),
 	 *         entity = new IgeEntity();
-	 *     
+	 *
 	 *     entity.translateToPoint(point);
 	 * @return {*}
 	 */
-	translateToPoint: function (point) {
+	translateToPoint(point) {
 		if (point !== undefined) {
 			this._translate.x = point.x;
 			this._translate.y = point.y;
@@ -2680,8 +2721,8 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._entity || this;
-	},
-	
+	}
+
 	/**
 	 * Translates the object to the tile co-ordinates passed.
 	 * @param {Number} x The x tile co-ordinate.
@@ -2692,18 +2733,18 @@ var IgeEntity = IgeObject.extend({
 	 *     var tileMap = new IgeTileMap2d()
 	 *         .tileWidth(40)
 	 *         .tileHeight(40);
-	 *     
+	 *
 	 *     // Mount our entity to the tile map
 	 *     entity.mount(tileMap);
-	 *     
+	 *
 	 *     // Translate the entity to the tile x:10, y:12
 	 *     entity.translateToTile(10, 12, 0);
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
-	translateToTile: function (x, y, z) {
+	translateToTile(x, y, z) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
-			var finalZ;
+			let finalZ;
 
 			// Handle being passed a z co-ordinate
 			if (z !== undefined) {
@@ -2718,7 +2759,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this;
-	},
+	}
 
 	/**
 	 * Gets the translate accessor object.
@@ -2726,7 +2767,7 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.translate().y(10);
 	 * @return {*}
 	 */
-	translate: function () {
+	translate() {
 		if (arguments.length) {
 			this.log('You called translate with arguments, did you mean translateTo or translateBy instead of translate?', 'warning');
 		}
@@ -2736,7 +2777,7 @@ var IgeEntity = IgeObject.extend({
 		this.z = this._translateAccessorZ;
 
 		return this._entity || this;
-	},
+	}
 
 	/**
 	 * The translate accessor method for the x axis. This
@@ -2746,14 +2787,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_translateAccessorX: function (val) {
+	_translateAccessorX(val) {
 		if (val !== undefined) {
 			this._translate.x = val;
 			return this._entity || this;
 		}
 
 		return this._translate.x;
-	},
+	}
 
 	/**
 	 * The translate accessor method for the y axis. This
@@ -2763,14 +2804,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_translateAccessorY: function (val) {
+	_translateAccessorY(val) {
 		if (val !== undefined) {
 			this._translate.y = val;
 			return this._entity || this;
 		}
 
 		return this._translate.y;
-	},
+	}
 
 	/**
 	 * The translate accessor method for the z axis. This
@@ -2780,7 +2821,7 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_translateAccessorZ: function (val) {
+	_translateAccessorZ(val) {
 		// TODO: Do we need to do anything to the matrix here for iso views?
 		//this._localMatrix.translateTo(this._translate.x, this._translate.y);
 		if (val !== undefined) {
@@ -2789,7 +2830,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._translate.z;
-	},
+	}
 
 	/**
 	 * Rotates the entity by adding the passed values to
@@ -2801,8 +2842,8 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.rotateBy(0, 0, Math.radians(10));
 	 * @return {*}
 	 */
-	rotateBy: function (x, y, z) {
-		if (x !== undefined && y!== undefined && z !== undefined) {
+	rotateBy(x, y, z) {
+		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._rotate.x += x;
 			this._rotate.y += y;
 			this._rotate.z += z;
@@ -2811,7 +2852,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._entity || this;
-	},
+	}
 
 	/**
 	 * Rotates the entity to the passed values.
@@ -2822,8 +2863,8 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.rotateTo(0, 0, Math.radians(10));
 	 * @return {*}
 	 */
-	rotateTo: function (x, y, z) {
-		if (x !== undefined && y!== undefined && z !== undefined) {
+	rotateTo(x, y, z) {
+		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._rotate.x = x;
 			this._rotate.y = y;
 			this._rotate.z = z;
@@ -2832,7 +2873,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._entity || this;
-	},
+	}
 
 	/**
 	 * Gets the translate accessor object.
@@ -2840,17 +2881,17 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.rotate().z(Math.radians(10));
 	 * @return {*}
 	 */
-	rotate: function () {
+	rotate() {
 		if (arguments.length) {
 			this.log('You called rotate with arguments, did you mean rotateTo or rotateBy instead of rotate?', 'warning');
 		}
-		
+
 		this.x = this._rotateAccessorX;
 		this.y = this._rotateAccessorY;
 		this.z = this._rotateAccessorZ;
 
 		return this._entity || this;
-	},
+	}
 
 	/**
 	 * The rotate accessor method for the x axis. This
@@ -2860,14 +2901,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_rotateAccessorX: function (val) {
+	_rotateAccessorX(val) {
 		if (val !== undefined) {
 			this._rotate.x = val;
 			return this._entity || this;
 		}
 
 		return this._rotate.x;
-	},
+	}
 
 	/**
 	 * The rotate accessor method for the y axis. This
@@ -2877,14 +2918,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_rotateAccessorY: function (val) {
+	_rotateAccessorY(val) {
 		if (val !== undefined) {
 			this._rotate.y = val;
 			return this._entity || this;
 		}
 
 		return this._rotate.y;
-	},
+	}
 
 	/**
 	 * The rotate accessor method for the z axis. This
@@ -2894,14 +2935,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_rotateAccessorZ: function (val) {
+	_rotateAccessorZ(val) {
 		if (val !== undefined) {
 			this._rotate.z = val;
 			return this._entity || this;
 		}
 
 		return this._rotate.z;
-	},
+	}
 
 	/**
 	 * Scales the entity by adding the passed values to
@@ -2913,8 +2954,8 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.scaleBy(2, 0, 0);
 	 * @return {*}
 	 */
-	scaleBy: function (x, y, z) {
-		if (x !== undefined && y!== undefined && z !== undefined) {
+	scaleBy(x, y, z) {
+		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._scale.x += x;
 			this._scale.y += y;
 			this._scale.z += z;
@@ -2923,7 +2964,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._entity || this;
-	},
+	}
 
 	/**
 	 * Scale the entity to the passed values.
@@ -2934,8 +2975,8 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.scaleTo(1, 1, 1);
 	 * @return {*}
 	 */
-	scaleTo: function (x, y, z) {
-		if (x !== undefined && y!== undefined && z !== undefined) {
+	scaleTo(x, y, z) {
+		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._scale.x = x;
 			this._scale.y = y;
 			this._scale.z = z;
@@ -2944,7 +2985,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._entity || this;
-	},
+	}
 
 	/**
 	 * Gets the scale accessor object.
@@ -2952,17 +2993,17 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.scale().x(1);
 	 * @return {*}
 	 */
-	scale: function () {
+	scale() {
 		if (arguments.length) {
 			this.log('You called scale with arguments, did you mean scaleTo or scaleBy instead of scale?', 'warning');
 		}
-		
+
 		this.x = this._scaleAccessorX;
 		this.y = this._scaleAccessorY;
 		this.z = this._scaleAccessorZ;
 
 		return this._entity || this;
-	},
+	}
 
 	/**
 	 * The scale accessor method for the x axis. This
@@ -2972,14 +3013,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_scaleAccessorX: function (val) {
+	_scaleAccessorX(val) {
 		if (val !== undefined) {
 			this._scale.x = val;
 			return this._entity || this;
 		}
 
 		return this._scale.x;
-	},
+	}
 
 	/**
 	 * The scale accessor method for the y axis. This
@@ -2989,14 +3030,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_scaleAccessorY: function (val) {
+	_scaleAccessorY(val) {
 		if (val !== undefined) {
 			this._scale.y = val;
 			return this._entity || this;
 		}
 
 		return this._scale.y;
-	},
+	}
 
 	/**
 	 * The scale accessor method for the z axis. This
@@ -3006,14 +3047,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_scaleAccessorZ: function (val) {
+	_scaleAccessorZ(val) {
 		if (val !== undefined) {
 			this._scale.z = val;
 			return this._entity || this;
 		}
 
 		return this._scale.z;
-	},
+	}
 
 	/**
 	 * Sets the origin of the entity by adding the passed values to
@@ -3025,8 +3066,8 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.originBy(0.5, 0, 0);
 	 * @return {*}
 	 */
-	originBy: function (x, y, z) {
-		if (x !== undefined && y!== undefined && z !== undefined) {
+	originBy(x, y, z) {
+		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._origin.x += x;
 			this._origin.y += y;
 			this._origin.z += z;
@@ -3035,7 +3076,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._entity || this;
-	},
+	}
 
 	/**
 	 * Set the origin of the entity to the passed values.
@@ -3046,8 +3087,8 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.originTo(0.5, 0.5, 0.5);
 	 * @return {*}
 	 */
-	originTo: function (x, y, z) {
-		if (x !== undefined && y!== undefined && z !== undefined) {
+	originTo(x, y, z) {
+		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._origin.x = x;
 			this._origin.y = y;
 			this._origin.z = z;
@@ -3056,7 +3097,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._entity || this;
-	},
+	}
 
 	/**
 	 * Gets the origin accessor object.
@@ -3064,13 +3105,13 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.origin().x(1);
 	 * @return {*}
 	 */
-	origin: function () {
+	origin() {
 		this.x = this._originAccessorX;
 		this.y = this._originAccessorY;
 		this.z = this._originAccessorZ;
 
 		return this._entity || this;
-	},
+	}
 
 	/**
 	 * The origin accessor method for the x axis. This
@@ -3080,14 +3121,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_originAccessorX: function (val) {
+	_originAccessorX(val) {
 		if (val !== undefined) {
 			this._origin.x = val;
 			return this._entity || this;
 		}
 
 		return this._origin.x;
-	},
+	}
 
 	/**
 	 * The origin accessor method for the y axis. This
@@ -3097,14 +3138,14 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_originAccessorY: function (val) {
+	_originAccessorY(val) {
 		if (val !== undefined) {
 			this._origin.y = val;
 			return this._entity || this;
 		}
 
 		return this._origin.y;
-	},
+	}
 
 	/**
 	 * The origin accessor method for the z axis. This
@@ -3114,33 +3155,33 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_originAccessorZ: function (val) {
+	_originAccessorZ(val) {
 		if (val !== undefined) {
 			this._origin.z = val;
 			return this._entity || this;
 		}
 
 		return this._origin.z;
-	},
+	}
 
-	_rotatePoint: function (point, radians, origin) {
-		var cosAngle = Math.cos(radians),
+	_rotatePoint(point, radians, origin) {
+		const cosAngle = Math.cos(radians),
 			sinAngle = Math.sin(radians);
 
 		return {
 			x: origin.x + (point.x - origin.x) * cosAngle + (point.y - origin.y) * sinAngle,
 			y: origin.y - (point.x - origin.x) * sinAngle + (point.y - origin.y) * cosAngle
 		};
-	},
+	}
 
 	/**
 	 * Checks the current transform values against the previous ones. If
 	 * any value is different, the appropriate method is called which will
 	 * update the transformation matrix accordingly.
 	 */
-	updateTransform: function () {
+	updateTransform() {
 		this._localMatrix.identity();
-		
+
 		if (this._mode === 0) {
 			// 2d translation
 			this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
@@ -3148,7 +3189,7 @@ var IgeEntity = IgeObject.extend({
 
 		if (this._mode === 1) {
 			// iso translation
-			var isoPoint = this._translateIso = new IgePoint3d(
+			const isoPoint = this._translateIso = new IgePoint3d(
 				this._translate.x,
 				this._translate.y,
 				this._translate.z + this._bounds3d.z / 2
@@ -3162,10 +3203,10 @@ var IgeEntity = IgeObject.extend({
 
 			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
 		}
-		
+
 		this._localMatrix.rotateBy(this._rotate.z);
 		this._localMatrix.scaleBy(this._scale.x, this._scale.y);
-		
+
 		// Adjust local matrix for origin values if not at center
 		if (this._origin.x !== 0.5 || this._origin.y !== 0.5) {
 			this._localMatrix.translateBy(
@@ -3173,7 +3214,7 @@ var IgeEntity = IgeObject.extend({
 				(this._bounds2d.y * (0.5 - this._origin.y))
 			);
 		}
-		
+
 		// TODO: If the parent and local transforms are unchanged, we should used cached values
 		if (this._parent) {
 			this._worldMatrix.copy(this._parent._worldMatrix);
@@ -3181,7 +3222,7 @@ var IgeEntity = IgeObject.extend({
 		} else {
 			this._worldMatrix.copy(this._localMatrix);
 		}
-		
+
 		// Check if the world matrix has changed and if so, set a few flags
 		// to allow other methods to know that a matrix change has occurred
 		if (!this._worldMatrix.compare(this._oldWorldMatrix)) {
@@ -3194,24 +3235,24 @@ var IgeEntity = IgeObject.extend({
 		} else {
 			this._transformChanged = false;
 		}
-		
+
 		// Check if the geometry has changed and if so, update the aabb dirty
 		if (!this._oldBounds2d.compare(this._bounds2d)) {
 			this._aabbDirty = true;
-			
+
 			// Record the new geometry to the oldGeometry data
 			this._oldBounds2d.copy(this._bounds2d);
 		}
-		
+
 		if (!this._oldBounds3d.compare(this._bounds3d)) {
 			this._bounds3dPolygonDirty = true;
-			
+
 			// Record the new geometry to the oldGeometry data
 			this._oldBounds3d.copy(this._bounds3d);
 		}
-		
+
 		return this;
-	},
+	}
 
 	/**
 	 * Gets / sets the disable interpolation flag. If set to true then
@@ -3221,14 +3262,14 @@ var IgeEntity = IgeObject.extend({
 	 * @param val
 	 * @returns {*}
 	 */
-	disableInterpolation: function (val) {
+	disableInterpolation(val) {
 		if (val !== undefined) {
 			this._disableInterpolation = val;
 			return this;
 		}
-		
+
 		return this._disableInterpolation;
-	},
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// STREAM
@@ -3242,37 +3283,37 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	streamSections: function (sectionArray) {
+	streamSections(sectionArray) {
 		if (sectionArray !== undefined) {
 			this._streamSections = sectionArray;
 			return this;
 		}
 
 		return this._streamSections;
-	},
+	}
 
 	/**
 	 * Adds a section into the existing streamed sections array.
 	 * @param {String} sectionName The section name to add.
 	 */
-	streamSectionsPush: function (sectionName) {
+	streamSectionsPush(sectionName) {
 		this._streamSections = this._streamSections || [];
 		this._streamSections.push(sectionName);
 
 		return this;
-	},
+	}
 
 	/**
 	 * Removes a section into the existing streamed sections array.
 	 * @param {String} sectionName The section name to remove.
 	 */
-	streamSectionsPull: function (sectionName) {
+	streamSectionsPull(sectionName) {
 		if (this._streamSections) {
 			this._streamSections.pull(sectionName);
 		}
 
 		return this;
-	},
+	}
 
 	/**
 	 * Gets / sets a streaming property on this entity. If set, the
@@ -3284,7 +3325,7 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when a propVal argument is passed to allow method
 	 * chaining or the current value if no propVal argument is specified.
 	 */
-	streamProperty: function (propName, propVal) {
+	streamProperty(propName, propVal) {
 		this._streamProperty = this._streamProperty || {};
 		//this._streamPropertyChange = this._streamPropertyChange || {};
 
@@ -3300,7 +3341,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return undefined;
-	},
+	}
 
 	/**
 	 * Gets / sets the data for the specified data section id. This method
@@ -3317,32 +3358,50 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when a data argument is passed to allow method
 	 * chaining or the current value if no data argument is specified.
 	 */
-	streamSectionData: function (sectionId, data, bypassTimeStream) {
+	streamSectionData(sectionId, data, bypassTimeStream) {
 		switch (sectionId) {
 			case 'transform':
 				if (data) {
 					// We have received updated data
-					var dataArr = data.split(',');
-	
+					const dataArr = data.split(',');
+
 					if (!this._disableInterpolation && !bypassTimeStream && !this._streamJustCreated) {
 						// Translate
-						if (dataArr[0]) { dataArr[0] = parseFloat(dataArr[0]); }
-						if (dataArr[1]) { dataArr[1] = parseFloat(dataArr[1]); }
-						if (dataArr[2]) { dataArr[2] = parseFloat(dataArr[2]); }
-	
+						if (dataArr[0]) {
+							dataArr[0] = parseFloat(dataArr[0]);
+						}
+						if (dataArr[1]) {
+							dataArr[1] = parseFloat(dataArr[1]);
+						}
+						if (dataArr[2]) {
+							dataArr[2] = parseFloat(dataArr[2]);
+						}
+
 						// Scale
-						if (dataArr[3]) { dataArr[3] = parseFloat(dataArr[3]); }
-						if (dataArr[4]) { dataArr[4] = parseFloat(dataArr[4]); }
-						if (dataArr[5]) { dataArr[5] = parseFloat(dataArr[5]); }
-	
+						if (dataArr[3]) {
+							dataArr[3] = parseFloat(dataArr[3]);
+						}
+						if (dataArr[4]) {
+							dataArr[4] = parseFloat(dataArr[4]);
+						}
+						if (dataArr[5]) {
+							dataArr[5] = parseFloat(dataArr[5]);
+						}
+
 						// Rotate
-						if (dataArr[6]) { dataArr[6] = parseFloat(dataArr[6]); }
-						if (dataArr[7]) { dataArr[7] = parseFloat(dataArr[7]); }
-						if (dataArr[8]) { dataArr[8] = parseFloat(dataArr[8]); }
-	
+						if (dataArr[6]) {
+							dataArr[6] = parseFloat(dataArr[6]);
+						}
+						if (dataArr[7]) {
+							dataArr[7] = parseFloat(dataArr[7]);
+						}
+						if (dataArr[8]) {
+							dataArr[8] = parseFloat(dataArr[8]);
+						}
+
 						// Add it to the time stream
-						this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
-	
+						this._timeStream.push([this._ige.network.stream._streamDataTime + this._ige.network._latency, dataArr]);
+
 						// Check stream length, don't allow higher than 10 items
 						if (this._timeStream.length > 10) {
 							// Remove the first item
@@ -3350,20 +3409,38 @@ var IgeEntity = IgeObject.extend({
 						}
 					} else {
 						// Assign all the transform values immediately
-						if (dataArr[0]) { this._translate.x = parseFloat(dataArr[0]); }
-						if (dataArr[1]) { this._translate.y = parseFloat(dataArr[1]); }
-						if (dataArr[2]) { this._translate.z = parseFloat(dataArr[2]); }
-	
+						if (dataArr[0]) {
+							this._translate.x = parseFloat(dataArr[0]);
+						}
+						if (dataArr[1]) {
+							this._translate.y = parseFloat(dataArr[1]);
+						}
+						if (dataArr[2]) {
+							this._translate.z = parseFloat(dataArr[2]);
+						}
+
 						// Scale
-						if (dataArr[3]) { this._scale.x = parseFloat(dataArr[3]); }
-						if (dataArr[4]) { this._scale.y = parseFloat(dataArr[4]); }
-						if (dataArr[5]) { this._scale.z = parseFloat(dataArr[5]); }
-	
+						if (dataArr[3]) {
+							this._scale.x = parseFloat(dataArr[3]);
+						}
+						if (dataArr[4]) {
+							this._scale.y = parseFloat(dataArr[4]);
+						}
+						if (dataArr[5]) {
+							this._scale.z = parseFloat(dataArr[5]);
+						}
+
 						// Rotate
-						if (dataArr[6]) { this._rotate.x = parseFloat(dataArr[6]); }
-						if (dataArr[7]) { this._rotate.y = parseFloat(dataArr[7]); }
-						if (dataArr[8]) { this._rotate.z = parseFloat(dataArr[8]); }
-						
+						if (dataArr[6]) {
+							this._rotate.x = parseFloat(dataArr[6]);
+						}
+						if (dataArr[7]) {
+							this._rotate.y = parseFloat(dataArr[7]);
+						}
+						if (dataArr[8]) {
+							this._rotate.z = parseFloat(dataArr[8]);
+						}
+
 						// If we are using composite caching ensure we update the cache
 						if (this._compositeCache) {
 							this.cacheDirty(true);
@@ -3376,30 +3453,30 @@ var IgeEntity = IgeObject.extend({
 						this._rotate.toString(this._streamFloatPrecision) + ','; // rotate
 				}
 				break;
-			
+
 			case 'depth':
-					if (data !== undefined) {
-						if (ige.isClient) {
-							this.depth(parseInt(data));
-						}
-					} else {
-						return String(this.depth());
+				if (data !== undefined) {
+					if (this._ige.isClient) {
+						this.depth(parseInt(data));
 					}
-					break;
-				
+				} else {
+					return String(this.depth());
+				}
+				break;
+
 			case 'layer':
 				if (data !== undefined) {
-					if (ige.isClient) {
+					if (this._ige.isClient) {
 						this.layer(parseInt(data));
 					}
 				} else {
 					return String(this.layer());
 				}
 				break;
-			
+
 			case 'bounds2d':
 				if (data !== undefined) {
-					if (ige.isClient) {
+					if (this._ige.isClient) {
 						var geom = data.split(',');
 						this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
 					}
@@ -3407,10 +3484,10 @@ var IgeEntity = IgeObject.extend({
 					return String(this._bounds2d.x + ',' + this._bounds2d.y);
 				}
 				break;
-			
+
 			case 'bounds3d':
 				if (data !== undefined) {
-					if (ige.isClient) {
+					if (this._ige.isClient) {
 						var geom = data.split(',');
 						this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 					}
@@ -3418,10 +3495,10 @@ var IgeEntity = IgeObject.extend({
 					return String(this._bounds3d.x + ',' + this._bounds3d.y + ',' + this._bounds3d.z);
 				}
 				break;
-			
+
 			case 'hidden':
 				if (data !== undefined) {
-					if (ige.isClient) {
+					if (this._ige.isClient) {
 						if (data == 'true') {
 							this.hide();
 						} else {
@@ -3432,13 +3509,13 @@ var IgeEntity = IgeObject.extend({
 					return String(this.isHidden());
 				}
 				break;
-			
+
 			case 'mount':
 				if (data !== undefined) {
-					if (ige.isClient) {
+					if (this._ige.isClient) {
 						if (data) {
-							var newParent = ige.$(data);
-							
+							const newParent = this._ige.$(data);
+
 							if (newParent) {
 								this.mount(newParent);
 							}
@@ -3448,8 +3525,8 @@ var IgeEntity = IgeObject.extend({
 						}
 					}
 				} else {
-					var parent = this.parent();
-					
+					const parent = this.parent();
+
 					if (parent) {
 						return this.parent().id();
 					} else {
@@ -3457,10 +3534,10 @@ var IgeEntity = IgeObject.extend({
 					}
 				}
 				break;
-			
+
 			case 'origin':
 				if (data !== undefined) {
-					if (ige.isClient) {
+					if (this._ige.isClient) {
 						var geom = data.split(',');
 						this.origin(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 					}
@@ -3475,8 +3552,8 @@ var IgeEntity = IgeObject.extend({
 					i;
 
 				if (data !== undefined) {
-					if (ige.isClient) {
-						var props = JSON.parse(data);
+					if (this._ige.isClient) {
+						const props = JSON.parse(data);
 
 						// Update properties that have been sent through
 						for (i in props) {
@@ -3497,8 +3574,8 @@ var IgeEntity = IgeObject.extend({
 					for (i in this._streamProperty) {
 						if (this._streamProperty.hasOwnProperty(i)) {
 							//if (this._streamPropertyChange[i]) {
-								newData[i] = this._streamProperty[i];
-								//this._streamPropertyChange[i] = false;
+							newData[i] = this._streamProperty[i];
+							//this._streamPropertyChange[i] = false;
 							//}
 						}
 					}
@@ -3507,7 +3584,7 @@ var IgeEntity = IgeObject.extend({
 				}
 				break;
 		}
-	},
+	}
 
 	/* CEXCLUDE */
 	/**
@@ -3523,16 +3600,16 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	streamMode: function (val) {
+	streamMode(val) {
 		if (val !== undefined) {
-			if (ige.isServer) {
+			if (this._ige.isServer) {
 				this._streamMode = val;
 			}
 			return this;
 		}
 
 		return this._streamMode;
-	},
+	}
 
 	/**
 	 * Gets / sets the stream control callback function that will be called
@@ -3553,19 +3630,19 @@ var IgeEntity = IgeObject.extend({
 	 *             return false;
 	 *         }
 	 *     });
-	 * 
+	 *
 	 * Further reading: [Controlling Streaming](https://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/manual/networking-multiplayer/realtime-network-streaming/stream-modes-and-controlling-streaming/)
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	streamControl: function (method) {
+	streamControl(method) {
 		if (method !== undefined) {
 			this._streamControl = method;
 			return this;
 		}
 
 		return this._streamControl;
-	},
+	}
 
 	/**
 	 * Gets / sets the stream sync interval. This value
@@ -3584,7 +3661,7 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	streamSyncInterval: function (val, sectionId) {
+	streamSyncInterval(val, sectionId) {
 		if (val !== undefined) {
 			if (!sectionId) {
 				if (val < 16) {
@@ -3607,7 +3684,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._streamSyncInterval;
-	},
+	}
 
 	/**
 	 * Gets / sets the precision by which floating-point values will
@@ -3624,11 +3701,11 @@ var IgeEntity = IgeObject.extend({
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	streamFloatPrecision: function (val) {
+	streamFloatPrecision(val) {
 		if (val !== undefined) {
 			this._streamFloatPrecision = val;
 
-			var i, floatRemove = '\\.';
+			let i, floatRemove = '\\.';
 
 			// Update the floatRemove regular expression pattern
 			for (i = 0; i < this._streamFloatPrecision; i++) {
@@ -3645,7 +3722,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this._streamFloatPrecision;
-	},
+	}
 
 	/**
 	 * Queues stream data for this entity to be sent to the
@@ -3654,11 +3731,11 @@ var IgeEntity = IgeObject.extend({
 	 * client to send the stream data to.
 	 * @return {IgeEntity} "this".
 	 */
-	streamSync: function (clientId) {
+	streamSync(clientId) {
 		if (this._streamMode === 1) {
 			// Check if we have a stream sync interval
 			if (this._streamSyncInterval) {
-				this._streamSyncDelta += ige._tickDelta;
+				this._streamSyncDelta += this._ige._tickDelta;
 
 				if (this._streamSyncDelta < this._streamSyncInterval) {
 					// The stream sync interval is still higher than
@@ -3674,10 +3751,10 @@ var IgeEntity = IgeObject.extend({
 
 			// Grab an array of connected clients from the network
 			// system
-			var recipientArr = [],
-				clientArr = ige.network.clients(this._streamRoomId),
+			let recipientArr = [],
+				clientArr = this._ige.network.clients(this._streamRoomId),
 				i;
-			
+
 			for (i in clientArr) {
 				if (clientArr.hasOwnProperty(i)) {
 					// Check for a stream control method
@@ -3706,7 +3783,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return this;
-	},
+	}
 
 	/**
 	 * Override this method if your entity should send data through to
@@ -3720,18 +3797,19 @@ var IgeEntity = IgeObject.extend({
 	 *         
 	 *         // Define the init with the parameter to receive the
 	 *         // data you return in the streamCreateData() method
-	 *         init: function (myCreateData) {
+	 *         init (myCreateData) {
 	 *             this._myData = myCreateData;
-	 *         },
+	 *         }
 	 *         
-	 *         streamCreateData: function () {
+	 *         streamCreateData () {
 	 *             return this._myData;
 	 *         }
 	 *     });
-	 * 
+	 *
 	 * Valid return values must not include circular references!
 	 */
-	streamCreateData: function () {},
+	streamCreateData() {
+	}
 
 	/**
 	 * Gets / sets the stream emit created flag. If set to true this entity
@@ -3740,15 +3818,15 @@ var IgeEntity = IgeObject.extend({
 	 * @param val
 	 * @returns {*}
 	 */
-	streamEmitCreated: function (val) {
+	streamEmitCreated(val) {
 		if (val !== undefined) {
 			this._streamEmitCreated = val;
 			return this;
 		}
-		
+
 		return this._streamEmitCreated;
-	},
-	
+	}
+
 	/**
 	 * Asks the stream system to queue the stream data to the specified
 	 * client id or array of ids.
@@ -3759,11 +3837,11 @@ var IgeEntity = IgeObject.extend({
 	 * in (can be undefined or null if no room assigned).
 	 * @private
 	 */
-	_streamSync: function (recipientArr, streamRoomId) {
-		var arrCount = recipientArr.length,
+	_streamSync(recipientArr, streamRoomId) {
+		let arrCount = recipientArr.length,
 			arrIndex,
 			clientId,
-			stream = ige.network.stream,
+			stream = this._ige.network.stream,
 			thisId = this.id(),
 			filteredArr = [],
 			createResult = true; // We set this to true by default
@@ -3789,7 +3867,7 @@ var IgeEntity = IgeObject.extend({
 				// Is the data different from the last data we sent
 				// this client?
 				stream._streamClientData[thisId] = stream._streamClientData[thisId] || {};
-				
+
 				if (stream._streamClientData[thisId][clientId] != data) {
 					filteredArr.push(clientId);
 
@@ -3798,11 +3876,11 @@ var IgeEntity = IgeObject.extend({
 				}
 			}
 		}
-		
+
 		if (filteredArr.length) {
 			stream.queue(thisId, data, filteredArr);
 		}
-	},
+	}
 
 	/**
 	 * Forces the stream to push this entity's full stream data on the
@@ -3812,19 +3890,19 @@ var IgeEntity = IgeObject.extend({
 	 * used every tick.
 	 * @returns {*}
 	 */
-	streamForceUpdate: function () {
-		if (ige.isServer) {
-			var thisId = this.id();
-			
+	streamForceUpdate() {
+		if (this._ige.isServer) {
+			const thisId = this.id();
+
 			// Invalidate the stream client data lookup to ensure
 			// the latest data will be pushed on the next stream sync
-			if (ige.network && ige.network.stream && ige.network.stream._streamClientData && ige.network.stream._streamClientData[thisId]) {
-				ige.network.stream._streamClientData[thisId] = {};
+			if (this._ige.network && this._ige.network.stream && this._ige.network.stream._streamClientData && this._ige.network.stream._streamClientData[thisId]) {
+				this._ige.network.stream._streamClientData[thisId] = {};
 			}
 		}
-		
+
 		return this;
-	},
+	}
 
 	/**
 	 * Issues a create entity command to the passed client id
@@ -3841,34 +3919,34 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.streamCreate('43245325');
 	 * @return {Boolean}
 	 */
-	streamCreate: function (clientId) {
+	streamCreate(clientId) {
 		if (this._parent) {
-			var thisId = this.id(),
+			let thisId = this.id(),
 				arr,
 				i;
 
 			// Send the client an entity create command first
-			ige.network.send('_igeStreamCreate', [
+			this._ige.network.send('_igeStreamCreate', [
 				this.classId(),
 				thisId,
 				this._parent.id(),
 				this.streamSectionData('transform'),
 				this.streamCreateData()
 			], clientId);
-			
-			ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
+
+			this._ige.network.stream._streamClientCreated[thisId] = this._ige.network.stream._streamClientCreated[thisId] || {};
 
 			if (clientId) {
 				// Mark the client as having received a create
 				// command for this entity
-				ige.network.stream._streamClientCreated[thisId][clientId] = true;
+				this._ige.network.stream._streamClientCreated[thisId][clientId] = true;
 			} else {
 				// Mark all clients as having received this create
-				arr = ige.network.clients();
+				arr = this._ige.network.clients();
 
 				for (i in arr) {
 					if (arr.hasOwnProperty(i)) {
-						ige.network.stream._streamClientCreated[thisId][i] = true;
+						this._ige.network.stream._streamClientCreated[thisId][i] = true;
 					}
 				}
 			}
@@ -3877,7 +3955,7 @@ var IgeEntity = IgeObject.extend({
 		}
 
 		return false;
-	},
+	}
 
 	/**
 	 * Issues a destroy entity command to the passed client id
@@ -3894,36 +3972,36 @@ var IgeEntity = IgeObject.extend({
 	 *     entity.streamDestroy('43245325');
 	 * @return {Boolean}
 	 */
-	streamDestroy: function (clientId) {
-		var thisId = this.id(),
+	streamDestroy(clientId) {
+		let thisId = this.id(),
 			arr,
 			i;
 
 		// Send clients the stream destroy command for this entity
-		ige.network.send('_igeStreamDestroy', [ige._currentTime, thisId], clientId);
-		
-		ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
-		ige.network.stream._streamClientData[thisId] = ige.network.stream._streamClientData[thisId] || {};
+		this._ige.network.send('_igeStreamDestroy', [this._ige._currentTime, thisId], clientId);
+
+		this._ige.network.stream._streamClientCreated[thisId] = this._ige.network.stream._streamClientCreated[thisId] || {};
+		this._ige.network.stream._streamClientData[thisId] = this._ige.network.stream._streamClientData[thisId] || {};
 
 		if (clientId) {
 			// Mark the client as having received a destroy
 			// command for this entity
-			ige.network.stream._streamClientCreated[thisId][clientId] = false;
-			ige.network.stream._streamClientData[thisId][clientId] = undefined;
+			this._ige.network.stream._streamClientCreated[thisId][clientId] = false;
+			this._ige.network.stream._streamClientData[thisId][clientId] = undefined;
 		} else {
 			// Mark all clients as having received this destroy
-			arr = ige.network.clients();
+			arr = this._ige.network.clients();
 
 			for (i in arr) {
 				if (arr.hasOwnProperty(i)) {
-					ige.network.stream._streamClientCreated[thisId][i] = false;
-					ige.network.stream._streamClientData[thisId][i] = undefined;
+					this._ige.network.stream._streamClientCreated[thisId][i] = false;
+					this._ige.network.stream._streamClientData[thisId][i] = undefined;
 				}
 			}
 		}
-		
+
 		return true;
-	},
+	}
 
 	/**
 	 * Generates and returns the current stream data for this entity. The
@@ -3935,13 +4013,13 @@ var IgeEntity = IgeObject.extend({
 	 * this entity.
 	 * @private
 	 */
-	_streamData: function () {
+	_streamData() {
 		// Check if we already have a cached version of the streamData
 		if (this._streamDataCache) {
 			return this._streamDataCache;
 		} else {
 			// Let's generate our stream data
-			var streamData = '',
+			let streamData = '',
 				sectionDataString = '',
 				sectionArr = this._streamSections,
 				sectionCount = sectionArr.length,
@@ -3959,7 +4037,7 @@ var IgeEntity = IgeObject.extend({
 				for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
 					sectionData = '';
 					sectionId = sectionArr[sectionIndex];
-					
+
 					// Stream section sync intervals allow individual stream sections
 					// to be streamed at different (usually longer) intervals than other
 					// sections so you could for instance reduce the number of updates
@@ -3967,7 +4045,7 @@ var IgeEntity = IgeObject.extend({
 					// not that important compared to updated transformation data
 					if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
 						// Check if the section interval has been reached
-						this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
+						this._streamSyncSectionDelta[sectionId] += this._ige._tickDelta;
 
 						if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
 							// Get the section data for this section id
@@ -3985,7 +4063,7 @@ var IgeEntity = IgeObject.extend({
 					// regardless of if there is actually any section data because
 					// we want to be able to identify sections in a serial fashion
 					// on receipt of the data string on the client
-					sectionDataString += ige.network.stream._sectionDesignator;
+					sectionDataString += this._ige.network.stream._sectionDesignator;
 
 					// Check if we were returned any data
 					if (sectionData !== undefined) {
@@ -4010,7 +4088,8 @@ var IgeEntity = IgeObject.extend({
 
 			return streamData;
 		}
-	},
+	}
+
 	/* CEXCLUDE */
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4026,17 +4105,21 @@ var IgeEntity = IgeObject.extend({
 	 * @param {Number} endTime The time the interpolation will end.
 	 * @return {Number} The interpolated value.
 	 */
-	interpolateValue: function (startValue, endValue, startTime, currentTime, endTime) {
-		var totalValue = endValue - startValue,
+	interpolateValue(startValue, endValue, startTime, currentTime, endTime) {
+		let totalValue = endValue - startValue,
 			dataDelta = endTime - startTime,
 			offsetDelta = currentTime - startTime,
 			deltaTime = offsetDelta / dataDelta;
 
 		// Clamp the current time from 0 to 1
-		if (deltaTime < 0) { deltaTime = 0; } else if (deltaTime > 1) { deltaTime = 1; }
+		if (deltaTime < 0) {
+			deltaTime = 0;
+		} else if (deltaTime > 1) {
+			deltaTime = 1;
+		}
 
 		return (totalValue * deltaTime) + startValue;
-	},
+	}
 
 	/**
 	 * Processes the time stream for the entity.
@@ -4046,11 +4129,13 @@ var IgeEntity = IgeObject.extend({
 	 * is assigned directly instead of being interpolated.
 	 * @private
 	 */
-	_processInterpolate: function (renderTime, maxLerp) {
+	_processInterpolate(renderTime, maxLerp) {
 		// Set the maximum lerp to 200 if none is present
-		if (!maxLerp) { maxLerp = 200; }
+		if (!maxLerp) {
+			maxLerp = 200;
+		}
 
-		var maxLerpSquared = maxLerp * maxLerp,
+		let maxLerpSquared = maxLerp * maxLerp,
 			previousData,
 			nextData,
 			timeStream = this._timeStream,
@@ -4085,7 +4170,7 @@ var IgeEntity = IgeObject.extend({
 					previousData = timeStream[timeStream.length - 2];
 					nextData = timeStream[timeStream.length - 1];
 					timeStream.shift();
-					
+
 					/**
 					 * Fires when the entity interpolates against old data, usually
 					 * the result of slow processing on the client or too much data
@@ -4104,7 +4189,9 @@ var IgeEntity = IgeObject.extend({
 		if (nextData && previousData) {
 			// Check if the previous data has a timestamp and if not,
 			// use the next data's timestamp
-			if (isNaN(previousData[0])) { previousData[0] = nextData[0]; }
+			if (isNaN(previousData[0])) {
+				previousData[0] = nextData[0];
+			}
 
 			// Store the data so outside systems can access them
 			this._timeStreamPreviousData = previousData;
@@ -4166,8 +4253,9 @@ var IgeEntity = IgeObject.extend({
 			// apply if we ever get UDP in websockets)
 			this._lastUpdate = new Date().getTime();
 		}
-	},
-	_highlightToGlobalCompositeOperation: function (val) {
+	}
+
+	_highlightToGlobalCompositeOperation(val) {
 		if (val) {
 			if (val === true) {
 				return 'lighter'
@@ -4176,6 +4264,4 @@ var IgeEntity = IgeObject.extend({
 			return val;
 		}
 	}
-});
-
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeEntity; }
+}
