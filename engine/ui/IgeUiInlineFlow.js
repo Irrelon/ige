@@ -1,15 +1,13 @@
-var IgeUiInlineFlow = IgeUiElement.extend({
-	classId: 'IgeUiInlineFlow',
+import IgeUiElement from "../src/IgeUiElement";
 
-	init: function () {
-		IgeUiElement.prototype.init.call(this);
-	},
+class IgeUiInlineFlow extends IgeUiElement {
+	classId = "IgeUiInlineFlow";
 
-	tick: function (ctx) {
+	tick (ctx) {
 		// Loop children and re-position them
 		var arr = this._children,
 			arrCount = arr.length, i,
-			item, itemY, currentX = 0;
+			item, itemX, currentX = 0;
 
 		for (i = 0; i < arrCount; i++) {
 			item = arr[i];
@@ -19,6 +17,8 @@ var IgeUiInlineFlow = IgeUiElement.extend({
 		}
 
 		// call the super-class tick
-		IgeUiElement.prototype.tick.call(this, ctx);
+		super.tick(ctx);
 	}
-});
+}
+
+export default IgeUiInlineFlow;

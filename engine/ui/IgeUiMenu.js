@@ -1,15 +1,18 @@
+import IgeUiElement from "../src/IgeUiElement";
+import IgeFontEntity from "../src/IgeFontEntity";
+
 /**
  * Provides a UI drop-down menu entity.
  */
-var IgeUiMenu = IgeUiElement.extend({
-	classId: 'IgeUiMenu',
+class IgeUiMenu extends IgeUiElement {
+	classId = "IgeUiMenu";
 
 	/**
 	 * Gets / sets the menu definition.
 	 * @param {Object=} val The menu definition object.
 	 * @return {*}
 	 */
-	menuData: function (val) {
+	menuData = (val) => {
 		if (val !== undefined) {
 			this._menuData = val;
 
@@ -22,16 +25,16 @@ var IgeUiMenu = IgeUiElement.extend({
 		}
 
 		return this._menuData;
-	},
+	}
 
-	menuMode: function (mode) {
+	menuMode = (mode) => {
 		if (mode !== undefined) {
 			this._menuMode = mode;
 			return this;
 		}
 
 		return this._menuMode;
-	},
+	}
 
 	/**
 	 * Gets / sets the font sheet (texture) that the text box will
@@ -39,22 +42,22 @@ var IgeUiMenu = IgeUiElement.extend({
 	 * @param fontSheet
 	 * @return {*}
 	 */
-	fontSheet: function (fontSheet) {
+	fontSheet = (fontSheet) => {
 		if (fontSheet !== undefined) {
 			this._fontSheet = fontSheet;
 			return this;
 		}
 
 		return this._fontSheet;
-	},
+	}
 
-	addItem: function (item) {
+	addItem = (item) => {
 		if (item !== undefined) {
-			
-		}
-	},
 
-	_buildMenu: function (data, parent) {
+		}
+	}
+
+	_buildMenu = (data, parent) => {
 		var arrCount = data.length, i,
 			item, ent, left = 0, top = 0;
 
@@ -66,7 +69,7 @@ var IgeUiMenu = IgeUiElement.extend({
 			}
 
 			ent = new IgeUiMenuItem()
-				.backgroundColor('#666666')
+				.backgroundColor("#666666")
 				.left(left)
 				.middle(top)
 				.height(this.height())
@@ -79,12 +82,12 @@ var IgeUiMenu = IgeUiElement.extend({
 			}
 		}
 	}
-});
+}
 
-var IgeUiMenuItem = IgeUiElement.extend({
-	classId: 'IgeUiMenuItem',
+class IgeUiMenuItem extends IgeUiElement {
+	classId = "IgeUiMenuItem";
 
-	menuData: function (menuData) {
+	menuData = (menuData) => {
 		if (menuData !== undefined) {
 			this._menuData = menuData;
 
@@ -94,8 +97,8 @@ var IgeUiMenuItem = IgeUiElement.extend({
 			if (menuData.mouseOver) { this.mouseOver(menuData.mouseOver); }
 			if (menuData.mouseOut) { this.mouseOut(menuData.mouseOut); }
 
-			this._labelEntity = new IgeFontEntity()
-				.id(this.id() + '_label')
+			this._labelEntity = new IgeFontEntity(this._ige)
+				.id(this.id() + "_label")
 				.texture(this._fontSheet)
 				.left(5)
 				.middle(0)
@@ -110,7 +113,7 @@ var IgeUiMenuItem = IgeUiElement.extend({
 		}
 
 		return this._menuData;
-	},
+	}
 
 	/**
 	 * Gets / sets the font sheet (texture) that the menu item will
@@ -118,22 +121,22 @@ var IgeUiMenuItem = IgeUiElement.extend({
 	 * @param fontSheet
 	 * @return {*}
 	 */
-	fontSheet: function (fontSheet) {
+	fontSheet = (fontSheet) => {
 		if (fontSheet !== undefined) {
 			this._fontSheet = fontSheet;
 			return this;
 		}
 
 		return this._fontSheet;
-	},
+	}
 
 	/**
 	 * Opens the menu item so it's child items are visible.
 	 */
-	open: function () {
+	open = () => {
 		if (this._menuData.items) {
 			this._childMenu = new IgeUiMenu()
-				.id(this.id() + '_childMenu')
+				.id(this.id() + "_childMenu")
 				.depth(this.depth() + 1)
 				.fontSheet(this._fontSheet)
 				.left(0)
@@ -144,14 +147,16 @@ var IgeUiMenuItem = IgeUiElement.extend({
 				.menuData(this._menuData.items)
 				.mount(this);
 		}
-	},
+	}
 
 	/**
 	 * Closes the menu item so it's child items are hidden.
 	 */
-	close: function () {
+	close = () => {
 		if (this._childMenu) {
 			this._childMenu.destroy();
 		}
 	}
-});
+}
+
+export default IgeUiMenu;

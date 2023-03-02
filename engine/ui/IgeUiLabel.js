@@ -1,34 +1,55 @@
 /**
  * Provides a UI label entity. Basic on-screen text label.
  */
-var IgeUiLabel = IgeUiElement.extend({
-	classId: 'IgeUiLabel',
+import IgeUiElement from "../src/IgeUiElement";
+import IgeFontEntity from "../src/IgeFontEntity";
+
+class IgeUiLabel extends IgeUiElement {
+	classId = "IgeUiLabel";
 
 	/**
 	 * @constructor
 	 */
-	init: function () {
-		IgeUiElement.prototype.init.call(this);
+	constructor (ige, options = {}) {
+		super(ige);
 
-		var self = this;
-
-		this._value = '';
-
-		this._fontEntity = new IgeFontEntity()
+		this._value = "";
+		this._fontEntity = new IgeFontEntity(ige)
 			.left(0)
-			.middle(0)
-			.textAlignX(0)
-			.textAlignY(0);
+			.top(0)
+			.textAlignX(options.textAlignX || 0)
+			.textAlignY(options.textAlignY || 0);
 
-		this._fontEntity.mount(self);
+		this._fontEntity.mount(this);
 
 		// Set defaults
-		this.font('10px Verdana');
-		this.paddingLeft(5);
+		this.font("10px Verdana");
 		this.allowActive(false);
 		this.allowFocus(false);
 		this.allowHover(false);
-	},
+	}
+
+	textAlign (val) {
+		if (val === undefined) {
+			return this._alignText;
+		}
+
+		this._alignText = val;
+
+		switch (val) {
+			case "left":
+				this._fontEntity.textAlignX(0);
+				break;
+
+			case "center":
+				this._fontEntity.textAlignX(1);
+				break;
+
+			case "right":
+				this._fontEntity.textAlignX(2);
+				break;
+		}
+	}
 
 	/**
 	 * Extended method to auto-update the width of the child
@@ -39,17 +60,17 @@ var IgeUiLabel = IgeUiElement.extend({
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	width: function (px, lockAspect, modifier, noUpdate) {
+	width (px, lockAspect, modifier, noUpdate) {
 		var val;
 
 		// Call the main super class method
-		val = IgeUiElement.prototype.width.call(this, px, lockAspect, modifier, noUpdate);
+		val = super.width(px, lockAspect, modifier, noUpdate);
 
 		// Update the font entity width - 10px for margin
-		this._fontEntity.width(px - 10, lockAspect, modifier, noUpdate);
+		this._fontEntity.width(px, lockAspect, modifier, noUpdate);
 
 		return val;
-	},
+	}
 
 	/**
 	 * Extended method to auto-update the height of the child
@@ -60,28 +81,28 @@ var IgeUiLabel = IgeUiElement.extend({
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	height: function (px, lockAspect, modifier, noUpdate) {
+	height (px, lockAspect, modifier, noUpdate) {
 		var val;
 
 		// Call the main super class method
-		val = IgeUiElement.prototype.height.call(this, px, lockAspect, modifier, noUpdate);
+		val = super.height(px, lockAspect, modifier, noUpdate);
 
 		// Update the font entity height
 		this._fontEntity.height(px, lockAspect, modifier, noUpdate);
 
 		return val;
-	},
+	}
 
 	/**
 	 * Gets / sets the text value of the input box.
 	 * @param {String=} val The text value.
 	 * @return {*}
 	 */
-	value: function (val) {
+	value (val) {
 		if (val !== undefined) {
 			if (this._value !== val) {
 				this._value = val;
-	
+
 				if (!val && this._placeHolder) {
 					// Assign placeholder text and color
 					this._fontEntity.text(this._placeHolder);
@@ -93,26 +114,26 @@ var IgeUiLabel = IgeUiElement.extend({
 						this._fontEntity.text(this._value);
 					} else {
 						// Assign a mask value instead
-						this._fontEntity.text(new Array(this._value.length + 1).join(this._mask))
+						this._fontEntity.text(new Array(this._value.length + 1).join(this._mask));
 					}
 					this._fontEntity.color(this._color);
 				}
-				
-				this.emit('change', this._value);
+
+				this.emit("change", this._value);
 			}
 			return this;
 		}
 
 		return this._value;
-	},
-	
+	}
+
 	/**
 	 * Gets / sets the font sheet (texture) that the text box will
 	 * use when rendering text inside the box.
 	 * @param fontSheet
 	 * @return {*}
 	 */
-	fontSheet: function (fontSheet) {
+	fontSheet (fontSheet) {
 		if (fontSheet !== undefined) {
 			this._fontSheet = fontSheet;
 
@@ -122,11 +143,11 @@ var IgeUiLabel = IgeUiElement.extend({
 		}
 
 		return this._fontSheet;
-	},
-	
-	font: function (val) {
+	}
+
+	font (val) {
 		if (val !== undefined) {
-			if (typeof(val) === 'string') {
+			if (typeof(val) === "string") {
 				// Native font name
 				return this.nativeFont(val);
 			} else {
@@ -134,7 +155,7 @@ var IgeUiLabel = IgeUiElement.extend({
 				return this.fontSheet(val);
 			}
 		}
-		
+
 		if (this._fontEntity._nativeMode) {
 			// Return native font
 			return this.nativeFont();
@@ -142,39 +163,39 @@ var IgeUiLabel = IgeUiElement.extend({
 			// Return font sheet
 			return this.fontSheet();
 		}
-	},
-	
-	nativeFont: function (val) {
+	}
+
+	nativeFont (val) {
 		if (val !== undefined) {
 			this._fontEntity.nativeFont(val);
 			return this;
 		}
-		
+
 		return this._fontEntity.nativeFont();
-	},
-	
-	nativeStroke: function (val) {
+	}
+
+	nativeStroke (val) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStroke(val);
 			return this;
 		}
-		
+
 		return this._fontEntity.nativeStroke();
-	},
-	
-	nativeStrokeColor: function (val) {
+	}
+
+	nativeStrokeColor (val) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStrokeColor(val);
 			return this;
 		}
-		
+
 		return this._fontEntity.nativeStrokeColor();
-	},
-	
-	color: function (val) {
+	}
+
+	color (val) {
 		if (val !== undefined) {
 			this._color = val;
-			
+
 			if (!this._value && this._placeHolder && this._placeHolderColor) {
 				this._fontEntity.color(this._placeHolderColor);
 			} else {
@@ -182,18 +203,20 @@ var IgeUiLabel = IgeUiElement.extend({
 			}
 			return this;
 		}
-		
+
 		return this._color;
-	},
-	
-	_mounted: function () {
+	}
+
+	_mounted () {
 		// Check if we have a text value
 		if (!this._value && this._placeHolder) {
 			// Assign placeholder text and color
 			this._fontEntity.text(this._placeHolder);
 			this._fontEntity.color(this._placeHolderColor);
 		}
-		
-		IgeUiElement.prototype._mounted.call(this);
+
+		super._mounted();
 	}
-});
+}
+
+export default IgeUiLabel;

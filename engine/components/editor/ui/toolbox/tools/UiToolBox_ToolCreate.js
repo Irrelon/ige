@@ -1,16 +1,16 @@
-var UiToolBox_ToolCreate = IgeEventingClass.extend({
+class UiToolBox_ToolCreate extends IgeEventingClass {
 	classId: 'UiToolBox_ToolCreate',
 	editorOptions: {
 		hide: true
 	},
-	
+
 	init: function () {
 		this.menuDefinition = [{
 			'group': []
 		}];
-		
+
 		var sortArr = [], i;
-		
+
 		for (i in igeClassStore) {
 			if (igeClassStore.hasOwnProperty(i)) {
 				if (!igeClassStore[i].prototype.editorOptions || !igeClassStore[i].prototype.editorOptions.hide) {
@@ -18,9 +18,9 @@ var UiToolBox_ToolCreate = IgeEventingClass.extend({
 				}
 			}
 		}
-		
+
 		sortArr.sort();
-		
+
 		for (i = 0; i < sortArr.length; i++) {
 			this.menuDefinition[0].group.push({
 				id: sortArr[i],
@@ -30,7 +30,7 @@ var UiToolBox_ToolCreate = IgeEventingClass.extend({
 			});
 		}
 	},
-	
+
 	enabled: function (val) {
 		if (val) {
 			// Display menu
@@ -40,7 +40,7 @@ var UiToolBox_ToolCreate = IgeEventingClass.extend({
 				left = position.left + toolboxButton.width(),
 				top = position.top,
 				height = $('body').height();
-			
+
 			ige.editor.ui.menus.create({
 				header: {
 					icon: 'log_in',
@@ -51,17 +51,17 @@ var UiToolBox_ToolCreate = IgeEventingClass.extend({
 			}, function (elem) {
 				// Now position the menu
 				var menuHeight = elem.height();
-				
+
 				top -= menuHeight / 2;
-				
+
 				if (top + menuHeight > height) {
 					top = height - menuHeight - 10;
 				}
-				
+
 				if (top - menuHeight < 30) {
 					top = 30;
 				}
-				
+
 				elem.css('left', left)
 					.css('top', top);
 			});

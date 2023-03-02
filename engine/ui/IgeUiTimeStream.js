@@ -1,45 +1,47 @@
-var IgeUiTimeStream = IgeUiElement.extend({
-	classId: 'IgeUiTimeStream',
+import IgeUiElement from "../src/IgeUiElement";
 
-	monitor: function (entity) {
+class IgeUiTimeStream extends IgeUiElement {
+	classId = "IgeUiTimeStream";
+
+	monitor = (entity) => {
 		this._entity = entity;
-	},
+	}
 
-	tick: function (ctx) {
+	tick (ctx) {
 		// Draw timeline
 		var i, text, xAdjust,
 			arr, arrCount, arrItem,
 			renderTime = ige._tickStart - ige.network.stream._renderLatency,
 			deltaTime;
 
-		IgeUiElement.prototype.tick.call(this, ctx);
+		super.tick(ctx);
 
-		ctx.strokeStyle = '#fffc00';
+		ctx.strokeStyle = "#fffc00";
 		ctx.beginPath();
 		ctx.moveTo(-200, -25.5);
 		ctx.lineTo(200, -25.5);
 		ctx.stroke();
 
-		ctx.font = 'normal 10px Verdana';
+		ctx.font = "normal 10px Verdana";
 
 		for (i = 0; i < 9; i++) {
 			ctx.beginPath();
 			if (((i - 2) * 10) === 0) {
 				// This is the render point, change colour for this one
-				ctx.strokeStyle = '#ff6600';
+				ctx.strokeStyle = "#ff6600";
 			} else {
-				ctx.strokeStyle = '#ffffff';
+				ctx.strokeStyle = "#ffffff";
 			}
 			ctx.moveTo(-200.5 + (i * 50), -30);
 			ctx.lineTo(-200.5 + (i * 50), 30);
 			ctx.stroke();
 
-			text = -ige.network.stream._renderLatency + ((i - 2) * 10) + 'ms';
+			text = -ige.network.stream._renderLatency + ((i - 2) * 10) + "ms";
 			xAdjust = ctx.measureText(text);
 			ctx.strokeText(text, -200 + (i * 50) - (xAdjust.width / 2), -38);
 
 			if (((i - 2) * 10) === 0) {
-				text = 'Render Point';
+				text = "Render Point";
 				xAdjust = ctx.measureText(text);
 				ctx.strokeText(text, -200 + (i * 50) - (xAdjust.width / 2), -52);
 			}
@@ -66,6 +68,6 @@ var IgeUiTimeStream = IgeUiElement.extend({
 			ige.client.custom4.value = this._entity._timeStreamCurrentInterpolateTime;
 		}
 	}
-});
+}
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeUiTimeStream; }
+export default IgeUiTimeStream;

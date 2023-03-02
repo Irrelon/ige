@@ -1,13 +1,15 @@
-var IgeUiAutoFlow = IgeUiElement.extend({
-	classId: 'IgeUiAutoFlow',
+import IgeUiElement from "../src/IgeUiElement";
 
-	init: function () {
-		IgeUiElement.prototype.init.call(this);
+class IgeUiAutoFlow extends IgeUiElement {
+	classId = "IgeUiAutoFlow";
+
+	constructor (ige) {
+		super(ige);
 
 		this._currentHeight = 0;
-	},
+	}
 
-	tick: function (ctx) {
+	tick (ctx) {
 		// Loop children and re-position then
 		var arr = this._children,
 			arrCount = arr.length, i,
@@ -23,6 +25,8 @@ var IgeUiAutoFlow = IgeUiElement.extend({
 		}
 
 		// Now do the super-class tick
-		IgeUiElement.prototype.tick.call(this, ctx);
+		super.tick(ctx);
 	}
-});
+}
+
+export default IgeUiAutoFlow;

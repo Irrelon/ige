@@ -1,0 +1,13 @@
+2023-03-02T09:34:38.566Z [intellij.services.AIInitializeManager.initializeAI] INFO AI state ENABLED
+2023-03-02T09:34:38.566Z [intellij.services.AIInitializeManager.initializeAI] INFO is toolwindow active false, is info toolwindow active false
+2023-03-02T09:34:38.567Z [intellij.services.AIInitializeManager.initializeAI] INFO AI state ENABLED
+2023-03-02T09:34:38.568Z [intellij.services.AIInitializeManager.initializeAI] INFO is toolwindow active true, is info toolwindow active true
+2023-03-02T09:34:38.568Z [ctureModificationListener$Companion.initForProject] INFO ProjectStructureModificationListener is init for project ige
+2023-03-02T09:34:38.568Z [ojectContextInitializer.createInfrastructureFacade] INFO Found port: 65186
+2023-03-02T09:34:38.582Z [ProjectContextInitializer.initializeProjectContext] INFO Plugin context initialized
+2023-03-02T09:34:38.584Z [ls.logging.AiLogger$Companion$cleanUpLogs$1.invoke] INFO Clean up logs files was started
+2023-03-02T09:34:40.676Z [initializeInfrastructureInstance$1$1.invokeSuspend] INFO Infrastructure initialized
+2023-03-02T09:37:07.247Z [ls.logging.AiLogger$Companion$cleanUpLogs$1.invoke] INFO Clean up logs files was started
+2023-03-02T09:37:07.247Z [ls.logging.AiLogger$Companion$cleanUpLogs$1.invoke] INFO Clean up logs files was finished
+2023-03-02T09:37:24.978Z [ls.logging.AiLogger$Companion$cleanUpLogs$1.invoke] INFO Clean up logs files was started
+2023-03-02T09:37:24.978Z [ls.logging.AiLogger$Companion$cleanUpLogs$1.invoke] INFO Clean up logs files was finished

@@ -1,15 +1,17 @@
-var IgeUiGridPanel = IgeUiElement.extend({
-	classId: 'IgeUiGridPanel',
+import IgeUiElement from "../src/IgeUiElement";
 
-	init: function (cellWidth, cellHeight) {
+class IgeUiGridPanel extends IgeUiElement {
+	classId = "IgeUiGridPanel";
+
+	init = (cellWidth, cellHeight) => {
 		IgeUiElement.prototype.init.call(this);
 
 		this._gridCellWidth = cellWidth || 32;
 		this._gridCellHeight = cellHeight || 32;
-	},
+	}
 
-	_childMounted: function (obj) {
-		IgeUiElement.prototype._childMounted.call(this, obj);
+	_childMounted = (obj) => {
+		super._childMounted(obj);
 
 		var gridWidth = Math.floor(this._bounds2d.x / this._gridCellWidth),
 			gridHeight = Math.floor(this._bounds2d.y / this._gridCellHeight),
@@ -22,4 +24,6 @@ var IgeUiGridPanel = IgeUiElement.extend({
 		obj.left(this._gridCellWidth * positionX)
 			.top(this._gridCellHeight * positionY);
 	}
-});
+}
+
+export default IgeUiGridPanel;

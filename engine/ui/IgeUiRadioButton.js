@@ -1,16 +1,18 @@
-var IgeUiRadioButton = IgeUiButton.extend({
-	classId: 'IgeUiRadioButton',
+import IgeUiButton from "./IgeUiButton";
 
-	radioGroup: function (val) {
+class IgeUiRadioButton extends IgeUiButton {
+	classId = "IgeUiRadioButton";
+
+	radioGroup = (val) => {
 		if (val !== undefined) {
 			this._uiRadioGroup = val;
 			return this;
 		}
 
 		return this._uiRadioGroup;
-	},
+	}
 
-	select: function (val) {
+	select = (val) => {
 		if (val !== undefined) {
 			this._uiOnSelect = val;
 			return this;
@@ -52,9 +54,9 @@ var IgeUiRadioButton = IgeUiButton.extend({
 		}
 
 		return this;
-	},
+	}
 
-	deSelect: function (val) {
+	deSelect = (val) => {
 		if (val !== undefined) {
 			this._uiOnDeSelect = val;
 			return this;
@@ -68,6 +70,6 @@ var IgeUiRadioButton = IgeUiButton.extend({
 
 		return this;
 	}
-});
+}
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeUiRadioButton; }
+export default IgeUiRadioButton;

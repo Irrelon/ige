@@ -1,54 +1,55 @@
-var IgeUiDropDown = IgeUiElement.extend({
-	classId: 'IgeUiDropDown',
-	
-	init: function () {
-		var self = this;
-		
-		IgeUiElement.prototype.init.call(this);
-		
+import IgeUiElement from "../src/IgeUiElement";
+import IgeUiLabel from "../ui/IgeUiLabel";
+
+class IgeUiDropDown extends IgeUiElement {
+	classId = "IgeUiDropDown";
+
+	constructor (ige) {
+		super(ige);
+
 		// Define some default styles
-		if (!ige.ui.style('.IgeUiDropDownOption')) {
-			ige.ui.style('.IgeUiDropDownOption', {
-				backgroundColor: null
+		if (!this._ige.ui.style(".IgeUiDropDownOption")) {
+			this._ige.ui.style(".IgeUiDropDownOption", {
+				"backgroundColor": null
 			});
-			
-			ige.ui.style('.IgeUiDropDownOption:hover', {
-				backgroundColor: '#00b4ff',
-				color: '#ffffff'
+
+			this._ige.ui.style(".IgeUiDropDownOption:hover", {
+				"backgroundColor": "#00b4ff",
+				"color": "#ffffff"
 			});
 		}
-		
+
 		// Set defaults
-		this.borderColor('#000000');
+		this.borderColor("#000000");
 		this.borderWidth(1);
-		this.backgroundColor('#ffffff');
-		this.color('#000000');
+		this.backgroundColor("#ffffff");
+		this.color("#000000");
 		this.width(200);
 		this.height(30);
-		
+
 		this._options = [];
 		this._toggleState = false;
-		
-		this._label = new IgeUiLabel()
-			.left(0)
+
+		this._label = new IgeUiLabel(ige, {"textAlignY": 1})
+			.left(5)
 			.right(30)
 			.top(0)
 			.bottom(0)
 			.mount(this);
-		
-		this.on('mouseUp', function () {
+
+		this.on("mouseUp", () => {
 			// Toggle the list drop-down
-			self.toggle();
+			this.toggle();
 		});
-	},
-	
-	options: function (ops) {
+	}
+
+	options (ops) {
 		if (ops !== undefined) {
 			this._options = ops;
-			
+
 			// Loop the options and check for a selected one
 			var arrCount = ops.length;
-			
+
 			while (arrCount--) {
 				if (ops[arrCount].selected) {
 					// Set this option as selected
@@ -56,70 +57,71 @@ var IgeUiDropDown = IgeUiElement.extend({
 					return this;
 				}
 			}
-			
+
 			// No item selected, select the first option
 			this.selectIndex(0);
-			
+
 			return this;
 		}
-		
+
 		return this;
-	},
-	
-	addOption: function (op) {
+	}
+
+	addOption (op) {
 		if (op !== undefined) {
 			this._options.push(op);
-			
+
 			if (op.selected) {
 				// Set this option as selected
 				this.selectIndex(this._options.length - 1);
 				return this;
 			}
-			
+
 			// No item selected, select the first option
 			this.selectIndex(0);
-			
+
 			return this;
 		}
-		
+
 		return this;
-	},
-	
-	removeAllOptions: function () {
+	}
+
+	removeAllOptions () {
 		this._options = [];
 		this.value({
-			text: '',
-			value: ''
+			"text": "",
+			"value": ""
 		});
-	},
-	
-	blur: function () {
-		IgeUiElement.prototype.blur.call(this);
+	}
+
+	blur () {
+		super.blur();
+
 		if (this._toggleState) {
 			this.toggle();
 		}
-	},
-	
-	selectIndex: function (index) {
+	}
+
+	selectIndex (index) {
 		if (this._options[index]) {
 			this.value(this._options[index]);
-			this.emit('change', this.value());
+			this.emit("change", this.value());
 		}
-	},
-	
-	value: function (val) {
+	}
+
+	value (val) {
 		if (val !== undefined) {
-			IgeUiElement.prototype.value.call(this, val);
+			super.value(val);
 			this._label.value(val.text);
 			return this;
 		}
-		
-		return this._value.value;
-	},
 
-	toggle: function () {
+		return this._value.value;
+	}
+
+	toggle () {
 		this._toggleState = !this._toggleState;
-		
+
 		if (this._toggleState) {
 			var self = this,
 				optionContainer,
@@ -127,9 +129,9 @@ var IgeUiDropDown = IgeUiElement.extend({
 				mainHeight = this._options.length * 30,
 				optionTop = 0,
 				i;
-			
-			optionContainer =new IgeUiElement()
-				.id(this._id + '_options')
+
+			optionContainer = new IgeUiElement(this._ige)
+				.id(this._id + "_options")
 				.backgroundColor(this._backgroundColor)
 				.borderColor(this._borderColor)
 				.borderWidth(this._borderWidth)
@@ -137,16 +139,16 @@ var IgeUiDropDown = IgeUiElement.extend({
 				.width(this._bounds2d.x)
 				.height(mainHeight)
 				.mount(this);
-			
+
 			for (i = 0; i < this._options.length; i++) {
-				ige.ui.style('#' + this._id + '_options_' + i, {
-					color: this._color
+				this._ige.ui.style("#" + this._id + "_options_" + i, {
+					"color": this._color
 				});
-				
-				new IgeUiLabel()
-					.id(this._id + '_options_' + i)
-					.data('optionIndex', i)
-					.styleClass('IgeUiDropDownOption')
+
+				new IgeUiLabel(this._ige, {"textAlignY": 1})
+					.id(this._id + "_options_" + i)
+					.data("optionIndex", i)
+					.styleClass("IgeUiDropDownOption")
 					.value(this._options[i].text)
 					.top((this._bounds2d.y * i) + 1)
 					.left(1)
@@ -156,22 +158,22 @@ var IgeUiDropDown = IgeUiElement.extend({
 					.allowActive(true)
 					.allowHover(true)
 					.mouseUp(function () {
-						self.selectIndex(this.data('optionIndex'));
+						self.selectIndex(this.data("optionIndex"));
 					})
 					.mount(optionContainer);
-			} 
+			}
 		} else {
-			ige.$(this._id + '_options').destroy();
+			this._ige.$(this._id + "_options").destroy();
 		}
-	},
-	
-	tick: function (ctx) {
-		IgeUiElement.prototype.tick.call(this, ctx);
-		
+	}
+
+	tick (ctx) {
+		super.tick(ctx);
+
 		// Draw drop-down box
-		ctx.fillStyle = '#cccccc';
+		ctx.fillStyle = "#cccccc";
 		ctx.fillRect(Math.floor(this._bounds2d.x2) - 30, -this._bounds2d.y2 + 1, 30, this._bounds2d.y - 2);
-		
+
 		// Chevron
 		ctx.strokeStyle = this._color;
 		ctx.beginPath();
@@ -179,9 +181,9 @@ var IgeUiDropDown = IgeUiElement.extend({
 		ctx.lineTo(this._bounds2d.x2 - 14.5, 2.5);
 		ctx.lineTo(this._bounds2d.x2 - 10.5, -this._bounds2d.y2 + 14.5);
 		ctx.stroke();
-		
+
 		this._renderBorder(ctx);
 	}
-});
+}
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeUiDropDown; }
+export default IgeUiDropDown;

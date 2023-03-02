@@ -1,23 +1,29 @@
-var IgeTimeComponent = IgeEventingClass.extend({
-	classId: 'IgeTimeComponent',
-	componentId: 'time',
-	
+import IgeEventingClass from "../src/IgeEventingClass";
+import IgeBaseClass from "../src/IgeBaseClass";
+
+class IgeTimeComponent extends IgeEventingClass {
+	classId = "IgeTimeComponent";
+	componentId = "time";
+
 	/**
 	 * @constructor
+	 * @param {Ige} ige The engine instance.
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	init: function (entity, options) {
+	constructor (ige, entity, options) {
+		super(ige);
+
 		this._entity = entity;
 		this._timers = [];
 		this._additions = [];
 		this._removals = [];
 
 		// Add the animation behaviour to the entity
-		entity.addBehaviour('time', this._update);
-	},
-	
-	addTimer: function (timer) {
+		entity.addBehaviour("time", this._update.bind(this));
+	}
+
+	addTimer = (timer) => {
 		if (timer) {
 			if (!this._updating) {
 				this._timers.push(timer);
@@ -25,73 +31,72 @@ var IgeTimeComponent = IgeEventingClass.extend({
 				this._additions.push(timer);
 			}
 		}
-		
+
 		return this;
-	},
-	
-	removeTimer: function (timer) {
+	}
+
+	removeTimer = (timer) => {
 		if (timer) {
 			if (!this._updating) {
-				this._timers.pull(timer);
+				IgeBaseClass.pull(this._timers, timer);
 			} else {
 				this._removals.push(timer);
 			}
 		}
-		
+
 		return this;
-	},
-	
-	_update: function () {
+	}
+
+	_update () {
 		// Get the ige tick delta and tell our timers / intervals that an update has occurred
-		var self = ige.time,
-			delta = ige._tickDelta,
-			arr = self._timers,
+		var delta = this._ige._tickDelta,
+			arr = this._timers,
 			arrCount = arr.length;
-		
+
 		while (arrCount--) {
 			arr[arrCount]
 				.addTime(delta)
 				.update();
 		}
-		
+
 		// Process removing any timers that were scheduled for removal
-		self._processRemovals();
-		
+		this._processRemovals();
+
 		// Now process any additions to the timers that were scheduled to be added
-		self._processAdditions();
-		
-		return self;
-	},
-	
-	_processAdditions: function () {
+		this._processAdditions();
+
+		return this;
+	}
+
+	_processAdditions = () => {
 		var arr = this._additions,
 			arrCount = arr.length;
-		
+
 		if (arrCount) {
 			while (arrCount--) {
 				this._timers.push(arr[arrCount]);
 			}
-			
+
 			this._additions = [];
 		}
-		
-		return this;
-	},
-	
-	_processRemovals: function () {
-		var arr = this._removals,
-			arrCount = arr.length;
-		
-		if (arrCount) {
-			while (arrCount--) {
-				this._timers.pull(arr[arrCount]);
-			}
-			
-			this._removals = [];
-		}
-		
+
 		return this;
 	}
-});
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeTimeComponent; }
+	_processRemovals = () => {
+		var arr = this._removals,
+			arrCount = arr.length;
+
+		if (arrCount) {
+			while (arrCount--) {
+				IgeBaseClass.pull(this._timers, arr[arrCount]);
+			}
+
+			this._removals = [];
+		}
+
+		return this;
+	}
+}
+
+export default IgeTimeComponent;

@@ -1,25 +1,31 @@
+import IgeEventingClass from "../src/IgeEventingClass";
+
 /**
  * When added to a viewport, automatically adds mouse panning
  * capabilities to the viewport's camera.
  */
-var IgeMousePanComponent = IgeEventingClass.extend({
-	classId: 'IgeMousePanComponent',
-	componentId: 'mousePan',
+class IgeMousePanComponent extends IgeEventingClass {
+	static componentTargetClass = "IgeViewport";
+	classId = "IgeMousePanComponent";
+	componentId = "mousePan";
 
 	/**
 	 * @constructor
+	 * @param {Ige} ige The engine instance.
 	 * @param {IgeObject} entity The object that the component is added to.
 	 * @param {Object=} options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	init: function (entity, options) {
+	constructor (ige, entity, options) {
+		super(ige);
+
 		this._entity = entity;
 		this._options = options;
 
 		// Set the pan component to inactive to start with
 		this._enabled = false;
 		this._startThreshold = 5; // The number of pixels the mouse should move to activate a pan
-	},
+	}
 
 	/**
 	 * Gets / sets the number of pixels after a mouse down that the mouse
@@ -27,14 +33,14 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	 * @param val
 	 * @return {*}
 	 */
-	startThreshold: function (val) {
+	startThreshold = (val) => {
 		if (val !== undefined) {
 			this._startThreshold = val;
 			return this._entity;
 		}
 
 		return this._startThreshold;
-	},
+	}
 
 	/**
 	 * Gets / sets the rectangle that the pan operation will be limited
@@ -42,14 +48,14 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	 * @param {IgeRect=} rect
 	 * @return {*}
 	 */
-	limit: function (rect) {
+	limit (rect) {
 		if (rect !== undefined) {
 			this._limit = rect;
 			return this._entity;
 		}
 
 		return this._limit;
-	},
+	}
 
 	/**
 	 * Gets / sets the enabled flag. If set to true, pan
@@ -58,33 +64,31 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	 * @param {Boolean=} val
 	 * @return {*}
 	 */
-	enabled: function (val) {
-		var self = this;
-
-		if (val !== undefined) {
-			this._enabled = val;
-
-			// Reset pan values.
-			// This prevents problems if mouse pan is disabled mid-pan.
-			this._panPreStart = false;
-			this._panStarted  = false;
-
-			if (this._enabled) {
-				// Listen for the mouse events we need to operate a mouse pan
-				this._entity.mouseDown(function (event) { self._mouseDown(event); });
-				this._entity.mouseMove(function (event) { self._mouseMove(event); });
-				this._entity.mouseUp(function (event) { self._mouseUp(event); });
-			} else {
-				// Remove the pan start data
-				delete this._panStartMouse;
-				delete this._panStartCamera;
-			}
-
-			return this._entity;
+	enabled (val) {
+		if (val === undefined) {
+			return this._enabled;
 		}
 
-		return this._enabled;
-	},
+		this._enabled = val;
+
+		// Reset pan values.
+		// This prevents problems if mouse pan is disabled mid-pan.
+		this._panPreStart = false;
+		this._panStarted  = false;
+
+		if (this._enabled) {
+			// Listen for the mouse events we need to operate a mouse pan
+			this._entity.mouseDown((event) => { this._mouseDown(event); });
+			this._entity.mouseMove((event) => { this._mouseMove(event); });
+			this._entity.mouseUp((event) => { this._mouseUp(event); });
+		} else {
+			// Remove the pan start data
+			delete this._panStartMouse;
+			delete this._panStartCamera;
+		}
+
+		return this._entity;
+	}
 
 	/**
 	 * Handles the mouseDown event. Records the starting position of the
@@ -92,21 +96,21 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	 * @param event
 	 * @private
 	 */
-	_mouseDown: function (event) {
+	_mouseDown = (event) => {
 		if (!this._panStarted && this._enabled && event.igeViewport.id() === this._entity.id()) {
 			// Record the mouse down position - pan pre-start
-			var curMousePos = ige._mousePos;
+			var curMousePos = this._ige._mousePos;
 			this._panStartMouse = curMousePos.clone();
 
 			this._panStartCamera = {
-				x: this._entity.camera._translate.x,
-				y: this._entity.camera._translate.y
+				"x": this._entity.camera._translate.x,
+				"y": this._entity.camera._translate.y
 			};
 
 			this._panPreStart = true;
 			this._panStarted = false;
 		}
-	},
+	}
 
 	/**
 	 * Handles the mouse move event. Translates the camera as the mouse
@@ -114,14 +118,14 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	 * @param event
 	 * @private
 	 */
-	_mouseMove: function (event) {
+	_mouseMove = (event) => {
 		if (this._enabled) {
 			// Pan the camera if the mouse is down
 			if (this._panStartMouse) {
-				var curMousePos = ige._mousePos,
+				var curMousePos = this._ige._mousePos,
 					panCords = {
-						x: this._panStartMouse.x - curMousePos.x,
-						y: this._panStartMouse.y - curMousePos.y
+						"x": this._panStartMouse.x - curMousePos.x,
+						"y": this._panStartMouse.y - curMousePos.y
 					}, distX = Math.abs(panCords.x), distY = Math.abs(panCords.y),
 					panFinalX = (panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x,
 					panFinalY = (panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y;
@@ -156,11 +160,11 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 							panFinalY,
 							0
 						);
-						this.emit('panStart');
+						this.emit("panStart");
 						this._panPreStart = false;
 						this._panStarted = true;
 
-						this.emit('panMove');
+						this.emit("panMove");
 					}
 				} else {
 					// Pan has already started
@@ -170,11 +174,11 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 						0
 					);
 
-					this.emit('panMove');
+					this.emit("panMove");
 				}
 			}
 		}
-	},
+	}
 
 	/**
 	 * Handles the mouse up event. Finishes the camera translate and
@@ -182,15 +186,15 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 	 * @param event
 	 * @private
 	 */
-	_mouseUp: function (event) {
+	_mouseUp = (event) => {
 		if (this._enabled) {
 			// End the pan
 			if (this._panStarted) {
 				if (this._panStartMouse) {
-					var curMousePos = ige._mousePos,
+					var curMousePos = this._ige._mousePos,
 						panCords = {
-							x: this._panStartMouse.x - curMousePos.x,
-							y: this._panStartMouse.y - curMousePos.y
+							"x": this._panStartMouse.x - curMousePos.x,
+							"y": this._panStartMouse.y - curMousePos.y
 						},
 						panFinalX = (panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x,
 						panFinalY = (panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y;
@@ -227,7 +231,7 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 					delete this._panStartMouse;
 					delete this._panStartCamera;
 
-					this.emit('panEnd');
+					this.emit("panEnd");
 					this._panStarted = false;
 				}
 			} else {
@@ -237,4 +241,6 @@ var IgeMousePanComponent = IgeEventingClass.extend({
 			}
 		}
 	}
-});
+}
+
+export default IgeMousePanComponent;

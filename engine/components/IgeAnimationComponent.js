@@ -1,3 +1,5 @@
+import IgeEventingClass from "../src/IgeEventingClass";
+
 /**
  * The animation component class. Handles defining and controlling
  * frame-based animations based on cells from a texture.
@@ -6,22 +8,25 @@
  * @event loopComplete - The animation has completed a full cycle (shown all frames).
  * @event complete - The animation has completed all assigned loop cycles.
  */
-var IgeAnimationComponent = IgeEventingClass.extend({
-	classId: 'IgeAnimationComponent',
-	componentId: 'animation',
+class IgeAnimationComponent extends IgeEventingClass {
+	classId = "IgeAnimationComponent";
+	componentId = "animation";
 
 	/**
 	 * @constructor
+	 * @param {Ige} ige The engine instance.
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	init: function (entity, options) {
+	constructor (ige, entity, options) {
+		super(ige);
+
 		this._entity = entity;
 		this._anims = {};
 
 		// Add the animation behaviour to the entity
-		entity.addBehaviour('tween', this._update);
-	},
+		entity.addBehaviour("tween", this._update);
+	}
 
 	/**
 	 * Defines an animation specifying the frames to use, the
@@ -45,7 +50,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 * @return {*}
 	 */
-	define: function (id, frames, fps, loop, convertIdsToIndex) {
+	define = (id, frames, fps, loop, convertIdsToIndex) => {
 		if (frames && frames.length) {
 			var i, frame;
 			this._anims.length = this._anims.length || 0;
@@ -58,14 +63,14 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 				// Check each frame for string values
 				for (i = 0; i < frames.length; i++) {
 					frame = frames[i];
-					
-					if (typeof(frame) === 'string') {
+
+					if (typeof(frame) === "string") {
 						if (this._entity._texture) {
 							// The frame has a cell id so convert to an index
 							frame = this._entity._texture.cellIdToIndex(frame);
 							frames[i] = frame;
 						} else {
-							this.log('You can increase the performance of id-based cell animations by specifying the animation.define AFTER you have assigned your sprite sheet to the entity on entity with ID: ' + this._entity.id(), 'warning');
+							this.log("You can increase the performance of id-based cell animations by specifying the animation.define AFTER you have assigned your sprite sheet to the entity on entity with ID: " + this._entity.id(), "warning");
 							break;
 						}
 					}
@@ -75,66 +80,66 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 			// Store the animation
 			var frameTime = ((1000 / fps)|0);
 			this._anims[id] = {
-				frames: frames,
-				frameTime: frameTime,
-				loop: loop !== undefined ? loop : -1, // Default to infinite loop (-1)
-				frameCount: frames.length,
-				totalTime: frames.length * frameTime,
-				currentDelta: 0,
-				currentLoop: 0
+				frames,
+				frameTime,
+				"loop": loop !== undefined ? loop : -1, // Default to infinite loop (-1)
+				"frameCount": frames.length,
+				"totalTime": frames.length * frameTime,
+				"currentDelta": 0,
+				"currentLoop": 0
 			};
 
 			this._anims.length++;
 		} else {
-			this.log('Cannot define an animation without a frame array!', 'error');
+			this.log("Cannot define an animation without a frame array!", "error");
 		}
 		return this._entity;
-	},
-	
-	addFrame: function (id, frameId) {
+	}
+
+	addFrame = (id, frameId) => {
 		if (this._anims[id]) {
 			var anim = this._anims[id];
-			
-			if (typeof(frameId) === 'string') {
+
+			if (typeof(frameId) === "string") {
 				frameId = this._entity._texture.cellIdToIndex(frameId);
 			}
-			
+
 			anim.frames.push(frameId);
 			anim.frameCount++;
 			anim.totalTime = anim.frames.length * anim.frameTime;
 		}
-	},
-	
-	removeFrame: function (id, frameIndex) {
+	}
+
+	removeFrame = (id, frameIndex) => {
 		if (this._anims[id]) {
 			var anim = this._anims[id];
-			
+
 			anim.frames.splice(frameIndex, 1);
 			anim.frameCount--;
 			anim.totalTime = anim.frames.length * anim.frameTime;
 		}
-	},
+	}
 
 	/**
 	 * Removes a previously defined animation from the entity.
 	 * @param {String} id The id of the animation to remove.
 	 * @returns {*}
 	 */
-	remove: function (id) {
+	remove = (id) => {
 		delete this._anims[id];
 		this._anims.length--;
-		
+
 		return this._entity;
-	},
+	}
 
 	/**
 	 * Returns true if the specified animation has been defined.
 	 * @param {String} id The id of the animation to check for.
 	 * @returns {Boolean} True if the animation has been defined.
 	 */
-	defined: function (id) {
+	defined = (id) => {
 		return Boolean(this._anims[id]);
-	},
+	}
 
 	/**
 	 * Sets the specified animation's FPS.
@@ -147,24 +152,24 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 *     var entity = new IgeEntity()
 	 *         .addComponent(IgeAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
-	 *     
+	 *
 	 *     // Change the FPS to 12
 	 *     entity.animation.setFps('anim1', 12);
 	 * @return {*}
 	 */
-	setFps: function (id, fps) {
+	setFps = (id, fps) => {
 		if (this._anims) {
 			var anim = this._anims[id];
-			
+
 			if (anim) {
 				anim.frameTime = ((1000 / fps)|0);
 				anim.totalTime = anim.frameCount * anim.frameTime;
 			}
 		}
-		
+
 		return this._entity;
-	},
-	
+	}
+
 	/**
 	 * Sets all the animations assigned to an entity to the specified FPS.
 	 * @param {Number=} fps The number of frames per second the animations
@@ -176,12 +181,12 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 *         .addComponent(IgeAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 *         .animation.define('anim2', [5, 6, 7, 8], 25, -1);
-	 *     
+	 *
 	 *     // Change the FPS of all animations to 12
 	 *     entity.animation.setAllFps(12);
 	 * @return {*}
 	 */
-	setAllFps: function (fps) {
+	setAllFps = (fps) => {
 		if (this._anims) {
 			for (id in this._anims) {
 				if (this._anims.hasOwnProperty(id)) {
@@ -189,19 +194,19 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 				}
 			}
 		}
-		
+
 		return this._entity;
-	},
+	}
 
 	/**
 	 * Checks the current animation state, either started
-	 * or stopped. 
+	 * or stopped.
 	 * @return {Boolean} True if an animation is currently playing
 	 * or false if not.
 	 */
-	playing: function () {
+	playing = () => {
 		return this._playing;
-	},
+	}
 
 	/**
 	 * Starts an animation from the beginning frame.
@@ -213,65 +218,65 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 *     var entity = new IgeEntity()
 	 *         .addComponent(IgeAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
-	 *         
+	 *
 	 *     entity.animation.start('anim1');
-	 *     
+	 *
 	 * @example #Start an animation with callbacks for animation events
 	 *     // Create an entity, add the animation component, define
 	 *     // an animation and then start it
 	 *     var entity = new IgeEntity()
 	 *         .addComponent(IgeAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
-	 *         
+	 *
 	 *     // In each animation callback...
 	 *     // this = the entity's animation component instance
 	 *     // anim = the animation component's _anim object
 	 *     // this._entity = the entity the animation is attached to
-	 *     
+	 *
 	 *     entity.animation.start('anim1', {
 	 *     		onLoop: function (anim) {
-	 *     			console.log('Animation looped', this, anim);	
+	 *     			console.log('Animation looped', this, anim);
 	 *     		},
 	 *     		onStopped: function (anim) {
-	 *     			console.log('Animation stopped', this, anim);	
+	 *     			console.log('Animation stopped', this, anim);
 	 *     		},
 	 *     		onComplete: function (anim) {
-	 *     			console.log('Animation completed', this, anim);	
+	 *     			console.log('Animation completed', this, anim);
 	 *     		}
 	 *     });
-	 *     
+	 *
 	 * @example #Start an animation with callbacks for animation events via event listeners
 	 *     // Create an entity, add the animation component, define
 	 *     // an animation and then start it
 	 *     var entity = new IgeEntity()
 	 *         .addComponent(IgeAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
-	 *     
+	 *
 	 *     // In each animation callback...
 	 *     // this = the entity's animation component instance
 	 *     // anim = the animation component's _anim object
 	 *     // this._entity = the entity the animation is attached to
-	 *     
+	 *
 	 *     entity.animation.on('started', function (anim) {
-	 *     		console.log('Animation started', this, anim);	
+	 *     		console.log('Animation started', this, anim);
 	 *     });
-	 *     
+	 *
 	 *     entity.animation.on('loopComplete', function (anim) {
-	 *     		console.log('Animation looped', this, anim);	
+	 *     		console.log('Animation looped', this, anim);
 	 *     });
-	 *     
+	 *
 	 *     entity.animation.on('stopped', function (anim) {
-	 *     		console.log('Animation stopped', this, anim);	
+	 *     		console.log('Animation stopped', this, anim);
 	 *     });
-	 *     
+	 *
 	 *     entity.animation.on('complete', function (anim) {
-	 *     		console.log('Animation complete', this, anim);	
+	 *     		console.log('Animation complete', this, anim);
 	 *     });
-	 *     
+	 *
 	 *     entity.animation.start('anim1');
 	 * @return {*}
 	 */
-	start: function (animId, options) {
+	start = (animId, options) => {
 		if (this._anims) {
 			var anim = this._anims[animId];
 
@@ -282,26 +287,26 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 
 				this._anim = anim;
 				this._animId = animId;
-				
+
 				// Check for any callbacks in the options object
 				if (options !== undefined) {
 					this._completeCallback = options.onComplete;
 					this._loopCallback = options.onLoop;
 					this._stoppedCallback = options.onStopped;
 				}
-				
+
 				this._playing = true;
 
-				this.emit('started', anim);
+				this.emit("started", anim);
 			} else {
-				this.log('Cannot set animation to "' + animId + '" because the animation does not exist!', 'warning');
+				this.log("Cannot set animation to \"" + animId + "\" because the animation does not exist!", "warning");
 			}
 		} else {
-			this.log('Cannot set animation to "' + animId + '" because no animations have been defined with defineAnim(...);', 'warning');
+			this.log("Cannot set animation to \"" + animId + "\" because no animations have been defined with defineAnim(...);", "warning");
 		}
 
 		return this._entity;
-	},
+	}
 
 	/**
 	 * Starts an animation only if the passed animation is not already
@@ -314,22 +319,22 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 *     var entity = new IgeEntity()
 	 *         .addComponent(IgeAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
-	 *         
+	 *
 	 *     entity.animation.select('anim1');
-	 *     
+	 *
 	 *     // Selecting the same animation twice will NOT reset the
 	 *     // animation because it is already playing. This is how
 	 *     // select() differs from start()
 	 *     entity.animation.select('anim1');
 	 * @return {*}
 	 */
-	select: function (animId, options) {
+	select = (animId, options) => {
 		if (this._animId !== animId) {
 			this.start(animId, options);
 		}
 
 		return this._entity;
-	},
+	}
 
 	/**
 	 * Stops the current animation.
@@ -337,13 +342,13 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 	 *     entity.animation.stop();
 	 * @return {*}
 	 */
-	stop: function () {
+	stop = () => {
 		if (this._stoppedCallback) {
 			this._stoppedCallback.call(this, this._anim);
 		}
-		
-		this.emit('stopped', this._anim);
-		
+
+		this.emit("stopped", this._anim);
+
 		this._playing = false;
 
 		delete this._anim;
@@ -354,19 +359,19 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 		delete this._stoppedCallback;
 
 		return this._entity;
-	},
-	
+	}
+
 	/**
 	 * Handles the animation processing each update.
 	 * @param {CanvasRenderingContext2D} ctx The rendering context to use when doing draw operations.
 	 * @param {Number} tickDelta The current ige._tickDelta passed down the scenegraph.
 	 */
-	_update: function (ctx, tickDelta) {
+	_update = (ctx, tickDelta) => {
 		var self = this.animation;
-		
+
 		// Just in case someone forgets to pass it in their update call!
 		tickDelta = tickDelta || ige._tickDelta;
-		
+
 		if (self._anim) {
 			var anim = self._anim,
 				multiple,
@@ -383,7 +388,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 					if (self._completeCallback) {
 						self._completeCallback.call(self, anim);
 					}
-					self.emit('complete', anim);
+					self.emit("complete", anim);
 					self.stop();
 				} else {
 					// Check if we have an infinite loop
@@ -397,7 +402,7 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 						if (self._loopCallback) {
 							self._loopCallback.call(self, anim);
 						}
-						self.emit('loopComplete', anim);
+						self.emit("loopComplete", anim);
 					} else {
 						anim.currentLoop++;
 						if (anim.loop > 0 && anim.currentLoop <= anim.loop) {
@@ -410,13 +415,13 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 							if (self._loopCallback) {
 								self._loopCallback.call(self, anim);
 							}
-							self.emit('loopComplete', anim);
+							self.emit("loopComplete", anim);
 						} else {
 							// The animation has ended
 							if (self._completeCallback) {
 								self._completeCallback.call(self, anim);
 							}
-							self.emit('complete', anim);
+							self.emit("complete", anim);
 							self.stop();
 						}
 					}
@@ -432,13 +437,13 @@ var IgeAnimationComponent = IgeEventingClass.extend({
 			cell = anim.frames[frame];
 
 			// Set the current frame
-			if (typeof(cell) === 'string') {
+			if (typeof(cell) === "string") {
 				self._entity.cellById(cell);
 			} else {
 				self._entity.cell(cell);
 			}
 		}
 	}
-});
+}
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeAnimationComponent; }
+export default IgeAnimationComponent;

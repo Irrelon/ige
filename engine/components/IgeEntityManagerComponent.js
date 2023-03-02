@@ -1,19 +1,24 @@
-var IgeEntityManagerComponent = IgeClass.extend({
-	classId: 'IgeEntityManagerComponent',
-	componentId: 'entityManager',
+import IgeBaseClass from "../src/IgeBaseClass";
+
+class IgeEntityManagerComponent extends IgeBaseClass {
+	classId = "IgeEntityManagerComponent";
+	componentId = "entityManager";
 
 	/**
 	 * @constructor
+	 * @param {Ige} ige The engine instance.
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	init: function (entity, options) {
+	constructor (ige, entity, options) {
+		super(ige);
+
 		this._entity = entity;
 		this._options = options;
 
 		// Check we are being added to a tile map
 		if (!this._entity.pointToTile) {
-			this.log('Warning, IgeEntityManagerComponent is only meant to be added to a tile map!', 'warning');
+			this.log("Warning, IgeEntityManagerComponent is only meant to be added to a tile map!", "warning");
 		}
 
 		this._maps = [];
@@ -22,8 +27,8 @@ var IgeEntityManagerComponent = IgeClass.extend({
 		this._createArr = [];
 		this._removeArr = [];
 
-		entity.addBehaviour('entityManager', this._behaviour);
-	},
+		entity.addBehaviour("entityManager", this._behaviour);
+	}
 
 	/**
 	 * Adds a map that will be used to read data and convert
@@ -31,13 +36,13 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 * @param {IgeTileMap2d=} map
 	 * @return {*}
 	 */
-	addMap: function (map) {
+	addMap = (map) => {
 		if (map !== undefined) {
 			this._maps.push(map);
 		}
 
 		return this._entity;
-	},
+	}
 
 	/**
 	 * Gets / sets the boolean flag determining if the entity
@@ -45,14 +50,14 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 * @param {Boolean=} val
 	 * @return {*}
 	 */
-	active: function (val) {
+	active = (val) => {
 		if (val !== undefined) {
 			this._active = val;
 			return this._entity;
 		}
 
 		return this._active;
-	},
+	}
 
 	/**
 	 * Gets / sets the number of entities the entity manager can
@@ -62,14 +67,14 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 * @param val
 	 * @return {*}
 	 */
-	maxCreatePerTick: function (val) {
+	maxCreatePerTick = (val) => {
 		if (val !== undefined) {
 			this._maxCreatePerTick = val;
 			return this._entity;
 		}
 
 		return this._maxCreatePerTick;
-	},
+	}
 
 	/**
 	 * Gets / sets the number of entities the entity manager can
@@ -79,14 +84,14 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 * @param val
 	 * @return {*}
 	 */
-	maxRemovePerTick: function (val) {
+	maxRemovePerTick = (val) => {
 		if (val !== undefined) {
 			this._maxRemovePerTick = val;
 			return this._entity;
 		}
 
 		return this._maxRemovePerTick;
-	},
+	}
 
 	/**
 	 * Gets / sets the overwatch mode for the entity manager. This
@@ -96,14 +101,14 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 * @param {Number=} val Overwatch mode, defaults to 0.
 	 * @return {*}
 	 */
-	overwatchMode: function (val) {
+	overwatchMode = (val) => {
 		if (val !== undefined) {
 			this._overwatchMode = val;
 			return this._entity;
 		}
 
 		return this._overwatchMode;
-	},
+	}
 
 	/**
 	 * Adds a callback method that is called before an entity is
@@ -112,14 +117,14 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 * @param {Function=} val The callback method.
 	 * @return {*}
 	 */
-	createCheck: function (val) {
+	createCheck = (val) => {
 		if (val !== undefined) {
 			this._createCheck = val;
 			return this._entity;
 		}
 
 		return this._createCheck;
-	},
+	}
 
 	/**
 	 * Adds a callback method that is called to allow you to execute
@@ -128,14 +133,14 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 * @param {Function=} val The callback method.
 	 * @return {*}
 	 */
-	createEntityFromMapData: function (val) {
+	createEntityFromMapData = (val) => {
 		if (val !== undefined) {
 			this._createEntityFromMapData = val;
 			return this._entity;
 		}
 
 		return this._createEntityFromMapData;
-	},
+	}
 
 	/**
 	 * Adds a callback method that is called before an entity is removed
@@ -144,14 +149,14 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 * @param {Function=} val The callback method.
 	 * @return {*}
 	 */
-	removeCheck: function (val) {
+	removeCheck = (val) => {
 		if (val !== undefined) {
 			this._removeCheck = val;
 			return this._entity;
 		}
 
 		return this._removeCheck;
-	},
+	}
 
 	/**
 	 * Get / sets the entity that will be used to determine the
@@ -160,21 +165,21 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 * @param entity
 	 * @return {*}
 	 */
-	trackTranslate: function (entity) {
+	trackTranslate = (entity) => {
 		if (entity !== undefined) {
 			this._trackTranslateTarget = entity;
 			return this;
 		}
 
 		return this._trackTranslateTarget;
-	},
+	}
 
 	/**
 	 * Stops tracking the current tracking target's translation.
 	 */
-	unTrackTranslate: function () {
+	unTrackTranslate = () => {
 		delete this._trackTranslateTarget;
-	},
+	}
 
 	/**
 	 * Gets / sets the center position of the management area.
@@ -182,7 +187,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 * @param {Number=} y
 	 * @return {*}
 	 */
-	areaCenter: function (x, y) {
+	areaCenter = (x, y) => {
 		if (x !== undefined && y !== undefined) {
 			// Adjust the passed x, y to account for this
 			// texture map's translation
@@ -207,7 +212,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 		}
 
 		return this._areaCenter;
-	},
+	}
 
 	/**
 	 * Gets / sets the area rectangle of the management area where
@@ -220,16 +225,16 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 * @param {Number=} height
 	 * @return {*}
 	 */
-	areaRect: function (x, y, width, height) {
+	areaRect = (x, y, width, height) => {
 		if (x !== undefined && y !== undefined && width !== undefined && height !== undefined) {
 			this._areaRect = new IgeRect(x, y, width, height);
 			return this._entity;
 		}
 
 		return this._areaRect;
-	},
+	}
 
-	areaRectAutoSize: function (val, options) {
+	areaRectAutoSize = (val, options) => {
 		if (val !== undefined) {
 			this._areaRectAutoSize = val;
 			this._areaRectAutoSizeOptions = options;
@@ -237,13 +242,13 @@ var IgeEntityManagerComponent = IgeClass.extend({
 		}
 
 		return this._areaRectAutoSize;
-	},
+	}
 
 	/**
 	 * Returns the current management area.
 	 * @return {IgeRect}
 	 */
-	currentArea: function () {
+	currentArea = () => {
 		// Check if we are tracking an entity that is used to
 		// set the center point of the area
 		if (this._trackTranslateTarget) {
@@ -265,7 +270,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 		} else {
 			return new IgeRect(0, 0, 0, 0);
 		}
-	},
+	}
 
 	/**
 	 * Gets / sets the mode that entities will be removed with.
@@ -277,21 +282,21 @@ var IgeEntityManagerComponent = IgeClass.extend({
 	 * @param val
 	 * @return {*}
 	 */
-	removeMode: function (val) {
+	removeMode = (val) => {
 		if (val !== undefined) {
 			this._removeMode = val;
 			return this._entity;
 		}
 
 		return this._removeMode;
-	},
+	}
 
 	/**
 	 * The behaviour method executed each tick.
 	 * @param ctx
 	 * @private
 	 */
-	_behaviour: function (ctx) {
+	_behaviour = (ige, entity, ctx) => {
 		var self = this.entityManager,
 			currentArea,
 			currentAreaTiles,
@@ -310,7 +315,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 			renderSize,
 			ratio;
 
-		if ((!self._areaRect || ige._resized) && self._areaRectAutoSize) {
+		if ((!self._areaRect || this._ige._resized) && self._areaRectAutoSize) {
 			self._resizeEvent();
 		}
 
@@ -385,7 +390,7 @@ var IgeEntityManagerComponent = IgeClass.extend({
 
 			// Generate the bounds rectangle
 			if (this._drawBounds) {
-				ctx.strokeStyle = '#ff0000';
+				ctx.strokeStyle = "#ff0000";
 				ctx.strokeRect(currentArea.x, currentArea.y, currentArea.width, currentArea.height);
 
 				this._highlightTileRect = currentAreaTiles;
@@ -444,9 +449,9 @@ var IgeEntityManagerComponent = IgeClass.extend({
 			// Process the entity queues
 			self.processQueues();
 		}
-	},
+	}
 
-	processQueues: function () {
+	processQueues = () => {
 		var createArr = this._createArr,
 			createCount = createArr.length,
 			createLimit = this._maxCreatePerTick !== undefined ? this._maxCreatePerTick : 0,
@@ -473,14 +478,14 @@ var IgeEntityManagerComponent = IgeClass.extend({
 			// to the entity creation method assigned to this manager
 			createEntityFunc.apply(this, createArr.shift());
 		}
-	},
+	}
 
 	/**
 	 * Handles screen resize events.
 	 * @param event
 	 * @private
 	 */
-	_resizeEvent: function (event) {
+	_resizeEvent = (event) => {
 		// Set width / height of scene to match parent
 		if (this._areaRectAutoSize) {
 			var geom = this._entity._parent._bounds2d,
@@ -506,4 +511,6 @@ var IgeEntityManagerComponent = IgeClass.extend({
 			}
 		}
 	}
-});
+}
+
+export default IgeEntityManagerComponent;

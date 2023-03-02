@@ -1,4 +1,4 @@
-var IgeUiPositionExtension = {
+const IgeUiPositionExtension = {
 	/**
 	 * Gets / sets the entity's x position relative to the left of
 	 * the canvas.
@@ -6,54 +6,55 @@ var IgeUiPositionExtension = {
 	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
-	left: function (px, noUpdate) {
-		if (px !== undefined) {
-			if (px === null) {
-				// Remove all data
-				delete this._uiLeft;
-				delete this._uiLeftPercent;
-			} else {
-				delete this._uiCenter;
-				delete this._uiCenterPercent;
-				
-				if (typeof(px) === 'string') {
-					// Store the percentage value
-					this._uiLeftPercent = px;
-					
-					// Check if we are already mounted
-					var parentWidth,
-						val = parseInt(px, 10),
-						newVal;
-					
-					if (this._parent) {
-						// We have a parent, use it's geometry
-						parentWidth = this._parent._bounds2d.x;
-					} else {
-						// We don't have a parent so use the main canvas
-						// as a reference
-						parentWidth = ige._bounds2d.x;
-					}
-						
-					// Calculate real width from percentage
-					newVal = (parentWidth / 100 * val) | 0;
-	
-					this._uiLeft = newVal;
-				} else {
-					// The value passed is not a percentage, directly assign it
-					this._uiLeft = px;
-					delete this._uiLeftPercent;
-				}
-			}
-			
-			if (!noUpdate) {
-				this._updateUiPosition();
-			}
-			return this;
+	left (px, noUpdate) {
+		if (px === undefined) {
+			return this._uiLeft;
 		}
 
-		return this._uiLeft;
+		if (px === null) {
+			// Remove all data
+			delete this._uiLeft;
+			delete this._uiLeftPercent;
+		} else {
+			delete this._uiCenter;
+			delete this._uiCenterPercent;
+
+			if (typeof(px) === "string") {
+				// Store the percentage value
+				this._uiLeftPercent = px;
+
+				// Check if we are already mounted
+				var parentWidth,
+					val = parseInt(px, 10),
+					newVal;
+
+				if (this._parent) {
+					// We have a parent, use it's geometry
+					parentWidth = this._parent._bounds2d.x;
+				} else {
+					// We don't have a parent so use the main canvas
+					// as a reference
+					parentWidth = this._ige.root._bounds2d.x;
+				}
+
+				// Calculate real width from percentage
+				newVal = (parentWidth / 100 * val) | 0;
+
+				this._uiLeft = newVal;
+			} else {
+				// The value passed is not a percentage, directly assign it
+				this._uiLeft = px;
+				delete this._uiLeftPercent;
+			}
+		}
+
+		if (!noUpdate) {
+			this._updateUiPosition();
+		}
+
+		return this;
 	},
-	
+
 	/**
 	 * Gets / sets the entity's x position relative to the right of
 	 * the canvas.
@@ -61,7 +62,7 @@ var IgeUiPositionExtension = {
 	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
-	right: function (px, noUpdate) {
+	right (px, noUpdate) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -70,28 +71,28 @@ var IgeUiPositionExtension = {
 			} else {
 				delete this._uiCenter;
 				delete this._uiCenterPercent;
-				
-				if (typeof(px) === 'string') {
+
+				if (typeof(px) === "string") {
 					// Store the percentage value
 					this._uiRightPercent = px;
-					
+
 					// Check if we are already mounted
 					var parentWidth,
 						val = parseInt(px, 10),
 						newVal;
-					
+
 					if (this._parent) {
 						// We have a parent, use it's geometry
 						parentWidth = this._parent._bounds2d.x;
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentWidth = ige._bounds2d.x;
+						parentWidth = this._ige.root._bounds2d.x;
 					}
-						
+
 					// Calculate real width from percentage
 					newVal = (parentWidth / 100 * val) | 0;
-	
+
 					this._uiRight = newVal;
 				} else {
 					// The value passed is not a percentage, directly assign it
@@ -99,7 +100,7 @@ var IgeUiPositionExtension = {
 					delete this._uiRightPercent;
 				}
 			}
-			
+
 			if (!noUpdate) {
 				this._updateUiPosition();
 			}
@@ -116,7 +117,7 @@ var IgeUiPositionExtension = {
 	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
-	center: function (px, noUpdate) {
+	center (px, noUpdate) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -127,28 +128,28 @@ var IgeUiPositionExtension = {
 				delete this._uiLeftPercent;
 				delete this._uiRight;
 				delete this._uiRightPercent;
-				
-				if (typeof(px) === 'string') {
+
+				if (typeof(px) === "string") {
 					// Store the percentage value
 					this._uiCenterPercent = px;
-					
+
 					// Check if we are already mounted
 					var parentWidth,
 						val = parseInt(px, 10),
 						newVal;
-					
+
 					if (this._parent) {
 						// We have a parent, use it's geometry
 						parentWidth = this._parent._bounds2d.x2;
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentWidth = ige._bounds2d.x2;
+						parentWidth = this._ige.root._bounds2d.x2;
 					}
-						
+
 					// Calculate real width from percentage
 					newVal = (parentWidth / 100 * val) | 0;
-	
+
 					this._uiCenter = newVal;
 				} else {
 					// The value passed is not a percentage, directly assign it
@@ -156,7 +157,7 @@ var IgeUiPositionExtension = {
 					delete this._uiCenterPercent;
 				}
 			}
-			
+
 			if (!noUpdate) {
 				this._updateUiPosition();
 			}
@@ -173,52 +174,54 @@ var IgeUiPositionExtension = {
 	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
-	top: function (px, noUpdate) {
-		if (px !== undefined) {
-			if (px === null) {
-				// Remove all data
-				delete this._uiTop;
-				delete this._uiTopPercent;
-			} else {
-				delete this._uiMiddle;
-				delete this._uiMiddlePercent;
-				
-				if (typeof(px) === 'string') {
-					// Store the percentage value
-					this._uiTopPercent = px;
-					
-					// Check if we are already mounted
-					var parentHeight,
-						val = parseInt(px, 10),
-						newVal;
-					
-					if (this._parent) {
-						// We have a parent, use it's geometry
-						parentHeight = this._parent._bounds2d.y;
-					} else {
-						// We don't have a parent so use the main canvas
-						// as a reference
-						parentHeight = ige._bounds2d.y;
-					}
-						
-					// Calculate real width from percentage
-					newVal = (parentHeight / 100 * val) | 0;
-	
-					this._uiTop = newVal;
-				} else {
-					// The value passed is not a percentage, directly assign it
-					this._uiTop = px;
-					delete this._uiTopPercent;
-				}
-			}
-			
-			if (!noUpdate) {
-				this._updateUiPosition();
-			}
-			return this;
+	top (px, noUpdate) {
+		if (px === undefined) {
+			return this._uiTop;
 		}
 
-		return this._uiTop;
+		if (px === null) {
+			// Remove all data
+			delete this._uiTop;
+			delete this._uiTopPercent;
+
+			return this._uiTop;
+		} else {
+			delete this._uiMiddle;
+			delete this._uiMiddlePercent;
+
+			if (typeof px === "string") {
+				// Store the percentage value
+				this._uiTopPercent = px;
+
+				// Check if we are already mounted
+				var parentHeight,
+					val = parseInt(px, 10),
+					newVal;
+
+				if (this._parent) {
+					// We have a parent, use it's geometry
+					parentHeight = this._parent._bounds2d.y;
+				} else {
+					// We don't have a parent so use the main canvas
+					// as a reference
+					parentHeight = this._ige.root._bounds2d.y;
+				}
+
+				// Calculate real width from percentage
+				newVal = (parentHeight / 100 * val) | 0;
+
+				this._uiTop = newVal;
+			} else {
+				// The value passed is not a percentage, directly assign it
+				this._uiTop = px;
+				delete this._uiTopPercent;
+			}
+		}
+
+		if (!noUpdate) {
+			this._updateUiPosition();
+		}
+		return this;
 	},
 
 	/**
@@ -228,7 +231,7 @@ var IgeUiPositionExtension = {
 	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
-	bottom: function (px, noUpdate) {
+	bottom (px, noUpdate) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -237,28 +240,28 @@ var IgeUiPositionExtension = {
 			} else {
 				delete this._uiMiddle;
 				delete this._uiMiddlePercent;
-				
-				if (typeof(px) === 'string') {
+
+				if (typeof(px) === "string") {
 					// Store the percentage value
 					this._uiBottomPercent = px;
-					
+
 					// Check if we are already mounted
 					var parentHeight,
 						val = parseInt(px, 10),
 						newVal;
-					
+
 					if (this._parent) {
 						// We have a parent, use it's geometry
 						parentHeight = this._parent._bounds2d.y;
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentHeight = ige._bounds2d.y;
+						parentHeight = this._ige.root._bounds2d.y;
 					}
-						
+
 					// Calculate real width from percentage
 					newVal = (parentHeight / 100 * val) | 0;
-	
+
 					this._uiBottom = newVal;
 				} else {
 					// The value passed is not a percentage, directly assign it
@@ -266,7 +269,7 @@ var IgeUiPositionExtension = {
 					delete this._uiBottomPercent;
 				}
 			}
-			
+
 			if (!noUpdate) {
 				this._updateUiPosition();
 			}
@@ -275,7 +278,7 @@ var IgeUiPositionExtension = {
 
 		return this._uiBottom;
 	},
-	
+
 	/**
 	 * Gets / sets the viewport's y position relative to the middle of
 	 * the canvas.
@@ -283,7 +286,7 @@ var IgeUiPositionExtension = {
 	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
-	middle: function (px, noUpdate) {
+	middle (px, noUpdate) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -294,28 +297,28 @@ var IgeUiPositionExtension = {
 				delete this._uiTopPercent;
 				delete this._uiBottom;
 				delete this._uiBottomPercent;
-				
-				if (typeof(px) === 'string') {
+
+				if (typeof(px) === "string") {
 					// Store the percentage value
 					this._uiMiddlePercent = px;
-					
+
 					// Check if we are already mounted
 					var parentWidth,
 						val = parseInt(px, 10),
 						newVal;
-					
+
 					if (this._parent) {
 						// We have a parent, use it's geometry
 						parentWidth = this._parent._bounds2d.y2;
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentWidth = ige._bounds2d.y2;
+						parentWidth = this._ige.root._bounds2d.y2;
 					}
-						
+
 					// Calculate real width from percentage
 					newVal = (parentWidth / 100 * val) | 0;
-	
+
 					this._uiMiddle = newVal;
 				} else {
 					// The value passed is not a percentage, directly assign it
@@ -323,7 +326,7 @@ var IgeUiPositionExtension = {
 					delete this._uiMiddlePercent;
 				}
 			}
-			
+
 			if (!noUpdate) {
 				this._updateUiPosition();
 			}
@@ -343,7 +346,7 @@ var IgeUiPositionExtension = {
 	 * @param {Boolean=} noUpdate
 	 * @return {*}
 	 */
-	width: function (px, lockAspect, modifier, noUpdate) {
+	width (px, lockAspect, modifier, noUpdate) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -353,32 +356,32 @@ var IgeUiPositionExtension = {
 			} else {
 				this._uiWidth = px;
 				this._widthModifier = modifier !== undefined ? modifier : 0;
-	
-				if (typeof(px) === 'string') {
+
+				if (typeof(px) === "string") {
 					if (this._parent) {
 						// Percentage
 						var parentWidth = this._parent._bounds2d.x,
 							val = parseInt(px, 10),
 							newVal,
 							ratio;
-	
+
 						// Calculate real width from percentage
 						newVal = (parentWidth / 100 * val) + this._widthModifier | 0;
-	
+
 						if (lockAspect) {
 							// Calculate the height from the change in width
 							ratio = newVal / this._bounds2d.x;
 							this.height(this._bounds2d.y / ratio, false, 0, noUpdate);
 						}
-	
+
 						this._bounds2d.x = newVal;
 						this._bounds2d.x2 = Math.floor(this._bounds2d.x / 2);
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						var parentWidth = ige._bounds2d.x,
+						var parentWidth = this._ige.root._bounds2d.x,
 							val = parseInt(px, 10);
-	
+
 						// Calculate real height from percentage
 						this._bounds2d.x = (parentWidth / 100 * val) + this._widthModifier | 0;
 						this._bounds2d.x2 = Math.floor(this._bounds2d.x / 2);
@@ -389,7 +392,7 @@ var IgeUiPositionExtension = {
 						var ratio = px / this._bounds2d.x;
 						this.height(this._bounds2d.y * ratio, false, 0, noUpdate);
 					}
-	
+
 					this._bounds2d.x = px;
 					this._bounds2d.x2 = Math.floor(this._bounds2d.x / 2);
 				}
@@ -414,7 +417,7 @@ var IgeUiPositionExtension = {
 	 * @param {Boolean=} noUpdate
 	 * @return {*}
 	 */
-	height: function (px, lockAspect, modifier, noUpdate) {
+	height (px, lockAspect, modifier, noUpdate) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -424,33 +427,33 @@ var IgeUiPositionExtension = {
 			} else {
 				this._uiHeight = px;
 				this._heightModifier = modifier !== undefined ? modifier : 0;
-	
-				if (typeof(px) === 'string') {
+
+				if (typeof(px) === "string") {
 					if (this._parent) {
 						// Percentage
 						var parentHeight = this._parent._bounds2d.y,
 							val = parseInt(px, 10),
 							newVal,
 							ratio;
-	
+
 						// Calculate real height from percentage
 						// Calculate real width from percentage
 						newVal = (parentHeight / 100 * val) + this._heightModifier | 0;
-	
+
 						if (lockAspect) {
 							// Calculate the height from the change in width
 							ratio = newVal / this._bounds2d.y;
 							this.width(this._bounds2d.x / ratio, false, 0, noUpdate);
 						}
-	
+
 						this._bounds2d.y = newVal;
 						this._bounds2d.y2 = Math.floor(this._bounds2d.y / 2);
 					} else {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						var parentHeight = ige._bounds2d.y,
+						var parentHeight = this._ige.root._bounds2d.y,
 							val = parseInt(px, 10);
-	
+
 						// Calculate real height from percentage
 						this._bounds2d.y = (parentHeight / 100 * val) + this._heightModifier | 0;
 						this._bounds2d.y2 = Math.floor(this._bounds2d.y / 2);
@@ -461,12 +464,12 @@ var IgeUiPositionExtension = {
 						var ratio = px / this._bounds2d.y;
 						this.width(this._bounds2d.x * ratio, false, 0, noUpdate);
 					}
-	
+
 					this._bounds2d.y = px;
 					this._bounds2d.y2 = Math.floor(this._bounds2d.y / 2);
 				}
 			}
-			
+
 			if (!noUpdate) {
 				this._updateUiPosition();
 			}
@@ -475,8 +478,15 @@ var IgeUiPositionExtension = {
 
 		return this._bounds2d.y;
 	},
-	
-	autoScaleX: function (val, lockAspect) {
+
+	flex (val) {
+		if (val === undefined) return this._uiFlex;
+
+		this._uiFlex = val;
+		return this;
+	},
+
+	autoScaleX (val, lockAspect) {
 		if (val !== undefined) {
 			this._autoScaleX = val;
 			this._autoScaleLockAspect = lockAspect;
@@ -488,7 +498,7 @@ var IgeUiPositionExtension = {
 		return this._autoScaleX;
 	},
 
-	autoScaleY: function (val, lockAspect) {
+	autoScaleY (val, lockAspect) {
 		if (val !== undefined) {
 			this._autoScaleY = val;
 			this._autoScaleLockAspect = lockAspect;
@@ -505,26 +515,27 @@ var IgeUiPositionExtension = {
 	 * for this UI entity.
 	 * @return {*}
 	 */
-	updateUiChildren: function () {
-		var arr = this._children,
+	updateUiChildren () {
+		var arr = this._children || [],
 			arrCount,
 			arrItem;
-		
+
 		if (arr) {
 			arrCount = arr.length;
-			
+
 			while (arrCount--) {
 				arrItem = arr[arrCount];
+
 				if (arrItem._updateUiPosition) {
 					arrItem._updateUiPosition();
 				}
-				
-				if (typeof(arrItem.updateUiChildren) === 'function') {
+
+				if (typeof arrItem.updateUiChildren === "function") {
 					arrItem.updateUiChildren();
 				}
 			}
 		}
-		
+
 		return this;
 	},
 
@@ -533,32 +544,32 @@ var IgeUiPositionExtension = {
 	 * top and bottom co-ordinates.
 	 * @private
 	 */
-	_updateUiPosition: function () {
+	_updateUiPosition () {
 		if (this._parent) {
 			var parentGeom = this._parent._bounds2d,
 				geomScaled = this._bounds2d.multiplyPoint(this._scale),
 				percent,
 				newVal,
 				ratio;
-			
-			/*if (this._ignoreCamera && ige._currentCamera) {
-				// Handle cam ignore when calculating 
-				parentGeom = parentGeom.dividePoint(ige._currentCamera._scale);
+
+			/*if (this._ignoreCamera && this._ige._currentCamera) {
+				// Handle cam ignore when calculating
+				parentGeom = parentGeom.dividePoint(this._ige._currentCamera._scale);
 			}*/
-			
+
 			if (this._autoScaleX) {
 				// Get the percentage as an integer
 				percent = parseInt(this._autoScaleX, 10);
-	
+
 				// Calculate new width from percentage
 				newVal = (parentGeom.x / 100 * percent);
-	
+
 				// Calculate scale ratio
 				ratio = newVal / this._bounds2d.x;
-	
+
 				// Set the new scale
 				this._scale.x = ratio;
-				
+
 				if (this._autoScaleLockAspect) {
 					this._scale.y = ratio;
 				}
@@ -584,14 +595,14 @@ var IgeUiPositionExtension = {
 
 			if (this._uiWidth) { this.width(this._uiWidth, false, this._widthModifier, true); }
 			if (this._uiHeight) { this.height(this._uiHeight, false, this._heightModifier, true); }
-			
+
 			if (this._uiCenterPercent) { this.center(this._uiCenterPercent, true); }
 			if (this._uiMiddlePercent) { this.middle(this._uiMiddlePercent, true); }
 			if (this._uiLeftPercent) { this.left(this._uiLeftPercent, true); }
 			if (this._uiRightPercent) { this.right(this._uiRightPercent, true); }
 			if (this._uiTopPercent) { this.top(this._uiTopPercent, true); }
 			if (this._uiBottomPercent) { this.bottom(this._uiBottomPercent, true); }
-			
+
 			if (this._uiCenter !== undefined) {
 				// The element is center-aligned
 				this._translate.x = Math.floor(this._uiCenter);
@@ -600,7 +611,7 @@ var IgeUiPositionExtension = {
 				if (this._uiLeft !== undefined && this._uiRight !== undefined) {
 					// Both left and right values are set, position left and assign width to reach right
 					this.width((parentGeom.x) - this._uiLeft - this._uiRight, false, 0, true);
-							
+
 					// Update translation
 					this._translate.x = Math.floor(this._uiLeft + geomScaled.x2 - (parentGeom.x2));
 				} else {
@@ -608,14 +619,14 @@ var IgeUiPositionExtension = {
 						// Position left aligned
 						this._translate.x = Math.floor(this._uiLeft + geomScaled.x2 - (parentGeom.x2));
 					}
-					
+
 					if (this._uiRight !== undefined) {
 						// Position right aligned
 						this._translate.x = Math.floor(parentGeom.x2 - geomScaled.x2 - this._uiRight);
 					}
 				}
 			}
-			
+
 			if (this._uiMiddle !== undefined) {
 				// The element is middle-aligned
 				this._translate.y = Math.floor(this._uiMiddle);
@@ -624,7 +635,7 @@ var IgeUiPositionExtension = {
 				if (this._uiTop !== undefined && this._uiBottom !== undefined) {
 					// Both top and bottom values are set, position top and assign height to reach bottom
 					this.height((parentGeom.y) - this._uiTop - this._uiBottom, false, 0, true);
-							
+
 					// Update translation
 					this._translate.y = Math.floor(this._uiTop + geomScaled.y2 - (parentGeom.y2));
 				} else {
@@ -632,19 +643,19 @@ var IgeUiPositionExtension = {
 						// Position top aligned
 						this._translate.y = Math.floor(this._uiTop + geomScaled.y2 - (parentGeom.y2));
 					}
-					
+
 					if (this._uiBottom !== undefined) {
 						// Position bottom aligned
 						this._translate.y = Math.floor(parentGeom.y2 - geomScaled.y2 - this._uiBottom);
 					}
 				}
 			}
-			
-			this.emit('uiUpdate');
-			
+
+			this.emit("uiUpdate");
+
 			this.cacheDirty(true);
 		}
 	}
 };
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeUiPositionExtension; }
+export default IgeUiPositionExtension;

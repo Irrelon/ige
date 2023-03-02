@@ -1,19 +1,21 @@
+import IgeBaseClass from "../src/IgeBaseClass";
+
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
  */
-var IgeTiledComponent = IgeClass.extend({
-	classId: 'IgeTiledComponent',
-	componentId: 'tiled',
+class IgeTiledComponent extends IgeBaseClass {
+	classId = "IgeTiledComponent";
+	componentId = "tiled";
 
 	/**
 	 * @constructor
 	 * @param entity
 	 * @param options
 	 */
-	init: function (entity, options) {
+	init = (entity, options) => {
 		this._entity = entity;
 		this._options = options;
-	},
+	}
 
 	/**
 	 * Loads a .js Tiled json-format file and converts to IGE format,
@@ -22,29 +24,29 @@ var IgeTiledComponent = IgeClass.extend({
 	 * @param url
 	 * @param callback
 	 */
-	loadJson: function (url, callback) {
+	loadJson = (url, callback) => {
 		var self = this,
 			scriptElem;
 
-		if (typeof(url) === 'string') {
-			if (ige.isClient) {
-				scriptElem = document.createElement('script');
+		if (typeof(url) === "string") {
+			if (this._ige.isClient) {
+				scriptElem = document.createElement("script");
 				scriptElem.src = url;
 				scriptElem.onload = function () {
-					self.log('Tiled data loaded, processing...');
+					self.log("Tiled data loaded, processing...");
 					self._processData(tiled, callback);
 				};
-				document.getElementsByTagName('head')[0].appendChild(scriptElem);
+				document.getElementsByTagName("head")[0].appendChild(scriptElem);
 			} else {
-				this.log('URL-based Tiled data is only available client-side. If you want to load Tiled map data on the server please include the map file in your ServerConfig.js file and then specify the map\'s data object instead of the URL.', 'error');
+				this.log("URL-based Tiled data is only available client-side. If you want to load Tiled map data on the server please include the map file in your ServerConfig.js file and then specify the map's data object instead of the URL.", "error");
 			}
 		} else {
 			self._processData(url, callback);
 		}
-	},
+	}
 
-	_processData: function (data, callback) {
-		var mapClass = ige.isServer === true ? IgeTileMap2d : IgeTextureMap,
+	_processData = (data, callback) => {
+		var mapClass = this._ige.isServer === true ? IgeTileMap2d : IgeTextureMap,
 			mapWidth = data.width,
 			mapHeight = data.height,
 			layerArray = data.layers,
@@ -78,7 +80,7 @@ var IgeTiledComponent = IgeClass.extend({
 				layerType = layer.type;
 
 				// Check if the layer is a tile layer or an object layer
-				if (layerType === 'tilelayer') {
+				if (layerType === "tilelayer") {
 					layerData = layer.data;
 
 					maps[i] = new mapClass()
@@ -90,14 +92,14 @@ var IgeTiledComponent = IgeClass.extend({
 					maps[i].type = layerType;
 
 					// Check if the layer should be isometric mounts enabled
-					if (data.orientation === 'isometric') {
+					if (data.orientation === "isometric") {
 						maps[i].isometricMounts(true);
 					}
 
 					layersById[layer.name] = maps[i];
 					tileSetCount = tileSetArray.length;
 
-					if (ige.isClient) {
+					if (this._ige.isClient) {
 						for (k = 0; k < tileSetCount; k++) {
 							maps[i].addTexture(textures[k]);
 						}
@@ -111,7 +113,7 @@ var IgeTiledComponent = IgeClass.extend({
 							z = x + (y * mapWidth);
 
 							if (layerData[z] > 0 && layerData[z] !== 2147483712) {
-								if (ige.isClient) {
+								if (this._ige.isClient) {
 									// Paint the tile
 									currentTexture = textureCellLookup[layerData[z]];
 									if (currentTexture) {
@@ -130,7 +132,7 @@ var IgeTiledComponent = IgeClass.extend({
 					}
 				}
 
-				if (layerType === 'objectgroup') {
+				if (layerType === "objectgroup") {
 					maps[i] = layer;
 					layersById[layer.name] = maps[i];
 				}
@@ -139,13 +141,13 @@ var IgeTiledComponent = IgeClass.extend({
 			callback(maps, layersById);
 		};
 
-		if (ige.isClient) {
+		if (this._ige.isClient) {
 			onLoadFunc = function (textures, tileSetCount, tileSetItem) {
 				return function () {
 					var i, cc,
 						cs = new IgeCellSheet(tileSetItem.image, this.width / tileSetItem.tilewidth, this.height / tileSetItem.tileheight)
 							.id(tileSetItem.name)
-							.on('loaded', function () {
+							.on("loaded", function () {
 								cc = this.cellCount();
 
 								this._tiledStartingId = tileSetItem.firstgid;
@@ -180,6 +182,6 @@ var IgeTiledComponent = IgeClass.extend({
 			allTexturesLoadedFunc();
 		}
 	}
-});
+}
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeTiledComponent; }
+export default IgeTiledComponent;

@@ -1,24 +1,29 @@
+import IgeEventingClass from "../src/IgeEventingClass";
+
 /**
  * When added to a viewport, automatically adds mouse zooming
  * capabilities to the viewport's camera.
  */
-var IgeMouseZoomComponent = IgeEventingClass.extend({
-	classId: 'IgeMouseZoomComponent',
-	componentId: 'mouseZoom',
+class IgeMouseZoomComponent extends IgeEventingClass {
+	classId = "IgeMouseZoomComponent";
+	componentId = "mouseZoom";
 
 	/**
 	 * @constructor
+	 * @param {Ige} ige The engine instance.
 	 * @param {IgeObject} entity The object that the component is added to.
 	 * @param {Object=} options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	init: function (entity, options) {
+	constructor (ige, entity, options) {
+		super(ige);
+
 		this._entity = entity;
 		this._options = options;
 
 		// Set the zoom component to inactive to start with
 		this._enabled = false;
-	},
+	}
 
 	/**
 	 * Sets / gets the enabled flag. If set to true, zoom
@@ -27,28 +32,24 @@ var IgeMouseZoomComponent = IgeEventingClass.extend({
 	 * @param {Boolean=} val
 	 * @return {*}
 	 */
-	enabled: function (val) {
-		var self = this;
-
-		if (val !== undefined) {
-			this._enabled = val;
-
-			if (this._enabled) {
-				// Listen for the mouse events we need to operate a mouse pan
-				this._entity.mouseDown(function (event) { self._mouseDown(event); });
-				this._entity.mouseMove(function (event) { self._mouseMove(event); });
-				this._entity.mouseUp(function (event) { self._mouseUp(event); });
-			} else {
-				// Remove the zoom start data
-				delete this._zoomStartMouse;
-				delete this._zoomStartCamera;
-			}
-
-			return this._entity;
+	enabled (val) {
+		if (val === undefined) {
+			return this._enabled;
 		}
 
-		return this._enabled;
-	},
+		this._enabled = val;
+
+		if (this._enabled) {
+			// Listen for the mouse events we need to operate a mouse zoom
+			this._entity.mouseWheel(this._mouseWheel);
+		} else {
+			// Remove the zoom start data
+			delete this._zoomStartMouse;
+			delete this._zoomStartCamera;
+		}
+
+		return this._entity;
+	}
 
 	/**
 	 * Handles the mouseDown event. Records the starting position of the
@@ -56,46 +57,37 @@ var IgeMouseZoomComponent = IgeEventingClass.extend({
 	 * @param event
 	 * @private
 	 */
-	_mouseDown: function (event) {
-		if (this._enabled && event.igeViewport.id() === this._entity.id()) {
-			// Record the mouse down position - zoom starting
-			var curMousePos = ige._mousePos;
-			this._zoomStartMouse = {
-				x: curMousePos.x,
-				y: curMousePos.y
-			};
+	_mouseDown (event) {
+		if (!this._enabled || event.igeViewport.id() !== this._entity.id()) { return; }
 
-			this._zoomStartCamera = {
-				x: this._entity.camera._scale.x,
-				y: this._entity.camera._scale.y
-			};
-		}
-	},
+		var curMousePos = this._ige._mousePos;
+		this._zoomStartMouse = {
+			"x": curMousePos.x,
+			"y": curMousePos.y
+		};
+		this._zoomStartCamera = {
+			"x": this._entity.camera._scale.x,
+			"y": this._entity.camera._scale.y
+		};
+	}
 
 	/**
-	 * Handles the mouse move event. Scales the camera as the mouse
-	 * moves across the screen.
+	 * Handles the mouse wheel event. Scales the camera as the wheel goes
+	 * positive or negative delta.
 	 * @param event
 	 * @private
 	 */
-	_mouseMove: function (event) {
-		if (this._enabled) {
-			// Zoom the camera if the mouse is down
-			if (this._zoomStartMouse) {
-				var curMousePos = ige._mousePos,
-					zoomCords = {
-						x: -(this._zoomStartMouse.x - curMousePos.x) / 100,
-						y: -(this._zoomStartMouse.y - curMousePos.y) / 100
-					};
+	_mouseWheel = (event) => {
+		if (!this._enabled) { return; }
 
-				this._entity.camera.scaleTo(
-					zoomCords.x + this._zoomStartCamera.x > 0.02 ? zoomCords.x + this._zoomStartCamera.x : 0.02,
-					zoomCords.x + this._zoomStartCamera.x > 0.02 ? zoomCords.x + this._zoomStartCamera.x : 0.02,
-					0
-				);
-			}
-		}
-	},
+		const curMousePos = this._ige._mousePos;
+
+		const zoomDelta = event.deltaY / 500;
+		const currentScale = this._entity.camera._scale.x;
+		const newZoom = currentScale - zoomDelta > 0.02 ? currentScale - zoomDelta : 0.02;
+
+		this._entity.camera.scaleTo(newZoom, newZoom, 0);
+	}
 
 	/**
 	 * Handles the mouse up event. Finishes the camera scale and
@@ -103,26 +95,26 @@ var IgeMouseZoomComponent = IgeEventingClass.extend({
 	 * @param event
 	 * @private
 	 */
-	_mouseUp: function (event) {
-		if (this._enabled) {
-			// End the zoom
-			if (this._zoomStartMouse) {
-				var curMousePos = ige._mousePos,
-					zoomCords = {
-						x: -(this._zoomStartMouse.x - curMousePos.x) / 100,
-						y: -(this._zoomStartMouse.y - curMousePos.y) / 100
-					};
+	_mouseUp (event) {
+		if (!this._enabled) { return; }
+		if (this._zoomStartMouse) {
+			var curMousePos = this._ige._mousePos,
+				zoomCords = {
+					"x": -(this._zoomStartMouse.x - curMousePos.x) / 100,
+					"y": -(this._zoomStartMouse.y - curMousePos.y) / 100
+				};
 
-				this._entity.camera.scaleTo(
-					zoomCords.x + this._zoomStartCamera.x > 0.02 ? zoomCords.x + this._zoomStartCamera.x : 0.02,
-					zoomCords.x + this._zoomStartCamera.x > 0.02 ? zoomCords.x + this._zoomStartCamera.x : 0.02,
-					0
-				);
+			this._entity.camera.scaleTo(
+				zoomCords.x + this._zoomStartCamera.x > 0.02 ? zoomCords.x + this._zoomStartCamera.x : 0.02,
+				zoomCords.x + this._zoomStartCamera.x > 0.02 ? zoomCords.x + this._zoomStartCamera.x : 0.02,
+				0
+			);
 
-				// Remove the zoom start data to end the zoom operation
-				delete this._zoomStartMouse;
-				delete this._zoomStartCamera;
-			}
+			// Remove the zoom start data to end the zoom operation
+			delete this._zoomStartMouse;
+			delete this._zoomStartCamera;
 		}
 	}
-});
+}
+
+export default IgeMouseZoomComponent;

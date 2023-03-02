@@ -1,29 +1,34 @@
+import IgeBaseClass from "../src/IgeBaseClass";
+
 /**
- * This component is already included in the IgeEngine (ige)
+ * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!
  * It handles global tween processing on all tweening values.
  */
-var IgeTweenComponent = IgeClass.extend({
-	classId: 'IgeTweenComponent',
-	componentId: 'tween',
+class IgeTweenComponent extends IgeBaseClass {
+	static componentTargetClass = "Ige";
+	classId = "IgeTweenComponent";
+	componentId = "tween";
 
-	init: function (entity, options) {
+	constructor (ige, entity, options) {
+		super(ige);
+
 		this._entity = entity;
 		this._transform = entity.transform;
 
 		// Setup the array that will hold our active tweens
 		this._tweens = [];
 
-		// Add the tween behaviour to the entity 
-		entity.addBehaviour('tween', this.update);
-	},
+		// Add the tween behaviour to the entity
+		entity.addBehaviour("tween", this.update);
+	}
 
 	/**
 	 * Start tweening particular properties for the object.
 	 * @param {IgeTween} tween The tween to start.
 	 * @return {Number} The index of the added tween or -1 on error.
 	 */
-	start: function (tween) {
+	start (tween) {
 		if (tween._startTime > ige._currentTime) {
 			// The tween is scheduled for later
 			// Push the tween into the IgeTweenComponent's _tweens array
@@ -31,7 +36,7 @@ var IgeTweenComponent = IgeClass.extend({
 		} else {
 			// The tween should start immediately
 			tween._currentStep = 0;
-			
+
 			// Setup the tween's step
 			if (this._setupStep(tween, false)) {
 				// Push the tween into the IgeTweenComponent's _tweens array
@@ -44,9 +49,9 @@ var IgeTweenComponent = IgeClass.extend({
 
 		// Return the tween
 		return tween;
-	},
+	}
 
-	_setupStep: function (tween, newTime) {
+	_setupStep (tween, newTime) {
 		var targetObj = tween._targetObj,
 			step = tween._steps[tween._currentStep],
 			propertyNameAndValue, // = tween._propertyObj
@@ -82,10 +87,10 @@ var IgeTweenComponent = IgeClass.extend({
 			for (propertyIndex in propertyNameAndValue) {
 				if (propertyNameAndValue.hasOwnProperty(propertyIndex)) {
 					targetData.push({
-						targetObj: targetObj,
-						propName: propertyIndex,
-						deltaVal: propertyNameAndValue[propertyIndex] - (step.isDelta ? 0 : targetObj[propertyIndex]), // The diff between end and start values
-						oldDelta: 0 // Var to save the old delta in order to get the actual difference data.
+						targetObj,
+						"propName": propertyIndex,
+						"deltaVal": propertyNameAndValue[propertyIndex] - (step.isDelta ? 0 : targetObj[propertyIndex]), // The diff between end and start values
+						"oldDelta": 0 // Var to save the old delta in order to get the actual difference data.
 					});
 				}
 			}
@@ -95,31 +100,31 @@ var IgeTweenComponent = IgeClass.extend({
 
 			return tween; // Return the tween
 		} else {
-			this.log('Cannot start tweening properties of the specified object "' + obj + '" because it does not exist!', 'error');
+			this.log("Cannot start tweening properties of the specified object \"" + obj + "\" because it does not exist!", "error");
 		}
-	},
+	}
 
 	/**
 	 * Removes the specified tween from the active tween list.
 	 * @param {IgeTween} tween The tween to stop.
 	 */
-	stop: function (tween) {
+	stop (tween) {
 		// Store the new tween details in the item
-		this._tweens.pull(tween);
+		IgeBaseClass.pull(this._tweens, tween);
 
 		if (!this._tweens.length) {
 			// Disable tweening on this item as there are
 			// no more tweens to process
 			this.disable();
 		}
-		
+
 		return this;
-	},
+	}
 
 	/**
 	 * Stop all tweening for the object.
 	 */
-	stopAll: function () {
+	stopAll () {
 		// Disable tweening
 		this.disable();
 
@@ -128,12 +133,12 @@ var IgeTweenComponent = IgeClass.extend({
 		this._tweens = [];
 
 		return this;
-	},
+	}
 
 	/**
 	 * Enable tweening for the object.
 	 */
-	enable: function () {
+	enable () {
 		// Check if the item is currently tweening
 		if (!this._tweening) {
 			// Set the item to tweening
@@ -141,12 +146,12 @@ var IgeTweenComponent = IgeClass.extend({
 		}
 
 		return this;
-	},
+	}
 
 	/**
 	 * Disable tweening for the object.
 	 */
-	disable: function () {
+	disable () {
 		// Check if the item is currently tweening
 		if (this._tweening) {
 			// Set the item to not tweening
@@ -154,13 +159,13 @@ var IgeTweenComponent = IgeClass.extend({
 		}
 
 		return this;
-	},
+	}
 
 	/**
 	 * Process tweening for the object.
 	 */
-	update: function (ctx) {
-		var thisTween = this.tween;
+	update (ige, entity, ctx) {
+		var thisTween = ige.tween;
 		if (thisTween._tweens && thisTween._tweens.length) {
 			var currentTime = ige._tickStart,
 				tweens = thisTween._tweens,
@@ -193,9 +198,9 @@ var IgeTweenComponent = IgeClass.extend({
 							tween._currentStep = 0;
 							thisTween._setupStep(tween, false);
 						}
-						
+
 						// Check if we have a beforeTween callback to fire
-						if (typeof(tween._beforeTween) === 'function') {
+						if (typeof(tween._beforeTween) === "function") {
 							// Fire the beforeTween callback
 							tween._beforeTween(tween);
 
@@ -204,7 +209,7 @@ var IgeTweenComponent = IgeClass.extend({
 						}
 
 						// Check if we have a beforeStep callback to fire
-						if (typeof(tween._beforeStep) === 'function') {
+						if (typeof(tween._beforeStep) === "function") {
 							// Fire the beforeStep callback
 							if (tween._stepDirection) {
 								stepIndex = tween._steps.length - (tween._currentStep + 1);
@@ -233,7 +238,7 @@ var IgeTweenComponent = IgeClass.extend({
 								item = targets[targetIndex];
 								targetProp = item.targetObj;
 								targetPropVal = targetProp[item.propName];
-								
+
 								// Check if the destination time is not zero
 								// because otherwise the easing method will provide
 								// a divide by zero error resulting in a NaN value
@@ -247,9 +252,9 @@ var IgeTweenComponent = IgeClass.extend({
 								} else {
 									currentDelta = item.deltaVal;
 								}
-								
+
 								targetPropVal += currentDelta - item.oldDelta;
-								
+
 								// Round the value to correct floating point operation imprecision
 								var roundingPrecision = Math.pow(10, 15-(targetPropVal.toFixed(0).toString().length));
 								targetProp[item.propName] = Math.round(targetPropVal * roundingPrecision)/roundingPrecision;
@@ -257,7 +262,7 @@ var IgeTweenComponent = IgeClass.extend({
 						}
 
 						// Check if we have a afterStep callback to fire
-						if (typeof(tween._afterStep) === 'function') {
+						if (typeof(tween._afterStep) === "function") {
 							// Fire the afterStep
 							if (tween._stepDirection) {
 								stepIndex = tween._steps.length - (tween._currentStep + 1);
@@ -298,13 +303,13 @@ var IgeTweenComponent = IgeClass.extend({
 									}
 
 									// Check if we have a stepsComplete callback to fire
-									if (typeof(tween._stepsComplete) === 'function') {
+									if (typeof(tween._stepsComplete) === "function") {
 										// Fire the stepsComplete callback
 										tween._stepsComplete(tween, tween._currentStep);
 									}
 
 									// Check if we have a beforeStep callback to fire
-									if (typeof(tween._beforeStep) === 'function') {
+									if (typeof(tween._beforeStep) === "function") {
 										// Fire the beforeStep callback
 										if (tween._stepDirection) {
 											stepIndex = tween._steps.length - (tween._currentStep + 1);
@@ -325,7 +330,7 @@ var IgeTweenComponent = IgeClass.extend({
 								tween.stop();
 
 								// If there is a callback, call it
-								if (typeof(tween._afterTween) === 'function') {
+								if (typeof(tween._afterTween) === "function") {
 									// Fire the afterTween callback
 									tween._afterTween(tween);
 
@@ -338,7 +343,7 @@ var IgeTweenComponent = IgeClass.extend({
 							tween._currentStep++;
 
 							// Check if we have a beforeStep callback to fire
-							if (typeof(tween._beforeStep) === 'function') {
+							if (typeof(tween._beforeStep) === "function") {
 								// Fire the beforeStep callback
 								if (tween._stepDirection) {
 									stepIndex = tween._steps.length - (tween._currentStep + 1);
@@ -350,8 +355,8 @@ var IgeTweenComponent = IgeClass.extend({
 
 							thisTween._setupStep(tween, true);
 						}
-						
-						if (typeof(tween._afterChange) === 'function') {
+
+						if (typeof(tween._afterChange) === "function") {
 							tween._afterChange(tween, stepIndex);
 						}
 					} else {
@@ -371,122 +376,122 @@ var IgeTweenComponent = IgeClass.extend({
 								item.oldDelta = currentDelta;
 							}
 						}
-						
-						if (typeof(tween._afterChange) === 'function') {
+
+						if (typeof(tween._afterChange) === "function") {
 							tween._afterChange(tween, stepIndex);
 						}
 					}
 				}
 			}
 		}
-	},
+	}
 
 	/** tweenEasing - Contains all the tween easing functions. {
 		category:"property",
 		type:"object",
 	} **/
-	easing: {
+	easing = {
 		// Easing equations converted from AS to JS from original source at
 		// http://robertpenner.com/easing/
-		none: function(t, c, d) {
+		"none" (t, c, d) {
 			return c*t/d;
 		},
-		inQuad: function(t, c, d) {
+		"inQuad" (t, c, d) {
 			return c*(t/=d)*t;
 		},
-		outQuad: function(t, c, d) {
+		"outQuad" (t, c, d) {
 			return -c *(t/=d)*(t-2);
 		},
-		inOutQuad: function(t, c, d) {
+		"inOutQuad" (t, c, d) {
 			if((t/=d/2) < 1) { return c/2*t*t; }
 			return -c/2 *((--t)*(t-2) - 1);
 		},
-		inCubic: function(t, c, d) {
+		"inCubic" (t, c, d) {
 			return c*(t/=d)*t*t;
 		},
-		outCubic: function(t, c, d) {
+		"outCubic" (t, c, d) {
 			return c*((t=t/d-1)*t*t + 1);
 		},
-		inOutCubic: function(t, c, d) {
+		"inOutCubic" (t, c, d) {
 			if((t/=d/2) < 1) { return c/2*t*t*t; }
 			return c/2*((t-=2)*t*t + 2);
 		},
-		outInCubic: function(t, c, d) {
+		"outInCubic" (t, c, d) {
 			if(t < d/2) { return this.outCubic(t*2, c/2, d); }
 			return this.inCubic((t*2)-d, c/2, c/2, d);
 		},
-		inQuart: function(t, c, d) {
+		"inQuart" (t, c, d) {
 			return c*(t/=d)*t*t*t;
 		},
-		outQuart: function(t, c, d) {
+		"outQuart" (t, c, d) {
 			return -c *((t=t/d-1)*t*t*t - 1);
 		},
-		inOutQuart: function(t, c, d) {
+		"inOutQuart" (t, c, d) {
 			if((t/=d/2) < 1) { return c/2*t*t*t*t; }
 			return -c/2 *((t-=2)*t*t*t - 2);
 		},
-		outInQuart: function(t, c, d) {
+		"outInQuart" (t, c, d) {
 			if(t < d/2) { return this.outQuart(t*2, c/2, d); }
 			return this.inQuart((t*2)-d, c/2, c/2, d);
 		},
-		inQuint: function(t, c, d) {
+		"inQuint" (t, c, d) {
 			return c*(t/=d)*t*t*t*t;
 		},
-		outQuint: function(t, c, d) {
+		"outQuint" (t, c, d) {
 			return c*((t=t/d-1)*t*t*t*t + 1);
 		},
-		inOutQuint: function(t, c, d) {
+		"inOutQuint" (t, c, d) {
 			if((t/=d/2) < 1) { return c/2*t*t*t*t*t; }
 			return c/2*((t-=2)*t*t*t*t + 2);
 		},
-		outInQuint: function(t, c, d) {
+		"outInQuint" (t, c, d) {
 			if(t < d/2) { return this.outQuint(t*2, c/2, d); }
 			return this.inQuint((t*2)-d, c/2, c/2, d);
 		},
-		inSine: function(t, c, d) {
+		"inSine" (t, c, d) {
 			return -c * Math.cos(t/d *(Math.PI/2)) + c;
 		},
-		outSine: function(t, c, d) {
+		"outSine" (t, c, d) {
 			return c * Math.sin(t/d *(Math.PI/2));
 		},
-		inOutSine: function(t, c, d) {
+		"inOutSine" (t, c, d) {
 			return -c/2 *(Math.cos(Math.PI*t/d) - 1);
 		},
-		outInSine: function(t, c, d) {
+		"outInSine" (t, c, d) {
 			if(t < d/2) { return this.outSine(t*2, c/2, d); }
 			return this.inSine((t*2)-d, c/2, c/2, d);
 		},
-		inExpo: function(t, c, d) {
+		"inExpo" (t, c, d) {
 			return(t === 0) ? 0 : c * Math.pow(2, 10 *(t/d - 1)) - c * 0.001;
 		},
-		outExpo: function(t, c, d) {
+		"outExpo" (t, c, d) {
 			return(t === d) ? c : c * 1.001 *(-Math.pow(2, -10 * t/d) + 1);
 		},
-		inOutExpo: function(t, c, d) {
+		"inOutExpo" (t, c, d) {
 			if(t === 0) { return 0; }
 			if(t === d) { return c; }
 			if((t/=d/2) < 1) { return c/2 * Math.pow(2, 10 *(t - 1)) - c * 0.0005; }
 			return c/2 * 1.0005 *(-Math.pow(2, -10 * --t) + 2);
 		},
-		outInExpo: function(t, c, d) {
+		"outInExpo" (t, c, d) {
 			if(t < d/2) { return this.outExpo(t*2, c/2, d); }
 			return this.inExpo((t*2)-d, c/2, c/2, d);
 		},
-		inCirc: function(t, c, d) {
+		"inCirc" (t, c, d) {
 			return -c *(Math.sqrt(1 -(t/=d)*t) - 1);
 		},
-		outCirc: function(t, c, d) {
+		"outCirc" (t, c, d) {
 			return c * Math.sqrt(1 -(t=t/d-1)*t);
 		},
-		inOutCirc: function(t, c, d) {
+		"inOutCirc" (t, c, d) {
 			if((t/=d/2) < 1) { return -c/2 *(Math.sqrt(1 - t*t) - 1); }
 			return c/2 *(Math.sqrt(1 -(t-=2)*t) + 1);
 		},
-		outInCirc: function(t, c, d) {
+		"outInCirc" (t, c, d) {
 			if(t < d/2) { return this.outCirc(t*2, c/2, d); }
 			return this.inCirc((t*2)-d, c/2, c/2, d);
 		},
-		inElastic: function(t, c, d, a, p) {
+		"inElastic" (t, c, d, a, p) {
 			var s;
 			if(t===0) {return 0;}
 			if((t/=d)===1) { return c; }
@@ -494,7 +499,7 @@ var IgeTweenComponent = IgeClass.extend({
 			if(!a || a < Math.abs(c)) { a=c; s=p/4; } else { s = p/(2*Math.PI) * Math.asin(c/a); }
 			return -(a*Math.pow(2,10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p ));
 		},
-		outElastic: function(t, c, d, a, p) {
+		"outElastic" (t, c, d, a, p) {
 			var s;
 			if(t===0) { return 0; }
 			if((t/=d)===1) { return c; }
@@ -502,7 +507,7 @@ var IgeTweenComponent = IgeClass.extend({
 			if(!a || a < Math.abs(c)) { a=c; s=p/4; } else { s = p/(2*Math.PI) * Math.asin(c/a); }
 			return(a*Math.pow(2,-10*t) * Math.sin((t*d-s)*(2*Math.PI)/p ) + c);
 		},
-		inOutElastic: function(t, c, d, a, p) {
+		"inOutElastic" (t, c, d, a, p) {
 			var s;
 			if(t===0) { return 0; }
 			if((t/=d/2)===2) { return c; }
@@ -511,31 +516,31 @@ var IgeTweenComponent = IgeClass.extend({
 			if(t < 1) { return -0.5*(a*Math.pow(2,10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p)); }
 			return a*Math.pow(2,-10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p )*0.5 + c;
 		},
-		outInElastic: function(t, c, d, a, p) {
+		"outInElastic" (t, c, d, a, p) {
 			if(t < d/2) { return this.outElastic(t*2, c/2, d, a, p); }
 			return this.inElastic((t*2)-d, c/2, c/2, d, a, p);
 		},
-		inBack: function(t, c, d, s) {
+		"inBack" (t, c, d, s) {
 			if(s === undefined) { s = 1.70158; }
 			return c*(t/=d)*t*((s+1)*t - s);
 		},
-		outBack: function(t, c, d, s) {
+		"outBack" (t, c, d, s) {
 			if(s === undefined) { s = 1.70158; }
 			return c*((t=t/d-1)*t*((s+1)*t + s) + 1);
 		},
-		inOutBack: function(t, c, d, s) {
+		"inOutBack" (t, c, d, s) {
 			if(s === undefined) { s = 1.70158; }
 			if((t/=d/2) < 1) { return c/2*(t*t*(((s*=(1.525))+1)*t - s)); }
 			return c/2*((t-=2)*t*(((s*=(1.525))+1)*t + s) + 2);
 		},
-		outInBack: function(t, c, d, s) {
+		"outInBack" (t, c, d, s) {
 			if(t < d/2) { return this.outBack(t*2, c/2, d, s); }
 			return this.inBack((t*2)-d, c/2, c/2, d, s);
 		},
-		inBounce: function(t, c, d) {
+		"inBounce" (t, c, d) {
 			return c - this.outBounce(d-t, 0, c, d);
 		},
-		outBounce: function(t, c, d) {
+		"outBounce" (t, c, d) {
 			if((t/=d) <(1/2.75)) {
 				return c*(7.5625*t*t);
 			} else if(t <(2/2.75)) {
@@ -546,18 +551,18 @@ var IgeTweenComponent = IgeClass.extend({
 				return c*(7.5625*(t-=(2.625/2.75))*t + 0.984375);
 			}
 		},
-		inOutBounce: function(t, c, d) {
+		"inOutBounce" (t, c, d) {
 			if(t < d/2) {
 				return this.inBounce(t*2, 0, c, d) * 0.5;
 			} else {
 				return this.outBounce(t*2-d, 0, c, d) * 0.5 + c*0.5;
 			}
 		},
-		outInBounce: function(t, c, d) {
+		"outInBounce" (t, c, d) {
 			if(t < d/2) { return this.outBounce(t*2, c/2, d); }
 			return this.inBounce((t*2)-d, c/2, c/2, d);
 		}
 	}
-});
+}
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeTweenComponent; }
+export default IgeTweenComponent;

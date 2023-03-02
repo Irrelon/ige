@@ -1,24 +1,27 @@
-var IgeEntityManager = IgeEventingClass.extend({
-	classId: 'IgeEntityManager',
-	componentId: 'entityManager',
-	
-	init: function (entity, options) {
+import IgeEventingClass from "../../src/IgeEventingClass";
+import IgeBaseClass from "../../src/IgeBaseClass";
+
+class IgeEntityManager extends IgeEventingClass {
+	classId = "IgeEntityManager";
+	componentId = "entityManager";
+
+	init (entity, options) {
 		this._entity = entity;
 		this._options = options;
-		
+
 		// Create queue arrays that will store entities waiting to
 		// be mounted or unmounted
 		this._mountQueue = [];
 		this._unMountQueue = [];
 		this._maxMountsPerOp = 0;
 		this._maxUnMountsPerOp = 0;
-			
+
 		// Create the _orphans array on the entity
 		entity._orphans = [];
-		
+
 		// Set a method (behaviour) that will be called on every update
-		entity.addBehaviour('entManager', this._updateBehaviour, false);
-	},
+		entity.addBehaviour("entManager", this._updateBehaviour, false);
+	}
 
 	/**
 	 * Called each update frame from the component parent and calls various private
@@ -26,30 +29,30 @@ var IgeEntityManager = IgeEventingClass.extend({
 	 * that are to be unmounted are unmounted.
 	 * @private
 	 */
-	_updateBehaviour: function (ctx) {
+	_updateBehaviour (ctx) {
 		// Draw visible area rect
 		var rect = ige._currentViewport.viewArea();
-		
+
 		/*new IgeEntity()
 			.id('visArea')
 			.texture(this.gameTexture.simpleBox)
 			.opacity(0.5)
 			.mount(ige.$('objectScene'));*/
-		
+
 		/*ige.$('visArea')
 			.translateTo(rect.x + (rect.width / 2), rect.y + (rect.height / 2), 0)
 			.height(rect.height)
 			.width(rect.width);*/
-		
+
 		// Get our instance back
 		var self = this.entityManager;
-		
+
 		self._updateOrphans();
 		self._updateChildren();
-		
+
 		self._processMountQueue();
 		self._processUnMountQueue();
-	},
+	}
 
 	/**
 	 * Checks all the mounted entities of our component parent are still supposed
@@ -57,7 +60,7 @@ var IgeEntityManager = IgeEventingClass.extend({
 	 * marks any entities that are non-managed but also off-screen as inView = false.
 	 * @private
 	 */
-	_updateOrphans: function () {
+	_updateOrphans = () => {
 		var arr = this._entity._children,
 			arrCount = arr.length,
 			viewportArr = ige._children,
@@ -66,7 +69,7 @@ var IgeEntityManager = IgeEventingClass.extend({
 			itemAabb,
 			vpIndex,
 			inVisibleArea;
-		
+
 		while (arrCount--) {
 			item = arr[arrCount];
 
@@ -77,9 +80,9 @@ var IgeEntityManager = IgeEventingClass.extend({
 					} else {
 						itemAabb = item.aabb();
 					}
-					
+
 					inVisibleArea = false;
-					
+
 					// Check the entity to see if its bounds are "inside" any
 					// viewport's visible area
 					for (vpIndex = 0; vpIndex < vpCount; vpIndex++) {
@@ -88,7 +91,7 @@ var IgeEntityManager = IgeEventingClass.extend({
 							break;
 						}
 					}
-					
+
 					if (!inVisibleArea) {
 						// Check for managed mode 1 (static entities that can be unmounted)
 						// or managed mode 2 (dynamic and should just be marked as inView = false)
@@ -109,14 +112,14 @@ var IgeEntityManager = IgeEventingClass.extend({
 				}
 			}
 		}
-	},
-	
+	}
+
 	/**
 	 * Checks all the un-mounted entities of our component parent to see if they are
 	 * now inside the visible area of a viewport and if so, queues them for re-mounting.
 	 * @private
 	 */
-	_updateChildren: function () {
+	_updateChildren () {
 		var arr = this._entity._orphans,
 			arrCount = arr.length,
 			viewportArr = ige._children,
@@ -125,7 +128,7 @@ var IgeEntityManager = IgeEventingClass.extend({
 			itemAabb,
 			vpIndex,
 			inVisibleArea;
-		
+
 		while (arrCount--) {
 			item = arr[arrCount];
 
@@ -136,9 +139,9 @@ var IgeEntityManager = IgeEventingClass.extend({
 					} else {
 						itemAabb = item.aabb();
 					}
-					
+
 					inVisibleArea = false;
-					
+
 					// Check the entity to see if its bounds are "inside" any
 					// viewport's visible area
 					for (vpIndex = 0; vpIndex < vpCount; vpIndex++) {
@@ -147,7 +150,7 @@ var IgeEntityManager = IgeEventingClass.extend({
 							break;
 						}
 					}
-					
+
 					if (inVisibleArea) {
 						// Check for managed mode 1 (static entities that can be mounted)
 						// or managed mode 2 (dynamic and should just be marked as inView = true)
@@ -165,43 +168,45 @@ var IgeEntityManager = IgeEventingClass.extend({
 				}
 			}
 		}
-	},
+	}
 
 	/**
 	 * Loops any entities queued for mounting and mounts them.
 	 * @private
 	 */
-	_processMountQueue: function () {
+	_processMountQueue = () => {
 		var arr = this._mountQueue,
 			arrCount = arr.length,
 			item;
-		
+
 		while (arrCount--) {
 			item = arr[arrCount];
-			
-			this._entity._orphans.pull(item);
+
+			IgeBaseClass.pull(this._entity._orphans, item);
 			item.mount(this._entity);
 		}
-		
+
 		this._mountQueue = [];
-	},
+	}
 
 	/**
 	 * Loops any entities queued for un-mounting and un-mounts them.
 	 * @private
 	 */
-	_processUnMountQueue: function () {
+	_processUnMountQueue = () => {
 		var arr = this._unMountQueue,
 			arrCount = arr.length,
 			item;
-		
+
 		while (arrCount--) {
 			item = arr[arrCount];
 			item.unMount();
-			
+
 			this._entity._orphans.push(item);
 		}
-		
+
 		this._unMountQueue = [];
 	}
-});
+}
+
+export default IgeEntityManager;

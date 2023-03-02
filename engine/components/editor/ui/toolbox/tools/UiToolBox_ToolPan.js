@@ -1,31 +1,31 @@
-var UiToolBox_ToolPan = IgeEventingClass.extend({
+class UiToolBox_ToolPan extends IgeEventingClass {
 	classId: 'UiToolBox_ToolPan',
-	
+
 	init: function () {
-		
+
 	},
-	
+
 	enabled: function (val) {
 		if (val !== undefined) {
 			this._enabled = val;
-			
+
 			if (val) {
 				ige.editor.interceptMouse(true);
 				var self = this;
-		
+
 				// Hook the engine's input system and take over mouse interaction
 				this._mouseUpHandle = ige.editor.on('mouseUp', function (event) {
 					self._mouseUp(event);
 				});
-				
+
 				this._mouseDownHandle = ige.editor.on('mouseDown', function (event) {
 					self._mouseDown(event);
 				});
-				
+
 				this._mouseMoveHandle = ige.editor.on('mouseMove', function (event) {
 					self._mouseMove(event);
 				});
-				
+
 				// Reset pan values.
 				this._opPreStart = false;
 				this._opStarted  = false;
@@ -38,7 +38,7 @@ var UiToolBox_ToolPan = IgeEventingClass.extend({
 			}
 		}
 	},
-	
+
 	/**
 	 * Handles the mouseDown event. Records the starting position of the
 	 * operation and the current operation translation.
@@ -51,7 +51,7 @@ var UiToolBox_ToolPan = IgeEventingClass.extend({
 			var mx = (event.igeX - ige._bounds2d.x2),
 				my = (event.igeY - ige._bounds2d.y2),
 				curMousePos = new IgePoint3d(mx, my, 0);
-			
+
 			this._opStartMouse = curMousePos.clone();
 
 			this._opStartTranslate = {
@@ -92,11 +92,11 @@ var UiToolBox_ToolPan = IgeEventingClass.extend({
 						panFinalY,
 						0
 					);
-					
+
 					this.emit('panStart');
 					this._opPreStart = false;
 					this._opStarted = true;
-					
+
 					this.emit('panMove');
 				}
 			} else {
@@ -106,10 +106,10 @@ var UiToolBox_ToolPan = IgeEventingClass.extend({
 					panFinalY,
 					0
 				);
-				
+
 				this.emit('panMove');
 			}
-			
+
 			//document.getElementById('igeSgEditorStatus').innerHTML = 'X: ' + panFinalX + ' Y:' + panFinalY;
 		}
 	},
@@ -161,13 +161,13 @@ var UiToolBox_ToolPan = IgeEventingClass.extend({
 					panFinalY,
 					0
 				);
-				
-				//document.getElementById('igeSgEditorStatus').innerHTML = 'X: ' + panFinalX + ' Y:' + panFinalY; 
+
+				//document.getElementById('igeSgEditorStatus').innerHTML = 'X: ' + panFinalX + ' Y:' + panFinalY;
 
 				// Remove the pan start data to end the pan operation
 				delete this._opStartMouse;
 				delete this._opStartTranslate;
-				
+
 				this.emit('panEnd');
 				this._opStarted = false;
 			}
@@ -177,7 +177,7 @@ var UiToolBox_ToolPan = IgeEventingClass.extend({
 			this._opStarted = false;
 		}
 	},
-	
+
 	destroy: function () {
 		this.enabled(false);
 	}

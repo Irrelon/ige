@@ -1,18 +1,19 @@
-var IgeUiTogglePanel = IgeUiElement.extend({
-	classId: 'IgeUiTogglePanel',
+import IgeUiElement from "../src/IgeUiElement";
 
-	init: function (title, titleTexture, toggleOffTexture, toggleOnTexture) {
-		IgeUiElement.prototype.init.call(this);
+class IgeUiTogglePanel extends IgeUiElement {
+	classId = "IgeUiTogglePanel";
 
-		this.backgroundColor('#222222');
+	constructor (ige, title, titleTexture, toggleOffTexture, toggleOnTexture) {
+		super(ige);
+
+		this.backgroundColor("#222222");
 
 		this._toggleState = false;
-
 		this._toggleOffTexture = toggleOffTexture;
 		this._toggleOnTexture = toggleOnTexture;
 
 		this._panelImage = new IgeUiElement()
-			.id('panelImage')
+			.id("panelImage")
 			.texture(toggleOffTexture)
 			.left(5)
 			.middle(0.5)
@@ -20,12 +21,12 @@ var IgeUiTogglePanel = IgeUiElement.extend({
 			.height(16)
 			.mount(this);
 
-		this._panelTitle = new IgeFontEntity()
-			.id('panelTitle')
+		this._panelTitle = new IgeFontEntity(ige)
+			.id("panelTitle")
 			.texture(titleTexture)
 			.left(25)
 			.middle(0.5)
-			.width('100%')
+			.width("100%")
 			.height(20)
 			.textAlignX(0)
 			.textAlignY(1)
@@ -33,11 +34,11 @@ var IgeUiTogglePanel = IgeUiElement.extend({
 			.mount(this);
 
 		this.mouseOver(function () {
-			this.backgroundColor('#666666');
+			this.backgroundColor("#666666");
 		});
 
 		this.mouseOut(function () {
-			this.backgroundColor('#222222');
+			this.backgroundColor("#222222");
 		});
 
 		this.mouseUp(function () {
@@ -55,15 +56,17 @@ var IgeUiTogglePanel = IgeUiElement.extend({
 				}
 			}
 		});
-	},
+	}
 
-	toggleOn: function (method) {
+	toggleOn = (method) => {
 		this._toggleOn = method;
 		return this;
-	},
+	}
 
-	toggleOff: function (method) {
+	toggleOff = (method) => {
 		this._toggleOff = method;
 		return this;
 	}
-});
+}
+
+export default IgeUiTogglePanel;
