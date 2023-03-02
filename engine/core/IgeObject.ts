@@ -9,12 +9,13 @@ import Ige from "./Ige";
 class IgeObject extends IgeEventingClass {
 	classId = "IgeObject";
 	_ige: Ige;
+	_id?: string;
 	_didInit = false;
 	_newBorn = true;
 	_alive = true;
 	_mode = 0;
 	_mountMode = 0;
-	_parent = null;
+	_parent: IgeObject | null = null;
 	_children: (IgeObject | IgeEntity)[] = [];
 	_layer = 0;
 	_depth = 0;
@@ -22,6 +23,14 @@ class IgeObject extends IgeEventingClass {
 	_timeStream = [];
 	_inView = true;
 	_managed = 1;
+	_drawBounds: boolean = false;
+	_drawBoundsData: boolean = false;
+	_drawMouse: boolean = false;
+	_drawMouseData: boolean = false;
+	_ignoreCamera: boolean = false;
+	_streamRoomId?: string;
+	_compositeCache: boolean = false;
+	_compositeParent: boolean = false;
 	_sortChildren: (comparatorFunction: (a: any, b: any) => number) => void;
 
 	constructor (ige: Ige) {
@@ -50,7 +59,7 @@ class IgeObject extends IgeEventingClass {
 	 *     entity.alive(true);
 	 * @return {*}
 	 */
-	alive (val) {
+	alive (val?: boolean) {
 		if (val !== undefined) {
 			this._alive = val;
 			return this;
@@ -75,7 +84,7 @@ class IgeObject extends IgeEventingClass {
 	 *         .id('myNewId');
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	id (id) {
+	id (id?: string) {
 		if (id !== undefined) {
 			// Check if we're changing the id
 			if (id !== this._id) {
@@ -117,7 +126,7 @@ class IgeObject extends IgeEventingClass {
 
 	/**
 	 * Gets / sets the boolean flag determining if this object should have
-	 * it's bounds drawn when the bounds for all objects are being drawn.
+	 * its bounds drawn when the bounds for all objects are being drawn.
 	 * In order for bounds to be drawn the viewport the object is being drawn
 	 * to must also have draw bounds enabled.
 	 * @param {Boolean} val
@@ -131,7 +140,7 @@ class IgeObject extends IgeEventingClass {
 	 *     console.log(entity.drawBounds());
 	 * @return {*}
 	 */
-	drawBounds (val) {
+	drawBounds (val?: boolean) {
 		if (val !== undefined) {
 			this._drawBounds = val;
 			return this;
@@ -155,7 +164,7 @@ class IgeObject extends IgeEventingClass {
 	 *     console.log(entity.drawBoundsData());
 	 * @return {*}
 	 */
-	drawBoundsData (val) {
+	drawBoundsData (val?: boolean) {
 		if (val !== undefined) {
 			this._drawBoundsData = val;
 			return this;
@@ -178,7 +187,7 @@ class IgeObject extends IgeEventingClass {
 	 *     console.log(entity.drawMouse());
 	 * @return {*}
 	 */
-	drawMouse (val) {
+	drawMouse (val?: boolean) {
 		if (val !== undefined) {
 			this._drawMouse = val;
 			return this;
@@ -203,7 +212,7 @@ class IgeObject extends IgeEventingClass {
 	 *     console.log(entity.drawMouseData());
 	 * @return {*}
 	 */
-	drawMouseData (val) {
+	drawMouseData (val?: boolean) {
 		if (val !== undefined) {
 			this._drawMouseData = val;
 			return this;
@@ -233,7 +242,7 @@ class IgeObject extends IgeEventingClass {
 	 *     console.log(parent.id());
 	 * @return {*}
 	 */
-	parent (id) {
+	parent (id?: string): IgeObject | null {
 		if (!id) {
 			return this._parent;
 		}
@@ -246,7 +255,7 @@ class IgeObject extends IgeEventingClass {
 			}
 		}
 
-		return undefined;
+		return null;
 	}
 
 	/**
@@ -282,7 +291,7 @@ class IgeObject extends IgeEventingClass {
 	 *     entity2.mount(entity1);
 	 * @return {*} Returns this on success or false on failure.
 	 */
-	mount (obj) {
+	mount (obj?: IgeObject) {
 		if (obj) {
 			if (obj === this) {
 				this.log("Cannot mount an object to itself!", "error");
@@ -305,7 +314,7 @@ class IgeObject extends IgeEventingClass {
 
 				this._parent = obj;
 
-				// Check if we need to set the ignore camera flag
+				// Check if we need to set the "ignore camera" flag
 				if (!this._ignoreCamera && this._parent._ignoreCamera) {
 					this._ignoreCamera = this._parent._ignoreCamera;
 
@@ -314,7 +323,7 @@ class IgeObject extends IgeEventingClass {
 					}*/
 				}
 
-				// Make sure we keep the child's room id in sync with it's parent
+				// Make sure we keep the child's room id in sync with its parent
 				if (this._parent._streamRoomId) {
 					this._streamRoomId = this._parent._streamRoomId;
 				}
@@ -328,9 +337,9 @@ class IgeObject extends IgeEventingClass {
 				}
 
 				if (obj._compositeCache) {
-					this._compositeParent = true;
+					this._compositeCache = true;
 				} else {
-					delete this._compositeParent;
+					this._compositeParent = false;
 				}
 
 				this._mounted(this._parent);
@@ -1070,7 +1079,7 @@ class IgeObject extends IgeEventingClass {
 	 *     console.log(entity._somePropertyOfTheEntity);
 	 * @return {*} Returns this on success or false on failure.
 	 */
-	addBehaviour (id, behaviour, duringTick) {
+	addBehaviour (id: string, behaviour: (...args: any[]) => any, duringTick = false) {
 		if (typeof(id) === "string") {
 			if (typeof(behaviour) === "function") {
 				if (duringTick) {

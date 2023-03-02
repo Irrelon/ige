@@ -1,11 +1,12 @@
-import IgeBaseClass from "../src/IgeBaseClass";
+import IgeBaseClass from "../core/IgeBaseClass";
+import IgeComponent from "../core/IgeComponent";
 
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!
  * It handles global tween processing on all tweening values.
  */
-class IgeTweenComponent extends IgeBaseClass {
+class IgeTweenComponent extends IgeComponent {
 	static componentTargetClass = "Ige";
 	classId = "IgeTweenComponent";
 	componentId = "tween";

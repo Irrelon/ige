@@ -89,6 +89,7 @@ class Ige {
 	_syncArr?: SyncEntry[];
 	_webFonts: FontFace[];
 	_cssFonts: string[];
+	_mouseOverVp?: IgeViewport;
 	_requestAnimFrame?: (callback: (time: number, ctx?: CanvasRenderingContext2D) => void, element?: any) => void;
 
 	constructor (canvas: HTMLCanvasElement) {

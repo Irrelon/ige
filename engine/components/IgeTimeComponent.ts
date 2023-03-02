@@ -1,17 +1,24 @@
-import IgeEventingClass from "../src/IgeEventingClass";
-import IgeBaseClass from "../src/IgeBaseClass";
+import IgeComponent from "../core/IgeComponent";
+import IgeBaseClass from "../core/IgeBaseClass";
+import Ige from "../core/Ige";
+import IgeEntity from "../core/IgeEntity";
+import IgeInterval from "../core/IgeInterval";
 
-class IgeTimeComponent extends IgeEventingClass {
+class IgeTimeComponent extends IgeComponent {
 	classId = "IgeTimeComponent";
 	componentId = "time";
+
+	_entity: IgeEntity;
+	_timers: IgeInterval[];
+	_additions: IgeInterval[];
+	_removals: IgeInterval[];
 
 	/**
 	 * @constructor
 	 * @param {Ige} ige The engine instance.
 	 * @param {Object} entity The parent object that this component is being added to.
-	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	constructor (ige, entity, options) {
+	constructor (ige: Ige, entity: IgeEntity) {
 		super(ige);
 
 		this._entity = entity;

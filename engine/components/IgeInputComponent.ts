@@ -2,10 +2,7 @@ import IgePoint3d from "../core/IgePoint3d";
 import IgeComponent from "../core/IgeComponent";
 import IgeEntity from "../core/IgeEntity";
 import Ige from "../core/Ige";
-
-export interface IgeMouseEvent extends MouseEvent {
-	igeType: string;
-}
+import IgeViewport from "../core/IgeViewport";
 
 export interface IgeInputMouseInterface {
 	"dblClick": number;
@@ -121,21 +118,30 @@ class IgeInputComponent extends IgeComponent {
 	static componentTargetClass = "Ige";
 	classId = "IgeInputComponent";
 	componentId = "input";
+
+	_ige: Ige;
 	_entity: IgeEntity;
-	_eventQueue: [(() => void), any][];
+	_eventQueue: [((evc: IgeInputEventControl, eventData?: any) => void), any][];
 	_eventControl: IgeInputEventControl;
-	_evRef: Record<string, (event: IgeMouseEvent) => void> = {};
+	_evRef: Record<string, (event: any) => void> = {};
 	_debug?: boolean;
-	_state: number[];
-	_controlMap: number[];
+	_state: Record<string | number, boolean | number>;
+	_controlMap: Record<string, string | number>;
 	mouse: IgeInputMouseInterface;
 	pad1: IgeInputGamePadInterface;
 	pad2: IgeInputGamePadInterface;
 	key: IgeInputKeyboardInterface;
+	dblClick: boolean | Event = false;
+	mouseMove: boolean | Event = false;
+	mouseDown: boolean | Event = false;
+	mouseUp: boolean | Event = false;
+	mouseWheel: boolean | Event = false;
+	contextMenu: boolean | Event = false;
 
 	constructor(ige: Ige, entity: IgeEntity) {
 		super(ige);
 
+		this._ige = ige;
 		this._entity = entity;
 
 		// Setup the input objects to hold the current input state
@@ -294,8 +300,8 @@ class IgeInputComponent extends IgeComponent {
 			"z": 90
 		};
 
-		this._controlMap = [];
-		this._state = [];
+		this._controlMap = {};
+		this._state = {};
 
 		// Set default values for the mouse position
 		this._state[this.mouse.x] = 0;
@@ -324,58 +330,48 @@ class IgeInputComponent extends IgeComponent {
 
 		// Define event functions and keep references for later removal
 		this._evRef = {
-			"mousedown": (event: IgeMouseEvent) => {
-				event.igeType = "mouse";
-				this._rationalise(event);
+			"mousedown": (event: MouseEvent) => {
+				this._rationalise(event, "mouse");
 				this._mouseDown(event);
 			},
-			"mouseup": (event: IgeMouseEvent) => {
-				event.igeType = "mouse";
-				this._rationalise(event);
+			"mouseup": (event: MouseEvent) => {
+				this._rationalise(event, "mouse");
 				this._mouseUp(event);
 			},
-			"mousemove": (event: IgeMouseEvent) => {
-				event.igeType = "mouse";
-				this._rationalise(event);
+			"mousemove": (event: MouseEvent) => {
+				this._rationalise(event, "mouse");
 				this._mouseMove(event);
 			},
-			"mouseWheel": (event: IgeMouseEvent) => {
-				event.igeType = "mouse";
-				this._rationalise(event);
+			"mouseWheel": (event: WheelEvent) => {
+				this._rationalise(event, "mouse");
 				this._mouseWheel(event);
 			},
 
-			"touchmove": (event: IgeMouseEvent) => {
-				event.igeType = "touch";
-				this._rationalise(event, true);
+			"touchmove": (event: TouchEvent) => {
+				this._rationalise(event, "touch");
 				this._mouseMove(event);
 			},
-			"touchstart": (event: IgeMouseEvent) => {
-				event.igeType = "touch";
-				this._rationalise(event, true);
+			"touchstart": (event: TouchEvent) => {
+				this._rationalise(event, "touch");
 				this._mouseDown(event);
 			},
-			"touchend": (event: IgeMouseEvent) => {
-				event.igeType = "touch";
-				this._rationalise(event, true);
+			"touchend": (event: TouchEvent) => {
+				this._rationalise(event, "touch");
 				this._mouseUp(event);
 			},
 
-			"contextmenu": (event: IgeMouseEvent) => {
+			"contextmenu": (event: MouseEvent) => {
 				event.preventDefault();
-				event.igeType = "mouse";
-				this._rationalise(event);
+				this._rationalise(event, "mouse");
 				this._contextMenu(event);
 			},
 
-			"keydown": (event: IgeMouseEvent) => {
-				event.igeType = "key";
-				this._rationalise(event);
+			"keydown": (event: KeyboardEvent) => {
+				this._rationalise(event, "key");
 				this._keyDown(event);
 			},
-			"keyup": (event: IgeMouseEvent) => {
-				event.igeType = "key";
-				this._rationalise(event);
+			"keyup": (event: KeyboardEvent) => {
+				this._rationalise(event, "key");
 				this._keyUp(event);
 			}
 		};
@@ -402,10 +398,15 @@ class IgeInputComponent extends IgeComponent {
 	destroyListeners = () => {
 		this.log("Removing input event listeners...");
 
-		// Remove the event listeners
-		const canvas = this._ige._canvas;
+		// Keyboard events
+		window.removeEventListener("keydown", this._evRef.keydown, false);
+		window.removeEventListener("keyup", this._evRef.keyup, false);
 
-		// Listen for mouse events
+		// Get the canvas element
+		const canvas = this._ige?._canvas;
+		if (!canvas) return;
+
+		// Mouse events
 		canvas.removeEventListener("mousedown", this._evRef.mousedown, false);
 		canvas.removeEventListener("mouseup", this._evRef.mouseup, false);
 		canvas.removeEventListener("mousemove", this._evRef.mousemove, false);
@@ -416,12 +417,8 @@ class IgeInputComponent extends IgeComponent {
 		canvas.removeEventListener("touchstart", this._evRef.touchstart, false);
 		canvas.removeEventListener("touchend", this._evRef.touchend, false);
 
-		// Kill the context menu on right-click, urgh!
+		// Context menu events
 		canvas.removeEventListener("contextmenu", this._evRef.contextmenu, false);
-
-		// Listen for keyboard events
-		window.removeEventListener("keydown", this._evRef.keydown, false);
-		window.removeEventListener("keyup", this._evRef.keyup, false);
 	}
 
 	/**
@@ -433,7 +430,7 @@ class IgeInputComponent extends IgeComponent {
 	 * @param {String} eventName The lowercase name of the event to fire e.g. mousedown.
 	 * @param {Object} eventObj The event object that was passed by the DOM.
 	 */
-	fireManualEvent = (eventName, eventObj) => {
+	fireManualEvent = (eventName: string, eventObj: Event) => {
 		if (eventName && eventObj) {
 			if (this._evRef[eventName]) {
 				this._evRef[eventName](eventObj);
@@ -450,18 +447,21 @@ class IgeInputComponent extends IgeComponent {
 	 * can be relied on to provide the x, y co-ordinates of the
 	 * mouse event including the canvas offset.
 	 * @param {Event} event The event object.
-	 * @param {Boolean} touch If the event was a touch event or
-	 * not.
+	 * @param type
 	 * @private
 	 */
-	_rationalise = (event: IgeMouseEvent, touch = false) => {
-		// Check if we want to prevent default behaviour
-		if (event.igeType === "key") {
-			if (event.keyCode === 8) { // Backspace
-				// Check if the event occurred on the body
-				var elem = event.srcElement || event.target;
+	_rationalise = (event: MouseEvent | KeyboardEvent | TouchEvent, type: "mouse" | "key" | "touch") => {
+		event.igeType = type;
 
-				if (elem.tagName.toLowerCase() === "body") {
+		// Check if we want to prevent default behaviour
+		if (type === "key") {
+			const keyboardEvent = event as KeyboardEvent;
+			// TODO: Re-map all the keys using the new event.key property
+			if (keyboardEvent.keyCode === 8) { // Backspace
+				// Check if the event occurred on the body
+				const elem: Element | null = event.target as Element;
+
+				if ((elem?.tagName || "body").toLowerCase() === "body") {
 					// The event occurred on our body element so prevent
 					// default behaviour. This allows other elements on
 					// the page to retain focus such as text boxes etc
@@ -471,25 +471,31 @@ class IgeInputComponent extends IgeComponent {
 			}
 		}
 
-		if (event.igeType === "touch") {
-			event.preventDefault();
-		}
 
-		if (touch) {
-			event.button = 0; // Emulate left mouse button
+		if (type === "touch") {
+			const touchEvent = event as TouchEvent;
+			touchEvent.preventDefault();
+			touchEvent.button = 0; // Emulate left mouse button
 
 			// Handle touch changed
-			if (event.changedTouches && event.changedTouches.length) {
-				event.igePageX = event.changedTouches[0].pageX;
-				event.igePageY = event.changedTouches[0].pageY;
+			if (touchEvent.changedTouches && touchEvent.changedTouches.length) {
+				touchEvent.igePageX = touchEvent.changedTouches[0].pageX;
+				touchEvent.igePageY = touchEvent.changedTouches[0].pageY;
 			}
-		} else {
+		}
+
+		if (type === "mouse") {
+			// @ts-ignore
 			event.igePageX = event.pageX;
+			// @ts-ignore
 			event.igePageY = event.pageY;
 		}
 
-		event.igeX = (event.igePageX - this._ige._canvasPosition().left);
-		event.igeY = (event.igePageY - this._ige._canvasPosition().top);
+		if (this._ige) {
+			const canvasPosition = this._ige._canvasPosition();
+			event.igeX = (event.igePageX - canvasPosition.left);
+			event.igeY = (event.igePageY - canvasPosition.top);
+		}
 
 		this.emit("inputEvent", event);
 	}
@@ -500,7 +506,7 @@ class IgeInputComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_mouseDown = (event) => {
+	_mouseDown = (event: MouseEvent | TouchEvent) => {
 		if (this._debug) {
 			console.log("Mouse Down", event);
 		}
@@ -537,16 +543,16 @@ class IgeInputComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_mouseUp = (event) => {
+	_mouseUp = (event: MouseEvent | TouchEvent) => {
 		if (this._debug) {
 			console.log("Mouse Up", event);
 		}
+
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.igeX - this._entity._bounds2d.x2,
-			my = event.igeY - this._entity._bounds2d.y2,
-			self = this;
+		const mx = event.igeX - this._entity._bounds2d.x2;
+		const my = event.igeY - this._entity._bounds2d.y2;
 
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = false;
@@ -569,7 +575,7 @@ class IgeInputComponent extends IgeComponent {
 		}
 	}
 
-	_contextMenu = (event) => {
+	_contextMenu = (event: MouseEvent) => {
 		if (this._debug) {
 			console.log("Context Menu", event);
 		}
@@ -606,13 +612,12 @@ class IgeInputComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_mouseMove = (event) => {
+	_mouseMove = (event: MouseEvent | TouchEvent) => {
 		// Update the mouse position within the viewports
 		this._ige._mouseOverVp = this._updateMouseData(event);
 
-		var mx = event.igeX - this._entity._bounds2d.x2,
-			my = event.igeY - this._entity._bounds2d.y2,
-			self = this;
+		const mx = event.igeX - this._entity._bounds2d.x2;
+		const my = event.igeY - this._entity._bounds2d.y2;
 
 		this._state[this.mouse.x] = mx;
 		this._state[this.mouse.y] = my;
@@ -631,7 +636,7 @@ class IgeInputComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_mouseWheel = (event) => {
+	_mouseWheel = (event: WheelEvent) => {
 		if (this._debug) {
 			console.log("MouseWheel", event);
 		}
@@ -639,13 +644,12 @@ class IgeInputComponent extends IgeComponent {
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.igeX - this._entity._bounds2d.x2,
-			my = event.igeY - this._entity._bounds2d.y2,
-			self = this;
+		const mx = event.igeX - this._entity._bounds2d.x2;
+		const my = event.igeY - this._entity._bounds2d.y2;
 
-		this._state[this.mouse.wheel] = event.wheelDelta;
+		this._state[this.mouse.wheel] = event.deltaY;
 
-		if (event.wheelDelta > 0) {
+		if (event.deltaY > 0) {
 			this._state[this.mouse.wheelUp] = true;
 		} else {
 			this._state[this.mouse.wheelDown] = true;
@@ -665,7 +669,7 @@ class IgeInputComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_keyDown = (event) => {
+	_keyDown = (event: KeyboardEvent) => {
 		var self = this;
 
 		this._state[event.keyCode] = true;
@@ -686,7 +690,7 @@ class IgeInputComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_keyUp = (event) => {
+	_keyUp = (event: KeyboardEvent) => {
 		this._state[event.keyCode] = false;
 
 		if (this._debug) {
@@ -709,9 +713,9 @@ class IgeInputComponent extends IgeComponent {
 	 * @return {*}
 	 * @private
 	 */
-	_updateMouseData = (event) => {
+	_updateMouseData = (event: MouseEvent | TouchEvent): IgeViewport | undefined => {
 		// Loop the viewports and check if the mouse is inside
-		const arr = this._entity._children;
+		const arr = this._entity._children as unknown as IgeViewport[];
 		const mx = (event.igeX - this._entity._bounds2d.x2) - this._entity._translate.x;
 		const my = (event.igeY - this._entity._bounds2d.y2) - this._entity._translate.y;
 
@@ -746,7 +750,7 @@ class IgeInputComponent extends IgeComponent {
 			}
 		}
 
-		return vpUpdated;
+		return vpUpdated as IgeViewport;
 	}
 
 	/**
@@ -755,7 +759,7 @@ class IgeInputComponent extends IgeComponent {
 	 * @param actionName
 	 * @param eventCode
 	 */
-	mapAction = (actionName, eventCode) => {
+	mapAction = (actionName: string, eventCode: string | number) => {
 		this._controlMap[actionName] = eventCode;
 	}
 
@@ -763,36 +767,35 @@ class IgeInputComponent extends IgeComponent {
 	 * Returns the passed action's input state value.
 	 * @param actionName
 	 */
-	actionVal = (actionName) => {
+	actionVal = (actionName: string) => {
 		return this._state[this._controlMap[actionName]];
 	}
 
 	/**
-	 * Returns true if the passed action's input is pressed or it's state
+	 * Returns true if the passed action's input is pressed or its state
 	 * is not zero.
 	 * @param actionName
 	 */
-	actionState = (actionName) => {
-		var val = this._state[this._controlMap[actionName]];
-		return !!val; // "Not not" to convert to boolean true/false
+	actionState = (actionName: string) => {
+		return Boolean(this._state[this._controlMap[actionName]]);
 	}
 
 	/**
 	 * Returns an input's current value.
-	 * @param actionName
+	 * @param inputId
 	 * @return {*}
 	 */
-	val = (inputId) => {
+	val = (inputId: string | number) => {
 		return this._state[inputId];
 	}
 
 	/**
 	 * Returns an input's current state as a boolean.
-	 * @param stateId
+	 * @param inputId
 	 * @return {Boolean}
 	 */
-	state = (inputId) => {
-		return !!this._state[inputId];
+	state = (inputId: string | number): boolean => {
+		return Boolean(this._state[inputId]);
 	}
 
 	/**
@@ -811,7 +814,7 @@ class IgeInputComponent extends IgeComponent {
 	 * @param {Function} eventFunction The event function.
 	 * @param {*} [eventData] The event data.
 	 */
-	queueEvent = (eventFunction, eventData) => {
+	queueEvent = (eventFunction: () => boolean | void, eventData?: any) => {
 		if (eventFunction !== undefined) {
 			this._eventQueue.push([eventFunction, eventData]);
 		}
@@ -825,12 +828,13 @@ class IgeInputComponent extends IgeComponent {
 	 */
 	tick() {
 		// If we have an event queue, process it
-		var arr = this._eventQueue,
-			arrCount = arr.length,
-			evc = this._eventControl;
+		const arr = this._eventQueue;
+		const evc = this._eventControl;
+
+		let arrCount = arr.length;
 
 		while (arrCount--) {
-			arr[arrCount][0](evc, arr[arrCount][2]);
+			arr[arrCount][0](evc, arr[arrCount][1]);
 
 			if (evc._cancelled) {
 				// The last event queue method stopped propagation so cancel all further
@@ -857,26 +861,26 @@ class IgeInputComponent extends IgeComponent {
 	 * If you are sending multiple arguments, use an array containing each argument.
 	 * @return {Number}
 	 */
-	emit = (eventName, args) => {
+	emit = (eventName: string, args: any) => {
 		if (this._eventListeners) {
 			// Check if the event has any listeners
 			if (this._eventListeners[eventName]) {
+				const evc = this._eventControl;
 
 				// Fire the listeners for this event
-				var eventCount = this._eventListeners[eventName].length,
-					eventCount2 = this._eventListeners[eventName].length - 1,
-					evc = this._eventControl,
-					finalArgs, i, cancelFlag, eventIndex, tempEvt, retVal;
+				let eventCount = this._eventListeners[eventName].length,
+					eventCount2 = this._eventListeners[eventName].length - 1;
+
+				let cancelFlag, eventIndex, tempEvt, retVal;
+				let finalArgs: any[] = [];
 
 				// If there are some events, ensure that the args is ready to be used
 				if (eventCount) {
 					finalArgs = [];
 					if (typeof (args) === "object" && args !== null && args[0] !== null) {
-						for (i in args) {
-							if (args.hasOwnProperty(i)) {
-								finalArgs[i] = args[i];
-							}
-						}
+						args.forEach((arg: any, argIndex: number) => {
+							finalArgs[argIndex] = arg;
+						});
 					} else {
 						finalArgs = [args];
 					}
@@ -884,7 +888,7 @@ class IgeInputComponent extends IgeComponent {
 					// Loop and emit!
 					cancelFlag = false;
 
-					this._eventListeners._processing = true;
+					this._eventsProcessing = true;
 					while (eventCount--) {
 						if (evc._cancelled) {
 							// The stopPropagation() method was called, cancel all other event calls
@@ -899,10 +903,10 @@ class IgeInputComponent extends IgeComponent {
 						}
 
 						// Call the callback
-						retVal = tempEvt.call.apply(tempEvt.context || this, finalArgs);
+						retVal = tempEvt.callback.apply(tempEvt.context || this, finalArgs);
 
 						// If the retVal === true then store the cancel flag and return to the emitting method
-						if (retVal === true || evc._cancelled === true) {
+						if (retVal === true || evc._cancelled) {
 							// The receiver method asked us to send a cancel request back to the emitter
 							cancelFlag = true;
 						}
@@ -914,7 +918,7 @@ class IgeInputComponent extends IgeComponent {
 							this.off(eventName, tempEvt);
 						}
 					}
-					this._eventListeners._processing = false;
+					this._eventsProcessing = false;
 
 					// Now process any event removal
 					this._processRemovals();

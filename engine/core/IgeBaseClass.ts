@@ -281,7 +281,7 @@ class IgeBaseClass {
 			}
 		}
 
-		const newComponentInstance = new component(this._ige, this, options);
+		const newComponentInstance = new component(this._ige as Ige, this, options);
 
 		this.components[newComponentInstance.componentId] = newComponentInstance;
 
