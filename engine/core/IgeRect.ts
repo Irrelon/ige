@@ -1,24 +1,17 @@
 /**
  * Creates a new rectangle (x, y, width, height).
  */
-import {IgeClass, IgeClassProps} from "./IgeClass";
-import {IgePoint3d} from "./IgePoint3d";
-import {IgePoint2d} from "./IgePoint2d";
+class IgeRect {
+	classId = "IgeRect";
 
-export class IgeRect extends IgeClass {
-	_classId = 'IgeRect';
-	x: number;
-	y: number;
-	x2: number;
-	y2: number;
-	width: number;
-	height: number;
+	x = 0;
+	y = 0;
+	width = 0;
+	height = 0;
+	x2 = 0;
+	y2 = 0;
 
-	constructor(props: IgeClassProps, x = 0, y = 0, width = 0, height = 0) {
-		super(props);
-
-		// Set values to the passed parameters or
-		// zero if they are undefined
+	constructor (x = 0, y = 0, width = 0, height = 0) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -36,18 +29,18 @@ export class IgeRect extends IgeClass {
 	 * @param {IgeRect} rect The rect to combine with this one.
 	 * @return {IgeRect} The new rect encapsulating both rects.
 	 */
-	combineRect(rect: IgeRect) {
-		const thisRectMaxX = this.x + this.width;
-		const thisRectMaxY = this.y + this.height;
-		const thatRectMaxX = rect.x + rect.width;
-		const thatRectMaxY = rect.y + rect.height;
+	combineRect (rect) {
+		var thisRectMaxX = this.x + this.width,
+			thisRectMaxY = this.y + this.height,
+			thatRectMaxX = rect.x + rect.width,
+			thatRectMaxY = rect.y + rect.height,
 
-		const x = Math.min(this.x, rect.x);
-		const y = Math.min(this.y, rect.y);
-		const width = Math.max(thisRectMaxX - this.x, thatRectMaxX - this.x);
-		const height = Math.max(thisRectMaxY - this.y, thatRectMaxY - this.y);
+			x = Math.min(this.x, rect.x),
+			y = Math.min(this.y, rect.y),
+			width = Math.max(thisRectMaxX - this.x, thatRectMaxX - this.x),
+			height = Math.max(thisRectMaxY - this.y, thatRectMaxY - this.y);
 
-		return new IgeRect({ige: this._ige, igeConfig: this._igeConfig}, x, y, width, height);
+		return new IgeRect(x, y, width, height);
 	}
 
 	/**
@@ -56,8 +49,8 @@ export class IgeRect extends IgeClass {
 	 * both rects.
 	 * @param {IgeRect} rect The rect to combine with this one.
 	 */
-	thisCombineRect(rect: IgeRect) {
-		const thisRectMaxX = this.x + this.width,
+	thisCombineRect (rect) {
+		var thisRectMaxX = this.x + this.width,
 			thisRectMaxY = this.y + this.height,
 			thatRectMaxX = rect.x + rect.width,
 			thatRectMaxY = rect.y + rect.height;
@@ -69,31 +62,28 @@ export class IgeRect extends IgeClass {
 		this.height = Math.max(thisRectMaxY - this.y, thatRectMaxY - this.y);
 	}
 
-	minusPoint(point: IgePoint2d) {
-		return new IgeRect({
-			ige: this._ige,
-			igeConfig: this._igeConfig
-		}, this.x - point.x, this.y - point.y, this.width, this.height);
+	minusPoint (point) {
+		return new IgeRect(this.x - point.x, this.y - point.y, this.width, this.height);
 	}
 
 	/**
-	 * Compares this rects dimensions with the passed rect and returns
+	 * Compares this rect's dimensions with the passed rect and returns
 	 * true if they are the same and false if any is different.
 	 * @param {IgeRect} rect
 	 * @return {Boolean}
 	 */
-	compare(rect: IgeRect): boolean {
+	compare (rect) {
 		return rect && this.x === rect.x && this.y === rect.y && this.width === rect.width && this.height === rect.height;
 	}
 
 	/**
 	 * Returns boolean indicating if the passed x, y is
 	 * inside the rectangle.
-	 * @param {number} x
-	 * @param {number} y
+	 * @param x
+	 * @param y
 	 * @return {Boolean}
 	 */
-	xyInside(x: number, y: number): boolean {
+	xyInside (x, y) {
 		return x >= this.x && y > this.y && x <= this.x + this.width && y <= this.y + this.height;
 	}
 
@@ -103,7 +93,7 @@ export class IgeRect extends IgeClass {
 	 * @param {IgePoint3d} point
 	 * @return {Boolean}
 	 */
-	pointInside(point: IgePoint3d): boolean {
+	pointInside (point) {
 		return point.x >= this.x && point.y > this.y && point.x <= this.x + this.width && point.y <= this.y + this.height;
 	}
 
@@ -113,8 +103,8 @@ export class IgeRect extends IgeClass {
 	 * @param {IgeRect} rect
 	 * @return {Boolean}
 	 */
-	rectIntersect(rect: IgeRect): boolean {
-		this.log('rectIntersect has been renamed to "intersects". Please update your code. rectIntersect will be removed in a later version of IGE.', 'warning');
+	rectIntersect (rect) {
+		this.log("rectIntersect has been renamed to \"intersects\". Please update your code. rectIntersect will be removed in a later version of IGE.", "warning");
 		return this.intersects(rect);
 	}
 
@@ -124,52 +114,54 @@ export class IgeRect extends IgeClass {
 	 * @param {IgeRect} rect
 	 * @return {Boolean}
 	 */
-	intersects(rect: IgeRect): boolean {
-		if (!rect) {
-			return false;
+	intersects (rect) {
+		if (rect) {
+			var sX1 = this.x,
+				sY1 = this.y,
+				sW = this.width,
+				sH = this.height,
+
+				dX1 = rect.x,
+				dY1 = rect.y,
+				dW = rect.width,
+				dH = rect.height,
+
+				sX2 = sX1 + sW,
+				sY2 = sY1 + sH,
+				dX2 = dX1 + dW,
+				dY2 = dY1 + dH;
+
+			if (sX1 < dX2 && sX2 > dX1 && sY1 < dY2 && sY2 > dY1) {
+				return true;
+			}
 		}
 
-		const sX1 = this.x;
-		const sY1 = this.y;
-		const sW = this.width;
-		const sH = this.height;
-
-		const dX1 = rect.x;
-		const dY1 = rect.y;
-		const dW = rect.width;
-		const dH = rect.height;
-
-		const sX2 = sX1 + sW;
-		const sY2 = sY1 + sH;
-		const dX2 = dX1 + dW;
-		const dY2 = dY1 + dH;
-
-		return sX1 < dX2 && sX2 > dX1 && sY1 < dY2 && sY2 > dY1;
+		return false;
 	}
 
 	/**
 	 * Multiplies this rect's data by the values specified
 	 * and returns a new IgeRect whose values are the result.
-	 * @param {number} x1
-	 * @param {number} y1
-	 * @param {number} x2
-	 * @param {number} y2
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
 	 * @return {*}
 	 */
-	multiply(x1: number, y1: number, x2: number, y2: number) {
-		return new IgeRect({ige: this._ige, igeConfig: this._igeConfig}, this.x * x1, this.y * y1, this.width * x2, this.height * y2);
+	multiply (x1, y1, x2, y2) {
+		return new IgeRect(this.x * x1, this.y * y1, this.width * x2, this.height * y2);
 	}
 
 	/**
-	 * Multiplies this rects data by the values specified and
+	 * Multiplies this rects's data by the values specified and
 	 * overwrites the previous values with the result.
-	 * @param {number} x1
-	 * @param {number} y1
-	 * @param {number} x2
-	 * @param {number} y2
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
 	 * @return {*}
 	 */
-	thisMultiply(x1: number, y1: number, x2: number, y2: number) {
+	thisMultiply (x1, y1, x2, y2) {
 		this.x *= x1;
 		this.y *= y1;
 		this.width *= x2;
@@ -183,8 +175,8 @@ export class IgeRect extends IgeClass {
 	 * but retains the same values.
 	 * @return {IgeRect}
 	 */
-	clone() {
-		return new IgeRect({ige: this._ige, igeConfig: this._igeConfig}, this.x, this.y, this.width, this.height);
+	clone () {
+		return new IgeRect(this.x, this.y, this.width, this.height);
 	}
 
 	/**
@@ -195,27 +187,22 @@ export class IgeRect extends IgeClass {
 	 * @param {Number=} precision
 	 * @return {String}
 	 */
-	toString(precision?: number) {
-		if (precision === undefined) {
-			precision = 2;
-		}
-
-		return this.x.toFixed(precision) + ',' + this.y.toFixed(precision) + ',' + this.width.toFixed(precision) + ',' + this.height.toFixed(precision);
+	toString (precision) {
+		if (precision === undefined) { precision = 2; }
+		return this.x.toFixed(precision) + "," + this.y.toFixed(precision) + "," + this.width.toFixed(precision) + "," + this.height.toFixed(precision);
 	}
 
 	/**
 	 * Draws the polygon bounding lines to the passed context.
 	 * @param {CanvasRenderingContext2D} ctx
-	 * @param {Boolean=} fill
 	 */
-	render(ctx: CanvasRenderingContext2D, fill = false) {
+	render (ctx, fill) {
 		ctx.rect(this.x, this.y, this.width, this.height);
-
-		if (fill) {
-			ctx.fill();
-		}
+		if (fill) { ctx.fill(); }
 		ctx.stroke();
 
 		return this;
 	}
 }
+
+export default IgeRect;

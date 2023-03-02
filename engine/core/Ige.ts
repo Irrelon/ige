@@ -17,12 +17,20 @@ import IgeViewport from "./IgeViewport";
 import IgeCamera from "./IgeCamera";
 import IgeEntity from "./IgeEntity";
 import IgeObject from "./IgeObject";
+import IgeComponent from "./IgeComponent";
+import {SyncEntry} from "../../types/SyncEntry";
+import IgeSceneGraph from "./IgeSceneGraph";
 
 class Ige {
-	_eventListeners: EventListenerRegister = {};
+	components: Record<string, IgeComponent> = {};
 	isServer: boolean;
 	isClient: boolean;
 	igeClassStore: Record<string, any>;
+	root: IgeRoot;
+	_canvas: HTMLCanvasElement;
+	_ctx: RenderingContext | typeof IgeDummyContext;
+	_components: IgeComponent[] = []; // TODO: Rename this to _componentsArr
+	_eventListeners: EventListenerRegister = {};
 	_textureStore: IgeTexture[];
 	_idCounter: number;
 	_renderModes: string[];
@@ -33,7 +41,6 @@ class Ige {
 	_enableUpdates: boolean;
 	_enableRenders: boolean;
 	_showSgTree: boolean;
-	_debugEvents: Record<string, boolean>;
 	_renderContext: "2d" | "three";
 	_renderMode: number;
 	_tickTime: string;
@@ -59,28 +66,30 @@ class Ige {
 	_currentTime: number;
 	_globalSmoothing: boolean;
 	_register: Record<string, IgeObject | IgeEntity | Ige>;
-	_categoryRegister
-	_groupRegister
-	_postTick
-	_timeSpentInUpdate
-	_timeSpentLastUpdate
-	_timeSpentInTick
-	_timeSpentLastTick
-	_timeScale
-	_globalScale
-	_graphInstances
-	_spawnQueue
-	_dependencyQueue
-	_dependencyCheckTimeout
-	_webFonts
-	_cssFonts
-	_ctx
+	_categoryRegister: Record<string, IgeObject> = {};
+	_groupRegister: Record<string, IgeObject[]> = {};
+	_postTick: (() => void)[];
+	_timeSpentInUpdate: Record<string, number>;
+	_timeSpentLastUpdate: Record<string, Record<string, number>>;
+	_timeSpentInTick: Record<string, number>;
+	_timeSpentLastTick: Record<string, Record<string, number>>;
+	_timeScale: number;
+	_globalScale: IgePoint3d;
+	_graphInstances: Record<string, IgeSceneGraph>;
+	_spawnQueue: IgeEntity[];
 	_headless: boolean;
-	_idCounter
-	root
-	isClient
-	_dependencyQueue
-	_secondTimer
+	_dependencyQueue: (() => boolean)[];
+	_secondTimer: number;
+	_loggedATL?: boolean;
+	_dependencyCheckStart?: number;
+	_dependencyCheckTimeout: number;
+	_debugEvents: Record<string, boolean | number>;
+	_autoSize?: boolean;
+	_syncIndex?: number;
+	_syncArr?: SyncEntry[];
+	_webFonts: FontFace[];
+	_cssFonts: string[];
+	_requestAnimFrame?: (callback: (time: number, ctx?: CanvasRenderingContext2D) => void, element?: any) => void;
 
 	constructor (canvas: HTMLCanvasElement) {
 		this._eventListeners = {};
@@ -137,7 +146,7 @@ class Ige {
 		this._timeSpentLastTick = {}; // An object holding time-spent-last-tick (time spent in this object's tick method last tick)
 		this._timeScale = 1; // The default time scaling factor to speed up or slow down engine time
 		this._globalScale = new IgePoint3d(1, 1, 1);
-		this._graphInstances = []; // Holds an array of instances of graph classes
+		this._graphInstances = {}; // Holds an array of instances of graph classes
 		this._spawnQueue = []; // Holds an array of entities that are yet to be born
 		this._dependencyQueue = []; // Holds an array of functions that must all return true for the engine to start
 		this._dependencyCheckTimeout = 30000; // Wait 30 seconds to load all dependencies then timeout
@@ -192,14 +201,14 @@ class Ige {
 		this._dependencyQueue.push(this.fontsLoaded);
 
 		// Start a timer to record every second of execution
-		this._secondTimer = setInterval(this._secondTick, 1000);
+		this._secondTimer = setInterval(this._secondTick, 1000) as unknown as number;
 	}
 
-	loadWebFont (family, url) {
+	loadWebFont (family: string, url: string) {
 		this.log(`Font (${family}) loading from url(${url})`);
 
 		const webFont = new FontFace(family, `url(${url})`);
-		webFont.load();
+		void webFont.load();
 
 		webFont.loaded.then(() => {
 			// Font is loaded
@@ -227,7 +236,7 @@ class Ige {
 		return loadedWebFonts && loadedCssFonts;
 	}
 
-	waitForCssFont (fontName) {
+	waitForCssFont (fontName: string) {
 		this._cssFonts.push(fontName);
 	}
 
@@ -279,31 +288,33 @@ class Ige {
 	 *     entity.addComponent(IgeVelocityComponent);
 	 *
 	 *     // Now that the component is added, we can access
-	 *     // the component via it's namespace. Call the
+	 *     // the component via its namespace. Call the
 	 *     // "byAngleAndPower" method of the velocity component:
 	 *     entity.velocity.byAngleAndPower(IgeBaseClass.degreesToRadians(20), 0.1);
 	 */
-	addComponent (component, options) {
+	addComponent (component: typeof IgeComponent, options?: any) {
 		if (component.componentTargetClass) {
 			// Check that the entity we are adding this component to is the correct type
-			if (this.constructor.name !== component.componentTargetClass) throw new Error(`${component.constructor.name} expected to be added to instance of [${component.componentTargetClass}] but was added to [${this.constructor.name}]`);
+			if (this.constructor.name !== component.componentTargetClass) {
+				throw new Error(`${component.constructor.name} expected to be added to instance of [${component.componentTargetClass}] but was added to [${this.constructor.name}]`);
+			}
 		}
 
-		var newComponent = new component(this, this.root, options);
+		const newComponentInstance = new component(this, this.root, options);
 
-		this[newComponent.componentId] = newComponent;
+		this.components[newComponentInstance.componentId] = newComponentInstance;
 
 		// Add the component reference to the class component array
 		this._components = this._components || [];
-		this._components.push(newComponent);
+		this._components.push(newComponentInstance);
 
 		return this;
 	}
 
 	/**
-	 * Removes a component by it's id.
+	 * Removes a component by its id.
 	 * @param {String} componentId The id of the component to remove.
-	 * @example #Remove a component by it's id (namespace)
+	 * @example #Remove a component by its id (namespace)
 	 *     var entity = new IgeEntity();
 	 *
 	 *     // Let's add the velocity component
@@ -315,17 +326,18 @@ class Ige {
 	 */
 	removeComponent (componentId: string) {
 		// If the component has a destroy method, call it
-		if (this[componentId] && this[componentId].destroy) {
-			this[componentId].destroy();
+		const component = this.components[componentId];
+		if (component && component.destroy) {
+			component.destroy();
 		}
 
 		// Remove the component from the class component array
 		if (this._components) {
-			IgeBaseClass.pull(this._components, this[componentId]);
+			IgeBaseClass.pull(this._components, component);
 		}
 
-		// Remove the component namespace from the class object
-		delete this[componentId];
+		// Remove the component from the class object
+		delete this.components[componentId];
 		return this;
 	}
 
@@ -498,50 +510,50 @@ class Ige {
 	 * @param autoSize If set to true, the engine will automatically size
 	 * the canvas to the width and height of the window upon window resize.
 	 */
-	canvas (elem, autoSize) {
-		if (elem !== undefined) {
-			if (!this._canvas) {
-				// Setup front-buffer canvas element
-				this._canvas = elem;
-				this._ctx = this._canvas.getContext(this._renderContext);
-
-				// Handle pixel ratio settings
-				if (this._pixelRatioScaling) {
-					// Support high-definition devices and "retina" (stupid marketing name)
-					// displays by adjusting for device and back store pixels ratios
-					this._devicePixelRatio = window.devicePixelRatio || 1;
-					this._backingStoreRatio = this._ctx.webkitBackingStorePixelRatio ||
-						this._ctx.mozBackingStorePixelRatio ||
-						this._ctx.msBackingStorePixelRatio ||
-						this._ctx.oBackingStorePixelRatio ||
-						this._ctx.backingStorePixelRatio || 1;
-
-					this._deviceFinalDrawRatio = Math.ceil(this._devicePixelRatio / this._backingStoreRatio);
-				} else {
-					// No auto-scaling
-					this._devicePixelRatio = 1;
-					this._backingStoreRatio = 1;
-					this._deviceFinalDrawRatio = 1;
-				}
-
-				this.log(`Device pixel ratio is ${this._devicePixelRatio} and canvas pixel ratio set to ${this._deviceFinalDrawRatio}`);
-
-				if (autoSize) {
-					this._autoSize = autoSize;
-				}
-
-				// Add some event listeners even if autosize is off
-				window.addEventListener("resize", this._resizeEvent);
-
-				// Fire the resize event for the first time
-				// which sets up initial canvas dimensions
-				this._resizeEvent();
-				this._ctx = this._canvas.getContext(this._renderContext);
-				this._headless = false;
-			}
+	canvas (elem: HTMLCanvasElement, autoSize = true) {
+		if (elem === undefined) {
+			return this._canvas;
 		}
 
-		return this._canvas;
+		if (!this._canvas) {
+			// Setup front-buffer canvas element
+			this._canvas = elem;
+			this._ctx = this._canvas.getContext(this._renderContext);
+
+			// Handle pixel ratio settings
+			if (this._pixelRatioScaling) {
+				// Support high-definition devices and "retina" (stupid marketing name)
+				// displays by adjusting for device and back store pixels ratios
+				this._devicePixelRatio = window.devicePixelRatio || 1;
+				this._backingStoreRatio = this._ctx.webkitBackingStorePixelRatio ||
+					this._ctx.mozBackingStorePixelRatio ||
+					this._ctx.msBackingStorePixelRatio ||
+					this._ctx.oBackingStorePixelRatio ||
+					this._ctx.backingStorePixelRatio || 1;
+
+				this._deviceFinalDrawRatio = Math.ceil(this._devicePixelRatio / this._backingStoreRatio);
+			} else {
+				// No auto-scaling
+				this._devicePixelRatio = 1;
+				this._backingStoreRatio = 1;
+				this._deviceFinalDrawRatio = 1;
+			}
+
+			this.log(`Device pixel ratio is ${this._devicePixelRatio} and canvas pixel ratio set to ${this._deviceFinalDrawRatio}`);
+
+			if (autoSize) {
+				this._autoSize = autoSize;
+			}
+
+			// Add some event listeners even if autosize is off
+			window.addEventListener("resize", this._resizeEvent);
+
+			// Fire the resize event for the first time
+			// which sets up initial canvas dimensions
+			this._resizeEvent();
+			this._ctx = this._canvas.getContext(this._renderContext);
+			this._headless = false;
+		}
 	}
 
 	/**

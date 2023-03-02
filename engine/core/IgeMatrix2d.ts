@@ -1,43 +1,31 @@
-import {IgePoint3d} from "./IgePoint3d";
-import {IgeClass} from "./IgeClass";
-
 /**
  * Creates a new transformation matrix.
  */
-export class IgeMatrix2d extends IgeClass {
-	matrix: number[];
-	_rotateOrigin: IgePoint3d;
-	_scaleOrigin: IgePoint3d;
-	
-	constructor({ige, igeConfig}) {
-		super({ige, igeConfig});
+import IgePoint3d from "./IgePoint3d";
+import IgeBaseClass from "./IgeBaseClass";
 
-		this.matrix = [
-			1.0,0.0,0.0,
-			0.0,1.0,0.0,
-			0.0,0.0,1.0
-		];
+class IgeMatrix2d {
+	matrix = [
+		1.0,0.0,0.0,
+		0.0,1.0,0.0,
+		0.0,0.0,1.0
+	];
 
-		this._rotateOrigin = new IgePoint3d({ige, igeConfig}, 0, 0, 0);
-		this._scaleOrigin = new IgePoint3d({ige, igeConfig}, 0, 0, 0);
-	}
-	
-	/**
-	 * Transform a point by this matrix. The parameter point will be modified with the transformation values.
-	 * @param {IgePoint3d} point
-	 * @return {IgePoint3d} The passed point.
-	 */
+	_rotateOrigin = new IgePoint3d(0, 0, 0);
+	_scaleOrigin = new IgePoint3d(0, 0, 0);
+
 	transformCoord (point, obj) {
-		var x = point.x,
-			y = point.y,
+		const {x} = point,
+			{y} = point,
 			tm = this.matrix;
 
 		point.x = x * tm[0] + y * tm[1] + tm[2];
 		point.y = x * tm[3] + y * tm[4] + tm[5];
-		
+
 		/* DEXCLUDE */
 		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
-			obj.log('The matrix operation produced a NaN value!', 'error');
+			obj.log("The matrix operation produced a NaN value!", "error");
+			debugger;
 		}
 		/* DEXCLUDE */
 
@@ -50,16 +38,17 @@ export class IgeMatrix2d extends IgeClass {
 	 * @return {IgePoint3d} The passed point.
 	 */
 	transformCoordInverse (point, obj) {
-		var x = point.x,
-			y = point.y,
+		var {x} = point,
+			{y} = point,
 			tm = this.matrix;
 
 		point.x = x * tm[0] - y * tm[1] + tm[2];
 		point.y = x * tm[3] + y * tm[4] - tm[5];
-		
+
 		/* DEXCLUDE */
 		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
-			obj.log('The matrix operation produced a NaN value!', 'error');
+			obj.log("The matrix operation produced a NaN value!", "error");
+			debugger;
 		}
 		/* DEXCLUDE */
 
@@ -83,13 +72,13 @@ export class IgeMatrix2d extends IgeClass {
 	 * @return {IgeMatrix2d} A new matrix object.
 	 */
 	_newRotate (angle) {
-		var m = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig});
+		var m = new IgeMatrix2d();
 		m.rotateTo(angle);
 		return m;
 	}
 
 	rotateBy (angle) {
-		var m = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig});
+		var m = new IgeMatrix2d();
 
 		m.translateBy(this._rotateOrigin.x, this._rotateOrigin.y);
 		m.rotateTo(angle);
@@ -109,10 +98,11 @@ export class IgeMatrix2d extends IgeClass {
 		tm[1] = -s;
 		tm[3] = s;
 		tm[4] = c;
-		
+
 		/* DEXCLUDE */
 		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
-			console.log('The matrix operation produced a NaN value!', 'error');
+			this.log("The matrix operation produced a NaN value!", "error");
+			debugger;
 		}
 		/* DEXCLUDE */
 
@@ -134,7 +124,7 @@ export class IgeMatrix2d extends IgeClass {
 	 * @return {Number}
 	 */
 	rotationDegrees () {
-		return Math.degrees(Math.acos(this.matrix[0]));
+		return IgeBaseClass.radiansToDegrees(Math.acos(this.matrix[0]));
 	}
 
 	/**
@@ -147,7 +137,7 @@ export class IgeMatrix2d extends IgeClass {
 	 * @static
 	 */
 	_newScale (x, y) {
-		var m = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig});
+		var m = new IgeMatrix2d();
 
 		m.matrix[0] = x;
 		m.matrix[4] = y;
@@ -156,7 +146,7 @@ export class IgeMatrix2d extends IgeClass {
 	}
 
 	scaleBy (x, y) {
-		var m = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig});
+		var m = new IgeMatrix2d();
 
 		m.matrix[0] = x;
 		m.matrix[4] = y;
@@ -171,10 +161,11 @@ export class IgeMatrix2d extends IgeClass {
 		//this.identity();
 		tm[0] = x;
 		tm[4] = y;
-		
+
 		/* DEXCLUDE */
 		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
-			this.log('The matrix operation produced a NaN value!', 'error');
+			this.log("The matrix operation produced a NaN value!", "error");
+			debugger;
 		}
 		/* DEXCLUDE */
 
@@ -188,7 +179,7 @@ export class IgeMatrix2d extends IgeClass {
 	 * @return {IgeMatrix2d} A new matrix object.
 	 */
 	_newTranslate (x, y) {
-		var m = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig});
+		var m = new IgeMatrix2d();
 
 		m.matrix[2] = x;
 		m.matrix[5] = y;
@@ -197,7 +188,7 @@ export class IgeMatrix2d extends IgeClass {
 	}
 
 	translateBy (x, y) {
-		var m = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig});
+		var m = new IgeMatrix2d();
 
 		m.matrix[2] = x;
 		m.matrix[5] = y;
@@ -214,13 +205,14 @@ export class IgeMatrix2d extends IgeClass {
 	 */
 	translateTo (x, y) {
 		var tm = this.matrix;
-		
+
 		tm[2] = x;
 		tm[5] = y;
-		
+
 		/* DEXCLUDE */
 		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
-			this.log('The matrix operation produced a NaN value!', 'error');
+			this.log("The matrix operation produced a NaN value!", "error");
+			debugger;
 		}
 		/* DEXCLUDE */
 
@@ -229,7 +221,7 @@ export class IgeMatrix2d extends IgeClass {
 
 	/**
 	 * Copy into this matrix the given matrix values.
-	 * @param {IgeMatrix2d} matrix 
+	 * @param {IgeMatrix2d} matrix
 	 * @return {Object} "this".
 	 */
 	copy (matrix) {
@@ -248,17 +240,17 @@ export class IgeMatrix2d extends IgeClass {
 
 		return this;
 	}
-	
+
 	compare (matrix) {
 		var thisMatrix = this.matrix,
 			thatMatrix = matrix.matrix;
-		
+
 		for (var i = 0; i < 9; i++) {
 			if (thisMatrix[i] !== thatMatrix[i]) {
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
 
@@ -380,7 +372,7 @@ export class IgeMatrix2d extends IgeClass {
 			m21 = tm[7],
 			m22 = tm[8],
 
-			newMatrix = new IgeMatrix2d({ige: this._ige, igeConfig: this._igeConfig}),
+			newMatrix = new IgeMatrix2d(),
 			determinant = m00* (m11*m22 - m21*m12) - m10*(m01*m22 - m21*m02) + m20 * (m01*m12 - m11*m02);
 
 		if  (determinant===0) {
@@ -425,7 +417,7 @@ export class IgeMatrix2d extends IgeClass {
 	 * Transforms the passed rendering context by the current matrix
 	 * data using the setTransform() method so that the matrix data
 	 * is set non-cumulative with the previous matrix data.
-	 * @param {CanvasRenderingContext2d} ctx The rendering context to
+	 * @param {CanvasRenderingContext2D} ctx The rendering context to
 	 * set the transform matrix for.
 	 */
 	transformRenderingContextSet (ctx) {
@@ -438,7 +430,7 @@ export class IgeMatrix2d extends IgeClass {
 	 * Transforms the passed rendering context by the current matrix
 	 * data using the transform() method so that the matrix data
 	 * is set cumulative with the previous matrix data.
-	 * @param {CanvasRenderingContext2d} ctx The rendering context to
+	 * @param {CanvasRenderingContext2D} ctx The rendering context to
 	 * set the transform matrix for.
 	 */
 	transformRenderingContext (ctx) {
@@ -447,3 +439,5 @@ export class IgeMatrix2d extends IgeClass {
 		return this;
 	}
 }
+
+export default IgeMatrix2d;

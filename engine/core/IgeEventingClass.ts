@@ -1,332 +1,342 @@
+import IgeBaseClass from "./IgeBaseClass";
+
+export interface EventListenerObject {
+	type: "single";
+	callback: (...args: any) => boolean | void;
+	context: any;
+	oneShot: boolean;
+	sendEventName: boolean;
+}
+
+export interface MultiEventListenerObject extends Omit<EventListenerObject, "type"> {
+	type: "multi";
+	handler: (firedEventName: string) => boolean | void;
+	eventsFired: number;
+	totalEvents: number;
+}
+
+export type EventListenerRegister = Record<string, EventListenerObject[]>;
+
+export type RemovalResultCallback = (success: boolean) => void;
+
 /**
  * Creates a new class with the capability to emit events.
  */
-import { IgeClass } from "./IgeClass";
+class IgeEventingClass extends IgeBaseClass {
+	classId = "IgeEventingClass";
 
-export class IgeEventingClass extends IgeClass {
-    _classId = "IgeEventingClass";
-    _eventListeners: {};
+	// Private
+	_eventsProcessing: boolean = false;
+	_eventRemovalQueue: any[] = [];
+	_eventListeners: EventListenerRegister = {};
 
-    /**
-     * Add an event listener method for an event.
-     * @param {String || Array} eventName The name of the event to listen for (string), or an array of events to listen for.
-     * @param {Function} call The method to call when the event listener is triggered.
-     * @param {Object=} context The context in which the call to the listening method will be made (sets the 'this' variable in the method to the object passed as this parameter).
-     * @param {Boolean=} oneShot If set, will instruct the listener to only listen to the event being fired once and will not fire again.
-     * @param {Boolean=} sendEventName If set, will instruct the emitter to send the event name as the argument instead of any emitted arguments.
-     * @return {Object} The event listener object. Hold this value if you later want to turn off the event listener.
-     * @example #Add an Event Listener
-     *     // Register event lister and store in "evt"
-     *     var evt = myEntity.on('mouseDown', function () { console.log('down'); });
-     * @example #Listen for Event Data
-     *     // Set a listener to listen for the data (multiple values emitted
-     *     // from an event are passed as function arguments)
-     *     myEntity.on('hello', function (arg1, arg2) {
-     *         console.log(arg1, arg2);
-     *     }
-     *
-     *     // Emit the event named "hello"
-     *     myEntity.emit('hello', ['data1', 'data2']);
-     *
-     *     // The console output is:
-     *     //    data1, data2
-     */
-    on(eventName, call, context, oneShot, sendEventName) {
-        let self = this,
-            newListener,
-            addListener,
-            existingIndex,
-            elArr,
-            multiEvent,
-            eventIndex,
-            eventData,
-            eventObj,
-            multiEventName;
+	/**
+	 * Add an event listener method for an event.
+	 * @param {String || Array} eventName The name of the event to listen for (string), or an array of events to listen for.
+	 * @param {Function} callback The method to call when the event listener is triggered.
+	 * @param {Object=} context The context in which the call to the listening method will be made (sets the 'this' variable in the method to the object passed as this parameter).
+	 * @param {Boolean=} oneShot If set, will instruct the listener to only listen to the event being fired once and will not fire again.
+	 * @param {Boolean=} sendEventName If set, will instruct the emitter to send the event name as the argument instead of any emitted arguments.
+	 * @return {Object} The event listener object. Hold this value if you later want to turn off the event listener.
+	 * @example #Add an Event Listener
+	 *     // Register event lister and store in "evt"
+	 *     var evt = myEntity.on('mouseDown', function () { console.log('down'); });
+	 * @example #Listen for Event Data
+	 *     // Set a listener to listen for the data (multiple values emitted
+	 *     // from an event are passed as function arguments)
+	 *     myEntity.on('hello', function (arg1, arg2) {
+	 *         console.log(arg1, arg2);
+	 *     }
+	 *
+	 *     // Emit the event named "hello"
+	 *     myEntity.emit('hello', ['data1', 'data2']);
+	 *
+	 *     // The console output is:
+	 *     //    data1, data2
+	 */
+	on(eventName: string | string[], callback: (...args: any) => void, context?: any, oneShot = false, sendEventName = false) {
+		// Check that we have an event listener object
+		this._eventListeners = this._eventListeners || {};
 
-        // Check that we have an event listener object
-        this._eventListeners = this._eventListeners || {};
+		if (typeof callback !== "function") {
+			if (typeof (eventName) !== "string") {
+				eventName = "*Multi-Event*";
+			}
+			this.log("Cannot register event listener for event \"" + eventName + "\" because the passed callback is not a function!", "error");
+		}
 
-        if (typeof call === "function") {
-            if (typeof eventName === "string") {
-                // Compose the new listener
-                newListener = {
-                    call: call,
-                    context: context,
-                    oneShot: oneShot,
-                    sendEventName: sendEventName
-                };
+		if (typeof eventName === "string") {
+			// Compose the new listener
+			const newListener: EventListenerObject = {
+				type: "single",
+				callback,
+				context,
+				oneShot,
+				sendEventName
+			};
 
-                elArr = this._eventListeners[eventName] = this._eventListeners[eventName] || [];
+			const elArr: EventListenerObject[] = this._eventListeners[eventName] = this._eventListeners[eventName] || [];
 
-                // Check if we already have this listener in the list
-                addListener = true;
+			const existingIndex = elArr.findIndex((tmpListener) => {
+				return tmpListener.callback === newListener.callback;
+			});
 
-                // TO-DO - Could this do with using indexOf? Would that work? Would be faster?
-                existingIndex = elArr.indexOf(newListener);
-                if (existingIndex > -1) {
-                    addListener = false;
-                }
+			if (existingIndex === -1) {
+				// The listener does not already exist, add it
+				elArr.push(newListener);
+			}
 
-                // Add this new listener
-                if (addListener) {
-                    elArr.push(newListener);
-                }
+			return newListener;
+		}
 
-                return newListener;
-            } else {
-                // The eventName is an array of names, creating a group of events
-                // that must be fired to fire this event callback
-                if (eventName.length) {
-                    // Loop the event array
-                    multiEvent = [];
-                    multiEvent[0] = 0; // This will hold our event count total
-                    multiEvent[1] = 0; // This will hold our number of events fired
+		if (!eventName.length) {
+			return;
+		}
 
-                    // Define the multi event callback
-                    multiEvent[3] = function (firedEventName) {
-                        multiEvent[1]++;
+		// The eventName is an array of names, creating a group of events
+		// that must be fired to fire this event callback
+		const multiEventListener: MultiEventListenerObject = {
+			type: "multi",
+			callback,
+			context,
+			oneShot,
+			sendEventName,
+			eventsFired: 0,
+			totalEvents: 0,
+			handler: (firedEventName: string) => {
+				multiEventListener.eventsFired++;
 
-                        if (multiEvent[0] === multiEvent[1]) {
-                            // All the multi-event events have fired
-                            // so fire the callback
-                            call.apply(context || self);
-                        }
-                    };
+				if (multiEventListener.totalEvents === multiEventListener.eventsFired) {
+					// All the multi-event events have fired
+					// so fire the callback
+					callback.apply(context || this);
+				}
+			}
+		};
 
-                    for (eventIndex in eventName) {
-                        if (eventName.hasOwnProperty(eventIndex)) {
-                            eventData = eventName[eventIndex];
-                            eventObj = eventData[0];
-                            multiEventName = eventData[1];
+		eventName.forEach((multiEventName) => {
+			// Increment the event listening count total
+			multiEventListener.totalEvents++;
 
-                            // Increment the event listening count total
-                            multiEvent[0]++;
+			// Register each event against the event object with a callback
+			this.on(multiEventName, multiEventListener.handler, null, true, true);
+		});
 
-                            // Register each event against the event object with a callback
-                            eventObj.on(multiEventName, multiEvent[3], null, true, true);
-                        }
-                    }
-                }
-            }
-        } else {
-            if (typeof eventName !== "string") {
-                eventName = "*Multi-Event*";
-            }
-            this.log(
-                'Cannot register event listener for event "' + eventName + '" because the passed callback is not a function!',
-                "error"
-            );
-        }
-    }
+		return multiEventListener;
+	}
 
-    /**
-     * Remove an event listener. If the _processing flag is true
-     * then the removal will be placed in the removals array to be
-     * processed after the event loop has completed in the emit()
-     * method.
-     * @param {Boolean} eventName The name of the event you originally registered to listen for.
-     * @param {Object} evtListener The event listener object to cancel. This object is the one
-     * returned when calling the on() method. It is NOT the method you passed as the second argument
-     * to the on() method.
-     * @param {Function} callback The callback method to call when the event listener has been
-     * successfully removed. If you attempt to remove a listener during the event firing loop
-     * then the listener will not immediately be removed but will be queued for removal before
-     * the next listener loop is fired. In this case you may like to be informed via callback
-     * when the listener has been fully removed in which case, provide a method for this argument.
-     *
-     * The callback will be passed a single boolean argument denoting if the removal was successful
-     * (true) or the listener did not exist to remove (false).
-     * @example #Switch off an Event Listener
-     *     // Register event lister and store in "evt"
-     *     var evt = myEntity.on('mouseDown', function () { console.log('down'); });
-     *
-     *     // Switch off event listener
-     *     myEntity.off('mouseDown', evt);
-     * @return {Boolean}
-     */
-    off(eventName, evtListener, callback) {
-        if (this._eventListeners) {
-            if (!this._eventListeners._processing) {
-                if (this._eventListeners[eventName]) {
-                    // Find this listener in the list
-                    const evtListIndex = this._eventListeners[eventName].indexOf(evtListener);
-                    if (evtListIndex > -1) {
-                        // Remove the listener from the event listener list
-                        this._eventListeners[eventName].splice(evtListIndex, 1);
-                        if (callback) {
-                            callback(true);
-                        }
-                        return true;
-                    } else {
-                        this.log('Failed to cancel event listener for event named "' + eventName + '" !', "warning", evtListener);
-                    }
-                } else {
-                    this.log("Failed to cancel event listener!");
-                }
-            } else {
-                // Add the removal to a remove queue since we are processing
-                // listeners at the moment and removing one would mess up the
-                // loop!
-                this._eventListeners._removeQueue = this._eventListeners._removeQueue || [];
-                this._eventListeners._removeQueue.push([eventName, evtListener, callback]);
+	/**
+	 * Remove an event listener. If the _processing flag is true
+	 * then the removal will be placed in the removals array to be
+	 * processed after the event loop has completed in the emit()
+	 * method.
+	 * @param {string} eventName The name of the event you originally registered to listen for.
+	 * @param {Object} evtListener The event listener object to cancel. This object is the one
+	 * returned when calling the on() method. It is NOT the method you passed as the second argument
+	 * to the on() method.
+	 * @param {Function} callback The callback method to call when the event listener has been
+	 * successfully removed. If you attempt to remove a listener during the event firing loop
+	 * then the listener will not immediately be removed but will be queued for removal before
+	 * the next listener loop is fired. In this case you may like to be informed via callback
+	 * when the listener has been fully removed in which case, provide a method for this argument.
+	 *
+	 * The callback will be passed a single boolean argument denoting if the removal was successful
+	 * (true) or the listener did not exist to remove (false).
+	 * @example #Switch off an Event Listener
+	 *     // Register event lister and store in "evt"
+	 *     var evt = myEntity.on('mouseDown', function () { console.log('down'); });
+	 *
+	 *     // Switch off event listener
+	 *     myEntity.off('mouseDown', evt);
+	 * @return {Boolean}
+	 */
+	off(eventName: string, evtListener: EventListenerObject, callback?: RemovalResultCallback) {
+		if (this._eventListeners) {
+			if (!this._eventListeners._processing) {
+				if (this._eventListeners[eventName]) {
+					// Find this listener in the list
+					var evtListIndex = this._eventListeners[eventName].indexOf(evtListener);
+					if (evtListIndex > -1) {
+						// Remove the listener from the event listener list
+						this._eventListeners[eventName].splice(evtListIndex, 1);
+						if (callback) {
+							callback(true);
+						}
+						return true;
+					} else {
+						this.log("Failed to cancel event listener for event named \"" + eventName + "\" !", "warning", evtListener);
+					}
+				} else {
+					this.log("Failed to cancel event listener!");
+				}
+			} else {
+				// Add the removal to a remove queue since we are processing
+				// listeners at the moment and removing one would mess up the
+				// loop!
+				this._eventRemovalQueue = this._eventRemovalQueue || [];
+				this._eventRemovalQueue.push([eventName, evtListener, callback]);
 
-                return -1;
-            }
-        }
+				return -1;
+			}
+		}
 
-        if (callback) {
-            callback(false);
-        }
-        return false;
-    }
+		if (callback) {
+			callback(false);
+		}
+		return false;
+	}
 
-    /**
-     * Emit an event by name.
-     * @param {Object} eventName The name of the event to emit.
-     * @param {Object || Array} args The arguments to send to any listening methods.
-     * If you are sending multiple arguments, use an array containing each argument.
-     * @return {Number}
-     * @example #Emit an Event
-     *     // Emit the event named "hello"
-     *     myEntity.emit('hello');
-     * @example #Emit an Event With Data Object
-     *     // Emit the event named "hello"
-     *     myEntity.emit('hello', {moo: true});
-     * @example #Emit an Event With Multiple Data Values
-     *     // Emit the event named "hello"
-     *     myEntity.emit('hello', [{moo: true}, 'someString']);
-     * @example #Listen for Event Data
-     *     // Set a listener to listen for the data (multiple values emitted
-     *     // from an event are passed as function arguments)
-     *     myEntity.on('hello', function (arg1, arg2) {
-     *         console.log(arg1, arg2);
-     *     }
-     *
-     *     // Emit the event named "hello"
-     *     myEntity.emit('hello', ['data1', 'data2']);
-     *
-     *     // The console output is:
-     *     //    data1, data2
-     */
-    emit(eventName: string, args?: any) {
-        if (this._eventListeners) {
-            // Check if the event has any listeners
-            if (this._eventListeners[eventName]) {
-                // Fire the listeners for this event
-                let eventCount = this._eventListeners[eventName].length,
-                    eventCount2 = this._eventListeners[eventName].length - 1,
-                    finalArgs,
-                    i,
-                    cancelFlag,
-                    eventIndex,
-                    tempEvt,
-                    retVal;
+	/**
+	 * Emit an event by name.
+	 * @param {Object} eventName The name of the event to emit.
+	 * @param {Object || Array} [args] The arguments to send to any listening methods.
+	 * If you are sending multiple arguments, use an array containing each argument.
+	 * @return {Number}
+	 * @example #Emit an Event
+	 *     // Emit the event named "hello"
+	 *     myEntity.emit('hello');
+	 * @example #Emit an Event With Data Object
+	 *     // Emit the event named "hello"
+	 *     myEntity.emit('hello', {moo: true});
+	 * @example #Emit an Event With Multiple Data Values
+	 *     // Emit the event named "hello"
+	 *     myEntity.emit('hello', [{moo: true}, 'someString']);
+	 * @example #Listen for Event Data
+	 *     // Set a listener to listen for the data (multiple values emitted
+	 *     // from an event are passed as function arguments)
+	 *     myEntity.on('hello', function (arg1, arg2) {
+	 *         console.log(arg1, arg2);
+	 *     }
+	 *
+	 *     // Emit the event named "hello"
+	 *     myEntity.emit('hello', ['data1', 'data2']);
+	 *
+	 *     // The console output is:
+	 *     //    data1, data2
+	 */
+	emit(eventName: string, args?: any) {
+		if (!this._eventListeners) {
+			return -1;
+		}
 
-                // If there are some events, ensure that the args is ready to be used
-                if (eventCount) {
-                    finalArgs = [];
-                    if (typeof args === "object" && args !== null && args[0] !== null && args[0] !== undefined) {
-                        for (i in args) {
-                            if (args.hasOwnProperty(i)) {
-                                finalArgs[i] = args[i];
-                            }
-                        }
-                    } else {
-                        finalArgs = [args];
-                    }
+		// Check if the event has any listeners
+		if (!this._eventListeners[eventName]) {
+			return -1;
+		}
 
-                    // Loop and emit!
-                    cancelFlag = false;
+		// Fire the listeners for this event
+		let eventCount = this._eventListeners[eventName].length,
+			eventCount2 = this._eventListeners[eventName].length - 1;
 
-                    this._eventListeners._processing = true;
-                    while (eventCount--) {
-                        eventIndex = eventCount2 - eventCount;
-                        tempEvt = this._eventListeners[eventName][eventIndex];
+		// If there are some events, ensure that the args is ready to be used
+		if (!eventCount) {
+			return -1;
+		}
 
-                        // If the sendEventName flag is set, overwrite the arguments with the event name
-                        if (tempEvt.sendEventName) {
-                            finalArgs = [eventName];
-                        }
+		let finalArgs: any[] = [];
 
-                        // Call the callback
-                        retVal = tempEvt.call.apply(tempEvt.context || this, finalArgs);
+		if (typeof (args) === "object" && args !== null && args[0] !== null && args[0] !== undefined) {
+			args.forEach((arg: any, argIndex: number) => {
+				finalArgs[argIndex] = arg;
+			});
+		} else {
+			finalArgs = [args];
+		}
 
-                        // If the retVal === true then store the cancel flag and return to the emitting method
-                        if (retVal === true) {
-                            // The receiver method asked us to send a cancel request back to the emitter
-                            cancelFlag = true;
-                        }
+		// Loop and emit!
+		let cancelFlag = false;
 
-                        // Check if we should now cancel the event
-                        if (tempEvt.oneShot) {
-                            // The event has a oneShot flag so since we have fired the event,
-                            // lets cancel the listener now
-                            if (this.off(eventName, tempEvt) === true) {
-                                eventCount2--;
-                            }
-                        }
-                    }
+		this._eventsProcessing = true;
 
-                    // Check that the array still exists because an event
-                    // could have triggered a method that destroyed our object
-                    // which would have deleted the array!
-                    if (this._eventListeners) {
-                        this._eventListeners._processing = false;
+		while (eventCount--) {
+			const eventIndex = eventCount2 - eventCount;
+			const tempEvt = this._eventListeners[eventName][eventIndex];
 
-                        // Now process any event removal
-                        this._processRemovals();
-                    }
+			// If the sendEventName flag is set, overwrite the arguments with the event name
+			if (tempEvt.sendEventName) {
+				finalArgs = [eventName];
+			}
 
-                    if (cancelFlag) {
-                        return 1;
-                    }
-                }
-            }
-        }
-    }
+			// Call the callback
+			const retVal = tempEvt.callback.apply(tempEvt.context || this, finalArgs);
 
-    /**
-     * Returns an object containing the current event listeners.
-     * @return {Object}
-     */
-    eventList() {
-        return this._eventListeners;
-    }
+			// If the retVal === true then store the cancel flag and return to the emitting method
+			if (retVal === true) {
+				// The receiver method asked us to send a cancel request back to the emitter
+				cancelFlag = true;
+			}
 
-    /**
-     * Loops the removals array and processes off() calls for
-     * each array item.
-     * @private
-     */
-    _processRemovals() {
-        if (this._eventListeners) {
-            let remArr = this._eventListeners._removeQueue,
-                arrCount,
-                item,
-                result;
+			// Check if we should now cancel the event
+			if (tempEvt.oneShot) {
+				// The event has a oneShot flag so since we have fired the event,
+				// lets cancel the listener now
+				if (this.off(eventName, tempEvt) === true) {
+					eventCount2--;
+				}
+			}
+		}
 
-            // If the removal array exists
-            if (remArr) {
-                // Get the number of items in the removal array
-                arrCount = remArr.length;
+		// Check that the array still exists because an event
+		// could have triggered a method that destroyed our object
+		// which would have deleted the array!
+		if (this._eventListeners) {
+			this._eventsProcessing = false;
 
-                // Loop the array
-                while (arrCount--) {
-                    item = remArr[arrCount];
+			// Now process any event removal
+			this._processRemovals();
+		}
 
-                    // Call the off() method for this item
-                    result = this.off(item[0], item[1]);
+		if (cancelFlag) {
+			return 1;
+		}
+	}
 
-                    // Check if there is a callback
-                    if (typeof remArr[2] === "function") {
-                        // Call the callback with the removal result
-                        remArr[2](result);
-                    }
-                }
-            }
+	/**
+	 * Returns an object containing the current event listeners.
+	 * @return {Object}
+	 */
+	eventList() {
+		return this._eventListeners;
+	}
 
-            // Remove the removal array
-            delete this._eventListeners._removeQueue;
-        }
-    }
+	/**
+	 * Loops the removals array and processes off() calls for
+	 * each array item.
+	 * @private
+	 */
+	_processRemovals() {
+		if (!this._eventListeners) {
+			return;
+		}
+
+		let remArr = this._eventRemovalQueue,
+			arrCount,
+			item,
+			result;
+
+		// If the removal array exists
+		if (remArr) {
+			// Get the number of items in the removal array
+			arrCount = remArr.length;
+
+			// Loop the array
+			while (arrCount--) {
+				item = remArr[arrCount];
+
+				// Call the off() method for this item
+				result = this.off(item[0], item[1]);
+
+				// Check if there is a callback
+				if (typeof remArr[2] === "function") {
+					// Call the callback with the removal result
+					remArr[2](result);
+				}
+			}
+		}
+
+		// Remove the removal array
+		this._eventRemovalQueue = [];
+	}
 }
+
+export default IgeEventingClass;

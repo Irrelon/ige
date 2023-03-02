@@ -1,38 +1,36 @@
 /**
  * Creates a new 3d point (x, y, z).
  */
-import {IgeClass} from "./IgeClass";
+class IgePoint3d {
+	classId = "IgePoint3d";
 
-export class IgePoint3d extends IgeClass {
-	_classId = 'IgePoint3d';
-	x: number;
-	y: number;
-	z: number;
-	x2: number;
-	y2: number;
-	z2: number;
-	_floor: boolean;
+	// Public
+	x = 0;
+	y = 0;
+	z = 0;
+	x2 = 0;
+	y2 = 0;
+	z2 = 0;
 
-	constructor({ige, igeConfig}, x = 0, y = 0, z = 0, floor = false) {
-		super({ige, igeConfig});
+	// Private
+	_floor = false;
 
+	constructor (x = 0, y = 0, z = 0, floor = false) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-
 		this._floor = floor;
 
 		if (this._floor) {
 			this.x2 = Math.floor(x / 2);
 			this.y2 = Math.floor(y / 2);
 			this.z2 = Math.floor(z / 2);
-		} else {
-			this.x2 = x / 2;
-			this.y2 = y / 2;
-			this.z2 = z / 2;
+			return this;
 		}
 
-		return this;
+		this.x2 = x / 2;
+		this.y2 = y / 2;
+		this.z2 = z / 2;
 	}
 
 	/**
@@ -41,7 +39,7 @@ export class IgePoint3d extends IgeClass {
 	 * @param val
 	 * @return {*}
 	 */
-	floor(val) {
+	floor (val) {
 		if (val !== undefined) {
 			this._floor = val;
 			return this;
@@ -56,7 +54,7 @@ export class IgePoint3d extends IgeClass {
 	 * @param {IgePoint3d} point The point to compare data with.
 	 * @return {Boolean}
 	 */
-	compare(point) {
+	compare (point) {
 		return point && this.x === point.x && this.y === point.y && this.z === point.z;
 	}
 
@@ -66,7 +64,7 @@ export class IgePoint3d extends IgeClass {
 	 * @param {IgePoint3d} point The point to copy values from.
 	 * @returns {*}
 	 */
-	copy(point) {
+	copy (point) {
 		this.x = point.x;
 		this.y = point.y;
 		this.z = point.z;
@@ -79,11 +77,8 @@ export class IgePoint3d extends IgeClass {
 	 * and returns an object whose x, y values are the result.
 	 * @return {Object}
 	 */
-	toIso() {
-		const sx = this.x - this.y;
-		const sy = (-this.z) * 1.2247 + (this.x + this.y) * 0.5;
-
-		return {x: sx, y: sy};
+	toIso () {
+		return {"x": this.x - this.y, "y": (-this.z) * 1.2247 + (this.x + this.y) * 0.5};
 	}
 
 	/**
@@ -91,7 +86,7 @@ export class IgePoint3d extends IgeClass {
 	 * and overwrites the previous x, y, z values with the result.
 	 * @return {*}
 	 */
-	thisToIso() {
+	thisToIso () {
 		const val = this.toIso();
 
 		this.x = val.x;
@@ -105,11 +100,8 @@ export class IgePoint3d extends IgeClass {
 	 * and returns an object whose x, y values are the result.
 	 * @return {Object}
 	 */
-	to2d() {
-		const sx = this.y + this.x / 2;
-		const sy = this.y - this.x / 2;
-
-		return {x: sx, y: sy};
+	to2d () {
+		return {"x": this.y + this.x / 2, "y": this.y - this.x / 2};
 	}
 
 	/**
@@ -117,7 +109,7 @@ export class IgePoint3d extends IgeClass {
 	 * and overwrites the previous x, y, z values with the result.
 	 * @return {*}
 	 */
-	thisTo2d() {
+	thisTo2d () {
 		const val = this.to2d();
 
 		this.x = val.x;
@@ -133,7 +125,7 @@ export class IgePoint3d extends IgeClass {
 	 * @param point
 	 * @return {*}
 	 */
-	addPoint(point) {
+	addPoint (point) {
 		return new IgePoint3d(this.x + point.x, this.y + point.y, this.z + point.z);
 	}
 
@@ -143,7 +135,7 @@ export class IgePoint3d extends IgeClass {
 	 * @param point
 	 * @return {*}
 	 */
-	thisAddPoint(point) {
+	thisAddPoint (point) {
 		this.x += point.x;
 		this.y += point.y;
 		this.z += point.z;
@@ -157,8 +149,8 @@ export class IgePoint3d extends IgeClass {
 	 * @param point
 	 * @return {*}
 	 */
-	minusPoint(point) {
-		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, this.x - point.x, this.y - point.y, this.z - point.z);
+	minusPoint (point) {
+		return new IgePoint3d(this.x - point.x, this.y - point.y, this.z - point.z);
 	}
 
 	/**
@@ -167,7 +159,7 @@ export class IgePoint3d extends IgeClass {
 	 * @param point
 	 * @return {*}
 	 */
-	thisMinusPoint(point) {
+	thisMinusPoint (point) {
 		this.x -= point.x;
 		this.y -= point.y;
 		this.z -= point.z;
@@ -183,8 +175,8 @@ export class IgePoint3d extends IgeClass {
 	 * @param z
 	 * @return {*}
 	 */
-	multiply(x, y, z) {
-		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, this.x * x, this.y * y, this.z * z);
+	multiply (x, y, z) {
+		return new IgePoint3d(this.x * x, this.y * y, this.z * z);
 	}
 
 	/**
@@ -193,8 +185,8 @@ export class IgePoint3d extends IgeClass {
 	 * @param {IgePoint3d} point
 	 * @return {*}
 	 */
-	multiplyPoint(point) {
-		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, this.x * point.x, this.y * point.y, this.z * point.z);
+	multiplyPoint (point) {
+		return new IgePoint3d(this.x * point.x, this.y * point.y, this.z * point.z);
 	}
 
 	/**
@@ -205,7 +197,7 @@ export class IgePoint3d extends IgeClass {
 	 * @param z
 	 * @return {*}
 	 */
-	thisMultiply(x, y, z) {
+	thisMultiply (x, y, z) {
 		this.x *= x;
 		this.y *= y;
 		this.z *= z;
@@ -221,8 +213,8 @@ export class IgePoint3d extends IgeClass {
 	 * @param z
 	 * @return {*}
 	 */
-	divide(x, y, z) {
-		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, this.x / x, this.y / y, this.z / z);
+	divide (x, y, z) {
+		return new IgePoint3d(this.x / x, this.y / y, this.z / z);
 	}
 
 	/**
@@ -231,22 +223,16 @@ export class IgePoint3d extends IgeClass {
 	 * @param {IgePoint3d} point
 	 * @return {*}
 	 */
-	dividePoint(point) {
-		let newX = this.x;
-		let newY = this.y;
-		let newZ = this.z;
+	dividePoint (point) {
+		let newX = this.x,
+			newY = this.y,
+			newZ = this.z;
 
-		if (point.x) {
-			newX = this.x / point.x;
-		}
-		if (point.y) {
-			newY = this.y / point.y;
-		}
-		if (point.z) {
-			newZ = this.z / point.z;
-		}
+		if (point.x) { newX = this.x / point.x; }
+		if (point.y) { newY = this.y / point.y; }
+		if (point.z) { newZ = this.z / point.z; }
 
-		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, newX, newY, newZ);
+		return new IgePoint3d(newX, newY, newZ);
 	}
 
 	/**
@@ -257,7 +243,7 @@ export class IgePoint3d extends IgeClass {
 	 * @param z
 	 * @return {*}
 	 */
-	thisDivide(x, y, z) {
+	thisDivide (x, y, z) {
 		this.x /= x;
 		this.y /= y;
 		this.z /= z;
@@ -269,8 +255,8 @@ export class IgePoint3d extends IgeClass {
 	 * Returns a clone of this IgePoint3d's data as a new instance.
 	 * @return {*}
 	 */
-	clone() {
-		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, this.x, this.y, this.z);
+	clone () {
+		return new IgePoint3d(this.x, this.y, this.z);
 	}
 
 	/**
@@ -283,15 +269,15 @@ export class IgePoint3d extends IgeClass {
 	 * @param endTime
 	 * @return {*}
 	 */
-	interpolate(endPoint, startTime, currentTime, endTime) {
-		const totalX = endPoint.x - this.x;
-		const totalY = endPoint.y - this.y;
-		const totalZ = endPoint.z - this.z;
-		const totalTime = endTime - startTime;
-		const deltaTime = totalTime - (currentTime - startTime);
-		const timeRatio = deltaTime / totalTime;
+	interpolate (endPoint, startTime, currentTime, endTime) {
+		const totalX = endPoint.x - this.x,
+			totalY = endPoint.y - this.y,
+			totalZ = endPoint.z - this.z,
+			totalTime = endTime - startTime,
+			deltaTime = totalTime - (currentTime - startTime),
+			timeRatio = deltaTime / totalTime;
 
-		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, endPoint.x - (totalX * timeRatio), endPoint.y - (totalY * timeRatio), endPoint.z - (totalZ * timeRatio));
+		return new IgePoint3d(endPoint.x - (totalX * timeRatio), endPoint.y - (totalY * timeRatio), endPoint.z - (totalZ * timeRatio));
 	}
 
 	/**
@@ -299,13 +285,13 @@ export class IgePoint3d extends IgeClass {
 	 * @param {Number} radians Radians to rotate by.
 	 * @return {IgePoint3d} A new point with the rotated x, y.
 	 */
-	rotate(radians) {
-		const s = Math.sin(radians);
-		const c = Math.cos(radians);
-		const x = c * this.x - s * this.y;
-		const y = s * this.x - c * this.y;
+	rotate (radians) {
+		const s = Math.sin(radians),
+			c = Math.cos(radians),
+			x = c * this.x - s * this.y,
+			y = s * this.x - c * this.y;
 
-		return new IgePoint3d({ige: this._ige, igeConfig: this._igeConfig}, x, y, this.z);
+		return new IgePoint3d(x, y, this.z);
 	}
 
 	/**
@@ -314,11 +300,11 @@ export class IgePoint3d extends IgeClass {
 	 * @param {Number} radians Radians to rotate by.
 	 * @return {IgePoint3d} This point.
 	 */
-	thisRotate(radians) {
-		const s = Math.sin(radians);
-		const c = Math.cos(radians);
-		const x = this.x;
-		const y = this.y;
+	thisRotate (radians) {
+		const s = Math.sin(radians),
+			c = Math.cos(radians),
+			{x} = this,
+			{y} = this;
 
 		this.x = c * x - s * y;
 		this.y = s * x - c * y;
@@ -334,11 +320,9 @@ export class IgePoint3d extends IgeClass {
 	 * @param {Number=} precision
 	 * @return {String}
 	 */
-	toString(precision) {
-		if (precision === undefined) {
-			precision = 2;
-		}
-
-		return this.x.toFixed(precision) + ',' + this.y.toFixed(precision) + ',' + this.z.toFixed(precision);
+	toString (precision = 2) {
+		return this.x.toFixed(precision) + "," + this.y.toFixed(precision) + "," + this.z.toFixed(precision);
 	}
 }
+
+export default IgePoint3d;

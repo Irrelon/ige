@@ -1,22 +1,18 @@
-import {IgeClass, IgeClassProps} from "./IgeClass";
-import {IgePoint2d} from "./IgePoint2d";
-import {IgeRect} from "./IgeRect";
+import IgePoint2d from "./IgePoint2d";
+import IgeRect from "./IgeRect";
 
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
  */
-export class IgePoly2d extends IgeClass {
-	_classId = 'IgePoly2d';
-	_poly: IgePoint2d[];
-	_scale: IgePoint2d;
+class IgePoly2d {
+	classId = "IgePoly2d";
 
-	constructor(props: IgeClassProps) {
-		super(props);
+	constructor () {
 		this._poly = [];
-		this._scale = new IgePoint2d(props, 1, 1);
+		this._scale = new IgePoint2d(1, 1);
 	}
 
-	scale(x?: number, y?: number) {
+	scale (x, y) {
 		if (x !== undefined && y !== undefined) {
 			this._scale.x = x;
 			this._scale.y = y;
@@ -32,11 +28,11 @@ export class IgePoly2d extends IgeClass {
 	 * @param {Number} factor The multiplication factor.
 	 * @return {*}
 	 */
-	multiply(factor): IgePoly2d {
+	multiply (factor) {
 		if (factor !== undefined) {
-			const polyPoints = this._poly;
-			const pointCount = polyPoints.length;
-			let pointIndex;
+			var polyPoints = this._poly,
+				pointCount = polyPoints.length,
+				pointIndex;
 
 			for (pointIndex = 0; pointIndex < pointCount; pointIndex++) {
 				polyPoints[pointIndex].x *= factor;
@@ -52,16 +48,16 @@ export class IgePoly2d extends IgeClass {
 	 * @param {Number} value The divide value.
 	 * @return {*}
 	 */
-	divide(value?: number): IgePoly2d {
-		if (value === undefined) return this;
+	divide (value) {
+		if (value !== undefined) {
+			var polyPoints = this._poly,
+				pointCount = polyPoints.length,
+				pointIndex;
 
-		const polyPoints = this._poly;
-		const pointCount = polyPoints.length;
-		let pointIndex;
-
-		for (pointIndex = 0; pointIndex < pointCount; pointIndex++) {
-			polyPoints[pointIndex].x /= value;
-			polyPoints[pointIndex].y /= value;
+			for (pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+				polyPoints[pointIndex].x /= value;
+				polyPoints[pointIndex].y /= value;
+			}
 		}
 
 		return this;
@@ -72,8 +68,8 @@ export class IgePoly2d extends IgeClass {
 	 * @param x
 	 * @param y
 	 */
-	addPoint(x: number, y: number): IgePoly2d {
-		this._poly.push(new IgePoint2d({ige: this._ige, igeConfig: this._igeConfig}, x, y));
+	addPoint (x, y) {
+		this._poly.push(new IgePoint2d(x, y));
 		return this;
 	}
 
@@ -81,21 +77,21 @@ export class IgePoly2d extends IgeClass {
 	 * Returns the length of the poly array.
 	 * @return {Number}
 	 */
-	length(): number {
+	length () {
 		return this._poly.length;
 	}
 
 	/**
 	 * Check if a point is inside this polygon.
 	 * @param {IgePoint2d} point
-	 * @return {boolean}
+	 * @return {Boolean}
 	 */
-	pointInPoly(point: IgePoint2d): boolean {
-		const polyPoints = this._poly;
-		const pointCount = polyPoints.length;
-		let pointIndex;
-		let oldPointIndex = pointCount - 1;
-		let c = false;
+	pointInPoly (point) {
+		var polyPoints = this._poly,
+			pointCount = polyPoints.length,
+			pointIndex,
+			oldPointIndex = pointCount - 1,
+			c = 0;
 
 		for (pointIndex = 0; pointIndex < pointCount; oldPointIndex = pointIndex++) {
 			if (((polyPoints[pointIndex].y > point.y) !== (polyPoints[oldPointIndex].y > point.y)) &&
@@ -106,21 +102,21 @@ export class IgePoly2d extends IgeClass {
 			}
 		}
 
-		return c;
+		return Boolean(c);
 	}
 
 	/**
 	 * Check if the passed x and y are inside this polygon.
 	 * @param {Number} x
 	 * @param {Number} y
-	 * @return {boolean}
+	 * @return {Boolean}
 	 */
-	xyInside(x: number, y: number): boolean {
-		const polyPoints = this._poly;
-		const pointCount = polyPoints.length;
-		let pointIndex;
-		let oldPointIndex = pointCount - 1;
-		let c = false;
+	xyInside (x, y) {
+		var polyPoints = this._poly,
+			pointCount = polyPoints.length,
+			pointIndex,
+			oldPointIndex = pointCount - 1,
+			c = 0;
 
 		for (pointIndex = 0; pointIndex < pointCount; oldPointIndex = pointIndex++) {
 			if (((polyPoints[pointIndex].y > y) !== (polyPoints[oldPointIndex].y > y)) &&
@@ -131,15 +127,19 @@ export class IgePoly2d extends IgeClass {
 			}
 		}
 
-		return c;
+		return Boolean(c);
 	}
 
-	aabb(): IgeRect {
-		const xArr = [];
-		const yArr = [];
-		const arr = this._poly;
-		const arrCount = arr.length;
-		let arrIndex;
+	aabb () {
+		var minX,
+			minY,
+			maxX,
+			maxY,
+			xArr = [],
+			yArr = [],
+			arr = this._poly,
+			arrIndex,
+			arrCount = arr.length;
 
 		for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
 			xArr.push(arr[arrIndex].x);
@@ -147,25 +147,26 @@ export class IgePoly2d extends IgeClass {
 		}
 
 		// Get the extents of the newly transformed poly
-		const minX = Math.min(...xArr);
-		const minY = Math.min(...yArr);
-		const maxX = Math.max(...xArr);
-		const maxY = Math.max(...yArr);
+		minX = Math.min.apply(Math, xArr);
+		minY = Math.min.apply(Math, yArr);
+		maxX = Math.max.apply(Math, xArr);
+		maxY = Math.max.apply(Math, yArr);
 
-		return new IgeRect({ige: this._ige, igeConfig: this._igeConfig}, minX, minY, maxX - minX, maxY - minY);
+		return new IgeRect(minX, minY, maxX - minX, maxY - minY);
 	}
 
 	/**
 	 * Returns a copy of this IgePoly2d object that is
-	 * its own version, separate from the original.
+	 * it's own version, separate from the original.
 	 * @return {IgePoly2d}
 	 */
-	clone(): IgePoly2d {
-		const newPoly = new IgePoly2d({ige: this._ige, igeConfig: this._igeConfig});
-		const arr = this._poly;
-		const arrCount = arr.length;
+	clone () {
+		var newPoly = new IgePoly2d(),
+			arr = this._poly,
+			arrCount = arr.length,
+			i;
 
-		for (let i = 0; i < arrCount; i++) {
+		for (i = 0; i < arrCount; i++) {
 			newPoly.addPoint(arr[i].x, arr[i].y);
 		}
 
@@ -179,23 +180,25 @@ export class IgePoly2d extends IgeClass {
 	 * @return {Boolean} A boolean true if clockwise or false
 	 * if not.
 	 */
-	clockWiseTriangle(): boolean {
+	clockWiseTriangle () {
 		// Loop the polygon points and determine if they are counter-clockwise
-		const arr = this._poly;
+		var arr = this._poly,
+			val,
+			p1, p2, p3;
 
-		const p1 = arr[0];
-		const p2 = arr[1];
-		const p3 = arr[2];
+		p1 = arr[0];
+		p2 = arr[1];
+		p3 = arr[2];
 
-		const val = (p1.x * p2.y) + (p2.x * p3.y) + (p3.x * p1.y) - (p2.y * p3.x) - (p3.y * p1.x) - (p1.y * p2.x);
+		val = (p1.x * p2.y) + (p2.x * p3.y) + (p3.x * p1.y) - (p2.y * p3.x) - (p3.y * p1.x) - (p1.y * p2.x);
 
 		return val > 0;
 	}
 
-	makeClockWiseTriangle() {
+	makeClockWiseTriangle () {
 		// If our data is already clockwise exit
 		if (!this.clockWiseTriangle()) {
-			const p0 = this._poly[0],
+			var p0 = this._poly[0],
 				p1 = this._poly[1],
 				p2 = this._poly[2];
 
@@ -204,13 +207,12 @@ export class IgePoly2d extends IgeClass {
 		}
 	}
 
-	triangulate() {
+	triangulate () {
 		// Get the indices of each new triangle
-		const poly = this._poly;
-		const triangles = [];
-		const indices = this.triangulationIndices();
-
-		let i,
+		var poly = this._poly,
+			triangles = [],
+			indices = this.triangulationIndices(),
+			i,
 			point1,
 			point2,
 			point3,
@@ -221,7 +223,7 @@ export class IgePoly2d extends IgeClass {
 			point1 = poly[indices[i]];
 			point2 = poly[indices[i + 1]];
 			point3 = poly[indices[i + 2]];
-			newPoly = new IgePoly2d({ige: this._ige, igeConfig: this._igeConfig});
+			newPoly = new IgePoly2d();
 
 			newPoly.addPoint(point1.x, point1.y);
 			newPoly.addPoint(point2.x, point2.y);
@@ -235,12 +237,11 @@ export class IgePoly2d extends IgeClass {
 		return triangles;
 	}
 
-	triangulationIndices() {
-		const indices = [];
-		const n = this._poly.length;
-		const V = [];
-
-		let v,
+	triangulationIndices () {
+		var indices = [],
+			n = this._poly.length,
+			v = [],
+			V = [],
 			nv,
 			count,
 			m,
@@ -252,9 +253,7 @@ export class IgePoly2d extends IgeClass {
 			s,
 			t;
 
-		if (n < 3) {
-			return indices;
-		}
+		if (n < 3) { return indices; }
 
 		if (this._area() > 0) {
 			for (v = 0; v < n; v++) {
@@ -270,7 +269,7 @@ export class IgePoly2d extends IgeClass {
 		count = 2 * nv;
 		m = 0;
 
-		for (v = nv - 1; nv > 2;) {
+		for (v = nv - 1; nv > 2; ) {
 			if ((count--) <= 0) {
 				return indices;
 			}
@@ -316,10 +315,9 @@ export class IgePoly2d extends IgeClass {
 		return indices;
 	}
 
-	_area() {
-		const n = this._poly.length;
-
-		let a = 0.0,
+	_area () {
+		var n = this._poly.length,
+			a = 0.0,
 			q = 0,
 			p,
 			pval,
@@ -334,11 +332,11 @@ export class IgePoly2d extends IgeClass {
 		return (a * 0.5);
 	}
 
-	_snip(u, v, w, n, V) {
-		const A = this._poly[V[u]];
-		const B = this._poly[V[v]];
-		const C = this._poly[V[w]];
-		let p,
+	_snip (u, v, w, n, V) {
+		var p,
+			A = this._poly[V[u]],
+			B = this._poly[V[v]],
+			C = this._poly[V[w]],
 			P;
 
 		// Replaced Math.Epsilon with 0.00001
@@ -347,6 +345,7 @@ export class IgePoly2d extends IgeClass {
 		}
 
 		for (p = 0; p < n; p++) {
+			// eslint-disable-next-line eqeqeq
 			if ((p == u) || (p == v) || (p == w)) {
 				continue;
 			}
@@ -360,23 +359,33 @@ export class IgePoly2d extends IgeClass {
 		return true;
 	}
 
-	_insideTriangle(A, B, C, P) {
-		const ax = C.x - B.x;
-		const ay = C.y - B.y;
-		const bx = A.x - C.x;
-		const by = A.y - C.y;
-		const cx = B.x - A.x;
-		const cy = B.y - A.y;
-		const apx = P.x - A.x;
-		const apy = P.y - A.y;
-		const bpx = P.x - B.x;
-		const bpy = P.y - B.y;
-		const cpx = P.x - C.x;
-		const cpy = P.y - C.y;
+	_insideTriangle (A, B, C, P) {
+		var ax,
+			ay,
+			bx,
+			by,
+			cx,
+			cy,
+			apx,
+			apy,
+			bpx,
+			bpy,
+			cpx,
+			cpy,
+			cCROSSap,
+			bCROSScp,
+			aCROSSbp;
 
-		const aCROSSbp = ax * bpy - ay * bpx;
-		const cCROSSap = cx * apy - cy * apx;
-		const bCROSScp = bx * cpy - by * cpx;
+		ax = C.x - B.x; ay = C.y - B.y;
+		bx = A.x - C.x; by = A.y - C.y;
+		cx = B.x - A.x; cy = B.y - A.y;
+		apx = P.x - A.x; apy = P.y - A.y;
+		bpx = P.x - B.x; bpy = P.y - B.y;
+		cpx = P.x - C.x; cpy = P.y - C.y;
+
+		aCROSSbp = ax * bpy - ay * bpx;
+		cCROSSap = cx * apy - cy * apx;
+		bCROSScp = bx * cpy - by * cpx;
 
 		return ((aCROSSbp >= 0.0) && (bCROSScp >= 0.0) && (cCROSSap >= 0.0));
 	}
@@ -384,25 +393,25 @@ export class IgePoly2d extends IgeClass {
 	/**
 	 * Draws the polygon bounding lines to the passed context.
 	 * @param {CanvasRenderingContext2D} ctx
-	 * @param {boolean} fill
 	 */
-	render(ctx: CanvasRenderingContext2D, fill = false) {
-		const polyPoints = this._poly;
-		const pointCount = polyPoints.length;
-		const scaleX = this._scale.x;
-		const scaleY = this._scale.y;
+	render (ctx, fill) {
+		var polyPoints = this._poly,
+			pointCount = polyPoints.length,
+			scaleX = this._scale.x,
+			scaleY = this._scale.y,
+			i;
 
 		ctx.beginPath();
 		ctx.moveTo(polyPoints[0].x * scaleX, polyPoints[0].y * scaleY);
-		for (let i = 1; i < pointCount; i++) {
+		for (i = 1; i < pointCount; i++) {
 			ctx.lineTo(polyPoints[i].x * scaleX, polyPoints[i].y * scaleY);
 		}
 		ctx.lineTo(polyPoints[0].x * scaleX, polyPoints[0].y * scaleY);
-		if (fill) {
-			ctx.fill();
-		}
+		if (fill) { ctx.fill(); }
 		ctx.stroke();
 
 		return this;
 	}
 }
+
+export default IgePoly2d;

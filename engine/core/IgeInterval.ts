@@ -1,17 +1,12 @@
-import {IgeEventingClass} from "./IgeEventingClass";
+import IgeEventingClass from "./IgeEventingClass";
 
 /**
  * Provides an alternative to setInterval() which works based on the engine's internal
  * time system allowing intervals to fire correctly, taking into account pausing the
  * game and differences in rendering speed etc.
  */
-export class IgeInterval extends IgeEventingClass {
-	_classId = "IgeInterval";
-	_method: () => void;
-	_interval: number;
-	_time: number;
-	_started: number;
-	_catchup: boolean;
+class IgeInterval extends IgeEventingClass {
+	classId = "IgeInterval";
 
 	/**
 	 * Creates a new timer that will call the method every given number of
@@ -22,8 +17,8 @@ export class IgeInterval extends IgeEventingClass {
 	 * retrospectively when the engine jumps in time. If false, the interval will
 	 * only fire a single time even if a large period of engine time has elapsed
 	 */
-	constructor (props, method, interval, catchup = true) {
-		super(props);
+	constructor (ige, method, interval, catchup = true) {
+		super(ige);
 
 		this._method = method;
 		this._interval = interval;
@@ -80,3 +75,5 @@ export class IgeInterval extends IgeEventingClass {
 		return this;
 	}
 }
+
+export default IgeInterval;

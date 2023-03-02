@@ -1,12 +1,12 @@
-import {IgeEntity} from "./IgeEntity";
+import IgeEntity from "./IgeEntity";
+import IgeMap2d from "./IgeMap2d";
 
-export class IgeCollisionMap2d extends IgeEntity {
-	_classId = 'IgeCollisionMap2d';
+class IgeCollisionMap2d extends IgeEntity {
+	classId = "IgeCollisionMap2d";
 
-	constructor (props, tileWidth, tileHeight) {
-		super(props);
-
-		this.map = new IgeMap2d();
+	constructor (ige, tileWidth, tileHeight) {
+		super(ige);
+		this.map = new IgeMap2d(ige);
 	}
 
 	mapData (val) {
@@ -18,3 +18,5 @@ export class IgeCollisionMap2d extends IgeEntity {
 		return this.map.mapData();
 	}
 }
+
+export default IgeCollisionMap2d;
