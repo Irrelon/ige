@@ -11,8 +11,6 @@ import IgePoint2d from "./IgePoint2d.js";
 class Ige extends WithComponentMixin(IgeEventingClass) {
     constructor(canvas) {
         super();
-        this.components = {};
-        this._components = []; // TODO: Rename this to _componentsArr
         this._manualRender = false;
         this._categoryRegister = {};
         this._groupRegister = {};
@@ -315,9 +313,9 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
         this._debugEvents = {}; // Holds debug event booleans for named events
         this._renderContext = "2d"; // The rendering context, default is 2d
         this._renderMode = 0; // Integer representation of the render context
-        this._tickTime = "NA"; // The time the tick took to process
-        this._updateTime = "NA"; // The time the tick update section took to process
-        this._renderTime = "NA"; // The time the tick render section took to process
+        this._tickTime = NaN; // The time the tick took to process
+        this._updateTime = NaN; // The time the tick update section took to process
+        this._renderTime = NaN; // The time the tick render section took to process
         this._tickDelta = 0; // The time between the last tick and the current one
         this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
         this._state = 0; // Currently stopped
@@ -378,7 +376,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
         // which is important when storing persistent data with ids etc
         this._idCounter = new Date().getTime();
         // Create the base engine instance for the scenegraph
-        //this.root = new IgeRoot(this).id("root");
+        //this.root = new IgeRoot().id("root");
         // Set the entity on which any components are added - this defaults to "this"
         // in the IgeComponentMixin.ts file - we override that here in this special case
         //this._componentBase = this.root;
@@ -402,6 +400,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
     }
     createRoot() {
         this.root = new IgeRoot();
+        this._componentBase = this.root;
     }
     loadWebFont(family, url) {
         this.log(`Font (${family}) loading from url(${url})`);
@@ -450,65 +449,6 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
             return this;
         }
         return this._spawnQueue;
-    }
-    /**
-     * Creates a new instance of the component argument passing
-     * the options argument to the component as it is initialised.
-     * The new component instance is then added to "this" via
-     * a property name that is defined in the component class as
-     * "componentId".
-     * @param {IgeBaseClass} component The class definition of the component.
-     * @param {Object=} options An options parameter to pass to the component
-     * on init.
-     * @example #Add the velocity component to an entity
-     *     var entity = new IgeEntity();
-     *     entity.addComponent(IgeVelocityComponent);
-     *
-     *     // Now that the component is added, we can access
-     *     // the component via its namespace. Call the
-     *     // "byAngleAndPower" method of the velocity component:
-     *     entity.velocity.byAngleAndPower(degreesToRadians(20), 0.1);
-     */
-    addComponent(component, options) {
-        if (component.componentTargetClass) {
-            // Check that the entity we are adding this component to is the correct type
-            if (this.constructor.name !== component.componentTargetClass) {
-                throw new Error(`${component.constructor.name} expected to be added to instance of [${component.componentTargetClass}] but was added to [${this.constructor.name}]`);
-            }
-        }
-        const newComponentInstance = new component(this._componentBase, options);
-        this.components[newComponentInstance.componentId] = newComponentInstance;
-        // Add the component reference to the class component array
-        this._components = this._components || [];
-        this._components.push(newComponentInstance);
-        return this;
-    }
-    /**
-     * Removes a component by its id.
-     * @param {String} componentId The id of the component to remove.
-     * @example #Remove a component by its id (namespace)
-     *     var entity = new IgeEntity();
-     *
-     *     // Let's add the velocity component
-     *     entity.addComponent(IgeVelocityComponent);
-     *
-     *     // Now that the component is added, let's remove
-     *     // it via it's id ("velocity")
-     *     entity.removeComponent('velocity');
-     */
-    removeComponent(componentId) {
-        // If the component has a destroy method, call it
-        const component = this.components[componentId];
-        if (component && component.destroy) {
-            component.destroy();
-        }
-        // Remove the component from the class component array
-        if (this._components) {
-            arrPull(this._components, component);
-        }
-        // Remove the component from the class object
-        delete this.components[componentId];
-        return this;
     }
     /**
      * Returns an object from the engine's object register by

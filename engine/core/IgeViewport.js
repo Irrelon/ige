@@ -21,7 +21,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         this._mousePos = new IgePoint3d(0, 0, 0);
         this._overflow = "";
         this._clipping = true;
-        this._bornTime = 0; // This used to be undefined, don't know why
+        this._bornTime = undefined;
         // Set default options if not specified
         // TODO: Is this required or even used?
         if (options) {
@@ -31,6 +31,9 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
                 // Store the w/h we want to lock to
                 this._lockDimension = new IgePoint3d(options.scaleToWidth, options.scaleToHeight, 0);
             }
+        }
+        if (!ige.root) {
+            throw new Error("IgeViewport instantiated before Ige instance createRoot() called!");
         }
         // Setup default objects
         this._bounds2d = new IgePoint2d(width || ige.root._bounds2d.x, height || ige.root._bounds2d.y);
@@ -43,15 +46,15 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
      * When set, if the viewport's geometry is reduced below the minimum width or
      * height, the viewport's camera is automatically scaled to ensure that the
      * minimum area remains visible in the viewport.
-     * @param {Integer} width Width in pixels.
-     * @param {Integer} height Height in pixels.
+     * @param {number} width Width in pixels.
+     * @param {number} height Height in pixels.
      * @returns {*}
      */
     minimumVisibleArea(width, height) {
         // Store the w/h we want to lock to
         this._lockDimension = new IgePoint3d(width, height, 0);
         if (ige.isClient) {
-            this._resizeEvent({});
+            this._resizeEvent();
         }
         return this;
     }
@@ -93,6 +96,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
     /**
      * Processes the updates before the render tick is called.
      * @param ctx
+     * @param tickDelta
      */
     update(ctx, tickDelta) {
         // Check if we have a scene attached to this viewport
@@ -102,7 +106,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         ige._currentCamera = this.camera;
         ige._currentViewport = this;
         this._scene._parent = this;
-        this.camera.update(ctx, tickDelta);
+        this.camera.update(ctx);
         super.update(ctx, tickDelta);
         if (this._scene.newFrame()) {
             this._scene.update(ctx, tickDelta);
@@ -111,9 +115,9 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
     /**
      * Processes the actions required each render frame.
      */
-    tick(ctx, scene) {
-        // Check if we have a scene attached to this viewport
-        if (!this._scene) {
+    tick(ctx) {
+        // Check if we have a scene attached to this viewport and ige has a root object
+        if (!this._scene || !ige.root) {
             return;
         }
         ige._currentCamera = this.camera;
@@ -196,7 +200,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
      * @return {IgePoint3d} The screen position of the entity.
      */
     screenPosition() {
-        return new IgePoint3d(Math.floor(this._worldMatrix.matrix[2] + ige.root._bounds2d.x2), Math.floor(this._worldMatrix.matrix[5] + ige.root._bounds2d.y2), 0);
+        var _a, _b, _c, _d;
+        return new IgePoint3d(Math.floor(this._worldMatrix.matrix[2] + (((_b = (_a = ige === null || ige === void 0 ? void 0 : ige.root) === null || _a === void 0 ? void 0 : _a._bounds2d) === null || _b === void 0 ? void 0 : _b.x2) || 0)), Math.floor(this._worldMatrix.matrix[5] + (((_d = (_c = ige === null || ige === void 0 ? void 0 : ige.root) === null || _c === void 0 ? void 0 : _c._bounds2d) === null || _d === void 0 ? void 0 : _d.y2) || 0)), 0);
     }
     drawViewArea(val) {
         if (val !== undefined) {
@@ -234,6 +239,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         return this._drawGuides;
     }
     paintGuides(ctx) {
+        if (!ige.root)
+            return;
         const geom = ige.root._bounds2d;
         // Check draw-guides setting
         if (this._drawGuides) {

@@ -204,9 +204,9 @@ class IgeCamera extends IgeEntity {
     update(ctx) {
         // Process any behaviours assigned to the camera
         this._processUpdateBehaviours(ctx);
-        // Check if we are tracking the translate value of a target
+        // Check if we are tracking the translation value of a target
         if (this._trackTranslateTarget) {
-            var targetEntity = this._trackTranslateTarget, targetMatrix = targetEntity._worldMatrix.matrix, targetX = targetMatrix[2], targetY = targetMatrix[5], sourceX, sourceY, distX, distY, destinationX, destinationY;
+            let targetEntity = this._trackTranslateTarget, targetMatrix = targetEntity._worldMatrix.matrix, targetX = targetMatrix[2], targetY = targetMatrix[5], sourceX, sourceY, distX, distY, destinationX, destinationY;
             if (!this._trackTranslateSmoothing) {
                 // Copy the target's world matrix translate data
                 this.lookAt(this._trackTranslateTarget);
@@ -246,7 +246,7 @@ class IgeCamera extends IgeEntity {
         }
         // Check if we are tracking the rotation values of a target
         if (this._trackRotateTarget) {
-            var targetParentRZ = this._trackRotateTarget._parent !== undefined ? this._trackRotateTarget._parent._rotate.z : 0, targetZ = -(targetParentRZ + this._trackRotateTarget._rotate.z), sourceZ, distZ;
+            let targetParentRZ = this._trackRotateTarget._parent !== undefined ? this._trackRotateTarget._parent._rotate.z : 0, targetZ = -(targetParentRZ + this._trackRotateTarget._rotate.z), sourceZ, distZ;
             if (!this._trackRotateSmoothing) {
                 // Copy the target's rotate data
                 this._rotate.z = targetZ;
@@ -302,7 +302,7 @@ class IgeCamera extends IgeEntity {
      */
     _stringify(options) {
         // Get the properties for all the super-classes
-        var str = super._stringify(), i;
+        let str = super._stringify(), i;
         // Loop properties and add property assignment code to string
         for (i in this) {
             if (this.hasOwnProperty(i) && this[i] !== undefined) {

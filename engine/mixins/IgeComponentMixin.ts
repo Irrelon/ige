@@ -6,7 +6,12 @@ import {arrPull} from "../services/utils";
 const WithComponentMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class extends Base {
 	components: Record<string, IgeComponent> = {};
 	_components: IgeComponent[] = []; // TODO: Rename this to _componentsArr
-	_componentBase?: typeof IgeBaseClass;
+	_componentBase: IgeBaseClass;
+
+	constructor () {
+		super();
+		this._componentBase = this;
+	}
 
 	/**
 	 * Creates a new instance of the component argument passing
@@ -27,7 +32,7 @@ const WithComponentMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class ext
 	 *     // "byAngleAndPower" method of the velocity component:
 	 *     entity.velocity.byAngleAndPower(degreesToRadians(20), 0.1);
 	 */
-	addComponent(component: typeof IgeComponent, options?: any) {
+	addComponent (component: typeof IgeComponent, options?: any) {
 		if (component.componentTargetClass) {
 			// Check that the entity we are adding this component to is the correct type
 			if (this.constructor.name !== component.componentTargetClass) {
@@ -37,7 +42,7 @@ const WithComponentMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class ext
 			}
 		}
 
-		const newComponentInstance = new component(this._componentBase || this, options);
+		const newComponentInstance = new component(this._componentBase, options);
 
 		this.components[newComponentInstance.componentId] = newComponentInstance;
 
@@ -61,7 +66,7 @@ const WithComponentMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class ext
 	 *     // it via it's id ("velocity")
 	 *     entity.removeComponent('velocity');
 	 */
-	removeComponent(componentId: string) {
+	removeComponent (componentId: string) {
 		// If the component has a destroy method, call it
 		const component = this.components[componentId];
 		if (component && component.destroy) {

@@ -1,9 +1,10 @@
 import { arrPull } from "../services/utils.js";
 const WithComponentMixin = (Base) => class extends Base {
     constructor() {
-        super(...arguments);
+        super();
         this.components = {};
         this._components = []; // TODO: Rename this to _componentsArr
+        this._componentBase = this;
     }
     /**
      * Creates a new instance of the component argument passing
@@ -31,7 +32,7 @@ const WithComponentMixin = (Base) => class extends Base {
                 throw new Error(`${component.constructor.name} expected to be added to instance of [${component.componentTargetClass}] but was added to [${this.constructor.name}]`);
             }
         }
-        const newComponentInstance = new component(this._componentBase || this, options);
+        const newComponentInstance = new component(this._componentBase, options);
         this.components[newComponentInstance.componentId] = newComponentInstance;
         // Add the component reference to the class component array
         this._components = this._components || [];

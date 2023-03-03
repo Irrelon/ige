@@ -42,6 +42,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         this._cacheSmoothing = false;
         this._aabbDirty = false;
         this._indestructible = false;
+        this._shouldRender = true;
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // INTERACTION
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -647,6 +648,28 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
             ige.register(this);
         }
     }
+    category(val) {
+        if (val === undefined) {
+            return this._category;
+        }
+        // Check if we already have a category
+        if (this._category) {
+            // Check if the category being assigned is different from
+            // the current one
+            if (this._category !== val) {
+                // The category is different so remove this object
+                // from the current category association
+                ige.categoryUnRegister(this);
+            }
+        }
+        this._category = val;
+        // Check the category is not a blank string
+        if (val) {
+            // Now register this object with the category it has been assigned
+            ige.categoryRegister(this);
+        }
+        return this;
+    }
     drawBounds(val) {
         if (val !== undefined) {
             this._drawBounds = val;
@@ -842,8 +865,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
             options.transform = true;
         }
         // Loop all children and clone them, then return cloned version of ourselves
-        const newObject = eval(this.stringify(options));
-        return newObject;
+        return eval(this.stringify(options));
     }
     indestructible(val) {
         if (val !== undefined) {
@@ -1103,42 +1125,41 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
             }
             // The entity should be removed because it has died
             this.destroy();
+            return;
+        }
+        // Check that the entity has been born
+        if (this._bornTime === undefined || ige._currentTime >= this._bornTime) {
+            // Remove the stream data cache
+            delete this._streamDataCache;
+            // Process any behaviours assigned to the entity
+            this._processUpdateBehaviours(ctx, tickDelta);
+            // Process velocity
+            if (this._velocity.x || this._velocity.y) {
+                this._translate.x += (this._velocity.x / 16) * tickDelta;
+                this._translate.y += (this._velocity.y / 16) * tickDelta;
+            }
+            if (this._timeStream.length) {
+                // Process any interpolation
+                this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
+            }
+            // Check for changes to the transform values
+            // directly without calling the transform methods
+            this.updateTransform();
+            if (!this._noAabb && this._aabbDirty) {
+                // Update the aabb
+                this.aabb();
+            }
+            this._oldTranslate = this._translate.clone();
+            // Update this object's current frame alternator value
+            // which allows us to determine if we are still on the
+            // same frame
+            this._frameAlternatorCurrent = ige._frameAlternator;
         }
         else {
-            // Check that the entity has been born
-            if (this._bornTime === undefined || ige._currentTime >= this._bornTime) {
-                // Remove the stream data cache
-                delete this._streamDataCache;
-                // Process any behaviours assigned to the entity
-                this._processUpdateBehaviours(ctx, tickDelta);
-                // Process velocity
-                if (this._velocity.x || this._velocity.y) {
-                    this._translate.x += (this._velocity.x / 16) * tickDelta;
-                    this._translate.y += (this._velocity.y / 16) * tickDelta;
-                }
-                if (this._timeStream.length) {
-                    // Process any interpolation
-                    this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
-                }
-                // Check for changes to the transform values
-                // directly without calling the transform methods
-                this.updateTransform();
-                if (!this._noAabb && this._aabbDirty) {
-                    // Update the aabb
-                    this.aabb();
-                }
-                this._oldTranslate = this._translate.clone();
-                // Update this object's current frame alternator value
-                // which allows us to determine if we are still on the
-                // same frame
-                this._frameAlternatorCurrent = ige._frameAlternator;
-            }
-            else {
-                // The entity is not yet born, unmount it and add to the spawn queue
-                this._birthMount = this._parent.id();
-                this.unMount();
-                ige.spawnQueue(this);
-            }
+            // The entity is not yet born, unmount it and add to the spawn queue
+            this._birthMount = this._parent.id();
+            this.unMount();
+            ige.spawnQueue(this);
         }
         // Process super class
         this._update(ctx, tickDelta);
@@ -1708,7 +1729,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * @return {*} The object this method was called from to allow
      * method chaining.
      */
-    widthByTile(val, lockAspect) {
+    widthByTile(val, lockAspect = false) {
         if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
             let tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2, ratio;
             this.width(val * tileSize);
@@ -1742,7 +1763,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * @return {*} The object this method was called from to allow
      * method chaining.
      */
-    heightByTile(val, lockAspect) {
+    heightByTile(val, lockAspect = false) {
         if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
             let tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2, ratio;
             this.height(val * tileSize);
@@ -1824,24 +1845,17 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      */
     overTiles() {
         // Check that the entity is mounted to a tile map
-        if (this._parent && this._parent.IgeTileMap2d) {
-            let x, y, tileWidth = this._tileWidth || 1, tileHeight = this._tileHeight || 1, tile = this._parent.pointToTile(this._translate), tileArr = [];
-            for (x = 0; x < tileWidth; x++) {
-                for (y = 0; y < tileHeight; y++) {
-                    tileArr.push(new IgePoint3d(tile.x + x, tile.y + y, 0));
-                }
-            }
-            return tileArr;
+        if (!(this._parent && this._parent.IgeTileMap2d)) {
+            return;
         }
+        let x, y, tileWidth = this._tileWidth || 1, tileHeight = this._tileHeight || 1, tile = this._parent.pointToTile(this._translate), tileArr = [];
+        for (x = 0; x < tileWidth; x++) {
+            for (y = 0; y < tileHeight; y++) {
+                tileArr.push(new IgePoint3d(tile.x + x, tile.y + y, 0));
+            }
+        }
+        return tileArr;
     }
-    /**
-     * Gets / sets the anchor position that this entity's texture
-     * will be adjusted by.
-     * @param {Number=} x The x anchor value.
-     * @param {Number=} y The y anchor value.
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     anchor(x, y) {
         if (x !== undefined && y !== undefined) {
             this._anchor = new IgePoint2d(x, y);
@@ -1849,87 +1863,45 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         }
         return this._anchor;
     }
-    /**
-     * Gets / sets the geometry x value.
-     * @param {Number=} px The new x value in pixels.
-     * @param {Boolean} lockAspect
-     * @example #Set the width of the entity
-     *     entity.width(40);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     width(px, lockAspect = false) {
-        if (px !== undefined) {
-            if (lockAspect) {
-                // Calculate the height from the change in width
-                const ratio = px / this._bounds2d.x;
-                this.height(this._bounds2d.y * ratio);
-            }
-            this._bounds2d.x = px;
-            this._bounds2d.x2 = px / 2;
-            return this;
+        if (px === undefined) {
+            return this._bounds2d.x;
         }
-        return this._bounds2d.x;
+        if (lockAspect) {
+            // Calculate the height from the change in width
+            const ratio = px / this._bounds2d.x;
+            this.height(this._bounds2d.y * ratio);
+        }
+        this._bounds2d.x = px;
+        this._bounds2d.x2 = px / 2;
+        return this;
     }
-    /**
-     * Gets / sets the geometry y value.
-     * @param {Number=} px The new y value in pixels.
-     * @param {Boolean} [lockAspect]
-     * @example #Set the height of the entity
-     *     entity.height(40);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     height(px, lockAspect = false) {
-        if (px !== undefined) {
-            if (lockAspect) {
-                // Calculate the width from the change in height
-                const ratio = px / this._bounds2d.y;
-                this.width(this._bounds2d.x * ratio);
-            }
-            this._bounds2d.y = px;
-            this._bounds2d.y2 = px / 2;
-            return this;
+        if (px === undefined) {
+            return this._bounds2d.y;
         }
-        return this._bounds2d.y;
+        if (lockAspect) {
+            // Calculate the width from the change in height
+            const ratio = px / this._bounds2d.y;
+            this.width(this._bounds2d.x * ratio);
+        }
+        this._bounds2d.y = px;
+        this._bounds2d.y2 = px / 2;
+        return this;
     }
-    /**
-     * Gets / sets the 2d geometry of the entity. The x and y values are
-     * relative to the center of the entity. This geometry is used when
-     * rendering textures for the entity and positioning in world space as
-     * well as UI positioning calculations. It holds no bearing on isometric
-     * positioning.
-     * @param {Number=} x The new x value in pixels.
-     * @param {Number=} y The new y value in pixels.
-     * @example #Set the dimensions of the entity (width and height)
-     *     entity.bounds2d(40, 40);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     bounds2d(x, y) {
-        if (x !== undefined && y !== undefined) {
-            this._bounds2d = new IgePoint2d(x, y, 0);
+        if (x !== undefined && y !== undefined && typeof x === "number") {
+            this._bounds2d = new IgePoint2d(x, y);
             return this;
         }
-        if (x !== undefined && y === undefined) {
+        // TODO: Is this exception still something we use?
+        if (typeof x === "object" && y === undefined) {
+            const bounds = x;
             // x is considered an IgePoint2d instance
-            this._bounds2d = new IgePoint2d(x.x, x.y);
+            this._bounds2d = new IgePoint2d(bounds.x, bounds.y);
         }
         return this._bounds2d;
     }
-    /**
-     * Gets / sets the 3d geometry of the entity. The x and y values are
-     * relative to the center of the entity and the z value is wholly
-     * positive from the "floor". Used to define a 3d bounding cuboid for
-     * the entity used in isometric depth sorting and hit testing.
-     * @param {Number=} x The new x value in pixels.
-     * @param {Number=} y The new y value in pixels.
-     * @param {Number=} z The new z value in pixels.
-     * @example #Set the dimensions of the entity (width, height and length)
-     *     entity.bounds3d(40, 40, 20);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     bounds3d(x, y, z) {
         if (x !== undefined && y !== undefined && z !== undefined) {
             this._bounds3d = new IgePoint3d(x, y, z);
@@ -1937,51 +1909,13 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         }
         return this._bounds3d;
     }
-    /**
-     * @deprecated Use bounds3d instead
-     * @param x
-     * @param y
-     * @param z
-     */
-    size3d(x, y, z) {
-        this.log("size3d has been renamed to bounds3d but is exactly the same so please search/replace your code to update calls.", "warning");
-    }
-    /**
-     * Gets / sets the life span of the object in milliseconds. The life
-     * span is how long the object will exist for before being automatically
-     * destroyed.
-     * @param {Number=} milliseconds The number of milliseconds the entity
-     * will live for from the current time.
-     * @param {Function=} deathCallback Optional callback method to call when
-     * the entity is destroyed from end of lifespan.
-     * @example #Set the lifespan of the entity to 2 seconds after which it will automatically be destroyed
-     *     entity.lifeSpan(2000);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     lifeSpan(milliseconds, deathCallback) {
         if (milliseconds !== undefined) {
             this.deathTime(ige._currentTime + milliseconds, deathCallback);
             return this;
         }
-        return this.deathTime() - ige._currentTime;
+        return (this.deathTime() || 0) - ige._currentTime;
     }
-    /**
-     * Gets / sets the timestamp in milliseconds that denotes the time
-     * that the entity will be destroyed. The object checks its own death
-     * time during each tick and if the current time is greater than the
-     * death time, the object will be destroyed.
-     * @param {Number=} val The death time timestamp. This is a time relative
-     * to the engine's start time of zero rather than the current time that
-     * would be retrieved from new Date().getTime(). It is usually easier
-     * to call lifeSpan() rather than setting the deathTime directly.
-     * @param {Function=} deathCallback Optional callback method to call when
-     * the entity is destroyed from end of lifespan.
-     * @example #Set the death time of the entity to 60 seconds after engine start
-     *     entity.deathTime(60000);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     deathTime(val, deathCallback) {
         if (val !== undefined) {
             this._deathTime = val;
@@ -1992,16 +1926,6 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         }
         return this._deathTime;
     }
-    /**
-     * Gets / sets the entity opacity from 0.0 to 1.0.
-     * @param {Number=} val The opacity value.
-     * @example #Set the entity to half-visible
-     *     entity.opacity(0.5);
-     * @example #Set the entity to fully-visible
-     *     entity.opacity(1.0);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     opacity(val) {
         if (val !== undefined) {
             this._opacity = val;
@@ -2009,16 +1933,6 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         }
         return this._opacity;
     }
-    /**
-     * Gets / sets the noAabb flag that determines if the entity's axis
-     * aligned bounding box should be calculated every tick or not. If
-     * you don't need the AABB data (for instance if you don't need to
-     * detect mouse events on this entity or you DO want the AABB to be
-     * updated but want to control it manually by calling aabb(true)
-     * yourself as needed).
-     * @param {Boolean=} val If set to true will turn off AABB calculation.
-     * @returns {*}
-     */
     noAabb(val) {
         if (val !== undefined) {
             this._noAabb = val;
@@ -2394,12 +2308,13 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      *         aabb = entity.compositeAabb();
      * @return {IgeRect}
      */
-    compositeAabb(inverse) {
-        let arr = this._children, arrCount, rect = this.aabb(true, inverse).clone();
-        // Now loop all children and get the aabb for each of them
+    compositeAabb(inverse = false) {
+        const arr = this._children;
+        const rect = this.aabb(true, inverse).clone();
+        // Now loop all children and get the aabb for each of
         // them add those bounds to the current rect
         if (arr) {
-            arrCount = arr.length;
+            let arrCount = arr.length;
             while (arrCount--) {
                 rect.thisCombineRect(arr[arrCount].compositeAabb(inverse));
             }
@@ -4292,61 +4207,61 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         if (this._streamDataCache) {
             return this._streamDataCache;
         }
-        else {
-            // Let's generate our stream data
-            let streamData = "", sectionDataString = "", sectionArr = this._streamSections, sectionCount = sectionArr.length, sectionData, sectionIndex, sectionId;
-            // Add the entity id
-            streamData += this.id();
-            // Only send further data if the entity is still "alive"
-            if (this._alive) {
-                // Now loop the data sections array and compile the rest of the
-                // data string from the data section return data
-                for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
-                    sectionData = "";
-                    sectionId = sectionArr[sectionIndex];
-                    // Stream section sync intervals allow individual stream sections
-                    // to be streamed at different (usually longer) intervals than other
-                    // sections so you could for instance reduce the number of updates
-                    // a particular section sends out in a second because the data is
-                    // not that important compared to updated transformation data
-                    if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
-                        // Check if the section interval has been reached
-                        this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
-                        if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
-                            // Get the section data for this section id
-                            sectionData = this.streamSectionData(sectionId);
-                            // Reset the section delta
-                            this._streamSyncSectionDelta[sectionId] = 0;
-                        }
-                    }
-                    else {
+        // Let's generate our stream data
+        const sectionArr = this._streamSections;
+        const sectionCount = sectionArr.length;
+        let streamData = "", sectionDataString = "", sectionData, sectionIndex, sectionId;
+        // Add the entity id
+        streamData += this.id();
+        // Only send further data if the entity is still "alive"
+        if (this._alive) {
+            // Now loop the data sections array and compile the rest of the
+            // data string from the data section return data
+            for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
+                sectionData = "";
+                sectionId = sectionArr[sectionIndex];
+                // Stream section sync intervals allow individual stream sections
+                // to be streamed at different (usually longer) intervals than other
+                // sections, so you could for instance reduce the number of updates
+                // a particular section sends out in a second because the data is
+                // not that important compared to updated transformation data
+                if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
+                    // Check if the section interval has been reached
+                    this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
+                    if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
                         // Get the section data for this section id
                         sectionData = this.streamSectionData(sectionId);
-                    }
-                    // Add the section start designator character. We do this
-                    // regardless of if there is actually any section data because
-                    // we want to be able to identify sections in a serial fashion
-                    // on receipt of the data string on the client
-                    sectionDataString += ige.network.stream._sectionDesignator;
-                    // Check if we were returned any data
-                    if (sectionData !== undefined) {
-                        // Add the data to the section string
-                        sectionDataString += sectionData;
+                        // Reset the section delta
+                        this._streamSyncSectionDelta[sectionId] = 0;
                     }
                 }
-                // Add any custom data to the stream string at this point
-                if (sectionDataString) {
-                    streamData += sectionDataString;
+                else {
+                    // Get the section data for this section id
+                    sectionData = this.streamSectionData(sectionId);
                 }
-                // Remove any .00 from the string since we don't need that data
-                // TODO: What about if a property is a string with something.00 and it should be kept?
-                streamData = streamData.replace(this._floatRemoveRegExp, ",");
+                // Add the section start designator character. We do this
+                // regardless of if there is actually any section data because
+                // we want to be able to identify sections in a serial fashion
+                // on receipt of the data string on the client
+                sectionDataString += ige.network.stream._sectionDesignator;
+                // Check if we were returned any data
+                if (sectionData !== undefined) {
+                    // Add the data to the section string
+                    sectionDataString += sectionData;
+                }
             }
-            // Store the data in cache in case we are asked for it again this tick
-            // the update() method of the IgeEntity class clears this every tick
-            this._streamDataCache = streamData;
-            return streamData;
+            // Add any custom data to the stream string at this point
+            if (sectionDataString) {
+                streamData += sectionDataString;
+            }
+            // Remove any .00 from the string since we don't need that data
+            // TODO: What about if a property is a string with something.00 and it should be kept?
+            streamData = streamData.replace(this._floatRemoveRegExp, ",");
         }
+        // Store the data in cache in case we are asked for it again this tick
+        // the update() method of the IgeEntity class clears this every tick
+        this._streamDataCache = streamData;
+        return streamData;
     }
     /* CEXCLUDE */
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4363,7 +4278,10 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * @return {Number} The interpolated value.
      */
     interpolateValue(startValue, endValue, startTime, currentTime, endTime) {
-        let totalValue = endValue - startValue, dataDelta = endTime - startTime, offsetDelta = currentTime - startTime, deltaTime = offsetDelta / dataDelta;
+        const totalValue = endValue - startValue;
+        const dataDelta = endTime - startTime;
+        const offsetDelta = currentTime - startTime;
+        let deltaTime = offsetDelta / dataDelta;
         // Clamp the current time from 0 to 1
         if (deltaTime < 0) {
             deltaTime = 0;
@@ -4381,12 +4299,15 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * is assigned directly instead of being interpolated.
      * @private
      */
-    _processInterpolate(renderTime, maxLerp) {
+    _processInterpolate(renderTime, maxLerp = 200) {
         // Set the maximum lerp to 200 if none is present
         if (!maxLerp) {
             maxLerp = 200;
         }
-        let maxLerpSquared = maxLerp * maxLerp, previousData, nextData, timeStream = this._timeStream, dataDelta, offsetDelta, currentTime, previousTransform, nextTransform, currentTransform = [], i = 1;
+        //const maxLerpSquared = maxLerp * maxLerp;
+        const timeStream = this._timeStream;
+        const currentTransform = [];
+        let previousData, nextData, dataDelta, offsetDelta, currentTime, previousTransform, nextTransform, i = 1;
         // Find the point in the time stream that is
         // closest to the render time and assign the
         // previous and next data points
@@ -4420,6 +4341,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
             }
         }
         else {
+            // TODO: Shouldn't we do this if we find old data as well? e.g. timeStream.length > 2
             // We have some new data so clear the old data
             timeStream.splice(0, i - 1);
         }
@@ -4444,8 +4366,8 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
             // Clamp the current time from 0 to 1
             //if (currentTime < 0) { currentTime = 0.0; } else if (currentTime > 1) { currentTime = 1.0; }
             // Set variables up to store the previous and next data
-            previousTransform = previousData[1];
-            nextTransform = nextData[1];
+            previousTransform = previousData[1].map(parseFloat);
+            nextTransform = nextData[1].map(parseFloat);
             // Translate
             currentTransform[0] = this.interpolateValue(previousTransform[0], nextTransform[0], previousData[0], renderTime, nextData[0]);
             currentTransform[1] = this.interpolateValue(previousTransform[1], nextTransform[1], previousData[0], renderTime, nextData[0]);
@@ -4458,24 +4380,10 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
             currentTransform[6] = this.interpolateValue(previousTransform[6], nextTransform[6], previousData[0], renderTime, nextData[0]);
             currentTransform[7] = this.interpolateValue(previousTransform[7], nextTransform[7], previousData[0], renderTime, nextData[0]);
             currentTransform[8] = this.interpolateValue(previousTransform[8], nextTransform[8], previousData[0], renderTime, nextData[0]);
-            this.translateTo(parseFloat(currentTransform[0]), parseFloat(currentTransform[1]), parseFloat(currentTransform[2]));
-            this.scaleTo(parseFloat(currentTransform[3]), parseFloat(currentTransform[4]), parseFloat(currentTransform[5]));
-            this.rotateTo(parseFloat(currentTransform[6]), parseFloat(currentTransform[7]), parseFloat(currentTransform[8]));
-            /*// Calculate the squared distance between the previous point and next point
-             dist = this.distanceSquared(previousTransform.x, previousTransform.y, nextTransform.x, nextTransform.y);
-
-             // Check that the distance is not higher than the maximum lerp and if higher,
-             // set the current time to 1 to snap to the next position immediately
-             if (dist > maxLerpSquared) { currentTime = 1; }
-
-             // Interpolate the entity position by multiplying the Delta times T, and adding the previous position
-             currentPosition = {};
-             currentPosition.x = ( (nextTransform.x - previousTransform.x) * currentTime ) + previousTransform.x;
-             currentPosition.y = ( (nextTransform.y - previousTransform.y) * currentTime ) + previousTransform.y;
-
-             // Now actually transform the entity
-             this.translate(entity, currentPosition.x, currentPosition.y);*/
-            // Record the last time we updated the entity so we can disregard any updates
+            this.translateTo(currentTransform[0], currentTransform[1], currentTransform[2]);
+            this.scaleTo(currentTransform[3], currentTransform[4], currentTransform[5]);
+            this.rotateTo(currentTransform[6], currentTransform[7], currentTransform[8]);
+            // Record the last time we updated the entity, so we can disregard any updates
             // that arrive and are before this timestamp (not applicable in TCP but will
             // apply if we ever get UDP in websockets)
             this._lastUpdate = new Date().getTime();
@@ -4483,10 +4391,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
     }
     _highlightToGlobalCompositeOperation(val) {
         if (val) {
-            if (val === true) {
-                return "lighter";
-            }
-            return val;
+            return "lighter";
         }
     }
 }

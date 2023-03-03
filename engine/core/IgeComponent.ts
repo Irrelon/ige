@@ -1,4 +1,3 @@
-import WithComponentMixin from "engine/mixins/IgeComponentMixin";
 import IgeBaseClass from "./IgeBaseClass";
 
 class IgeComponent extends IgeBaseClass {
@@ -6,9 +5,9 @@ class IgeComponent extends IgeBaseClass {
 	componentId: string = "IgeComponent";
 	destroy?: () => void;
 	_options?: any;
-	_entity: typeof WithComponentMixin;
+	_entity: IgeBaseClass;
 
-	constructor(parent: typeof WithComponentMixin, options?: any) {
+	constructor (parent: IgeBaseClass, options?: any) {
 		super();
 		this._entity = parent;
 		this._options = options;

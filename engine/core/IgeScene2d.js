@@ -96,7 +96,7 @@ class IgeScene2d extends IgeEntity {
         this.update = (ctx, tickDelta) => {
             if (this._ignoreCamera) {
                 // Translate the scene so it is always center of the camera
-                var cam = ige._currentCamera;
+                const cam = ige._currentCamera;
                 this.translateTo(cam._translate.x, cam._translate.y, cam._translate.z);
                 this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
                 this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);
@@ -111,11 +111,12 @@ class IgeScene2d extends IgeEntity {
          */
         this._resizeEvent = (event) => {
             // Set width / height of scene to match main ige (SCENES ARE ALWAYS THE FULL IGE SIZE!!)
-            if (this._autoSize) {
+            if (this._autoSize && ige.root) {
                 this._bounds2d = ige.root._bounds2d.clone();
             }
             // Resize any children
-            var arr = this._children, arrCount = arr.length;
+            const arr = this._children;
+            let arrCount = arr.length;
             while (arrCount--) {
                 arr[arrCount]._resizeEvent(event);
             }
