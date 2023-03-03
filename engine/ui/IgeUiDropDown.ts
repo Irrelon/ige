@@ -1,4 +1,4 @@
-import IgeUiElement from "../src/IgeUiElement";
+import IgeUiElement from "../core/IgeUiElement";
 import IgeUiLabel from "../ui/IgeUiLabel";
 
 class IgeUiDropDown extends IgeUiElement {

@@ -1,20 +1,17 @@
-import IgeBaseClass from "../src/IgeBaseClass";
+import IgeBaseClass from "../core/IgeBaseClass";
+import IgeComponent from "../core/IgeComponent";
 
-class IgeEntityManagerComponent extends IgeBaseClass {
+class IgeEntityManagerComponent extends IgeComponent {
 	classId = "IgeEntityManagerComponent";
 	componentId = "entityManager";
 
 	/**
 	 * @constructor
-	 * @param {Ige} ige The engine instance.
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	constructor (ige, entity, options) {
-		super(ige);
-
-		this._entity = entity;
-		this._options = options;
+	constructor (entity: IgeBaseClass, options?: any) {
+		super(entity, options);
 
 		// Check we are being added to a tile map
 		if (!this._entity.pointToTile) {

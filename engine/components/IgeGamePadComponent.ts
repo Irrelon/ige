@@ -1,16 +1,14 @@
-import IgeEventingClass from "../src/IgeEventingClass";
+import IgeEventingClass from "../core/IgeEventingClass";
+import IgeComponent from "../core/IgeComponent";
+import IgeBaseClass from "../core/IgeBaseClass";
 
-class IgeGamePadComponent extends IgeEventingClass {
+class IgeGamePadComponent extends IgeComponent {
 	"classId" = "IgeGamePadComponent";
 	"componentId" = "gamePad";
 
-	constructor (ige, entity, options) {
-		super(ige);
+	constructor (entity: IgeBaseClass, options?: any) {
+		super(entity, options);
 
-		var self = this;
-
-		this._entity = entity;
-		this._options = options;
 		this.gamepadAvailable = null;
 
 		// A number of typical buttons recognized by Gamepad API and mapped to

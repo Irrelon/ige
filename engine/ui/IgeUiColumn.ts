@@ -1,4 +1,4 @@
-import IgeUiElement from "../src/IgeUiElement";
+import IgeUiElement from "../core/IgeUiElement";
 
 class IgeUiColumn extends IgeUiElement {
 	classId = "IgeUiColumn";

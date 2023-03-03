@@ -3,25 +3,20 @@ import IgeBaseClass from "../core/IgeBaseClass";
 import Ige from "../core/Ige";
 import IgeEntity from "../core/IgeEntity";
 import IgeInterval from "../core/IgeInterval";
+import {arrPull} from "../services/utils";
+import IgeBaseClass from "../core/IgeBaseClass";
 
 class IgeTimeComponent extends IgeComponent {
 	classId = "IgeTimeComponent";
 	componentId = "time";
 
-	_entity: IgeEntity;
 	_timers: IgeInterval[];
 	_additions: IgeInterval[];
 	_removals: IgeInterval[];
 
-	/**
-	 * @constructor
-	 * @param {Ige} ige The engine instance.
-	 * @param {Object} entity The parent object that this component is being added to.
-	 */
-	constructor (ige: Ige, entity: IgeEntity) {
-		super(ige);
+	constructor (entity: IgeBaseClass, options?: any) {
+		super(entity, options);
 
-		this._entity = entity;
 		this._timers = [];
 		this._additions = [];
 		this._removals = [];
@@ -45,7 +40,7 @@ class IgeTimeComponent extends IgeComponent {
 	removeTimer = (timer) => {
 		if (timer) {
 			if (!this._updating) {
-				IgeBaseClass.pull(this._timers, timer);
+				arrPull(this._timers, timer);
 			} else {
 				this._removals.push(timer);
 			}
@@ -96,7 +91,7 @@ class IgeTimeComponent extends IgeComponent {
 
 		if (arrCount) {
 			while (arrCount--) {
-				IgeBaseClass.pull(this._timers, arr[arrCount]);
+				arrPull(this._timers, arr[arrCount]);
 			}
 
 			this._removals = [];

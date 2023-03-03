@@ -1,6 +1,7 @@
 import IgeSceneGraph from "./IgeSceneGraph";
 import IgeScene2d from "./IgeScene2d";
 import IgeViewport from "./IgeViewport";
+import {ige} from "../instance";
 
 /**
  * When loaded into memory using ige.addGraph('IgeBaseScene') will create
@@ -16,15 +17,21 @@ class IgeBaseScene extends IgeSceneGraph {
      */
     addGraph = () => {
         // Clear existing graph data
-        if (this._ige.$("baseScene")) {
+        if (ige.$("baseScene")) {
             this.removeGraph();
         }
 
         // Create the scene
-        const baseScene = new IgeScene2d(this._ige).id("baseScene");
+        const baseScene = new IgeScene2d(ige).id("baseScene");
 
         // Create the main viewport to look at "baseScene"
-        new IgeViewport(this._ige).id("vp1").autoSize(true).scene(baseScene).drawBounds(false).drawBoundsData(false).mount(this._ige.root);
+        new IgeViewport(ige)
+            .id("vp1")
+            .autoSize(true)
+            .scene(baseScene)
+            .drawBounds(false)
+            .drawBoundsData(false)
+            .mount(ige.root);
     };
 
     /**
@@ -33,10 +40,10 @@ class IgeBaseScene extends IgeSceneGraph {
      */
     removeGraph = () => {
         // Destroy the viewport
-        this._ige.$("vp1").destroy();
+        ige.$("vp1").destroy();
 
         // Destroy the baseScene
-        this._ige.$("baseScene").destroy();
+        ige.$("baseScene").destroy();
     };
 }
 

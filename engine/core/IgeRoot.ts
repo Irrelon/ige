@@ -1,17 +1,24 @@
 import IgeEntity from "./IgeEntity";
 import igeConfig from "./config";
+import {ige} from "../instance";
 
 /**
  * The base engine class definition.
  */
 class IgeRoot extends IgeEntity {
     classId = "IgeRoot";
+    _viewportDepth: boolean = false;
 
-    // Public
+    // The root entity is always "in view" as in, no occlusion will stop it from rendering
+    // because it's only the child entities that need occlusion testing
+    _alwaysInView = true;
+
     basePath = "";
 
-    // Private
-    _alwaysInView = true;
+    constructor() {
+        super();
+        this.id("root");
+    }
 
     /**
      * Returns the mouse position relative to the main front buffer. Mouse
@@ -103,12 +110,12 @@ class IgeRoot extends IgeEntity {
         super._childMounted(child);
     }
 
-    updateSceneGraph(ctx) {
+    updateSceneGraph(ctx: CanvasRenderingContext2D) {
         let arr = this._children,
             arrCount,
             us,
             ud,
-            tickDelta = this._ige._tickDelta;
+            tickDelta = ige._tickDelta;
 
         // Process any behaviours assigned to the engine
         this._processUpdateBehaviours(ctx, tickDelta);
@@ -124,16 +131,16 @@ class IgeRoot extends IgeEntity {
                     ud = new Date().getTime() - us;
 
                     if (arr[arrCount]) {
-                        if (!this._ige._timeSpentInUpdate[arr[arrCount].id()]) {
-                            this._ige._timeSpentInUpdate[arr[arrCount].id()] = 0;
+                        if (!ige._timeSpentInUpdate[arr[arrCount].id()]) {
+                            ige._timeSpentInUpdate[arr[arrCount].id()] = 0;
                         }
 
-                        if (!this._ige._timeSpentLastUpdate[arr[arrCount].id()]) {
-                            this._ige._timeSpentLastUpdate[arr[arrCount].id()] = {};
+                        if (!ige._timeSpentLastUpdate[arr[arrCount].id()]) {
+                            ige._timeSpentLastUpdate[arr[arrCount].id()] = {};
                         }
 
-                        this._ige._timeSpentInUpdate[arr[arrCount].id()] += ud;
-                        this._ige._timeSpentLastUpdate[arr[arrCount].id()].ms = ud;
+                        ige._timeSpentInUpdate[arr[arrCount].id()] += ud;
+                        ige._timeSpentLastUpdate[arr[arrCount].id()].ms = ud;
                     }
                 }
             } else {
@@ -144,7 +151,7 @@ class IgeRoot extends IgeEntity {
         }
     }
 
-    renderSceneGraph(ctx) {
+    renderSceneGraph(ctx: CanvasRenderingContext2D) {
         let ts, td;
 
         // Process any behaviours assigned to the engine
@@ -186,16 +193,16 @@ class IgeRoot extends IgeEntity {
                     arr[arrCount].tick(ctx);
                     td = new Date().getTime() - ts;
                     if (arr[arrCount]) {
-                        if (!this._ige._timeSpentInTick[arr[arrCount].id()]) {
-                            this._ige._timeSpentInTick[arr[arrCount].id()] = 0;
+                        if (!ige._timeSpentInTick[arr[arrCount].id()]) {
+                            ige._timeSpentInTick[arr[arrCount].id()] = 0;
                         }
 
-                        if (!this._ige._timeSpentLastTick[arr[arrCount].id()]) {
-                            this._ige._timeSpentLastTick[arr[arrCount].id()] = {};
+                        if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
+                            ige._timeSpentLastTick[arr[arrCount].id()] = {};
                         }
 
-                        this._ige._timeSpentInTick[arr[arrCount].id()] += td;
-                        this._ige._timeSpentLastTick[arr[arrCount].id()].ms = td;
+                        ige._timeSpentInTick[arr[arrCount].id()] += td;
+                        ige._timeSpentLastTick[arr[arrCount].id()].ms = td;
                     }
                     ctx.restore();
                 }
@@ -213,7 +220,7 @@ class IgeRoot extends IgeEntity {
 
     destroy() {
         // Call class destroy() super method
-        super.destroy();
+        return super.destroy();
     }
 }
 

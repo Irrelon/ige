@@ -1,20 +1,16 @@
-import IgeBaseClass from "../src/IgeBaseClass";
+import IgeBaseClass from "../core/IgeBaseClass";
+import IgeBaseClass from "../core/IgeBaseClass";
+import IgeComponent from "../core/IgeComponent";
 
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
  */
-class IgeTiledComponent extends IgeBaseClass {
+class IgeTiledComponent extends IgeComponent {
 	classId = "IgeTiledComponent";
 	componentId = "tiled";
 
-	/**
-	 * @constructor
-	 * @param entity
-	 * @param options
-	 */
-	init = (entity, options) => {
-		this._entity = entity;
-		this._options = options;
+	constructor (entity: IgeBaseClass, options?: any) {
+		super(entity, options);
 	}
 
 	/**

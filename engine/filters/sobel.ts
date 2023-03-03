@@ -1,6 +1,6 @@
 import { IgeSmartFilter } from "../../types/IgeSmartFilter";
 import { convoluteHelper } from "./convolute";
-import igeFilters from "../../services/igeFilters";
+import igeFilters from "../services/igeFilters";
 
 export const sobel: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
     let strength = 1,

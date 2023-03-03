@@ -1,4 +1,5 @@
 import IgeBaseClass from "./IgeBaseClass";
+import {arrPull} from "../services/utils";
 
 /**
  * Creates a new map that has two dimensions (x and y) to it's data
@@ -84,7 +85,7 @@ class IgeMapStack2d extends IgeBaseClass {
 	 */
 	pull (x, y, val) {
 		if (this._mapData[y] && this._mapData[y][x]) {
-			IgeBaseClass.pull(this._mapData[y][x], val);
+			arrPull(this._mapData[y][x], val);
 			return this;
 		}
 

@@ -1,26 +1,24 @@
-import IgeEventingClass from "../src/IgeEventingClass";
+import IgeEventingClass from "../core/IgeEventingClass";
+import IgeBaseClass from "../core/IgeBaseClass";
+import IgeComponent from "../core/IgeComponent";
 
 /**
  * When added to a viewport, automatically adds mouse panning
  * capabilities to the viewport's camera.
  */
-class IgeMousePanComponent extends IgeEventingClass {
+class IgeMousePanComponent extends IgeComponent {
 	static componentTargetClass = "IgeViewport";
 	classId = "IgeMousePanComponent";
 	componentId = "mousePan";
 
 	/**
 	 * @constructor
-	 * @param {Ige} ige The engine instance.
 	 * @param {IgeObject} entity The object that the component is added to.
 	 * @param {Object=} options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor (ige, entity, options) {
-		super(ige);
-
-		this._entity = entity;
-		this._options = options;
+	constructor (entity: IgeBaseClass, options?: any) {
+		super(entity, options);
 
 		// Set the pan component to inactive to start with
 		this._enabled = false;

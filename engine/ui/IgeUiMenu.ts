@@ -1,5 +1,5 @@
-import IgeUiElement from "../src/IgeUiElement";
-import IgeFontEntity from "../src/IgeFontEntity";
+import IgeUiElement from "../core/IgeUiElement";
+import IgeFontEntity from "../core/IgeFontEntity";
 
 /**
  * Provides a UI drop-down menu entity.

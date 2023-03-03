@@ -2,8 +2,8 @@
  * Provides a UI tooltip. Change properties (textBox, fonts, backgroundcolor)
  * at free will.
  */
-import IgeUiElement from "../src/IgeUiElement";
-import IgeFontEntity from "../src/IgeFontEntity";
+import IgeUiElement from "../core/IgeUiElement";
+import IgeFontEntity from "../core/IgeFontEntity";
 
 class IgeUiTooltip extends IgeUiElement {
 	classId = "IgeUiTooltip";

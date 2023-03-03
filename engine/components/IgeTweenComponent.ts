@@ -1,5 +1,9 @@
 import IgeBaseClass from "../core/IgeBaseClass";
 import IgeComponent from "../core/IgeComponent";
+import {arrPull} from "../services/utils";
+import IgeTween from "../core/IgeTween";
+import Ige from "../core/Ige";
+import IgeEntity from "../core/IgeEntity";
 
 /**
  * This component is already included in the IgeRoot (ige)
@@ -10,14 +14,12 @@ class IgeTweenComponent extends IgeComponent {
 	static componentTargetClass = "Ige";
 	classId = "IgeTweenComponent";
 	componentId = "tween";
+	_tweens: IgeTween[];
 
-	constructor (ige, entity, options) {
-		super(ige);
+	constructor (entity: IgeBaseClass, options?: any) {
+		super(entity, options);
 
-		this._entity = entity;
-		this._transform = entity.transform;
-
-		// Setup the array that will hold our active tweens
+		// Set up the array that will hold our active tweens
 		this._tweens = [];
 
 		// Add the tween behaviour to the entity
@@ -29,8 +31,8 @@ class IgeTweenComponent extends IgeComponent {
 	 * @param {IgeTween} tween The tween to start.
 	 * @return {Number} The index of the added tween or -1 on error.
 	 */
-	start (tween) {
-		if (tween._startTime > ige._currentTime) {
+	start (tween: IgeTween) {
+		if (tween._startTime > this._ige._currentTime) {
 			// The tween is scheduled for later
 			// Push the tween into the IgeTweenComponent's _tweens array
 			this._tweens.push(tween);
@@ -52,7 +54,7 @@ class IgeTweenComponent extends IgeComponent {
 		return tween;
 	}
 
-	_setupStep (tween, newTime) {
+	_setupStep (tween: IgeTween, newTime: number) {
 		var targetObj = tween._targetObj,
 			step = tween._steps[tween._currentStep],
 			propertyNameAndValue, // = tween._propertyObj
@@ -109,9 +111,9 @@ class IgeTweenComponent extends IgeComponent {
 	 * Removes the specified tween from the active tween list.
 	 * @param {IgeTween} tween The tween to stop.
 	 */
-	stop (tween) {
+	stop (tween: IgeTween) {
 		// Store the new tween details in the item
-		IgeBaseClass.pull(this._tweens, tween);
+		arrPull(this._tweens, tween);
 
 		if (!this._tweens.length) {
 			// Disable tweening on this item as there are
@@ -165,7 +167,7 @@ class IgeTweenComponent extends IgeComponent {
 	/**
 	 * Process tweening for the object.
 	 */
-	update (ige, entity, ctx) {
+	update (ige: Ige, entity: IgeEntity, ctx: CanvasRenderingContext2D) {
 		var thisTween = ige.tween;
 		if (thisTween._tweens && thisTween._tweens.length) {
 			var currentTime = ige._tickStart,
@@ -384,184 +386,6 @@ class IgeTweenComponent extends IgeComponent {
 					}
 				}
 			}
-		}
-	}
-
-	/** tweenEasing - Contains all the tween easing functions. {
-		category:"property",
-		type:"object",
-	} **/
-	easing = {
-		// Easing equations converted from AS to JS from original source at
-		// http://robertpenner.com/easing/
-		"none" (t, c, d) {
-			return c*t/d;
-		},
-		"inQuad" (t, c, d) {
-			return c*(t/=d)*t;
-		},
-		"outQuad" (t, c, d) {
-			return -c *(t/=d)*(t-2);
-		},
-		"inOutQuad" (t, c, d) {
-			if((t/=d/2) < 1) { return c/2*t*t; }
-			return -c/2 *((--t)*(t-2) - 1);
-		},
-		"inCubic" (t, c, d) {
-			return c*(t/=d)*t*t;
-		},
-		"outCubic" (t, c, d) {
-			return c*((t=t/d-1)*t*t + 1);
-		},
-		"inOutCubic" (t, c, d) {
-			if((t/=d/2) < 1) { return c/2*t*t*t; }
-			return c/2*((t-=2)*t*t + 2);
-		},
-		"outInCubic" (t, c, d) {
-			if(t < d/2) { return this.outCubic(t*2, c/2, d); }
-			return this.inCubic((t*2)-d, c/2, c/2, d);
-		},
-		"inQuart" (t, c, d) {
-			return c*(t/=d)*t*t*t;
-		},
-		"outQuart" (t, c, d) {
-			return -c *((t=t/d-1)*t*t*t - 1);
-		},
-		"inOutQuart" (t, c, d) {
-			if((t/=d/2) < 1) { return c/2*t*t*t*t; }
-			return -c/2 *((t-=2)*t*t*t - 2);
-		},
-		"outInQuart" (t, c, d) {
-			if(t < d/2) { return this.outQuart(t*2, c/2, d); }
-			return this.inQuart((t*2)-d, c/2, c/2, d);
-		},
-		"inQuint" (t, c, d) {
-			return c*(t/=d)*t*t*t*t;
-		},
-		"outQuint" (t, c, d) {
-			return c*((t=t/d-1)*t*t*t*t + 1);
-		},
-		"inOutQuint" (t, c, d) {
-			if((t/=d/2) < 1) { return c/2*t*t*t*t*t; }
-			return c/2*((t-=2)*t*t*t*t + 2);
-		},
-		"outInQuint" (t, c, d) {
-			if(t < d/2) { return this.outQuint(t*2, c/2, d); }
-			return this.inQuint((t*2)-d, c/2, c/2, d);
-		},
-		"inSine" (t, c, d) {
-			return -c * Math.cos(t/d *(Math.PI/2)) + c;
-		},
-		"outSine" (t, c, d) {
-			return c * Math.sin(t/d *(Math.PI/2));
-		},
-		"inOutSine" (t, c, d) {
-			return -c/2 *(Math.cos(Math.PI*t/d) - 1);
-		},
-		"outInSine" (t, c, d) {
-			if(t < d/2) { return this.outSine(t*2, c/2, d); }
-			return this.inSine((t*2)-d, c/2, c/2, d);
-		},
-		"inExpo" (t, c, d) {
-			return(t === 0) ? 0 : c * Math.pow(2, 10 *(t/d - 1)) - c * 0.001;
-		},
-		"outExpo" (t, c, d) {
-			return(t === d) ? c : c * 1.001 *(-Math.pow(2, -10 * t/d) + 1);
-		},
-		"inOutExpo" (t, c, d) {
-			if(t === 0) { return 0; }
-			if(t === d) { return c; }
-			if((t/=d/2) < 1) { return c/2 * Math.pow(2, 10 *(t - 1)) - c * 0.0005; }
-			return c/2 * 1.0005 *(-Math.pow(2, -10 * --t) + 2);
-		},
-		"outInExpo" (t, c, d) {
-			if(t < d/2) { return this.outExpo(t*2, c/2, d); }
-			return this.inExpo((t*2)-d, c/2, c/2, d);
-		},
-		"inCirc" (t, c, d) {
-			return -c *(Math.sqrt(1 -(t/=d)*t) - 1);
-		},
-		"outCirc" (t, c, d) {
-			return c * Math.sqrt(1 -(t=t/d-1)*t);
-		},
-		"inOutCirc" (t, c, d) {
-			if((t/=d/2) < 1) { return -c/2 *(Math.sqrt(1 - t*t) - 1); }
-			return c/2 *(Math.sqrt(1 -(t-=2)*t) + 1);
-		},
-		"outInCirc" (t, c, d) {
-			if(t < d/2) { return this.outCirc(t*2, c/2, d); }
-			return this.inCirc((t*2)-d, c/2, c/2, d);
-		},
-		"inElastic" (t, c, d, a, p) {
-			var s;
-			if(t===0) {return 0;}
-			if((t/=d)===1) { return c; }
-			if(!p) { p=d*0.3; }
-			if(!a || a < Math.abs(c)) { a=c; s=p/4; } else { s = p/(2*Math.PI) * Math.asin(c/a); }
-			return -(a*Math.pow(2,10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p ));
-		},
-		"outElastic" (t, c, d, a, p) {
-			var s;
-			if(t===0) { return 0; }
-			if((t/=d)===1) { return c; }
-			if(!p) { p=d*0.3; }
-			if(!a || a < Math.abs(c)) { a=c; s=p/4; } else { s = p/(2*Math.PI) * Math.asin(c/a); }
-			return(a*Math.pow(2,-10*t) * Math.sin((t*d-s)*(2*Math.PI)/p ) + c);
-		},
-		"inOutElastic" (t, c, d, a, p) {
-			var s;
-			if(t===0) { return 0; }
-			if((t/=d/2)===2) { return c; }
-			if(!p) { p=d*(0.3*1.5); }
-			if(!a || a < Math.abs(c)) { a=c; s=p/4; } else { s = p/(2*Math.PI) * Math.asin(c/a); }
-			if(t < 1) { return -0.5*(a*Math.pow(2,10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p)); }
-			return a*Math.pow(2,-10*(t-=1)) * Math.sin((t*d-s)*(2*Math.PI)/p )*0.5 + c;
-		},
-		"outInElastic" (t, c, d, a, p) {
-			if(t < d/2) { return this.outElastic(t*2, c/2, d, a, p); }
-			return this.inElastic((t*2)-d, c/2, c/2, d, a, p);
-		},
-		"inBack" (t, c, d, s) {
-			if(s === undefined) { s = 1.70158; }
-			return c*(t/=d)*t*((s+1)*t - s);
-		},
-		"outBack" (t, c, d, s) {
-			if(s === undefined) { s = 1.70158; }
-			return c*((t=t/d-1)*t*((s+1)*t + s) + 1);
-		},
-		"inOutBack" (t, c, d, s) {
-			if(s === undefined) { s = 1.70158; }
-			if((t/=d/2) < 1) { return c/2*(t*t*(((s*=(1.525))+1)*t - s)); }
-			return c/2*((t-=2)*t*(((s*=(1.525))+1)*t + s) + 2);
-		},
-		"outInBack" (t, c, d, s) {
-			if(t < d/2) { return this.outBack(t*2, c/2, d, s); }
-			return this.inBack((t*2)-d, c/2, c/2, d, s);
-		},
-		"inBounce" (t, c, d) {
-			return c - this.outBounce(d-t, 0, c, d);
-		},
-		"outBounce" (t, c, d) {
-			if((t/=d) <(1/2.75)) {
-				return c*(7.5625*t*t);
-			} else if(t <(2/2.75)) {
-				return c*(7.5625*(t-=(1.5/2.75))*t + 0.75);
-			} else if(t <(2.5/2.75)) {
-				return c*(7.5625*(t-=(2.25/2.75))*t + 0.9375);
-			} else {
-				return c*(7.5625*(t-=(2.625/2.75))*t + 0.984375);
-			}
-		},
-		"inOutBounce" (t, c, d) {
-			if(t < d/2) {
-				return this.inBounce(t*2, 0, c, d) * 0.5;
-			} else {
-				return this.outBounce(t*2-d, 0, c, d) * 0.5 + c*0.5;
-			}
-		},
-		"outInBounce" (t, c, d) {
-			if(t < d/2) { return this.outBounce(t*2, c/2, d); }
-			return this.inBounce((t*2)-d, c/2, c/2, d);
 		}
 	}
 }

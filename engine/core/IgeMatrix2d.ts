@@ -3,6 +3,7 @@
  */
 import IgePoint3d from "./IgePoint3d";
 import IgeBaseClass from "./IgeBaseClass";
+import {radiansToDegrees} from "../services/utils";
 
 class IgeMatrix2d {
 	matrix = [
@@ -124,7 +125,7 @@ class IgeMatrix2d {
 	 * @return {Number}
 	 */
 	rotationDegrees () {
-		return IgeBaseClass.radiansToDegrees(Math.acos(this.matrix[0]));
+		return radiansToDegrees(Math.acos(this.matrix[0]));
 	}
 
 	/**

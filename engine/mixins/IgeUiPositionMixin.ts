@@ -1,5 +1,5 @@
-import {Mixin} from "../../types/Mixin";
-import IgeEntity from "../core/IgeEntity";
+import type {Mixin} from "../../types/Mixin";
+import type IgeEntity from "../core/IgeEntity";
 
 const WithUiPositionMixin = <T extends Mixin<IgeEntity>>(Base: T) => class extends Base {
 	/**

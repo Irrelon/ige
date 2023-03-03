@@ -1,5 +1,5 @@
 // See the ige/engine/filters folder for the individual filter source
-import { IgeSmartFilter } from "../types/IgeSmartFilter";
+import { IgeSmartFilter } from "../../types/IgeSmartFilter";
 
 export type IgeFilterHelperFunction = (...args: any[]) => any;
 

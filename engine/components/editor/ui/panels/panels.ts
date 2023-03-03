@@ -1,4 +1,4 @@
-import IgeEventingClass from "../../../../src/IgeEventingClass";
+import IgeEventingClass from "../../../../core/IgeEventingClass";
 
 class UiPanels extends IgeEventingClass {
 	classId = "UiPanels";

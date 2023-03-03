@@ -1,4 +1,5 @@
-import IgeEventingClass from "../core/IgeEventingClass";
+import IgeComponent from "../core/IgeComponent";
+import WithComponentMixin from "../mixins/IgeComponentMixin";
 
 /**
  * The animation component class. Handles defining and controlling
@@ -8,20 +9,19 @@ import IgeEventingClass from "../core/IgeEventingClass";
  * @event loopComplete - The animation has completed a full cycle (shown all frames).
  * @event complete - The animation has completed all assigned loop cycles.
  */
-class IgeAnimationComponent extends IgeEventingClass {
+class IgeAnimationComponent extends IgeComponent {
 	classId = "IgeAnimationComponent";
 	componentId = "animation";
+	_anims: Record<string, any>;
 
 	/**
 	 * @constructor
-	 * @param {Ige} ige The engine instance.
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	constructor (ige, entity, options) {
-		super(ige);
+	constructor (entity: typeof WithComponentMixin, options?: any) {
+		super(entity, options);
 
-		this._entity = entity;
 		this._anims = {};
 
 		// Add the animation behaviour to the entity

@@ -1,13 +1,18 @@
 import IgeEntity from "./IgeEntity";
+import {ige} from "../instance";
 
 /**
  * Creates a new 2d scene.
  */
 class IgeScene2d extends IgeEntity {
 	classId = "IgeScene2d";
+	_shouldRender: boolean;
+	_autoSize: boolean;
+	_mouseAlwaysInside: boolean;
+	_alwaysInView: boolean;
 
-	constructor (ige) {
-		super(ige);
+	constructor () {
+		super();
 
 		this._mouseAlwaysInside = true;
 		this._alwaysInView = true;
@@ -17,8 +22,8 @@ class IgeScene2d extends IgeEntity {
 
 		// Set the geometry of the scene to the main canvas
 		// width / height - used when positioning UI elements
-		this._bounds2d.x = this._ige.root._bounds2d.x;
-		this._bounds2d.y = this._ige.root._bounds2d.y;
+		this._bounds2d.x = ige.root._bounds2d.x;
+		this._bounds2d.y = ige.root._bounds2d.y;
 
 		this.streamSections(["transform", "ignoreCamera"]);
 	}
@@ -120,11 +125,11 @@ class IgeScene2d extends IgeEntity {
 	update = (ctx, tickDelta) => {
 		if (this._ignoreCamera) {
 			// Translate the scene so it is always center of the camera
-			var cam = this._ige._currentCamera;
+			var cam = ige._currentCamera;
 			this.translateTo(cam._translate.x, cam._translate.y, cam._translate.z);
 			this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
 			this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);
-			//this._localMatrix.multiply(this._ige._currentCamera._worldMatrix.getInverse());
+			//this._localMatrix.multiply(ige._currentCamera._worldMatrix.getInverse());
 		}
 
 		super.update(ctx, tickDelta);
@@ -148,7 +153,7 @@ class IgeScene2d extends IgeEntity {
 	_resizeEvent = (event) => {
 		// Set width / height of scene to match main ige (SCENES ARE ALWAYS THE FULL IGE SIZE!!)
 		if (this._autoSize) {
-			this._bounds2d = this._ige.root._bounds2d.clone();
+			this._bounds2d = ige.root._bounds2d.clone();
 		}
 
 		// Resize any children

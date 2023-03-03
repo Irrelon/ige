@@ -1,15 +1,14 @@
-import IgeBaseClass from "../src/IgeBaseClass";
+import IgeComponent from "../core/IgeComponent";
+import {arrPull} from "../services/utils";
+import IgeBaseClass from "../core/IgeBaseClass";
 
-class IgeUiManagerComponent extends IgeBaseClass {
+class IgeUiManagerComponent extends IgeComponent {
 	static componentTargetClass = "Ige";
 	classId = "IgeUiManagerComponent";
 	componentId = "ui";
 
-	constructor (ige, entity, options) {
-		super(ige);
-
-		this._entity = entity;
-		this._options = options;
+	constructor (entity: IgeBaseClass, options?: any) {
+		super(entity, options);
 
 		this._focus = null; // The element that currently has focus
 		this._caret = null; // The caret position within the focused element
@@ -17,7 +16,7 @@ class IgeUiManagerComponent extends IgeBaseClass {
 		this._styles = {};
 		this._elementsByStyle = {};
 
-		this._ige.input.on("keyDown", (event) => {
+		this._ige.components.input.on("keyDown", (event) => {
 			this._keyDown(event);
 		});
 	}
@@ -57,7 +56,7 @@ class IgeUiManagerComponent extends IgeBaseClass {
 	 * @param elem
 	 */
 	unRegisterElement (elem) {
-		IgeBaseClass.pull(this._register, elem);
+		arrPull(this._register, elem);
 
 		// Kill any styles defined for this element id
 		delete this._styles["#" + elem._id];

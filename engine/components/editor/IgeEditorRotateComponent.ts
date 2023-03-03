@@ -1,5 +1,6 @@
-import IgeEventingClass from "../../src/IgeEventingClass";
-import IgeBaseClass from "../../src/IgeBaseClass";
+import IgeEventingClass from "../../core/IgeEventingClass";
+import IgeBaseClass from "../../core/IgeBaseClass";
+import {degreesToRadians, radiansToDegrees} from "../../services/utils";
 
 /**
  * When added to a viewport, automatically adds entity rotate
@@ -113,13 +114,13 @@ class IgeEditorRotateComponent extends IgeEventingClass {
 			this._opStartMouse = curMousePos.clone();
 
 			this._opStartRotate = {
-				"x": IgeBaseClass.radiansToDegrees(this._targetEntity._rotate.z)
+				"x": radiansToDegrees(this._targetEntity._rotate.z)
 			};
 
 			this._opPreStart = true;
 			this._opStarted = false;
 
-			document.getElementById("igeSgEditorStatus").innerHTML = "Degrees: " + IgeBaseClass.radiansToDegrees(this._targetEntity._rotate.z);
+			document.getElementById("igeSgEditorStatus").innerHTML = "Degrees: " + radiansToDegrees(this._targetEntity._rotate.z);
 		}
 	}
 
@@ -145,7 +146,7 @@ class IgeEditorRotateComponent extends IgeEventingClass {
 						this._targetEntity.rotateTo(
 							this._targetEntity._rotate.x,
 							this._targetEntity._rotate.y,
-							IgeBaseClass.degreesToRadians(-distX)
+							degreesToRadians(-distX)
 						);
 						this.emit("rotateStart");
 						this._opPreStart = false;
@@ -158,13 +159,13 @@ class IgeEditorRotateComponent extends IgeEventingClass {
 					this._targetEntity.rotateTo(
 						this._targetEntity._rotate.x,
 						this._targetEntity._rotate.y,
-						IgeBaseClass.degreesToRadians(-distX)
+						degreesToRadians(-distX)
 					);
 
 					this.emit("rotateMove");
 				}
 
-				document.getElementById("igeSgEditorStatus").innerHTML = "Degrees: " + IgeBaseClass.radiansToDegrees(this._targetEntity._rotate.z);
+				document.getElementById("igeSgEditorStatus").innerHTML = "Degrees: " + radiansToDegrees(this._targetEntity._rotate.z);
 			}
 		}
 	}
@@ -189,10 +190,10 @@ class IgeEditorRotateComponent extends IgeEventingClass {
 					this._targetEntity.rotateTo(
 						this._targetEntity._rotate.x,
 						this._targetEntity._rotate.y,
-						IgeBaseClass.degreesToRadians(-distX)
+						degreesToRadians(-distX)
 					);
 
-					document.getElementById("igeSgEditorStatus").innerHTML = "Degrees: " + IgeBaseClass.radiansToDegrees(this._targetEntity._rotate.z);
+					document.getElementById("igeSgEditorStatus").innerHTML = "Degrees: " + radiansToDegrees(this._targetEntity._rotate.z);
 
 					// Remove the rotate start data to end the rotate operation
 					delete this._opStartMouse;

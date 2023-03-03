@@ -4,21 +4,22 @@ import IgeMatrix2d from "./IgeMatrix2d";
 import IgePoly2d from "./IgePoly2d";
 import IgeDummyCanvas from "./IgeDummyCanvas";
 import IgeRect from "./IgeRect";
-import IgeBaseClass from "./IgeBaseClass";
 import Ige from "./Ige";
 import IgeDummyContext from "./IgeDummyContext";
 import IgeViewport from "./IgeViewport";
-import IgeEventingClass from "./IgeEventingClass";
 import igeConfig from "./config";
 import IgeTexture from "./IgeTexture";
+import WithEventingMixin from "../mixins/IgeEventingMixin";
+import {arrPull, degreesToRadians, toIso} from "../services/utils";
+import IgeBaseClass from "./IgeBaseClass";
+import {ige} from "../instance";
 
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
  */
-class IgeEntity extends IgeEventingClass {
+class IgeEntity extends WithEventingMixin(IgeBaseClass) {
     classId = "IgeEntity";
-    _ige: Ige;
     _id?: string;
     _didInit = false;
     _newBorn = true;
@@ -65,7 +66,7 @@ class IgeEntity extends IgeEventingClass {
     _oldWorldMatrix: IgeMatrix2d;
     _hidden: boolean;
     _cache: boolean = false;
-    _cacheCtx?: RenderingContext | typeof IgeDummyContext | null;
+    _cacheCtx?: CanvasRenderingContext2D | typeof IgeDummyContext | null;
     _cacheCanvas?: HTMLCanvasElement | IgeDummyCanvas;
     _cacheDirty: boolean = false;
     _cacheSmoothing: boolean = false;
@@ -73,11 +74,13 @@ class IgeEntity extends IgeEventingClass {
     _aabb?: IgeRect;
     _hasParent?: Record<string, boolean>;
     _texture?: IgeTexture;
+    _streamMode?: number;
+    _streamDataCache?: boolean;
+    _deathCallBack?: (...args: any[]) => void;
     _sortChildren: (comparatorFunction: (a: IgeEntity, b: IgeEntity) => number) => void;
 
-    constructor(ige: Ige) {
-        super(ige);
-        this._ige = ige;
+    constructor() {
+        super();
 
         // Default sorting behavior
         this._sortChildren = (compareFn) => {
@@ -182,31 +185,31 @@ class IgeEntity extends IgeEventingClass {
             }
 
             // Check if this ID already exists in the object register
-            if (!this._ige._register[id]) {
+            if (!ige._register[id]) {
                 // Check if we already have an id assigned
-                if (this._id && this._ige._register[this._id]) {
+                if (this._id && ige._register[this._id]) {
                     // Unregister the old ID before setting this new one
-                    this._ige.unRegister(this);
+                    ige.unRegister(this);
                 }
 
                 this._id = id;
 
                 // Now register this object with the object register
-                this._ige.register(this);
+                ige.register(this);
 
                 return this;
             }
 
             // Already an object with this ID!
-            if (this._ige._register[id] !== this) {
+            if (ige._register[id] !== this) {
                 this.log(`Cannot set ID of object to "${id}" because that ID is already in use by another object!`, "error");
             }
         }
 
         if (!this._id) {
             // The item has no id so generate one automatically
-            this._id = this._ige.newIdHex();
-            this._ige.register(this);
+            this._id = ige.newIdHex();
+            ige.register(this);
         }
 
         return this._id;
@@ -914,7 +917,7 @@ class IgeEntity extends IgeEventingClass {
         }
     }
 
-    update(ctx, tickDelta) {
+    _update(ctx: CanvasRenderingContext2D, tickDelta: number) {
         // Check that we are alive before processing further
         if (!this._alive) {
             return;
@@ -936,16 +939,16 @@ class IgeEntity extends IgeEventingClass {
         arrCount = arr.length;
 
         // Depth sort all child objects
-        if (arrCount && !this._ige._headless) {
+        if (arrCount && !ige._headless) {
             if (igeConfig.debug._timing) {
-                if (!this._ige._timeSpentLastTick[this.id()]) {
-                    this._ige._timeSpentLastTick[this.id()] = {};
+                if (!ige._timeSpentLastTick[this.id()]) {
+                    ige._timeSpentLastTick[this.id()] = {};
                 }
 
                 ts = new Date().getTime();
                 this.depthSortChildren();
                 td = new Date().getTime() - ts;
-                this._ige._timeSpentLastTick[this.id()].depthSortChildren = td;
+                ige._timeSpentLastTick[this.id()].depthSortChildren = td;
             } else {
                 this.depthSortChildren();
             }
@@ -958,16 +961,16 @@ class IgeEntity extends IgeEventingClass {
                 arr[arrCount].update(ctx, tickDelta);
                 td = new Date().getTime() - ts;
                 if (arr[arrCount]) {
-                    if (!this._ige._timeSpentInTick[arr[arrCount].id()]) {
-                        this._ige._timeSpentInTick[arr[arrCount].id()] = 0;
+                    if (!ige._timeSpentInTick[arr[arrCount].id()]) {
+                        ige._timeSpentInTick[arr[arrCount].id()] = 0;
                     }
 
-                    if (!this._ige._timeSpentLastTick[arr[arrCount].id()]) {
-                        this._ige._timeSpentLastTick[arr[arrCount].id()] = {};
+                    if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
+                        ige._timeSpentLastTick[arr[arrCount].id()] = {};
                     }
 
-                    this._ige._timeSpentInTick[arr[arrCount].id()] += td;
-                    this._ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
+                    ige._timeSpentInTick[arr[arrCount].id()] += td;
+                    ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
                 }
             }
         } else {
@@ -978,69 +981,76 @@ class IgeEntity extends IgeEventingClass {
     }
 
     /**
-     * Processes the actions required each render frame.
+     * Processes the updates required each render frame. Any code in the update()
+     * method will be called ONCE for each render frame BEFORE the tick() method.
+     * This differs from the tick() method in that the tick method can be called
+     * multiple times during a render frame depending on how many viewports your
+     * simulation is being rendered to, whereas the update() method is only called
+     * once. It is therefore the perfect place to put code that will control your
+     * entity's motion, AI etc.
+     * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
+     * @param {Number} tickDelta The delta between the last tick time and this one.
      */
-    tick(ctx) {
-        // Check that we are alive before processing further
-        if (!this._alive) {
-            return;
-        }
-
-        let arr = this._children,
-            arrCount,
-            ts,
-            td;
-
-        if (!arr) {
-            return;
-        }
-
-        arrCount = arr.length;
-
-        if (igeConfig.debug._timing) {
-            while (arrCount--) {
-                if (!arr[arrCount]) {
-                    this.log("Object _children is undefined for index " + arrCount + " and _id: " + this._id, "error");
-                    continue;
-                }
-
-                if (!arr[arrCount]._newBorn) {
-                    ctx.save();
-                    ts = new Date().getTime();
-                    arr[arrCount].tick(ctx);
-                    td = new Date().getTime() - ts;
-                    if (arr[arrCount]) {
-                        if (!this._ige._timeSpentInTick[arr[arrCount].id()]) {
-                            this._ige._timeSpentInTick[arr[arrCount].id()] = 0;
-                        }
-
-                        if (!this._ige._timeSpentLastTick[arr[arrCount].id()]) {
-                            this._ige._timeSpentLastTick[arr[arrCount].id()] = {};
-                        }
-
-                        this._ige._timeSpentInTick[arr[arrCount].id()] += td;
-                        this._ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
-                    }
-                    ctx.restore();
-                }
+    update(ctx: CanvasRenderingContext2D, tickDelta: number) {
+        // Check if the entity should still exist
+        if (this._deathTime !== undefined && this._deathTime <= ige._tickStart) {
+            // Check if the deathCallBack was set
+            if (this._deathCallBack) {
+                this._deathCallBack.apply(this);
+                delete this._deathCallback;
             }
+
+            // The entity should be removed because it has died
+            this.destroy();
         } else {
-            while (arrCount--) {
-                if (!arr[arrCount]) {
-                    this.log("Object _children is undefined for index " + arrCount + " and _id: " + this._id, "error");
-                    continue;
+            // Check that the entity has been born
+            if (this._bornTime === undefined || ige._currentTime >= this._bornTime) {
+                // Remove the stream data cache
+                delete this._streamDataCache;
+
+                // Process any behaviours assigned to the entity
+                this._processUpdateBehaviours(ctx, tickDelta);
+
+                // Process velocity
+                if (this._velocity.x || this._velocity.y) {
+                    this._translate.x += (this._velocity.x / 16) * tickDelta;
+                    this._translate.y += (this._velocity.y / 16) * tickDelta;
                 }
 
-                if (!arr[arrCount]._newBorn) {
-                    ctx.save();
-                    arr[arrCount].tick(ctx);
-                    ctx.restore();
+                if (this._timeStream.length) {
+                    // Process any interpolation
+                    this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
                 }
+
+                // Check for changes to the transform values
+                // directly without calling the transform methods
+                this.updateTransform();
+
+                if (!this._noAabb && this._aabbDirty) {
+                    // Update the aabb
+                    this.aabb();
+                }
+
+                this._oldTranslate = this._translate.clone();
+
+                // Update this object's current frame alternator value
+                // which allows us to determine if we are still on the
+                // same frame
+                this._frameAlternatorCurrent = ige._frameAlternator;
+            } else {
+                // The entity is not yet born, unmount it and add to the spawn queue
+                this._birthMount = this._parent.id();
+                this.unMount();
+
+                ige.spawnQueue(this);
             }
         }
+
+        // Process super class
+        this._update(ctx, tickDelta);
     }
 
-    _depthSortVisit(u, sortObj) {
+    _depthSortVisit(u: number, sortObj) {
         let arr = sortObj.adj[u],
             arrCount = arr.length,
             i,
@@ -1068,7 +1078,7 @@ class IgeEntity extends IgeEventingClass {
      * @param event
      * @private
      */
-    _resizeEvent = (event) => {
+    _resizeEvent = (event: Event) => {
         let arr = this._children,
             arrCount;
 
@@ -1084,65 +1094,28 @@ class IgeEntity extends IgeEventingClass {
     };
 
     /**
-     * Called when a child object is mounted to this object.
+     * Called when a child object is un-mounted from this object.
      * @param obj
      * @private
      */
-    _childMounted(obj) {
-        this._resizeEvent(null);
-    }
+    _childUnMounted(obj: IgeEntity) {}
 
     /**
-     * Called when a child object is un-mounted to this object.
+     * Called when this object is mounted to an object.
      * @param obj
      * @private
      */
-    _childUnMounted(obj) {}
-
-    /**
-     * Called when this object is mounted to another object.
-     * @param obj
-     * @private
-     */
-    _mounted(obj) {}
+    _mounted(obj: IgeEntity) {}
 
     /**
      * Called when this object is un-mounted from its parent.
      * @param obj
      * @private
      */
-    _unMounted(obj) {}
+    _unMounted(obj: IgeEntity) {}
 
     isMounted() {
         return Boolean(this._parent);
-    }
-
-    /**
-     * Destroys the object and all its child objects, removing them from the
-     * scenegraph and from memory.
-     */
-    destroy() {
-        // Remove ourselves from any parent
-        this.unMount();
-
-        // Remove any children
-        if (this._children) {
-            this.destroyChildren();
-        }
-
-        // Remove the object from the lookup system
-        this._ige.unRegister(this);
-
-        // Set a flag in case a reference to this object
-        // has been held somewhere, shows that the object
-        // should no longer be interacted with
-        this._alive = false;
-
-        // Remove the event listeners array in case any
-        // object references still exist there
-        delete this._eventListeners;
-
-        return this;
     }
 
     /**
@@ -1155,7 +1128,7 @@ class IgeEntity extends IgeEventingClass {
      *     entity.childSortingAlgorithm(function (compareFn) { this._children.sort(compareFn); });
      * @return {*}
      */
-    childSortingAlgorithm(val) {
+    childSortingAlgorithm(val: (comparatorFunction: (a: IgeEntity, b: IgeEntity) => number) => void) {
         if (val !== undefined) {
             this._sortChildren = val;
             return this;
@@ -1315,7 +1288,7 @@ class IgeEntity extends IgeEventingClass {
         if (arr) {
             arrCount = arr.length;
             while (arrCount--) {
-                arr[arrCount].method(this._ige, this, ...args);
+                arr[arrCount].method(ige, this, ...args);
             }
         }
     }
@@ -1331,12 +1304,31 @@ class IgeEntity extends IgeEventingClass {
             arrCount = arr.length;
 
             while (arrCount--) {
-                arr[arrCount].method(this._ige, this, ...args);
+                arr[arrCount].method(ige, this, ...args);
             }
         }
     }
 
-    /** ========================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
+    /** ======================================================================================================== **/
 
     /**
      * Sets the entity as visible and able to be interacted with.
@@ -1419,9 +1411,9 @@ class IgeEntity extends IgeEventingClass {
         }
 
         // Create the off-screen canvas
-        if (this._ige.isClient) {
+        if (ige.isClient) {
             // Use a real canvas
-            const canvasObj = this._ige.createCanvas({ smoothing: this._cacheSmoothing, pixelRatioScaling: true });
+            const canvasObj = ige.createCanvas({ smoothing: this._cacheSmoothing, pixelRatioScaling: true });
             this._cacheCanvas = canvasObj.canvas;
             this._cacheCtx = canvasObj.ctx;
         } else {
@@ -1475,7 +1467,7 @@ class IgeEntity extends IgeEventingClass {
      * @return {*}
      */
     compositeCache(val?: boolean, propagateToChildren = false) {
-        if (!this._ige.isClient) {
+        if (!ige.isClient) {
             return this;
         }
 
@@ -1488,7 +1480,7 @@ class IgeEntity extends IgeEventingClass {
             this.cache(false);
 
             // Create the off-screen canvas
-            const canvasObj = this._ige.createCanvas({ smoothing: this._cacheSmoothing, pixelRatioScaling: true });
+            const canvasObj = ige.createCanvas({ smoothing: this._cacheSmoothing, pixelRatioScaling: true });
             this._cacheCanvas = canvasObj.canvas;
             this._cacheCtx = canvasObj.ctx;
 
@@ -1556,7 +1548,7 @@ class IgeEntity extends IgeEventingClass {
      * center.
      */
     mousePos(viewport?: IgeViewport | null): IgePoint3d {
-        viewport = viewport || this._ige._currentViewport;
+        viewport = viewport || ige._currentViewport;
         if (!viewport) {
             return new IgePoint3d(0, 0, 0);
         }
@@ -1564,7 +1556,7 @@ class IgeEntity extends IgeEventingClass {
         const mp = viewport._mousePos.clone();
 
         // if (this._ignoreCamera) {
-        //      const cam = this._ige._currentCamera;
+        //      const cam = ige._currentCamera;
         // 	    mp.thisMultiply(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
         // 	    //mp.thisRotate(-cam._rotate.z);
         // 	    mp.thisAddPoint(cam._translate);
@@ -1590,7 +1582,7 @@ class IgeEntity extends IgeEventingClass {
      * center.
      */
     mousePosAbsolute(viewport?: IgeViewport | null): IgePoint3d {
-        viewport = viewport || this._ige._currentViewport;
+        viewport = viewport || ige._currentViewport;
 
         if (viewport) {
             const mp = viewport._mousePos.clone();
@@ -1613,7 +1605,7 @@ class IgeEntity extends IgeEventingClass {
      * center.
      */
     mousePosWorld(viewport?: IgeViewport | null): IgePoint3d {
-        viewport = viewport || this._ige._currentViewport;
+        viewport = viewport || ige._currentViewport;
         const mp = this.mousePos(viewport);
         this.localToWorldPoint(mp, viewport);
 
@@ -1642,7 +1634,7 @@ class IgeEntity extends IgeEventingClass {
         this.rotateTo(
             this._rotate.x,
             this._rotate.y,
-            Math.atan2(worldPos.y - point.y, worldPos.x - point.x) - (this._parent?._rotate?.z ?? 0) + IgeBaseClass.degreesToRadians(270)
+            Math.atan2(worldPos.y - point.y, worldPos.x - point.x) - (this._parent?._rotate?.z ?? 0) + degreesToRadians(270)
         );
 
         return this;
@@ -2014,11 +2006,11 @@ class IgeEntity extends IgeEventingClass {
      */
     lifeSpan(milliseconds, deathCallback) {
         if (milliseconds !== undefined) {
-            this.deathTime(this._ige._currentTime + milliseconds, deathCallback);
+            this.deathTime(ige._currentTime + milliseconds, deathCallback);
             return this;
         }
 
-        return this.deathTime() - this._ige._currentTime;
+        return this.deathTime() - ige._currentTime;
     }
 
     /**
@@ -2316,7 +2308,7 @@ class IgeEntity extends IgeEventingClass {
      * @param {Array} points The array of IgePoints to convert.
      */
     localToWorld(points, viewport, inverse) {
-        viewport = viewport || this._ige._currentViewport;
+        viewport = viewport || ige._currentViewport;
 
         if (this._adjustmentMatrix) {
             // Apply the optional adjustment matrix
@@ -2342,7 +2334,7 @@ class IgeEntity extends IgeEventingClass {
      * @param {IgePoint3d} point The IgePoint3d to convert.
      */
     localToWorldPoint(point, viewport) {
-        viewport = viewport || this._ige._currentViewport;
+        viewport = viewport || ige._currentViewport;
         this._worldMatrix.transform([point], this);
     }
 
@@ -2359,12 +2351,12 @@ class IgeEntity extends IgeEventingClass {
     screenPosition() {
         return new IgePoint3d(
             Math.floor(
-                (this._worldMatrix.matrix[2] - this._ige._currentCamera._translate.x) * this._ige._currentCamera._scale.x +
-                    this._ige.root._bounds2d.x2
+                (this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x +
+                    ige.root._bounds2d.x2
             ),
             Math.floor(
-                (this._worldMatrix.matrix[5] - this._ige._currentCamera._translate.y) * this._ige._currentCamera._scale.y +
-                    this._ige.root._bounds2d.y2
+                (this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y +
+                    ige.root._bounds2d.y2
             ),
             0
         );
@@ -2380,13 +2372,13 @@ class IgeEntity extends IgeEventingClass {
             const geom = this._bounds3d,
                 poly = new IgePoly2d(),
                 // Bottom face
-                bf2 = IgeBaseClass.toIso(+geom.x2, -geom.y2, -geom.z2),
-                bf3 = IgeBaseClass.toIso(+geom.x2, +geom.y2, -geom.z2),
-                bf4 = IgeBaseClass.toIso(-geom.x2, +geom.y2, -geom.z2),
+                bf2 = toIso(+geom.x2, -geom.y2, -geom.z2),
+                bf3 = toIso(+geom.x2, +geom.y2, -geom.z2),
+                bf4 = toIso(-geom.x2, +geom.y2, -geom.z2),
                 // Top face
-                tf1 = IgeBaseClass.toIso(-geom.x2, -geom.y2, geom.z2),
-                tf2 = IgeBaseClass.toIso(+geom.x2, -geom.y2, geom.z2),
-                tf4 = IgeBaseClass.toIso(-geom.x2, +geom.y2, geom.z2);
+                tf1 = toIso(-geom.x2, -geom.y2, geom.z2),
+                tf2 = toIso(+geom.x2, -geom.y2, geom.z2),
+                tf4 = toIso(-geom.x2, +geom.y2, geom.z2);
 
             poly.addPoint(tf1.x, tf1.y)
                 .addPoint(tf2.x, tf2.y)
@@ -2586,7 +2578,7 @@ class IgeEntity extends IgeEventingClass {
      * @param {IgeEntity} child
      * @private
      */
-    _childMounted(child) {
+    _childMounted(child: IgeEntity) {
         // Check if we need to set the compositeStream and streamMode
         if (this.compositeStream()) {
             child.compositeStream(true);
@@ -2594,7 +2586,7 @@ class IgeEntity extends IgeEventingClass {
             child.streamControl(this.streamControl());
         }
 
-        super._childMounted(child);
+        this._resizeEvent(null);
 
         // Check if we are compositeCached and update the cache
         if (this.compositeCache()) {
@@ -2805,7 +2797,7 @@ class IgeEntity extends IgeEventingClass {
      * not yet been processed for this tick.
      */
     newFrame() {
-        return this._ige._frameAlternator !== this._frameAlternatorCurrent;
+        return ige._frameAlternator !== this._frameAlternatorCurrent;
     }
 
     /**
@@ -2846,76 +2838,6 @@ class IgeEntity extends IgeEventingClass {
     }
 
     /**
-     * Processes the updates required each render frame. Any code in the update()
-     * method will be called ONCE for each render frame BEFORE the tick() method.
-     * This differs from the tick() method in that the tick method can be called
-     * multiple times during a render frame depending on how many viewports your
-     * simulation is being rendered to, whereas the update() method is only called
-     * once. It is therefore the perfect place to put code that will control your
-     * entity's motion, AI etc.
-     * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
-     * @param {Number} tickDelta The delta between the last tick time and this one.
-     */
-    update(ctx, tickDelta) {
-        // Check if the entity should still exist
-        if (this._deathTime !== undefined && this._deathTime <= this._ige._tickStart) {
-            // Check if the deathCallBack was set
-            if (this._deathCallBack) {
-                this._deathCallBack.apply(this);
-                delete this._deathCallback;
-            }
-
-            // The entity should be removed because it has died
-            this.destroy();
-        } else {
-            // Check that the entity has been born
-            if (this._bornTime === undefined || this._ige._currentTime >= this._bornTime) {
-                // Remove the stream data cache
-                delete this._streamDataCache;
-
-                // Process any behaviours assigned to the entity
-                this._processUpdateBehaviours(ctx, tickDelta);
-
-                // Process velocity
-                if (this._velocity.x || this._velocity.y) {
-                    this._translate.x += (this._velocity.x / 16) * tickDelta;
-                    this._translate.y += (this._velocity.y / 16) * tickDelta;
-                }
-
-                if (this._timeStream.length) {
-                    // Process any interpolation
-                    this._processInterpolate(this._ige._tickStart - this._ige.network.stream._renderLatency);
-                }
-
-                // Check for changes to the transform values
-                // directly without calling the transform methods
-                this.updateTransform();
-
-                if (!this._noAabb && this._aabbDirty) {
-                    // Update the aabb
-                    this.aabb();
-                }
-
-                this._oldTranslate = this._translate.clone();
-
-                // Update this object's current frame alternator value
-                // which allows us to determine if we are still on the
-                // same frame
-                this._frameAlternatorCurrent = this._ige._frameAlternator;
-            } else {
-                // The entity is not yet born, unmount it and add to the spawn queue
-                this._birthMount = this._parent.id();
-                this.unMount();
-
-                this._ige.spawnQueue(this);
-            }
-        }
-
-        // Process super class
-        super.update(ctx, tickDelta);
-    }
-
-    /**
      * Processes the actions required each render frame.
      * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
      * @param {Boolean} [dontTransform] If set to true, the tick method will
@@ -2934,13 +2856,13 @@ class IgeEntity extends IgeEventingClass {
         if (this._mouseEventsActive) {
             if (this._processTriggerHitTests()) {
                 // Point is inside the trigger bounds
-                this._ige.input.queueEvent(this._mouseInTrigger, null);
+                ige.input.queueEvent(this._mouseInTrigger, null);
             } else {
-                if (this._ige.input.mouseMove) {
+                if (ige.input.mouseMove) {
                     // There is a mouse move event but we are not inside the entity
                     // so fire a mouse out event (_handleMouseOut will check if the
                     // mouse WAS inside before firing an out event).
-                    this._handleMouseOut(this._ige.input.mouseMove);
+                    this._handleMouseOut(ige.input.mouseMove);
                 }
             }
         }
@@ -2973,20 +2895,80 @@ class IgeEntity extends IgeEventingClass {
         if (this._compositeCache) {
             if (this._cacheDirty) {
                 // Process children
-                super.tick(this._cacheCtx);
+                this._tick(this._cacheCtx);
                 this._renderCache(ctx);
                 this._cacheDirty = false;
             }
         } else {
             // Process children
-            super.tick(ctx);
+            this._tick(ctx);
+        }
+    }
+
+    _tick (ctx: CanvasRenderingContext2D) {
+        // Check that we are alive before processing further
+        if (!this._alive) {
+            return;
+        }
+
+        let arr = this._children,
+            arrCount,
+            ts,
+            td;
+
+        if (!arr) {
+            return;
+        }
+
+        arrCount = arr.length;
+
+        if (igeConfig.debug._timing) {
+            while (arrCount--) {
+                if (!arr[arrCount]) {
+                    this.log("Object _children is undefined for index " + arrCount + " and _id: " + this._id, "error");
+                    continue;
+                }
+
+                if (!arr[arrCount]._newBorn) {
+                    ctx.save();
+                    ts = new Date().getTime();
+                    arr[arrCount].tick(ctx);
+                    td = new Date().getTime() - ts;
+                    if (arr[arrCount]) {
+                        if (!ige._timeSpentInTick[arr[arrCount].id()]) {
+                            ige._timeSpentInTick[arr[arrCount].id()] = 0;
+                        }
+
+                        if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
+                            ige._timeSpentLastTick[arr[arrCount].id()] = {};
+                        }
+
+                        ige._timeSpentInTick[arr[arrCount].id()] += td;
+                        ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
+                    }
+                    ctx.restore();
+                }
+            }
+        } else {
+            while (arrCount--) {
+                if (!arr[arrCount]) {
+                    this.log("Object _children is undefined for index " + arrCount + " and _id: " + this._id, "error");
+                    continue;
+                }
+
+                if (!arr[arrCount]._newBorn) {
+                    ctx.save();
+                    arr[arrCount].tick(ctx);
+                    ctx.restore();
+                }
+            }
         }
     }
 
     _processTriggerHitTests() {
         let mp, mouseTriggerPoly;
 
-        if (this._ige._currentViewport) {
+        if (ige._currentViewport) {
             if (!this._mouseAlwaysInside) {
                 mp = this.mousePosWorld();
 
@@ -3115,11 +3097,11 @@ class IgeEntity extends IgeEventingClass {
                     ctx.translate(-this._bounds2d.x2, -this._bounds2d.y2);
                     ctx.rect(0, 0, this._bounds2d.x, this._bounds2d.y);
                     if (this._backgroundPatternTrackCamera) {
-                        ctx.translate(-this._ige._currentCamera._translate.x, -this._ige._currentCamera._translate.y);
-                        ctx.scale(this._ige._currentCamera._scale.x, this._ige._currentCamera._scale.y);
+                        ctx.translate(-ige._currentCamera._translate.x, -ige._currentCamera._translate.y);
+                        ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
                     }
                     ctx.fill();
-                    this._ige._drawCount++;
+                    ige._drawCount++;
 
                     if (this._backgroundPatternIsoTile) {
                         ctx.translate(
@@ -3127,7 +3109,7 @@ class IgeEntity extends IgeEventingClass {
                             -Math.floor(this._backgroundPattern.image.height / 2)
                         );
                         ctx.fill();
-                        this._ige._drawCount++;
+                        ige._drawCount++;
                     }
                 }
 
@@ -3139,7 +3121,7 @@ class IgeEntity extends IgeEventingClass {
 
         if (texture && texture._loaded) {
             // Draw the entity image
-            texture.render(ctx, this, this._ige._tickDelta);
+            texture.render(ctx, this, ige._tickDelta);
 
             if (this._highlight) {
                 ctx.save();
@@ -3149,7 +3131,7 @@ class IgeEntity extends IgeEventingClass {
             }
         }
 
-        if (this._compositeCache && this._ige._currentViewport._drawCompositeBounds) {
+        if (this._compositeCache && ige._currentViewport._drawCompositeBounds) {
             //console.log('moo');
             ctx.fillStyle = "rgba(0, 0, 255, 0.3)";
             ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
@@ -3174,7 +3156,7 @@ class IgeEntity extends IgeEventingClass {
 
             if (this._parent && this._parent._ignoreCamera) {
                 // Translate the entity back to negate the scene translate
-                const cam = this._ige._currentCamera;
+                const cam = ige._currentCamera;
                 //ctx.translate(-cam._translate.x, -cam._translate.y);
                 /*this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
 				this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
@@ -3186,7 +3168,7 @@ class IgeEntity extends IgeEventingClass {
         // as it is rendered (usually because of device pixel ratio related stuff)
         ctx.drawImage(this._cacheCanvas, -this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
 
-        if (this._ige._currentViewport._drawCompositeBounds) {
+        if (ige._currentViewport._drawCompositeBounds) {
             ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
             ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._cacheCanvas.width, this._cacheCanvas.height);
             ctx.fillStyle = "#ffffff";
@@ -3194,7 +3176,7 @@ class IgeEntity extends IgeEventingClass {
             ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
         }
 
-        this._ige._drawCount++;
+        ige._drawCount++;
         ctx.restore();
     }
 
@@ -3278,7 +3260,7 @@ class IgeEntity extends IgeEventingClass {
                         str += ".opacity(" + this.opacity() + ")";
                         break;
                     case "_texture":
-                        str += ".texture(this._ige.$('" + this.texture().id() + "'))";
+                        str += ".texture(ige.$('" + this.texture().id() + "'))";
                         break;
                     case "_cell":
                         str += ".cell(" + this.cell() + ")";
@@ -3367,8 +3349,27 @@ class IgeEntity extends IgeEventingClass {
          */
         this.emit("destroyed", this);
 
-        // Call IgeObject.destroy()
-        super.destroy();
+        // Remove ourselves from any parent
+        this.unMount();
+
+        // Remove any children
+        if (this._children) {
+            this.destroyChildren();
+        }
+
+        // Remove the object from the lookup system
+        ige.unRegister(this);
+
+        // Set a flag in case a reference to this object
+        // has been held somewhere, shows that the object
+        // should no longer be interacted with
+        this._alive = false;
+
+        // Remove the event listeners array in case any
+        // object references still exist there
+        delete this._eventListeners;
+
+        return this;
     }
 
     saveSpecialProp(obj, i) {
@@ -3391,7 +3392,7 @@ class IgeEntity extends IgeEventingClass {
     loadSpecialProp(obj, i) {
         switch (i) {
             case "_texture":
-                return { _texture: this._ige.$(obj[i]) };
+                return { _texture: ige.$(obj[i]) };
                 break;
 
             default:
@@ -3811,24 +3812,24 @@ class IgeEntity extends IgeEventingClass {
      * @private
      */
     _mouseInTrigger = (evc, data) => {
-        if (this._ige.input.mouseMove) {
+        if (ige.input.mouseMove) {
             // There is a mouse move event
-            this._handleMouseIn(this._ige.input.mouseMove, evc, data);
+            this._handleMouseIn(ige.input.mouseMove, evc, data);
         }
 
-        if (this._ige.input.mouseDown) {
+        if (ige.input.mouseDown) {
             // There is a mouse down event
-            this._handleMouseDown(this._ige.input.mouseDown, evc, data);
+            this._handleMouseDown(ige.input.mouseDown, evc, data);
         }
 
-        if (this._ige.input.mouseUp) {
+        if (ige.input.mouseUp) {
             // There is a mouse up event
-            this._handleMouseUp(this._ige.input.mouseUp, evc, data);
+            this._handleMouseUp(ige.input.mouseUp, evc, data);
         }
 
-        if (this._ige.input.mouseWheel) {
+        if (ige.input.mouseWheel) {
             // There is a mouse wheel event
-            this._handleMouseWheel(this._ige.input.mouseWheel, evc, data);
+            this._handleMouseWheel(ige.input.mouseWheel, evc, data);
         }
     };
 
@@ -3844,39 +3845,39 @@ class IgeEntity extends IgeEventingClass {
      * @returns {IgeEntity}
      */
     debugTransforms() {
-        this._ige.traceSet(this._translate, "x", 1, (val) => {
+        ige.traceSet(this._translate, "x", 1, (val) => {
             return isNaN(val);
         });
 
-        this._ige.traceSet(this._translate, "y", 1, (val) => {
+        ige.traceSet(this._translate, "y", 1, (val) => {
             return isNaN(val);
         });
 
-        this._ige.traceSet(this._translate, "z", 1, (val) => {
+        ige.traceSet(this._translate, "z", 1, (val) => {
             return isNaN(val);
         });
 
-        this._ige.traceSet(this._rotate, "x", 1, (val) => {
+        ige.traceSet(this._rotate, "x", 1, (val) => {
             return isNaN(val);
         });
 
-        this._ige.traceSet(this._rotate, "y", 1, (val) => {
+        ige.traceSet(this._rotate, "y", 1, (val) => {
             return isNaN(val);
         });
 
-        this._ige.traceSet(this._rotate, "z", 1, (val) => {
+        ige.traceSet(this._rotate, "z", 1, (val) => {
             return isNaN(val);
         });
 
-        this._ige.traceSet(this._scale, "x", 1, (val) => {
+        ige.traceSet(this._scale, "x", 1, (val) => {
             return isNaN(val);
         });
 
-        this._ige.traceSet(this._scale, "y", 1, (val) => {
+        ige.traceSet(this._scale, "y", 1, (val) => {
             return isNaN(val);
         });
 
-        this._ige.traceSet(this._scale, "z", 1, (val) => {
+        ige.traceSet(this._scale, "z", 1, (val) => {
             return isNaN(val);
         });
 
@@ -4097,7 +4098,7 @@ class IgeEntity extends IgeEventingClass {
      * @param {Number} y The y co-ordinate.
      * @param {Number} z The z co-ordinate.
      * @example #Rotate the entity by 10 degrees about the z axis
-     *     entity.rotateBy(0, 0, IgeBaseClass.degreesToRadians(10));
+     *     entity.rotateBy(0, 0, degreesToRadians(10));
      * @return {*}
      */
     rotateBy(x, y, z) {
@@ -4118,7 +4119,7 @@ class IgeEntity extends IgeEventingClass {
      * @param {Number} y The y co-ordinate.
      * @param {Number} z The z co-ordinate.
      * @example #Rotate the entity to 10 degrees about the z axis
-     *     entity.rotateTo(0, 0, IgeBaseClass.degreesToRadians(10));
+     *     entity.rotateTo(0, 0, degreesToRadians(10));
      * @return {*}
      */
     rotateTo(x, y, z) {
@@ -4136,7 +4137,7 @@ class IgeEntity extends IgeEventingClass {
     /**
      * Gets the translate accessor object.
      * @example #Use the rotate accessor object to rotate the entity about the z axis 10 degrees
-     *     entity.rotate().z(IgeBaseClass.degreesToRadians(10));
+     *     entity.rotate().z(degreesToRadians(10));
      * @return {*}
      */
     rotate(...args) {
@@ -4571,7 +4572,7 @@ class IgeEntity extends IgeEventingClass {
      */
     streamSectionsPull(sectionName) {
         if (this._streamSections) {
-            IgeBaseClass.pull(this._streamSections, sectionName);
+            arrPull(this._streamSections, sectionName);
         }
 
         return this;
@@ -4662,7 +4663,7 @@ class IgeEntity extends IgeEventingClass {
                         }
 
                         // Add it to the time stream
-                        this._timeStream.push([this._ige.network.stream._streamDataTime + this._ige.network._latency, dataArr]);
+                        this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
 
                         // Check stream length, don't allow higher than 10 items
                         if (this._timeStream.length > 10) {
@@ -4723,7 +4724,7 @@ class IgeEntity extends IgeEventingClass {
 
             case "depth":
                 if (data !== undefined) {
-                    if (this._ige.isClient) {
+                    if (ige.isClient) {
                         this.depth(parseInt(data));
                     }
                 } else {
@@ -4733,7 +4734,7 @@ class IgeEntity extends IgeEventingClass {
 
             case "layer":
                 if (data !== undefined) {
-                    if (this._ige.isClient) {
+                    if (ige.isClient) {
                         this.layer(parseInt(data));
                     }
                 } else {
@@ -4743,7 +4744,7 @@ class IgeEntity extends IgeEventingClass {
 
             case "bounds2d":
                 if (data !== undefined) {
-                    if (this._ige.isClient) {
+                    if (ige.isClient) {
                         var geom = data.split(",");
                         this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
                     }
@@ -4754,7 +4755,7 @@ class IgeEntity extends IgeEventingClass {
 
             case "bounds3d":
                 if (data !== undefined) {
-                    if (this._ige.isClient) {
+                    if (ige.isClient) {
                         var geom = data.split(",");
                         this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
                     }
@@ -4765,7 +4766,7 @@ class IgeEntity extends IgeEventingClass {
 
             case "hidden":
                 if (data !== undefined) {
-                    if (this._ige.isClient) {
+                    if (ige.isClient) {
                         if (data === "true") {
                             this.hide();
                         } else {
@@ -4779,9 +4780,9 @@ class IgeEntity extends IgeEventingClass {
 
             case "mount":
                 if (data !== undefined) {
-                    if (this._ige.isClient) {
+                    if (ige.isClient) {
                         if (data) {
-                            const newParent = this._ige.$(data);
+                            const newParent = ige.$(data);
 
                             if (newParent) {
                                 this.mount(newParent);
@@ -4804,7 +4805,7 @@ class IgeEntity extends IgeEventingClass {
 
             case "origin":
                 if (data !== undefined) {
-                    if (this._ige.isClient) {
+                    if (ige.isClient) {
                         var geom = data.split(",");
                         this.origin(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
                     }
@@ -4817,7 +4818,7 @@ class IgeEntity extends IgeEventingClass {
                 var newData, changed, i;
 
                 if (data !== undefined) {
-                    if (this._ige.isClient) {
+                    if (ige.isClient) {
                         const props = JSON.parse(data);
 
                         // Update properties that have been sent through
@@ -4867,7 +4868,7 @@ class IgeEntity extends IgeEventingClass {
      */
     streamMode(val) {
         if (val !== undefined) {
-            if (this._ige.isServer) {
+            if (ige.isServer) {
                 this._streamMode = val;
             }
             return this;
@@ -5001,7 +5002,7 @@ class IgeEntity extends IgeEventingClass {
         if (this._streamMode === 1) {
             // Check if we have a stream sync interval
             if (this._streamSyncInterval) {
-                this._streamSyncDelta += this._ige._tickDelta;
+                this._streamSyncDelta += ige._tickDelta;
 
                 if (this._streamSyncDelta < this._streamSyncInterval) {
                     // The stream sync interval is still higher than
@@ -5018,7 +5019,7 @@ class IgeEntity extends IgeEventingClass {
             // Grab an array of connected clients from the network
             // system
             let recipientArr = [],
-                clientArr = this._ige.network.clients(this._streamRoomId),
+                clientArr = ige.network.clients(this._streamRoomId),
                 i;
 
             for (i in clientArr) {
@@ -5106,7 +5107,7 @@ class IgeEntity extends IgeEventingClass {
         let arrCount = recipientArr.length,
             arrIndex,
             clientId,
-            { stream } = this._ige.network,
+            { stream } = ige.network,
             thisId = this.id(),
             filteredArr = [],
             createResult = true; // We set this to true by default
@@ -5156,18 +5157,18 @@ class IgeEntity extends IgeEventingClass {
      * @returns {*}
      */
     streamForceUpdate() {
-        if (this._ige.isServer) {
+        if (ige.isServer) {
             const thisId = this.id();
 
             // Invalidate the stream client data lookup to ensure
             // the latest data will be pushed on the next stream sync
             if (
-                this._ige.network &&
-                this._ige.network.stream &&
-                this._ige.network.stream._streamClientData &&
-                this._ige.network.stream._streamClientData[thisId]
+                ige.network &&
+                ige.network.stream &&
+                ige.network.stream._streamClientData &&
+                ige.network.stream._streamClientData[thisId]
             ) {
-                this._ige.network.stream._streamClientData[thisId] = {};
+                ige.network.stream._streamClientData[thisId] = {};
             }
         }
 
@@ -5196,25 +5197,25 @@ class IgeEntity extends IgeEventingClass {
                 i;
 
             // Send the client an entity create command first
-            this._ige.network.send(
+            ige.network.send(
                 "_igeStreamCreate",
                 [this.classId, thisId, this._parent.id(), this.streamSectionData("transform"), this.streamCreateData()],
                 clientId
             );
 
-            this._ige.network.stream._streamClientCreated[thisId] = this._ige.network.stream._streamClientCreated[thisId] || {};
+            ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
 
             if (clientId) {
                 // Mark the client as having received a create
                 // command for this entity
-                this._ige.network.stream._streamClientCreated[thisId][clientId] = true;
+                ige.network.stream._streamClientCreated[thisId][clientId] = true;
             } else {
                 // Mark all clients as having received this create
-                arr = this._ige.network.clients();
+                arr = ige.network.clients();
 
                 for (i in arr) {
                     if (arr.hasOwnProperty(i)) {
-                        this._ige.network.stream._streamClientCreated[thisId][i] = true;
+                        ige.network.stream._streamClientCreated[thisId][i] = true;
                     }
                 }
             }
@@ -5240,30 +5241,30 @@ class IgeEntity extends IgeEventingClass {
      *     entity.streamDestroy('43245325');
      * @return {Boolean}
      */
-    streamDestroy(clientId) {
+    streamDestroy(clientId?: string) {
         let thisId = this.id(),
             arr,
             i;
 
         // Send clients the stream destroy command for this entity
-        this._ige.network.send("_igeStreamDestroy", [this._ige._currentTime, thisId], clientId);
+        ige.network.send("_igeStreamDestroy", [ige._currentTime, thisId], clientId);
 
-        this._ige.network.stream._streamClientCreated[thisId] = this._ige.network.stream._streamClientCreated[thisId] || {};
-        this._ige.network.stream._streamClientData[thisId] = this._ige.network.stream._streamClientData[thisId] || {};
+        ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
+        ige.network.stream._streamClientData[thisId] = ige.network.stream._streamClientData[thisId] || {};
 
         if (clientId) {
             // Mark the client as having received a destroy
             // command for this entity
-            this._ige.network.stream._streamClientCreated[thisId][clientId] = false;
-            this._ige.network.stream._streamClientData[thisId][clientId] = undefined;
+            ige.network.stream._streamClientCreated[thisId][clientId] = false;
+            ige.network.stream._streamClientData[thisId][clientId] = undefined;
         } else {
             // Mark all clients as having received this destroy
-            arr = this._ige.network.clients();
+            arr = ige.network.clients();
 
             for (i in arr) {
                 if (arr.hasOwnProperty(i)) {
-                    this._ige.network.stream._streamClientCreated[thisId][i] = false;
-                    this._ige.network.stream._streamClientData[thisId][i] = undefined;
+                    ige.network.stream._streamClientCreated[thisId][i] = false;
+                    ige.network.stream._streamClientData[thisId][i] = undefined;
                 }
             }
         }
@@ -5313,7 +5314,7 @@ class IgeEntity extends IgeEventingClass {
                     // not that important compared to updated transformation data
                     if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
                         // Check if the section interval has been reached
-                        this._streamSyncSectionDelta[sectionId] += this._ige._tickDelta;
+                        this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
 
                         if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
                             // Get the section data for this section id
@@ -5331,7 +5332,7 @@ class IgeEntity extends IgeEventingClass {
                     // regardless of if there is actually any section data because
                     // we want to be able to identify sections in a serial fashion
                     // on receipt of the data string on the client
-                    sectionDataString += this._ige.network.stream._sectionDesignator;
+                    sectionDataString += ige.network.stream._sectionDesignator;
 
                     // Check if we were returned any data
                     if (sectionData !== undefined) {

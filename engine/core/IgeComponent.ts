@@ -1,13 +1,17 @@
-import IgeEventingClass from "./IgeEventingClass";
-import type Ige from "./Ige";
+import WithComponentMixin from "engine/mixins/IgeComponentMixin";
+import IgeBaseClass from "./IgeBaseClass";
 
-class IgeComponent extends IgeEventingClass {
+class IgeComponent extends IgeBaseClass {
 	static componentTargetClass?: string;
 	componentId: string = "IgeComponent";
 	destroy?: () => void;
+	_options?: any;
+	_entity: typeof WithComponentMixin;
 
-	constructor(ige: Ige, parent?: any, options?: any) {
-		super(ige);
+	constructor(parent: typeof WithComponentMixin, options?: any) {
+		super();
+		this._entity = parent;
+		this._options = options;
 	}
 }
 

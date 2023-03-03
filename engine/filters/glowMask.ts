@@ -1,5 +1,5 @@
 import { IgeSmartFilter } from "../../types/IgeSmartFilter";
-import igeFilters from "../../services/igeFilters";
+import igeFilters from "../services/igeFilters";
 import { convoluteHelper } from "./convolute";
 
 export const glowMask: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {

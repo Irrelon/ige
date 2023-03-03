@@ -4,19 +4,19 @@ import Ige from "../../engine/core/Ige";
 export class Game extends IgeBaseClass {
     classId = "Game";
 
-    constructor(App: new (ige: Ige, ...args: any[]) => IgeBaseClass, options?: any) {
+    constructor(App: new (...args: any[]) => IgeBaseClass, options?: any) {
+        // Init the super class
+        super();
+
         // Create the engine
         const ige = new Ige();
 
-        // Init the super class
-        super(ige);
-
-        if (this._ige.isClient) {
-            this._ige.client = new App(ige);
+        if (ige.isClient) {
+            ige.client = new App();
         }
 
-        if (this._ige.isServer) {
-            this._ige.server = new App(ige, options);
+        if (ige.isServer) {
+            ige.server = new App(options);
         }
     }
 }

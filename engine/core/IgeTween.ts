@@ -1,12 +1,49 @@
+import {
+	easingFunctions
+} from "../services/easing";
+import {arrPull} from "../services/utils";
 import IgeBaseClass from "./IgeBaseClass";
+import Ige from "./Ige";
+
+export interface IgeTweenStep {
+	props: Record<string, any>;
+	durationMs?: number;
+	easing?: string;
+	isDelta?: boolean;
+}
+
+export type IgeTweenPropertyObject = Record<string, number>;
+
+export interface IgeTweenOptions {
+	easing: string;
+	startTime: number;
+	beforeTween: (...args: any[]) => void;
+	afterTween: (...args: any[]) => void;
+}
 
 /**
  * Creates a new tween instance.
  */
 class IgeTween extends IgeBaseClass {
 	classId = "IgeTween";
+	_steps: IgeTweenStep[];
+	_targetObj: any;
+	_currentStep: number;
+	_startTime: number = 0;
+	_started: boolean;
+	_durationMs: number;
+	_stepDirection: boolean;
+	_repeatMode: number = 0;
+	_repeatCount: number = 0;
+	_repeatedCount: number = 0;
+	_easing?: string;
+	_beforeTween?: (...args: any[]) => void;
+	_afterTween?: (...args: any[]) => void;
+	_beforeStep?: (...args: any[]) => void;
+	_afterStep?: (...args: any[]) => void;
+	_afterChange?: (...args: any[]) => void;
 
-	constructor (ige, targetObj, propertyObj, durationMs, options) {
+	constructor (ige: Ige, targetObj?: any, propertyObj?: IgeTweenPropertyObject, durationMs?: number, options?: IgeTweenOptions) {
 		super(ige);
 
 		// Create a new tween object and return it
@@ -33,7 +70,7 @@ class IgeTween extends IgeBaseClass {
 	 * @param targetObj
 	 * @return {*}
 	 */
-	targetObj (targetObj) {
+	targetObj (targetObj: any) {
 		if (targetObj !== undefined) {
 			this._targetObj = targetObj;
 		}
@@ -46,7 +83,7 @@ class IgeTween extends IgeBaseClass {
 	 * @param propertyObj
 	 * @return {*}
 	 */
-	properties (propertyObj) {
+	properties (propertyObj: IgeTweenPropertyObject) {
 		if (propertyObj !== undefined) {
 			// Reset any existing steps and add this new one
 			this._steps = [];
@@ -68,7 +105,7 @@ class IgeTween extends IgeBaseClass {
 	 * @param count
 	 * @return {*}
 	 */
-	repeatMode (val, count) {
+	repeatMode (val?: number, count?: number) {
 		if (val !== undefined) {
 			this._repeatMode = val;
 			this.repeatCount(count);
@@ -88,7 +125,7 @@ class IgeTween extends IgeBaseClass {
 	 * @param val
 	 * @return {*}
 	 */
-	repeatCount (val) {
+	repeatCount (val?: number) {
 		if (val !== undefined) {
 			this._repeatCount = val;
 			this._repeatedCount = 0;
@@ -96,15 +133,6 @@ class IgeTween extends IgeBaseClass {
 		}
 
 		return this._repeatCount;
-	}
-
-	/**
-	 * DEPRECIATED, Renamed to stepTo().
-	 */
-	step (propertyObj, durationMs, easing) {
-		this.log("The step method has been renamed to stepTo(). Please update your code as the step() method will soon be removed.", "warning");
-		this.stepTo(propertyObj, durationMs, easing);
-		return this;
 	}
 
 	/**
@@ -121,7 +149,7 @@ class IgeTween extends IgeBaseClass {
 	 * delta values instead of absolute values as the destination.
 	 * @return {*} this for chaining.
 	 */
-	stepTo (propertyObj, durationMs, easing, delta) {
+	stepTo (propertyObj: IgeTweenPropertyObject, durationMs?: number, easing?: string, delta?: boolean) {
 		if (propertyObj !== undefined) {
 			// Check if we have already been given a standard
 			// non-staged property
@@ -148,7 +176,7 @@ class IgeTween extends IgeBaseClass {
 	 * to use during this step.
 	 * @return {*}
 	 */
-	stepBy (propertyObj, durationMs, easing) {
+	stepBy (propertyObj: IgeTweenPropertyObject, durationMs: number, easing: string) {
 		this.stepTo(
 			propertyObj,
 			durationMs,
@@ -164,7 +192,7 @@ class IgeTween extends IgeBaseClass {
 	 * @param durationMs
 	 * @return {*}
 	 */
-	duration (durationMs) {
+	duration (durationMs?: number) {
 		if (durationMs !== undefined) {
 			this._durationMs = durationMs;
 		}
@@ -177,7 +205,7 @@ class IgeTween extends IgeBaseClass {
 	 * @param callback
 	 * @return {*}
 	 */
-	beforeTween (callback) {
+	beforeTween (callback?: (...args: any[]) => void) {
 		if (callback !== undefined) {
 			this._beforeTween = callback;
 		}
@@ -190,7 +218,7 @@ class IgeTween extends IgeBaseClass {
 	 * @param callback
 	 * @return {*}
 	 */
-	afterTween (callback) {
+	afterTween (callback?: (...args: any[]) => void) {
 		if (callback !== undefined) {
 			this._afterTween = callback;
 		}
@@ -204,7 +232,7 @@ class IgeTween extends IgeBaseClass {
 	 * @param callback
 	 * @return {*}
 	 */
-	beforeStep (callback) {
+	beforeStep (callback?: (...args: any[]) => void) {
 		if (callback !== undefined) {
 			this._beforeStep = callback;
 		}
@@ -218,7 +246,7 @@ class IgeTween extends IgeBaseClass {
 	 * @param callback
 	 * @return {*}
 	 */
-	afterStep (callback) {
+	afterStep (callback?: (...args: any[]) => void) {
 		if (callback !== undefined) {
 			this._afterStep = callback;
 		}
@@ -232,7 +260,7 @@ class IgeTween extends IgeBaseClass {
 	 * @param callback
 	 * @return {*}
 	 */
-	afterChange (callback) {
+	afterChange (callback?: (...args: any[]) => void) {
 		if (callback !== undefined) {
 			this._afterChange = callback;
 		}
@@ -253,9 +281,9 @@ class IgeTween extends IgeBaseClass {
 	 * @param methodName
 	 * @return {*}
 	 */
-	easing (methodName) {
+	easing (methodName: string) {
 		if (methodName !== undefined) {
-			if (this._ige.tween.easing[methodName]) {
+			if (easingFunctions[methodName]) {
 				this._easing = methodName;
 			} else {
 				this.log("The easing method you have selected does not exist, please use a valid easing method. For a list of easing methods please inspect ige.tween.easing from your console.", "error", this._ige.tween.easing);
@@ -270,7 +298,7 @@ class IgeTween extends IgeBaseClass {
 	 * @param timeMs
 	 * @return {*}
 	 */
-	startTime (timeMs) {
+	startTime (timeMs: number) {
 		if (timeMs !== undefined) {
 			this._startTime = timeMs;
 		}
@@ -283,12 +311,12 @@ class IgeTween extends IgeBaseClass {
 	 * @param {Number=} timeMs If set, the tween will start this
 	 * many milliseconds in the future.
 	 */
-	start (timeMs) {
+	start (timeMs?: number) {
 		if (timeMs !== undefined) {
 			this.startTime(timeMs + this._ige._currentTime);
 		}
 
-		this._ige.tween.start(this);
+		this._ige.components.tween.start(this);
 
 		// Add the tween to the target object's tween array
 		this._targetObj._tweenArr = this._targetObj._tweenArr || [];
@@ -301,9 +329,9 @@ class IgeTween extends IgeBaseClass {
 	 * Stops the tweening operation.
 	 */
 	stop () {
-		this._ige.tween.stop(this);
+		this._ige.components.tween.stop(this);
 		if (this._targetObj._tweenArr) {
-			IgeBaseClass.pull(this._targetObj._tweenArr, this);
+			arrPull(this._targetObj._tweenArr, this);
 		}
 
 		return this;
@@ -315,7 +343,7 @@ class IgeTween extends IgeBaseClass {
 	 */
 	startAll () {
 		if (this._targetObj._tweenArr) {
-			this._targetObj._tweenArr.eachReverse((tweenItem) => {
+			this._targetObj._tweenArr.eachReverse((tweenItem: IgeTween) => {
 				tweenItem.start();
 			});
 		}
@@ -329,7 +357,7 @@ class IgeTween extends IgeBaseClass {
 	 */
 	stopAll () {
 		if (this._targetObj._tweenArr) {
-			this._targetObj._tweenArr.eachReverse((tweenItem) => {
+			this._targetObj._tweenArr.eachReverse((tweenItem: IgeTween) => {
 				tweenItem.stop();
 			});
 		}
@@ -349,7 +377,7 @@ class IgeTween extends IgeBaseClass {
  * @param {Object=} [options]
  * @return {IgeTween} A new IgeTween instance.
  */
-export const createTween = (ige, target, props, durationMs, options) => {
+export const createTween = (ige: Ige, target: any, props: IgeTweenPropertyObject, durationMs: number, options?: IgeTweenOptions) => {
 	const newTween = new IgeTween(ige)
 		.targetObj(target)
 		.properties(props)

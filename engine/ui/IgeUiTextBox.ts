@@ -3,8 +3,8 @@
  * capture keyboard input and display it, similar in usage to the HTML input
  * text element.
  */
-import IgeUiElement from "../src/IgeUiElement";
-import IgeFontEntity from "../src/IgeFontEntity";
+import IgeUiElement from "../core/IgeUiElement";
+import IgeFontEntity from "../core/IgeFontEntity";
 
 //TODO: Make cursor a text entry cursor on hover
 class IgeUiTextBox extends IgeUiElement {

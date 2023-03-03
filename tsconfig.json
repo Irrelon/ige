@@ -15,11 +15,17 @@
         "noEmit": false,
         "incremental": true,
         "esModuleInterop": true,
-        "module": "esnext",
+        "module": "es2022",
         "moduleResolution": "node",
         "resolveJsonModule": true,
         "isolatedModules": true,
         "jsx": "preserve",
+        "plugins": [
+            {
+                "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
+                "after": true,
+            }
+        ]
     },
     "include": ["**/*.d.ts", "**/*.ts", "**/*.tsx"],
     "exclude": ["node_modules"]

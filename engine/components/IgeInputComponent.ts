@@ -1,8 +1,10 @@
 import IgePoint3d from "../core/IgePoint3d";
 import IgeComponent from "../core/IgeComponent";
-import IgeEntity from "../core/IgeEntity";
 import Ige from "../core/Ige";
 import IgeViewport from "../core/IgeViewport";
+import IgeBaseClass from "../core/IgeBaseClass";
+import WithEventingMixin from "../mixins/IgeEventingMixin";
+import {ige} from "../instance";
 
 export interface IgeInputMouseInterface {
 	"dblClick": number;
@@ -114,13 +116,10 @@ export interface IgeInputEventControl {
 	stopPropagation: () => void;
 }
 
-class IgeInputComponent extends IgeComponent {
+class IgeInputComponent extends WithEventingMixin(IgeComponent) {
 	static componentTargetClass = "Ige";
 	classId = "IgeInputComponent";
 	componentId = "input";
-
-	_ige: Ige;
-	_entity: IgeEntity;
 	_eventQueue: [((evc: IgeInputEventControl, eventData?: any) => void), any][];
 	_eventControl: IgeInputEventControl;
 	_evRef: Record<string, (event: any) => void> = {};
@@ -138,13 +137,10 @@ class IgeInputComponent extends IgeComponent {
 	mouseWheel: boolean | Event = false;
 	contextMenu: boolean | Event = false;
 
-	constructor(ige: Ige, entity: IgeEntity) {
-		super(ige);
+	constructor (entity: IgeBaseClass, options?: any) {
+		super(entity, options);
 
-		this._ige = ige;
-		this._entity = entity;
-
-		// Setup the input objects to hold the current input state
+		// Set up the input objects to hold the current input state
 		this._eventQueue = [];
 		this._eventControl = {
 			"_cancelled": false,
@@ -307,7 +303,7 @@ class IgeInputComponent extends IgeComponent {
 		this._state[this.mouse.x] = 0;
 		this._state[this.mouse.y] = 0;
 
-		// Ask the input component to setup any listeners it has
+		// Ask the input component to set up any listeners it has
 		this.setupListeners(ige._canvas);
 	}
 
@@ -325,7 +321,12 @@ class IgeInputComponent extends IgeComponent {
 	 * buffer DOM objects.
 	 * @private
 	 */
-	setupListeners = (canvas: HTMLCanvasElement) => {
+	setupListeners = (canvas?: HTMLCanvasElement) => {
+		if (!canvas) {
+			this.log("Cannot set up input event listeners - no canvas was supplied");
+			return;
+		}
+
 		this.log("Setting up input event listeners...");
 
 		// Define event functions and keep references for later removal
@@ -403,7 +404,7 @@ class IgeInputComponent extends IgeComponent {
 		window.removeEventListener("keyup", this._evRef.keyup, false);
 
 		// Get the canvas element
-		const canvas = this._ige?._canvas;
+		const canvas = ige?._canvas;
 		if (!canvas) return;
 
 		// Mouse events
@@ -491,8 +492,8 @@ class IgeInputComponent extends IgeComponent {
 			event.igePageY = event.pageY;
 		}
 
-		if (this._ige) {
-			const canvasPosition = this._ige._canvasPosition();
+		if (ige) {
+			const canvasPosition = ige._canvasPosition();
 			event.igeX = (event.igePageX - canvasPosition.left);
 			event.igeY = (event.igePageY - canvasPosition.top);
 		}
@@ -614,7 +615,7 @@ class IgeInputComponent extends IgeComponent {
 	 */
 	_mouseMove = (event: MouseEvent | TouchEvent) => {
 		// Update the mouse position within the viewports
-		this._ige._mouseOverVp = this._updateMouseData(event);
+		ige._mouseOverVp = this._updateMouseData(event);
 
 		const mx = event.igeX - this._entity._bounds2d.x2;
 		const my = event.igeY - this._entity._bounds2d.y2;
@@ -723,8 +724,8 @@ class IgeInputComponent extends IgeComponent {
 		let vp;
 		let vpUpdated;
 
-		this._ige._mousePos.x = mx;
-		this._ige._mousePos.y = my;
+		ige._mousePos.x = mx;
+		ige._mousePos.y = my;
 
 		while (arrCount--) {
 			vp = arr[arr.length - (arrCount + 1)];

@@ -1,6 +1,7 @@
 import IgeUiEntity from "./IgeUiEntity";
 import IgeTween from "./IgeTween";
 import IgeBaseClass from "./IgeBaseClass";
+import { degreesToRadians } from "engine/services/utils";
 
 /**
  * Creates a new particle emitter.
@@ -600,7 +601,7 @@ class IgeParticleEmitter extends IgeUiEntity {
 							// entity definition because some components may already
 							// have initialised due to the particle template
 							tempParticle.translateTo(translateX, translateY, translateZ);
-							tempParticle.rotateTo(0, 0, IgeBaseClass.degreesToRadians(rotate));
+							tempParticle.rotateTo(0, 0, degreesToRadians(rotate));
 							tempParticle.scaleTo(scaleX, scaleY, scaleZ);
 							tempParticle.opacity(opacity);
 
@@ -619,7 +620,7 @@ class IgeParticleEmitter extends IgeUiEntity {
 							if (typeof (deathRotate) !== "undefined") {
 								tweens.push(new IgeTween(this._ige)
 									.targetObj(tempParticle._rotate)
-									.properties({"z": IgeBaseClass.degreesToRadians(deathRotate)})
+									.properties({"z": degreesToRadians(deathRotate)})
 									.duration(life));
 							}
 							if (typeof (deathOpacity) !== "undefined") {

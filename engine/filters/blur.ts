@@ -1,5 +1,5 @@
 import { IgeSmartFilter } from "../../types/IgeSmartFilter";
-import igeFilters from "../../services/igeFilters";
+import igeFilters from "../services/igeFilters";
 
 export const blur: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
     const oneNinth = 1 / 9;

@@ -1,4 +1,4 @@
-import IgeUiElement from "../src/IgeUiElement";
+import IgeUiElement from "../core/IgeUiElement";
 
 class IgeUiButton extends IgeUiElement {
 	classId = "IgeUiButton";

@@ -1,4 +1,4 @@
-import IgeUiElement from "../src/IgeUiElement";
+import IgeUiElement from "../core/IgeUiElement";
 
 class IgeUiGridPanel extends IgeUiElement {
 	classId = "IgeUiGridPanel";

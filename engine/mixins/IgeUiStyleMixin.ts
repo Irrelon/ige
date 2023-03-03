@@ -1,6 +1,6 @@
 // TODO: Add "overflow" with automatic scroll-bars
-import {Mixin} from "../../types/Mixin";
-import IgeEntity from "../core/IgeEntity";
+import type {Mixin} from "../../types/Mixin";
+import type IgeEntity from "../core/IgeEntity";
 
 const WithUiStyleMixin = <T extends Mixin<IgeEntity>>(Base: T) => class extends Base {
 	/**

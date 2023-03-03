@@ -1,4 +1,4 @@
-import IgeEventingClass from "../../src/IgeEventingClass";
+import IgeEventingClass from "../../core/IgeEventingClass";
 
 /**
  * When added to a viewport, automatically adds entity rotate

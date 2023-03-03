@@ -1,5 +1,5 @@
 // TODO: Document this class
-import IgeUiElement from "../src/IgeUiElement";
+import IgeUiElement from "../core/IgeUiElement";
 
 class IgeUiProgressBar extends IgeUiElement {
 	classId = "IgeUiProgressBar";

@@ -1,6 +1,7 @@
 import IgeEntity from "./IgeEntity";
 import IgeVelocityComponent from "../components/IgeVelocityComponent";
 import IgeBaseClass from "./IgeBaseClass";
+import {arrPull} from "../services/utils";
 
 class IgeParticle extends IgeEntity {
 	classId = "IgeParticle";
@@ -16,7 +17,7 @@ class IgeParticle extends IgeEntity {
 	destroy () {
 		// Remove ourselves from the emitter
 		if (this._emitter !== undefined) {
-			IgeBaseClass.pull(this._emitter._particles, this);
+			arrPull(this._emitter._particles, this);
 		}
 
 		super.destroy();

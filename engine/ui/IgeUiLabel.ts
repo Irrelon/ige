@@ -1,8 +1,8 @@
 /**
  * Provides a UI label entity. Basic on-screen text label.
  */
-import IgeUiElement from "../src/IgeUiElement";
-import IgeFontEntity from "../src/IgeFontEntity";
+import IgeUiElement from "../core/IgeUiElement";
+import IgeFontEntity from "../core/IgeFontEntity";
 
 class IgeUiLabel extends IgeUiElement {
 	classId = "IgeUiLabel";

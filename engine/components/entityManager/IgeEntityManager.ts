@@ -1,5 +1,6 @@
-import IgeEventingClass from "../../src/IgeEventingClass";
-import IgeBaseClass from "../../src/IgeBaseClass";
+import IgeEventingClass from "../../core/IgeEventingClass";
+import IgeBaseClass from "../../core/IgeBaseClass";
+import {arrPull} from "../../services/utils";
 
 class IgeEntityManager extends IgeEventingClass {
 	classId = "IgeEntityManager";
@@ -182,7 +183,7 @@ class IgeEntityManager extends IgeEventingClass {
 		while (arrCount--) {
 			item = arr[arrCount];
 
-			IgeBaseClass.pull(this._entity._orphans, item);
+			arrPull(this._entity._orphans, item);
 			item.mount(this._entity);
 		}
 

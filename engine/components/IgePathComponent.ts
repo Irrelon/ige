@@ -1,15 +1,19 @@
-import IgeEventingClass from "../src/IgeEventingClass";
-import IgeBaseClass from "../src/IgeBaseClass";
+import IgeEventingClass from "../core/IgeEventingClass";
+import IgeBaseClass from "../core/IgeBaseClass";
+import {distance} from "../services/utils";
+import IgeComponent from "../core/IgeComponent";
+import IgeBaseClass from "../core/IgeBaseClass";
 
 /**
  * Handles entity path traversal.
  */
-class IgePathComponent extends IgeEventingClass {
+class IgePathComponent extends IgeComponent {
 	classId = "IgePathComponent";
 	componentId = "path";
 
-	init = (entity, options) => {
-		this._entity = entity;
+	constructor (entity: IgeBaseClass, options?: any) {
+		super(entity, options);
+
 		this._points = [];
 		this._speed = 1 / 1000;
 
@@ -795,7 +799,7 @@ class IgePathComponent extends IgeEventingClass {
 		for (i = 1; i < this._points.length; i++) {
 			pointFrom = this._points[i - 1];
 			pointTo = this._points[i];
-			pointFrom._distanceToNext = IgeBaseClass.distance(pointFrom.x, pointFrom.y, pointTo.x, pointTo.y);
+			pointFrom._distanceToNext = distance(pointFrom.x, pointFrom.y, pointTo.x, pointTo.y);
 
 			totalDistance += Math.abs(pointFrom._distanceToNext);
 

@@ -1,15 +1,14 @@
 // TODO: Doc this class!
-import IgeBaseClass from "../src/IgeBaseClass";
-import IgePoint3d from "../src/IgePoint3d";
+import IgeBaseClass from "../core/IgeBaseClass";
+import IgePoint3d from "../core/IgePoint3d";
+import IgeBaseClass from "../core/IgeBaseClass";
 
 class IgeVelocityComponent extends IgeBaseClass {
 	classId = "IgeVelocityComponent";
 	componentId = "velocity";
 
-	constructor (ige, entity, options) {
-		super(ige);
-
-		this._entity = entity;
+	constructor (entity: IgeBaseClass, options?: any) {
+		super(entity, options);
 
 		this._velocity = new IgePoint3d(0, 0, 0);
 		this._friction = new IgePoint3d(1, 1, 1);
