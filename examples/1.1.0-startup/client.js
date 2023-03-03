@@ -13,16 +13,16 @@ export class Client extends IgeBaseClass {
         this.classId = "Client";
         // Load our textures
         const obj = [];
-        // Load the fairy texture and store it in the gameTexture object
-        const gameTexture = {};
-        gameTexture.fairy = new IgeTexture("./assets/textures/sprites/fairy.png");
-        // Load a smart texture
-        gameTexture.simpleBox = new IgeTexture(simpleBox);
+        // Load the fairy texture and simpleBox smart texture
+        const gameTexture = {
+            fairy: new IgeTexture("./assets/textures/sprites/fairy.png"),
+            simpleBox: new IgeTexture(simpleBox)
+        };
         // Wait for our textures to load before continuing
         ige.on("texturesLoaded", function () {
             // Create the HTML canvas
-            ige.createRoot();
             ige.createFrontBuffer(true);
+            ige.createRoot();
             // Start the engine
             ige.start(function (success) {
                 // Check if the engine started successfully

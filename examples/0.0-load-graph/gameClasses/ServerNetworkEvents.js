@@ -1,5 +1,7 @@
+"use strict";
 var ServerNetworkEvents = {
-	example: function (data, socket) {}
+    example: function (data, socket) { }
 };
-
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = ServerNetworkEvents; }
+if (typeof (module) !== 'undefined' && typeof (module.exports) !== 'undefined') {
+    module.exports = ServerNetworkEvents;
+}

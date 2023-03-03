@@ -16,7 +16,7 @@ export class Client extends IgeBaseClass {
 		super();
 
 		// Load our textures
-		const obj: IgeTexture[] = [];
+		const obj: IgeBaseClass[] = [];
 
 		// Load the fairy texture and simpleBox smart texture
 		const gameTexture: Record<string, IgeTexture> = {
