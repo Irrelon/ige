@@ -5,14 +5,20 @@ import IgePoly2d from "./IgePoly2d";
 import IgeDummyCanvas from "./IgeDummyCanvas";
 import IgeRect from "./IgeRect";
 import IgeDummyContext from "./IgeDummyContext";
-import IgeViewport from "./IgeViewport";
 import igeConfig from "./config";
-import IgeTexture from "./IgeTexture";
 import WithEventingMixin from "../mixins/IgeEventingMixin";
 import { arrPull, degreesToRadians, toIso } from "../services/utils";
 import IgeBaseClass from "./IgeBaseClass";
 import { ige } from "../instance";
-import { IgeDepthSortObject } from "../../types/IgeDepthSortObject";
+
+import type IgeViewport from "./IgeViewport";
+import type IgeTexture from "./IgeTexture";
+import type { IgeDepthSortObject } from "../../types/IgeDepthSortObject";
+import type { IgeSmartTexture } from "../../types/IgeSmartTexture";
+import type {
+	IgeTimeStreamPacket,
+	IgeTimeStreamParsedTransformData
+} from "../../types/IgeTimeStream";
 
 /**
  * Creates an entity and handles the entity's life cycle and
@@ -31,7 +37,8 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	_layer = 0;
 	_depth = 0;
 	_depthSortMode = 0;
-	_timeStream = [];
+	_category?: string;
+	_timeStream: IgeTimeStreamPacket[] = [];
 	_inView = true;
 	_managed = 1;
 	_drawBounds: boolean = false;
@@ -77,7 +84,16 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	_streamMode?: number;
 	_streamDataCache?: boolean;
 	_indestructible: boolean = false;
-	_deathCallBack?: (...args: any[]) => void;
+	_shouldRender?: boolean = true;
+	_noAabb?: boolean;
+	_smartBackground?: IgeSmartTexture;
+	_lastUpdate?: number;
+	_timeStreamCurrentInterpolateTime?: number;
+	_timeStreamDataDelta?: number;
+	_timeStreamOffsetDelta?: number;
+	_timeStreamPreviousData?: IgeTimeStreamPacket;
+	_timeStreamNextData?: IgeTimeStreamPacket;
+	_deathCallBack?: (...args: any[]) => void; // TODO: Rename this to _deathCallback (lower case B)
 	_sortChildren: (comparatorFunction: (a: IgeEntity, b: IgeEntity) => number) => void;
 
 	constructor () {
@@ -216,6 +232,63 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 			this._id = ige.newIdHex();
 			ige.register(this);
 		}
+	}
+
+	/**
+	 * Gets / sets the arbitrary category name that the object belongs to.
+	 * @param {String=} val
+	 * @example #Get the category of an entity
+	 *     var entity = new IgeEntity();
+	 *     console.log(entity.category());
+	 * @example #Set the category of an entity
+	 *     var entity = new IgeEntity();
+	 *     entity.category('myNewCategory');
+	 * @example #Set the category of an entity via chaining
+	 *     var entity = new IgeEntity()
+	 *         .category('myNewCategory');
+	 * @example #Get all the entities belonging to a category
+	 *     var entityArray = ige.$$('categoryName');
+	 * @example #Remove the category of an entity
+	 *     // Set category to some name
+	 *     var entity = new IgeEntity()
+	 *         .category('myCategory');
+	 *
+	 *     // Will output "myCategory"
+	 *     console.log(entity.category());
+	 *
+	 *     // Now remove the category
+	 *     entity.category('');
+	 *
+	 *     // Will return ""
+	 *     console.log(entity.category());
+	 * @return {*}
+	 */
+	category (): string | undefined;
+	category (val: string): this;
+	category (val?: string) {
+		if (val === undefined) {
+			return this._category;
+		}
+
+		// Check if we already have a category
+		if (this._category) {
+			// Check if the category being assigned is different from
+			// the current one
+			if (this._category !== val) {
+				// The category is different so remove this object
+				// from the current category association
+				ige.categoryUnRegister(this);
+			}
+		}
+
+		this._category = val;
+
+		// Check the category is not a blank string
+		if (val) {
+			// Now register this object with the category it has been assigned
+			ige.categoryRegister(this);
+		}
+		return this;
 	}
 
 	/**
@@ -544,14 +617,12 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 		}
 
 		// Loop all children and clone them, then return cloned version of ourselves
-		const newObject = eval(this.stringify(options));
-
-		return newObject;
+		return eval(this.stringify(options));
 	}
 
 	/**
 	 * Gets / sets the indestructible flag. If set to true, the object will
-	 * not be destroyed even if a call to the destroy() method is made.
+	 * not be destroyed even if a call to destroy() method is made.
 	 * @param {Number=} val
 	 * @example #Set an entity to indestructible
 	 *     var entity = new IgeEntity()
@@ -1091,7 +1162,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @param event
 	 * @private
 	 */
-	_resizeEvent (event: Event) {
+	_resizeEvent (event?: Event) {
 		const arr = this._children;
 
 		if (!arr) {
@@ -1689,7 +1760,9 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 		return this._backgroundPattern;
 	}
 
-	smartBackground (renderMethod) {
+	smartBackground (): IgeSmartTexture | undefined;
+	smartBackground (renderMethod?: IgeSmartTexture): this;
+	smartBackground (renderMethod?: IgeSmartTexture) {
 		if (renderMethod !== undefined) {
 			this._smartBackground = renderMethod;
 			return this;
@@ -1712,7 +1785,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
-	widthByTile (val, lockAspect) {
+	widthByTile (val: number, lockAspect = false) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
 			let tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2,
 				ratio;
@@ -1755,7 +1828,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
-	heightByTile (val, lockAspect) {
+	heightByTile (val: number, lockAspect = false) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
 			let tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2,
 				ratio;
@@ -1793,7 +1866,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @param {Number=} width Number of tiles along the x-axis to occupy.
 	 * @param {Number=} height Number of tiles along the y-axis to occupy.
 	 */
-	occupyTile (x, y, width, height) {
+	occupyTile (x?: number, y?: number, width?: number, height?: number) {
 		// Check that the entity is mounted to a tile map
 		if (this._parent && this._parent.IgeTileMap2d) {
 			if (x !== undefined && y !== undefined) {
@@ -1827,7 +1900,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @param {Number=} height Number of tiles along the y-axis to un-occupy.
 	 * @private
 	 */
-	unOccupyTile (x, y, width, height) {
+	unOccupyTile (x?: number, y?: number, width?: number, height?: number) {
 		// Check that the entity is mounted to a tile map
 		if (this._parent && this._parent.IgeTileMap2d) {
 			if (x !== undefined && y !== undefined) {
@@ -1860,22 +1933,24 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 */
 	overTiles () {
 		// Check that the entity is mounted to a tile map
-		if (this._parent && this._parent.IgeTileMap2d) {
-			let x,
-				y,
-				tileWidth = this._tileWidth || 1,
-				tileHeight = this._tileHeight || 1,
-				tile = this._parent.pointToTile(this._translate),
-				tileArr = [];
-
-			for (x = 0; x < tileWidth; x++) {
-				for (y = 0; y < tileHeight; y++) {
-					tileArr.push(new IgePoint3d(tile.x + x, tile.y + y, 0));
-				}
-			}
-
-			return tileArr;
+		if (!(this._parent && this._parent.IgeTileMap2d)) {
+			return;
 		}
+
+		let x,
+			y,
+			tileWidth = this._tileWidth || 1,
+			tileHeight = this._tileHeight || 1,
+			tile = this._parent.pointToTile(this._translate),
+			tileArr = [];
+
+		for (x = 0; x < tileWidth; x++) {
+			for (y = 0; y < tileHeight; y++) {
+				tileArr.push(new IgePoint3d(tile.x + x, tile.y + y, 0));
+			}
+		}
+
+		return tileArr;
 	}
 
 	/**
@@ -1886,7 +1961,9 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	anchor (x, y) {
+	anchor (): IgePoint2d;
+	anchor (x: number, y: number): this;
+	anchor (x?: number, y?: number) {
 		if (x !== undefined && y !== undefined) {
 			this._anchor = new IgePoint2d(x, y);
 			return this;
@@ -1904,45 +1981,49 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	width (px, lockAspect = false) {
-		if (px !== undefined) {
-			if (lockAspect) {
-				// Calculate the height from the change in width
-				const ratio = px / this._bounds2d.x;
-				this.height(this._bounds2d.y * ratio);
-			}
-
-			this._bounds2d.x = px;
-			this._bounds2d.x2 = px / 2;
-			return this;
+	width (): number;
+	width (px: number, lockAspect?: boolean): this;
+	width (px?: number, lockAspect = false) {
+		if (px === undefined) {
+			return this._bounds2d.x;
 		}
 
-		return this._bounds2d.x;
+		if (lockAspect) {
+			// Calculate the height from the change in width
+			const ratio = px / this._bounds2d.x;
+			this.height(this._bounds2d.y * ratio);
+		}
+
+		this._bounds2d.x = px;
+		this._bounds2d.x2 = px / 2;
+		return this;
 	}
 
 	/**
 	 * Gets / sets the geometry y value.
-	 * @param {Number=} px The new y value in pixels.
-	 * @param {Boolean} [lockAspect]
+	 * @param {number=} px The new y value in pixels.
+	 * @param {boolean} [lockAspect]
 	 * @example #Set the height of the entity
 	 *     entity.height(40);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
+	height (): number;
+	height (px: number, lockAspect?: boolean): this;
 	height (px?: number, lockAspect = false) {
-		if (px !== undefined) {
-			if (lockAspect) {
-				// Calculate the width from the change in height
-				const ratio = px / this._bounds2d.y;
-				this.width(this._bounds2d.x * ratio);
-			}
-
-			this._bounds2d.y = px;
-			this._bounds2d.y2 = px / 2;
-			return this;
+		if (px === undefined) {
+			return this._bounds2d.y;
 		}
 
-		return this._bounds2d.y;
+		if (lockAspect) {
+			// Calculate the width from the change in height
+			const ratio = px / this._bounds2d.y;
+			this.width(this._bounds2d.x * ratio);
+		}
+
+		this._bounds2d.y = px;
+		this._bounds2d.y2 = px / 2;
+		return this;
 	}
 
 	/**
@@ -1958,15 +2039,20 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	bounds2d (x, y) {
-		if (x !== undefined && y !== undefined) {
-			this._bounds2d = new IgePoint2d(x, y, 0);
+	bounds2d (): IgePoint2d;
+	bounds2d (x: number, y: number): this;
+	bounds2d (x: IgePoint2d): this;
+	bounds2d (x?: number | IgePoint2d, y?: number) {
+		if (x !== undefined && y !== undefined && typeof x === "number") {
+			this._bounds2d = new IgePoint2d(x, y);
 			return this;
 		}
 
-		if (x !== undefined && y === undefined) {
+		// TODO: Is this exception still something we use?
+		if (typeof x === "object" && y === undefined) {
+			const bounds = x as IgePoint2d;
 			// x is considered an IgePoint2d instance
-			this._bounds2d = new IgePoint2d(x.x, x.y);
+			this._bounds2d = new IgePoint2d(bounds.x, bounds.y);
 		}
 
 		return this._bounds2d;
@@ -1977,15 +2063,17 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * relative to the center of the entity and the z value is wholly
 	 * positive from the "floor". Used to define a 3d bounding cuboid for
 	 * the entity used in isometric depth sorting and hit testing.
-	 * @param {Number=} x The new x value in pixels.
-	 * @param {Number=} y The new y value in pixels.
-	 * @param {Number=} z The new z value in pixels.
+	 * @param {number=} x The new x value in pixels.
+	 * @param {number=} y The new y value in pixels.
+	 * @param {number=} z The new z value in pixels.
 	 * @example #Set the dimensions of the entity (width, height and length)
 	 *     entity.bounds3d(40, 40, 20);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	bounds3d (x, y, z) {
+	bounds3d (): IgePoint3d;
+	bounds3d (x: number, y: number, z: number): this;
+	bounds3d (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._bounds3d = new IgePoint3d(x, y, z);
 			return this;
@@ -1995,23 +2083,10 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	}
 
 	/**
-	 * @deprecated Use bounds3d instead
-	 * @param x
-	 * @param y
-	 * @param z
-	 */
-	size3d (x, y, z) {
-		this.log(
-			"size3d has been renamed to bounds3d but is exactly the same so please search/replace your code to update calls.",
-			"warning"
-		);
-	}
-
-	/**
 	 * Gets / sets the life span of the object in milliseconds. The life
 	 * span is how long the object will exist for before being automatically
 	 * destroyed.
-	 * @param {Number=} milliseconds The number of milliseconds the entity
+	 * @param {number=} milliseconds The number of milliseconds the entity
 	 * will live for from the current time.
 	 * @param {Function=} deathCallback Optional callback method to call when
 	 * the entity is destroyed from end of lifespan.
@@ -2020,13 +2095,16 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	lifeSpan (milliseconds, deathCallback) {
+	lifeSpan (): number;
+	lifeSpan (milliseconds: number): this;
+	lifeSpan (milliseconds: number, deathCallback: (...args: any[]) => void): this;
+	lifeSpan (milliseconds?: number, deathCallback?: (...args: any[]) => void) {
 		if (milliseconds !== undefined) {
 			this.deathTime(ige._currentTime + milliseconds, deathCallback);
 			return this;
 		}
 
-		return this.deathTime() - ige._currentTime;
+		return (this.deathTime() || 0) - ige._currentTime;
 	}
 
 	/**
@@ -2045,7 +2123,10 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	deathTime (val, deathCallback) {
+	deathTime (): number | undefined;
+	deathTime (val: number): this;
+	deathTime (val: number, deathCallback?: (...args: any[]) => void): this;
+	deathTime (val?: number, deathCallback?: (...args: any[]) => void) {
 		if (val !== undefined) {
 			this._deathTime = val;
 
@@ -2068,6 +2149,8 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
+	opacity (): number;
+	opacity (val: number): this;
 	opacity (val?: number) {
 		if (val !== undefined) {
 			this._opacity = val;
@@ -2081,13 +2164,15 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * Gets / sets the noAabb flag that determines if the entity's axis
 	 * aligned bounding box should be calculated every tick or not. If
 	 * you don't need the AABB data (for instance if you don't need to
-	 * detect mouse events on this entity or you DO want the AABB to be
+	 * detect mouse events on this entity, or you DO want the AABB to be
 	 * updated but want to control it manually by calling aabb(true)
 	 * yourself as needed).
 	 * @param {Boolean=} val If set to true will turn off AABB calculation.
 	 * @returns {*}
 	 */
-	noAabb (val) {
+	noAabb (): boolean | undefined;
+	noAabb (val: boolean): this;
+	noAabb (val?: boolean) {
 		if (val !== undefined) {
 			this._noAabb = val;
 			return this;
@@ -2552,15 +2637,14 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 *         aabb = entity.compositeAabb();
 	 * @return {IgeRect}
 	 */
-	compositeAabb (inverse) {
-		let arr = this._children,
-			arrCount,
-			rect = this.aabb(true, inverse).clone();
+	compositeAabb (inverse = false) {
+		const arr = this._children;
+		const rect = this.aabb(true, inverse).clone();
 
-		// Now loop all children and get the aabb for each of them
+		// Now loop all children and get the aabb for each of
 		// them add those bounds to the current rect
 		if (arr) {
-			arrCount = arr.length;
+			let arrCount = arr.length;
 
 			while (arrCount--) {
 				rect.thisCombineRect(arr[arrCount].compositeAabb(inverse));
@@ -5297,77 +5381,77 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 		// Check if we already have a cached version of the streamData
 		if (this._streamDataCache) {
 			return this._streamDataCache;
-		} else {
-			// Let's generate our stream data
-			let streamData = "",
-				sectionDataString = "",
-				sectionArr = this._streamSections,
-				sectionCount = sectionArr.length,
-				sectionData,
-				sectionIndex,
-				sectionId;
+		}
 
-			// Add the entity id
-			streamData += this.id();
+		// Let's generate our stream data
+		const sectionArr = this._streamSections;
+		const sectionCount = sectionArr.length;
 
-			// Only send further data if the entity is still "alive"
-			if (this._alive) {
-				// Now loop the data sections array and compile the rest of the
-				// data string from the data section return data
-				for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
-					sectionData = "";
-					sectionId = sectionArr[sectionIndex];
+		let streamData = "",
+			sectionDataString = "",
+			sectionData,
+			sectionIndex,
+			sectionId;
 
-					// Stream section sync intervals allow individual stream sections
-					// to be streamed at different (usually longer) intervals than other
-					// sections so you could for instance reduce the number of updates
-					// a particular section sends out in a second because the data is
-					// not that important compared to updated transformation data
-					if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
-						// Check if the section interval has been reached
-						this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
+		// Add the entity id
+		streamData += this.id();
 
-						if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
-							// Get the section data for this section id
-							sectionData = this.streamSectionData(sectionId);
+		// Only send further data if the entity is still "alive"
+		if (this._alive) {
+			// Now loop the data sections array and compile the rest of the
+			// data string from the data section return data
+			for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
+				sectionData = "";
+				sectionId = sectionArr[sectionIndex];
 
-							// Reset the section delta
-							this._streamSyncSectionDelta[sectionId] = 0;
-						}
-					} else {
+				// Stream section sync intervals allow individual stream sections
+				// to be streamed at different (usually longer) intervals than other
+				// sections, so you could for instance reduce the number of updates
+				// a particular section sends out in a second because the data is
+				// not that important compared to updated transformation data
+				if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
+					// Check if the section interval has been reached
+					this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
+
+					if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
 						// Get the section data for this section id
 						sectionData = this.streamSectionData(sectionId);
-					}
 
-					// Add the section start designator character. We do this
-					// regardless of if there is actually any section data because
-					// we want to be able to identify sections in a serial fashion
-					// on receipt of the data string on the client
-					sectionDataString += ige.network.stream._sectionDesignator;
-
-					// Check if we were returned any data
-					if (sectionData !== undefined) {
-						// Add the data to the section string
-						sectionDataString += sectionData;
+						// Reset the section delta
+						this._streamSyncSectionDelta[sectionId] = 0;
 					}
+				} else {
+					// Get the section data for this section id
+					sectionData = this.streamSectionData(sectionId);
 				}
 
-				// Add any custom data to the stream string at this point
-				if (sectionDataString) {
-					streamData += sectionDataString;
-				}
+				// Add the section start designator character. We do this
+				// regardless of if there is actually any section data because
+				// we want to be able to identify sections in a serial fashion
+				// on receipt of the data string on the client
+				sectionDataString += ige.network.stream._sectionDesignator;
 
-				// Remove any .00 from the string since we don't need that data
-				// TODO: What about if a property is a string with something.00 and it should be kept?
-				streamData = streamData.replace(this._floatRemoveRegExp, ",");
+				// Check if we were returned any data
+				if (sectionData !== undefined) {
+					// Add the data to the section string
+					sectionDataString += sectionData;
+				}
 			}
 
-			// Store the data in cache in case we are asked for it again this tick
-			// the update() method of the IgeEntity class clears this every tick
-			this._streamDataCache = streamData;
+			// Add any custom data to the stream string at this point
+			if (sectionDataString) {
+				streamData += sectionDataString;
+			}
 
-			return streamData;
+			// Remove any .00 from the string since we don't need that data
+			// TODO: What about if a property is a string with something.00 and it should be kept?
+			streamData = streamData.replace(this._floatRemoveRegExp, ",");
 		}
+
+		// Store the data in cache in case we are asked for it again this tick
+		// the update() method of the IgeEntity class clears this every tick
+		this._streamDataCache = streamData;
+		return streamData;
 	}
 
 	/* CEXCLUDE */
@@ -5385,11 +5469,11 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @param {Number} endTime The time the interpolation will end.
 	 * @return {Number} The interpolated value.
 	 */
-	interpolateValue (startValue, endValue, startTime, currentTime, endTime) {
-		let totalValue = endValue - startValue,
-			dataDelta = endTime - startTime,
-			offsetDelta = currentTime - startTime,
-			deltaTime = offsetDelta / dataDelta;
+	interpolateValue (startValue: number, endValue: number, startTime: number, currentTime: number, endTime: number) {
+		const totalValue = endValue - startValue;
+		const dataDelta = endTime - startTime;
+		const offsetDelta = currentTime - startTime;
+		let deltaTime = offsetDelta / dataDelta;
 
 		// Clamp the current time from 0 to 1
 		if (deltaTime < 0) {
@@ -5409,22 +5493,22 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * is assigned directly instead of being interpolated.
 	 * @private
 	 */
-	_processInterpolate (renderTime, maxLerp) {
+	_processInterpolate (renderTime: number, maxLerp = 200) {
 		// Set the maximum lerp to 200 if none is present
 		if (!maxLerp) {
 			maxLerp = 200;
 		}
 
-		let maxLerpSquared = maxLerp * maxLerp,
-			previousData,
-			nextData,
-			timeStream = this._timeStream,
+		//const maxLerpSquared = maxLerp * maxLerp;
+		const timeStream = this._timeStream;
+		const currentTransform = [];
+		let previousData: IgeTimeStreamPacket | undefined,
+			nextData: IgeTimeStreamPacket | undefined,
 			dataDelta,
 			offsetDelta,
 			currentTime,
-			previousTransform,
-			nextTransform,
-			currentTransform = [],
+			previousTransform: IgeTimeStreamParsedTransformData,
+			nextTransform: IgeTimeStreamParsedTransformData,
 			i = 1;
 
 		// Find the point in the time stream that is
@@ -5461,6 +5545,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 				}
 			}
 		} else {
+			// TODO: Shouldn't we do this if we find old data as well? e.g. timeStream.length > 2
 			// We have some new data so clear the old data
 			timeStream.splice(0, i - 1);
 		}
@@ -5493,8 +5578,8 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 			//if (currentTime < 0) { currentTime = 0.0; } else if (currentTime > 1) { currentTime = 1.0; }
 
 			// Set variables up to store the previous and next data
-			previousTransform = previousData[1];
-			nextTransform = nextData[1];
+			previousTransform = previousData[1].map(parseFloat) as IgeTimeStreamParsedTransformData;
+			nextTransform = nextData[1].map(parseFloat) as IgeTimeStreamParsedTransformData;
 
 			// Translate
 			currentTransform[0] = this.interpolateValue(previousTransform[0], nextTransform[0], previousData[0], renderTime, nextData[0]);
@@ -5509,39 +5594,20 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 			currentTransform[7] = this.interpolateValue(previousTransform[7], nextTransform[7], previousData[0], renderTime, nextData[0]);
 			currentTransform[8] = this.interpolateValue(previousTransform[8], nextTransform[8], previousData[0], renderTime, nextData[0]);
 
-			this.translateTo(parseFloat(currentTransform[0]), parseFloat(currentTransform[1]), parseFloat(currentTransform[2]));
-			this.scaleTo(parseFloat(currentTransform[3]), parseFloat(currentTransform[4]), parseFloat(currentTransform[5]));
-			this.rotateTo(parseFloat(currentTransform[6]), parseFloat(currentTransform[7]), parseFloat(currentTransform[8]));
+			this.translateTo(currentTransform[0], currentTransform[1], currentTransform[2]);
+			this.scaleTo(currentTransform[3], currentTransform[4], currentTransform[5]);
+			this.rotateTo(currentTransform[6], currentTransform[7], currentTransform[8]);
 
-			/*// Calculate the squared distance between the previous point and next point
-			 dist = this.distanceSquared(previousTransform.x, previousTransform.y, nextTransform.x, nextTransform.y);
-
-			 // Check that the distance is not higher than the maximum lerp and if higher,
-			 // set the current time to 1 to snap to the next position immediately
-			 if (dist > maxLerpSquared) { currentTime = 1; }
-
-			 // Interpolate the entity position by multiplying the Delta times T, and adding the previous position
-			 currentPosition = {};
-			 currentPosition.x = ( (nextTransform.x - previousTransform.x) * currentTime ) + previousTransform.x;
-			 currentPosition.y = ( (nextTransform.y - previousTransform.y) * currentTime ) + previousTransform.y;
-
-			 // Now actually transform the entity
-			 this.translate(entity, currentPosition.x, currentPosition.y);*/
-
-			// Record the last time we updated the entity so we can disregard any updates
+			// Record the last time we updated the entity, so we can disregard any updates
 			// that arrive and are before this timestamp (not applicable in TCP but will
 			// apply if we ever get UDP in websockets)
 			this._lastUpdate = new Date().getTime();
 		}
 	}
 
-	_highlightToGlobalCompositeOperation (val) {
+	_highlightToGlobalCompositeOperation (val: boolean): string | undefined {
 		if (val) {
-			if (val === true) {
-				return "lighter";
-			}
-
-			return val;
+			return "lighter";
 		}
 	}
 }

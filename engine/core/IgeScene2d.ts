@@ -54,23 +54,23 @@ class IgeScene2d extends IgeEntity {
 	 */
 	streamSectionData = (sectionId, data) => {
 		switch (sectionId) {
-			case "ignoreCamera":
-				if (data !== undefined) {
-					// Setter
-					if (data === "false") {
-						this.ignoreCamera(false);
-					} else {
-						this.ignoreCamera(true);
-					}
+		case "ignoreCamera":
+			if (data !== undefined) {
+				// Setter
+				if (data === "false") {
+					this.ignoreCamera(false);
 				} else {
-					// Getter
-					return String(this._ignoreCamera);
+					this.ignoreCamera(true);
 				}
-				break;
+			} else {
+				// Getter
+				return String(this._ignoreCamera);
+			}
+			break;
 
-			default:
-				super.streamSectionData(sectionId, data);
-				break;
+		default:
+			super.streamSectionData(sectionId, data);
+			break;
 		}
 	}
 
@@ -125,7 +125,7 @@ class IgeScene2d extends IgeEntity {
 	update = (ctx, tickDelta) => {
 		if (this._ignoreCamera) {
 			// Translate the scene so it is always center of the camera
-			var cam = ige._currentCamera;
+			const cam = ige._currentCamera;
 			this.translateTo(cam._translate.x, cam._translate.y, cam._translate.z);
 			this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
 			this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);
@@ -150,15 +150,15 @@ class IgeScene2d extends IgeEntity {
 	 * @param event
 	 * @private
 	 */
-	_resizeEvent = (event) => {
+	_resizeEvent = (event?: Event) => {
 		// Set width / height of scene to match main ige (SCENES ARE ALWAYS THE FULL IGE SIZE!!)
-		if (this._autoSize) {
+		if (this._autoSize && ige.root) {
 			this._bounds2d = ige.root._bounds2d.clone();
 		}
 
 		// Resize any children
-		var arr = this._children,
-			arrCount = arr.length;
+		const arr = this._children;
+		let arrCount = arr.length;
 
 		while (arrCount--) {
 			arr[arrCount]._resizeEvent(event);
@@ -181,12 +181,12 @@ class IgeScene2d extends IgeEntity {
 		for (i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-					case "_shouldRender":
-						str += ".shouldRender(" + this.shouldRender() + ")";
-						break;
-					case "_autoSize":
-						str += ".autoSize(" + this.autoSize() + ")";
-						break;
+				case "_shouldRender":
+					str += ".shouldRender(" + this.shouldRender() + ")";
+					break;
+				case "_autoSize":
+					str += ".autoSize(" + this.autoSize() + ")";
+					break;
 				}
 			}
 		}

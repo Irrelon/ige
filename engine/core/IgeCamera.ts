@@ -239,13 +239,13 @@ class IgeCamera extends IgeEntity {
 		return this;
 	}
 
-	update (ctx) {
+	update (ctx: CanvasRenderingContext2D) {
 		// Process any behaviours assigned to the camera
 		this._processUpdateBehaviours(ctx);
 
-		// Check if we are tracking the translate value of a target
+		// Check if we are tracking the translation value of a target
 		if (this._trackTranslateTarget) {
-			var targetEntity = this._trackTranslateTarget,
+			let targetEntity = this._trackTranslateTarget,
 				targetMatrix = targetEntity._worldMatrix.matrix,
 				targetX = targetMatrix[2],
 				targetY = targetMatrix[5],
@@ -296,7 +296,7 @@ class IgeCamera extends IgeEntity {
 
 		// Check if we are tracking the rotation values of a target
 		if (this._trackRotateTarget) {
-			var targetParentRZ = this._trackRotateTarget._parent !== undefined ? this._trackRotateTarget._parent._rotate.z : 0,
+			let targetParentRZ = this._trackRotateTarget._parent !== undefined ? this._trackRotateTarget._parent._rotate.z : 0,
 				targetZ = -(targetParentRZ + this._trackRotateTarget._rotate.z),
 				sourceZ, distZ;
 
@@ -362,18 +362,18 @@ class IgeCamera extends IgeEntity {
 	 */
 	_stringify (options) {
 		// Get the properties for all the super-classes
-		var str = super._stringify(), i;
+		let str = super._stringify(), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-					case "_trackTranslateTarget":
-						str += ".trackTranslate(ige.$('" + this._trackTranslateTarget.id() + "'), " + this.trackTranslateSmoothing() + ")";
-						break;
-					case "_trackRotateTarget":
-						str += ".trackRotate(ige.$('" + this._trackRotateTarget.id() + "'), " + this.trackRotateSmoothing() + ")";
-						break;
+				case "_trackTranslateTarget":
+					str += ".trackTranslate(ige.$('" + this._trackTranslateTarget.id() + "'), " + this.trackTranslateSmoothing() + ")";
+					break;
+				case "_trackRotateTarget":
+					str += ".trackRotate(ige.$('" + this._trackRotateTarget.id() + "'), " + this.trackRotateSmoothing() + ")";
+					break;
 				}
 			}
 		}

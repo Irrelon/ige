@@ -44,7 +44,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 	_showSgTree: boolean;
 	_renderContext: "2d" | "three";
 	_renderMode: number;
-	_tickTime: string;
+	_tickTime: number;
 	_updateTime: number;
 	_renderTime: number;
 	_tickDelta: number;
@@ -94,7 +94,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 	_cssFonts: string[];
 	_mouseOverVp?: IgeViewport;
 	_deviceFinalDrawRatio: number = 1;
-	_requestAnimFrame?: (callback: (time: number, ctx?: CanvasRenderingContext2D) => void, element?: any) => void;
+	_requestAnimFrame?: (callback: (time: number, ctx?: CanvasRenderingContext2D) => void, element?: Element) => void;
 
 	constructor (canvas?: HTMLCanvasElement) {
 		super();
@@ -114,9 +114,9 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 		this._debugEvents = {}; // Holds debug event booleans for named events
 		this._renderContext = "2d"; // The rendering context, default is 2d
 		this._renderMode = 0; // Integer representation of the render context
-		this._tickTime = "NA"; // The time the tick took to process
-		this._updateTime = "NA"; // The time the tick update section took to process
-		this._renderTime = "NA"; // The time the tick render section took to process
+		this._tickTime = NaN; // The time the tick took to process
+		this._updateTime = NaN; // The time the tick update section took to process
+		this._renderTime = NaN; // The time the tick render section took to process
 		this._tickDelta = 0; // The time between the last tick and the current one
 		this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
 		this._state = 0; // Currently stopped

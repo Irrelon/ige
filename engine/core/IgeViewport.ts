@@ -29,6 +29,11 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	_clipping: boolean;
 	_autoSize: boolean = false;
 	_scene?: IgeScene2d;
+	_drawGuides?: boolean;
+	_drawBoundsLimitId?: string | string[];
+	_drawBoundsLimitCategory?: string;
+	_drawCompositeBounds?: boolean;
+	_drawViewArea?: boolean;
 	camera: IgeCamera;
 
 	constructor (options?: IgeViewportOptions) {
@@ -55,6 +60,10 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 			}
 		}
 
+		if (!ige.root) {
+			throw new Error("IgeViewport instantiated before Ige instance createRoot() called!");
+		}
+
 		// Setup default objects
 		this._bounds2d = new IgePoint2d(width || ige.root._bounds2d.x, height || ige.root._bounds2d.y);
 		this.camera = new IgeCamera(ige, this);
@@ -67,8 +76,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 * When set, if the viewport's geometry is reduced below the minimum width or
 	 * height, the viewport's camera is automatically scaled to ensure that the
 	 * minimum area remains visible in the viewport.
-	 * @param {Integer} width Width in pixels.
-	 * @param {Integer} height Height in pixels.
+	 * @param {number} width Width in pixels.
+	 * @param {number} height Height in pixels.
 	 * @returns {*}
 	 */
 	minimumVisibleArea (width: number, height: number) {
@@ -76,7 +85,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		this._lockDimension = new IgePoint3d(width, height, 0);
 
 		if (ige.isClient) {
-			this._resizeEvent({});
+			this._resizeEvent();
 		}
 
 		return this;
@@ -152,8 +161,9 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	/**
 	 * Processes the updates before the render tick is called.
 	 * @param ctx
+	 * @param tickDelta
 	 */
-	update (ctx, tickDelta) {
+	update (ctx: CanvasRenderingContext2D, tickDelta: number) {
 		// Check if we have a scene attached to this viewport
 		if (!this._scene) {
 			return;
@@ -163,7 +173,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		ige._currentViewport = this;
 		this._scene._parent = this;
 
-		this.camera.update(ctx, tickDelta);
+		this.camera.update(ctx);
 
 		super.update(ctx, tickDelta);
 
@@ -175,9 +185,9 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	/**
 	 * Processes the actions required each render frame.
 	 */
-	tick (ctx, scene) {
-		// Check if we have a scene attached to this viewport
-		if (!this._scene) {
+	tick (ctx: CanvasRenderingContext2D) {
+		// Check if we have a scene attached to this viewport and ige has a root object
+		if (!this._scene || !ige.root) {
 			return;
 		}
 
@@ -288,13 +298,15 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 */
 	screenPosition () {
 		return new IgePoint3d(
-			Math.floor(this._worldMatrix.matrix[2] + ige.root._bounds2d.x2),
-			Math.floor(this._worldMatrix.matrix[5] + ige.root._bounds2d.y2),
+			Math.floor(this._worldMatrix.matrix[2] + (ige?.root?._bounds2d?.x2 || 0)),
+			Math.floor(this._worldMatrix.matrix[5] + (ige?.root?._bounds2d?.y2 || 0)),
 			0
 		);
 	}
 
-	drawViewArea (val) {
+	drawViewArea (): boolean;
+	drawViewArea (val: boolean): this;
+	drawViewArea (val?: boolean) {
 		if (val !== undefined) {
 			this._drawViewArea = val;
 			return this;
@@ -303,7 +315,9 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawViewArea;
 	}
 
-	drawBoundsLimitId (id) {
+	drawBoundsLimitId (): string | string[] | undefined;
+	drawBoundsLimitId (id: string | string[]): this;
+	drawBoundsLimitId (id?: string | string[]) {
 		if (id !== undefined) {
 			this._drawBoundsLimitId = id;
 			return this;
@@ -312,7 +326,9 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawBoundsLimitId;
 	}
 
-	drawBoundsLimitCategory (category) {
+	drawBoundsLimitCategory (): string | undefined;
+	drawBoundsLimitCategory (category: string): this;
+	drawBoundsLimitCategory (category?: string) {
 		if (category !== undefined) {
 			this._drawBoundsLimitCategory = category;
 			return this;
@@ -321,7 +337,9 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawBoundsLimitCategory;
 	}
 
-	drawCompositeBounds (val) {
+	drawCompositeBounds (): boolean | undefined;
+	drawCompositeBounds (val: boolean): this;
+	drawCompositeBounds (val?: boolean) {
 		if (val !== undefined) {
 			this._drawCompositeBounds = val;
 			return this;
@@ -330,7 +348,9 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawCompositeBounds;
 	}
 
-	drawGuides (val) {
+	drawGuides (): boolean | undefined;
+	drawGuides (val: boolean): this;
+	drawGuides (val?: boolean) {
 		if (val !== undefined) {
 			this._drawGuides = val;
 			return this;
@@ -339,7 +359,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawGuides;
 	}
 
-	paintGuides (ctx) {
+	paintGuides (ctx: CanvasRenderingContext2D) {
+		if (!ige.root) return;
 		const geom = ige.root._bounds2d;
 
 		// Check draw-guides setting
@@ -367,7 +388,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 * @param rootObject
 	 * @param index
 	 */
-	paintAabbs (ctx, rootObject, index) {
+	paintAabbs (ctx: CanvasRenderingContext2D, rootObject: IgeEntity, index: number) {
 		const arr = rootObject._children || [];
 
 		let arrCount,
@@ -541,7 +562,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 * @param event
 	 * @private
 	 */
-	_resizeEvent (event: Event) {
+	_resizeEvent (event?: Event) {
 		if (this._autoSize && this._parent) {
 			this._bounds2d = this._parent._bounds2d.clone();
 		}
