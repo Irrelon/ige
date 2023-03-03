@@ -9,6 +9,10 @@
       "email": "rob@irrelon.com"
     }
   ],
+  "scripts": {
+    "build": "ttsc",
+    "build-watch": "ttsc --watch"
+  },
   "dependencies": {
     "easyimage": "0.1.3",
     "mongodb": "1.0.2",
