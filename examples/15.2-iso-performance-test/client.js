@@ -9,7 +9,7 @@ var Client = IgeClass.extend({
 
 		// Load our textures
 		var self = this;
-		
+
 		//ige.debugEnabled(false);
 		//ige.debugTiming(false);
 
@@ -31,7 +31,7 @@ var Client = IgeClass.extend({
 
 					// Create the basic scene, viewport etc
 					self.setupScene();
-					
+
 					// Create the UI entities
 					self.setupUi();
 
@@ -74,13 +74,13 @@ var Client = IgeClass.extend({
 		this.gameTexture.uiButtonMove = new IgeTexture('../assets/textures/ui/uiButton_move.png');
 		this.gameTexture.uiButtonDelete = new IgeTexture('../assets/textures/ui/uiButton_delete.png');
 		this.gameTexture.uiButtonHouse = new IgeTexture('../assets/textures/ui/uiButton_house.png');
-		
+
 		this.gameTexture.simpleBox = new IgeTexture('./assets/textures/smartTextures/simpleBox.js');
 	},
 
 	setupScene: function () {
 		var self = this;
-		
+
 		// Create the scene
 		this.mainScene = new IgeScene2d()
 			.id('mainScene');
@@ -113,7 +113,7 @@ var Client = IgeClass.extend({
 			.drawBounds(false)
 			.drawBoundsData(false)
 			.mount(ige);
-		
+
 		window.addEventListener('keyup', function () {
 			if (self.vp1.mousePan.enabled()) {
 				self.vp1.mousePan.enabled(false);
@@ -123,7 +123,7 @@ var Client = IgeClass.extend({
 				self.vp1.mouseZoom.enabled(false);
 			}
 		});
-		
+
 		/*// Create the second viewport
 		this.vp2 = new IgeViewport()
 			.id('vp2')
@@ -153,15 +153,15 @@ var Client = IgeClass.extend({
 
 			// Switch the cursor mode
 			ige.client.data('cursorMode', 'panning');
-			ige.input.stopPropagation();
+			ige.components.input.stopPropagation();
 		});
 
 		this.vp1.mousePan.on('panEnd', function () {
 			// Switch the cursor mode back
 			ige.client.data('cursorMode', ige.client.data('tempCursorMode'));
-			ige.input.stopPropagation();
+			ige.components.input.stopPropagation();
 		});
-		
+
 		// Create the scene that the game items will
 		// be mounted to (like the tile map). This scene
 		// is then mounted to the main scene.
@@ -182,7 +182,7 @@ var Client = IgeClass.extend({
 			.depth(2)
 			.ignoreCamera(true)
 			.mount(this.mainScene);
-		
+
 		// Create a collision map. We don't mount this to
 		// our scene because we are only going to use it
 		// for storing where buildings CAN be placed since
@@ -209,7 +209,7 @@ var Client = IgeClass.extend({
 			.depthSortMode(0)
 			//.viewChecking(false)
 			.mount(this.gameScene);
-		
+
 		this.tileMap1.addComponent(IgeEntityManager);
 
 		/*
@@ -228,7 +228,7 @@ var Client = IgeClass.extend({
 			JS console and issue the command: ige.scenegraph();
 		 */
 	},
-	
+
 	/**
 	 * Creates the UI entities that the user can interact with to
 	 * perform certain tasks like placing and removing buildings.
@@ -243,9 +243,9 @@ var Client = IgeClass.extend({
 			.top(0)
 			.width('100%')
 			.height(40)
-			.mouseDown(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
-			.mouseUp(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
-			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			.mouseDown(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.components.input.stopPropagation(); } })
+			.mouseUp(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.components.input.stopPropagation(); } })
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.components.input.stopPropagation(); } })
 			.mount(this.uiScene);
 
 		// Create the menu bar buttons
@@ -263,23 +263,23 @@ var Client = IgeClass.extend({
 					this.backgroundColor('#6b6b6b');
 				}
 
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseOut(function () {
 				if (ige.client.data('cursorMode') !== 'select') {
 					this.backgroundColor('');
 				}
 
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseDown(function () {
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseUp(function () {
 				this.select();
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
-			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.components.input.stopPropagation(); } })
 			// Define the callback when the radio button is selected
 			.select(function () {
 				ige.client.data('cursorMode', 'select');
@@ -307,23 +307,23 @@ var Client = IgeClass.extend({
 					this.backgroundColor('#6b6b6b');
 				}
 
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseOut(function () {
 				if (ige.client.data('cursorMode') !== 'move') {
 					this.backgroundColor('');
 				}
 
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseDown(function () {
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseUp(function () {
 				this.select();
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
-			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.components.input.stopPropagation(); } })
 			// Define the callback when the radio button is selected
 			.select(function () {
 				ige.client.data('cursorMode', 'move');
@@ -350,23 +350,23 @@ var Client = IgeClass.extend({
 					this.backgroundColor('#6b6b6b');
 				}
 
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseOut(function () {
 				if (ige.client.data('cursorMode') !== 'delete') {
 					this.backgroundColor('');
 				}
 
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseDown(function () {
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseUp(function () {
 				this.select();
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
-			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.components.input.stopPropagation(); } })
 			// Define the callback when the radio button is selected
 			.select(function () {
 				ige.client.data('cursorMode', 'delete');
@@ -381,7 +381,7 @@ var Client = IgeClass.extend({
 
 		this.setupUi_BuildingsMenu();
 	},
-	
+
 	setupUi_BuildingsMenu: function () {
 		// First, create an entity that will act as a drop-down menu
 		this.uiMenuBuildings = new IgeUiEntity()
@@ -393,20 +393,20 @@ var Client = IgeClass.extend({
 			.backgroundColor('#222')
 			.mount(this.uiScene)
 			.mouseDown(function () {
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseOver(function () {
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseOut(function () {
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseUp(function () {
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
-			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.components.input.stopPropagation(); } })
 			.hide();
-		
+
 		// Now add the building "buttons" that will allow the user to select
 		// the type of building they want to build
 		new IgeUiRadioButton()
@@ -424,42 +424,42 @@ var Client = IgeClass.extend({
 				if (!this._uiSelected) {
 					this.backgroundColor('#6b6b6b');
 				}
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseOut(function () {
 				if (!this._uiSelected) {
 					this.backgroundColor('');
 				}
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseDown(function () {
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseUp(function () {
 				// Check if this item is already selected
 				//if (!this._uiSelected) {
-					// The item is NOT already selected so select it!
-					this.select();
+				// The item is NOT already selected so select it!
+				this.select();
 				//}
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
-			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.components.input.stopPropagation(); } })
 			// Define the callback when the radio button is selected
 			.select(function () {
 				ige.client.data('cursorMode', 'build');
 				this.backgroundColor('#00baff');
-				
+
 				var tempItem = ige.client.createTemporaryItem(this.data('buildingType'))
 					.opacity(0.7);
 
 				ige.client.data('ghostItem', tempItem);
-				
-				ige.input.stopPropagation();
+
+				ige.components.input.stopPropagation();
 			})
 			// Define the callback when the radio button is de-selected
 			.deSelect(function () {
 				this.backgroundColor('');
-				
+
 				// If we had a temporary building, kill it
 				var item = ige.client.data('ghostItem');
 				if (item) {
@@ -467,7 +467,7 @@ var Client = IgeClass.extend({
 					ige.client.data('ghostItem', false);
 				}
 			});
-		
+
 		new IgeUiRadioButton()
 			.id('uiMenuBuildings_burgers')
 			.data('buildingType', 'Burgers') // Set the class to instantiate from this button
@@ -483,42 +483,42 @@ var Client = IgeClass.extend({
 				if (!this._uiSelected) {
 					this.backgroundColor('#6b6b6b');
 				}
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseOut(function () {
 				if (!this._uiSelected) {
 					this.backgroundColor('');
 				}
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseDown(function () {
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseUp(function () {
 				// Check if this item is already selected
 				//if (!this._uiSelected) {
-					// The item is NOT already selected so select it!
-					this.select();
+				// The item is NOT already selected so select it!
+				this.select();
 				//}
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
-			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.components.input.stopPropagation(); } })
 			// Define the callback when the radio button is selected
 			.select(function () {
 				ige.client.data('cursorMode', 'build');
 				this.backgroundColor('#00baff');
-				
+
 				var tempItem = ige.client.createTemporaryItem(this.data('buildingType'))
 					.opacity(0.7);
 
 				ige.client.data('ghostItem', tempItem);
-				
-				ige.input.stopPropagation();
+
+				ige.components.input.stopPropagation();
 			})
 			// Define the callback when the radio button is de-selected
 			.deSelect(function () {
 				this.backgroundColor('');
-				
+
 				// If we had a temporary building, kill it
 				var item = ige.client.data('ghostItem');
 				if (item) {
@@ -526,7 +526,7 @@ var Client = IgeClass.extend({
 					ige.client.data('ghostItem', false);
 				}
 			});
-		
+
 		new IgeUiRadioButton()
 			.id('uiMenuBuildings_electricals')
 			.data('buildingType', 'Electricals') // Set the class to instantiate from this button
@@ -542,42 +542,42 @@ var Client = IgeClass.extend({
 				if (!this._uiSelected) {
 					this.backgroundColor('#6b6b6b');
 				}
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseOut(function () {
 				if (!this._uiSelected) {
 					this.backgroundColor('');
 				}
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseDown(function () {
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseUp(function () {
 				// Check if this item is already selected
 				//if (!this._uiSelected) {
-					// The item is NOT already selected so select it!
-					this.select();
+				// The item is NOT already selected so select it!
+				this.select();
 				//}
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
-			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.components.input.stopPropagation(); } })
 			// Define the callback when the radio button is selected
 			.select(function () {
 				ige.client.data('cursorMode', 'build');
 				this.backgroundColor('#00baff');
-				
+
 				var tempItem = ige.client.createTemporaryItem(this.data('buildingType'))
 					.opacity(0.7);
 
 				ige.client.data('ghostItem', tempItem);
-				
-				ige.input.stopPropagation();
+
+				ige.components.input.stopPropagation();
 			})
 			// Define the callback when the radio button is de-selected
 			.deSelect(function () {
 				this.backgroundColor('');
-				
+
 				// If we had a temporary building, kill it
 				var item = ige.client.data('ghostItem');
 				if (item) {
@@ -585,7 +585,7 @@ var Client = IgeClass.extend({
 					ige.client.data('ghostItem', false);
 				}
 			});
-		
+
 		this.uiButtonBuildings = new IgeUiRadioButton()
 			.id('uiButtonBuildings')
 			.left(124)
@@ -600,23 +600,23 @@ var Client = IgeClass.extend({
 					this.backgroundColor('#6b6b6b');
 				}
 
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseOut(function () {
 				if (ige.client.data('cursorMode') !== 'build') {
 					this.backgroundColor('');
 				}
 
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseDown(function () {
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
 			.mouseUp(function () {
 				this.select();
-				ige.input.stopPropagation();
+				ige.components.input.stopPropagation();
 			})
-			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.input.stopPropagation(); } })
+			.mouseMove(function () { if (ige.client.data('cursorMode') !== 'panning') { ige.components.input.stopPropagation(); } })
 			// Define the callback when the radio button is selected
 			.select(function () {
 				ige.client.data('cursorMode', 'build');
@@ -629,7 +629,7 @@ var Client = IgeClass.extend({
 			.deSelect(function () {
 				// Hide the buildings drop-down
 				ige.$('uiMenuBuildings').hide();
-				
+
 				ige.client.data('currentlyHighlighted', false);
 				this.backgroundColor('');
 
@@ -650,23 +650,23 @@ var Client = IgeClass.extend({
 			type = Math.floor(Math.random() * 3);
 			x = Math.floor(Math.random() * 500);
 			y = Math.floor(Math.random() * 500);
-			
+
 			switch (type) {
-				case 0:
-					this.placeItem('Bank', x, y);
-					break;
-				
-				case 1:
-					this.placeItem('Electricals', x, y);
-					break;
-				
-				case 2:
-					this.placeItem('Burgers', x, y);
-					break;
+			case 0:
+				this.placeItem('Bank', x, y);
+				break;
+
+			case 1:
+				this.placeItem('Electricals', x, y);
+				break;
+
+			case 2:
+				this.placeItem('Burgers', x, y);
+				break;
 			}
 		}
 	},
-	
+
 	/**
 	 * Place a building on the map.
 	 * @param type
@@ -725,72 +725,114 @@ var Client = IgeClass.extend({
 	_mapOnMouseUp: function (x, y) {
 		// Check what mode our cursor is in
 		switch (ige.client.data('cursorMode')) {
-			case 'select':
+		case 'select':
 
 			break;
 
-			case 'move':
-				// Check if we are already moving an item 
-				if (!ige.client.data('moveItem')) {
-					// We're not already moving an item so check if the user
-					// just clicked on a building
-					var item = ige.client.itemAt(x, y),
-						apiUrl;
-					
-					if (item) {
-						// The user clicked on a building so set this as the
-						// building we are moving.
-						ige.client.data('moveItem', item);
-						ige.client.data('moveItemX', item.data('tileX'));
-						ige.client.data('moveItemY', item.data('tileY'));
-					}
-				} else {
-					// We are already moving a building, place this building
-					// down now
-					var item = ige.client.data('moveItem'),
-						moveX = item.data('lastMoveX'),
-						moveY = item.data('lastMoveY');
-					
-					item.moveTo(moveX, moveY);
-					
-					// Ask the server to move the item
-					// **SERVER-CALL**
-					apiUrl = ''; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process.php
-					if (apiUrl) {
-						$.ajax(apiUrl, {
-							dataType: 'json',
-							data: {
-								action: 'move',
-								fromX: ige.client.data('moveItemX'),
-								fromY: ige.client.data('moveItemY'),
-								classId: item._classId,
-								tileX: item.data('tileX'),
-								tileY: item.data('tileY')
-							},
-							success: function (data, status, requestObject) {
-								// Do what you want with the server return value
-							}
-						});
-					}
-					
-					// Clear the data
-					ige.client.data('moveItem', '');
-				}
-			break;
-
-			case 'delete':
+		case 'move':
+			// Check if we are already moving an item
+			if (!ige.client.data('moveItem')) {
+				// We're not already moving an item so check if the user
+				// just clicked on a building
 				var item = ige.client.itemAt(x, y),
 					apiUrl;
 
 				if (item) {
-					// Ask the server to remove the item
+					// The user clicked on a building so set this as the
+					// building we are moving.
+					ige.client.data('moveItem', item);
+					ige.client.data('moveItemX', item.data('tileX'));
+					ige.client.data('moveItemY', item.data('tileY'));
+				}
+			} else {
+				// We are already moving a building, place this building
+				// down now
+				var item = ige.client.data('moveItem'),
+					moveX = item.data('lastMoveX'),
+					moveY = item.data('lastMoveY');
+
+				item.moveTo(moveX, moveY);
+
+				// Ask the server to move the item
+				// **SERVER-CALL**
+				apiUrl = ''; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process.php
+				if (apiUrl) {
+					$.ajax(apiUrl, {
+						dataType: 'json',
+						data: {
+							action: 'move',
+							fromX: ige.client.data('moveItemX'),
+							fromY: ige.client.data('moveItemY'),
+							classId: item._classId,
+							tileX: item.data('tileX'),
+							tileY: item.data('tileY')
+						},
+						success: function (data, status, requestObject) {
+							// Do what you want with the server return value
+						}
+					});
+				}
+
+				// Clear the data
+				ige.client.data('moveItem', '');
+			}
+			break;
+
+		case 'delete':
+			var item = ige.client.itemAt(x, y),
+				apiUrl;
+
+			if (item) {
+				// Ask the server to remove the item
+				// **SERVER-CALL**
+				apiUrl = ''; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process.php
+				if (apiUrl) {
+					$.ajax(apiUrl, {
+						dataType: 'json',
+						data: {
+							action: 'delete',
+							classId: item._classId,
+							tileX: item.data('tileX'),
+							tileY: item.data('tileY')
+						},
+						success: function (data, status, requestObject) {
+							// Do what you want with the server return value
+						}
+					});
+				}
+
+				this.data('currentlyHighlighted', false);
+
+				// Remove the item from the engine
+				item.destroy();
+			}
+			break;
+
+		case 'build':
+			var item = ige.client.data('ghostItem'),
+				tempItem,
+				apiUrl;
+
+			if (item && item.data('tileX') !== -1000 && item.data('tileY') !== -1000) {
+				if (item.data('tileX') > -1 && item.data('tileY') > -1) {
+					// TODO: Use the collision map to check that the tile location is allowed for building! At the moment you can basically build anywhere and that sucks!
+					// Clear out reference to the ghost item
+					ige.client.data('ghostItem', false);
+
+					// Turn the ghost item into a "real" building
+					item.opacity(1)
+						.place();
+
+					// Now that we've placed a building, ask the server
+					// to ok / save the request. If the server doesn't
+					// tell us anything then the building is obviously ok!
 					// **SERVER-CALL**
 					apiUrl = ''; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process.php
 					if (apiUrl) {
 						$.ajax(apiUrl, {
 							dataType: 'json',
 							data: {
-								action: 'delete',
+								action: 'build',
 								classId: item._classId,
 								tileX: item.data('tileX'),
 								tileY: item.data('tileY')
@@ -801,59 +843,17 @@ var Client = IgeClass.extend({
 						});
 					}
 
-					this.data('currentlyHighlighted', false);
+					// Now create a new temporary building
+					tempItem = ige.client.createTemporaryItem(item._classId) // SkyScraper, Electricals etc
+						.opacity(0.7);
 
-					// Remove the item from the engine
-					item.destroy();
+					ige.client.data('ghostItem', tempItem);
 				}
-			break;
-
-			case 'build':
-				var item = ige.client.data('ghostItem'),
-					tempItem,
-					apiUrl;
-
-				if (item && item.data('tileX') !== -1000 && item.data('tileY') !== -1000) {
-					if (item.data('tileX') > -1 && item.data('tileY') > -1) {
-						// TODO: Use the collision map to check that the tile location is allowed for building! At the moment you can basically build anywhere and that sucks!
-						// Clear out reference to the ghost item
-						ige.client.data('ghostItem', false);
-
-						// Turn the ghost item into a "real" building
-						item.opacity(1)
-							.place();
-
-						// Now that we've placed a building, ask the server
-						// to ok / save the request. If the server doesn't
-						// tell us anything then the building is obviously ok!
-						// **SERVER-CALL**
-						apiUrl = ''; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process.php
-						if (apiUrl) {
-							$.ajax(apiUrl, {
-								dataType: 'json',
-								data: {
-									action: 'build',
-									classId: item._classId,
-									tileX: item.data('tileX'),
-									tileY: item.data('tileY')
-								},
-								success: function (data, status, requestObject) {
-									// Do what you want with the server return value
-								}
-							});
-						}
-
-						// Now create a new temporary building
-						tempItem = ige.client.createTemporaryItem(item._classId) // SkyScraper, Electricals etc
-							.opacity(0.7);
-
-						ige.client.data('ghostItem', tempItem);
-					}
-				}
+			}
 			break;
 		}
 	},
-	
+
 	/**
 	 * Handles when the mouse over event occurs on our map (tileMap1).
 	 * @param x
@@ -862,66 +862,66 @@ var Client = IgeClass.extend({
 	 */
 	_mapOnMouseOver: function (x, y) {
 		switch (ige.client.data('cursorMode')) {
-			case 'select':
-				// If we already have a selection, un-highlight it
-				if (this.data('currentlyHighlighted')) {
-					this.data('currentlyHighlighted').highlight(false);
-				}
+		case 'select':
+			// If we already have a selection, un-highlight it
+			if (this.data('currentlyHighlighted')) {
+				this.data('currentlyHighlighted').highlight(false);
+			}
 
-				// Highlight the building at the map x, y
-				var item = ige.client.itemAt(x, y);
-				if (item) {
-					item.highlight(true);
-					this.data('currentlyHighlighted', item);
-				}
+			// Highlight the building at the map x, y
+			var item = ige.client.itemAt(x, y);
+			if (item) {
+				item.highlight(true);
+				this.data('currentlyHighlighted', item);
+			}
 			break;
 
-			case 'delete':
-				// If we already have a selection, un-highlight it
-				if (this.data('currentlyHighlighted')) {
-					this.data('currentlyHighlighted').highlight(false);
-				}
+		case 'delete':
+			// If we already have a selection, un-highlight it
+			if (this.data('currentlyHighlighted')) {
+				this.data('currentlyHighlighted').highlight(false);
+			}
 
-				// Highlight the building at the map x, y
-				var item = ige.client.itemAt(x, y);
-				if (item) {
-					item.highlight(true);
-					this.data('currentlyHighlighted', item);
-				}
+			// Highlight the building at the map x, y
+			var item = ige.client.itemAt(x, y);
+			if (item) {
+				item.highlight(true);
+				this.data('currentlyHighlighted', item);
+			}
 			break;
-			
-			case 'move':
-				var item = ige.client.data('moveItem'),
-					map = ige.client.tileMap1.map;
-				
-				if (item) {
-					// Check if the current tile is occupied or not
-					if (!map.collision(x, y, item.data('tileWidth'), item.data('tileHeight')) || map.collisionWithOnly(x, y, item.data('tileWidth'), item.data('tileHeight'), item)) {
-						// We are currently moving an item so update it's
-						// translation
-						item.translateToTile(x, y);
-						
-						// Store the last position we accepted
-						item.data('lastMoveX', x);
-						item.data('lastMoveY', y);
-					}
-				}
-				break;
 
-			case 'build':
-				var item = ige.client.data('ghostItem');
-				if (item) {
-					// We have a ghost item so move it to where the
-					// mouse is!
+		case 'move':
+			var item = ige.client.data('moveItem'),
+				map = ige.client.tileMap1.map;
 
-					// Check the tile is not currently occupied!
-					if (!ige.client.tileMap1.map.collision(x, y, item.data('tileWidth'), item.data('tileHeight'))) {
-						// The tile is not occupied so move to it!
-						item.data('tileX', x)
-							.data('tileY', y)
-							.translateToTile(x, y, 0);
-					}
+			if (item) {
+				// Check if the current tile is occupied or not
+				if (!map.collision(x, y, item.data('tileWidth'), item.data('tileHeight')) || map.collisionWithOnly(x, y, item.data('tileWidth'), item.data('tileHeight'), item)) {
+					// We are currently moving an item so update it's
+					// translation
+					item.translateToTile(x, y);
+
+					// Store the last position we accepted
+					item.data('lastMoveX', x);
+					item.data('lastMoveY', y);
 				}
+			}
+			break;
+
+		case 'build':
+			var item = ige.client.data('ghostItem');
+			if (item) {
+				// We have a ghost item so move it to where the
+				// mouse is!
+
+				// Check the tile is not currently occupied!
+				if (!ige.client.tileMap1.map.collision(x, y, item.data('tileWidth'), item.data('tileHeight'))) {
+					// The tile is not occupied so move to it!
+					item.data('tileX', x)
+						.data('tileY', y)
+						.translateToTile(x, y, 0);
+				}
+			}
 			break;
 		}
 	}

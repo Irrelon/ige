@@ -9,7 +9,7 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
-		//ige.input.debug(true);
+		//ige.components.input.debug(true);
 
 		// Load the fairy texture and store it in the gameTexture array
 		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
@@ -97,7 +97,7 @@ var Client = IgeClass.extend({
 
 					self.vp1.camera.translateTo(0, 0, 0);
 					self.vp2.camera.scaleTo(2, 2, 2);
-					
+
 					self.cont = new IgeUiEntity()
 						.id('cont')
 						.middle(0)

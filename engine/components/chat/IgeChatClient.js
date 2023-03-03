@@ -3,13 +3,13 @@
  * The client-side chat component. Handles all client-side
  * chat methods and events.
  */
-var IgeChatClient = {
+const IgeChatClient = {
     /**
      * Asks the serve to let us join the room specified.
      * @param {String} roomId The room id of the room to join.
      */
     joinRoom: function (roomId) {
-        ige.network.send('igeChatJoinRoom', roomId);
+        ige.components.network.send('igeChatJoinRoom', roomId);
     },
     sendToRoom: function (roomId, message, to) {
         if (roomId !== undefined && message !== undefined) {
@@ -18,11 +18,11 @@ var IgeChatClient = {
                 text: message,
                 to: to
             };
-            ige.network.send('igeChatMsg', msg);
+            ige.components.network.send('igeChatMsg', msg);
         }
     },
     _onMessageFromServer: function (data) {
-        var self = ige.chat;
+        const self = ige.chat;
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
         if (!self.emit('messageFromServer', [data])) {
@@ -30,7 +30,7 @@ var IgeChatClient = {
         }
     },
     _onJoinedRoom: function (data) {
-        var self = ige.chat;
+        const self = ige.chat;
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
         if (!self.emit('joinedRoom', [data])) {
@@ -43,7 +43,7 @@ var IgeChatClient = {
         }
     },
     _onLeftRoom: function (data) {
-        var self = ige.chat;
+        const self = ige.chat;
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
         if (!self.emit('leftRoom', [data])) {
@@ -51,7 +51,7 @@ var IgeChatClient = {
         }
     },
     _onServerSentRoomList: function (data) {
-        var self = ige.chat;
+        const self = ige.chat;
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
         if (!self.emit('roomList', [data])) {
@@ -59,7 +59,7 @@ var IgeChatClient = {
         }
     },
     _onServerSentRoomUserList: function (data) {
-        var self = ige.chat;
+        const self = ige.chat;
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
         if (!self.emit('roomUserList', [data])) {
@@ -67,7 +67,7 @@ var IgeChatClient = {
         }
     },
     _onRoomCreated: function (data) {
-        var self = ige.chat;
+        const self = ige.chat;
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
         if (!self.emit('roomCreated', [data])) {
@@ -75,7 +75,7 @@ var IgeChatClient = {
         }
     },
     _onRoomRemoved: function (data) {
-        var self = ige.chat;
+        const self = ige.chat;
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
         if (!self.emit('roomRemoved', [data])) {

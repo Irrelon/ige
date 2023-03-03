@@ -8,8 +8,8 @@ const WithComponentMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class ext
 	_components: IgeComponent[] = []; // TODO: Rename this to _componentsArr
 	_componentBase: IgeBaseClass;
 
-	constructor () {
-		super();
+	constructor (...args: any[]) {
+		super(...args);
 		this._componentBase = this;
 	}
 
@@ -33,15 +33,6 @@ const WithComponentMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class ext
 	 *     entity.velocity.byAngleAndPower(degreesToRadians(20), 0.1);
 	 */
 	addComponent (component: typeof IgeComponent, options?: any) {
-		if (component.componentTargetClass) {
-			// Check that the entity we are adding this component to is the correct type
-			if (this.constructor.name !== component.componentTargetClass) {
-				throw new Error(
-					`${component.constructor.name} expected to be added to instance of [${component.componentTargetClass}] but was added to [${this.constructor.name}]`
-				);
-			}
-		}
-
 		const newComponentInstance = new component(this._componentBase, options);
 
 		this.components[newComponentInstance.componentId] = newComponentInstance;

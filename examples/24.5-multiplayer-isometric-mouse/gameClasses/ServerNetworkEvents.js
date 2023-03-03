@@ -31,7 +31,7 @@ var ServerNetworkEvents = {
 				.mount(ige.server.foregroundMap);
 
 			// Tell the client to track their player entity
-			ige.network.send('playerEntity', ige.server.players[clientId].id(), clientId);
+			ige.components.network.send('playerEntity', ige.server.players[clientId].id(), clientId);
 		}
 	},
 
@@ -42,10 +42,10 @@ var ServerNetworkEvents = {
 			startTile;
 
 		console.log('Path to: ', data);
-		
+
 		startTile = playerEntity._parent.pointToTile(currentPosition.toIso());
 		console.log('startTile', startTile);
-				
+
 		// Start movement along the new path
 		playerEntity.path
 			.clear()

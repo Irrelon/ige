@@ -9,14 +9,14 @@ class IgeUiManagerComponent extends IgeComponent {
             // Direct the key event to the focused element
             if (this._focus) {
                 this._focus.emit("keyUp", event);
-                this._ige.input.stopPropagation();
+                this._ige.components.input.stopPropagation();
             }
         };
         this._keyDown = (event) => {
             // Direct the key event to the focused element
             if (this._focus) {
                 this._focus.emit("keyDown", event);
-                this._ige.input.stopPropagation();
+                this._ige.components.input.stopPropagation();
             }
         };
         this._focus = null; // The element that currently has focus
@@ -93,7 +93,7 @@ class IgeUiManagerComponent extends IgeComponent {
         if (elem !== undefined) {
             if (elem !== this._focus) {
                 // The element is not our current focus so focus to it
-                var previousFocus = this._focus;
+                const previousFocus = this._focus;
                 // Tell the current focused element that it is about to loose focus
                 if (!previousFocus || !previousFocus.emit("blur", elem)) {
                     if (previousFocus) {

@@ -92,6 +92,10 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 	_cssFonts: string[];
 	_mouseOverVp?: IgeViewport;
 	_deviceFinalDrawRatio: number = 1;
+	_createdFrontBuffer: boolean = false;
+	_devicePixelRatio: number = 1;
+	_backingStoreRatio: number = 1;
+	_resized: boolean = false;
 	_requestAnimFrame?: (callback: (time: number, ctx?: CanvasRenderingContext2D) => void, element?: Element) => void;
 
 	constructor () {
@@ -169,6 +173,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 		}
 
 		// Output our header
+		console.log("-----------------------------------------");
 		console.log(`Powered by Isogenic Engine ${version}`);
 		console.log("(C)opyright " + new Date().getFullYear() + " Irrelon Software Limited");
 		console.log("https://www.isogenicengine.com");
@@ -195,6 +200,8 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 		// Set the entity on which any components are added - this defaults to "this"
 		// in the IgeComponentMixin.ts file - we override that here in this special case
 		this._componentBase = this.root;
+
+		this._resizeEvent();
 
 		// Set up components
 		this.addComponent(IgeInputComponent);
@@ -470,6 +477,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 
 		this._canvas = elem;
 		this._ctx = this._canvas.getContext(this._renderContext);
+
 		if (this._pixelRatioScaling) {
 			// Support high-definition devices and "retina" (stupid marketing name)
 			// displays by adjusting for device and back store pixels ratios
@@ -642,7 +650,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 	 * @param event
 	 * @private
 	 */
-	_resizeEvent = (event: Event) => {
+	_resizeEvent = (event?: Event) => {
 		let canvasBoundingRect;
 
 		if (this._autoSize) {
@@ -655,8 +663,8 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 				canvasBoundingRect = this._canvasPosition();
 
 				// Adjust the newWidth and newHeight by the canvas offset
-				newWidth -= parseInt(canvasBoundingRect.left, 10);
-				newHeight -= parseInt(canvasBoundingRect.top, 10);
+				newWidth -= canvasBoundingRect.left;
+				newHeight -= canvasBoundingRect.top;
 
 				// Make sure we can divide the new width and height by 2...
 				// otherwise minus 1 so we get an even number so that we
@@ -698,11 +706,13 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 		if (this._showSgTree) {
 			const sgTreeElem = document.getElementById("igeSgTree");
 
-			canvasBoundingRect = this._canvasPosition();
+			if (sgTreeElem) {
+				canvasBoundingRect = this._canvasPosition();
 
-			sgTreeElem.style.top = parseInt(canvasBoundingRect.top) + 5 + "px";
-			sgTreeElem.style.left = parseInt(canvasBoundingRect.left) + 5 + "px";
-			sgTreeElem.style.height = this.root._bounds2d.y - 30 + "px";
+				sgTreeElem.style.top = parseInt(canvasBoundingRect.top) + 5 + "px";
+				sgTreeElem.style.left = parseInt(canvasBoundingRect.left) + 5 + "px";
+				sgTreeElem.style.height = this.root._bounds2d.y - 30 + "px";
+			}
 		}
 
 		this._resized = true;
@@ -715,6 +725,13 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 	 * @private
 	 */
 	_canvasPosition () {
+		if (!this._canvas) {
+			return {
+				top: 0,
+				left: 0
+			};
+		}
+
 		try {
 			return this._canvas.getBoundingClientRect();
 		} catch (e) {
@@ -1996,7 +2013,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 		this._frontBufferSetup(autoSize, dontScale);
 	}
 
-	_frontBufferSetup (autoSize, dontScale) {
+	_frontBufferSetup (autoSize: boolean, dontScale: boolean) {
 		// Create a new canvas element to use as the
 		// rendering front-buffer
 		const tempCanvas = document.createElement("canvas");

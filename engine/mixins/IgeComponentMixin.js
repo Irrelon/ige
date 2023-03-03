@@ -1,7 +1,7 @@
 import { arrPull } from "../services/utils.js";
 const WithComponentMixin = (Base) => class extends Base {
-    constructor() {
-        super();
+    constructor(...args) {
+        super(...args);
         this.components = {};
         this._components = []; // TODO: Rename this to _componentsArr
         this._componentBase = this;
@@ -26,12 +26,6 @@ const WithComponentMixin = (Base) => class extends Base {
      *     entity.velocity.byAngleAndPower(degreesToRadians(20), 0.1);
      */
     addComponent(component, options) {
-        if (component.componentTargetClass) {
-            // Check that the entity we are adding this component to is the correct type
-            if (this.constructor.name !== component.componentTargetClass) {
-                throw new Error(`${component.constructor.name} expected to be added to instance of [${component.componentTargetClass}] but was added to [${this.constructor.name}]`);
-            }
-        }
         const newComponentInstance = new component(this._componentBase, options);
         this.components[newComponentInstance.componentId] = newComponentInstance;
         // Add the component reference to the class component array

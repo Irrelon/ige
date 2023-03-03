@@ -1,7 +1,7 @@
 /**
  * Adds stream capabilities to the network system.
  */
-var IgeStreamComponent = IgeEventingClass.extend({
+const IgeStreamComponent = IgeEventingClass.extend({
 	classId: 'IgeStreamComponent',
 	componentId: 'stream',
 
@@ -14,8 +14,8 @@ var IgeStreamComponent = IgeEventingClass.extend({
 		this._entity = entity;
 		this._options = options;
 
-		var self = this;
-		
+		const self = this;
+
 		// Set the stream data section designator character
 		this._sectionDesignator = '¬';
 
@@ -93,7 +93,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 	 * Starts the stream of world updates to connected clients.
 	 */
 	start: function () {
-		var self = this;
+		const self = this;
 
 		this.log('Starting delta stream...');
 		this._streamTimer = setInterval(function () { self._sendQueue(); }, this._streamInterval);
@@ -131,7 +131,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 	 * @private
 	 */
 	_sendQueue: function () {
-		var st = new Date().getTime(),
+		let st = new Date().getTime(),
 			ct,
 			dt,
 			arr = this._queuedData,
@@ -178,7 +178,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 	},
 
 	_onStreamCreate: function (data) {
-		var classId = data[0],
+		let classId = data[0],
 			entityId = data[1],
 			parentId = data[2],
 			transformData = data[3],
@@ -198,14 +198,14 @@ var IgeStreamComponent = IgeEventingClass.extend({
 					entity = new classConstructor(createData)
 						.id(entityId)
 						.mount(parent);
-					
+
 					entity.streamSectionData('transform', transformData, true);
 
 					// Set the just created flag which will stop the renderer
 					// from handling this entity until after the first stream
 					// data has been received for it
 					entity._streamJustCreated = true;
-					
+
 					if (entity._streamEmitCreated) {
 						entity.emit('streamCreated');
 					}
@@ -214,7 +214,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
 					// data, inform any interested listeners
 					this.emit('entityCreated', entity);
 				} else {
-					ige.network.stop();
+					ige.components.network.stop();
 					ige.stop();
 
 					this.log('Network stream cannot create entity with class ' + classId + ' because the class has not been defined! The engine will now stop.', 'error');
@@ -226,15 +226,15 @@ var IgeStreamComponent = IgeEventingClass.extend({
 	},
 
 	_onStreamDestroy: function (data) {
-		var entity = ige.$(data[1]),
+		const entity = ige.$(data[1]),
 			self = this;
-		
+
 		if (entity) {
 			// Calculate how much time we have left before the entity
 			// should be removed from the simulation given the render
 			// latency setting and the current time
-			var destroyDelta = ige.network.stream._renderLatency + (ige._currentTime - data[0]);
-			
+			const destroyDelta = ige.components.network.stream._renderLatency + (ige._currentTime - data[0]);
+
 			if (destroyDelta > 0) {
 				// Give the entity a lifespan to destroy it in x ms
 				entity.lifeSpan(destroyDelta, function () {
@@ -257,10 +257,10 @@ var IgeStreamComponent = IgeEventingClass.extend({
 	 */
 	_onStreamData: function (data) {
 		// Read the packet data into variables
-		var entityId,
+		let entityId,
 			entity,
 			sectionArr,
-			sectionDataArr = data.split(ige.network.stream._sectionDesignator),
+			sectionDataArr = data.split(ige.components.network.stream._sectionDesignator),
 			sectionDataCount = sectionDataArr.length,
 			sectionIndex,
 			justCreated;

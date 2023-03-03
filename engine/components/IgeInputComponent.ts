@@ -1,10 +1,10 @@
 import IgePoint3d from "../core/IgePoint3d";
 import IgeComponent from "../core/IgeComponent";
-import Ige from "../core/Ige";
 import IgeViewport from "../core/IgeViewport";
 import IgeBaseClass from "../core/IgeBaseClass";
 import WithEventingMixin from "../mixins/IgeEventingMixin";
 import {ige} from "../instance";
+import Ige from "../core/Ige";
 
 export interface IgeInputMouseInterface {
 	"dblClick": number;
@@ -116,8 +116,7 @@ export interface IgeInputEventControl {
 	stopPropagation: () => void;
 }
 
-class IgeInputComponent extends WithEventingMixin(IgeComponent) {
-	static componentTargetClass = "Ige";
+class IgeInputComponent extends WithEventingMixin(IgeComponent<Ige>) {
 	classId = "IgeInputComponent";
 	componentId = "input";
 	_eventQueue: [((evc: IgeInputEventControl, eventData?: any) => void), any][];
@@ -144,7 +143,7 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent) {
 		this._eventQueue = [];
 		this._eventControl = {
 			"_cancelled": false,
-			"stopPropagation"() {
+			"stopPropagation" () {
 				this._cancelled = true;
 			}
 		};
@@ -583,7 +582,7 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent) {
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		var mx = event.igeX - this._entity._bounds2d.x2,
+		const mx = event.igeX - this._entity._bounds2d.x2,
 			my = event.igeY - this._entity._bounds2d.y2,
 			self = this;
 
@@ -671,7 +670,7 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent) {
 	 * @private
 	 */
 	_keyDown = (event: KeyboardEvent) => {
-		var self = this;
+		const self = this;
 
 		this._state[event.keyCode] = true;
 
@@ -827,7 +826,7 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent) {
 	 * Called by the engine after ALL other tick methods have processed.
 	 * Call originates in IgeRoot.js. Allows us to reset any flags etc.
 	 */
-	tick() {
+	tick () {
 		// If we have an event queue, process it
 		const arr = this._eventQueue;
 		const evc = this._eventControl;
@@ -856,7 +855,7 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent) {
 
 	/**
 	 * Emit an event by name. Overrides the IgeEventingClass emit method and
-	 * checks for propagation stopped by calling ige.input.stopPropagation().
+	 * checks for propagation stopped by calling ige.components.input.stopPropagation().
 	 * @param {Object} eventName The name of the event to emit.
 	 * @param {Object || Array} args The arguments to send to any listening methods.
 	 * If you are sending multiple arguments, use an array containing each argument.

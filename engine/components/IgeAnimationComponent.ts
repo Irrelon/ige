@@ -1,5 +1,5 @@
 import IgeComponent from "../core/IgeComponent";
-import WithComponentMixin from "../mixins/IgeComponentMixin";
+import IgeEntity from "../core/IgeEntity";
 
 /**
  * The animation component class. Handles defining and controlling
@@ -9,7 +9,7 @@ import WithComponentMixin from "../mixins/IgeComponentMixin";
  * @event loopComplete - The animation has completed a full cycle (shown all frames).
  * @event complete - The animation has completed all assigned loop cycles.
  */
-class IgeAnimationComponent extends IgeComponent {
+class IgeAnimationComponent extends IgeComponent<IgeEntity> {
 	classId = "IgeAnimationComponent";
 	componentId = "animation";
 	_anims: Record<string, any>;
@@ -19,7 +19,7 @@ class IgeAnimationComponent extends IgeComponent {
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	constructor (entity: typeof WithComponentMixin, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._anims = {};
@@ -50,9 +50,9 @@ class IgeAnimationComponent extends IgeComponent {
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 * @return {*}
 	 */
-	define = (id, frames, fps, loop, convertIdsToIndex) => {
+	define = (id: string, frames: number[], fps: number, loop: number, convertIdsToIndex: boolean) => {
 		if (frames && frames.length) {
-			var i, frame;
+			let i, frame;
 			this._anims.length = this._anims.length || 0;
 
 			if (convertIdsToIndex === undefined) {
@@ -78,7 +78,7 @@ class IgeAnimationComponent extends IgeComponent {
 			}
 
 			// Store the animation
-			var frameTime = ((1000 / fps)|0);
+			const frameTime = ((1000 / fps)|0);
 			this._anims[id] = {
 				frames,
 				frameTime,
@@ -98,7 +98,7 @@ class IgeAnimationComponent extends IgeComponent {
 
 	addFrame = (id, frameId) => {
 		if (this._anims[id]) {
-			var anim = this._anims[id];
+			const anim = this._anims[id];
 
 			if (typeof(frameId) === "string") {
 				frameId = this._entity._texture.cellIdToIndex(frameId);
@@ -112,7 +112,7 @@ class IgeAnimationComponent extends IgeComponent {
 
 	removeFrame = (id, frameIndex) => {
 		if (this._anims[id]) {
-			var anim = this._anims[id];
+			const anim = this._anims[id];
 
 			anim.frames.splice(frameIndex, 1);
 			anim.frameCount--;
@@ -159,7 +159,7 @@ class IgeAnimationComponent extends IgeComponent {
 	 */
 	setFps = (id, fps) => {
 		if (this._anims) {
-			var anim = this._anims[id];
+			const anim = this._anims[id];
 
 			if (anim) {
 				anim.frameTime = ((1000 / fps)|0);
@@ -278,7 +278,7 @@ class IgeAnimationComponent extends IgeComponent {
 	 */
 	start = (animId, options) => {
 		if (this._anims) {
-			var anim = this._anims[animId];
+			const anim = this._anims[animId];
 
 			if (anim) {
 				anim.currentDelta = 0;
@@ -367,13 +367,13 @@ class IgeAnimationComponent extends IgeComponent {
 	 * @param {Number} tickDelta The current ige._tickDelta passed down the scenegraph.
 	 */
 	_update = (ctx, tickDelta) => {
-		var self = this.animation;
+		const self = this.animation;
 
 		// Just in case someone forgets to pass it in their update call!
 		tickDelta = tickDelta || ige._tickDelta;
 
 		if (self._anim) {
-			var anim = self._anim,
+			let anim = self._anim,
 				multiple,
 				cell,
 				frame;

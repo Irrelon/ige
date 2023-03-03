@@ -21,10 +21,10 @@ var ServerNetworkEvents = {
 			self._clientStore[clientId].username = data.username;
 
 			console.log('Sending login accepted...');
-			ige.network.send('login', {success: true}, clientId);
+			ige.components.network.send('login', {success: true}, clientId);
 		} else {
 			console.log('Sending login denied...');
-			ige.network.send('login', {success: false}, clientId);
+			ige.components.network.send('login', {success: false}, clientId);
 		}
 	},
 
@@ -45,7 +45,7 @@ var ServerNetworkEvents = {
 		ige.mongo.findAll('buildings', searchData, function (err, results) {
 			console.log(results);
 			if (results && results.length) {
-				ige.network.send('getMap', results);
+				ige.components.network.send('getMap', results);
 			}
 		});
 	},

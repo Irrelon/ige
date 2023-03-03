@@ -13,14 +13,14 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
-		ige.input.debug(true);
+		ige.components.input.debug(true);
 
 		// Create the HTML canvas
 		ige.createFrontBuffer(true);
 
 		// Setup the input system to use events
 		// from the three.js renderer canvas
-		ige.input.setupListeners(ige.three._canvas);
+		ige.components.input.setupListeners(ige.three._canvas);
 
 		// Start the engine
 		ige.start(function (success) {
@@ -42,10 +42,10 @@ var Client = IgeClass.extend({
 
 				self.vp1.camera.translateTo(0, 0, 500);
 
-				ige.input.mapAction('rotateLeft', ige.input.key.left);
-				ige.input.mapAction('rotateRight', ige.input.key.right);
-				ige.input.mapAction('rotateLeft', ige.input.key.a);
-				ige.input.mapAction('rotateRight', ige.input.key.d);
+				ige.components.input.mapAction('rotateLeft', ige.components.input.key.left);
+				ige.components.input.mapAction('rotateRight', ige.components.input.key.right);
+				ige.components.input.mapAction('rotateLeft', ige.components.input.key.a);
+				ige.components.input.mapAction('rotateRight', ige.components.input.key.d);
 
 				self.plane = new IgeEntity()
 					.id('plane')

@@ -10,15 +10,15 @@ var PlayerComponent = IgeEntity.extend({
 
 		// Store any options that were passed to us
 		this._options = options;
-		
+
 		if (ige.isClient) {
 			// Listen for mouse events on the texture map
 			ige.client.textureMap1.mouseUp(function (mouseEvent) {
-				
+
 				var tilePos = this.mouseToTile();
 
 				// Send a message to the server asking to path to this tile
-				ige.network.send('playerControlToTile', [tilePos.x, tilePos.y]);
+				ige.components.network.send('playerControlToTile', [tilePos.x, tilePos.y]);
 			});
 		}
 	}

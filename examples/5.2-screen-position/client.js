@@ -3,7 +3,7 @@ var Client = IgeClass.extend({
 	init: function () {
 		var self = this;
 		ige.addComponent(IgeEditorComponent);
-		ige.input.debug(true);
+		ige.components.input.debug(true);
 
 		// Load our textures
 		self.obj = [];

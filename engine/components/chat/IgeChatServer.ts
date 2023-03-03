@@ -2,49 +2,49 @@
  * The server-side chat component. Handles all server-side
  * chat methods and events.
  */
-var IgeChatServer = {
-    /**
+const IgeChatServer = {
+	/**
      * Creates a new room with the specified room name and options.
      * @param roomName The display name of the room.
      * @param options An object containing options key/values.
 	 * @param {String=} roomId If specified, becomes the new room's ID.
      * @return {String} The new room's ID.
      */
-    createRoom: function (roomName, options, roomId) {
-		var self = ige.chat,
+	createRoom: function (roomName, options, roomId) {
+		const self = ige.chat,
 			newRoomId = roomId || ige.newIdHex();
 
-       self._rooms[roomId] = {
-            id: newRoomId,
-            name: roomName,
-            options: options,
-            users: []
-        };
+		self._rooms[roomId] = {
+			id: newRoomId,
+			name: roomName,
+			options: options,
+			users: []
+		};
 
 		// Inform all users that the room was created
 		self._entity.network.send('igeChatRoomCreated', roomId);
 
-        return roomId;
-    },
+		return roomId;
+	},
 
 	/**
 	 * Removes an existing room with the specified id.
 	 * @param roomId
 	 * @return {Boolean}
 	 */
-    removeRoom: function (roomId) {
-		var self = ige.chat;
+	removeRoom: function (roomId) {
+		const self = ige.chat;
 
-        if (self._rooms[roomId]) {
+		if (self._rooms[roomId]) {
 			// Inform all users that the room was removed
 			self._entity.network.send('igeChatRoomRemoved', roomId);
 
-            delete self._rooms[roomId];
-            return true;
-        } else {
-            return false;
-        }
-    },
+			delete self._rooms[roomId];
+			return true;
+		} else {
+			return false;
+		}
+	},
 
 	/**
 	 * Sends a message to a room.
@@ -54,10 +54,10 @@ var IgeChatServer = {
 	 * @param {String} from The id of the user that sent the message.
 	 */
 	sendToRoom: function (roomId, message, to, from) {
-		var self = ige.chat;
+		const self = ige.chat;
 
 		if (self._rooms[roomId]) {
-			var room = self._rooms[roomId],
+			let room = self._rooms[roomId],
 				msg, i;
 
 			if (message !== undefined) {
@@ -88,14 +88,14 @@ var IgeChatServer = {
 		}
 	},
 
-    _onMessageFromClient: function (msg, clientId) {
-		var self = ige.chat,
+	_onMessageFromClient: function (msg, clientId) {
+		let self = ige.chat,
 			room;
 
-        // Emit the event and if it wasn't cancelled (by returning true) then
-        // process this ourselves
-        if (!self.emit('messageFromClient', [msg, clientId])) {
-            console.log('Message from client: (' + clientId + ')', msg);
+		// Emit the event and if it wasn't cancelled (by returning true) then
+		// process this ourselves
+		if (!self.emit('messageFromClient', [msg, clientId])) {
+			console.log('Message from client: (' + clientId + ')', msg);
 
 			if (msg.roomId) {
 				room = self._rooms[msg.roomId];
@@ -119,16 +119,16 @@ var IgeChatServer = {
 				// No room id in the message
 				console.log('User tried to send message to room but didn\'t specify room id!', msg);
 			}
-        }
-    },
+		}
+	},
 
-    _onJoinRoomRequestFromClient: function (roomId, clientId) {
-		var self = ige.chat;
+	_onJoinRoomRequestFromClient: function (roomId, clientId) {
+		const self = ige.chat;
 
-        // Emit the event and if it wasn't cancelled (by returning true) then
-        // process this ourselves
-        if (!self.emit('clientJoinRoomRequest', [roomId, clientId])) {
-			var room = self._rooms[roomId];
+		// Emit the event and if it wasn't cancelled (by returning true) then
+		// process this ourselves
+		if (!self.emit('clientJoinRoomRequest', [roomId, clientId])) {
+			const room = self._rooms[roomId];
 
 			self.log('Client wants to join room: (' + clientId + ')', roomId);
 
@@ -138,7 +138,7 @@ var IgeChatServer = {
 				if (!room.users[clientId]) {
 					// Add the user to the room
 					room.users.push(clientId);
-					ige.network.send('igeChatJoinRoom', {roomId: roomId, joined: true}, clientId);
+					ige.components.network.send('igeChatJoinRoom', {roomId: roomId, joined: true}, clientId);
 					console.log('User "' + clientId + '" joined room ' + roomId);
 				} else {
 					// User is already in the room!
@@ -146,32 +146,32 @@ var IgeChatServer = {
 			} else {
 				// Room does not exist!
 			}
-        }
-    },
+		}
+	},
 
-    _onLeaveRoomRequestFromClient: function (roomId, clientId) {
-        // Emit the event and if it wasn't cancelled (by returning true) then
-        // process this ourselves
-        if (!self.emit('clientLeaveRoomRequest', [roomId, clientId])) {
-            console.log('Client wants to leave room: (' + clientId + ')', roomId);
-        }
-    },
+	_onLeaveRoomRequestFromClient: function (roomId, clientId) {
+		// Emit the event and if it wasn't cancelled (by returning true) then
+		// process this ourselves
+		if (!self.emit('clientLeaveRoomRequest', [roomId, clientId])) {
+			console.log('Client wants to leave room: (' + clientId + ')', roomId);
+		}
+	},
 
-    _onClientWantsRoomList: function (data, clientId) {
-        // Emit the event and if it wasn't cancelled (by returning true) then
-        // process this ourselves
-        if (!self.emit('clientRoomListRequest', [data, clientId])) {
-            console.log('Client wants the room list: (' + clientId + ')', data);
-        }
-    },
+	_onClientWantsRoomList: function (data, clientId) {
+		// Emit the event and if it wasn't cancelled (by returning true) then
+		// process this ourselves
+		if (!self.emit('clientRoomListRequest', [data, clientId])) {
+			console.log('Client wants the room list: (' + clientId + ')', data);
+		}
+	},
 
-    _onClientWantsRoomUserList: function (roomId, clientId) {
-        // Emit the event and if it wasn't cancelled (by returning true) then
-        // process this ourselves
-        if (!self.emit('clientRoomUserListRequest', [roomId, clientId])) {
-            console.log('Client wants the room user list: (' + clientId + ')', roomId);
-        }
-    }
+	_onClientWantsRoomUserList: function (roomId, clientId) {
+		// Emit the event and if it wasn't cancelled (by returning true) then
+		// process this ourselves
+		if (!self.emit('clientRoomUserListRequest', [roomId, clientId])) {
+			console.log('Client wants the room user list: (' + clientId + ')', roomId);
+		}
+	}
 };
 
 if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeChatServer; }

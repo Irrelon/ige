@@ -2,11 +2,11 @@ var Client = IgeClass.extend({
 	classId: 'Client',
 	init: function () {
 		var self = this;
-		//ige.input.debug(true);
-		
+		//ige.components.input.debug(true);
+
 		//ige.addComponent(IgeEditorComponent);
 		ige.addComponent(IgeGamePadComponent);
-		
+
 		// Add physics and setup physics world
 		ige.addComponent(IgeBox2dComponent)
 			.box2d.sleep(true)
@@ -47,13 +47,13 @@ var Client = IgeClass.extend({
 						.texture(self.gameTexture.shapes.square)
 						.translateTo(0, 0, 0)
 						.mount(ige.$('baseScene'));
-					
+
 					self.spawnTarget();
 				}
 			});
 		});
 	},
-	
+
 	spawnTarget: function () {
 		setTimeout(function () {
 			new Square()
@@ -65,7 +65,7 @@ var Client = IgeClass.extend({
 				.mount(ige.$('baseScene'))
 				.ready();
 		}, 500);
-		
+
 	}
 });
 

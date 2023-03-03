@@ -2,7 +2,7 @@ import IgePoint3d from "../core/IgePoint3d.js";
 import IgeComponent from "../core/IgeComponent.js";
 import WithEventingMixin from "../mixins/IgeEventingMixin.js";
 import { ige } from "../instance.js";
-class IgeInputComponent extends WithEventingMixin(IgeComponent) {
+class IgeInputComponent extends WithEventingMixin((IgeComponent)) {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgeInputComponent";
@@ -247,7 +247,7 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent) {
             }
             // Update the mouse position within the viewports
             this._updateMouseData(event);
-            var mx = event.igeX - this._entity._bounds2d.x2, my = event.igeY - this._entity._bounds2d.y2, self = this;
+            const mx = event.igeX - this._entity._bounds2d.x2, my = event.igeY - this._entity._bounds2d.y2, self = this;
             if (event.button === 0) {
                 this._state[this.mouse.button1] = false;
             }
@@ -316,7 +316,7 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent) {
          * @private
          */
         this._keyDown = (event) => {
-            var self = this;
+            const self = this;
             this._state[event.keyCode] = true;
             if (this._debug) {
                 console.log("Key Down", event);
@@ -443,7 +443,7 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent) {
         };
         /**
          * Emit an event by name. Overrides the IgeEventingClass emit method and
-         * checks for propagation stopped by calling ige.input.stopPropagation().
+         * checks for propagation stopped by calling ige.components.input.stopPropagation().
          * @param {Object} eventName The name of the event to emit.
          * @param {Object || Array} args The arguments to send to any listening methods.
          * If you are sending multiple arguments, use an array containing each argument.
@@ -692,5 +692,4 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent) {
         this.mouseWheel = false;
     }
 }
-IgeInputComponent.componentTargetClass = "Ige";
 export default IgeInputComponent;

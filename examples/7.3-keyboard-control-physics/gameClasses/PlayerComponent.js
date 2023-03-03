@@ -16,20 +16,20 @@ var PlayerComponent = IgeClass.extend({
 		this._options = options;
 
 		// Setup the control system
-		ige.input.mapAction('walkLeft', ige.input.key.left);
-		ige.input.mapAction('walkRight', ige.input.key.right);
-		ige.input.mapAction('walkUp', ige.input.key.up);
-		ige.input.mapAction('walkDown', ige.input.key.down);
+		ige.components.input.mapAction('walkLeft', ige.components.input.key.left);
+		ige.components.input.mapAction('walkRight', ige.components.input.key.right);
+		ige.components.input.mapAction('walkUp', ige.components.input.key.up);
+		ige.components.input.mapAction('walkDown', ige.components.input.key.down);
 
 		// Listen for the key up event
-		ige.input.on('keyUp', function (event, keyCode) { self._keyUp(event, keyCode); });
+		ige.components.input.on('keyUp', function (event, keyCode) { self._keyUp(event, keyCode); });
 
 		// Add the playerComponent behaviour to the entity
 		this._entity.addBehaviour('playerComponent_behaviour', this._behaviour);
 	},
 
 	_keyUp: function (event, keyCode) {
-		if (keyCode === ige.input.key.space) {
+		if (keyCode === ige.components.input.key.space) {
 			// Change the character
 			this._entity._characterType++;
 
@@ -45,75 +45,75 @@ var PlayerComponent = IgeClass.extend({
 		var vel = 6,
 			direction = '';
 
-		if (ige.input.actionState('walkUp')) {
+		if (ige.components.input.actionState('walkUp')) {
 			direction += 'N';
 		}
 
-		if (ige.input.actionState('walkDown')) {
+		if (ige.components.input.actionState('walkDown')) {
 			direction += 'S';
 		}
 
-		if (ige.input.actionState('walkLeft')) {
+		if (ige.components.input.actionState('walkLeft')) {
 			direction += 'W';
 		}
 
-		if (ige.input.actionState('walkRight')) {
+		if (ige.components.input.actionState('walkRight')) {
 			direction += 'E';
 		}
 
 		switch (direction) {
-			case 'N':
-				this._box2dBody.SetLinearVelocity(new IgePoint3d(0, -vel, 0));
-				this._box2dBody.SetAwake(true);
-				this.animation.select('walkUp');
-				break;
+		case 'N':
+			this._box2dBody.SetLinearVelocity(new IgePoint3d(0, -vel, 0));
+			this._box2dBody.SetAwake(true);
+			this.animation.select('walkUp');
+			break;
 
-			case 'S':
-				this._box2dBody.SetLinearVelocity(new IgePoint3d(0, vel, 0));
-				this._box2dBody.SetAwake(true);
-				this.animation.select('walkDown');
-				break;
+		case 'S':
+			this._box2dBody.SetLinearVelocity(new IgePoint3d(0, vel, 0));
+			this._box2dBody.SetAwake(true);
+			this.animation.select('walkDown');
+			break;
 
-			case 'E':
-				this._box2dBody.SetLinearVelocity(new IgePoint3d(vel, 0, 0));
-				this._box2dBody.SetAwake(true);
-				this.animation.select('walkRight');
-				break;
+		case 'E':
+			this._box2dBody.SetLinearVelocity(new IgePoint3d(vel, 0, 0));
+			this._box2dBody.SetAwake(true);
+			this.animation.select('walkRight');
+			break;
 
-			case 'W':
-				this._box2dBody.SetLinearVelocity(new IgePoint3d(-vel, 0, 0));
-				this._box2dBody.SetAwake(true);
-				this.animation.select('walkLeft');
-				break;
+		case 'W':
+			this._box2dBody.SetLinearVelocity(new IgePoint3d(-vel, 0, 0));
+			this._box2dBody.SetAwake(true);
+			this.animation.select('walkLeft');
+			break;
 
-			case 'NE':
-				this._box2dBody.SetLinearVelocity(new IgePoint3d(vel, -vel, 0));
-				this._box2dBody.SetAwake(true);
-				this.animation.select('walkRight');
-				break;
+		case 'NE':
+			this._box2dBody.SetLinearVelocity(new IgePoint3d(vel, -vel, 0));
+			this._box2dBody.SetAwake(true);
+			this.animation.select('walkRight');
+			break;
 
-			case 'NW':
-				this._box2dBody.SetLinearVelocity(new IgePoint3d(-vel, -vel, 0));
-				this._box2dBody.SetAwake(true);
-				this.animation.select('walkLeft');
-				break;
+		case 'NW':
+			this._box2dBody.SetLinearVelocity(new IgePoint3d(-vel, -vel, 0));
+			this._box2dBody.SetAwake(true);
+			this.animation.select('walkLeft');
+			break;
 
-			case 'SE':
-				this._box2dBody.SetLinearVelocity(new IgePoint3d(vel, vel, 0));
-				this._box2dBody.SetAwake(true);
-				this.animation.select('walkRight');
-				break;
+		case 'SE':
+			this._box2dBody.SetLinearVelocity(new IgePoint3d(vel, vel, 0));
+			this._box2dBody.SetAwake(true);
+			this.animation.select('walkRight');
+			break;
 
-			case 'SW':
-				this._box2dBody.SetLinearVelocity(new IgePoint3d(-vel, vel, 0));
-				this._box2dBody.SetAwake(true);
-				this.animation.select('walkLeft');
-				break;
+		case 'SW':
+			this._box2dBody.SetLinearVelocity(new IgePoint3d(-vel, vel, 0));
+			this._box2dBody.SetAwake(true);
+			this.animation.select('walkLeft');
+			break;
 
-			default:
-				this._box2dBody.SetLinearVelocity(new IgePoint3d(0, 0, 0));
-				this.animation.stop();
-				break;
+		default:
+			this._box2dBody.SetLinearVelocity(new IgePoint3d(0, 0, 0));
+			this.animation.stop();
+			break;
 		}
 	}
 });

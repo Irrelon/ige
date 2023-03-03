@@ -26,7 +26,7 @@ class IgeUiElement extends IgeUiEntity {
 		this.on("mouseOver", () => {
 			if (this._allowHover) {
 				this._updateStyle();
-				this._ige.input.stopPropagation();
+				this._ige.components.input.stopPropagation();
 			} else {
 				this._mouseStateOver = false;
 			}
@@ -35,7 +35,7 @@ class IgeUiElement extends IgeUiEntity {
 		this.on("mouseOut", () => {
 			if (this._allowHover) {
 				this._updateStyle();
-				this._ige.input.stopPropagation();
+				this._ige.components.input.stopPropagation();
 			} else {
 				this._mouseStateOver = false;
 			}
@@ -44,7 +44,7 @@ class IgeUiElement extends IgeUiEntity {
 		this.on("mouseDown", () => {
 			if (this._allowActive) {
 				this._updateStyle();
-				this._ige.input.stopPropagation();
+				this._ige.components.input.stopPropagation();
 			} else {
 				this._mouseStateDown = false;
 			}
@@ -56,7 +56,7 @@ class IgeUiElement extends IgeUiEntity {
 				if (!this.focus()) {
 					this._updateStyle();
 				} else {
-					this._ige.input.stopPropagation();
+					this._ige.components.input.stopPropagation();
 				}
 			} else if (this._allowActive) {
 				this._updateStyle();
@@ -173,7 +173,7 @@ class IgeUiElement extends IgeUiEntity {
 			//this.log('Checking for styles with selector: ' + styleName);
 
 			// Basic
-			var styleData = this._ige.ui.style(styleName);
+			const styleData = this._ige.ui.style(styleName);
 			if (styleData) {
 				//this.log('Applying styles with selector "' + styleName + '"');
 				this.applyStyle(styleData);

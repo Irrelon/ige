@@ -3,7 +3,7 @@
  * The client-side socket.io component. Handles all client-side
  * networking systems.
  */
-var IgeSocketIoClient = {
+const IgeSocketIoClient = {
     _initDone: false,
     _idCounter: 0,
     _requests: {},
@@ -26,7 +26,7 @@ var IgeSocketIoClient = {
      * network has started.
      */
     start: function (data, callback) {
-        var self = this;
+        const self = this;
         // Check if the io library exists and use ioNoDom otherwise
         if (typeof (io) === 'undefined') {
             io = ioNoDom;
@@ -44,7 +44,7 @@ var IgeSocketIoClient = {
         // Define message listener
         this._io.on('message', function (data) {
             if (!self._initDone) {
-                var i, commandCount = 0;
+                let i, commandCount = 0;
                 // Check if the data is an init packet
                 if (data.cmd === 'init') {
                     // Set flag to show we've now received an init command
@@ -103,7 +103,7 @@ var IgeSocketIoClient = {
         }
     },
     send: function (commandName, data) {
-        var commandIndex = this._networkCommandsLookup[commandName];
+        const commandIndex = this._networkCommandsLookup[commandName];
         if (commandIndex !== undefined) {
             this._io.json.send([commandIndex, data]);
         }
@@ -114,7 +114,7 @@ var IgeSocketIoClient = {
     /**
      * Sends a network request. This is different from a standard
      * call to send() because the recipient code will be able to
-     * respond by calling ige.network.response(). When the response
+     * respond by calling ige.components.network.response(). When the response
      * is received, the callback method that was passed in the
      * callback parameter will be fired with the response data.
      * @param {String} commandName
@@ -123,7 +123,7 @@ var IgeSocketIoClient = {
      */
     request: function (commandName, data, callback) {
         // Build the request object
-        var req = {
+        const req = {
             id: this.newIdHex(),
             cmd: commandName,
             data: data,
@@ -146,7 +146,7 @@ var IgeSocketIoClient = {
      */
     response: function (requestId, data) {
         // Grab the original request object
-        var req = this._requests[requestId];
+        const req = this._requests[requestId];
         if (req) {
             // Send the network response packet
             this.send('_igeResponse', {
@@ -183,10 +183,10 @@ var IgeSocketIoClient = {
     _onResponse: function (data) {
         // The message is a network response
         // to a request we sent earlier
-        var id = data.id;
+        const id = data.id;
         // Get the original request object from
         // the request id
-        var req = this._requests[id];
+        const req = this._requests[id];
         if (this.debug()) {
             console.log('onResponse', data);
             this._debugCounter++;
@@ -214,7 +214,7 @@ var IgeSocketIoClient = {
      * @private
      */
     _onMessageFromServer: function (data) {
-        var commandName = this._networkCommandsIndex[data[0]];
+        const commandName = this._networkCommandsIndex[data[0]];
         if (this._networkCommands[commandName]) {
             this._networkCommands[commandName](data[1]);
         }

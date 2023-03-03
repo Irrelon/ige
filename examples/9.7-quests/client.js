@@ -115,10 +115,10 @@ var Client = IgeClass.extend({
 					.borderTopColor('#666666')
 					.borderTopWidth(1)
 					.backgroundPosition(0, 0)
-					.mouseOver(function () {this.backgroundColor('#49ceff'); ige.input.stopPropagation(); })
-					.mouseOut(function () {this.backgroundColor('#474747'); ige.input.stopPropagation(); })
-					.mouseMove(function () { ige.input.stopPropagation(); })
-					.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
+					.mouseOver(function () {this.backgroundColor('#49ceff'); ige.components.input.stopPropagation(); })
+					.mouseOut(function () {this.backgroundColor('#474747'); ige.components.input.stopPropagation(); })
+					.mouseMove(function () { ige.components.input.stopPropagation(); })
+					.mouseUp(function () { console.log('Clicked ' + this.id()); ige.components.input.stopPropagation(); })
 					.mount(self.uiScene);
 
 				// Set the camera to track the character with some

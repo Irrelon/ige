@@ -28,15 +28,15 @@ var Client = IgeClass.extend({
 				// than before the scene etc are created... maybe you want
 				// a splash screen or a menu first? Then connect after you've
 				// got a username or something?
-				ige.network.start('http://localhost:2000', function () {
+				ige.components.network.start('http://localhost:2000', function () {
 					// Define network command listeners
-					ige.network.define('test', self._onTest);
+					ige.components.network.define('test', self._onTest);
 
 					// Send the server a test message
-					ige.network.send('test', {moo: 'Some test data!'});
+					ige.components.network.send('test', {moo: 'Some test data!'});
 
 					// Send the server a request (gets a callback when the server responds!)
-					ige.network.request('testRequest', {hello:100}, function (commandName, data) {
+					ige.components.network.request('testRequest', {hello:100}, function (commandName, data) {
 						console.log('Request response received from server via callback with data:', data);
 					});
 				});

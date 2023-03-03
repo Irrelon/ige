@@ -25,7 +25,7 @@ var Server = IgeClass.extend({
 					// Check if the engine started successfully
 					if (success) {
 						// Accept incoming network connections
-						ige.network.acceptConnections(true);
+						ige.components.network.acceptConnections(true);
 					}
 				});
 			} else {

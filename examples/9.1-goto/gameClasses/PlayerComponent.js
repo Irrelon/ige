@@ -15,7 +15,7 @@ var PlayerComponent = IgeClass.extend({
 		this._options = options;
 
 		// Listen for the mouse up event
-		ige.input.on('mouseUp', function (event, x, y, button) { self._mouseUp(event, x, y, button); });
+		ige.components.input.on('mouseUp', function (event, x, y, button) { self._mouseUp(event, x, y, button); });
 	},
 
 	/**

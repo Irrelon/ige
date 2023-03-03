@@ -18,6 +18,10 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
         this._groupRegister = {};
         this._tickStart = 0;
         this._deviceFinalDrawRatio = 1;
+        this._createdFrontBuffer = false;
+        this._devicePixelRatio = 1;
+        this._backingStoreRatio = 1;
+        this._resized = false;
         this.fontsLoaded = () => {
             if (!this._webFonts.length && !this._cssFonts.length)
                 return true;
@@ -46,8 +50,8 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
                     // Check if we can get the position of the canvas
                     canvasBoundingRect = this._canvasPosition();
                     // Adjust the newWidth and newHeight by the canvas offset
-                    newWidth -= parseInt(canvasBoundingRect.left, 10);
-                    newHeight -= parseInt(canvasBoundingRect.top, 10);
+                    newWidth -= canvasBoundingRect.left;
+                    newHeight -= canvasBoundingRect.top;
                     // Make sure we can divide the new width and height by 2...
                     // otherwise minus 1 so we get an even number so that we
                     // negate the blur effect of sub-pixel rendering
@@ -82,10 +86,12 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
             }
             if (this._showSgTree) {
                 const sgTreeElem = document.getElementById("igeSgTree");
-                canvasBoundingRect = this._canvasPosition();
-                sgTreeElem.style.top = parseInt(canvasBoundingRect.top) + 5 + "px";
-                sgTreeElem.style.left = parseInt(canvasBoundingRect.left) + 5 + "px";
-                sgTreeElem.style.height = this.root._bounds2d.y - 30 + "px";
+                if (sgTreeElem) {
+                    canvasBoundingRect = this._canvasPosition();
+                    sgTreeElem.style.top = parseInt(canvasBoundingRect.top) + 5 + "px";
+                    sgTreeElem.style.left = parseInt(canvasBoundingRect.left) + 5 + "px";
+                    sgTreeElem.style.height = this.root._bounds2d.y - 30 + "px";
+                }
             }
             this._resized = true;
         };
@@ -369,6 +375,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
             }
         }
         // Output our header
+        console.log("-----------------------------------------");
         console.log(`Powered by Isogenic Engine ${version}`);
         console.log("(C)opyright " + new Date().getFullYear() + " Irrelon Software Limited");
         console.log("https://www.isogenicengine.com");
@@ -390,6 +397,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
         // Set the entity on which any components are added - this defaults to "this"
         // in the IgeComponentMixin.ts file - we override that here in this special case
         this._componentBase = this.root;
+        this._resizeEvent();
         // Set up components
         this.addComponent(IgeInputComponent);
         this.addComponent(IgeTweenComponent);
@@ -767,6 +775,12 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
      * @private
      */
     _canvasPosition() {
+        if (!this._canvas) {
+            return {
+                top: 0,
+                left: 0
+            };
+        }
         try {
             return this._canvas.getBoundingClientRect();
         }

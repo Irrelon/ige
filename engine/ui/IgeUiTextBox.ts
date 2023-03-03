@@ -36,10 +36,10 @@ class IgeUiTextBox extends IgeUiElement {
 		};
 
 		const focusFunc = () => {
-			this._ige.input.stopPropagation();
+			this._ige.components.input.stopPropagation();
 			blurFunc();
 
-			var input,
+			let input,
 				body,
 				entScreenPos = this.screenPosition();
 
@@ -98,14 +98,14 @@ class IgeUiTextBox extends IgeUiElement {
 		// On focus, create a temp input element in the DOM and focus to it
 		this.on("focus", focusFunc);
 		this.on("mouseUp", focusFunc);
-		this.on("mouseDown", () => { this._ige.input.stopPropagation(); });
+		this.on("mouseDown", () => { this._ige.components.input.stopPropagation(); });
 
 		this.on("uiUpdate", () => {
 			if (self._domElement) {
 				// Update the transformation matrix
 				self.updateTransform();
 
-				var input = self._domElement,
+				const input = self._domElement,
 					entScreenPos = self.screenPosition();
 
 				// Reposition the dom element
@@ -127,7 +127,7 @@ class IgeUiTextBox extends IgeUiElement {
 	 * @return {*}
 	 */
 	width (px, lockAspect, modifier, noUpdate) {
-		var val;
+		let val;
 
 		// Call the main super class method
 		val = super.width(px, lockAspect, modifier, noUpdate);
@@ -148,7 +148,7 @@ class IgeUiTextBox extends IgeUiElement {
 	 * @return {*}
 	 */
 	height (px, lockAspect, modifier, noUpdate) {
-		var val;
+		let val;
 
 		// Call the main super class method
 		val = super.height(px, lockAspect, modifier, noUpdate);

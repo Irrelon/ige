@@ -33,12 +33,12 @@ var Client = IgeClass.extend({
 					// than before the scene etc are created... maybe you want
 					// a splash screen or a menu first? Then connect after you've
 					// got a username or something?
-					ige.network.start('http://localhost:2000', function () {
+					ige.components.network.start('http://localhost:2000', function () {
 						// Setup the network command listeners
-						ige.network.define('playerEntity', self._onPlayerEntity); // Defined in ./gameClasses/ClientNetworkEvents.js
+						ige.components.network.define('playerEntity', self._onPlayerEntity); // Defined in ./gameClasses/ClientNetworkEvents.js
 
 						// Setup the network stream handler
-						ige.network.addComponent(IgeStreamComponent)
+						ige.components.network.addComponent(IgeStreamComponent)
 							.stream.renderLatency(80) // Render the simulation 160 milliseconds in the past
 							// Create a listener that will fire whenever an entity
 							// is created because of the incoming stream data
@@ -54,12 +54,12 @@ var Client = IgeClass.extend({
 							.id('backgroundScene')
 							.layer(0)
 							.mount(self.mainScene);
-						
+
 						self.foregroundScene = new IgeScene2d()
 							.id('foregroundScene')
 							.layer(1)
 							.mount(self.mainScene);
-						
+
 						self.foregroundMap = new IgeTileMap2d()
 							.id('foregroundMap')
 							.isometricMounts(true)
@@ -82,7 +82,7 @@ var Client = IgeClass.extend({
 							.scene(self.mainScene)
 							.drawBounds(false)
 							.mount(ige);
-						
+
 						// Create the texture map that will work as our "tile background"
 						// Create the texture maps
 						self.textureMap1 = new IgeTextureMap()
@@ -99,13 +99,13 @@ var Client = IgeClass.extend({
 							.gridSize(20,20)
 							//.translateTo(300, 300, 0)
 							.mount(self.backgroundScene);
-	
+
 						var texIndex = self.textureMap1.addTexture(self.textures.grassSheet);
-						
+
 						// Ask the server to send us the tile data
-						ige.network.request('gameTiles', {}, function (commandName, data) {
+						ige.components.network.request('gameTiles', {}, function (commandName, data) {
 							console.log('gameTiles response', data);
-							
+
 							// Paint the texture map based on the data sent from the server
 							var x, y, tileData;
 							for (x = 0; x < data.length; x++) {
@@ -114,16 +114,16 @@ var Client = IgeClass.extend({
 									self.textureMap1.paintTile(x, y, tileData[0], tileData[1]);
 								}
 							}
-							
+
 							// Now set the texture map's cache data to dirty so it will
 							// be redrawn
 							self.textureMap1.cacheDirty(true);
 						});
 
 						// Ask the server to create an entity for us
-						ige.network.send('playerEntity');
+						ige.components.network.send('playerEntity');
 
-						
+
 						// We don't create any entities here because in this example the entities
 						// are created server-side and then streamed to the clients. If an entity
 						// is streamed to a client and the client doesn't have the entity in

@@ -29,9 +29,9 @@ var Client = IgeClass.extend({
 					// than before the scene etc are created... maybe you want
 					// a splash screen or a menu first? Then connect after you've
 					// got a username or something?
-					ige.network.start('http://localhost:2000', function () {
+					ige.components.network.start('http://localhost:2000', function () {
 						// Setup the network stream handler
-						ige.network.addComponent(IgeStreamComponent)
+						ige.components.network.addComponent(IgeStreamComponent)
 							.stream.renderLatency(80) // Render the simulation 160 milliseconds in the past
 							// Create a listener that will fire whenever an entity
 							// is created because of the incoming stream data
@@ -39,7 +39,7 @@ var Client = IgeClass.extend({
 								self.log('Stream entity created with ID: ' + entity.id());
 
 							});
-						
+
 						// Load the base scene data
 						ige.addGraph('IgeBaseScene');
 					});

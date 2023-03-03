@@ -24,12 +24,12 @@ var Server = IgeClass.extend({
 					// Check if the engine started successfully
 					if (success) {
 						// Add the network stream component
-						ige.network.addComponent(IgeStreamComponent)
+						ige.components.network.addComponent(IgeStreamComponent)
 							.stream.sendInterval(120) // Send a stream update once every 30 milliseconds
 							.stream.start(); // Start the stream
 
 						// Accept incoming connections
-						ige.network.acceptConnections(true);
+						ige.components.network.acceptConnections(true);
 
 						// Create the scene
 						self.mainScene = new IgeScene2d()

@@ -98,14 +98,14 @@ var Ship = IgeEntity.extend({
 		/* CEXCLUDE */
 
 		if (ige.isClient) {
-			if (ige.input.actionState('left')) {
+			if (ige.components.input.actionState('left')) {
 
 				if (!this.controls.left) {
 					// Record the new state
 					this.controls.left = true;
 
 					// Tell the server about our control change
-					ige.network.send('playerControlLeftDown');
+					ige.components.network.send('playerControlLeftDown');
 				}
 			} else {
 				if (this.controls.left) {
@@ -113,17 +113,17 @@ var Ship = IgeEntity.extend({
 					this.controls.left = false;
 
 					// Tell the server about our control change
-					ige.network.send('playerControlLeftUp');
+					ige.components.network.send('playerControlLeftUp');
 				}
 			}
 
-			if (ige.input.actionState('right')) {
+			if (ige.components.input.actionState('right')) {
 				if (!this.controls.right) {
 					// Record the new state
 					this.controls.right = true;
 
 					// Tell the server about our control change
-					ige.network.send('playerControlRightDown');
+					ige.components.network.send('playerControlRightDown');
 				}
 			} else {
 				if (this.controls.right) {
@@ -131,17 +131,17 @@ var Ship = IgeEntity.extend({
 					this.controls.right = false;
 
 					// Tell the server about our control change
-					ige.network.send('playerControlRightUp');
+					ige.components.network.send('playerControlRightUp');
 				}
 			}
 
-			if (ige.input.actionState('thrust')) {
+			if (ige.components.input.actionState('thrust')) {
 				if (!this.controls.thrust) {
 					// Record the new state
 					this.controls.thrust = true;
 
 					// Tell the server about our control change
-					ige.network.send('playerControlThrustDown');
+					ige.components.network.send('playerControlThrustDown');
 				}
 			} else {
 				if (this.controls.thrust) {
@@ -149,7 +149,7 @@ var Ship = IgeEntity.extend({
 					this.controls.thrust = false;
 
 					// Tell the server about our control change
-					ige.network.send('playerControlThrustUp');
+					ige.components.network.send('playerControlThrustUp');
 				}
 			}
 		}

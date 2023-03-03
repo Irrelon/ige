@@ -12,7 +12,7 @@ var Server = IgeClass.extend({
 		ige.addComponent(IgeNetIoComponent);
 		ige.addComponent(IgeChatComponent);
 		// Define a network command
-		ige.network.define('test', self._onTest)
+		ige.components.network.define('test', self._onTest)
 			// Start the network server
 			.network.start(2000, function () {
 				// Networking has started so start the game engine
@@ -20,7 +20,7 @@ var Server = IgeClass.extend({
 					// Check if the engine started successfully
 					if (success) {
 						// Accept incoming network connections
-						ige.network.acceptConnections(true);
+						ige.components.network.acceptConnections(true);
 
 						// Create a new chat room
 						ige.chat.createRoom('The Lobby', {}, 'lobby');

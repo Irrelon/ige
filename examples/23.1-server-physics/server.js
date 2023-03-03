@@ -26,12 +26,12 @@ var Server = IgeClass.extend({
 					// Check if the engine started successfully
 					if (success) {
 						// Add the network stream component
-						ige.network.addComponent(IgeStreamComponent)
+						ige.components.network.addComponent(IgeStreamComponent)
 							.stream.sendInterval(60) // Send a stream update once every 60 milliseconds
 							.stream.start(); // Start the stream
 
 						// Accept incoming network connections
-						ige.network.acceptConnections(true);
+						ige.components.network.acceptConnections(true);
 
 						ige.addGraph('IgeBaseScene');
 

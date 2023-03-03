@@ -5,7 +5,7 @@ export class Rotator extends IgeEntity {
 	classId = 'Rotator';
 	_rSpeed: number = 0;
 
-	constructor(speed: number) {
+	constructor (speed: number) {
 		super();
 
 		if (speed !== undefined) {

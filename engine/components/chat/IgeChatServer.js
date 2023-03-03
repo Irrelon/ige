@@ -3,7 +3,7 @@
  * The server-side chat component. Handles all server-side
  * chat methods and events.
  */
-var IgeChatServer = {
+const IgeChatServer = {
     /**
      * Creates a new room with the specified room name and options.
      * @param roomName The display name of the room.
@@ -12,7 +12,7 @@ var IgeChatServer = {
      * @return {String} The new room's ID.
      */
     createRoom: function (roomName, options, roomId) {
-        var self = ige.chat, newRoomId = roomId || ige.newIdHex();
+        const self = ige.chat, newRoomId = roomId || ige.newIdHex();
         self._rooms[roomId] = {
             id: newRoomId,
             name: roomName,
@@ -29,7 +29,7 @@ var IgeChatServer = {
      * @return {Boolean}
      */
     removeRoom: function (roomId) {
-        var self = ige.chat;
+        const self = ige.chat;
         if (self._rooms[roomId]) {
             // Inform all users that the room was removed
             self._entity.network.send('igeChatRoomRemoved', roomId);
@@ -48,9 +48,9 @@ var IgeChatServer = {
      * @param {String} from The id of the user that sent the message.
      */
     sendToRoom: function (roomId, message, to, from) {
-        var self = ige.chat;
+        const self = ige.chat;
         if (self._rooms[roomId]) {
-            var room = self._rooms[roomId], msg, i;
+            let room = self._rooms[roomId], msg, i;
             if (message !== undefined) {
                 msg = {
                     roomId: roomId,
@@ -82,7 +82,7 @@ var IgeChatServer = {
         }
     },
     _onMessageFromClient: function (msg, clientId) {
-        var self = ige.chat, room;
+        let self = ige.chat, room;
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
         if (!self.emit('messageFromClient', [msg, clientId])) {
@@ -116,11 +116,11 @@ var IgeChatServer = {
         }
     },
     _onJoinRoomRequestFromClient: function (roomId, clientId) {
-        var self = ige.chat;
+        const self = ige.chat;
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
         if (!self.emit('clientJoinRoomRequest', [roomId, clientId])) {
-            var room = self._rooms[roomId];
+            const room = self._rooms[roomId];
             self.log('Client wants to join room: (' + clientId + ')', roomId);
             // Check the room exists
             if (room) {
@@ -128,7 +128,7 @@ var IgeChatServer = {
                 if (!room.users[clientId]) {
                     // Add the user to the room
                     room.users.push(clientId);
-                    ige.network.send('igeChatJoinRoom', { roomId: roomId, joined: true }, clientId);
+                    ige.components.network.send('igeChatJoinRoom', { roomId: roomId, joined: true }, clientId);
                     console.log('User "' + clientId + '" joined room ' + roomId);
                 }
                 else {

@@ -3,7 +3,7 @@ var Client = IgeClass.extend({
 	init: function () {
 		var self = this;
 		ige.addComponent(IgeEditorComponent);
-		ige.input.debug(true);
+		ige.components.input.debug(true);
 
 		// Load our textures
 		self.obj = [];
@@ -36,7 +36,7 @@ var Client = IgeClass.extend({
 						.translateTo(400, 200, 0)
 						.addBehaviour('mouseAim', MouseAim)
 						.mount(ige.$('baseScene'));
-					
+
 					self.obj[1] = new IgeEntity()
 						.id('ship2')
 						.depth(1)

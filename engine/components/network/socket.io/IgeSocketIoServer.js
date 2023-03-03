@@ -1,5 +1,5 @@
 "use strict";
-var IgeSocketIoServer = {
+const IgeSocketIoServer = {
     _idCounter: 0,
     _requests: {},
     /**
@@ -9,7 +9,7 @@ var IgeSocketIoServer = {
      * network has started.
      */
     start: function (data, callback) {
-        var self = this;
+        const self = this;
         this._socketById = {};
         this._socketsByRoomId = {};
         if (typeof (data) !== 'undefined') {
@@ -52,7 +52,7 @@ var IgeSocketIoServer = {
         if (commandName !== undefined) {
             this._networkCommands[commandName] = callback;
             // Record reverse lookups
-            var index = this._networkCommandsIndex.length;
+            const index = this._networkCommandsIndex.length;
             this._networkCommandsIndex[index] = commandName;
             this._networkCommandsLookup[commandName] = index;
             return this._entity;
@@ -116,7 +116,7 @@ var IgeSocketIoServer = {
      */
     clientLeaveAllRooms: function (clientId) {
         if (clientId !== undefined) {
-            var arr = this._clientRooms[clientId], arrCount = arr.length;
+            let arr = this._clientRooms[clientId], arrCount = arr.length;
             while (arrCount--) {
                 this.clientLeaveRoom(clientId, arr[arrCount]);
             }
@@ -180,7 +180,7 @@ var IgeSocketIoServer = {
         return this._acceptConnections;
     },
     send: function (commandName, data, clientId) {
-        var commandIndex = this._networkCommandsLookup[commandName], arrCount, clientSocket;
+        let commandIndex = this._networkCommandsLookup[commandName], arrCount, clientSocket;
         if (commandIndex !== undefined) {
             if (clientId) {
                 if (typeof (clientId) === 'object') {
@@ -218,7 +218,7 @@ var IgeSocketIoServer = {
     /**
      * Sends a network request. This is different from a standard
      * call to send() because the recipient code will be able to
-     * respond by calling ige.network.response(). When the response
+     * respond by calling ige.components.network.response(). When the response
      * is received, the callback method that was passed in the
      * callback parameter will be fired with the response data.
      * @param {String} commandName
@@ -227,7 +227,7 @@ var IgeSocketIoServer = {
      */
     request: function (commandName, data, callback) {
         // Build the request object
-        var req = {
+        const req = {
             id: this.newIdHex(),
             cmd: commandName,
             data: data,
@@ -250,7 +250,7 @@ var IgeSocketIoServer = {
      */
     response: function (requestId, data) {
         // Grab the original request object
-        var req = this._requests[requestId];
+        const req = this._requests[requestId];
         if (req) {
             // Send the network response packet
             this.send('_igeResponse', {
@@ -282,7 +282,7 @@ var IgeSocketIoServer = {
      * @private
      */
     _onClientConnect: function (socket) {
-        var self = this;
+        const self = this;
         if (this._acceptConnections) {
             if (!this.emit('connect', socket)) {
                 this.log('Accepted connection with id ' + socket.id);
@@ -318,7 +318,7 @@ var IgeSocketIoServer = {
      * @private
      */
     _onClientMessage: function (data, clientId) {
-        var commandName = this._networkCommandsIndex[data[0]];
+        const commandName = this._networkCommandsIndex[data[0]];
         if (this._networkCommands[commandName]) {
             this._networkCommands[commandName](data[1], clientId);
         }

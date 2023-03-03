@@ -61,7 +61,7 @@ class IgeEditorTranslateComponent extends IgeEventingClass {
 	 * @return {*}
 	 */
 	enabled = (val) => {
-		var self = this;
+		const self = this;
 
 		if (val !== undefined) {
 			this._enabled = val;
@@ -81,9 +81,9 @@ class IgeEditorTranslateComponent extends IgeEventingClass {
 						this.enabled(false);
 					} else {
 						// Listen for the mouse events we need to operate
-						this._ige.input.on("mouseDown", (event) => { self._mouseDown(event); });
-						this._ige.input.on("mouseMove", (event) => { self._mouseMove(event); });
-						this._ige.input.on("mouseUp", (event) => { self._mouseUp(event); });
+						this._ige.components.input.on("mouseDown", (event) => { self._mouseDown(event); });
+						this._ige.components.input.on("mouseMove", (event) => { self._mouseMove(event); });
+						this._ige.components.input.on("mouseUp", (event) => { self._mouseUp(event); });
 						this.log("Editor: Mouse translate enabled");
 					}
 				}
@@ -108,7 +108,7 @@ class IgeEditorTranslateComponent extends IgeEventingClass {
 	_mouseDown = (event) => {
 		if (!this._opStarted && this._enabled && this._targetEntity) {
 			// Record the mouse down position - pre-start
-			var curMousePos = this._ige._mousePos;
+			const curMousePos = this._ige._mousePos;
 			this._opStartMouse = curMousePos.clone();
 
 			this._opStartTranslate = {
@@ -133,7 +133,7 @@ class IgeEditorTranslateComponent extends IgeEventingClass {
 		if (this._enabled && this._targetEntity) {
 			// Pan the camera if the mouse is down
 			if (this._opStartMouse) {
-				var curMousePos = this._ige._mousePos,
+				let curMousePos = this._ige._mousePos,
 					panCords = {
 						"x": this._opStartMouse.x - curMousePos.x,
 						"y": this._opStartMouse.y - curMousePos.y
@@ -204,7 +204,7 @@ class IgeEditorTranslateComponent extends IgeEventingClass {
 			// End the pan
 			if (this._opStarted) {
 				if (this._opStartMouse) {
-					var curMousePos = this._ige._mousePos,
+					let curMousePos = this._ige._mousePos,
 						panCords = {
 							"x": this._opStartMouse.x - curMousePos.x,
 							"y": this._opStartMouse.y - curMousePos.y

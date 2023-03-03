@@ -1,10 +1,10 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
-	
+
 	init: function () {
 		var self = this;
 		ige.addComponent(IgeEditorComponent);
-		ige.input.debug(true);
+		ige.components.input.debug(true);
 
 		// Load our textures
 		self.obj = [];
@@ -27,7 +27,7 @@ var Client = IgeClass.extend({
 				if (success) {
 					// Load the base scene data
 					ige.addGraph('IgeBaseScene');
-					
+
 					// Add all the items in Scene1 to the scenegraph
 					// (see gameClasses/Scene1.js :: addGraph() to see
 					// the method being called by the engine and how

@@ -41,7 +41,7 @@ class IgeAnimationComponent extends IgeComponent {
          */
         this.define = (id, frames, fps, loop, convertIdsToIndex) => {
             if (frames && frames.length) {
-                var i, frame;
+                let i, frame;
                 this._anims.length = this._anims.length || 0;
                 if (convertIdsToIndex === undefined) {
                     convertIdsToIndex = true; // Default the flag to true if undefined
@@ -64,7 +64,7 @@ class IgeAnimationComponent extends IgeComponent {
                     }
                 }
                 // Store the animation
-                var frameTime = ((1000 / fps) | 0);
+                const frameTime = ((1000 / fps) | 0);
                 this._anims[id] = {
                     frames,
                     frameTime,
@@ -83,7 +83,7 @@ class IgeAnimationComponent extends IgeComponent {
         };
         this.addFrame = (id, frameId) => {
             if (this._anims[id]) {
-                var anim = this._anims[id];
+                const anim = this._anims[id];
                 if (typeof (frameId) === "string") {
                     frameId = this._entity._texture.cellIdToIndex(frameId);
                 }
@@ -94,7 +94,7 @@ class IgeAnimationComponent extends IgeComponent {
         };
         this.removeFrame = (id, frameIndex) => {
             if (this._anims[id]) {
-                var anim = this._anims[id];
+                const anim = this._anims[id];
                 anim.frames.splice(frameIndex, 1);
                 anim.frameCount--;
                 anim.totalTime = anim.frames.length * anim.frameTime;
@@ -136,7 +136,7 @@ class IgeAnimationComponent extends IgeComponent {
          */
         this.setFps = (id, fps) => {
             if (this._anims) {
-                var anim = this._anims[id];
+                const anim = this._anims[id];
                 if (anim) {
                     anim.frameTime = ((1000 / fps) | 0);
                     anim.totalTime = anim.frameCount * anim.frameTime;
@@ -249,7 +249,7 @@ class IgeAnimationComponent extends IgeComponent {
          */
         this.start = (animId, options) => {
             if (this._anims) {
-                var anim = this._anims[animId];
+                const anim = this._anims[animId];
                 if (anim) {
                     anim.currentDelta = 0;
                     anim.currentLoop = 0;
@@ -325,11 +325,11 @@ class IgeAnimationComponent extends IgeComponent {
          * @param {Number} tickDelta The current ige._tickDelta passed down the scenegraph.
          */
         this._update = (ctx, tickDelta) => {
-            var self = this.animation;
+            const self = this.animation;
             // Just in case someone forgets to pass it in their update call!
             tickDelta = tickDelta || ige._tickDelta;
             if (self._anim) {
-                var anim = self._anim, multiple, cell, frame;
+                let anim = self._anim, multiple, cell, frame;
                 // Advance the internal animation timer
                 anim.currentDelta += tickDelta;
                 // Check if the animation timer is greater than the total animation time

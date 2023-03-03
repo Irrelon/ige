@@ -1,4 +1,4 @@
-var IgeNetIoServer = {
+const IgeNetIoServer = {
 	_idCounter: 0,
 	_requests: {},
 
@@ -9,7 +9,7 @@ var IgeNetIoServer = {
 	 * network has started.
 	 */
 	start: function (data, callback) {
-		var self = this;
+		const self = this;
 
 		this._socketById = {};
 		this._socketsByRoomId = {};
@@ -51,7 +51,7 @@ var IgeNetIoServer = {
 			this._networkCommands[commandName] = callback;
 
 			// Record reverse lookups
-			var index = this._networkCommandsIndex.length;
+			const index = this._networkCommandsIndex.length;
 			this._networkCommandsIndex[index] = commandName;
 			this._networkCommandsLookup[commandName] = index;
 
@@ -63,7 +63,7 @@ var IgeNetIoServer = {
 
 	/**
 	 * Adds a client to a room by id. All clients are added to room id
-	 * "ige" by default when they connect to the server. 
+	 * "ige" by default when they connect to the server.
 	 * @param {String} clientId The id of the client to add to the room.
 	 * @param {String} roomId The id of the room to add the client to.
 	 * @returns {*}
@@ -73,25 +73,25 @@ var IgeNetIoServer = {
 			if (roomId !== undefined) {
 				this._clientRooms[clientId] = this._clientRooms[clientId] || [];
 				this._clientRooms[clientId].push(roomId);
-				
+
 				this._socketsByRoomId[roomId] = this._socketsByRoomId[roomId] || {};
 				this._socketsByRoomId[roomId][clientId] = this._socketById[clientId];
-				
+
 				if (this.debug()) {
 					this.log('Client ' + clientId + ' joined room ' + roomId);
 				}
-				
+
 				return this._entity;
 			}
-			
+
 			this.log('Cannot add client to room because no roomId was provided!', 'warning');
 			return this._entity;
 		}
-		
+
 		this.log('Cannot add client to room because no clientId was provided!', 'warning');
 		return this._entity;
 	},
-	
+
 	/**
 	 * Removes a client from a room by id. All clients are added to room id
 	 * "ige" by default when they connect to the server and you can remove
@@ -107,14 +107,14 @@ var IgeNetIoServer = {
 					this._clientRooms[clientId].pull(roomId);
 					delete this._socketsByRoomId[roomId][clientId];
 				}
-				
+
 				return this._entity;
 			}
-			
+
 			this.log('Cannot remove client from room because no roomId was provided!', 'warning');
 			return this._entity;
 		}
-		
+
 		this.log('Cannot remove client from room because no clientId was provided!', 'warning');
 		return this._entity;
 	},
@@ -126,17 +126,17 @@ var IgeNetIoServer = {
 	 */
 	clientLeaveAllRooms: function (clientId) {
 		if (clientId !== undefined) {
-			var arr = this._clientRooms[clientId],
+			let arr = this._clientRooms[clientId],
 				arrCount = arr.length;
-			
+
 			while (arrCount--) {
 				this.clientLeaveRoom(clientId, arr[arrCount]);
 			}
-			
+
 			delete this._clientRooms[clientId];
 			return this._entity;
 		}
-		
+
 		this.log('Cannot remove client from room because no clientId was provided!', 'warning');
 		return this._entity;
 	},
@@ -150,11 +150,11 @@ var IgeNetIoServer = {
 		if (clientId !== undefined) {
 			return this._clientRooms[clientId] || [];
 		}
-		
+
 		this.log('Cannot get/set the clientRoom id because no clientId was provided!', 'warning');
 		return [];
 	},
-	
+
 	/**
 	 * Returns an associative array of all connected clients
 	 * by their ID.
@@ -166,7 +166,7 @@ var IgeNetIoServer = {
 		if (roomId !== undefined) {
 			return this._socketsByRoomId[roomId];
 		}
-		
+
 		return this._socketById;
 	},
 
@@ -208,7 +208,7 @@ var IgeNetIoServer = {
 	 * @param {*=} clientId If specified, sets the recipient socket id or a array of socket ids to send to.
 	 */
 	send: function (commandName, data, clientId) {
-		var commandIndex = this._networkCommandsLookup[commandName],
+		let commandIndex = this._networkCommandsLookup[commandName],
 			ciEncoded;
 
 		if (commandIndex !== undefined) {
@@ -222,7 +222,7 @@ var IgeNetIoServer = {
 	/**
 	 * Sends a network request. This is different from a standard
 	 * call to send() because the recipient code will be able to
-	 * respond by calling ige.network.response(). When the response
+	 * respond by calling ige.components.network.response(). When the response
 	 * is received, the callback method that was passed in the
 	 * callback parameter will be fired with the response data.
 	 * @param {String} commandName
@@ -231,7 +231,7 @@ var IgeNetIoServer = {
 	 */
 	request: function (commandName, data, callback) {
 		// Build the request object
-		var req = {
+		const req = {
 			id: this.newIdHex(),
 			cmd: commandName,
 			data: data,
@@ -260,7 +260,7 @@ var IgeNetIoServer = {
 	 */
 	response: function (requestId, data) {
 		// Grab the original request object
-		var req = this._requests[requestId];
+		const req = this._requests[requestId];
 
 		if (req) {
 			// Send the network response packet
@@ -308,14 +308,14 @@ var IgeNetIoServer = {
 	 * @private
 	 */
 	_onClientConnect: function (socket) {
-		var self = this;
+		const self = this;
 
 		if (this._acceptConnections) {
 			// Check if any listener cancels this
 			if (!this.emit('connect', socket)) {
 				this.log('Accepted connection with id ' + socket.id);
 				this._socketById[socket.id] = socket;
-				
+
 				// Store a rooms array for this client
 				this._clientRooms[socket.id] = this._clientRooms[socket.id] || [];
 
@@ -354,7 +354,7 @@ var IgeNetIoServer = {
 	 * @private
 	 */
 	_onClientMessage: function (data, clientId) {
-		var ciDecoded = data[0].charCodeAt(0),
+		const ciDecoded = data[0].charCodeAt(0),
 			commandName = this._networkCommandsIndex[ciDecoded];
 
 		if (this._networkCommands[commandName]) {
@@ -363,7 +363,7 @@ var IgeNetIoServer = {
 
 		this.emit(commandName, [data[1], clientId]);
 	},
-	
+
 	_onRequest: function (data, clientId) {
 		// The message is a network request so fire
 		// the command event with the request id and
@@ -416,7 +416,7 @@ var IgeNetIoServer = {
 	_onClientDisconnect: function (data, socket) {
 		this.log('Client disconnected with id ' + socket.id);
 		this.emit('disconnect', socket.id);
-		
+
 		// Remove them from all rooms
 		this.clientLeaveAllRooms(socket.id);
 

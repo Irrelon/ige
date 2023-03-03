@@ -16,26 +16,26 @@ var PlayerComponent = IgeClass.extend({
 		this._options = options;
 
 		// Setup the control system
-		ige.input.mapAction('walkLeft', ige.input.key.left);
-		ige.input.mapAction('walkRight', ige.input.key.right);
-		ige.input.mapAction('walkUp', ige.input.key.up);
-		ige.input.mapAction('walkDown', ige.input.key.down);
+		ige.components.input.mapAction('walkLeft', ige.components.input.key.left);
+		ige.components.input.mapAction('walkRight', ige.components.input.key.right);
+		ige.components.input.mapAction('walkUp', ige.components.input.key.up);
+		ige.components.input.mapAction('walkDown', ige.components.input.key.down);
 
 		// Add the playerComponent behaviour to the entity
 		this._entity.addBehaviour('playerComponent_behaviour', this._behaviour);
 	},
 
 	_behaviour: function (ctx) {
-		if (ige.input.actionState('walkLeft')) {
+		if (ige.components.input.actionState('walkLeft')) {
 			this.velocity.x(-0.1)
 				.velocity.y(0);
-		} else if (ige.input.actionState('walkRight')) {
+		} else if (ige.components.input.actionState('walkRight')) {
 			this.velocity.x(0.1)
 				.velocity.y(0);
-		} else if (ige.input.actionState('walkUp')) {
+		} else if (ige.components.input.actionState('walkUp')) {
 			this.velocity.x(0)
 				.velocity.y(-0.1);
-		} else if (ige.input.actionState('walkDown')) {
+		} else if (ige.components.input.actionState('walkDown')) {
 			this.velocity.x(0)
 				.velocity.y(0.1);
 		} else {

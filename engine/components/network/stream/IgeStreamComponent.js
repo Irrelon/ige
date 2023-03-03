@@ -2,7 +2,7 @@
 /**
  * Adds stream capabilities to the network system.
  */
-var IgeStreamComponent = IgeEventingClass.extend({
+const IgeStreamComponent = IgeEventingClass.extend({
     classId: 'IgeStreamComponent',
     componentId: 'stream',
     /**
@@ -13,7 +13,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
     init: function (entity, options) {
         this._entity = entity;
         this._options = options;
-        var self = this;
+        const self = this;
         // Set the stream data section designator character
         this._sectionDesignator = '¬';
         /* CEXCLUDE */
@@ -81,7 +81,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
      * Starts the stream of world updates to connected clients.
      */
     start: function () {
-        var self = this;
+        const self = this;
         this.log('Starting delta stream...');
         this._streamTimer = setInterval(function () { self._sendQueue(); }, this._streamInterval);
         return this._entity;
@@ -112,7 +112,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
      * @private
      */
     _sendQueue: function () {
-        var st = new Date().getTime(), ct, dt, arr = this._queuedData, arrIndex, network = this._entity, item, currentTime = ige._currentTime, clientSentTimeData = {};
+        let st = new Date().getTime(), ct, dt, arr = this._queuedData, arrIndex, network = this._entity, item, currentTime = ige._currentTime, clientSentTimeData = {};
         // Send the stream data
         for (arrIndex in arr) {
             if (arr.hasOwnProperty(arrIndex)) {
@@ -145,7 +145,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
         this._streamDataTime = data;
     },
     _onStreamCreate: function (data) {
-        var classId = data[0], entityId = data[1], parentId = data[2], transformData = data[3], createData = data[4], parent = ige.$(parentId), classConstructor, entity;
+        let classId = data[0], entityId = data[1], parentId = data[2], transformData = data[3], createData = data[4], parent = ige.$(parentId), classConstructor, entity;
         // Check the required class exists
         if (parent) {
             // Check that the entity doesn't already exist
@@ -169,7 +169,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
                     this.emit('entityCreated', entity);
                 }
                 else {
-                    ige.network.stop();
+                    ige.components.network.stop();
                     ige.stop();
                     this.log('Network stream cannot create entity with class ' + classId + ' because the class has not been defined! The engine will now stop.', 'error');
                 }
@@ -180,12 +180,12 @@ var IgeStreamComponent = IgeEventingClass.extend({
         }
     },
     _onStreamDestroy: function (data) {
-        var entity = ige.$(data[1]), self = this;
+        const entity = ige.$(data[1]), self = this;
         if (entity) {
             // Calculate how much time we have left before the entity
             // should be removed from the simulation given the render
             // latency setting and the current time
-            var destroyDelta = ige.network.stream._renderLatency + (ige._currentTime - data[0]);
+            const destroyDelta = ige.components.network.stream._renderLatency + (ige._currentTime - data[0]);
             if (destroyDelta > 0) {
                 // Give the entity a lifespan to destroy it in x ms
                 entity.lifeSpan(destroyDelta, function () {
@@ -208,7 +208,7 @@ var IgeStreamComponent = IgeEventingClass.extend({
      */
     _onStreamData: function (data) {
         // Read the packet data into variables
-        var entityId, entity, sectionArr, sectionDataArr = data.split(ige.network.stream._sectionDesignator), sectionDataCount = sectionDataArr.length, sectionIndex, justCreated;
+        let entityId, entity, sectionArr, sectionDataArr = data.split(ige.components.network.stream._sectionDesignator), sectionDataCount = sectionDataArr.length, sectionIndex, justCreated;
         // We know the first bit of data will always be the
         // target entity's ID
         entityId = sectionDataArr.shift();

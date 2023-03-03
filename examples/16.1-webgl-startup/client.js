@@ -13,7 +13,7 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
-		ige.input.debug(true);
+		ige.components.input.debug(true);
 
 		// Create the HTML canvas
 		ige.createFrontBuffer(true);

@@ -32,12 +32,12 @@ var Client = IgeClass.extend({
 					// than before the scene etc are created... maybe you want
 					// a splash screen or a menu first? Then connect after you've
 					// got a username or something?
-					ige.network.start('http://localhost:2000', function () {
+					ige.components.network.start('http://localhost:2000', function () {
 						// Setup the network command listeners
-						ige.network.define('playerEntity', self._onPlayerEntity); // Defined in ./gameClasses/ClientNetworkEvents.js
+						ige.components.network.define('playerEntity', self._onPlayerEntity); // Defined in ./gameClasses/ClientNetworkEvents.js
 
 						// Setup the network stream handler
-						ige.network.addComponent(IgeStreamComponent)
+						ige.components.network.addComponent(IgeStreamComponent)
 							.stream.renderLatency(80) // Render the simulation 160 milliseconds in the past
 							// Create a listener that will fire whenever an entity
 							// is created because of the incoming stream data
@@ -70,12 +70,12 @@ var Client = IgeClass.extend({
 							.mount(ige);
 
 						// Define our player controls
-						ige.input.mapAction('left', ige.input.key.left);
-						ige.input.mapAction('right', ige.input.key.right);
-						ige.input.mapAction('thrust', ige.input.key.up);
+						ige.components.input.mapAction('left', ige.components.input.key.left);
+						ige.components.input.mapAction('right', ige.components.input.key.right);
+						ige.components.input.mapAction('thrust', ige.components.input.key.up);
 
 						// Ask the server to create an entity for us
-						ige.network.send('playerEntity');
+						ige.components.network.send('playerEntity');
 
 						// We don't create any entities here because in this example the entities
 						// are created server-side and then streamed to the clients. If an entity
@@ -85,8 +85,8 @@ var Client = IgeClass.extend({
 						// Enable console logging of network messages but only show 10 of them and
 						// then stop logging them. This is a demo of how to help you debug network
 						// data messages.
-						ige.network.debugMax(10);
-						ige.network.debug(true);
+						ige.components.network.debugMax(10);
+						ige.components.network.debug(true);
 
 						// Create an IgeUiTimeStream entity that will allow us to "visualise" the
 						// timestream data being interpolated by the player entity

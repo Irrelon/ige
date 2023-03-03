@@ -31,7 +31,7 @@ var ServerNetworkEvents = {
 				.mount(ige.server.foregroundScene);
 
 			// Tell the client to track their player entity
-			ige.network.send('playerEntity', ige.server.players[clientId].id(), clientId);
+			ige.components.network.send('playerEntity', ige.server.players[clientId].id(), clientId);
 		}
 	},
 
@@ -58,7 +58,7 @@ var ServerNetworkEvents = {
 	_onPlayerUpUp: function (data, clientId) {
 		ige.server.players[clientId].playerControl.controls.up = false;
 	},
-	
+
 	_onPlayerDownDown: function (data, clientId) {
 		ige.server.players[clientId].playerControl.controls.down = true;
 	},

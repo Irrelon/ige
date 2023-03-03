@@ -2,7 +2,7 @@
  * The client-side net.io component. Handles all client-side
  * networking systems.
  */
-var IgeNetIoClient = {
+const IgeNetIoClient = {
 	version: '1.0.0',
 	_initDone: false,
 	_idCounter: 0,
@@ -16,7 +16,7 @@ var IgeNetIoClient = {
 	id: function () {
 		return this._id || '';
 	},
-	
+
 	/**
 	 * Starts the network for the client.
 	 * @param {*} url The game server URL.
@@ -30,7 +30,7 @@ var IgeNetIoClient = {
 				callback();
 			}
 		} else {
-			var self = this;
+			const self = this;
 
 			self._startCallback = callback;
 
@@ -54,7 +54,7 @@ var IgeNetIoClient = {
 				// Define message listener
 				this._io.on('message', function (data) {
 					if (!self._initDone) {
-						var i, commandCount = 0;
+						let i, commandCount = 0;
 
 						// Check if the data is an init packet
 						if (data.cmd === 'init') {
@@ -148,7 +148,7 @@ var IgeNetIoClient = {
 	 * @param data
 	 */
 	send: function (commandName, data) {
-		var commandIndex = this._networkCommandsLookup[commandName],
+		let commandIndex = this._networkCommandsLookup[commandName],
 			ciEncoded;
 
 		if (commandIndex !== undefined) {
@@ -166,7 +166,7 @@ var IgeNetIoClient = {
 	/**
 	 * Sends a network request. This is different from a standard
 	 * call to send() because the recipient code will be able to
-	 * respond by calling ige.network.response(). When the response
+	 * respond by calling ige.components.network.response(). When the response
 	 * is received, the callback method that was passed in the
 	 * callback parameter will be fired with the response data.
 	 * @param {String} commandName
@@ -175,7 +175,7 @@ var IgeNetIoClient = {
 	 */
 	request: function (commandName, data, callback) {
 		// Build the request object
-		var req = {
+		const req = {
 			id: this.newIdHex(),
 			cmd: commandName,
 			data: data,
@@ -204,7 +204,7 @@ var IgeNetIoClient = {
 	 */
 	response: function (requestId, data) {
 		// Grab the original request object
-		var req = this._requests[requestId];
+		const req = this._requests[requestId];
 
 		if (req) {
 			// Send the network response packet
@@ -250,9 +250,9 @@ var IgeNetIoClient = {
 	},
 
 	_onResponse: function (data) {
-		var id,
+		let id,
 			req;
-		
+
 		// The message is a network response
 		// to a request we sent earlier
 		id = data.id;
@@ -290,7 +290,7 @@ var IgeNetIoClient = {
 	 * @private
 	 */
 	_onMessageFromServer: function (data) {
-		var ciDecoded = data[0].charCodeAt(0),
+		const ciDecoded = data[0].charCodeAt(0),
 			commandName = this._networkCommandsIndex[ciDecoded];
 
 		if (this._networkCommands[commandName]) {

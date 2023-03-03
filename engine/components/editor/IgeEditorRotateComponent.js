@@ -43,7 +43,7 @@ class IgeEditorRotateComponent extends IgeEventingClass {
          * @return {*}
          */
         this.enabled = (val) => {
-            var self = this;
+            const self = this;
             if (val !== undefined) {
                 this._enabled = val;
                 // Reset rotate values.
@@ -60,9 +60,9 @@ class IgeEditorRotateComponent extends IgeEventingClass {
                         }
                         else {
                             // Listen for the mouse events we need to operate
-                            this._ige.input.on("mouseDown", (event) => { self._mouseDown(event); });
-                            this._ige.input.on("mouseMove", (event) => { self._mouseMove(event); });
-                            this._ige.input.on("mouseUp", (event) => { self._mouseUp(event); });
+                            this._ige.components.input.on("mouseDown", (event) => { self._mouseDown(event); });
+                            this._ige.components.input.on("mouseMove", (event) => { self._mouseMove(event); });
+                            this._ige.components.input.on("mouseUp", (event) => { self._mouseUp(event); });
                             this.log("Editor: Mouse rotate enabled");
                         }
                     }
@@ -85,7 +85,7 @@ class IgeEditorRotateComponent extends IgeEventingClass {
         this._mouseDown = (event) => {
             if (!this._opStarted && this._enabled && this._targetEntity) {
                 // Record the mouse down position - pre-start
-                var curMousePos = this._ige._mousePos;
+                const curMousePos = this._ige._mousePos;
                 this._opStartMouse = curMousePos.clone();
                 this._opStartRotate = {
                     "x": radiansToDegrees(this._targetEntity._rotate.z)
@@ -105,7 +105,7 @@ class IgeEditorRotateComponent extends IgeEventingClass {
             if (this._enabled && this._targetEntity) {
                 // Rotate the camera if the mouse is down
                 if (this._opStartMouse) {
-                    var curMousePos = this._ige._mousePos, rotateCords = {
+                    const curMousePos = this._ige._mousePos, rotateCords = {
                         "x": this._opStartMouse.x - curMousePos.x
                     }, distX = rotateCords.x - this._opStartRotate.x;
                     if (this._opPreStart) {
@@ -138,7 +138,7 @@ class IgeEditorRotateComponent extends IgeEventingClass {
                 // End the rotate
                 if (this._opStarted) {
                     if (this._opStartMouse) {
-                        var curMousePos = this._ige._mousePos, rotateCords = {
+                        const curMousePos = this._ige._mousePos, rotateCords = {
                             "x": this._opStartMouse.x - curMousePos.x
                         }, distX = rotateCords.x - this._opStartRotate.x;
                         this._targetEntity.rotateTo(this._targetEntity._rotate.x, this._targetEntity._rotate.y, degreesToRadians(-distX));

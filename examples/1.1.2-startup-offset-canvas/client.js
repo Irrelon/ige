@@ -3,7 +3,7 @@ var Client = IgeClass.extend({
 	init: function () {
 		var self = this;
 		ige.addComponent(IgeEditorComponent);
-		ige.input.debug(true);
+		ige.components.input.debug(true);
 
 		// Load our textures
 		self.obj = [];
@@ -29,7 +29,7 @@ var Client = IgeClass.extend({
 				if (success) {
 					// Load the base scene data
 					ige.addGraph('IgeBaseScene');
-					
+
 					// Create an entity that will follow the mouse
 					self.mouseEnt = new IgeEntity()
 						.id('mouseEnt')
@@ -38,7 +38,7 @@ var Client = IgeClass.extend({
 						.height(20)
 						.texture(self.gameTexture.simpleBox)
 						.mount(ige.$('baseScene'));
-					
+
 					self.mousePosText = new IgeFontEntity()
 						.layer(6)
 						.textAlignX(1)
@@ -52,8 +52,8 @@ var Client = IgeClass.extend({
 						.translateTo(0, 100, 0)
 						.cache(false)
 						.mount(ige.$('baseScene'));
-					
-					ige.input.on('mouseMove', function () {
+
+					ige.components.input.on('mouseMove', function () {
 						self.mouseEnt.translateToPoint(ige.mousePos());
 						self.mousePosText.text('X: ' + self.mouseEnt._translate.x + ', Y: ' + self.mouseEnt._translate.y);
 					});
@@ -68,12 +68,12 @@ var Client = IgeClass.extend({
 						.translateTo(0, 0, 0)
 						.mouseEventsActive(true)
 						.mount(ige.$('baseScene'));
-					
+
 					self.obj[0].on('mouseOver', function () {
 						this.highlight(true);
 						console.log('on');
 					});
-					
+
 					self.obj[0].on('mouseOut', function () {
 						this.highlight(false);
 						console.log('off');

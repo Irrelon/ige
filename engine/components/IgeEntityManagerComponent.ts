@@ -1,7 +1,7 @@
-import IgeBaseClass from "../core/IgeBaseClass";
 import IgeComponent from "../core/IgeComponent";
+import IgeEntity from "../core/IgeEntity";
 
-class IgeEntityManagerComponent extends IgeComponent {
+class IgeEntityManagerComponent extends IgeComponent<IgeEntity> {
 	classId = "IgeEntityManagerComponent";
 	componentId = "entityManager";
 
@@ -10,7 +10,7 @@ class IgeEntityManagerComponent extends IgeComponent {
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	constructor (entity: IgeBaseClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Check we are being added to a tile map
@@ -188,7 +188,7 @@ class IgeEntityManagerComponent extends IgeComponent {
 		if (x !== undefined && y !== undefined) {
 			// Adjust the passed x, y to account for this
 			// texture map's translation
-			var ent = this._entity,
+			let ent = this._entity,
 				offset;
 
 			if (ent._mode === 0) {
@@ -259,7 +259,7 @@ class IgeEntityManagerComponent extends IgeComponent {
 			this.areaCenter(entTranslate.x, entTranslate.y);
 		}
 
-		var areaRect = this._areaRect,
+		const areaRect = this._areaRect,
 			areaCenter = this._areaCenter;
 
 		if (areaRect && areaCenter) {
@@ -294,7 +294,7 @@ class IgeEntityManagerComponent extends IgeComponent {
 	 * @private
 	 */
 	_behaviour = (ige, entity, ctx) => {
-		var self = this.entityManager,
+		let self = this.entityManager,
 			currentArea,
 			currentAreaTiles,
 			arr = this._children,
@@ -449,7 +449,7 @@ class IgeEntityManagerComponent extends IgeComponent {
 	}
 
 	processQueues = () => {
-		var createArr = this._createArr,
+		let createArr = this._createArr,
 			createCount = createArr.length,
 			createLimit = this._maxCreatePerTick !== undefined ? this._maxCreatePerTick : 0,
 			createEntityFunc = this._createEntityFromMapData,
@@ -485,7 +485,7 @@ class IgeEntityManagerComponent extends IgeComponent {
 	_resizeEvent = (event) => {
 		// Set width / height of scene to match parent
 		if (this._areaRectAutoSize) {
-			var geom = this._entity._parent._bounds2d,
+			let geom = this._entity._parent._bounds2d,
 				additionX = 0, additionY = 0;
 
 			if (this._areaRectAutoSizeOptions) {

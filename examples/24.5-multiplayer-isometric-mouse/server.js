@@ -8,7 +8,7 @@ var Server = IgeClass.extend({
 
 		// Define an object to hold references to our player entities
 		this.players = {};
-		
+
 		// Define an array to hold our tile data
 		this.tileData = [];
 
@@ -24,26 +24,26 @@ var Server = IgeClass.extend({
 					// Check if the engine started successfully
 					if (success) {
 						// Create some network commands we will need
-						ige.network.define('gameTiles', function (data, clientId, requestId) {
+						ige.components.network.define('gameTiles', function (data, clientId, requestId) {
 							console.log('Client gameTiles command received from client id "' + clientId + '" with data:', data);
-							
-							// Send the tile data back
-							ige.network.response(requestId, self.tileData);
-						});
-						
-						ige.network.define('playerEntity', self._onPlayerEntity);
-						ige.network.define('playerControlToTile', self._onPlayerControlToTile);
 
-						ige.network.on('connect', self._onPlayerConnect); // Defined in ./gameClasses/ServerNetworkEvents.js
-						ige.network.on('disconnect', self._onPlayerDisconnect); // Defined in ./gameClasses/ServerNetworkEvents.js
+							// Send the tile data back
+							ige.components.network.response(requestId, self.tileData);
+						});
+
+						ige.components.network.define('playerEntity', self._onPlayerEntity);
+						ige.components.network.define('playerControlToTile', self._onPlayerControlToTile);
+
+						ige.components.network.on('connect', self._onPlayerConnect); // Defined in ./gameClasses/ServerNetworkEvents.js
+						ige.components.network.on('disconnect', self._onPlayerDisconnect); // Defined in ./gameClasses/ServerNetworkEvents.js
 
 						// Add the network stream component
-						ige.network.addComponent(IgeStreamComponent)
+						ige.components.network.addComponent(IgeStreamComponent)
 							.stream.sendInterval(30) // Send a stream update once every 30 milliseconds
 							.stream.start(); // Start the stream
 
 						// Accept incoming network connections
-						ige.network.acceptConnections(true);
+						ige.components.network.acceptConnections(true);
 
 						// Create the scene
 						self.mainScene = new IgeScene2d()
@@ -53,12 +53,12 @@ var Server = IgeClass.extend({
 							.id('backgroundScene')
 							.layer(0)
 							.mount(self.mainScene);
-						
+
 						self.foregroundScene = new IgeScene2d()
 							.id('foregroundScene')
 							.layer(1)
 							.mount(self.mainScene);
-						
+
 						self.foregroundMap = new IgeTileMap2d()
 							.id('foregroundMap')
 							.isometricMounts(true)
@@ -75,15 +75,15 @@ var Server = IgeClass.extend({
 							.scene(self.mainScene)
 							.drawBounds(true)
 							.mount(ige);
-						
+
 						// Create a tile map to use as a collision map. Basically if you set
 						// a tile on this map then it will be "impassable".
 						self.collisionMap = new IgeTileMap2d()
 							.tileWidth(40)
 							.tileHeight(40)
 							.translateTo(0, 0, 0);
-							//.occupyTile(1, 1, 1, 1, 1); // Mark tile area as occupied with a value of 1 (x, y, width, height, value);
-						
+						//.occupyTile(1, 1, 1, 1, 1); // Mark tile area as occupied with a value of 1 (x, y, width, height, value);
+
 						// Generate some random data for our background texture map
 						// this data will be sent to the client when the server receives
 						// a "gameTiles" network command
@@ -92,7 +92,7 @@ var Server = IgeClass.extend({
 							for (y = 0; y < 20; y++) {
 								rand = Math.ceil(Math.random() * 4);
 								self.tileData[x] = self.tileData[x] || [];
-								
+
 								// We assign [0, rand] here as we are assuming that the
 								// tile will use the textureIndex 0. If you assign different
 								// textures to the client-side textureMap then want to use them
@@ -100,7 +100,7 @@ var Server = IgeClass.extend({
 								self.tileData[x][y] = [0, rand];
 							}
 						}
-						
+
 						// Create a pathFinder instance that we'll use to find paths
 						self.pathFinder = new IgePathFinder()
 							.neighbourLimit(100);

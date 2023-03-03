@@ -1,13 +1,12 @@
 import IgeBaseClass from "./IgeBaseClass";
 
-class IgeComponent extends IgeBaseClass {
-	static componentTargetClass?: string;
+class IgeComponent<TargetClass extends IgeBaseClass> extends IgeBaseClass {
+	_entity: TargetClass;
+	_options?: any;
 	componentId: string = "IgeComponent";
 	destroy?: () => void;
-	_options?: any;
-	_entity: IgeBaseClass;
 
-	constructor (parent: IgeBaseClass, options?: any) {
+	constructor (parent: TargetClass, options?: any) {
 		super();
 		this._entity = parent;
 		this._options = options;

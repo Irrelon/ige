@@ -65,13 +65,13 @@ var Client = IgeClass.extend({
 
 					// Switch the cursor mode
 					ige.client.data('cursorMode', 'panning');
-					ige.input.stopPropagation();
+					ige.components.input.stopPropagation();
 				});
 
 				self.vp1.mousePan.on('panEnd', function () {
 					// Switch the cursor mode back
 					ige.client.data('cursorMode', ige.client.data('tempCursorMode'));
-					ige.input.stopPropagation();
+					ige.components.input.stopPropagation();
 				});
 
 				// Create an isometric tile map
@@ -150,11 +150,11 @@ var Client = IgeClass.extend({
 					.borderTopColor('#666666')
 					.borderTopWidth(1)
 					.backgroundPosition(0, 0)
-					.mouseDown(function () { ige.input.stopPropagation(); })
-					.mouseOver(function () {this.backgroundColor('#49ceff'); ige.input.stopPropagation(); })
-					.mouseOut(function () {this.backgroundColor('#474747'); ige.input.stopPropagation(); })
-					.mouseMove(function () { ige.input.stopPropagation(); })
-					.mouseUp(function () { console.log('Clicked ' + this.id()); ige.input.stopPropagation(); })
+					.mouseDown(function () { ige.components.input.stopPropagation(); })
+					.mouseOver(function () {this.backgroundColor('#49ceff'); ige.components.input.stopPropagation(); })
+					.mouseOut(function () {this.backgroundColor('#474747'); ige.components.input.stopPropagation(); })
+					.mouseMove(function () { ige.components.input.stopPropagation(); })
+					.mouseUp(function () { console.log('Clicked ' + this.id()); ige.components.input.stopPropagation(); })
 					.mount(self.uiScene);
 
 				// Set the camera to track the character with some
@@ -162,7 +162,7 @@ var Client = IgeClass.extend({
 				//self.vp1.camera.trackTranslate(self.player, 100);
 				
 				// Listen for the mouse up event
-				ige.input.on('mouseUp', function (event, x, y, button) {
+				ige.components.input.on('mouseUp', function (event, x, y, button) {
 					// Get the tile co-ordinates that the mouse is currently over
 					var tileMap = ige.$('tileMap1'),
 						clickedTile = tileMap.mouseToTile(),

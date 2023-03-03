@@ -1,8 +1,7 @@
-import IgeEventingClass from "../core/IgeEventingClass";
 import IgeComponent from "../core/IgeComponent";
 import IgeBaseClass from "../core/IgeBaseClass";
 
-class IgeGamePadComponent extends IgeComponent {
+class IgeGamePadComponent extends IgeComponent<IgeBaseClass> {
 	"classId" = "IgeGamePadComponent";
 	"componentId" = "gamePad";
 
@@ -81,7 +80,7 @@ class IgeGamePadComponent extends IgeComponent {
 	 */
 	"onGamepadDisconnect" (event) {
 		// Remove the gamepad from the list of gamepads to monitor.
-		for (var i in this.gamepads) {
+		for (const i in this.gamepads) {
 			if (this.gamepads[i].index == event.gamepad.index) {
 				this.gamepads.splice(i, 1);
 				break;
@@ -132,8 +131,8 @@ class IgeGamePadComponent extends IgeComponent {
 		// only on Chrome.
 		this.pollGamepads();
 
-		for (var i in this.gamepads) {
-			var gamepad = this.gamepads[i];
+		for (const i in this.gamepads) {
+			const gamepad = this.gamepads[i];
 
 			// Don’t do anything if the current timestamp is the same as previous
 			// one, which means that the state of the gamepad hasn’t changed.
@@ -155,7 +154,7 @@ class IgeGamePadComponent extends IgeComponent {
 		// is the most modern one and is supported by Firefox 28+ and
 		// Chrome 35+. The second one (webkitGetGamepads) is a deprecated method
 		// used by older Chrome builds.
-		var rawGamepads =
+		const rawGamepads =
 			(navigator.getGamepads && navigator.getGamepads()) ||
 				(navigator.webkitGetGamepads && navigator.webkitGetGamepads());
 
@@ -168,9 +167,9 @@ class IgeGamePadComponent extends IgeComponent {
 			// We only refresh the display when we detect some gamepads are new
 			// or removed; we do it by comparing raw gamepad table entries to
 			// “undefined.”
-			var gamepadsChanged = false;
+			let gamepadsChanged = false;
 
-			for (var i = 0; i < rawGamepads.length; i++) {
+			for (let i = 0; i < rawGamepads.length; i++) {
 				if (typeof rawGamepads[i] != this.prevRawGamepadTypes[i]) {
 					gamepadsChanged = true;
 					this.prevRawGamepadTypes[i] = typeof rawGamepads[i];

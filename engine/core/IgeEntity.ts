@@ -1111,7 +1111,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 
 			if (this._timeStream.length) {
 				// Process any interpolation
-				this._processInterpolate(ige._tickStart - ige.network.stream._renderLatency);
+				this._processInterpolate(ige._tickStart - ige.components.network.stream._renderLatency);
 			}
 
 			// Check for changes to the transform values
@@ -2180,6 +2180,8 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
+	texture (): IgeTexture | undefined;
+	texture (texture: IgeTexture): this;
 	texture (texture?: IgeTexture) {
 		if (texture !== undefined) {
 			this._texture = texture;
@@ -2945,13 +2947,13 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 		if (this._mouseEventsActive) {
 			if (this._processTriggerHitTests()) {
 				// Point is inside the trigger bounds
-				ige.input.queueEvent(this._mouseInTrigger, null);
+				ige.components.input.queueEvent(this._mouseInTrigger, null);
 			} else {
-				if (ige.input.mouseMove) {
+				if (ige.components.input.mouseMove) {
 					// There is a mouse move event but we are not inside the entity
 					// so fire a mouse out event (_handleMouseOut will check if the
 					// mouse WAS inside before firing an out event).
-					this._handleMouseOut(ige.input.mouseMove);
+					this._handleMouseOut(ige.components.input.mouseMove);
 				}
 			}
 		}
@@ -3510,7 +3512,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         ige.components.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -3538,7 +3540,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         ige.components.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -3566,7 +3568,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         ige.components.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -3594,7 +3596,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         ige.components.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -3622,7 +3624,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         ige.components.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -3651,7 +3653,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         ige.components.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -3901,24 +3903,24 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @private
 	 */
 	_mouseInTrigger = (evc, data) => {
-		if (ige.input.mouseMove) {
+		if (ige.components.input.mouseMove) {
 			// There is a mouse move event
-			this._handleMouseIn(ige.input.mouseMove, evc, data);
+			this._handleMouseIn(ige.components.input.mouseMove, evc, data);
 		}
 
-		if (ige.input.mouseDown) {
+		if (ige.components.input.mouseDown) {
 			// There is a mouse down event
-			this._handleMouseDown(ige.input.mouseDown, evc, data);
+			this._handleMouseDown(ige.components.input.mouseDown, evc, data);
 		}
 
-		if (ige.input.mouseUp) {
+		if (ige.components.input.mouseUp) {
 			// There is a mouse up event
-			this._handleMouseUp(ige.input.mouseUp, evc, data);
+			this._handleMouseUp(ige.components.input.mouseUp, evc, data);
 		}
 
-		if (ige.input.mouseWheel) {
+		if (ige.components.input.mouseWheel) {
 			// There is a mouse wheel event
-			this._handleMouseWheel(ige.input.mouseWheel, evc, data);
+			this._handleMouseWheel(ige.components.input.mouseWheel, evc, data);
 		}
 	};
 
@@ -4752,7 +4754,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 					}
 
 					// Add it to the time stream
-					this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
+					this._timeStream.push([ige.components.network.stream._streamDataTime + ige.components.network._latency, dataArr]);
 
 					// Check stream length, don't allow higher than 10 items
 					if (this._timeStream.length > 10) {
@@ -5108,7 +5110,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 			// Grab an array of connected clients from the network
 			// system
 			let recipientArr = [],
-				clientArr = ige.network.clients(this._streamRoomId),
+				clientArr = ige.components.network.clients(this._streamRoomId),
 				i;
 
 			for (i in clientArr) {
@@ -5197,7 +5199,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 		let arrCount = recipientArr.length,
 			arrIndex,
 			clientId,
-			{ stream } = ige.network,
+			{ stream } = ige.components.network,
 			thisId = this.id(),
 			filteredArr = [],
 			createResult = true; // We set this to true by default
@@ -5252,8 +5254,8 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 
 			// Invalidate the stream client data lookup to ensure
 			// the latest data will be pushed on the next stream sync
-			if (ige.network && ige.network.stream && ige.network.stream._streamClientData && ige.network.stream._streamClientData[thisId]) {
-				ige.network.stream._streamClientData[thisId] = {};
+			if (ige.components.network && ige.components.network.stream && ige.components.network.stream._streamClientData && ige.components.network.stream._streamClientData[thisId]) {
+				ige.components.network.stream._streamClientData[thisId] = {};
 			}
 		}
 
@@ -5282,25 +5284,25 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 				i;
 
 			// Send the client an entity create command first
-			ige.network.send(
+			ige.components.network.send(
 				"_igeStreamCreate",
 				[this.classId, thisId, this._parent.id(), this.streamSectionData("transform"), this.streamCreateData()],
 				clientId
 			);
 
-			ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
+			ige.components.network.stream._streamClientCreated[thisId] = ige.components.network.stream._streamClientCreated[thisId] || {};
 
 			if (clientId) {
 				// Mark the client as having received a create
 				// command for this entity
-				ige.network.stream._streamClientCreated[thisId][clientId] = true;
+				ige.components.network.stream._streamClientCreated[thisId][clientId] = true;
 			} else {
 				// Mark all clients as having received this create
-				arr = ige.network.clients();
+				arr = ige.components.network.clients();
 
 				for (i in arr) {
 					if (arr.hasOwnProperty(i)) {
-						ige.network.stream._streamClientCreated[thisId][i] = true;
+						ige.components.network.stream._streamClientCreated[thisId][i] = true;
 					}
 				}
 			}
@@ -5332,24 +5334,24 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 			i;
 
 		// Send clients the stream destroy command for this entity
-		ige.network.send("_igeStreamDestroy", [ige._currentTime, thisId], clientId);
+		ige.components.network.send("_igeStreamDestroy", [ige._currentTime, thisId], clientId);
 
-		ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
-		ige.network.stream._streamClientData[thisId] = ige.network.stream._streamClientData[thisId] || {};
+		ige.components.network.stream._streamClientCreated[thisId] = ige.components.network.stream._streamClientCreated[thisId] || {};
+		ige.components.network.stream._streamClientData[thisId] = ige.components.network.stream._streamClientData[thisId] || {};
 
 		if (clientId) {
 			// Mark the client as having received a destroy
 			// command for this entity
-			ige.network.stream._streamClientCreated[thisId][clientId] = false;
-			ige.network.stream._streamClientData[thisId][clientId] = undefined;
+			ige.components.network.stream._streamClientCreated[thisId][clientId] = false;
+			ige.components.network.stream._streamClientData[thisId][clientId] = undefined;
 		} else {
 			// Mark all clients as having received this destroy
-			arr = ige.network.clients();
+			arr = ige.components.network.clients();
 
 			for (i in arr) {
 				if (arr.hasOwnProperty(i)) {
-					ige.network.stream._streamClientCreated[thisId][i] = false;
-					ige.network.stream._streamClientData[thisId][i] = undefined;
+					ige.components.network.stream._streamClientCreated[thisId][i] = false;
+					ige.components.network.stream._streamClientData[thisId][i] = undefined;
 				}
 			}
 		}
@@ -5419,7 +5421,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 				// regardless of if there is actually any section data because
 				// we want to be able to identify sections in a serial fashion
 				// on receipt of the data string on the client
-				sectionDataString += ige.network.stream._sectionDesignator;
+				sectionDataString += ige.components.network.stream._sectionDesignator;
 
 				// Check if we were returned any data
 				if (sectionData !== undefined) {

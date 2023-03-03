@@ -1,5 +1,5 @@
 var PlayerBehaviour = function () {
-	if (ige.input.actionState('left')) {
+	if (ige.components.input.actionState('left')) {
 		if (!this.controls.left) {
 			// Record the new state
 			this.controls.left = true;
@@ -12,7 +12,7 @@ var PlayerBehaviour = function () {
 		}
 	}
 
-	if (ige.input.actionState('right')) {
+	if (ige.components.input.actionState('right')) {
 		if (!this.controls.right) {
 			// Record the new state
 			this.controls.right = true;
@@ -25,7 +25,7 @@ var PlayerBehaviour = function () {
 		}
 	}
 
-	if (ige.input.actionState('thrust')) {
+	if (ige.components.input.actionState('thrust')) {
 		if (!this.controls.thrust) {
 			// Record the new state
 			this.controls.thrust = true;
@@ -64,7 +64,7 @@ var PlayerBehaviour = function () {
 		this.thrustEmitter.stop();
 	}
 
-	if (ige.input.actionState('drop')) {
+	if (ige.components.input.actionState('drop')) {
 		if (this._carryingOrb) {
 			this.dropOrb();
 		}

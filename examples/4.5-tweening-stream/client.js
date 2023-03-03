@@ -25,8 +25,8 @@ var Client = IgeClass.extend({
 			ige.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
-					ige.network.start('http://localhost:2000', function () {
-						ige.network.addComponent(IgeStreamComponent)
+					ige.components.network.start('http://localhost:2000', function () {
+						ige.components.network.addComponent(IgeStreamComponent)
 							.stream.renderLatency(160); // Render the simulation 160 milliseconds in the past
 
 						// Create the scene
