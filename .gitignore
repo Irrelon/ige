@@ -171,3 +171,4 @@ npm-debug.log
 
 # Ignore all node_modules
 node_modules
+tsconfig.tsbuildinfo
