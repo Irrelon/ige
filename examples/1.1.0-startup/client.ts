@@ -5,6 +5,7 @@ import IgeBaseClass from "../../engine/core/IgeBaseClass";
 import {Rotator} from "./gameClasses/Rotator";
 import {ige} from "../../engine/instance";
 
+// @ts-ignore
 window.ige = ige;
 
 export class Client extends IgeBaseClass {

@@ -21,9 +21,9 @@ class IgeBaseScene extends IgeSceneGraph {
                 this.removeGraph();
             }
             // Create the scene
-            const baseScene = new IgeScene2d(ige).id("baseScene");
+            const baseScene = new IgeScene2d().id("baseScene");
             // Create the main viewport to look at "baseScene"
-            new IgeViewport(ige)
+            new IgeViewport()
                 .id("vp1")
                 .autoSize(true)
                 .scene(baseScene)

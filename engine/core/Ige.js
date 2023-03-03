@@ -16,6 +16,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
         this._manualRender = false;
         this._categoryRegister = {};
         this._groupRegister = {};
+        this._tickStart = 0;
         this._deviceFinalDrawRatio = 1;
         this.fontsLoaded = () => {
             if (!this._webFonts.length && !this._cssFonts.length)
@@ -560,9 +561,9 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
             }
             else {
                 obj._registered = false;
-                this.log('Cannot add object id "' +
+                this.log("Cannot add object id \"" +
                     obj.id() +
-                    '" to scenegraph because there is already another object in the graph with the same ID!', "error");
+                    "\" to scenegraph because there is already another object in the graph with the same ID!", "error");
                 return false;
             }
         }
@@ -1198,15 +1199,15 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
                     this._graphInstances[classInstance.constructor.name] = classInstance;
                 }
                 else {
-                    this.log('Could not load graph for class name "' +
+                    this.log("Could not load graph for class name \"" +
                         className +
-                        '" because the class does not implement both the require methods "addGraph()" and "removeGraph()".', "error");
+                        "\" because the class does not implement both the require methods \"addGraph()\" and \"removeGraph()\".", "error");
                 }
             }
             else {
-                this.log('Cannot load graph for class name "' +
+                this.log("Cannot load graph for class name \"" +
                     className +
-                    '" because the class could not be found. Have you included it in your server/clientConfig.js file?', "error");
+                    "\" because the class could not be found. Have you included it in your server/clientConfig.js file?", "error");
             }
         }
         return this;
@@ -1228,9 +1229,9 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
                 delete this._graphInstances[className];
             }
             else {
-                this.log('Cannot remove graph for class name "' +
+                this.log("Cannot remove graph for class name \"" +
                     className +
-                    '" because the class instance could not be found. Did you add it via ige.addGraph() ?', "error");
+                    "\" because the class instance could not be found. Did you add it via ige.addGraph() ?", "error");
             }
         }
         return this;
@@ -1348,7 +1349,8 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
             };
         }
     }
-    requestAnimFrame(frameHandlerFunction = () => { }, element) {
+    requestAnimFrame(frameHandlerFunction = () => {
+    }, element) {
         window.requestAnimationFrame(frameHandlerFunction);
     }
     showStats() {

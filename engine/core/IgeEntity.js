@@ -41,22 +41,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         this._cacheDirty = false;
         this._cacheSmoothing = false;
         this._aabbDirty = false;
-        /**
-         * Handles screen resize events. Calls the _resizeEvent method of
-         * every child object mounted to this object.
-         * @param event
-         * @private
-         */
-        this._resizeEvent = (event) => {
-            let arr = this._children, arrCount;
-            if (!arr) {
-                return;
-            }
-            arrCount = arr.length;
-            while (arrCount--) {
-                arr[arrCount]._resizeEvent(event);
-            }
-        };
+        this._indestructible = false;
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // INTERACTION
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -630,70 +615,38 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         }
         return this._alive;
     }
-    /**
-     * Gets / sets the current object id. If no id is currently assigned and no
-     * id is passed to the method, it will automatically generate and assign a
-     * new id as a 16 character hexadecimal value typed as a string.
-     * @param {String=} id
-     * @example #Get the id of an entity
-     *     var entity = new IgeEntity();
-     *     console.log(entity.id());
-     * @example #Set the id of an entity
-     *     var entity = new IgeEntity();
-     *     entity.id('myNewId');
-     * @example #Set the id of an entity via chaining
-     *     var entity = new IgeEntity()
-     *         .id('myNewId');
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
     id(id) {
-        if (id !== undefined) {
-            // Check if we're changing the id
-            if (id === this._id) {
-                // The same ID we already have is being applied,
-                // ignore the request and return
-                return this;
+        if (id === undefined) {
+            return this._id;
+        }
+        // Check if we're changing the id
+        if (id === this._id) {
+            // The same ID we already have is being applied,
+            // ignore the request and return
+            return this;
+        }
+        // Check if this ID already exists in the object register
+        if (!ige._register[id]) {
+            // Check if we already have an id assigned
+            if (this._id && ige._register[this._id]) {
+                // Unregister the old ID before setting this new one
+                ige.unRegister(this);
             }
-            // Check if this ID already exists in the object register
-            if (!ige._register[id]) {
-                // Check if we already have an id assigned
-                if (this._id && ige._register[this._id]) {
-                    // Unregister the old ID before setting this new one
-                    ige.unRegister(this);
-                }
-                this._id = id;
-                // Now register this object with the object register
-                ige.register(this);
-                return this;
-            }
-            // Already an object with this ID!
-            if (ige._register[id] !== this) {
-                this.log(`Cannot set ID of object to "${id}" because that ID is already in use by another object!`, "error");
-            }
+            this._id = id;
+            // Now register this object with the object register
+            ige.register(this);
+            return this;
+        }
+        // Already an object with this ID!
+        if (ige._register[id] !== this) {
+            this.log(`Cannot set ID of object to "${id}" because that ID is already in use by another object!`, "error");
         }
         if (!this._id) {
             // The item has no id so generate one automatically
             this._id = ige.newIdHex();
             ige.register(this);
         }
-        return this._id;
     }
-    /**
-     * Gets / sets the boolean flag determining if this object should have
-     * its bounds drawn when the bounds for all objects are being drawn.
-     * In order for bounds to be drawn the viewport the object is being drawn
-     * to must also have draw bounds enabled.
-     * @param {Boolean} val
-     * @example #Enable draw bounds
-     *     var entity = new IgeEntity();
-     *     entity.drawBounds(true);
-     * @example #Disable draw bounds
-     *     var entity = new IgeEntity();
-     *     entity.drawBounds(false);
-     * @example #Get the current flag value
-     *     console.log(entity.drawBounds());
-     * @return {*}
-     */
     drawBounds(val) {
         if (val !== undefined) {
             this._drawBounds = val;
@@ -701,21 +654,6 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         }
         return this._drawBounds;
     }
-    /**
-     * Gets / sets the boolean flag determining if this object should have
-     * its bounds data drawn when the bounds for all objects are being drawn.
-     * Bounds data includes the object ID and its current depth etc.
-     * @param {Boolean} val
-     * @example #Enable draw bounds data
-     *     var entity = new IgeEntity();
-     *     entity.drawBoundsData(true);
-     * @example #Disable draw bounds data
-     *     var entity = new IgeEntity();
-     *     entity.drawBoundsData(false);
-     * @example #Get the current flag value
-     *     console.log(entity.drawBoundsData());
-     * @return {*}
-     */
     drawBoundsData(val) {
         if (val !== undefined) {
             this._drawBoundsData = val;
@@ -723,20 +661,6 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         }
         return this._drawBoundsData;
     }
-    /**
-     * Gets / sets the boolean flag determining if this object should have
-     * its mouse position drawn, usually for debug purposes.
-     * @param {Boolean=} val
-     * @example #Enable draw mouse position data
-     *     var entity = new IgeEntity();
-     *     entity.drawMouse(true);
-     * @example #Disable draw mouse position data
-     *     var entity = new IgeEntity();
-     *     entity.drawMouse(false);
-     * @example #Get the current flag value
-     *     console.log(entity.drawMouse());
-     * @return {*}
-     */
     drawMouse(val) {
         if (val !== undefined) {
             this._drawMouse = val;
@@ -744,22 +668,6 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         }
         return this._drawMouse;
     }
-    /**
-     * Gets / sets the boolean flag determining if this object should have
-     * its extra mouse data drawn for debug purposes. For instance, on tile maps
-     * (IgeTileMap2d) instances, when enabled you will see the tile x and y
-     * co-ordinates currently being hovered over by the mouse.
-     * @param {Boolean=} val
-     * @example #Enable draw mouse data
-     *     var entity = new IgeEntity();
-     *     entity.drawMouseData(true);
-     * @example #Disable draw mouse data
-     *     var entity = new IgeEntity();
-     *     entity.drawMouseData(false);
-     * @example #Get the current flag value
-     *     console.log(entity.drawMouseData());
-     * @return {*}
-     */
     drawMouseData(val) {
         if (val !== undefined) {
             this._drawMouseData = val;
@@ -767,27 +675,6 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         }
         return this._drawMouseData;
     }
-    /**
-     * Returns the object's parent object (the object that
-     * it is mounted to).
-     * @param {String=} id Optional, if present will scan up
-     * the parent chain until a parent with the matching id is
-     * found. If none is found, returns undefined.
-     * @example #Get the object parent
-     *     // Create a couple of entities and give them ids
-     *     var entity1 = new IgeEntity().id('entity1'),
-     *         entity2 = new IgeEntity().id('entity2');
-     *
-     *     // Mount entity2 to entity1
-     *     entity2.mount(entity1);
-     *
-     *     // Get the parent of entity2 (which is entity1)
-     *     var parent = entity2.parent();
-     *
-     *     // Log the parent's id (will output "entity1")
-     *     console.log(parent.id());
-     * @return {*}
-     */
     parent(id) {
         if (!id) {
             return this._parent;
@@ -835,18 +722,13 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * @return {*} Returns this on success or false on failure.
      */
     mount(obj) {
-        if (!obj) {
-            this.log("Cannot mount non-existent object!", "error");
-            return this;
-        }
         if (obj === this) {
             this.log("Cannot mount an object to itself!", "error");
             return this;
         }
         if (!obj._children) {
             // The object has no _children array!
-            this.log("Cannot mount object because it has no _children array! If you are mounting to a custom class, ensure that you have extended from IgeEntity.", "warning");
-            return false;
+            throw new Error("Cannot mount object because it has no _children array! If you are mounting to a custom class, ensure that you have extended from IgeEntity.");
         }
         // Check that the engine will allow us to register this object
         this.id(); // Generates a new id if none is currently set, and registers it on the object register!
@@ -898,24 +780,20 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * @return {*} Returns this on success or false on failure.
      */
     unMount() {
-        if (this._parent) {
-            const childArr = this._parent._children, index = childArr.indexOf(this), oldParent = this._parent;
-            if (index > -1) {
-                // Found this in the parent._children array so remove it
-                childArr.splice(index, 1);
-                this._parent._childUnMounted(this);
-                this._parent = null;
-                this._unMounted(oldParent);
-                return this;
-            }
-            else {
-                // Cannot find this in the parent._children array
-                return false;
-            }
-        }
-        else {
+        if (!this._parent) {
             return false;
         }
+        const childArr = this._parent._children, index = childArr.indexOf(this), oldParent = this._parent;
+        if (index <= -1) {
+            // Cannot find this in the parent._children array
+            return false;
+        }
+        // Found this in the parent._children array so remove it
+        childArr.splice(index, 1);
+        this._parent._childUnMounted(this);
+        this._parent = null;
+        this._unMounted(oldParent);
+        return this;
     }
     /**
      * Determines if the object has a parent up the scenegraph whose
@@ -964,73 +842,16 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
             options.transform = true;
         }
         // Loop all children and clone them, then return cloned version of ourselves
-        const newObject = eval(this._stringify(options));
+        const newObject = eval(this.stringify(options));
         return newObject;
     }
-    /**
-     * Gets / sets the indestructible flag. If set to true, the object will
-     * not be destroyed even if a call to the destroy() method is made.
-     * @param {Number=} val
-     * @example #Set an entity to indestructible
-     *     var entity = new IgeEntity()
-     *         .indestructible(true);
-     * @example #Set an entity to destructible
-     *     var entity = new IgeEntity()
-     *         .indestructible(false);
-     * @example #Get an entity's indestructible flag value
-     *     var entity = new IgeEntity()
-     *     console.log(entity.indestructible());
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
     indestructible(val) {
-        if (typeof val !== "undefined") {
+        if (val !== undefined) {
             this._indestructible = val;
             return this;
         }
         return this._indestructible;
     }
-    /**
-     * Gets / sets the current entity layer. This affects how the entity is depth-sorted
-     * against other entities of the same parent. Please note that entities are first sorted
-     * by their layer and then by their depth, and only entities of the same layer will be
-     * sorted against each other by their depth values.
-     * @param {Number=} val
-     * @example #Set an entity's layer to 22
-     *     var entity = new IgeEntity()
-     *         .layer(22);
-     * @example #Get an entity's layer value
-     *     var entity = new IgeEntity()
-     *     console.log(entity.layer());
-     * @example #How layers and depths are handled together
-     *     var entity1 = new IgeEntity(),
-     *         entity2 = new IgeEntity(),
-     *         entity3 = new IgeEntity();
-     *
-     *     // Set entity1 to at layer zero and depth 100
-     *     entity1.layer(0)
-     *         .depth(100);
-     *
-     *     // Set entity2 and 3 to be at layer 1
-     *     entity2.layer(1);
-     *     entity3.layer(1);
-     *
-     *     // Set entity3 to have a higher depth than entity2
-     *     entity2.depth(0);
-     *     entity3.depth(1);
-     *
-     *     // The engine sorts first based on layer from lowest to highest
-     *     // and then within each layer, by depth from lowest to highest.
-     *     // This means that entity1 will be drawn before entity 2 and 3
-     *     // because even though its depth is higher, it is not on the same
-     *     // layer as entity 2 and 3.
-     *
-     *     // Based on the layers and depths we have assigned, here
-     *     // is how the engine will sort the draw order of the entities
-     *     // entity1
-     *     // entity2
-     *     // entity3
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
     layer(val) {
         if (val !== undefined) {
             this._layer = val;
@@ -1038,48 +859,6 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         }
         return this._layer;
     }
-    /**
-     * Gets / sets the current render depth of the object (higher depths
-     * are drawn over lower depths). Please note that entities are first sorted
-     * by their layer and then by their depth, and only entities of the same layer will be
-     * sorted against each other by their depth values.
-     * @param {Number=} val
-     * @example #Set an entity's depth to 1
-     *     var entity = new IgeEntity()
-     *         .depth(1);
-     * @example #Get an entity's depth value
-     *     var entity = new IgeEntity()
-     *     console.log(entity.depth());
-     * @example #How layers and depths are handled together
-     *     var entity1 = new IgeEntity(),
-     *         entity2 = new IgeEntity(),
-     *         entity3 = new IgeEntity();
-     *
-     *     // Set entity1 to at layer zero and depth 100
-     *     entity1.layer(0)
-     *         .depth(100);
-     *
-     *     // Set entity2 and 3 to be at layer 1
-     *     entity2.layer(1);
-     *     entity3.layer(1);
-     *
-     *     // Set entity3 to have a higher depth than entity2
-     *     entity2.depth(0);
-     *     entity3.depth(1);
-     *
-     *     // The engine sorts first based on layer from lowest to highest
-     *     // and then within each layer, by depth from lowest to highest.
-     *     // This means that entity1 will be drawn before entity 2 and 3
-     *     // because even though its depth is higher, it is not on the same
-     *     // layer as entity 2 and 3.
-     *
-     *     // Based on the layers and depths we have assigned, here
-     *     // is how the engine will sort the draw order of the entities
-     *     // entity1
-     *     // entity2
-     *     // entity3
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
     depth(val) {
         if (val !== undefined) {
             this._depth = val;
@@ -1093,9 +872,9 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * internal _children array.
      */
     destroyChildren() {
-        let arr = this._children, arrCount;
+        const arr = this._children;
         if (arr) {
-            arrCount = arr.length;
+            let arrCount = arr.length;
             while (arrCount--) {
                 arr[arrCount].destroy();
             }
@@ -1103,75 +882,20 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         this._children = [];
         return this;
     }
-    /**
-     * Gets / sets if this object should be positioned isometrically
-     * or in 2d.
-     * @param {Boolean} val Set to true to position this object in
-     * isometric space or false to position it in 2d space.
-     * @example #Set the positioning mode to isometric
-     *     var entity = new IgeEntity()
-     *         .isometric(true);
-     * @example #Set the positioning mode to 2d
-     *     var entity = new IgeEntity()
-     *         .isometric(false);
-     * @return {*}
-     */
     isometric(val) {
-        if (val === true) {
-            this._mode = 1;
-            return this;
-        }
-        if (val === false) {
-            this._mode = 0;
+        if (val !== undefined) {
+            this._mode = val ? 1 : 0;
             return this;
         }
         return this._mode === 1;
     }
-    /**
-     * Gets / sets if objects mounted to this object should be positioned
-     * and depth-sorted in an isometric fashion or a 2d fashion.
-     * @param {Boolean=} val Set to true to enabled isometric positioning
-     * and depth sorting of objects mounted to this object, or false to
-     * enable 2d positioning and depth-sorting of objects mounted to this
-     * object.
-     * @example #Set children to be positioned and depth sorted in 2d
-     *     var entity = new IgeEntity()
-     *         .isometricMounts(false);
-     * @example #Set children to be positioned and depth sorted in isometric
-     *     var entity = new IgeEntity()
-     *         .isometricMounts(true);
-     * @return {*}
-     */
     isometricMounts(val) {
-        if (val === true) {
-            this._mountMode = 1;
-            return this;
-        }
-        if (val === false) {
-            this._mountMode = 0;
+        if (val !== undefined) {
+            this._mountMode = val ? 1 : 0;
             return this;
         }
         return this._mountMode === 1;
     }
-    /**
-     * Gets / sets the depth sort mode that is used when
-     * depth sorting this object's children against each other. This
-     * mode only applies if this object's mount mode is isometric,
-     * as set by calling isometricMounts(true). If the mount mode is
-     * 2d, the depth sorter will use a very fast 2d depth sort that
-     * does not use 3d bounds at all.
-     * @param {Number=} val The mode to use when depth sorting
-     * this object's children, given as an integer value.
-     * @example #Turn off all depth sorting for this object's children
-     *     entity.depthSortMode(-1);
-     * @example #Use 3d bounds when sorting this object's children
-     *     entity.depthSortMode(0);
-     * @example #Use 3d bounds optimised for mostly cube-shaped bounds when sorting this object's children
-     *     entity.depthSortMode(1);
-     * @example #Use 3d bounds optimised for all cube-shaped bounds when sorting this object's children
-     *     entity.depthSortMode(2);
-     * @return {*}
-     */
     depthSortMode(val) {
         if (val !== undefined) {
             this._depthSortMode = val;
@@ -1183,125 +907,126 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * Sorts the _children array by the layer and then depth of each object.
      */
     depthSortChildren() {
-        if (this._depthSortMode !== -1) {
-            // TODO: Optimise this method, it is not especially efficient at the moment!
-            let arr = this._children, arrCount, sortObj, i, j;
-            if (arr) {
-                arrCount = arr.length;
-                // See if we can bug-out early
-                if (arrCount > 1) {
-                    // Check if the mount mode is isometric
-                    if (this._mountMode === 1) {
-                        // Check the depth sort mode
-                        if (this._depthSortMode === 0) {
-                            // Slowest, uses 3d bounds
-                            // Calculate depths from 3d bounds
-                            sortObj = {
-                                adj: [],
-                                c: [],
-                                p: [],
-                                order: [],
-                                order_ind: arrCount - 1
-                            };
-                            for (i = 0; i < arrCount; ++i) {
-                                sortObj.c[i] = 0;
-                                sortObj.p[i] = -1;
-                                for (j = i + 1; j < arrCount; ++j) {
-                                    sortObj.adj[i] = sortObj.adj[i] || [];
-                                    sortObj.adj[j] = sortObj.adj[j] || [];
-                                    if (arr[i]._inView && arr[j]._inView && arr[i]._projectionOverlap && arr[j]._projectionOverlap) {
-                                        if (arr[i]._projectionOverlap(arr[j])) {
-                                            if (arr[i].isBehind(arr[j])) {
-                                                sortObj.adj[j].push(i);
-                                            }
-                                            else {
-                                                sortObj.adj[i].push(j);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            for (i = 0; i < arrCount; ++i) {
-                                if (sortObj.c[i] === 0) {
-                                    this._depthSortVisit(i, sortObj);
-                                }
-                            }
-                            for (i = 0; i < sortObj.order.length; i++) {
-                                arr[sortObj.order[i]].depth(i);
-                            }
-                            this._sortChildren((a, b) => {
-                                const layerIndex = b._layer - a._layer;
-                                if (layerIndex === 0) {
-                                    // On same layer so sort by depth
-                                    return b._depth - a._depth;
-                                }
-                                else {
-                                    // Not on same layer so sort by layer
-                                    return layerIndex;
-                                }
-                            });
-                        }
-                        if (this._depthSortMode === 1) {
-                            // Medium speed, optimised for almost-cube shaped 3d bounds
-                            // Now sort the entities by depth
-                            this._sortChildren((a, b) => {
-                                const layerIndex = b._layer - a._layer;
-                                if (layerIndex === 0) {
-                                    // On same layer so sort by depth
-                                    //if (a._projectionOverlap(b)) {
-                                    if (a.isBehind(b)) {
-                                        return -1;
-                                    }
-                                    else {
-                                        return 1;
-                                    }
-                                    //}
-                                }
-                                else {
-                                    // Not on same layer so sort by layer
-                                    return layerIndex;
-                                }
-                            });
-                        }
-                        if (this._depthSortMode === 2) {
-                            // Fastest, optimised for cube-shaped 3d bounds
-                            while (arrCount--) {
-                                sortObj = arr[arrCount];
-                                j = sortObj._translate;
-                                if (j) {
-                                    sortObj._depth = j.x + j.y + j.z;
-                                }
-                            }
-                            // Now sort the entities by depth
-                            this._sortChildren((a, b) => {
-                                const layerIndex = b._layer - a._layer;
-                                if (layerIndex === 0) {
-                                    // On same layer so sort by depth
-                                    return b._depth - a._depth;
-                                }
-                                else {
-                                    // Not on same layer so sort by layer
-                                    return layerIndex;
-                                }
-                            });
-                        }
+        if (this._depthSortMode === -1) {
+            return;
+        }
+        const arr = this._children;
+        if (arr) {
+            let arrCount = arr.length;
+            // See if we can bug-out early (one or no children)
+            if (arrCount <= 1) {
+                return;
+            }
+            if (this._mountMode !== 1) {
+                // 2d mode
+                // Now sort the entities by depth
+                this._sortChildren((a, b) => {
+                    const layerIndex = b._layer - a._layer;
+                    if (layerIndex === 0) {
+                        // On same layer so sort by depth
+                        return b._depth - a._depth;
                     }
                     else {
-                        // 2d mode
-                        // Now sort the entities by depth
-                        this._sortChildren((a, b) => {
-                            const layerIndex = b._layer - a._layer;
-                            if (layerIndex === 0) {
-                                // On same layer so sort by depth
-                                return b._depth - a._depth;
+                        // Not on same layer so sort by layer
+                        return layerIndex;
+                    }
+                });
+                return;
+            }
+            // Check the depth sort mode
+            if (this._depthSortMode === 0) {
+                // Slowest, uses 3d bounds
+                // Calculate depths from 3d bounds
+                const sortObj = {
+                    adj: [],
+                    c: [],
+                    p: [],
+                    order: [],
+                    order_ind: arrCount - 1
+                };
+                for (let i = 0; i < arrCount; ++i) {
+                    sortObj.c[i] = 0;
+                    sortObj.p[i] = -1;
+                    for (let j = i + 1; j < arrCount; ++j) {
+                        sortObj.adj[i] = sortObj.adj[i] || [];
+                        sortObj.adj[j] = sortObj.adj[j] || [];
+                        if (arr[i]._inView && arr[j]._inView && arr[i]._projectionOverlap && arr[j]._projectionOverlap) {
+                            if (arr[i]._projectionOverlap(arr[j])) {
+                                if (arr[i].isBehind(arr[j])) {
+                                    sortObj.adj[j].push(i);
+                                }
+                                else {
+                                    sortObj.adj[i].push(j);
+                                }
                             }
-                            else {
-                                // Not on same layer so sort by layer
-                                return layerIndex;
-                            }
-                        });
+                        }
                     }
                 }
+                for (let i = 0; i < arrCount; ++i) {
+                    if (sortObj.c[i] !== 0) {
+                        continue;
+                    }
+                    this._depthSortVisit(i, sortObj);
+                }
+                for (let i = 0; i < sortObj.order.length; i++) {
+                    arr[sortObj.order[i]].depth(i);
+                }
+                this._sortChildren((a, b) => {
+                    const layerIndex = b._layer - a._layer;
+                    if (layerIndex === 0) {
+                        // On same layer so sort by depth
+                        return b._depth - a._depth;
+                    }
+                    else {
+                        // Not on same layer so sort by layer
+                        return layerIndex;
+                    }
+                });
+            }
+            if (this._depthSortMode === 1) {
+                // Medium speed, optimised for almost-cube shaped 3d bounds
+                // Now sort the entities by depth
+                this._sortChildren((a, b) => {
+                    const layerIndex = b._layer - a._layer;
+                    if (layerIndex === 0) {
+                        // On same layer so sort by depth
+                        //if (a._projectionOverlap(b)) {
+                        if (a.isBehind(b)) {
+                            return -1;
+                        }
+                        else {
+                            return 1;
+                        }
+                        //}
+                    }
+                    else {
+                        // Not on same layer so sort by layer
+                        return layerIndex;
+                    }
+                });
+            }
+            if (this._depthSortMode === 2) {
+                // Fastest, optimised for cube-shaped 3d bounds
+                while (arrCount--) {
+                    const sortObj = arr[arrCount];
+                    const j = sortObj._translate;
+                    if (!j) {
+                        continue;
+                    }
+                    sortObj._depth = j.x + j.y + j.z;
+                }
+                // Now sort the entities by depth
+                this._sortChildren((a, b) => {
+                    const layerIndex = b._layer - a._layer;
+                    if (layerIndex === 0) {
+                        // On same layer so sort by depth
+                        return b._depth - a._depth;
+                    }
+                    else {
+                        // Not on same layer so sort by layer
+                        return layerIndex;
+                    }
+                });
             }
         }
     }
@@ -1313,49 +1038,49 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         if (this._newBorn) {
             this._newBorn = false;
         }
-        let arr = this._children, arrCount, ts, td;
+        const arr = this._children;
         if (!arr) {
             return;
         }
-        arrCount = arr.length;
+        let arrCount = arr.length;
         // Depth sort all child objects
         if (arrCount && !ige._headless) {
             if (igeConfig.debug._timing) {
                 if (!ige._timeSpentLastTick[this.id()]) {
                     ige._timeSpentLastTick[this.id()] = {};
                 }
-                ts = new Date().getTime();
+                const ts = new Date().getTime();
                 this.depthSortChildren();
-                td = new Date().getTime() - ts;
-                ige._timeSpentLastTick[this.id()].depthSortChildren = td;
+                ige._timeSpentLastTick[this.id()].depthSortChildren = new Date().getTime() - ts;
             }
             else {
                 this.depthSortChildren();
             }
         }
         // Loop our children and call their update methods
-        if (igeConfig.debug._timing) {
-            while (arrCount--) {
-                ts = new Date().getTime();
-                arr[arrCount].update(ctx, tickDelta);
-                td = new Date().getTime() - ts;
-                if (arr[arrCount]) {
-                    if (!ige._timeSpentInTick[arr[arrCount].id()]) {
-                        ige._timeSpentInTick[arr[arrCount].id()] = 0;
-                    }
-                    if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
-                        ige._timeSpentLastTick[arr[arrCount].id()] = {};
-                    }
-                    ige._timeSpentInTick[arr[arrCount].id()] += td;
-                    ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
-                }
-            }
-        }
-        else {
+        if (!igeConfig.debug._timing) {
             while (arrCount--) {
                 arr[arrCount].update(ctx, tickDelta);
             }
+            return;
         }
+        while (arrCount--) {
+            const ts = new Date().getTime();
+            arr[arrCount].update(ctx, tickDelta);
+            const td = new Date().getTime() - ts;
+            if (!arr[arrCount]) {
+                continue;
+            }
+            if (!ige._timeSpentInTick[arr[arrCount].id()]) {
+                ige._timeSpentInTick[arr[arrCount].id()] = 0;
+            }
+            if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
+                ige._timeSpentLastTick[arr[arrCount].id()] = {};
+            }
+            ige._timeSpentInTick[arr[arrCount].id()] += td;
+            ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
+        }
+        return;
     }
     /**
      * Processes the updates required each render frame. Any code in the update()
@@ -1374,7 +1099,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
             // Check if the deathCallBack was set
             if (this._deathCallBack) {
                 this._deathCallBack.apply(this);
-                delete this._deathCallback;
+                delete this._deathCallBack;
             }
             // The entity should be removed because it has died
             this.destroy();
@@ -1433,23 +1158,42 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         --sortObj.order_ind;
     }
     /**
+     * Handles screen resize events. Calls the _resizeEvent method of
+     * every child object mounted to this object.
+     * @param event
+     * @private
+     */
+    _resizeEvent(event) {
+        const arr = this._children;
+        if (!arr) {
+            return;
+        }
+        let arrCount = arr.length;
+        while (arrCount--) {
+            arr[arrCount]._resizeEvent(event);
+        }
+    }
+    /**
      * Called when a child object is un-mounted from this object.
      * @param obj
      * @private
      */
-    _childUnMounted(obj) { }
+    _childUnMounted(obj) {
+    }
     /**
      * Called when this object is mounted to an object.
      * @param obj
      * @private
      */
-    _mounted(obj) { }
+    _mounted(obj) {
+    }
     /**
      * Called when this object is un-mounted from its parent.
      * @param obj
      * @private
      */
-    _unMounted(obj) { }
+    _unMounted(obj) {
+    }
     isMounted() {
         return Boolean(this._parent);
     }
@@ -2351,13 +2095,13 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
                 }
                 // We were unable to find the cell index from the cell
                 // id so produce an error
-                this.log('Could not find the cell id "' +
+                this.log("Could not find the cell id \"" +
                     val +
-                    '" in the assigned entity texture ' +
+                    "\" in the assigned entity texture " +
                     tex.id() +
-                    ', please check your sprite sheet (texture) cell definition to ensure the cell id "' +
+                    ", please check your sprite sheet (texture) cell definition to ensure the cell id \"" +
                     val +
-                    '" has been assigned to a cell!', "error");
+                    "\" has been assigned to a cell!", "error");
             }
             else {
                 this.log("Cannot assign cell index from cell ID until an IgeSpriteSheet has been set as the texture for this entity. Please set the texture before calling cellById().", "error");
@@ -2522,14 +2266,13 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * @return {IgePoint3d} The screen position of the entity.
      */
     screenPosition() {
-        return new IgePoint3d(Math.floor((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x +
-            ige.root._bounds2d.x2), Math.floor((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y +
-            ige.root._bounds2d.y2), 0);
+        return new IgePoint3d(Math.floor((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x + ige.root._bounds2d.x2), Math.floor((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y + ige.root._bounds2d.y2), 0);
     }
     /**
      * @deprecated Use bounds3dPolygon instead
      */
-    localIsoBoundsPoly() { }
+    localIsoBoundsPoly() {
+    }
     localBounds3dPolygon(recalculate) {
         if (this._bounds3dPolygonDirty || !this._localBounds3dPolygon || recalculate) {
             const geom = this._bounds3d, poly = new IgePoly2d(), 
@@ -4380,7 +4123,8 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      *
      * Valid return values must not include circular references!
      */
-    streamCreateData() { }
+    streamCreateData() {
+    }
     /**
      * Gets / sets the stream emit created flag. If set to true this entity
      * emit a "streamCreated" event when it is created by the stream, but
@@ -4449,10 +4193,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
             const thisId = this.id();
             // Invalidate the stream client data lookup to ensure
             // the latest data will be pushed on the next stream sync
-            if (ige.network &&
-                ige.network.stream &&
-                ige.network.stream._streamClientData &&
-                ige.network.stream._streamClientData[thisId]) {
+            if (ige.network && ige.network.stream && ige.network.stream._streamClientData && ige.network.stream._streamClientData[thisId]) {
                 ige.network.stream._streamClientData[thisId] = {};
             }
         }

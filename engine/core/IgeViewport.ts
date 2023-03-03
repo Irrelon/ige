@@ -4,9 +4,9 @@ import IgeCamera from "./IgeCamera";
 import IgeRect from "./IgeRect";
 import WithUiStyleMixin from "../mixins/IgeUiStyleMixin";
 import WithUiPositionMixin from "../mixins/IgeUiPositionMixin";
-import type Ige from "./Ige";
 import IgePoint2d from "./IgePoint2d";
-import {ige} from "../instance";
+import { ige } from "../instance";
+import IgeScene2d from "./IgeScene2d";
 
 export interface IgeViewportOptions {
 	width: number;
@@ -28,6 +28,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	_overflow: string;
 	_clipping: boolean;
 	_autoSize: boolean = false;
+	_scene?: IgeScene2d;
 	camera: IgeCamera;
 
 	constructor (options?: IgeViewportOptions) {
@@ -40,7 +41,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		this._mousePos = new IgePoint3d(0, 0, 0);
 		this._overflow = "";
 		this._clipping = true;
-		this._bornTime = 0; // This used to be undefined, don't know why
+		this._bornTime = undefined;
 
 		// Set default options if not specified
 		// TODO: Is this required or even used?
@@ -70,9 +71,10 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 * @param {Integer} height Height in pixels.
 	 * @returns {*}
 	 */
-	minimumVisibleArea = (width, height) => {
+	minimumVisibleArea (width: number, height: number) {
 		// Store the w/h we want to lock to
 		this._lockDimension = new IgePoint3d(width, height, 0);
+
 		if (ige.isClient) {
 			this._resizeEvent({});
 		}
@@ -86,8 +88,10 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 * @param val
 	 * @return {*}
 	 */
-	autoSize = (val?: boolean) => {
-		if (typeof(val) !== "undefined") {
+	autoSize (): boolean;
+	autoSize (id: boolean): this;
+	autoSize (val?: boolean) {
+		if (typeof (val) !== "undefined") {
 			this._autoSize = val;
 			return this;
 		}
@@ -100,8 +104,10 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 * @param {IgeScene2d} scene
 	 * @return {*}
 	 */
-	scene = (scene) => {
-		if (typeof(scene) !== "undefined") {
+	scene (): IgeScene2d;
+	scene (id: IgeScene2d): this;
+	scene (scene?: IgeScene2d) {
+		if (scene !== undefined) {
 			this._scene = scene;
 			return this;
 		}
@@ -113,13 +119,13 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 * Returns the viewport's mouse position.
 	 * @return {IgePoint3d}
 	 */
-	mousePos = () => {
+	mousePos () {
 		// Viewport mouse position is calculated and assigned in the
 		// IgeInputComponent class.
 		return this._mousePos.clone();
 	}
 
-	mousePosWorld = () => {
+	mousePosWorld () {
 		return this._transformPoint(this._mousePos.clone());
 	}
 
@@ -128,8 +134,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 * in the world. The co-ordinates are in world space.
 	 * @returns {IgeRect}
 	 */
-	viewArea = () => {
-		var aabb = this.aabb(),
+	viewArea () {
+		const aabb = this.aabb(),
 			camTrans = this.camera._translate,
 			camScale = this.camera._scale,
 			width = aabb.width * (1 / camScale.x),
@@ -149,7 +155,9 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 */
 	update (ctx, tickDelta) {
 		// Check if we have a scene attached to this viewport
-		if (!this._scene) { return; }
+		if (!this._scene) {
+			return;
+		}
 
 		ige._currentCamera = this.camera;
 		ige._currentViewport = this;
@@ -169,7 +177,9 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 */
 	tick (ctx, scene) {
 		// Check if we have a scene attached to this viewport
-		if (!this._scene) { return; }
+		if (!this._scene) {
+			return;
+		}
 
 		ige._currentCamera = this.camera;
 		ige._currentViewport = this;
@@ -229,7 +239,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 
 		if (this._drawMouse && ctx === ige._ctx) {
 			ctx.save();
-			var mp = this.mousePos(),
+			let mp = this.mousePos(),
 				text,
 				mx,
 				my,
@@ -256,7 +266,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 
 		if (this._drawViewArea) {
 			ctx.save();
-			var va = this.viewArea();
+			const va = this.viewArea();
 			ctx.rect(va.x, va.y, va.width, va.height);
 			ctx.stroke();
 			ctx.restore();
@@ -276,7 +286,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 *     var screenPos = entity.screenPosition();
 	 * @return {IgePoint3d} The screen position of the entity.
 	 */
-	screenPosition = () => {
+	screenPosition () {
 		return new IgePoint3d(
 			Math.floor(this._worldMatrix.matrix[2] + ige.root._bounds2d.x2),
 			Math.floor(this._worldMatrix.matrix[5] + ige.root._bounds2d.y2),
@@ -284,7 +294,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		);
 	}
 
-	drawViewArea = (val) => {
+	drawViewArea (val) {
 		if (val !== undefined) {
 			this._drawViewArea = val;
 			return this;
@@ -293,7 +303,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawViewArea;
 	}
 
-	drawBoundsLimitId = (id) => {
+	drawBoundsLimitId (id) {
 		if (id !== undefined) {
 			this._drawBoundsLimitId = id;
 			return this;
@@ -302,7 +312,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawBoundsLimitId;
 	}
 
-	drawBoundsLimitCategory = (category) => {
+	drawBoundsLimitCategory (category) {
 		if (category !== undefined) {
 			this._drawBoundsLimitCategory = category;
 			return this;
@@ -311,7 +321,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawBoundsLimitCategory;
 	}
 
-	drawCompositeBounds = (val) => {
+	drawCompositeBounds (val) {
 		if (val !== undefined) {
 			this._drawCompositeBounds = val;
 			return this;
@@ -320,7 +330,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawCompositeBounds;
 	}
 
-	drawGuides = (val) => {
+	drawGuides (val) {
 		if (val !== undefined) {
 			this._drawGuides = val;
 			return this;
@@ -329,8 +339,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawGuides;
 	}
 
-	paintGuides = (ctx) => {
-		var geom = ige.root._bounds2d;
+	paintGuides (ctx) {
+		const geom = ige.root._bounds2d;
 
 		// Check draw-guides setting
 		if (this._drawGuides) {
@@ -357,7 +367,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 * @param rootObject
 	 * @param index
 	 */
-	paintAabbs = (ctx, rootObject, index) => {
+	paintAabbs (ctx, rootObject, index) {
 		const arr = rootObject._children || [];
 
 		let arrCount,
@@ -383,7 +393,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 
 			if (obj._shouldRender !== false) {
 				if (obj.classId !== "IgeScene2d" && (!this._drawBoundsLimitId && !this._drawBoundsLimitCategory) || ((this._drawBoundsLimitId && (this._drawBoundsLimitId instanceof Array ? this._drawBoundsLimitId.indexOf(obj.id()) > -1 : this._drawBoundsLimitId === obj.id())) || (this._drawBoundsLimitCategory && this._drawBoundsLimitCategory === obj.category()))) {
-					if (typeof(obj.aabb) === "function") {
+					if (typeof (obj.aabb) === "function") {
 						// Grab the AABB and then draw it
 						aabb = obj.aabb();
 
@@ -400,10 +410,10 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 								//if (!obj._parent || (obj._parent && obj._parent._mountMode !== 1)) {
 								// Draw a rect around the bounds of the object transformed in world space
 								/*ctx.save();
-										obj._worldMatrix.transformRenderingContext(ctx);
-										ctx.strokeStyle = '#9700ae';
-										ctx.strokeRect(-obj._bounds2d.x2, -obj._bounds2d.y2, obj._bounds2d.x, obj._bounds2d.y);
-									ctx.restore();*/
+									obj._worldMatrix.transformRenderingContext(ctx);
+									ctx.strokeStyle = '#9700ae';
+									ctx.strokeRect(-obj._bounds2d.x2, -obj._bounds2d.y2, obj._bounds2d.x, obj._bounds2d.y);
+								  ctx.restore();*/
 
 								// Draw individual bounds
 								ctx.strokeStyle = "#00deff";
@@ -434,15 +444,15 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 									xl5 = new IgePoint3d(0, 0, -(r3d.z / 2)).toIso();
 									xl6 = new IgePoint3d(0, 0, +(r3d.z / 2)).toIso();
 									// Bottom face
-									bf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
-									bf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2),  -(r3d.z / 2)).toIso();
-									bf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
-									bf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2),  -(r3d.z / 2)).toIso();
+									bf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), -(r3d.z / 2)).toIso();
+									bf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), -(r3d.z / 2)).toIso();
+									bf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
+									bf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
 									// Top face
-									tf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
-									tf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2),  (r3d.z / 2)).toIso();
-									tf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
-									tf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2),  (r3d.z / 2)).toIso();
+									tf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), (r3d.z / 2)).toIso();
+									tf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), (r3d.z / 2)).toIso();
+									tf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), (r3d.z / 2)).toIso();
+									tf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), (r3d.z / 2)).toIso();
 
 									ga = ctx.globalAlpha;
 
@@ -510,7 +520,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 								}
 							}
 
-							if (this._drawBoundsData  && (obj._drawBounds || obj._drawBoundsData === undefined)) {
+							if (this._drawBoundsData && (obj._drawBounds || obj._drawBoundsData === undefined)) {
 								ctx.globalAlpha = 1;
 								ctx.fillStyle = "#f6ff00";
 								ctx.fillText("ID: " + obj.id() + " " + "(" + obj.classId + ") " + obj.layer() + ":" + obj.depth().toFixed(0), aabb.x + aabb.width + 3, aabb.y + 10);
@@ -531,7 +541,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 * @param event
 	 * @private
 	 */
-	_resizeEvent = (event) => {
+	_resizeEvent (event: Event) {
 		if (this._autoSize && this._parent) {
 			this._bounds2d = this._parent._bounds2d.clone();
 		}
@@ -546,12 +556,12 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		// Process locked dimension scaling
 		if (this._lockDimension) {
 			// Calculate the new camera scale
-			var ratio = 1,
+			let ratio = 1,
 				tmpX,
 				tmpY;
 
 			if (this._bounds2d.x > this._lockDimension.x && this._bounds2d.y > this._lockDimension.y) {
-				// Scale using lowest ratio
+				// Scale using the lowest ratio
 				tmpX = this._bounds2d.x / this._lockDimension.x;
 				tmpY = this._bounds2d.y / this._lockDimension.y;
 
@@ -568,7 +578,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 				}
 
 				if (this._bounds2d.x < this._lockDimension.x && this._bounds2d.y < this._lockDimension.y) {
-					// Scale using lowest ratio
+					// Scale using the lowest ratio
 					tmpX = this._bounds2d.x / this._lockDimension.x;
 					tmpY = this._bounds2d.y / this._lockDimension.y;
 
@@ -590,18 +600,18 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 */
 	_stringify () {
 		// Get the properties for all the super-classes
-		var str = super._stringify(), i;
+		let str = super._stringify(), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-					case "_autoSize":
-						str += ".autoSize(" + this._autoSize + ")";
-						break;
-					case "_scene":
-						str += ".scene(ige.$('" + this.scene().id() + "'))";
-						break;
+				case "_autoSize":
+					str += ".autoSize(" + this._autoSize + ")";
+					break;
+				case "_scene":
+					str += ".scene(ige.$('" + this.scene().id() + "'))";
+					break;
 				}
 			}
 		}
