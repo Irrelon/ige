@@ -8,43 +8,36 @@ import IgeViewport from "./IgeViewport";
  * examples and can be used as the base for your scenegraph as well.
  */
 class IgeBaseScene extends IgeSceneGraph {
-	classId = "IgeBaseScene";
+    classId = "IgeBaseScene";
 
-	/**
-	 * Called when loading the graph data via ige.addGraph().
-	 * @param options
-	 */
-	addGraph = (options) => {
-		// Clear existing graph data
-		if (this._ige.$("baseScene")) {
-			this.removeGraph();
-		}
+    /**
+     * Called when loading the graph data via ige.addGraph().
+     * @param options
+     */
+    addGraph = () => {
+        // Clear existing graph data
+        if (this._ige.$("baseScene")) {
+            this.removeGraph();
+        }
 
-		// Create the scene
-		var baseScene = new IgeScene2d(this._ige)
-			.id("baseScene");
+        // Create the scene
+        const baseScene = new IgeScene2d(this._ige).id("baseScene");
 
-		// Create the main viewport to look at "baseScene"
-		new IgeViewport(this._ige)
-			.id("vp1")
-			.autoSize(true)
-			.scene(baseScene)
-			.drawBounds(false)
-			.drawBoundsData(false)
-			.mount(this._ige.root);
-	};
+        // Create the main viewport to look at "baseScene"
+        new IgeViewport(this._ige).id("vp1").autoSize(true).scene(baseScene).drawBounds(false).drawBoundsData(false).mount(this._ige.root);
+    };
 
-	/**
-	 * The method called when the graph items are to be removed from the
-	 * active graph.
-	 */
-	removeGraph = () => {
-		// Destroy the viewport
-		this._ige.$("vp1").destroy();
+    /**
+     * The method called when the graph items are to be removed from the
+     * active graph.
+     */
+    removeGraph = () => {
+        // Destroy the viewport
+        this._ige.$("vp1").destroy();
 
-		// Destroy the baseScene
-		this._ige.$("baseScene").destroy();
-	};
+        // Destroy the baseScene
+        this._ige.$("baseScene").destroy();
+    };
 }
 
 export default IgeBaseScene;

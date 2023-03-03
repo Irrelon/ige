@@ -66,7 +66,7 @@ class Ige {
     _currentCamera: IgeCamera | null;
     _currentTime: number;
     _globalSmoothing: boolean;
-    _register: Record<string, IgeObject | IgeEntity | Ige>;
+    _register: Record<string, IgeObject | IgeEntity | IgeTexture | Ige>;
     _categoryRegister: Record<string, IgeObject> = {};
     _groupRegister: Record<string, IgeObject[]> = {};
     _postTick: (() => void)[];
@@ -1280,13 +1280,12 @@ class Ige {
      * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
      * @returns {*}
      */
-    addGraph(className: string, options?: any) {
+    addGraph(className: string | typeof IgeSceneGraph, options?: any) {
         if (className !== undefined) {
-            let classObj = this.getClass(className),
-                classInstance;
+            const classObj = this.getClass(className);
 
             if (classObj) {
-                classInstance = this.newClassInstance(className);
+                const classInstance = this.newClassInstance(className);
                 this.log("Loading SceneGraph data class: " + classInstance.constructor.name);
 
                 // Make sure the graph class implements the required methods "addGraph" and "removeGraph"

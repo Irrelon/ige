@@ -10,8 +10,13 @@
 	<title>Example Suite - Isogenic Engine</title>
 
 	<!-- Isogenic Loader -->
-	<script type="text/javascript">var igeRoot = '../../engine/';</script>
-	<script type="text/javascript" src="../../engine/loader.js"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="../../engine/css/ige.css" />
+
+    <script type="module">
+        import {Client} from "./client.js";
+        import {Game} from "./index.js";
+        const game = new Game(Client);
+    </script>
 </head>
 <body>
     <div class="igeLoading loadingFloat">
