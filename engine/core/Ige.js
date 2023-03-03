@@ -8,8 +8,10 @@ import IgeDummyContext from "./IgeDummyContext.js";
 import IgeEventingClass from "./IgeEventingClass.js";
 import WithComponentMixin from "../mixins/IgeComponentMixin.js";
 import IgePoint2d from "./IgePoint2d.js";
+import IgeInputComponent from "../components/IgeInputComponent.js";
+import IgeTweenComponent from "../components/IgeTweenComponent.js";
 class Ige extends WithComponentMixin(IgeEventingClass) {
-    constructor(canvas) {
+    constructor() {
         super();
         this._manualRender = false;
         this._categoryRegister = {};
@@ -370,27 +372,11 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
         console.log(`Powered by Isogenic Engine ${version}`);
         console.log("(C)opyright " + new Date().getFullYear() + " Irrelon Software Limited");
         console.log("https://www.isogenicengine.com");
-        console.log("------------------------------------------------------------------------------");
+        console.log("-----------------------------------------");
         // Set the initial id as the current time in milliseconds. This ensures that under successive
         // restarts of the engine, new ids will still always be created compared to earlier runs -
         // which is important when storing persistent data with ids etc
         this._idCounter = new Date().getTime();
-        // Create the base engine instance for the scenegraph
-        //this.root = new IgeRoot().id("root");
-        // Set the entity on which any components are added - this defaults to "this"
-        // in the IgeComponentMixin.ts file - we override that here in this special case
-        //this._componentBase = this.root;
-        // Set up the canvas
-        //this.canvas(canvas, true);
-        // Set up components
-        // this.addComponent(IgeInputComponent);
-        // this.addComponent(IgeTweenComponent);
-        // this.addComponent(IgeTimeComponent);
-        //
-        // if (this.isClient) {
-        //     // Enable UI element (virtual DOM) support
-        //     this.addComponent(IgeUiManagerComponent);
-        // }
         // Add the textures loaded dependency
         this._dependencyQueue.push(this.texturesLoaded);
         this._dependencyQueue.push(this.canvasReady);
@@ -399,8 +385,20 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
         this._secondTimer = setInterval(this._secondTick, 1000);
     }
     createRoot() {
+        // Create the base engine instance for the scenegraph
         this.root = new IgeRoot();
+        // Set the entity on which any components are added - this defaults to "this"
+        // in the IgeComponentMixin.ts file - we override that here in this special case
         this._componentBase = this.root;
+        // Set up components
+        this.addComponent(IgeInputComponent);
+        this.addComponent(IgeTweenComponent);
+        // this.addComponent(IgeTimeComponent);
+        //
+        // if (this.isClient) {
+        //     // Enable UI element (virtual DOM) support
+        //     this.addComponent(IgeUiManagerComponent);
+        // }
     }
     loadWebFont(family, url) {
         this.log(`Font (${family}) loading from url(${url})`);

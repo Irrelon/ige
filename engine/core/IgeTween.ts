@@ -1,15 +1,24 @@
+import IgeBaseClass from "./IgeBaseClass";
+import { ige } from "../instance";
+import {arrPull} from "../services/utils";
 import {
 	easingFunctions
 } from "../services/easing";
-import {arrPull} from "../services/utils";
-import IgeBaseClass from "./IgeBaseClass";
-import Ige from "./Ige";
+
+import type IgeTweenComponent from "../components/IgeTweenComponent";
 
 export interface IgeTweenStep {
-	props: Record<string, any>;
+	props: Record<string, number>;
 	durationMs?: number;
 	easing?: string;
 	isDelta?: boolean;
+}
+
+export interface IgeTweenDestination {
+	targetObj: any;
+	propName: string;
+	deltaVal: number;
+	oldDelta: number;
 }
 
 export type IgeTweenPropertyObject = Record<string, number>;
@@ -30,6 +39,10 @@ class IgeTween extends IgeBaseClass {
 	_targetObj: any;
 	_currentStep: number;
 	_startTime: number = 0;
+	_selectedEasing?: string;
+	_endTime: number = 0;
+	_targetData: IgeTweenDestination[] = [];
+	_destTime: number = 0;
 	_started: boolean;
 	_durationMs: number;
 	_stepDirection: boolean;
@@ -43,8 +56,8 @@ class IgeTween extends IgeBaseClass {
 	_afterStep?: (...args: any[]) => void;
 	_afterChange?: (...args: any[]) => void;
 
-	constructor (ige: Ige, targetObj?: any, propertyObj?: IgeTweenPropertyObject, durationMs?: number, options?: IgeTweenOptions) {
-		super(ige);
+	constructor (targetObj?: any, propertyObj?: IgeTweenPropertyObject, durationMs?: number, options?: IgeTweenOptions) {
+		super();
 
 		// Create a new tween object and return it
 		// so the user can decide when to start it
@@ -277,20 +290,23 @@ class IgeTween extends IgeBaseClass {
 	}
 
 	/**
-	 * Sets the name of the easing method to use with the tween.
-	 * @param methodName
+	 * Gets / sets the name of the easing method to use with the tween.
+	 * @param {string=} methodName
 	 * @return {*}
 	 */
-	easing (methodName: string) {
+	easing (): string | undefined;
+	easing (methodName: string): this;
+	easing (methodName?: string) {
 		if (methodName !== undefined) {
-			if (easingFunctions[methodName]) {
-				this._easing = methodName;
-			} else {
-				this.log("The easing method you have selected does not exist, please use a valid easing method. For a list of easing methods please inspect ige.tween.easing from your console.", "error", this._ige.tween.easing);
+			if (!easingFunctions[methodName]) {
+				throw new Error("The easing method you have selected does not exist, please use a valid easing method. For a list of easing methods please inspect `easingFunctions`");
 			}
+
+			this._easing = methodName;
+			return this;
 		}
 
-		return this;
+		return this._easing;
 	}
 
 	/**
@@ -313,10 +329,10 @@ class IgeTween extends IgeBaseClass {
 	 */
 	start (timeMs?: number) {
 		if (timeMs !== undefined) {
-			this.startTime(timeMs + this._ige._currentTime);
+			this.startTime(timeMs + ige._currentTime);
 		}
 
-		this._ige.components.tween.start(this);
+		(ige.components.tween as IgeTweenComponent).start(this);
 
 		// Add the tween to the target object's tween array
 		this._targetObj._tweenArr = this._targetObj._tweenArr || [];
@@ -329,7 +345,7 @@ class IgeTween extends IgeBaseClass {
 	 * Stops the tweening operation.
 	 */
 	stop () {
-		this._ige.components.tween.stop(this);
+		(ige.components.tween as IgeTweenComponent).stop(this);
 		if (this._targetObj._tweenArr) {
 			arrPull(this._targetObj._tweenArr, this);
 		}
@@ -370,15 +386,14 @@ class IgeTween extends IgeBaseClass {
  * Creates a new IgeTween with the passed parameters that will act upon
  * the object's properties. The returned tween will not start tweening
  * until a call to start() is made.
- * @param {IgeEngine} ige The engine instance in use.
  * @param {Object} target The target object to tween properties of.
  * @param {Object} [props]
  * @param {Number} [durationMs]
  * @param {Object=} [options]
  * @return {IgeTween} A new IgeTween instance.
  */
-export const createTween = (ige: Ige, target: any, props: IgeTweenPropertyObject, durationMs: number, options?: IgeTweenOptions) => {
-	const newTween = new IgeTween(ige)
+export const createTween = (target: any, props: IgeTweenPropertyObject, durationMs: number, options?: IgeTweenOptions) => {
+	const newTween = new IgeTween()
 		.targetObj(target)
 		.properties(props)
 		.duration(durationMs);

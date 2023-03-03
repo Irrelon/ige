@@ -1,9 +1,8 @@
-import IgeBaseClass from "../core/IgeBaseClass";
 import IgeComponent from "../core/IgeComponent";
-import {arrPull} from "../services/utils";
-import IgeTween from "../core/IgeTween";
-import Ige from "../core/Ige";
+import { arrPull } from "../services/utils";
+import IgeTween, { IgeTweenDestination } from "../core/IgeTween";
 import IgeEntity from "../core/IgeEntity";
+import { ige } from "../instance";
 
 /**
  * This component is already included in the IgeRoot (ige)
@@ -15,8 +14,9 @@ class IgeTweenComponent extends IgeComponent {
 	classId = "IgeTweenComponent";
 	componentId = "tween";
 	_tweens: IgeTween[];
+	_tweening: boolean = false;
 
-	constructor (entity: IgeBaseClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Set up the array that will hold our active tweens
@@ -32,7 +32,7 @@ class IgeTweenComponent extends IgeComponent {
 	 * @return {Number} The index of the added tween or -1 on error.
 	 */
 	start (tween: IgeTween) {
-		if (tween._startTime > this._ige._currentTime) {
+		if (tween._startTime > ige._currentTime) {
 			// The tween is scheduled for later
 			// Push the tween into the IgeTweenComponent's _tweens array
 			this._tweens.push(tween);
@@ -40,8 +40,8 @@ class IgeTweenComponent extends IgeComponent {
 			// The tween should start immediately
 			tween._currentStep = 0;
 
-			// Setup the tween's step
-			if (this._setupStep(tween, false)) {
+			// Set up the tweens step
+			if (this._setupStep(tween, 0)) {
 				// Push the tween into the IgeTweenComponent's _tweens array
 				this._tweens.push(tween);
 			}
@@ -55,56 +55,54 @@ class IgeTweenComponent extends IgeComponent {
 	}
 
 	_setupStep (tween: IgeTween, newTime: number) {
-		var targetObj = tween._targetObj,
+		const targetObj = tween._targetObj,
 			step = tween._steps[tween._currentStep],
-			propertyNameAndValue, // = tween._propertyObj
-			durationMs,
-			endTime,
-			easing,
-			propertyIndex,
-			targetData = [];
+			targetData: IgeTweenDestination[] = [];
+
+		let propertyNameAndValue: Record<string, number> = {}, // = tween._propertyObj
+			propertyIndex;
 
 		if (step) {
 			propertyNameAndValue = step.props;
 		}
 
-		if (targetObj) {
-			// Check / fill some option defaults
-			if (tween._currentStep === 0 && !newTime) {
-				// Because we are on step zero we can check for a start time
-				if (tween._startTime === undefined) {
-					tween._startTime = ige._currentTime;
-				}
-			} else {
-				// We're not on step zero anymore so the new step start time
-				// is NOW!
+		if (!targetObj) {
+			throw new Error("Cannot start tweening properties of the specified object because it does not exist!");
+		}
+
+		// Check / fill some option defaults
+		if (tween._currentStep === 0 && !newTime) {
+			// Because we are on step zero we can check for a start time
+			if (tween._startTime === undefined) {
 				tween._startTime = ige._currentTime;
 			}
-
-			durationMs = step.durationMs ? step.durationMs : tween._durationMs;
-			tween._selectedEasing = step.easing ? step.easing : tween._easing;
-
-			// Calculate the end time
-			tween._endTime = tween._startTime + durationMs;
-
-			for (propertyIndex in propertyNameAndValue) {
-				if (propertyNameAndValue.hasOwnProperty(propertyIndex)) {
-					targetData.push({
-						targetObj,
-						"propName": propertyIndex,
-						"deltaVal": propertyNameAndValue[propertyIndex] - (step.isDelta ? 0 : targetObj[propertyIndex]), // The diff between end and start values
-						"oldDelta": 0 // Var to save the old delta in order to get the actual difference data.
-					});
-				}
-			}
-
-			tween._targetData = targetData;
-			tween._destTime = tween._endTime - tween._startTime;
-
-			return tween; // Return the tween
 		} else {
-			this.log("Cannot start tweening properties of the specified object \"" + obj + "\" because it does not exist!", "error");
+			// We're not on step zero anymore so the new step start time
+			// is NOW!
+			tween._startTime = ige._currentTime;
 		}
+
+		const durationMs = step.durationMs ? step.durationMs : tween._durationMs;
+		tween._selectedEasing = step.easing ? step.easing : tween._easing;
+
+		// Calculate the end time
+		tween._endTime = tween._startTime + durationMs;
+
+		for (propertyIndex in propertyNameAndValue) {
+			if (propertyNameAndValue.hasOwnProperty(propertyIndex)) {
+				targetData.push({
+					targetObj,
+					"propName": propertyIndex,
+					"deltaVal": propertyNameAndValue[propertyIndex] - (step.isDelta ? 0 : targetObj[propertyIndex]), // The diff between end and start values
+					"oldDelta": 0 // Var to save the old delta in order to get the actual difference data.
+				});
+			}
+		}
+
+		tween._targetData = targetData;
+		tween._destTime = tween._endTime - tween._startTime;
+
+		return tween; // Return the tween
 	}
 
 	/**
@@ -132,7 +130,6 @@ class IgeTweenComponent extends IgeComponent {
 		this.disable();
 
 		// Remove all tween details
-		delete this._tweens;
 		this._tweens = [];
 
 		return this;
@@ -167,8 +164,8 @@ class IgeTweenComponent extends IgeComponent {
 	/**
 	 * Process tweening for the object.
 	 */
-	update (ige: Ige, entity: IgeEntity, ctx: CanvasRenderingContext2D) {
-		var thisTween = ige.tween;
+	update (entity: IgeEntity, ctx: CanvasRenderingContext2D) {
+		const thisTween = ige.components.tween;
 		if (thisTween._tweens && thisTween._tweens.length) {
 			var currentTime = ige._tickStart,
 				tweens = thisTween._tweens,
@@ -203,7 +200,7 @@ class IgeTweenComponent extends IgeComponent {
 						}
 
 						// Check if we have a beforeTween callback to fire
-						if (typeof(tween._beforeTween) === "function") {
+						if (typeof (tween._beforeTween) === "function") {
 							// Fire the beforeTween callback
 							tween._beforeTween(tween);
 
@@ -212,7 +209,7 @@ class IgeTweenComponent extends IgeComponent {
 						}
 
 						// Check if we have a beforeStep callback to fire
-						if (typeof(tween._beforeStep) === "function") {
+						if (typeof (tween._beforeStep) === "function") {
 							// Fire the beforeStep callback
 							if (tween._stepDirection) {
 								stepIndex = tween._steps.length - (tween._currentStep + 1);
@@ -259,13 +256,13 @@ class IgeTweenComponent extends IgeComponent {
 								targetPropVal += currentDelta - item.oldDelta;
 
 								// Round the value to correct floating point operation imprecision
-								var roundingPrecision = Math.pow(10, 15-(targetPropVal.toFixed(0).toString().length));
-								targetProp[item.propName] = Math.round(targetPropVal * roundingPrecision)/roundingPrecision;
+								const roundingPrecision = Math.pow(10, 15 - (targetPropVal.toFixed(0).toString().length));
+								targetProp[item.propName] = Math.round(targetPropVal * roundingPrecision) / roundingPrecision;
 							}
 						}
 
 						// Check if we have a afterStep callback to fire
-						if (typeof(tween._afterStep) === "function") {
+						if (typeof (tween._afterStep) === "function") {
 							// Fire the afterStep
 							if (tween._stepDirection) {
 								stepIndex = tween._steps.length - (tween._currentStep + 1);
@@ -306,13 +303,13 @@ class IgeTweenComponent extends IgeComponent {
 									}
 
 									// Check if we have a stepsComplete callback to fire
-									if (typeof(tween._stepsComplete) === "function") {
+									if (typeof (tween._stepsComplete) === "function") {
 										// Fire the stepsComplete callback
 										tween._stepsComplete(tween, tween._currentStep);
 									}
 
 									// Check if we have a beforeStep callback to fire
-									if (typeof(tween._beforeStep) === "function") {
+									if (typeof (tween._beforeStep) === "function") {
 										// Fire the beforeStep callback
 										if (tween._stepDirection) {
 											stepIndex = tween._steps.length - (tween._currentStep + 1);
@@ -333,7 +330,7 @@ class IgeTweenComponent extends IgeComponent {
 								tween.stop();
 
 								// If there is a callback, call it
-								if (typeof(tween._afterTween) === "function") {
+								if (typeof (tween._afterTween) === "function") {
 									// Fire the afterTween callback
 									tween._afterTween(tween);
 
@@ -346,7 +343,7 @@ class IgeTweenComponent extends IgeComponent {
 							tween._currentStep++;
 
 							// Check if we have a beforeStep callback to fire
-							if (typeof(tween._beforeStep) === "function") {
+							if (typeof (tween._beforeStep) === "function") {
 								// Fire the beforeStep callback
 								if (tween._stepDirection) {
 									stepIndex = tween._steps.length - (tween._currentStep + 1);
@@ -359,7 +356,7 @@ class IgeTweenComponent extends IgeComponent {
 							thisTween._setupStep(tween, true);
 						}
 
-						if (typeof(tween._afterChange) === "function") {
+						if (typeof (tween._afterChange) === "function") {
 							tween._afterChange(tween, stepIndex);
 						}
 					} else {
@@ -380,7 +377,7 @@ class IgeTweenComponent extends IgeComponent {
 							}
 						}
 
-						if (typeof(tween._afterChange) === "function") {
+						if (typeof (tween._afterChange) === "function") {
 							tween._afterChange(tween, stepIndex);
 						}
 					}

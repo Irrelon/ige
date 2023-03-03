@@ -20,6 +20,11 @@ import type {
 	IgeTimeStreamParsedTransformData
 } from "../../types/IgeTimeStream";
 
+export interface IgeEntityBehaviour {
+	id: string;
+	method: (...args: any[]) => any;
+}
+
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -93,6 +98,8 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	_timeStreamOffsetDelta?: number;
 	_timeStreamPreviousData?: IgeTimeStreamPacket;
 	_timeStreamNextData?: IgeTimeStreamPacket;
+	_tickBehaviours?: IgeEntityBehaviour[];
+	_updateBehaviours?: IgeEntityBehaviour[];
 	_deathCallBack?: (...args: any[]) => void; // TODO: Rename this to _deathCallback (lower case B)
 	_sortChildren: (comparatorFunction: (a: IgeEntity, b: IgeEntity) => number) => void;
 
@@ -1245,34 +1252,21 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 * @return {*} Returns this on success or false on failure.
 	 */
 	addBehaviour (id: string, behaviour: (...args: any[]) => any, duringTick = false) {
-		if (typeof id === "string") {
-			if (typeof behaviour === "function") {
-				if (duringTick) {
-					this._tickBehaviours = this._tickBehaviours || [];
-					this._tickBehaviours.push({
-						id,
-						method: behaviour
-					});
-				} else {
-					this._updateBehaviours = this._updateBehaviours || [];
-					this._updateBehaviours.push({
-						id,
-						method: behaviour
-					});
-				}
-
-				return this;
-			} else {
-				this.log("The behaviour you passed is not a function! The second parameter of the call must be a function!", "error");
-			}
+		if (duringTick) {
+			this._tickBehaviours = this._tickBehaviours || [];
+			this._tickBehaviours.push({
+				id,
+				method: behaviour
+			});
 		} else {
-			this.log(
-				"Cannot add behaviour to object because the specified behaviour id is not a string. You must provide two parameters with the addBehaviour() call, an id:String and a behaviour:Function. Adding a behaviour with an id allows you to remove it by its id at a later stage!",
-				"error"
-			);
+			this._updateBehaviours = this._updateBehaviours || [];
+			this._updateBehaviours.push({
+				id,
+				method: behaviour
+			});
 		}
 
-		return false;
+		return this;
 	}
 
 	/**
@@ -1293,31 +1287,27 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 *     entity.removeBehaviour('myBehaviour');
 	 * @return {*} Returns this on success or false on failure.
 	 */
-	removeBehaviour (id, duringTick) {
-		if (id !== undefined) {
-			let arr, arrCount;
+	removeBehaviour (id: string, duringTick = false) {
+		let arr, arrCount;
 
-			if (duringTick) {
-				arr = this._tickBehaviours;
-			} else {
-				arr = this._updateBehaviours;
-			}
+		if (duringTick) {
+			arr = this._tickBehaviours;
+		} else {
+			arr = this._updateBehaviours;
+		}
 
-			// Find the behaviour
-			if (arr) {
-				arrCount = arr.length;
+		// Find the behaviour
+		if (arr) {
+			arrCount = arr.length;
 
-				while (arrCount--) {
-					if (arr[arrCount].id === id) {
-						// Remove the item from the array
-						arr.splice(arrCount, 1);
-						return this;
-					}
+			while (arrCount--) {
+				if (arr[arrCount].id === id) {
+					// Remove the item from the array
+					arr.splice(arrCount, 1);
+					return this;
 				}
 			}
 		}
-
-		return false;
 	}
 
 	/**

@@ -1257,32 +1257,21 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * @return {*} Returns this on success or false on failure.
      */
     addBehaviour(id, behaviour, duringTick = false) {
-        if (typeof id === "string") {
-            if (typeof behaviour === "function") {
-                if (duringTick) {
-                    this._tickBehaviours = this._tickBehaviours || [];
-                    this._tickBehaviours.push({
-                        id,
-                        method: behaviour
-                    });
-                }
-                else {
-                    this._updateBehaviours = this._updateBehaviours || [];
-                    this._updateBehaviours.push({
-                        id,
-                        method: behaviour
-                    });
-                }
-                return this;
-            }
-            else {
-                this.log("The behaviour you passed is not a function! The second parameter of the call must be a function!", "error");
-            }
+        if (duringTick) {
+            this._tickBehaviours = this._tickBehaviours || [];
+            this._tickBehaviours.push({
+                id,
+                method: behaviour
+            });
         }
         else {
-            this.log("Cannot add behaviour to object because the specified behaviour id is not a string. You must provide two parameters with the addBehaviour() call, an id:String and a behaviour:Function. Adding a behaviour with an id allows you to remove it by its id at a later stage!", "error");
+            this._updateBehaviours = this._updateBehaviours || [];
+            this._updateBehaviours.push({
+                id,
+                method: behaviour
+            });
         }
-        return false;
+        return this;
     }
     /**
      * Removes a behaviour to the object's active behaviour list by its id.
@@ -1302,28 +1291,25 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      *     entity.removeBehaviour('myBehaviour');
      * @return {*} Returns this on success or false on failure.
      */
-    removeBehaviour(id, duringTick) {
-        if (id !== undefined) {
-            let arr, arrCount;
-            if (duringTick) {
-                arr = this._tickBehaviours;
-            }
-            else {
-                arr = this._updateBehaviours;
-            }
-            // Find the behaviour
-            if (arr) {
-                arrCount = arr.length;
-                while (arrCount--) {
-                    if (arr[arrCount].id === id) {
-                        // Remove the item from the array
-                        arr.splice(arrCount, 1);
-                        return this;
-                    }
+    removeBehaviour(id, duringTick = false) {
+        let arr, arrCount;
+        if (duringTick) {
+            arr = this._tickBehaviours;
+        }
+        else {
+            arr = this._updateBehaviours;
+        }
+        // Find the behaviour
+        if (arr) {
+            arrCount = arr.length;
+            while (arrCount--) {
+                if (arr[arrCount].id === id) {
+                    // Remove the item from the array
+                    arr.splice(arrCount, 1);
+                    return this;
                 }
             }
         }
-        return false;
     }
     /**
      * Checks if the object has the specified behaviour already added to it.

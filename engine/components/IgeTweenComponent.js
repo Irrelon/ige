@@ -1,5 +1,6 @@
 import IgeComponent from "../core/IgeComponent.js";
 import { arrPull } from "../services/utils.js";
+import { ige } from "../instance.js";
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!
@@ -10,6 +11,7 @@ class IgeTweenComponent extends IgeComponent {
         super(entity, options);
         this.classId = "IgeTweenComponent";
         this.componentId = "tween";
+        this._tweening = false;
         // Set up the array that will hold our active tweens
         this._tweens = [];
         // Add the tween behaviour to the entity
@@ -21,7 +23,7 @@ class IgeTweenComponent extends IgeComponent {
      * @return {Number} The index of the added tween or -1 on error.
      */
     start(tween) {
-        if (tween._startTime > this._ige._currentTime) {
+        if (tween._startTime > ige._currentTime) {
             // The tween is scheduled for later
             // Push the tween into the IgeTweenComponent's _tweens array
             this._tweens.push(tween);
@@ -29,8 +31,8 @@ class IgeTweenComponent extends IgeComponent {
         else {
             // The tween should start immediately
             tween._currentStep = 0;
-            // Setup the tween's step
-            if (this._setupStep(tween, false)) {
+            // Set up the tweens step
+            if (this._setupStep(tween, 0)) {
                 // Push the tween into the IgeTweenComponent's _tweens array
                 this._tweens.push(tween);
             }
@@ -41,45 +43,44 @@ class IgeTweenComponent extends IgeComponent {
         return tween;
     }
     _setupStep(tween, newTime) {
-        var targetObj = tween._targetObj, step = tween._steps[tween._currentStep], propertyNameAndValue, // = tween._propertyObj
-        durationMs, endTime, easing, propertyIndex, targetData = [];
+        const targetObj = tween._targetObj, step = tween._steps[tween._currentStep], targetData = [];
+        let propertyNameAndValue = {}, // = tween._propertyObj
+        propertyIndex;
         if (step) {
             propertyNameAndValue = step.props;
         }
-        if (targetObj) {
-            // Check / fill some option defaults
-            if (tween._currentStep === 0 && !newTime) {
-                // Because we are on step zero we can check for a start time
-                if (tween._startTime === undefined) {
-                    tween._startTime = ige._currentTime;
-                }
-            }
-            else {
-                // We're not on step zero anymore so the new step start time
-                // is NOW!
+        if (!targetObj) {
+            throw new Error("Cannot start tweening properties of the specified object because it does not exist!");
+        }
+        // Check / fill some option defaults
+        if (tween._currentStep === 0 && !newTime) {
+            // Because we are on step zero we can check for a start time
+            if (tween._startTime === undefined) {
                 tween._startTime = ige._currentTime;
             }
-            durationMs = step.durationMs ? step.durationMs : tween._durationMs;
-            tween._selectedEasing = step.easing ? step.easing : tween._easing;
-            // Calculate the end time
-            tween._endTime = tween._startTime + durationMs;
-            for (propertyIndex in propertyNameAndValue) {
-                if (propertyNameAndValue.hasOwnProperty(propertyIndex)) {
-                    targetData.push({
-                        targetObj,
-                        "propName": propertyIndex,
-                        "deltaVal": propertyNameAndValue[propertyIndex] - (step.isDelta ? 0 : targetObj[propertyIndex]),
-                        "oldDelta": 0 // Var to save the old delta in order to get the actual difference data.
-                    });
-                }
-            }
-            tween._targetData = targetData;
-            tween._destTime = tween._endTime - tween._startTime;
-            return tween; // Return the tween
         }
         else {
-            this.log("Cannot start tweening properties of the specified object \"" + obj + "\" because it does not exist!", "error");
+            // We're not on step zero anymore so the new step start time
+            // is NOW!
+            tween._startTime = ige._currentTime;
         }
+        const durationMs = step.durationMs ? step.durationMs : tween._durationMs;
+        tween._selectedEasing = step.easing ? step.easing : tween._easing;
+        // Calculate the end time
+        tween._endTime = tween._startTime + durationMs;
+        for (propertyIndex in propertyNameAndValue) {
+            if (propertyNameAndValue.hasOwnProperty(propertyIndex)) {
+                targetData.push({
+                    targetObj,
+                    "propName": propertyIndex,
+                    "deltaVal": propertyNameAndValue[propertyIndex] - (step.isDelta ? 0 : targetObj[propertyIndex]),
+                    "oldDelta": 0 // Var to save the old delta in order to get the actual difference data.
+                });
+            }
+        }
+        tween._targetData = targetData;
+        tween._destTime = tween._endTime - tween._startTime;
+        return tween; // Return the tween
     }
     /**
      * Removes the specified tween from the active tween list.
@@ -102,7 +103,6 @@ class IgeTweenComponent extends IgeComponent {
         // Disable tweening
         this.disable();
         // Remove all tween details
-        delete this._tweens;
         this._tweens = [];
         return this;
     }
@@ -131,8 +131,8 @@ class IgeTweenComponent extends IgeComponent {
     /**
      * Process tweening for the object.
      */
-    update(ige, entity, ctx) {
-        var thisTween = ige.tween;
+    update(entity, ctx) {
+        const thisTween = ige.components.tween;
         if (thisTween._tweens && thisTween._tweens.length) {
             var currentTime = ige._tickStart, tweens = thisTween._tweens, tweenCount = tweens.length, tween, deltaTime, destTime, easing, item, targetProp, targetPropVal, targets, targetIndex, stepIndex, stopped, currentDelta;
             // Loop the item's tweens
@@ -195,7 +195,7 @@ class IgeTweenComponent extends IgeComponent {
                                 }
                                 targetPropVal += currentDelta - item.oldDelta;
                                 // Round the value to correct floating point operation imprecision
-                                var roundingPrecision = Math.pow(10, 15 - (targetPropVal.toFixed(0).toString().length));
+                                const roundingPrecision = Math.pow(10, 15 - (targetPropVal.toFixed(0).toString().length));
                                 targetProp[item.propName] = Math.round(targetPropVal * roundingPrecision) / roundingPrecision;
                             }
                         }

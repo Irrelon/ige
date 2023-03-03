@@ -1,14 +1,18 @@
-import { easingFunctions } from "../services/easing.js";
-import { arrPull } from "../services/utils.js";
 import IgeBaseClass from "./IgeBaseClass.js";
+import { ige } from "../instance.js";
+import { arrPull } from "../services/utils.js";
+import { easingFunctions } from "../services/easing.js";
 /**
  * Creates a new tween instance.
  */
 class IgeTween extends IgeBaseClass {
-    constructor(ige, targetObj, propertyObj, durationMs, options) {
-        super(ige);
+    constructor(targetObj, propertyObj, durationMs, options) {
+        super();
         this.classId = "IgeTween";
         this._startTime = 0;
+        this._endTime = 0;
+        this._targetData = [];
+        this._destTime = 0;
         this._repeatMode = 0;
         this._repeatCount = 0;
         this._repeatedCount = 0;
@@ -221,21 +225,15 @@ class IgeTween extends IgeBaseClass {
     targetObject() {
         return this._targetObj;
     }
-    /**
-     * Sets the name of the easing method to use with the tween.
-     * @param methodName
-     * @return {*}
-     */
     easing(methodName) {
         if (methodName !== undefined) {
-            if (easingFunctions[methodName]) {
-                this._easing = methodName;
+            if (!easingFunctions[methodName]) {
+                throw new Error("The easing method you have selected does not exist, please use a valid easing method. For a list of easing methods please inspect `easingFunctions`");
             }
-            else {
-                this.log("The easing method you have selected does not exist, please use a valid easing method. For a list of easing methods please inspect ige.tween.easing from your console.", "error", this._ige.tween.easing);
-            }
+            this._easing = methodName;
+            return this;
         }
-        return this;
+        return this._easing;
     }
     /**
      * Sets the timestamp at which the tween should start.
@@ -255,9 +253,9 @@ class IgeTween extends IgeBaseClass {
      */
     start(timeMs) {
         if (timeMs !== undefined) {
-            this.startTime(timeMs + this._ige._currentTime);
+            this.startTime(timeMs + ige._currentTime);
         }
-        this._ige.components.tween.start(this);
+        ige.components.tween.start(this);
         // Add the tween to the target object's tween array
         this._targetObj._tweenArr = this._targetObj._tweenArr || [];
         this._targetObj._tweenArr.push(this);
@@ -267,7 +265,7 @@ class IgeTween extends IgeBaseClass {
      * Stops the tweening operation.
      */
     stop() {
-        this._ige.components.tween.stop(this);
+        ige.components.tween.stop(this);
         if (this._targetObj._tweenArr) {
             arrPull(this._targetObj._tweenArr, this);
         }
@@ -302,15 +300,14 @@ class IgeTween extends IgeBaseClass {
  * Creates a new IgeTween with the passed parameters that will act upon
  * the object's properties. The returned tween will not start tweening
  * until a call to start() is made.
- * @param {IgeEngine} ige The engine instance in use.
  * @param {Object} target The target object to tween properties of.
  * @param {Object} [props]
  * @param {Number} [durationMs]
  * @param {Object=} [options]
  * @return {IgeTween} A new IgeTween instance.
  */
-export const createTween = (ige, target, props, durationMs, options) => {
-    const newTween = new IgeTween(ige)
+export const createTween = (target, props, durationMs, options) => {
+    const newTween = new IgeTween()
         .targetObj(target)
         .properties(props)
         .duration(durationMs);
