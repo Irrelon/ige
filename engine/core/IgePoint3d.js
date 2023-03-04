@@ -4,14 +4,12 @@
 class IgePoint3d {
     constructor(x = 0, y = 0, z = 0, floor = false) {
         this.classId = "IgePoint3d";
-        // Public
         this.x = 0;
         this.y = 0;
         this.z = 0;
         this.x2 = 0;
         this.y2 = 0;
         this.z2 = 0;
-        // Private
         this._floor = false;
         this.x = x;
         this.y = y;
@@ -27,12 +25,6 @@ class IgePoint3d {
         this.y2 = y / 2;
         this.z2 = z / 2;
     }
-    /**
-     * Gets / sets the floor mode of this point. If set to true the point's
-     * data will be mathematically floored when they are assigned.
-     * @param val
-     * @return {*}
-     */
     floor(val) {
         if (val !== undefined) {
             this._floor = val;
@@ -112,7 +104,7 @@ class IgePoint3d {
     /**
      * Adds this point's data by the x, y, z values specified and
      * overwrites the previous x, y, z values with the result.
-     * @param point
+     * @param {IgePoint3d} point
      * @return {*}
      */
     thisAddPoint(point) {
@@ -231,10 +223,10 @@ class IgePoint3d {
      * Interpolates the x, y, z values of this point towards the endPoint's
      * x, y, z values based on the passed time variables and returns a new
      * IgePoint3d whose values are the result.
-     * @param endPoint
-     * @param startTime
-     * @param currentTime
-     * @param endTime
+     * @param {IgePoint2d} endPoint
+     * @param {Number} startTime
+     * @param {Number} currentTime
+     * @param {Number} endTime
      * @return {*}
      */
     interpolate(endPoint, startTime, currentTime, endTime) {
@@ -257,7 +249,7 @@ class IgePoint3d {
      * @return {IgePoint3d} This point.
      */
     thisRotate(radians) {
-        const s = Math.sin(radians), c = Math.cos(radians), { x } = this, { y } = this;
+        const s = Math.sin(radians), c = Math.cos(radians), { x, y } = this;
         this.x = c * x - s * y;
         this.y = s * x - c * y;
         return this;

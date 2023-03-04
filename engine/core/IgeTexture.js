@@ -25,6 +25,7 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
         this._cells = [];
         this._smoothing = false;
         this._filterImageDrawn = false;
+        this._destroyed = false;
         this._loaded = false;
         /* CEXCLUDE */
         // If on a server, error
@@ -53,13 +54,6 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
             this.assignSmartTextureImage(urlOrObject);
         }
     }
-    /**
-     * Gets / sets the current object id. If no id is currently assigned and no
-     * id is passed to the method, it will automatically generate and assign a
-     * new id as a 16 character hexadecimal value typed as a string.
-     * @param {String=} id
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
     id(id) {
         if (id !== undefined) {
             // Check if this ID already exists in the object register
@@ -99,11 +93,6 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
         }
         return this._id;
     }
-    /**
-     * Gets / sets the source file for this texture.
-     * @param {String=} url "The url used to load the file for this texture.
-     * @return {*}
-     */
     url(url) {
         if (url !== undefined) {
             this._url = url;
@@ -127,14 +116,13 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
      * @private
      */
     _loadImage(imageUrl) {
-        let image;
         if (!ige.isClient) {
             return;
         }
         ige.textureLoadStart(imageUrl, this);
         if (!ige._textureImageStore[imageUrl]) {
             // Image not in cache, create the image object
-            image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new Image();
+            const image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new Image();
             image._igeTextures = image._igeTextures || [];
             // Add this texture to the textures that are using this image
             image._igeTextures.push(this);
@@ -151,9 +139,10 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
                     self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
                 }*/
                 // Loop textures that are using this image
-                let arr = image._igeTextures, arrCount = arr.length, i, item;
-                for (i = 0; i < arrCount; i++) {
-                    item = arr[i];
+                const arr = image._igeTextures;
+                const arrCount = arr.length;
+                for (let i = 0; i < arrCount; i++) {
+                    const item = arr[i];
                     item._mode = 0;
                     item.sizeX(image.width);
                     item.sizeY(image.height);
@@ -167,7 +156,7 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
         }
         else {
             // Grab the cached image object
-            image = this.image = this._originalImage = ige._textureImageStore[imageUrl];
+            const image = this.image = this._originalImage = ige._textureImageStore[imageUrl];
             // Add this texture to the textures that are using this image
             image._igeTextures.push(this);
             if (image._loaded) {

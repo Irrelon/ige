@@ -18,7 +18,7 @@ class IgeRoot extends IgeEntity {
          * is currently over, ordered by their draw order from drawn last (above other
          * entities) to first (underneath other entities).
          */
-        this.mouseOverList = (obj, entArr) => {
+        this.mouseOverList = (obj, entArr = []) => {
             let arr, arrCount, mp, mouseTriggerPoly, first = false;
             if (!obj) {
                 obj = this;

@@ -1,3 +1,6 @@
+/**
+ * Creates a new 2d point (x, y).
+ */
 class IgePoint2d {
     constructor(x = 0, y = 0, floor = false) {
         this.classId = "IgePoint2d";
@@ -17,12 +20,6 @@ class IgePoint2d {
         this.x2 = x / 2;
         this.y2 = y / 2;
     }
-    /**
-     * Gets / sets the floor mode of this point. If set to true the point's
-     * data will be mathematically floored when they are assigned.
-     * @param {Boolean} [val] True or false.
-     * @return {*} Either `this` for chaining or current floor setting.
-     */
     floor(val) {
         if (val !== undefined) {
             this._floor = val;
@@ -48,7 +45,6 @@ class IgePoint2d {
     copy(point) {
         this.x = point.x;
         this.y = point.y;
-        this.z = point.z;
         return this;
     }
     /**
@@ -159,10 +155,9 @@ class IgePoint2d {
      * overwrites the previous x, y values with the result.
      * @param {Number} x
      * @param {Number} y
-     * @param {Number} z
      * @return {*}
      */
-    thisMultiply(x, y, z) {
+    thisMultiply(x, y) {
         this.x *= x;
         this.y *= y;
         return this;
@@ -184,7 +179,7 @@ class IgePoint2d {
      * @return {*}
      */
     dividePoint(point) {
-        var newX = this.x, newY = this.y;
+        let newX = this.x, newY = this.y;
         if (point.x) {
             newX = this.x / point.x;
         }
@@ -223,7 +218,7 @@ class IgePoint2d {
      * @return {*}
      */
     interpolate(endPoint, startTime, currentTime, endTime) {
-        var totalX = endPoint.x - this.x, totalY = endPoint.y - this.y, totalTime = endTime - startTime, deltaTime = totalTime - (currentTime - startTime), timeRatio = deltaTime / totalTime;
+        const totalX = endPoint.x - this.x, totalY = endPoint.y - this.y, totalTime = endTime - startTime, deltaTime = totalTime - (currentTime - startTime), timeRatio = deltaTime / totalTime;
         return new IgePoint2d(endPoint.x - (totalX * timeRatio), endPoint.y - (totalY * timeRatio));
     }
     /**
@@ -232,7 +227,7 @@ class IgePoint2d {
      * @return {IgePoint2d} A new point with the rotated x, y.
      */
     rotate(radians) {
-        var s = Math.sin(radians), c = Math.cos(radians), x = c * this.x - s * this.y, y = s * this.x - c * this.y;
+        const s = Math.sin(radians), c = Math.cos(radians), x = c * this.x - s * this.y, y = s * this.x - c * this.y;
         return new IgePoint2d(x, y);
     }
     /**
@@ -242,7 +237,7 @@ class IgePoint2d {
      * @return {IgePoint2d} This point.
      */
     thisRotate(radians) {
-        var s = Math.sin(radians), c = Math.cos(radians), { x } = this, { y } = this;
+        const s = Math.sin(radians), c = Math.cos(radians), { x, y } = this;
         this.x = c * x - s * y;
         this.y = s * x - c * y;
         return this;
@@ -255,10 +250,7 @@ class IgePoint2d {
      * @param {Number} [precision]
      * @return {String}
      */
-    toString(precision) {
-        if (precision === undefined) {
-            precision = 2;
-        }
+    toString(precision = 2) {
         return this.x.toFixed(precision) + "," + this.y.toFixed(precision);
     }
 }

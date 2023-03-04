@@ -1,11 +1,18 @@
 import IgeEventingClass from "../../core/IgeEventingClass.js";
+import { ige } from "../../instance.js";
 /**
  * When added to a viewport, automatically adds entity rotate
  * capabilities to the selected entity in the scenegraph viewer.
  */
 class IgeEditorComponent extends IgeEventingClass {
-    constructor() {
-        super(...arguments);
+    /**
+     * @constructor
+     * @param {IgeObject} entity The object that the component is added to.
+     * @param {Object=} options The options object that was passed to the component during
+     * the call to addComponent.
+     */
+    constructor(entity, options) {
+        super();
         this.classId = "IgeEditorComponent";
         this.componentId = "editor";
         this.interceptMouse = (val) => {
@@ -19,7 +26,6 @@ class IgeEditorComponent extends IgeEventingClass {
          * @return {*}
          */
         this.enabled = (val) => {
-            const self = this;
             if (val !== undefined) {
                 this._enabled = val;
                 return this._entity;
@@ -29,10 +35,10 @@ class IgeEditorComponent extends IgeEventingClass {
         this.toggle = () => {
             const elem = $("#editorToggle");
             if (elem.hasClass("active")) {
-                this._ige.editor.hide();
+                ige.components.editor.hide();
             }
             else {
-                this._ige.editor.show();
+                ige.components.editor.show();
             }
         };
         this.show = () => {
@@ -55,10 +61,10 @@ class IgeEditorComponent extends IgeEventingClass {
         this.toggleStats = () => {
             const elem = $("#statsToggle");
             if (elem.hasClass("active")) {
-                this._ige.editor.hideStats();
+                ige.components.editor.hideStats();
             }
             else {
-                this._ige.editor.showStats();
+                ige.components.editor.showStats();
             }
         };
         this.showStats = () => {
@@ -126,7 +132,7 @@ class IgeEditorComponent extends IgeEventingClass {
         this.selectObject = (id) => {
             if (id !== undefined) {
                 if (id) {
-                    this._selectedObject = this._ige.$(id);
+                    this._selectedObject = ige.$(id);
                     this._objectSelected(this._selectedObject);
                 }
                 else {
@@ -136,8 +142,8 @@ class IgeEditorComponent extends IgeEventingClass {
         };
         this._objectSelected = (obj) => {
             if (obj) {
-                this._ige.editor.ui.panels.showPanelByInstance(obj);
-                this._selectedObjectClassList = this._ige.getClassDerivedList(obj);
+                ige.components.editor.ui.panels.showPanelByInstance(obj);
+                this._selectedObjectClassList = ige.getClassDerivedList(obj);
                 // Update active-for selectors
                 $("[data-active-for]")
                     .removeClass("disabled")
@@ -158,7 +164,7 @@ class IgeEditorComponent extends IgeEventingClass {
         };
         this.createObject = (classId, select) => {
             if (this._selectedObject) {
-                const newObj = this._ige.newClassInstance(classId);
+                const newObj = ige.newClassInstance(classId);
                 newObj.mount(this._selectedObject);
                 this.ui.scenegraph.updateSceneGraph();
                 if (select) {
@@ -185,7 +191,7 @@ class IgeEditorComponent extends IgeEventingClass {
          * @private
          */
         this._statsTick = () => {
-            let self = this._ige.editor, i, watchCount, watchItem, itemName, res, html = "";
+            let self = ige.components.editor, i, watchCount, watchItem, itemName, res, html = "";
             // Check if the stats output is enabled
             if (self._showStats && !self._statsPauseUpdate) {
                 switch (self._showStats) {
@@ -232,15 +238,15 @@ class IgeEditorComponent extends IgeEventingClass {
                     elems[i].className = "sgItem";
                 }
                 this.className += " selected";
-                this._ige._sgTreeSelected = this.id;
-                this._ige._currentViewport.drawBounds(true);
+                ige._sgTreeSelected = this.id;
+                ige._currentViewport.drawBounds(true);
                 if (this.id !== "ige") {
-                    this._ige._currentViewport.drawBoundsLimitId(this.id);
+                    ige._currentViewport.drawBoundsLimitId(this.id);
                 }
                 else {
-                    this._ige._currentViewport.drawBoundsLimitId("");
+                    ige._currentViewport.drawBoundsLimitId("");
                 }
-                this._ige.emit("sgTreeSelectionChanged", this._ige._sgTreeSelected);
+                ige.emit("sgTreeSelectionChanged", ige._sgTreeSelected);
             };
             dblClick = function (event) {
                 event.stopPropagation();
@@ -252,15 +258,15 @@ class IgeEditorComponent extends IgeEventingClass {
             elem.id = item.id;
             elem.innerHTML = item.text;
             elem.className = "sgItem";
-            if (this._ige._sgTreeSelected === item.id) {
+            if (ige._sgTreeSelected === item.id) {
                 elem.className += " selected";
             }
             if (igeConfig.debug._timing) {
-                if (this._ige._timeSpentInTick[item.id]) {
-                    timingString = "<span>" + this._ige._timeSpentInTick[item.id] + "ms</span>";
-                    /*if (this._ige._timeSpentLastTick[item.id]) {
-                        if (typeof(this._ige._timeSpentLastTick[item.id].ms) === 'number') {
-                            timingString += ' | LastTick: ' + this._ige._timeSpentLastTick[item.id].ms;
+                if (ige._timeSpentInTick[item.id]) {
+                    timingString = "<span>" + ige._timeSpentInTick[item.id] + "ms</span>";
+                    /*if (ige._timeSpentLastTick[item.id]) {
+                        if (typeof(ige._timeSpentLastTick[item.id].ms) === 'number') {
+                            timingString += ' | LastTick: ' + ige._timeSpentLastTick[item.id].ms;
                         }
                     }*/
                     elem.innerHTML += " " + timingString;
@@ -275,7 +281,7 @@ class IgeEditorComponent extends IgeEventingClass {
                 arr = item.items;
                 arrCount = arr.length;
                 for (i = 0; i < arrCount; i++) {
-                    this._ige.addToSgTree(arr[i]);
+                    ige.addToSgTree(arr[i]);
                 }
             }
         };
@@ -284,11 +290,11 @@ class IgeEditorComponent extends IgeEventingClass {
             if (this._showSgTree) {
                 // Create the scenegraph tree
                 let self = this, elem1 = document.createElement("div"), elem2, canvasBoundingRect;
-                canvasBoundingRect = this._ige._canvasPosition();
+                canvasBoundingRect = ige._canvasPosition();
                 elem1.id = "igeSgTree";
                 elem1.style.top = (parseInt(canvasBoundingRect.top) + 5) + "px";
                 elem1.style.left = (parseInt(canvasBoundingRect.left) + 5) + "px";
-                elem1.style.height = (this._ige.root._bounds2d.y - 30) + "px";
+                elem1.style.height = (ige.root._bounds2d.y - 30) + "px";
                 elem1.style.overflow = "auto";
                 elem1.addEventListener("mousemove", (event) => {
                     event.stopPropagation();
@@ -338,13 +344,13 @@ class IgeEditorComponent extends IgeEventingClass {
                 editorModeTranslate.value = "Translate";
                 editorModeTranslate.addEventListener("click", () => {
                     // Disable other modes
-                    this._ige.editorRotate.enabled(false);
-                    if (this._ige.editorTranslate.enabled()) {
-                        this._ige.editorTranslate.enabled(false);
+                    ige.editorRotate.enabled(false);
+                    if (ige.editorTranslate.enabled()) {
+                        ige.editorTranslate.enabled(false);
                         self.log("Editor: Translate mode disabled");
                     }
                     else {
-                        this._ige.editorTranslate.enabled(true);
+                        ige.editorTranslate.enabled(true);
                         self.log("Editor: Translate mode enabled");
                     }
                 });
@@ -353,13 +359,13 @@ class IgeEditorComponent extends IgeEventingClass {
                 editorModeRotate.value = "Rotate";
                 editorModeRotate.addEventListener("click", () => {
                     // Disable other modes
-                    this._ige.editorTranslate.enabled(false);
-                    if (this._ige.editorRotate.enabled()) {
-                        this._ige.editorRotate.enabled(false);
+                    ige.editorTranslate.enabled(false);
+                    if (ige.editorRotate.enabled()) {
+                        ige.editorRotate.enabled(false);
                         self.log("Editor: Rotate mode disabled");
                     }
                     else {
-                        this._ige.editorRotate.enabled(true);
+                        ige.editorRotate.enabled(true);
                         self.log("Editor: Rotate mode enabled");
                     }
                 });
@@ -372,22 +378,22 @@ class IgeEditorComponent extends IgeEventingClass {
                 editorRoot.appendChild(editorStatus);
                 document.body.appendChild(editorRoot);
                 // Add the translate component to the ige instance
-                this._ige.addComponent(IgeEditorTranslateComponent);
-                this._ige.addComponent(IgeEditorRotateComponent);
+                ige.addComponent(IgeEditorTranslateComponent);
+                ige.addComponent(IgeEditorRotateComponent);
                 // Schedule tree updates every second
-                this._ige._sgTreeUpdateInterval = setInterval(() => { self.sgTreeUpdate(); }, 1000);
+                ige._sgTreeUpdateInterval = setInterval(() => { self.sgTreeUpdate(); }, 1000);
             }
             else {
                 // Kill interval
-                clearInterval(this._ige._sgTreeUpdateInterval);
+                clearInterval(ige._sgTreeUpdateInterval);
                 let child = document.getElementById("igeSgTree");
                 child.parentNode.removeChild(child);
                 child = document.getElementById("igeSgConsoleHolder");
                 child.parentNode.removeChild(child);
                 child = document.getElementById("igeSgEditorRoot");
                 child.parentNode.removeChild(child);
-                this._ige.removeComponent("editorTranslate");
-                this._ige.removeComponent("editorRotate");
+                ige.removeComponent("editorTranslate");
+                ige.removeComponent("editorRotate");
             }
         };
         this.sgTreeUpdate = () => {
@@ -396,15 +402,6 @@ class IgeEditorComponent extends IgeEventingClass {
             // Get the scenegraph data
             this.addToSgTree(this.getSceneGraphData(this, true));
         };
-    }
-    /**
-     * @constructor
-     * @param {IgeObject} entity The object that the component is added to.
-     * @param {Object=} options The options object that was passed to the component during
-     * the call to addComponent.
-     */
-    init(entity, options) {
-        const self = this;
         this._entity = entity;
         this._options = options;
         this._showStats = 0;
@@ -412,119 +409,121 @@ class IgeEditorComponent extends IgeEventingClass {
         this._cacheTemplates = true;
         this.ui = {};
         this._interceptMouse = false;
+        // @ts-ignore
+        const igeRoot = window.igeRoot || "";
         // Hook the input component's keyUp and check for the = symbol... if there, toggle editor
-        this._activateKeyHandle = this._ige.components.input.on("keyUp", (event) => {
+        this._activateKeyHandle = ige.components.input.on("keyUp", (event) => {
             if (event.keyIdentifier === "U+00BB") {
                 // = key pressed, toggle the editor
-                self.toggle();
+                this.toggle();
                 // Return true to stop this event from being emitted by the engine to the scenegraph
                 return true;
             }
         });
         // Hook the input component's keyUp and check for the - symbol... if there, toggle stats
-        this._activateKeyHandle = this._ige.components.input.on("keyUp", (event) => {
+        this._activateKeyHandle = ige.components.input.on("keyUp", (event) => {
             if (event.keyIdentifier === "U+00BD") {
                 // Toggle the stats
-                self.toggleStats();
+                this.toggleStats();
                 // Return true to stop this event from being emitted by the engine to the scenegraph
                 return true;
             }
         });
         // Hook the engine's input system and take over mouse interaction
-        this._mouseUpHandle = this._ige.components.input.on("preMouseUp", (event) => {
-            if (self._enabled && self._interceptMouse) {
-                self.emit("mouseUp", event);
+        this._mouseUpHandle = ige.components.input.on("preMouseUp", (event) => {
+            if (this._enabled && this._interceptMouse) {
+                this.emit("mouseUp", event);
                 // Return true to stop this event from being emitted by the engine to the scenegraph
                 return true;
             }
         });
-        this._mouseDownHandle = this._ige.components.input.on("preMouseDown", (event) => {
-            if (self._enabled && self._interceptMouse) {
-                self.emit("mouseDown", event);
+        this._mouseDownHandle = ige.components.input.on("preMouseDown", (event) => {
+            if (this._enabled && this._interceptMouse) {
+                this.emit("mouseDown", event);
                 // Return true to stop this event from being emitted by the engine to the scenegraph
                 return true;
             }
         });
-        this._mouseMoveHandle = this._ige.components.input.on("preMouseMove", (event) => {
-            if (self._enabled && self._interceptMouse) {
-                self.emit("mouseMove", event);
+        this._mouseMoveHandle = ige.components.input.on("preMouseMove", (event) => {
+            if (this._enabled && this._interceptMouse) {
+                this.emit("mouseMove", event);
                 // Return true to stop this event from being emitted by the engine to the scenegraph
                 return true;
             }
         });
-        this._contextMenuHandle = this._ige.components.input.on("preContextMenu", (event) => {
-            if (self._enabled && self._interceptMouse) {
-                self.emit("contextMenu", event);
+        this._contextMenuHandle = ige.components.input.on("preContextMenu", (event) => {
+            if (this._enabled && this._interceptMouse) {
+                this.emit("contextMenu", event);
                 // Return true to stop this event from being emitted by the engine to the scenegraph
                 return true;
             }
         });
         // Load jsRender for HTML template support
-        this._ige.requireScript(igeRoot + "components/editor/vendor/jsRender.js");
+        ige.requireScript(igeRoot + "components/editor/vendor/jsRender.js");
         // Load jQuery, the editor will use it for DOM manipulation simplicity
-        this._ige.requireScript(igeRoot + "components/editor/vendor/jquery.2.0.3.min.js");
-        this._ige.on("allRequireScriptsLoaded", () => {
+        ige.requireScript(igeRoot + "components/editor/vendor/jquery.2.0.3.min.js");
+        ige.on("allRequireScriptsLoaded", () => {
             // Stop drag-drop of files over the page from doing a redirect and leaving the page
             $(() => {
                 $("body")
-                    .on("dragover", (e) => {
-                    e.preventDefault();
+                    .on("dragover", (evt) => {
+                    evt.preventDefault();
                 })
-                    .on("drop", (e) => {
-                    e.preventDefault();
+                    .on("drop", (evt) => {
+                    evt.preventDefault();
                 });
             });
             // Load editor html into the DOM
-            self.loadHtml(igeRoot + "components/editor/root.html", (html) => {
+            this.loadHtml(igeRoot + "components/editor/root.html", (html) => {
                 // Add the html
                 $("body").append($(html));
-                this._ige.requireScript(igeRoot + "components/editor/vendor/jsrender-helpers.js");
+                ige.requireScript(igeRoot + "components/editor/vendor/jsrender-helpers.js");
                 // Object mutation observer polyfill
-                this._ige.requireScript(igeRoot + "components/editor/vendor/observe.js");
+                ige.requireScript(igeRoot + "components/editor/vendor/observe.js");
                 // Load plugin styles
-                this._ige.requireStylesheet(igeRoot + "components/editor/vendor/glyphicons/css/halflings.css");
-                this._ige.requireStylesheet(igeRoot + "components/editor/vendor/glyphicons/css/glyphicons.css");
-                this._ige.requireStylesheet(igeRoot + "components/editor/vendor/treeview_simple/css/style.css");
+                ige.requireStylesheet(igeRoot + "components/editor/vendor/glyphicons/css/halflings.css");
+                ige.requireStylesheet(igeRoot + "components/editor/vendor/glyphicons/css/glyphicons.css");
+                ige.requireStylesheet(igeRoot + "components/editor/vendor/treeview_simple/css/style.css");
                 // Load the editor stylesheet
-                this._ige.requireStylesheet(igeRoot + "components/editor/css/editor.css");
+                ige.requireStylesheet(igeRoot + "components/editor/css/editor.css");
                 // Listen for scenegraph tree selection updates
-                this._ige.on("sgTreeSelectionChanged", (objectId) => {
-                    self._objectSelected(this._ige.$(objectId));
+                ige.on("sgTreeSelectionChanged", (objectId) => {
+                    this._objectSelected(ige.$(objectId));
                 });
                 // Wait for all required files to finish loading
-                this._ige.on("allRequireScriptsLoaded", () => {
+                ige.on("allRequireScriptsLoaded", () => {
                     // Load UI scripts
-                    this._ige.sync(this._ige.requireScript, igeRoot + "components/editor/ui/dialogs/dialogs.js");
-                    this._ige.sync(this._ige.requireScript, igeRoot + "components/editor/ui/scenegraph/scenegraph.js");
-                    this._ige.sync(this._ige.requireScript, igeRoot + "components/editor/ui/menu/menu.js");
-                    this._ige.sync(this._ige.requireScript, igeRoot + "components/editor/ui/toolbox/toolbox.js");
-                    this._ige.sync(this._ige.requireScript, igeRoot + "components/editor/ui/panels/panels.js");
-                    this._ige.sync(this._ige.requireScript, igeRoot + "components/editor/ui/textures/textures.js");
-                    this._ige.sync(this._ige.requireScript, igeRoot + "components/editor/ui/textureEditor/textureEditor.js");
-                    this._ige.sync(this._ige.requireScript, igeRoot + "components/editor/ui/animationEditor/animationEditor.js");
+                    ige.sync(ige.requireScript, igeRoot + "components/editor/ui/dialogs/dialogs.js");
+                    ige.sync(ige.requireScript, igeRoot + "components/editor/ui/scenegraph/scenegraph.js");
+                    ige.sync(ige.requireScript, igeRoot + "components/editor/ui/menu/menu.js");
+                    ige.sync(ige.requireScript, igeRoot + "components/editor/ui/toolbox/toolbox.js");
+                    ige.sync(ige.requireScript, igeRoot + "components/editor/ui/panels/panels.js");
+                    ige.sync(ige.requireScript, igeRoot + "components/editor/ui/textures/textures.js");
+                    ige.sync(ige.requireScript, igeRoot + "components/editor/ui/textureEditor/textureEditor.js");
+                    ige.sync(ige.requireScript, igeRoot + "components/editor/ui/animationEditor/animationEditor.js");
                     // Load jquery plugins
-                    this._ige.sync(this._ige.requireScript, igeRoot + "components/editor/vendor/autoback.jquery.js");
-                    this._ige.sync(this._ige.requireScript, igeRoot + "components/editor/vendor/tree/tree.jquery.js");
-                    this._ige.sync(this._ige.requireScript, igeRoot + "components/editor/vendor/tabs/tabs.jquery.js");
-                    this._ige.sync(this._ige.requireScript, igeRoot + "components/editor/vendor/treeview_simple/treeview_simple.jquery.js");
-                    this._ige.on("syncComplete", () => {
+                    ige.sync(ige.requireScript, igeRoot + "components/editor/vendor/autoback.jquery.js");
+                    ige.sync(ige.requireScript, igeRoot + "components/editor/vendor/tree/tree.jquery.js");
+                    ige.sync(ige.requireScript, igeRoot + "components/editor/vendor/tabs/tabs.jquery.js");
+                    ige.sync(ige.requireScript, igeRoot + "components/editor/vendor/treeview_simple/treeview_simple.jquery.js");
+                    ige.on("syncComplete", () => {
                         // Observe changes to the engine to update our display
                         setInterval(() => {
                             // Update the stats counters
-                            $("#editorFps").html(this._ige._fps + " fps");
-                            $("#editorDps").html(this._ige._dps + " dps");
-                            $("#editorDpf").html(this._ige._dpf + " dpf");
-                            $("#editorUd").html(this._ige._updateTime + " ud/ms");
-                            $("#editorRd").html(this._ige._renderTime + " rd/ms");
-                            $("#editorTd").html(this._ige._tickTime + " td/ms");
+                            $("#editorFps").html(ige._fps + " fps");
+                            $("#editorDps").html(ige._dps + " dps");
+                            $("#editorDpf").html(ige._dpf + " dpf");
+                            $("#editorUd").html(ige._updateTime + " ud/ms");
+                            $("#editorRd").html(ige._renderTime + " rd/ms");
+                            $("#editorTd").html(ige._tickTime + " td/ms");
                         }, 1000);
                         // Add auto-backing
                         $(".backed").autoback();
                         // Call finished on all ui instances
-                        for (const i in self.ui) {
-                            if (self.ui.hasOwnProperty(i)) {
-                                if (self.ui[i].ready) {
-                                    self.ui[i].ready();
+                        for (const i in this.ui) {
+                            if (this.ui.hasOwnProperty(i)) {
+                                if (this.ui[i].ready) {
+                                    this.ui[i].ready();
                                 }
                             }
                         }
@@ -532,17 +531,17 @@ class IgeEditorComponent extends IgeEventingClass {
                         $(".tabGroup").tabs();
                         // Enable the stats toggle button
                         $("#statsToggle").on("click", () => {
-                            this._ige.editor.toggleStats();
+                            ige.components.editor.toggleStats();
                         });
                         // Enable the editor toggle button
                         $("#editorToggle").on("click", () => {
-                            this._ige.editor.toggle();
+                            ige.components.editor.toggle();
                         });
                     }, null, true);
                 }, null, true);
             });
         }, null, true);
-        // Set the component to inactive to start with
+        // Set the component as inactive to start with
         this._enabled = false;
         this._show = false;
         // Set object create defaults

@@ -118,7 +118,7 @@ const WithEventingMixin = (Base) => class extends Base {
             if (!this._eventListeners._processing) {
                 if (this._eventListeners[eventName]) {
                     // Find this listener in the list
-                    var evtListIndex = this._eventListeners[eventName].indexOf(evtListener);
+                    const evtListIndex = this._eventListeners[eventName].indexOf(evtListener);
                     if (evtListIndex > -1) {
                         // Remove the listener from the event listener list
                         this._eventListeners[eventName].splice(evtListIndex, 1);

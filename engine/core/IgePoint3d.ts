@@ -4,15 +4,12 @@
 class IgePoint3d {
 	classId = "IgePoint3d";
 
-	// Public
 	x = 0;
 	y = 0;
 	z = 0;
 	x2 = 0;
 	y2 = 0;
 	z2 = 0;
-
-	// Private
 	_floor = false;
 
 	constructor (x = 0, y = 0, z = 0, floor = false) {
@@ -36,8 +33,8 @@ class IgePoint3d {
 	/**
 	 * Gets / sets the floor mode of this point. If set to true the point's
 	 * data will be mathematically floored when they are assigned.
-	 * @param val
-	 * @return {*}
+	 * @param {Boolean=} val True or false.
+	 * @return {*} Either `this` for chaining or current floor setting.
 	 */
 	floor (val: boolean): this;
 	floor (): boolean;
@@ -271,10 +268,10 @@ class IgePoint3d {
 	 * Interpolates the x, y, z values of this point towards the endPoint's
 	 * x, y, z values based on the passed time variables and returns a new
 	 * IgePoint3d whose values are the result.
-	 * @param endPoint
-	 * @param startTime
-	 * @param currentTime
-	 * @param endTime
+	 * @param {IgePoint2d} endPoint
+	 * @param {Number} startTime
+	 * @param {Number} currentTime
+	 * @param {Number} endTime
 	 * @return {*}
 	 */
 	interpolate (endPoint: IgePoint3d, startTime: number, currentTime: number, endTime: number) {
@@ -311,8 +308,7 @@ class IgePoint3d {
 	thisRotate (radians: number) {
 		const s = Math.sin(radians),
 			c = Math.cos(radians),
-			{ x } = this,
-			{ y } = this;
+			{x, y} = this;
 
 		this.x = c * x - s * y;
 		this.y = s * x - c * y;

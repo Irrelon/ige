@@ -37,12 +37,15 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         this._ignoreCamera = false;
         this._compositeCache = false;
         this._compositeParent = false;
+        this._cell = 1;
+        this._bornTime = 0;
         this._cache = false;
         this._cacheDirty = false;
         this._cacheSmoothing = false;
         this._aabbDirty = false;
         this._indestructible = false;
         this._shouldRender = true;
+        this._frameAlternatorCurrent = false;
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // INTERACTION
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -734,7 +737,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
     }
     /**
      * Mounts this object to the passed object in the scenegraph.
-     * @param {IgeObject} obj
+     * @param {IgeEntity} obj
      * @example #Mount an entity to another entity
      *     // Create a couple of entities and give them ids
      *     var entity1 = new IgeEntity().id('entity1'),
@@ -1116,6 +1119,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * @param {Number} tickDelta The delta between the last tick time and this one.
      */
     update(ctx, tickDelta) {
+        var _a;
         // Check if the entity should still exist
         if (this._deathTime !== undefined && this._deathTime <= ige._tickStart) {
             // Check if the deathCallBack was set
@@ -1128,7 +1132,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
             return;
         }
         // Check that the entity has been born
-        if (this._bornTime === undefined || ige._currentTime >= this._bornTime) {
+        if (ige._currentTime >= this._bornTime) {
             // Remove the stream data cache
             delete this._streamDataCache;
             // Process any behaviours assigned to the entity
@@ -1157,7 +1161,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         }
         else {
             // The entity is not yet born, unmount it and add to the spawn queue
-            this._birthMount = this._parent.id();
+            this._birthMount = (_a = this._parent) === null || _a === void 0 ? void 0 : _a.id();
             this.unMount();
             ige.spawnQueue(this);
         }
@@ -1165,10 +1169,11 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         this._update(ctx, tickDelta);
     }
     _depthSortVisit(u, sortObj) {
-        let arr = sortObj.adj[u], arrCount = arr.length, i, v;
+        const arr = sortObj.adj[u];
+        const arrCount = arr.length;
         sortObj.c[u] = 1;
-        for (i = 0; i < arrCount; ++i) {
-            v = arr[i];
+        for (let i = 0; i < arrCount; ++i) {
+            const v = arr[i];
             if (sortObj.c[v] === 0) {
                 sortObj.p[v] = u;
                 this._depthSortVisit(v, sortObj);
@@ -1329,7 +1334,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      *     console.log(entity.hasBehaviour('myBehaviour')); // Will log "true"
      * @return {*} Returns this on success or false on failure.
      */
-    hasBehaviour(id, duringTick) {
+    hasBehaviour(id, duringTick = false) {
         if (id !== undefined) {
             let arr, arrCount;
             if (duringTick) {
@@ -1355,9 +1360,9 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * @private
      */
     _processUpdateBehaviours(...args) {
-        let arr = this._updateBehaviours, arrCount;
+        const arr = this._updateBehaviours;
         if (arr) {
-            arrCount = arr.length;
+            let arrCount = arr.length;
             while (arrCount--) {
                 arr[arrCount].method(ige, this, ...args);
             }
@@ -1367,9 +1372,9 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * Calls each behaviour method for the object.
      */
     _processTickBehaviours(...args) {
-        let arr = this._tickBehaviours, arrCount;
+        const arr = this._tickBehaviours;
         if (arr) {
-            arrCount = arr.length;
+            let arrCount = arr.length;
             while (arrCount--) {
                 arr[arrCount].method(ige, this, ...args);
             }
@@ -1683,10 +1688,10 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      *     entity.backgroundPattern(texture, 'repeat', true, true);
      * @return {*}
      */
-    backgroundPattern(texture, repeat, trackCamera, isoTile) {
+    backgroundPattern(texture, repeat = "repeat", trackCamera = false, isoTile = false) {
         if (texture !== undefined) {
             this._backgroundPattern = texture;
-            this._backgroundPatternRepeat = repeat || "repeat";
+            this._backgroundPatternRepeat = repeat;
             this._backgroundPatternTrackCamera = trackCamera;
             this._backgroundPatternIsoTile = isoTile;
             this._backgroundPatternFill = null;
@@ -1709,29 +1714,27 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * @example #Set the width of the entity based on the tile width of the map the entity is mounted to
      *     // Set the entity width to the size of 1 tile with
      *     // lock aspect enabled which will automatically size
-     *     // the height as well so as to maintain the aspect
+     *     // the height as well, to maintain the aspect
      *     // ratio of the entity
      *     entity.widthByTile(1, true);
      * @return {*} The object this method was called from to allow
      * method chaining.
      */
     widthByTile(val, lockAspect = false) {
-        if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
-            let tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2, ratio;
-            this.width(val * tileSize);
-            if (lockAspect) {
-                if (this._texture) {
-                    // Calculate the height based on the new width
-                    ratio = this._texture._sizeX / this._bounds2d.x;
-                    this.height(this._texture._sizeY / ratio);
-                }
-                else {
-                    this.log("Cannot set height based on texture aspect ratio and new width because no texture is currently assigned to the entity!", "error");
-                }
-            }
+        if (!(this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
+            throw new Error("Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.");
         }
-        else {
-            this.log("Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.", "warning");
+        const tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
+        this.width(val * tileSize);
+        if (lockAspect) {
+            if (this._texture) {
+                // Calculate the height based on the new width
+                const ratio = this._texture._sizeX / this._bounds2d.x;
+                this.height(this._texture._sizeY / ratio);
+            }
+            else {
+                this.log("Cannot set height based on texture aspect ratio and new width because no texture is currently assigned to the entity!", "error");
+            }
         }
         return this;
     }
@@ -1750,22 +1753,20 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * method chaining.
      */
     heightByTile(val, lockAspect = false) {
-        if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
-            let tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2, ratio;
-            this.height(val * tileSize);
-            if (lockAspect) {
-                if (this._texture) {
-                    // Calculate the width based on the new height
-                    ratio = this._texture._sizeY / this._bounds2d.y;
-                    this.width(this._texture._sizeX / ratio);
-                }
-                else {
-                    this.log("Cannot set width based on texture aspect ratio and new height because no texture is currently assigned to the entity!", "error");
-                }
-            }
+        if (!(this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
+            throw new Error("Cannot set height by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.");
         }
-        else {
-            this.log("Cannot set height by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.", "warning");
+        const tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
+        this.height(val * tileSize);
+        if (lockAspect) {
+            if (this._texture) {
+                // Calculate the width based on the new height
+                const ratio = this._texture._sizeY / this._bounds2d.y;
+                this.width(this._texture._sizeX / ratio);
+            }
+            else {
+                this.log("Cannot set width based on texture aspect ratio and new height because no texture is currently assigned to the entity!", "error");
+            }
         }
         return this;
     }
@@ -1933,20 +1934,8 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         }
         return this._texture;
     }
-    /**
-     * Gets / sets the current texture cell used when rendering the game
-     * object's texture. If the texture is not cell-based, this value is
-     * ignored.
-     * @param {Number=} val The cell index.
-     * @example #Set the entity texture as a 4x4 cell sheet and then set the cell to use
-     *     var texture = new IgeCellSheet('path/to/some/cellSheet.png', 4, 4);
-     *     entity.texture(texture)
-     *         .cell(3);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     cell(val) {
-        if (val > 0 || val === null) {
+        if (val !== undefined && (val === null || val > 0)) {
             this._cell = val;
             return this;
         }
@@ -1976,8 +1965,9 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
         if (val !== undefined) {
             if (this._texture) {
                 // Find the cell index this id corresponds to
-                let i, tex = this._texture, cells = tex._cells;
-                for (i = 1; i < cells.length; i++) {
+                const tex = this._texture;
+                const cells = tex._cells;
+                for (let i = 1; i < cells.length; i++) {
                     if (cells[i][4] === val) {
                         // Found the cell id so assign this cell index
                         this.cell(i);
@@ -2050,7 +2040,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      */
     dimensionsFromCell(percent) {
         if (this._texture) {
-            if (this._texture._cells && this._texture._cells.length) {
+            if (this._texture._cells && this._texture._cells.length && this._cell) {
                 if (percent === undefined) {
                     this.width(this._texture._cells[this._cell][2]);
                     this.height(this._texture._cells[this._cell][3]);
@@ -2069,6 +2059,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * Gets / sets the highlight mode. True is on false is off.
      * @param {Boolean} val The highlight mode true, false or optionally a string representing a globalCompositeOperation.
      * https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing
+     * @param highlightChildEntities
      * @example #Set the entity to render highlighted
      *     entity.highlight(true);
      * @example #Set the entity to render highlighted using 'screen' globalCompositeOperation
@@ -2118,9 +2109,12 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * world space using its world transform matrix. This will alter
      * the points passed in the array directly.
      * @param {Array} points The array of IgePoints to convert.
+     * @param viewport
+     * @param inverse
      */
-    localToWorld(points, viewport, inverse) {
-        viewport = viewport || ige._currentViewport;
+    localToWorld(points, viewport, inverse = false) {
+        // Commented as this was doing literally nothing
+        //viewport = viewport || ige._currentViewport;
         if (this._adjustmentMatrix) {
             // Apply the optional adjustment matrix
             this._worldMatrix.multiply(this._adjustmentMatrix);
@@ -2735,7 +2729,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      * @param {Boolean} [dontTransform] If you don't want to apply transforms.
      * @private
      */
-    _renderEntity(ctx, dontTransform) {
+    _renderEntity(ctx, dontTransform = false) {
         if (this._opacity <= 0) {
             return;
         }

@@ -17,11 +17,17 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
         this._categoryRegister = {};
         this._groupRegister = {};
         this._tickStart = 0;
+        this._syncIndex = 0;
+        this._syncArr = [];
         this._deviceFinalDrawRatio = 1;
         this._createdFrontBuffer = false;
         this._devicePixelRatio = 1;
         this._backingStoreRatio = 1;
         this._resized = false;
+        this._timeScaleLastTimestamp = 0;
+        this._useManualTicks = false;
+        this._manualFrameAlternator = false;
+        this.lastTick = 0;
         this.fontsLoaded = () => {
             if (!this._webFonts.length && !this._cssFonts.length)
                 return true;
@@ -195,12 +201,14 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
                 then process updates and ticks. This will also allow a layered rendering system that can render the
                 first x number of entities then stop, allowing a step through of the renderer in realtime.
              */
-            let st, et, updateStart, renderStart, ptArr = this._postTick, ptCount = ptArr.length, ptIndex, unbornQueue, unbornCount, unbornIndex, unbornEntity;
+            const ptArr = this._postTick;
+            const ptCount = ptArr.length;
             // Scale the timestamp according to the current
             // engine's time scaling factor
             this.incrementTime(timeStamp, this._timeScaleLastTimestamp);
             this._timeScaleLastTimestamp = timeStamp;
             timeStamp = Math.floor(this._currentTime);
+            let st = 0;
             if (igeConfig.debug._timing) {
                 st = new Date().getTime();
             }
@@ -237,11 +245,11 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
                     this._tickDelta = this._tickStart - this.lastTick;
                 }
                 // Check for unborn entities that should be born now
-                unbornQueue = this._spawnQueue;
-                unbornCount = unbornQueue.length;
-                for (unbornIndex = unbornCount - 1; unbornIndex >= 0; unbornIndex--) {
-                    unbornEntity = unbornQueue[unbornIndex];
-                    if (this._currentTime >= unbornEntity._bornTime) {
+                const unbornQueue = this._spawnQueue;
+                const unbornCount = unbornQueue.length;
+                for (let unbornIndex = unbornCount - 1; unbornIndex >= 0; unbornIndex--) {
+                    const unbornEntity = unbornQueue[unbornIndex];
+                    if (this._currentTime >= unbornEntity._bornTime && unbornEntity._birthMount) {
                         // Now birth this entity
                         unbornEntity.mount(this.$(unbornEntity._birthMount));
                         unbornQueue.splice(unbornIndex, 1);
@@ -250,7 +258,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
                 // Update the scenegraph
                 if (this._enableUpdates) {
                     if (igeConfig.debug._timing) {
-                        updateStart = new Date().getTime();
+                        const updateStart = new Date().getTime();
                         this.root && this.root.updateSceneGraph(ctx);
                         this._updateTime = new Date().getTime() - updateStart;
                     }
@@ -262,7 +270,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
                 if (this._enableRenders) {
                     if (!this._useManualRender) {
                         if (igeConfig.debug._timing) {
-                            renderStart = new Date().getTime();
+                            const renderStart = new Date().getTime();
                             this.root && this.root.renderSceneGraph(ctx);
                             this._renderTime = new Date().getTime() - renderStart;
                         }
@@ -273,7 +281,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
                     else {
                         if (this._manualRender) {
                             if (igeConfig.debug._timing) {
-                                renderStart = new Date().getTime();
+                                const renderStart = new Date().getTime();
                                 this.root && this.root.renderSceneGraph(ctx);
                                 this._renderTime = new Date().getTime() - renderStart;
                             }
@@ -285,7 +293,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
                     }
                 }
                 // Call post-tick methods
-                for (ptIndex = 0; ptIndex < ptCount; ptIndex++) {
+                for (let ptIndex = 0; ptIndex < ptCount; ptIndex++) {
                     ptArr[ptIndex]();
                 }
                 // Record the lastTick value so we can
@@ -295,13 +303,13 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
                 this._dpf = this._drawCount;
                 this._drawCount = 0;
                 // Call the input system tick to reset any flags etc
-                if (this.input) {
-                    this.input.tick();
+                if (this.components.input) {
+                    this.components.input.tick();
                 }
             }
             this._resized = false;
             if (igeConfig.debug._timing) {
-                et = new Date().getTime();
+                const et = new Date().getTime();
                 this._tickTime = et - st;
             }
         };
@@ -1301,8 +1309,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
             };
         }
     }
-    requestAnimFrame(frameHandlerFunction = () => {
-    }, element) {
+    requestAnimFrame(frameHandlerFunction, element) {
         window.requestAnimationFrame(frameHandlerFunction);
     }
     showStats() {
@@ -1317,7 +1324,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
         this.igeClassStore[id] = obj;
     }
     /**
-     * Retrieves a class by it's ID that was defined with
+     * Retrieves a class by its ID that was defined with
      * a call to defineClass().
      * @param {String} id The ID of the class to retrieve.
      * @return {Object} The class definition.
@@ -1388,27 +1395,30 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
      * Updates the loading screen DOM elements to show the update progress.
      */
     updateProgress() {
+        var _a;
         // Check for a loading progress bar DOM element
-        if (typeof document !== "undefined" && document.getElementById) {
-            const elem = document.getElementById("loadingProgressBar"), textElem = document.getElementById("loadingText");
-            if (elem) {
-                // Calculate the width from progress
-                const totalWidth = parseInt(elem.parentNode.offsetWidth), currentWidth = Math.floor((totalWidth / this._texturesTotal) * (this._texturesTotal - this._texturesLoading));
-                // Set the current bar width
-                elem.style.width = currentWidth + "px";
-                if (textElem) {
-                    if (this._loadingPreText === undefined) {
-                        // Fill the text to use
-                        this._loadingPreText = textElem.innerHTML;
-                    }
-                    textElem.innerHTML =
-                        this._loadingPreText +
-                            " " +
-                            Math.floor((100 / this._texturesTotal) * (this._texturesTotal - this._texturesLoading)) +
-                            "%";
-                }
-            }
+        if (!(typeof document !== "undefined" && document.getElementById)) {
+            return;
         }
+        const elem = document.getElementById("loadingProgressBar"), textElem = document.getElementById("loadingText");
+        if (!elem) {
+            return;
+        }
+        const totalWidth = (_a = elem.parentNode) === null || _a === void 0 ? void 0 : _a.offsetWidth;
+        const currentWidth = Math.floor((totalWidth / this._texturesTotal) * (this._texturesTotal - this._texturesLoading));
+        elem.style.width = currentWidth + "px";
+        if (!textElem) {
+            return;
+        }
+        if (this._loadingPreText === undefined) {
+            // Fill the text to use
+            this._loadingPreText = textElem.innerHTML;
+        }
+        textElem.innerHTML =
+            this._loadingPreText +
+                " " +
+                Math.floor((100 / this._texturesTotal) * (this._texturesTotal - this._texturesLoading)) +
+                "%";
     }
     /**
      * Adds one to the number of textures currently loading.
@@ -1447,9 +1457,10 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
      * @return {IgeTexture}
      */
     textureFromUrl(url) {
-        let arr = this._textureStore, arrCount = arr.length, item;
+        const arr = this._textureStore;
+        let arrCount = arr.length;
         while (arrCount--) {
-            item = arr[arrCount];
+            const item = arr[arrCount];
             if (item._url === url) {
                 return item;
             }
@@ -1513,25 +1524,28 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
      * @return {String}
      */
     newIdFromString(str) {
-        if (str !== undefined) {
-            let id, val = 0, count = str.length, i;
-            for (i = 0; i < count; i++) {
-                val += str.charCodeAt(i) * Math.pow(10, 17);
-            }
-            id = val.toString(16);
-            // Check if the ID is already in use
-            while (this.$(id)) {
-                val += Math.pow(10, 17);
-                id = val.toString(16);
-            }
-            return id;
+        if (str === undefined) {
+            return;
         }
+        const count = str.length;
+        let id, val = 0, i;
+        for (i = 0; i < count; i++) {
+            val += str.charCodeAt(i) * Math.pow(10, 17);
+        }
+        id = val.toString(16);
+        // Check if the ID is already in use
+        while (this.$(id)) {
+            val += Math.pow(10, 17);
+            id = val.toString(16);
+        }
+        return id;
     }
     /**
      * Starts the engine.
      * @param callback
      */
     start(callback) {
+        var _a;
         if (this._state) {
             return;
         }
@@ -1543,9 +1557,10 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
             // and if so, remove it from the DOM now
             if (this.isClient) {
                 if (document.getElementsByClassName && document.getElementsByClassName("igeLoading")) {
-                    let arr = document.getElementsByClassName("igeLoading"), arrCount = arr.length;
+                    const arr = document.getElementsByClassName("igeLoading");
+                    let arrCount = arr.length;
                     while (arrCount--) {
-                        arr[arrCount].parentNode.removeChild(arr[arrCount]);
+                        (_a = arr[arrCount].parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(arr[arrCount]);
                     }
                 }
             }
@@ -1718,6 +1733,92 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
             this.removeCanvas();
         }
         this.log("Engine destroy complete.");
+    }
+    /**
+     * Load a js script file into memory via a path or url.
+     * @param {String} url The file's path or url.
+     * @param {Function=} callback Optional callback when script loads.
+     */
+    requireScript(url, callback) {
+        if (url !== undefined) {
+            // Add to the load counter
+            this._requireScriptTotal++;
+            this._requireScriptLoading++;
+            // Create the script element
+            const elem = document.createElement("script");
+            elem.addEventListener("load", () => {
+                this._requireScriptLoaded(this);
+                if (callback) {
+                    setTimeout(function () {
+                        callback();
+                    }, 100);
+                }
+            });
+            // For compatibility with CocoonJS
+            document.body.appendChild(elem);
+            // Set the source to load the url
+            elem.src = url;
+            this.log("Loading script from: " + url);
+            this.emit("requireScriptLoading", url);
+        }
+    }
+    /**
+     * Called when a js script has been loaded via the requireScript
+     * method.
+     * @param {Element} elem The script element added to the DOM.
+     * @private
+     */
+    _requireScriptLoaded(elem) {
+        this._requireScriptLoading--;
+        this.emit("requireScriptLoaded", elem.src);
+        if (this._requireScriptLoading === 0) {
+            // All scripts have loaded, fire the engine event
+            this.emit("allRequireScriptsLoaded");
+        }
+    }
+    /**
+     * Load a css style file into memory via a path or url.
+     * @param {String} url The file's path or url.
+     */
+    requireStylesheet(url) {
+        if (url !== undefined) {
+            // Load the engine stylesheet
+            const css = document.createElement("link");
+            css.rel = "stylesheet";
+            css.type = "text/css";
+            css.media = "all";
+            css.href = url;
+            document.getElementsByTagName("head")[0].appendChild(css);
+            this.log("Load css stylesheet from: " + url);
+        }
+    }
+    sync(method, attrArr) {
+        this._syncArr = this._syncArr || [];
+        this._syncArr.push({ method: method, attrArr: attrArr });
+        if (this._syncArr.length === 1) {
+            // Start sync waterfall
+            this._syncIndex = 0;
+            this._processSync();
+        }
+    }
+    _processSync() {
+        let syncEntry;
+        if (this._syncIndex < this._syncArr.length) {
+            syncEntry = this._syncArr[this._syncIndex];
+            // Add the callback to the last attribute
+            syncEntry.attrArr.push(() => {
+                this._syncIndex++;
+                setTimeout(this._processSync, 1);
+            });
+            // Call the method
+            syncEntry.method.apply(this, syncEntry.attrArr);
+        }
+        else {
+            // Reached end of sync cycle
+            delete this._syncArr;
+            delete this._syncIndex;
+            this.emit("syncComplete");
+        }
     }
 }
 export default Ige;

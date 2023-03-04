@@ -1,4 +1,6 @@
+export type SyncMethod = (data: string) => void;
+
 export interface SyncEntry {
-    attrArr: string[];
-    method: (data: string[]) => void;
+    attrArr: string;
+    method: SyncMethod;
 }

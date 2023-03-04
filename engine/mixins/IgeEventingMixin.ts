@@ -1,7 +1,7 @@
 import type {Mixin} from "../../types/Mixin";
 import type IgeBaseClass from "../core/IgeBaseClass";
 
-export interface EventListenerObject {
+export interface IgeEventListenerObject {
 	type: "single";
 	callback: (...args: any) => boolean | void;
 	context: any;
@@ -9,23 +9,23 @@ export interface EventListenerObject {
 	sendEventName: boolean;
 }
 
-export interface MultiEventListenerObject extends Omit<EventListenerObject, "type"> {
+export interface IgeMultiEventListenerObject extends Omit<IgeEventListenerObject, "type"> {
 	type: "multi";
 	handler: (firedEventName: string) => boolean | void;
 	eventsFired: number;
 	totalEvents: number;
 }
 
-export type EventListenerRegister = Record<string, EventListenerObject[]>;
+export type IgeEventListenerRegister = Record<string, IgeEventListenerObject[]>;
 
-export type RemovalResultCallback = (success: boolean) => void;
+export type IgeEventRemovalResultCallback = (success: boolean) => void;
 
 
 const WithEventingMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class extends Base {
 	// Private
 	_eventsProcessing: boolean = false;
 	_eventRemovalQueue: any[] = [];
-	_eventListeners?: EventListenerRegister = {};
+	_eventListeners?: IgeEventListenerRegister = {};
 
 	/**
 	 * Add an event listener method for an event.
@@ -51,7 +51,7 @@ const WithEventingMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class exte
 	 *     // The console output is:
 	 *     //    data1, data2
 	 */
-	on(eventName: string | string[], callback: (...args: any) => void, context?: any, oneShot = false, sendEventName = false) {
+	on (eventName: string | string[], callback: (...args: any) => void, context?: any, oneShot = false, sendEventName = false) {
 		// Check that we have an event listener object
 		this._eventListeners = this._eventListeners || {};
 
@@ -64,7 +64,7 @@ const WithEventingMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class exte
 
 		if (typeof eventName === "string") {
 			// Compose the new listener
-			const newListener: EventListenerObject = {
+			const newListener: IgeEventListenerObject = {
 				type: "single",
 				callback,
 				context,
@@ -72,7 +72,7 @@ const WithEventingMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class exte
 				sendEventName
 			};
 
-			const elArr: EventListenerObject[] = this._eventListeners[eventName] = this._eventListeners[eventName] || [];
+			const elArr: IgeEventListenerObject[] = this._eventListeners[eventName] = this._eventListeners[eventName] || [];
 
 			const existingIndex = elArr.findIndex((tmpListener) => {
 				return tmpListener.callback === newListener.callback;
@@ -92,7 +92,7 @@ const WithEventingMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class exte
 
 		// The eventName is an array of names, creating a group of events
 		// that must be fired to fire this event callback
-		const multiEventListener: MultiEventListenerObject = {
+		const multiEventListener: IgeMultiEventListenerObject = {
 			type: "multi",
 			callback,
 			context,
@@ -147,12 +147,12 @@ const WithEventingMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class exte
 	 *     myEntity.off('mouseDown', evt);
 	 * @return {Boolean}
 	 */
-	off(eventName: string, evtListener: EventListenerObject, callback?: RemovalResultCallback) {
+	off (eventName: string, evtListener: IgeEventListenerObject, callback?: IgeEventRemovalResultCallback) {
 		if (this._eventListeners) {
 			if (!this._eventListeners._processing) {
 				if (this._eventListeners[eventName]) {
 					// Find this listener in the list
-					var evtListIndex = this._eventListeners[eventName].indexOf(evtListener);
+					const evtListIndex = this._eventListeners[eventName].indexOf(evtListener);
 					if (evtListIndex > -1) {
 						// Remove the listener from the event listener list
 						this._eventListeners[eventName].splice(evtListIndex, 1);
@@ -211,7 +211,7 @@ const WithEventingMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class exte
 	 *     // The console output is:
 	 *     //    data1, data2
 	 */
-	emit(eventName: string, args?: any) {
+	emit (eventName: string, args?: any) {
 		if (!this._eventListeners) {
 			return -1;
 		}
@@ -292,7 +292,7 @@ const WithEventingMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class exte
 	 * Returns an object containing the current event listeners.
 	 * @return {Object}
 	 */
-	eventList() {
+	eventList () {
 		return this._eventListeners;
 	}
 
@@ -301,7 +301,7 @@ const WithEventingMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class exte
 	 * each array item.
 	 * @private
 	 */
-	_processRemovals() {
+	_processRemovals () {
 		if (!this._eventListeners) {
 			return;
 		}

@@ -10,6 +10,7 @@ import {ige} from "../instance";
 class IgeTexture extends WithEventingMixin(IgeBaseClass) {
 	classId = "IgeTexture";
 	IgeTexture = true;
+	_id?: string;
 	_didInit = false;
 	_sizeX: number = 0;
 	_sizeY: number = 0;
@@ -17,6 +18,9 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
 	_cells: number[][] = [];
 	_smoothing: boolean = false;
 	_filterImageDrawn: boolean = false;
+	_destroyed: boolean = false;
+	_url?: string;
+	_mode?: number;
 
 	/**
      * Constructor for a new IgeTexture.
@@ -73,7 +77,9 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
      * @param {String=} id
      * @return {*} Returns this when setting the value or the current value if none is specified.
      */
-	id (id) {
+	id (id: string): this;
+	id (): string | undefined;
+	id (id?: string) {
 		if (id !== undefined) {
 			// Check if this ID already exists in the object register
 			if (ige._register[id]) {
@@ -122,7 +128,9 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
      * @param {String=} url "The url used to load the file for this texture.
      * @return {*}
      */
-	url (url) {
+	url (url: string): this;
+	url (): string | undefined;
+	url (url?: string) {
 		if (url !== undefined) {
 			this._url = url;
 
@@ -147,9 +155,7 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
      * image data.
      * @private
      */
-	_loadImage (imageUrl) {
-		let image;
-
+	_loadImage (imageUrl: string) {
 		if (!ige.isClient) {
 			return;
 		}
@@ -157,7 +163,7 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
 		ige.textureLoadStart(imageUrl, this);
 		if (!ige._textureImageStore[imageUrl]) {
 			// Image not in cache, create the image object
-			image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new Image();
+			const image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new Image();
 			image._igeTextures = image._igeTextures || [];
 
 			// Add this texture to the textures that are using this image
@@ -179,13 +185,11 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
 				}*/
 
 				// Loop textures that are using this image
-				let arr = image._igeTextures,
-					arrCount = arr.length,
-					i,
-					item;
+				const arr = image._igeTextures;
+				const arrCount = arr.length;
 
-				for (i = 0; i < arrCount; i++) {
-					item = arr[i];
+				for (let i = 0; i < arrCount; i++) {
+					const item = arr[i];
 
 					item._mode = 0;
 
@@ -203,7 +207,7 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
 			image.src = imageUrl;
 		} else {
 			// Grab the cached image object
-			image = this.image = this._originalImage = ige._textureImageStore[imageUrl];
+			const image = this.image = this._originalImage = ige._textureImageStore[imageUrl];
 
 			// Add this texture to the textures that are using this image
 			image._igeTextures.push(this);

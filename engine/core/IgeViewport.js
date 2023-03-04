@@ -21,7 +21,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         this._mousePos = new IgePoint3d(0, 0, 0);
         this._overflow = "";
         this._clipping = true;
-        this._bornTime = undefined;
+        this._bornTime = 0;
         // Set default options if not specified
         // TODO: Is this required or even used?
         if (options) {
