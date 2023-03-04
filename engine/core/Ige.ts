@@ -9,7 +9,7 @@ import IgePoint3d from "./IgePoint3d";
 import IgeBaseClass from "./IgeBaseClass";
 import IgeDummyContext from "./IgeDummyContext";
 import IgeEventingClass from "./IgeEventingClass";
-import IgeTexture, { IgeImage } from "./IgeTexture";
+import IgeTexture from "./IgeTexture";
 import IgeViewport from "./IgeViewport";
 import IgeCamera from "./IgeCamera";
 import IgeEntity from "./IgeEntity";
@@ -19,8 +19,10 @@ import WithComponentMixin from "../mixins/IgeComponentMixin";
 import IgePoint2d from "./IgePoint2d";
 import IgeInputComponent from "../components/IgeInputComponent";
 import IgeTweenComponent from "../components/IgeTweenComponent";
+import { Mixin } from "../../types/Mixin";
+import IgeImage from "./IgeImage";
 
-class Ige extends WithComponentMixin(IgeEventingClass) {
+class Ige extends WithComponentMixin<IgeEntity, Mixin<IgeEventingClass>>(IgeEventingClass) {
 	isServer: boolean;
 	isClient: boolean;
 	client?: IgeBaseClass;

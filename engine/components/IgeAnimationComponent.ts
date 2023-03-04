@@ -9,7 +9,7 @@ import IgeEntity from "../core/IgeEntity";
  * @event loopComplete - The animation has completed a full cycle (shown all frames).
  * @event complete - The animation has completed all assigned loop cycles.
  */
-class IgeAnimationComponent extends IgeComponent<IgeEntity> {
+class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgeAnimationComponent";
 	componentId = "animation";
 	_anims: Record<string, any>;
@@ -19,7 +19,7 @@ class IgeAnimationComponent extends IgeComponent<IgeEntity> {
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	constructor (entity: IgeEntity, options?: any) {
+	constructor (entity: TargetClass, options?: any) {
 		super(entity, options);
 
 		this._anims = {};

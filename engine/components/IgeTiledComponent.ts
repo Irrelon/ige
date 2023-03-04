@@ -1,15 +1,14 @@
-import IgeBaseClass from "../core/IgeBaseClass";
-import IgeBaseClass from "../core/IgeBaseClass";
 import IgeComponent from "../core/IgeComponent";
+import IgeEntity from "../core/IgeEntity";
 
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
  */
-class IgeTiledComponent extends IgeComponent {
+class IgeTiledComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgeTiledComponent";
 	componentId = "tiled";
 
-	constructor (entity: IgeBaseClass, options?: any) {
+	constructor (entity: TargetClass, options?: any) {
 		super(entity, options);
 	}
 
@@ -21,7 +20,7 @@ class IgeTiledComponent extends IgeComponent {
 	 * @param callback
 	 */
 	loadJson = (url, callback) => {
-		var self = this,
+		let self = this,
 			scriptElem;
 
 		if (typeof(url) === "string") {
@@ -42,7 +41,7 @@ class IgeTiledComponent extends IgeComponent {
 	}
 
 	_processData = (data, callback) => {
-		var mapClass = this._ige.isServer === true ? IgeTileMap2d : IgeTextureMap,
+		let mapClass = this._ige.isServer === true ? IgeTileMap2d : IgeTextureMap,
 			mapWidth = data.width,
 			mapHeight = data.height,
 			layerArray = data.layers,
@@ -140,7 +139,7 @@ class IgeTiledComponent extends IgeComponent {
 		if (this._ige.isClient) {
 			onLoadFunc = function (textures, tileSetCount, tileSetItem) {
 				return function () {
-					var i, cc,
+					let i, cc,
 						cs = new IgeCellSheet(tileSetItem.image, this.width / tileSetItem.tilewidth, this.height / tileSetItem.tileheight)
 							.id(tileSetItem.name)
 							.on("loaded", function () {

@@ -1,7 +1,7 @@
 import IgeComponent from "../core/IgeComponent";
 import IgeEntity from "../core/IgeEntity";
 
-class IgeEntityManagerComponent extends IgeComponent<IgeEntity> {
+class IgeEntityManagerComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgeEntityManagerComponent";
 	componentId = "entityManager";
 
@@ -10,7 +10,7 @@ class IgeEntityManagerComponent extends IgeComponent<IgeEntity> {
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	constructor (entity: IgeEntity, options?: any) {
+	constructor (entity: TargetClass, options?: any) {
 		super(entity, options);
 
 		// Check we are being added to a tile map

@@ -9,14 +9,14 @@ import { ige } from "../instance";
  * instance and is not designed for use in any other way!
  * It handles global tween processing on all tweening values.
  */
-class IgeTweenComponent extends IgeComponent {
+class IgeTweenComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	static componentTargetClass = "Ige";
 	classId = "IgeTweenComponent";
 	componentId = "tween";
 	_tweens: IgeTween[];
 	_tweening: boolean = false;
 
-	constructor (entity: IgeEntity, options?: any) {
+	constructor (entity: TargetClass, options?: any) {
 		super(entity, options);
 
 		// Set up the array that will hold our active tweens

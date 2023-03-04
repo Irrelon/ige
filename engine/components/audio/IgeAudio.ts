@@ -1,10 +1,11 @@
 import IgeEventingClass from "../../core/IgeEventingClass";
+import { ige } from "../../instance";
 
 class IgeAudio extends IgeEventingClass {
 	classId = "IgeAudio";
 
-	constructor (ige, url) {
-		super(ige);
+	constructor (url?: string) {
+		super();
 
 		if (!url) { return; }
 		this.load(url);
@@ -17,28 +18,28 @@ class IgeAudio extends IgeEventingClass {
 	 * @param {String=} id The id to set to.
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	id (id) {
+	id (id?: string) {
 		if (id !== undefined) {
 			// Check if this ID already exists in the object register
-			if (this._ige._register[id]) {
-				if (this._ige._register[id] === this) {
+			if (ige._register[id]) {
+				if (ige._register[id] === this) {
 					// We are already registered as this id
 					return this;
 				}
 
 				// Already an object with this ID!
-				this.log("Cannot set ID of object to \"" + id + "\" because that ID is already in use by another object!", "error");
+				this.log(`Cannot set ID of object to "${id}" because that ID is already in use by another object!`, "error");
 			} else {
 				// Check if we already have an id assigned
-				if (this._id && this._ige._register[this._id]) {
+				if (this._id && ige._register[this._id]) {
 					// Unregister the old ID before setting this new one
-					this._ige.unRegister(this);
+					ige.unRegister(this);
 				}
 
 				this._id = id;
 
 				// Now register this object with the object register
-				this._ige.register(this);
+				ige.register(this);
 
 				return this;
 			}
@@ -50,12 +51,12 @@ class IgeAudio extends IgeEventingClass {
 				// Generate an ID from the URL string of the audio file
 				// this instance is using. Useful for always reproducing
 				// the same ID for the same file :)
-				this._id = this._ige.newIdFromString(this._url);
+				this._id = ige.newIdFromString(this._url);
 			} else {
 				// We don't have a URL so generate a random ID
-				this._id = this._ige.newIdHex();
+				this._id = ige.newIdHex();
 			}
-			this._ige.register(this);
+			ige.register(this);
 		}
 
 		return this._id;
@@ -67,7 +68,7 @@ class IgeAudio extends IgeEventingClass {
 	 * @param {Function=} callback Optional callback method to call when the audio
 	 * file has loaded or on error.
 	 */
-	load (url, callback) {
+	load (url: string, callback?: () => void) {
 		const request = new XMLHttpRequest();
 
 		request.open("GET", url, true);
@@ -88,10 +89,10 @@ class IgeAudio extends IgeEventingClass {
 	}
 
 	_loaded (callback) {
-		this._ige.root.audio.decode(this._data, (err, buffer) => {
+		ige.root.audio.decode(this._data, (err, buffer) => {
 			if (!err) {
 				this._buffer = buffer;
-				this._ige.root.audio.log("Audio file (" + this._url + ") loaded successfully");
+				ige.root.audio.log("Audio file (" + this._url + ") loaded successfully");
 
 				if (callback) { callback.apply(this, [false]); }
 				this.emit("loaded");
@@ -113,9 +114,9 @@ class IgeAudio extends IgeEventingClass {
 			});
 		}
 
-		const bufferSource = this._ige.root.audio._ctx.createBufferSource();
+		const bufferSource = ige.root.audio._ctx.createBufferSource();
 		bufferSource.buffer = this._buffer;
-		bufferSource.connect(this._ige.root.audio._ctx.destination);
+		bufferSource.connect(ige.root.audio._ctx.destination);
 		bufferSource.start(0);
 	}
 }

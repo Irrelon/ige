@@ -15,8 +15,6 @@ export class Client extends IgeBaseClass {
         ige.createRoot();
         ige.addComponent(IgeEditorComponent);
         ige.components.input.debug(true);
-        // Load our textures
-        this.obj = [];
         // Load the fairy texture and simpleBox smart texture
         this.gameTexture = {
             fairy: new IgeTexture("./assets/textures/sprites/fairy.png"),

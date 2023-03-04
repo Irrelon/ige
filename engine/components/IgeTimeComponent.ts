@@ -1,12 +1,9 @@
 import IgeComponent from "../core/IgeComponent";
-import IgeBaseClass from "../core/IgeBaseClass";
-import Ige from "../core/Ige";
 import IgeEntity from "../core/IgeEntity";
 import IgeInterval from "../core/IgeInterval";
 import {arrPull} from "../services/utils";
-import IgeBaseClass from "../core/IgeBaseClass";
 
-class IgeTimeComponent extends IgeComponent {
+class IgeTimeComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgeTimeComponent";
 	componentId = "time";
 
@@ -14,7 +11,7 @@ class IgeTimeComponent extends IgeComponent {
 	_additions: IgeInterval[];
 	_removals: IgeInterval[];
 
-	constructor (entity: IgeBaseClass, options?: any) {
+	constructor (entity: TargetClass, options?: any) {
 		super(entity, options);
 
 		this._timers = [];
@@ -51,7 +48,7 @@ class IgeTimeComponent extends IgeComponent {
 
 	_update () {
 		// Get the ige tick delta and tell our timers / intervals that an update has occurred
-		var delta = this._ige._tickDelta,
+		let delta = this._ige._tickDelta,
 			arr = this._timers,
 			arrCount = arr.length;
 
@@ -71,7 +68,7 @@ class IgeTimeComponent extends IgeComponent {
 	}
 
 	_processAdditions = () => {
-		var arr = this._additions,
+		let arr = this._additions,
 			arrCount = arr.length;
 
 		if (arrCount) {
@@ -86,7 +83,7 @@ class IgeTimeComponent extends IgeComponent {
 	}
 
 	_processRemovals = () => {
-		var arr = this._removals,
+		let arr = this._removals,
 			arrCount = arr.length;
 
 		if (arrCount) {

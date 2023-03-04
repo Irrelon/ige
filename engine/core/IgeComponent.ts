@@ -1,6 +1,6 @@
-import IgeBaseClass from "./IgeBaseClass";
+import IgeEventingClass from "./IgeEventingClass";
 
-class IgeComponent<TargetClass extends IgeBaseClass> extends IgeBaseClass {
+class IgeComponent<TargetClass> extends IgeEventingClass {
 	_entity: TargetClass;
 	_options?: any;
 	componentId: string = "IgeComponent";

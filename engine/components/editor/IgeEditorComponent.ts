@@ -1,20 +1,18 @@
-import IgeEventingClass from "../../core/IgeEventingClass";
-import IgeEntity from "../../core/IgeEntity";
 import { ige } from "../../instance";
 import IgeInputComponent from "../IgeInputComponent";
 import { IgeEventListenerObject, IgeMultiEventListenerObject } from "../../mixins/IgeEventingMixin";
+import IgeComponent from "../../core/IgeComponent";
+import IgeEntity from "../../core/IgeEntity";
 
 /**
  * When added to a viewport, automatically adds entity rotate
  * capabilities to the selected entity in the scenegraph viewer.
  */
-class IgeEditorComponent extends IgeEventingClass {
+class IgeEditorComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgeEditorComponent";
 	componentId = "editor";
 	ui: Record<string, any>;
 	objectDefault: Record<string, Record<string, any>>;
-	_entity: IgeEntity;
-	_options: any;
 	_showStats: number;
 	_templateCache: Record<string, any>;
 	_cacheTemplates: boolean;
@@ -29,15 +27,13 @@ class IgeEditorComponent extends IgeEventingClass {
 
 	/**
 	 * @constructor
-	 * @param {IgeObject} entity The object that the component is added to.
-	 * @param {Object=} options The options object that was passed to the component during
+	 * @param entity The object that the component is added to.
+	 * @param options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor (entity: IgeEntity, options?: any) {
-		super();
+	constructor (entity: TargetClass, options?: any) {
+		super(entity, options);
 
-		this._entity = entity;
-		this._options = options;
 		this._showStats = 0;
 
 		this._templateCache = {};

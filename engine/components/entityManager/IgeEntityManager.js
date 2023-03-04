@@ -1,8 +1,8 @@
-import IgeEventingClass from "../../core/IgeEventingClass.js";
 import { arrPull } from "../../services/utils.js";
-class IgeEntityManager extends IgeEventingClass {
-    constructor() {
-        super(...arguments);
+import IgeComponent from "../../core/IgeComponent.js";
+class IgeEntityManager extends IgeComponent {
+    constructor(entity, options) {
+        super(entity, options);
         this.classId = "IgeEntityManager";
         this.componentId = "entityManager";
         /**
@@ -12,7 +12,7 @@ class IgeEntityManager extends IgeEventingClass {
          * @private
          */
         this._updateOrphans = () => {
-            var arr = this._entity._children, arrCount = arr.length, viewportArr = ige._children, vpCount = viewportArr.length, item, itemAabb, vpIndex, inVisibleArea;
+            let arr = this._entity._children, arrCount = arr.length, viewportArr = ige._children, vpCount = viewportArr.length, item, itemAabb, vpIndex, inVisibleArea;
             while (arrCount--) {
                 item = arr[arrCount];
                 if (item._managed) {
@@ -61,7 +61,7 @@ class IgeEntityManager extends IgeEventingClass {
          * @private
          */
         this._processMountQueue = () => {
-            var arr = this._mountQueue, arrCount = arr.length, item;
+            let arr = this._mountQueue, arrCount = arr.length, item;
             while (arrCount--) {
                 item = arr[arrCount];
                 arrPull(this._entity._orphans, item);
@@ -74,7 +74,7 @@ class IgeEntityManager extends IgeEventingClass {
          * @private
          */
         this._processUnMountQueue = () => {
-            var arr = this._unMountQueue, arrCount = arr.length, item;
+            let arr = this._unMountQueue, arrCount = arr.length, item;
             while (arrCount--) {
                 item = arr[arrCount];
                 item.unMount();
@@ -82,10 +82,6 @@ class IgeEntityManager extends IgeEventingClass {
             }
             this._unMountQueue = [];
         };
-    }
-    init(entity, options) {
-        this._entity = entity;
-        this._options = options;
         // Create queue arrays that will store entities waiting to
         // be mounted or unmounted
         this._mountQueue = [];
@@ -105,7 +101,7 @@ class IgeEntityManager extends IgeEventingClass {
      */
     _updateBehaviour(ctx) {
         // Draw visible area rect
-        var rect = ige._currentViewport.viewArea();
+        const rect = ige._currentViewport.viewArea();
         /*new IgeEntity()
             .id('visArea')
             .texture(this.gameTexture.simpleBox)
@@ -116,7 +112,7 @@ class IgeEntityManager extends IgeEventingClass {
             .height(rect.height)
             .width(rect.width);*/
         // Get our instance back
-        var self = this.entityManager;
+        const self = this.entityManager;
         self._updateOrphans();
         self._updateChildren();
         self._processMountQueue();
@@ -128,7 +124,7 @@ class IgeEntityManager extends IgeEventingClass {
      * @private
      */
     _updateChildren() {
-        var arr = this._entity._orphans, arrCount = arr.length, viewportArr = ige._children, vpCount = viewportArr.length, item, itemAabb, vpIndex, inVisibleArea;
+        let arr = this._entity._orphans, arrCount = arr.length, viewportArr = ige._children, vpCount = viewportArr.length, item, itemAabb, vpIndex, inVisibleArea;
         while (arrCount--) {
             item = arr[arrCount];
             if (item._managed) {

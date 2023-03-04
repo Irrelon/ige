@@ -1,7 +1,7 @@
 import type {Mixin} from "../../types/Mixin";
 import type IgeBaseClass from "../core/IgeBaseClass";
 
-const WithExampleMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class extends Base {
+const WithExampleMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => class extends Base {
 
 }
 

@@ -1,12 +1,11 @@
-import IgeEventingClass from "../core/IgeEventingClass";
-import IgeBaseClass from "../core/IgeBaseClass";
 import IgeComponent from "../core/IgeComponent";
+import IgeEntity from "../core/IgeEntity";
 
 /**
  * When added to a viewport, automatically adds mouse zooming
  * capabilities to the viewport's camera.
  */
-class IgeMouseZoomComponent extends IgeComponent {
+class IgeMouseZoomComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgeMouseZoomComponent";
 	componentId = "mouseZoom";
 
@@ -16,7 +15,7 @@ class IgeMouseZoomComponent extends IgeComponent {
 	 * @param {Object=} options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor (entity: IgeBaseClass, options?: any) {
+	constructor (entity: TargetClass, options?: any) {
 		super(entity, options);
 
 		// Set the zoom component to inactive to start with
@@ -58,7 +57,7 @@ class IgeMouseZoomComponent extends IgeComponent {
 	_mouseDown (event) {
 		if (!this._enabled || event.igeViewport.id() !== this._entity.id()) { return; }
 
-		var curMousePos = this._ige._mousePos;
+		const curMousePos = this._ige._mousePos;
 		this._zoomStartMouse = {
 			"x": curMousePos.x,
 			"y": curMousePos.y
@@ -96,7 +95,7 @@ class IgeMouseZoomComponent extends IgeComponent {
 	_mouseUp (event) {
 		if (!this._enabled) { return; }
 		if (this._zoomStartMouse) {
-			var curMousePos = this._ige._mousePos,
+			const curMousePos = this._ige._mousePos,
 				zoomCords = {
 					"x": -(this._zoomStartMouse.x - curMousePos.x) / 100,
 					"y": -(this._zoomStartMouse.y - curMousePos.y) / 100

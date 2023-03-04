@@ -1,10 +1,10 @@
-import IgeEventingClass from "../../core/IgeEventingClass.js";
+import IgeComponent from "../../core/IgeComponent.js";
 /**
  * Manages audio mixing and output.
  */
-class IgeAudioComponent extends IgeEventingClass {
-    constructor(ige, entity, options) {
-        super(ige);
+class IgeAudioComponent extends IgeComponent {
+    constructor(entity, options) {
+        super(entity, options);
         this.classId = "IgeAudioComponent";
         this.componentId = "audio";
         /**
@@ -24,7 +24,7 @@ class IgeAudioComponent extends IgeEventingClass {
          * @returns {*}
          */
         this.getContext = () => {
-            var ctxProto = window.AudioContext || window.webkitAudioContext;
+            const ctxProto = window.AudioContext || window.webkitAudioContext;
             if (ctxProto) {
                 return new ctxProto();
             }
@@ -38,7 +38,7 @@ class IgeAudioComponent extends IgeEventingClass {
          * @param {String=} id The id to assign the audio.
          */
         this.load = (url, id) => {
-            var audio = new IgeAudio(url);
+            const audio = new IgeAudio(url);
             if (id) {
                 audio.id(id);
             }
@@ -56,7 +56,7 @@ class IgeAudioComponent extends IgeEventingClass {
             });
         };
         this.play = (id) => {
-            var audio = this._ige.$(id);
+            const audio = this._ige.$(id);
             if (audio) {
                 if (audio.prototype.play) {
                     audio.play();

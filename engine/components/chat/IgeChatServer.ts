@@ -2,6 +2,8 @@
  * The server-side chat component. Handles all server-side
  * chat methods and events.
  */
+import { ige } from "../../instance";
+
 const IgeChatServer = {
 	/**
      * Creates a new room with the specified room name and options.

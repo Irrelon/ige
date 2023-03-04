@@ -1,12 +1,11 @@
-import IgeEventingClass from "../core/IgeEventingClass";
-import IgeBaseClass from "../core/IgeBaseClass";
 import IgeComponent from "../core/IgeComponent";
+import IgeEntity from "../core/IgeEntity";
 
 /**
  * When added to a viewport, automatically adds mouse panning
  * capabilities to the viewport's camera.
  */
-class IgeMousePanComponent extends IgeComponent {
+class IgeMousePanComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	static componentTargetClass = "IgeViewport";
 	classId = "IgeMousePanComponent";
 	componentId = "mousePan";
@@ -17,7 +16,7 @@ class IgeMousePanComponent extends IgeComponent {
 	 * @param {Object=} options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor (entity: IgeBaseClass, options?: any) {
+	constructor (entity: TargetClass, options?: any) {
 		super(entity, options);
 
 		// Set the pan component to inactive to start with
@@ -97,7 +96,7 @@ class IgeMousePanComponent extends IgeComponent {
 	_mouseDown = (event) => {
 		if (!this._panStarted && this._enabled && event.igeViewport.id() === this._entity.id()) {
 			// Record the mouse down position - pan pre-start
-			var curMousePos = this._ige._mousePos;
+			const curMousePos = this._ige._mousePos;
 			this._panStartMouse = curMousePos.clone();
 
 			this._panStartCamera = {
@@ -120,7 +119,7 @@ class IgeMousePanComponent extends IgeComponent {
 		if (this._enabled) {
 			// Pan the camera if the mouse is down
 			if (this._panStartMouse) {
-				var curMousePos = this._ige._mousePos,
+				let curMousePos = this._ige._mousePos,
 					panCords = {
 						"x": this._panStartMouse.x - curMousePos.x,
 						"y": this._panStartMouse.y - curMousePos.y
@@ -189,7 +188,7 @@ class IgeMousePanComponent extends IgeComponent {
 			// End the pan
 			if (this._panStarted) {
 				if (this._panStartMouse) {
-					var curMousePos = this._ige._mousePos,
+					let curMousePos = this._ige._mousePos,
 						panCords = {
 							"x": this._panStartMouse.x - curMousePos.x,
 							"y": this._panStartMouse.y - curMousePos.y

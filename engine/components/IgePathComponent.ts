@@ -1,17 +1,15 @@
-import IgeEventingClass from "../core/IgeEventingClass";
-import IgeBaseClass from "../core/IgeBaseClass";
 import {distance} from "../services/utils";
 import IgeComponent from "../core/IgeComponent";
-import IgeBaseClass from "../core/IgeBaseClass";
+import IgeEntity from "../core/IgeEntity";
 
 /**
  * Handles entity path traversal.
  */
-class IgePathComponent extends IgeComponent {
+class IgePathComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgePathComponent";
 	componentId = "path";
 
-	constructor (entity: IgeBaseClass, options?: any) {
+	constructor (entity: TargetClass, options?: any) {
 		super(entity, options);
 
 		this._points = [];
@@ -87,7 +85,7 @@ class IgePathComponent extends IgeComponent {
 	 */
 	tileChecker = (val) => {
 		if (val !== undefined) {
-			var self = this;
+			const self = this;
 
 			this._tileChecker = function () {
 				return val.apply(self._entity, arguments);
@@ -155,7 +153,7 @@ class IgePathComponent extends IgeComponent {
 		this.clear();
 
 		// Create a new path
-		var path = this._finder.generate(
+		const path = this._finder.generate(
 			this._tileMap,
 			new IgePoint3d(fromX, fromY, fromZ),
 			new IgePoint3d(toX, toY, toZ),
@@ -172,7 +170,7 @@ class IgePathComponent extends IgeComponent {
 
 	add = (x, y, z, findNearest) => {
 		// Get the endPoint of the current path
-		var endPoint = this.getEndPoint(),
+		let endPoint = this.getEndPoint(),
 			shift = true;
 
 		if (!endPoint) {
@@ -182,7 +180,7 @@ class IgePathComponent extends IgeComponent {
 		}
 
 		// Create a new path
-		var path = this._finder.generate(
+		const path = this._finder.generate(
 			this._tileMap,
 			endPoint,
 			new IgePoint3d(x, y, z),
@@ -215,7 +213,7 @@ class IgePathComponent extends IgeComponent {
 	 */
 	reRoute = (x, y, z, findNearest) => {
 		// Get the endPoint of the current path
-		var toPoint = this.getToPoint(),
+		let toPoint = this.getToPoint(),
 			fromPoint = this.getFromPoint();
 
 		if (!toPoint) {
@@ -224,8 +222,8 @@ class IgePathComponent extends IgeComponent {
 		}
 
 		// Create a new path, making sure we include the points that we're currently working between
-		var prePath = fromPoint ? [fromPoint] : [];
-		var path = this._finder.generate(
+		const prePath = fromPoint ? [fromPoint] : [];
+		const path = this._finder.generate(
 			this._tileMap,
 			toPoint,
 			new IgePoint3d(x, y, z),
@@ -308,37 +306,37 @@ class IgePathComponent extends IgeComponent {
 				if (this._entity._mode === 1) {
 					// Convert direction for isometric
 					switch (dir) {
-						case "E":
-							dir = "SE";
-							break;
+					case "E":
+						dir = "SE";
+						break;
 
-						case "S":
-							dir = "SW";
-							break;
+					case "S":
+						dir = "SW";
+						break;
 
-						case "W":
-							dir = "NW";
-							break;
+					case "W":
+						dir = "NW";
+						break;
 
-						case "N":
-							dir = "NE";
-							break;
+					case "N":
+						dir = "NE";
+						break;
 
-						case "NE":
-							dir = "E";
-							break;
+					case "NE":
+						dir = "E";
+						break;
 
-						case "SW":
-							dir = "W";
-							break;
+					case "SW":
+						dir = "W";
+						break;
 
-						case "NW":
-							dir = "N";
-							break;
+					case "NW":
+						dir = "N";
+						break;
 
-						case "SE":
-							dir = "S";
-							break;
+					case "SE":
+						dir = "S";
+						break;
 					}
 				}
 			}
@@ -387,7 +385,7 @@ class IgePathComponent extends IgeComponent {
 	 * @return {*}
 	 */
 	speed = (val, startTime) => {
-		var endPoint, restartPoint;
+		let endPoint, restartPoint;
 
 		if (val !== undefined) {
 			this._speed = val / 1000;
@@ -415,7 +413,7 @@ class IgePathComponent extends IgeComponent {
 	 * @return {*}
 	 */
 	start = (startTime) => {
-		var startPoint;
+		let startPoint;
 
 		if (!this._active) {
 			this._active = true;
@@ -612,13 +610,13 @@ class IgePathComponent extends IgeComponent {
 	 * @private
 	 */
 	_updateBehaviour = (ctx) => {
-		var {path} = this,
+		const {path} = this,
 			currentTime = ige._currentTime,
 			progressTime = currentTime - path._startTime;
 
 		// Check if we should be processing paths
 		if (path._active && path._totalDistance !== 0 && currentTime >= path._startTime && (progressTime <= path._totalTime || !path._finished)) {
-			var distanceTravelled = (path._speed) * progressTime,
+			let distanceTravelled = (path._speed) * progressTime,
 				totalDistance = 0,
 				pointArr = path._points,
 				pointCount = pointArr.length,
@@ -743,7 +741,7 @@ class IgePathComponent extends IgeComponent {
 	}
 
 	_processDynamic = (pointFrom, pointTo, destinationPoint) => {
-		var self = this,
+		let self = this,
 			tileMapData,
 			tileCheckData,
 			newPathPoints;
@@ -781,7 +779,7 @@ class IgePathComponent extends IgeComponent {
 	}
 
 	_calculatePathData = () => {
-		var totalDistance = 0,
+		let totalDistance = 0,
 			startPoint,
 			pointFrom,
 			pointTo,
@@ -820,14 +818,14 @@ class IgePathComponent extends IgeComponent {
 	 * @param {Array} newPoints The array of new points to insert.
 	 */
 	replacePoints = (fromIndex, replaceLength, newPoints) => {
-		var args = [fromIndex, replaceLength].concat(newPoints);
+		const args = [fromIndex, replaceLength].concat(newPoints);
 		this._points.splice.apply(this._points, args);
 		this._calculatePathData();
 	}
 
 	_tickBehaviour = (ctx) => {
 		if (ige.isClient) {
-			var self = this.path,
+			let self = this.path,
 				entity = this,
 				currentPath = self._points,
 				oldTracePathPoint,
@@ -869,7 +867,7 @@ class IgePathComponent extends IgeComponent {
 							// Not the starting point
 							if (self._drawPathGlow) {
 								ctx.globalAlpha = 0.1;
-								for (var k = 3; k >= 0 ; k--) {
+								for (let k = 3; k >= 0 ; k--) {
 									ctx.lineWidth = (k + 1) * 4 - 3.5;
 									ctx.beginPath();
 									ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
@@ -958,7 +956,7 @@ class IgePathComponent extends IgeComponent {
 	 * @private
 	 */
 	_positionAlongVector = (p1, p2, speed, deltaTime) => {
-		var newPoint,
+		let newPoint,
 			p1X = p1.x,
 			p1Y = p1.y,
 			p2X = p2.x,

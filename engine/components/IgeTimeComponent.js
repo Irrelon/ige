@@ -28,7 +28,7 @@ class IgeTimeComponent extends IgeComponent {
             return this;
         };
         this._processAdditions = () => {
-            var arr = this._additions, arrCount = arr.length;
+            let arr = this._additions, arrCount = arr.length;
             if (arrCount) {
                 while (arrCount--) {
                     this._timers.push(arr[arrCount]);
@@ -38,7 +38,7 @@ class IgeTimeComponent extends IgeComponent {
             return this;
         };
         this._processRemovals = () => {
-            var arr = this._removals, arrCount = arr.length;
+            let arr = this._removals, arrCount = arr.length;
             if (arrCount) {
                 while (arrCount--) {
                     arrPull(this._timers, arr[arrCount]);
@@ -55,7 +55,7 @@ class IgeTimeComponent extends IgeComponent {
     }
     _update() {
         // Get the ige tick delta and tell our timers / intervals that an update has occurred
-        var delta = this._ige._tickDelta, arr = this._timers, arrCount = arr.length;
+        let delta = this._ige._tickDelta, arr = this._timers, arrCount = arr.length;
         while (arrCount--) {
             arr[arrCount]
                 .addTime(delta)

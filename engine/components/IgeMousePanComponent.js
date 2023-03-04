@@ -36,7 +36,7 @@ class IgeMousePanComponent extends IgeComponent {
         this._mouseDown = (event) => {
             if (!this._panStarted && this._enabled && event.igeViewport.id() === this._entity.id()) {
                 // Record the mouse down position - pan pre-start
-                var curMousePos = this._ige._mousePos;
+                const curMousePos = this._ige._mousePos;
                 this._panStartMouse = curMousePos.clone();
                 this._panStartCamera = {
                     "x": this._entity.camera._translate.x,
@@ -56,7 +56,7 @@ class IgeMousePanComponent extends IgeComponent {
             if (this._enabled) {
                 // Pan the camera if the mouse is down
                 if (this._panStartMouse) {
-                    var curMousePos = this._ige._mousePos, panCords = {
+                    let curMousePos = this._ige._mousePos, panCords = {
                         "x": this._panStartMouse.x - curMousePos.x,
                         "y": this._panStartMouse.y - curMousePos.y
                     }, distX = Math.abs(panCords.x), distY = Math.abs(panCords.y), panFinalX = (panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x, panFinalY = (panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y;
@@ -107,7 +107,7 @@ class IgeMousePanComponent extends IgeComponent {
                 // End the pan
                 if (this._panStarted) {
                     if (this._panStartMouse) {
-                        var curMousePos = this._ige._mousePos, panCords = {
+                        let curMousePos = this._ige._mousePos, panCords = {
                             "x": this._panStartMouse.x - curMousePos.x,
                             "y": this._panStartMouse.y - curMousePos.y
                         }, panFinalX = (panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x, panFinalY = (panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y;

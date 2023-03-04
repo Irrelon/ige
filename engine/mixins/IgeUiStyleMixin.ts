@@ -2,13 +2,15 @@
 import type {Mixin} from "../../types/Mixin";
 import type IgeEntity from "../core/IgeEntity";
 
-const WithUiStyleMixin = <T extends Mixin<IgeEntity>>(Base: T) => class extends Base {
+const WithUiStyleMixin = <BaseClassType extends Mixin<IgeEntity>>(Base: BaseClassType) => class extends Base {
+	_color: string | CanvasGradient | CanvasPattern = "#000000";
+
 	/**
 	 * Gets / sets the color to use as the font color.
 	 * @param {CSSColor, CanvasGradient, CanvasPattern=} color
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	color (color) {
+	color (color: string | CanvasGradient | CanvasPattern) {
 		if (color !== undefined) {
 			this._color = color;
 			this.cacheDirty(true);
@@ -50,7 +52,7 @@ const WithUiStyleMixin = <T extends Mixin<IgeEntity>>(Base: T) => class extends 
 			if (this._cell > 1) {
 				// We are using a cell sheet, render the cell to a
 				// temporary canvas and set that as the pattern image
-				var canvas = document.createElement("canvas"),
+				const canvas = document.createElement("canvas"),
 					ctx = canvas.getContext("2d"),
 					cellData = texture._cells[this._cell];
 

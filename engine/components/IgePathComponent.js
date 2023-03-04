@@ -62,7 +62,7 @@ class IgePathComponent extends IgeComponent {
          */
         this.tileChecker = (val) => {
             if (val !== undefined) {
-                var self = this;
+                const self = this;
                 this._tileChecker = function () {
                     return val.apply(self._entity, arguments);
                 };
@@ -119,20 +119,20 @@ class IgePathComponent extends IgeComponent {
             // Clear existing path
             this.clear();
             // Create a new path
-            var path = this._finder.generate(this._tileMap, new IgePoint3d(fromX, fromY, fromZ), new IgePoint3d(toX, toY, toZ), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
+            const path = this._finder.generate(this._tileMap, new IgePoint3d(fromX, fromY, fromZ), new IgePoint3d(toX, toY, toZ), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
             this.addPoints(path);
             return this;
         };
         this.add = (x, y, z, findNearest) => {
             // Get the endPoint of the current path
-            var endPoint = this.getEndPoint(), shift = true;
+            let endPoint = this.getEndPoint(), shift = true;
             if (!endPoint) {
                 // There is no existing path, detect current tile position
                 endPoint = this._entity._parent.pointToTile(this._entity._translate);
                 shift = false;
             }
             // Create a new path
-            var path = this._finder.generate(this._tileMap, endPoint, new IgePoint3d(x, y, z), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
+            const path = this._finder.generate(this._tileMap, endPoint, new IgePoint3d(x, y, z), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
             if (shift) {
                 // Remove the first tile, it's the last one on the list already
                 path.shift();
@@ -153,14 +153,14 @@ class IgePathComponent extends IgeComponent {
          */
         this.reRoute = (x, y, z, findNearest) => {
             // Get the endPoint of the current path
-            var toPoint = this.getToPoint(), fromPoint = this.getFromPoint();
+            let toPoint = this.getToPoint(), fromPoint = this.getFromPoint();
             if (!toPoint) {
                 // There is no existing path, detect current tile position
                 toPoint = this._entity._parent.pointToTile(this._entity._translate);
             }
             // Create a new path, making sure we include the points that we're currently working between
-            var prePath = fromPoint ? [fromPoint] : [];
-            var path = this._finder.generate(this._tileMap, toPoint, new IgePoint3d(x, y, z), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
+            const prePath = fromPoint ? [fromPoint] : [];
+            const path = this._finder.generate(this._tileMap, toPoint, new IgePoint3d(x, y, z), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
             // Do nothing if the new path is empty or invalid
             if (path.length > 0) {
                 this.clear();
@@ -292,7 +292,7 @@ class IgePathComponent extends IgeComponent {
          * @return {*}
          */
         this.speed = (val, startTime) => {
-            var endPoint, restartPoint;
+            let endPoint, restartPoint;
             if (val !== undefined) {
                 this._speed = val / 1000;
                 if (this._active) {
@@ -315,7 +315,7 @@ class IgePathComponent extends IgeComponent {
          * @return {*}
          */
         this.start = (startTime) => {
-            var startPoint;
+            let startPoint;
             if (!this._active) {
                 this._active = true;
                 this._finished = false;
@@ -468,10 +468,10 @@ class IgePathComponent extends IgeComponent {
          * @private
          */
         this._updateBehaviour = (ctx) => {
-            var { path } = this, currentTime = ige._currentTime, progressTime = currentTime - path._startTime;
+            const { path } = this, currentTime = ige._currentTime, progressTime = currentTime - path._startTime;
             // Check if we should be processing paths
             if (path._active && path._totalDistance !== 0 && currentTime >= path._startTime && (progressTime <= path._totalTime || !path._finished)) {
-                var distanceTravelled = (path._speed) * progressTime, totalDistance = 0, pointArr = path._points, pointCount = pointArr.length, pointIndex, pointFrom, pointTo, newPoint, dynamicResult, effectiveTime;
+                let distanceTravelled = (path._speed) * progressTime, totalDistance = 0, pointArr = path._points, pointCount = pointArr.length, pointIndex, pointFrom, pointTo, newPoint, dynamicResult, effectiveTime;
                 // Loop points along the path and determine which points we are traversing between
                 for (pointIndex = 0; pointIndex < pointCount; pointIndex++) {
                     totalDistance += pointArr[pointIndex]._distanceToNext;
@@ -560,7 +560,7 @@ class IgePathComponent extends IgeComponent {
             }
         };
         this._processDynamic = (pointFrom, pointTo, destinationPoint) => {
-            var self = this, tileMapData, tileCheckData, newPathPoints;
+            let self = this, tileMapData, tileCheckData, newPathPoints;
             // We are in dynamic mode, check steps ahead to see if they
             // have been blocked or not
             tileMapData = self._tileMap.map._mapData;
@@ -582,7 +582,7 @@ class IgePathComponent extends IgeComponent {
             return false;
         };
         this._calculatePathData = () => {
-            var totalDistance = 0, startPoint, pointFrom, pointTo, i;
+            let totalDistance = 0, startPoint, pointFrom, pointTo, i;
             if (this._currentPointFrom === 0) {
                 // always set the first point to be the current position
                 startPoint = this._entity._translate.clone();
@@ -610,13 +610,13 @@ class IgePathComponent extends IgeComponent {
          * @param {Array} newPoints The array of new points to insert.
          */
         this.replacePoints = (fromIndex, replaceLength, newPoints) => {
-            var args = [fromIndex, replaceLength].concat(newPoints);
+            const args = [fromIndex, replaceLength].concat(newPoints);
             this._points.splice.apply(this._points, args);
             this._calculatePathData();
         };
         this._tickBehaviour = (ctx) => {
             if (ige.isClient) {
-                var self = this.path, entity = this, currentPath = self._points, oldTracePathPoint, tracePathPoint, pathPointIndex, tempPathText;
+                let self = this.path, entity = this, currentPath = self._points, oldTracePathPoint, tracePathPoint, pathPointIndex, tempPathText;
                 if (currentPath.length) {
                     if (currentPath && self._drawPath) {
                         // Draw the current path
@@ -642,7 +642,7 @@ class IgePathComponent extends IgeComponent {
                                 // Not the starting point
                                 if (self._drawPathGlow) {
                                     ctx.globalAlpha = 0.1;
-                                    for (var k = 3; k >= 0; k--) {
+                                    for (let k = 3; k >= 0; k--) {
                                         ctx.lineWidth = (k + 1) * 4 - 3.5;
                                         ctx.beginPath();
                                         ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
@@ -717,7 +717,7 @@ class IgePathComponent extends IgeComponent {
          * @private
          */
         this._positionAlongVector = (p1, p2, speed, deltaTime) => {
-            var newPoint, p1X = p1.x, p1Y = p1.y, p2X = p2.x, p2Y = p2.y, deltaX = (p2X - p1X), deltaY = (p2Y - p1Y), magnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY), normalisedX = deltaX / magnitude, normalisedY = deltaY / magnitude;
+            let newPoint, p1X = p1.x, p1Y = p1.y, p2X = p2.x, p2Y = p2.y, deltaX = (p2X - p1X), deltaY = (p2Y - p1Y), magnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY), normalisedX = deltaX / magnitude, normalisedY = deltaY / magnitude;
             if (deltaX !== 0 || deltaY !== 0) {
                 newPoint = new IgePoint3d(p1X + (normalisedX * (speed * deltaTime)), p1Y + (normalisedY * (speed * deltaTime)), 0);
             }

@@ -15,7 +15,7 @@ class IgeTiledComponent extends IgeComponent {
          * @param callback
          */
         this.loadJson = (url, callback) => {
-            var self = this, scriptElem;
+            let self = this, scriptElem;
             if (typeof (url) === "string") {
                 if (this._ige.isClient) {
                     scriptElem = document.createElement("script");
@@ -35,7 +35,7 @@ class IgeTiledComponent extends IgeComponent {
             }
         };
         this._processData = (data, callback) => {
-            var mapClass = this._ige.isServer === true ? IgeTileMap2d : IgeTextureMap, mapWidth = data.width, mapHeight = data.height, layerArray = data.layers, layerCount = layerArray.length, layer, layerType, layerData, layerDataCount, maps = [], layersById = {}, tileSetArray = data.tilesets, tileSetCount = tileSetArray.length, tileSetItem, tileSetsTotal = tileSetCount, tileSetsLoaded = 0, textureCellLookup = [], currentTexture, currentCell, onLoadFunc, image, textures = [], allTexturesLoadedFunc, i, k, x, y, z, ent;
+            let mapClass = this._ige.isServer === true ? IgeTileMap2d : IgeTextureMap, mapWidth = data.width, mapHeight = data.height, layerArray = data.layers, layerCount = layerArray.length, layer, layerType, layerData, layerDataCount, maps = [], layersById = {}, tileSetArray = data.tilesets, tileSetCount = tileSetArray.length, tileSetItem, tileSetsTotal = tileSetCount, tileSetsLoaded = 0, textureCellLookup = [], currentTexture, currentCell, onLoadFunc, image, textures = [], allTexturesLoadedFunc, i, k, x, y, z, ent;
             // Define the function to call when all textures have finished loading
             allTexturesLoadedFunc = function () {
                 // Create a map for each layer
@@ -97,7 +97,7 @@ class IgeTiledComponent extends IgeComponent {
             if (this._ige.isClient) {
                 onLoadFunc = function (textures, tileSetCount, tileSetItem) {
                     return function () {
-                        var i, cc, cs = new IgeCellSheet(tileSetItem.image, this.width / tileSetItem.tilewidth, this.height / tileSetItem.tileheight)
+                        let i, cc, cs = new IgeCellSheet(tileSetItem.image, this.width / tileSetItem.tilewidth, this.height / tileSetItem.tileheight)
                             .id(tileSetItem.name)
                             .on("loaded", function () {
                             cc = this.cellCount();

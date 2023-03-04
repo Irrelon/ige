@@ -1,10 +1,10 @@
 import type {Mixin} from "../../types/Mixin";
 import type IgeBaseClass from "../core/IgeBaseClass";
 
-const WithDataMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class extends Base {
+const WithDataMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => class extends Base {
 	_data: Record<string, any> = {};
 
-	data(key?: string, value?: any) {
+	data (key?: string, value?: any) {
 		if (key === undefined) {
 			return;
 		}

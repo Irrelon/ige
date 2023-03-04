@@ -1,4 +1,8 @@
 const WithUiStyleMixin = (Base) => class extends Base {
+    constructor() {
+        super(...arguments);
+        this._color = "#000000";
+    }
     /**
      * Gets / sets the color to use as the font color.
      * @param {CSSColor, CanvasGradient, CanvasPattern=} color
@@ -43,7 +47,7 @@ const WithUiStyleMixin = (Base) => class extends Base {
             if (this._cell > 1) {
                 // We are using a cell sheet, render the cell to a
                 // temporary canvas and set that as the pattern image
-                var canvas = document.createElement("canvas"), ctx = canvas.getContext("2d"), cellData = texture._cells[this._cell];
+                const canvas = document.createElement("canvas"), ctx = canvas.getContext("2d"), cellData = texture._cells[this._cell];
                 canvas.width = cellData[2];
                 canvas.height = cellData[3];
                 ctx.drawImage(texture.image, cellData[0], cellData[1], cellData[2], cellData[3], 0, 0, cellData[2], cellData[3]);

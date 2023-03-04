@@ -1,10 +1,13 @@
-var IgeChatComponent = IgeEventingClass.extend({
-    classId: 'IgeChatComponent',
-    componentId: 'chat',
+import IgeEntity from "../../core/IgeEntity";
+import IgeComponent from "../../core/IgeComponent";
+import { ige } from "../../instance";
 
-    init: function (entity, options) {
-        this._entity = entity;
-        this._options = options;
+class IgeChatComponent<TargetClass extends IgeEntity> extends IgeComponent<TargetClass> {
+	classId = 'IgeChatComponent';
+    componentId ='chat';
+
+	constructor (entity: TargetClass, options?: any) {
+		super(entity, options);
 
         this._rooms = {};
 

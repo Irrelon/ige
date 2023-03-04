@@ -2492,7 +2492,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 		return this._localBounds3dPolygon;
 	}
 
-	bounds3dPolygon (recalculate) {
+	bounds3dPolygon (recalculate = false) {
 		if (this._bounds3dPolygonDirty || !this._bounds3dPolygon || recalculate) {
 			const poly = this.localBounds3dPolygon(recalculate).clone();
 

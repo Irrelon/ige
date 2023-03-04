@@ -1,24 +1,24 @@
-import IgeEventingClass from "../../core/IgeEventingClass";
+import IgeEntity from "../../core/IgeEntity";
+import IgeComponent from "../../core/IgeComponent";
 
 /**
  * When added to a viewport, automatically adds entity translate
  * capabilities to the selected entity in the scenegraph viewer.
  */
-class IgeEditorTranslateComponent extends IgeEventingClass {
+class IgeEditorTranslateComponent<TargetClass extends IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgeEditorTranslateComponent";
 	componentId = "editorTranslate";
 
 	/**
 	 * @constructor
-	 * @param {IgeObject} entity The object that the component is added to.
-	 * @param {Object=} options The options object that was passed to the component during
+	 * @param entity The object that the component is added to.
+	 * @param options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	init (entity, options) {
-		this._entity = entity;
-		this._options = options;
+	constructor (entity: TargetClass, options?: any) {
+		super(entity, options);
 
-		// Set the pan component to inactive to start with
+		// Set the pan component as inactive to start with
 		this._enabled = false;
 		this._startThreshold = 1; // The number of pixels the mouse should move to activate
 	}

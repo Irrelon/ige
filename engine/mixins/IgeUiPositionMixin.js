@@ -22,7 +22,7 @@ const WithUiPositionMixin = (Base) => class extends Base {
                 // Store the percentage value
                 this._uiLeftPercent = px;
                 // Check if we are already mounted
-                var parentWidth, val = parseInt(px, 10), newVal;
+                let parentWidth, val = parseInt(px, 10), newVal;
                 if (this._parent) {
                     // We have a parent, use it's geometry
                     parentWidth = this._parent._bounds2d.x;
@@ -68,7 +68,7 @@ const WithUiPositionMixin = (Base) => class extends Base {
                     // Store the percentage value
                     this._uiRightPercent = px;
                     // Check if we are already mounted
-                    var parentWidth, val = parseInt(px, 10), newVal;
+                    let parentWidth, val = parseInt(px, 10), newVal;
                     if (this._parent) {
                         // We have a parent, use it's geometry
                         parentWidth = this._parent._bounds2d.x;
@@ -118,7 +118,7 @@ const WithUiPositionMixin = (Base) => class extends Base {
                     // Store the percentage value
                     this._uiCenterPercent = px;
                     // Check if we are already mounted
-                    var parentWidth, val = parseInt(px, 10), newVal;
+                    let parentWidth, val = parseInt(px, 10), newVal;
                     if (this._parent) {
                         // We have a parent, use it's geometry
                         parentWidth = this._parent._bounds2d.x2;
@@ -169,7 +169,7 @@ const WithUiPositionMixin = (Base) => class extends Base {
                 // Store the percentage value
                 this._uiTopPercent = px;
                 // Check if we are already mounted
-                var parentHeight, val = parseInt(px, 10), newVal;
+                let parentHeight, val = parseInt(px, 10), newVal;
                 if (this._parent) {
                     // We have a parent, use it's geometry
                     parentHeight = this._parent._bounds2d.y;
@@ -215,7 +215,7 @@ const WithUiPositionMixin = (Base) => class extends Base {
                     // Store the percentage value
                     this._uiBottomPercent = px;
                     // Check if we are already mounted
-                    var parentHeight, val = parseInt(px, 10), newVal;
+                    let parentHeight, val = parseInt(px, 10), newVal;
                     if (this._parent) {
                         // We have a parent, use it's geometry
                         parentHeight = this._parent._bounds2d.y;
@@ -265,7 +265,7 @@ const WithUiPositionMixin = (Base) => class extends Base {
                     // Store the percentage value
                     this._uiMiddlePercent = px;
                     // Check if we are already mounted
-                    var parentWidth, val = parseInt(px, 10), newVal;
+                    let parentWidth, val = parseInt(px, 10), newVal;
                     if (this._parent) {
                         // We have a parent, use it's geometry
                         parentWidth = this._parent._bounds2d.y2;
@@ -450,7 +450,7 @@ const WithUiPositionMixin = (Base) => class extends Base {
      * @return {*}
      */
     updateUiChildren() {
-        var arr = this._children || [], arrCount, arrItem;
+        let arr = this._children || [], arrCount, arrItem;
         if (arr) {
             arrCount = arr.length;
             while (arrCount--) {
@@ -472,7 +472,7 @@ const WithUiPositionMixin = (Base) => class extends Base {
      */
     _updateUiPosition() {
         if (this._parent) {
-            var parentGeom = this._parent._bounds2d, geomScaled = this._bounds2d.multiplyPoint(this._scale), percent, newVal, ratio;
+            let parentGeom = this._parent._bounds2d, geomScaled = this._bounds2d.multiplyPoint(this._scale), percent, newVal, ratio;
             /*if (this._ignoreCamera && this._ige._currentCamera) {
                 // Handle cam ignore when calculating
                 parentGeom = parentGeom.dividePoint(this._ige._currentCamera._scale);

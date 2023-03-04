@@ -1,8 +1,7 @@
 import IgePoint3d from "../core/IgePoint3d.js";
 import IgeComponent from "../core/IgeComponent.js";
-import WithEventingMixin from "../mixins/IgeEventingMixin.js";
 import { ige } from "../instance.js";
-class IgeInputComponent extends WithEventingMixin((IgeComponent)) {
+class IgeInputComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgeInputComponent";
@@ -247,7 +246,8 @@ class IgeInputComponent extends WithEventingMixin((IgeComponent)) {
             }
             // Update the mouse position within the viewports
             this._updateMouseData(event);
-            const mx = event.igeX - this._entity._bounds2d.x2, my = event.igeY - this._entity._bounds2d.y2, self = this;
+            const mx = event.igeX - this._entity._bounds2d.x2;
+            const my = event.igeY - this._entity._bounds2d.y2;
             if (event.button === 0) {
                 this._state[this.mouse.button1] = false;
             }
@@ -316,7 +316,6 @@ class IgeInputComponent extends WithEventingMixin((IgeComponent)) {
          * @private
          */
         this._keyDown = (event) => {
-            const self = this;
             this._state[event.keyCode] = true;
             if (this._debug) {
                 console.log("Key Down", event);
@@ -455,7 +454,8 @@ class IgeInputComponent extends WithEventingMixin((IgeComponent)) {
                 if (this._eventListeners[eventName]) {
                     const evc = this._eventControl;
                     // Fire the listeners for this event
-                    let eventCount = this._eventListeners[eventName].length, eventCount2 = this._eventListeners[eventName].length - 1;
+                    let eventCount = this._eventListeners[eventName].length;
+                    const eventCount2 = this._eventListeners[eventName].length - 1;
                     let cancelFlag, eventIndex, tempEvt, retVal;
                     let finalArgs = [];
                     // If there are some events, ensure that the args is ready to be used

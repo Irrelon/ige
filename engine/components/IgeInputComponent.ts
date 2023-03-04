@@ -1,10 +1,8 @@
 import IgePoint3d from "../core/IgePoint3d";
 import IgeComponent from "../core/IgeComponent";
 import IgeViewport from "../core/IgeViewport";
-import IgeBaseClass from "../core/IgeBaseClass";
-import WithEventingMixin from "../mixins/IgeEventingMixin";
 import {ige} from "../instance";
-import Ige from "../core/Ige";
+import IgeEntity from "../core/IgeEntity";
 
 export interface IgeInputMouseInterface {
 	"dblClick": number;
@@ -116,7 +114,7 @@ export interface IgeInputEventControl {
 	stopPropagation: () => void;
 }
 
-class IgeInputComponent extends WithEventingMixin(IgeComponent<Ige>) {
+class IgeInputComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgeInputComponent";
 	componentId = "input";
 	_eventQueue: [((evc: IgeInputEventControl, eventData?: any) => void), any][];
@@ -136,7 +134,7 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent<Ige>) {
 	mouseWheel: boolean | Event = false;
 	contextMenu: boolean | Event = false;
 
-	constructor (entity: IgeBaseClass, options?: any) {
+	constructor (entity: TargetClass, options?: any) {
 		super(entity, options);
 
 		// Set up the input objects to hold the current input state
@@ -582,9 +580,8 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent<Ige>) {
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		const mx = event.igeX - this._entity._bounds2d.x2,
-			my = event.igeY - this._entity._bounds2d.y2,
-			self = this;
+		const mx = event.igeX - this._entity._bounds2d.x2;
+		const my = event.igeY - this._entity._bounds2d.y2;
 
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = false;
@@ -670,8 +667,6 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent<Ige>) {
 	 * @private
 	 */
 	_keyDown = (event: KeyboardEvent) => {
-		const self = this;
-
 		this._state[event.keyCode] = true;
 
 		if (this._debug) {
@@ -868,8 +863,8 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent<Ige>) {
 				const evc = this._eventControl;
 
 				// Fire the listeners for this event
-				let eventCount = this._eventListeners[eventName].length,
-					eventCount2 = this._eventListeners[eventName].length - 1;
+				let eventCount = this._eventListeners[eventName].length;
+				const eventCount2 = this._eventListeners[eventName].length - 1;
 
 				let cancelFlag, eventIndex, tempEvt, retVal;
 				let finalArgs: any[] = [];
@@ -894,6 +889,7 @@ class IgeInputComponent extends WithEventingMixin(IgeComponent<Ige>) {
 							// The stopPropagation() method was called, cancel all other event calls
 							break;
 						}
+
 						eventIndex = eventCount2 - eventCount;
 						tempEvt = this._eventListeners[eventName][eventIndex];
 

@@ -21,7 +21,7 @@ export type IgeEventListenerRegister = Record<string, IgeEventListenerObject[]>;
 export type IgeEventRemovalResultCallback = (success: boolean) => void;
 
 
-const WithEventingMixin = <T extends Mixin<IgeBaseClass>>(Base: T) => class extends Base {
+const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => class extends Base {
 	// Private
 	_eventsProcessing: boolean = false;
 	_eventRemovalQueue: any[] = [];

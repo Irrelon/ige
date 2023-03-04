@@ -1,13 +1,13 @@
 // TODO: Doc this class!
-import IgeBaseClass from "../core/IgeBaseClass";
 import IgePoint3d from "../core/IgePoint3d";
-import IgeBaseClass from "../core/IgeBaseClass";
+import IgeEntity from "../core/IgeEntity";
+import IgeComponent from "../core/IgeComponent";
 
-class IgeVelocityComponent extends IgeBaseClass {
+class IgeVelocityComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgeVelocityComponent";
 	componentId = "velocity";
 
-	constructor (entity: IgeBaseClass, options?: any) {
+	constructor (entity: TargetClass, options?: any) {
 		super(entity, options);
 
 		this._velocity = new IgePoint3d(0, 0, 0);
@@ -27,7 +27,7 @@ class IgeVelocityComponent extends IgeBaseClass {
 	}
 
 	byAngleAndPower = (radians, power, relative) => {
-		var vel = this._velocity,
+		const vel = this._velocity,
 			x = Math.cos(radians) * power,
 			y = Math.sin(radians) * power,
 			z = 0;
@@ -46,7 +46,7 @@ class IgeVelocityComponent extends IgeBaseClass {
 	}
 
 	xyz = (x, y, z, relative) => {
-		var vel = this._velocity;
+		const vel = this._velocity;
 
 		if (!relative) {
 			vel.x = x;
@@ -62,7 +62,7 @@ class IgeVelocityComponent extends IgeBaseClass {
 	}
 
 	x = (x, relative) => {
-		var vel = this._velocity;
+		const vel = this._velocity;
 
 		if (!relative) {
 			vel.x = x;
@@ -74,7 +74,7 @@ class IgeVelocityComponent extends IgeBaseClass {
 	}
 
 	y = (y, relative) => {
-		var vel = this._velocity;
+		const vel = this._velocity;
 
 		if (!relative) {
 			vel.y = y;
@@ -86,7 +86,7 @@ class IgeVelocityComponent extends IgeBaseClass {
 	}
 
 	z = (z, relative) => {
-		var vel = this._velocity;
+		const vel = this._velocity;
 
 		if (!relative) {
 			vel.z = z;
@@ -102,7 +102,7 @@ class IgeVelocityComponent extends IgeBaseClass {
 			vector.scale = 1; // Default to 1
 		}
 
-		var vel = this._velocity,
+		const vel = this._velocity,
 			{x} = vector,
 			{y} = vector,
 			{z} = vector;
@@ -121,7 +121,7 @@ class IgeVelocityComponent extends IgeBaseClass {
 	}
 
 	friction = (val) => {
-		var finalFriction = 1 - val;
+		let finalFriction = 1 - val;
 
 		if (finalFriction < 0) {
 			finalFriction = 0;
@@ -134,7 +134,7 @@ class IgeVelocityComponent extends IgeBaseClass {
 
 	linearForce = (degrees, power) => {
 		power /= 1000;
-		var radians = (degrees * Math.PI / 180),
+		const radians = (degrees * Math.PI / 180),
 			x = Math.cos(radians) * power,
 			y = Math.sin(radians) * power,
 			z = x * y;
@@ -149,7 +149,7 @@ class IgeVelocityComponent extends IgeBaseClass {
 	}
 
 	linearForceVector3 = (vector, power, relative) => {
-		var force = this._linearForce = this._linearForce || new IgePoint3d(0, 0, 0),
+		const force = this._linearForce = this._linearForce || new IgePoint3d(0, 0, 0),
 			x = vector.x / 1000,
 			y = vector.y / 1000,
 			z = vector.z / 1000;
@@ -169,7 +169,7 @@ class IgeVelocityComponent extends IgeBaseClass {
 
 	_applyLinearForce = (delta) => {
 		if (this._linearForce) {
-			var vel = this._velocity;
+			const vel = this._velocity;
 
 			vel.x += (this._linearForce.x * delta);
 			vel.y += (this._linearForce.y * delta);
@@ -178,7 +178,7 @@ class IgeVelocityComponent extends IgeBaseClass {
 	}
 
 	_applyFriction = () => {
-		var vel = this._velocity,
+		const vel = this._velocity,
 			fric = this._friction;
 
 		vel.x *= fric.x;
@@ -187,7 +187,7 @@ class IgeVelocityComponent extends IgeBaseClass {
 	}
 
 	tick (ctx) {
-		var delta = this._ige._tickDelta,
+		let delta = this._ige._tickDelta,
 			vel = this._velocity,
 			x, y, z;
 

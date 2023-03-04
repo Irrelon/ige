@@ -1,12 +1,18 @@
-import IgeEventingClass from "../../core/IgeEventingClass.js";
 import { degreesToRadians, radiansToDegrees } from "../../services/utils.js";
+import IgeComponent from "../../core/IgeComponent.js";
 /**
  * When added to a viewport, automatically adds entity rotate
  * capabilities to the selected entity in the scenegraph viewer.
  */
-class IgeEditorRotateComponent extends IgeEventingClass {
-    constructor() {
-        super(...arguments);
+class IgeEditorRotateComponent extends IgeComponent {
+    /**
+     * @constructor
+     * @param entity The object that the component is added to.
+     * @param options The options object that was passed to the component during
+     * the call to addComponent.
+     */
+    constructor(entity, options) {
+        super(entity, options);
         this.classId = "IgeEditorRotateComponent";
         this.componentId = "editorRotate";
         /**
@@ -157,17 +163,7 @@ class IgeEditorRotateComponent extends IgeEventingClass {
                 }
             }
         };
-    }
-    /**
-     * @constructor
-     * @param {IgeObject} entity The object that the component is added to.
-     * @param {Object=} options The options object that was passed to the component during
-     * the call to addComponent.
-     */
-    init(entity, options) {
-        this._entity = entity;
-        this._options = options;
-        // Set the rotate component to inactive to start with
+        // Set the "rotate" component as inactive to start with
         this._enabled = false;
         this._startThreshold = 1; // The number of pixels the mouse should move to activate
     }

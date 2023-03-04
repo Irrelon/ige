@@ -1,7 +1,7 @@
 import type {Mixin} from "../../types/Mixin";
 import type IgeEntity from "../core/IgeEntity";
 
-const WithUiPositionMixin = <T extends Mixin<IgeEntity>>(Base: T) => class extends Base {
+const WithUiPositionMixin = <BaseClassType extends Mixin<IgeEntity>>(Base: BaseClassType) => class extends Base {
 	/**
 	 * Gets / sets the entity's x position relative to the left of
 	 * the canvas.
@@ -27,7 +27,7 @@ const WithUiPositionMixin = <T extends Mixin<IgeEntity>>(Base: T) => class exten
 				this._uiLeftPercent = px;
 
 				// Check if we are already mounted
-				var parentWidth,
+				let parentWidth,
 					val = parseInt(px, 10),
 					newVal;
 
@@ -80,7 +80,7 @@ const WithUiPositionMixin = <T extends Mixin<IgeEntity>>(Base: T) => class exten
 					this._uiRightPercent = px;
 
 					// Check if we are already mounted
-					var parentWidth,
+					let parentWidth,
 						val = parseInt(px, 10),
 						newVal;
 
@@ -137,7 +137,7 @@ const WithUiPositionMixin = <T extends Mixin<IgeEntity>>(Base: T) => class exten
 					this._uiCenterPercent = px;
 
 					// Check if we are already mounted
-					var parentWidth,
+					let parentWidth,
 						val = parseInt(px, 10),
 						newVal;
 
@@ -197,7 +197,7 @@ const WithUiPositionMixin = <T extends Mixin<IgeEntity>>(Base: T) => class exten
 				this._uiTopPercent = px;
 
 				// Check if we are already mounted
-				var parentHeight,
+				let parentHeight,
 					val = parseInt(px, 10),
 					newVal;
 
@@ -249,7 +249,7 @@ const WithUiPositionMixin = <T extends Mixin<IgeEntity>>(Base: T) => class exten
 					this._uiBottomPercent = px;
 
 					// Check if we are already mounted
-					var parentHeight,
+					let parentHeight,
 						val = parseInt(px, 10),
 						newVal;
 
@@ -306,7 +306,7 @@ const WithUiPositionMixin = <T extends Mixin<IgeEntity>>(Base: T) => class exten
 					this._uiMiddlePercent = px;
 
 					// Check if we are already mounted
-					var parentWidth,
+					let parentWidth,
 						val = parseInt(px, 10),
 						newVal;
 
@@ -524,7 +524,7 @@ const WithUiPositionMixin = <T extends Mixin<IgeEntity>>(Base: T) => class exten
 	 * @return {*}
 	 */
 	updateUiChildren () {
-		var arr = this._children || [],
+		let arr = this._children || [],
 			arrCount,
 			arrItem;
 
@@ -554,7 +554,7 @@ const WithUiPositionMixin = <T extends Mixin<IgeEntity>>(Base: T) => class exten
 	 */
 	_updateUiPosition () {
 		if (this._parent) {
-			var parentGeom = this._parent._bounds2d,
+			let parentGeom = this._parent._bounds2d,
 				geomScaled = this._bounds2d.multiplyPoint(this._scale),
 				percent,
 				newVal,

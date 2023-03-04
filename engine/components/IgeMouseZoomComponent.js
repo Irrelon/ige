@@ -66,7 +66,7 @@ class IgeMouseZoomComponent extends IgeComponent {
         if (!this._enabled || event.igeViewport.id() !== this._entity.id()) {
             return;
         }
-        var curMousePos = this._ige._mousePos;
+        const curMousePos = this._ige._mousePos;
         this._zoomStartMouse = {
             "x": curMousePos.x,
             "y": curMousePos.y
@@ -87,7 +87,7 @@ class IgeMouseZoomComponent extends IgeComponent {
             return;
         }
         if (this._zoomStartMouse) {
-            var curMousePos = this._ige._mousePos, zoomCords = {
+            const curMousePos = this._ige._mousePos, zoomCords = {
                 "x": -(this._zoomStartMouse.x - curMousePos.x) / 100,
                 "y": -(this._zoomStartMouse.y - curMousePos.y) / 100
             };

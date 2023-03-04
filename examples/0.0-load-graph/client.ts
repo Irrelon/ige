@@ -5,6 +5,7 @@ import IgeBaseClass from "../../engine/core/IgeBaseClass";
 import {ige} from "../../engine/instance";
 import { Scene1 } from "./levels/Scene1";
 import IgeEditorComponent from "../../engine/components/editor/IgeEditorComponent";
+import IgeInputComponent from "../../engine/components/IgeInputComponent";
 
 // @ts-ignore
 window.ige = ige;
@@ -12,17 +13,13 @@ window.ige = ige;
 export class Client extends IgeBaseClass {
 	classId = "Client";
 	gameTexture: Record<string, IgeTexture>;
-	obj: IgeBaseClass[];
 
 	constructor () {
 		// Init the super class
 		super();
 		ige.createRoot();
 		ige.addComponent(IgeEditorComponent);
-		ige.components.input.debug(true);
-
-		// Load our textures
-		this.obj = [];
+		(ige.components.input as IgeInputComponent).debug(true);
 
 		// Load the fairy texture and simpleBox smart texture
 		this.gameTexture = {

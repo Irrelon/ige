@@ -1,10 +1,10 @@
-"use strict";
-var IgeChatComponent = IgeEventingClass.extend({
-    classId: 'IgeChatComponent',
-    componentId: 'chat',
-    init: function (entity, options) {
-        this._entity = entity;
-        this._options = options;
+import IgeComponent from "../../core/IgeComponent.js";
+import { ige } from "../../instance.js";
+class IgeChatComponent extends IgeComponent {
+    constructor(entity, options) {
+        super(entity, options);
+        this.classId = 'IgeChatComponent';
+        this.componentId = 'chat';
         this._rooms = {};
         /* CEXCLUDE */
         if (ige.isServer) {
@@ -34,7 +34,8 @@ var IgeChatComponent = IgeEventingClass.extend({
         }
         this.log('Chat component initiated!');
     }
-});
+}
+;
 if (typeof (module) !== 'undefined' && typeof (module.exports) !== 'undefined') {
     module.exports = IgeChatComponent;
 }

@@ -1,18 +1,18 @@
-import IgeEventingClass from "../../core/IgeEventingClass.js";
 import { ige } from "../../instance.js";
+import IgeComponent from "../../core/IgeComponent.js";
 /**
  * When added to a viewport, automatically adds entity rotate
  * capabilities to the selected entity in the scenegraph viewer.
  */
-class IgeEditorComponent extends IgeEventingClass {
+class IgeEditorComponent extends IgeComponent {
     /**
      * @constructor
-     * @param {IgeObject} entity The object that the component is added to.
-     * @param {Object=} options The options object that was passed to the component during
+     * @param entity The object that the component is added to.
+     * @param options The options object that was passed to the component during
      * the call to addComponent.
      */
     constructor(entity, options) {
-        super();
+        super(entity, options);
         this.classId = "IgeEditorComponent";
         this.componentId = "editor";
         this.interceptMouse = (val) => {
@@ -400,8 +400,6 @@ class IgeEditorComponent extends IgeEventingClass {
             // Get the scenegraph data
             this.addToSgTree(this.getSceneGraphData(this, true));
         };
-        this._entity = entity;
-        this._options = options;
         this._showStats = 0;
         this._templateCache = {};
         this._cacheTemplates = true;
