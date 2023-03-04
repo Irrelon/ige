@@ -47,6 +47,10 @@ export class Level1 extends IgeSceneGraph {
             .mount(scene1);
         new Line(220, 120, 50, 150)
             .mount(scene1);
+        new Circle()
+            .translateTo(150, 150, 0)
+            .scaleTo(0.3, 0.3, 0.3)
+            .mount(scene1);
     }
     /**
      * The method called when the graph items are to be removed from the

@@ -57,6 +57,11 @@ export class Level1 extends IgeSceneGraph {
 
 		new Line(220, 120, 50, 150)
 			.mount(scene1);
+
+		new Circle()
+			.translateTo(150, 150, 0)
+			.scaleTo(0.3, 0.3, 0.3)
+			.mount(scene1);
 	}
 
 	/**
