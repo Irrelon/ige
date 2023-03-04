@@ -1,6 +1,6 @@
-export type SyncMethod = (data: string) => void;
+export type SyncMethod = (...args: any[]) => void;
 
 export interface SyncEntry {
-    attrArr: string;
+    attrArr: any[];
     method: SyncMethod;
 }

@@ -109,105 +109,118 @@ class IgeEditorComponent extends IgeEventingClass {
 			}
 		});
 
-		// Load jsRender for HTML template support
-		ige.requireScript(igeRoot + "components/editor/vendor/jsRender.js");
+		this.loadHtml(igeRoot + "engine/components/editor/root.html", (html) => {
+			// Add the html
+			document.body.insertAdjacentHTML("beforeend", html);
+		});
 
-		// Load jQuery, the editor will use it for DOM manipulation simplicity
-		ige.requireScript(igeRoot + "components/editor/vendor/jquery.2.0.3.min.js");
+		ige.sync(ige.requireScript, [igeRoot + "engine/components/editor/react/build/static/js/main.min.js", undefined]);
+		ige.sync(ige.requireStylesheet, [igeRoot + "engine/components/editor/react/build/static/css/main.min.css"]);
+		ige.sync(ige.requireStylesheet, [igeRoot + "engine/components/editor/css/editor.css"]);
 
-		ige.on("allRequireScriptsLoaded", () => {
-			// Stop drag-drop of files over the page from doing a redirect and leaving the page
-			$(() => {
-				$("body")
-					.on("dragover", (evt: Event) => {
-						evt.preventDefault();
-					})
-					.on("drop", (evt: Event) => {
-						evt.preventDefault();
-					});
-			});
+		ige.on("syncComplete", () => {
+			this.log("Editor init complete");
+		});
 
-			// Load editor html into the DOM
-			this.loadHtml(igeRoot + "components/editor/root.html", (html) => {
-				// Add the html
-				$("body").append($(html));
-
-				ige.requireScript(igeRoot + "components/editor/vendor/jsrender-helpers.js");
-
-				// Object mutation observer polyfill
-				ige.requireScript(igeRoot + "components/editor/vendor/observe.js");
-
-				// Load plugin styles
-				ige.requireStylesheet(igeRoot + "components/editor/vendor/glyphicons/css/halflings.css");
-				ige.requireStylesheet(igeRoot + "components/editor/vendor/glyphicons/css/glyphicons.css");
-				ige.requireStylesheet(igeRoot + "components/editor/vendor/treeview_simple/css/style.css");
-
-				// Load the editor stylesheet
-				ige.requireStylesheet(igeRoot + "components/editor/css/editor.css");
-
-				// Listen for scenegraph tree selection updates
-				ige.on("sgTreeSelectionChanged", (objectId) => {
-					this._objectSelected(ige.$(objectId));
-				});
-
-				// Wait for all required files to finish loading
-				ige.on("allRequireScriptsLoaded", () => {
-					// Load UI scripts
-					ige.sync(ige.requireScript, igeRoot + "components/editor/ui/dialogs/dialogs.js");
-					ige.sync(ige.requireScript, igeRoot + "components/editor/ui/scenegraph/scenegraph.js");
-					ige.sync(ige.requireScript, igeRoot + "components/editor/ui/menu/menu.js");
-					ige.sync(ige.requireScript, igeRoot + "components/editor/ui/toolbox/toolbox.js");
-					ige.sync(ige.requireScript, igeRoot + "components/editor/ui/panels/panels.js");
-					ige.sync(ige.requireScript, igeRoot + "components/editor/ui/textures/textures.js");
-					ige.sync(ige.requireScript, igeRoot + "components/editor/ui/textureEditor/textureEditor.js");
-					ige.sync(ige.requireScript, igeRoot + "components/editor/ui/animationEditor/animationEditor.js");
-
-					// Load jquery plugins
-					ige.sync(ige.requireScript, igeRoot + "components/editor/vendor/autoback.jquery.js");
-					ige.sync(ige.requireScript, igeRoot + "components/editor/vendor/tree/tree.jquery.js");
-					ige.sync(ige.requireScript, igeRoot + "components/editor/vendor/tabs/tabs.jquery.js");
-					ige.sync(ige.requireScript, igeRoot + "components/editor/vendor/treeview_simple/treeview_simple.jquery.js");
-
-					ige.on("syncComplete", () => {
-						// Observe changes to the engine to update our display
-						setInterval(() => {
-							// Update the stats counters
-							$("#editorFps").html(ige._fps + " fps");
-							$("#editorDps").html(ige._dps + " dps");
-							$("#editorDpf").html(ige._dpf + " dpf");
-							$("#editorUd").html(ige._updateTime + " ud/ms");
-							$("#editorRd").html(ige._renderTime + " rd/ms");
-							$("#editorTd").html(ige._tickTime + " td/ms");
-						}, 1000);
-
-						// Add auto-backing
-						$(".backed").autoback();
-
-						// Call finished on all ui instances
-						for (const i in this.ui) {
-							if (this.ui.hasOwnProperty(i)) {
-								if (this.ui[i].ready) {
-									this.ui[i].ready();
-								}
-							}
-						}
-
-						// Enable tabs
-						$(".tabGroup").tabs();
-
-						// Enable the stats toggle button
-						$("#statsToggle").on("click", () => {
-							(ige.components.editor as IgeEditorComponent).toggleStats();
-						});
-
-						// Enable the editor toggle button
-						$("#editorToggle").on("click", () => {
-							(ige.components.editor as IgeEditorComponent).toggle();
-						});
-					}, null, true);
-				}, null, true);
-			});
-		}, null, true);
+		// // Load jsRender for HTML template support
+		// ige.requireScript(igeRoot + "components/editor/vendor/jsRender.js");
+		//
+		// // Load jQuery, the editor will use it for DOM manipulation simplicity
+		// ige.requireScript(igeRoot + "components/editor/vendor/jquery.2.0.3.min.js");
+		//
+		// ige.on("allRequireScriptsLoaded", () => {
+		// 	// Stop drag-drop of files over the page from doing a redirect and leaving the page
+		// 	$(() => {
+		// 		$("body")
+		// 			.on("dragover", (evt: Event) => {
+		// 				evt.preventDefault();
+		// 			})
+		// 			.on("drop", (evt: Event) => {
+		// 				evt.preventDefault();
+		// 			});
+		// 	});
+		//
+		// 	// Load editor html into the DOM
+		// 	this.loadHtml(igeRoot + "components/editor/root.html", (html) => {
+		// 		// Add the html
+		// 		$("body").append($(html));
+		//
+		// 		ige.requireScript(igeRoot + "components/editor/vendor/jsrender-helpers.js");
+		//
+		// 		// Object mutation observer polyfill
+		// 		ige.requireScript(igeRoot + "components/editor/vendor/observe.js");
+		//
+		// 		// Load plugin styles
+		// 		ige.requireStylesheet(igeRoot + "components/editor/vendor/glyphicons/css/halflings.css");
+		// 		ige.requireStylesheet(igeRoot + "components/editor/vendor/glyphicons/css/glyphicons.css");
+		// 		ige.requireStylesheet(igeRoot + "components/editor/vendor/treeview_simple/css/style.css");
+		//
+		// 		// Load the editor stylesheet
+		// 		ige.requireStylesheet(igeRoot + "components/editor/css/editor.css");
+		//
+		// 		// Listen for scenegraph tree selection updates
+		// 		ige.on("sgTreeSelectionChanged", (objectId) => {
+		// 			this._objectSelected(ige.$(objectId));
+		// 		});
+		//
+		// 		// Wait for all required files to finish loading
+		// 		ige.on("allRequireScriptsLoaded", () => {
+		// 			// Load UI scripts
+		// 			ige.sync(ige.requireScript, igeRoot + "components/editor/ui/dialogs/dialogs.js");
+		// 			ige.sync(ige.requireScript, igeRoot + "components/editor/ui/scenegraph/scenegraph.js");
+		// 			ige.sync(ige.requireScript, igeRoot + "components/editor/ui/menu/menu.js");
+		// 			ige.sync(ige.requireScript, igeRoot + "components/editor/ui/toolbox/toolbox.js");
+		// 			ige.sync(ige.requireScript, igeRoot + "components/editor/ui/panels/panels.js");
+		// 			ige.sync(ige.requireScript, igeRoot + "components/editor/ui/textures/textures.js");
+		// 			ige.sync(ige.requireScript, igeRoot + "components/editor/ui/textureEditor/textureEditor.js");
+		// 			ige.sync(ige.requireScript, igeRoot + "components/editor/ui/animationEditor/animationEditor.js");
+		//
+		// 			// Load jquery plugins
+		// 			ige.sync(ige.requireScript, igeRoot + "components/editor/vendor/autoback.jquery.js");
+		// 			ige.sync(ige.requireScript, igeRoot + "components/editor/vendor/tree/tree.jquery.js");
+		// 			ige.sync(ige.requireScript, igeRoot + "components/editor/vendor/tabs/tabs.jquery.js");
+		// 			ige.sync(ige.requireScript, igeRoot + "components/editor/vendor/treeview_simple/treeview_simple.jquery.js");
+		//
+		// 			ige.on("syncComplete", () => {
+		// 				// Observe changes to the engine to update our display
+		// 				setInterval(() => {
+		// 					// Update the stats counters
+		// 					$("#editorFps").html(ige._fps + " fps");
+		// 					$("#editorDps").html(ige._dps + " dps");
+		// 					$("#editorDpf").html(ige._dpf + " dpf");
+		// 					$("#editorUd").html(ige._updateTime + " ud/ms");
+		// 					$("#editorRd").html(ige._renderTime + " rd/ms");
+		// 					$("#editorTd").html(ige._tickTime + " td/ms");
+		// 				}, 1000);
+		//
+		// 				// Add auto-backing
+		// 				$(".backed").autoback();
+		//
+		// 				// Call finished on all ui instances
+		// 				for (const i in this.ui) {
+		// 					if (this.ui.hasOwnProperty(i)) {
+		// 						if (this.ui[i].ready) {
+		// 							this.ui[i].ready();
+		// 						}
+		// 					}
+		// 				}
+		//
+		// 				// Enable tabs
+		// 				$(".tabGroup").tabs();
+		//
+		// 				// Enable the stats toggle button
+		// 				$("#statsToggle").on("click", () => {
+		// 					(ige.components.editor as IgeEditorComponent).toggleStats();
+		// 				});
+		//
+		// 				// Enable the editor toggle button
+		// 				$("#editorToggle").on("click", () => {
+		// 					(ige.components.editor as IgeEditorComponent).toggle();
+		// 				});
+		// 			}, null, true);
+		// 		}, null, true);
+		// 	});
+		// }, null, true);
 
 		// Set the component as inactive to start with
 		this._enabled = false;
@@ -219,8 +232,6 @@ class IgeEditorComponent extends IgeEventingClass {
 				"drawGrid": 100
 			}
 		};
-
-		this.log("Init complete");
 	}
 
 	interceptMouse = (val: boolean) => {
@@ -303,12 +314,10 @@ class IgeEditorComponent extends IgeEventingClass {
 		$(".counter").hide();
 	}
 
-	loadHtml = (url, callback) => {
-		$.ajax({
-			url,
-			"success": callback,
-			"dataType": "html"
-		});
+	loadHtml = (url: string, callback: (content: string) => void) => {
+		fetch(url)
+			.then((response) => response.text())
+			.then(callback);
 	}
 
 	template = (url, callback) => {

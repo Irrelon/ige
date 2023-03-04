@@ -2093,35 +2093,36 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 	/**
 	 * Load a js script file into memory via a path or url.
 	 * @param {String} url The file's path or url.
-	 * @param {Function=} callback Optional callback when script loads.
+	 * @param configFunc
 	 */
-	requireScript (url: string, callback?: () => void) {
-		if (url !== undefined) {
-			// Add to the load counter
+	async requireScript (url: string, configFunc?: (elem: HTMLScriptElement) => void) {
+		if (url === undefined) {
+			return;
+		}
+
+		return new Promise<void>((resolve) => {
 			this._requireScriptTotal++;
 			this._requireScriptLoading++;
-
-			// Create the script element
 			const elem = document.createElement("script");
-			elem.addEventListener("load", () => {
-				this._requireScriptLoaded(this);
 
-				if (callback) {
-					setTimeout(function () {
-						callback();
-					}, 100);
-				}
+			if (configFunc) {
+				configFunc(elem);
+			}
+
+			elem.addEventListener("load", () => {
+				this._requireScriptLoaded(elem);
+
+				setTimeout(() => {
+					resolve();
+				}, 100);
 			});
 
-			// For compatibility with CocoonJS
 			document.body.appendChild(elem);
-
-			// Set the source to load the url
 			elem.src = url;
 
 			this.log("Loading script from: " + url);
 			this.emit("requireScriptLoading", url);
-		}
+		});
 	}
 
 	/**
@@ -2130,7 +2131,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 	 * @param {Element} elem The script element added to the DOM.
 	 * @private
 	 */
-	_requireScriptLoaded (elem) {
+	_requireScriptLoaded (elem: HTMLScriptElement) {
 		this._requireScriptLoading--;
 
 		this.emit("requireScriptLoaded", elem.src);
@@ -2145,22 +2146,25 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 	 * Load a css style file into memory via a path or url.
 	 * @param {String} url The file's path or url.
 	 */
-	requireStylesheet (url: string) {
-		if (url !== undefined) {
-			// Load the engine stylesheet
-			const css = document.createElement("link");
-			css.rel = "stylesheet";
-			css.type = "text/css";
-			css.media = "all";
-			css.href = url;
-
-			document.getElementsByTagName("head")[0].appendChild(css);
-
-			this.log("Load css stylesheet from: " + url);
+	async requireStylesheet (url: string) {
+		if (url === undefined) {
+			throw new Error(`Cannot require a stylesheet with no url!`);
 		}
+
+		const css = document.createElement("link");
+		css.rel = "stylesheet";
+		css.type = "text/css";
+		css.media = "all";
+		css.href = url;
+		document.getElementsByTagName("head")[0].appendChild(css);
+		this.log("Load css stylesheet from: " + url);
 	}
 
-	sync (method: SyncMethod, attrArr: string) {
+	sync (method: SyncMethod, attrArr: any) {
+		if (!Array.isArray(attrArr)) {
+			attrArr = [attrArr];
+		}
+
 		this._syncArr = this._syncArr || [];
 		this._syncArr.push({ method: method, attrArr: attrArr });
 
@@ -2171,28 +2175,30 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
 		}
 	}
 
-	_processSync () {
+	_processSync = async () => {
 		let syncEntry;
 
 		if (this._syncIndex < this._syncArr.length) {
 			syncEntry = this._syncArr[this._syncIndex];
 
-			// Add the callback to the last attribute
-			syncEntry.attrArr.push(() => {
-				this._syncIndex++;
-				setTimeout(this._processSync, 1);
-			});
-
 			// Call the method
-			syncEntry.method.apply(this, syncEntry.attrArr);
-		} else {
-			// Reached end of sync cycle
-			delete this._syncArr;
-			delete this._syncIndex;
+			await syncEntry.method.apply(this, syncEntry.attrArr);
 
-			this.emit("syncComplete");
+			this._syncIndex++;
+
+			setTimeout(() => {
+				this._processSync();
+			}, 1);
+
+			return;
 		}
-	}
+
+		// Reached end of sync cycle
+		this._syncArr = [];
+		this._syncIndex = 0;
+
+		this.emit("syncComplete");
+	};
 }
 
 export default Ige;

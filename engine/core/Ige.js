@@ -1,3 +1,12 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 //import { version } from "../../package.json";
 import { arrPull } from "../services/utils.js";
 const version = "2.0.0";
@@ -313,6 +322,23 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
                 this._tickTime = et - st;
             }
         };
+        this._processSync = () => __awaiter(this, void 0, void 0, function* () {
+            let syncEntry;
+            if (this._syncIndex < this._syncArr.length) {
+                syncEntry = this._syncArr[this._syncIndex];
+                // Call the method
+                yield syncEntry.method.apply(this, syncEntry.attrArr);
+                this._syncIndex++;
+                setTimeout(() => {
+                    this._processSync();
+                }, 1);
+                return;
+            }
+            // Reached end of sync cycle
+            this._syncArr = [];
+            this._syncIndex = 0;
+            this.emit("syncComplete");
+        });
         this.isServer = false;
         this.isClient = true;
         this.igeClassStore = {};
@@ -1737,30 +1763,32 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
     /**
      * Load a js script file into memory via a path or url.
      * @param {String} url The file's path or url.
-     * @param {Function=} callback Optional callback when script loads.
+     * @param configFunc
      */
-    requireScript(url, callback) {
-        if (url !== undefined) {
-            // Add to the load counter
-            this._requireScriptTotal++;
-            this._requireScriptLoading++;
-            // Create the script element
-            const elem = document.createElement("script");
-            elem.addEventListener("load", () => {
-                this._requireScriptLoaded(this);
-                if (callback) {
-                    setTimeout(function () {
-                        callback();
-                    }, 100);
+    requireScript(url, configFunc) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (url === undefined) {
+                return;
+            }
+            return new Promise((resolve) => {
+                this._requireScriptTotal++;
+                this._requireScriptLoading++;
+                const elem = document.createElement("script");
+                if (configFunc) {
+                    configFunc(elem);
                 }
+                elem.addEventListener("load", () => {
+                    this._requireScriptLoaded(elem);
+                    setTimeout(() => {
+                        resolve();
+                    }, 100);
+                });
+                document.body.appendChild(elem);
+                elem.src = url;
+                this.log("Loading script from: " + url);
+                this.emit("requireScriptLoading", url);
             });
-            // For compatibility with CocoonJS
-            document.body.appendChild(elem);
-            // Set the source to load the url
-            elem.src = url;
-            this.log("Loading script from: " + url);
-            this.emit("requireScriptLoading", url);
-        }
+        });
     }
     /**
      * Called when a js script has been loaded via the requireScript
@@ -1781,8 +1809,10 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
      * @param {String} url The file's path or url.
      */
     requireStylesheet(url) {
-        if (url !== undefined) {
-            // Load the engine stylesheet
+        return __awaiter(this, void 0, void 0, function* () {
+            if (url === undefined) {
+                throw new Error(`Cannot require a stylesheet with no url!`);
+            }
             const css = document.createElement("link");
             css.rel = "stylesheet";
             css.type = "text/css";
@@ -1790,34 +1820,18 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
             css.href = url;
             document.getElementsByTagName("head")[0].appendChild(css);
             this.log("Load css stylesheet from: " + url);
-        }
+        });
     }
     sync(method, attrArr) {
+        if (!Array.isArray(attrArr)) {
+            attrArr = [attrArr];
+        }
         this._syncArr = this._syncArr || [];
         this._syncArr.push({ method: method, attrArr: attrArr });
         if (this._syncArr.length === 1) {
             // Start sync waterfall
             this._syncIndex = 0;
             this._processSync();
-        }
-    }
-    _processSync() {
-        let syncEntry;
-        if (this._syncIndex < this._syncArr.length) {
-            syncEntry = this._syncArr[this._syncIndex];
-            // Add the callback to the last attribute
-            syncEntry.attrArr.push(() => {
-                this._syncIndex++;
-                setTimeout(this._processSync, 1);
-            });
-            // Call the method
-            syncEntry.method.apply(this, syncEntry.attrArr);
-        }
-        else {
-            // Reached end of sync cycle
-            delete this._syncArr;
-            delete this._syncIndex;
-            this.emit("syncComplete");
         }
     }
 }
