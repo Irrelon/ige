@@ -2,7 +2,7 @@ import IgeEntity from "./IgeEntity.js";
 import igeConfig from "./config.js";
 import { ige } from "../instance.js";
 /**
- * The base engine class definition.
+ * The engine's root entity that all the scenegraph lives from.
  */
 class IgeRoot extends IgeEntity {
     constructor() {

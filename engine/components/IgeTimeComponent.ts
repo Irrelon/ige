@@ -2,6 +2,7 @@ import IgeComponent from "../core/IgeComponent";
 import IgeEntity from "../core/IgeEntity";
 import IgeInterval from "../core/IgeInterval";
 import {arrPull} from "../services/utils";
+import { ige } from "../instance";
 
 class IgeTimeComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgeTimeComponent";
@@ -48,7 +49,7 @@ class IgeTimeComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCom
 
 	_update () {
 		// Get the ige tick delta and tell our timers / intervals that an update has occurred
-		let delta = this._ige._tickDelta,
+		let delta = ige._tickDelta,
 			arr = this._timers,
 			arrCount = arr.length;
 

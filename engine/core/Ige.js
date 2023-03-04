@@ -8,8 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 //import { version } from "../../package.json";
-import { arrPull } from "../services/utils.js";
-const version = "2.0.0";
 import igeConfig from "./config.js";
 import IgeRoot from "./IgeRoot.js";
 import IgePoint3d from "./IgePoint3d.js";
@@ -19,6 +17,9 @@ import WithComponentMixin from "../mixins/IgeComponentMixin.js";
 import IgePoint2d from "./IgePoint2d.js";
 import IgeInputComponent from "../components/IgeInputComponent.js";
 import IgeTweenComponent from "../components/IgeTweenComponent.js";
+import IgeTimeComponent from "../components/IgeTimeComponent.js";
+import { arrPull } from "../services/utils.js";
+const version = "2.0.0";
 class Ige extends WithComponentMixin(IgeEventingClass) {
     constructor() {
         super();
@@ -426,6 +427,8 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
         this._secondTimer = setInterval(this._secondTick, 1000);
     }
     createRoot() {
+        if (this.root)
+            return;
         // Create the base engine instance for the scenegraph
         this.root = new IgeRoot();
         // Set the entity on which any components are added - this defaults to "this"
@@ -435,7 +438,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
         // Set up components
         this.addComponent(IgeInputComponent);
         this.addComponent(IgeTweenComponent);
-        // this.addComponent(IgeTimeComponent);
+        this.addComponent(IgeTimeComponent);
         //
         // if (this.isClient) {
         //     // Enable UI element (virtual DOM) support
@@ -527,7 +530,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
     }
     /**
      * Register an object with the engine object register. The
-     * register allows you to access an object by it's id with
+     * register allows you to access an object by its id with
      * a call to ige.$(objectId).
      * @param {Object} obj The object to register.
      * @return {*}

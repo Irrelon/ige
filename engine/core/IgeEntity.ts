@@ -19,7 +19,7 @@ import type {
 	IgeTimeStreamPacket,
 	IgeTimeStreamParsedTransformData
 } from "../../types/IgeTimeStream";
-import { IgePoint } from "../../types/IgePointXY";
+import { IgePoint } from "../../types/IgePoint";
 
 export interface IgeEntityBehaviour {
 	id: string;
@@ -4351,9 +4351,9 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 *     entity.scale().x(1);
 	 * @return {*}
 	 */
-	scale (...args) {
+	scale (...args: any[]) {
 		if (args.length) {
-			this.log("You called scale with arguments, did you mean scaleTo or scaleBy instead of scale?", "warning");
+			throw new Error("You called scale with arguments, did you mean scaleTo or scaleBy instead of scale?");
 		}
 
 		return (

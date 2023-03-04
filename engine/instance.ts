@@ -9,3 +9,4 @@
 import Ige from "./core/Ige";
 
 export const ige = new Ige();
+ige.createRoot();

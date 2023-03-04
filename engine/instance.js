@@ -8,3 +8,4 @@
  */
 import Ige from "./core/Ige.js";
 export const ige = new Ige();
+ige.createRoot();

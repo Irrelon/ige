@@ -1,5 +1,6 @@
 import IgeComponent from "../core/IgeComponent.js";
 import { arrPull } from "../services/utils.js";
+import { ige } from "../instance.js";
 class IgeTimeComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
@@ -55,7 +56,7 @@ class IgeTimeComponent extends IgeComponent {
     }
     _update() {
         // Get the ige tick delta and tell our timers / intervals that an update has occurred
-        let delta = this._ige._tickDelta, arr = this._timers, arrCount = arr.length;
+        let delta = ige._tickDelta, arr = this._timers, arrCount = arr.length;
         while (arrCount--) {
             arr[arrCount]
                 .addTime(delta)

@@ -88,7 +88,7 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
 	id (id: string): this;
-	id (): string | undefined;
+	id (): string;
 	id (id?: string) {
 		if (id !== undefined) {
 			// Check if this ID already exists in the object register

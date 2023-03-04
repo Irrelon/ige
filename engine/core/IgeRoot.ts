@@ -3,7 +3,7 @@ import igeConfig from "./config";
 import { ige } from "../instance";
 
 /**
- * The base engine class definition.
+ * The engine's root entity that all the scenegraph lives from.
  */
 class IgeRoot extends IgeEntity {
 	classId = "IgeRoot";

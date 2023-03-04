@@ -3367,7 +3367,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
      */
     scale(...args) {
         if (args.length) {
-            this.log("You called scale with arguments, did you mean scaleTo or scaleBy instead of scale?", "warning");
+            throw new Error("You called scale with arguments, did you mean scaleTo or scaleBy instead of scale?");
         }
         return (this._entity || {
             x: this._scaleAccessorX,

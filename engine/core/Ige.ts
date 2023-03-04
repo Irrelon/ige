@@ -1,26 +1,28 @@
 //import { version } from "../../package.json";
-import { arrPull } from "../services/utils";
-
-const version = "2.0.0";
 import igeConfig from "./config";
 
 import IgeRoot from "./IgeRoot";
 import IgePoint3d from "./IgePoint3d";
-import IgeBaseClass from "./IgeBaseClass";
 import IgeDummyContext from "./IgeDummyContext";
 import IgeEventingClass from "./IgeEventingClass";
-import IgeTexture from "./IgeTexture";
-import IgeViewport from "./IgeViewport";
-import IgeCamera from "./IgeCamera";
-import IgeEntity from "./IgeEntity";
-import { SyncEntry, SyncMethod } from "../../types/SyncEntry";
-import IgeSceneGraph from "./IgeSceneGraph";
 import WithComponentMixin from "../mixins/IgeComponentMixin";
 import IgePoint2d from "./IgePoint2d";
 import IgeInputComponent from "../components/IgeInputComponent";
 import IgeTweenComponent from "../components/IgeTweenComponent";
-import { Mixin } from "../../types/Mixin";
-import IgeImage from "./IgeImage";
+import IgeTimeComponent from "../components/IgeTimeComponent";
+import { arrPull } from "../services/utils";
+
+import type { SyncEntry, SyncMethod } from "../../types/SyncEntry";
+import type { Mixin } from "../../types/Mixin";
+import type IgeBaseClass from "./IgeBaseClass";
+import type IgeTexture from "./IgeTexture";
+import type IgeViewport from "./IgeViewport";
+import type IgeCamera from "./IgeCamera";
+import type IgeSceneGraph from "./IgeSceneGraph";
+import type IgeImage from "./IgeImage";
+import type IgeEntity from "./IgeEntity";
+
+const version = "2.0.0";
 
 class Ige extends WithComponentMixin<IgeEntity, Mixin<IgeEventingClass>>(IgeEventingClass) {
 	isServer: boolean;
@@ -199,6 +201,8 @@ class Ige extends WithComponentMixin<IgeEntity, Mixin<IgeEventingClass>>(IgeEven
 	}
 
 	createRoot () {
+		if (this.root) return;
+
 		// Create the base engine instance for the scenegraph
 		this.root = new IgeRoot();
 
@@ -211,7 +215,7 @@ class Ige extends WithComponentMixin<IgeEntity, Mixin<IgeEventingClass>>(IgeEven
 		// Set up components
 		this.addComponent(IgeInputComponent);
 		this.addComponent(IgeTweenComponent);
-		// this.addComponent(IgeTimeComponent);
+		this.addComponent(IgeTimeComponent);
 		//
 		// if (this.isClient) {
 		//     // Enable UI element (virtual DOM) support
@@ -335,12 +339,12 @@ class Ige extends WithComponentMixin<IgeEntity, Mixin<IgeEventingClass>>(IgeEven
 
 	/**
 	 * Register an object with the engine object register. The
-	 * register allows you to access an object by it's id with
+	 * register allows you to access an object by its id with
 	 * a call to ige.$(objectId).
 	 * @param {Object} obj The object to register.
 	 * @return {*}
 	 */
-	register (obj) {
+	register (obj: IgeEntity | IgeTexture) {
 		if (obj !== undefined) {
 			if (!this._register[obj.id()]) {
 				this._register[obj.id()] = obj;
