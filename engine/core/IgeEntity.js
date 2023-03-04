@@ -9,11 +9,12 @@ import WithEventingMixin from "../mixins/IgeEventingMixin.js";
 import { arrPull, degreesToRadians, toIso } from "../services/utils.js";
 import IgeBaseClass from "./IgeBaseClass.js";
 import { ige } from "../instance.js";
+import WithDataMixin from "../mixins/IgeDataMixin.js";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
  */
-class IgeEntity extends WithEventingMixin(IgeBaseClass) {
+class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
     constructor() {
         super();
         this.classId = "IgeEntity";

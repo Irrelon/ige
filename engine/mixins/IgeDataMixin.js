@@ -4,9 +4,6 @@ const WithDataMixin = (Base) => class extends Base {
         this._data = {};
     }
     data(key, value) {
-        if (key === undefined) {
-            return;
-        }
         if (value !== undefined) {
             this._data = this._data || {};
             this._data[key] = value;

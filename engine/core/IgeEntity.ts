@@ -20,6 +20,7 @@ import type {
 	IgeTimeStreamParsedTransformData
 } from "../../types/IgeTimeStream";
 import { IgePoint } from "../../types/IgePoint";
+import WithDataMixin from "../mixins/IgeDataMixin";
 
 export interface IgeEntityBehaviour {
 	id: string;
@@ -30,7 +31,7 @@ export interface IgeEntityBehaviour {
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
  */
-class IgeEntity extends WithEventingMixin(IgeBaseClass) {
+class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
 	classId = "IgeEntity";
 	_id?: string;
 	_didInit = false;
@@ -4218,7 +4219,7 @@ class IgeEntity extends WithEventingMixin(IgeBaseClass) {
 	 *     entity.rotateTo(0, 0, degreesToRadians(10));
 	 * @return {*}
 	 */
-	rotateTo (x, y, z) {
+	rotateTo (x: number, y: number, z: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._rotate.x = x;
 			this._rotate.y = y;
