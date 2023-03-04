@@ -1,6 +1,8 @@
 /**
  * Creates a new 2d point (x, y).
  */
+import IgePoint3d from "./IgePoint3d";
+
 class IgePoint2d {
 	classId = "IgePoint2d";
 
@@ -177,10 +179,10 @@ class IgePoint2d {
 	/**
 	 * Multiplies this point's data by the point specified
 	 * and returns a new IgePoint2d whose values are the result.
-	 * @param {IgePoint2d} point
+	 * @param point
 	 * @return {*}
 	 */
-	multiplyPoint (point: IgePoint2d) {
+	multiplyPoint (point: IgePoint2d | IgePoint3d) {
 		return new IgePoint2d(this.x * point.x, this.y * point.y);
 	}
 

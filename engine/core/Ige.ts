@@ -21,6 +21,7 @@ import type IgeCamera from "./IgeCamera";
 import type IgeSceneGraph from "./IgeSceneGraph";
 import type IgeImage from "./IgeImage";
 import type IgeEntity from "./IgeEntity";
+import { IgeRegisterable } from "../../types/IgeRegisterable";
 
 const version = "2.0.0";
 
@@ -68,7 +69,7 @@ class Ige extends WithComponentMixin<IgeEntity, Mixin<IgeEventingClass>>(IgeEven
 	_currentCamera: IgeCamera | null;
 	_currentTime: number;
 	_globalSmoothing: boolean;
-	_register: Record<string, IgeEntity | IgeTexture | Ige>;
+	_register: Record<string, IgeRegisterable>;
 	_categoryRegister: Record<string, IgeEntity> = {};
 	_groupRegister: Record<string, IgeEntity[]> = {};
 	_postTick: (() => void)[];
@@ -344,7 +345,7 @@ class Ige extends WithComponentMixin<IgeEntity, Mixin<IgeEventingClass>>(IgeEven
 	 * @param {Object} obj The object to register.
 	 * @return {*}
 	 */
-	register (obj: IgeEntity | IgeTexture) {
+	register (obj: IgeRegisterable) {
 		if (obj !== undefined) {
 			if (!this._register[obj.id()]) {
 				this._register[obj.id()] = obj;

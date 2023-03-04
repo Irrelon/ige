@@ -1,14 +1,29 @@
-var IgeNetIoComponent = IgeEventingClass.extend([
-	{extension: IgeTimeSyncExtension, overwrite: false}
-], {
-	classId: 'IgeNetIoComponent',
-	componentId: 'network',
+import { ige } from "../../../instance";
+import IgeEntity from "../../../core/IgeEntity";
+import IgeComponent from "../../../core/IgeComponent";
+import { IgeNetworkMessageHandler } from "../../../../types/IgeNetworkMessage";
 
-	init: function (entity, options) {
-		this._entity = entity;
-		this._options = options;
+class IgeNetIoComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+	classId = 'IgeNetIoComponent';
+	componentId = 'network';
+	_networkCommands: Record<string, IgeNetworkMessageHandler>; // Maps a command name to a command handler function
+	_networkCommandsIndex: string[]; // Maps a command name to an integer via the array index
+	_networkCommandsLookup: Record<string, number>; // Maps a command name to its index
+	_port: number = 8000;
+	_debug: boolean;
+	_debugCounter: number;
+	_debugMax: number;
+	_clientRooms: Record<string, string[]>;
+	_socketsByRoomId: Record<string, Record<string, any>> = {}; // Any should be socket, figure out what that is
+	_timeSyncInterval: number;
+	_timeSyncLog: Record<string, number>;
+	_latency: number;
+	_acceptConnections: boolean = false;
 
-		// Setup the network commands storage
+	constructor (entity: TargetClass, options?: any) {
+		super(entity, options);
+
+		// Set up the network commands storage
 		this._networkCommands = {};
 		this._networkCommandsIndex = [];
 		this._networkCommandsLookup = {};
@@ -27,7 +42,6 @@ var IgeNetIoComponent = IgeEventingClass.extend([
 
 		/* CEXCLUDE */
 		if (ige.isServer) {
-			this.implement(IgeNetIoServer);
 			this._netio = require('../../../' + modulePath + 'net.io-server').Server;
 			this._acceptConnections = false;
 		}
@@ -39,7 +53,7 @@ var IgeNetIoComponent = IgeEventingClass.extend([
 		}
 
 		this.log('Network component initiated with Net.IO version: ' + this._netio.version);
-	},
+	}
 
 	/**
 	 * Gets / sets debug flag that determines if debug output
@@ -47,7 +61,7 @@ var IgeNetIoComponent = IgeEventingClass.extend([
 	 * @param {Boolean=} val
 	 * @return {*}
 	 */
-	debug: function (val) {
+	debug (val?: boolean) {
 		if (val !== undefined) {
 			this._debug = val;
 			return this._entity;
@@ -60,7 +74,7 @@ var IgeNetIoComponent = IgeEventingClass.extend([
 		}
 
 		return this._debug;
-	},
+	}
 
 	/**
 	 * Gets / sets the maximum number of debug messages that
@@ -74,7 +88,7 @@ var IgeNetIoComponent = IgeEventingClass.extend([
 	 * infinite amounts.
 	 * @return {*}
 	 */
-	debugMax: function (val) {
+	debugMax (val?: number) {
 		if (val !== undefined) {
 			this._debugMax = val;
 			return this._entity;
@@ -82,6 +96,6 @@ var IgeNetIoComponent = IgeEventingClass.extend([
 
 		return this._debugMax;
 	}
-});
+}
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeNetIoComponent; }
+export default IgeNetIoComponent;

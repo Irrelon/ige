@@ -1,3 +1,5 @@
+import { ige } from "../instance.js";
+import IgeBaseClass from "./IgeBaseClass.js";
 import IgePoint2d from "./IgePoint2d.js";
 import IgePoint3d from "./IgePoint3d.js";
 import IgeMatrix2d from "./IgeMatrix2d.js";
@@ -6,10 +8,8 @@ import IgeDummyCanvas from "./IgeDummyCanvas.js";
 import IgeRect from "./IgeRect.js";
 import igeConfig from "./config.js";
 import WithEventingMixin from "../mixins/IgeEventingMixin.js";
-import { arrPull, degreesToRadians, toIso } from "../services/utils.js";
-import IgeBaseClass from "./IgeBaseClass.js";
-import { ige } from "../instance.js";
 import WithDataMixin from "../mixins/IgeDataMixin.js";
+import { arrPull, degreesToRadians, toIso } from "../services/utils.js";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -18,6 +18,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
     constructor() {
         super();
         this.classId = "IgeEntity";
+        this._registered = false;
         this._didInit = false;
         this._newBorn = true;
         this._alive = true;
@@ -4080,7 +4081,10 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
             const thisId = this.id();
             // Invalidate the stream client data lookup to ensure
             // the latest data will be pushed on the next stream sync
-            if (ige.components.network && ige.components.network.stream && ige.components.network.stream._streamClientData && ige.components.network.stream._streamClientData[thisId]) {
+            if (ige.components.network &&
+                ige.components.network.stream &&
+                ige.components.network.stream._streamClientData &&
+                ige.components.network.stream._streamClientData[thisId]) {
                 ige.components.network.stream._streamClientData[thisId] = {};
             }
         }

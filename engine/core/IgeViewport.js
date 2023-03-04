@@ -14,6 +14,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         super();
         this.classId = "IgeViewport";
         this.IgeViewport = true;
+        this._registered = false;
         this._autoSize = false;
         let width, height;
         this._alwaysInView = true;
@@ -59,7 +60,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         return this;
     }
     autoSize(val) {
-        if (typeof (val) !== "undefined") {
+        if (typeof val !== "undefined") {
             this._autoSize = val;
             return this;
         }
@@ -91,7 +92,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
      */
     viewArea() {
         const aabb = this.aabb(), camTrans = this.camera._translate, camScale = this.camera._scale, width = aabb.width * (1 / camScale.x), height = aabb.height * (1 / camScale.y);
-        return new IgeRect((camTrans.x - width / 2), (camTrans.y - height / 2), width, height);
+        return new IgeRect(camTrans.x - width / 2, camTrans.y - height / 2, width, height);
     }
     /**
      * Processes the updates before the render tick is called.
@@ -274,8 +275,13 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
             obj = arr[arrCount];
             index++;
             if (obj._shouldRender !== false) {
-                if (obj.classId !== "IgeScene2d" && (!this._drawBoundsLimitId && !this._drawBoundsLimitCategory) || ((this._drawBoundsLimitId && (this._drawBoundsLimitId instanceof Array ? this._drawBoundsLimitId.indexOf(obj.id()) > -1 : this._drawBoundsLimitId === obj.id())) || (this._drawBoundsLimitCategory && this._drawBoundsLimitCategory === obj.category()))) {
-                    if (typeof (obj.aabb) === "function") {
+                if ((obj.classId !== "IgeScene2d" && !this._drawBoundsLimitId && !this._drawBoundsLimitCategory) ||
+                    (this._drawBoundsLimitId &&
+                        (this._drawBoundsLimitId instanceof Array
+                            ? this._drawBoundsLimitId.indexOf(obj.id()) > -1
+                            : this._drawBoundsLimitId === obj.id())) ||
+                    (this._drawBoundsLimitCategory && this._drawBoundsLimitCategory === obj.category())) {
+                    if (typeof obj.aabb === "function") {
                         // Grab the AABB and then draw it
                         aabb = obj.aabb();
                         if (this._drawCompositeBounds && obj._compositeCache) {
@@ -321,10 +327,10 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
                                     bf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
                                     bf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
                                     // Top face
-                                    tf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), (r3d.z / 2)).toIso();
-                                    tf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), (r3d.z / 2)).toIso();
-                                    tf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), (r3d.z / 2)).toIso();
-                                    tf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), (r3d.z / 2)).toIso();
+                                    tf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), r3d.z / 2).toIso();
+                                    tf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), r3d.z / 2).toIso();
+                                    tf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), r3d.z / 2).toIso();
+                                    tf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), r3d.z / 2).toIso();
                                     ga = ctx.globalAlpha;
                                     // Axis lines
                                     ctx.globalAlpha = 1;
@@ -388,7 +394,14 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
                                 ctx.globalAlpha = 1;
                                 ctx.fillStyle = "#f6ff00";
                                 ctx.fillText("ID: " + obj.id() + " " + "(" + obj.classId + ") " + obj.layer() + ":" + obj.depth().toFixed(0), aabb.x + aabb.width + 3, aabb.y + 10);
-                                ctx.fillText("X: " + obj._translate.x.toFixed(2) + ", " + "Y: " + obj._translate.y.toFixed(2) + ", " + "Z: " + obj._translate.z.toFixed(2), aabb.x + aabb.width + 3, aabb.y + 20);
+                                ctx.fillText("X: " +
+                                    obj._translate.x.toFixed(2) +
+                                    ", " +
+                                    "Y: " +
+                                    obj._translate.y.toFixed(2) +
+                                    ", " +
+                                    "Z: " +
+                                    obj._translate.z.toFixed(2), aabb.x + aabb.width + 3, aabb.y + 20);
                                 ctx.fillText("Num Children: " + obj._children.length, aabb.x + aabb.width + 3, aabb.y + 40);
                             }
                         }

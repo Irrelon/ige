@@ -7,6 +7,7 @@ import WithUiPositionMixin from "../mixins/IgeUiPositionMixin";
 import IgePoint2d from "./IgePoint2d";
 import { ige } from "../instance";
 import IgeScene2d from "./IgeScene2d";
+import { IgeRegisterable } from "../../types/IgeRegisterable";
 
 export interface IgeViewportOptions {
 	width: number;
@@ -18,9 +19,10 @@ export interface IgeViewportOptions {
 /**
  * Creates a new viewport.
  */
-class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
+class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(WithUiStyleMixin(IgeEntity))) implements IgeRegisterable {
 	classId = "IgeViewport";
 	IgeViewport = true;
+	_registered: boolean = false;
 	_lockDimension?: IgePoint3d;
 	_alwaysInView: boolean;
 	_mouseAlwaysInside: boolean;
@@ -35,7 +37,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	_drawCompositeBounds?: boolean;
 	_drawViewArea?: boolean;
 	camera: IgeCamera;
-
+ 
 	constructor (options?: IgeViewportOptions) {
 		super();
 
@@ -97,10 +99,10 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 * @param val
 	 * @return {*}
 	 */
-	autoSize (): boolean;
-	autoSize (id: boolean): this;
+	autoSize(): boolean;
+	autoSize(id: boolean): this;
 	autoSize (val?: boolean) {
-		if (typeof (val) !== "undefined") {
+		if (typeof val !== "undefined") {
 			this._autoSize = val;
 			return this;
 		}
@@ -113,8 +115,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 * @param {IgeScene2d} scene
 	 * @return {*}
 	 */
-	scene (): IgeScene2d;
-	scene (id: IgeScene2d): this;
+	scene(): IgeScene2d;
+	scene(id: IgeScene2d): this;
 	scene (scene?: IgeScene2d) {
 		if (scene !== undefined) {
 			this._scene = scene;
@@ -150,12 +152,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 			width = aabb.width * (1 / camScale.x),
 			height = aabb.height * (1 / camScale.y);
 
-		return new IgeRect(
-			(camTrans.x - width / 2),
-			(camTrans.y - height / 2),
-			width,
-			height
-		);
+		return new IgeRect(camTrans.x - width / 2, camTrans.y - height / 2, width, height);
 	}
 
 	/**
@@ -197,10 +194,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 
 		super.tick(ctx);
 
-		ctx.translate(
-			-(this._bounds2d.x * this._origin.x) | 0,
-			-(this._bounds2d.y * this._origin.y) | 0
-		);
+		ctx.translate(-(this._bounds2d.x * this._origin.x) | 0, -(this._bounds2d.y * this._origin.y) | 0);
 
 		ctx.clearRect(0, 0, this._bounds2d.x, this._bounds2d.y);
 
@@ -249,24 +243,20 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 
 		if (this._drawMouse && ctx === ige._ctx) {
 			ctx.save();
-			let mp = this.mousePos(),
-				text,
-				mx,
-				my,
-				textMeasurement;
+			const mp = this.mousePos();
 
 			// Re-scale the context to ensure that output is always 1:1
 			ctx.scale(1 / this.camera._scale.x, 1 / this.camera._scale.y);
 
 			// Work out the re-scale mouse position
-			mx = Math.floor(mp.x * this.camera._scale.x);
-			my = Math.floor(mp.y * this.camera._scale.y);
+			const mx = Math.floor(mp.x * this.camera._scale.x);
+			const my = Math.floor(mp.y * this.camera._scale.y);
 
 			ctx.fillStyle = "#fc00ff";
 			ctx.fillRect(mx - 5, my - 5, 10, 10);
 
-			text = this.id() + " X: " + mx + ", Y: " + my;
-			textMeasurement = ctx.measureText(text);
+			const text = this.id() + " X: " + mx + ", Y: " + my;
+			const textMeasurement = ctx.measureText(text);
 			ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
 			ctx.fillRect(Math.floor(mx - textMeasurement.width / 2 - 5), Math.floor(my - 25), Math.floor(textMeasurement.width + 10), 14);
 			ctx.fillStyle = "#ffffff";
@@ -304,8 +294,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		);
 	}
 
-	drawViewArea (): boolean;
-	drawViewArea (val: boolean): this;
+	drawViewArea(): boolean;
+	drawViewArea(val: boolean): this;
 	drawViewArea (val?: boolean) {
 		if (val !== undefined) {
 			this._drawViewArea = val;
@@ -315,8 +305,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawViewArea;
 	}
 
-	drawBoundsLimitId (): string | string[] | undefined;
-	drawBoundsLimitId (id: string | string[]): this;
+	drawBoundsLimitId(): string | string[] | undefined;
+	drawBoundsLimitId(id: string | string[]): this;
 	drawBoundsLimitId (id?: string | string[]) {
 		if (id !== undefined) {
 			this._drawBoundsLimitId = id;
@@ -326,8 +316,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawBoundsLimitId;
 	}
 
-	drawBoundsLimitCategory (): string | undefined;
-	drawBoundsLimitCategory (category: string): this;
+	drawBoundsLimitCategory(): string | undefined;
+	drawBoundsLimitCategory(category: string): this;
 	drawBoundsLimitCategory (category?: string) {
 		if (category !== undefined) {
 			this._drawBoundsLimitCategory = category;
@@ -337,8 +327,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawBoundsLimitCategory;
 	}
 
-	drawCompositeBounds (): boolean | undefined;
-	drawCompositeBounds (val: boolean): this;
+	drawCompositeBounds(): boolean | undefined;
+	drawCompositeBounds(val: boolean): this;
 	drawCompositeBounds (val?: boolean) {
 		if (val !== undefined) {
 			this._drawCompositeBounds = val;
@@ -348,8 +338,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return this._drawCompositeBounds;
 	}
 
-	drawGuides (): boolean | undefined;
-	drawGuides (val: boolean): this;
+	drawGuides(): boolean | undefined;
+	drawGuides(val: boolean): this;
 	drawGuides (val?: boolean) {
 		if (val !== undefined) {
 			this._drawGuides = val;
@@ -391,16 +381,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	paintAabbs (ctx: CanvasRenderingContext2D, rootObject: IgeEntity, index: number) {
 		const arr = rootObject._children || [];
 
-		let arrCount,
-			obj,
-			aabb,
-			aabbC,
-			bounds3dPoly,
-			ga,
-			r3d,
-			xl1, xl2, xl3, xl4, xl5, xl6,
-			bf1, bf2, bf3, bf4,
-			tf1, tf2, tf3, tf4;
+		let arrCount, obj, aabb, aabbC, bounds3dPoly, ga, r3d, xl1, xl2, xl3, xl4, xl5, xl6, bf1, bf2, bf3, bf4, tf1, tf2, tf3, tf4;
 
 		if (!arr || !arr.length) {
 			return;
@@ -413,8 +394,15 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 			index++;
 
 			if (obj._shouldRender !== false) {
-				if (obj.classId !== "IgeScene2d" && (!this._drawBoundsLimitId && !this._drawBoundsLimitCategory) || ((this._drawBoundsLimitId && (this._drawBoundsLimitId instanceof Array ? this._drawBoundsLimitId.indexOf(obj.id()) > -1 : this._drawBoundsLimitId === obj.id())) || (this._drawBoundsLimitCategory && this._drawBoundsLimitCategory === obj.category()))) {
-					if (typeof (obj.aabb) === "function") {
+				if (
+					(obj.classId !== "IgeScene2d" && !this._drawBoundsLimitId && !this._drawBoundsLimitCategory) ||
+					(this._drawBoundsLimitId &&
+						(this._drawBoundsLimitId instanceof Array
+							? this._drawBoundsLimitId.indexOf(obj.id()) > -1
+							: this._drawBoundsLimitId === obj.id())) ||
+					(this._drawBoundsLimitCategory && this._drawBoundsLimitCategory === obj.category())
+				) {
+					if (typeof obj.aabb === "function") {
 						// Grab the AABB and then draw it
 						aabb = obj.aabb();
 
@@ -450,10 +438,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 									ctx.restore();
 
 									ctx.save();
-									ctx.translate(
-										bounds3dPoly.x + bounds3dPoly.width / 2,
-										bounds3dPoly.y + bounds3dPoly.height / 2
-									);
+									ctx.translate(bounds3dPoly.x + bounds3dPoly.width / 2, bounds3dPoly.y + bounds3dPoly.height / 2);
 									//obj._transformContext(ctx);
 
 									// Calculate the 3d bounds data
@@ -470,10 +455,10 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 									bf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
 									bf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
 									// Top face
-									tf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), (r3d.z / 2)).toIso();
-									tf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), (r3d.z / 2)).toIso();
-									tf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), (r3d.z / 2)).toIso();
-									tf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), (r3d.z / 2)).toIso();
+									tf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), r3d.z / 2).toIso();
+									tf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), r3d.z / 2).toIso();
+									tf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), r3d.z / 2).toIso();
+									tf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), r3d.z / 2).toIso();
 
 									ga = ctx.globalAlpha;
 
@@ -544,8 +529,23 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 							if (this._drawBoundsData && (obj._drawBounds || obj._drawBoundsData === undefined)) {
 								ctx.globalAlpha = 1;
 								ctx.fillStyle = "#f6ff00";
-								ctx.fillText("ID: " + obj.id() + " " + "(" + obj.classId + ") " + obj.layer() + ":" + obj.depth().toFixed(0), aabb.x + aabb.width + 3, aabb.y + 10);
-								ctx.fillText("X: " + obj._translate.x.toFixed(2) + ", " + "Y: " + obj._translate.y.toFixed(2) + ", " + "Z: " + obj._translate.z.toFixed(2), aabb.x + aabb.width + 3, aabb.y + 20);
+								ctx.fillText(
+									"ID: " + obj.id() + " " + "(" + obj.classId + ") " + obj.layer() + ":" + obj.depth().toFixed(0),
+									aabb.x + aabb.width + 3,
+									aabb.y + 10
+								);
+								ctx.fillText(
+									"X: " +
+										obj._translate.x.toFixed(2) +
+										", " +
+										"Y: " +
+										obj._translate.y.toFixed(2) +
+										", " +
+										"Z: " +
+										obj._translate.z.toFixed(2),
+									aabb.x + aabb.width + 3,
+									aabb.y + 20
+								);
 								ctx.fillText("Num Children: " + obj._children.length, aabb.x + aabb.width + 3, aabb.y + 40);
 							}
 						}
@@ -621,10 +621,10 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 	 */
 	_stringify () {
 		// Get the properties for all the super-classes
-		let str = super._stringify(), i;
+		let str = super.stringify();
 
 		// Loop properties and add property assignment code to string
-		for (i in this) {
+		for (const i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
 				case "_autoSize":

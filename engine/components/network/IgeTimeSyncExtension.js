@@ -1,10 +1,17 @@
-"use strict";
+import { ige } from "../../instance.js";
 /**
  * Adds client/server time sync capabilities to the network system.
  * This handles calculating the time difference between the clock
  * on the server and the clock on connected clients.
  */
-var IgeTimeSyncExtension = {
+export class IgeTimeSyncExtension {
+    constructor() {
+        this._timeSyncInterval = 0;
+        this._timeSyncStarted = false;
+        this._timeSyncTimer = 0;
+        this._latency = 0;
+        this._timeSyncLog = {};
+    }
     /**
      * Gets / sets the number of milliseconds between client/server
      * clock sync events. The shorter the time, the more accurate the
@@ -15,40 +22,41 @@ var IgeTimeSyncExtension = {
      * @param val
      * @return {*}
      */
-    timeSyncInterval: function (val) {
+    timeSyncInterval(val) {
         if (val !== undefined) {
             this._timeSyncInterval = val;
             return this._entity;
         }
         return this._timeSyncInterval;
-    },
+    }
     /* CEXCLUDE */
-    timeSyncStart: function () {
+    timeSyncStart() {
         if (ige.isServer) {
             this._timeSyncStarted = true;
-            // Send a time sync request now so we
+            // Send a time sync request now, so we
             // have a starting value to work with
             this._sendTimeSync();
-            var self = this;
-            this.log('Starting client/server clock sync...');
-            this._timeSyncTimer = setInterval(function () { self._sendTimeSync(); }, this._timeSyncInterval);
+            this.log("Starting client/server clock sync...");
+            this._timeSyncTimer = setInterval(() => {
+                this._sendTimeSync();
+            }, this._timeSyncInterval);
         }
         return this._entity;
-    },
-    timeSyncStop: function () {
-        this.log('Stopping client/server clock sync...');
+    }
+    timeSyncStop() {
+        this.log("Stopping client/server clock sync...");
         clearInterval(this._timeSyncTimer);
         this._timeSyncStarted = false;
         return this._entity;
-    },
+    }
     /* CEXCLUDE */
-    _sendTimeSync: function (data, clientId) {
+    _sendTimeSync(data, clientId) {
         if (!data) {
-            data = ige._currentTime;
+            data = [ige._currentTime];
         }
         // Send the time sync command
-        this.send('_igeNetTimeSync', data, clientId);
-    },
+        this.send("_igeNetTimeSync", data, clientId);
+    }
     /**
      * Converts a timestamp on the client to approx. time
      * on the server using the difference in client/server
@@ -58,16 +66,17 @@ var IgeTimeSyncExtension = {
      * the result of new Date().getTime() or
      * ige.currentTime()).
      */
-    timeToServerTime: function (time) {
+    timeToServerTime(time) {
         if (time !== undefined) {
             return time + this._latency;
         }
         return this._latency;
-    },
-    _onTimeSync: function (data, clientId) {
-        var localTime = Math.floor(ige._currentTime), sendTime, roundTrip, direction;
+    }
+    _onTimeSync(data, clientId) {
+        const localTime = Math.floor(ige._currentTime);
+        let sendTime, roundTrip, direction;
         if (ige.isClient) {
-            sendTime = parseInt(data, 10);
+            sendTime = parseInt(data[0], 10);
             this._latency = localTime - sendTime;
             /*if (localTime < sendTime) {
                 direction = 'behind';
@@ -78,7 +87,7 @@ var IgeTimeSyncExtension = {
             }
 
             this.log('Time sync, client clock ' + (localTime - sendTime) + 'ms ' + direction + ' server, send timestamp: ' + sendTime + ', local timestamp: ' + localTime);*/
-            // Send a response with out current clock time to the server
+            // Send a response without current clock time to the server
             this._sendTimeSync([data, localTime]);
         }
         /* CEXCLUDE */
@@ -98,7 +107,4 @@ var IgeTimeSyncExtension = {
         }
         /* CEXCLUDE */
     }
-};
-if (typeof (module) !== 'undefined' && typeof (module.exports) !== 'undefined') {
-    module.exports = IgeTimeSyncExtension;
 }

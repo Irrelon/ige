@@ -1,13 +1,14 @@
-"use strict";
-var IgeNetIoComponent = IgeEventingClass.extend([
-    { extension: IgeTimeSyncExtension, overwrite: false }
-], {
-    classId: 'IgeNetIoComponent',
-    componentId: 'network',
-    init: function (entity, options) {
-        this._entity = entity;
-        this._options = options;
-        // Setup the network commands storage
+import { ige } from "../../../instance.js";
+import IgeComponent from "../../../core/IgeComponent.js";
+class IgeNetIoComponent extends IgeComponent {
+    constructor(entity, options) {
+        super(entity, options);
+        this.classId = 'IgeNetIoComponent';
+        this.componentId = 'network';
+        this._port = 8000;
+        this._socketsByRoomId = {}; // Any should be socket, figure out what that is
+        this._acceptConnections = false;
+        // Set up the network commands storage
         this._networkCommands = {};
         this._networkCommandsIndex = [];
         this._networkCommandsLookup = {};
@@ -33,14 +34,14 @@ var IgeNetIoComponent = IgeEventingClass.extend([
             this.implement(IgeNetIoClient);
         }
         this.log('Network component initiated with Net.IO version: ' + this._netio.version);
-    },
+    }
     /**
      * Gets / sets debug flag that determines if debug output
      * is logged to the console.
      * @param {Boolean=} val
      * @return {*}
      */
-    debug: function (val) {
+    debug(val) {
         if (val !== undefined) {
             this._debug = val;
             return this._entity;
@@ -51,7 +52,7 @@ var IgeNetIoComponent = IgeEventingClass.extend([
             this._debugCounter = 0;
         }
         return this._debug;
-    },
+    }
     /**
      * Gets / sets the maximum number of debug messages that
      * should be allowed to be output to the console before
@@ -64,14 +65,12 @@ var IgeNetIoComponent = IgeEventingClass.extend([
      * infinite amounts.
      * @return {*}
      */
-    debugMax: function (val) {
+    debugMax(val) {
         if (val !== undefined) {
             this._debugMax = val;
             return this._entity;
         }
         return this._debugMax;
     }
-});
-if (typeof (module) !== 'undefined' && typeof (module.exports) !== 'undefined') {
-    module.exports = IgeNetIoComponent;
 }
+export default IgeNetIoComponent;

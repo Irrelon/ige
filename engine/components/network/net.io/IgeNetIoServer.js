@@ -4,16 +4,16 @@ const IgeNetIoServer = {
     _requests: {},
     /**
      * Starts the network for the server.
-     * @param {*} data The port to listen on.
+     * @param {*} port The port to listen on.
      * @param {Function=} callback A callback method to call once the
      * network has started.
      */
-    start: function (data, callback) {
+    start(port, callback) {
         const self = this;
         this._socketById = {};
         this._socketsByRoomId = {};
-        if (typeof (data) !== 'undefined') {
-            this._port = data;
+        if (typeof (port) !== 'undefined') {
+            this._port = port;
         }
         // Start net.io
         this.log('Starting net.io listener on port ' + this._port);
