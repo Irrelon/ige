@@ -1,26 +1,27 @@
 import IgePoint2d from "../core/IgePoint2d.js";
 const IgeTileMap2dSmartTexture = {
     render: (ige, ctx, entity) => {
-        let tileWidth = entity._tileWidth, tileHeight = entity._tileHeight, bounds2d = entity.bounds2d(), gridSize = entity._gridSize, x = 0, y = 0;
+        const tileWidth = entity._tileWidth, tileHeight = entity._tileHeight, bounds2d = entity.bounds2d(), gridSize = entity._gridSize;
+        let x = 0, y = 0;
         /*ctx.save();
         var triggerPoly = entity.tileMapHitPolygon();
-    
+
         ctx.strokeStyle = '#00ff00';
         ctx.fillStyle = '#ff99f4';
-    
+
         if (entity._processTriggerHitTests()) {
             ctx.fillStyle = '#ff26e8';
         }
-    
+
         if (entity._mountMode === 0) {
             ctx.translate(bounds2d.x2, bounds2d.y2);
         }
-    
+
         if (entity._mountMode === 1) {
             ctx.translate(-entity._translate.x, -entity._translate.y);
             triggerPoly.render(ctx, true);
         }
-    
+
         //
         ctx.restore();*/
         if (entity._drawGrid) {
