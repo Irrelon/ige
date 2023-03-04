@@ -2,23 +2,24 @@
  * Creates a new transformation matrix.
  */
 import IgePoint3d from "./IgePoint3d";
+import { radiansToDegrees } from "../services/utils";
+import { IgePoint } from "../../types/IgePoint";
+import IgeEntity from "./IgeEntity";
 import IgeBaseClass from "./IgeBaseClass";
-import {radiansToDegrees} from "../services/utils";
 
-class IgeMatrix2d {
+class IgeMatrix2d extends IgeBaseClass {
 	matrix = [
-		1.0,0.0,0.0,
-		0.0,1.0,0.0,
-		0.0,0.0,1.0
+		1.0, 0.0, 0.0,
+		0.0, 1.0, 0.0,
+		0.0, 0.0, 1.0
 	];
 
 	_rotateOrigin = new IgePoint3d(0, 0, 0);
 	_scaleOrigin = new IgePoint3d(0, 0, 0);
 
-	transformCoord (point, obj) {
-		const {x} = point,
-			{y} = point,
-			tm = this.matrix;
+	transformCoord (point: IgePoint, obj: IgeEntity) {
+		const { x, y } = point;
+		const tm = this.matrix;
 
 		point.x = x * tm[0] + y * tm[1] + tm[2];
 		point.y = x * tm[3] + y * tm[4] + tm[5];
@@ -36,12 +37,12 @@ class IgeMatrix2d {
 	/**
 	 * Transform a point by this matrix in inverse. The parameter point will be modified with the transformation values.
 	 * @param {IgePoint3d} point.
+	 * @param obj
 	 * @return {IgePoint3d} The passed point.
 	 */
-	transformCoordInverse (point, obj) {
-		var {x} = point,
-			{y} = point,
-			tm = this.matrix;
+	transformCoordInverse (point: IgePoint, obj: IgeEntity) {
+		const { x, y } = point;
+		const tm = this.matrix;
 
 		point.x = x * tm[0] - y * tm[1] + tm[2];
 		point.y = x * tm[3] + y * tm[4] - tm[5];
@@ -56,11 +57,10 @@ class IgeMatrix2d {
 		return point;
 	}
 
-	transform (points, obj) {
-		var pointIndex,
-			pointCount = points.length;
+	transform (points: IgePoint[], obj: IgeEntity) {
+		const pointCount = points.length;
 
-		for (pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+		for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
 			this.transformCoord(points[pointIndex], obj);
 		}
 
@@ -72,14 +72,15 @@ class IgeMatrix2d {
 	 * @param {Number} angle
 	 * @return {IgeMatrix2d} A new matrix object.
 	 */
-	_newRotate (angle) {
-		var m = new IgeMatrix2d();
+	_newRotate (angle: number) {
+		const m = new IgeMatrix2d();
 		m.rotateTo(angle);
+
 		return m;
 	}
 
-	rotateBy (angle) {
-		var m = new IgeMatrix2d();
+	rotateBy (angle: number) {
+		const m = new IgeMatrix2d();
 
 		m.translateBy(this._rotateOrigin.x, this._rotateOrigin.y);
 		m.rotateTo(angle);
@@ -90,10 +91,10 @@ class IgeMatrix2d {
 		return this;
 	}
 
-	rotateTo (angle) {
-		var tm = this.matrix,
-			c = Math.cos(angle),
-			s = Math.sin(angle);
+	rotateTo (angle: number) {
+		const tm = this.matrix;
+		const c = Math.cos(angle);
+		const s = Math.sin(angle);
 
 		tm[0] = c;
 		tm[1] = -s;
@@ -137,8 +138,8 @@ class IgeMatrix2d {
 	 *
 	 * @static
 	 */
-	_newScale (x, y) {
-		var m = new IgeMatrix2d();
+	_newScale (x: number, y: number) {
+		const m = new IgeMatrix2d();
 
 		m.matrix[0] = x;
 		m.matrix[4] = y;
@@ -146,8 +147,8 @@ class IgeMatrix2d {
 		return m;
 	}
 
-	scaleBy (x, y) {
-		var m = new IgeMatrix2d();
+	scaleBy (x: number, y: number) {
+		const m = new IgeMatrix2d();
 
 		m.matrix[0] = x;
 		m.matrix[4] = y;
@@ -157,8 +158,8 @@ class IgeMatrix2d {
 		return this;
 	}
 
-	scaleTo (x, y) {
-		var tm = this.matrix;
+	scaleTo (x: number, y: number) {
+		const tm = this.matrix;
 		//this.identity();
 		tm[0] = x;
 		tm[4] = y;
@@ -179,8 +180,8 @@ class IgeMatrix2d {
 	 * @param {Number} y Y translation magnitude.
 	 * @return {IgeMatrix2d} A new matrix object.
 	 */
-	_newTranslate (x, y) {
-		var m = new IgeMatrix2d();
+	_newTranslate (x: number, y: number) {
+		const m = new IgeMatrix2d();
 
 		m.matrix[2] = x;
 		m.matrix[5] = y;
@@ -188,8 +189,8 @@ class IgeMatrix2d {
 		return m;
 	}
 
-	translateBy (x, y) {
-		var m = new IgeMatrix2d();
+	translateBy (x: number, y: number) {
+		const m = new IgeMatrix2d();
 
 		m.matrix[2] = x;
 		m.matrix[5] = y;
@@ -204,8 +205,8 @@ class IgeMatrix2d {
 	 * @param x
 	 * @param y
 	 */
-	translateTo (x, y) {
-		var tm = this.matrix;
+	translateTo (x: number, y: number) {
+		const tm = this.matrix;
 
 		tm[2] = x;
 		tm[5] = y;
@@ -225,28 +226,28 @@ class IgeMatrix2d {
 	 * @param {IgeMatrix2d} matrix
 	 * @return {Object} "this".
 	 */
-	copy (matrix) {
-		matrix = matrix.matrix;
+	copy (matrix: IgeMatrix2d) {
+		const internalMatrix = matrix.matrix;
 
-		var tmatrix = this.matrix;
-		tmatrix[0] = matrix[0];
-		tmatrix[1] = matrix[1];
-		tmatrix[2] = matrix[2];
-		tmatrix[3] = matrix[3];
-		tmatrix[4] = matrix[4];
-		tmatrix[5] = matrix[5];
-		tmatrix[6] = matrix[6];
-		tmatrix[7] = matrix[7];
-		tmatrix[8] = matrix[8];
+		const thisMatrix = this.matrix;
+		thisMatrix[0] = internalMatrix[0];
+		thisMatrix[1] = internalMatrix[1];
+		thisMatrix[2] = internalMatrix[2];
+		thisMatrix[3] = internalMatrix[3];
+		thisMatrix[4] = internalMatrix[4];
+		thisMatrix[5] = internalMatrix[5];
+		thisMatrix[6] = internalMatrix[6];
+		thisMatrix[7] = internalMatrix[7];
+		thisMatrix[8] = internalMatrix[8];
 
 		return this;
 	}
 
-	compare (matrix) {
-		var thisMatrix = this.matrix,
+	compare (matrix: IgeMatrix2d) {
+		const thisMatrix = this.matrix,
 			thatMatrix = matrix.matrix;
 
-		for (var i = 0; i < 9; i++) {
+		for (let i = 0; i < 9; i++) {
 			if (thisMatrix[i] !== thatMatrix[i]) {
 				return false;
 			}
@@ -261,7 +262,7 @@ class IgeMatrix2d {
 	 */
 	identity () {
 
-		var m = this.matrix;
+		const m = this.matrix;
 		m[0] = 1.0;
 		m[1] = 0.0;
 		m[2] = 0.0;
@@ -283,8 +284,8 @@ class IgeMatrix2d {
 	 * current matrix by.
 	 * @return {Object} "this".
 	 */
-	multiply (m) {
-		var tm = this.matrix,
+	multiply (m: IgeMatrix2d) {
+		const tm = this.matrix,
 			mm = m.matrix,
 
 			tm0 = tm[0],
@@ -307,15 +308,15 @@ class IgeMatrix2d {
 			mm7 = mm[7],
 			mm8 = mm[8];
 
-		tm[0] = tm0*mm0 + tm1*mm3 + tm2*mm6;
-		tm[1] = tm0*mm1 + tm1*mm4 + tm2*mm7;
-		tm[2] = tm0*mm2 + tm1*mm5 + tm2*mm8;
-		tm[3] = tm3*mm0 + tm4*mm3 + tm5*mm6;
-		tm[4] = tm3*mm1 + tm4*mm4 + tm5*mm7;
-		tm[5] = tm3*mm2 + tm4*mm5 + tm5*mm8;
-		tm[6] = tm6*mm0 + tm7*mm3 + tm8*mm6;
-		tm[7] = tm6*mm1 + tm7*mm4 + tm8*mm7;
-		tm[8] = tm6*mm2 + tm7*mm5 + tm8*mm8;
+		tm[0] = tm0 * mm0 + tm1 * mm3 + tm2 * mm6;
+		tm[1] = tm0 * mm1 + tm1 * mm4 + tm2 * mm7;
+		tm[2] = tm0 * mm2 + tm1 * mm5 + tm2 * mm8;
+		tm[3] = tm3 * mm0 + tm4 * mm3 + tm5 * mm6;
+		tm[4] = tm3 * mm1 + tm4 * mm4 + tm5 * mm7;
+		tm[5] = tm3 * mm2 + tm4 * mm5 + tm5 * mm8;
+		tm[6] = tm6 * mm0 + tm7 * mm3 + tm8 * mm6;
+		tm[7] = tm6 * mm1 + tm7 * mm4 + tm8 * mm7;
+		tm[8] = tm6 * mm2 + tm7 * mm5 + tm8 * mm8;
 
 		return this;
 	}
@@ -326,19 +327,19 @@ class IgeMatrix2d {
 	 * current matrix by.
 	 * @return {Object} "this".
 	 */
-	premultiply (m) {
+	premultiply (m: IgeMatrix2d) {
 
-		var m00 = m.matrix[0]*this.matrix[0] + m.matrix[1]*this.matrix[3] + m.matrix[2]*this.matrix[6];
-		var m01 = m.matrix[0]*this.matrix[1] + m.matrix[1]*this.matrix[4] + m.matrix[2]*this.matrix[7];
-		var m02 = m.matrix[0]*this.matrix[2] + m.matrix[1]*this.matrix[5] + m.matrix[2]*this.matrix[8];
+		const m00 = m.matrix[0] * this.matrix[0] + m.matrix[1] * this.matrix[3] + m.matrix[2] * this.matrix[6];
+		const m01 = m.matrix[0] * this.matrix[1] + m.matrix[1] * this.matrix[4] + m.matrix[2] * this.matrix[7];
+		const m02 = m.matrix[0] * this.matrix[2] + m.matrix[1] * this.matrix[5] + m.matrix[2] * this.matrix[8];
 
-		var m10 = m.matrix[3]*this.matrix[0] + m.matrix[4]*this.matrix[3] + m.matrix[5]*this.matrix[6];
-		var m11 = m.matrix[3]*this.matrix[1] + m.matrix[4]*this.matrix[4] + m.matrix[5]*this.matrix[7];
-		var m12 = m.matrix[3]*this.matrix[2] + m.matrix[4]*this.matrix[5] + m.matrix[5]*this.matrix[8];
+		const m10 = m.matrix[3] * this.matrix[0] + m.matrix[4] * this.matrix[3] + m.matrix[5] * this.matrix[6];
+		const m11 = m.matrix[3] * this.matrix[1] + m.matrix[4] * this.matrix[4] + m.matrix[5] * this.matrix[7];
+		const m12 = m.matrix[3] * this.matrix[2] + m.matrix[4] * this.matrix[5] + m.matrix[5] * this.matrix[8];
 
-		var m20 = m.matrix[6]*this.matrix[0] + m.matrix[7]*this.matrix[3] + m.matrix[8]*this.matrix[6];
-		var m21 = m.matrix[6]*this.matrix[1] + m.matrix[7]*this.matrix[4] + m.matrix[8]*this.matrix[7];
-		var m22 = m.matrix[6]*this.matrix[2] + m.matrix[7]*this.matrix[5] + m.matrix[8]*this.matrix[8];
+		const m20 = m.matrix[6] * this.matrix[0] + m.matrix[7] * this.matrix[3] + m.matrix[8] * this.matrix[6];
+		const m21 = m.matrix[6] * this.matrix[1] + m.matrix[7] * this.matrix[4] + m.matrix[8] * this.matrix[7];
+		const m22 = m.matrix[6] * this.matrix[2] + m.matrix[7] * this.matrix[5] + m.matrix[8] * this.matrix[8];
 
 		this.matrix[0] = m00;
 		this.matrix[1] = m01;
@@ -361,9 +362,9 @@ class IgeMatrix2d {
 	 * @return {IgeMatrix2d} An inverse matrix.
 	 */
 	getInverse () {
-		var tm = this.matrix;
+		const tm = this.matrix;
 
-		var m00 = tm[0],
+		const m00 = tm[0],
 			m01 = tm[1],
 			m02 = tm[2],
 			m10 = tm[3],
@@ -374,41 +375,41 @@ class IgeMatrix2d {
 			m22 = tm[8],
 
 			newMatrix = new IgeMatrix2d(),
-			determinant = m00* (m11*m22 - m21*m12) - m10*(m01*m22 - m21*m02) + m20 * (m01*m12 - m11*m02);
+			determinant = m00 * (m11 * m22 - m21 * m12) - m10 * (m01 * m22 - m21 * m02) + m20 * (m01 * m12 - m11 * m02);
 
-		if  (determinant===0) {
+		if (determinant === 0) {
 			return null;
 		}
 
-		var m = newMatrix.matrix;
+		const m = newMatrix.matrix;
 
-		m[0] = m11*m22-m12*m21;
-		m[1] = m02*m21-m01*m22;
-		m[2] = m01*m12-m02*m11;
+		m[0] = m11 * m22 - m12 * m21;
+		m[1] = m02 * m21 - m01 * m22;
+		m[2] = m01 * m12 - m02 * m11;
 
-		m[3] = m12*m20-m10*m22;
-		m[4] = m00*m22-m02*m20;
-		m[5] = m02*m10-m00*m12;
+		m[3] = m12 * m20 - m10 * m22;
+		m[4] = m00 * m22 - m02 * m20;
+		m[5] = m02 * m10 - m00 * m12;
 
-		m[6] = m10*m21-m11*m20;
-		m[7] = m01*m20-m00*m21;
-		m[8] = m00*m11-m01*m10;
+		m[6] = m10 * m21 - m11 * m20;
+		m[7] = m01 * m20 - m00 * m21;
+		m[8] = m00 * m11 - m01 * m10;
 
-		newMatrix.multiplyScalar (1/determinant);
+		newMatrix.multiplyScalar(1 / determinant);
 
 		return newMatrix;
 	}
 
 	/**
 	 * Multiply this matrix by a scalar.
-	 * @param scalar {number} Scalar value.
+	 * @param {number} scalar Scalar value.
 	 * @return this
 	 */
-	multiplyScalar (scalar) {
-		var i;
+	multiplyScalar (scalar: number) {
+		let i;
 
-		for (i=0; i<9; i++) {
-			this.matrix[i]*=scalar;
+		for (i = 0; i < 9; i++) {
+			this.matrix[i] *= scalar;
 		}
 
 		return this;
@@ -421,9 +422,9 @@ class IgeMatrix2d {
 	 * @param {CanvasRenderingContext2D} ctx The rendering context to
 	 * set the transform matrix for.
 	 */
-	transformRenderingContextSet (ctx) {
-		var m = this.matrix;
-		ctx.setTransform (m[0], m[3], m[1], m[4], m[2], m[5]);
+	transformRenderingContextSet (ctx: CanvasRenderingContext2D) {
+		const m = this.matrix;
+		ctx.setTransform(m[0], m[3], m[1], m[4], m[2], m[5]);
 		return this;
 	}
 
@@ -434,8 +435,8 @@ class IgeMatrix2d {
 	 * @param {CanvasRenderingContext2D} ctx The rendering context to
 	 * set the transform matrix for.
 	 */
-	transformRenderingContext (ctx) {
-		var m = this.matrix;
+	transformRenderingContext (ctx: CanvasRenderingContext2D) {
+		const m = this.matrix;
 		ctx.transform(m[0], m[3], m[1], m[4], m[2], m[5]);
 		return this;
 	}
