@@ -5,12 +5,12 @@ import IgePoint3d from "./IgePoint3d";
 
 class IgePoint2d {
 	classId = "IgePoint2d";
+	x: number = 0;
+	y: number = 0;
+	x2: number = 0;
+	y2: number = 0;
 
-	x = 0;
-	y = 0;
-	x2 = 0;
-	y2 = 0;
-	_floor = false;
+	_floor: boolean = false;
 
 	constructor (x = 0, y = 0, floor = false) {
 		this.x = x;

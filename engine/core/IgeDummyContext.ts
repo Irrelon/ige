@@ -24,6 +24,7 @@ const IgeDummyContext = {
 	setTransform: nullMethod,
 	fillText: nullMethod,
 	createImageData: nullMethod,
+	createPattern: nullMethod,
 	imageSmoothingEnabled: false
 };
 

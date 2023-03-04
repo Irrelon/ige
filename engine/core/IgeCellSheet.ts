@@ -1,4 +1,7 @@
 import IgeTexture from "./IgeTexture";
+import { IgeSmartTexture } from "../../types/IgeSmartTexture";
+import IgeImage from "./IgeImage";
+import IgeCanvas from "./IgeCanvas";
 
 /**
  * Creates a new cell sheet. Cell sheets are textures that are
@@ -8,9 +11,14 @@ import IgeTexture from "./IgeTexture";
 class IgeCellSheet extends IgeTexture {
 	classId = "IgeCellSheet";
 	IgeSpriteSheet = true;
+	_cellColumns: number = 0;
+	_cellRows: number = 0;
+	_cellWidth: number = 0;
+	_cellHeight: number = 0;
+	_sheetImage?: IgeImage | IgeCanvas;
 
-	constructor (ige, url, horizontalCells, verticalCells) {
-		super(ige, url);
+	constructor (urlOrObject: string | IgeSmartTexture, horizontalCells: number, verticalCells: number) {
+		super(urlOrObject);
 
 		this.horizontalCells(horizontalCells || 1);
 		this.verticalCells(verticalCells || 1);
@@ -42,7 +50,9 @@ class IgeCellSheet extends IgeTexture {
 	 * Gets / sets the number of horizontal cells in the cell sheet.
 	 * @param {Number=} val The integer count of the number of horizontal cells in the cell sheet.
 	 */
-	horizontalCells (val) {
+	horizontalCells (val: number): this;
+	horizontalCells (): number;
+	horizontalCells (val?: number) {
 		if (val !== undefined) {
 			this._cellColumns = val;
 			return this;
@@ -55,7 +65,9 @@ class IgeCellSheet extends IgeTexture {
 	 * Gets / sets the number of vertical cells in the cell sheet.
 	 * @param {Number=} val The integer count of the number of vertical cells in the cell sheet.
 	 */
-	verticalCells (val) {
+	verticalCells (val: number): this;
+	verticalCells (): number;
+	verticalCells (val?: number) {
 		if (val !== undefined) {
 			this._cellRows = val;
 			return this;
@@ -70,7 +82,7 @@ class IgeCellSheet extends IgeTexture {
 	 * @private
 	 */
 	_applyCells () {
-		var imgWidth, imgHeight,
+		let imgWidth, imgHeight,
 			rows, columns,
 			cellWidth, cellHeight,
 			cellIndex,
@@ -90,11 +102,11 @@ class IgeCellSheet extends IgeTexture {
 				cellHeight = this._cellHeight = imgHeight / rows;
 
 				// Check if the cell width and height are non-floating-point
-				if (cellWidth !== parseInt(cellWidth, 10)) {
+				if (cellWidth !== parseInt(cellWidth.toString(), 10)) {
 					this.log("Cell width is a floating-point number! (Image Width " + imgWidth + " / Number of Columns " + columns + " = " + cellWidth + ") in file: " + this._url, "warning");
 				}
 
-				if (cellHeight !== parseInt(cellHeight, 10)) {
+				if (cellHeight !== parseInt(cellHeight.toString(), 10)) {
 					this.log("Cell height is a floating-point number! (Image Height " + imgHeight + " / Number of Rows " + rows + " = " + cellHeight + ")  in file: " + this._url, "warning");
 				}
 
@@ -121,7 +133,7 @@ class IgeCellSheet extends IgeTexture {
 	 * @return {String}
 	 */
 	stringify () {
-		var str = "new " + this.classId + "('" + this.url() + "', " + this.horizontalCells() + ", " + this.verticalCells() + ")";
+		const str = "new " + this.classId + "('" + this.url() + "', " + this.horizontalCells() + ", " + this.verticalCells() + ")";
 
 		// Every object has an ID, assign that first
 		// IDs are automatically generated from texture urls

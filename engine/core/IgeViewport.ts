@@ -19,7 +19,7 @@ export interface IgeViewportOptions {
 /**
  * Creates a new viewport.
  */
-class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(WithUiStyleMixin(IgeEntity))) implements IgeRegisterable {
+class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) implements IgeRegisterable {
 	classId = "IgeViewport";
 	IgeViewport = true;
 	_registered: boolean = false;

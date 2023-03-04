@@ -7,11 +7,15 @@ import { IgeSmartFilter } from "../../types/IgeSmartFilter";
 import IgeImage from "./IgeImage";
 import IgeCanvas from "./IgeCanvas";
 import IgeEntity from "./IgeEntity";
+import WithUiStyleMixin from "../mixins/IgeUiStyleMixin";
+
+type IgeTextureCell = [number, number, number, number, string?];
+type IgeTextureCellArray = IgeTextureCell[];
 
 /**
  * Creates a new texture.
  */
-class IgeTexture extends WithEventingMixin(IgeBaseClass) {
+class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
 	classId = "IgeTexture";
 	IgeTexture = true;
 	_id?: string;
@@ -19,12 +23,10 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
 	_sizeX: number = 0;
 	_sizeY: number = 0;
 	_loaded: boolean = false;
-	_cells: number[][] = [];
 	_smoothing: boolean = false;
 	_filterImageDrawn: boolean = false;
 	_destroyed: boolean = false;
 	_url?: string;
-	_mode?: number;
 	_applyFilters: IgeSmartFilter[] = []; // TODO: Rename to _postFilters
 	_applyFiltersData: Record<string, any>[] = [];
 	_preFilters: IgeSmartFilter[] = [];
@@ -32,6 +34,7 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
 	_originalImage?: IgeImage | IgeCanvas;
 	_textureCanvas?: IgeCanvas;
 	_textureCtx?: CanvasRenderingContext2D;
+	_cells: IgeTextureCellArray = [];
 	image?: IgeImage | IgeCanvas;
 	script?: IgeSmartTexture;
 
@@ -378,88 +381,6 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
 
 			this._cells[1] = [0, 0, this._sizeX, this._sizeY];
 		}
-	}
-
-	/**
-	 * Creates a new texture from a cell in the existing texture
-	 * and returns the new texture.
-	 * @param {number | string} indexOrId The cell index or id to use.
-	 * @return {*}
-	 */
-	textureFromCell (indexOrId: number | string) {
-		const tex = new IgeTexture();
-
-		if (this._loaded) {
-			this._textureFromCell(tex, indexOrId);
-		} else {
-			// The texture has not yet loaded, return the new texture and set a listener to handle
-			// when this texture has loaded then we can assign the texture's image properly
-			this.on("loaded", () => {
-				this._textureFromCell(tex, indexOrId);
-			});
-		}
-
-		return tex;
-	}
-
-	/**
-	 * Called by textureFromCell() when the texture is ready
-	 * to be processed. See textureFromCell() for description.
-	 * @param {IgeTexture} tex The new texture to paint to.
-	 * @param {Number, String} indexOrId The cell index or id
-	 * to use.
-	 * @private
-	 */
-	_textureFromCell (tex: IgeTexture, indexOrId: number | string) {
-		if (!this._originalImage) {
-			throw new Error("Unable to create new texture from passed cell index because we don't have an _originalImage assigned to the IgeTexture!");
-		}
-
-		let index;
-
-		if (typeof indexOrId === "string") {
-			// TODO: cellIdToIndex is part of the IgeSpriteSheet class
-			//   so this call is incorrect here, fix the whole process
-			index = this.cellIdToIndex(indexOrId);
-		} else {
-			index = indexOrId;
-		}
-
-		if (!this._cells[index]) {
-			throw new Error(`Unable to create new texture from passed cell index (${indexOrId}) because the cell does not exist!`);
-		}
-
-		// Create a new IgeTexture, then draw the existing cell
-		// to its internal canvas
-		const cell = this._cells[index];
-		const canvas = new IgeCanvas();
-		const ctx = canvas.getContext("2d");
-
-		if (!ctx) {
-			throw new Error("Unable to get 2d context from IgeTexture canvas");
-		}
-
-		// Set smoothing mode
-		// TODO: Does this cause a costly context change? If so maybe we set a global value to keep
-		//    track of the value and evaluate first before changing?
-		ctx.imageSmoothingEnabled = this._smoothing;
-
-		canvas.width = cell[2];
-		canvas.height = cell[3];
-
-		// Draw the cell to the canvas
-		ctx.drawImage(this._originalImage, cell[0], cell[1], cell[2], cell[3], 0, 0, cell[2], cell[3]);
-
-		// Set the new texture's image to the canvas
-		// TODO: We need to figure out how to create a uniform interface for using either
-		//		an image or a canvas source for texture image data
-		tex._setImage(canvas);
-		tex._loaded = true;
-
-		// Fire the loaded event
-		setTimeout(() => {
-			tex.emit("loaded");
-		}, 1);
 	}
 
 	/**
@@ -937,6 +858,108 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
 		str += this._stringify();
 
 		return str;
+	}
+
+	/**
+	 * Creates a new texture from a cell in the existing texture
+	 * and returns the new texture.
+	 * @param {number | string} indexOrId The cell index or id to use.
+	 * @return {*}
+	 */
+	textureFromCell (indexOrId: number | string) {
+		const tex = new IgeTexture();
+
+		if (this._loaded) {
+			this._textureFromCell(tex, indexOrId);
+		} else {
+			// The texture has not yet loaded, return the new texture and set a listener to handle
+			// when this texture has loaded then we can assign the texture's image properly
+			this.on("loaded", () => {
+				this._textureFromCell(tex, indexOrId);
+			});
+		}
+
+		return tex;
+	}
+
+	/**
+	 * Called by textureFromCell() when the texture is ready
+	 * to be processed. See textureFromCell() for description.
+	 * @param {IgeTexture} tex The new texture to paint to.
+	 * @param {Number, String} indexOrId The cell index or id
+	 * to use.
+	 * @private
+	 */
+	_textureFromCell (tex: IgeTexture, indexOrId: number | string) {
+		if (!this._originalImage) {
+			throw new Error("Unable to create new texture from passed cell index because we don't have an _originalImage assigned to the IgeTexture!");
+		}
+
+		let index;
+
+		if (typeof indexOrId === "string") {
+			// TODO: cellIdToIndex is part of the IgeSpriteSheet class
+			//   so this call is incorrect here, fix the whole process
+			index = this.cellIdToIndex(indexOrId);
+		} else {
+			index = indexOrId;
+		}
+
+		if (!this._cells[index]) {
+			throw new Error(`Unable to create new texture from passed cell index (${indexOrId}) because the cell does not exist!`);
+		}
+
+		// Create a new IgeTexture, then draw the existing cell
+		// to its internal canvas
+		const cell = this._cells[index];
+		const canvas = new IgeCanvas();
+		const ctx = canvas.getContext("2d");
+
+		if (!ctx) {
+			throw new Error("Unable to get 2d context from IgeTexture canvas");
+		}
+
+		// Set smoothing mode
+		// TODO: Does this cause a costly context change? If so maybe we set a global value to keep
+		//    track of the value and evaluate first before changing?
+		ctx.imageSmoothingEnabled = this._smoothing;
+
+		canvas.width = cell[2];
+		canvas.height = cell[3];
+
+		// Draw the cell to the canvas
+		ctx.drawImage(this._originalImage, cell[0], cell[1], cell[2], cell[3], 0, 0, cell[2], cell[3]);
+
+		// Set the new texture's image to the canvas
+		// TODO: We need to figure out how to create a uniform interface for using either
+		//		an image or a canvas source for texture image data
+		tex._setImage(canvas);
+		tex._loaded = true;
+
+		// Fire the loaded event
+		setTimeout(() => {
+			tex.emit("loaded");
+		}, 1);
+	}
+
+	/**
+	 * Returns the cell index that the passed cell id corresponds
+	 * to.
+	 * @param {String} id
+	 * @return {Number} The cell index that the cell id corresponds
+	 * to or -1 if a corresponding index could not be found.
+	 */
+	cellIdToIndex (id: string) {
+		const cells = this._cells;
+
+		for (let i = 1; i < cells.length; i++) {
+			if (cells[i][4] === id) {
+				// Found the cell id so return the index
+				return i;
+			}
+		}
+
+		return -1;
 	}
 
 	_stringify () {
