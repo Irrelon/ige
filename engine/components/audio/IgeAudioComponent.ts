@@ -1,19 +1,24 @@
 import IgeEntity from "../../core/IgeEntity";
 import IgeComponent from "../../core/IgeComponent";
+import IgeAudio from "./IgeAudio";
+import { ige } from "../../instance";
 
 /**
  * Manages audio mixing and output.
  */
-class IgeAudioComponent<TargetClass extends IgeEntity> extends IgeComponent<TargetClass> {
+class IgeAudioComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgeAudioComponent";
 	componentId = "audio";
+	_active: boolean;
+	_disabled: boolean;
+	_ctx: AudioContext;
 
 	constructor (entity: TargetClass, options?: any) {
 		super(entity, options);
 
 		this._active = false;
 		this._disabled = false;
-		this._ctx = this.getContext();
+		this._ctx = this.getAudioContext();
 
 		if (!this._ctx) {
 			this.log("No web audio API support, cannot play sounds!", "warning");
@@ -29,7 +34,7 @@ class IgeAudioComponent<TargetClass extends IgeEntity> extends IgeComponent<Targ
 	 * @param {Boolean=} val True to enable audio support.
 	 * @returns {*}
 	 */
-	active = (val) => {
+	active = (val?: boolean) => {
 		if (val !== undefined && !this._disabled) {
 			this._active = val;
 			return this;
@@ -42,14 +47,8 @@ class IgeAudioComponent<TargetClass extends IgeEntity> extends IgeComponent<Targ
 	 * Returns an audio context.
 	 * @returns {*}
 	 */
-	getContext = () => {
-		const ctxProto = window.AudioContext || window.webkitAudioContext;
-
-		if (ctxProto) {
-			return new ctxProto();
-		} else {
-			return undefined;
-		}
+	getAudioContext () {
+		return new window.AudioContext();
 	}
 
 	/**
@@ -57,7 +56,7 @@ class IgeAudioComponent<TargetClass extends IgeEntity> extends IgeComponent<Targ
 	 * @param {String} url The url to load the audio from.
 	 * @param {String=} id The id to assign the audio.
 	 */
-	load = (url, id) => {
+	load = (url: string, id: string) => {
 		const audio = new IgeAudio(url);
 
 		if (id) {
@@ -68,25 +67,19 @@ class IgeAudioComponent<TargetClass extends IgeEntity> extends IgeComponent<Targ
 	/**
 	 * Decodes audio data and calls back with an audio buffer.
 	 * @param {ArrayBuffer} data The audio data to decode.
-	 * @param {Function} callback The callback to pass the buffer to.
 	 */
-	decode = (data, callback) => {
-		this._ctx.decodeAudioData(data, (buffer) => {
-			callback(false, buffer);
-		}, (err) => {
-			callback(err);
-		});
+	decode = async (data: ArrayBuffer): Promise<AudioBuffer> => {
+		return this._ctx.decodeAudioData(data);
 	}
 
-	play = (id) => {
-		const audio = this._ige.$(id);
-		if (audio) {
-			if (audio.prototype.play) {
-				audio.play();
-			} else {
-				this.log("Trying to play audio with id \"\" but object with this id is not an IgeAudio instance, or does not implement the .play() method!", "warnign");
-			}
+	play = (id: string) => {
+		const audio = ige.$(id) as IgeAudio;
+
+		if (!audio || !audio.play) {
+			throw new Error(`Trying to play audio with id "${id}" but object with this id is not an IgeAudio instance, or does not implement the .play() method!`);
 		}
+
+		audio.play();
 	}
 }
 
