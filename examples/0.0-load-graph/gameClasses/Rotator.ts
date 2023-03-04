@@ -1,5 +1,5 @@
-import IgeEntity from "../../../engine/core/IgeEntity";
 import {ige} from "../../../engine/instance";
+import IgeEntity from "../../../engine/core/IgeEntity";
 
 export class Rotator extends IgeEntity {
 	classId = 'Rotator';

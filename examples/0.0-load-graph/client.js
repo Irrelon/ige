@@ -1,10 +1,10 @@
-import IgeTexture from "../../engine/core/IgeTexture.js";
-import IgeBaseScene from "../../engine/core/IgeBaseScene.js";
-import simpleBox from "./assets/textures/smartTextures/simpleBox.js";
-import IgeBaseClass from "../../engine/core/IgeBaseClass.js";
 import { ige } from "../../engine/instance.js";
-import { Scene1 } from "./levels/Scene1.js";
+import IgeBaseClass from "../../engine/core/IgeBaseClass.js";
+import IgeBaseScene from "../../engine/core/IgeBaseScene.js";
 import IgeEditorComponent from "../../engine/components/editor/IgeEditorComponent.js";
+import IgeTexture from "../../engine/core/IgeTexture.js";
+import { Scene1 } from "./levels/Scene1.js";
+import simpleBox from "./assets/textures/smartTextures/simpleBox.js";
 // @ts-ignore
 window.ige = ige;
 export class Client extends IgeBaseClass {

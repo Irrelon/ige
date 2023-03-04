@@ -1,9 +1,8 @@
 import { ige } from "../../../engine/instance";
 import IgeSceneGraph from "../../../engine/core/IgeSceneGraph";
 import IgeScene2d from "../../../engine/core/IgeScene2d";
-import { Rotator } from "../gameClasses/Rotator";
 import IgeEntity from "../../../engine/core/IgeEntity";
-import { Client } from "../client";
+import { Fairy } from "../gameClasses/Fairy";
 
 export class Scene1 extends IgeSceneGraph {
 	classId = 'Scene1';
@@ -12,7 +11,6 @@ export class Scene1 extends IgeSceneGraph {
 	 * Called when loading the graph data via ige.addGraph().
 	 */
 	addGraph () {
-		const client = ige.client as Client;
 		const baseScene = ige.$('baseScene') as IgeEntity;
 
 		// Clear existing graph data
@@ -26,38 +24,11 @@ export class Scene1 extends IgeSceneGraph {
 			.mount(baseScene);
 
 		// Create an entity and mount it to the scene
-		const fairy1 = new Rotator(0.1)
-			.id('fairy1')
-			.depth(1)
-			.width(100)
-			.height(100)
-			.texture(client.gameTexture.fairy)
-			.translateTo(0, 0, 0)
-			.mount(scene1);
+		new Fairy(-0.1)
+			.translateTo(-220, 0, 0);
 
-		// Create a second rotator entity and mount
-		// it to the first one at 0, 50 relative to the
-		// parent
-		new Rotator(0.1)
-			.id('fairy2')
-			.depth(1)
-			.width(50)
-			.height(50)
-			.texture(client.gameTexture.fairy)
-			.translateTo(0, 50, 0)
-			.mount(fairy1);
-
-		// Create a third rotator entity and mount
-		// it to the first on at 0, -50 relative to the
-		// parent, but assign it a smart texture!
-		new Rotator(0.1)
-			.id('simpleBox')
-			.depth(1)
-			.width(50)
-			.height(50)
-			.texture(client.gameTexture.simpleBox)
-			.translateTo(0, -50, 0)
-			.mount(fairy1);
+		new Fairy(0.1)
+			.translateTo(220, 0, 0);
 	}
 
 	/**

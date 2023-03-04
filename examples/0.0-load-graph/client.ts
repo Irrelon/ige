@@ -1,11 +1,11 @@
-import IgeTexture from "../../engine/core/IgeTexture";
-import IgeBaseScene from "../../engine/core/IgeBaseScene";
-import simpleBox from "./assets/textures/smartTextures/simpleBox";
-import IgeBaseClass from "../../engine/core/IgeBaseClass";
 import {ige} from "../../engine/instance";
-import { Scene1 } from "./levels/Scene1";
+import IgeBaseClass from "../../engine/core/IgeBaseClass";
+import IgeBaseScene from "../../engine/core/IgeBaseScene";
 import IgeEditorComponent from "../../engine/components/editor/IgeEditorComponent";
 import IgeInputComponent from "../../engine/components/IgeInputComponent";
+import IgeTexture from "../../engine/core/IgeTexture";
+import { Scene1 } from "./levels/Scene1";
+import simpleBox from "./assets/textures/smartTextures/simpleBox";
 
 // @ts-ignore
 window.ige = ige;
@@ -17,6 +17,7 @@ export class Client extends IgeBaseClass {
 	constructor () {
 		// Init the super class
 		super();
+
 		ige.createRoot();
 		ige.addComponent(IgeEditorComponent);
 		(ige.components.input as IgeInputComponent).debug(true);
