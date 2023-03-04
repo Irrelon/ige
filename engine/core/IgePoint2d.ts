@@ -1,3 +1,6 @@
+/**
+ * Creates a new 2d point (x, y).
+ */
 class IgePoint2d {
 	classId = "IgePoint2d";
 
@@ -25,10 +28,12 @@ class IgePoint2d {
 	/**
 	 * Gets / sets the floor mode of this point. If set to true the point's
 	 * data will be mathematically floored when they are assigned.
-	 * @param {Boolean} [val] True or false.
+	 * @param {Boolean=} val True or false.
 	 * @return {*} Either `this` for chaining or current floor setting.
 	 */
-	floor (val) {
+	floor (val: boolean): this;
+	floor (): boolean;
+	floor (val?: boolean) {
 		if (val !== undefined) {
 			this._floor = val;
 			return this;
@@ -43,7 +48,7 @@ class IgePoint2d {
 	 * @param {IgePoint2d} point The point to compare data with.
 	 * @return {Boolean}
 	 */
-	compare (point) {
+	compare (point: IgePoint2d) {
 		return point && this.x === point.x && this.y === point.y;
 	}
 
@@ -53,10 +58,9 @@ class IgePoint2d {
 	 * @param {IgePoint2d} point The point to copy values from.
 	 * @returns {*}
 	 */
-	copy (point) {
+	copy (point: IgePoint2d) {
 		this.x = point.x;
 		this.y = point.y;
-		this.z = point.z;
 
 		return this;
 	}
@@ -119,7 +123,7 @@ class IgePoint2d {
 	 * @param point
 	 * @return {*}
 	 */
-	addPoint (point) {
+	addPoint (point: IgePoint2d) {
 		return new IgePoint2d(this.x + point.x, this.y + point.y);
 	}
 
@@ -129,7 +133,7 @@ class IgePoint2d {
 	 * @param point
 	 * @return {*}
 	 */
-	thisAddPoint (point) {
+	thisAddPoint (point: IgePoint2d) {
 		this.x += point.x;
 		this.y += point.y;
 
@@ -142,7 +146,7 @@ class IgePoint2d {
 	 * @param point
 	 * @return {*}
 	 */
-	minusPoint (point) {
+	minusPoint (point: IgePoint2d) {
 		return new IgePoint2d(this.x - point.x, this.y - point.y);
 	}
 
@@ -152,7 +156,7 @@ class IgePoint2d {
 	 * @param point
 	 * @return {*}
 	 */
-	thisMinusPoint (point) {
+	thisMinusPoint (point: IgePoint2d) {
 		this.x -= point.x;
 		this.y -= point.y;
 
@@ -166,7 +170,7 @@ class IgePoint2d {
 	 * @param y
 	 * @return {*}
 	 */
-	multiply (x, y) {
+	multiply (x: number, y: number) {
 		return new IgePoint2d(this.x * x, this.y * y);
 	}
 
@@ -176,7 +180,7 @@ class IgePoint2d {
 	 * @param {IgePoint2d} point
 	 * @return {*}
 	 */
-	multiplyPoint (point) {
+	multiplyPoint (point: IgePoint2d) {
 		return new IgePoint2d(this.x * point.x, this.y * point.y);
 	}
 
@@ -185,10 +189,9 @@ class IgePoint2d {
 	 * overwrites the previous x, y values with the result.
 	 * @param {Number} x
 	 * @param {Number} y
-	 * @param {Number} z
 	 * @return {*}
 	 */
-	thisMultiply (x, y, z) {
+	thisMultiply (x: number, y: number) {
 		this.x *= x;
 		this.y *= y;
 
@@ -202,7 +205,7 @@ class IgePoint2d {
 	 * @param {Number} y
 	 * @return {*}
 	 */
-	divide (x, y) {
+	divide (x: number, y: number) {
 		return new IgePoint2d(this.x / x, this.y / y);
 	}
 
@@ -212,8 +215,8 @@ class IgePoint2d {
 	 * @param {IgePoint2d} point
 	 * @return {*}
 	 */
-	dividePoint (point) {
-		var newX = this.x,
+	dividePoint (point: IgePoint2d) {
+		let newX = this.x,
 			newY = this.y;
 
 		if (point.x) { newX = this.x / point.x; }
@@ -229,7 +232,7 @@ class IgePoint2d {
 	 * @param {Number} y
 	 * @return {*}
 	 */
-	thisDivide (x, y) {
+	thisDivide (x: number, y: number) {
 		this.x /= x;
 		this.y /= y;
 
@@ -254,8 +257,8 @@ class IgePoint2d {
 	 * @param {Number} endTime
 	 * @return {*}
 	 */
-	interpolate (endPoint, startTime, currentTime, endTime) {
-		var totalX = endPoint.x - this.x,
+	interpolate (endPoint: IgePoint2d, startTime: number, currentTime: number, endTime: number) {
+		const totalX = endPoint.x - this.x,
 			totalY = endPoint.y - this.y,
 			totalTime = endTime - startTime,
 			deltaTime = totalTime - (currentTime - startTime),
@@ -269,8 +272,8 @@ class IgePoint2d {
 	 * @param {Number} radians Radians to rotate by.
 	 * @return {IgePoint2d} A new point with the rotated x, y.
 	 */
-	rotate (radians) {
-		var s = Math.sin(radians),
+	rotate (radians: number) {
+		const s = Math.sin(radians),
 			c = Math.cos(radians),
 			x = c * this.x - s * this.y,
 			y = s * this.x - c * this.y;
@@ -284,11 +287,10 @@ class IgePoint2d {
 	 * @param {Number} radians Radians to rotate by.
 	 * @return {IgePoint2d} This point.
 	 */
-	thisRotate (radians) {
-		var s = Math.sin(radians),
+	thisRotate (radians: number) {
+		const s = Math.sin(radians),
 			c = Math.cos(radians),
-			{x} = this,
-			{y} = this;
+			{x, y} = this;
 
 		this.x = c * x - s * y;
 		this.y = s * x - c * y;
@@ -304,8 +306,7 @@ class IgePoint2d {
 	 * @param {Number} [precision]
 	 * @return {String}
 	 */
-	toString (precision) {
-		if (precision === undefined) { precision = 2; }
+	toString (precision: number = 2) {
 		return this.x.toFixed(precision) + "," + this.y.toFixed(precision);
 	}
 }
