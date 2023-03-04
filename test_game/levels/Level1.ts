@@ -3,8 +3,11 @@ import IgeSceneGraph from "../../engine/core/IgeSceneGraph";
 import IgeScene2d from "../../engine/core/IgeScene2d";
 import IgeEntity from "../../engine/core/IgeEntity";
 import { Client } from "../client";
-import { textures } from "../services/textures";
 import { degreesToRadians } from "../../engine/services/utils";
+import { Square } from "../entity/Square";
+import { Circle } from "../entity/Circle";
+import { Triangle } from "../entity/Triangle";
+import { Line } from "../entity/Line";
 
 export class Level1 extends IgeSceneGraph {
 	classId = 'Level1';
@@ -29,52 +32,31 @@ export class Level1 extends IgeSceneGraph {
 		// Create a third rotator entity and mount
 		// it to the first on at 0, -50 relative to the
 		// parent, but assign it a smart texture!
-		new IgeEntity()
-			.data("glowColor", "#00d0ff")
-			.depth(1)
-			.width(50)
-			.height(50)
-			.texture(textures.getTextureById("square"))
+		new Square()
 			.translateTo(0, 0, 0)
 			.mount(scene1);
 
-		new IgeEntity()
-			.data("glowColor", "#c852ff")
-			.depth(1)
-			.width(50)
-			.height(50)
-			.texture(textures.getTextureById("circle"))
+		new Circle()
 			.translateTo(250, -50, 0)
 			.mount(scene1);
 
-		new IgeEntity()
-			.data("glowColor", "#00ff00")
-			.depth(1)
-			.width(50)
-			.height(50)
-			.texture(textures.getTextureById("triangle"))
+		new Triangle()
 			.translateTo(220, 120, 0)
 			.rotateTo(0, 0, degreesToRadians(-10))
 			.mount(scene1);
 
-		new IgeEntity()
-			.data("glowColor", "#ffea00")
-			.depth(0)
-			.width(250)
-			.height(-50)
-			.texture(textures.getTextureById("line"))
-			.translateTo(125, -25, 0)
+		new Circle()
+			.translateTo(50, 150, 0)
 			.mount(scene1);
 
-		new IgeEntity()
-			.data("glowColor", "#ffea00")
-			.depth(0)
-			.width(-30)
-			.height(170)
-			.texture(textures.getTextureById("line"))
-			.translateTo(250-15, 170 / 2 - 50, 0)
+		new Line(0, 0, 250, -50)
 			.mount(scene1);
 
+		new Line(250, -50, 220, 120)
+			.mount(scene1);
+
+		new Line(220, 120, 50, 150)
+			.mount(scene1);
 	}
 
 	/**
