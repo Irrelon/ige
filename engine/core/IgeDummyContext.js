@@ -1,4 +1,5 @@
-export const nullMethod = () => { };
+export const nullMethod = () => {
+};
 const IgeDummyContext = {
     dummy: true,
     save: nullMethod,
@@ -21,6 +22,7 @@ const IgeDummyContext = {
     transform: nullMethod,
     setTransform: nullMethod,
     fillText: nullMethod,
-    createImageData: nullMethod
+    createImageData: nullMethod,
+    imageSmoothingEnabled: false
 };
 export default IgeDummyContext;

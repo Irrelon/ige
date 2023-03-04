@@ -2,6 +2,8 @@ import IgeBaseClass from "./IgeBaseClass.js";
 import WithEventingMixin from "../mixins/IgeEventingMixin.js";
 import { arrPull } from "../services/utils.js";
 import { ige } from "../instance.js";
+import IgeImage from "./IgeImage.js";
+import IgeCanvas from "./IgeCanvas.js";
 /**
  * Creates a new texture.
  */
@@ -9,10 +11,9 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
     /**
      * Constructor for a new IgeTexture.
      * @param {Ige} ige The engine instance.
-     * @param {String, Object} urlOrObject Either a string URL that
+     * @param {string | IgeSmartTexture} urlOrObject Either a string URL that
      * points to the path of the image or script you wish to use as
      * the texture image, or an object containing a smart texture.
-     * @return {*}
      */
     constructor(urlOrObject) {
         super();
@@ -26,11 +27,15 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
         this._smoothing = false;
         this._filterImageDrawn = false;
         this._destroyed = false;
+        this._applyFilters = []; // TODO: Rename to _postFilters
+        this._applyFiltersData = [];
+        this._preFilters = [];
+        this._preFiltersData = [];
         this._loaded = false;
         /* CEXCLUDE */
         // If on a server, error
         if (ige.isServer) {
-            this.log('Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don\'t try to load a texture on the server-side using something like an if statement around your texture laoding such as "if (ige.isClient) {}".', "error");
+            this.log("Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side using something like an if statement around your texture laoding such as \"if (ige.isClient) {}\".", "error");
             return this;
         }
         /* CEXCLUDE */
@@ -42,14 +47,15 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
         this._applyFiltersData = [];
         this._preFilters = [];
         this._preFiltersData = [];
-        const type = typeof urlOrObject;
-        if (type === "string") {
+        if (!urlOrObject)
+            return;
+        if (typeof urlOrObject === "string") {
             // Load the texture URL
             if (urlOrObject) {
                 this.url(urlOrObject);
             }
         }
-        if (type === "object") {
+        else {
             // Assign the texture script object
             this.assignSmartTextureImage(urlOrObject);
         }
@@ -63,7 +69,7 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
                     return this;
                 }
                 // Already an object with this ID!
-                this.log('Cannot set ID of object to "' + id + '" because that ID is already in use by another object!', "error");
+                this.log("Cannot set ID of object to \"" + id + "\" because that ID is already in use by another object!", "error");
             }
             else {
                 // Check if we already have an id assigned
@@ -122,7 +128,7 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
         ige.textureLoadStart(imageUrl, this);
         if (!ige._textureImageStore[imageUrl]) {
             // Image not in cache, create the image object
-            const image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new Image();
+            const image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new IgeImage();
             image._igeTextures = image._igeTextures || [];
             // Add this texture to the textures that are using this image
             image._igeTextures.push(this);
@@ -199,7 +205,7 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
      * @private
      */
     _loadScript(scriptUrl) {
-        const { textures } = ige;
+        const textures = ige._textureStore;
         let rs_sandboxContext, scriptElem;
         ige.textureLoadStart(scriptUrl, this);
         if (ige.isClient) {
@@ -210,6 +216,8 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
                 .catch((err) => {
                 console.log("Module error", err);
             });
+            // TODO: Finish this off so we can dynamically load script-based
+            //		render functions and store the imported module as a Smart Texture
             // scriptElem = document.createElement("script");
             // scriptElem.onload = function (data) {
             // 	self.log("Texture script \"" + scriptUrl + "\" loaded successfully");
@@ -249,33 +257,26 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
      * @private
      */
     assignSmartTextureImage(scriptObj) {
-        let { textures } = ige, rs_sandboxContext, scriptElem;
         // Check the object has a render method
-        if (typeof scriptObj.render === "function") {
-            //ige.textureLoadStart(scriptUrl, this);
-            // Store the script data
-            this._mode = 1;
-            this.script = scriptObj;
-            // Run the asset script init method
-            if (typeof scriptObj.init === "function") {
-                scriptObj.init.apply(scriptObj, [this]);
-            }
-            //this.sizeX(image.width);
-            //this.sizeY(image.height);
-            this._loaded = true;
-            this.emit("loaded");
-            //ige.textureLoadEnd(scriptUrl, this);
+        if (typeof scriptObj.render !== "function") {
+            throw new Error("Cannot assign smart texture because it doesn't have a render() method!");
         }
-        else {
-            this.log("Cannot assign smart texture because it doesn't have a render() method!", "error");
+        // Store the script data
+        this._mode = 1;
+        this.script = scriptObj;
+        // Run the asset script init method
+        if (typeof scriptObj.init === "function") {
+            scriptObj.init.apply(scriptObj, [this]);
         }
+        this._loaded = true;
+        this.emit("loaded");
     }
     /**
      * Sets the image element that the IgeTexture will use when
      * rendering. This is a special method not designed to be called
      * directly by any game code and is used specifically when
      * assigning an existing canvas element to an IgeTexture.
-     * @param {Image} imageElement The canvas / image to use as
+     * @param {IgeImage} imageElement The canvas / image to use as
      * the image data for the IgeTexture.
      * @private
      */
@@ -284,7 +285,6 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
         if (ige.isClient) {
             // Create the image object
             image = this.image = this._originalImage = imageElement;
-            image._igeTextures = image._igeTextures || [];
             // Mark the image as loaded
             image._loaded = true;
             this._mode = 0;
@@ -296,7 +296,7 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
     /**
      * Creates a new texture from a cell in the existing texture
      * and returns the new texture.
-     * @param {Number, String} indexOrId The cell index or id to use.
+     * @param {number | string} indexOrId The cell index or id to use.
      * @return {*}
      */
     textureFromCell(indexOrId) {
@@ -306,7 +306,7 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
         }
         else {
             // The texture has not yet loaded, return the new texture and set a listener to handle
-            // when this texture has loaded so we can assign the texture's image properly
+            // when this texture has loaded then we can assign the texture's image properly
             this.on("loaded", () => {
                 this._textureFromCell(tex, indexOrId);
             });
@@ -322,45 +322,46 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
      * @private
      */
     _textureFromCell(tex, indexOrId) {
-        let index, cell, canvas, ctx;
+        if (!this._originalImage) {
+            throw new Error("Unable to create new texture from passed cell index because we don't have an _originalImage assigned to the IgeTexture!");
+        }
+        let index;
         if (typeof indexOrId === "string") {
+            // TODO: cellIdToIndex is part of the IgeSpriteSheet class
+            //   so this call is incorrect here, fix the whole process
             index = this.cellIdToIndex(indexOrId);
         }
         else {
             index = indexOrId;
         }
-        if (this._cells[index]) {
-            // Create a new IgeTexture, then draw the existing cell
-            // to its internal canvas
-            cell = this._cells[index];
-            canvas = document.createElement("canvas");
-            ctx = canvas.getContext("2d");
-            // Set smoothing mode
-            // TODO: Does this cause a costly context change? If so maybe we set a global value to keep
-            // TODO: track of the value and evaluate first before changing?
-            if (!this._smoothing) {
-                ctx.imageSmoothingEnabled = false;
-                ctx.mozImageSmoothingEnabled = false;
-            }
-            else {
-                ctx.imageSmoothingEnabled = true;
-                ctx.mozImageSmoothingEnabled = true;
-            }
-            canvas.width = cell[2];
-            canvas.height = cell[3];
-            // Draw the cell to the canvas
-            ctx.drawImage(this._originalImage, cell[0], cell[1], cell[2], cell[3], 0, 0, cell[2], cell[3]);
-            // Set the new texture's image to the canvas
-            tex._setImage(canvas);
-            tex._loaded = true;
-            // Fire the loaded event
-            setTimeout(() => {
-                tex.emit("loaded");
-            }, 1);
+        if (!this._cells[index]) {
+            throw new Error(`Unable to create new texture from passed cell index (${indexOrId}) because the cell does not exist!`);
         }
-        else {
-            this.log("Unable to create new texture from passed cell index (" + indexOrId + ") because the cell does not exist!", "warning");
+        // Create a new IgeTexture, then draw the existing cell
+        // to its internal canvas
+        const cell = this._cells[index];
+        const canvas = new IgeCanvas();
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+            throw new Error("Unable to get 2d context from IgeTexture canvas");
         }
+        // Set smoothing mode
+        // TODO: Does this cause a costly context change? If so maybe we set a global value to keep
+        //    track of the value and evaluate first before changing?
+        ctx.imageSmoothingEnabled = this._smoothing;
+        canvas.width = cell[2];
+        canvas.height = cell[3];
+        // Draw the cell to the canvas
+        ctx.drawImage(this._originalImage, cell[0], cell[1], cell[2], cell[3], 0, 0, cell[2], cell[3]);
+        // Set the new texture's image to the canvas
+        // TODO: We need to figure out how to create a uniform interface for using either
+        //		an image or a canvas source for texture image data
+        tex._setImage(canvas);
+        tex._loaded = true;
+        // Fire the loaded event
+        setTimeout(() => {
+            tex.emit("loaded");
+        }, 1);
     }
     /**
      * Sets the _sizeX property.
@@ -387,36 +388,31 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
      * canvas and not the output image. Use in conjunction with the
      * applyFilter() and preFilter() methods.
      */
-    resize(x, y, dontDraw) {
+    resize(x, y, dontDraw = false) {
         if (this._originalImage) {
-            if (this._loaded) {
-                if (!this._textureCtx) {
-                    // Create a new canvas
-                    this._textureCanvas = document.createElement("canvas");
-                }
-                this._textureCanvas.width = x;
-                this._textureCanvas.height = y;
-                this._textureCtx = this._textureCanvas.getContext("2d");
-                // Set smoothing mode
-                if (!this._smoothing) {
-                    this._textureCtx.imageSmoothingEnabled = false;
-                    this._textureCtx.mozImageSmoothingEnabled = false;
-                }
-                else {
-                    this._textureCtx.imageSmoothingEnabled = true;
-                    this._textureCtx.mozImageSmoothingEnabled = true;
-                }
-                if (!dontDraw) {
-                    // Draw the original image to the new canvas
-                    // scaled as required
-                    this._textureCtx.drawImage(this._originalImage, 0, 0, this._originalImage.width, this._originalImage.height, 0, 0, x, y);
-                }
-                // Swap the current image for this new canvas
-                this.image = this._textureCanvas;
+            if (!this._loaded) {
+                throw new Error(`Cannot resize texture because the texture image (${this._url}) has not loaded into memory yet!`);
             }
-            else {
-                this.log("Cannot resize texture because the texture image (" + this._url + ") has not loaded into memory yet!", "error");
+            if (!this._textureCtx || !this._textureCanvas) {
+                // Create a new canvas
+                this._textureCanvas = new IgeCanvas();
             }
+            this._textureCanvas.width = x;
+            this._textureCanvas.height = y;
+            const tmpCtx = this._textureCanvas.getContext("2d");
+            if (!tmpCtx) {
+                throw new Error("Couldn't get texture canvas 2d context!");
+            }
+            this._textureCtx = tmpCtx;
+            // Set smoothing mode
+            this._textureCtx.imageSmoothingEnabled = this._smoothing;
+            if (!dontDraw) {
+                // Draw the original image to the new canvas
+                // scaled as required
+                this._textureCtx.drawImage(this._originalImage, 0, 0, this._originalImage.width, this._originalImage.height, 0, 0, x, y);
+            }
+            // Swap the current image for this new canvas
+            this.image = this._textureCanvas;
         }
     }
     /**
@@ -430,46 +426,41 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
      * canvas and not the output image. Use in conjunction with the
      * applyFilter() and preFilter() methods.
      */
-    resizeByPercent(x, y, dontDraw) {
-        if (this._originalImage) {
-            if (this._loaded) {
-                // Calc final x/y values
-                x = Math.floor((this.image.width / 100) * x);
-                y = Math.floor((this.image.height / 100) * y);
-                if (!this._textureCtx) {
-                    // Create a new canvas
-                    this._textureCanvas = document.createElement("canvas");
-                }
-                this._textureCanvas.width = x;
-                this._textureCanvas.height = y;
-                this._textureCtx = this._textureCanvas.getContext("2d");
-                // Set smoothing mode
-                if (!this._smoothing) {
-                    this._textureCtx.imageSmoothingEnabled = false;
-                    this._textureCtx.mozImageSmoothingEnabled = false;
-                }
-                else {
-                    this._textureCtx.imageSmoothingEnabled = true;
-                    this._textureCtx.mozImageSmoothingEnabled = true;
-                }
-                if (!dontDraw) {
-                    // Draw the original image to the new canvas
-                    // scaled as required
-                    this._textureCtx.drawImage(this._originalImage, 0, 0, this._originalImage.width, this._originalImage.height, 0, 0, x, y);
-                }
-                // Swap the current image for this new canvas
-                this.image = this._textureCanvas;
-            }
-            else {
-                this.log("Cannot resize texture because the texture image (" + this._url + ") has not loaded into memory yet!", "error");
-            }
+    resizeByPercent(x, y, dontDraw = false) {
+        if (!this._originalImage) {
+            return;
         }
+        if (!this._loaded) {
+            throw new Error(`Cannot resize texture because the texture image (${this._url}) has not loaded into memory yet!`);
+        }
+        // Calc final x/y values
+        x = Math.floor((this._originalImage.width / 100) * x);
+        y = Math.floor((this._originalImage.height / 100) * y);
+        if (!this._textureCtx || !this._textureCanvas) {
+            // Create a new canvas
+            this._textureCanvas = new IgeCanvas();
+        }
+        this._textureCanvas.width = x;
+        this._textureCanvas.height = y;
+        const tmpCtx = this._textureCanvas.getContext("2d");
+        if (!tmpCtx) {
+            throw new Error("Couldn't get texture canvas 2d context!");
+        }
+        this._textureCtx = tmpCtx;
+        // Set smoothing mode
+        this._textureCtx.imageSmoothingEnabled = this._smoothing;
+        if (!dontDraw) {
+            // Draw the original image to the new canvas
+            // scaled as required
+            this._textureCtx.drawImage(this._originalImage, 0, 0, this._originalImage.width, this._originalImage.height, 0, 0, x, y);
+        }
+        // Swap the current image for this new canvas
+        this.image = this._textureCanvas;
     }
     /**
      * Sets the texture image back to the original image that the
      * texture first loaded. Useful if you have applied filters
-     * or resized the image and now want to revert back to the
-     * original.
+     * or resized the image and now want to revert to the original.
      */
     restoreOriginal() {
         this.image = this._originalImage;
@@ -494,60 +485,61 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
         // Check that the cell is not set to null. If it is then
         // we don't render anything which effectively makes the
         // entity "blank"
-        if (entity._cell !== null) {
-            // TODO: Does this cause a costly context change? If so maybe we set a global value to keep
-            // TODO: track of the value and evaluate first before changing?
-            if (!this._smoothing) {
-                ige._ctx.imageSmoothingEnabled = false;
-                ige._ctx.mozImageSmoothingEnabled = false;
+        if (entity._cell === null) {
+            return;
+        }
+        if (ige._ctx) {
+            ige._ctx.imageSmoothingEnabled = this._smoothing;
+        }
+        if (this._mode === 0) {
+            // This texture is image-based
+            if (!this._originalImage || !this.image) {
+                throw new Error("No image is available to render but the IgeTexture is in mode zero (image based render)!");
             }
-            else {
-                ige._ctx.imageSmoothingEnabled = true;
-                ige._ctx.mozImageSmoothingEnabled = true;
+            const cell = this._cells[entity._cell], geom = entity._bounds2d, poly = entity._renderPos; // Render pos is calculated in the IgeEntity.aabb() method
+            if (!cell) {
+                throw new Error(`Cannot render texture using cell ${entity._cell} because the cell does not exist in the assigned texture!`);
             }
-            if (this._mode === 0) {
-                // This texture is image-based
-                const cell = this._cells[entity._cell], geom = entity._bounds2d, poly = entity._renderPos; // Render pos is calculated in the IgeEntity.aabb() method
-                if (cell) {
-                    if (this._preFilters.length > 0 && this._textureCtx) {
-                        // Call the drawing of the original image
-                        this._textureCtx.clearRect(0, 0, this._textureCanvas.width, this._textureCanvas.height);
-                        this._textureCtx.drawImage(this._originalImage, 0, 0);
-                        const self = this;
-                        // Call the applyFilter and preFilter methods one by one
-                        this._applyFilters.forEach((method, index) => {
-                            self._textureCtx.save();
-                            method(self._textureCanvas, self._textureCtx, self._originalImage, self, self._applyFiltersData[index]);
-                            self._textureCtx.restore();
-                        });
-                        this._preFilters.forEach((method, index) => {
-                            self._textureCtx.save();
-                            method(self._textureCanvas, self._textureCtx, self._originalImage, self, self._preFiltersData[index]);
-                            self._textureCtx.restore();
-                        });
-                    }
-                    ctx.drawImage(this.image, cell[0], // texture x
-                    cell[1], // texture y
-                    cell[2], // texture width
-                    cell[3], // texture height
-                    poly.x, // render x
-                    poly.y, // render y
-                    geom.x, // render width
-                    geom.y // render height
-                    );
-                    ige._drawCount++;
-                }
-                else {
-                    this.log("Cannot render texture using cell " + entity._cell + " because the cell does not exist in the assigned texture!", "error");
-                }
+            if (this._preFilters.length > 0 && this._textureCanvas && this._textureCtx) {
+                // Call the drawing of the original image
+                this._textureCtx.clearRect(0, 0, this._textureCanvas.width, this._textureCanvas.height);
+                this._textureCtx.drawImage(this._originalImage, 0, 0);
+                // Call the applyFilter and preFilter methods one by one
+                this._applyFilters.forEach((method, index) => {
+                    if (!this._textureCanvas || !this._textureCtx || !this._originalImage)
+                        return;
+                    this._textureCtx.save();
+                    method(this._textureCanvas, this._textureCtx, this._originalImage, this, this._applyFiltersData[index]);
+                    this._textureCtx.restore();
+                });
+                this._preFilters.forEach((method, index) => {
+                    if (!this._textureCanvas || !this._textureCtx || !this._originalImage)
+                        return;
+                    this._textureCtx.save();
+                    method(this._textureCanvas, this._textureCtx, this._originalImage, this, this._preFiltersData[index]);
+                    this._textureCtx.restore();
+                });
             }
-            if (this._mode === 1) {
-                // This texture is script-based (a "smart texture")
-                ctx.save();
-                this.script.render(ige, ctx, entity, this);
-                ctx.restore();
-                ige._drawCount++;
+            ctx.drawImage(this.image, cell[0], // texture x
+            cell[1], // texture y
+            cell[2], // texture width
+            cell[3], // texture height
+            poly.x, // render x
+            poly.y, // render y
+            geom.x, // render width
+            geom.y // render height
+            );
+            ige._drawCount++;
+        }
+        if (this._mode === 1) {
+            if (!this.script) {
+                throw new Error("No smart texture is available to render but the IgeTexture is in mode one (script based render)!");
             }
+            // This texture is script-based (a "smart texture")
+            ctx.save();
+            this.script.render(ige, ctx, entity, this);
+            ctx.restore();
+            ige._drawCount++;
         }
     }
     /**
@@ -555,19 +547,31 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
      * Useful if you want to keep resizings, etc.
      */
     removeFilter(method) {
-        let i;
-        while ((i = this._preFilters.indexOf(method)) > -1) {
-            this._preFilters[i] = undefined;
-            this._preFiltersData[i] = undefined;
+        // TODO: Maybe we should refactor filter data structures so that the filter data is stored alongside the filter method?
+        const matchingPreFilterIndexes = [];
+        const matchingApplyFilterIndexes = [];
+        // Find any filter methods that match the passed `method`
+        this._preFilters.forEach((tmpFilterItem, index) => {
+            if (tmpFilterItem === method) {
+                matchingPreFilterIndexes.push(index);
+            }
+        });
+        this._applyFilters.forEach((tmpFilterItem, index) => {
+            if (tmpFilterItem === method) {
+                matchingApplyFilterIndexes.push(index);
+            }
+        });
+        // Remove any filter methods that match the passed `method`
+        for (let i = matchingPreFilterIndexes.length - 1; i >= 0; i--) {
+            const index = matchingPreFilterIndexes[i];
+            this._preFilters.splice(index, 1);
+            this._preFiltersData.splice(index, 1);
         }
-        while ((i = this._applyFilters.indexOf(method)) > -1) {
-            this._applyFilters[i] = undefined;
-            this._applyFiltersData[i] = undefined;
+        for (let i = matchingApplyFilterIndexes.length - 1; i >= 0; i--) {
+            const index = matchingApplyFilterIndexes[i];
+            this._applyFilters.splice(index, 1);
+            this._applyFiltersData.splice(index, 1);
         }
-        this._preFilters = this._preFilters.clean();
-        this._preFiltersData = this._preFiltersData.clean();
-        this._applyFilters = this._applyFilters.clean();
-        this._applyFiltersData = this._applyFiltersData.clean();
         this._rerenderFilters();
     }
     /**
@@ -593,11 +597,12 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
         // resize it to the old boundaries
         this.resize(this._textureCanvas.width, this._textureCanvas.height, false);
         // Draw applyFilter layers upon it
-        const self = this;
         this._applyFilters.forEach((method, index) => {
-            self._textureCtx.save();
-            method(self._textureCanvas, self._textureCtx, self._originalImage, self, self._applyFiltersData[index]);
-            self._textureCtx.restore();
+            if (!this._textureCtx || !this._textureCanvas || !this._originalImage)
+                return;
+            this._textureCtx.save();
+            method(this._textureCanvas, this._textureCtx, this._originalImage, this, this._applyFiltersData[index]);
+            this._textureCtx.restore();
         });
     }
     /**
@@ -605,39 +610,32 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
      * the texture is rendered and will allow you to modify the texture
      * image before rendering each tick.
      * @param method
+     * @param data
      * @return {*}
      */
     preFilter(method, data) {
-        if (method !== undefined) {
-            if (this._originalImage) {
-                if (!this._textureCtx) {
-                    // Create a new canvas
-                    this._textureCanvas = document.createElement("canvas");
-                    this._textureCanvas.width = this._originalImage.width;
-                    this._textureCanvas.height = this._originalImage.height;
-                    this._textureCtx = this._textureCanvas.getContext("2d");
-                    // Set smoothing mode
-                    if (!this._smoothing) {
-                        this._textureCtx.imageSmoothingEnabled = false;
-                        this._textureCtx.mozImageSmoothingEnabled = false;
-                    }
-                    else {
-                        this._textureCtx.imageSmoothingEnabled = true;
-                        this._textureCtx.mozImageSmoothingEnabled = true;
-                    }
-                }
-                // Swap the current image for this new canvas
-                this.image = this._textureCanvas;
-                // Save filter in active preFilter list
-                this._preFilters[this._preFilters.length] = method;
-                this._preFiltersData[this._preFiltersData.length] = !data ? {} : data;
-            }
+        if (!this._originalImage) {
             return this;
         }
-        else {
-            this.log("Cannot use pre-filter, no filter method was passed!", "warning");
+        if (!this._textureCtx || !this._textureCanvas) {
+            // Create a new canvas
+            this._textureCanvas = new IgeCanvas();
+            this._textureCanvas.width = this._originalImage.width;
+            this._textureCanvas.height = this._originalImage.height;
+            const tmpCtx = this._textureCanvas.getContext("2d");
+            if (!tmpCtx) {
+                throw new Error("Couldn't get texture canvas 2d context!");
+            }
+            this._textureCtx = tmpCtx;
+            // Set smoothing mode
+            this._textureCtx.imageSmoothingEnabled = this._smoothing;
         }
-        return this._preFilters[this._preFilters.length - 1];
+        // Swap the current image for this new canvas
+        this.image = this._textureCanvas;
+        // Save filter in active preFilter list
+        this._preFilters[this._preFilters.length] = method;
+        this._preFiltersData[this._preFiltersData.length] = !data ? {} : data;
+        return this;
     }
     /**
      * Applies a filter to the texture. The filter is a method that will
@@ -649,48 +647,39 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
      * @return {*}
      */
     applyFilter(method, data) {
-        if (this._loaded) {
-            if (method !== undefined) {
-                if (this._originalImage) {
-                    if (!this._textureCtx) {
-                        // Create a new canvas
-                        this._textureCanvas = document.createElement("canvas");
-                        this._textureCanvas.width = this._originalImage.width;
-                        this._textureCanvas.height = this._originalImage.height;
-                        this._textureCtx = this._textureCanvas.getContext("2d");
-                        // Draw the basic image
-                        this._textureCtx.clearRect(0, 0, this._textureCanvas.width, this._textureCanvas.height);
-                        this._textureCtx.drawImage(this._originalImage, 0, 0);
-                        // Set smoothing mode
-                        if (!this._smoothing) {
-                            this._textureCtx.imageSmoothingEnabled = false;
-                            this._textureCtx.mozImageSmoothingEnabled = false;
-                        }
-                        else {
-                            this._textureCtx.imageSmoothingEnabled = true;
-                            this._textureCtx.mozImageSmoothingEnabled = true;
-                        }
-                    }
-                    // Swap the current image for this new canvas
-                    this.image = this._textureCanvas;
-                    // Call the passed method
-                    if (this._preFilters.length <= 0) {
-                        this._textureCtx.save();
-                        method(this._textureCanvas, this._textureCtx, this._originalImage, this, data);
-                        this._textureCtx.restore();
-                    }
-                    // Save filter in active applyFiler list
-                    this._applyFilters[this._applyFilters.length] = method;
-                    this._applyFiltersData[this._applyFiltersData.length] = !data ? {} : data;
-                }
-            }
-            else {
-                this.log("Cannot apply filter, no filter method was passed!", "warning");
-            }
+        if (!this._loaded) {
+            throw new Error("Cannot apply filter, the texture you are trying to apply the filter to has not yet loaded!");
         }
-        else {
-            this.log("Cannot apply filter, the texture you are trying to apply the filter to has not yet loaded!", "error");
+        if (!this._originalImage) {
+            return this;
         }
+        if (!this._textureCtx || !this._textureCanvas) {
+            // Create a new canvas
+            this._textureCanvas = new IgeCanvas();
+            this._textureCanvas.width = this._originalImage.width;
+            this._textureCanvas.height = this._originalImage.height;
+            const tmpCtx = this._textureCanvas.getContext("2d");
+            if (!tmpCtx) {
+                throw new Error("Couldn't get texture canvas 2d context!");
+            }
+            this._textureCtx = tmpCtx;
+            // Draw the basic image
+            this._textureCtx.clearRect(0, 0, this._textureCanvas.width, this._textureCanvas.height);
+            this._textureCtx.drawImage(this._originalImage, 0, 0);
+            // Set smoothing mode
+            this._textureCtx.imageSmoothingEnabled = this._smoothing;
+        }
+        // Swap the current image for this new canvas
+        this.image = this._textureCanvas;
+        // Call the passed method
+        if (this._preFilters.length <= 0) {
+            this._textureCtx.save();
+            method(this._textureCanvas, this._textureCtx, this._originalImage, this, data);
+            this._textureCtx.restore();
+        }
+        // Save filter in active applyFiler list
+        this._applyFilters[this._applyFilters.length] = method;
+        this._applyFiltersData[this._applyFiltersData.length] = !data ? {} : data;
         return this;
     }
     /**
@@ -703,34 +692,29 @@ class IgeTexture extends WithEventingMixin(IgeBaseClass) {
      * @return {Array} [r,g,b,a] Pixel data.
      */
     pixelData(x, y) {
-        if (this._loaded) {
-            if (this.image) {
-                // Check if the texture is already using a canvas
-                if (!this._textureCtx) {
-                    // Create a new canvas
-                    this._textureCanvas = document.createElement("canvas");
-                    this._textureCanvas.width = this.image.width;
-                    this._textureCanvas.height = this.image.height;
-                    this._textureCtx = this._textureCanvas.getContext("2d");
-                    // Set smoothing mode
-                    if (!this._smoothing) {
-                        this._textureCtx.imageSmoothingEnabled = false;
-                        this._textureCtx.mozImageSmoothingEnabled = false;
-                    }
-                    else {
-                        this._textureCtx.imageSmoothingEnabled = true;
-                        this._textureCtx.mozImageSmoothingEnabled = true;
-                    }
-                    // Draw the image to the canvas
-                    this._textureCtx.drawImage(this.image, 0, 0);
-                }
-                return this._textureCtx.getImageData(x, y, 1, 1).data;
+        if (!this._loaded) {
+            throw new Error("Cannot read pixel data, the texture you are trying to read data from has not yet loaded!");
+        }
+        if (!this.image) {
+            return this;
+        }
+        // Check if the texture is already using a canvas
+        if (!this._textureCtx || !this._textureCanvas) {
+            // Create a new canvas
+            this._textureCanvas = new IgeCanvas();
+            this._textureCanvas.width = this.image.width;
+            this._textureCanvas.height = this.image.height;
+            const tmpCtx = this._textureCanvas.getContext("2d");
+            if (!tmpCtx) {
+                throw new Error("Couldn't get texture canvas 2d context!");
             }
+            this._textureCtx = tmpCtx;
+            // Set smoothing mode
+            this._textureCtx.imageSmoothingEnabled = this._smoothing;
+            // Draw the image to the canvas
+            this._textureCtx.drawImage(this.image, 0, 0);
         }
-        else {
-            this.log("Cannot read pixel data, the texture you are trying to read data from has not yet loaded!", "error");
-        }
-        return this;
+        return this._textureCtx.getImageData(x, y, 1, 1).data;
     }
     /**
      * Creates a clone of the texture.

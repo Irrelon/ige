@@ -379,7 +379,7 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
         this._globalSmoothing = false; // Determines the default smoothing setting for new textures
         this._register = {
             ige: this
-        }; // Holds a reference to every item in the scenegraph by it's ID
+        }; // Holds a reference to every item in the scenegraph by its ID
         this._categoryRegister = {}; // Holds reference to every item with a category
         this._groupRegister = {}; // Holds reference to every item with a group
         this._postTick = []; // An array of methods that are called upon tick completion
