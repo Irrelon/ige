@@ -1,32 +1,20 @@
-"use strict";
+import IgeBaseClass from "./IgeBaseClass";
 
-var appCore = require('irrelon-appcore');
+class IgeSceneGraph extends IgeBaseClass {
+	classId = "IgeSceneGraph";
 
-appCore.module('IgeSceneGraph', function (IgeClass) {
-	var IgeSceneGraph = IgeClass.extend({
-		classId: 'IgeSceneGraph',
-		interfaceImplements: [
-			'addGraph',
-			'removeGraph'
-		],
-		
-		/**
-		 * Called when loading the graph data via $ige.engine.addGraph().
-		 * @param {Object=} options The options that were passed with the call
-		 * to $ige.engine.addGraph().
-		 */
-		addGraph: function (options) {
-			
-		},
-		
-		/**
-		 * The method called when the graph items are to be removed from the
-		 * active graph.
-		 */
-		removeGraph: function () {
-			
-		}
-	});
-	
-	return IgeSceneGraph;
-});
+	/**
+	 * Called when loading the graph data via ige.engine.addGraph().
+	 * @param {Object=} options The options that were passed with the call
+	 * to ige.addGraph().
+	 */
+	addGraph (options?: any) {}
+
+	/**
+	 * The method called when the graph items are to be removed from the
+	 * active graph.
+	 */
+	removeGraph (options?: any) {}
+}
+
+export default IgeSceneGraph;

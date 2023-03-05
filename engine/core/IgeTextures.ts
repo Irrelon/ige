@@ -1,26 +1,27 @@
-"use strict";
+import type { Ige } from "./ige";
+import { IgeEventingClass } from "./IgeEventingClass";
 
-var appCore = require('irrelon-appcore'),
-	emitter = require('irrelon-emitter');
+export class IgeTextures extends IgeEventingClass {
+	_ige: Ige;
 
-appCore.module('$textures', function ($ige) {
-	var $textures = function () {
-		$ige.$textures = this;
-		
+	constructor (ige: Ige) {
+		super();
+
+		this._ige = ige;
 		this._store = {};
 		this._arr = [];
 		this._textureImageStore = {};
 		this._texturesLoading = 0; // Holds a count of currently loading textures
 		this._texturesTotal = 0; // Holds total number of textures loading / loaded
 		this._globalSmoothing = false; // Determines the default smoothing setting for new textures
-	};
+	}
 	
-	$textures.prototype.add = function (name, texture) {
+	add = function (name, texture) {
 		this._store[name] = texture;
 	};
 	
-	$textures.prototype.addGroup = function (group) {
-		var i;
+	addGroup = function (group) {
+		let i;
 		
 		for (i in group) {
 			if (group.hasOwnProperty(i)) {
@@ -29,8 +30,8 @@ appCore.module('$textures', function ($ige) {
 		}
 	};
 	
-	$textures.prototype.remove = function (name) {
-		var texture = this._store[name];
+	remove = function (name) {
+		const texture = this._store[name];
 		
 		if (texture) {
 			texture.destroy();
@@ -38,8 +39,8 @@ appCore.module('$textures', function ($ige) {
 		}
 	};
 	
-	$textures.prototype.removeGroup = function (group) {
-		var i;
+	removeGroup = function (group) {
+		let i;
 		
 		for (i in group) {
 			if (group.hasOwnProperty(i)) {
@@ -48,8 +49,8 @@ appCore.module('$textures', function ($ige) {
 		}
 	};
 	
-	$textures.prototype.get = function (name) {
-		var tex = this._store[name];
+	get = function (name) {
+		const tex = this._store[name];
 		if (!tex) {
 			throw('Attempted to get texture that does not exist: ' + name);
 		}
@@ -60,11 +61,13 @@ appCore.module('$textures', function ($ige) {
 	/**
 	 * Adds one to the number of textures currently loading.
 	 */
-	$textures.prototype.textureLoadStart = function (url, textureObj) {
+	textureLoadStart = function (url, textureObj) {
 		this._texturesLoading++;
 		this._texturesTotal++;
-		
-		$ige.engine.updateProgress();
+
+		// TODO: The engine should listen to the events emitted from this
+		//    so this line is not required
+		//$ige.engine.updateProgress();
 		
 		this.emit('textureLoadStart', textureObj);
 	};
@@ -73,8 +76,8 @@ appCore.module('$textures', function ($ige) {
 	 * Subtracts one from the number of textures currently loading and if no more need
 	 * to load, it will also call the _allTexturesLoaded() method.
 	 */
-	$textures.prototype.textureLoadEnd = function (url, textureObj) {
-		var self = this;
+	textureLoadEnd = function (url, textureObj) {
+		const self = this;
 		
 		if (!textureObj._destroyed) {
 			// Add the texture to the _arr array
@@ -83,14 +86,19 @@ appCore.module('$textures', function ($ige) {
 		
 		// Decrement the overall loading number
 		this._texturesLoading--;
-		
-		$ige.engine.updateProgress();
+
+		// TODO: The engine should listen to the events emitted from this
+		//    so this line is not required
+		//$ige.engine.updateProgress();
 		
 		this.emit('textureLoadEnd', textureObj);
 		
 		// If we've finished...
 		if (this._texturesLoading === 0) {
 			// All textures have finished loading
+			// TODO: The engine should listen to the events emitted from this
+			//    so this line is not required
+			//$ige.engine.updateProgress();
 			$ige.engine.updateProgress();
 			
 			setTimeout(function () {
@@ -104,8 +112,8 @@ appCore.module('$textures', function ($ige) {
 	 * @param {String} url
 	 * @return {IgeTexture}
 	 */
-	$textures.prototype.textureFromUrl = function (url) {
-		var arr = this._arr,
+	textureFromUrl = function (url) {
+		let arr = this._arr,
 			arrCount = arr.length,
 			item;
 		
@@ -121,7 +129,7 @@ appCore.module('$textures', function ($ige) {
 	 * Checks if all textures have finished loading and returns true if so.
 	 * @return {Boolean}
 	 */
-	$textures.prototype.texturesLoaded = function () {
+	texturesLoaded = function () {
 		return this._texturesLoading === 0;
 	};
 	
@@ -129,10 +137,10 @@ appCore.module('$textures', function ($ige) {
 	 * Emits the "texturesLoaded" event.
 	 * @private
 	 */
-	$textures.prototype._allTexturesLoaded = function () {
+	_allTexturesLoaded = function () {
 		if (!this._loggedATL) {
 			this._loggedATL = true;
-			$ige.engine.log('All textures have loaded');
+			this.log('All textures have loaded');
 		}
 		
 		// Fire off an event about this
@@ -146,7 +154,7 @@ appCore.module('$textures', function ($ige) {
 	 * @param val
 	 * @return {*}
 	 */
-	$textures.prototype.globalSmoothing = function (val) {
+	globalSmoothing = function (val) {
 		if (val !== undefined) {
 			this._globalSmoothing = val;
 			return this;
@@ -154,9 +162,4 @@ appCore.module('$textures', function ($ige) {
 		
 		return this._globalSmoothing;
 	};
-	
-	// Add event emitter functionality to the class
-	emitter($textures);
-	
-	return new $textures();
-});
+}
