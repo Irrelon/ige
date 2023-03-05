@@ -1,7 +1,7 @@
 import { ige } from "../../instance";
 import IgeEventingClass from "../../core/IgeEventingClass";
-import IgeAudioComponent from "./IgeAudioComponent";
 import { IgeRegisterable } from "../../../types/IgeRegisterable";
+import { audioController } from "../../services/audioController";
 
 class IgeAudio extends IgeEventingClass implements IgeRegisterable {
 	classId = "IgeAudio";
@@ -10,12 +10,20 @@ class IgeAudio extends IgeEventingClass implements IgeRegisterable {
 	_url?: string;
 	_data?: ArrayBuffer;
 	_buffer?: AudioBuffer;
+	_playWhenReady: boolean = false;
+	_loaded: boolean = false;
+	_loop: boolean = false;
 
 	constructor (url?: string) {
 		super();
 
-		if (!url) { return; }
-		void this.load(url).then(this._loaded);
+		if (!url) {
+			return;
+		}
+
+		this.url(url).then(() => {
+			this._loaded = true;
+		});
 	}
 
 	/**
@@ -71,64 +79,76 @@ class IgeAudio extends IgeEventingClass implements IgeRegisterable {
 		return this._id;
 	}
 
-	/**
-	 * Loads an audio file from the given url.
-	 * @param {String} url The url to load the audio file from.
-	 * @param {Function=} callback Optional callback method to call when the audio
-	 * file has loaded or on error.
-	 */
-	async load (url: string) {
-		return new Promise<ArrayBuffer>((resolve, reject) => {
-			const request = new XMLHttpRequest();
-
-			request.open("GET", url, true);
-			request.responseType = "arraybuffer";
-
-			// Decode asynchronously
-			request.onload = () => {
-				this._data = request.response as ArrayBuffer;
-				this._url = url;
-
-				resolve(request.response as ArrayBuffer);
-			};
-
-			request.onerror = (err) => {
-				reject(err);
-			};
-
-			request.send();
+	async url (url: string) {
+		return audioController._load(url).then((buffer) => {
+			this.buffer(buffer);
 		});
 	}
 
-	async _loaded (data: ArrayBuffer) {
-		return (ige.components.audio as IgeAudioComponent).decode(data)
-			.then((buffer) => {
-				this._buffer = buffer;
-				(ige.components.audio as IgeAudioComponent).log(`Audio file (${this._url}) loaded successfully`);
+	/**
+	 * Gets / sets the current audio buffer.
+	 * @param buffer
+	 * @returns {*}
+	 */
+	buffer (buffer: AudioBuffer) {
+		if (buffer !== undefined) {
+			this._buffer = buffer;
 
-				this.emit("loaded");
-			}).catch((err: any) => {
-				throw new Error(`Failed to decode audio "${this._url}": ${err}`);
-			});
+			if (this._playWhenReady) {
+				this.play(this._loop);
+			}
+
+			return this;
+		}
+
+		return this._buffer;
+	}
+
+
+
+	panner (val) {
+		if (val === undefined) {
+			return this._panner;
+		}
+
+		this._panner = val;
+
+		if (this._bufferSource) {
+			// Make sure we include the panner in the connections
+			this._bufferSource.connect(this._panner);
+			this._panner.connect($ige.engine.audio._masterVolumeNode);
+		}
+
+		return this;
 	}
 
 	/**
 	 * Plays the audio.
 	 */
 	play () {
-		if (!this._buffer) {
-			// Wait for the audio to load
-			this.on("loaded", () => {
-				this.play();
-			});
+		if (this._buffer) {
+			this._bufferSource = audioController._ctx.createBufferSource();
+			this._bufferSource.buffer = this._buffer;
 
-			return;
+			if (this._panner) {
+				// Connect through the panner
+				this._bufferSource.connect(this._panner);
+				this._panner.connect(audioController._masterVolumeNode);
+			} else {
+				// Connect directly to the destination
+				this._bufferSource.connect(audioController._masterVolumeNode);
+			}
+
+			this._bufferSource.loop = loop;
+			this._bufferSource.start(0);
+
+			this.log("Audio file (" + this._url + ") playing...");
+		} else {
+			this._playWhenReady = true;
+			this._loop = loop;
 		}
 
-		const bufferSource = (ige.components.audio as IgeAudioComponent)._ctx.createBufferSource();
-		bufferSource.buffer = this._buffer;
-		bufferSource.connect((ige.components.audio as IgeAudioComponent)._ctx.destination);
-		bufferSource.start(0);
+		this._playing = true;
 	}
 }
 

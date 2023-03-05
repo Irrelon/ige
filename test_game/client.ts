@@ -3,7 +3,7 @@ import IgeBaseClass from "../engine/core/IgeBaseClass";
 import IgeBaseScene from "../engine/core/IgeBaseScene";
 import IgeEditorComponent from "../engine/components/editor/IgeEditorComponent";
 import IgeInputComponent from "../engine/components/IgeInputComponent";
-import IgeAudioComponent from "../engine/components/audio/IgeAudioComponent";
+import IgeAudioComponent from "../engine/components/audio/IgeAudioController";
 import { Level1 } from "./levels/Level1";
 import { textures } from "./services/textures";
 
