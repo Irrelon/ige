@@ -31,7 +31,7 @@ class IgeFontSheet extends IgeTexture {
                 this._measuredWidthMap = this._fontData.characters.measuredWidth;
                 this._pixelWidthMap = this._fontData.characters.pixelWidth;
                 if (this._fontData) {
-                    var header = this._fontData.font;
+                    const header = this._fontData.font;
                     this.log("Loaded font sheet for font: " + header.fontName + " @ " + header.fontSize + header.fontSizeUnit + " in " + header.fontColor);
                 }
                 else {
@@ -42,7 +42,7 @@ class IgeFontSheet extends IgeTexture {
     }
     decodeHeader() {
         // Create a temporary canvas
-        var canvas = document.createElement("canvas"), ctx = canvas.getContext("2d");
+        const canvas = document.createElement("canvas"), ctx = canvas.getContext("2d");
         // Set canvas width to match font sheet image and
         // height to 1 as we have 1 line of header data
         canvas.width = this.image.width;
@@ -54,7 +54,7 @@ class IgeFontSheet extends IgeTexture {
     }
     _decode(canvas, x, y, maxX) {
         "use strict";
-        var ctx = canvas.getContext("2d"), imageData = ctx.getImageData(x, y, maxX, canvas.height).data, run = true, quadCode, i = 0, jsonString = "";
+        let ctx = canvas.getContext("2d"), imageData = ctx.getImageData(x, y, maxX, canvas.height).data, run = true, quadCode, i = 0, jsonString = "";
         while (run) {
             quadCode = String(imageData[i]) + " " + String(imageData[i + 1]) + " " + String(imageData[i + 2]);
             if (quadCode === "3 2 1") {
@@ -86,7 +86,7 @@ class IgeFontSheet extends IgeTexture {
      */
     measureTextWidth(text) {
         if (this._loaded) {
-            var characterIndex, charCodeMap = this._charCodeMap, measuredWidthMap = this._measuredWidthMap, charIndex, lineArr = [], lineIndex, measuredWidth, maxWidth = 0;
+            let characterIndex, charCodeMap = this._charCodeMap, measuredWidthMap = this._measuredWidthMap, charIndex, lineArr = [], lineIndex, measuredWidth, maxWidth = 0;
             // Handle multi-line text
             if (text.indexOf("\n") > -1) {
                 // Split each line into an array item
@@ -114,7 +114,7 @@ class IgeFontSheet extends IgeTexture {
     }
     render(ctx, entity) {
         if (entity._renderText && this._loaded) {
-            var _ctx = ctx, text = entity._renderText, lineText, lineArr = [], lineIndex, characterIndex, charCodeMap = this._charCodeMap, charPosMap = this._charPosMap, measuredWidthMap = this._measuredWidthMap, pixelWidthMap = this._pixelWidthMap, renderX = 0, renderY = 0, renderStartX = 0, renderStartY = 0, masterX = 0, masterY = 0, lineWidth = [], lineHeight = (this._sizeY - 2), singleLineWidth = 0, totalWidth = 0, totalHeight, charIndex;
+            let _ctx = ctx, text = entity._renderText, lineText, lineArr = [], lineIndex, characterIndex, charCodeMap = this._charCodeMap, charPosMap = this._charPosMap, measuredWidthMap = this._measuredWidthMap, pixelWidthMap = this._pixelWidthMap, renderX = 0, renderY = 0, renderStartX = 0, renderStartY = 0, masterX = 0, masterY = 0, lineWidth = [], lineHeight = (this._sizeY - 2), singleLineWidth = 0, totalWidth = 0, totalHeight, charIndex;
             // Handle multi-line text
             if (text.indexOf("\n") > -1) {
                 // Split each line into an array item
@@ -206,7 +206,7 @@ class IgeFontSheet extends IgeTexture {
                         _ctx.restore();
                     }
                     renderX += measuredWidthMap[charIndex] || 0;
-                    this._ige._drawCount++;
+                    this._ige.metrics.drawCount++;
                 }
                 renderX = 0;
             }

@@ -225,14 +225,14 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) imple
 		this._scene.tick(ctx);
 		ctx.restore();
 
-		if (this._drawGuides && ctx === ige._ctx) {
+		if (this._drawGuides && ctx === ige.engine._ctx) {
 			ctx.save();
 			ctx.translate(-this._translate.x, -this._translate.y);
 			this.paintGuides(ctx);
 			ctx.restore();
 		}
 
-		if (this._drawBounds && ctx === ige._ctx) {
+		if (this._drawBounds && ctx === ige.engine._ctx) {
 			// Traverse the scenegraph and draw axis-aligned
 			// bounding boxes for every object
 			ctx.save();
@@ -241,7 +241,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) imple
 			ctx.restore();
 		}
 
-		if (this._drawMouse && ctx === ige._ctx) {
+		if (this._drawMouse && ctx === ige.engine._ctx) {
 			ctx.save();
 			const mp = this.mousePos();
 

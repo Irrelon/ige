@@ -66,7 +66,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 */
 	negate (entity) {
 		if (entity !== undefined) {
-			var x, y,
+			let x, y,
 				entityMapData = entity.map._mapData,
 				thisMapData = this.map._mapData;
 
@@ -112,7 +112,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 */
 	allTexturesLoaded () {
 		if (!this._allTexturesLoaded) {
-			var arr = this._textureList,
+			let arr = this._textureList,
 				arrCount = arr.length;
 
 			while (arrCount--) {
@@ -163,7 +163,7 @@ class IgeTextureMap extends IgeTileMap2d {
 			// Empty the existing array
 			this._textureList = [];
 
-			var tex = [], i,
+			let tex = [], i,
 				self = this;
 
 			// Loop the texture list and create each texture object
@@ -190,7 +190,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 */
 	saveMap () {
 		// in URL format
-		var textures = [], i,
+		let textures = [], i,
 			x, y,
 			dataX = 0, dataY = 0,
 			mapData = this.map._mapData;
@@ -256,7 +256,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 */
 	tileTextureIndex (x, y, textureIndex) {
 		if (x !== undefined && y !== undefined) {
-			var obj = this.map.tileData(x, y);
+			const obj = this.map.tileData(x, y);
 			if (textureIndex !== undefined) {
 				// Set the cell
 				obj[0] = textureIndex;
@@ -274,7 +274,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 */
 	tileTextureCell (x, y, cell) {
 		if (x !== undefined && y !== undefined) {
-			var obj = this.map.tileData(x, y);
+			const obj = this.map.tileData(x, y);
 			if (cell !== undefined) {
 				// Set the cell
 				obj[1] = cell;
@@ -291,7 +291,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 * @return {Object} The new map data.
 	 */
 	convertHorizontalData (mapData) {
-		var newData = [],
+		let newData = [],
 			x, y;
 
 		for (x in mapData) {
@@ -319,7 +319,7 @@ class IgeTextureMap extends IgeTileMap2d {
 		super.tick(ctx);
 
 		// Draw each image that has been defined on the map
-		var mapData = this.map._mapData,
+		let mapData = this.map._mapData,
 			x, y,
 			tx, ty,
 			xInt, yInt,
@@ -483,7 +483,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 * @private
 	 */
 	_ensureSectionExists (sectionX, sectionY) {
-		var sectionCtx;
+		let sectionCtx;
 
 		this._sections[sectionX] = this._sections[sectionX] || [];
 		this._sectionCtx[sectionX] = this._sectionCtx[sectionX] || [];
@@ -515,7 +515,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 * @private
 	 */
 	_drawSectionsToCtx (ctx) {
-		var x, y, tileData,
+		let x, y, tileData,
 			sectionRenderX, sectionRenderY,
 			sectionAbsX, sectionAbsY,
 			sectionWidth, sectionHeight,
@@ -558,7 +558,7 @@ class IgeTextureMap extends IgeTileMap2d {
 								sectionHeight
 							);
 
-							this._ige._drawCount++;
+							this._ige.metrics.drawCount++;
 
 							if (this._drawSectionBounds) {
 								// Draw a bounding rectangle around the section
@@ -593,7 +593,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 */
 	_renderTile (ctx, x, y, tileData, tileEntity, rect, sectionX, sectionY) {
 		// TODO: Handle scaling so tiles don't loose res on scaled cached sections
-		var finalX, finalY, regions,
+		let finalX, finalY, regions,
 			xm1, xp1, ym1, yp1, regObj,
 			xAdjust = this._mountMode === 1 ? this._tileWidth / 2 : 0,
 			yAdjust = this._mountMode === 1 ? this._tileHeight / 2 : 0,

@@ -7,7 +7,6 @@ import IgePoly2d from "./IgePoly2d";
 import IgeDummyCanvas from "./IgeDummyCanvas";
 import IgeRect from "./IgeRect";
 import IgeDummyContext from "./IgeDummyContext";
-import igeConfig from "./config";
 import WithEventingMixin from "../mixins/IgeEventingMixin";
 import WithDataMixin from "../mixins/IgeDataMixin";
 import { arrPull, degreesToRadians, toIso } from "../services/utils";
@@ -20,7 +19,7 @@ import type { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "../../types/IgeTimeStream";
 import type IgeViewport from "./IgeViewport";
 import type IgeTexture from "./IgeTexture";
-import IgeTileMap2d from "./IgeTileMap2d";
+import type IgeTileMap2d from "./IgeTileMap2d";
 
 export interface IgeEntityBehaviour {
     id: string;
@@ -1040,7 +1039,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		// Depth sort all child objects
 		if (arrCount && !ige._headless) {
-			if (igeConfig.debug._timing) {
+			if (ige.config.debug._timing) {
 				if (!ige._timeSpentLastTick[this.id()]) {
 					ige._timeSpentLastTick[this.id()] = {};
 				}
@@ -1054,7 +1053,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		}
 
 		// Loop our children and call their update methods
-		if (!igeConfig.debug._timing) {
+		if (!ige.config.debug._timing) {
 			while (arrCount--) {
 				arr[arrCount].update(ctx, tickDelta);
 			}
@@ -3030,7 +3029,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		arrCount = arr.length;
 
-		if (igeConfig.debug._timing) {
+		if (ige.config.debug._timing) {
 			while (arrCount--) {
 				if (!arr[arrCount]) {
 					this.log("Object _children is undefined for index " + arrCount + " and _id: " + this._id, "error");
@@ -3209,7 +3208,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 						ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
 					}
 					ctx.fill();
-					ige._drawCount++;
+					ige.metrics.drawCount++;
 
 					if (this._backgroundPatternIsoTile) {
 						ctx.translate(
@@ -3217,7 +3216,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 							-Math.floor(this._backgroundPattern.image.height / 2)
 						);
 						ctx.fill();
-						ige._drawCount++;
+						ige.metrics.drawCount++;
 					}
 				}
 
@@ -3284,7 +3283,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 			ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
 		}
 
-		ige._drawCount++;
+		ige.metrics.drawCount++;
 		ctx.restore();
 	}
 

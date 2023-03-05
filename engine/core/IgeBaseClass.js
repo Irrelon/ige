@@ -1,4 +1,3 @@
-import igeConfig from "./config.js";
 class IgeBaseClass {
     constructor() {
         this.classId = "IgeBaseClass";
@@ -59,8 +58,6 @@ class IgeBaseClass {
      */
     log(...args) {
         console.log(...args);
-        if (igeConfig.debug._enabled) {
-        }
         return this;
     }
 }

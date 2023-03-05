@@ -6,11 +6,9 @@ import IgeMatrix2d from "./IgeMatrix2d.js";
 import IgePoly2d from "./IgePoly2d.js";
 import IgeDummyCanvas from "./IgeDummyCanvas.js";
 import IgeRect from "./IgeRect.js";
-import igeConfig from "./config.js";
 import WithEventingMixin from "../mixins/IgeEventingMixin.js";
 import WithDataMixin from "../mixins/IgeDataMixin.js";
 import { arrPull, degreesToRadians, toIso } from "../services/utils.js";
-import IgeTileMap2d from "./IgeTileMap2d.js";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -1073,7 +1071,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
         let arrCount = arr.length;
         // Depth sort all child objects
         if (arrCount && !ige._headless) {
-            if (igeConfig.debug._timing) {
+            if (ige.config.debug._timing) {
                 if (!ige._timeSpentLastTick[this.id()]) {
                     ige._timeSpentLastTick[this.id()] = {};
                 }
@@ -1086,7 +1084,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
             }
         }
         // Loop our children and call their update methods
-        if (!igeConfig.debug._timing) {
+        if (!ige.config.debug._timing) {
             while (arrCount--) {
                 arr[arrCount].update(ctx, tickDelta);
             }
@@ -2604,7 +2602,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
             return;
         }
         arrCount = arr.length;
-        if (igeConfig.debug._timing) {
+        if (ige.config.debug._timing) {
             while (arrCount--) {
                 if (!arr[arrCount]) {
                     this.log("Object _children is undefined for index " + arrCount + " and _id: " + this._id, "error");
@@ -2768,11 +2766,11 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
                         ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
                     }
                     ctx.fill();
-                    ige._drawCount++;
+                    ige.metrics.drawCount++;
                     if (this._backgroundPatternIsoTile) {
                         ctx.translate(-Math.floor(this._backgroundPattern.image.width) / 2, -Math.floor(this._backgroundPattern.image.height / 2));
                         ctx.fill();
-                        ige._drawCount++;
+                        ige.metrics.drawCount++;
                     }
                 }
                 ctx.restore();
@@ -2829,7 +2827,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
             ctx.fillText("Composite Cache", -this._bounds2d.x2, -this._bounds2d.y2 - 15);
             ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
         }
-        ige._drawCount++;
+        ige.metrics.drawCount++;
         ctx.restore();
     }
     /**

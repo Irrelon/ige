@@ -1,7 +1,7 @@
+import { ige } from "../instance.js";
 import IgeBaseClass from "./IgeBaseClass.js";
 import WithEventingMixin from "../mixins/IgeEventingMixin.js";
 import { arrPull } from "../services/utils.js";
-import { ige } from "../instance.js";
 import IgeImage from "./IgeImage.js";
 import IgeCanvas from "./IgeCanvas.js";
 import WithUiStyleMixin from "../mixins/IgeUiStyleMixin.js";
@@ -126,10 +126,10 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
         if (!ige.isClient) {
             return;
         }
-        ige.textureLoadStart(imageUrl, this);
-        if (!ige._textureImageStore[imageUrl]) {
+        ige.textures.onLoadStart(imageUrl, this);
+        if (!ige.textures._textureImageStore[imageUrl]) {
             // Image not in cache, create the image object
-            const image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new IgeImage();
+            const image = ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = new IgeImage();
             image._igeTextures = image._igeTextures || [];
             // Add this texture to the textures that are using this image
             image._igeTextures.push(this);
@@ -137,7 +137,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
                 // Mark the image as loaded
                 image._loaded = true;
                 // Log success
-                ige.log("Texture image (" + imageUrl + ") loaded successfully");
+                this.log("Texture image (" + imageUrl + ") loaded successfully");
                 /*if (image.width % 2) {
                     self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
                 }
@@ -163,7 +163,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
         }
         else {
             // Grab the cached image object
-            const image = this.image = this._originalImage = ige._textureImageStore[imageUrl];
+            const image = this.image = this._originalImage = ige.textures._textureImageStore[imageUrl];
             // Add this texture to the textures that are using this image
             image._igeTextures.push(this);
             if (image._loaded) {
@@ -195,7 +195,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
             this._loaded = true;
             this.emit("loaded");
             // Inform the engine that this image has loaded
-            ige.textureLoadEnd(this.image.src, this);
+            ige.textures.onLoadEnd(this.image.src, this);
         }, 5);
     }
     /**
@@ -206,9 +206,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
      * @private
      */
     _loadScript(scriptUrl) {
-        const textures = ige._textureStore;
-        let rs_sandboxContext, scriptElem;
-        ige.textureLoadStart(scriptUrl, this);
+        ige.textures.onLoadStart(scriptUrl, this);
         if (ige.isClient) {
             import(scriptUrl)
                 .then((module) => {
@@ -241,7 +239,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
             //
             // 	self._loaded = true;
             // 	self.emit("loaded");
-            // 	ige.textureLoadEnd(scriptUrl, self);
+            // 	ige.textures.onLoadEnd(scriptUrl, self);
             // };
             //
             // scriptElem.addEventListener("error", () => {
@@ -419,8 +417,8 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
         if (entity._cell === null) {
             return;
         }
-        if (ige._ctx) {
-            ige._ctx.imageSmoothingEnabled = this._smoothing;
+        if (ige.engine._ctx) {
+            ige.engine._ctx.imageSmoothingEnabled = this._smoothing;
         }
         if (this._mode === 0) {
             // This texture is image-based
@@ -460,7 +458,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
             geom.x, // render width
             geom.y // render height
             );
-            ige._drawCount++;
+            ige.metrics.drawCount++;
         }
         if (this._mode === 1) {
             if (!this.script) {
@@ -470,7 +468,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
             ctx.save();
             this.script.render(ige, ctx, entity, this);
             ctx.restore();
-            ige._drawCount++;
+            ige.metrics.drawCount++;
         }
     }
     /**
@@ -771,7 +769,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
             arrPull(this.image._igeTextures, this);
         }
         // Remove the texture from the texture store
-        arrPull(ige._textureStore, this);
+        arrPull(ige.textures._assetArr, this);
         delete this.image;
         delete this.script;
         delete this._textureCanvas;

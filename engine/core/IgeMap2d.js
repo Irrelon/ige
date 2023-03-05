@@ -1,6 +1,6 @@
 import IgeBaseClass from "./IgeBaseClass.js";
 /**
- * Creates a new map that has two dimensions (x and y) to it's data.
+ * Creates a new map that has two dimensions (x and y) to its data.
  */
 class IgeMap2d extends IgeBaseClass {
     constructor(data) {

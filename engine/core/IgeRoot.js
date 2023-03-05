@@ -1,6 +1,5 @@
-import IgeEntity from "./IgeEntity.js";
-import igeConfig from "./config.js";
 import { ige } from "../instance.js";
+import IgeEntity from "./IgeEntity.js";
 /**
  * The engine's root entity that all the scenegraph lives from.
  */
@@ -94,7 +93,7 @@ class IgeRoot extends IgeEntity {
         if (arr) {
             arrCount = arr.length;
             // Loop our viewports and call their update methods
-            if (igeConfig.debug._timing) {
+            if (ige.config.debug._timing) {
                 while (arrCount--) {
                     us = new Date().getTime();
                     arr[arrCount].update(ctx, tickDelta);
@@ -124,7 +123,7 @@ class IgeRoot extends IgeEntity {
         this._processTickBehaviours(ctx);
         // Depth-sort the viewports
         if (this._viewportDepth) {
-            if (igeConfig.debug._timing) {
+            if (ige.config.debug._timing) {
                 ts = new Date().getTime();
                 this.root.depthSortChildren();
                 td = new Date().getTime() - ts;
@@ -145,7 +144,7 @@ class IgeRoot extends IgeEntity {
         if (arr) {
             arrCount = arr.length;
             // Loop our viewports and call their tick methods
-            if (igeConfig.debug._timing) {
+            if (ige.config.debug._timing) {
                 while (arrCount--) {
                     ctx.save();
                     ts = new Date().getTime();

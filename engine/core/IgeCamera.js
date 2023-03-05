@@ -3,8 +3,8 @@ import IgeEntity from "./IgeEntity.js";
  * Creates a new camera that will be attached to a viewport.
  */
 class IgeCamera extends IgeEntity {
-    constructor(ige, viewport) {
-        super(ige);
+    constructor(viewport) {
+        super();
         this.classId = "IgeCamera";
         this._trackRotateTarget = undefined;
         this._trackTranslateTarget = undefined;
@@ -143,7 +143,7 @@ class IgeCamera extends IgeEntity {
     trackRotate(entity, smoothing) {
         if (entity !== undefined) {
             this.log("Camera on viewport " + this._entity.id() + " is now tracking rotation of target " + entity.id());
-            this._trackRotateSmoothing = smoothing >= 1 ? smoothing : 0;
+            this._trackRotateSmoothing = smoothing !== undefined && smoothing >= 1 ? smoothing : 0;
             this._trackRotateTarget = entity;
             return this._entity;
         }

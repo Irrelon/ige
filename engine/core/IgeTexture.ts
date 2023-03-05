@@ -1,8 +1,8 @@
+import { ige } from "../instance";
 import IgeBaseClass from "./IgeBaseClass";
 import { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import WithEventingMixin from "../mixins/IgeEventingMixin";
 import { arrPull } from "../services/utils";
-import { ige } from "../instance";
 import { IgeSmartFilter } from "../../types/IgeSmartFilter";
 import IgeImage from "./IgeImage";
 import IgeCanvas from "./IgeCanvas";
@@ -173,11 +173,11 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
 			return;
 		}
 
-		ige.textureLoadStart(imageUrl, this);
+		ige.textures.onLoadStart(imageUrl, this);
 
-		if (!ige._textureImageStore[imageUrl]) {
+		if (!ige.textures._textureImageStore[imageUrl]) {
 			// Image not in cache, create the image object
-			const image = ige._textureImageStore[imageUrl] = this.image = this._originalImage = new IgeImage();
+			const image = ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = new IgeImage();
 			image._igeTextures = image._igeTextures || [];
 
 			// Add this texture to the textures that are using this image
@@ -188,7 +188,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
 				image._loaded = true;
 
 				// Log success
-				ige.log("Texture image (" + imageUrl + ") loaded successfully");
+				this.log("Texture image (" + imageUrl + ") loaded successfully");
 
 				/*if (image.width % 2) {
 					self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
@@ -221,7 +221,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
 			image.src = imageUrl;
 		} else {
 			// Grab the cached image object
-			const image = this.image = this._originalImage = ige._textureImageStore[imageUrl];
+			const image = this.image = this._originalImage = ige.textures._textureImageStore[imageUrl];
 
 			// Add this texture to the textures that are using this image
 			image._igeTextures.push(this);
@@ -268,7 +268,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
 			this.emit("loaded");
 
 			// Inform the engine that this image has loaded
-			ige.textureLoadEnd((this.image as IgeImage).src, this);
+			ige.textures.onLoadEnd((this.image as IgeImage).src, this);
 		}, 5);
 	}
 
@@ -280,11 +280,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
 	 * @private
 	 */
 	_loadScript (scriptUrl: string) {
-		const textures = ige._textureStore;
-		let rs_sandboxContext,
-			scriptElem;
-
-		ige.textureLoadStart(scriptUrl, this);
+		ige.textures.onLoadStart(scriptUrl, this);
 
 		if (ige.isClient) {
 			import(scriptUrl)
@@ -319,7 +315,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
 			//
 			// 	self._loaded = true;
 			// 	self.emit("loaded");
-			// 	ige.textureLoadEnd(scriptUrl, self);
+			// 	ige.textures.onLoadEnd(scriptUrl, self);
 			// };
 			//
 			// scriptElem.addEventListener("error", () => {
@@ -553,8 +549,8 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
 			return;
 		}
 
-		if (ige._ctx) {
-			ige._ctx.imageSmoothingEnabled = this._smoothing;
+		if (ige.engine._ctx) {
+			ige.engine._ctx.imageSmoothingEnabled = this._smoothing;
 		}
 
 		if (this._mode === 0) {
@@ -603,7 +599,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
 				geom.y // render height
 			);
 
-			ige._drawCount++;
+			ige.metrics.drawCount++;
 		}
 
 		if (this._mode === 1) {
@@ -616,7 +612,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
 			this.script.render(ige, ctx, entity, this);
 			ctx.restore();
 
-			ige._drawCount++;
+			ige.metrics.drawCount++;
 		}
 	}
 
@@ -978,7 +974,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
 		}
 
 		// Remove the texture from the texture store
-		arrPull(ige._textureStore, this);
+		arrPull(ige.textures._assetArr, this);
 
 		delete this.image;
 		delete this.script;
