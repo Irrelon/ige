@@ -3,13 +3,14 @@ import IgeMap2d from "./IgeMap2d";
 
 class IgeCollisionMap2d extends IgeEntity {
 	classId = "IgeCollisionMap2d";
+	map: IgeMap2d;
 
-	constructor (ige, tileWidth, tileHeight) {
-		super(ige);
-		this.map = new IgeMap2d(ige);
+	constructor () {
+		super();
+		this.map = new IgeMap2d();
 	}
 
-	mapData (val) {
+	mapData (val?: number[][]) {
 		if (val !== undefined) {
 			this.map.mapData(val);
 			return this;

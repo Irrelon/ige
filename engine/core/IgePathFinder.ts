@@ -1,27 +1,25 @@
+import IgeEventingClass from "./IgeEventingClass";
+import IgePathNode from "./IgePathNode";
+import IgeCollisionMap2d from "./IgeCollisionMap2d";
+
+type IgePathFinderComparisonCallback = (tileData: any, newX: number, newY: number, currentNodeData?: IgePathNode, x?: number, y?: number) => boolean;
+
 /**
  * Creates a new path using the A* path-finding algorithm.
  */
-import IgeEventingClass from "./IgeEventingClass";
-import IgePathNode from "./IgePathNode";
-
 class IgePathFinder extends IgeEventingClass {
 	classId = "IgePathFinder";
-
-	constructor (ige) {
-		super(ige);
-		
-		this._neighbourLimit = 1000;
-		this._squareCost = 10;
-		this._diagonalCost = 10;
-	}
+	_neighbourLimit: number = 1000;
+	_squareCost: number = 10;
+	_diagonalCost: number = 10;
 
 	/**
-	 * Gets / sets the cost of movement over a square (left,
-	 * right, up, down) adjacent tile.
-	 * @param {Number=} val
-	 * @return {*}
-	 */
-	squareCost (val) {
+     * Gets / sets the cost of movement over a square (left,
+     * right, up, down) adjacent tile.
+     * @param {Number=} val
+     * @return {*}
+     */
+	squareCost (val?: number) {
 		if (val !== undefined) {
 			this._squareCost = val;
 			return this;
@@ -31,12 +29,12 @@ class IgePathFinder extends IgeEventingClass {
 	}
 
 	/**
-	 * Gets / sets the cost of movement over a diagonal (nw,
-	 * ne, sw, se) adjacent tile.
-	 * @param {Number=} val
-	 * @return {*}
-	 */
-	diagonalCost (val) {
+     * Gets / sets the cost of movement over a diagonal (nw,
+     * ne, sw, se) adjacent tile.
+     * @param {Number=} val
+     * @return {*}
+     */
+	diagonalCost (val?: number) {
 		if (val !== undefined) {
 			this._diagonalCost = val;
 			return this;
@@ -46,15 +44,15 @@ class IgePathFinder extends IgeEventingClass {
 	}
 
 	/**
-	 * Gets / sets the limit on the number of neighbour nodes
-	 * that the path-finder will analyse before reaching it's
-	 * target tile. On large maps this limit should be increased
-	 * to allow pathing where many neighbours need to be
-	 * considered.
-	 * @param val
-	 * @return {*}
-	 */
-	neighbourLimit (val) {
+     * Gets / sets the limit on the number of neighbour nodes
+     * that the path-finder will analyse before reaching it's
+     * target tile. On large maps this limit should be increased
+     * to allow pathing where many neighbours need to be
+     * considered.
+     * @param val
+     * @return {*}
+     */
+	neighbourLimit (val?: number) {
 		if (val !== undefined) {
 			this._neighbourLimit = val;
 			return this;
@@ -68,21 +66,21 @@ class IgePathFinder extends IgeEventingClass {
 	}
 
 	/**
-	 * Uses the A* algorithm to generate path data between two points.
-	 * @param {IgeCollisionMap2d} tileMap The tile map to use when generating the path.
-	 * @param {IgePoint3d} startPoint The point on the map to start path-finding from.
-	 * @param {IgePoint3d} endPoint The point on the map to try to path-find to.
-	 * @param {Function} comparisonCallback The callback function that will decide if each tile that is being considered for use in the path is allowed or not based on the tile map's data stored for that tile which is passed to this method as the first parameter. Must return a boolean value.
-	 * @param {Boolean} allowSquare Whether to allow neighboring tiles along a square axis. Defaults to true if undefined.
-	 * @param {Boolean} allowDiagonal Whether to allow neighboring tiles along a diagonal axis. Defaults to false if undefined.
-	 * @param {Boolean=} allowInvalidDestination If the path finder cannot path to the destination tile, if this is true the closest path will be returned instead.
-	 * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
-	 */
-	generate (tileMap, startPoint, endPoint, comparisonCallback, allowSquare, allowDiagonal, allowInvalidDestination) {
-		var openList = [],
-			closedList = [],
-			listHash = {},
-			startNode,
+     * Uses the A* algorithm to generate path data between two points.
+     * @param {IgeCollisionMap2d} tileMap The tile map to use when generating the path.
+     * @param {IgePoint3d} startPoint The point on the map to start path-finding from.
+     * @param {IgePoint3d} endPoint The point on the map to try to path-find to.
+     * @param {Function} comparisonCallback The callback function that will decide if each tile that is being considered for use in the path is allowed or not based on the tile map's data stored for that tile which is passed to this method as the first parameter. Must return a boolean value.
+     * @param {Boolean} allowSquare Whether to allow neighboring tiles along a square axis. Defaults to true if undefined.
+     * @param {Boolean} allowDiagonal Whether to allow neighboring tiles along a diagonal axis. Defaults to false if undefined.
+     * @param {Boolean=} allowInvalidDestination If the pathfinder cannot path to the destination tile, if this is true the closest path will be returned instead.
+     * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
+     */
+	generate (tileMap: IgeCollisionMap2d, startPoint: IgePathNode, endPoint: IgePathNode, comparisonCallback: IgePathFinderComparisonCallback, allowSquare: boolean = false, allowDiagonal: boolean = false, allowInvalidDestination: boolean = false) {
+		const openList = [];
+		const closedList = [];
+		const listHash: Record<string, IgePathNode> = {};
+		let
 			lowestFScoringIndex,
 			openCount,
 			currentNode,
@@ -91,18 +89,20 @@ class IgePathFinder extends IgeEventingClass {
 			neighbourList,
 			neighbourCount,
 			neighbourNode,
-			endPointCheckTile,
-			tileMapData,
 			existingNode,
 			lowestHNode;
 
 		// Set some defaults
-		if (allowSquare === undefined) { allowSquare = true; }
-		if (allowDiagonal === undefined) { allowDiagonal = false; }
+		if (allowSquare === undefined) {
+			allowSquare = true;
+		}
+		if (allowDiagonal === undefined) {
+			allowDiagonal = false;
+		}
 
 		// Check that the end point on the map is actually allowed to be pathed to!
-		tileMapData = tileMap.map._mapData;
-		endPointCheckTile = tileMapData[endPoint.y] && tileMapData[endPoint.y][endPoint.x] ? tileMapData[endPoint.y][endPoint.x] : null;
+		const tileMapData = tileMap.map._mapData;
+		const endPointCheckTile: any = tileMapData[endPoint.y] && tileMapData[endPoint.y][endPoint.x] ? tileMapData[endPoint.y][endPoint.x] : null;
 		if (!allowInvalidDestination && !comparisonCallback(endPointCheckTile, endPoint.x, endPoint.y)) {
 			// There is no path to the end point because the end point
 			// is not allowed to be pathed to!
@@ -112,8 +112,15 @@ class IgePathFinder extends IgeEventingClass {
 		}
 
 		// Starting point to open list
-		startNode = new IgePathNode(this._ige, startPoint.x, startPoint.y, 0, 0, this._heuristic(startPoint.x, startPoint.y, endPoint.x, endPoint.y, 10));
-		startNode.link = 1;
+		const startNode = new IgePathNode(
+			startPoint.x,
+			startPoint.y,
+			0,
+			0,
+			this._heuristic(startPoint.x, startPoint.y, endPoint.x, endPoint.y, 10)
+		);
+		// TODO this makes no sense, why did we assign as one?
+		//startNode.link = 1;
 		openList.push(startNode);
 		listHash[startNode.hash] = startNode;
 		startNode.listType = 1;
@@ -135,7 +142,9 @@ class IgePathFinder extends IgeEventingClass {
 			openCount = openList.length;
 
 			while (openCount--) {
-				if (openList[openCount].f < openList[lowestFScoringIndex].f) { lowestFScoringIndex = openCount; }
+				if (openList[openCount].f < openList[lowestFScoringIndex].f) {
+					lowestFScoringIndex = openCount;
+				}
 			}
 
 			currentNode = openList[lowestFScoringIndex];
@@ -220,7 +229,7 @@ class IgePathFinder extends IgeEventingClass {
 				pathPoint = pathPoint.link;
 			}
 
-			// Reverse the final path so it is from
+			// Reverse the final path, so it is from
 			// start to finish
 			finalPath = finalPath.reverse();
 
@@ -230,33 +239,40 @@ class IgePathFinder extends IgeEventingClass {
 	}
 
 	/**
-	 * Get all the neighbors of a node for the A* algorithm.
-	 * @param {IgePathNode} currentNode The current node along the path to evaluate neighbors for.
-	 * @param {IgePathNode} endPoint The end point of the path.
-	 * @param {IgeCollisionMap2d} tileMap The tile map to use when evaluating neighbours.
-	 * @param {Function} comparisonCallback The callback function that will decide if the tile data at the neighbouring node is to be used or not. Must return a boolean value.
-	 * @param {Boolean} allowSquare Whether to allow neighboring tiles along a square axis.
-	 * @param {Boolean} allowDiagonal Whether to allow neighboring tiles along a diagonal axis.
-	 * @return {Array} An array containing nodes describing the neighbouring tiles of the current node.
-	 * @private
-	 */
-	_getNeighbours (currentNode, endPoint, tileMap, comparisonCallback, allowSquare, allowDiagonal) {
-		var list = [],
-			{x} = currentNode,
-			{y} = currentNode,
-			newX = 0,
-			newY = 0,
-			newNode,
-			mapData = tileMap.map._mapData,
-			currentNodeData = mapData[y] && mapData[y][x] ? mapData[y][x] : undefined,
-			tileData;
+     * Get all the neighbors of a node for the A* algorithm.
+     * @param {IgePathNode} currentNode The current node along the path to evaluate neighbors for.
+     * @param {IgePathNode} endPoint The end point of the path.
+     * @param {IgeCollisionMap2d} tileMap The tile map to use when evaluating neighbours.
+     * @param {Function} comparisonCallback The callback function that will decide if the tile data at the neighbouring node is to be used or not. Must return a boolean value.
+     * @param {Boolean} allowSquare Whether to allow neighboring tiles along a square axis.
+     * @param {Boolean} allowDiagonal Whether to allow neighboring tiles along a diagonal axis.
+     * @return {Array} An array containing nodes describing the neighbouring tiles of the current node.
+     * @private
+     */
+	_getNeighbours (currentNode: IgePathNode, endPoint: IgePathNode, tileMap: IgeCollisionMap2d, comparisonCallback: IgePathFinderComparisonCallback, allowSquare: boolean, allowDiagonal: boolean) {
+		const list = [];
+		const { x, y } = currentNode;
+		let newX = 0;
+		let newY = 0;
+		const mapData = tileMap.map._mapData;
+		const currentNodeData: IgePathNode | undefined = mapData[y] && mapData[y][x] ? mapData[y][x] : undefined;
+
+		let tileData;
 
 		if (allowSquare) {
 			newX = x - 1;
 			newY = y;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(this._ige, newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode, "W");
+				const newNode = new IgePathNode(
+					newX,
+					newY,
+					currentNode.g,
+					this._squareCost,
+					this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost),
+					currentNode,
+					"W"
+				);
 				list.push(newNode);
 			}
 
@@ -264,7 +280,7 @@ class IgePathFinder extends IgeEventingClass {
 			newY = y;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(this._ige, newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode, "E");
+				const newNode = new IgePathNode(newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode, "E");
 				list.push(newNode);
 			}
 
@@ -272,7 +288,7 @@ class IgePathFinder extends IgeEventingClass {
 			newY = y - 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(this._ige, newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode, "N");
+				const newNode = new IgePathNode(newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode, "N");
 				list.push(newNode);
 			}
 
@@ -280,7 +296,7 @@ class IgePathFinder extends IgeEventingClass {
 			newY = y + 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(this._ige, newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode, "S");
+				const newNode = new IgePathNode(newX, newY, currentNode.g, this._squareCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._squareCost), currentNode, "S");
 				list.push(newNode);
 			}
 
@@ -291,7 +307,7 @@ class IgePathFinder extends IgeEventingClass {
 			newY = y - 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(this._ige, newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode, "NW");
+				const newNode = new IgePathNode(newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode, "NW");
 				list.push(newNode);
 			}
 
@@ -299,7 +315,7 @@ class IgePathFinder extends IgeEventingClass {
 			newY = y - 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(this._ige, newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode, "NE");
+				const newNode = new IgePathNode(newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode, "NE");
 				list.push(newNode);
 			}
 
@@ -307,7 +323,7 @@ class IgePathFinder extends IgeEventingClass {
 			newY = y + 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(this._ige, newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode, "SW");
+				const newNode = new IgePathNode(newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode, "SW");
 				list.push(newNode);
 			}
 
@@ -315,7 +331,7 @@ class IgePathFinder extends IgeEventingClass {
 			newY = y + 1;
 			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
 			if (comparisonCallback(tileData, newX, newY, currentNodeData, x, y)) {
-				newNode = new IgePathNode(this._ige, newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode, "SE");
+				const newNode = new IgePathNode(newX, newY, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, endPoint.x, endPoint.y, this._diagonalCost), currentNode, "SE");
 				list.push(newNode);
 			}
 		}
@@ -324,32 +340,18 @@ class IgePathFinder extends IgeEventingClass {
 	}
 
 	/**
-	 * The heuristic to calculate the rough cost of pathing from the
-	 * x1, y1 to x2, y2.
-	 * @param {Number} x1 The first x co-ordinate.
-	 * @param {Number} y1 The first y co-ordinate.
-	 * @param {Number} x2 The second x co-ordinate.
-	 * @param {Number} y2 The second y co-ordinate.
-	 * @param {Number} moveCost The cost multiplier to multiply by.
-	 * @return {Number} Returns the heuristic cost between the co-ordinates specified.
-	 * @private
-	 */
-	_heuristic (x1, y1, x2, y2, moveCost) {
+     * The heuristic to calculate the rough cost of pathing from the
+     * x1, y1 to x2, y2.
+     * @param {Number} x1 The first x co-ordinate.
+     * @param {Number} y1 The first y co-ordinate.
+     * @param {Number} x2 The second x co-ordinate.
+     * @param {Number} y2 The second y co-ordinate.
+     * @param {Number} moveCost The cost multiplier to multiply by.
+     * @return {Number} Returns the heuristic cost between the co-ordinates specified.
+     * @private
+     */
+	_heuristic (x1: number, y1: number, x2: number, y2: number, moveCost: number) {
 		return moveCost * (Math.abs(x1 - x2) + Math.abs(y1 - y2));
-	}
-
-	as (map, fromNode, toNode) {
-		var openList = [],
-			closedList = [];
-
-		// Add start point to open list
-		openList.push(fromNode);
-
-
-	}
-
-	_as (openList, closedList, currentNode, toNode) {
-
 	}
 }
 

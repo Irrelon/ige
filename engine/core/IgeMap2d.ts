@@ -1,13 +1,13 @@
 import IgeBaseClass from "./IgeBaseClass";
 
 /**
- * Creates a new map that has two dimensions (x and y) to it's data.
+ * Creates a new map that has two dimensions (x and y) to its data.
  */
 class IgeMap2d extends IgeBaseClass {
 	classId = "IgeMap2d";
-	_mapData: number[][];
+	_mapData: any[][];
 
-	constructor (data?: number[][]) {
+	constructor (data?: any[][]) {
 		super();
 		this._mapData = data || [];
 	}
