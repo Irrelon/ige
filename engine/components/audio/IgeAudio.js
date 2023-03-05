@@ -1,21 +1,24 @@
-import IgeEventingClass from "../../core/IgeEventingClass.js";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { ige } from "../../instance.js";
+import IgeEventingClass from "../../core/IgeEventingClass.js";
 class IgeAudio extends IgeEventingClass {
     constructor(url) {
         super();
         this.classId = "IgeAudio";
+        this._registered = false;
         if (!url) {
             return;
         }
-        this.load(url);
+        void this.load(url).then(this._loaded);
     }
-    /**
-     * Gets / sets the current object id. If no id is currently assigned and no
-     * id is passed to the method, it will automatically generate and assign a
-     * new id as a 16 character hexadecimal value typed as a string.
-     * @param {String=} id The id to set to.
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
     id(id) {
         if (id !== undefined) {
             // Check if this ID already exists in the object register
@@ -61,37 +64,35 @@ class IgeAudio extends IgeEventingClass {
      * @param {Function=} callback Optional callback method to call when the audio
      * file has loaded or on error.
      */
-    load(url, callback) {
-        const request = new XMLHttpRequest();
-        request.open("GET", url, true);
-        request.responseType = "arraybuffer";
-        // Decode asynchronously
-        request.onload = () => {
-            this._data = request.response;
-            this._url = url;
-            this._loaded(callback);
-        };
-        request.onerror = (err) => {
-            callback.apply(this, [err]);
-        };
-        request.send();
+    load(url) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                const request = new XMLHttpRequest();
+                request.open("GET", url, true);
+                request.responseType = "arraybuffer";
+                // Decode asynchronously
+                request.onload = () => {
+                    this._data = request.response;
+                    this._url = url;
+                    resolve(request.response);
+                };
+                request.onerror = (err) => {
+                    reject(err);
+                };
+                request.send();
+            });
+        });
     }
-    _loaded(callback) {
-        ige.root.audio.decode(this._data, (err, buffer) => {
-            if (!err) {
+    _loaded(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return ige.components.audio.decode(data)
+                .then((buffer) => {
                 this._buffer = buffer;
-                ige.root.audio.log("Audio file (" + this._url + ") loaded successfully");
-                if (callback) {
-                    callback.apply(this, [false]);
-                }
+                ige.components.audio.log(`Audio file (${this._url}) loaded successfully`);
                 this.emit("loaded");
-            }
-            else {
-                this.log("Failed to decode audio data from: " + this._url, "warning");
-                if (callback) {
-                    callback.apply(this, [err]);
-                }
-            }
+            }).catch((err) => {
+                throw new Error(`Failed to decode audio "${this._url}": ${err}`);
+            });
         });
     }
     /**
@@ -103,10 +104,11 @@ class IgeAudio extends IgeEventingClass {
             this.on("loaded", () => {
                 this.play();
             });
+            return;
         }
-        const bufferSource = ige.root.audio._ctx.createBufferSource();
+        const bufferSource = ige.components.audio._ctx.createBufferSource();
         bufferSource.buffer = this._buffer;
-        bufferSource.connect(ige.root.audio._ctx.destination);
+        bufferSource.connect(ige.components.audio._ctx.destination);
         bufferSource.start(0);
     }
 }

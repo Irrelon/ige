@@ -2,6 +2,7 @@ import { ige } from "../engine/instance.js";
 import IgeBaseClass from "../engine/core/IgeBaseClass.js";
 import IgeBaseScene from "../engine/core/IgeBaseScene.js";
 import IgeEditorComponent from "../engine/components/editor/IgeEditorComponent.js";
+import IgeAudioComponent from "../engine/components/audio/IgeAudioComponent.js";
 import { Level1 } from "./levels/Level1.js";
 import { textures } from "./services/textures.js";
 // @ts-ignore
@@ -12,6 +13,8 @@ export class Client extends IgeBaseClass {
         super();
         this.classId = "Client";
         ige.addComponent(IgeEditorComponent);
+        ige.addComponent(IgeAudioComponent);
+        ige.components.audio.masterVolume(options.get('masterVolume', 1));
         ige.components.input.debug(true);
         // Load the game textures
         textures.load();

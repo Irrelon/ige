@@ -1,6 +1,3 @@
-/**
- * Creates a new 2d point (x, y).
- */
 class IgePoint2d {
     constructor(x = 0, y = 0, floor = false) {
         this.classId = "IgePoint2d";
@@ -144,7 +141,7 @@ class IgePoint2d {
     /**
      * Multiplies this point's data by the point specified
      * and returns a new IgePoint2d whose values are the result.
-     * @param {IgePoint2d} point
+     * @param point
      * @return {*}
      */
     multiplyPoint(point) {

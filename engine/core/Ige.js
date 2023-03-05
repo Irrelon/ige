@@ -23,6 +23,7 @@ const version = "2.0.0";
 class Ige extends WithComponentMixin(IgeEventingClass) {
     constructor() {
         super();
+        this._registered = true;
         this._manualRender = false;
         this._categoryRegister = {};
         this._groupRegister = {};
@@ -425,6 +426,12 @@ class Ige extends WithComponentMixin(IgeEventingClass) {
         this._dependencyQueue.push(this.fontsLoaded);
         // Start a timer to record every second of execution
         this._secondTimer = setInterval(this._secondTick, 1000);
+    }
+    id(id) {
+        if (!id) {
+            return "ige";
+        }
+        return this;
     }
     createRoot() {
         if (this.root)

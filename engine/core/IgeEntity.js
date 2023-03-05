@@ -10,6 +10,7 @@ import igeConfig from "./config.js";
 import WithEventingMixin from "../mixins/IgeEventingMixin.js";
 import WithDataMixin from "../mixins/IgeDataMixin.js";
 import { arrPull, degreesToRadians, toIso } from "../services/utils.js";
+import IgeTileMap2d from "./IgeTileMap2d.js";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -1783,7 +1784,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
      */
     occupyTile(x, y, width, height) {
         // Check that the entity is mounted to a tile map
-        if (this._parent && this._parent.IgeTileMap2d) {
+        if (this._parent && this._parent instanceof IgeTileMap2d) {
             if (x !== undefined && y !== undefined) {
                 this._parent.occupyTile(x, y, width, height, this);
             }
@@ -2153,6 +2154,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
      * @return {IgePoint3d} The screen position of the entity.
      */
     screenPosition() {
+        if (!ige._currentCamera) {
+            throw new Error("Cannot get screen position of entity, ige instance has no camera!");
+        }
         return new IgePoint3d(Math.floor((this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x + ige.root._bounds2d.x2), Math.floor((this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y + ige.root._bounds2d.y2), 0);
     }
     /**

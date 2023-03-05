@@ -25,13 +25,14 @@ import { IgeRegisterable } from "../../types/IgeRegisterable";
 
 const version = "2.0.0";
 
-class Ige extends WithComponentMixin<IgeEntity, Mixin<IgeEventingClass>>(IgeEventingClass) {
+class Ige extends WithComponentMixin<IgeEntity, Mixin<IgeEventingClass>>(IgeEventingClass) implements IgeRegisterable {
 	isServer: boolean;
 	isClient: boolean;
 	client?: IgeBaseClass;
 	server?: IgeBaseClass;
 	igeClassStore: Record<string, any>;
 	root?: IgeRoot; // The root entity that all scenegraph will mount to
+	_registered: boolean = true;
 	_canvas?: HTMLCanvasElement;
 	_ctx: CanvasRenderingContext2D | null | typeof IgeDummyContext;
 	_textureStore: IgeTexture[];
@@ -199,6 +200,16 @@ class Ige extends WithComponentMixin<IgeEntity, Mixin<IgeEventingClass>>(IgeEven
 
 		// Start a timer to record every second of execution
 		this._secondTimer = setInterval(this._secondTick, 1000) as unknown as number;
+	}
+
+	id (): string;
+	id (id: string): this;
+	id (id?: string): this | string | undefined {
+		if (!id) {
+			return "ige";
+		}
+
+		return this;
 	}
 
 	createRoot () {

@@ -4,10 +4,13 @@ import IgeTexture from "./IgeTexture.js";
  * arbitrary sections.
  */
 class IgeSpriteSheet extends IgeTexture {
-    constructor(ige, url, cells) {
-        super(ige, url);
+    constructor(urlOrObject, cells) {
+        super(urlOrObject);
         this.classId = "IgeSpriteSheet";
         this.IgeSpriteSheet = true;
+        this._cells = [];
+        this._spriteCells = [];
+        this._checkModulus = false;
         this._spriteCells = cells;
     }
     _textureLoaded() {
@@ -20,7 +23,7 @@ class IgeSpriteSheet extends IgeTexture {
             super._textureLoaded();
             // Store the cell sheet image
             this._sheetImage = this.image;
-            var i, cells = this._spriteCells;
+            let cells = this._spriteCells;
             if (!cells) {
                 // Try to automatically determine cells
                 this.log("No cell data provided for sprite sheet, attempting to automatically detect sprite bounds...");
@@ -28,7 +31,7 @@ class IgeSpriteSheet extends IgeTexture {
             }
             // Cells in the sheets always start at index
             // 1 so move all the cells one forward
-            for (i = 0; i < cells.length; i++) {
+            for (let i = 0; i < cells.length; i++) {
                 this._cells[i + 1] = cells[i];
                 if (this._checkModulus) {
                     // Check cell for division by 2 modulus warnings
@@ -89,16 +92,21 @@ class IgeSpriteSheet extends IgeTexture {
      */
     detectCells(img) {
         // Create a temp canvas
-        var canvas = document.createElement("canvas"), ctx = canvas.getContext("2d"), pixels, x, y, newRect, spriteRects = [];
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        const spriteRects = [];
+        if (!ctx) {
+            throw new Error("Couldn't get texture canvas 2d context!");
+        }
         canvas.width = img.width;
         canvas.height = img.height;
         // Draw the sheet to the canvas
         ctx.drawImage(img, 0, 0);
         // Read the pixel data
-        pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
         // Loop the pixels and find non-transparent one
-        for (y = 0; y < canvas.height; y++) {
-            for (x = 0; x < canvas.width; x++) {
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
                 // Check if the pixel is not transparent
                 if (!this.isPixelTransparent(pixels, x, y)) {
                     // We found a non-transparent pixel so
@@ -107,7 +115,7 @@ class IgeSpriteSheet extends IgeTexture {
                         // The pixel is not already in a rect,
                         // so determine the bounding rect for
                         // the new sprite whose pixel we've found
-                        newRect = this._determineRect(pixels, x, y);
+                        const newRect = this._determineRect(pixels, x, y);
                         if (newRect) {
                             spriteRects.push(newRect);
                         }
@@ -128,7 +136,7 @@ class IgeSpriteSheet extends IgeTexture {
         for (rectIndex = 0; rectIndex < rectCount; rectIndex++) {
             rect = rects[rectIndex];
             // Check if the x, y is inside this rect
-            if (x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height) {
+            if (x >= rect[0] && x <= rect[0] + rect[2] && y >= rect[1] && y <= rect[1] + rect[3]) {
                 // The x, y is inside this rect
                 return true;
             }
@@ -137,11 +145,12 @@ class IgeSpriteSheet extends IgeTexture {
     }
     _determineRect(pixels, x, y) {
         const pixArr = [{ x, y }];
-        const rect = { x, y, "width": 1, "height": 1 };
-        let currentPixel;
+        const rect = { x, y, width: 1, height: 1 };
         while (pixArr.length) {
             // De-queue front item
-            currentPixel = pixArr.shift();
+            const currentPixel = pixArr.shift();
+            if (!currentPixel)
+                continue;
             // Expand rect to include pixel position
             if (currentPixel.x > rect.x + rect.width) {
                 rect.width = currentPixel.x - rect.x + 1;
@@ -159,49 +168,49 @@ class IgeSpriteSheet extends IgeTexture {
             }
             // Check surrounding pixels
             if (!this.isPixelTransparent(pixels, currentPixel.x - 1, currentPixel.y - 1)) {
-                // Mark pixel so we dont use it again
+                // Mark pixel so we don't use it again
                 this.makePixelTransparent(pixels, currentPixel.x - 1, currentPixel.y - 1);
                 // Add pixel position to queue
                 pixArr.push({ "x": currentPixel.x - 1, "y": currentPixel.y - 1 });
             }
             if (!this.isPixelTransparent(pixels, currentPixel.x, currentPixel.y - 1)) {
-                // Mark pixel so we dont use it again
+                // Mark pixel so we don't use it again
                 this.makePixelTransparent(pixels, currentPixel.x, currentPixel.y - 1);
                 // Add pixel position to queue
                 pixArr.push({ "x": currentPixel.x, "y": currentPixel.y - 1 });
             }
             if (!this.isPixelTransparent(pixels, currentPixel.x + 1, currentPixel.y - 1)) {
-                // Mark pixel so we dont use it again
+                // Mark pixel so we don't use it again
                 this.makePixelTransparent(pixels, currentPixel.x + 1, currentPixel.y - 1);
                 // Add pixel position to queue
                 pixArr.push({ "x": currentPixel.x + 1, "y": currentPixel.y - 1 });
             }
             if (!this.isPixelTransparent(pixels, currentPixel.x - 1, currentPixel.y)) {
-                // Mark pixel so we dont use it again
+                // Mark pixel so we don't use it again
                 this.makePixelTransparent(pixels, currentPixel.x - 1, currentPixel.y);
                 // Add pixel position to queue
                 pixArr.push({ "x": currentPixel.x - 1, "y": currentPixel.y });
             }
             if (!this.isPixelTransparent(pixels, currentPixel.x + 1, currentPixel.y)) {
-                // Mark pixel so we dont use it again
+                // Mark pixel so we don't use it again
                 this.makePixelTransparent(pixels, currentPixel.x + 1, currentPixel.y);
                 // Add pixel position to queue
                 pixArr.push({ "x": currentPixel.x + 1, "y": currentPixel.y });
             }
             if (!this.isPixelTransparent(pixels, currentPixel.x - 1, currentPixel.y + 1)) {
-                // Mark pixel so we dont use it again
+                // Mark pixel so we don't use it again
                 this.makePixelTransparent(pixels, currentPixel.x - 1, currentPixel.y + 1);
                 // Add pixel position to queue
                 pixArr.push({ "x": currentPixel.x - 1, "y": currentPixel.y + 1 });
             }
             if (!this.isPixelTransparent(pixels, currentPixel.x, currentPixel.y + 1)) {
-                // Mark pixel so we dont use it again
+                // Mark pixel so we don't use it again
                 this.makePixelTransparent(pixels, currentPixel.x, currentPixel.y + 1);
                 // Add pixel position to queue
                 pixArr.push({ "x": currentPixel.x, "y": currentPixel.y + 1 });
             }
             if (!this.isPixelTransparent(pixels, currentPixel.x + 1, currentPixel.y + 1)) {
-                // Mark pixel so we dont use it again
+                // Mark pixel so we don't use it again
                 this.makePixelTransparent(pixels, currentPixel.x + 1, currentPixel.y + 1);
                 // Add pixel position to queue
                 pixArr.push({ "x": currentPixel.x + 1, "y": currentPixel.y + 1 });
@@ -217,29 +226,12 @@ class IgeSpriteSheet extends IgeTexture {
         return this._cells.length;
     }
     /**
-     * Returns the cell index that the passed cell id corresponds
-     * to.
-     * @param {String} id
-     * @return {Number} The cell index that the cell id corresponds
-     * to or -1 if a corresponding index could not be found.
-     */
-    cellIdToIndex(id) {
-        var cells = this._cells, i;
-        for (i = 1; i < cells.length; i++) {
-            if (cells[i][4] === id) {
-                // Found the cell id so return the index
-                return i;
-            }
-        }
-        return -1;
-    }
-    /**
      * Returns a string containing a code fragment that when
      * evaluated will reproduce this object.
      * @return {String}
      */
     stringify() {
-        var str = "new " + this.classId + "('" + this.url() + "', " + this._cells.toString() + ")";
+        const str = "new " + this.classId + "('" + this.url() + "', " + this._cells.toString() + ")";
         // Every object has an ID, assign that first
         // IDs are automatically generated from texture urls
         //str += ".id('" + this.id() + "');";

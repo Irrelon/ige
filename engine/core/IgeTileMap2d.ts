@@ -7,6 +7,7 @@ import IgePoint2d from "./IgePoint2d";
 import IgeRect from "./IgeRect";
 import IgePoint3d from "./IgePoint3d";
 import IgePoly2d from "./IgePoly2d";
+import { ige } from "../instance";
 
 /**
  * Tile maps provide a way to align mounted child objects to a tile-based grid.
@@ -16,26 +17,32 @@ import IgePoly2d from "./IgePoly2d";
 class IgeTileMap2d extends IgeEntity {
 	classId = "IgeTileMap2d";
 	IgeTileMap2d = true;
+	_drawGrid?: boolean;
+	_gridColor?: string;
+	_tileWidth: number = 0;
+	_tileHeight: number = 0;
+	_gridSize?: IgePoint2d;
+	map: IgeMap2d;
 
-	constructor (ige, tileWidth, tileHeight) {
-		super(ige);
+	constructor (tileWidth?: number, tileHeight?: number) {
+		super();
 
 		tileWidth = tileWidth !== undefined ? tileWidth : 40;
 		tileHeight = tileHeight !== undefined ? tileHeight : 40;
 
-		if (!this._ige.isServer) {
-			const tex = new IgeTexture(ige, IgeTileMap2dSmartTexture);
+		if (!ige.isServer) {
+			const tex = new IgeTexture(IgeTileMap2dSmartTexture);
 			this.texture(tex);
 		}
 
-		this.map = new IgeMap2d(ige);
+		this.map = new IgeMap2d();
 		this._adjustmentMatrix = new IgeMatrix2d();
 
 		this.tileWidth(tileWidth);
 		this.tileHeight(tileHeight);
 		this.gridSize(3, 3);
 
-		this._drawGrid = 0;
+		this._drawGrid = false;
 		this._gridColor = "#ffffff";
 	}
 
@@ -68,7 +75,9 @@ class IgeTileMap2d extends IgeEntity {
 	 * @param {Number} val Tile width.
 	 * @return {*}
 	 */
-	tileWidth (val) {
+	tileWidth (val: number): this;
+	tileWidth (): number;
+	tileWidth (val?: number) {
 		if (val !== undefined) {
 			this._tileWidth = val;
 			if (this._gridSize && this._gridSize.x) {
@@ -87,7 +96,9 @@ class IgeTileMap2d extends IgeEntity {
 	 * @param {Number} val Tile height.
 	 * @return {*}
 	 */
-	tileHeight (val) {
+	tileHeight (val: number): this;
+	tileHeight (): number;
+	tileHeight (val?: number) {
 		if (val !== undefined) {
 			this._tileHeight = val;
 			if (this._gridSize && this._gridSize.y) {
@@ -101,7 +112,7 @@ class IgeTileMap2d extends IgeEntity {
 		return this._tileHeight;
 	}
 
-	gridSize (x, y) {
+	gridSize (x?: number, y?: number) {
 		if (x !== undefined && y !== undefined) {
 			this._gridSize = new IgePoint2d(x, y);
 
@@ -174,7 +185,7 @@ class IgeTileMap2d extends IgeEntity {
 	 * @return {*}
 	 */
 	occupyTile (x, y, width, height, obj) {
-		var xi, yi;
+		let xi, yi;
 
 		if (width === undefined) { width = 1; }
 		if (height === undefined) { height = 1; }
@@ -210,7 +221,7 @@ class IgeTileMap2d extends IgeEntity {
 	 * @return {*}
 	 */
 	unOccupyTile (x, y, width, height) {
-		var xi, yi, item;
+		let xi, yi, item;
 
 		if (width === undefined) { width = 1; }
 		if (height === undefined) { height = 1; }
@@ -266,7 +277,7 @@ class IgeTileMap2d extends IgeEntity {
 	pointToTile (point) {
 		// TODO: Could this do with some caching to check if the input values have changed and if not,
 		// TODO: supply the same pre-calculated data if it already exists?
-		var mx = point.x,
+		let mx = point.x,
 			my = point.y,
 			dx, dy, tilePos;
 
@@ -302,7 +313,7 @@ class IgeTileMap2d extends IgeEntity {
 	 * @return {IgePoint3d}
 	 */
 	mouseTilePoint () {
-		var tilePos = this.mouseToTile()
+		const tilePos = this.mouseToTile()
 			.thisMultiply(this._tileWidth, this._tileHeight, 1);
 
 		tilePos.x += this._tileWidth / 2;
@@ -312,7 +323,7 @@ class IgeTileMap2d extends IgeEntity {
 	}
 
 	tileToPoint (x, y) {
-		var point;
+		let point;
 
 		if (this._mountMode === 0) {
 			point = new IgePoint3d(x, y, 0)
@@ -339,7 +350,7 @@ class IgeTileMap2d extends IgeEntity {
 	 * @return {IgePoint3d}
 	 */
 	mouseToTile () {
-		var tilePos;
+		let tilePos;
 
 		if (this._mountMode === 0) {
 			tilePos = this.pointToTile(this.mousePos());
@@ -360,7 +371,7 @@ class IgeTileMap2d extends IgeEntity {
 	 * @return {Array}
 	 */
 	scanRects (callback) {
-		var x, y,
+		let x, y,
 			rectArray = [],
 			mapData = this.map._mapData.clone();
 
@@ -474,7 +485,7 @@ class IgeTileMap2d extends IgeEntity {
 	 */
 	saveMap () {
 		// in URL format
-		var textures = [], i,
+		let textures = [], i,
 			x, y,
 			dataX = 0, dataY = 0,
 			mapData = this.map._mapData;
@@ -524,7 +535,7 @@ class IgeTileMap2d extends IgeEntity {
 		}
 
 		if (this._mountMode === 1) {
-			var aabb = this.aabb(),
+			const aabb = this.aabb(),
 				poly = new IgePoly2d();
 
 			poly.addPoint(aabb.x + aabb.width / 2, aabb.y);
@@ -538,9 +549,9 @@ class IgeTileMap2d extends IgeEntity {
 
 	_processTriggerHitTests () {
 		// This method overrides the one in IgeEntity
-		if (this._mouseEventsActive && this._ige._currentViewport) {
+		if (this._mouseEventsActive && ige._currentViewport) {
 			if (!this._mouseAlwaysInside) {
-				var mouseTile = this.mouseToTile();
+				const mouseTile = this.mouseToTile();
 				if (mouseTile.x >= 0 && mouseTile.y >= 0 && mouseTile.x < this._gridSize.x && mouseTile.y < this._gridSize.y) {
 					return true;
 				} else {

@@ -20,6 +20,7 @@ import type { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "../../types/IgeTimeStream";
 import type IgeViewport from "./IgeViewport";
 import type IgeTexture from "./IgeTexture";
+import IgeTileMap2d from "./IgeTileMap2d";
 
 export interface IgeEntityBehaviour {
     id: string;
@@ -33,13 +34,14 @@ export interface IgeEntityBehaviour {
 class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implements IgeRegisterable {
 	classId = "IgeEntity";
 	_registered: boolean = false;
+	_entity?: IgeEntity; // TODO: This may not be required? Where does it get set from? Could be removed and all relevant code looking at it.
 	_id?: string;
 	_didInit = false;
 	_newBorn = true;
 	_alive = true;
 	_mode = 0;
 	_mountMode = 0;
-	_parent: IgeEntity | null = null;
+	_parent: IgeEntity | IgeTileMap2d | null = null;
 	_children: IgeEntity[] = [];
 	_layer = 0;
 	_depth = 0;
@@ -436,9 +438,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *     console.log(parent.id());
      * @return {*}
      */
-	parent(): IgeEntity | null | undefined;
+	parent(): IgeEntity | IgeTileMap2d | null | undefined;
 	parent(id: string): IgeEntity | null;
-	parent (id?: string): IgeEntity | null {
+	parent (id?: string): IgeEntity | IgeTileMap2d | null {
 		if (!id) {
 			return this._parent;
 		}
@@ -1216,7 +1218,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * @param obj
      * @private
      */
-	_unMounted (obj: IgeEntity) {
+	_unMounted (obj: IgeEntity | IgeTileMap2d) {
 	}
 
 	isMounted () {
@@ -1864,7 +1866,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      */
 	occupyTile (x?: number, y?: number, width?: number, height?: number) {
 		// Check that the entity is mounted to a tile map
-		if (this._parent && this._parent.IgeTileMap2d) {
+		if (this._parent && this._parent instanceof IgeTileMap2d) {
 			if (x !== undefined && y !== undefined) {
 				this._parent.occupyTile(x, y, width, height, this);
 			} else {
@@ -2453,6 +2455,10 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * @return {IgePoint3d} The screen position of the entity.
      */
 	screenPosition () {
+		if (!ige._currentCamera) {
+			throw new Error("Cannot get screen position of entity, ige instance has no camera!");
+		}
+
 		return new IgePoint3d(
 			Math.floor(
 				(this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x + ige.root._bounds2d.x2
@@ -3986,7 +3992,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		return this;
 	}
 
-	velocityTo (x, y, z) {
+	velocityTo (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._velocity.x = x;
 			this._velocity.y = y;
@@ -3998,7 +4004,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		return this._entity || this;
 	}
 
-	velocityBy (x, y, z) {
+	velocityBy (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._velocity.x += x;
 			this._velocity.y += y;
@@ -4020,7 +4026,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *     entity.translateBy(10, 0, 0);
      * @return {*}
      */
-	translateBy (x, y, z) {
+	translateBy (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._translate.x += x;
 			this._translate.y += y;
@@ -4041,7 +4047,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *     entity.translateTo(10, 0, 0);
      * @return {*}
      */
-	translateTo (x, y, z) {
+	translateTo (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._translate.x = x;
 			this._translate.y = y;
@@ -4094,7 +4100,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * @return {*} The object this method was called from to allow
      * method chaining.
      */
-	translateToTile (x, y, z) {
+	translateToTile (x?: number, y?: number, z?: number) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
 			let finalZ;
 
@@ -4203,7 +4209,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *     entity.rotateBy(0, 0, degreesToRadians(10));
      * @return {*}
      */
-	rotateBy (x, y, z) {
+	rotateBy (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._rotate.x += x;
 			this._rotate.y += y;
@@ -4317,7 +4323,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *     entity.scaleBy(2, 0, 0);
      * @return {*}
      */
-	scaleBy (x, y, z) {
+	scaleBy (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._scale.x += x;
 			this._scale.y += y;
@@ -4338,7 +4344,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *     entity.scaleTo(1, 1, 1);
      * @return {*}
      */
-	scaleTo (x, y, z) {
+	scaleTo (x?: number, y?: number, z?: number) {
 		if (x === undefined || y === undefined || z === undefined) {
 			this.log("scaleTo() called with a missing or undefined x, y or z parameter!", "error");
 			return this;
@@ -4432,7 +4438,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *     entity.originBy(0.5, 0, 0);
      * @return {*}
      */
-	originBy (x, y, z) {
+	originBy (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._origin.x += x;
 			this._origin.y += y;
@@ -4453,7 +4459,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *     entity.originTo(0.5, 0.5, 0.5);
      * @return {*}
      */
-	originTo (x, y, z) {
+	originTo (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._origin.x = x;
 			this._origin.y = y;

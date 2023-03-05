@@ -3,6 +3,7 @@ import IgeBaseClass from "../engine/core/IgeBaseClass";
 import IgeBaseScene from "../engine/core/IgeBaseScene";
 import IgeEditorComponent from "../engine/components/editor/IgeEditorComponent";
 import IgeInputComponent from "../engine/components/IgeInputComponent";
+import IgeAudioComponent from "../engine/components/audio/IgeAudioComponent";
 import { Level1 } from "./levels/Level1";
 import { textures } from "./services/textures";
 
@@ -17,6 +18,8 @@ export class Client extends IgeBaseClass {
 		super();
 
 		ige.addComponent(IgeEditorComponent);
+		ige.addComponent(IgeAudioComponent);
+		(ige.components.audio as IgeAudioComponent).masterVolume(options.get('masterVolume', 1));
 		(ige.components.input as IgeInputComponent).debug(true);
 
 		// Load the game textures

@@ -3,8 +3,8 @@ import IgeBaseClass from "./IgeBaseClass.js";
  * Creates a new map that has two dimensions (x and y) to it's data.
  */
 class IgeMap2d extends IgeBaseClass {
-    constructor(ige, data) {
-        super(ige);
+    constructor(data) {
+        super();
         this.classId = "IgeMap2d";
         this._mapData = data || [];
     }
@@ -58,7 +58,7 @@ class IgeMap2d extends IgeBaseClass {
      * @param height
      */
     collision(x, y, width, height) {
-        var xi, yi;
+        let xi, yi;
         if (width === undefined) {
             width = 1;
         }
@@ -86,7 +86,7 @@ class IgeMap2d extends IgeBaseClass {
      * @param data
      */
     collisionWith(x, y, width, height, data) {
-        var xi, yi;
+        let xi, yi;
         if (width === undefined) {
             width = 1;
         }
@@ -115,7 +115,7 @@ class IgeMap2d extends IgeBaseClass {
      * @param data
      */
     collisionWithOnly(x, y, width, height, data) {
-        var xi, yi, tileData, withData = false;
+        let xi, yi, tileData, withData = false;
         if (width === undefined) {
             width = 1;
         }
@@ -139,53 +139,39 @@ class IgeMap2d extends IgeBaseClass {
         }
         return withData;
     }
-    /**
-     * Gets / sets the map's tile data.
-     * @param {Array} val The map data array.
-     * @param {Integer} startX The start x co-ordinate of the data.
-     * @param {Integer} startY The start y co-ordinate of the data.
-     * @return {*}
-     */
     mapData(val, startX, startY) {
-        if (val !== undefined) {
-            if (!startX && !startY) {
-                this._mapData = val;
-            }
-            else {
-                // Loop the map data and apply based on the start positions
-                var x, y;
-                for (y in val) {
-                    for (x in val[y]) {
-                        this._mapData[startY + parseInt(y)][startX + parseInt(x)] = val[y][x];
-                    }
-                }
-            }
+        if (val === undefined) {
+            return this._mapData;
+        }
+        if (!startX || !startY) {
+            this._mapData = val;
             return this;
         }
-        return this._mapData;
+        // Loop the map data and apply based on the start positions
+        for (let y = 0; y < val.length; y++) {
+            for (let x = 0; x < val[y].length; x++) {
+                this._mapData[startY + y][startX + x] = val[y][x];
+            }
+        }
+        return this;
     }
     sortedMapDataAsArray() {
-        var data = this.mapData(), finalData = {};
-        var x, y, xArr, yArr, i, k;
-        yArr = this._sortKeys(data);
-        for (i = 0; i < yArr.length; i++) {
-            y = yArr[i];
-            xArr = this._sortKeys(data[y]);
+        const data = this.mapData();
+        const finalData = [];
+        const yArr = this._sortKeys(data);
+        for (let i = 0; i < yArr.length; i++) {
+            const y = yArr[i];
+            const xArr = this._sortKeys(data[y]);
             finalData[y] = finalData[y] || {};
-            for (k = 0; k < xArr.length; k++) {
-                x = xArr[k];
+            for (let k = 0; k < xArr.length; k++) {
+                const x = xArr[k];
                 finalData[y][x] = data[y][x];
             }
         }
         return finalData;
     }
     _sortKeys(obj) {
-        var arr = [];
-        for (var i in obj) {
-            arr.push(i);
-        }
-        arr.sort();
-        return arr;
+        return Object.keys(obj).sort();
     }
     /**
      * Returns a string of the map's data in JSON format.
@@ -194,52 +180,14 @@ class IgeMap2d extends IgeBaseClass {
     mapDataString() {
         return JSON.stringify(this.mapData());
     }
-    /**
-     * Inserts map data into the map at the given co-ordinates. Please note this
-     * is not used for setting a tile's value. This is used to add large sections
-     * of map data at the specified co-ordinates. To set an individual tile value,
-     * please use tile(x, y, val).
-     * @param {Number} x
-     * @param {Number} y
-     * @param {Array} val The map data array.
-     */
-    //TODO: Write this function's internals!
-    insertMapData(x, y, val) {
-        // Loop the data and fill the map data with it
-    }
-    /**
-     * Rotates map data either -90 degrees (anti-clockwise), 90 degrees (clockwise) or
-     * 180 degrees. Useful when you want to define one section of a map and then re-use
-     * it in slightly different layouts.
-     * @param {Array} val The map data array to rotate.
-     * @param {Number} mode Either -90, 90 or 180 to denote the type of rotation to perform.
-     */
-    //TODO: Write this function's internals!
-    rotateData(val, mode) {
-        switch (mode) {
-            case -90:
-                // Rotate the data
-                break;
-            case 180:
-                break;
-            case 90:
-            default:
-                break;
-        }
-    }
     translateDataBy(transX, transY) {
-        var yArr = this.mapData(), newArr = [], x, y, xArr, i, k;
-        for (y in yArr) {
-            if (yArr.hasOwnProperty(y)) {
-                i = parseInt(y, 10);
-                xArr = yArr[i];
-                newArr[i + transY] = newArr[i + transY] || {};
-                for (x in xArr) {
-                    if (xArr.hasOwnProperty(x)) {
-                        k = parseInt(x, 10);
-                        newArr[i + transY][k + transX] = yArr[y][x];
-                    }
-                }
+        const yArr = this.mapData();
+        const newArr = [];
+        for (let y = 0; y < yArr.length; y++) {
+            const xArr = yArr[y];
+            newArr[y + transY] = newArr[y + transY] || [];
+            for (let x = 0; x < xArr.length; x++) {
+                newArr[y + transY][x + transX] = yArr[y][x];
             }
         }
         this.mapData(newArr, 0, 0);

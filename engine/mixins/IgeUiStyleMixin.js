@@ -1,7 +1,11 @@
+import { ige } from "../instance.js";
+// TODO: Update this mixin so it extensds from IgeBaseClass, moving anything that relies on IgeEntity
+//    to another class, probably IgeEntity or IgeUiEntity?
 const WithUiStyleMixin = (Base) => class extends Base {
     constructor() {
         super(...arguments);
         this._color = "#000000";
+        this._cell = null;
     }
     /**
      * Gets / sets the color to use as the font color.
@@ -26,6 +30,7 @@ const WithUiStyleMixin = (Base) => class extends Base {
      * the current background image if no parameters are specified.
      */
     backgroundImage(texture, repeatType) {
+        var _a, _b;
         if (texture && texture.image) {
             if (!repeatType) {
                 repeatType = "no-repeat";
@@ -44,19 +49,24 @@ const WithUiStyleMixin = (Base) => class extends Base {
                 this._patternWidth = texture.image.width;
                 this._patternHeight = texture.image.height;
             }
-            if (this._cell > 1) {
+            if (this._cell && this._cell > 1) {
                 // We are using a cell sheet, render the cell to a
                 // temporary canvas and set that as the pattern image
-                const canvas = document.createElement("canvas"), ctx = canvas.getContext("2d"), cellData = texture._cells[this._cell];
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                if (!ctx) {
+                    throw new Error("Couldn't get texture canvas 2d context!");
+                }
+                const cellData = texture._cells[this._cell];
                 canvas.width = cellData[2];
                 canvas.height = cellData[3];
                 ctx.drawImage(texture.image, cellData[0], cellData[1], cellData[2], cellData[3], 0, 0, cellData[2], cellData[3]);
                 // Create the pattern from the texture cell
-                this._patternFill = this._ige._ctx.createPattern(canvas, repeatType);
+                this._patternFill = ((_a = ige._ctx) === null || _a === void 0 ? void 0 : _a.createPattern(canvas, repeatType)) || undefined;
             }
             else {
                 // Create the pattern from the texture
-                this._patternFill = this._ige._ctx.createPattern(texture.image, repeatType);
+                this._patternFill = ((_b = ige._ctx) === null || _b === void 0 ? void 0 : _b.createPattern(texture.image, repeatType)) || undefined;
             }
             texture.restoreOriginal();
             this.cacheDirty(true);
@@ -65,53 +75,51 @@ const WithUiStyleMixin = (Base) => class extends Base {
         return this._patternFill;
     }
     backgroundSize(x, y) {
-        if (x !== undefined && y !== undefined) {
-            if (typeof (x) === "string" && x !== "auto") {
-                // Work out the actual size in pixels
-                // from the percentage
-                x = this._bounds2d.x / 100 * parseInt(x, 10);
-            }
-            if (typeof (y) === "string" && y !== "auto") {
-                // Work out the actual size in pixels
-                // from the percentage
-                y = this._bounds2d.y / 100 * parseInt(y, 10);
-            }
-            if (x === "auto" && y === "auto") {
-                this.log("Cannot set background x and y both to auto!", "error");
-                return this;
-            }
-            else if (x === "auto") {
-                if (this._patternTexture && this._patternTexture.image) {
-                    // find out y change and apply it to the x
-                    x = this._patternTexture.image.width * (y / this._patternTexture.image.height);
-                }
-                else {
-                    x = this._bounds2d.x * (y / this._bounds2d.y);
-                }
-            }
-            else if (y === "auto") {
-                if (this._patternTexture && this._patternTexture.image) {
-                    // find out x change and apply it to the y
-                    y = this._patternTexture.image.height * (x / this._patternTexture.image.width);
-                }
-                else {
-                    y = this._bounds2d.y * (x / this._bounds2d.x);
-                }
-            }
-            if (x !== 0 && y !== 0) {
-                this._backgroundSize = { x, y };
-                // Reset the background image
-                if (this._patternTexture && this._patternRepeat) {
-                    this.backgroundImage(this._patternTexture, this._patternRepeat);
-                }
-                this.cacheDirty(true);
-            }
-            else {
-                this.log("Cannot set background to zero-sized x or y!", "error");
-            }
+        if (!(x !== undefined && y !== undefined)) {
+            return this._backgroundSize;
+        }
+        if (typeof x === "string" && x !== "auto") {
+            // Work out the actual size in pixels
+            // from the percentage
+            x = this._bounds2d.x / 100 * parseInt(x, 10);
+        }
+        if (typeof y === "string" && y !== "auto") {
+            // Work out the actual size in pixels
+            // from the percentage
+            y = this._bounds2d.y / 100 * parseInt(y, 10);
+        }
+        if (x === "auto" && y === "auto") {
+            this.log("Cannot set both background x and y to auto!", "error");
             return this;
         }
-        return this._backgroundSize;
+        if (x === "auto" && typeof y === "number") {
+            if (this._patternTexture && this._patternTexture.image) {
+                // find out y change and apply it to the x
+                x = this._patternTexture.image.width * (y / this._patternTexture.image.height);
+            }
+            else {
+                x = this._bounds2d.x * (y / this._bounds2d.y);
+            }
+        }
+        else if (y === "auto" && typeof x === "number") {
+            if (this._patternTexture && this._patternTexture.image) {
+                // find out x change and apply it to the y
+                y = this._patternTexture.image.height * (x / this._patternTexture.image.width);
+            }
+            else {
+                y = this._bounds2d.y * (x / this._bounds2d.x);
+            }
+        }
+        if (!(x !== 0 && y !== 0)) {
+            throw new Error("Cannot set background to zero-sized x or y!");
+        }
+        this._backgroundSize = { x, y };
+        // Reset the background image
+        if (this._patternTexture && this._patternRepeat) {
+            this.backgroundImage(this._patternTexture, this._patternRepeat);
+        }
+        this.cacheDirty(true);
+        return this;
     }
     /**
      * Gets / sets the color to use as a background when
@@ -274,7 +282,7 @@ const WithUiStyleMixin = (Base) => class extends Base {
         return this._borderBottomRightRadius;
     }
     padding(...args) {
-        if (!args.length)
+        if (args.length === 0)
             return this._padding;
         if (args.length === 1) {
             // Set padding proper
@@ -323,7 +331,7 @@ const WithUiStyleMixin = (Base) => class extends Base {
         return this._paddingBottom;
     }
     margin(...args) {
-        if (!args.length)
+        if (args.length === 0)
             return this._margin;
         if (args.length === 1) {
             // Set margin proper

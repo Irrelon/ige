@@ -24,7 +24,6 @@ class IgeNetIoComponent extends IgeComponent {
         this._latency = 0;
         /* CEXCLUDE */
         if (ige.isServer) {
-            this.implement(IgeNetIoServer);
             this._netio = require('../../../' + modulePath + 'net.io-server').Server;
             this._acceptConnections = false;
         }

@@ -163,16 +163,16 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         }
         if (this._drawMouse && ctx === ige._ctx) {
             ctx.save();
-            let mp = this.mousePos(), text, mx, my, textMeasurement;
+            const mp = this.mousePos();
             // Re-scale the context to ensure that output is always 1:1
             ctx.scale(1 / this.camera._scale.x, 1 / this.camera._scale.y);
             // Work out the re-scale mouse position
-            mx = Math.floor(mp.x * this.camera._scale.x);
-            my = Math.floor(mp.y * this.camera._scale.y);
+            const mx = Math.floor(mp.x * this.camera._scale.x);
+            const my = Math.floor(mp.y * this.camera._scale.y);
             ctx.fillStyle = "#fc00ff";
             ctx.fillRect(mx - 5, my - 5, 10, 10);
-            text = this.id() + " X: " + mx + ", Y: " + my;
-            textMeasurement = ctx.measureText(text);
+            const text = this.id() + " X: " + mx + ", Y: " + my;
+            const textMeasurement = ctx.measureText(text);
             ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
             ctx.fillRect(Math.floor(mx - textMeasurement.width / 2 - 5), Math.floor(my - 25), Math.floor(textMeasurement.width + 10), 14);
             ctx.fillStyle = "#ffffff";
@@ -464,9 +464,9 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
      */
     _stringify() {
         // Get the properties for all the super-classes
-        let str = super._stringify(), i;
+        let str = super.stringify();
         // Loop properties and add property assignment code to string
-        for (i in this) {
+        for (const i in this) {
             if (this.hasOwnProperty(i) && this[i] !== undefined) {
                 switch (i) {
                     case "_autoSize":
