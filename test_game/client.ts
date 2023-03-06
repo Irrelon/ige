@@ -3,7 +3,7 @@ import IgeBaseClass from "../engine/core/IgeBaseClass";
 import IgeBaseScene from "../engine/core/IgeBaseScene";
 import { Level1 } from "./levels/Level1";
 import { textures } from "./services/textures";
-import { audioController } from "../engine/services/audioController";
+import { audioController } from "../engine/services/igeAudioController";
 import { IgeOptions } from "../engine/core/IgeOptions";
 
 // @ts-ignore

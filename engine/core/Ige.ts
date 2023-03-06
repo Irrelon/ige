@@ -10,6 +10,7 @@ import type { IgeRegisterableByCategory } from "../../types/IgeRegisterableByCat
 import type IgeEntity from "./IgeEntity";
 import type IgeViewport from "./IgeViewport";
 import IgePoint3d from "./IgePoint3d";
+import { IgeAudioController } from "../components/IgeAudioController";
 
 const version = "2.0.0";
 
@@ -18,6 +19,7 @@ export class Ige {
 	textures: IgeTextures = new IgeTextures();
 	metrics: IgeMetrics = new IgeMetrics();
 	input: IgeInputComponent = new IgeInputComponent();
+	audio: IgeAudioController = new IgeAudioController();
 	register: IgeObjectRegister = new IgeObjectRegister();
 	categoryRegister: IgeArrayRegister<IgeRegisterableByCategory> = new IgeArrayRegister("_category", "_categoryRegistered");
 	groupRegister: IgeArrayRegister<IgeRegisterableByCategory> = new IgeArrayRegister("_category", "_categoryRegistered");

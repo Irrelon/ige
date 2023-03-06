@@ -1,113 +1,91 @@
 import { ige } from "../../instance";
 import IgeEventingClass from "../../core/IgeEventingClass";
-import { IgeRegisterableById } from "../../../types/IgeRegisterableById";
-import { audioController } from "../../services/audioController";
-import { newIdHex } from "../../services/utils";
 
-class IgeAudio extends IgeEventingClass implements IgeRegisterableById {
+class IgeAudio extends IgeEventingClass {
 	classId = "IgeAudio";
-	_idRegistered: boolean = false;
-	_id?: string;
 	_url?: string;
 	_data?: ArrayBuffer;
 	_buffer?: AudioBuffer;
+	_bufferSource?: AudioBufferSourceNode;
 	_playWhenReady: boolean = false;
 	_loaded: boolean = false;
 	_loop: boolean = false;
+	_playing: boolean = false;
+	_audioId?: string;
+	_panner?: PannerNode;
 
-	constructor (url?: string) {
+	constructor (audioId?: string) {
 		super();
 
-		if (!url) {
-			return;
+		if (audioId) {
+			this.audioId(audioId);
 		}
-
-		this.url(url).then(() => {
-			this._loaded = true;
-		});
 	}
 
-	/**
-	 * Gets / sets the current object id. If no id is currently assigned and no
-	 * id is passed to the method, it will automatically generate and assign a
-	 * new id as a 16 character hexadecimal value typed as a string.
-	 * @param {String=} id The id to set to.
-	 * @return {*} Returns this when setting the value or the current value if none is specified.
-	 */
-	id (id: string): this;
-	id (): string;
-	id (id?: string): this | string | undefined {
-		if (id !== undefined) {
-			// Check if this ID already exists in the object register
-			if (ige.register.get(id)) {
-				if (ige.register.get(id) === this) {
-					// We are already registered as this id
-					return this;
-				}
-
-				// Already an object with this ID!
-				this.log(`Cannot set ID of object to "${id}" because that ID is already in use by another object!`, "error");
-			} else {
-				// Check if we already have an id assigned
-				if (this._id && ige.register.get(this._id)) {
-					// Unregister the old ID before setting this new one
-					ige.register.remove(this);
-				}
-
-				this._id = id;
-
-				// Now register this object with the object register
-				ige.register.add(this);
-
-				return this;
-			}
+	playing (val?: boolean) {
+		if (val !== undefined) {
+			this._playing = val;
+			return this;
 		}
 
-		if (!this._id) {
-			// The item has no id so generate one automatically
-			if (this._url) {
-				// Generate an ID from the URL string of the audio file
-				// this instance is using. Useful for always reproducing
-				// the same ID for the same file :)
-				this._id = ige.engine.newIdFromString(this._url);
-			} else {
-				// We don't have a URL so generate a random ID
-				this._id = newIdHex();
-			}
-			ige.register.add(this);
-		}
-
-		return this._id;
+		return this._playing;
 	}
 
-	async url (url: string) {
-		return audioController._load(url).then((buffer) => {
+	audioId (audioId: string): this;
+	audioId (): string;
+	audioId (audioId?: string) {
+		if (audioId === undefined) {
+			return this._audioId;
+		}
+
+		this._audioId = audioId;
+		this.buffer(ige.audio.register(audioId));
+
+		return this;
+	}
+
+	url (url: string): this;
+	url (): string;
+	url (url?: string) {
+		if (url === undefined) {
+			return this._url;
+		}
+
+		this._url = url;
+
+		ige.audio._load(url).then((buffer) => {
 			this.buffer(buffer);
+		}).catch((err) => {
+			throw new Error(`Unable to load audio: ${err}`);
 		});
+
+		return this;
 	}
 
 	/**
 	 * Gets / sets the current audio buffer.
-	 * @param buffer
+	 * @param {AudioBuffer} buffer
 	 * @returns {*}
 	 */
-	buffer (buffer: AudioBuffer) {
-		if (buffer !== undefined) {
-			this._buffer = buffer;
-
-			if (this._playWhenReady) {
-				this.play(this._loop);
-			}
-
-			return this;
+	buffer (buffer: AudioBuffer): this;
+	buffer (): AudioBuffer;
+	buffer (buffer?: AudioBuffer) {
+		if (buffer === undefined) {
+			return this._buffer;
 		}
 
-		return this._buffer;
+		this._buffer = buffer;
+
+		if (this._playWhenReady) {
+			this.play(this._loop);
+		}
+
+		return this;
 	}
 
-
-
-	panner (val) {
+	panner (val: PannerNode): this;
+	panner (): PannerNode;
+	panner (val?: PannerNode) {
 		if (val === undefined) {
 			return this._panner;
 		}
@@ -117,7 +95,7 @@ class IgeAudio extends IgeEventingClass implements IgeRegisterableById {
 		if (this._bufferSource) {
 			// Make sure we include the panner in the connections
 			this._bufferSource.connect(this._panner);
-			this._panner.connect($ige.engine.audio._masterVolumeNode);
+			this._panner.connect(ige.audio._masterVolumeNode);
 		}
 
 		return this;
@@ -126,30 +104,45 @@ class IgeAudio extends IgeEventingClass implements IgeRegisterableById {
 	/**
 	 * Plays the audio.
 	 */
-	play () {
-		if (this._buffer) {
-			this._bufferSource = audioController._ctx.createBufferSource();
-			this._bufferSource.buffer = this._buffer;
-
-			if (this._panner) {
-				// Connect through the panner
-				this._bufferSource.connect(this._panner);
-				this._panner.connect(audioController._masterVolumeNode);
-			} else {
-				// Connect directly to the destination
-				this._bufferSource.connect(audioController._masterVolumeNode);
-			}
-
-			this._bufferSource.loop = loop;
-			this._bufferSource.start(0);
-
-			this.log("Audio file (" + this._url + ") playing...");
-		} else {
+	play (loop: boolean = false) {
+		if (!this._buffer) {
 			this._playWhenReady = true;
 			this._loop = loop;
+			this._playing = true;
+			return;
 		}
 
+		this._bufferSource = ige.audio._ctx.createBufferSource();
+		this._bufferSource.buffer = this._buffer;
+
+		if (this._panner) {
+			// Connect through the panner
+			this._bufferSource.connect(this._panner);
+			this._panner.connect(ige.audio._masterVolumeNode);
+		} else {
+			// Connect directly to the destination
+			this._bufferSource.connect(ige.audio._masterVolumeNode);
+		}
+
+		this._bufferSource.loop = loop;
+		this._bufferSource.start(0);
+
 		this._playing = true;
+		this.log(`Audio file (${this._url}) playing...`);
+	}
+
+	/**
+	 * Stops the currently playing audio.
+	 */
+	stop () {
+		if (this._bufferSource) {
+			this.log("Audio file (" + this._url + ") stopping...");
+			this._bufferSource.stop();
+		} else {
+			this._playWhenReady = false;
+		}
+
+		this._playing = false;
 	}
 }
 

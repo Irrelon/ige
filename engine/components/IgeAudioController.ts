@@ -6,7 +6,7 @@ export class IgeAudioController extends IgeEventingClass {
 	_active: boolean;
 	_disabled: boolean;
 	_ctx: AudioContext;
-	_masterVolumeNode?: GainNode;
+	_masterVolumeNode: GainNode;
 	_register: Record<string, AudioBuffer>;
 
 	constructor () {
@@ -17,9 +17,8 @@ export class IgeAudioController extends IgeEventingClass {
 		this._register = {};
 
 		if (!this._ctx) {
-			this.log("No web audio API support, cannot play sounds!", "warning");
+			this.log("No web audio API support, sound is disabled!");
 			this._disabled = true;
-			return;
 		}
 
 		this._masterVolumeNode = this._ctx.createGain();
@@ -172,5 +171,3 @@ export class IgeAudioController extends IgeEventingClass {
 		return this._ctx.decodeAudioData(data);
 	}
 }
-
-export const audioController = new IgeAudioController();
