@@ -1,48 +1,44 @@
-"use strict";
-var IgeSocketIoComponent = IgeEventingClass.extend([
-    { extension: IgeTimeSyncExtension, overwrite: false }
-], {
-    classId: 'IgeSocketIoComponent',
-    componentId: 'network',
-    init: function (entity, options) {
-        this._entity = entity;
-        this._options = options;
-        // Setup the network commands storage
-        this._networkCommands = {};
-        this._networkCommandsIndex = [];
-        this._networkCommandsLookup = {};
-        // Set some defaults
+import IgeEventingClass from "../../../core/IgeEventingClass.js";
+export class IgeNetIoBaseComponent extends IgeEventingClass {
+    constructor() {
+        super();
+        this.classId = 'IgeNetIoBaseComponent';
+        this._networkCommands = {}; // Maps a command name to a command handler function
+        this._networkCommandsIndex = []; // Maps a command name to an integer via the array index
+        this._networkCommandsLookup = {}; // Maps a command name to its index
         this._port = 8000;
         this._debug = false;
+        this._debugCounter = 0;
         this._debugMax = 0;
         this._clientRooms = {};
-        // Time sync defaults
+        this._socketsByRoomId = {}; // Any should be socket, figure out what that is
         this._timeSyncInterval = 10000; // Sync the client/server clocks every ten seconds by default
         this._timeSyncLog = {};
         this._latency = 0;
-        /* CEXCLUDE */
-        if (ige.isServer) {
-            this.implement(IgeSocketIoServer);
-            this._socketio = require('../../../' + modulePath + 'socket.io');
-            this._acceptConnections = false;
-        }
-        /* CEXCLUDE */
-        if (ige.isClient) {
-            this._socketio = IgeSocketIoClient;
-            this.implement(IgeSocketIoClient);
-        }
-        this.log('Network component initiated with socket.io version: ' + this._socketio.version);
-    },
+        this._acceptConnections = false;
+        // /* CEXCLUDE */
+        // if (ige.isServer) {
+        // 	this._netio = require('../../../' + modulePath + 'net.io-server').Server;
+        // 	this._acceptConnections = false;
+        // }
+        // /* CEXCLUDE */
+        //
+        // if (ige.isClient) {
+        // 	this._netio = IgeNetIoClient;
+        // 	//this.implement(IgeNetIoClient);
+        // }
+        //this.log('Network component initiated with Net.IO version: ' + this._netio.version);
+    }
     /**
      * Gets / sets debug flag that determines if debug output
      * is logged to the console.
      * @param {Boolean=} val
      * @return {*}
      */
-    debug: function (val) {
+    debug(val) {
         if (val !== undefined) {
             this._debug = val;
-            return this._entity;
+            return this;
         }
         // Check the debug counter settings
         if (this._debugMax > 0 && this._debugCounter >= this._debugMax) {
@@ -50,7 +46,7 @@ var IgeSocketIoComponent = IgeEventingClass.extend([
             this._debugCounter = 0;
         }
         return this._debug;
-    },
+    }
     /**
      * Gets / sets the maximum number of debug messages that
      * should be allowed to be output to the console before
@@ -63,14 +59,11 @@ var IgeSocketIoComponent = IgeEventingClass.extend([
      * infinite amounts.
      * @return {*}
      */
-    debugMax: function (val) {
+    debugMax(val) {
         if (val !== undefined) {
             this._debugMax = val;
-            return this._entity;
+            return this;
         }
         return this._debugMax;
     }
-});
-if (typeof (module) !== 'undefined' && typeof (module.exports) !== 'undefined') {
-    module.exports = IgeSocketIoComponent;
 }

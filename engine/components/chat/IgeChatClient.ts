@@ -8,7 +8,7 @@ const IgeChatClient = {
 	 * @param {String} roomId The room id of the room to join.
 	 */
 	joinRoom: function (roomId) {
-		ige.components.network.send('igeChatJoinRoom', roomId);
+		ige.network.send('igeChatJoinRoom', roomId);
 	},
 
 	sendToRoom: function (roomId, message, to) {
@@ -19,7 +19,7 @@ const IgeChatClient = {
 				to: to
 			};
 
-			ige.components.network.send('igeChatMsg', msg);
+			ige.network.send('igeChatMsg', msg);
 		}
 	},
 

@@ -2,7 +2,7 @@
  * The server-side chat component. Handles all server-side
  * chat methods and events.
  */
-import { newIdHex } from "engine/services/utils";
+import { newIdHex } from "../../services/utils.js";
 import { ige } from "../../instance.js";
 const IgeChatServer = {
     /**
@@ -129,7 +129,7 @@ const IgeChatServer = {
                 if (!room.users[clientId]) {
                     // Add the user to the room
                     room.users.push(clientId);
-                    ige.components.network.send('igeChatJoinRoom', { roomId: roomId, joined: true }, clientId);
+                    ige.network.send('igeChatJoinRoom', { roomId: roomId, joined: true }, clientId);
                     console.log('User "' + clientId + '" joined room ' + roomId);
                 }
                 else {

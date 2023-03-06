@@ -3,11 +3,11 @@ import IgeSceneGraph from "../../engine/core/IgeSceneGraph";
 import IgeScene2d from "../../engine/core/IgeScene2d";
 import IgeEntity from "../../engine/core/IgeEntity";
 import { Client } from "../client";
-import { degreesToRadians } from "../../engine/services/utils";
 import { Square } from "../entity/Square";
 import { Circle } from "../entity/Circle";
 import { Triangle } from "../entity/Triangle";
 import { Line } from "../entity/Line";
+import { degreesToRadians } from "../../engine/services/utils";
 
 export class Level1 extends IgeSceneGraph {
 	classId = 'Level1';

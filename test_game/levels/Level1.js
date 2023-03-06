@@ -1,11 +1,11 @@
 import { ige } from "../../engine/instance.js";
 import IgeSceneGraph from "../../engine/core/IgeSceneGraph.js";
 import IgeScene2d from "../../engine/core/IgeScene2d.js";
-import { degreesToRadians } from "../../engine/services/utils.js";
 import { Square } from "../entity/Square.js";
 import { Circle } from "../entity/Circle.js";
 import { Triangle } from "../entity/Triangle.js";
 import { Line } from "../entity/Line.js";
+import { degreesToRadians } from "../../engine/services/utils.js";
 export class Level1 extends IgeSceneGraph {
     constructor() {
         super(...arguments);

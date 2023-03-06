@@ -20,9 +20,11 @@
     "net.io-server": "https://github.com/irrelon/net.io-server/tarball/master",
     "node-arguments": "0.0.1",
     "socket.io": "0.9.14",
-    "uglify-js2": "2.1.4"
+    "uglify-js2": "2.1.4",
+    "websocket": "^1.0.34"
   },
   "devDependencies": {
+    "@types/websocket": "^1.0.5",
     "@typescript-eslint/eslint-plugin": "^5.22.0",
     "@typescript-eslint/parser": "^5.22.0",
     "@zoltu/typescript-transformer-append-js-extension": "^1.0.1",

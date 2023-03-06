@@ -3,8 +3,8 @@ import IgeBaseClass from "../engine/core/IgeBaseClass";
 import IgeBaseScene from "../engine/core/IgeBaseScene";
 import { Level1 } from "./levels/Level1";
 import { textures } from "./services/textures";
-import { audioController } from "../engine/services/igeAudioController";
 import { IgeOptions } from "../engine/core/IgeOptions";
+import { IgeNetIoClientComponent } from "../engine/components/network/net.io/IgeNetIoClientComponent";
 
 // @ts-ignore
 window.ige = ige;
@@ -20,7 +20,7 @@ export class Client extends IgeBaseClass {
 		options.set("masterVolume", 1);
 		ige.init();
 		//ige.engine.addComponent(IgeEditorComponent);
-		audioController.masterVolume(options.get('masterVolume', 1));
+		ige.audio.masterVolume(options.get('masterVolume', 1));
 		//(ige.components.input as IgeInputComponent).debug(true);
 
 		// Load the game textures
@@ -43,6 +43,10 @@ export class Client extends IgeBaseClass {
 					// the method being called by the engine and how
 					// the items are added to the scenegraph)
 					ige.engine.addGraph(Level1);
+
+					(ige.network as IgeNetIoClientComponent)?.start('http://localhost:2000', () => {
+						console.log("Connect result")
+					});
 				}
 			});
 		});

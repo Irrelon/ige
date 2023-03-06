@@ -1,13 +1,11 @@
 import IgeUiEntity from "./IgeUiEntity.js";
 import IgeTween from "./IgeTween.js";
-import { degreesToRadians } from "engine/services/utils";
 /**
  * Creates a new particle emitter.
  */
 class IgeParticleEmitter extends IgeUiEntity {
-    constructor(ige) {
-        // IgeBody.init()
-        super(ige);
+    constructor() {
+        super();
         this.classId = "IgeParticleEmitter";
         this.IgeParticleEmitter = true;
         // Set some defaults
@@ -286,7 +284,7 @@ class IgeParticleEmitter extends IgeUiEntity {
     stopAndKill() {
         this._started = false;
         // Loop the particles array and destroy all the particles
-        var arr = this._particles, arrCount = arr.length;
+        let arr = this._particles, arrCount = arr.length;
         while (arrCount--) {
             arr[arrCount].destroy();
         }
@@ -309,7 +307,7 @@ class IgeParticleEmitter extends IgeUiEntity {
     baseAndVarianceValue(base, variance, floorIt) {
         base = base || 0;
         variance = variance || [0, 0];
-        var variant = 0;
+        let variant = 0;
         if (floorIt) {
             variant = Math.floor(variance[0] + Math.random() * (variance[1] - variance[0]));
         }
@@ -320,7 +318,7 @@ class IgeParticleEmitter extends IgeUiEntity {
     }
     vectorFromBaseMinMax(vectorData) {
         if (vectorData.min && vectorData.max) {
-            var { base } = vectorData, { min } = vectorData, { max } = vectorData, newVector = {};
+            let { base } = vectorData, { min } = vectorData, { max } = vectorData, newVector = {};
             newVector.x = base.x + (min.x + Math.random() * (max.x - min.x));
             newVector.y = base.y + (min.y + Math.random() * (max.y - min.y));
             newVector.z = base.z + (min.z + Math.random() * (max.z - min.z));
@@ -342,7 +340,7 @@ class IgeParticleEmitter extends IgeUiEntity {
         // then don't bother creating particles!
         if (this._parent && this._started) {
             if (!this._quantityMax || this._quantityProduced < this._quantityMax) {
-                var particleCount, translateX, translateY, translateZ, 
+                let particleCount, translateX, translateY, translateZ, 
                 //vectorAngle,
                 //vectorPower,
                 velocityVector, newVecX, newVecY, rotX, rotY, cosRot, sinRot, scaleX, scaleY, scaleZ, rotate, opacity, life, 
@@ -547,7 +545,7 @@ class IgeParticleEmitter extends IgeUiEntity {
      */
     _stringify(options) {
         // Get the properties for all the super-classes
-        var str = IgeUiEntity.prototype._stringify.call(this), i;
+        let str = IgeUiEntity.prototype._stringify.call(this), i;
         return str;
         // TODO: WRITE THIS FOR THIS CLASS - EPIC AMOUNT OF WORK HERE
         // Loop properties and add property assignment code to string

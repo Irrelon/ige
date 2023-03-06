@@ -11,7 +11,7 @@ class IgeUiTimeStream extends IgeUiElement {
 		// Draw timeline
 		let i, text, xAdjust,
 			arr, arrCount, arrItem,
-			renderTime = ige._tickStart - ige.components.network.stream._renderLatency,
+			renderTime = ige._tickStart - ige.network.stream._renderLatency,
 			deltaTime;
 
 		super.tick(ctx);
@@ -36,7 +36,7 @@ class IgeUiTimeStream extends IgeUiElement {
 			ctx.lineTo(-200.5 + (i * 50), 30);
 			ctx.stroke();
 
-			text = -ige.components.network.stream._renderLatency + ((i - 2) * 10) + "ms";
+			text = -ige.network.stream._renderLatency + ((i - 2) * 10) + "ms";
 			xAdjust = ctx.measureText(text);
 			ctx.strokeText(text, -200 + (i * 50) - (xAdjust.width / 2), -38);
 

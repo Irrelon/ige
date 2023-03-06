@@ -427,9 +427,6 @@ export class IgeEngine extends IgeEntity {
             return;
         // Create the base engine instance for the scenegraph
         this.root = new IgeRoot();
-        // Set the entity on which any components are added - this defaults to "this"
-        // in the IgeComponentMixin.ts file - we override that here in this special case
-        this._componentBase = this.root;
         this._resizeEvent();
         // Set up components
         //this.addComponent(IgeInputComponent);

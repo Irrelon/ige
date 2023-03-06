@@ -8,8 +8,8 @@ import WithUiStyleMixin from "../mixins/IgeUiStyleMixin.js";
  * won't do the job.
  */
 class IgeUiEntity extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
-    constructor(ige) {
-        super(ige);
+    constructor() {
+        super();
         this.classId = "IgeUiEntity";
         // Set some defaults
         this._color = "#000000";
@@ -55,7 +55,7 @@ class IgeUiEntity extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         return this._overflow;
     }
     _renderBackground(ctx) {
-        var geom = this._bounds2d, left, top, width, height;
+        let geom = this._bounds2d, left, top, width, height;
         if (this._backgroundColor || this._patternFill) {
             left = -(geom.x / 2) | 0;
             top = -(geom.y / 2) | 0;
@@ -110,7 +110,7 @@ class IgeUiEntity extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         }
     }
     _renderBorder(ctx) {
-        var rad, geom = this._bounds2d, left = (-(geom.x2) | 0) + 0.5, top = (-(geom.y2) | 0) + 0.5, width = geom.x - 1, height = geom.y - 1;
+        let rad, geom = this._bounds2d, left = (-(geom.x2) | 0) + 0.5, top = (-(geom.y2) | 0) + 0.5, width = geom.x - 1, height = geom.y - 1;
         // Check for early exit if we are rendering a rectangle
         if (!this._borderTopRightRadius && !this._borderBottomRightRadius && !this._borderBottomLeftRadius && !this._borderTopLeftRadius
             && this._borderLeftWidth === this._borderWidth
@@ -122,7 +122,7 @@ class IgeUiEntity extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
             ctx.strokeRect(left, top, width, height);
         }
         else {
-            var startNewStroke = function () {
+            const startNewStroke = function () {
                 ctx.stroke();
                 ctx.beginPath();
             };
@@ -199,14 +199,14 @@ class IgeUiEntity extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         }
     }
     cell(val) {
-        var ret = super.cell(val);
+        const ret = super.cell(val);
         if (ret === this && this._patternTexture) {
             this.backgroundImage(this._patternTexture, this._patternRepeat);
         }
         return ret;
     }
     mount(obj) {
-        var ret = super.mount(obj);
+        const ret = super.mount(obj);
         if (this._parent) {
             // Now we're mounted update our ui calculations since we have a parent
             // to calculate from
@@ -236,7 +236,7 @@ class IgeUiEntity extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
             if (this._overflow === "hidden") {
                 // Limit drawing of child entities to within the bounds
                 // of this one
-                var geom = this._bounds2d, left = -(geom.x / 2) + this._paddingLeft | 0, top = -(geom.y / 2) + (this._paddingTop) | 0, width = geom.x + this._paddingRight, height = geom.y + this._paddingBottom;
+                const geom = this._bounds2d, left = -(geom.x / 2) + this._paddingLeft | 0, top = -(geom.y / 2) + (this._paddingTop) | 0, width = geom.x + this._paddingRight, height = geom.y + this._paddingBottom;
                 ctx.rect(left, top, width, height);
                 //ctx.stroke();
                 ctx.clip();

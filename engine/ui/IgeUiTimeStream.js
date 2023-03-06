@@ -9,7 +9,7 @@ class IgeUiTimeStream extends IgeUiElement {
     }
     tick(ctx) {
         // Draw timeline
-        let i, text, xAdjust, arr, arrCount, arrItem, renderTime = ige._tickStart - ige.components.network.stream._renderLatency, deltaTime;
+        let i, text, xAdjust, arr, arrCount, arrItem, renderTime = ige._tickStart - ige.network.stream._renderLatency, deltaTime;
         super.tick(ctx);
         ctx.strokeStyle = "#fffc00";
         ctx.beginPath();
@@ -29,7 +29,7 @@ class IgeUiTimeStream extends IgeUiElement {
             ctx.moveTo(-200.5 + (i * 50), -30);
             ctx.lineTo(-200.5 + (i * 50), 30);
             ctx.stroke();
-            text = -ige.components.network.stream._renderLatency + ((i - 2) * 10) + "ms";
+            text = -ige.network.stream._renderLatency + ((i - 2) * 10) + "ms";
             xAdjust = ctx.measureText(text);
             ctx.strokeText(text, -200 + (i * 50) - (xAdjust.width / 2), -38);
             if (((i - 2) * 10) === 0) {

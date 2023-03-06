@@ -169,7 +169,7 @@ const IgeStreamComponent = IgeEventingClass.extend({
                     this.emit('entityCreated', entity);
                 }
                 else {
-                    ige.components.network.stop();
+                    ige.network.stop();
                     ige.stop();
                     this.log('Network stream cannot create entity with class ' + classId + ' because the class has not been defined! The engine will now stop.', 'error');
                 }
@@ -185,7 +185,7 @@ const IgeStreamComponent = IgeEventingClass.extend({
             // Calculate how much time we have left before the entity
             // should be removed from the simulation given the render
             // latency setting and the current time
-            const destroyDelta = ige.components.network.stream._renderLatency + (ige.engine._currentTime - data[0]);
+            const destroyDelta = ige.network.stream._renderLatency + (ige.engine._currentTime - data[0]);
             if (destroyDelta > 0) {
                 // Give the entity a lifespan to destroy it in x ms
                 entity.lifeSpan(destroyDelta, function () {
@@ -208,7 +208,7 @@ const IgeStreamComponent = IgeEventingClass.extend({
      */
     _onStreamData: function (data) {
         // Read the packet data into variables
-        let entityId, entity, sectionArr, sectionDataArr = data.split(ige.components.network.stream._sectionDesignator), sectionDataCount = sectionDataArr.length, sectionIndex, justCreated;
+        let entityId, entity, sectionArr, sectionDataArr = data.split(ige.network.stream._sectionDesignator), sectionDataCount = sectionDataArr.length, sectionIndex, justCreated;
         // We know the first bit of data will always be the
         // target entity's ID
         entityId = sectionDataArr.shift();

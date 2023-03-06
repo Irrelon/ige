@@ -1,4 +1,4 @@
-import IgeBaseClass from "../core/IgeBaseClass";
+import type IgeBaseClass from "../core/IgeBaseClass";
 
 let _idCounter = 0;
 

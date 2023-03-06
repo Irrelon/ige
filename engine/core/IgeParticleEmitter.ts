@@ -1,7 +1,5 @@
 import IgeUiEntity from "./IgeUiEntity";
 import IgeTween from "./IgeTween";
-import IgeBaseClass from "./IgeBaseClass";
-import { degreesToRadians } from "engine/services/utils";
 
 /**
  * Creates a new particle emitter.
@@ -10,9 +8,8 @@ class IgeParticleEmitter extends IgeUiEntity {
 	classId = "IgeParticleEmitter";
 	IgeParticleEmitter = true;
 
-	constructor (ige) {
-		// IgeBody.init()
-		super(ige);
+	constructor () {
+		super();
 
 		// Set some defaults
 		this._currentDelta = 0;
@@ -340,7 +337,7 @@ class IgeParticleEmitter extends IgeUiEntity {
 		this._started = false;
 
 		// Loop the particles array and destroy all the particles
-		var arr = this._particles,
+		let arr = this._particles,
 			arrCount = arr.length;
 
 		while (arrCount--) {
@@ -368,7 +365,7 @@ class IgeParticleEmitter extends IgeUiEntity {
 	baseAndVarianceValue (base, variance, floorIt) {
 		base = base || 0;
 		variance = variance || [0, 0];
-		var variant = 0;
+		let variant = 0;
 
 		if (floorIt) {
 			variant = Math.floor(variance[0] + Math.random() * (variance[1] - variance[0]));
@@ -381,7 +378,7 @@ class IgeParticleEmitter extends IgeUiEntity {
 
 	vectorFromBaseMinMax (vectorData) {
 		if (vectorData.min && vectorData.max) {
-			var {base} = vectorData,
+			let {base} = vectorData,
 				{min} = vectorData,
 				{max} = vectorData,
 				newVector = {};
@@ -409,7 +406,7 @@ class IgeParticleEmitter extends IgeUiEntity {
 		// then don't bother creating particles!
 		if (this._parent && this._started) {
 			if (!this._quantityMax || this._quantityProduced < this._quantityMax) {
-				var particleCount,
+				let particleCount,
 					translateX,
 					translateY,
 					translateZ,
@@ -690,7 +687,7 @@ class IgeParticleEmitter extends IgeUiEntity {
 	 */
 	_stringify (options) {
 		// Get the properties for all the super-classes
-		var str = IgeUiEntity.prototype._stringify.call(this), i;
+		let str = IgeUiEntity.prototype._stringify.call(this), i;
 		return str;
 
 		// TODO: WRITE THIS FOR THIS CLASS - EPIC AMOUNT OF WORK HERE
@@ -698,9 +695,9 @@ class IgeParticleEmitter extends IgeUiEntity {
 		for (i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-					case "":
-						str += ".text(" + this.text() + ")";
-						break;
+				case "":
+					str += ".text(" + this.text() + ")";
+					break;
 				}
 			}
 		}

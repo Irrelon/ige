@@ -13,53 +13,48 @@ const defaultPanner = {
     coneOuterGain: 0
 };
 class IgeAudioEntity extends IgeEntity {
-    constructor(options) {
+    constructor(audioId, options = {
+        started: false,
+        loop: false,
+        gain: 1,
+        panner: defaultPanner
+    }) {
         super();
         this.classId = "IgeAudioEntity";
-        if (ige.isClient) {
-            // Create a new IgeAudio instance that will handle the
-            // internals of audio playback for us
-            this.audioInterface(new IgeAudio());
-            // Set some default options
-            this._options = {
-                started: false,
-                relativeTo: undefined,
-                panner: defaultPanner,
-                gain: 1
-            };
-            // Handle being given an audio id as the second argument
-            // instead of an options object
-            if (typeof options === "object") {
-                this._options = options;
-            }
-            else if (typeof options === "string") {
-                this._options.audioId = options;
-                options = undefined;
-            }
-            if (this._options) {
-                // Select the audio from the audio register
-                this._audioInterface.audioId(this._options.audioId);
-                if (this._options.relativeTo) {
-                    this.relativeTo(this._options.relativeTo);
-                }
-                if (this._options.started) {
-                    // We take this out of process so that there is time
-                    // to handle other calls that may modify the audio
-                    // before playback starts
-                    setTimeout(() => {
-                        this._audioInterface.play(this._options.loop);
-                    }, 1);
-                }
-            }
+        this._options = {
+            started: false,
+            loop: false,
+            gain: 1,
+            panner: defaultPanner
+        };
+        if (!ige.isClient) {
+            return;
+        }
+        this._audioInterface = new IgeAudio(audioId);
+        this._options = options;
+        if (this._options.relativeTo) {
+            this.relativeTo(this._options.relativeTo);
+        }
+        if (this._options.started) {
+            // We take this out of process so that there is time
+            // to handle other calls that may modify the audio
+            // before playback starts
+            setTimeout(() => {
+                if (!this._audioInterface)
+                    return;
+                this._audioInterface.play(this._options.loop);
+            }, 1);
         }
     }
     relativeTo(val) {
-        let self = this, i;
         if (val !== undefined) {
+            const audioInterface = this.audioInterface();
+            if (!audioInterface)
+                return;
             this._relativeTo = val;
-            this._listener = ige.engine.audio._ctx.listener;
+            this._listener = ige.audio._ctx.listener;
             // Check if we have a panner node yet or not
-            if (!this.audioInterface().panner()) {
+            if (!audioInterface.panner()) {
                 // Create a panner node for the audio output
                 this._panner = new PannerNode(ige.engine.audio._ctx, self._options.panner);
                 // Run through options and apply to panner
@@ -132,12 +127,6 @@ class IgeAudioEntity extends IgeEntity {
         this.audioInterface().stop();
         return this;
     }
-    /**
-     * Gets / sets the IgeAudio instance used to control
-     * playback of the audio stream.
-     * @param {IgeAudio=} audio
-     * @returns {*}
-     */
     audioInterface(audio) {
         if (audio !== undefined) {
             this._audioInterface = audio;

@@ -6,6 +6,7 @@ import IgeInputComponent from "../components/IgeInputComponent.js";
 import { IgeObjectRegister } from "./IgeObjectRegister.js";
 import { IgeArrayRegister } from "./IgeArrayRegister.js";
 import IgePoint3d from "./IgePoint3d.js";
+import { IgeAudioController } from "../components/IgeAudioController.js";
 const version = "2.0.0";
 export class Ige {
     constructor() {
@@ -13,14 +14,25 @@ export class Ige {
         this.textures = new IgeTextures();
         this.metrics = new IgeMetrics();
         this.input = new IgeInputComponent();
+        this.audio = new IgeAudioController();
         this.register = new IgeObjectRegister();
         this.categoryRegister = new IgeArrayRegister("_category", "_categoryRegistered");
         this.groupRegister = new IgeArrayRegister("_category", "_categoryRegistered");
         this.config = igeConfig;
         this.version = version;
         this._mousePos = new IgePoint3d(); // Could probably be just {x: number, y: number}
-        this.isServer = (typeof (module) !== 'undefined' && typeof (module.exports) !== 'undefined' && typeof window === 'undefined');
+        this.isServer = typeof window === 'undefined';
         this.isClient = !this.isServer;
+        if (this.isClient) {
+            import("../components/network/net.io/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
+                this.network = new Module();
+            });
+        }
+        if (this.isServer) {
+            import("../components/network/net.io/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
+                this.network = new Module();
+            });
+        }
     }
     init() {
         this.engine.createRoot();
@@ -52,14 +64,5 @@ export class Ige {
      */
     $$(categoryName) {
         return this.categoryRegister.get(categoryName) || [];
-    }
-    /**
-     * Returns an array of all objects that have been assigned
-     * the passed group name.
-     * @param {String} groupName The name of the group to return
-     * all objects for.
-     */
-    $$$(groupName) {
-        return this.groupRegister[groupName] || [];
     }
 }
