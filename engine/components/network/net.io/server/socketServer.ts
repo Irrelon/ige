@@ -79,12 +79,13 @@ export class NetIoSocket extends IgeEventingClass {
 	 * @param reason
 	 */
 	close (reason?: string) {
+		debugger;
 		this.send({
 			_netioCmd: 'close',
 			data: reason
 		});
 
-		this._socket.close(0, reason);
+		this._socket.close();
 	}
 }
 

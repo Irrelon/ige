@@ -6,7 +6,7 @@ var CharacterContainer = IgeEntity.extend({
 		var self = this;
 		IgeEntity.prototype.init.call(this);
 		
-		if (ige.isClient) {
+		if (isClient) {
 			// Setup the entity 3d bounds
 			self.bounds3d(20, 20, 40);
 	
@@ -23,11 +23,11 @@ var CharacterContainer = IgeEntity.extend({
 			this.isometric(true);
 		}
 		
-		if (ige.isServer) {
+		if (isServer) {
 			this.addComponent(IgePathComponent);
 			this.path.finder(ige.server.pathFinder);
 			this.path.tileMap(ige.server.collisionMap);
-			this.path.tileChecker(function(tileData, tileX, tileY) {
+			this.path.tileChecker(function (tileData, tileX, tileY) {
 				return tileData !== 1;
 			});
 		}
@@ -51,7 +51,7 @@ var CharacterContainer = IgeEntity.extend({
 		if (sectionId === 'direction') {
 			// Check if the server sent us data, if not we are supposed
 			// to return the data instead of set it
-			if (ige.isClient) {
+			if (isClient) {
 				if (data) {
 					// We have been given new data!
 					this._streamDir = data;
@@ -71,7 +71,7 @@ var CharacterContainer = IgeEntity.extend({
 	},
 
 	update: function (ctx, tickDelta) {
-		if (ige.isServer) {
+		if (isServer) {
 			// Make sure the character is animating in the correct
 			// direction - this variable is actually streamed to the client
 			// when it's value changes!
@@ -90,21 +90,21 @@ var CharacterContainer = IgeEntity.extend({
 					// The characters we are using only have four directions
 					// so convert the NW, SE, NE, SW to N, S, E, W
 					switch (this._streamDir) {
-						case 'S':
-							dir = 'W';
-							break;
+					case 'S':
+						dir = 'W';
+						break;
 						
-						case 'E':
-							dir = 'E';
-							break;
+					case 'E':
+						dir = 'E';
+						break;
 						
-						case 'N':
-							dir = 'E';
-							break;
+					case 'N':
+						dir = 'E';
+						break;
 						
-						case 'W':
-							dir = 'W';
-							break;
+					case 'W':
+						dir = 'W';
+						break;
 					}
 					
 					if (dir && dir !== 'stop') {

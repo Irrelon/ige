@@ -9,6 +9,7 @@
       "email": "rob@irrelon.com"
     }
   ],
+  "type": "module",
   "scripts": {
     "build": "ttsc",
     "build-watch": "ttsc --watch"

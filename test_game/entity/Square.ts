@@ -1,5 +1,6 @@
 import IgeEntity from "../../engine/core/IgeEntity";
 import { textures } from "../services/textures";
+import { isClient } from "../../engine/services/clientServer";
 
 export class Square extends IgeEntity {
 	classId = 'Square';
@@ -10,7 +11,10 @@ export class Square extends IgeEntity {
 		this.data("glowColor", "#00d0ff")
 			.depth(1)
 			.width(50)
-			.height(50)
-			.texture(textures.getTextureById("square"));
+			.height(50);
+
+		if (isClient) {
+			this.texture(textures.getTextureById("square"));
+		}
 	}
 }

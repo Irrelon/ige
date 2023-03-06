@@ -20,7 +20,7 @@ const IgeStreamComponent = IgeEventingClass.extend({
 		this._sectionDesignator = '¬';
 
 		/* CEXCLUDE */
-		if (ige.isServer) {
+		if (isServer) {
 			// Define the network stream command
 			this._entity.define('_igeStreamCreate');
 			this._entity.define('_igeStreamDestroy');
@@ -36,7 +36,7 @@ const IgeStreamComponent = IgeEventingClass.extend({
 		}
 		/* CEXCLUDE */
 
-		if (ige.isClient) {
+		if (isClient) {
 			// Define the network stream command
 			this._entity.define('_igeStreamCreate', function () { self._onStreamCreate.apply(self, arguments); });
 			this._entity.define('_igeStreamDestroy', function () { self._onStreamDestroy.apply(self, arguments); });

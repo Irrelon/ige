@@ -6,7 +6,7 @@ var Square = IgeEntityBox2d.extend({
 
 		var self = this;
 
-		if (ige.isClient) {
+		if (isClient) {
 			// Define the texture this entity will use
 			self.texture(ige.client.gameTexture.rect)
 				.width(40)

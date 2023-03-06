@@ -1,16 +1,23 @@
-import IgeBaseClass from "../engine/core/IgeBaseClass";
 import { ige } from "../engine/instance";
+import { isClient, isServer } from "../engine/services/clientServer";
 
 export class Game {
 	classId = "Game";
 
-	constructor (App: new (...args: any[]) => IgeBaseClass, options?: any) {
-		if (ige.isClient) {
-			ige.client = new App();
+	constructor (options?: any) {
+		if (isClient) {
+			import("./client.js").then(({ Client: App }) => {
+				ige.client = new App();
+			});
 		}
 
-		if (ige.isServer) {
-			ige.server = new App(options);
+		if (isServer) {
+			console.log("Init server instance");
+			import("./server.js").then(({ Server: App }) => {
+				ige.server = new App();
+			});
 		}
 	}
 }
+
+export const game = new Game();

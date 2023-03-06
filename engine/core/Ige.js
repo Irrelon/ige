@@ -7,6 +7,7 @@ import { IgeObjectRegister } from "./IgeObjectRegister.js";
 import { IgeArrayRegister } from "./IgeArrayRegister.js";
 import IgePoint3d from "./IgePoint3d.js";
 import { IgeAudioController } from "../components/IgeAudioController.js";
+import { isClient, isServer } from "../services/clientServer.js";
 const version = "2.0.0";
 export class Ige {
     constructor() {
@@ -21,14 +22,12 @@ export class Ige {
         this.config = igeConfig;
         this.version = version;
         this._mousePos = new IgePoint3d(); // Could probably be just {x: number, y: number}
-        this.isServer = typeof window === 'undefined';
-        this.isClient = !this.isServer;
-        if (this.isClient) {
+        if (isClient) {
             import("../components/network/net.io/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
                 this.network = new Module();
             });
         }
-        if (this.isServer) {
+        if (isServer) {
             import("../components/network/net.io/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
                 this.network = new Module();
             });

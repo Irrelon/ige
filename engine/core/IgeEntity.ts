@@ -11,9 +11,9 @@ import WithEventingMixin from "../mixins/IgeEventingMixin";
 import WithDataMixin from "../mixins/IgeDataMixin";
 import { arrPull, degreesToRadians, newIdHex, toIso } from "../services/utils";
 
-import IgeNetIoBaseComponent from "engine/components/network/net.io/IgeNetIoComponent";
 import { IgePoint } from "../../types/IgePoint";
 import { IgeRegisterableById } from "../../types/IgeRegisterableById";
+import { IgeNetIoBaseComponent } from "../components/network/net.io/IgeNetIoBaseComponent";
 import type { IgeDepthSortObject } from "../../types/IgeDepthSortObject";
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "../../types/IgeTimeStream";
@@ -22,6 +22,7 @@ import type IgeTexture from "./IgeTexture";
 import type IgeTileMap2d from "./IgeTileMap2d";
 import type { IgeRegisterableByCategory } from "../../types/IgeRegisterableByCategory";
 import type { IgeRegisterableByGroup } from "../../types/IgeRegisterableByGroup";
+import { isClient } from "../services/clientServer";
 
 export interface IgeEntityBehaviour {
     id: string;
@@ -1505,9 +1506,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		}
 
 		// Create the off-screen canvas
-		if (ige.isClient) {
+		if (isClient) {
 			// Use a real canvas
-			const canvasObj = ige.createCanvas({ smoothing: this._cacheSmoothing, pixelRatioScaling: true });
+			const canvasObj = ige.engine.createCanvas({ smoothing: this._cacheSmoothing, pixelRatioScaling: true });
 			this._cacheCanvas = canvasObj.canvas;
 			this._cacheCtx = canvasObj.ctx;
 		} else {
@@ -1561,7 +1562,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * @return {*}
      */
 	compositeCache (val?: boolean, propagateToChildren = false) {
-		if (!ige.isClient) {
+		if (!isClient) {
 			return this;
 		}
 
@@ -4837,7 +4838,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		case "depth":
 			if (data !== undefined) {
-				if (ige.isClient) {
+				if (isClient) {
 					this.depth(parseInt(data));
 				}
 			} else {
@@ -4847,7 +4848,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		case "layer":
 			if (data !== undefined) {
-				if (ige.isClient) {
+				if (isClient) {
 					this.layer(parseInt(data));
 				}
 			} else {
@@ -4857,7 +4858,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		case "bounds2d":
 			if (data !== undefined) {
-				if (ige.isClient) {
+				if (isClient) {
 					var geom = data.split(",");
 					this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
 				}
@@ -4868,7 +4869,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		case "bounds3d":
 			if (data !== undefined) {
-				if (ige.isClient) {
+				if (isClient) {
 					var geom = data.split(",");
 					this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 				}
@@ -4879,7 +4880,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		case "hidden":
 			if (data !== undefined) {
-				if (ige.isClient) {
+				if (isClient) {
 					if (data === "true") {
 						this.hide();
 					} else {
@@ -4893,7 +4894,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		case "mount":
 			if (data !== undefined) {
-				if (ige.isClient) {
+				if (isClient) {
 					if (data) {
 						const newParent = ige.$(data);
 
@@ -4918,7 +4919,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		case "origin":
 			if (data !== undefined) {
-				if (ige.isClient) {
+				if (isClient) {
 					var geom = data.split(",");
 					this.origin(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 				}
@@ -4931,7 +4932,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 			var newData, changed, i;
 
 			if (data !== undefined) {
-				if (ige.isClient) {
+				if (isClient) {
 					const props = JSON.parse(data);
 
 					// Update properties that have been sent through
@@ -4981,7 +4982,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      */
 	streamMode (val) {
 		if (val !== undefined) {
-			if (ige.isServer) {
+			if (isServer) {
 				this._streamMode = val;
 			}
 			return this;
@@ -5271,7 +5272,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * @returns {*}
      */
 	streamForceUpdate () {
-		if (ige.isServer) {
+		if (isServer) {
 			const thisId = this.id();
 
 			// Invalidate the stream client data lookup to ensure

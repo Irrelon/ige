@@ -1,5 +1,6 @@
 import { distance } from "../services/utils.js";
 import IgeComponent from "../core/IgeComponent.js";
+import { isClient } from "../services/clientServer.js";
 /**
  * Handles entity path traversal.
  */
@@ -615,7 +616,7 @@ class IgePathComponent extends IgeComponent {
             this._calculatePathData();
         };
         this._tickBehaviour = (ctx) => {
-            if (ige.isClient) {
+            if (isClient) {
                 let self = this.path, entity = this, currentPath = self._points, oldTracePathPoint, tracePathPoint, pathPointIndex, tempPathText;
                 if (currentPath.length) {
                     if (currentPath && self._drawPath) {

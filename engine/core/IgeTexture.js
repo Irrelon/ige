@@ -2,9 +2,10 @@ import { ige } from "../instance.js";
 import IgeBaseClass from "./IgeBaseClass.js";
 import WithEventingMixin from "../mixins/IgeEventingMixin.js";
 import { arrPull, newIdHex } from "../services/utils.js";
-import IgeImage from "./IgeImage.js";
-import IgeCanvas from "./IgeCanvas.js";
 import WithUiStyleMixin from "../mixins/IgeUiStyleMixin.js";
+import { isClient, isServer } from "../services/clientServer.js";
+let IgeImageClass;
+let IgeCanvasClass;
 /**
  * Creates a new texture.
  */
@@ -35,14 +36,20 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
         this._loaded = false;
         /* CEXCLUDE */
         // If on a server, error
-        if (ige.isServer) {
-            this.log("Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side using something like an if statement around your texture laoding such as \"if (ige.isClient) {}\".", "error");
+        if (isServer) {
+            this.log("Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side using something like an if statement around your texture laoding such as \"if (isClient) {}\".", "error");
             return this;
         }
         /* CEXCLUDE */
+        this.addDependency("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
+            IgeImageClass = IgeModule;
+        }));
+        this.addDependency("IgeCanvasClass", import("./IgeCanvas.js").then(({ IgeCanvas: IgeModule }) => {
+            IgeCanvasClass = IgeModule;
+        }));
         // Create an array that is used to store cell dimensions
         this._cells = [];
-        this._smoothing = ige._globalSmoothing;
+        this._smoothing = ige.engine._globalSmoothing;
         // Instantiate filter lists for filter combinations
         this._applyFilters = [];
         this._applyFiltersData = [];
@@ -123,43 +130,45 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
      * @private
      */
     _loadImage(imageUrl) {
-        if (!ige.isClient) {
+        if (!isClient) {
             return;
         }
         ige.textures.onLoadStart(imageUrl, this);
         if (!ige.textures._textureImageStore[imageUrl]) {
-            // Image not in cache, create the image object
-            const image = ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = new IgeImage();
-            image._igeTextures = image._igeTextures || [];
-            // Add this texture to the textures that are using this image
-            image._igeTextures.push(this);
-            image.onload = () => {
-                // Mark the image as loaded
-                image._loaded = true;
-                // Log success
-                this.log("Texture image (" + imageUrl + ") loaded successfully");
-                /*if (image.width % 2) {
-                    self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
-                }
+            this.dependsOn(["IgeImageClass"], () => {
+                // Image not in cache, create the image object
+                const image = ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = new IgeImageClass();
+                image._igeTextures = image._igeTextures || [];
+                // Add this texture to the textures that are using this image
+                image._igeTextures.push(this);
+                image.onload = () => {
+                    // Mark the image as loaded
+                    image._loaded = true;
+                    // Log success
+                    this.log("Texture image (" + imageUrl + ") loaded successfully");
+                    /*if (image.width % 2) {
+                        self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
+                    }
 
-                if (image.height % 2) {
-                    self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
-                }*/
-                // Loop textures that are using this image
-                const arr = image._igeTextures;
-                const arrCount = arr.length;
-                for (let i = 0; i < arrCount; i++) {
-                    const item = arr[i];
-                    item._mode = 0;
-                    item.sizeX(image.width);
-                    item.sizeY(image.height);
-                    item._cells[1] = [0, 0, item._sizeX, item._sizeY];
-                    // Mark texture as loaded
-                    item._textureLoaded();
-                }
-            };
-            // Start the image loading by setting the source url
-            image.src = imageUrl;
+                    if (image.height % 2) {
+                        self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
+                    }*/
+                    // Loop textures that are using this image
+                    const arr = image._igeTextures;
+                    const arrCount = arr.length;
+                    for (let i = 0; i < arrCount; i++) {
+                        const item = arr[i];
+                        item._mode = 0;
+                        item.sizeX(image.width);
+                        item.sizeY(image.height);
+                        item._cells[1] = [0, 0, item._sizeX, item._sizeY];
+                        // Mark texture as loaded
+                        item._textureLoaded();
+                    }
+                };
+                // Start the image loading by setting the source url
+                image.src = imageUrl;
+            });
         }
         else {
             // Grab the cached image object
@@ -207,7 +216,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
      */
     _loadScript(scriptUrl) {
         ige.textures.onLoadStart(scriptUrl, this);
-        if (ige.isClient) {
+        if (isClient) {
             import(scriptUrl)
                 .then((module) => {
                 console.log("Loaded module", module);
@@ -281,7 +290,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
      */
     _setImage(imageElement) {
         let image;
-        if (ige.isClient) {
+        if (isClient) {
             // Create the image object
             image = this.image = this._originalImage = imageElement;
             // Mark the image as loaded

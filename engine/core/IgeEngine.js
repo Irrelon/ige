@@ -14,6 +14,7 @@ import IgePoint2d from "./IgePoint2d.js";
 import { arrPull } from "../services/utils.js";
 import IgeEntity from "./IgeEntity.js";
 import { ige } from "../instance.js";
+import { isClient, isServer } from "../services/clientServer.js";
 export class IgeEngine extends IgeEntity {
     constructor() {
         super();
@@ -22,6 +23,7 @@ export class IgeEngine extends IgeEntity {
         this._categoryRegister = {};
         this._groupRegister = {};
         this._tickStart = 0;
+        this._dependencyCheckTimeout = 5000; // Wait 30 seconds to load all dependencies then timeout;
         this._syncIndex = 0;
         this._syncArr = [];
         this._deviceFinalDrawRatio = 1;
@@ -195,7 +197,7 @@ export class IgeEngine extends IgeEntity {
          * @return {Boolean}
          */
         this.canvasReady = () => {
-            return this._canvas !== undefined || this.isServer;
+            return this._canvas !== undefined || isServer;
         };
         /**
          * Called each frame to traverse and render the scenegraph.
@@ -335,8 +337,6 @@ export class IgeEngine extends IgeEntity {
             this._syncIndex = 0;
             this.emit("syncComplete");
         });
-        this.isServer = false;
-        this.isClient = true;
         this.igeClassStore = {};
         this._idCounter = 0;
         this._renderModes = ["2d", "three"];
@@ -387,7 +387,6 @@ export class IgeEngine extends IgeEntity {
         this._graphInstances = {}; // Holds an array of instances of graph classes
         this._spawnQueue = []; // Holds an array of entities that are yet to be born
         this._dependencyQueue = []; // Holds an array of functions that must all return true for the engine to start
-        this._dependencyCheckTimeout = 30000; // Wait 30 seconds to load all dependencies then timeout
         this._webFonts = []; // Holds an array of web fonts to load
         this._cssFonts = []; // Holds an array of css fonts we want to wait for (loaded via HTML or CSS rather than our own loadWebFont())
         // Set the context to a dummy context to start
@@ -427,13 +426,15 @@ export class IgeEngine extends IgeEntity {
             return;
         // Create the base engine instance for the scenegraph
         this.root = new IgeRoot();
-        this._resizeEvent();
+        if (isClient) {
+            this._resizeEvent();
+        }
         // Set up components
         //this.addComponent(IgeInputComponent);
         //this.addComponent(IgeTweenComponent);
         //this.addComponent(IgeTimeComponent);
         //
-        // if (this.isClient) {
+        // if (isClient) {
         //     // Enable UI element (virtual DOM) support
         //     this.addComponent(IgeUiManagerComponent);
         // }
@@ -537,13 +538,15 @@ export class IgeEngine extends IgeEntity {
      * the canvas to the width and height of the window upon window resize.
      */
     canvas(elem, autoSize = true) {
+        if (isServer)
+            return this;
         if (elem === undefined) {
             // Return current value
             return this._canvas;
         }
         if (this._canvas) {
             // We already have a canvas
-            return;
+            return this;
         }
         this._canvas = elem;
         this._ctx = this._canvas.getContext(this._renderContext);
@@ -1227,7 +1230,13 @@ export class IgeEngine extends IgeEntity {
         }
     }
     requestAnimFrame(frameHandlerFunction, element) {
-        window.requestAnimationFrame(frameHandlerFunction);
+        if (isClient) {
+            window.requestAnimationFrame(frameHandlerFunction);
+            return;
+        }
+        setTimeout(function () {
+            frameHandlerFunction(new Date().getTime());
+        }, 1000 / 60);
     }
     showStats() {
         this.log("showStats has been removed from the ige in favour of the new editor component, please remove this call from your code.");
@@ -1440,10 +1449,11 @@ export class IgeEngine extends IgeEntity {
      */
     start(callback) {
         var _a;
+        // Check if the state is anything other than zero (stopped)
         if (this._state) {
             return;
         }
-        if (this._dependencyQueue.length === 0) {
+        if (isClient && this._dependencyQueue.length === 0) {
             // Add the textures loaded dependency
             this._dependencyQueue.push(ige.textures.haveAllTexturesLoaded);
             this._dependencyQueue.push(this.canvasReady);
@@ -1455,7 +1465,7 @@ export class IgeEngine extends IgeEntity {
             this._state = 1;
             // Check if we have a DOM, that there is an igeLoading element
             // and if so, remove it from the DOM now
-            if (this.isClient) {
+            if (isClient) {
                 if (document.getElementsByClassName && document.getElementsByClassName("igeLoading")) {
                     const arr = document.getElementsByClassName("igeLoading");
                     let arrCount = arr.length;
@@ -1556,7 +1566,7 @@ export class IgeEngine extends IgeEntity {
      * those whose pixel ratio is different from 1 to 1.
      */
     createFrontBuffer(autoSize = true, dontScale = false) {
-        if (!this.isClient) {
+        if (!isClient) {
             return;
         }
         if (this._canvas) {
@@ -1628,7 +1638,7 @@ export class IgeEngine extends IgeEntity {
         this.stop();
         this.root.destroy();
         // Remove the front buffer (canvas) if we created it
-        if (this.isClient) {
+        if (isClient) {
             this.removeCanvas();
         }
         this.log("Engine destroy complete.");

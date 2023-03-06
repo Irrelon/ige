@@ -8,6 +8,7 @@ import IgePoint2d from "./IgePoint2d";
 import { ige } from "../instance";
 import IgeScene2d from "./IgeScene2d";
 import { IgeRegisterableById } from "../../types/IgeRegisterableById";
+import { isClient } from "../services/clientServer";
 
 export interface IgeViewportOptions {
 	width: number;
@@ -86,7 +87,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) imple
 		// Store the w/h we want to lock to
 		this._lockDimension = new IgePoint3d(width, height, 0);
 
-		if (ige.isClient) {
+		if (isClient) {
 			this._resizeEvent();
 		}
 

@@ -5,10 +5,10 @@ export class Game extends IgeBaseClass {
         // Init the super class
         super();
         this.classId = "Game";
-        if (ige.isClient) {
+        if (isClient) {
             ige.client = new App();
         }
-        if (ige.isServer) {
+        if (isServer) {
             ige.server = new App(options);
         }
     }

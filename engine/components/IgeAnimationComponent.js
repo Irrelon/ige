@@ -1,3 +1,4 @@
+import { ige } from "../instance.js";
 import IgeComponent from "../core/IgeComponent.js";
 /**
  * The animation component class. Handles defining and controlling

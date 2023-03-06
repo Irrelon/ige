@@ -1,3 +1,4 @@
+import { ige } from "../instance";
 import IgeComponent from "../core/IgeComponent";
 import IgeEntity from "../core/IgeEntity";
 

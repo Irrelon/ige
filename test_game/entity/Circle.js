@@ -1,5 +1,6 @@
 import IgeEntity from "../../engine/core/IgeEntity.js";
 import { textures } from "../services/textures.js";
+import { isClient } from "../../engine/services/clientServer.js";
 export class Circle extends IgeEntity {
     constructor() {
         super();
@@ -7,7 +8,9 @@ export class Circle extends IgeEntity {
         this.data("glowColor", "#c852ff")
             .depth(1)
             .width(50)
-            .height(50)
-            .texture(textures.getTextureById("circle"));
+            .height(50);
+        if (isClient) {
+            this.texture(textures.getTextureById("circle"));
+        }
     }
 }

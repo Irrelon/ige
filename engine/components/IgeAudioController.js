@@ -7,12 +7,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "../instance.js";
 import IgeEventingClass from "../core/IgeEventingClass.js";
+import { isClient } from "../services/clientServer.js";
 export class IgeAudioController extends IgeEventingClass {
     constructor() {
         super();
         this.classId = "IgeAudioController";
+        this._active = false;
+        this._disabled = false;
+        this._register = {};
         /**
          * Decodes audio data and calls back with an audio buffer.
          * @param {ArrayBuffer} data The audio data to decode.
@@ -20,12 +23,16 @@ export class IgeAudioController extends IgeEventingClass {
          * @private
          */
         this._decode = (data) => __awaiter(this, void 0, void 0, function* () {
+            if (!this._ctx)
+                return;
             return this._ctx.decodeAudioData(data);
         });
         this._active = false;
         this._disabled = false;
-        this._ctx = this.getContext();
         this._register = {};
+        if (!isClient)
+            return;
+        this._ctx = this.getContext();
         if (!this._ctx) {
             this.log("No web audio API support, sound is disabled!");
             this._disabled = true;
@@ -77,7 +84,7 @@ export class IgeAudioController extends IgeEventingClass {
      * it is explicitly stopped.
      */
     play(id, loop = false) {
-        if (!ige.isClient) {
+        if (!isClient || !this._ctx) {
             return;
         }
         const buffer = this.register(id);
@@ -121,6 +128,9 @@ export class IgeAudioController extends IgeEventingClass {
                 // Decode asynchronously
                 request.onload = () => {
                     this._loaded(url, request.response).then((buffer) => {
+                        if (!buffer) {
+                            return reject(new Error("Could not create audio buffer"));
+                        }
                         resolve(buffer);
                     }).catch((err) => {
                         reject(err);

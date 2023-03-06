@@ -21,13 +21,13 @@ export class IgeNetIoBaseComponent extends IgeEventingClass {
 		super();
 
 		// /* CEXCLUDE */
-		// if (ige.isServer) {
+		// if (isServer) {
 		// 	this._netio = require('../../../' + modulePath + 'net.io-server').Server;
 		// 	this._acceptConnections = false;
 		// }
 		// /* CEXCLUDE */
 		//
-		// if (ige.isClient) {
+		// if (isClient) {
 		// 	this._netio = IgeNetIoClient;
 		// 	//this.implement(IgeNetIoClient);
 		// }
@@ -116,5 +116,5 @@ export class IgeNetIoBaseComponent extends IgeEventingClass {
 		return this._debugMax;
 	}
 
-	send (command: string, data: IgeNetworkMessageData, clientId?: string) {}
+	send (command: string, data: IgeNetworkMessageData) {}
 }

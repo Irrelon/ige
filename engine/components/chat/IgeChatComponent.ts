@@ -12,7 +12,7 @@ class IgeChatComponent<TargetClass extends IgeEntity> extends IgeComponent<Targe
         this._rooms = {};
 
         /* CEXCLUDE */
-        if (ige.isServer) {
+        if (isServer) {
             this.implement(IgeChatServer);
 
             // Define the chat system network commands
@@ -27,7 +27,7 @@ class IgeChatComponent<TargetClass extends IgeEntity> extends IgeComponent<Targe
         }
         /* CEXCLUDE */
 
-        if (ige.isClient) {
+        if (isClient) {
             this.implement(IgeChatClient);
 
             // Define the chat system network command listeners

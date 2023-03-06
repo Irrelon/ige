@@ -1,20 +1,23 @@
-import { ige } from "../instance";
 import IgeEventingClass from "../core/IgeEventingClass";
+import { isClient } from "../services/clientServer";
 
 export class IgeAudioController extends IgeEventingClass {
 	classId = "IgeAudioController";
-	_active: boolean;
-	_disabled: boolean;
-	_ctx: AudioContext;
-	_masterVolumeNode: GainNode;
-	_register: Record<string, AudioBuffer>;
+	_active: boolean = false;
+	_disabled: boolean = false;
+	_register: Record<string, AudioBuffer> = {};
+	_ctx?: AudioContext;
+	_masterVolumeNode?: GainNode;
 
 	constructor () {
 		super();
 		this._active = false;
 		this._disabled = false;
-		this._ctx = this.getContext();
 		this._register = {};
+
+		if (!isClient) return;
+
+		this._ctx = this.getContext();
 
 		if (!this._ctx) {
 			this.log("No web audio API support, sound is disabled!");
@@ -85,7 +88,7 @@ export class IgeAudioController extends IgeEventingClass {
 	 * it is explicitly stopped.
 	 */
 	play (id: string, loop: boolean = false) {
-		if (!ige.isClient) {
+		if (!isClient || !this._ctx) {
 			return;
 		}
 
@@ -137,6 +140,10 @@ export class IgeAudioController extends IgeEventingClass {
 			// Decode asynchronously
 			request.onload = () => {
 				this._loaded(url, request.response as ArrayBuffer).then((buffer) => {
+					if (!buffer) {
+						return reject(new Error("Could not create audio buffer"));
+					}
+
 					resolve(buffer);
 				}).catch((err) => {
 					reject(err);
@@ -167,7 +174,8 @@ export class IgeAudioController extends IgeEventingClass {
 	 * @param {Function} callback The callback to pass the buffer to.
 	 * @private
 	 */
-	_decode = async (data: ArrayBuffer): Promise<AudioBuffer> => {
+	_decode = async (data: ArrayBuffer): Promise<AudioBuffer | undefined> => {
+		if (!this._ctx) return;
 		return this._ctx.decodeAudioData(data);
 	}
 }

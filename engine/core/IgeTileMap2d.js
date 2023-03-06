@@ -8,6 +8,7 @@ import IgePoint2d from "./IgePoint2d.js";
 import IgeRect from "./IgeRect.js";
 import IgePoint3d from "./IgePoint3d.js";
 import IgePoly2d from "./IgePoly2d.js";
+import { isServer } from "../services/clientServer.js";
 /**
  * Tile maps provide a way to align mounted child objects to a tile-based grid.
  * NOTE: These are not to be confused with IgeTextureMap's which allow you to
@@ -22,7 +23,7 @@ class IgeTileMap2d extends IgeEntity {
         this._tileHeight = 0;
         tileWidth = tileWidth !== undefined ? tileWidth : 40;
         tileHeight = tileHeight !== undefined ? tileHeight : 40;
-        if (!ige.isServer) {
+        if (!isServer) {
             const tex = new IgeTexture(IgeTileMap2dSmartTexture);
             this.texture(tex);
         }

@@ -1,5 +1,6 @@
 import IgeEntity from "../../engine/core/IgeEntity";
 import { textures } from "../services/textures";
+import { isClient } from "../../engine/services/clientServer";
 
 export class Line extends IgeEntity {
 	classId = 'Line';
@@ -12,7 +13,10 @@ export class Line extends IgeEntity {
 			.depth(0)
 			.width(x2 - x1)
 			.height(y2 - y1)
-			.texture(textures.getTextureById("line"))
 			.translateTo((x2 / 2) + (x1 / 2), (y2 / 2) + (y1 / 2), 0);
+
+		if (isClient) {
+			this.texture(textures.getTextureById("line"));
+		}
 	}
 }

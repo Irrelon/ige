@@ -6,6 +6,7 @@ import WithUiStyleMixin from "../mixins/IgeUiStyleMixin.js";
 import WithUiPositionMixin from "../mixins/IgeUiPositionMixin.js";
 import IgePoint2d from "./IgePoint2d.js";
 import { ige } from "../instance.js";
+import { isClient } from "../services/clientServer.js";
 /**
  * Creates a new viewport.
  */
@@ -54,7 +55,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
     minimumVisibleArea(width, height) {
         // Store the w/h we want to lock to
         this._lockDimension = new IgePoint3d(width, height, 0);
-        if (ige.isClient) {
+        if (isClient) {
             this._resizeEvent();
         }
         return this;

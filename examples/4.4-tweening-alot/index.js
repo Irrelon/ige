@@ -5,11 +5,11 @@ var Game = IgeClass.extend({
 		// Create the engine
 		ige = new IgeEngine();
 
-		if (ige.isClient) {
+		if (isClient) {
 			ige.client = new App();
 		}
 
-		if (ige.isServer) {
+		if (isServer) {
 			ige.server = new App(options);
 		}
 	}

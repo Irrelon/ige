@@ -11533,7 +11533,7 @@ var $i_53 = $i_3.extend({
 	_loadImage: function (t) {
 		var i,
 			e = this;
-		ige.isClient &&
+		isClient &&
             (ige.textureLoadStart(t, this),
             ige._textureImageStore[t]
             	? ((i = this.image = this._originalImage = ige._textureImageStore[t]),
@@ -11587,7 +11587,7 @@ var $i_53 = $i_3.extend({
 			self = this,
 			scriptElem;
 		ige.textureLoadStart(scriptUrl, this),
-		ige.isClient &&
+		isClient &&
                 ((scriptElem = document.createElement("script")),
                 (scriptElem.onload = function (data) {
                 	self.log('Texture script "' + scriptUrl + '" loaded successfully'),
@@ -11617,7 +11617,7 @@ var $i_53 = $i_3.extend({
 	},
 	_setImage: function (t) {
 		var i;
-		ige.isClient &&
+		isClient &&
             ((i = this.image = this._originalImage = t),
             (i._igeTextures = i._igeTextures || []),
             (i._loaded = !0),
@@ -12908,7 +12908,7 @@ var $i_59 = $i_58.extend({
 	cache: function (t) {
 		if (t !== void 0) {
 			if (((this._cache = t), t)) {
-				(this._cacheCanvas = ige.isClient ? document.createElement("canvas") : new $i_48()),
+				(this._cacheCanvas = isClient ? document.createElement("canvas") : new $i_48()),
 				(this._cacheCtx = this._cacheCanvas.getContext("2d")),
 				(this._cacheDirty = !0);
 				var i = this._cacheSmoothing !== void 0 ? this._cacheSmoothing : ige._globalSmoothing;
@@ -12929,7 +12929,7 @@ var $i_59 = $i_58.extend({
 		return t !== void 0 ? ((this._cacheSmoothing = t), this) : this._cacheSmoothing;
 	},
 	compositeCache: function (t) {
-		if (ige.isClient) {
+		if (isClient) {
 			if (t !== void 0) {
 				if (t) {
 					this.cache(!1),
@@ -13942,36 +13942,36 @@ var $i_59 = $i_58.extend({
 			break;
 		case "depth":
 			if (i === void 0) return this.depth() + "";
-			ige.isClient && this.depth(parseInt(i));
+			isClient && this.depth(parseInt(i));
 			break;
 		case "layer":
 			if (i === void 0) return this.layer() + "";
-			ige.isClient && this.layer(parseInt(i));
+			isClient && this.layer(parseInt(i));
 			break;
 		case "bounds2d":
 			if (i === void 0) return this._bounds2d.x + "," + this._bounds2d.y + "";
-			if (ige.isClient) {
+			if (isClient) {
 				var s = i.split(",");
 				this.bounds2d(parseFloat(s[0]), parseFloat(s[1]));
 			}
 			break;
 		case "bounds3d":
 			if (i === void 0) return this._bounds3d.x + "," + this._bounds3d.y + "," + this._bounds3d.z + "";
-			if (ige.isClient) {
+			if (isClient) {
 				var s = i.split(",");
 				this.bounds3d(parseFloat(s[0]), parseFloat(s[1]), parseFloat(s[2]));
 			}
 			break;
 		case "hidden":
 			if (i === void 0) return this.isHidden() + "";
-			ige.isClient && (i == "true" ? this.hide() : this.show());
+			isClient && (i == "true" ? this.hide() : this.show());
 			break;
 		case "mount":
 			if (i === void 0) {
 				var n = this.parent();
 				return n ? this.parent().id() : "";
 			}
-			if (ige.isClient)
+			if (isClient)
 				if (i) {
 					var r = ige.$(i);
 					r && this.mount(r);
@@ -13979,7 +13979,7 @@ var $i_59 = $i_58.extend({
 			break;
 		case "origin":
 			if (i === void 0) return this._origin.x + "," + this._origin.y + "," + this._origin.z + "";
-			if (ige.isClient) {
+			if (isClient) {
 				var s = i.split(",");
 				this.origin(parseFloat(s[0]), parseFloat(s[1]), parseFloat(s[2]));
 			}
@@ -15698,7 +15698,7 @@ var $i_71 = $i_59.extend(
 			(this.camera._entity = this);
 		},
 		minimumVisibleArea: function (t, i) {
-			return (this._lockDimension = new $i_5(t, i, 0)), ige.isClient && this._resizeEvent({}), this;
+			return (this._lockDimension = new $i_5(t, i, 0)), isClient && this._resizeEvent({}), this;
 		},
 		autoSize: function (t) {
 			return t !== void 0 ? ((this._autoSize = t), this) : this._autoSize;
@@ -16912,7 +16912,7 @@ var $i_90 = $i_61.extend({
 			return t !== void 0 ? ((this._globalSmoothing = t), this) : this._globalSmoothing;
 		},
 		canvasReady: function () {
-			return ige._canvas !== void 0 || ige.isServer;
+			return ige._canvas !== void 0 || isServer;
 		},
 		newId: function () {
 			return (
@@ -17923,7 +17923,7 @@ typeof module != "undefined" && module.exports !== void 0 && (module.exports = C
 var Game = $i_2.extend({
 	classId: "Game",
 	init: function (t, i) {
-		(ige = new $i_113()), ige.isClient && (ige.client = new t()), ige.isServer && (ige.server = new t(i));
+		(ige = new $i_113()), isClient && (ige.client = new t()), isServer && (ige.server = new t(i));
 	}
 });
 if (typeof module != "undefined" && module.exports !== void 0) module.exports = Game;

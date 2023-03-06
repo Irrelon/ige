@@ -211,14 +211,14 @@ const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: Base
 	 *     // The console output is:
 	 *     //    data1, data2
 	 */
-	emit (eventName: string, args?: any) {
+	emit (eventName: string, args?: any): number {
 		if (!this._eventListeners) {
-			return -1;
+			return 0;
 		}
 
 		// Check if the event has any listeners
 		if (!this._eventListeners[eventName]) {
-			return -1;
+			return 0;
 		}
 
 		// Fire the listeners for this event
@@ -227,7 +227,7 @@ const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: Base
 
 		// If there are some events, ensure that the args is ready to be used
 		if (!eventCount) {
-			return -1;
+			return 0;
 		}
 
 		let finalArgs: any[] = [];
@@ -286,6 +286,8 @@ const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: Base
 		if (cancelFlag) {
 			return 1;
 		}
+
+		return 0;
 	}
 
 	/**

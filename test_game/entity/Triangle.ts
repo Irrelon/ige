@@ -1,5 +1,6 @@
 import IgeEntity from "../../engine/core/IgeEntity";
 import { textures } from "../services/textures";
+import { isClient } from "../../engine/services/clientServer";
 
 export class Triangle extends IgeEntity {
 	classId = 'Triangle';
@@ -10,7 +11,10 @@ export class Triangle extends IgeEntity {
 		this.data("glowColor", "#00ff00")
 			.depth(1)
 			.width(50)
-			.height(50)
-			.texture(textures.getTextureById("triangle"));
+			.height(50);
+
+		if (isClient) {
+			this.texture(textures.getTextureById("triangle"));
+		}
 	}
 }

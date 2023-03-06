@@ -1,6 +1,7 @@
 import { ige } from "../../instance.js";
 import IgeEntity from "../../core/IgeEntity.js";
 import IgeAudio from "./IgeAudio.js";
+import { isClient } from "../../services/clientServer.js";
 // Set default data for any audio panner node
 const defaultPanner = {
     panningModel: "HRTF",
@@ -27,7 +28,7 @@ class IgeAudioEntity extends IgeEntity {
             gain: 1,
             panner: defaultPanner
         };
-        if (!ige.isClient) {
+        if (!isClient) {
             return;
         }
         this._audioInterface = new IgeAudio(audioId);
@@ -157,7 +158,7 @@ class IgeAudioEntity extends IgeEntity {
      * current audio stream playback.
      */
     destroy() {
-        if (ige.isClient) {
+        if (isClient) {
             this.audioInterface().stop();
         }
         IgeEntity.prototype.destroy.call(this);

@@ -12,7 +12,7 @@ var Ship = IgeEntity.extend({
 
 		this.scaleTo(4, 4, 4);
 
-		if (ige.isClient) {
+		if (isClient) {
 			this.material(new THREE.MeshFaceMaterial())
 				.model(modelSpaceFrigate6);
 		}
@@ -34,7 +34,7 @@ var Ship = IgeEntity.extend({
 			thrust: false
 		};
 
-		if (ige.isServer) {
+		if (isServer) {
 			this.addComponent(IgeVelocityComponent);
 		}
 
@@ -79,7 +79,7 @@ var Ship = IgeEntity.extend({
 	 */
 	tick: function (ctx) {
 		/* CEXCLUDE */
-		if (ige.isServer) {
+		if (isServer) {
 			if (this.controls.left) {
 				this.rotateBy(0, 0, Math.radians(-0.2 * ige._tickDelta));
 			}
@@ -97,7 +97,7 @@ var Ship = IgeEntity.extend({
 		}
 		/* CEXCLUDE */
 
-		if (ige.isClient) {
+		if (isClient) {
 			if (ige.components.input.actionState('left')) {
 
 				if (!this.controls.left) {

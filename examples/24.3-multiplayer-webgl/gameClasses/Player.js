@@ -17,11 +17,11 @@ var Player = IgeEntity.extend({
 			thrust: false
 		};
 
-		if (ige.isServer) {
+		if (isServer) {
 			this.addComponent(IgeVelocityComponent);
 		}
 
-		if (ige.isClient) {
+		if (isClient) {
 			self.texture(ige.client.textures.ship)
 				.width(20)
 				.height(20);
@@ -68,7 +68,7 @@ var Player = IgeEntity.extend({
 	 */
 	tick: function (ctx) {
 		/* CEXCLUDE */
-		if (ige.isServer) {
+		if (isServer) {
 			if (this.controls.left) {
 				this.rotateBy(0, 0, Math.radians(-0.2 * ige._tickDelta));
 			}
@@ -86,7 +86,7 @@ var Player = IgeEntity.extend({
 		}
 		/* CEXCLUDE */
 
-		if (ige.isClient) {
+		if (isClient) {
 			if (ige.components.input.actionState('left')) {
 				if (!this.controls.left) {
 					// Record the new state

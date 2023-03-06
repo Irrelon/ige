@@ -1,6 +1,7 @@
 import { ige } from "../../instance";
 import IgeEntity from "../../core/IgeEntity";
 import IgeAudio from "./IgeAudio";
+import { isClient } from "../../services/clientServer";
 
 export interface IgeAudioEntityPanner {
 	panningModel: string;
@@ -54,7 +55,7 @@ class IgeAudioEntity extends IgeEntity {
 	}) {
 		super();
 
-		if (!ige.isClient) {
+		if (!isClient) {
 			return;
 		}
 
@@ -219,7 +220,7 @@ class IgeAudioEntity extends IgeEntity {
 	 * current audio stream playback.
 	 */
 	destroy () {
-		if (ige.isClient) {
+		if (isClient) {
 			this.audioInterface().stop();
 		}
 

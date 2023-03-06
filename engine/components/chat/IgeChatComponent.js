@@ -1,5 +1,4 @@
 import IgeComponent from "../../core/IgeComponent.js";
-import { ige } from "../../instance.js";
 class IgeChatComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
@@ -7,7 +6,7 @@ class IgeChatComponent extends IgeComponent {
         this.componentId = 'chat';
         this._rooms = {};
         /* CEXCLUDE */
-        if (ige.isServer) {
+        if (isServer) {
             this.implement(IgeChatServer);
             // Define the chat system network commands
             this._entity
@@ -20,7 +19,7 @@ class IgeChatComponent extends IgeComponent {
                 .network.define('igeChatRoomRemoved');
         }
         /* CEXCLUDE */
-        if (ige.isClient) {
+        if (isClient) {
             this.implement(IgeChatClient);
             // Define the chat system network command listeners
             this._entity

@@ -6,7 +6,6 @@ export class IgeNetIoBaseComponent extends IgeEventingClass {
         this._networkCommands = {}; // Maps a command name to a command handler function
         this._networkCommandsIndex = []; // Maps a command name to an integer via the array index
         this._networkCommandsLookup = {}; // Maps a command name to its index
-        this._port = 8000;
         this._debug = false;
         this._debugCounter = 0;
         this._debugMax = 0;
@@ -15,19 +14,41 @@ export class IgeNetIoBaseComponent extends IgeEventingClass {
         this._timeSyncInterval = 10000; // Sync the client/server clocks every ten seconds by default
         this._timeSyncLog = {};
         this._latency = 0;
-        this._acceptConnections = false;
+        this._timeSyncStarted = false;
+        this._timeSyncTimer = 0;
         // /* CEXCLUDE */
-        // if (ige.isServer) {
+        // if (isServer) {
         // 	this._netio = require('../../../' + modulePath + 'net.io-server').Server;
         // 	this._acceptConnections = false;
         // }
         // /* CEXCLUDE */
         //
-        // if (ige.isClient) {
+        // if (isClient) {
         // 	this._netio = IgeNetIoClient;
         // 	//this.implement(IgeNetIoClient);
         // }
         //this.log('Network component initiated with Net.IO version: ' + this._netio.version);
+    }
+    timeSyncInterval(val) {
+        if (val !== undefined) {
+            this._timeSyncInterval = val;
+            return this;
+        }
+        return this._timeSyncInterval;
+    }
+    /**
+     * Converts a timestamp on the client to approx. time
+     * on the server using the difference in client/server
+     * clocks and the network latency between this client
+     * and the server.
+     * @param {Number} time The client timestamp, usually
+     * the result of new Date().getTime() or ige.currentTime().
+     */
+    timeToServerTime(time) {
+        if (time !== undefined) {
+            return time + this._latency;
+        }
+        return this._latency;
     }
     /**
      * Gets / sets debug flag that determines if debug output
@@ -47,18 +68,6 @@ export class IgeNetIoBaseComponent extends IgeEventingClass {
         }
         return this._debug;
     }
-    /**
-     * Gets / sets the maximum number of debug messages that
-     * should be allowed to be output to the console before
-     * debugging is automatically turned off. This is useful
-     * if you want to sample a certain number of outputs and
-     * then automatically disable output so your console is
-     * not flooded.
-     * @param {Number=} val Number of debug messages to allow
-     * to be output to the console. Set to zero to allow
-     * infinite amounts.
-     * @return {*}
-     */
     debugMax(val) {
         if (val !== undefined) {
             this._debugMax = val;
@@ -66,4 +75,5 @@ export class IgeNetIoBaseComponent extends IgeEventingClass {
         }
         return this._debugMax;
     }
+    send(command, data) { }
 }

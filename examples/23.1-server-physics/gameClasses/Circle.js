@@ -6,7 +6,7 @@ var Circle = IgeEntityBox2d.extend({
 
 		var self = this;
 
-		if (ige.isClient) {
+		if (isClient) {
 			// Define the texture this entity will use
 			self.texture(ige.client.gameTexture.circle)
 				.width(40)

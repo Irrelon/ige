@@ -7,7 +7,7 @@ var Rotator = IgeEntity.extend({
 
 		var self = this;
 
-		if (ige.isClient) {
+		if (isClient) {
 			// Define the texture this entity will use
 			this._tex = new IgeTexture('../assets/textures/sprites/fairy.png');
 
@@ -67,7 +67,7 @@ var Rotator = IgeEntity.extend({
 	tick: function (ctx) {
 		// Only process rotation on the server, the stream will bring
 		// transform updates to the client automatically
-		if (ige.isServer) {
+		if (isServer) {
 			// Rotate this entity by 0.1 degrees.
 			this.rotateBy(0, 0, (this._rotateSpeed * ige._tickDelta) * Math.PI / 180);
 		}

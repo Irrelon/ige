@@ -6,7 +6,7 @@ var Mover = IgeEntity.extend({
 
 		var self = this;
 
-		if (ige.isClient) {
+		if (isClient) {
 			// Define the texture this entity will use
 			this._tex = new IgeTexture('../assets/textures/sprites/fairy.png');
 
@@ -62,7 +62,7 @@ var Mover = IgeEntity.extend({
 	tick: function (ctx) {
 		// Only process rotation on the server, the stream will bring
 		// transform updates to the client automatically
-		if (ige.isServer) {
+		if (isServer) {
 			if (this._moveDir) {
 				this.translateBy(0.35 * ige._tickDelta, 0, 0);
 

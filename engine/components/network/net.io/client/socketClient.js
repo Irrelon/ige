@@ -7,7 +7,7 @@ export class NetIoClient extends IgeEventingClass {
         reconnect: true
     }) {
         super();
-        this.classId = "NetIo.Client";
+        this.classId = "NetIoClient";
         this._options = {
             connectionRetry: true,
             connectionRetryMax: 10,
@@ -71,7 +71,7 @@ export class NetIoClient extends IgeEventingClass {
         };
         this._onError = (evt) => {
             this.log("An error occurred with the net.io socket!", "error", evt);
-            this.emit("error", evt);
+            this.emit("error", { reason: "Unknown error occurred" });
         };
         this.log("Net.io client starting...");
         this._options = options || {};

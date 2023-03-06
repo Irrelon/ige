@@ -1,12 +1,19 @@
 import { ige } from "../engine/instance.js";
+import { isClient, isServer } from "../engine/services/clientServer.js";
 export class Game {
-    constructor(App, options) {
+    constructor(options) {
         this.classId = "Game";
-        if (ige.isClient) {
-            ige.client = new App();
+        if (isClient) {
+            import("./client.js").then(({ Client: App }) => {
+                ige.client = new App();
+            });
         }
-        if (ige.isServer) {
-            ige.server = new App(options);
+        if (isServer) {
+            console.log("Init server instance");
+            import("./server.js").then(({ Server: App }) => {
+                ige.server = new App();
+            });
         }
     }
 }
+export const game = new Game();

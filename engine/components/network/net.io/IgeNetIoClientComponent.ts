@@ -122,7 +122,48 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 		this._io.on("error",  this._onError);
 	}
 
-	_onTimeSync (data: IgeNetworkServerTimeSyncRequest) {
+	_onRequest = (data: IgeNetworkRequestMessageStructure<IgeNetworkMessageHandler>) => {
+		// Store the network request by its id
+		this._requests[data.id] = data;
+
+		if (this.debug()) {
+			console.log('onRequest', data);
+			this._debugCounter++;
+		}
+
+		// The message is a network request so fire the command event
+		// with the request id and the request data
+		if (this._networkCommands[data.cmd]) {
+			this._networkCommands[data.cmd](data.id, data.data);
+		}
+
+		this.emit(data.cmd, [data.id, data.data]);
+	}
+
+	_onResponse = (data: IgeNetworkMessageStructure) => {
+		// The message is a network response
+		// to a request we sent earlier
+		const id = data.id;
+
+		// Get the original request object from
+		// the request id
+		const req = this._requests[id];
+
+		if (this.debug()) {
+			console.log('onResponse', data);
+			this._debugCounter++;
+		}
+
+		if (req) {
+			// Fire the request callback!
+			req.callback(req.cmd, data.data);
+
+			// Delete the request from memory
+			delete this._requests[id];
+		}
+	}
+
+	_onTimeSync = (data: IgeNetworkServerTimeSyncRequest) => {
 		const localTime = Math.floor(ige.engine._currentTime);
 		const serverTime = data[0];
 
@@ -180,7 +221,12 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 	 * @param commandName
 	 * @param data
 	 */
-	send (commandName: string, data: any[]) {
+	send (commandName: string, data: IgeNetworkMessageData, callback?: IgeNetworkMessageHandler) {
+		if (callback) {
+			this.request(commandName, data, callback);
+			return;
+		}
+
 		const commandIndex = this._networkCommandsLookup[commandName];
 
 		if (commandIndex !== undefined) {
@@ -252,47 +298,6 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 
 			// Remove the request as we've now responded!
 			delete this._requests[requestId];
-		}
-	}
-
-	_onRequest = (data: IgeNetworkRequestMessageStructure<IgeNetworkMessageHandler>) => {
-		// Store the network request by its id
-		this._requests[data.id] = data;
-
-		if (this.debug()) {
-			console.log('onRequest', data);
-			this._debugCounter++;
-		}
-
-		// The message is a network request so fire the command event
-		// with the request id and the request data
-		if (this._networkCommands[data.cmd]) {
-			this._networkCommands[data.cmd](data.id, data.data);
-		}
-
-		this.emit(data.cmd, [data.id, data.data]);
-	}
-
-	_onResponse = (data: IgeNetworkMessageStructure) => {
-		// The message is a network response
-		// to a request we sent earlier
-		const id = data.id;
-
-		// Get the original request object from
-		// the request id
-		const req = this._requests[id];
-
-		if (this.debug()) {
-			console.log('onResponse', data);
-			this._debugCounter++;
-		}
-
-		if (req) {
-			// Fire the request callback!
-			req.callback(req.cmd, data.data);
-
-			// Delete the request from memory
-			delete this._requests[id];
 		}
 	}
 

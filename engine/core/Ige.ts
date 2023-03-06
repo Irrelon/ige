@@ -13,6 +13,7 @@ import IgePoint3d from "./IgePoint3d";
 import { IgeAudioController } from "../components/IgeAudioController";
 import type { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
 import type { IgeNetIoServerComponent } from "../components/network/net.io/IgeNetIoServerComponent";
+import { isClient, isServer } from "../services/clientServer";
 
 const version = "2.0.0";
 
@@ -28,8 +29,6 @@ export class Ige {
 	groupRegister: IgeArrayRegister<IgeRegisterableByCategory> = new IgeArrayRegister("_category", "_categoryRegistered");
 	client: any;
 	server: any;
-	isServer: boolean;
-	isClient: boolean;
 	config: IgeConfig = igeConfig;
 	version: string = version;
 
@@ -38,16 +37,13 @@ export class Ige {
 	_mousePos: IgePoint3d = new IgePoint3d(); // Could probably be just {x: number, y: number}
 
 	constructor () {
-		this.isServer = typeof window === 'undefined';
-		this.isClient = !this.isServer;
-
-		if (this.isClient) {
+		if (isClient) {
 			import("../components/network/net.io/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
 				this.network = new Module();
 			});
 		}
 
-		if (this.isServer) {
+		if (isServer) {
 			import("../components/network/net.io/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
 				this.network = new Module();
 			});

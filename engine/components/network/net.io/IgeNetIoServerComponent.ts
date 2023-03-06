@@ -2,11 +2,12 @@ import { ige } from "../../../instance";
 import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent";
 import {
 	IgeNetworkMessageData,
-	IgeNetworkMessageHandler,
+	IgeNetworkMessageHandler, IgeNetworkMessageStructure,
 	IgeNetworkRequestMessageStructure, IgeNetworkServerTimeSyncRequest
 } from "../../../../types/IgeNetworkMessage";
 import { arrPull, newIdHex } from "../../../services/utils";
 import { NetIoServer, NetIoSocket } from "./server/socketServer";
+import { isServer } from "../../../services/clientServer";
 
 export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	_idCounter: number = 0;
@@ -53,7 +54,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 * @param data The data the client sent with the request.
 	 * @param clientId The id of the client that sent the request.
 	 */
-	_onRequest (data: IgeNetworkRequestMessageStructure<IgeNetworkMessageHandler>, clientId: string) {
+	_onRequest = (data: IgeNetworkRequestMessageStructure<IgeNetworkMessageHandler>, clientId: string) => {
 		if (!clientId) return;
 
 		// The message is a network request so fire
@@ -75,7 +76,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 		this.emit(data.cmd, [data.id, data.data, clientId]);
 	}
 
-	_onResponse (data: IgeNetworkMessageData, clientId?: string) {
+	_onResponse = (data: IgeNetworkMessageStructure, clientId?: string) => {
 		if (!clientId) return;
 
 		// The message is a network response
@@ -100,7 +101,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 		}
 	}
 
-	_onTimeSync (data: IgeNetworkMessageData, clientId?: string) {
+	_onTimeSync = (data: IgeNetworkMessageData, clientId?: string) => {
 		if (!clientId) return;
 		const localTime = Math.floor(ige.engine._currentTime);
 		const sendTime = parseInt(data[1], 10);
@@ -120,7 +121,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	}
 
 	timeSyncStart () {
-		if (!ige.isServer) {
+		if (!isServer) {
 			return this;
 		}
 
@@ -278,9 +279,15 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 * Sends a message over the network.
 	 * @param {String} commandName
 	 * @param {Object} data
-	 * @param {*=} clientId If specified, sets the recipient socket id or a array of socket ids to send to.
+	 * @param {*=} clientId If specified, sets the recipient socket id or
+	 * an array of socket ids to send to.
 	 */
-	send (commandName: string, data: IgeNetworkMessageData, clientId?: string) {
+	send (commandName: string, data: IgeNetworkMessageStructure, clientId?: string, callback?: IgeNetworkMessageHandler) {
+		if (callback) {
+			this.request(commandName, data, clientId, callback);
+			return;
+		}
+
 		const commandIndex = this._networkCommandsLookup[commandName];
 
 		if (commandIndex !== undefined) {
@@ -301,14 +308,15 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 * callback parameter will be fired with the response data.
 	 * @param {String} commandName
 	 * @param {Object} data
+	 * @param clientId
 	 * @param {Function} callback
 	 */
-	request (commandName: string, data: IgeNetworkMessageData, callback: IgeNetworkMessageHandler) {
+	request (commandName: string, data: IgeNetworkMessageStructure, clientId: string, callback: IgeNetworkMessageHandler) {
 		// Build the request object
 		const req = {
 			id: newIdHex(),
 			cmd: commandName,
-			data: data,
+			data: data.data,
 			callback: callback,
 			timestamp: new Date().getTime()
 		};
@@ -336,21 +344,21 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 		// Grab the original request object
 		const req = this._requests[requestId];
 
-		if (req) {
-			// Send the network response packet
-			this.send(
-				"_igeResponse",
-				{
-					id: requestId,
-					cmd: req.cmd,
-					data: data
-				},
-				req.clientId
-			);
-
-			// Remove the request as we've now responded!
-			delete this._requests[requestId];
+		if (!req) {
+			return;
 		}
+
+		this.send(
+			"_igeResponse",
+			{
+				id: requestId,
+				cmd: req.cmd,
+				data: data
+			},
+			req.clientId
+		);
+
+		delete this._requests[requestId];
 	}
 
 	/**

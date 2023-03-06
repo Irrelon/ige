@@ -11,7 +11,7 @@ var CharacterAi = Character.extend({
 		// Choose a random character type
 		this.setType(Math.random() * 8 | 0);
 
-		if (ige.isServer) {
+		if (isServer) {
 			this.pathFinder = pathFinder;
 			this.collisionMap = collisionMap;
 

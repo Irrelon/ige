@@ -37,7 +37,7 @@ var PlayerComponent = IgeEntity.extend({
 	 */
 	_behaviour: function (ctx) {
 		/* CEXCLUDE */
-		if (ige.isServer) {
+		if (isServer) {
 			if (this.playerControl.controls.left) {
 				this.velocity.x(-this.playerControl._speed);
 			} else if (this.playerControl.controls.right) {
@@ -56,7 +56,7 @@ var PlayerComponent = IgeEntity.extend({
 		}
 		/* CEXCLUDE */
 
-		if (ige.isClient) {
+		if (isClient) {
 			if (ige.components.input.actionState('left')) {
 				if (!this.playerControl.controls.left) {
 					// Record the new state

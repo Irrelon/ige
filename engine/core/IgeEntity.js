@@ -9,6 +9,7 @@ import IgeRect from "./IgeRect.js";
 import WithEventingMixin from "../mixins/IgeEventingMixin.js";
 import WithDataMixin from "../mixins/IgeDataMixin.js";
 import { arrPull, degreesToRadians, newIdHex, toIso } from "../services/utils.js";
+import { isClient } from "../services/clientServer.js";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -1478,9 +1479,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
             return this;
         }
         // Create the off-screen canvas
-        if (ige.isClient) {
+        if (isClient) {
             // Use a real canvas
-            const canvasObj = ige.createCanvas({ smoothing: this._cacheSmoothing, pixelRatioScaling: true });
+            const canvasObj = ige.engine.createCanvas({ smoothing: this._cacheSmoothing, pixelRatioScaling: true });
             this._cacheCanvas = canvasObj.canvas;
             this._cacheCtx = canvasObj.ctx;
         }
@@ -1529,7 +1530,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
      * @return {*}
      */
     compositeCache(val, propagateToChildren = false) {
-        if (!ige.isClient) {
+        if (!isClient) {
             return this;
         }
         if (val === undefined) {
@@ -3688,7 +3689,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
                 break;
             case "depth":
                 if (data !== undefined) {
-                    if (ige.isClient) {
+                    if (isClient) {
                         this.depth(parseInt(data));
                     }
                 }
@@ -3698,7 +3699,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
                 break;
             case "layer":
                 if (data !== undefined) {
-                    if (ige.isClient) {
+                    if (isClient) {
                         this.layer(parseInt(data));
                     }
                 }
@@ -3708,7 +3709,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
                 break;
             case "bounds2d":
                 if (data !== undefined) {
-                    if (ige.isClient) {
+                    if (isClient) {
                         var geom = data.split(",");
                         this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
                     }
@@ -3719,7 +3720,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
                 break;
             case "bounds3d":
                 if (data !== undefined) {
-                    if (ige.isClient) {
+                    if (isClient) {
                         var geom = data.split(",");
                         this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
                     }
@@ -3730,7 +3731,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
                 break;
             case "hidden":
                 if (data !== undefined) {
-                    if (ige.isClient) {
+                    if (isClient) {
                         if (data === "true") {
                             this.hide();
                         }
@@ -3745,7 +3746,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
                 break;
             case "mount":
                 if (data !== undefined) {
-                    if (ige.isClient) {
+                    if (isClient) {
                         if (data) {
                             const newParent = ige.$(data);
                             if (newParent) {
@@ -3770,7 +3771,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
                 break;
             case "origin":
                 if (data !== undefined) {
-                    if (ige.isClient) {
+                    if (isClient) {
                         var geom = data.split(",");
                         this.origin(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
                     }
@@ -3782,7 +3783,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
             case "props":
                 var newData, changed, i;
                 if (data !== undefined) {
-                    if (ige.isClient) {
+                    if (isClient) {
                         const props = JSON.parse(data);
                         // Update properties that have been sent through
                         for (i in props) {
@@ -3828,7 +3829,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
      */
     streamMode(val) {
         if (val !== undefined) {
-            if (ige.isServer) {
+            if (isServer) {
                 this._streamMode = val;
             }
             return this;
@@ -4082,7 +4083,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
      * @returns {*}
      */
     streamForceUpdate() {
-        if (ige.isServer) {
+        if (isServer) {
             const thisId = this.id();
             // Invalidate the stream client data lookup to ensure
             // the latest data will be pushed on the next stream sync

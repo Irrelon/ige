@@ -179,17 +179,17 @@ const WithEventingMixin = (Base) => class extends Base {
      */
     emit(eventName, args) {
         if (!this._eventListeners) {
-            return -1;
+            return 0;
         }
         // Check if the event has any listeners
         if (!this._eventListeners[eventName]) {
-            return -1;
+            return 0;
         }
         // Fire the listeners for this event
         let eventCount = this._eventListeners[eventName].length, eventCount2 = this._eventListeners[eventName].length - 1;
         // If there are some events, ensure that the args is ready to be used
         if (!eventCount) {
-            return -1;
+            return 0;
         }
         let finalArgs = [];
         if (typeof (args) === "object" && args !== null && args[0] !== null && args[0] !== undefined) {
@@ -237,6 +237,7 @@ const WithEventingMixin = (Base) => class extends Base {
         if (cancelFlag) {
             return 1;
         }
+        return 0;
     }
     /**
      * Returns an object containing the current event listeners.
