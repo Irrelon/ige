@@ -1,3 +1,5 @@
+import { newIdHex } from "engine/services/utils";
+
 /**
  * The client-side socket.io component. Handles all client-side
  * networking systems.
@@ -141,7 +143,7 @@ const IgeSocketIoClient = {
 	request: function (commandName, data, callback) {
 		// Build the request object
 		const req = {
-			id: this.newIdHex(),
+			id: newIdHex(),
 			cmd: commandName,
 			data: data,
 			callback: callback,

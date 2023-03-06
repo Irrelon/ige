@@ -73,40 +73,41 @@ class IgeRoot extends IgeEntity {
      * @return {IgePoint3d}
      */
     mousePos() {
-        return this._mousePos.clone();
+        return ige._mousePos.clone();
     }
     _childMounted(child) {
         if (child.IgeViewport) {
             // The first mounted viewport gets set as the current
             // one before any rendering is done
-            if (!this._currentViewport) {
-                this._currentViewport = child;
-                this._currentCamera = child.camera;
+            if (!ige.engine._currentViewport) {
+                ige.engine._currentViewport = child;
+                ige.engine._currentCamera = child.camera;
             }
         }
         super._childMounted(child);
     }
     updateSceneGraph(ctx) {
-        let arr = this._children, arrCount, us, ud, tickDelta = ige._tickDelta;
+        const arr = this._children;
+        const tickDelta = ige.engine._tickDelta;
         // Process any behaviours assigned to the engine
         this._processUpdateBehaviours(ctx, tickDelta);
         if (arr) {
-            arrCount = arr.length;
+            let arrCount = arr.length;
             // Loop our viewports and call their update methods
             if (ige.config.debug._timing) {
                 while (arrCount--) {
-                    us = new Date().getTime();
+                    const us = new Date().getTime();
                     arr[arrCount].update(ctx, tickDelta);
-                    ud = new Date().getTime() - us;
+                    const ud = new Date().getTime() - us;
                     if (arr[arrCount]) {
-                        if (!ige._timeSpentInUpdate[arr[arrCount].id()]) {
-                            ige._timeSpentInUpdate[arr[arrCount].id()] = 0;
+                        if (!ige.engine._timeSpentInUpdate[arr[arrCount].id()]) {
+                            ige.engine._timeSpentInUpdate[arr[arrCount].id()] = 0;
                         }
-                        if (!ige._timeSpentLastUpdate[arr[arrCount].id()]) {
-                            ige._timeSpentLastUpdate[arr[arrCount].id()] = {};
+                        if (!ige.engine._timeSpentLastUpdate[arr[arrCount].id()]) {
+                            ige.engine._timeSpentLastUpdate[arr[arrCount].id()] = {};
                         }
-                        ige._timeSpentInUpdate[arr[arrCount].id()] += ud;
-                        ige._timeSpentLastUpdate[arr[arrCount].id()].ms = ud;
+                        ige.engine._timeSpentInUpdate[arr[arrCount].id()] += ud;
+                        ige.engine._timeSpentLastUpdate[arr[arrCount].id()].ms = ud;
                     }
                 }
             }
@@ -125,24 +126,24 @@ class IgeRoot extends IgeEntity {
         if (this._viewportDepth) {
             if (ige.config.debug._timing) {
                 ts = new Date().getTime();
-                this.root.depthSortChildren();
+                this.depthSortChildren();
                 td = new Date().getTime() - ts;
-                if (!this._timeSpentLastTick[this.root.id()]) {
-                    this._timeSpentLastTick[this.id()] = {};
+                if (!ige.engine._timeSpentLastTick[this.id()]) {
+                    ige.engine._timeSpentLastTick[this.id()] = {};
                 }
-                this._timeSpentLastTick[this.id()].depthSortChildren = td;
+                ige.engine._timeSpentLastTick[this.id()].depthSortChildren = td;
             }
             else {
-                this.root.depthSortChildren();
+                this.depthSortChildren();
             }
         }
         ctx.save();
         ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
         //ctx.scale(this._globalScale.x, this._globalScale.y);
         // Process the current engine tick for all child objects
-        let arr = this._children, arrCount;
+        const arr = this._children;
         if (arr) {
-            arrCount = arr.length;
+            let arrCount = arr.length;
             // Loop our viewports and call their tick methods
             if (ige.config.debug._timing) {
                 while (arrCount--) {
@@ -151,14 +152,14 @@ class IgeRoot extends IgeEntity {
                     arr[arrCount].tick(ctx);
                     td = new Date().getTime() - ts;
                     if (arr[arrCount]) {
-                        if (!ige._timeSpentInTick[arr[arrCount].id()]) {
-                            ige._timeSpentInTick[arr[arrCount].id()] = 0;
+                        if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
+                            ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
                         }
-                        if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
-                            ige._timeSpentLastTick[arr[arrCount].id()] = {};
+                        if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
+                            ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
                         }
-                        ige._timeSpentInTick[arr[arrCount].id()] += td;
-                        ige._timeSpentLastTick[arr[arrCount].id()].ms = td;
+                        ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
+                        ige.engine._timeSpentLastTick[arr[arrCount].id()].ms = td;
                     }
                     ctx.restore();
                 }

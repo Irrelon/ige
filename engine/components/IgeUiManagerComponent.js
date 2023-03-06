@@ -9,14 +9,14 @@ class IgeUiManagerComponent extends IgeComponent {
             // Direct the key event to the focused element
             if (this._focus) {
                 this._focus.emit("keyUp", event);
-                this._ige.components.input.stopPropagation();
+                this._ige.input.stopPropagation();
             }
         };
         this._keyDown = (event) => {
             // Direct the key event to the focused element
             if (this._focus) {
                 this._focus.emit("keyDown", event);
-                this._ige.components.input.stopPropagation();
+                this._ige.input.stopPropagation();
             }
         };
         this._focus = null; // The element that currently has focus
@@ -24,7 +24,7 @@ class IgeUiManagerComponent extends IgeComponent {
         this._register = [];
         this._styles = {};
         this._elementsByStyle = {};
-        this._ige.components.input.on("keyDown", (event) => {
+        this._ige.input.on("keyDown", (event) => {
             this._keyDown(event);
         });
     }

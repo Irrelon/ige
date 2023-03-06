@@ -253,7 +253,7 @@ class IgeAnimationComponent extends IgeComponent {
                 if (anim) {
                     anim.currentDelta = 0;
                     anim.currentLoop = 0;
-                    anim.startTime = ige._currentTime;
+                    anim.startTime = ige.engine._currentTime;
                     this._anim = anim;
                     this._animId = animId;
                     // Check for any callbacks in the options object

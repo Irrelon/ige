@@ -7,7 +7,7 @@ import WithUiPositionMixin from "../mixins/IgeUiPositionMixin";
 import IgePoint2d from "./IgePoint2d";
 import { ige } from "../instance";
 import IgeScene2d from "./IgeScene2d";
-import { IgeRegisterable } from "../../types/IgeRegisterable";
+import { IgeRegisterableById } from "../../types/IgeRegisterableById";
 
 export interface IgeViewportOptions {
 	width: number;
@@ -19,10 +19,10 @@ export interface IgeViewportOptions {
 /**
  * Creates a new viewport.
  */
-class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) implements IgeRegisterable {
+class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) implements IgeRegisterableById {
 	classId = "IgeViewport";
 	IgeViewport = true;
-	_registered: boolean = false;
+	_idRegistered: boolean = false;
 	_lockDimension?: IgePoint3d;
 	_alwaysInView: boolean;
 	_mouseAlwaysInside: boolean;
@@ -62,12 +62,12 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) imple
 			}
 		}
 
-		if (!ige.root) {
+		if (!ige.engine.root) {
 			throw new Error("IgeViewport instantiated before Ige instance createRoot() called!");
 		}
 
 		// Setup default objects
-		this._bounds2d = new IgePoint2d(width || ige.root._bounds2d.x, height || ige.root._bounds2d.y);
+		this._bounds2d = new IgePoint2d(width || ige.engine.root._bounds2d.x, height || ige.engine.root._bounds2d.y);
 		this.camera = new IgeCamera(ige, this);
 		this.camera._entity = this;
 		//this._drawMouse = true;
@@ -184,7 +184,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) imple
 	 */
 	tick (ctx: CanvasRenderingContext2D) {
 		// Check if we have a scene attached to this viewport and ige has a root object
-		if (!this._scene || !ige.root) {
+		if (!this._scene || !ige.engine.root) {
 			return;
 		}
 
@@ -200,7 +200,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) imple
 
 		if (this._clipping || this._borderColor) {
 			ctx.beginPath();
-			ctx.rect(0, 0, this._bounds2d.x / ige.root._scale.x, this._bounds2d.y / ige.root._scale.x);
+			ctx.rect(0, 0, this._bounds2d.x / ige.engine.root._scale.x, this._bounds2d.y / ige.engine.root._scale.x);
 
 			// Paint a border if required
 			if (this._borderColor) {
@@ -213,10 +213,10 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) imple
 			}
 		}
 
-		ctx.translate(((this._bounds2d.x / 2) | 0) + ige.root._translate.x, ((this._bounds2d.y / 2) | 0) + ige.root._translate.y);
+		ctx.translate(((this._bounds2d.x / 2) | 0) + ige.engine.root._translate.x, ((this._bounds2d.y / 2) | 0) + ige.engine.root._translate.y);
 
-		if (ige.root._scale.x !== 1 || ige.root._scale.y !== 1) {
-			ctx.scale(ige.root._scale.x, ige.root._scale.y);
+		if (ige.engine.root._scale.x !== 1 || ige.engine.root._scale.y !== 1) {
+			ctx.scale(ige.engine.root._scale.x, ige.engine.root._scale.y);
 		}
 
 		this.camera.tick(ctx);
@@ -350,8 +350,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) imple
 	}
 
 	paintGuides (ctx: CanvasRenderingContext2D) {
-		if (!ige.root) return;
-		const geom = ige.root._bounds2d;
+		if (!ige.engine.root) return;
+		const geom = ige.engine.root._bounds2d;
 
 		// Check draw-guides setting
 		if (this._drawGuides) {

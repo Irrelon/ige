@@ -1,7 +1,7 @@
 import { ige } from "../instance.js";
 import IgeBaseClass from "./IgeBaseClass.js";
 import WithEventingMixin from "../mixins/IgeEventingMixin.js";
-import { arrPull } from "../services/utils.js";
+import { arrPull, newIdHex } from "../services/utils.js";
 import IgeImage from "./IgeImage.js";
 import IgeCanvas from "./IgeCanvas.js";
 import WithUiStyleMixin from "../mixins/IgeUiStyleMixin.js";
@@ -64,39 +64,39 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
     id(id) {
         if (id !== undefined) {
             // Check if this ID already exists in the object register
-            if (ige._register[id]) {
-                if (ige._register[id] === this) {
+            if (ige.register.get(id)) {
+                if (ige.register.get(id) === this) {
                     // We are already registered as this id
                     return this;
                 }
                 // Already an object with this ID!
-                this.log("Cannot set ID of object to \"" + id + "\" because that ID is already in use by another object!", "error");
+                this.log(`Cannot set ID of object to "${id}" because that ID is already in use by another object!`, "error");
             }
             else {
                 // Check if we already have an id assigned
-                if (this._id && ige._register[this._id]) {
+                if (this._id && ige.register.get(this._id)) {
                     // Unregister the old ID before setting this new one
-                    ige.unRegister(this);
+                    ige.register.remove(this);
                 }
                 this._id = id;
                 // Now register this object with the object register
-                ige.register(this);
+                ige.register.add(this);
                 return this;
             }
         }
         if (!this._id) {
             // The item has no id so generate one automatically
             if (this._url) {
-                // Generate an ID from the URL string of the image
-                // this texture is using. Useful for always reproducing
-                // the same ID for the same texture :)
-                this._id = ige.newIdFromString(this._url);
+                // Generate an ID from the URL string of the audio file
+                // this instance is using. Useful for always reproducing
+                // the same ID for the same file :)
+                this._id = ige.engine.newIdFromString(this._url);
             }
             else {
                 // We don't have a URL so generate a random ID
-                this._id = ige.newIdHex();
+                this._id = newIdHex();
             }
-            ige.register(this);
+            ige.register.add(this);
         }
         return this._id;
     }

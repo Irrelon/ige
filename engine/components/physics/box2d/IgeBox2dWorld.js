@@ -1,5 +1,5 @@
-"use strict";
-var IgeBox2dWorld = IgeEventingClass.extend({
+import { newIdHex } from "../../../services/utils.js";
+const IgeBox2dWorld = IgeEventingClass.extend({
     classId: 'IgeBox2dWorld',
     init: function (entity, options) {
         this.b2Color = Box2D.Common.b2Color;
@@ -22,7 +22,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
         this.b2DistanceJointDef = Box2D.Dynamics.Joints.b2DistanceJointDef;
         this._entity = entity;
         options = options || {
-            id: ige.newIdHex(),
+            id: newIdHex(),
             gravity: new this.b2Vec2(0, 0),
             sleep: true
         };
@@ -40,7 +40,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
      * @return {b2FixtureDef}
      */
     createFixture: function (params) {
-        var tempDef = new this.b2FixtureDef(), param;
+        let tempDef = new this.b2FixtureDef(), param;
         for (param in params) {
             if (params.hasOwnProperty(param)) {
                 if (param !== 'shape' && param !== 'filter') {
@@ -58,7 +58,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
      * @return {b2Body}
      */
     createBody: function (entity, body) {
-        var tempDef = new this.b2BodyDef(), param, tempBod, fixtureDef, tempFixture, finalFixture, tempShape, tempFilterData, i, finalX, finalY, finalWidth, finalHeight;
+        let tempDef = new this.b2BodyDef(), param, tempBod, fixtureDef, tempFixture, finalFixture, tempShape, tempFilterData, i, finalX, finalY, finalWidth, finalHeight;
         // Process body definition and create a box2d body for it
         switch (body.type) {
             case 'static':
@@ -203,7 +203,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
      */
     staticsFromMap: function (mapLayer, callback) {
         if (mapLayer.map) {
-            var tileWidth = mapLayer.tileWidth(), tileHeight = mapLayer.tileHeight(), posX, posY, rectArray, rectCount, rect;
+            let tileWidth = mapLayer.tileWidth(), tileHeight = mapLayer.tileHeight(), posX, posY, rectArray, rectCount, rect;
             // Get the array of rectangle bounds based on
             // the map's data
             rectArray = mapLayer.scanRects(callback);
@@ -243,7 +243,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
      * @param {Function} postSolve
      */
     contactListener: function (beginContactCallback, endContactCallback, preSolve, postSolve) {
-        var contactListener = new this.b2ContactListener();
+        const contactListener = new this.b2ContactListener();
         if (beginContactCallback !== undefined) {
             contactListener.BeginContact = beginContactCallback;
         }
@@ -300,7 +300,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
     enableDebug: function (mountScene) {
         if (mountScene) {
             // Define the debug drawing instance
-            var debugDraw = new this.b2DebugDraw();
+            const debugDraw = new this.b2DebugDraw();
             this._box2dDebug = true;
             debugDraw.SetSprite(ige._ctx);
             debugDraw.SetDrawScale(this._scaleRatio);
@@ -347,7 +347,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
         return this._updateCallback;
     },
     start: function () {
-        var self = this;
+        const self = this;
         if (!this._active) {
             this._active = true;
             if (!this._networkDebugMode) {
@@ -379,7 +379,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
      * @private
      */
     _behaviour: function (ctx) {
-        var self = this, tempBod, entity, entityBox2dBody, removeWhenReady, count, destroyBody;
+        let self = this, tempBod, entity, entityBox2dBody, removeWhenReady, count, destroyBody;
         if (self._active && self._world) {
             if (!self._world.IsLocked()) {
                 // Remove any bodies that were queued for removal

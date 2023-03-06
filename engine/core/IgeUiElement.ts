@@ -26,7 +26,7 @@ class IgeUiElement extends IgeUiEntity {
 		this.on("mouseOver", () => {
 			if (this._allowHover) {
 				this._updateStyle();
-				this._ige.components.input.stopPropagation();
+				this._ige.input.stopPropagation();
 			} else {
 				this._mouseStateOver = false;
 			}
@@ -35,7 +35,7 @@ class IgeUiElement extends IgeUiEntity {
 		this.on("mouseOut", () => {
 			if (this._allowHover) {
 				this._updateStyle();
-				this._ige.components.input.stopPropagation();
+				this._ige.input.stopPropagation();
 			} else {
 				this._mouseStateOver = false;
 			}
@@ -44,7 +44,7 @@ class IgeUiElement extends IgeUiEntity {
 		this.on("mouseDown", () => {
 			if (this._allowActive) {
 				this._updateStyle();
-				this._ige.components.input.stopPropagation();
+				this._ige.input.stopPropagation();
 			} else {
 				this._mouseStateDown = false;
 			}
@@ -56,7 +56,7 @@ class IgeUiElement extends IgeUiEntity {
 				if (!this.focus()) {
 					this._updateStyle();
 				} else {
-					this._ige.components.input.stopPropagation();
+					this._ige.input.stopPropagation();
 				}
 			} else if (this._allowActive) {
 				this._updateStyle();

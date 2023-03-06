@@ -1,4 +1,4 @@
-"use strict";
+import { newIdHex } from "../../../../services/utils.js";
 class UiDialogs extends IgeEventingClass {
 }
 {
@@ -12,7 +12,7 @@ ready: function () {
 create: function (dialogData) {
     var self = this;
     self._dialogOrder += 2;
-    dialogData.id = dialogData.id || ige.newIdHex();
+    dialogData.id = dialogData.id || newIdHex();
     dialogData.title = dialogData.title || 'Dialog';
     // Create a dialog and show as loading
     ige.editor.renderTemplate(igeRoot + 'components/editor/ui/dialogs/templates/dialog.html', dialogData, function (err, dialogElem) {
@@ -97,7 +97,7 @@ addControl: function (dialogId, controlElem) {
     $('#' + dialogId).find('.controls').append(controlElem);
 }
 confirm: function (dialogOptions) {
-    dialogOptions.id = dialogOptions.id || ige.newIdHex();
+    dialogOptions.id = dialogOptions.id || newIdHex();
     if (dialogOptions.dialogClass) {
         dialogOptions.dialogClass += ' confirm';
     }
@@ -136,7 +136,7 @@ confirm: function (dialogOptions) {
     this.create(dialogOptions);
 }
 input: function (dialogOptions) {
-    dialogOptions.id = dialogOptions.id || ige.newIdHex();
+    dialogOptions.id = dialogOptions.id || newIdHex();
     if (dialogOptions.dialogClass) {
         dialogOptions.dialogClass += ' input';
     }
@@ -176,7 +176,7 @@ input: function (dialogOptions) {
     this.create(dialogOptions);
 }
 prompt: function (dialogOptions) {
-    dialogOptions.id = dialogOptions.id || ige.newIdHex();
+    dialogOptions.id = dialogOptions.id || newIdHex();
     if (dialogOptions.dialogClass) {
         dialogOptions.dialogClass += ' prompt';
     }

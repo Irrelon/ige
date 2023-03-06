@@ -329,7 +329,7 @@ class IgeTween extends IgeBaseClass {
 	 */
 	start (timeMs?: number) {
 		if (timeMs !== undefined) {
-			this.startTime(timeMs + ige._currentTime);
+			this.startTime(timeMs + ige.engine._currentTime);
 		}
 
 		(ige.components.tween as IgeTweenComponent).start(this);

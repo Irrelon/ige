@@ -1,8 +1,8 @@
-"use strict";
+import { newIdHex } from "../../../services/utils.js";
 /**
  * The engine's box2d multi-world component class.
  */
-var IgeBox2dMultiWorldComponent = IgeEventingClass.extend({
+const IgeBox2dMultiWorldComponent = IgeEventingClass.extend({
     classId: 'IgeBox2dMultiWorldComponent',
     componentId: 'box2d',
     init: function (entity, options) {
@@ -30,13 +30,13 @@ var IgeBox2dMultiWorldComponent = IgeEventingClass.extend({
         // Extend the b2Contact class to allow the IGE entity accessor
         // and other helper methods
         this.b2Contact.prototype.igeEntityA = function () {
-            var ent = this.m_fixtureA.m_body._entity;
+            const ent = this.m_fixtureA.m_body._entity;
             ent._box2dOurContactFixture = this.m_fixtureA;
             ent._box2dTheirContactFixture = this.m_fixtureB;
             return ent;
         };
         this.b2Contact.prototype.igeEntityB = function () {
-            var ent = this.m_fixtureB.m_body._entity;
+            const ent = this.m_fixtureB.m_body._entity;
             ent._box2dOurContactFixture = this.m_fixtureB;
             ent._box2dTheirContactFixture = this.m_fixtureA;
             return ent;
@@ -110,9 +110,9 @@ var IgeBox2dMultiWorldComponent = IgeEventingClass.extend({
      * @return {*}
      */
     createWorld: function (options) {
-        var world;
+        let world;
         options = options || {};
-        options.id = options.id || ige.newIdHex();
+        options.id = options.id || newIdHex();
         options.gravity = options.gravity || new this.b2Vec2(0, 0);
         options.sleep = options.sleep !== undefined ? options.sleep : true;
         // Create world instance

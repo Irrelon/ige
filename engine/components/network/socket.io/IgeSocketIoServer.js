@@ -1,3 +1,4 @@
+import { newIdHex } from "engine/services/utils";
 class IgeSocketIoServerComponent {
     constructor() {
         this._idCounter = 0;
@@ -244,7 +245,7 @@ class IgeSocketIoServerComponent {
     request(commandName, data, callback) {
         // Build the request object
         const req = {
-            id: this.newIdHex(),
+            id: newIdHex(),
             cmd: commandName,
             data: data,
             callback: callback,

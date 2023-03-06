@@ -58,10 +58,10 @@ const WithUiPositionMixin = <BaseClassType extends Mixin<IgeEntity>>(Base: BaseC
 				if (this._parent) {
 					// We have a parent, use it's geometry
 					parentWidth = this._parent._bounds2d.x;
-				} else if (ige.root) {
+				} else if (ige.engine.root) {
 					// We don't have a parent so use the main canvas
 					// as a reference
-					parentWidth = ige.root._bounds2d.x;
+					parentWidth = ige.engine.root._bounds2d.x;
 				}
 
 				// Calculate real width from percentage
@@ -108,10 +108,10 @@ const WithUiPositionMixin = <BaseClassType extends Mixin<IgeEntity>>(Base: BaseC
 					if (this._parent) {
 						// We have a parent, use it's geometry
 						parentWidth = this._parent._bounds2d.x;
-					} else if (ige.root) {
+					} else if (ige.engine.root) {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentWidth = ige.root._bounds2d.x;
+						parentWidth = ige.engine.root._bounds2d.x;
 					}
 
 					// Calculate real width from percentage
@@ -162,10 +162,10 @@ const WithUiPositionMixin = <BaseClassType extends Mixin<IgeEntity>>(Base: BaseC
 					if (this._parent) {
 						// We have a parent, use it's geometry
 						parentWidth = this._parent._bounds2d.x2;
-					} else if (ige.root) {
+					} else if (ige.engine.root) {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentWidth = ige.root._bounds2d.x2;
+						parentWidth = ige.engine.root._bounds2d.x2;
 					}
 
 					// Calculate real width from percentage
@@ -219,10 +219,10 @@ const WithUiPositionMixin = <BaseClassType extends Mixin<IgeEntity>>(Base: BaseC
 				if (this._parent) {
 					// We have a parent, use it's geometry
 					parentHeight = this._parent._bounds2d.y;
-				} else if (ige.root) {
+				} else if (ige.engine.root) {
 					// We don't have a parent so use the main canvas
 					// as a reference
-					parentHeight = ige.root._bounds2d.y;
+					parentHeight = ige.engine.root._bounds2d.y;
 				}
 
 				// Calculate real width from percentage
@@ -268,10 +268,10 @@ const WithUiPositionMixin = <BaseClassType extends Mixin<IgeEntity>>(Base: BaseC
 					if (this._parent) {
 						// We have a parent, use it's geometry
 						parentHeight = this._parent._bounds2d.y;
-					} else if (ige.root) {
+					} else if (ige.engine.root) {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentHeight = ige.root._bounds2d.y;
+						parentHeight = ige.engine.root._bounds2d.y;
 					}
 
 					// Calculate real width from percentage
@@ -322,10 +322,10 @@ const WithUiPositionMixin = <BaseClassType extends Mixin<IgeEntity>>(Base: BaseC
 					if (this._parent) {
 						// We have a parent, use it's geometry
 						parentWidth = this._parent._bounds2d.y2;
-					} else if (ige.root) {
+					} else if (ige.engine.root) {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						parentWidth = ige.root._bounds2d.y2;
+						parentWidth = ige.engine.root._bounds2d.y2;
 					}
 
 					// Calculate real width from percentage
@@ -384,10 +384,10 @@ const WithUiPositionMixin = <BaseClassType extends Mixin<IgeEntity>>(Base: BaseC
 
 						this._bounds2d.x = newVal;
 						this._bounds2d.x2 = Math.floor(this._bounds2d.x / 2);
-					} else if (ige.root) {
+					} else if (ige.engine.root) {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						const parentWidth = ige.root._bounds2d.x;
+						const parentWidth = ige.engine.root._bounds2d.x;
 						const val = parseInt(px, 10);
 
 						// Calculate real height from percentage
@@ -459,10 +459,10 @@ const WithUiPositionMixin = <BaseClassType extends Mixin<IgeEntity>>(Base: BaseC
 
 						this._bounds2d.y = newVal;
 						this._bounds2d.y2 = Math.floor(this._bounds2d.y / 2);
-					} else if (ige.root) {
+					} else if (ige.engine.root) {
 						// We don't have a parent so use the main canvas
 						// as a reference
-						const parentHeight = ige.root._bounds2d.y;
+						const parentHeight = ige.engine.root._bounds2d.y;
 						const val = parseInt(px, 10);
 
 						// Calculate real height from percentage

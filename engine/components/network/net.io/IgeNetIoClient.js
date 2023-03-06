@@ -1,8 +1,8 @@
-"use strict";
 /**
  * The client-side net.io component. Handles all client-side
  * networking systems.
  */
+import { newIdHex } from "../../../services/utils.js";
 const IgeNetIoClient = {
     version: '1.0.0',
     _initDone: false,
@@ -70,7 +70,7 @@ const IgeNetIoClient = {
                             self.log('Received network command list with count: ' + commandCount);
                             // Setup time scale and current time
                             ige.timeScale(parseFloat(data.ts));
-                            ige._currentTime = parseInt(data.ct);
+                            ige.engine._currentTime = parseInt(data.ct);
                             // Now fire the start() callback
                             if (typeof (self._startCallback) === 'function') {
                                 self._startCallback();
@@ -158,7 +158,7 @@ const IgeNetIoClient = {
     request: function (commandName, data, callback) {
         // Build the request object
         const req = {
-            id: this.newIdHex(),
+            id: newIdHex(),
             cmd: commandName,
             data: data,
             callback: callback,

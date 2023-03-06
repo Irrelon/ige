@@ -1,4 +1,6 @@
-var IgeBox2dWorld = IgeEventingClass.extend({
+import { newIdHex } from "../../../services/utils";
+
+const IgeBox2dWorld = IgeEventingClass.extend({
 	classId: 'IgeBox2dWorld',
 	
 	init: function (entity, options) {
@@ -24,7 +26,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 		this._entity = entity;
 		
 		options = options || {
-			id: ige.newIdHex(),
+			id: newIdHex(),
 			gravity: new this.b2Vec2(0, 0),
 			sleep: true
 		};
@@ -49,7 +51,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 	 * @return {b2FixtureDef}
 	 */
 	createFixture: function (params) {
-		var tempDef = new this.b2FixtureDef(),
+		let tempDef = new this.b2FixtureDef(),
 			param;
 
 		for (param in params) {
@@ -71,7 +73,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 	 * @return {b2Body}
 	 */
 	createBody: function (entity, body) {
-		var tempDef = new this.b2BodyDef(),
+		let tempDef = new this.b2BodyDef(),
 			param,
 			tempBod,
 			fixtureDef,
@@ -85,34 +87,34 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 
 		// Process body definition and create a box2d body for it
 		switch (body.type) {
-			case 'static':
-				tempDef.type = this.b2Body.b2_staticBody;
-				break;
+		case 'static':
+			tempDef.type = this.b2Body.b2_staticBody;
+			break;
 
-			case 'dynamic':
-				tempDef.type = this.b2Body.b2_dynamicBody;
-				break;
+		case 'dynamic':
+			tempDef.type = this.b2Body.b2_dynamicBody;
+			break;
 			
-			case 'kinematic':
-                tempDef.type = this.b2Body.b2_kinematicBody;
-                break;
+		case 'kinematic':
+			tempDef.type = this.b2Body.b2_kinematicBody;
+			break;
 		}
 
 		// Add the parameters of the body to the new body instance
 		for (param in body) {
 			if (body.hasOwnProperty(param)) {
 				switch (param) {
-					case 'type':
-					case 'gravitic':
-					case 'fixedRotation':
-					case 'fixtures':
-						// Ignore these for now, we process them
-						// below as post-creation attributes
-						break;
+				case 'type':
+				case 'gravitic':
+				case 'fixedRotation':
+				case 'fixtures':
+					// Ignore these for now, we process them
+					// below as post-creation attributes
+					break;
 
-					default:
-						tempDef[param] = body[param];
-						break;
+				default:
+					tempDef[param] = body[param];
+					break;
 				}
 			}
 		}
@@ -127,103 +129,103 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 		for (param in body) {
 			if (body.hasOwnProperty(param)) {
 				switch (param) {
-					case 'gravitic':
-						if (!body.gravitic) {
-							tempBod.m_nonGravitic = true;
-						}
-						break;
+				case 'gravitic':
+					if (!body.gravitic) {
+						tempBod.m_nonGravitic = true;
+					}
+					break;
 
-					case 'fixedRotation':
-						if (body.fixedRotation) {
-							tempBod.SetFixedRotation(true);
-						}
-						break;
+				case 'fixedRotation':
+					if (body.fixedRotation) {
+						tempBod.SetFixedRotation(true);
+					}
+					break;
 
-					case 'fixtures':
-						if (body.fixtures && body.fixtures.length) {
-							for (i = 0; i < body.fixtures.length; i++) {
-								// Grab the fixture definition
-								fixtureDef = body.fixtures[i];
+				case 'fixtures':
+					if (body.fixtures && body.fixtures.length) {
+						for (i = 0; i < body.fixtures.length; i++) {
+							// Grab the fixture definition
+							fixtureDef = body.fixtures[i];
 	
-								// Create the fixture
-								tempFixture = this.createFixture(fixtureDef);
-								tempFixture.igeId = fixtureDef.igeId;
+							// Create the fixture
+							tempFixture = this.createFixture(fixtureDef);
+							tempFixture.igeId = fixtureDef.igeId;
 	
-								// Check for a shape definition for the fixture
-								if (fixtureDef.shape) {
-									// Create based on the shape type
-									switch (fixtureDef.shape.type) {
-										case 'circle':
-											tempShape = new this.b2CircleShape();
-											if (fixtureDef.shape.data && typeof(fixtureDef.shape.data.radius) !== 'undefined') {
-												tempShape.SetRadius(fixtureDef.shape.data.radius / this._scaleRatio);
-											} else {
-												tempShape.SetRadius((entity._bounds2d.x / this._scaleRatio) / 2);
-											}
+							// Check for a shape definition for the fixture
+							if (fixtureDef.shape) {
+								// Create based on the shape type
+								switch (fixtureDef.shape.type) {
+								case 'circle':
+									tempShape = new this.b2CircleShape();
+									if (fixtureDef.shape.data && typeof(fixtureDef.shape.data.radius) !== 'undefined') {
+										tempShape.SetRadius(fixtureDef.shape.data.radius / this._scaleRatio);
+									} else {
+										tempShape.SetRadius((entity._bounds2d.x / this._scaleRatio) / 2);
+									}
 											
-											if (fixtureDef.shape.data) {
-												finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
-												finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
+									if (fixtureDef.shape.data) {
+										finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
+										finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
 												
-												tempShape.SetLocalPosition(new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio));
-											}
-											break;
+										tempShape.SetLocalPosition(new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio));
+									}
+									break;
 	
-										case 'polygon':
-											tempShape = new this.b2PolygonShape();
-											tempShape.SetAsArray(fixtureDef.shape.data._poly, fixtureDef.shape.data.length());
-											break;
+								case 'polygon':
+									tempShape = new this.b2PolygonShape();
+									tempShape.SetAsArray(fixtureDef.shape.data._poly, fixtureDef.shape.data.length());
+									break;
 	
-										case 'rectangle':
-											tempShape = new this.b2PolygonShape();
+								case 'rectangle':
+									tempShape = new this.b2PolygonShape();
 	
-											if (fixtureDef.shape.data) {
-												finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
-												finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
-												finalWidth = fixtureDef.shape.data.width !== undefined ? fixtureDef.shape.data.width : (entity._bounds2d.x / 2);
-												finalHeight = fixtureDef.shape.data.height !== undefined ? fixtureDef.shape.data.height : (entity._bounds2d.y / 2);
-											} else {
-												finalX = 0;
-												finalY = 0;
-												finalWidth = (entity._bounds2d.x / 2);
-												finalHeight = (entity._bounds2d.y / 2);
-											}
-	
-											// Set the polygon as a box
-											tempShape.SetAsOrientedBox(
-												(finalWidth / this._scaleRatio),
-												(finalHeight / this._scaleRatio),
-												new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio),
-												0
-											);
-											break;
+									if (fixtureDef.shape.data) {
+										finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
+										finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
+										finalWidth = fixtureDef.shape.data.width !== undefined ? fixtureDef.shape.data.width : (entity._bounds2d.x / 2);
+										finalHeight = fixtureDef.shape.data.height !== undefined ? fixtureDef.shape.data.height : (entity._bounds2d.y / 2);
+									} else {
+										finalX = 0;
+										finalY = 0;
+										finalWidth = (entity._bounds2d.x / 2);
+										finalHeight = (entity._bounds2d.y / 2);
 									}
 	
-									if (tempShape) {
-										tempFixture.shape = tempShape;
-										finalFixture = tempBod.CreateFixture(tempFixture);
-										finalFixture.igeId = tempFixture.igeId;
-									}
+									// Set the polygon as a box
+									tempShape.SetAsOrientedBox(
+										(finalWidth / this._scaleRatio),
+										(finalHeight / this._scaleRatio),
+										new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio),
+										0
+									);
+									break;
 								}
 	
-								if (fixtureDef.filter && finalFixture) {
-									tempFilterData = new this.b2FilterData();
-	
-									if (fixtureDef.filter.categoryBits !== undefined) { tempFilterData.categoryBits = fixtureDef.filter.categoryBits; }
-									if (fixtureDef.filter.maskBits !== undefined) { tempFilterData.maskBits = fixtureDef.filter.maskBits; }
-									if (fixtureDef.filter.categoryIndex !== undefined) { tempFilterData.categoryIndex = fixtureDef.filter.categoryIndex; }
-	
-									finalFixture.SetFilterData(tempFilterData);
-								}
-	
-								if (fixtureDef.density !== undefined && finalFixture) {
-									finalFixture.SetDensity(fixtureDef.density);
+								if (tempShape) {
+									tempFixture.shape = tempShape;
+									finalFixture = tempBod.CreateFixture(tempFixture);
+									finalFixture.igeId = tempFixture.igeId;
 								}
 							}
-						} else {
-							this.log('Box2D body has no fixtures, have you specified fixtures correctly? They are supposed to be an array of fixture objects.', 'warning');
+	
+							if (fixtureDef.filter && finalFixture) {
+								tempFilterData = new this.b2FilterData();
+	
+								if (fixtureDef.filter.categoryBits !== undefined) { tempFilterData.categoryBits = fixtureDef.filter.categoryBits; }
+								if (fixtureDef.filter.maskBits !== undefined) { tempFilterData.maskBits = fixtureDef.filter.maskBits; }
+								if (fixtureDef.filter.categoryIndex !== undefined) { tempFilterData.categoryIndex = fixtureDef.filter.categoryIndex; }
+	
+								finalFixture.SetFilterData(tempFilterData);
+							}
+	
+							if (fixtureDef.density !== undefined && finalFixture) {
+								finalFixture.SetDensity(fixtureDef.density);
+							}
 						}
-						break;
+					} else {
+						this.log('Box2D body has no fixtures, have you specified fixtures correctly? They are supposed to be an array of fixture objects.', 'warning');
+					}
+					break;
 				}
 			}
 		}
@@ -248,7 +250,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 	 */
 	staticsFromMap: function (mapLayer, callback) {
 		if (mapLayer.map) {
-			var tileWidth = mapLayer.tileWidth(),
+			let tileWidth = mapLayer.tileWidth(),
 				tileHeight = mapLayer.tileHeight(),
 				posX, posY,
 				rectArray, rectCount, rect;
@@ -295,7 +297,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 	 * @param {Function} postSolve
 	 */
 	contactListener: function (beginContactCallback, endContactCallback, preSolve, postSolve) {
-		var contactListener = new this.b2ContactListener();
+		const contactListener = new this.b2ContactListener();
 		if (beginContactCallback !== undefined) {
 			contactListener.BeginContact = beginContactCallback;
 		}
@@ -360,7 +362,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 	enableDebug: function (mountScene) {
 		if (mountScene) {
 			// Define the debug drawing instance
-			var debugDraw = new this.b2DebugDraw();
+			const debugDraw = new this.b2DebugDraw();
 			this._box2dDebug = true;
 
 			debugDraw.SetSprite(ige._ctx);
@@ -414,7 +416,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 	},
 
 	start: function () {
-		var self = this;
+		const self = this;
 		if (!this._active) {
 			this._active = true;
 			
@@ -448,7 +450,7 @@ var IgeBox2dWorld = IgeEventingClass.extend({
 	 * @private
 	 */
 	_behaviour: function (ctx) {
-		var self = this,
+		let self = this,
 			tempBod,
 			entity,
 			entityBox2dBody,

@@ -9,17 +9,19 @@ import IgeRect from "./IgeRect";
 import IgeDummyContext from "./IgeDummyContext";
 import WithEventingMixin from "../mixins/IgeEventingMixin";
 import WithDataMixin from "../mixins/IgeDataMixin";
-import { arrPull, degreesToRadians, toIso } from "../services/utils";
+import { arrPull, degreesToRadians, newIdHex, toIso } from "../services/utils";
 
 import IgeNetIoComponent from "engine/components/network/net.io/IgeNetIoComponent";
 import { IgePoint } from "../../types/IgePoint";
-import { IgeRegisterable } from "../../types/IgeRegisterable";
+import { IgeRegisterableById } from "../../types/IgeRegisterableById";
 import type { IgeDepthSortObject } from "../../types/IgeDepthSortObject";
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "../../types/IgeTimeStream";
 import type IgeViewport from "./IgeViewport";
 import type IgeTexture from "./IgeTexture";
 import type IgeTileMap2d from "./IgeTileMap2d";
+import type { IgeRegisterableByCategory } from "../../types/IgeRegisterableByCategory";
+import type { IgeRegisterableByGroup } from "../../types/IgeRegisterableByGroup";
 
 export interface IgeEntityBehaviour {
     id: string;
@@ -30,9 +32,10 @@ export interface IgeEntityBehaviour {
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
  */
-class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implements IgeRegisterable {
+class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implements IgeRegisterableById, IgeRegisterableByCategory, IgeRegisterableByGroup {
 	classId = "IgeEntity";
-	_registered: boolean = false;
+	_idRegistered: boolean = false;
+	_categoryRegistered: boolean = false;
 	_entity?: IgeEntity; // TODO: This may not be required? Where does it get set from? Could be removed and all relevant code looking at it.
 	_id?: string;
 	_didInit = false;
@@ -132,7 +135,6 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		this._cell = 1;
 
 		this._deathTime = undefined;
-		this._bornTime = ige._currentTime;
 
 		this._translate = new IgePoint3d(0, 0, 0);
 		this._oldTranslate = new IgePoint3d(0, 0, 0);
@@ -227,30 +229,30 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		}
 
 		// Check if this ID already exists in the object register
-		if (!ige._register[id]) {
+		if (!ige.register.get(id)) {
 			// Check if we already have an id assigned
-			if (this._id && ige._register[this._id]) {
+			if (this._id && ige.register.get(this._id)) {
 				// Unregister the old ID before setting this new one
-				ige.unRegister(this);
+				ige.register.remove(this);
 			}
 
 			this._id = id;
 
 			// Now register this object with the object register
-			ige.register(this);
+			ige.register.add(this);
 
 			return this;
 		}
 
 		// Already an object with this ID!
-		if (ige._register[id] !== this) {
+		if (ige.register.get(id) !== this) {
 			this.log(`Cannot set ID of object to "${id}" because that ID is already in use by another object!`, "error");
 		}
 
 		if (!this._id) {
 			// The item has no id so generate one automatically
-			this._id = ige.newIdHex();
-			ige.register(this);
+			this._id = newIdHex();
+			ige.register.add(this);
 		}
 	}
 
@@ -297,7 +299,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 			if (this._category !== val) {
 				// The category is different so remove this object
 				// from the current category association
-				ige.categoryUnRegister(this);
+				ige.categoryRegister.remove(this);
 			}
 		}
 
@@ -527,6 +529,10 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		// Make sure we keep the child's room id in sync with its parent
 		if (this._parent._streamRoomId) {
 			this._streamRoomId = this._parent._streamRoomId;
+		}
+
+		if (this._bornTime === 0) {
+			this._bornTime = ige.engine._currentTime;
 		}
 
 		obj._children.push(this);
@@ -1038,15 +1044,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		let arrCount = arr.length;
 
 		// Depth sort all child objects
-		if (arrCount && !ige._headless) {
+		if (arrCount && !ige.engine._headless) {
 			if (ige.config.debug._timing) {
-				if (!ige._timeSpentLastTick[this.id()]) {
-					ige._timeSpentLastTick[this.id()] = {};
+				if (!ige.engine._timeSpentLastTick[this.id()]) {
+					ige.engine._timeSpentLastTick[this.id()] = {};
 				}
 
 				const ts = new Date().getTime();
 				this.depthSortChildren();
-				ige._timeSpentLastTick[this.id()].depthSortChildren = new Date().getTime() - ts;
+				ige.engine._timeSpentLastTick[this.id()].depthSortChildren = new Date().getTime() - ts;
 			} else {
 				this.depthSortChildren();
 			}
@@ -1070,16 +1076,16 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 				continue;
 			}
 
-			if (!ige._timeSpentInTick[arr[arrCount].id()]) {
-				ige._timeSpentInTick[arr[arrCount].id()] = 0;
+			if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
+				ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
 			}
 
-			if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
-				ige._timeSpentLastTick[arr[arrCount].id()] = {};
+			if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
+				ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
 			}
 
-			ige._timeSpentInTick[arr[arrCount].id()] += td;
-			ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
+			ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
+			ige.engine._timeSpentLastTick[arr[arrCount].id()].tick = td;
 		}
 
 		return;
@@ -1098,7 +1104,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      */
 	update (ctx: CanvasRenderingContext2D, tickDelta: number) {
 		// Check if the entity should still exist
-		if (this._deathTime !== undefined && this._deathTime <= ige._tickStart) {
+		if (this._deathTime !== undefined && this._deathTime <= ige.engine._tickStart) {
 			// Check if the deathCallBack was set
 			if (this._deathCallBack) {
 				this._deathCallBack.apply(this);
@@ -1111,7 +1117,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		}
 
 		// Check that the entity has been born
-		if (ige._currentTime >= this._bornTime) {
+		if (ige.engine._currentTime >= this._bornTime) {
 			// Remove the stream data cache
 			delete this._streamDataCache;
 
@@ -1126,7 +1132,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 			if (this._timeStream.length) {
 				// Process any interpolation
-				this._processInterpolate(ige._tickStart - (ige.components.network as IgeNetIoComponent).stream._renderLatency);
+				this._processInterpolate(ige.engine._tickStart - (ige.components.network as IgeNetIoComponent).stream._renderLatency);
 			}
 
 			// Check for changes to the transform values
@@ -1143,13 +1149,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 			// Update this object's current frame alternator value
 			// which allows us to determine if we are still on the
 			// same frame
-			this._frameAlternatorCurrent = ige._frameAlternator;
+			this._frameAlternatorCurrent = ige.engine._frameAlternator;
 		} else {
 			// The entity is not yet born, unmount it and add to the spawn queue
 			this._birthMount = this._parent?.id();
 			this.unMount();
 
-			ige.spawnQueue(this);
+			ige.engine.spawnQueue(this);
 		}
 
 		// Process super class
@@ -1636,7 +1642,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * center.
      */
 	mousePos (viewport?: IgeViewport | null): IgePoint3d {
-		viewport = viewport || ige._currentViewport;
+		viewport = viewport || ige.engine._currentViewport;
 		if (!viewport) {
 			return new IgePoint3d(0, 0, 0);
 		}
@@ -1644,7 +1650,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		const mp = viewport._mousePos.clone();
 
 		// if (this._ignoreCamera) {
-		//      const cam = ige._currentCamera;
+		//      const cam = ige.engine._currentCamera;
 		// 	    mp.thisMultiply(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
 		// 	    //mp.thisRotate(-cam._rotate.z);
 		// 	    mp.thisAddPoint(cam._translate);
@@ -1670,7 +1676,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * center.
      */
 	mousePosAbsolute (viewport?: IgeViewport | null): IgePoint3d {
-		viewport = viewport || ige._currentViewport;
+		viewport = viewport || ige.engine._currentViewport;
 
 		if (viewport) {
 			const mp = viewport._mousePos.clone();
@@ -1693,7 +1699,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * center.
      */
 	mousePosWorld (viewport?: IgeViewport | null): IgePoint3d {
-		viewport = viewport || ige._currentViewport;
+		viewport = viewport || ige.engine._currentViewport;
 		const mp = this.mousePos(viewport);
 		this.localToWorldPoint(mp, viewport);
 
@@ -1711,7 +1717,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * @example #Point the entity at another entity
      *     entity.rotateToPoint(otherEntity.worldPosition());
      * @example #Point the entity at mouse
-     *     entity.rotateToPoint(ige._currentViewport.mousePos());
+     *     entity.rotateToPoint(ige.engine._currentViewport.mousePos());
      * @example #Point the entity at an arbitrary point x, y
      *     entity.rotateToPoint(new IgePoint3d(x, y, 0));
      * @return {*}
@@ -2097,11 +2103,11 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	lifeSpan(milliseconds: number): this;
 	lifeSpan (milliseconds?: number, deathCallback?: (...args: any[]) => void) {
 		if (milliseconds !== undefined) {
-			this.deathTime(ige._currentTime + milliseconds, deathCallback);
+			this.deathTime(ige.engine._currentTime + milliseconds, deathCallback);
 			return this;
 		}
 
-		return (this.deathTime() || 0) - ige._currentTime;
+		return (this.deathTime() || 0) - ige.engine._currentTime;
 	}
 
 	/**
@@ -2413,7 +2419,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      */
 	localToWorld (points: IgePoint[], viewport?: IgeViewport, inverse = false) {
 		// Commented as this was doing literally nothing
-		//viewport = viewport || ige._currentViewport;
+		//viewport = viewport || ige.engine._currentViewport;
 
 		if (this._adjustmentMatrix) {
 			// Apply the optional adjustment matrix
@@ -2439,7 +2445,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * @param {IgePoint3d} point The IgePoint3d to convert.
      */
 	localToWorldPoint (point, viewport) {
-		viewport = viewport || ige._currentViewport;
+		viewport = viewport || ige.engine._currentViewport;
 		this._worldMatrix.transform([point], this);
 	}
 
@@ -2454,16 +2460,16 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * @return {IgePoint3d} The screen position of the entity.
      */
 	screenPosition () {
-		if (!ige._currentCamera) {
+		if (!ige.engine._currentCamera) {
 			throw new Error("Cannot get screen position of entity, ige instance has no camera!");
 		}
 
 		return new IgePoint3d(
 			Math.floor(
-				(this._worldMatrix.matrix[2] - ige._currentCamera._translate.x) * ige._currentCamera._scale.x + ige.root._bounds2d.x2
+				(this._worldMatrix.matrix[2] - ige.engine._currentCamera._translate.x) * ige.engine._currentCamera._scale.x + ige.engine.root._bounds2d.x2
 			),
 			Math.floor(
-				(this._worldMatrix.matrix[5] - ige._currentCamera._translate.y) * ige._currentCamera._scale.y + ige.root._bounds2d.y2
+				(this._worldMatrix.matrix[5] - ige.engine._currentCamera._translate.y) * ige.engine._currentCamera._scale.y + ige.engine.root._bounds2d.y2
 			),
 			0
 		);
@@ -2904,7 +2910,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * not yet been processed for this tick.
      */
 	newFrame () {
-		return ige._frameAlternator !== this._frameAlternatorCurrent;
+		return ige.engine._frameAlternator !== this._frameAlternatorCurrent;
 	}
 
 	/**
@@ -2963,13 +2969,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		if (this._mouseEventsActive) {
 			if (this._processTriggerHitTests()) {
 				// Point is inside the trigger bounds
-				ige.components.input.queueEvent(this._mouseInTrigger, null);
+				ige.input.queueEvent(this._mouseInTrigger, null);
 			} else {
-				if (ige.components.input.mouseMove) {
+				if (ige.input.mouseMove) {
 					// There is a mouse move event but we are not inside the entity
 					// so fire a mouse out event (_handleMouseOut will check if the
 					// mouse WAS inside before firing an out event).
-					this._handleMouseOut(ige.components.input.mouseMove);
+					this._handleMouseOut(ige.input.mouseMove);
 				}
 			}
 		}
@@ -3042,16 +3048,16 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 					arr[arrCount].tick(ctx);
 					td = new Date().getTime() - ts;
 					if (arr[arrCount]) {
-						if (!ige._timeSpentInTick[arr[arrCount].id()]) {
-							ige._timeSpentInTick[arr[arrCount].id()] = 0;
+						if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
+							ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
 						}
 
-						if (!ige._timeSpentLastTick[arr[arrCount].id()]) {
-							ige._timeSpentLastTick[arr[arrCount].id()] = {};
+						if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
+							ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
 						}
 
-						ige._timeSpentInTick[arr[arrCount].id()] += td;
-						ige._timeSpentLastTick[arr[arrCount].id()].tick = td;
+						ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
+						ige.engine._timeSpentLastTick[arr[arrCount].id()].tick = td;
 					}
 					ctx.restore();
 				}
@@ -3075,7 +3081,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	_processTriggerHitTests () {
 		let mp, mouseTriggerPoly;
 
-		if (ige._currentViewport) {
+		if (ige.engine._currentViewport) {
 			if (!this._mouseAlwaysInside) {
 				mp = this.mousePosWorld();
 
@@ -3204,8 +3210,8 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 					ctx.translate(-this._bounds2d.x2, -this._bounds2d.y2);
 					ctx.rect(0, 0, this._bounds2d.x, this._bounds2d.y);
 					if (this._backgroundPatternTrackCamera) {
-						ctx.translate(-ige._currentCamera._translate.x, -ige._currentCamera._translate.y);
-						ctx.scale(ige._currentCamera._scale.x, ige._currentCamera._scale.y);
+						ctx.translate(-ige.engine._currentCamera._translate.x, -ige.engine._currentCamera._translate.y);
+						ctx.scale(ige.engine._currentCamera._scale.x, ige.engine._currentCamera._scale.y);
 					}
 					ctx.fill();
 					ige.metrics.drawCount++;
@@ -3228,7 +3234,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		if (texture && texture._loaded) {
 			// Draw the entity image
-			texture.render(ctx, this, ige._tickDelta);
+			texture.render(ctx, this, ige.engine._tickDelta);
 
 			if (this._highlight) {
 				ctx.save();
@@ -3238,7 +3244,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 			}
 		}
 
-		if (this._compositeCache && ige._currentViewport._drawCompositeBounds) {
+		if (this._compositeCache && ige.engine._currentViewport._drawCompositeBounds) {
 			//console.log('moo');
 			ctx.fillStyle = "rgba(0, 0, 255, 0.3)";
 			ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
@@ -3263,7 +3269,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 			if (this._parent && this._parent._ignoreCamera) {
 				// Translate the entity back to negate the scene translate
-				const cam = ige._currentCamera;
+				const cam = ige.engine._currentCamera;
 				//ctx.translate(-cam._translate.x, -cam._translate.y);
 				/*this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
 				this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
@@ -3275,7 +3281,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		// as it is rendered (usually because of device pixel ratio related stuff)
 		ctx.drawImage(this._cacheCanvas, -this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
 
-		if (ige._currentViewport._drawCompositeBounds) {
+		if (ige.engine._currentViewport._drawCompositeBounds) {
 			ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
 			ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._cacheCanvas.width, this._cacheCanvas.height);
 			ctx.fillStyle = "#ffffff";
@@ -3528,7 +3534,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *
      *         // You can ALSO stop propagation without the control object
      *         // reference via the global reference:
-     *         ige.components.input.stopPropagation();
+     *         ige.input.stopPropagation();
      *     });
      * @return {*}
      */
@@ -3556,7 +3562,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *
      *         // You can ALSO stop propagation without the control object
      *         // reference via the global reference:
-     *         ige.components.input.stopPropagation();
+     *         ige.input.stopPropagation();
      *     });
      * @return {*}
      */
@@ -3584,7 +3590,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *
      *         // You can ALSO stop propagation without the control object
      *         // reference via the global reference:
-     *         ige.components.input.stopPropagation();
+     *         ige.input.stopPropagation();
      *     });
      * @return {*}
      */
@@ -3612,7 +3618,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *
      *         // You can ALSO stop propagation without the control object
      *         // reference via the global reference:
-     *         ige.components.input.stopPropagation();
+     *         ige.input.stopPropagation();
      *     });
      * @return {*}
      */
@@ -3640,7 +3646,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *
      *         // You can ALSO stop propagation without the control object
      *         // reference via the global reference:
-     *         ige.components.input.stopPropagation();
+     *         ige.input.stopPropagation();
      *     });
      * @return {*}
      */
@@ -3669,7 +3675,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *
      *         // You can ALSO stop propagation without the control object
      *         // reference via the global reference:
-     *         ige.components.input.stopPropagation();
+     *         ige.input.stopPropagation();
      *     });
      * @return {*}
      */
@@ -3919,24 +3925,24 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * @private
      */
 	_mouseInTrigger = (evc, data) => {
-		if (ige.components.input.mouseMove) {
+		if (ige.input.mouseMove) {
 			// There is a mouse move event
-			this._handleMouseIn(ige.components.input.mouseMove, evc, data);
+			this._handleMouseIn(ige.input.mouseMove, evc, data);
 		}
 
-		if (ige.components.input.mouseDown) {
+		if (ige.input.mouseDown) {
 			// There is a mouse down event
-			this._handleMouseDown(ige.components.input.mouseDown, evc, data);
+			this._handleMouseDown(ige.input.mouseDown, evc, data);
 		}
 
-		if (ige.components.input.mouseUp) {
+		if (ige.input.mouseUp) {
 			// There is a mouse up event
-			this._handleMouseUp(ige.components.input.mouseUp, evc, data);
+			this._handleMouseUp(ige.input.mouseUp, evc, data);
 		}
 
-		if (ige.components.input.mouseWheel) {
+		if (ige.input.mouseWheel) {
 			// There is a mouse wheel event
-			this._handleMouseWheel(ige.components.input.mouseWheel, evc, data);
+			this._handleMouseWheel(ige.input.mouseWheel, evc, data);
 		}
 	};
 
@@ -5109,7 +5115,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		if (this._streamMode === 1) {
 			// Check if we have a stream sync interval
 			if (this._streamSyncInterval) {
-				this._streamSyncDelta += ige._tickDelta;
+				this._streamSyncDelta += ige.engine._tickDelta;
 
 				if (this._streamSyncDelta < this._streamSyncInterval) {
 					// The stream sync interval is still higher than
@@ -5355,7 +5361,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 			i;
 
 		// Send clients the stream destroy command for this entity
-		ige.components.network.send("_igeStreamDestroy", [ige._currentTime, thisId], clientId);
+		ige.components.network.send("_igeStreamDestroy", [ige.engine._currentTime, thisId], clientId);
 
 		ige.components.network.stream._streamClientCreated[thisId] = ige.components.network.stream._streamClientCreated[thisId] || {};
 		ige.components.network.stream._streamClientData[thisId] = ige.components.network.stream._streamClientData[thisId] || {};
@@ -5424,7 +5430,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 				// not that important compared to updated transformation data
 				if (this._streamSyncSectionInterval && this._streamSyncSectionInterval[sectionId]) {
 					// Check if the section interval has been reached
-					this._streamSyncSectionDelta[sectionId] += ige._tickDelta;
+					this._streamSyncSectionDelta[sectionId] += ige.engine._tickDelta;
 
 					if (this._streamSyncSectionDelta[sectionId] >= this._streamSyncSectionInterval[sectionId]) {
 						// Get the section data for this section id

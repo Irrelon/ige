@@ -2,6 +2,7 @@
  * The server-side chat component. Handles all server-side
  * chat methods and events.
  */
+import { newIdHex } from "engine/services/utils";
 import { ige } from "../../instance";
 
 const IgeChatServer = {
@@ -14,7 +15,7 @@ const IgeChatServer = {
      */
 	createRoom: function (roomName, options, roomId) {
 		const self = ige.chat,
-			newRoomId = roomId || ige.newIdHex();
+			newRoomId = roomId || newIdHex();
 
 		self._rooms[roomId] = {
 			id: newRoomId,

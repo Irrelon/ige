@@ -82,9 +82,9 @@ class IgeEditorRotateComponent<TargetClass extends IgeEntity> extends IgeCompone
 						this.enabled(false);
 					} else {
 						// Listen for the mouse events we need to operate
-						this._ige.components.input.on("mouseDown", (event) => { self._mouseDown(event); });
-						this._ige.components.input.on("mouseMove", (event) => { self._mouseMove(event); });
-						this._ige.components.input.on("mouseUp", (event) => { self._mouseUp(event); });
+						this._ige.input.on("mouseDown", (event) => { self._mouseDown(event); });
+						this._ige.input.on("mouseMove", (event) => { self._mouseMove(event); });
+						this._ige.input.on("mouseUp", (event) => { self._mouseUp(event); });
 						this.log("Editor: Mouse rotate enabled");
 					}
 				}

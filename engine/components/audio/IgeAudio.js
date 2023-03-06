@@ -10,11 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { ige } from "../../instance.js";
 import IgeEventingClass from "../../core/IgeEventingClass.js";
 import { audioController } from "../../services/audioController.js";
+import { newIdHex } from "../../services/utils.js";
 class IgeAudio extends IgeEventingClass {
     constructor(url) {
         super();
         this.classId = "IgeAudio";
-        this._registered = false;
+        this._idRegistered = false;
         this._playWhenReady = false;
         this._loaded = false;
         this._loop = false;
@@ -28,8 +29,8 @@ class IgeAudio extends IgeEventingClass {
     id(id) {
         if (id !== undefined) {
             // Check if this ID already exists in the object register
-            if (ige._register[id]) {
-                if (ige._register[id] === this) {
+            if (ige.register.get(id)) {
+                if (ige.register.get(id) === this) {
                     // We are already registered as this id
                     return this;
                 }
@@ -38,13 +39,13 @@ class IgeAudio extends IgeEventingClass {
             }
             else {
                 // Check if we already have an id assigned
-                if (this._id && ige._register[this._id]) {
+                if (this._id && ige.register.get(this._id)) {
                     // Unregister the old ID before setting this new one
-                    ige.unRegister(this);
+                    ige.register.remove(this);
                 }
                 this._id = id;
                 // Now register this object with the object register
-                ige.register(this);
+                ige.register.add(this);
                 return this;
             }
         }
@@ -54,13 +55,13 @@ class IgeAudio extends IgeEventingClass {
                 // Generate an ID from the URL string of the audio file
                 // this instance is using. Useful for always reproducing
                 // the same ID for the same file :)
-                this._id = ige.newIdFromString(this._url);
+                this._id = ige.engine.newIdFromString(this._url);
             }
             else {
                 // We don't have a URL so generate a random ID
-                this._id = ige.newIdHex();
+                this._id = newIdHex();
             }
-            ige.register(this);
+            ige.register.add(this);
         }
         return this._id;
     }

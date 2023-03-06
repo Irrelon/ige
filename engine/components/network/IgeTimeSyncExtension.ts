@@ -60,7 +60,7 @@ export class IgeTimeSyncExtension {
 
 	_sendTimeSync (data?: (number|string)[], clientId?: string) {
 		if (!data) {
-			data = [ige._currentTime];
+			data = [ige.engine._currentTime];
 		}
 
 		// Send the time sync command
@@ -85,7 +85,7 @@ export class IgeTimeSyncExtension {
 	}
 
 	_onTimeSync (data: string[], clientId: string) {
-		const localTime = Math.floor(ige._currentTime);
+		const localTime = Math.floor(ige.engine._currentTime);
 		let sendTime,
 			roundTrip,
 			direction;

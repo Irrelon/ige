@@ -1,4 +1,5 @@
 import IgeNetIoComponent from "./IgeNetIoComponent.js";
+import { newIdHex } from "engine/services/utils";
 class IgeNetIoServerComponent extends IgeNetIoComponent {
     constructor() {
         super(...arguments);
@@ -32,7 +33,7 @@ class IgeNetIoServerComponent extends IgeNetIoComponent {
                         cmd: 'init',
                         ncmds: this._networkCommandsLookup,
                         ts: ige._timeScale,
-                        ct: ige._currentTime
+                        ct: ige.engine._currentTime
                     });
                     // Send a clock sync command
                     this._sendTimeSync(undefined, socket.id);
@@ -243,7 +244,7 @@ class IgeNetIoServerComponent extends IgeNetIoComponent {
     request(commandName, data, callback) {
         // Build the request object
         const req = {
-            id: this.newIdHex(),
+            id: newIdHex(),
             cmd: commandName,
             data: data,
             callback: callback,

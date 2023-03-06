@@ -1,5 +1,5 @@
-export interface IgeRegisterable {
-    _registered: boolean;
+export interface IgeRegisterableById {
+    _idRegistered: boolean;
     _id?: string;
 
     id (): string;

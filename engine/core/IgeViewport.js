@@ -14,7 +14,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         super();
         this.classId = "IgeViewport";
         this.IgeViewport = true;
-        this._registered = false;
+        this._idRegistered = false;
         this._autoSize = false;
         let width, height;
         this._alwaysInView = true;
@@ -33,11 +33,11 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
                 this._lockDimension = new IgePoint3d(options.scaleToWidth, options.scaleToHeight, 0);
             }
         }
-        if (!ige.root) {
+        if (!ige.engine.root) {
             throw new Error("IgeViewport instantiated before Ige instance createRoot() called!");
         }
         // Setup default objects
-        this._bounds2d = new IgePoint2d(width || ige.root._bounds2d.x, height || ige.root._bounds2d.y);
+        this._bounds2d = new IgePoint2d(width || ige.engine.root._bounds2d.x, height || ige.engine.root._bounds2d.y);
         this.camera = new IgeCamera(ige, this);
         this.camera._entity = this;
         //this._drawMouse = true;
@@ -118,7 +118,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
      */
     tick(ctx) {
         // Check if we have a scene attached to this viewport and ige has a root object
-        if (!this._scene || !ige.root) {
+        if (!this._scene || !ige.engine.root) {
             return;
         }
         ige._currentCamera = this.camera;
@@ -129,7 +129,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         ctx.clearRect(0, 0, this._bounds2d.x, this._bounds2d.y);
         if (this._clipping || this._borderColor) {
             ctx.beginPath();
-            ctx.rect(0, 0, this._bounds2d.x / ige.root._scale.x, this._bounds2d.y / ige.root._scale.x);
+            ctx.rect(0, 0, this._bounds2d.x / ige.engine.root._scale.x, this._bounds2d.y / ige.engine.root._scale.x);
             // Paint a border if required
             if (this._borderColor) {
                 ctx.strokeStyle = this._borderColor;
@@ -139,9 +139,9 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
                 ctx.clip();
             }
         }
-        ctx.translate(((this._bounds2d.x / 2) | 0) + ige.root._translate.x, ((this._bounds2d.y / 2) | 0) + ige.root._translate.y);
-        if (ige.root._scale.x !== 1 || ige.root._scale.y !== 1) {
-            ctx.scale(ige.root._scale.x, ige.root._scale.y);
+        ctx.translate(((this._bounds2d.x / 2) | 0) + ige.engine.root._translate.x, ((this._bounds2d.y / 2) | 0) + ige.engine.root._translate.y);
+        if (ige.engine.root._scale.x !== 1 || ige.engine.root._scale.y !== 1) {
+            ctx.scale(ige.engine.root._scale.x, ige.engine.root._scale.y);
         }
         this.camera.tick(ctx);
         ctx.save();
@@ -240,9 +240,9 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         return this._drawGuides;
     }
     paintGuides(ctx) {
-        if (!ige.root)
+        if (!ige.engine.root)
             return;
-        const geom = ige.root._bounds2d;
+        const geom = ige.engine.root._bounds2d;
         // Check draw-guides setting
         if (this._drawGuides) {
             ctx.strokeStyle = "#ffffff";

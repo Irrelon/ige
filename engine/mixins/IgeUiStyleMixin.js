@@ -1,5 +1,5 @@
 import { ige } from "../instance.js";
-// TODO: Update this mixin so it extensds from IgeBaseClass, moving anything that relies on IgeEntity
+// TODO: Update this mixin so it extends from IgeBaseClass, moving anything that relies on IgeEntity
 //    to another class, probably IgeEntity or IgeUiEntity?
 const WithUiStyleMixin = (Base) => class extends Base {
     constructor() {

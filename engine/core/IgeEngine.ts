@@ -3,8 +3,6 @@ import IgePoint3d from "./IgePoint3d";
 import IgeDummyContext from "./IgeDummyContext";
 import IgePoint2d from "./IgePoint2d";
 import IgeInputComponent from "../components/IgeInputComponent";
-import IgeTweenComponent from "../components/IgeTweenComponent";
-import IgeTimeComponent from "../components/IgeTimeComponent";
 import { arrPull } from "../services/utils";
 
 import type { SyncEntry, SyncMethod } from "../../types/SyncEntry";
@@ -15,7 +13,7 @@ import type IgeCamera from "./IgeCamera";
 import type IgeSceneGraph from "./IgeSceneGraph";
 import type IgeImage from "./IgeImage";
 import IgeEntity from "./IgeEntity";
-import { IgeRegisterable } from "../../types/IgeRegisterable";
+import { IgeRegisterableById } from "../../types/IgeRegisterableById";
 import { ige } from "../instance";
 
 export class IgeEngine extends IgeEntity {
@@ -24,8 +22,9 @@ export class IgeEngine extends IgeEntity {
 	client?: IgeBaseClass;
 	server?: IgeBaseClass;
 	igeClassStore: Record<string, any>;
-	root?: IgeRoot; // The root entity that all scenegraph will mount to
-	_registered: boolean = true;
+	// @ts-ignore
+	root: IgeRoot; // The root entity that all scenegraph will mount to
+	_idRegistered: boolean = true;
 	_canvas?: HTMLCanvasElement;
 	_ctx: CanvasRenderingContext2D | null | typeof IgeDummyContext;
 	_idCounter: number;
@@ -62,7 +61,7 @@ export class IgeEngine extends IgeEntity {
 	_currentCamera: IgeCamera | null;
 	_currentTime: number;
 	_globalSmoothing: boolean;
-	_register: Record<string, IgeRegisterable>;
+	_register: Record<string, IgeRegisterableById>;
 	_categoryRegister: Record<string, IgeEntity> = {};
 	_groupRegister: Record<string, IgeEntity[]> = {};
 	_postTick: (() => void)[];
@@ -164,17 +163,17 @@ export class IgeEngine extends IgeEntity {
 		this._headless = true;
 
 		// Deal with some debug settings first
-		if (ige.config.debug) {
-			if (!ige.config.debug._enabled) {
-				// Debug is not enabled so ensure that
-				// timing debugs are disabled
-				ige.config.debug._timing = false;
-			}
-		}
+		// if (ige.config.debug) {
+		// 	if (!ige.config.debug._enabled) {
+		// 		// Debug is not enabled so ensure that
+		// 		// timing debugs are disabled
+		// 		ige.config.debug._timing = false;
+		// 	}
+		// }
 
 		// Output our header
 		console.log("-----------------------------------------");
-		console.log(`Powered by Isogenic Engine ${ige.version}`);
+		console.log(`Powered by Isogenic Engine`);
 		console.log("(C)opyright " + new Date().getFullYear() + " Irrelon Software Limited");
 		console.log("https://www.isogenicengine.com");
 		console.log("-----------------------------------------");
@@ -183,11 +182,6 @@ export class IgeEngine extends IgeEntity {
 		// restarts of the engine, new ids will still always be created compared to earlier runs -
 		// which is important when storing persistent data with ids etc
 		this._idCounter = new Date().getTime();
-
-		// Add the textures loaded dependency
-		this._dependencyQueue.push(ige.textures.haveAllTexturesLoaded);
-		this._dependencyQueue.push(this.canvasReady);
-		this._dependencyQueue.push(this.fontsLoaded);
 
 		// Start a timer to record every second of execution
 		this._secondTimer = setInterval(this._secondTick, 1000) as unknown as number;
@@ -216,9 +210,9 @@ export class IgeEngine extends IgeEntity {
 		this._resizeEvent();
 
 		// Set up components
-		this.addComponent(IgeInputComponent);
-		this.addComponent(IgeTweenComponent);
-		this.addComponent(IgeTimeComponent);
+		//this.addComponent(IgeInputComponent);
+		//this.addComponent(IgeTweenComponent);
+		//this.addComponent(IgeTimeComponent);
 		//
 		// if (this.isClient) {
 		//     // Enable UI element (virtual DOM) support
@@ -300,126 +294,6 @@ export class IgeEngine extends IgeEntity {
 		}
 
 		return this._spawnQueue;
-	}
-
-	/**
-     * Returns an object from the engine's object register by
-     * the object's id. If the item passed is not a string id
-     * then the item is returned as is. If no item is passed
-     * the engine itself is returned.
-     * @param {String || Object} item The id of the item to return,
-     * or if an object, returns the object as-is.
-     */
-	$ (item: string | IgeEntity) {
-		if (typeof item === "string") {
-			return this._register[item];
-		} else if (typeof item === "object") {
-			return item;
-		}
-
-		return this;
-	}
-
-	/**
-     * Returns an array of all objects that have been assigned
-     * the passed category name.
-     * @param {String} categoryName The name of the category to return
-     * all objects for.
-     */
-	$$ (categoryName: string) {
-		return this._categoryRegister[categoryName] || [];
-	}
-
-	/**
-     * Returns an array of all objects that have been assigned
-     * the passed group name.
-     * @param {String} groupName The name of the group to return
-     * all objects for.
-     */
-	$$$ (groupName: string) {
-		return this._groupRegister[groupName] || [];
-	}
-
-	/**
-     * Register an object with the engine object register. The
-     * register allows you to access an object by its id with
-     * a call to ige.$(objectId).
-     * @param {Object} obj The object to register.
-     * @return {*}
-     */
-	register (obj: IgeRegisterable) {
-		if (obj !== undefined) {
-			if (!this._register[obj.id()]) {
-				this._register[obj.id()] = obj;
-				obj._registered = true;
-
-				return this;
-			} else {
-				obj._registered = false;
-
-				this.log(
-					"Cannot add object id \"" +
-                    obj.id() +
-                    "\" to scenegraph because there is already another object in the graph with the same ID!",
-					"error"
-				);
-				return false;
-			}
-		}
-
-		return this._register;
-	}
-
-	/**
-     * Un-register an object with the engine object register. The
-     * object will no longer be accessible via ige.$().
-     * @param {Object} obj The object to un-register.
-     * @return {*}
-     */
-	unRegister (obj) {
-		if (obj !== undefined) {
-			// Check if the object is registered in the ID lookup
-			if (this._register[obj.id()]) {
-				delete this._register[obj.id()];
-				obj._registered = false;
-			}
-		}
-
-		return this;
-	}
-
-	/**
-     * Register an object with the engine category register. The
-     * register allows you to access an object by it's category with
-     * a call to ige.$$(categoryName).
-     * @param {Object} obj The object to register.
-     * @return {*}
-     */
-	categoryRegister (obj) {
-		if (obj !== undefined) {
-			this._categoryRegister[obj._category] = this._categoryRegister[obj._category] || [];
-			this._categoryRegister[obj._category].push(obj);
-			obj._categoryRegistered = true;
-		}
-
-		return this._register;
-	}
-
-	/**
-     * Un-register an object with the engine category register. The
-     * object will no longer be accessible via ige.$$().
-     * @param {Object} obj The object to un-register.
-     * @return {*}
-     */
-	categoryUnRegister (obj) {
-		if (obj !== undefined) {
-			if (this._categoryRegister[obj._category]) {
-				arrPull(this._categoryRegister[obj._category], obj);
-				obj._categoryRegistered = false;
-			}
-		}
-
-		return this;
 	}
 
 	/**
@@ -1680,36 +1554,6 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Generates a new unique ID
-     * @return {String}
-     */
-	newId () {
-		this._idCounter++;
-		return String(
-			this._idCounter +
-            (Math.random() * Math.pow(10, 17) +
-                Math.random() * Math.pow(10, 17) +
-                Math.random() * Math.pow(10, 17) +
-                Math.random() * Math.pow(10, 17))
-		);
-	}
-
-	/**
-     * Generates a new 16-character hexadecimal unique ID
-     * @return {String}
-     */
-	newIdHex () {
-		this._idCounter++;
-		return (
-			this._idCounter +
-            (Math.random() * Math.pow(10, 17) +
-                Math.random() * Math.pow(10, 17) +
-                Math.random() * Math.pow(10, 17) +
-                Math.random() * Math.pow(10, 17))
-		).toString(16);
-	}
-
-	/**
      * Generates a new 16-character hexadecimal ID based on
      * the passed string. Will always generate the same ID
      * for the same string.
@@ -1748,6 +1592,13 @@ export class IgeEngine extends IgeEntity {
 	start (callback: (success: boolean) => void) {
 		if (this._state) {
 			return;
+		}
+
+		if (this._dependencyQueue.length === 0) {
+			// Add the textures loaded dependency
+			this._dependencyQueue.push(ige.textures.haveAllTexturesLoaded);
+			this._dependencyQueue.push(this.canvasReady);
+			this._dependencyQueue.push(this.fontsLoaded);
 		}
 
 		if (this.dependencyCheck()) {
@@ -1945,8 +1796,8 @@ export class IgeEngine extends IgeEntity {
 			this._drawCount = 0;
 
 			// Call the input system tick to reset any flags etc
-			if (this.components.input) {
-				(this.components.input as IgeInputComponent).tick();
+			if (ige.input) {
+				(ige.input as IgeInputComponent).tick();
 			}
 		}
 

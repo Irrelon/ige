@@ -47,7 +47,7 @@ class IgeEditorComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeC
 		const igeRoot = window.igeRoot || "";
 
 		// Hook the input component's keyUp and check for the = symbol... if there, toggle editor
-		this._activateKeyHandle = (ige.components.input as IgeInputComponent).on("keyUp", (event) => {
+		this._activateKeyHandle = (ige.input as IgeInputComponent).on("keyUp", (event) => {
 			if (event.keyIdentifier === "U+00BB") {
 				// = key pressed, toggle the editor
 				this.toggle();
@@ -58,7 +58,7 @@ class IgeEditorComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeC
 		});
 
 		// Hook the input component's keyUp and check for the - symbol... if there, toggle stats
-		this._activateKeyHandle = (ige.components.input as IgeInputComponent).on("keyUp", (event) => {
+		this._activateKeyHandle = (ige.input as IgeInputComponent).on("keyUp", (event) => {
 			if (event.keyIdentifier === "U+00BD") {
 				// Toggle the stats
 				this.toggleStats();
@@ -69,7 +69,7 @@ class IgeEditorComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeC
 		});
 
 		// Hook the engine's input system and take over mouse interaction
-		this._mouseUpHandle = (ige.components.input as IgeInputComponent).on("preMouseUp", (event) => {
+		this._mouseUpHandle = (ige.input as IgeInputComponent).on("preMouseUp", (event) => {
 			if (this._enabled && this._interceptMouse) {
 				this.emit("mouseUp", event);
 
@@ -78,7 +78,7 @@ class IgeEditorComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeC
 			}
 		});
 
-		this._mouseDownHandle = (ige.components.input as IgeInputComponent).on("preMouseDown", (event) => {
+		this._mouseDownHandle = (ige.input as IgeInputComponent).on("preMouseDown", (event) => {
 			if (this._enabled && this._interceptMouse) {
 				this.emit("mouseDown", event);
 
@@ -87,7 +87,7 @@ class IgeEditorComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeC
 			}
 		});
 
-		this._mouseMoveHandle = (ige.components.input as IgeInputComponent).on("preMouseMove", (event) => {
+		this._mouseMoveHandle = (ige.input as IgeInputComponent).on("preMouseMove", (event) => {
 			if (this._enabled && this._interceptMouse) {
 				this.emit("mouseMove", event);
 
@@ -96,7 +96,7 @@ class IgeEditorComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeC
 			}
 		});
 
-		this._contextMenuHandle = (ige.components.input as IgeInputComponent).on("preContextMenu", (event) => {
+		this._contextMenuHandle = (ige.input as IgeInputComponent).on("preContextMenu", (event) => {
 			if (this._enabled && this._interceptMouse) {
 				this.emit("contextMenu", event);
 
@@ -565,7 +565,7 @@ class IgeEditorComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeC
 			elem1.id = "igeSgTree";
 			elem1.style.top = (parseInt(canvasBoundingRect.top) + 5) + "px";
 			elem1.style.left = (parseInt(canvasBoundingRect.left) + 5) + "px";
-			elem1.style.height = (ige.root._bounds2d.y - 30) + "px";
+			elem1.style.height = (ige.engine.root._bounds2d.y - 30) + "px";
 			elem1.style.overflow = "auto";
 			elem1.addEventListener("mousemove", (event) => {
 				event.stopPropagation();

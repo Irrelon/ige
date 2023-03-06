@@ -29,10 +29,10 @@ const WithUiPositionMixin = (Base) => class extends Base {
                     // We have a parent, use it's geometry
                     parentWidth = this._parent._bounds2d.x;
                 }
-                else if (ige.root) {
+                else if (ige.engine.root) {
                     // We don't have a parent so use the main canvas
                     // as a reference
-                    parentWidth = ige.root._bounds2d.x;
+                    parentWidth = ige.engine.root._bounds2d.x;
                 }
                 // Calculate real width from percentage
                 this._uiLeft = (parentWidth / 100 * val) | 0;
@@ -75,10 +75,10 @@ const WithUiPositionMixin = (Base) => class extends Base {
                         // We have a parent, use it's geometry
                         parentWidth = this._parent._bounds2d.x;
                     }
-                    else if (ige.root) {
+                    else if (ige.engine.root) {
                         // We don't have a parent so use the main canvas
                         // as a reference
-                        parentWidth = ige.root._bounds2d.x;
+                        parentWidth = ige.engine.root._bounds2d.x;
                     }
                     // Calculate real width from percentage
                     this._uiRight = (parentWidth / 100 * val) | 0;
@@ -125,10 +125,10 @@ const WithUiPositionMixin = (Base) => class extends Base {
                         // We have a parent, use it's geometry
                         parentWidth = this._parent._bounds2d.x2;
                     }
-                    else if (ige.root) {
+                    else if (ige.engine.root) {
                         // We don't have a parent so use the main canvas
                         // as a reference
-                        parentWidth = ige.root._bounds2d.x2;
+                        parentWidth = ige.engine.root._bounds2d.x2;
                     }
                     // Calculate real width from percentage
                     this._uiCenter = (parentWidth / 100 * val) | 0;
@@ -176,10 +176,10 @@ const WithUiPositionMixin = (Base) => class extends Base {
                     // We have a parent, use it's geometry
                     parentHeight = this._parent._bounds2d.y;
                 }
-                else if (ige.root) {
+                else if (ige.engine.root) {
                     // We don't have a parent so use the main canvas
                     // as a reference
-                    parentHeight = ige.root._bounds2d.y;
+                    parentHeight = ige.engine.root._bounds2d.y;
                 }
                 // Calculate real width from percentage
                 this._uiTop = (parentHeight / 100 * val) | 0;
@@ -222,10 +222,10 @@ const WithUiPositionMixin = (Base) => class extends Base {
                         // We have a parent, use it's geometry
                         parentHeight = this._parent._bounds2d.y;
                     }
-                    else if (ige.root) {
+                    else if (ige.engine.root) {
                         // We don't have a parent so use the main canvas
                         // as a reference
-                        parentHeight = ige.root._bounds2d.y;
+                        parentHeight = ige.engine.root._bounds2d.y;
                     }
                     // Calculate real width from percentage
                     this._uiBottom = (parentHeight / 100 * val) | 0;
@@ -272,10 +272,10 @@ const WithUiPositionMixin = (Base) => class extends Base {
                         // We have a parent, use it's geometry
                         parentWidth = this._parent._bounds2d.y2;
                     }
-                    else if (ige.root) {
+                    else if (ige.engine.root) {
                         // We don't have a parent so use the main canvas
                         // as a reference
-                        parentWidth = ige.root._bounds2d.y2;
+                        parentWidth = ige.engine.root._bounds2d.y2;
                     }
                     // Calculate real width from percentage
                     this._uiMiddle = (parentWidth / 100 * val) | 0;
@@ -329,10 +329,10 @@ const WithUiPositionMixin = (Base) => class extends Base {
                         this._bounds2d.x = newVal;
                         this._bounds2d.x2 = Math.floor(this._bounds2d.x / 2);
                     }
-                    else if (ige.root) {
+                    else if (ige.engine.root) {
                         // We don't have a parent so use the main canvas
                         // as a reference
-                        const parentWidth = ige.root._bounds2d.x;
+                        const parentWidth = ige.engine.root._bounds2d.x;
                         const val = parseInt(px, 10);
                         // Calculate real height from percentage
                         this._bounds2d.x = (parentWidth / 100 * val) + this._widthModifier | 0;
@@ -398,10 +398,10 @@ const WithUiPositionMixin = (Base) => class extends Base {
                         this._bounds2d.y = newVal;
                         this._bounds2d.y2 = Math.floor(this._bounds2d.y / 2);
                     }
-                    else if (ige.root) {
+                    else if (ige.engine.root) {
                         // We don't have a parent so use the main canvas
                         // as a reference
-                        const parentHeight = ige.root._bounds2d.y;
+                        const parentHeight = ige.engine.root._bounds2d.y;
                         const val = parseInt(px, 10);
                         // Calculate real height from percentage
                         this._bounds2d.y = (parentHeight / 100 * val) + this._heightModifier | 0;

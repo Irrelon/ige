@@ -23,7 +23,7 @@ class IgeTweenComponent extends IgeComponent {
      * @return {Number} The index of the added tween or -1 on error.
      */
     start(tween) {
-        if (tween._startTime > ige._currentTime) {
+        if (tween._startTime > ige.engine._currentTime) {
             // The tween is scheduled for later
             // Push the tween into the IgeTweenComponent's _tweens array
             this._tweens.push(tween);
@@ -56,13 +56,13 @@ class IgeTweenComponent extends IgeComponent {
         if (tween._currentStep === 0 && !newTime) {
             // Because we are on step zero we can check for a start time
             if (tween._startTime === undefined) {
-                tween._startTime = ige._currentTime;
+                tween._startTime = ige.engine._currentTime;
             }
         }
         else {
             // We're not on step zero anymore so the new step start time
             // is NOW!
-            tween._startTime = ige._currentTime;
+            tween._startTime = ige.engine._currentTime;
         }
         const durationMs = step.durationMs ? step.durationMs : tween._durationMs;
         tween._selectedEasing = step.easing ? step.easing : tween._easing;

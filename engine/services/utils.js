@@ -1,3 +1,4 @@
+let _idCounter = 0;
 /**
  * Removes the passed item from an array, the opposite of push().
  * @param arr
@@ -126,4 +127,31 @@ export const radiansToDegrees = (radians) => {
  */
 export const distance = (x1, y1, x2, y2) => {
     return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+};
+/**
+ * Generates a new unique ID as a number.
+ * @return {number}
+ */
+export const newIdNumber = () => {
+    _idCounter++;
+    return (_idCounter +
+        (Math.random() * Math.pow(10, 17) +
+            Math.random() * Math.pow(10, 17) +
+            Math.random() * Math.pow(10, 17) +
+            Math.random() * Math.pow(10, 17)));
+};
+/**
+ * Generates a new unique ID string
+ * @return {string}
+ */
+export const newId = () => {
+    _idCounter++;
+    return newIdNumber().toString();
+};
+/**
+ * Generates a new 16-character hexadecimal unique ID
+ * @return {String}
+ */
+export const newIdHex = () => {
+    return newIdNumber().toString(16);
 };

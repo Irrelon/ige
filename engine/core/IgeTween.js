@@ -253,7 +253,7 @@ class IgeTween extends IgeBaseClass {
      */
     start(timeMs) {
         if (timeMs !== undefined) {
-            this.startTime(timeMs + ige._currentTime);
+            this.startTime(timeMs + ige.engine._currentTime);
         }
         ige.components.tween.start(this);
         // Add the tween to the target object's tween array

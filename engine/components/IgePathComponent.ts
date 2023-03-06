@@ -397,7 +397,7 @@ class IgePathComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCom
 				// Need to round the restart co-ordinates as the speed could have changed with an entity halfway between
 				// points and this upsets the tile checker
 				this.set(Math.round(restartPoint.x), Math.round(restartPoint.y), restartPoint.z, endPoint.x, endPoint.y, endPoint.z);
-				this.restart(startTime || ige._currentTime);
+				this.restart(startTime || ige.engine._currentTime);
 			}
 			return this;
 		}
@@ -418,7 +418,7 @@ class IgePathComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCom
 		if (!this._active) {
 			this._active = true;
 			this._finished = false;
-			this._startTime = startTime || ige._currentTime;
+			this._startTime = startTime || ige.engine._currentTime;
 
 			this._calculatePathData();
 
@@ -441,7 +441,7 @@ class IgePathComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCom
 	 * Restarts an existing path traversal, for example after we have changed the speed or given it a new set of points
 	 * but don't want to consider it a new path and raise a new start event
 	 * @param {Number=} startTime The time to start path traversal. Defaults
-	 * to ige._currentTime if no value is presented.
+	 * to ige.engine._currentTime if no value is presented.
 	 * @return {*}
 	 */
 	restart = (startTime) => {
@@ -450,7 +450,7 @@ class IgePathComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCom
 
 			if (!this._active) {
 				this._active = true;
-				this._startTime = startTime || ige._currentTime;
+				this._startTime = startTime || ige.engine._currentTime;
 
 				if (this._points.length > 1) {
 					this._currentPointFrom = this._nextPointToProcess;
@@ -477,7 +477,7 @@ class IgePathComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCom
 	pause = () => {
 		this._active = false;
 		this._paused = true;
-		this._pauseTime = ige._currentTime;
+		this._pauseTime = ige.engine._currentTime;
 
 		this.emit("paused", this._entity);
 		return this;
@@ -611,7 +611,7 @@ class IgePathComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCom
 	 */
 	_updateBehaviour = (ctx) => {
 		const {path} = this,
-			currentTime = ige._currentTime,
+			currentTime = ige.engine._currentTime,
 			progressTime = currentTime - path._startTime;
 
 		// Check if we should be processing paths

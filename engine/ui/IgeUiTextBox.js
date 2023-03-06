@@ -29,7 +29,7 @@ class IgeUiTextBox extends IgeUiElement {
             }
         };
         const focusFunc = () => {
-            this._ige.components.input.stopPropagation();
+            this._ige.input.stopPropagation();
             blurFunc();
             let input, body, entScreenPos = this.screenPosition();
             input = document.createElement("input");
@@ -75,7 +75,7 @@ class IgeUiTextBox extends IgeUiElement {
         // On focus, create a temp input element in the DOM and focus to it
         this.on("focus", focusFunc);
         this.on("mouseUp", focusFunc);
-        this.on("mouseDown", () => { this._ige.components.input.stopPropagation(); });
+        this.on("mouseDown", () => { this._ige.input.stopPropagation(); });
         this.on("uiUpdate", () => {
             if (self._domElement) {
                 // Update the transformation matrix

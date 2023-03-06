@@ -1,8 +1,7 @@
-import IgePoint3d from "../core/IgePoint3d";
-import IgeComponent from "../core/IgeComponent";
-import IgeViewport from "../core/IgeViewport";
 import {ige} from "../instance";
-import IgeEntity from "../core/IgeEntity";
+import IgePoint3d from "../core/IgePoint3d";
+import IgeViewport from "../core/IgeViewport";
+import IgeEventingClass from "../core/IgeEventingClass";
 
 export interface IgeInputMouseInterface {
 	"dblClick": number;
@@ -114,7 +113,7 @@ export interface IgeInputEventControl {
 	stopPropagation: () => void;
 }
 
-class IgeInputComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+class IgeInputComponent extends IgeEventingClass {
 	classId = "IgeInputComponent";
 	componentId = "input";
 	_eventQueue: [((evc: IgeInputEventControl, eventData?: any) => void), any][];
@@ -134,8 +133,8 @@ class IgeInputComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCo
 	mouseWheel: boolean | Event = false;
 	contextMenu: boolean | Event = false;
 
-	constructor (entity: TargetClass, options?: any) {
-		super(entity, options);
+	constructor () {
+		super();
 
 		// Set up the input objects to hold the current input state
 		this._eventQueue = [];
@@ -301,7 +300,7 @@ class IgeInputComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCo
 		this._state[this.mouse.y] = 0;
 
 		// Ask the input component to set up any listeners it has
-		this.setupListeners(ige._canvas);
+		//this.setupListeners(ige.engine._canvas);
 	}
 
 	debug = (val?: boolean) => {
@@ -401,7 +400,7 @@ class IgeInputComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCo
 		window.removeEventListener("keyup", this._evRef.keyup, false);
 
 		// Get the canvas element
-		const canvas = ige?._canvas;
+		const canvas = ige.engine._canvas;
 		if (!canvas) return;
 
 		// Mouse events
@@ -489,11 +488,9 @@ class IgeInputComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCo
 			event.igePageY = event.pageY;
 		}
 
-		if (ige) {
-			const canvasPosition = ige._canvasPosition();
-			event.igeX = (event.igePageX - canvasPosition.left);
-			event.igeY = (event.igePageY - canvasPosition.top);
-		}
+		const canvasPosition = ige.engine._canvasPosition();
+		event.igeX = (event.igePageX - canvasPosition.left);
+		event.igeY = (event.igePageY - canvasPosition.top);
 
 		this.emit("inputEvent", event);
 	}
@@ -512,8 +509,8 @@ class IgeInputComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCo
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		const mx = event.igeX - this._entity._bounds2d.x2;
-		const my = event.igeY - this._entity._bounds2d.y2;
+		const mx = event.igeX - ige.engine.root._bounds2d.x2;
+		const my = event.igeY - ige.engine.root._bounds2d.y2;
 
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = true;
@@ -549,8 +546,8 @@ class IgeInputComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCo
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		const mx = event.igeX - this._entity._bounds2d.x2;
-		const my = event.igeY - this._entity._bounds2d.y2;
+		const mx = event.igeX - ige.engine.root._bounds2d.x2;
+		const my = event.igeY - ige.engine.root._bounds2d.y2;
 
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = false;
@@ -580,8 +577,8 @@ class IgeInputComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCo
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		const mx = event.igeX - this._entity._bounds2d.x2;
-		const my = event.igeY - this._entity._bounds2d.y2;
+		const mx = event.igeX - ige.engine.root._bounds2d.x2;
+		const my = event.igeY - ige.engine.root._bounds2d.y2;
 
 		if (event.button === 0) {
 			this._state[this.mouse.button1] = false;
@@ -613,8 +610,8 @@ class IgeInputComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCo
 		// Update the mouse position within the viewports
 		ige._mouseOverVp = this._updateMouseData(event);
 
-		const mx = event.igeX - this._entity._bounds2d.x2;
-		const my = event.igeY - this._entity._bounds2d.y2;
+		const mx = event.igeX - ige.engine.root._bounds2d.x2;
+		const my = event.igeY - ige.engine.root._bounds2d.y2;
 
 		this._state[this.mouse.x] = mx;
 		this._state[this.mouse.y] = my;
@@ -641,8 +638,8 @@ class IgeInputComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCo
 		// Update the mouse position within the viewports
 		this._updateMouseData(event);
 
-		const mx = event.igeX - this._entity._bounds2d.x2;
-		const my = event.igeY - this._entity._bounds2d.y2;
+		const mx = event.igeX - ige.engine.root._bounds2d.x2;
+		const my = event.igeY - ige.engine.root._bounds2d.y2;
 
 		this._state[this.mouse.wheel] = event.deltaY;
 
@@ -710,19 +707,17 @@ class IgeInputComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCo
 	 */
 	_updateMouseData = (event: MouseEvent | TouchEvent): IgeViewport | undefined => {
 		// Loop the viewports and check if the mouse is inside
-		const arr = this._entity._children as unknown as IgeViewport[];
-		const mx = (event.igeX - this._entity._bounds2d.x2) - this._entity._translate.x;
-		const my = (event.igeY - this._entity._bounds2d.y2) - this._entity._translate.y;
+		const arr = ige.engine.root._children as unknown as IgeViewport[];
+		const mx = (event.igeX - ige.engine.root._bounds2d.x2) - ige.engine.root._translate.x;
+		const my = (event.igeY - ige.engine.root._bounds2d.y2) - ige.engine.root._translate.y;
 
 		let arrCount = arr.length;
-		let vp;
-		let vpUpdated;
 
 		ige._mousePos.x = mx;
 		ige._mousePos.y = my;
 
 		while (arrCount--) {
-			vp = arr[arr.length - (arrCount + 1)];
+			const vp = arr[arr.length - (arrCount + 1)];
 
 			// Check if the mouse is inside this viewport's bounds
 			// TODO: Update this code to take into account viewport rotation and camera rotation
@@ -850,7 +845,7 @@ class IgeInputComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCo
 
 	/**
 	 * Emit an event by name. Overrides the IgeEventingClass emit method and
-	 * checks for propagation stopped by calling ige.components.input.stopPropagation().
+	 * checks for propagation stopped by calling ige.input.stopPropagation().
 	 * @param {Object} eventName The name of the event to emit.
 	 * @param {Object || Array} args The arguments to send to any listening methods.
 	 * If you are sending multiple arguments, use an array containing each argument.

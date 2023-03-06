@@ -1,11 +1,12 @@
 import { ige } from "../../instance";
 import IgeEventingClass from "../../core/IgeEventingClass";
-import { IgeRegisterable } from "../../../types/IgeRegisterable";
+import { IgeRegisterableById } from "../../../types/IgeRegisterableById";
 import { audioController } from "../../services/audioController";
+import { newIdHex } from "../../services/utils";
 
-class IgeAudio extends IgeEventingClass implements IgeRegisterable {
+class IgeAudio extends IgeEventingClass implements IgeRegisterableById {
 	classId = "IgeAudio";
-	_registered: boolean = false;
+	_idRegistered: boolean = false;
 	_id?: string;
 	_url?: string;
 	_data?: ArrayBuffer;
@@ -33,13 +34,13 @@ class IgeAudio extends IgeEventingClass implements IgeRegisterable {
 	 * @param {String=} id The id to set to.
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	id (): string;
 	id (id: string): this;
+	id (): string;
 	id (id?: string): this | string | undefined {
 		if (id !== undefined) {
 			// Check if this ID already exists in the object register
-			if (ige._register[id]) {
-				if (ige._register[id] === this) {
+			if (ige.register.get(id)) {
+				if (ige.register.get(id) === this) {
 					// We are already registered as this id
 					return this;
 				}
@@ -48,15 +49,15 @@ class IgeAudio extends IgeEventingClass implements IgeRegisterable {
 				this.log(`Cannot set ID of object to "${id}" because that ID is already in use by another object!`, "error");
 			} else {
 				// Check if we already have an id assigned
-				if (this._id && ige._register[this._id]) {
+				if (this._id && ige.register.get(this._id)) {
 					// Unregister the old ID before setting this new one
-					ige.unRegister(this);
+					ige.register.remove(this);
 				}
 
 				this._id = id;
 
 				// Now register this object with the object register
-				ige.register(this);
+				ige.register.add(this);
 
 				return this;
 			}
@@ -68,12 +69,12 @@ class IgeAudio extends IgeEventingClass implements IgeRegisterable {
 				// Generate an ID from the URL string of the audio file
 				// this instance is using. Useful for always reproducing
 				// the same ID for the same file :)
-				this._id = ige.newIdFromString(this._url);
+				this._id = ige.engine.newIdFromString(this._url);
 			} else {
 				// We don't have a URL so generate a random ID
-				this._id = ige.newIdHex();
+				this._id = newIdHex();
 			}
-			ige.register(this);
+			ige.register.add(this);
 		}
 
 		return this._id;

@@ -1,3 +1,4 @@
+import { newIdHex } from "engine/services/utils";
 import { IgeNetworkMessageData, IgeNetworkRequestMessageData } from "../../../../types/IgeNetworkMessage";
 
 class IgeSocketIoServerComponent {
@@ -260,7 +261,7 @@ class IgeSocketIoServerComponent {
 	request (commandName: string, data, callback) {
 		// Build the request object
 		const req: IgeNetworkRequestMessageData = {
-			id: this.newIdHex(),
+			id: newIdHex(),
 			cmd: commandName,
 			data: data,
 			callback: callback,

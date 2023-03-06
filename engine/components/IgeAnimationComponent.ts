@@ -283,7 +283,7 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 			if (anim) {
 				anim.currentDelta = 0;
 				anim.currentLoop = 0;
-				anim.startTime = ige._currentTime;
+				anim.startTime = ige.engine._currentTime;
 
 				this._anim = anim;
 				this._animId = animId;

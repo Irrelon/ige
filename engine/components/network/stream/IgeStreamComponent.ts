@@ -137,7 +137,7 @@ const IgeStreamComponent = IgeEventingClass.extend({
 			arr = this._queuedData,
 			arrIndex,
 			network = this._entity,
-			item, currentTime = ige._currentTime,
+			item, currentTime = ige.engine._currentTime,
 			clientSentTimeData = {};
 
 		// Send the stream data
@@ -233,7 +233,7 @@ const IgeStreamComponent = IgeEventingClass.extend({
 			// Calculate how much time we have left before the entity
 			// should be removed from the simulation given the render
 			// latency setting and the current time
-			const destroyDelta = ige.components.network.stream._renderLatency + (ige._currentTime - data[0]);
+			const destroyDelta = ige.components.network.stream._renderLatency + (ige.engine._currentTime - data[0]);
 
 			if (destroyDelta > 0) {
 				// Give the entity a lifespan to destroy it in x ms

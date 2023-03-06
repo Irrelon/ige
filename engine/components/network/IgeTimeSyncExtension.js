@@ -52,7 +52,7 @@ export class IgeTimeSyncExtension {
     /* CEXCLUDE */
     _sendTimeSync(data, clientId) {
         if (!data) {
-            data = [ige._currentTime];
+            data = [ige.engine._currentTime];
         }
         // Send the time sync command
         this.send("_igeNetTimeSync", data, clientId);
@@ -73,7 +73,7 @@ export class IgeTimeSyncExtension {
         return this._latency;
     }
     _onTimeSync(data, clientId) {
-        const localTime = Math.floor(ige._currentTime);
+        const localTime = Math.floor(ige.engine._currentTime);
         let sendTime, roundTrip, direction;
         if (ige.isClient) {
             sendTime = parseInt(data[0], 10);

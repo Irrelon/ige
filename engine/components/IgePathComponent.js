@@ -301,7 +301,7 @@ class IgePathComponent extends IgeComponent {
                     // Need to round the restart co-ordinates as the speed could have changed with an entity halfway between
                     // points and this upsets the tile checker
                     this.set(Math.round(restartPoint.x), Math.round(restartPoint.y), restartPoint.z, endPoint.x, endPoint.y, endPoint.z);
-                    this.restart(startTime || ige._currentTime);
+                    this.restart(startTime || ige.engine._currentTime);
                 }
                 return this;
             }
@@ -319,7 +319,7 @@ class IgePathComponent extends IgeComponent {
             if (!this._active) {
                 this._active = true;
                 this._finished = false;
-                this._startTime = startTime || ige._currentTime;
+                this._startTime = startTime || ige.engine._currentTime;
                 this._calculatePathData();
                 if (this._points.length > 1) {
                     this._nextPointToProcess = 0;
@@ -338,7 +338,7 @@ class IgePathComponent extends IgeComponent {
          * Restarts an existing path traversal, for example after we have changed the speed or given it a new set of points
          * but don't want to consider it a new path and raise a new start event
          * @param {Number=} startTime The time to start path traversal. Defaults
-         * to ige._currentTime if no value is presented.
+         * to ige.engine._currentTime if no value is presented.
          * @return {*}
          */
         this.restart = (startTime) => {
@@ -346,7 +346,7 @@ class IgePathComponent extends IgeComponent {
                 this._finished = false;
                 if (!this._active) {
                     this._active = true;
-                    this._startTime = startTime || ige._currentTime;
+                    this._startTime = startTime || ige.engine._currentTime;
                     if (this._points.length > 1) {
                         this._currentPointFrom = this._nextPointToProcess;
                         this._currentPointTo = this._nextPointToProcess + 1;
@@ -369,7 +369,7 @@ class IgePathComponent extends IgeComponent {
         this.pause = () => {
             this._active = false;
             this._paused = true;
-            this._pauseTime = ige._currentTime;
+            this._pauseTime = ige.engine._currentTime;
             this.emit("paused", this._entity);
             return this;
         };
@@ -468,7 +468,7 @@ class IgePathComponent extends IgeComponent {
          * @private
          */
         this._updateBehaviour = (ctx) => {
-            const { path } = this, currentTime = ige._currentTime, progressTime = currentTime - path._startTime;
+            const { path } = this, currentTime = ige.engine._currentTime, progressTime = currentTime - path._startTime;
             // Check if we should be processing paths
             if (path._active && path._totalDistance !== 0 && currentTime >= path._startTime && (progressTime <= path._totalTime || !path._finished)) {
                 let distanceTravelled = (path._speed) * progressTime, totalDistance = 0, pointArr = path._points, pointCount = pointArr.length, pointIndex, pointFrom, pointTo, newPoint, dynamicResult, effectiveTime;

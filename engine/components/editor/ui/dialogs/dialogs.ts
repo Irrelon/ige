@@ -1,3 +1,5 @@
+import { newIdHex } from "../../../../services/utils";
+
 class UiDialogs extends IgeEventingClass {
 	classId: 'UiDialogs',
 
@@ -15,7 +17,7 @@ class UiDialogs extends IgeEventingClass {
 		var self = this;
 		self._dialogOrder += 2;
 
-		dialogData.id = dialogData.id || ige.newIdHex();
+		dialogData.id = dialogData.id || newIdHex();
 		dialogData.title = dialogData.title || 'Dialog';
 
 		// Create a dialog and show as loading
@@ -115,7 +117,7 @@ class UiDialogs extends IgeEventingClass {
 	},
 
 	confirm: function (dialogOptions) {
-		dialogOptions.id = dialogOptions.id || ige.newIdHex();
+		dialogOptions.id = dialogOptions.id || newIdHex();
 		if (dialogOptions.dialogClass) {
 			dialogOptions.dialogClass += ' confirm';
 		} else {
@@ -159,7 +161,7 @@ class UiDialogs extends IgeEventingClass {
 	},
 
 	input: function (dialogOptions) {
-		dialogOptions.id = dialogOptions.id || ige.newIdHex();
+		dialogOptions.id = dialogOptions.id || newIdHex();
 		if (dialogOptions.dialogClass) {
 			dialogOptions.dialogClass += ' input';
 		} else {
@@ -204,7 +206,7 @@ class UiDialogs extends IgeEventingClass {
 	},
 
 	prompt: function (dialogOptions) {
-		dialogOptions.id = dialogOptions.id || ige.newIdHex();
+		dialogOptions.id = dialogOptions.id || newIdHex();
 		if (dialogOptions.dialogClass) {
 			dialogOptions.dialogClass += ' prompt';
 		} else {
