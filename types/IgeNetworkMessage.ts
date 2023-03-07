@@ -1,8 +1,11 @@
-export type IgeNetworkMessageData = any[];
+export type IgeNetworkMessageData = any;
 export type IgeNetworkEncodedMessageData = [string, IgeNetworkMessageData];
-export type IgeNetworkMessageHandler = (data: IgeNetworkMessageData, clientId?: string, requestId?: string) => void;
-export type IgeNetworkServerTimeSyncRequest = [number];
-export type IgeNetworkClientTimeSyncResponse = [number, number];
+export type IgeNetworkServerSideMessageHandler = (data: IgeNetworkMessageData, clientId: string, requestCallback?: (responseErr: any, responseData: any) => void) => void;
+export type IgeNetworkClientSideMessageHandler = (data: IgeNetworkMessageData, requestCallback?: (responseErr: any, responseData: any) => void) => void;
+export type IgeNetworkClientSideResponseHandler = (...args: any[]) => void;
+export type IgeNetworkTimeSyncRequestFromServer = [number];
+export type IgeNetworkTimeSyncResponseFromClient = [number, number];
+export type IgeNetworkServerSideResponseData = any[];
 
 export interface IgeNetworkRequestMessageStructure<CallbackType> {
     clientId?: string;

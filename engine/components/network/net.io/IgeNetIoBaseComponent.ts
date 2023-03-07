@@ -1,12 +1,13 @@
 import IgeEventingClass from "../../../core/IgeEventingClass";
-import { IgeNetworkMessageData, IgeNetworkMessageHandler } from "../../../../types/IgeNetworkMessage";
+import {
+	IgeNetworkMessageData
+} from "../../../../types/IgeNetworkMessage";
 
 export class IgeNetIoBaseComponent extends IgeEventingClass {
 	classId = 'IgeNetIoBaseComponent';
-	_networkCommands: Record<string, IgeNetworkMessageHandler> = {}; // Maps a command name to a command handler function
 	_networkCommandsIndex: string[] = []; // Maps a command name to an integer via the array index
 	_networkCommandsLookup: Record<string, number> = {}; // Maps a command name to its index
-	_debug: boolean = false;
+	_debug: boolean = true;
 	_debugCounter: number = 0;
 	_debugMax: number = 0;
 	_clientRooms: Record<string, string[]> = {};

@@ -19,6 +19,9 @@ export class Client extends IgeBaseClass {
 		const options = new IgeOptions();
 		options.set("masterVolume", 1);
 		ige.init();
+
+		const network = (ige.network as IgeNetIoClientComponent);
+
 		//ige.engine.addComponent(IgeEditorComponent);
 		ige.audio.masterVolume(options.get('masterVolume', 1));
 		//(ige.components.input as IgeInputComponent).debug(true);
@@ -44,8 +47,11 @@ export class Client extends IgeBaseClass {
 					// the items are added to the scenegraph)
 					ige.engine.addGraph(Level1);
 
-					(ige.network as IgeNetIoClientComponent)?.start('http://localhost:2000', () => {
-						console.log("Connect result")
+
+					network.start('http://localhost:2000', () => {
+						network.send("testRequest", "foo", (err, data) => {
+							console.log("testRequest response", err, data);
+						});
 					});
 				}
 			});

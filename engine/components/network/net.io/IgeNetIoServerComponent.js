@@ -7,6 +7,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
     constructor() {
         super(...arguments);
         this._idCounter = 0;
+        this._networkCommands = {}; // Maps a command name to a command handler function
         this._requests = {};
         this._socketById = {};
         this._port = 8000;
@@ -19,6 +20,9 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
         this._onRequest = (data, clientId) => {
             if (!clientId)
                 return;
+            const responseCallback = (...args) => {
+                this.response(data.id, args);
+            };
             // The message is a network request so fire
             // the command event with the request id and
             // the request data
@@ -29,10 +33,11 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
                 this.log("emitting", data.cmd, [data.id, data.data]);
                 this._debugCounter++;
             }
-            if (this._networkCommands[data.cmd]) {
-                this._networkCommands[data.cmd](data.data, clientId, data.id);
+            const commandHandler = this._networkCommands[data.cmd];
+            if (commandHandler) {
+                commandHandler(data.data, clientId, responseCallback);
             }
-            this.emit(data.cmd, [data.id, data.data, clientId]);
+            this.emit(data.cmd, [data.data, clientId, responseCallback]);
         };
         this._onResponse = (data, clientId) => {
             if (!clientId)
@@ -49,7 +54,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
             }
             if (req) {
                 // Fire the request callback!
-                req.callback(req.cmd, [data.data, clientId]);
+                req.callback(data.data.err, clientId, data.data.data);
                 // Delete the request from memory
                 delete this._requests[id];
             }
@@ -278,6 +283,10 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
     send(commandName, data, clientId, callback) {
         var _a;
         if (callback) {
+            if (!clientId) {
+                this.log("Attempted to send a request command without specifying the recipient clientId!", "error");
+                return;
+            }
             this.request(commandName, data, clientId, callback);
             return;
         }
@@ -333,7 +342,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
         this.send("_igeResponse", {
             id: requestId,
             cmd: req.cmd,
-            data: data
+            data
         }, req.clientId);
         delete this._requests[requestId];
     }
@@ -360,8 +369,9 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
      */
     _onClientMessage(data, clientId) {
         const ciDecoded = data[0].charCodeAt(0), commandName = this._networkCommandsIndex[ciDecoded];
-        if (this._networkCommands[commandName]) {
-            this._networkCommands[commandName](data[1], clientId);
+        const commandHandler = this._networkCommands[commandName];
+        if (commandHandler) {
+            commandHandler(data[1], clientId);
         }
         this.emit(commandName, [data[1], clientId]);
     }

@@ -3,10 +3,9 @@ export class IgeNetIoBaseComponent extends IgeEventingClass {
     constructor() {
         super();
         this.classId = 'IgeNetIoBaseComponent';
-        this._networkCommands = {}; // Maps a command name to a command handler function
         this._networkCommandsIndex = []; // Maps a command name to an integer via the array index
         this._networkCommandsLookup = {}; // Maps a command name to its index
-        this._debug = false;
+        this._debug = true;
         this._debugCounter = 0;
         this._debugMax = 0;
         this._clientRooms = {};

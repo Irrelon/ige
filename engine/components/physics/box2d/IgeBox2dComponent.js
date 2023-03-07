@@ -1,8 +1,8 @@
-"use strict";
 /**
  * The engine's box2d component class.
  */
-var IgeBox2dComponent = IgeEventingClass.extend({
+import { igeClassStore } from "../../../services/igeClassStore.js";
+const IgeBox2dComponent = IgeEventingClass.extend({
     classId: 'IgeBox2dComponent',
     componentId: 'box2d',
     init: function (entity, options) {
@@ -35,13 +35,13 @@ var IgeBox2dComponent = IgeEventingClass.extend({
         // Extend the b2Contact class to allow the IGE entity accessor
         // and other helper methods
         this.b2Contact.prototype.igeEntityA = function () {
-            var ent = this.m_fixtureA.m_body._entity;
+            const ent = this.m_fixtureA.m_body._entity;
             ent._box2dOurContactFixture = this.m_fixtureA;
             ent._box2dTheirContactFixture = this.m_fixtureB;
             return ent;
         };
         this.b2Contact.prototype.igeEntityB = function () {
-            var ent = this.m_fixtureB.m_body._entity;
+            const ent = this.m_fixtureB.m_body._entity;
             ent._box2dOurContactFixture = this.m_fixtureB;
             ent._box2dTheirContactFixture = this.m_fixtureA;
             return ent;
@@ -194,7 +194,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
      * @return {b2FixtureDef}
      */
     createFixture: function (params) {
-        var tempDef = new this.b2FixtureDef(), param;
+        let tempDef = new this.b2FixtureDef(), param;
         for (param in params) {
             if (params.hasOwnProperty(param)) {
                 if (param !== 'shape' && param !== 'filter') {
@@ -212,7 +212,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
      * @return {b2Body}
      */
     createBody: function (entity, body) {
-        var tempDef = new this.b2BodyDef(), param, tempBod, fixtureDef, tempFixture, finalFixture, tempShape, tempFilterData, i, finalX, finalY, finalWidth, finalHeight;
+        let tempDef = new this.b2BodyDef(), param, tempBod, fixtureDef, tempFixture, finalFixture, tempShape, tempFilterData, i, finalX, finalY, finalWidth, finalHeight;
         // Process body definition and create a box2d body for it
         switch (body.type) {
             case 'static':
@@ -357,7 +357,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
      */
     staticsFromMap: function (mapLayer, callback) {
         if (mapLayer.map) {
-            var tileWidth = mapLayer.tileWidth(), tileHeight = mapLayer.tileHeight(), posX, posY, rectArray, rectCount, rect;
+            let tileWidth = mapLayer.tileWidth(), tileHeight = mapLayer.tileHeight(), posX, posY, rectArray, rectCount, rect;
             // Get the array of rectangle bounds based on
             // the map's data
             rectArray = mapLayer.scanRects(callback);
@@ -397,7 +397,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
      * @param {Function} postSolve
      */
     contactListener: function (beginContactCallback, endContactCallback, preSolve, postSolve) {
-        var contactListener = new this.b2ContactListener();
+        const contactListener = new this.b2ContactListener();
         if (beginContactCallback !== undefined) {
             contactListener.BeginContact = beginContactCallback;
         }
@@ -454,7 +454,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
     enableDebug: function (mountScene) {
         if (mountScene) {
             // Define the debug drawing instance
-            var debugDraw = new this.b2DebugDraw();
+            const debugDraw = new this.b2DebugDraw();
             this._box2dDebug = true;
             debugDraw.SetSprite(ige._ctx);
             debugDraw.SetDrawScale(this._scaleRatio);
@@ -532,7 +532,7 @@ var IgeBox2dComponent = IgeEventingClass.extend({
      * @private
      */
     _behaviour: function (ctx) {
-        var self = this.box2d, tempBod, entity, entityBox2dBody, removeWhenReady, count, destroyBody;
+        let self = this.box2d, tempBod, entity, entityBox2dBody, removeWhenReady, count, destroyBody;
         if (self._active && self._world) {
             if (!self._world.IsLocked()) {
                 // Remove any bodies that were queued for removal

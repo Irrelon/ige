@@ -10,6 +10,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
     constructor() {
         super(...arguments);
         this.version = '1.0.0';
+        this._networkCommands = {}; // Maps a command name to a command handler function
         this._initDone = false;
         this._idCounter = 0;
         this._requests = {};
@@ -28,20 +29,20 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
             }
             this.emit(data.cmd, [data.id, data.data]);
         };
-        this._onResponse = (data) => {
+        this._onResponse = (responseObj) => {
             // The message is a network response
             // to a request we sent earlier
-            const id = data.id;
+            const id = responseObj.id;
             // Get the original request object from
             // the request id
-            const req = this._requests[id];
+            const requestObj = this._requests[id];
             if (this.debug()) {
-                console.log('onResponse', data);
+                console.log('onResponse', responseObj);
                 this._debugCounter++;
             }
-            if (req) {
+            if (requestObj) {
                 // Fire the request callback!
-                req.callback(req.cmd, data.data);
+                requestObj.callback(...responseObj.data);
                 // Delete the request from memory
                 delete this._requests[id];
             }

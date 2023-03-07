@@ -6,6 +6,9 @@ import { Circle } from "../entities/Circle.js";
 import { Triangle } from "../entities/Triangle.js";
 import { Line } from "../entities/Line.js";
 import { degreesToRadians } from "../../engine/services/utils.js";
+import { Rotator } from "../../examples/1.1.0-startup/gameClasses/Rotator.js";
+import { textures } from "../services/textures.js";
+import { isClient } from "../../engine/services/clientServer.js";
 export class Level1 extends IgeSceneGraph {
     constructor() {
         super(...arguments);
@@ -15,7 +18,6 @@ export class Level1 extends IgeSceneGraph {
      * Called when loading the graph data via ige.addGraph().
      */
     addGraph() {
-        const client = ige.client;
         const baseScene = ige.$('baseScene');
         // Clear existing graph data
         if (ige.$('scene1')) {
@@ -51,6 +53,17 @@ export class Level1 extends IgeSceneGraph {
             .translateTo(150, 150, 0)
             .scaleTo(0.3, 0.3, 0.3)
             .mount(scene1);
+        const fairy = new Rotator(0.1)
+            .id("fairy1")
+            .depth(1)
+            .width(100)
+            .height(100)
+            .translateTo(0, 0, 0)
+            .streamMode(1)
+            .mount(scene1);
+        if (isClient) {
+            fairy.texture(textures.getTextureById("fairy"));
+        }
     }
     /**
      * The method called when the graph items are to be removed from the

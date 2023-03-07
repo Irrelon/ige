@@ -11,11 +11,11 @@ export class Server extends IgeBaseClass {
         const options = new IgeOptions();
         options.set("masterVolume", 1);
         ige.init();
+        const network = ige.network;
         //ige.engine.addComponent(IgeEditorComponent);
         //(ige.components.input as IgeInputComponent).debug(true);
         // Start the engine
         ige.engine.start((success) => {
-            var _a;
             // Check if the engine started successfully
             if (success) {
                 // Load the base scene data
@@ -25,8 +25,13 @@ export class Server extends IgeBaseClass {
                 // the method being called by the engine and how
                 // the items are added to the scenegraph)
                 ige.engine.addGraph(Level1);
-                (_a = ige.network) === null || _a === void 0 ? void 0 : _a.start(2000, () => {
-                    ige.network.acceptConnections(true);
+                network.stream.sendInterval(60) // Send a stream update once every 60 milliseconds
+                    .stream.start();
+                network.define("testRequest", (data, clientId, requestCallback) => {
+                    requestCallback === null || requestCallback === void 0 ? void 0 : requestCallback(false, "some data");
+                });
+                network.start(2000, () => {
+                    network.acceptConnections(true);
                 });
             }
         });

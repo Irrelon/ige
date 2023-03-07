@@ -1,5 +1,6 @@
-import { IgeEngine } from "./IgeEngine.js";
+import { igeClassStore } from "../services/igeClassStore.js";
 import { igeConfig } from "./config.js";
+import { IgeEngine } from "./IgeEngine.js";
 import { IgeTextures } from "./IgeTextures.js";
 import { IgeMetrics } from "./IgeMetrics.js";
 import IgeInputComponent from "../components/IgeInputComponent.js";
@@ -21,6 +22,7 @@ export class Ige {
         this.groupRegister = new IgeArrayRegister("_category", "_categoryRegistered");
         this.config = igeConfig;
         this.version = version;
+        this.classStore = igeClassStore;
         this._mousePos = new IgePoint3d(); // Could probably be just {x: number, y: number}
         if (isClient) {
             import("../components/network/net.io/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {

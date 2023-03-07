@@ -5,7 +5,6 @@ export interface IgeDependencyAction {
 
 class IgeBaseClass {
 	classId = "IgeBaseClass";
-
 	_dependencyFulfilled: Record<string, boolean> = {};
 	_dependsOnArr: IgeDependencyAction[] = [];
 

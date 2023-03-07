@@ -15,6 +15,8 @@ export class Server extends IgeBaseClass {
 		const options = new IgeOptions();
 		options.set("masterVolume", 1);
 		ige.init();
+
+		const network = (ige.network as IgeNetIoServerComponent);
 		//ige.engine.addComponent(IgeEditorComponent);
 		//(ige.components.input as IgeInputComponent).debug(true);
 
@@ -31,8 +33,15 @@ export class Server extends IgeBaseClass {
 				// the items are added to the scenegraph)
 				ige.engine.addGraph(Level1);
 
-				(ige.network as IgeNetIoServerComponent)?.start(2000, () => {
-					(ige.network as IgeNetIoServerComponent).acceptConnections(true);
+				network.stream.sendInterval(60) // Send a stream update once every 60 milliseconds
+					.stream.start()
+
+				network.define("testRequest", (data, clientId, requestCallback) => {
+					requestCallback?.(false, "some data");
+				});
+
+				network.start(2000, () => {
+					network.acceptConnections(true);
 				});
 			}
 		});

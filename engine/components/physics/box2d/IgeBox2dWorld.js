@@ -1,4 +1,5 @@
 import { newIdHex } from "../../../services/utils.js";
+import { igeClassStore } from "../../../services/igeClassStore.js";
 const IgeBox2dWorld = IgeEventingClass.extend({
     classId: 'IgeBox2dWorld',
     init: function (entity, options) {

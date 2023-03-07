@@ -22,7 +22,8 @@ import type IgeTexture from "./IgeTexture";
 import type IgeTileMap2d from "./IgeTileMap2d";
 import type { IgeRegisterableByCategory } from "../../types/IgeRegisterableByCategory";
 import type { IgeRegisterableByGroup } from "../../types/IgeRegisterableByGroup";
-import { isClient } from "../services/clientServer";
+import { isClient, isServer } from "../services/clientServer";
+import { IgeNetIoServerComponent } from "../components/network/net.io/IgeNetIoServerComponent";
 
 export interface IgeEntityBehaviour {
     id: string;
@@ -94,18 +95,11 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	_aabb?: IgeRect;
 	_hasParent?: Record<string, boolean>;
 	_texture?: IgeTexture;
-	_streamMode?: number;
-	_streamDataCache?: boolean;
 	_indestructible: boolean = false;
 	_shouldRender?: boolean = true;
 	_noAabb?: boolean;
 	_smartBackground?: IgeSmartTexture;
 	_lastUpdate?: number;
-	_timeStreamCurrentInterpolateTime?: number;
-	_timeStreamDataDelta?: number;
-	_timeStreamOffsetDelta?: number;
-	_timeStreamPreviousData?: IgeTimeStreamPacket;
-	_timeStreamNextData?: IgeTimeStreamPacket;
 	_tickBehaviours?: IgeEntityBehaviour[];
 	_updateBehaviours?: IgeEntityBehaviour[];
 	_birthMount?: string;
@@ -120,6 +114,18 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	_deathCallBack?: (...args: any[]) => void; // TODO: Rename this to _deathCallback (lower case B)
 	_sortChildren: (comparatorFunction: (a: IgeEntity, b: IgeEntity) => number) => void;
 
+	_specialProp: string[] = [];
+	_streamMode?: number;
+	_streamDataCache?: boolean;
+	_streamJustCreated?: boolean;
+	_streamEmitCreated?: boolean;
+	_streamSections: string[] = [];
+	_timeStreamCurrentInterpolateTime?: number;
+	_timeStreamDataDelta?: number;
+	_timeStreamOffsetDelta?: number;
+	_timeStreamPreviousData?: IgeTimeStreamPacket;
+	_timeStreamNextData?: IgeTimeStreamPacket;
+
 	constructor () {
 		super();
 
@@ -127,6 +133,12 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		this._sortChildren = (compareFn) => {
 			return this._children.sort(compareFn);
 		};
+
+		// Register the IgeEntity special properties handler for
+		// serialise and de-serialise support
+		this._specialProp.push('_texture');
+		this._specialProp.push('_eventListeners');
+		this._specialProp.push('_aabb');
 
 		this._anchor = new IgePoint2d(0, 0);
 		this._renderPos = { x: 0, y: 0 };
@@ -163,12 +175,10 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		//this._mouseEventTrigger = 0;
 
-		/* CEXCLUDE */
-		if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+		if (isServer) {
 			// Set the stream floating point precision to 2 as default
 			this.streamFloatPrecision(2);
 		}
-		/* CEXCLUDE */
 
 		// Set the default stream sections as just the transform data
 		this.streamSections(["transform"]);
@@ -4735,7 +4745,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * @return {*} "this" when a data argument is passed to allow method
      * chaining or the current value if no data argument is specified.
      */
-	streamSectionData (sectionId, data, bypassTimeStream) {
+	streamSectionData (sectionId: string, data: string, bypassTimeStream: boolean = false) {
 		switch (sectionId) {
 		case "transform":
 			if (data) {
@@ -4980,7 +4990,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-	streamMode (val) {
+	streamMode (val: number): this;
+	streamMode (): number;
+	streamMode (val?: number) {
 		if (val !== undefined) {
 			if (isServer) {
 				this._streamMode = val;
@@ -5305,32 +5317,34 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      *     entity.streamCreate('43245325');
      * @return {Boolean}
      */
-	streamCreate (clientId) {
+	streamCreate (clientId: string) {
 		if (this._parent) {
 			let thisId = this.id(),
 				arr,
 				i;
 
+			const network = ige.network as IgeNetIoServerComponent;
+
 			// Send the client an entity create command first
-			ige.network.send(
+			network.send(
 				"_igeStreamCreate",
 				[this.classId, thisId, this._parent.id(), this.streamSectionData("transform"), this.streamCreateData()],
 				clientId
 			);
 
-			ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
+			network.stream._streamClientCreated[thisId] = network.stream._streamClientCreated[thisId] || {};
 
 			if (clientId) {
 				// Mark the client as having received a create
 				// command for this entity
-				ige.network.stream._streamClientCreated[thisId][clientId] = true;
+				network.stream._streamClientCreated[thisId][clientId] = true;
 			} else {
 				// Mark all clients as having received this create
-				arr = ige.network.clients();
+				arr = network.clients();
 
 				for (i in arr) {
 					if (arr.hasOwnProperty(i)) {
-						ige.network.stream._streamClientCreated[thisId][i] = true;
+						network.stream._streamClientCreated[thisId][i] = true;
 					}
 				}
 			}

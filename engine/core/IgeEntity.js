@@ -9,7 +9,7 @@ import IgeRect from "./IgeRect.js";
 import WithEventingMixin from "../mixins/IgeEventingMixin.js";
 import WithDataMixin from "../mixins/IgeDataMixin.js";
 import { arrPull, degreesToRadians, newIdHex, toIso } from "../services/utils.js";
-import { isClient } from "../services/clientServer.js";
+import { isClient, isServer } from "../services/clientServer.js";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -49,6 +49,8 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
         this._indestructible = false;
         this._shouldRender = true;
         this._frameAlternatorCurrent = false;
+        this._specialProp = [];
+        this._streamSections = [];
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // INTERACTION
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -565,6 +567,11 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
         this._sortChildren = (compareFn) => {
             return this._children.sort(compareFn);
         };
+        // Register the IgeEntity special properties handler for
+        // serialise and de-serialise support
+        this._specialProp.push('_texture');
+        this._specialProp.push('_eventListeners');
+        this._specialProp.push('_aabb');
         this._anchor = new IgePoint2d(0, 0);
         this._renderPos = { x: 0, y: 0 };
         this._computedOpacity = 1;
@@ -589,12 +596,10 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
         this._inView = true;
         this._hidden = false;
         //this._mouseEventTrigger = 0;
-        /* CEXCLUDE */
-        if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+        if (isServer) {
             // Set the stream floating point precision to 2 as default
             this.streamFloatPrecision(2);
         }
-        /* CEXCLUDE */
         // Set the default stream sections as just the transform data
         this.streamSections(["transform"]);
     }
@@ -3595,7 +3600,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
      * @return {*} "this" when a data argument is passed to allow method
      * chaining or the current value if no data argument is specified.
      */
-    streamSectionData(sectionId, data, bypassTimeStream) {
+    streamSectionData(sectionId, data, bypassTimeStream = false) {
         switch (sectionId) {
             case "transform":
                 if (data) {
@@ -3813,20 +3818,6 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
                 break;
         }
     }
-    /* CEXCLUDE */
-    /**
-     * Gets / sets the stream mode that the stream system will use when
-     * handling pushing data updates to connected clients.
-     * @param {Number=} val A value representing the stream mode.
-     * @example #Set the entity to disable streaming
-     *     entity.streamMode(0);
-     * @example #Set the entity to automatic streaming
-     *     entity.streamMode(1);
-     * @example #Set the entity to manual (advanced mode) streaming
-     *     entity.streamMode(2);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     streamMode(val) {
         if (val !== undefined) {
             if (isServer) {
@@ -4114,20 +4105,21 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
     streamCreate(clientId) {
         if (this._parent) {
             let thisId = this.id(), arr, i;
+            const network = ige.network;
             // Send the client an entity create command first
-            ige.network.send("_igeStreamCreate", [this.classId, thisId, this._parent.id(), this.streamSectionData("transform"), this.streamCreateData()], clientId);
-            ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
+            network.send("_igeStreamCreate", [this.classId, thisId, this._parent.id(), this.streamSectionData("transform"), this.streamCreateData()], clientId);
+            network.stream._streamClientCreated[thisId] = network.stream._streamClientCreated[thisId] || {};
             if (clientId) {
                 // Mark the client as having received a create
                 // command for this entity
-                ige.network.stream._streamClientCreated[thisId][clientId] = true;
+                network.stream._streamClientCreated[thisId][clientId] = true;
             }
             else {
                 // Mark all clients as having received this create
-                arr = ige.network.clients();
+                arr = network.clients();
                 for (i in arr) {
                     if (arr.hasOwnProperty(i)) {
-                        ige.network.stream._streamClientCreated[thisId][i] = true;
+                        network.stream._streamClientCreated[thisId][i] = true;
                     }
                 }
             }

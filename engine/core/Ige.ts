@@ -1,11 +1,12 @@
-import { IgeEngine } from "./IgeEngine";
+import { igeClassStore } from "../services/igeClassStore";
 import { IgeConfig, igeConfig } from "./config";
+import { IgeEngine } from "./IgeEngine";
 import { IgeTextures } from "./IgeTextures";
 import { IgeMetrics } from "./IgeMetrics";
 import IgeInputComponent from "../components/IgeInputComponent";
 import  { IgeObjectRegister } from "./IgeObjectRegister";
-import  { IgeArrayRegister } from "./IgeArrayRegister";
 
+import  { IgeArrayRegister } from "./IgeArrayRegister";
 import type { IgeRegisterableByCategory } from "../../types/IgeRegisterableByCategory";
 import type IgeEntity from "./IgeEntity";
 import type IgeViewport from "./IgeViewport";
@@ -31,6 +32,7 @@ export class Ige {
 	server: any;
 	config: IgeConfig = igeConfig;
 	version: string = version;
+	classStore = igeClassStore;
 
 	// Questionable properties, think about them and potentially move
 	_mouseOverVp?: IgeViewport;

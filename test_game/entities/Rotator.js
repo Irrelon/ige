@@ -1,5 +1,6 @@
-import IgeEntity from "../../engine/core/IgeEntity.js";
 import { ige } from "../../engine/instance.js";
+import { registerClass } from "../../engine/services/igeClassStore.js";
+import IgeEntity from "../../engine/core/IgeEntity.js";
 export class Rotator extends IgeEntity {
     constructor(speed) {
         super();
@@ -23,3 +24,4 @@ export class Rotator extends IgeEntity {
         super.tick(ctx);
     }
 }
+registerClass(Rotator);

@@ -2,12 +2,14 @@ import { ige } from "../../engine/instance";
 import IgeSceneGraph from "../../engine/core/IgeSceneGraph";
 import IgeScene2d from "../../engine/core/IgeScene2d";
 import IgeEntity from "../../engine/core/IgeEntity";
-import { Client } from "../client";
 import { Square } from "../entities/Square";
 import { Circle } from "../entities/Circle";
 import { Triangle } from "../entities/Triangle";
 import { Line } from "../entities/Line";
 import { degreesToRadians } from "../../engine/services/utils";
+import { Rotator } from "../../examples/1.1.0-startup/gameClasses/Rotator";
+import { textures } from "../services/textures";
+import { isClient } from "../../engine/services/clientServer";
 
 export class Level1 extends IgeSceneGraph {
 	classId = 'Level1';
@@ -16,7 +18,6 @@ export class Level1 extends IgeSceneGraph {
 	 * Called when loading the graph data via ige.addGraph().
 	 */
 	addGraph () {
-		const client = ige.client as Client;
 		const baseScene = ige.$('baseScene') as IgeEntity;
 
 		// Clear existing graph data
@@ -62,6 +63,19 @@ export class Level1 extends IgeSceneGraph {
 			.translateTo(150, 150, 0)
 			.scaleTo(0.3, 0.3, 0.3)
 			.mount(scene1);
+
+		const fairy = new Rotator(0.1)
+			.id("fairy1")
+			.depth(1)
+			.width(100)
+			.height(100)
+			.translateTo(0, 0, 0)
+			.streamMode(1)
+			.mount(scene1);
+
+		if (isClient) {
+			fairy.texture(textures.getTextureById("fairy"));
+		}
 	}
 
 	/**
@@ -72,6 +86,6 @@ export class Level1 extends IgeSceneGraph {
 		// Since all our objects in addGraph() were mounted to the
 		// 'scene1' entity, destroying it will remove everything we
 		// added to it.
-		ige.$('scene1').destroy();
+		(ige.$('scene1') as IgeScene2d).destroy();
 	}
 }

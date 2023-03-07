@@ -2,8 +2,8 @@ import { ige } from "../../../instance";
 import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent";
 import {
 	IgeNetworkMessageData,
-	IgeNetworkMessageHandler, IgeNetworkMessageStructure,
-	IgeNetworkRequestMessageStructure, IgeNetworkServerTimeSyncRequest
+	IgeNetworkServerSideMessageHandler, IgeNetworkMessageStructure,
+	IgeNetworkRequestMessageStructure, IgeNetworkTimeSyncRequestFromServer, IgeNetworkServerSideResponseData
 } from "../../../../types/IgeNetworkMessage";
 import { arrPull, newIdHex } from "../../../services/utils";
 import { NetIoServer, NetIoSocket } from "./server/socketServer";
@@ -11,7 +11,8 @@ import { isServer } from "../../../services/clientServer";
 
 export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	_idCounter: number = 0;
-	_requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkMessageHandler>> = {};
+	_networkCommands: Record<string, IgeNetworkServerSideMessageHandler | undefined> = {}; // Maps a command name to a command handler function
+	_requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkServerSideMessageHandler>> = {};
 	_socketById: Record<string, any> = {};
 	_port: number = 8000;
 	_acceptConnections: boolean = false;
@@ -54,8 +55,12 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 * @param data The data the client sent with the request.
 	 * @param clientId The id of the client that sent the request.
 	 */
-	_onRequest = (data: IgeNetworkRequestMessageStructure<IgeNetworkMessageHandler>, clientId: string) => {
+	_onRequest = (data: IgeNetworkRequestMessageStructure<IgeNetworkServerSideMessageHandler>, clientId: string) => {
 		if (!clientId) return;
+
+		const responseCallback = (...args: any[]) => {
+			this.response(data.id, args);
+		};
 
 		// The message is a network request so fire
 		// the command event with the request id and
@@ -69,11 +74,13 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 			this._debugCounter++;
 		}
 
-		if (this._networkCommands[data.cmd]) {
-			this._networkCommands[data.cmd](data.data, clientId, data.id);
+		const commandHandler = this._networkCommands[data.cmd];
+
+		if (commandHandler) {
+			commandHandler(data.data, clientId, responseCallback);
 		}
 
-		this.emit(data.cmd, [data.id, data.data, clientId]);
+		this.emit(data.cmd, [data.data, clientId, responseCallback]);
 	}
 
 	_onResponse = (data: IgeNetworkMessageStructure, clientId?: string) => {
@@ -94,7 +101,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 
 		if (req) {
 			// Fire the request callback!
-			req.callback(req.cmd, [data.data, clientId]);
+			req.callback(data.data.err, clientId, data.data.data);
 
 			// Delete the request from memory
 			delete this._requests[id];
@@ -157,7 +164,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 * command is received by the network.
 	 * @return {*}
 	 */
-	define (commandName: string, callback: IgeNetworkMessageHandler) {
+	define (commandName: string, callback?: IgeNetworkServerSideMessageHandler) {
 		this._networkCommands[commandName] = callback;
 
 		// Record reverse lookups
@@ -282,8 +289,13 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 * @param {*=} clientId If specified, sets the recipient socket id or
 	 * an array of socket ids to send to.
 	 */
-	send (commandName: string, data: IgeNetworkMessageStructure, clientId?: string, callback?: IgeNetworkMessageHandler) {
+	send (commandName: string, data: IgeNetworkMessageData, clientId?: string, callback?: IgeNetworkServerSideMessageHandler) {
 		if (callback) {
+			if (!clientId) {
+				this.log("Attempted to send a request command without specifying the recipient clientId!", "error");
+				return;
+			}
+
 			this.request(commandName, data, clientId, callback);
 			return;
 		}
@@ -311,7 +323,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 * @param clientId
 	 * @param {Function} callback
 	 */
-	request (commandName: string, data: IgeNetworkMessageStructure, clientId: string, callback: IgeNetworkMessageHandler) {
+	request (commandName: string, data: IgeNetworkMessageStructure, clientId: string, callback: IgeNetworkServerSideMessageHandler) {
 		// Build the request object
 		const req = {
 			id: newIdHex(),
@@ -340,7 +352,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 * @param {String} requestId
 	 * @param {Object} data
 	 */
-	response (requestId: string, data: IgeNetworkMessageData) {
+	response (requestId: string, data: IgeNetworkServerSideResponseData) {
 		// Grab the original request object
 		const req = this._requests[requestId];
 
@@ -353,7 +365,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 			{
 				id: requestId,
 				cmd: req.cmd,
-				data: data
+				data
 			},
 			req.clientId
 		);
@@ -421,7 +433,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 
 	_sendTimeSync (clientId?: string) {
 		// Send the time sync command
-		const data: IgeNetworkServerTimeSyncRequest = [ige.engine._currentTime];
+		const data: IgeNetworkTimeSyncRequestFromServer = [ige.engine._currentTime];
 		this.send("_igeNetTimeSync", data, clientId);
 	}
 
@@ -435,8 +447,10 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 		const ciDecoded = data[0].charCodeAt(0),
 			commandName = this._networkCommandsIndex[ciDecoded];
 
-		if (this._networkCommands[commandName]) {
-			this._networkCommands[commandName](data[1], clientId);
+		const commandHandler = this._networkCommands[commandName];
+
+		if (commandHandler) {
+			commandHandler(data[1], clientId);
 		}
 
 		this.emit(commandName, [data[1], clientId]);

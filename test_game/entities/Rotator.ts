@@ -1,5 +1,6 @@
-import IgeEntity from "../../engine/core/IgeEntity";
 import {ige} from "../../engine/instance";
+import { registerClass } from "../../engine/services/igeClassStore";
+import IgeEntity from "../../engine/core/IgeEntity";
 
 export class Rotator extends IgeEntity {
 	classId = 'Rotator';
@@ -27,3 +28,5 @@ export class Rotator extends IgeEntity {
 		super.tick(ctx);
 	}
 }
+
+registerClass(Rotator);
