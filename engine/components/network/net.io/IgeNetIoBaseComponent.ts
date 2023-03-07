@@ -17,6 +17,7 @@ export class IgeNetIoBaseComponent extends IgeEventingClass {
 	_latency: number = 0;
 	_timeSyncStarted: boolean = false;
 	_timeSyncTimer: number = 0;
+	_sectionDesignator: string = '¬'; // Set the stream data section designator character
 
 	constructor () {
 		super();

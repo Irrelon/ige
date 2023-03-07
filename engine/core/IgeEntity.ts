@@ -13,7 +13,6 @@ import { arrPull, degreesToRadians, newIdHex, toIso } from "../services/utils";
 
 import { IgePoint } from "../../types/IgePoint";
 import { IgeRegisterableById } from "../../types/IgeRegisterableById";
-import { IgeNetIoBaseComponent } from "../components/network/net.io/IgeNetIoBaseComponent";
 import type { IgeDepthSortObject } from "../../types/IgeDepthSortObject";
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "../../types/IgeTimeStream";
@@ -24,6 +23,7 @@ import type { IgeRegisterableByCategory } from "../../types/IgeRegisterableByCat
 import type { IgeRegisterableByGroup } from "../../types/IgeRegisterableByGroup";
 import { isClient, isServer } from "../services/clientServer";
 import { IgeNetIoServerComponent } from "../components/network/net.io/IgeNetIoServerComponent";
+import { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
 
 export interface IgeEntityBehaviour {
     id: string;
@@ -116,15 +116,19 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 	_specialProp: string[] = [];
 	_streamMode?: number;
-	_streamDataCache?: boolean;
+	_streamDataCache: string = "";
 	_streamJustCreated?: boolean;
 	_streamEmitCreated?: boolean;
 	_streamSections: string[] = [];
+	_streamSyncSectionInterval: Record<string, number> = {}; // Holds minimum delta before the stream section is included in the next stream data packet
+	_streamSyncSectionDelta: Record<string, number> = {}; // Stores the game time elapsed since the last time the section was included in a stream data packet
 	_timeStreamCurrentInterpolateTime?: number;
 	_timeStreamDataDelta?: number;
 	_timeStreamOffsetDelta?: number;
 	_timeStreamPreviousData?: IgeTimeStreamPacket;
 	_timeStreamNextData?: IgeTimeStreamPacket;
+	_streamFloatPrecision: number = 2;
+	_floatRemoveRegExp: RegExp = new RegExp("\\.00,", "g");
 
 	constructor () {
 		super();
@@ -1143,7 +1147,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 			if (this._timeStream.length) {
 				// Process any interpolation
-				this._processInterpolate(ige.engine._tickStart - (ige.network as IgeNetIoBaseComponent).stream._renderLatency);
+				this._processInterpolate(ige.engine._tickStart - (ige.network as IgeNetIoClientComponent)._renderLatency);
 			}
 
 			// Check for changes to the transform values
@@ -4787,7 +4791,8 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 					}
 
 					// Add it to the time stream
-					this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
+					const network = (ige.network as IgeNetIoClientComponent);
+					this._timeStream.push([network._streamDataTime + network._latency, dataArr]);
 
 					// Check stream length, don't allow higher than 10 items
 					if (this._timeStream.length > 10) {
@@ -5211,7 +5216,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * @param val
      * @returns {*}
      */
-	streamEmitCreated (val) {
+	streamEmitCreated (val?: boolean) {
 		if (val !== undefined) {
 			this._streamEmitCreated = val;
 			return this;
@@ -5230,14 +5235,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
      * in (can be undefined or null if no room assigned).
      * @private
      */
-	_streamSync (recipientArr, streamRoomId) {
+	_streamSync (recipientArr: string[], streamRoomId?: string) {
 		let arrCount = recipientArr.length,
 			arrIndex,
 			clientId,
-			{ stream } = ige.network,
 			thisId = this.id(),
 			filteredArr = [],
 			createResult = true; // We set this to true by default
+
+		const network = ige.network as IgeNetIoServerComponent;
 
 		// Loop the recipient array
 		for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
@@ -5245,8 +5251,8 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 			// Check if the client has already received a create
 			// command for this entity
-			stream._streamClientCreated[thisId] = stream._streamClientCreated[thisId] || {};
-			if (!stream._streamClientCreated[thisId][clientId]) {
+			network._streamClientCreated[thisId] = network._streamClientCreated[thisId] || {};
+			if (!network._streamClientCreated[thisId][clientId]) {
 				createResult = this.streamCreate(clientId);
 			}
 
@@ -5255,17 +5261,17 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 			// to waste bandwidth on stream updates
 			if (createResult) {
 				// Get the stream data
-				var data = this._streamData();
+				const data = this._streamData();
 
 				// Is the data different from the last data we sent
 				// this client?
-				stream._streamClientData[thisId] = stream._streamClientData[thisId] || {};
+				network._streamClientData[thisId] = network._streamClientData[thisId] || {};
 
-				if (stream._streamClientData[thisId][clientId] !== data) {
+				if (network._streamClientData[thisId][clientId] !== data) {
 					filteredArr.push(clientId);
 
 					// Store the new data for later comparison
-					stream._streamClientData[thisId][clientId] = data;
+					network._streamClientData[thisId][clientId] = data;
 				}
 			}
 		}
@@ -5463,7 +5469,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 				// regardless of if there is actually any section data because
 				// we want to be able to identify sections in a serial fashion
 				// on receipt of the data string on the client
-				sectionDataString += ige.network.stream._sectionDesignator;
+				sectionDataString += (ige.network as IgeNetIoServerComponent)._sectionDesignator;
 
 				// Check if we were returned any data
 				if (sectionData !== undefined) {
@@ -5487,7 +5493,6 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		this._streamDataCache = streamData;
 		return streamData;
 	}
-
 	/* CEXCLUDE */
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -5,13 +5,17 @@ import { NetIoServer } from "./server/socketServer.js";
 import { isServer } from "../../../services/clientServer.js";
 export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
     constructor() {
-        super(...arguments);
+        super();
         this._idCounter = 0;
         this._networkCommands = {}; // Maps a command name to a command handler function
         this._requests = {};
         this._socketById = {};
         this._port = 8000;
         this._acceptConnections = false;
+        this._streamInterval = 50;
+        this._queuedData = {}; // Define the object that will hold the stream data queue
+        this._streamClientData = {}; // Set some stream data containers
+        this._streamClientCreated = {}; // Set some stream data containers
         /**
          * Called on receipt of a request message from a client.
          * @param data The data the client sent with the request.
@@ -117,6 +121,44 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
                 socket.close();
             }
         };
+        /**
+         * Asks the server to send the data packets for all the queued stream
+         * data to the specified clients.
+         * @private
+         */
+        this._sendQueue = () => {
+            const st = new Date().getTime();
+            const queueObj = this._queuedData;
+            const network = ige.network;
+            const currentTime = ige.engine._currentTime;
+            const hasSentTimeDataByClientId = {};
+            // Send the stream data
+            for (const queueKey in queueObj) {
+                if (queueObj.hasOwnProperty(queueKey)) {
+                    const item = queueObj[queueKey];
+                    // Check if we've already sent this client the starting
+                    // time of the stream data
+                    if (!hasSentTimeDataByClientId[item[1]]) {
+                        // Send the stream start time
+                        network.send('_igeStreamTime', currentTime, item[1]);
+                        hasSentTimeDataByClientId[item[1]] = true;
+                    }
+                    network.send('_igeStreamData', item[0], item[1]);
+                    delete queueObj[queueKey];
+                }
+                const ct = new Date().getTime();
+                const dt = ct - st;
+                if (dt > this._streamInterval) {
+                    console.log('WARNING, Stream send is taking too long: ' + dt + 'ms');
+                    break;
+                }
+            }
+        };
+        // Define the network stream commands
+        this.define('_igeStreamCreate');
+        this.define('_igeStreamDestroy');
+        this.define('_igeStreamData');
+        this.define('_igeStreamTime');
     }
     /**
      * Starts the network for the server.
@@ -141,6 +183,8 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
         this.define("_igeNetTimeSync", this._onTimeSync);
         // Start network sync
         this.timeSyncStart();
+        this.log('Starting delta stream...');
+        this._streamTimer = setInterval(this._sendQueue, this._streamInterval);
         return this;
     }
     timeSyncStart() {
@@ -387,5 +431,38 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
         // Remove them from all rooms
         this.clientLeaveAllRooms(socket._id);
         delete this._socketById[socket._id];
+    }
+    /**
+     * Gets / sets the interval by which updates to the game world are packaged
+     * and transmitted to connected clients. The greater the value, the less
+     * updates are sent per second.
+     * @param {Number=} ms The number of milliseconds between stream messages.
+     */
+    sendInterval(ms) {
+        if (ms !== undefined) {
+            this.log('Setting delta stream interval to ' + (ms / ige.engine._timeScale) + 'ms');
+            this._streamInterval = ms / ige.engine._timeScale;
+            return this;
+        }
+        return this._streamInterval;
+    }
+    /**
+     * Stops the stream of world updates to connected clients.
+     */
+    stop() {
+        this.log('Stopping delta stream...');
+        clearInterval(this._streamTimer);
+        return this;
+    }
+    /**
+     * Queues stream data to be sent during the next stream data interval.
+     * @param {String} id The id of the entity that this data belongs to.
+     * @param {String} data The data queued for delivery to the client.
+     * @param {String} clientId The client id this data is queued for.
+     * @return {*}
+     */
+    queue(id, data, clientId) {
+        this._queuedData[id] = [data, clientId];
+        return this;
     }
 }

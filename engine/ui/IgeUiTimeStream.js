@@ -1,4 +1,5 @@
 import IgeUiElement from "../core/IgeUiElement.js";
+import { ige } from "../instance.js";
 class IgeUiTimeStream extends IgeUiElement {
     constructor() {
         super(...arguments);
@@ -9,7 +10,8 @@ class IgeUiTimeStream extends IgeUiElement {
     }
     tick(ctx) {
         // Draw timeline
-        let i, text, xAdjust, arr, arrCount, arrItem, renderTime = ige._tickStart - ige.network.stream._renderLatency, deltaTime;
+        const renderTime = ige.engine._tickStart - ige.network._renderLatency;
+        let i, text, xAdjust, arr, arrCount, arrItem, deltaTime;
         super.tick(ctx);
         ctx.strokeStyle = "#fffc00";
         ctx.beginPath();

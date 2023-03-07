@@ -223,7 +223,7 @@ class IgeUiEntity extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
         }
         return ret;
     }
-    tick(ctx, dontTransform) {
+    tick(ctx, dontTransform = false) {
         if (!this._hidden && this._inView && (!this._parent || (this._parent._inView)) && !this._streamJustCreated) {
             if (!dontTransform) {
                 this._transformContext(ctx);

@@ -1,4 +1,6 @@
 import IgeUiElement from "../core/IgeUiElement";
+import { ige } from "../instance";
+import { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
 
 class IgeUiTimeStream extends IgeUiElement {
 	classId = "IgeUiTimeStream";
@@ -9,9 +11,9 @@ class IgeUiTimeStream extends IgeUiElement {
 
 	tick (ctx) {
 		// Draw timeline
+		const renderTime = ige.engine._tickStart - (ige.network as IgeNetIoClientComponent)._renderLatency;
 		let i, text, xAdjust,
 			arr, arrCount, arrItem,
-			renderTime = ige._tickStart - ige.network.stream._renderLatency,
 			deltaTime;
 
 		super.tick(ctx);

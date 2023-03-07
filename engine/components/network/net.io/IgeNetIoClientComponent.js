@@ -2,19 +2,22 @@ import { ige } from "../../../instance.js";
 import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent.js";
 import { NetIoClient } from "./client/socketClient.js";
 import { newIdHex } from "../../../services/utils.js";
+import { igeClassStore } from "../../../services/igeClassStore.js";
 /**
  * The client-side net.io component. Handles all client-side
  * networking systems.
  */
 export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
     constructor() {
-        super(...arguments);
+        super();
         this.version = '1.0.0';
         this._networkCommands = {}; // Maps a command name to a command handler function
         this._initDone = false;
         this._idCounter = 0;
         this._requests = {};
         this._state = 0;
+        this._renderLatency = 100;
+        this._streamDataTime = 0;
         this._onRequest = (data) => {
             // Store the network request by its id
             this._requests[data.id] = data;
@@ -72,6 +75,112 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
         this._onError = (data) => {
             this.log(`Error with connection: ${data.reason}`, 'error');
         };
+        /**
+         * Handles receiving the start time of the stream data.
+         * @param data
+         * @private
+         */
+        this._onStreamTime = (data) => {
+            this._streamDataTime = data;
+        };
+        this._onStreamCreate = (data) => {
+            const classId = data[0];
+            const entityId = data[1];
+            const parentId = data[2];
+            const transformData = data[3];
+            const createData = data[4];
+            const parent = ige.$(parentId);
+            // Check the required class exists
+            if (parent) {
+                // Check that the entity doesn't already exist
+                if (!ige.$(entityId)) {
+                    const ClassConstructor = igeClassStore[classId];
+                    if (ClassConstructor) {
+                        // The entity does not currently exist so create it!
+                        const entity = new ClassConstructor(createData)
+                            .id(entityId)
+                            .mount(parent);
+                        entity.streamSectionData('transform', transformData, true);
+                        // Set the just created flag which will stop the renderer
+                        // from handling this entity until after the first stream
+                        // data has been received for it
+                        entity._streamJustCreated = true;
+                        if (entity._streamEmitCreated) {
+                            entity.emit('streamCreated');
+                        }
+                        // Since we just created an entity through receiving stream
+                        // data, inform any interested listeners
+                        this.emit('entityCreated', entity);
+                    }
+                    else {
+                        ige.network.stop();
+                        ige.engine.stop();
+                        this.log(`Network stream cannot create entity with class ${classId} because the class has not been defined! The engine will now stop.`, 'error');
+                    }
+                }
+            }
+            else {
+                this.log(`Cannot properly handle network streamed entity with id ${entityId} because it's parent with id ${parentId} does not exist on the scenegraph!`, 'warning');
+            }
+        };
+        this._onStreamDestroy = (data) => {
+            const entity = ige.$(data[1]);
+            if (!entity) {
+                return;
+            }
+            const destroyDelta = this._renderLatency + (ige.engine._currentTime - data[0]);
+            if (destroyDelta > 0) {
+                // Give the entity a lifespan to destroy it in x ms
+                entity.lifeSpan(destroyDelta, () => {
+                    this.emit("entityDestroyed", entity);
+                });
+                return;
+            }
+            // Destroy immediately
+            this.emit("entityDestroyed", entity);
+            entity.destroy();
+        };
+        /**
+         * Called when the client receives data from the stream system.
+         * Handles decoding the data and calling the relevant entity
+         * _onStreamData() methods.
+         * @param data
+         * @private
+         */
+        this._onStreamData = (data) => {
+            // Read the packet data into variables
+            const sectionDataArr = data.split(this._sectionDesignator);
+            const sectionDataCount = sectionDataArr.length;
+            // We know the first bit of data will always be the
+            // target entity's ID
+            const entityId = sectionDataArr.shift();
+            if (!entityId)
+                return;
+            // Check if the entity with this ID currently exists
+            const entity = ige.$(entityId);
+            if (!entity) {
+                this.log("+++ Stream: Data received for unknown entity (" + entityId + ")");
+                return;
+            }
+            // Hold the entity's just created flag
+            const justCreated = entity._streamJustCreated;
+            // Get the entity stream section array
+            const sectionArr = entity._streamSections;
+            // Now loop the data sections array and compile the rest of the
+            // data string from the data section return data
+            for (let sectionIndex = 0; sectionIndex < sectionDataCount; sectionIndex++) {
+                // Tell the entity to handle this section's data
+                entity.streamSectionData(sectionArr[sectionIndex], sectionDataArr[sectionIndex], justCreated);
+            }
+            // Now that the entity has had it's first bit of data
+            // reset the just created flag
+            delete entity._streamJustCreated;
+        };
+        // Define the network stream commands
+        this.define('_igeStreamCreate', this._onStreamCreate);
+        this.define('_igeStreamDestroy', this._onStreamDestroy);
+        this.define('_igeStreamData', this._onStreamData);
+        this.define('_igeStreamTime', this._onStreamTime);
     }
     /**
      * Gets the current socket id.
@@ -296,5 +405,26 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
     _sendTimeSync(data) {
         // Send the time sync command
         this.send("_igeNetTimeSync", data);
+    }
+    /**
+     * Gets /Sets the amount of milliseconds in the past that the renderer will
+     * show updates from the stream. This allows us to interpolate from a previous
+     * position to the next position in the stream update. Updates come in and
+     * are already in the past when they are received so we need to set this
+     * latency value to something greater than the highest level of acceptable
+     * network latency. Usually this is a value between 100 and 200ms. If your
+     * game requires much tighter latency you will have to reduce the number of
+     * players / network updates / data size in order to compensate. A value of
+     * 100 in this call is the standard that most triple-A FPS games accept as
+     * normal render latency and should be OK for your game.
+     *
+     * @param latency
+     */
+    renderLatency(latency) {
+        if (latency !== undefined) {
+            this._renderLatency = latency;
+            return this;
+        }
+        return this._renderLatency;
     }
 }

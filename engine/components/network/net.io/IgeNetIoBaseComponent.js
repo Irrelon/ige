@@ -15,6 +15,7 @@ export class IgeNetIoBaseComponent extends IgeEventingClass {
         this._latency = 0;
         this._timeSyncStarted = false;
         this._timeSyncTimer = 0;
+        this._sectionDesignator = '¬'; // Set the stream data section designator character
         // /* CEXCLUDE */
         // if (isServer) {
         // 	this._netio = require('../../../' + modulePath + 'net.io-server').Server;

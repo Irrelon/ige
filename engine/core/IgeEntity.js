@@ -50,7 +50,12 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
         this._shouldRender = true;
         this._frameAlternatorCurrent = false;
         this._specialProp = [];
+        this._streamDataCache = "";
         this._streamSections = [];
+        this._streamSyncSectionInterval = {}; // Holds minimum delta before the stream section is included in the next stream data packet
+        this._streamSyncSectionDelta = {}; // Stores the game time elapsed since the last time the section was included in a stream data packet
+        this._streamFloatPrecision = 2;
+        this._floatRemoveRegExp = new RegExp("\\.00,", "g");
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // INTERACTION
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1154,7 +1159,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
             }
             if (this._timeStream.length) {
                 // Process any interpolation
-                this._processInterpolate(ige.engine._tickStart - ige.network.stream._renderLatency);
+                this._processInterpolate(ige.engine._tickStart - ige.network._renderLatency);
             }
             // Check for changes to the transform values
             // directly without calling the transform methods
@@ -3638,7 +3643,8 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
                             dataArr[8] = parseFloat(dataArr[8]);
                         }
                         // Add it to the time stream
-                        this._timeStream.push([ige.network.stream._streamDataTime + ige.network._latency, dataArr]);
+                        const network = ige.network;
+                        this._timeStream.push([network._streamDataTime + network._latency, dataArr]);
                         // Check stream length, don't allow higher than 10 items
                         if (this._timeStream.length > 10) {
                             // Remove the first item
@@ -4035,14 +4041,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
      * @private
      */
     _streamSync(recipientArr, streamRoomId) {
-        let arrCount = recipientArr.length, arrIndex, clientId, { stream } = ige.network, thisId = this.id(), filteredArr = [], createResult = true; // We set this to true by default
+        let arrCount = recipientArr.length, arrIndex, clientId, thisId = this.id(), filteredArr = [], createResult = true; // We set this to true by default
+        const network = ige.network;
         // Loop the recipient array
         for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
             clientId = recipientArr[arrIndex];
             // Check if the client has already received a create
             // command for this entity
-            stream._streamClientCreated[thisId] = stream._streamClientCreated[thisId] || {};
-            if (!stream._streamClientCreated[thisId][clientId]) {
+            network._streamClientCreated[thisId] = network._streamClientCreated[thisId] || {};
+            if (!network._streamClientCreated[thisId][clientId]) {
                 createResult = this.streamCreate(clientId);
             }
             // Make sure that if we had to create the entity for
@@ -4050,14 +4057,14 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
             // to waste bandwidth on stream updates
             if (createResult) {
                 // Get the stream data
-                var data = this._streamData();
+                const data = this._streamData();
                 // Is the data different from the last data we sent
                 // this client?
-                stream._streamClientData[thisId] = stream._streamClientData[thisId] || {};
-                if (stream._streamClientData[thisId][clientId] !== data) {
+                network._streamClientData[thisId] = network._streamClientData[thisId] || {};
+                if (network._streamClientData[thisId][clientId] !== data) {
                     filteredArr.push(clientId);
                     // Store the new data for later comparison
-                    stream._streamClientData[thisId][clientId] = data;
+                    network._streamClientData[thisId][clientId] = data;
                 }
             }
         }
@@ -4217,7 +4224,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) {
                 // regardless of if there is actually any section data because
                 // we want to be able to identify sections in a serial fashion
                 // on receipt of the data string on the client
-                sectionDataString += ige.network.stream._sectionDesignator;
+                sectionDataString += ige.network._sectionDesignator;
                 // Check if we were returned any data
                 if (sectionData !== undefined) {
                     // Add the data to the section string
