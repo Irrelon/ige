@@ -229,7 +229,9 @@ class IgeTileMap2d extends IgeEntity {
     pointToTile(point) {
         // TODO: Could this do with some caching to check if the input values have changed and if not,
         // TODO: supply the same pre-calculated data if it already exists?
-        let mx = point.x, my = point.y, dx, dy, tilePos;
+        const mx = point.x;
+        const my = point.y;
+        let dx, dy, tilePos;
         if (this._mountMode === 0) {
             // 2d
             dx = mx; //+ this._tileWidth / 2;

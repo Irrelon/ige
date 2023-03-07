@@ -243,6 +243,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 	 * and data.
 	 * @param commandName
 	 * @param data
+	 * @param callback
 	 */
 	send (commandName: string, data: IgeNetworkMessageData, callback?: IgeNetworkClientSideResponseHandler) {
 		if (callback) {

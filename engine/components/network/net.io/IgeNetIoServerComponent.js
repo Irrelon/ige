@@ -95,31 +95,30 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
                 return;
             }
             // Check if any listener cancels this
-            if (!this.emit("connect", socket)) {
-                this.log("Accepted connection with id " + socket._id);
-                this._socketById[socket._id] = socket;
-                // Store a rooms array for this client
-                this._clientRooms[socket._id] = this._clientRooms[socket._id] || [];
-                socket.on("message", (data) => {
-                    this._onClientMessage(data, socket._id);
-                });
-                socket.on("disconnect", (data) => {
-                    this._onClientDisconnect(data, socket);
-                });
-                // Send an init message to the client
-                socket.send({
-                    cmd: "init",
-                    ncmds: this._networkCommandsLookup,
-                    ts: ige.engine._timeScale,
-                    ct: ige.engine._currentTime
-                });
-                // Send a clock sync command
-                this._sendTimeSync(socket._id);
-            }
-            else {
+            if (this.emit("connect", socket)) {
                 // Reject the connection
                 socket.close();
+                return;
             }
+            this.log("Accepted connection with id " + socket._id);
+            this._socketById[socket._id] = socket;
+            // Store a rooms array for this client
+            this._clientRooms[socket._id] = this._clientRooms[socket._id] || [];
+            socket.on("message", (data) => {
+                this._onClientMessage(data, socket._id);
+            });
+            socket.on("disconnect", (data) => {
+                this._onClientDisconnect(data, socket);
+            });
+            // Send an init message to the client
+            socket.send({
+                cmd: "init",
+                ncmds: this._networkCommandsLookup,
+                ts: ige.engine._timeScale,
+                ct: ige.engine._currentTime
+            });
+            // Send a clock sync command
+            this._sendTimeSync(socket._id);
         };
         /**
          * Asks the server to send the data packets for all the queued stream
@@ -284,10 +283,12 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
      * by their ID.
      * @param {String=} roomId Optional, if provided will only return clients
      * that have joined room specified by the passed roomId.
-     * @return {Array}
+     * @return
      */
     clients(roomId) {
-        return this._socketsByRoomId[roomId];
+        if (!roomId)
+            return this._socketById;
+        return this._socketsByRoomId[roomId] || {};
     }
     /**
      * Returns the socket associated with the specified client id.
@@ -456,13 +457,13 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
     }
     /**
      * Queues stream data to be sent during the next stream data interval.
-     * @param {String} id The id of the entity that this data belongs to.
+     * @param {String} entityId The id of the entity that this data belongs to.
      * @param {String} data The data queued for delivery to the client.
      * @param {String} clientId The client id this data is queued for.
      * @return {*}
      */
-    queue(id, data, clientId) {
-        this._queuedData[id] = [data, clientId];
+    queue(entityId, data, clientId) {
+        this._queuedData[entityId] = [data, clientId];
         return this;
     }
 }

@@ -1,7 +1,7 @@
 import { ige } from "../instance.js";
-import IgeBaseClass from "./IgeBaseClass.js";
 import WithEventingMixin from "../mixins/IgeEventingMixin.js";
 import { arrPull, newIdHex } from "../services/utils.js";
+import IgeEntity from "./IgeEntity.js";
 import WithUiStyleMixin from "../mixins/IgeUiStyleMixin.js";
 import { isClient, isServer } from "../services/clientServer.js";
 let IgeImageClass;
@@ -9,7 +9,7 @@ let IgeCanvasClass;
 /**
  * Creates a new texture.
  */
-class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
+class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeEntity)) {
     /**
      * Constructor for a new IgeTexture.
      * @param {Ige} ige The engine instance.
@@ -333,7 +333,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
             }
             if (!this._textureCtx || !this._textureCanvas) {
                 // Create a new canvas
-                this._textureCanvas = new IgeCanvas();
+                this._textureCanvas = new IgeCanvasClass();
             }
             this._textureCanvas.width = x;
             this._textureCanvas.height = y;
@@ -376,7 +376,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
         y = Math.floor((this._originalImage.height / 100) * y);
         if (!this._textureCtx || !this._textureCanvas) {
             // Create a new canvas
-            this._textureCanvas = new IgeCanvas();
+            this._textureCanvas = new IgeCanvasClass();
         }
         this._textureCanvas.width = x;
         this._textureCanvas.height = y;
@@ -557,7 +557,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
         }
         if (!this._textureCtx || !this._textureCanvas) {
             // Create a new canvas
-            this._textureCanvas = new IgeCanvas();
+            this._textureCanvas = new IgeCanvasClass();
             this._textureCanvas.width = this._originalImage.width;
             this._textureCanvas.height = this._originalImage.height;
             const tmpCtx = this._textureCanvas.getContext("2d");
@@ -593,7 +593,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
         }
         if (!this._textureCtx || !this._textureCanvas) {
             // Create a new canvas
-            this._textureCanvas = new IgeCanvas();
+            this._textureCanvas = new IgeCanvasClass();
             this._textureCanvas.width = this._originalImage.width;
             this._textureCanvas.height = this._originalImage.height;
             const tmpCtx = this._textureCanvas.getContext("2d");
@@ -639,7 +639,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
         // Check if the texture is already using a canvas
         if (!this._textureCtx || !this._textureCanvas) {
             // Create a new canvas
-            this._textureCanvas = new IgeCanvas();
+            this._textureCanvas = new IgeCanvasClass();
             this._textureCanvas.width = this.image.width;
             this._textureCanvas.height = this.image.height;
             const tmpCtx = this._textureCanvas.getContext("2d");
@@ -725,7 +725,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
         // Create a new IgeTexture, then draw the existing cell
         // to its internal canvas
         const cell = this._cells[index];
-        const canvas = new IgeCanvas();
+        const canvas = new IgeCanvasClass();
         const ctx = canvas.getContext("2d");
         if (!ctx) {
             throw new Error("Unable to get 2d context from IgeTexture canvas");
@@ -784,6 +784,7 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeBaseClass)) {
         delete this._textureCanvas;
         delete this._textureCtx;
         this._destroyed = true;
+        return this;
     }
 }
 export default IgeTexture;

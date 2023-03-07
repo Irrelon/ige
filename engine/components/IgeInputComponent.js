@@ -7,12 +7,6 @@ class IgeInputComponent extends IgeEventingClass {
         this.classId = "IgeInputComponent";
         this.componentId = "input";
         this._evRef = {};
-        this.dblClick = false;
-        this.mouseMove = false;
-        this.mouseDown = false;
-        this.mouseUp = false;
-        this.mouseWheel = false;
-        this.contextMenu = false;
         this.debug = (val) => {
             if (val !== undefined) {
                 this._debug = val;
@@ -355,6 +349,7 @@ class IgeInputComponent extends IgeEventingClass {
             const mx = (event.igeX - ige.engine.root._bounds2d.x2) - ige.engine.root._translate.x;
             const my = (event.igeY - ige.engine.root._bounds2d.y2) - ige.engine.root._translate.y;
             let arrCount = arr.length;
+            let vpUpdated;
             ige._mousePos.x = mx;
             ige._mousePos.y = my;
             while (arrCount--) {
@@ -435,73 +430,6 @@ class IgeInputComponent extends IgeEventingClass {
                 this._eventQueue.push([eventFunction, eventData]);
             }
             return this;
-        };
-        /**
-         * Emit an event by name. Overrides the IgeEventingClass emit method and
-         * checks for propagation stopped by calling ige.input.stopPropagation().
-         * @param {Object} eventName The name of the event to emit.
-         * @param {Object || Array} args The arguments to send to any listening methods.
-         * If you are sending multiple arguments, use an array containing each argument.
-         * @return {Number}
-         */
-        this.emit = (eventName, args) => {
-            if (this._eventListeners) {
-                // Check if the event has any listeners
-                if (this._eventListeners[eventName]) {
-                    const evc = this._eventControl;
-                    // Fire the listeners for this event
-                    let eventCount = this._eventListeners[eventName].length;
-                    const eventCount2 = this._eventListeners[eventName].length - 1;
-                    let cancelFlag, eventIndex, tempEvt, retVal;
-                    let finalArgs = [];
-                    // If there are some events, ensure that the args is ready to be used
-                    if (eventCount) {
-                        finalArgs = [];
-                        if (typeof (args) === "object" && args !== null && args[0] !== null) {
-                            args.forEach((arg, argIndex) => {
-                                finalArgs[argIndex] = arg;
-                            });
-                        }
-                        else {
-                            finalArgs = [args];
-                        }
-                        // Loop and emit!
-                        cancelFlag = false;
-                        this._eventsProcessing = true;
-                        while (eventCount--) {
-                            if (evc._cancelled) {
-                                // The stopPropagation() method was called, cancel all other event calls
-                                break;
-                            }
-                            eventIndex = eventCount2 - eventCount;
-                            tempEvt = this._eventListeners[eventName][eventIndex];
-                            // If the sendEventName flag is set, overwrite the arguments with the event name
-                            if (tempEvt.sendEventName) {
-                                finalArgs = [eventName];
-                            }
-                            // Call the callback
-                            retVal = tempEvt.callback.apply(tempEvt.context || this, finalArgs);
-                            // If the retVal === true then store the cancel flag and return to the emitting method
-                            if (retVal === true || evc._cancelled) {
-                                // The receiver method asked us to send a cancel request back to the emitter
-                                cancelFlag = true;
-                            }
-                            // Check if we should now cancel the event
-                            if (tempEvt.oneShot) {
-                                // The event has a oneShot flag so since we have fired the event,
-                                // lets cancel the listener now
-                                this.off(eventName, tempEvt);
-                            }
-                        }
-                        this._eventsProcessing = false;
-                        // Now process any event removal
-                        this._processRemovals();
-                        if (cancelFlag) {
-                            return 1;
-                        }
-                    }
-                }
-            }
         };
         // Set up the input objects to hold the current input state
         this._eventQueue = [];
@@ -681,11 +609,77 @@ class IgeInputComponent extends IgeEventingClass {
         // Reset all the flags and variables for the next tick
         this._eventQueue = [];
         this._eventControl._cancelled = false;
-        this.dblClick = false; // TODO: Add double-click event handling
-        this.mouseMove = false;
-        this.mouseDown = false;
-        this.mouseUp = false;
-        this.mouseWheel = false;
+        delete this.dblClick; // TODO: Add double-click event handling
+        delete this.mouseMove;
+        delete this.mouseDown;
+        delete this.mouseUp;
+        delete this.mouseWheel;
+    }
+    /**
+     * Emit an event by name. Overrides the IgeEventingClass emit method and
+     * checks for propagation stopped by calling ige.input.stopPropagation().
+     * @param {Object} eventName The name of the event to emit.
+     * @param {Object || Array} args The arguments to send to any listening methods.
+     * If you are sending multiple arguments, use an array containing each argument.
+     * @return {Number}
+     */
+    emit(eventName, args) {
+        if (!this._eventListeners) {
+            return 0;
+        }
+        // Check if the event has any listeners
+        if (!this._eventListeners[eventName]) {
+            return 0;
+        }
+        const evc = this._eventControl;
+        let eventCount = this._eventListeners[eventName].length;
+        const eventCount2 = this._eventListeners[eventName].length - 1;
+        let finalArgs = [];
+        if (!eventCount) {
+            return 0;
+        }
+        finalArgs = [];
+        if (typeof (args) === "object" && args !== null && args[0] !== null) {
+            args.forEach((arg, argIndex) => {
+                finalArgs[argIndex] = arg;
+            });
+        }
+        else {
+            finalArgs = [args];
+        }
+        let cancelFlag = false;
+        this._eventsProcessing = true;
+        while (eventCount--) {
+            if (evc._cancelled) {
+                // The stopPropagation() method was called, cancel all other event calls
+                break;
+            }
+            const eventIndex = eventCount2 - eventCount;
+            const tempEvt = this._eventListeners[eventName][eventIndex];
+            // If the sendEventName flag is set, overwrite the arguments with the event name
+            if (tempEvt.sendEventName) {
+                finalArgs = [eventName];
+            }
+            // Call the callback
+            const retVal = tempEvt.callback.apply(tempEvt.context || this, finalArgs);
+            // If the retVal === true then store the cancel flag and return to the emitting method
+            if (retVal === true || evc._cancelled) {
+                // The receiver method asked us to send a cancel request back to the emitter
+                cancelFlag = true;
+            }
+            // Check if we should now cancel the event
+            if (tempEvt.oneShot) {
+                // The event has a oneShot flag so since we have fired the event,
+                // lets cancel the listener now
+                this.off(eventName, tempEvt);
+            }
+        }
+        this._eventsProcessing = false;
+        this._processRemovals();
+        if (cancelFlag) {
+            return 1;
+        }
+        return 0;
     }
 }
 export default IgeInputComponent;

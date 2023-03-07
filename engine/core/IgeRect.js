@@ -1,8 +1,7 @@
-/**
- * Creates a new rectangle (x, y, width, height).
- */
-class IgeRect {
+import IgeBaseClass from "./IgeBaseClass.js";
+class IgeRect extends IgeBaseClass {
     constructor(x = 0, y = 0, width = 0, height = 0) {
+        super();
         this.classId = "IgeRect";
         this.x = 0;
         this.y = 0;
@@ -25,7 +24,7 @@ class IgeRect {
      * @return {IgeRect} The new rect encapsulating both rects.
      */
     combineRect(rect) {
-        var thisRectMaxX = this.x + this.width, thisRectMaxY = this.y + this.height, thatRectMaxX = rect.x + rect.width, thatRectMaxY = rect.y + rect.height, x = Math.min(this.x, rect.x), y = Math.min(this.y, rect.y), width = Math.max(thisRectMaxX - this.x, thatRectMaxX - this.x), height = Math.max(thisRectMaxY - this.y, thatRectMaxY - this.y);
+        const thisRectMaxX = this.x + this.width, thisRectMaxY = this.y + this.height, thatRectMaxX = rect.x + rect.width, thatRectMaxY = rect.y + rect.height, x = Math.min(this.x, rect.x), y = Math.min(this.y, rect.y), width = Math.max(thisRectMaxX - this.x, thatRectMaxX - this.x), height = Math.max(thisRectMaxY - this.y, thatRectMaxY - this.y);
         return new IgeRect(x, y, width, height);
     }
     /**
@@ -35,7 +34,7 @@ class IgeRect {
      * @param {IgeRect} rect The rect to combine with this one.
      */
     thisCombineRect(rect) {
-        var thisRectMaxX = this.x + this.width, thisRectMaxY = this.y + this.height, thatRectMaxX = rect.x + rect.width, thatRectMaxY = rect.y + rect.height;
+        const thisRectMaxX = this.x + this.width, thisRectMaxY = this.y + this.height, thatRectMaxX = rect.x + rect.width, thatRectMaxY = rect.y + rect.height;
         this.x = Math.min(this.x, rect.x);
         this.y = Math.min(this.y, rect.y);
         this.width = Math.max(thisRectMaxX - this.x, thatRectMaxX - this.x);
@@ -45,7 +44,7 @@ class IgeRect {
         return new IgeRect(this.x - point.x, this.y - point.y, this.width, this.height);
     }
     /**
-     * Compares this rect's dimensions with the passed rect and returns
+     * Compares this rects dimensions with the passed rect and returns
      * true if they are the same and false if any is different.
      * @param {IgeRect} rect
      * @return {Boolean}
@@ -89,16 +88,14 @@ class IgeRect {
      * @return {Boolean}
      */
     intersects(rect) {
-        if (rect) {
-            var sX1 = this.x, sY1 = this.y, sW = this.width, sH = this.height, dX1 = rect.x, dY1 = rect.y, dW = rect.width, dH = rect.height, sX2 = sX1 + sW, sY2 = sY1 + sH, dX2 = dX1 + dW, dY2 = dY1 + dH;
-            if (sX1 < dX2 && sX2 > dX1 && sY1 < dY2 && sY2 > dY1) {
-                return true;
-            }
+        if (!rect) {
+            return false;
         }
-        return false;
+        const sX1 = this.x, sY1 = this.y, sW = this.width, sH = this.height, dX1 = rect.x, dY1 = rect.y, dW = rect.width, dH = rect.height, sX2 = sX1 + sW, sY2 = sY1 + sH, dX2 = dX1 + dW, dY2 = dY1 + dH;
+        return sX1 < dX2 && sX2 > dX1 && sY1 < dY2 && sY2 > dY1;
     }
     /**
-     * Multiplies this rect's data by the values specified
+     * Multiplies this rects data by the values specified
      * and returns a new IgeRect whose values are the result.
      * @param x1
      * @param y1
@@ -110,7 +107,7 @@ class IgeRect {
         return new IgeRect(this.x * x1, this.y * y1, this.width * x2, this.height * y2);
     }
     /**
-     * Multiplies this rects's data by the values specified and
+     * Multiplies this rects data by the values specified and
      * overwrites the previous values with the result.
      * @param x1
      * @param y1
@@ -134,7 +131,7 @@ class IgeRect {
         return new IgeRect(this.x, this.y, this.width, this.height);
     }
     /**
-     * Returns a string representation of the rect's x, y, width,
+     * Returns a string representation of the rects x, y, width,
      * height, converting floating point values into fixed using the
      * passed precision parameter. If no precision is specified
      * then the precision defaults to 2.
@@ -150,8 +147,9 @@ class IgeRect {
     /**
      * Draws the polygon bounding lines to the passed context.
      * @param {CanvasRenderingContext2D} ctx
+     * @param fill
      */
-    render(ctx, fill) {
+    render(ctx, fill = false) {
         ctx.rect(this.x, this.y, this.width, this.height);
         if (fill) {
             ctx.fill();

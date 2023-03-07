@@ -126,12 +126,12 @@ class IgeInputComponent extends IgeEventingClass {
 	pad1: IgeInputGamePadInterface;
 	pad2: IgeInputGamePadInterface;
 	key: IgeInputKeyboardInterface;
-	dblClick: boolean | Event = false;
-	mouseMove: boolean | Event = false;
-	mouseDown: boolean | Event = false;
-	mouseUp: boolean | Event = false;
-	mouseWheel: boolean | Event = false;
-	contextMenu: boolean | Event = false;
+	dblClick?: Event;
+	mouseMove?: Event;
+	mouseDown?: Event;
+	mouseUp?: Event;
+	mouseWheel?: Event;
+	contextMenu?: Event;
 
 	constructor () {
 		super();
@@ -712,6 +712,7 @@ class IgeInputComponent extends IgeEventingClass {
 		const my = (event.igeY - ige.engine.root._bounds2d.y2) - ige.engine.root._translate.y;
 
 		let arrCount = arr.length;
+		let vpUpdated;
 
 		ige._mousePos.x = mx;
 		ige._mousePos.y = my;
@@ -804,7 +805,7 @@ class IgeInputComponent extends IgeEventingClass {
 	 * @param {Function} eventFunction The event function.
 	 * @param {*} [eventData] The event data.
 	 */
-	queueEvent = (eventFunction: () => boolean | void, eventData?: any) => {
+	queueEvent = (eventFunction?: ((evc: IgeInputEventControl, eventData?: any) => boolean | void), eventData?: any) => {
 		if (eventFunction !== undefined) {
 			this._eventQueue.push([eventFunction, eventData]);
 		}
@@ -836,11 +837,11 @@ class IgeInputComponent extends IgeEventingClass {
 		// Reset all the flags and variables for the next tick
 		this._eventQueue = [];
 		this._eventControl._cancelled = false;
-		this.dblClick = false; // TODO: Add double-click event handling
-		this.mouseMove = false;
-		this.mouseDown = false;
-		this.mouseUp = false;
-		this.mouseWheel = false;
+		delete this.dblClick; // TODO: Add double-click event handling
+		delete this.mouseMove;
+		delete this.mouseDown;
+		delete this.mouseUp;
+		delete this.mouseWheel;
 	}
 
 	/**
@@ -851,77 +852,78 @@ class IgeInputComponent extends IgeEventingClass {
 	 * If you are sending multiple arguments, use an array containing each argument.
 	 * @return {Number}
 	 */
-	emit = (eventName: string, args: any) => {
-		if (this._eventListeners) {
-			// Check if the event has any listeners
-			if (this._eventListeners[eventName]) {
-				const evc = this._eventControl;
+	emit (eventName: string, args?: any): number {
+		if (!this._eventListeners) {
+			return 0;
+		}
 
-				// Fire the listeners for this event
-				let eventCount = this._eventListeners[eventName].length;
-				const eventCount2 = this._eventListeners[eventName].length - 1;
+		// Check if the event has any listeners
+		if (!this._eventListeners[eventName]) {
+			return 0;
+		}
 
-				let cancelFlag, eventIndex, tempEvt, retVal;
-				let finalArgs: any[] = [];
+		const evc = this._eventControl;
+		let eventCount = this._eventListeners[eventName].length;
+		const eventCount2 = this._eventListeners[eventName].length - 1;
 
-				// If there are some events, ensure that the args is ready to be used
-				if (eventCount) {
-					finalArgs = [];
-					if (typeof (args) === "object" && args !== null && args[0] !== null) {
-						args.forEach((arg: any, argIndex: number) => {
-							finalArgs[argIndex] = arg;
-						});
-					} else {
-						finalArgs = [args];
-					}
+		let finalArgs: any[] = [];
 
-					// Loop and emit!
-					cancelFlag = false;
+		if (!eventCount) {
+			return 0;
+		}
 
-					this._eventsProcessing = true;
-					while (eventCount--) {
-						if (evc._cancelled) {
-							// The stopPropagation() method was called, cancel all other event calls
-							break;
-						}
+		finalArgs = [];
 
-						eventIndex = eventCount2 - eventCount;
-						tempEvt = this._eventListeners[eventName][eventIndex];
+		if (typeof (args) === "object" && args !== null && args[0] !== null) {
+			args.forEach((arg: any, argIndex: number) => {
+				finalArgs[argIndex] = arg;
+			});
+		} else {
+			finalArgs = [args];
+		}
 
-						// If the sendEventName flag is set, overwrite the arguments with the event name
-						if (tempEvt.sendEventName) {
-							finalArgs = [eventName];
-						}
+		let cancelFlag = false;
+		this._eventsProcessing = true;
 
-						// Call the callback
-						retVal = tempEvt.callback.apply(tempEvt.context || this, finalArgs);
+		while (eventCount--) {
+			if (evc._cancelled) {
+				// The stopPropagation() method was called, cancel all other event calls
+				break;
+			}
 
-						// If the retVal === true then store the cancel flag and return to the emitting method
-						if (retVal === true || evc._cancelled) {
-							// The receiver method asked us to send a cancel request back to the emitter
-							cancelFlag = true;
-						}
+			const eventIndex = eventCount2 - eventCount;
+			const tempEvt = this._eventListeners[eventName][eventIndex];
 
-						// Check if we should now cancel the event
-						if (tempEvt.oneShot) {
-							// The event has a oneShot flag so since we have fired the event,
-							// lets cancel the listener now
-							this.off(eventName, tempEvt);
-						}
-					}
-					this._eventsProcessing = false;
+			// If the sendEventName flag is set, overwrite the arguments with the event name
+			if (tempEvt.sendEventName) {
+				finalArgs = [eventName];
+			}
 
-					// Now process any event removal
-					this._processRemovals();
+			// Call the callback
+			const retVal = tempEvt.callback.apply(tempEvt.context || this, finalArgs);
 
-					if (cancelFlag) {
-						return 1;
-					}
+			// If the retVal === true then store the cancel flag and return to the emitting method
+			if (retVal === true || evc._cancelled) {
+				// The receiver method asked us to send a cancel request back to the emitter
+				cancelFlag = true;
+			}
 
-				}
-
+			// Check if we should now cancel the event
+			if (tempEvt.oneShot) {
+				// The event has a oneShot flag so since we have fired the event,
+				// lets cancel the listener now
+				this.off(eventName, tempEvt);
 			}
 		}
+
+		this._eventsProcessing = false;
+		this._processRemovals();
+
+		if (cancelFlag) {
+			return 1;
+		}
+
+		return 0;
 	}
 }
 

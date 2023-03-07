@@ -31,48 +31,48 @@ const WithUiStyleMixin = (Base) => class extends Base {
      */
     backgroundImage(texture, repeatType) {
         var _a, _b;
-        if (texture && texture.image) {
-            if (!repeatType) {
-                repeatType = "no-repeat";
-            }
-            // Store the repeatType
-            this._patternRepeat = repeatType;
-            // Store the texture
-            this._patternTexture = texture;
-            // Resize the image if required
-            if (this._backgroundSize) {
-                texture.resize(this._backgroundSize.x, this._backgroundSize.y);
-                this._patternWidth = this._backgroundSize.x;
-                this._patternHeight = this._backgroundSize.y;
-            }
-            else {
-                this._patternWidth = texture.image.width;
-                this._patternHeight = texture.image.height;
-            }
-            if (this._cell && this._cell > 1) {
-                // We are using a cell sheet, render the cell to a
-                // temporary canvas and set that as the pattern image
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
-                if (!ctx) {
-                    throw new Error("Couldn't get texture canvas 2d context!");
-                }
-                const cellData = texture._cells[this._cell];
-                canvas.width = cellData[2];
-                canvas.height = cellData[3];
-                ctx.drawImage(texture.image, cellData[0], cellData[1], cellData[2], cellData[3], 0, 0, cellData[2], cellData[3]);
-                // Create the pattern from the texture cell
-                this._patternFill = ((_a = ige._ctx) === null || _a === void 0 ? void 0 : _a.createPattern(canvas, repeatType)) || undefined;
-            }
-            else {
-                // Create the pattern from the texture
-                this._patternFill = ((_b = ige._ctx) === null || _b === void 0 ? void 0 : _b.createPattern(texture.image, repeatType)) || undefined;
-            }
-            texture.restoreOriginal();
-            this.cacheDirty(true);
-            return this;
+        if (!(texture && texture.image)) {
+            return this._patternFill;
         }
-        return this._patternFill;
+        if (!repeatType) {
+            repeatType = "no-repeat";
+        }
+        // Store the repeatType
+        this._patternRepeat = repeatType;
+        // Store the texture
+        this._patternTexture = texture;
+        // Resize the image if required
+        if (this._backgroundSize && typeof this._backgroundSize.x === "number" && typeof this._backgroundSize.y === "number") {
+            texture.resize(this._backgroundSize.x, this._backgroundSize.y);
+            this._patternWidth = this._backgroundSize.x;
+            this._patternHeight = this._backgroundSize.y;
+        }
+        else {
+            this._patternWidth = texture.image.width;
+            this._patternHeight = texture.image.height;
+        }
+        if (this._cell && this._cell > 1) {
+            // We are using a cell sheet, render the cell to a
+            // temporary canvas and set that as the pattern image
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+                throw new Error("Couldn't get texture canvas 2d context!");
+            }
+            const cellData = texture._cells[this._cell];
+            canvas.width = cellData[2];
+            canvas.height = cellData[3];
+            ctx.drawImage(texture.image, cellData[0], cellData[1], cellData[2], cellData[3], 0, 0, cellData[2], cellData[3]);
+            // Create the pattern from the texture cell
+            this._patternFill = ((_a = ige.engine._ctx) === null || _a === void 0 ? void 0 : _a.createPattern(canvas, repeatType)) || undefined;
+        }
+        else {
+            // Create the pattern from the texture
+            this._patternFill = ((_b = ige.engine._ctx) === null || _b === void 0 ? void 0 : _b.createPattern(texture.image, repeatType)) || undefined;
+        }
+        texture.restoreOriginal();
+        this.cacheDirty(true);
+        return this;
     }
     backgroundSize(x, y) {
         if (!(x !== undefined && y !== undefined)) {

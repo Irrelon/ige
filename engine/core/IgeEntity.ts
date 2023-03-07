@@ -18,23 +18,23 @@ import type { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "../../types/IgeTimeStream";
 import type IgeViewport from "./IgeViewport";
 import type IgeTexture from "./IgeTexture";
-import type IgeTileMap2d from "./IgeTileMap2d";
+import IgeTileMap2d from "./IgeTileMap2d";
 import type { IgeRegisterableByCategory } from "../../types/IgeRegisterableByCategory";
-import type { IgeRegisterableByGroup } from "../../types/IgeRegisterableByGroup";
 import { isClient, isServer } from "../services/clientServer";
 import { IgeNetIoServerComponent } from "../components/network/net.io/IgeNetIoServerComponent";
 import { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
+import { IgeInputEventControl } from "../components/IgeInputComponent";
 
 export interface IgeEntityBehaviour {
-    id: string;
-    method: (...args: any[]) => any;
+	id: string;
+	method: (...args: any[]) => any;
 }
 
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
  */
-class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implements IgeRegisterableById, IgeRegisterableByCategory, IgeRegisterableByGroup {
+class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implements IgeRegisterableById, IgeRegisterableByCategory {
 	classId = "IgeEntity";
 	_idRegistered: boolean = false;
 	_categoryRegistered: boolean = false;
@@ -59,7 +59,6 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	_drawMouse: boolean = false;
 	_drawMouseData: boolean = false;
 	_ignoreCamera: boolean = false;
-	_streamRoomId?: string;
 	_compositeCache: boolean = false;
 	_compositeParent: boolean = false;
 	_anchor: IgePoint2d;
@@ -80,6 +79,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	_oldBounds3d: IgePoint3d;
 	_highlight: boolean;
 	_mouseEventsActive: boolean;
+	_mouseStateDown: boolean = false;
+	_mouseStateOver: boolean = false;
+	_mouseAlwaysInside: boolean = false;
+	_mouseOut?: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
+	_mouseOver?: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
+	_mouseMove?: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
+	_mouseWheel?: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
+	_mouseUp?: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
+	_mouseDown?: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
 	_velocity: IgePoint3d;
 	_localMatrix: IgeMatrix2d;
 	_worldMatrix: IgeMatrix2d;
@@ -92,7 +100,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	_cacheDirty: boolean = false;
 	_cacheSmoothing: boolean = false;
 	_aabbDirty: boolean = false;
-	_aabb?: IgeRect;
+	_aabb: IgeRect = new IgeRect();
 	_hasParent?: Record<string, boolean>;
 	_texture?: IgeTexture;
 	_indestructible: boolean = false;
@@ -109,17 +117,24 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	_backgroundPatternTrackCamera?: boolean;
 	_backgroundPatternIsoTile?: boolean;
 	_backgroundPatternFill?: CanvasPattern | null;
-	_tileWidth?: number;
-	_tileHeight?: number;
+	_tileWidth: number = 1;
+	_tileHeight: number = 1;
+	_bounds3dPolygonDirty: boolean = false;
+	_localBounds3dPolygon?: IgePoly2d;
+	_bounds3dPolygon?: IgePoly2d;
+	_localAabb?: IgeRect;
 	_deathCallBack?: (...args: any[]) => void; // TODO: Rename this to _deathCallback (lower case B)
 	_sortChildren: (comparatorFunction: (a: IgeEntity, b: IgeEntity) => number) => void;
 
 	_specialProp: string[] = [];
 	_streamMode?: number;
+	_streamRoomId?: string;
 	_streamDataCache: string = "";
 	_streamJustCreated?: boolean;
 	_streamEmitCreated?: boolean;
 	_streamSections: string[] = [];
+	_streamSyncInterval?: number;
+	_streamSyncDelta: number = 0;
 	_streamSyncSectionInterval: Record<string, number> = {}; // Holds minimum delta before the stream section is included in the next stream data packet
 	_streamSyncSectionDelta: Record<string, number> = {}; // Stores the game time elapsed since the last time the section was included in a stream data packet
 	_timeStreamCurrentInterpolateTime?: number;
@@ -129,6 +144,8 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	_timeStreamNextData?: IgeTimeStreamPacket;
 	_streamFloatPrecision: number = 2;
 	_floatRemoveRegExp: RegExp = new RegExp("\\.00,", "g");
+	_compositeStream: boolean = false;
+	_streamControl?: (clientId: string, roomId?: string) => boolean;
 
 	constructor () {
 		super();
@@ -140,9 +157,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		// Register the IgeEntity special properties handler for
 		// serialise and de-serialise support
-		this._specialProp.push('_texture');
-		this._specialProp.push('_eventListeners');
-		this._specialProp.push('_aabb');
+		this._specialProp.push("_texture");
+		this._specialProp.push("_eventListeners");
+		this._specialProp.push("_aabb");
 
 		this._anchor = new IgePoint2d(0, 0);
 		this._renderPos = { x: 0, y: 0 };
@@ -189,21 +206,23 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Determines if the object is alive or not. The alive
-     * value is automatically set to false when the object's
-     * destroy() method is called. Useful for checking if
-     * an object that you are holding a reference to has been
-     * destroyed.
-     * @param {Boolean=} val The value to set the alive flag
-     * to.
-     * @example #Get the alive flag value
-     *     var entity = new IgeEntity();
-     *     console.log(entity.alive());
-     * @example #Set the alive flag value
-     *     var entity = new IgeEntity();
-     *     entity.alive(true);
-     * @return {*}
-     */
+	 * Determines if the object is alive or not. The alive
+	 * value is automatically set to false when the object's
+	 * destroy() method is called. Useful for checking if
+	 * an object that you are holding a reference to has been
+	 * destroyed.
+	 * @param {Boolean=} val The value to set the alive flag
+	 * to.
+	 * @example #Get the alive flag value
+	 *     var entity = new IgeEntity();
+	 *     console.log(entity.alive());
+	 * @example #Set the alive flag value
+	 *     var entity = new IgeEntity();
+	 *     entity.alive(true);
+	 * @return {*}
+	 */
+	alive(val: boolean): this;
+	alive(): boolean;
 	alive (val?: boolean) {
 		if (val !== undefined) {
 			this._alive = val;
@@ -214,23 +233,23 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the current object id. If no id is currently assigned and no
-     * id is passed to the method, it will automatically generate and assign a
-     * new id as a 16 character hexadecimal value typed as a string.
-     * @param {String=} id
-     * @example #Get the id of an entity
-     *     var entity = new IgeEntity();
-     *     console.log(entity.id());
-     * @example #Set the id of an entity
-     *     var entity = new IgeEntity();
-     *     entity.id('myNewId');
-     * @example #Set the id of an entity via chaining
-     *     var entity = new IgeEntity()
-     *         .id('myNewId');
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
-	id(): string;
+	 * Gets / sets the current object id. If no id is currently assigned and no
+	 * id is passed to the method, it will automatically generate and assign a
+	 * new id as a 16 character hexadecimal value typed as a string.
+	 * @param {String=} id
+	 * @example #Get the id of an entity
+	 *     var entity = new IgeEntity();
+	 *     console.log(entity.id());
+	 * @example #Set the id of an entity
+	 *     var entity = new IgeEntity();
+	 *     entity.id('myNewId');
+	 * @example #Set the id of an entity via chaining
+	 *     var entity = new IgeEntity()
+	 *         .id('myNewId');
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 */
 	id(id: string): this;
+	id(): string;
 	id (id?: string): this | string | undefined {
 		if (id === undefined) {
 			return this._id;
@@ -272,34 +291,34 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the arbitrary category name that the object belongs to.
-     * @param {String=} val
-     * @example #Get the category of an entity
-     *     var entity = new IgeEntity();
-     *     console.log(entity.category());
-     * @example #Set the category of an entity
-     *     var entity = new IgeEntity();
-     *     entity.category('myNewCategory');
-     * @example #Set the category of an entity via chaining
-     *     var entity = new IgeEntity()
-     *         .category('myNewCategory');
-     * @example #Get all the entities belonging to a category
-     *     var entityArray = ige.$$('categoryName');
-     * @example #Remove the category of an entity
-     *     // Set category to some name
-     *     var entity = new IgeEntity()
-     *         .category('myCategory');
-     *
-     *     // Will output "myCategory"
-     *     console.log(entity.category());
-     *
-     *     // Now remove the category
-     *     entity.category('');
-     *
-     *     // Will return ""
-     *     console.log(entity.category());
-     * @return {*}
-     */
+	 * Gets / sets the arbitrary category name that the object belongs to.
+	 * @param {String=} val
+	 * @example #Get the category of an entity
+	 *     var entity = new IgeEntity();
+	 *     console.log(entity.category());
+	 * @example #Set the category of an entity
+	 *     var entity = new IgeEntity();
+	 *     entity.category('myNewCategory');
+	 * @example #Set the category of an entity via chaining
+	 *     var entity = new IgeEntity()
+	 *         .category('myNewCategory');
+	 * @example #Get all the entities belonging to a category
+	 *     var entityArray = ige.$$('categoryName');
+	 * @example #Remove the category of an entity
+	 *     // Set category to some name
+	 *     var entity = new IgeEntity()
+	 *         .category('myCategory');
+	 *
+	 *     // Will output "myCategory"
+	 *     console.log(entity.category());
+	 *
+	 *     // Now remove the category
+	 *     entity.category('');
+	 *
+	 *     // Will return ""
+	 *     console.log(entity.category());
+	 * @return {*}
+	 */
 	category(): string | undefined;
 	category(val: string): this;
 	category (val?: string) {
@@ -323,27 +342,27 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		// Check the category is not a blank string
 		if (val) {
 			// Now register this object with the category it has been assigned
-			ige.categoryRegister(this);
+			ige.categoryRegister.add(this);
 		}
 		return this;
 	}
 
 	/**
-     * Gets / sets the boolean flag determining if this object should have
-     * its bounds drawn when the bounds for all objects are being drawn.
-     * In order for bounds to be drawn the viewport the object is being drawn
-     * to must also have draw bounds enabled.
-     * @param {Boolean} val
-     * @example #Enable draw bounds
-     *     var entity = new IgeEntity();
-     *     entity.drawBounds(true);
-     * @example #Disable draw bounds
-     *     var entity = new IgeEntity();
-     *     entity.drawBounds(false);
-     * @example #Get the current flag value
-     *     console.log(entity.drawBounds());
-     * @return {*}
-     */
+	 * Gets / sets the boolean flag determining if this object should have
+	 * its bounds drawn when the bounds for all objects are being drawn.
+	 * In order for bounds to be drawn the viewport the object is being drawn
+	 * to must also have draw bounds enabled.
+	 * @param {Boolean} val
+	 * @example #Enable draw bounds
+	 *     var entity = new IgeEntity();
+	 *     entity.drawBounds(true);
+	 * @example #Disable draw bounds
+	 *     var entity = new IgeEntity();
+	 *     entity.drawBounds(false);
+	 * @example #Get the current flag value
+	 *     console.log(entity.drawBounds());
+	 * @return {*}
+	 */
 	drawBounds(): boolean;
 	drawBounds(id: boolean): this;
 	drawBounds (val?: boolean) {
@@ -356,20 +375,20 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the boolean flag determining if this object should have
-     * its bounds data drawn when the bounds for all objects are being drawn.
-     * Bounds data includes the object ID and its current depth etc.
-     * @param {Boolean} val
-     * @example #Enable draw bounds data
-     *     var entity = new IgeEntity();
-     *     entity.drawBoundsData(true);
-     * @example #Disable draw bounds data
-     *     var entity = new IgeEntity();
-     *     entity.drawBoundsData(false);
-     * @example #Get the current flag value
-     *     console.log(entity.drawBoundsData());
-     * @return {*}
-     */
+	 * Gets / sets the boolean flag determining if this object should have
+	 * its bounds data drawn when the bounds for all objects are being drawn.
+	 * Bounds data includes the object ID and its current depth etc.
+	 * @param {Boolean} val
+	 * @example #Enable draw bounds data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawBoundsData(true);
+	 * @example #Disable draw bounds data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawBoundsData(false);
+	 * @example #Get the current flag value
+	 *     console.log(entity.drawBoundsData());
+	 * @return {*}
+	 */
 	drawBoundsData(): boolean;
 	drawBoundsData(val: boolean): this;
 	drawBoundsData (val?: boolean) {
@@ -382,19 +401,19 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the boolean flag determining if this object should have
-     * its mouse position drawn, usually for debug purposes.
-     * @param {Boolean=} val
-     * @example #Enable draw mouse position data
-     *     var entity = new IgeEntity();
-     *     entity.drawMouse(true);
-     * @example #Disable draw mouse position data
-     *     var entity = new IgeEntity();
-     *     entity.drawMouse(false);
-     * @example #Get the current flag value
-     *     console.log(entity.drawMouse());
-     * @return {*}
-     */
+	 * Gets / sets the boolean flag determining if this object should have
+	 * its mouse position drawn, usually for debug purposes.
+	 * @param {Boolean=} val
+	 * @example #Enable draw mouse position data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawMouse(true);
+	 * @example #Disable draw mouse position data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawMouse(false);
+	 * @example #Get the current flag value
+	 *     console.log(entity.drawMouse());
+	 * @return {*}
+	 */
 	drawMouse(): boolean;
 	drawMouse(val: boolean): this;
 	drawMouse (val?: boolean) {
@@ -407,21 +426,21 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the boolean flag determining if this object should have
-     * its extra mouse data drawn for debug purposes. For instance, on tile maps
-     * (IgeTileMap2d) instances, when enabled you will see the tile x and y
-     * co-ordinates currently being hovered over by the mouse.
-     * @param {Boolean=} val
-     * @example #Enable draw mouse data
-     *     var entity = new IgeEntity();
-     *     entity.drawMouseData(true);
-     * @example #Disable draw mouse data
-     *     var entity = new IgeEntity();
-     *     entity.drawMouseData(false);
-     * @example #Get the current flag value
-     *     console.log(entity.drawMouseData());
-     * @return {*}
-     */
+	 * Gets / sets the boolean flag determining if this object should have
+	 * its extra mouse data drawn for debug purposes. For instance, on tile maps
+	 * (IgeTileMap2d) instances, when enabled you will see the tile x and y
+	 * co-ordinates currently being hovered over by the mouse.
+	 * @param {Boolean=} val
+	 * @example #Enable draw mouse data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawMouseData(true);
+	 * @example #Disable draw mouse data
+	 *     var entity = new IgeEntity();
+	 *     entity.drawMouseData(false);
+	 * @example #Get the current flag value
+	 *     console.log(entity.drawMouseData());
+	 * @return {*}
+	 */
 	drawMouseData(): boolean;
 	drawMouseData(val: boolean): this;
 	drawMouseData (val?: boolean) {
@@ -434,26 +453,26 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Returns the object's parent object (the object that
-     * it is mounted to).
-     * @param {String=} id Optional, if present will scan up
-     * the parent chain until a parent with the matching id is
-     * found. If none is found, returns undefined.
-     * @example #Get the object parent
-     *     // Create a couple of entities and give them ids
-     *     var entity1 = new IgeEntity().id('entity1'),
-     *         entity2 = new IgeEntity().id('entity2');
-     *
-     *     // Mount entity2 to entity1
-     *     entity2.mount(entity1);
-     *
-     *     // Get the parent of entity2 (which is entity1)
-     *     var parent = entity2.parent();
-     *
-     *     // Log the parent's id (will output "entity1")
-     *     console.log(parent.id());
-     * @return {*}
-     */
+	 * Returns the object's parent object (the object that
+	 * it is mounted to).
+	 * @param {String=} id Optional, if present will scan up
+	 * the parent chain until a parent with the matching id is
+	 * found. If none is found, returns undefined.
+	 * @example #Get the object parent
+	 *     // Create a couple of entities and give them ids
+	 *     var entity1 = new IgeEntity().id('entity1'),
+	 *         entity2 = new IgeEntity().id('entity2');
+	 *
+	 *     // Mount entity2 to entity1
+	 *     entity2.mount(entity1);
+	 *
+	 *     // Get the parent of entity2 (which is entity1)
+	 *     var parent = entity2.parent();
+	 *
+	 *     // Log the parent's id (will output "entity1")
+	 *     console.log(parent.id());
+	 * @return {*}
+	 */
 	parent(): IgeEntity | IgeTileMap2d | null | undefined;
 	parent(id: string): IgeEntity | null;
 	parent (id?: string): IgeEntity | IgeTileMap2d | null {
@@ -473,38 +492,38 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Returns the object's children as an array of objects.
-     * @example #Get the child objects array
-     *     // Create a couple of entities and give them ids
-     *     var entity1 = new IgeEntity().id('entity1'),
-     *         entity2 = new IgeEntity().id('entity2');
-     *
-     *     // Mount entity2 to entity1
-     *     entity2.mount(entity1);
-     *
-     *     // Get the children array entity1
-     *     var childArray = entity1.children();
-     *
-     *     // Log the child array contents (will contain entity2)
-     *     console.log(childArray);
-     * @return {Array} The array of child objects.
-     */
+	 * Returns the object's children as an array of objects.
+	 * @example #Get the child objects array
+	 *     // Create a couple of entities and give them ids
+	 *     var entity1 = new IgeEntity().id('entity1'),
+	 *         entity2 = new IgeEntity().id('entity2');
+	 *
+	 *     // Mount entity2 to entity1
+	 *     entity2.mount(entity1);
+	 *
+	 *     // Get the children array entity1
+	 *     var childArray = entity1.children();
+	 *
+	 *     // Log the child array contents (will contain entity2)
+	 *     console.log(childArray);
+	 * @return {Array} The array of child objects.
+	 */
 	children () {
 		return this._children;
 	}
 
 	/**
-     * Mounts this object to the passed object in the scenegraph.
-     * @param {IgeEntity} obj
-     * @example #Mount an entity to another entity
-     *     // Create a couple of entities and give them ids
-     *     var entity1 = new IgeEntity().id('entity1'),
-     *         entity2 = new IgeEntity().id('entity2');
-     *
-     *     // Mount entity2 to entity1
-     *     entity2.mount(entity1);
-     * @return {*} Returns this on success or false on failure.
-     */
+	 * Mounts this object to the passed object in the scenegraph.
+	 * @param {IgeEntity} obj
+	 * @example #Mount an entity to another entity
+	 *     // Create a couple of entities and give them ids
+	 *     var entity1 = new IgeEntity().id('entity1'),
+	 *         entity2 = new IgeEntity().id('entity2');
+	 *
+	 *     // Mount entity2 to entity1
+	 *     entity2.mount(entity1);
+	 * @return {*} Returns this on success or false on failure.
+	 */
 	mount (obj: IgeEntity): this {
 		if (obj === this) {
 			this.log("Cannot mount an object to itself!", "error");
@@ -569,19 +588,19 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Unmounts this object from its parent object in the scenegraph.
-     * @example #Unmount an entity from another entity
-     *     // Create a couple of entities and give them ids
-     *     var entity1 = new IgeEntity().id('entity1'),
-     *         entity2 = new IgeEntity().id('entity2');
-     *
-     *     // Mount entity2 to entity1
-     *     entity2.mount(entity1);
-     *
-     *     // Now unmount entity2 from entity1
-     *     entity2.unMount();
-     * @return {*} Returns this on success or false on failure.
-     */
+	 * Unmounts this object from its parent object in the scenegraph.
+	 * @example #Unmount an entity from another entity
+	 *     // Create a couple of entities and give them ids
+	 *     var entity1 = new IgeEntity().id('entity1'),
+	 *         entity2 = new IgeEntity().id('entity2');
+	 *
+	 *     // Mount entity2 to entity1
+	 *     entity2.mount(entity1);
+	 *
+	 *     // Now unmount entity2 from entity1
+	 *     entity2.unMount();
+	 * @return {*} Returns this on success or false on failure.
+	 */
 	unMount () {
 		if (!this._parent) {
 			return false;
@@ -608,15 +627,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Determines if the object has a parent up the scenegraph whose
-     * id matches the one passed. Will traverse each parent object
-     * checking if the id matches. This information will be cached when
-     * first called and can be refreshed by setting the "fresh" parameter
-     * to true.
-     * @param {String} parentId The id of the parent to check for.
-     * @param {Boolean=} fresh If true will force a full check instead of
-     * using the cached value from an earlier check.
-     */
+	 * Determines if the object has a parent up the scenegraph whose
+	 * id matches the one passed. Will traverse each parent object
+	 * checking if the id matches. This information will be cached when
+	 * first called and can be refreshed by setting the "fresh" parameter
+	 * to true.
+	 * @param {String} parentId The id of the parent to check for.
+	 * @param {Boolean=} fresh If true will force a full check instead of
+	 * using the cached value from an earlier check.
+	 */
 	hasParent (parentId: string, fresh = false): boolean {
 		let bool = false;
 
@@ -640,8 +659,8 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Clones the object and all its children and returns a new object.
-     */
+	 * Clones the object and all its children and returns a new object.
+	 */
 	clone (options?: Record<string, boolean>) {
 		// Make sure we have an options object
 		if (options === undefined) {
@@ -664,20 +683,20 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the indestructible flag. If set to true, the object will
-     * not be destroyed even if a call to destroy() method is made.
-     * @param {Number=} val
-     * @example #Set an entity to indestructible
-     *     var entity = new IgeEntity()
-     *         .indestructible(true);
-     * @example #Set an entity to destructible
-     *     var entity = new IgeEntity()
-     *         .indestructible(false);
-     * @example #Get an entity's indestructible flag value
-     *     var entity = new IgeEntity()
-     *     console.log(entity.indestructible());
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
+	 * Gets / sets the indestructible flag. If set to true, the object will
+	 * not be destroyed even if a call to destroy() method is made.
+	 * @param {Number=} val
+	 * @example #Set an entity to indestructible
+	 *     var entity = new IgeEntity()
+	 *         .indestructible(true);
+	 * @example #Set an entity to destructible
+	 *     var entity = new IgeEntity()
+	 *         .indestructible(false);
+	 * @example #Get an entity's indestructible flag value
+	 *     var entity = new IgeEntity()
+	 *     console.log(entity.indestructible());
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 */
 	indestructible(): boolean;
 	indestructible(val: boolean): this;
 	indestructible (val?: boolean): boolean | this {
@@ -690,47 +709,47 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the current entity layer. This affects how the entity is depth-sorted
-     * against other entities of the same parent. Please note that entities are first sorted
-     * by their layer and then by their depth, and only entities of the same layer will be
-     * sorted against each other by their depth values.
-     * @param {Number=} val
-     * @example #Set an entity's layer to 22
-     *     var entity = new IgeEntity()
-     *         .layer(22);
-     * @example #Get an entity's layer value
-     *     var entity = new IgeEntity()
-     *     console.log(entity.layer());
-     * @example #How layers and depths are handled together
-     *     var entity1 = new IgeEntity(),
-     *         entity2 = new IgeEntity(),
-     *         entity3 = new IgeEntity();
-     *
-     *     // Set entity1 to at layer zero and depth 100
-     *     entity1.layer(0)
-     *         .depth(100);
-     *
-     *     // Set entity2 and 3 to be at layer 1
-     *     entity2.layer(1);
-     *     entity3.layer(1);
-     *
-     *     // Set entity3 to have a higher depth than entity2
-     *     entity2.depth(0);
-     *     entity3.depth(1);
-     *
-     *     // The engine sorts first based on layer from lowest to highest
-     *     // and then within each layer, by depth from lowest to highest.
-     *     // This means that entity1 will be drawn before entity 2 and 3
-     *     // because even though its depth is higher, it is not on the same
-     *     // layer as entity 2 and 3.
-     *
-     *     // Based on the layers and depths we have assigned, here
-     *     // is how the engine will sort the draw order of the entities
-     *     // entity1
-     *     // entity2
-     *     // entity3
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
+	 * Gets / sets the current entity layer. This affects how the entity is depth-sorted
+	 * against other entities of the same parent. Please note that entities are first sorted
+	 * by their layer and then by their depth, and only entities of the same layer will be
+	 * sorted against each other by their depth values.
+	 * @param {Number=} val
+	 * @example #Set an entity's layer to 22
+	 *     var entity = new IgeEntity()
+	 *         .layer(22);
+	 * @example #Get an entity's layer value
+	 *     var entity = new IgeEntity()
+	 *     console.log(entity.layer());
+	 * @example #How layers and depths are handled together
+	 *     var entity1 = new IgeEntity(),
+	 *         entity2 = new IgeEntity(),
+	 *         entity3 = new IgeEntity();
+	 *
+	 *     // Set entity1 to at layer zero and depth 100
+	 *     entity1.layer(0)
+	 *         .depth(100);
+	 *
+	 *     // Set entity2 and 3 to be at layer 1
+	 *     entity2.layer(1);
+	 *     entity3.layer(1);
+	 *
+	 *     // Set entity3 to have a higher depth than entity2
+	 *     entity2.depth(0);
+	 *     entity3.depth(1);
+	 *
+	 *     // The engine sorts first based on layer from lowest to highest
+	 *     // and then within each layer, by depth from lowest to highest.
+	 *     // This means that entity1 will be drawn before entity 2 and 3
+	 *     // because even though its depth is higher, it is not on the same
+	 *     // layer as entity 2 and 3.
+	 *
+	 *     // Based on the layers and depths we have assigned, here
+	 *     // is how the engine will sort the draw order of the entities
+	 *     // entity1
+	 *     // entity2
+	 *     // entity3
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 */
 	layer(): number;
 	layer(val: number): this;
 	layer (val?: number): number | this {
@@ -743,47 +762,47 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the current render depth of the object (higher depths
-     * are drawn over lower depths). Please note that entities are first sorted
-     * by their layer and then by their depth, and only entities of the same layer will be
-     * sorted against each other by their depth values.
-     * @param {Number=} val
-     * @example #Set an entity's depth to 1
-     *     var entity = new IgeEntity()
-     *         .depth(1);
-     * @example #Get an entity's depth value
-     *     var entity = new IgeEntity()
-     *     console.log(entity.depth());
-     * @example #How layers and depths are handled together
-     *     var entity1 = new IgeEntity(),
-     *         entity2 = new IgeEntity(),
-     *         entity3 = new IgeEntity();
-     *
-     *     // Set entity1 to at layer zero and depth 100
-     *     entity1.layer(0)
-     *         .depth(100);
-     *
-     *     // Set entity2 and 3 to be at layer 1
-     *     entity2.layer(1);
-     *     entity3.layer(1);
-     *
-     *     // Set entity3 to have a higher depth than entity2
-     *     entity2.depth(0);
-     *     entity3.depth(1);
-     *
-     *     // The engine sorts first based on layer from lowest to highest
-     *     // and then within each layer, by depth from lowest to highest.
-     *     // This means that entity1 will be drawn before entity 2 and 3
-     *     // because even though its depth is higher, it is not on the same
-     *     // layer as entity 2 and 3.
-     *
-     *     // Based on the layers and depths we have assigned, here
-     *     // is how the engine will sort the draw order of the entities
-     *     // entity1
-     *     // entity2
-     *     // entity3
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
+	 * Gets / sets the current render depth of the object (higher depths
+	 * are drawn over lower depths). Please note that entities are first sorted
+	 * by their layer and then by their depth, and only entities of the same layer will be
+	 * sorted against each other by their depth values.
+	 * @param {Number=} val
+	 * @example #Set an entity's depth to 1
+	 *     var entity = new IgeEntity()
+	 *         .depth(1);
+	 * @example #Get an entity's depth value
+	 *     var entity = new IgeEntity()
+	 *     console.log(entity.depth());
+	 * @example #How layers and depths are handled together
+	 *     var entity1 = new IgeEntity(),
+	 *         entity2 = new IgeEntity(),
+	 *         entity3 = new IgeEntity();
+	 *
+	 *     // Set entity1 to at layer zero and depth 100
+	 *     entity1.layer(0)
+	 *         .depth(100);
+	 *
+	 *     // Set entity2 and 3 to be at layer 1
+	 *     entity2.layer(1);
+	 *     entity3.layer(1);
+	 *
+	 *     // Set entity3 to have a higher depth than entity2
+	 *     entity2.depth(0);
+	 *     entity3.depth(1);
+	 *
+	 *     // The engine sorts first based on layer from lowest to highest
+	 *     // and then within each layer, by depth from lowest to highest.
+	 *     // This means that entity1 will be drawn before entity 2 and 3
+	 *     // because even though its depth is higher, it is not on the same
+	 *     // layer as entity 2 and 3.
+	 *
+	 *     // Based on the layers and depths we have assigned, here
+	 *     // is how the engine will sort the draw order of the entities
+	 *     // entity1
+	 *     // entity2
+	 *     // entity3
+	 * @return {*} Returns this when setting the value or the current value if none is specified.
+	 */
 	depth(): number;
 	depth(val: number): this;
 	depth (val?: number) {
@@ -796,10 +815,10 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Loops through all child objects of this object and destroys them
-     * by calling each child's destroy() method then clears the object's
-     * internal _children array.
-     */
+	 * Loops through all child objects of this object and destroys them
+	 * by calling each child's destroy() method then clears the object's
+	 * internal _children array.
+	 */
 	destroyChildren () {
 		const arr = this._children;
 
@@ -817,18 +836,18 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets if this object should be positioned isometrically
-     * or in 2d.
-     * @param {Boolean} val Set to true to position this object in
-     * isometric space or false to position it in 2d space.
-     * @example #Set the positioning mode to isometric
-     *     var entity = new IgeEntity()
-     *         .isometric(true);
-     * @example #Set the positioning mode to 2d
-     *     var entity = new IgeEntity()
-     *         .isometric(false);
-     * @return {*}
-     */
+	 * Gets / sets if this object should be positioned isometrically
+	 * or in 2d.
+	 * @param {Boolean} val Set to true to position this object in
+	 * isometric space or false to position it in 2d space.
+	 * @example #Set the positioning mode to isometric
+	 *     var entity = new IgeEntity()
+	 *         .isometric(true);
+	 * @example #Set the positioning mode to 2d
+	 *     var entity = new IgeEntity()
+	 *         .isometric(false);
+	 * @return {*}
+	 */
 	isometric(): boolean;
 	isometric(val: boolean): this;
 	isometric (val?: boolean): boolean | this {
@@ -841,20 +860,20 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets if objects mounted to this object should be positioned
-     * and depth-sorted in an isometric fashion or a 2d fashion.
-     * @param {Boolean=} val Set to true to enabled isometric positioning
-     * and depth sorting of objects mounted to this object, or false to
-     * enable 2d positioning and depth-sorting of objects mounted to this
-     * object.
-     * @example #Set children to be positioned and depth sorted in 2d
-     *     var entity = new IgeEntity()
-     *         .isometricMounts(false);
-     * @example #Set children to be positioned and depth sorted in isometric
-     *     var entity = new IgeEntity()
-     *         .isometricMounts(true);
-     * @return {*}
-     */
+	 * Gets / sets if objects mounted to this object should be positioned
+	 * and depth-sorted in an isometric fashion or a 2d fashion.
+	 * @param {Boolean=} val Set to true to enabled isometric positioning
+	 * and depth sorting of objects mounted to this object, or false to
+	 * enable 2d positioning and depth-sorting of objects mounted to this
+	 * object.
+	 * @example #Set children to be positioned and depth sorted in 2d
+	 *     var entity = new IgeEntity()
+	 *         .isometricMounts(false);
+	 * @example #Set children to be positioned and depth sorted in isometric
+	 *     var entity = new IgeEntity()
+	 *         .isometricMounts(true);
+	 * @return {*}
+	 */
 	isometricMounts(): boolean;
 	isometricMounts(val: boolean): this;
 	isometricMounts (val?: boolean) {
@@ -867,24 +886,24 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the depth sort mode that is used when
-     * depth sorting this object's children against each other. This
-     * mode only applies if this object's mount mode is isometric,
-     * as set by calling isometricMounts(true). If the mount mode is
-     * 2d, the depth sorter will use a very fast 2d depth sort that
-     * does not use 3d bounds at all.
-     * @param {Number=} val The mode to use when depth sorting
-     * this object's children, given as an integer value.
-     * @example #Turn off all depth sorting for this object's children
-     *     entity.depthSortMode(-1);
-     * @example #Use 3d bounds when sorting this object's children
-     *     entity.depthSortMode(0);
-     * @example #Use 3d bounds optimised for mostly cube-shaped bounds when sorting this object's children
-     *     entity.depthSortMode(1);
-     * @example #Use 3d bounds optimised for all cube-shaped bounds when sorting this object's children
-     *     entity.depthSortMode(2);
-     * @return {*}
-     */
+	 * Gets / sets the depth sort mode that is used when
+	 * depth sorting this object's children against each other. This
+	 * mode only applies if this object's mount mode is isometric,
+	 * as set by calling isometricMounts(true). If the mount mode is
+	 * 2d, the depth sorter will use a very fast 2d depth sort that
+	 * does not use 3d bounds at all.
+	 * @param {Number=} val The mode to use when depth sorting
+	 * this object's children, given as an integer value.
+	 * @example #Turn off all depth sorting for this object's children
+	 *     entity.depthSortMode(-1);
+	 * @example #Use 3d bounds when sorting this object's children
+	 *     entity.depthSortMode(0);
+	 * @example #Use 3d bounds optimised for mostly cube-shaped bounds when sorting this object's children
+	 *     entity.depthSortMode(1);
+	 * @example #Use 3d bounds optimised for all cube-shaped bounds when sorting this object's children
+	 *     entity.depthSortMode(2);
+	 * @return {*}
+	 */
 	depthSortMode(): number;
 	depthSortMode(val: number): this;
 	depthSortMode (val?: number) {
@@ -897,8 +916,8 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Sorts the _children array by the layer and then depth of each object.
-     */
+	 * Sorts the _children array by the layer and then depth of each object.
+	 */
 	depthSortChildren () {
 		if (this._depthSortMode === -1) {
 			return;
@@ -1107,16 +1126,16 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Processes the updates required each render frame. Any code in the update()
-     * method will be called ONCE for each render frame BEFORE the tick() method.
-     * This differs from the tick() method in that the tick method can be called
-     * multiple times during a render frame depending on how many viewports your
-     * simulation is being rendered to, whereas the update() method is only called
-     * once. It is therefore the perfect place to put code that will control your
-     * entity's motion, AI etc.
-     * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
-     * @param {Number} tickDelta The delta between the last tick time and this one.
-     */
+	 * Processes the updates required each render frame. Any code in the update()
+	 * method will be called ONCE for each render frame BEFORE the tick() method.
+	 * This differs from the tick() method in that the tick method can be called
+	 * multiple times during a render frame depending on how many viewports your
+	 * simulation is being rendered to, whereas the update() method is only called
+	 * once. It is therefore the perfect place to put code that will control your
+	 * entity's motion, AI etc.
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
+	 * @param {Number} tickDelta The delta between the last tick time and this one.
+	 */
 	update (ctx: CanvasRenderingContext2D, tickDelta: number) {
 		// Check if the entity should still exist
 		if (this._deathTime !== undefined && this._deathTime <= ige.engine._tickStart) {
@@ -1134,7 +1153,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		// Check that the entity has been born
 		if (ige.engine._currentTime >= this._bornTime) {
 			// Remove the stream data cache
-			delete this._streamDataCache;
+			this._streamDataCache = "";
 
 			// Process any behaviours assigned to the entity
 			this._processUpdateBehaviours(ctx, tickDelta);
@@ -1198,11 +1217,11 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Handles screen resize events. Calls the _resizeEvent method of
-     * every child object mounted to this object.
-     * @param event
-     * @private
-     */
+	 * Handles screen resize events. Calls the _resizeEvent method of
+	 * every child object mounted to this object.
+	 * @param event
+	 * @private
+	 */
 	_resizeEvent (event?: Event) {
 		const arr = this._children;
 
@@ -1218,26 +1237,26 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Called when a child object is un-mounted from this object.
-     * @param obj
-     * @private
-     */
+	 * Called when a child object is un-mounted from this object.
+	 * @param obj
+	 * @private
+	 */
 	_childUnMounted (obj: IgeEntity) {
 	}
 
 	/**
-     * Called when this object is mounted to an object.
-     * @param obj
-     * @private
-     */
+	 * Called when this object is mounted to an object.
+	 * @param obj
+	 * @private
+	 */
 	_mounted (obj: IgeEntity) {
 	}
 
 	/**
-     * Called when this object is un-mounted from its parent.
-     * @param obj
-     * @private
-     */
+	 * Called when this object is un-mounted from its parent.
+	 * @param obj
+	 * @private
+	 */
 	_unMounted (obj: IgeEntity | IgeTileMap2d) {
 	}
 
@@ -1246,15 +1265,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets or sets the function used to sort children for example in depth sorting. This allows us to optionally use
-     * a stable sort (for browsers where the native implementation is not stable) or something more specific such as
-     * insertion sort for a speedup when we know data is going to be already mostly sorted.
-     * @param {Function=} val Sorting function - must operate on this._children and sort the array in place.
-     * @example #Set the child sorting algorithm
-     *     var entity = new IgeEntity();
-     *     entity.childSortingAlgorithm(function (compareFn) { this._children.sort(compareFn); });
-     * @return {*}
-     */
+	 * Gets or sets the function used to sort children for example in depth sorting. This allows us to optionally use
+	 * a stable sort (for browsers where the native implementation is not stable) or something more specific such as
+	 * insertion sort for a speedup when we know data is going to be already mostly sorted.
+	 * @param {Function=} val Sorting function - must operate on this._children and sort the array in place.
+	 * @example #Set the child sorting algorithm
+	 *     var entity = new IgeEntity();
+	 *     entity.childSortingAlgorithm(function (compareFn) { this._children.sort(compareFn); });
+	 * @return {*}
+	 */
 	childSortingAlgorithm (val: (comparatorFunction: (a: IgeEntity, b: IgeEntity) => number) => void) {
 		if (val !== undefined) {
 			this._sortChildren = val;
@@ -1265,26 +1284,26 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Adds a behaviour to the object's active behaviour list.
-     * @param {String} id
-     * @param {Function} behaviour
-     * @param {Boolean=} duringTick If true, will execute the behaviour
-     * during the tick() method instead of the update() method.
-     * @example #Add a behaviour with the id "myBehaviour"
-     *     var entity = new IgeEntity();
-     *     entity.addBehaviour('myBehaviour', function () {
-     *         // Code here will execute during each engine update for
-     *         // this entity. I can access the entity via the "this"
-     *         // keyword such as:
-     *         this._somePropertyOfTheEntity = 'moo';
-     *     });
-     *
-     *     // Now since each update we are setting _somePropertyOfTheEntity
-     *     // to equal "moo" we can console log the property and get
-     *     // the value as "moo"
-     *     console.log(entity._somePropertyOfTheEntity);
-     * @return {*} Returns this on success or false on failure.
-     */
+	 * Adds a behaviour to the object's active behaviour list.
+	 * @param {String} id
+	 * @param {Function} behaviour
+	 * @param {Boolean=} duringTick If true, will execute the behaviour
+	 * during the tick() method instead of the update() method.
+	 * @example #Add a behaviour with the id "myBehaviour"
+	 *     var entity = new IgeEntity();
+	 *     entity.addBehaviour('myBehaviour', function () {
+	 *         // Code here will execute during each engine update for
+	 *         // this entity. I can access the entity via the "this"
+	 *         // keyword such as:
+	 *         this._somePropertyOfTheEntity = 'moo';
+	 *     });
+	 *
+	 *     // Now since each update we are setting _somePropertyOfTheEntity
+	 *     // to equal "moo" we can console log the property and get
+	 *     // the value as "moo"
+	 *     console.log(entity._somePropertyOfTheEntity);
+	 * @return {*} Returns this on success or false on failure.
+	 */
 	addBehaviour (id: string, behaviour: (...args: any[]) => any, duringTick = false) {
 		if (duringTick) {
 			this._tickBehaviours = this._tickBehaviours || [];
@@ -1304,23 +1323,23 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Removes a behaviour to the object's active behaviour list by its id.
-     * @param {String} id
-     * @param {Boolean=} duringTick If true will look to remove the behaviour
-     * from the tick method rather than the update method.
-     * @example #Remove a behaviour with the id "myBehaviour"
-     *     var entity = new IgeEntity();
-     *     entity.addBehaviour('myBehaviour', function () {
-     *         // Code here will execute during each engine update for
-     *         // this entity. I can access the entity via the "this"
-     *         // keyword such as:
-     *         this._somePropertyOfTheEntity = 'moo';
-     *     });
-     *
-     *     // Now remove the "myBehaviour" behaviour
-     *     entity.removeBehaviour('myBehaviour');
-     * @return {*} Returns this on success or false on failure.
-     */
+	 * Removes a behaviour to the object's active behaviour list by its id.
+	 * @param {String} id
+	 * @param {Boolean=} duringTick If true will look to remove the behaviour
+	 * from the tick method rather than the update method.
+	 * @example #Remove a behaviour with the id "myBehaviour"
+	 *     var entity = new IgeEntity();
+	 *     entity.addBehaviour('myBehaviour', function () {
+	 *         // Code here will execute during each engine update for
+	 *         // this entity. I can access the entity via the "this"
+	 *         // keyword such as:
+	 *         this._somePropertyOfTheEntity = 'moo';
+	 *     });
+	 *
+	 *     // Now remove the "myBehaviour" behaviour
+	 *     entity.removeBehaviour('myBehaviour');
+	 * @return {*} Returns this on success or false on failure.
+	 */
 	removeBehaviour (id: string, duringTick = false) {
 		let arr, arrCount;
 
@@ -1345,23 +1364,23 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Checks if the object has the specified behaviour already added to it.
-     * @param {String} id
-     * @param {Boolean=} duringTick If true will look to remove the behaviour
-     * from the tick method rather than the update method.
-     * @example #Check for a behaviour with the id "myBehaviour"
-     *     var entity = new IgeEntity();
-     *     entity.addBehaviour('myBehaviour', function () {
-     *         // Code here will execute during each engine update for
-     *         // this entity. I can access the entity via the "this"
-     *         // keyword such as:
-     *         this._somePropertyOfTheEntity = 'moo';
-     *     });
-     *
-     *     // Now check for the "myBehaviour" behaviour
-     *     console.log(entity.hasBehaviour('myBehaviour')); // Will log "true"
-     * @return {*} Returns this on success or false on failure.
-     */
+	 * Checks if the object has the specified behaviour already added to it.
+	 * @param {String} id
+	 * @param {Boolean=} duringTick If true will look to remove the behaviour
+	 * from the tick method rather than the update method.
+	 * @example #Check for a behaviour with the id "myBehaviour"
+	 *     var entity = new IgeEntity();
+	 *     entity.addBehaviour('myBehaviour', function () {
+	 *         // Code here will execute during each engine update for
+	 *         // this entity. I can access the entity via the "this"
+	 *         // keyword such as:
+	 *         this._somePropertyOfTheEntity = 'moo';
+	 *     });
+	 *
+	 *     // Now check for the "myBehaviour" behaviour
+	 *     console.log(entity.hasBehaviour('myBehaviour')); // Will log "true"
+	 * @return {*} Returns this on success or false on failure.
+	 */
 	hasBehaviour (id?: string, duringTick = false) {
 		if (id !== undefined) {
 			let arr, arrCount;
@@ -1388,9 +1407,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Calls each behaviour method for the object.
-     * @private
-     */
+	 * Calls each behaviour method for the object.
+	 * @private
+	 */
 	_processUpdateBehaviours (...args: any[]) {
 		const arr = this._updateBehaviours;
 
@@ -1403,8 +1422,8 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Calls each behaviour method for the object.
-     */
+	 * Calls each behaviour method for the object.
+	 */
 	_processTickBehaviours (...args: any[]) {
 		const arr = this._tickBehaviours;
 
@@ -1440,65 +1459,65 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	/** ======================================================================================================== **/
 
 	/**
-     * Sets the entity as visible and able to be interacted with.
-     * @example #Show a hidden entity
-     *     entity.show();
-     * @return {*} The object this method was called from to allow
-     * method chaining.
-     */
+	 * Sets the entity as visible and able to be interacted with.
+	 * @example #Show a hidden entity
+	 *     entity.show();
+	 * @return {*} The object this method was called from to allow
+	 * method chaining.
+	 */
 	show () {
 		this._hidden = false;
 		return this;
 	}
 
 	/**
-     * Sets the entity as hidden and cannot be interacted with.
-     * @example #Hide a visible entity
-     *     entity.hide();
-     * @return {*} The object this method was called from to allow
-     * method chaining.
-     */
+	 * Sets the entity as hidden and cannot be interacted with.
+	 * @example #Hide a visible entity
+	 *     entity.hide();
+	 * @return {*} The object this method was called from to allow
+	 * method chaining.
+	 */
 	hide () {
 		this._hidden = true;
 		return this;
 	}
 
 	/**
-     * Checks if the entity is visible.
-     * @returns {boolean} True if the entity is visible.
-     */
+	 * Checks if the entity is visible.
+	 * @returns {boolean} True if the entity is visible.
+	 */
 	isVisible () {
 		return !this._hidden;
 	}
 
 	/**
-     * Checks if the entity is hidden.
-     * @returns {boolean} True if the entity is hidden.
-     */
+	 * Checks if the entity is hidden.
+	 * @returns {boolean} True if the entity is hidden.
+	 */
 	isHidden () {
 		return this._hidden;
 	}
 
 	/**
-     * Gets / sets the cache flag that determines if the entity's
-     * texture rendering output should be stored on an off-screen
-     * canvas instead of calling the texture.render() method each
-     * tick. Useful for expensive texture calls such as rendering
-     * fonts etc. If enabled, this will automatically disable advanced
-     * composite caching on this entity with a call to
-     * compositeCache(false).
-     * @param {Boolean=} val True to enable caching, false to
-     * disable caching.
-     * @param {Boolean} propagateToChildren If true, calls cache()
-     * on each child and all their children with the same `val`.
-     * @example #Enable entity caching
-     *     entity.cache(true);
-     * @example #Disable entity caching
-     *     entity.cache(false);
-     * @example #Get caching flag value
-     *     var val = entity.cache();
-     * @return {*}
-     */
+	 * Gets / sets the cache flag that determines if the entity's
+	 * texture rendering output should be stored on an off-screen
+	 * canvas instead of calling the texture.render() method each
+	 * tick. Useful for expensive texture calls such as rendering
+	 * fonts etc. If enabled, this will automatically disable advanced
+	 * composite caching on this entity with a call to
+	 * compositeCache(false).
+	 * @param {Boolean=} val True to enable caching, false to
+	 * disable caching.
+	 * @param {Boolean} propagateToChildren If true, calls cache()
+	 * on each child and all their children with the same `val`.
+	 * @example #Enable entity caching
+	 *     entity.cache(true);
+	 * @example #Disable entity caching
+	 *     entity.cache(false);
+	 * @example #Get caching flag value
+	 *     var val = entity.cache();
+	 * @return {*}
+	 */
 	cache (val?: boolean, propagateToChildren = false) {
 		if (val === undefined) {
 			return this._cache;
@@ -1542,12 +1561,12 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * When using the caching system, this boolean determines if the
-     * cache canvas should have image smoothing enabled or not. If
-     * not set, the ige global smoothing setting will be used instead.
-     * @param {Boolean=} val True to enable smoothing, false to disable.
-     * @returns {*}
-     */
+	 * When using the caching system, this boolean determines if the
+	 * cache canvas should have image smoothing enabled or not. If
+	 * not set, the ige global smoothing setting will be used instead.
+	 * @param {Boolean=} val True to enable smoothing, false to disable.
+	 * @returns {*}
+	 */
 	cacheSmoothing (val?: boolean) {
 		if (val !== undefined) {
 			this._cacheSmoothing = val;
@@ -1558,23 +1577,23 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets composite caching. Composite caching draws this entity
-     * and all of its children (and their children etc.) to a single
-     * off-screen canvas so that the entity does not need to be redrawn with
-     * all its children every tick. For composite entities where little
-     * change occurs this will massively increase rendering performance.
-     * If enabled, this will automatically disable simple caching on this
-     * entity with a call to cache(false).
-     * @param {Boolean=} val
-     * @param propagateToChildren
-     * @example #Enable entity composite caching
-     *     entity.compositeCache(true);
-     * @example #Disable entity composite caching
-     *     entity.compositeCache(false);
-     * @example #Get composite caching flag value
-     *     var val = entity.cache();
-     * @return {*}
-     */
+	 * Gets / sets composite caching. Composite caching draws this entity
+	 * and all of its children (and their children etc.) to a single
+	 * off-screen canvas so that the entity does not need to be redrawn with
+	 * all its children every tick. For composite entities where little
+	 * change occurs this will massively increase rendering performance.
+	 * If enabled, this will automatically disable simple caching on this
+	 * entity with a call to cache(false).
+	 * @param {Boolean=} val
+	 * @param propagateToChildren
+	 * @example #Enable entity composite caching
+	 *     entity.compositeCache(true);
+	 * @example #Disable entity composite caching
+	 *     entity.compositeCache(false);
+	 * @example #Get composite caching flag value
+	 *     var val = entity.cache();
+	 * @return {*}
+	 */
 	compositeCache (val?: boolean, propagateToChildren = false) {
 		if (!isClient) {
 			return this;
@@ -1589,7 +1608,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 			this.cache(false);
 
 			// Create the off-screen canvas
-			const canvasObj = ige.createCanvas({ smoothing: this._cacheSmoothing, pixelRatioScaling: true });
+			const canvasObj = ige.engine.createCanvas({ smoothing: this._cacheSmoothing, pixelRatioScaling: true });
 			this._cacheCanvas = canvasObj.canvas;
 			this._cacheCtx = canvasObj.ctx;
 
@@ -1610,18 +1629,20 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the cache dirty flag. If set to true this will
-     * instruct the entity to re-draw its cached image from the
-     * assigned texture. Once that occurs the flag will automatically
-     * be set back to false. This works in either standard cache mode
-     * or composite cache mode.
-     * @param {Boolean=} val True to force a cache update.
-     * @example #Get cache dirty flag value
-     *     var val = entity.cacheDirty();
-     * @example #Set cache dirty flag value
-     *     entity.cacheDirty(true);
-     * @return {*}
-     */
+	 * Gets / sets the cache dirty flag. If set to true this will
+	 * instruct the entity to re-draw its cached image from the
+	 * assigned texture. Once that occurs the flag will automatically
+	 * be set back to false. This works in either standard cache mode
+	 * or composite cache mode.
+	 * @param {Boolean=} val True to force a cache update.
+	 * @example #Get cache dirty flag value
+	 *     var val = entity.cacheDirty();
+	 * @example #Set cache dirty flag value
+	 *     entity.cacheDirty(true);
+	 * @return {*}
+	 */
+	cacheDirty (val: boolean): this;
+	cacheDirty (): boolean;
 	cacheDirty (val?: boolean) {
 		if (val === undefined) {
 			return this._cacheDirty;
@@ -1644,20 +1665,21 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets the position of the mouse relative to this entity's
-     * center point.
-     * @param {IgeViewport=} viewport The viewport to use as the
-     * base from which the mouse position is determined. If no
-     * viewport is specified then the current viewport the engine
-     * is rendering to is used instead.
-     * @example #Get the mouse position relative to the entity
-     *     // The returned value is an object with properties x, y, z
-     *     var mousePos = entity.mousePos();
-     * @return {IgePoint3d} The mouse point relative to the entity
-     * center.
-     */
+	 * Gets the position of the mouse relative to this entity's
+	 * center point.
+	 * @param {IgeViewport=} viewport The viewport to use as the
+	 * base from which the mouse position is determined. If no
+	 * viewport is specified then the current viewport the engine
+	 * is rendering to is used instead.
+	 * @example #Get the mouse position relative to the entity
+	 *     // The returned value is an object with properties x, y, z
+	 *     var mousePos = entity.mousePos();
+	 * @return {IgePoint3d} The mouse point relative to the entity
+	 * center.
+	 */
 	mousePos (viewport?: IgeViewport | null): IgePoint3d {
 		viewport = viewport || ige.engine._currentViewport;
+
 		if (!viewport) {
 			return new IgePoint3d(0, 0, 0);
 		}
@@ -1671,7 +1693,10 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		// 	    mp.thisAddPoint(cam._translate);
 		// }
 
+		// TODO: No idea why viewport doesn't have _translate, it's extended from IgeEntity!
+		// @ts-ignore
 		mp.x += viewport._translate.x;
+		// @ts-ignore
 		mp.y += viewport._translate.y;
 		this._transformPoint(mp);
 
@@ -1679,17 +1704,17 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets the position of the mouse relative to this entity not
-     * taking into account viewport translation.
-     * @param {IgeViewport=} viewport The viewport to use as the
-     * base from which the mouse position is determined. If no
-     * viewport is specified then the current viewport the engine
-     * is rendering to is used instead.
-     * @example #Get absolute mouse position
-     *     var mousePosAbs = entity.mousePosAbsolute();
-     * @return {IgePoint3d} The mouse point relative to the entity
-     * center.
-     */
+	 * Gets the position of the mouse relative to this entity not
+	 * taking into account viewport translation.
+	 * @param {IgeViewport=} viewport The viewport to use as the
+	 * base from which the mouse position is determined. If no
+	 * viewport is specified then the current viewport the engine
+	 * is rendering to is used instead.
+	 * @example #Get absolute mouse position
+	 *     var mousePosAbs = entity.mousePosAbsolute();
+	 * @return {IgePoint3d} The mouse point relative to the entity
+	 * center.
+	 */
 	mousePosAbsolute (viewport?: IgeViewport | null): IgePoint3d {
 		viewport = viewport || ige.engine._currentViewport;
 
@@ -1703,16 +1728,16 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets the position of the mouse in world co-ordinates.
-     * @param {IgeViewport=} viewport The viewport to use as the
-     * base from which the mouse position is determined. If no
-     * viewport is specified then the current viewport the engine
-     * is rendering to is used instead.
-     * @example #Get mouse position in world co-ordinates
-     *     var mousePosWorld = entity.mousePosWorld();
-     * @return {IgePoint3d} The mouse point relative to the world
-     * center.
-     */
+	 * Gets the position of the mouse in world co-ordinates.
+	 * @param {IgeViewport=} viewport The viewport to use as the
+	 * base from which the mouse position is determined. If no
+	 * viewport is specified then the current viewport the engine
+	 * is rendering to is used instead.
+	 * @example #Get mouse position in world co-ordinates
+	 *     var mousePosWorld = entity.mousePosWorld();
+	 * @return {IgePoint3d} The mouse point relative to the world
+	 * center.
+	 */
 	mousePosWorld (viewport?: IgeViewport | null): IgePoint3d {
 		viewport = viewport || ige.engine._currentViewport;
 		const mp = this.mousePos(viewport);
@@ -1726,17 +1751,17 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Rotates the entity to point at the target point around the z axis.
-     * @param {IgePoint3d} point The point in world co-ordinates to
-     * point the entity at.
-     * @example #Point the entity at another entity
-     *     entity.rotateToPoint(otherEntity.worldPosition());
-     * @example #Point the entity at mouse
-     *     entity.rotateToPoint(ige.engine._currentViewport.mousePos());
-     * @example #Point the entity at an arbitrary point x, y
-     *     entity.rotateToPoint(new IgePoint3d(x, y, 0));
-     * @return {*}
-     */
+	 * Rotates the entity to point at the target point around the z axis.
+	 * @param {IgePoint3d} point The point in world co-ordinates to
+	 * point the entity at.
+	 * @example #Point the entity at another one
+	 *     entity.rotateToPoint(otherEntity.worldPosition());
+	 * @example #Point the entity at mouse
+	 *     entity.rotateToPoint(ige.engine._currentViewport.mousePos());
+	 * @example #Point the entity at an arbitrary point x, y
+	 *     entity.rotateToPoint(new IgePoint3d(x, y, 0));
+	 * @return {*}
+	 */
 	rotateToPoint (point: IgePoint3d) {
 		const worldPos = this.worldPosition();
 
@@ -1750,25 +1775,25 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the texture to use as the background
-     * pattern for this entity.
-     * @param {IgeTexture} texture The texture to use as
-     * the background.
-     * @param {String=} repeat The type of repeat mode either: "repeat",
-     * "repeat-x", "repeat-y" or "none".
-     * @param {Boolean=} trackCamera If set to true, will track the camera
-     * translation and "move" the background with the camera.
-     * @param {Boolean=} isoTile If true the tiles of the background will
-     * be treated as isometric and will therefore be drawn so that they are
-     * layered seamlessly in isometric view.
-     * @example #Set a background pattern for this entity with 2d tiling
-     *     var texture = new IgeTexture('path/to/my/texture.png');
-     *     entity.backgroundPattern(texture, 'repeat', true, false);
-     * @example #Set a background pattern for this entity with isometric tiling
-     *     var texture = new IgeTexture('path/to/my/texture.png');
-     *     entity.backgroundPattern(texture, 'repeat', true, true);
-     * @return {*}
-     */
+	 * Gets / sets the texture to use as the background
+	 * pattern for this entity.
+	 * @param {IgeTexture} texture The texture to use as
+	 * the background.
+	 * @param {String=} repeat The type of repeat mode either: "repeat",
+	 * "repeat-x", "repeat-y" or "none".
+	 * @param {Boolean=} trackCamera If set to true, will track the camera
+	 * translation and "move" the background with the camera.
+	 * @param {Boolean=} isoTile If true the tiles of the background will
+	 * be treated as isometric and will therefore be drawn so that they are
+	 * layered seamlessly in isometric view.
+	 * @example #Set a background pattern for this entity with 2d tiling
+	 *     var texture = new IgeTexture('path/to/my/texture.png');
+	 *     entity.backgroundPattern(texture, 'repeat', true, false);
+	 * @example #Set a background pattern for this entity with isometric tiling
+	 *     var texture = new IgeTexture('path/to/my/texture.png');
+	 *     entity.backgroundPattern(texture, 'repeat', true, true);
+	 * @return {*}
+	 */
 	backgroundPattern (texture?: IgeTexture, repeat: string = "repeat", trackCamera: boolean = false, isoTile: boolean = false) {
 		if (texture !== undefined) {
 			this._backgroundPattern = texture;
@@ -1794,19 +1819,19 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Set the object's width to the number of tile width's specified.
-     * @param {Number} val Number of tiles.
-     * @param {Boolean=} lockAspect If true, sets the height according
-     * to the texture aspect ratio and the new width.
-     * @example #Set the width of the entity based on the tile width of the map the entity is mounted to
-     *     // Set the entity width to the size of 1 tile with
-     *     // lock aspect enabled which will automatically size
-     *     // the height as well, to maintain the aspect
-     *     // ratio of the entity
-     *     entity.widthByTile(1, true);
-     * @return {*} The object this method was called from to allow
-     * method chaining.
-     */
+	 * Set the object's width to the number of tile width's specified.
+	 * @param {Number} val Number of tiles.
+	 * @param {Boolean=} lockAspect If true, sets the height according
+	 * to the texture aspect ratio and the new width.
+	 * @example #Set the width of the entity based on the tile width of the map the entity is mounted to
+	 *     // Set the entity width to the size of 1 tile with
+	 *     // lock aspect enabled which will automatically size
+	 *     // the height as well, to maintain the aspect
+	 *     // ratio of the entity
+	 *     entity.widthByTile(1, true);
+	 * @return {*} The object this method was called from to allow
+	 * method chaining.
+	 */
 	widthByTile (val: number, lockAspect = false) {
 		if (!(this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
 			throw new Error(
@@ -1835,19 +1860,18 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Set the object's height to the number of tile height's specified.
-     * @param {Number} val Number of tiles.
-     * @param {Boolean=} lockAspect If true, sets the width according
-     * to the texture aspect ratio and the new height.
-     * @example #Set the height of the entity based on the tile height of the map the entity is mounted to
-     *     // Set the entity height to the size of 1 tile with
-     *     // lock aspect enabled which will automatically size
-     *     // the width as well so as to maintain the aspect
-     *     // ratio of the entity
-     *     entity.heightByTile(1, true);
-     * @return {*} The object this method was called from to allow
-     * method chaining.
-     */
+	 * Set the object's height to the number of tile height's specified.
+	 * @param {Number} val Number of tiles.
+	 * @param {Boolean=} lockAspect If true, sets the width according
+	 * to the texture aspect ratio and the new height.
+	 * @example #Set the height of the entity based on the tile height of the map the entity is mounted to
+	 *     // Set the entity height to the size of 1 tile with
+	 *     // lock aspect enabled which will automatically size
+	 *     // the width as well to maintain the aspect ratio
+	 *     entity.heightByTile(1, true);
+	 * @return {*} The object this method was called from to allow
+	 * method chaining.
+	 */
 	heightByTile (val: number, lockAspect = false) {
 		if (!(this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
 			throw new Error(
@@ -1876,94 +1900,108 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Adds the object to the tile map at the passed tile co-ordinates. If
-     * no tile co-ordinates are passed, will use the current tile position
-     * and the tileWidth() and tileHeight() values.
-     * @param {Number=} x X co-ordinate of the tile to occupy.
-     * @param {Number=} y Y co-ordinate of the tile to occupy.
-     * @param {Number=} width Number of tiles along the x-axis to occupy.
-     * @param {Number=} height Number of tiles along the y-axis to occupy.
-     */
+	 * Adds the object to the tile map at the passed tile co-ordinates. If
+	 * no tile co-ordinates are passed, will use the current tile position
+	 * and the tileWidth() and tileHeight() values.
+	 * @param {Number=} x X co-ordinate of the tile to occupy.
+	 * @param {Number=} y Y co-ordinate of the tile to occupy.
+	 * @param {Number=} width Number of tiles along the x-axis to occupy.
+	 * @param {Number=} height Number of tiles along the y-axis to occupy.
+	 */
 	occupyTile (x?: number, y?: number, width?: number, height?: number) {
 		// Check that the entity is mounted to a tile map
-		if (this._parent && this._parent instanceof IgeTileMap2d) {
-			if (x !== undefined && y !== undefined) {
-				this._parent.occupyTile(x, y, width, height, this);
-			} else {
-				// Occupy tiles based upon tile point and tile width/height
-				const trPoint = new IgePoint3d(
-						this._translate.x - (this._tileWidth / 2 - 0.5) * this._parent._tileWidth,
-						this._translate.y - (this._tileHeight / 2 - 0.5) * this._parent._tileHeight,
-						0
-					),
-					tilePoint = this._parent.pointToTile(trPoint);
-
-				if (this._parent._mountMode === 1) {
-					tilePoint.thisToIso();
-				}
-
-				this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
-			}
+		if (!(this._parent && this._parent instanceof IgeTileMap2d)) {
+			return this;
 		}
+
+		if (this._tileWidth === undefined || this._tileHeight === undefined) {
+			return this;
+		}
+
+		if (x !== undefined && y !== undefined) {
+			this._parent.occupyTile(x, y, width, height, this);
+			return this;
+		}
+
+		// Occupy tiles based upon tile point and tile width/height
+		const trPoint = new IgePoint3d(
+			this._translate.x - (this._tileWidth / 2 - 0.5) * this._parent._tileWidth,
+			this._translate.y - (this._tileHeight / 2 - 0.5) * this._parent._tileHeight,
+			0
+		);
+
+		const tilePoint = this._parent.pointToTile(trPoint);
+
+		if (this._parent._mountMode === 1) {
+			tilePoint.thisToIso();
+		}
+
+		this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
+
 		return this;
 	}
 
 	/**
-     * Removes the object from the tile map at the passed tile co-ordinates.
-     * If no tile co-ordinates are passed, will use the current tile position
-     * and the tileWidth() and tileHeight() values.
-     * @param {Number=} x X co-ordinate of the tile to un-occupy.
-     * @param {Number=} y Y co-ordinate of the tile to un-occupy.
-     * @param {Number=} width Number of tiles along the x-axis to un-occupy.
-     * @param {Number=} height Number of tiles along the y-axis to un-occupy.
-     * @private
-     */
+	 * Removes the object from the tile map at the passed tile co-ordinates.
+	 * If no tile co-ordinates are passed, will use the current tile position
+	 * and the tileWidth() and tileHeight() values.
+	 * @param {Number=} x X co-ordinate of the tile to un-occupy.
+	 * @param {Number=} y Y co-ordinate of the tile to un-occupy.
+	 * @param {Number=} width Number of tiles along the x-axis to un-occupy.
+	 * @param {Number=} height Number of tiles along the y-axis to un-occupy.
+	 * @private
+	 */
 	unOccupyTile (x?: number, y?: number, width?: number, height?: number) {
 		// Check that the entity is mounted to a tile map
-		if (this._parent && this._parent.IgeTileMap2d) {
-			if (x !== undefined && y !== undefined) {
-				this._parent.unOccupyTile(x, y, width, height);
-			} else {
-				// Un-occupy tiles based upon tile point and tile width/height
-				const trPoint = new IgePoint3d(
-						this._translate.x - (this._tileWidth / 2 - 0.5) * this._parent._tileWidth,
-						this._translate.y - (this._tileHeight / 2 - 0.5) * this._parent._tileHeight,
-						0
-					),
-					tilePoint = this._parent.pointToTile(trPoint);
-
-				if (this._parent._mountMode === 1) {
-					tilePoint.thisToIso();
-				}
-
-				this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
-			}
+		if (!(this._parent && this._parent instanceof IgeTileMap2d)) {
+			return this;
 		}
+
+		if (this._tileWidth === undefined || this._tileHeight === undefined) {
+			return this;
+		}
+
+		if (x !== undefined && y !== undefined) {
+			this._parent.unOccupyTile(x, y, width, height);
+			return this;
+		}
+
+		// Un-occupy tiles based upon tile point and tile width/height
+		const trPoint = new IgePoint3d(
+				this._translate.x - (this._tileWidth / 2 - 0.5) * this._parent._tileWidth,
+				this._translate.y - (this._tileHeight / 2 - 0.5) * this._parent._tileHeight,
+				0
+			),
+			tilePoint = this._parent.pointToTile(trPoint);
+
+		if (this._parent._mountMode === 1) {
+			tilePoint.thisToIso();
+		}
+
+		this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
 		return this;
 	}
 
 	/**
-     * Returns an array of tile co-ordinates that the object is currently
-     * over, calculated using the current world co-ordinates of the object
-     * as well as its 3d geometry.
-     * @private
-     * @return {Array} The array of tile co-ordinates as IgePoint3d instances.
-     */
+	 * Returns an array of tile co-ordinates that the object is currently
+	 * over, calculated using the current world co-ordinates of the object
+	 * as well as its 3d geometry.
+	 * @private
+	 * @return {Array} The array of tile co-ordinates as IgePoint3d instances.
+	 */
 	overTiles () {
 		// Check that the entity is mounted to a tile map
-		if (!(this._parent && this._parent.IgeTileMap2d)) {
+		if (!(this._parent && this._parent instanceof IgeTileMap2d)) {
 			return;
 		}
 
-		let x,
-			y,
-			tileWidth = this._tileWidth || 1,
-			tileHeight = this._tileHeight || 1,
-			tile = this._parent.pointToTile(this._translate),
-			tileArr = [];
+		const tileWidth = this._tileWidth || 1;
+		const tileHeight = this._tileHeight || 1;
+		const tile = this._parent.pointToTile(this._translate);
+		const tileArr = [];
 
-		for (x = 0; x < tileWidth; x++) {
-			for (y = 0; y < tileHeight; y++) {
+		for (let x = 0; x < tileWidth; x++) {
+			for (let y = 0; y < tileHeight; y++) {
 				tileArr.push(new IgePoint3d(tile.x + x, tile.y + y, 0));
 			}
 		}
@@ -1972,13 +2010,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the anchor position that this entity's texture
-     * will be adjusted by.
-     * @param {Number=} x The x anchor value.
-     * @param {Number=} y The y anchor value.
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the anchor position that this entity's texture
+	 * will be adjusted by.
+	 * @param {Number=} x The x anchor value.
+	 * @param {Number=} y The y anchor value.
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	anchor(x: number, y: number): this;
 	anchor(): IgePoint2d;
 	anchor (x?: number, y?: number) {
@@ -1991,14 +2029,14 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the geometry x value.
-     * @param {Number=} px The new x value in pixels.
-     * @param {Boolean} lockAspect
-     * @example #Set the width of the entity
-     *     entity.width(40);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the geometry x value.
+	 * @param {Number=} px The new x value in pixels.
+	 * @param {Boolean} lockAspect
+	 * @example #Set the entity width
+	 *     entity.width(40);
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	width(px: number, lockAspect?: boolean): this;
 	width(): number;
 	width (px?: number, lockAspect = false) {
@@ -2018,14 +2056,14 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the geometry y value.
-     * @param {number=} px The new y value in pixels.
-     * @param {boolean} [lockAspect]
-     * @example #Set the height of the entity
-     *     entity.height(40);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the geometry y value.
+	 * @param {number=} px The new y value in pixels.
+	 * @param {boolean} [lockAspect]
+	 * @example #Set the entity height
+	 *     entity.height(40);
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	height(px: number, lockAspect?: boolean): this;
 	height(): number;
 	height (px?: number, lockAspect = false) {
@@ -2045,18 +2083,18 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the 2d geometry of the entity. The x and y values are
-     * relative to the center of the entity. This geometry is used when
-     * rendering textures for the entity and positioning in world space as
-     * well as UI positioning calculations. It holds no bearing on isometric
-     * positioning.
-     * @param {Number=} x The new x value in pixels.
-     * @param {Number=} y The new y value in pixels.
-     * @example #Set the dimensions of the entity (width and height)
-     *     entity.bounds2d(40, 40);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the 2d geometry of the entity. The x and y values are
+	 * relative to the center of the entity. This geometry is used when
+	 * rendering textures for the entity and positioning in world space as
+	 * well as UI positioning calculations. It holds no bearing on isometric
+	 * positioning.
+	 * @param {Number=} x The new x value in pixels.
+	 * @param {Number=} y The new y value in pixels.
+	 * @example #Set the dimensions of the entity (width and height)
+	 *     entity.bounds2d(40, 40);
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	bounds2d(x: number, y: number): this;
 	bounds2d(): IgePoint2d;
 	bounds2d(x: IgePoint2d): this;
@@ -2077,18 +2115,18 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the 3d geometry of the entity. The x and y values are
-     * relative to the center of the entity and the z value is wholly
-     * positive from the "floor". Used to define a 3d bounding cuboid for
-     * the entity used in isometric depth sorting and hit testing.
-     * @param {number=} x The new x value in pixels.
-     * @param {number=} y The new y value in pixels.
-     * @param {number=} z The new z value in pixels.
-     * @example #Set the dimensions of the entity (width, height and length)
-     *     entity.bounds3d(40, 40, 20);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the 3d geometry of the entity. The x and y values are
+	 * relative to the center of the entity and the z value is wholly
+	 * positive from the "floor". Used to define a 3d bounding cuboid for
+	 * the entity used in isometric depth sorting and hit testing.
+	 * @param {number=} x The new x value in pixels.
+	 * @param {number=} y The new y value in pixels.
+	 * @param {number=} z The new z value in pixels.
+	 * @example #Set the dimensions of the entity (width, height and length)
+	 *     entity.bounds3d(40, 40, 20);
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	bounds3d(x: number, y: number, z: number): this;
 	bounds3d(): IgePoint3d;
 	bounds3d (x?: number, y?: number, z?: number) {
@@ -2101,18 +2139,18 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the life span of the object in milliseconds. The life
-     * span is how long the object will exist for before being automatically
-     * destroyed.
-     * @param {number=} milliseconds The number of milliseconds the entity
-     * will live for from the current time.
-     * @param {Function=} deathCallback Optional callback method to call when
-     * the entity is destroyed from end of lifespan.
-     * @example #Set the lifespan of the entity to 2 seconds after which it will automatically be destroyed
-     *     entity.lifeSpan(2000);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the life span of the object in milliseconds. The life
+	 * span is how long the object will exist for before being automatically
+	 * destroyed.
+	 * @param {number=} milliseconds The number of milliseconds the entity
+	 * will live for from the current time.
+	 * @param {Function=} deathCallback Optional callback method to call when
+	 * the entity is destroyed from end of lifespan.
+	 * @example #Set the lifespan of the entity to 2 seconds after which it will automatically be destroyed
+	 *     entity.lifeSpan(2000);
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	lifeSpan(milliseconds: number, deathCallback: (...args: any[]) => void): this;
 	lifeSpan(): number;
 	lifeSpan(milliseconds: number): this;
@@ -2126,21 +2164,21 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the timestamp in milliseconds that denotes the time
-     * that the entity will be destroyed. The object checks its own death
-     * time during each tick and if the current time is greater than the
-     * death time, the object will be destroyed.
-     * @param {Number=} val The death time timestamp. This is a time relative
-     * to the engine's start time of zero rather than the current time that
-     * would be retrieved from new Date().getTime(). It is usually easier
-     * to call lifeSpan() rather than setting the deathTime directly.
-     * @param {Function=} deathCallback Optional callback method to call when
-     * the entity is destroyed from end of lifespan.
-     * @example #Set the death time of the entity to 60 seconds after engine start
-     *     entity.deathTime(60000);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the timestamp in milliseconds that denotes the time
+	 * that the entity will be destroyed. The object checks its own death
+	 * time during each tick and if the current time is greater than the
+	 * death time, the object will be destroyed.
+	 * @param {Number=} val The death time timestamp. This is a time relative
+	 * to the engine's start time of zero rather than the current time that
+	 * would be retrieved from new Date().getTime(). It is usually easier
+	 * to call lifeSpan() rather than setting the deathTime directly.
+	 * @param {Function=} deathCallback Optional callback method to call when
+	 * the entity is destroyed from end of lifespan.
+	 * @example #Set the death time of the entity to 60 seconds after engine start
+	 *     entity.deathTime(60000);
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	deathTime(val: number, deathCallback?: (...args: any[]) => void): this;
 	deathTime(): number | undefined;
 	deathTime(val: number): this;
@@ -2158,15 +2196,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the entity opacity from 0.0 to 1.0.
-     * @param {number=} val The opacity value.
-     * @example #Set the entity to half-visible
-     *     entity.opacity(0.5);
-     * @example #Set the entity to fully-visible
-     *     entity.opacity(1.0);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the entity opacity from 0.0 to 1.0.
+	 * @param {number=} val The opacity value.
+	 * @example #Set the entity to half-visible
+	 *     entity.opacity(0.5);
+	 * @example #Set the entity to fully-visible
+	 *     entity.opacity(1.0);
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	opacity(val: number): this;
 	opacity(): number;
 	opacity (val?: number) {
@@ -2179,15 +2217,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the noAabb flag that determines if the entity's axis
-     * aligned bounding box should be calculated every tick or not. If
-     * you don't need the AABB data (for instance if you don't need to
-     * detect mouse events on this entity, or you DO want the AABB to be
-     * updated but want to control it manually by calling aabb(true)
-     * yourself as needed).
-     * @param {Boolean=} val If set to true will turn off AABB calculation.
-     * @returns {*}
-     */
+	 * Gets / sets the noAabb flag that determines if the entity's axis
+	 * aligned bounding box should be calculated every tick or not. If
+	 * you don't need the AABB data (for instance if you don't need to
+	 * detect mouse events on this entity, or you DO want the AABB to be
+	 * updated but want to control it manually by calling aabb(true)
+	 * yourself as needed).
+	 * @param {Boolean=} val If set to true will turn off AABB calculation.
+	 * @returns {*}
+	 */
 	noAabb(val: boolean): this;
 	noAabb(): boolean | undefined;
 	noAabb (val?: boolean) {
@@ -2200,14 +2238,14 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the texture to use when rendering the entity.
-     * @param {IgeTexture=} texture The texture object.
-     * @example #Set the entity texture (image)
-     *     var texture = new IgeTexture('path/to/some/texture.png');
-     *     entity.texture(texture);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the texture to use when rendering the entity.
+	 * @param {IgeTexture=} texture The texture object.
+	 * @example #Set the entity texture (image)
+	 *     var texture = new IgeTexture('path/to/some/texture.png');
+	 *     entity.texture(texture);
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	texture(texture: IgeTexture): this;
 	texture(): IgeTexture | undefined;
 	texture (texture?: IgeTexture) {
@@ -2220,17 +2258,17 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the current texture cell used when rendering the game
-     * object's texture. If the texture is not cell-based, this value is
-     * ignored.
-     * @param {number|null=} val The cell index.
-     * @example #Set the entity texture as a 4x4 cell sheet and then set the cell to use
-     *     var texture = new IgeCellSheet('path/to/some/cellSheet.png', 4, 4);
-     *     entity.texture(texture)
-     *         .cell(3);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the current texture cell used when rendering the game
+	 * object's texture. If the texture is not cell-based, this value is
+	 * ignored.
+	 * @param {number|null=} val The cell index.
+	 * @example #Set the entity texture as a 4x4 cell sheet and then set the cell to use
+	 *     var texture = new IgeCellSheet('path/to/some/cellSheet.png', 4, 4);
+	 *     entity.texture(texture)
+	 *         .cell(3);
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	cell(val: number | null): this;
 	cell(): number | null;
 	cell (val?: number | null) {
@@ -2243,26 +2281,26 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the current texture cell used when rendering the game
-     * object's texture. If the texture is not cell-based, this value is
-     * ignored. This differs from cell() in that it accepts a string id
-     * as the cell
-     * @param {Number=} val The cell id.
-     * @example #Set the entity texture as a sprite sheet with cell ids and then set the cell to use
-     *     var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
-     *         [0, 0, 40, 40, 'robotHead'],
-     *         [40, 0, 40, 40, 'humanHead'],
-     *     ]);
-     *
-     *     // Assign the texture, set the cell to use and then
-     *     // set the entity to the size of the cell automatically!
-     *     entity.texture(texture)
-     *         .cellById('robotHead')
-     *         .dimensionsFromCell();
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
-	cellById (val?: number) {
+	 * Gets / sets the current texture cell used when rendering the game
+	 * object's texture. If the texture is not cell-based, this value is
+	 * ignored. This differs from cell() in that it accepts a string id
+	 * as the cell
+	 * @param {Number=} val The cell id.
+	 * @example #Set the entity texture as a sprite sheet with cell ids and then set the cell to use
+	 *     var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
+	 *         [0, 0, 40, 40, 'robotHead'],
+	 *         [40, 0, 40, 40, 'humanHead'],
+	 *     ]);
+	 *
+	 *     // Assign the texture, set the cell to use and then
+	 *     // set the entity to the size of the cell automatically!
+	 *     entity.texture(texture)
+	 *         .cellById('robotHead')
+	 *         .dimensionsFromCell();
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
+	cellById (val?: string) {
 		if (val !== undefined) {
 			if (this._texture) {
 				// Find the cell index this id corresponds to
@@ -2280,13 +2318,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 				// We were unable to find the cell index from the cell
 				// id so produce an error
 				this.log(
-					"Could not find the cell id \"" +
-                    val +
-                    "\" in the assigned entity texture " +
-                    tex.id() +
-                    ", please check your sprite sheet (texture) cell definition to ensure the cell id \"" +
-                    val +
-                    "\" has been assigned to a cell!",
+					`Could not find the cell id "${val}" in the assigned entity texture ${tex.id()}, please check your sprite sheet (texture) cell definition to ensure the cell id "${val}" has been assigned to a cell!`,
 					"error"
 				);
 			} else {
@@ -2301,19 +2333,19 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Sets the geometry of the entity to match the width and height
-     * of the assigned texture.
-     * @param {Number=} percent The percentage size to resize to.
-     * @example #Set the entity dimensions based on the assigned texture
-     *     var texture = new IgeTexture('path/to/some/texture.png');
-     *
-     *     // Assign the texture, and then set the entity to the
-     *     // size of the texture automatically!
-     *     entity.texture(texture)
-     *         .dimensionsFromTexture();
-     * @return {*} The object this method was called from to allow
-     * method chaining.
-     */
+	 * Sets the geometry of the entity to match the width and height
+	 * of the assigned texture.
+	 * @param {Number=} percent The percentage size to resize to.
+	 * @example #Set the entity dimensions based on the assigned texture
+	 *     var texture = new IgeTexture('path/to/some/texture.png');
+	 *
+	 *     // Assign the texture, and then set the entity to the
+	 *     // size of the texture automatically!
+	 *     entity.texture(texture)
+	 *         .dimensionsFromTexture();
+	 * @return {*} The object this method was called from to allow
+	 * method chaining.
+	 */
 	dimensionsFromTexture (percent?: number) {
 		if (this._texture) {
 			if (percent === undefined) {
@@ -2332,24 +2364,24 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Sets the geometry of the entity to match the width and height
-     * of the assigned texture cell. If the texture is not cell-based
-     * the entire texture width / height will be used.
-     * @param {Number=} percent The percentage size to resize to.
-     * @example #Set the entity dimensions based on the assigned texture and cell
-     *     var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
-     *         [0, 0, 40, 40, 'robotHead'],
-     *         [40, 0, 40, 40, 'humanHead'],
-     *     ]);
-     *
-     *     // Assign the texture, set the cell to use and then
-     *     // set the entity to the size of the cell automatically!
-     *     entity.texture(texture)
-     *         .cellById('robotHead')
-     *         .dimensionsFromCell();
-     * @return {*} The object this method was called from to allow
-     * method chaining
-     */
+	 * Sets the geometry of the entity to match the width and height
+	 * of the assigned texture cell. If the texture is not cell-based
+	 * the entire texture width / height will be used.
+	 * @param {Number=} percent The percentage size to resize to.
+	 * @example #Set the entity dimensions based on the assigned texture and cell
+	 *     var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
+	 *         [0, 0, 40, 40, 'robotHead'],
+	 *         [40, 0, 40, 40, 'humanHead'],
+	 *     ]);
+	 *
+	 *     // Assign the texture, set the cell to use and then
+	 *     // set the entity to the size of the cell automatically!
+	 *     entity.texture(texture)
+	 *         .cellById('robotHead')
+	 *         .dimensionsFromCell();
+	 * @return {*} The object this method was called from to allow
+	 * method chaining
+	 */
 	dimensionsFromCell (percent?: number) {
 		if (this._texture) {
 			if (this._texture._cells && this._texture._cells.length && this._cell) {
@@ -2370,19 +2402,19 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the highlight mode. True is on false is off.
-     * @param {Boolean} val The highlight mode true, false or optionally a string representing a globalCompositeOperation.
-     * https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing
-     * @param highlightChildEntities
-     * @example #Set the entity to render highlighted
-     *     entity.highlight(true);
-     * @example #Set the entity to render highlighted using 'screen' globalCompositeOperation
-     *     entity.highlight('screen');
-     * @example #Get the current highlight state
-     *     var isHighlighted = entity.highlight();
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the highlight mode. True is on false is off.
+	 * @param {Boolean} val The highlight mode true, false or optionally a string representing a globalCompositeOperation.
+	 * https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing
+	 * @param highlightChildEntities
+	 * @example #Set the entity to render highlighted
+	 *     entity.highlight(true);
+	 * @example #Set the entity to render highlighted using 'screen' globalCompositeOperation
+	 *     entity.highlight('screen');
+	 * @example #Get the current highlight state
+	 *     var isHighlighted = entity.highlight();
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	highlight (val?: boolean, highlightChildEntities = true) {
 		if (val !== undefined) {
 			this._highlight = val;
@@ -2401,38 +2433,38 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Returns the absolute world position of the entity as an
-     * IgePoint3d.
-     * @example #Get the world position of the entity
-     *     var wordPos = entity.worldPosition();
-     * @return {IgePoint3d} The absolute world position of the
-     * entity.
-     */
+	 * Returns the absolute world position of the entity as an
+	 * IgePoint3d.
+	 * @example #Get the world position of the entity
+	 *     var wordPos = entity.worldPosition();
+	 * @return {IgePoint3d} The absolute world position of the
+	 * entity.
+	 */
 	worldPosition () {
 		return new IgePoint3d(this._worldMatrix.matrix[2], this._worldMatrix.matrix[5], 0);
 	}
 
 	/**
-     * Returns the absolute world rotation z of the entity as a
-     * value in radians.
-     * @example #Get the world rotation of the entity's z axis
-     *     var wordRot = entity.worldRotationZ();
-     * @return {Number} The absolute world rotation z of the
-     * entity.
-     */
+	 * Returns the absolute world rotation z of the entity as a
+	 * value in radians.
+	 * @example #Get the world rotation of the entity's z axis
+	 *     var wordRot = entity.worldRotationZ();
+	 * @return {Number} The absolute world rotation z of the
+	 * entity.
+	 */
 	worldRotationZ () {
 		return this._worldMatrix.rotationRadians();
 	}
 
 	/**
-     * Converts an array of points from local space to this entity's
-     * world space using its world transform matrix. This will alter
-     * the points passed in the array directly.
-     * @param {Array} points The array of IgePoints to convert.
-     * @param viewport
-     * @param inverse
-     */
-	localToWorld (points: IgePoint[], viewport?: IgeViewport, inverse = false) {
+	 * Converts an array of points from local space to this entity's
+	 * world space using its world transform matrix. This will alter
+	 * the points passed in the array directly.
+	 * @param {Array} points The array of IgePoints to convert.
+	 * @param viewport
+	 * @param inverse
+	 */
+	localToWorld (points: IgePoint[], viewport?: IgeViewport | null, inverse = false) {
 		// Commented as this was doing literally nothing
 		//viewport = viewport || ige.engine._currentViewport;
 
@@ -2454,27 +2486,29 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Converts a point from local space to this entity's world space
-     * using its world transform matrix. This will alter the point's
-     * data directly.
-     * @param {IgePoint3d} point The IgePoint3d to convert.
-     */
-	localToWorldPoint (point, viewport) {
-		viewport = viewport || ige.engine._currentViewport;
+	 * Converts a point from local space to this entity's world space
+	 * using its world transform matrix. This will alter the point's
+	 * data directly.
+	 * @param {IgePoint3d} point The IgePoint3d to convert.
+	 * @param viewport
+	 */
+	localToWorldPoint (point: IgePoint3d, viewport?: IgeViewport | null) {
+		// TODO: We commented this because it doesn't even get used... is this a mistake?
+		//viewport = viewport || ige.engine._currentViewport;
 		this._worldMatrix.transform([point], this);
 	}
 
 	/**
-     * Returns the screen position of the entity as an IgePoint3d where x is the
-     * "left" and y is the "top", useful for positioning HTML elements at the
-     * screen location of an IGE entity. This method assumes that the top-left
-     * of the main canvas element is at 0, 0. If not you can adjust the values
-     * yourself to allow for offset.
-     * @example #Get the screen position of the entity
-     *     var screenPos = entity.screenPosition();
-     * @return {IgePoint3d} The screen position of the entity.
-     */
-	screenPosition () {
+	 * Returns the screen position of the entity as an IgePoint3d where x is the
+	 * "left" and y is the "top", useful for positioning HTML elements at the
+	 * screen location of an IGE entity. This method assumes that the top-left
+	 * of the main canvas element is at 0, 0. If not you can adjust the values
+	 * yourself to allow for offset.
+	 * @example #Get the screen position of the entity
+	 *     var screenPos = entity.screenPosition();
+	 * @return {IgePoint3d} The screen position of the entity.
+	 */
+	screenPosition (): IgePoint3d {
 		if (!ige.engine._currentCamera) {
 			throw new Error("Cannot get screen position of entity, ige instance has no camera!");
 		}
@@ -2491,12 +2525,12 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * @deprecated Use bounds3dPolygon instead
-     */
+	 * @deprecated Use bounds3dPolygon instead
+	 */
 	localIsoBoundsPoly () {
 	}
 
-	localBounds3dPolygon (recalculate) {
+	localBounds3dPolygon (recalculate = false): IgePoly2d {
 		if (this._bounds3dPolygonDirty || !this._localBounds3dPolygon || recalculate) {
 			const geom = this._bounds3d,
 				poly = new IgePoly2d(),
@@ -2524,7 +2558,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		return this._localBounds3dPolygon;
 	}
 
-	bounds3dPolygon (recalculate = false) {
+	bounds3dPolygon (recalculate = false): IgePoly2d {
 		if (this._bounds3dPolygonDirty || !this._bounds3dPolygon || recalculate) {
 			const poly = this.localBounds3dPolygon(recalculate).clone();
 
@@ -2537,135 +2571,125 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		return this._bounds3dPolygon;
 	}
 
-	mouseInBounds3d (recalculate) {
-		const poly = this.localBounds3dPolygon(recalculate),
-			mp = this.mousePos();
-
-		return poly.pointInside(mp);
-	}
+	// Commented as this can't have ever worked
+	// mouseInBounds3d (recalculate = false): boolean {
+	// 	const poly = this.localBounds3dPolygon(recalculate),
+	// 		mp = this.mousePos();
+	//
+	// 	// TODO this won't work because pointInside doesn't exist on IgePoly2d
+	// 	return poly.pointInside(mp);
+	// }
 
 	/**
-     * Calculates and returns the current axis-aligned bounding box in
-     * world co-ordinates.
-     * @param {Boolean=} recalculate If true this will force the
-     * recalculation of the AABB instead of returning a cached
-     * value.
-     * @param inverse
-     * @example #Get the entity axis-aligned bounding box dimensions
-     *     var aabb = entity.aabb();
-     *
-     *     console.log(aabb.x);
-     *     console.log(aabb.y);
-     *     console.log(aabb.width);
-     *     console.log(aabb.height);
-     * @example #Get the entity axis-aligned bounding box dimensions forcing the engine to update the values first
-     *     var aabb = entity.aabb(true); // Call with true to force update
-     *
-     *     console.log(aabb.x);
-     *     console.log(aabb.y);
-     *     console.log(aabb.width);
-     *     console.log(aabb.height);
-     * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
-     */
-	aabb (recalculate = true, inverse = false) {
-		if (this._aabbDirty || !this._aabb || recalculate) {
-			//  && this.newFrame()
-			let poly = new IgePoly2d(),
-				minX,
-				minY,
-				maxX,
-				maxY,
-				box,
-				anc = this._anchor,
-				ancX = anc.x,
-				ancY = anc.y,
-				geom,
-				geomX2,
-				geomY2,
-				x,
-				y;
-
-			geom = this._bounds2d;
-			geomX2 = geom.x2;
-			geomY2 = geom.y2;
-
-			x = geomX2;
-			y = geomY2;
-
-			poly.addPoint(-x + ancX, -y + ancY);
-			poly.addPoint(x + ancX, -y + ancY);
-			poly.addPoint(x + ancX, y + ancY);
-			poly.addPoint(-x + ancX, y + ancY);
-
-			this._renderPos = { x: -x + ancX, y: -y + ancY };
-
-			// Convert the poly's points from local space to world space
-			this.localToWorld(poly._poly, null, inverse);
-
-			// Get the extents of the newly transformed poly
-			minX = Math.min(poly._poly[0].x, poly._poly[1].x, poly._poly[2].x, poly._poly[3].x);
-
-			minY = Math.min(poly._poly[0].y, poly._poly[1].y, poly._poly[2].y, poly._poly[3].y);
-
-			maxX = Math.max(poly._poly[0].x, poly._poly[1].x, poly._poly[2].x, poly._poly[3].x);
-
-			maxY = Math.max(poly._poly[0].y, poly._poly[1].y, poly._poly[2].y, poly._poly[3].y);
-
-			box = new IgeRect(minX, minY, maxX - minX, maxY - minY);
-
-			this._aabb = box;
-			this._aabbDirty = false;
+	 * Calculates and returns the current axis-aligned bounding box in
+	 * world co-ordinates.
+	 * @param {Boolean=} recalculate If true this will force the
+	 * recalculation of the AABB instead of returning a cached
+	 * value.
+	 * @param inverse
+	 * @example #Get the entity axis-aligned bounding box dimensions
+	 *     var aabb = entity.aabb();
+	 *
+	 *     console.log(aabb.x);
+	 *     console.log(aabb.y);
+	 *     console.log(aabb.width);
+	 *     console.log(aabb.height);
+	 * @example #Get the entity axis-aligned bounding box dimensions forcing the engine to update the values first
+	 *     var aabb = entity.aabb(true); // Call with true to force update
+	 *
+	 *     console.log(aabb.x);
+	 *     console.log(aabb.y);
+	 *     console.log(aabb.width);
+	 *     console.log(aabb.height);
+	 * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
+	 */
+	aabb (recalculate = true, inverse = false): IgeRect {
+		if (!(this._aabbDirty || !this._aabb || recalculate)) {
+			return this._aabb;
 		}
+
+		//  && this.newFrame()
+		const poly = new IgePoly2d();
+		const anc = this._anchor;
+		const ancX = anc.x;
+		const ancY = anc.y;
+
+		const geom = this._bounds2d;
+		const geomX2 = geom.x2;
+		const geomY2 = geom.y2;
+
+		const x = geomX2;
+		const y = geomY2;
+
+		poly.addPoint(-x + ancX, -y + ancY);
+		poly.addPoint(x + ancX, -y + ancY);
+		poly.addPoint(x + ancX, y + ancY);
+		poly.addPoint(-x + ancX, y + ancY);
+
+		this._renderPos = { x: -x + ancX, y: -y + ancY };
+
+		// Convert the poly's points from local space to world space
+		this.localToWorld(poly._poly, null, inverse);
+
+		// Get the extents of the newly transformed poly
+		const minX = Math.min(poly._poly[0].x, poly._poly[1].x, poly._poly[2].x, poly._poly[3].x);
+		const minY = Math.min(poly._poly[0].y, poly._poly[1].y, poly._poly[2].y, poly._poly[3].y);
+		const maxX = Math.max(poly._poly[0].x, poly._poly[1].x, poly._poly[2].x, poly._poly[3].x);
+		const maxY = Math.max(poly._poly[0].y, poly._poly[1].y, poly._poly[2].y, poly._poly[3].y);
+
+		this._aabb = new IgeRect(minX, minY, maxX - minX, maxY - minY);
+		this._aabbDirty = false;
 
 		return this._aabb;
 	}
 
 	/**
-     * Calculates and returns the local axis-aligned bounding box
-     * for the entity. This is the AABB relative to the entity's
-     * center point.
-     * @param {Boolean=} recalculate If true this will force the
-     * recalculation of the local AABB instead of returning a cached
-     * value.
-     * @example #Get the entity local axis-aligned bounding box dimensions
-     *     var aabb = entity.localAabb();
-     *
-     *     console.log(aabb.x);
-     *     console.log(aabb.y);
-     *     console.log(aabb.width);
-     *     console.log(aabb.height);
-     * @example #Get the entity local axis-aligned bounding box dimensions forcing the engine to update the values first
-     *     var aabb = entity.localAabb(true); // Call with true to force update
-     *
-     *     console.log(aabb.x);
-     *     console.log(aabb.y);
-     *     console.log(aabb.width);
-     *     console.log(aabb.height);
-     * @return {IgeRect} The local AABB.
-     */
-	localAabb (recalculate) {
-		if (!this._localAabb || recalculate) {
-			const aabb = this.aabb();
-			this._localAabb = new IgeRect(
-				-Math.floor(aabb.width / 2),
-				-Math.floor(aabb.height / 2),
-				Math.floor(aabb.width),
-				Math.floor(aabb.height)
-			);
+	 * Calculates and returns the local axis-aligned bounding box
+	 * for the entity. This is the AABB relative to the entity's
+	 * center point.
+	 * @param {Boolean=} recalculate If true this will force the
+	 * recalculation of the local AABB instead of returning a cached
+	 * value.
+	 * @example #Get the entity local axis-aligned bounding box dimensions
+	 *     var aabb = entity.localAabb();
+	 *
+	 *     console.log(aabb.x);
+	 *     console.log(aabb.y);
+	 *     console.log(aabb.width);
+	 *     console.log(aabb.height);
+	 * @example #Get the entity local axis-aligned bounding box dimensions forcing the engine to update the values first
+	 *     var aabb = entity.localAabb(true); // Call with true to force update
+	 *
+	 *     console.log(aabb.x);
+	 *     console.log(aabb.y);
+	 *     console.log(aabb.width);
+	 *     console.log(aabb.height);
+	 * @return {IgeRect} The local AABB.
+	 */
+	localAabb (recalculate = false) {
+		if (!(!this._localAabb || recalculate)) {
+			return this._localAabb;
 		}
 
-		return this._localAabb;
+		const aabb = this.aabb();
+
+		this._localAabb = new IgeRect(
+			-Math.floor(aabb.width / 2),
+			-Math.floor(aabb.height / 2),
+			Math.floor(aabb.width),
+			Math.floor(aabb.height)
+		);
 	}
 
 	/**
-     * Calculates the axis-aligned bounding box for this entity, including
-     * all child entity bounding boxes and returns the final composite
-     * bounds.
-     * @example #Get the composite AABB
-     *     var entity = new IgeEntity(),
-     *         aabb = entity.compositeAabb();
-     * @return {IgeRect}
-     */
+	 * Calculates the axis-aligned bounding box for this entity, including
+	 * all child entity bounding boxes and returns the final composite
+	 * bounds.
+	 * @example #Get the composite AABB
+	 *     var entity = new IgeEntity(),
+	 *         aabb = entity.compositeAabb();
+	 * @return {IgeRect}
+	 */
 	compositeAabb (inverse = false) {
 		const arr = this._children;
 		const rect = this.aabb(true, inverse).clone();
@@ -2684,15 +2708,17 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the composite stream flag. If set to true, any objects
-     * mounted to this one will have their streamMode() set to the same
-     * value as this entity and will also have their compositeStream flag
-     * set to true. This allows you to easily automatically stream any
-     * objects mounted to a root object and stream them all.
-     * @param val
-     * @returns {*}
-     */
-	compositeStream (val) {
+	 * Gets / sets the composite stream flag. If set to true, any objects
+	 * mounted to this one will have their streamMode() set to the same
+	 * value as this entity and will also have their compositeStream flag
+	 * set to true. This allows you to easily automatically stream any
+	 * objects mounted to a root object and stream them all.
+	 * @param val
+	 * @returns {*}
+	 */
+	compositeStream (val: boolean): this;
+	compositeStream (): boolean;
+	compositeStream (val?: boolean) {
 		if (val !== undefined) {
 			this._compositeStream = val;
 			return this;
@@ -2702,10 +2728,10 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Override the _childMounted method and apply entity-based flags.
-     * @param {IgeEntity} child
-     * @private
-     */
+	 * Override the _childMounted method and apply entity-based flags.
+	 * @param {IgeEntity} child
+	 * @private
+	 */
 	_childMounted (child: IgeEntity) {
 		// Check if we need to set the compositeStream and streamMode
 		if (this.compositeStream()) {
@@ -2714,7 +2740,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 			child.streamControl(this.streamControl());
 		}
 
-		this._resizeEvent(null);
+		this._resizeEvent();
 
 		// Check if we are compositeCached and update the cache
 		if (this.compositeCache()) {
@@ -2723,20 +2749,20 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Takes two values and returns them as an array where index [0]
-     * is the y argument and index[1] is the x argument. This method
-     * is used specifically in the 3d bounds intersection process to
-     * determine entity depth sorting.
-     * @param {Number} x The first value.
-     * @param {Number} y The second value.
-     * @return {Array} The swapped arguments.
-     * @private
-     */
-	_swapVars (x, y) {
+	 * Takes two values and returns them as an array where index [0]
+	 * is the y argument and index[1] is the x argument. This method
+	 * is used specifically in the 3d bounds intersection process to
+	 * determine entity depth sorting.
+	 * @param {Number} x The first value.
+	 * @param {Number} y The second value.
+	 * @return {Array} The swapped arguments.
+	 * @private
+	 */
+	_swapVars (x: number, y: number): [number, number] {
 		return [y, x];
 	}
 
-	_internalsOverlap (x0, x1, y0, y1) {
+	_internalsOverlap (x0: number, x1: number, y0: number, y1: number) {
 		let tempSwap;
 
 		if (x0 > x1) {
@@ -2753,18 +2779,16 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		if (x0 > y0) {
 			tempSwap = this._swapVars(x0, y0);
-			x0 = tempSwap[0];
 			y0 = tempSwap[1];
 
 			tempSwap = this._swapVars(x1, y1);
 			x1 = tempSwap[0];
-			y1 = tempSwap[1];
 		}
 
 		return y0 < x1;
 	}
 
-	_projectionOverlap (otherObject) {
+	_projectionOverlap (otherObject: IgeEntity) {
 		const thisG3d = this._bounds3d;
 		const otherG3d = otherObject._bounds3d;
 
@@ -2792,24 +2816,24 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		return (
 			this._internalsOverlap(thisMin.x - thisMax.y, thisMax.x - thisMin.y, otherMin.x - otherMax.y, otherMax.x - otherMin.y) &&
-            this._internalsOverlap(thisMin.x - thisMax.z, thisMax.x - thisMin.z, otherMin.x - otherMax.z, otherMax.x - otherMin.z) &&
-            this._internalsOverlap(thisMin.z - thisMax.y, thisMax.z - thisMin.y, otherMin.z - otherMax.y, otherMax.z - otherMin.y)
+			this._internalsOverlap(thisMin.x - thisMax.z, thisMax.x - thisMin.z, otherMin.x - otherMax.z, otherMax.x - otherMin.z) &&
+			this._internalsOverlap(thisMin.z - thisMax.y, thisMax.z - thisMin.y, otherMin.z - otherMax.y, otherMax.z - otherMin.y)
 		);
 	}
 
 	/**
-     * Compares the current entity's 3d bounds to the passed entity and
-     * determines if the current entity is "behind" the passed one. If an
-     * entity is behind another, it is drawn first during the scenegraph
-     * render phase.
-     * @param {IgeEntity} otherObject The other entity to check this
-     * entity's 3d bounds against.
-     * @example #Determine if this entity is "behind" another entity based on the current depth-sort
-     *     var behind = entity.isBehind(otherEntity);
-     * @return {Boolean} If true this entity is "behind" the passed entity
-     * or false if not.
-     */
-	isBehind (otherObject) {
+	 * Compares the current entity's 3d bounds to the passed entity and
+	 * determines if the current entity is "behind" the passed one. If an
+	 * entity is behind another, it is drawn first during the scenegraph
+	 * render phase.
+	 * @param {IgeEntity} otherObject The other entity to check this
+	 * entity's 3d bounds against.
+	 * @example #Determine if this entity is "behind" another entity based on the current depth-sort
+	 *     var behind = entity.isBehind(otherEntity);
+	 * @return {Boolean} If true this entity is "behind" the passed entity
+	 * or false if not.
+	 */
+	isBehind (otherObject: IgeEntity) {
 		const thisG3d = this._bounds3d,
 			otherG3d = otherObject._bounds3d,
 			thisTranslate = this._translate.clone(),
@@ -2864,21 +2888,23 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Get / set the flag determining if this entity will respond
-     * to mouse interaction or not. When you set a mouse* event e.g.
-     * mouseUp, mouseOver etc this flag will automatically be reset
-     * to true.
-     * @param {Boolean=} val The flag value true or false.
-     * @example #Set entity to ignore mouse events
-     *     entity.mouseEventsActive(false);
-     * @example #Set entity to receive mouse events
-     *     entity.mouseEventsActive(true);
-     * @example #Get current flag value
-     *     var val = entity.mouseEventsActive();
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
-	mouseEventsActive (val) {
+	 * Get / set the flag determining if this entity will respond
+	 * to mouse interaction or not. When you set a mouse* event e.g.
+	 * mouseUp, mouseOver etc this flag will automatically be reset
+	 * to true.
+	 * @param {Boolean=} val The flag value true or false.
+	 * @example #Set entity to ignore mouse events
+	 *     entity.mouseEventsActive(false);
+	 * @example #Set entity to receive mouse events
+	 *     entity.mouseEventsActive(true);
+	 * @example #Get current flag value
+	 *     var val = entity.mouseEventsActive();
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
+	mouseEventsActive (val: boolean): this;
+	mouseEventsActive (): boolean;
+	mouseEventsActive (val?: boolean) {
 		if (val !== undefined) {
 			this._mouseEventsActive = val;
 			return this;
@@ -2888,61 +2914,61 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Sets the _ignoreCamera internal flag to the value passed for this
-     * and all child entities down the scenegraph.
-     * @param val
-     */
-	ignoreCameraComposite (val) {
-		let i,
-			arr = this._children,
-			arrCount = arr.length;
+	 * Sets the _ignoreCamera internal flag to the value passed for this
+	 * and all child entities down the scenegraph.
+	 * @param val
+	 */
+	ignoreCameraComposite (val: boolean) {
+		const arr = this._children;
+		const arrCount = arr.length;
 
 		this._ignoreCamera = val;
 
-		for (i = 0; i < arrCount; i++) {
-			if (arr[i].ignoreCameraComposite) {
+		for (let i = 0; i < arrCount; i++) {
+			if ("ignoreCameraComposite" in arr[i]) {
 				arr[i].ignoreCameraComposite(val);
 			}
 		}
 	}
 
 	/**
-     * Determines if the frame alternator value for this entity
-     * matches the engine's frame alternator value. The entity's
-     * frame alternator value will be set to match the engine's
-     * after each call to the entity.tick() method so the return
-     * value of this method can be used to determine if the tick()
-     * method has already been run for this entity.
-     *
-     * This is useful if you have multiple viewports which will
-     * cause the entity tick() method to fire once for each viewport
-     * but you only want to execute update code such as movement etc
-     * on the first time the tick() method is called.
-     *
-     * @example #Determine if the entity has already had its tick method called
-     *     var tickAlreadyCalled = entity.newFrame();
-     * @return {Boolean} If false, the entity's tick method has
-     * not yet been processed for this tick.
-     */
+	 * Determines if the frame alternator value for this entity
+	 * matches the engine's frame alternator value. The entity's
+	 * frame alternator value will be set to match the engine's
+	 * after each call to the entity.tick() method so the return
+	 * value of this method can be used to determine if the tick()
+	 * method has already been run for this entity.
+	 *
+	 * This is useful if you have multiple viewports which will
+	 * cause the entity tick() method to fire once for each viewport
+	 * but you only want to execute update code such as movement etc
+	 * on the first time the tick() method is called.
+	 *
+	 * @example #Determine if the entity has already had its tick method called
+	 *     var tickAlreadyCalled = entity.newFrame();
+	 * @return {Boolean} If false, the entity's tick method has
+	 * not yet been processed for this tick.
+	 */
 	newFrame () {
 		return ige.engine._frameAlternator !== this._frameAlternatorCurrent;
 	}
 
 	/**
-     * Sets the canvas context transform properties to match the the game
-     * object's current transform values.
-     * @param {CanvasRenderingContext2D} ctx The canvas context to apply
-     * the transformation matrix to.
-     * @example #Transform a canvas context to the entity's local matrix values
-     *     var canvas = document.createElement('canvas');
-     *     canvas.width = 800;
-     *     canvas.height = 600;
-     *
-     *     var ctx = canvas.getContext('2d');
-     *     entity._transformContext(ctx);
-     * @private
-     */
-	_transformContext (ctx, inverse) {
+	 * Sets the canvas context transform properties to match the game
+	 * object's current transform values.
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to apply
+	 * the transformation matrix to.
+	 * @param inverse
+	 * @example #Transform a canvas context to the entity's local matrix values
+	 *     var canvas = document.createElement('canvas');
+	 *     canvas.width = 800;
+	 *     canvas.height = 600;
+	 *
+	 *     var ctx = canvas.getContext('2d');
+	 *     entity._transformContext(ctx);
+	 * @private
+	 */
+	_transformContext (ctx: CanvasRenderingContext2D, inverse: boolean = false) {
 		if (this._parent) {
 			ctx.globalAlpha = this._computedOpacity = this._parent._computedOpacity * this._opacity;
 		} else {
@@ -2952,11 +2978,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		if (!inverse) {
 			this._localMatrix.transformRenderingContext(ctx);
 		} else {
-			this._localMatrix.getInverse().transformRenderingContext(ctx);
+			this._localMatrix.getInverse()?.transformRenderingContext(ctx);
 		}
 	}
 
-	mouseAlwaysInside (val) {
+	mouseAlwaysInside (val: boolean): this;
+	mouseAlwaysInside (): boolean;
+	mouseAlwaysInside (val?: boolean) {
 		if (val !== undefined) {
 			this._mouseAlwaysInside = val;
 			return this;
@@ -2966,15 +2994,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Processes the actions required each render frame.
-     * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
-     * @param {Boolean} [dontTransform] If set to true, the tick method will
-     * not transform the context based on the entity's matrices. This is useful
-     * if you have extended the class and want to process down the inheritance
-     * chain but have already transformed the entity in a previous overloaded
-     * method.
-     */
-	tick (ctx, dontTransform = false) {
+	 * Processes the actions required each render frame.
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
+	 * @param {Boolean} [dontTransform] If set to true, the tick method will
+	 * not transform the context based on the entity's matrices. This is useful
+	 * if you have extended the class and want to process down the inheritance
+	 * chain but have already transformed the entity in a previous overloaded
+	 * method.
+	 */
+	tick (ctx: CanvasRenderingContext2D, dontTransform = false) {
 		if (!(!this._hidden && this._inView && (!this._parent || this._parent._inView) && !this._streamJustCreated)) {
 			return;
 		}
@@ -2987,7 +3015,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 				ige.input.queueEvent(this._mouseInTrigger, null);
 			} else {
 				if (ige.input.mouseMove) {
-					// There is a mouse move event but we are not inside the entity
+					// There is a mouse move event, but we are not inside the entity
 					// so fire a mouse out event (_handleMouseOut will check if the
 					// mouse WAS inside before firing an out event).
 					this._handleMouseOut(ige.input.mouseMove);
@@ -3023,7 +3051,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		if (this._compositeCache) {
 			if (this._cacheDirty) {
 				// Process children
-				this._tick(this._cacheCtx);
+				this._tick(this._cacheCtx as CanvasRenderingContext2D);
 				this._renderCache(ctx);
 				this._cacheDirty = false;
 			}
@@ -3153,9 +3181,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 			_ctx.translate(-aabbC.x, -aabbC.y);
 
 			/**
-             * Fires when the entity's composite cache is ready.
-             * @event IgeEntity#compositeReady
-             */
+			 * Fires when the entity's composite cache is ready.
+			 * @event IgeEntity#compositeReady
+			 */
 			this.emit("compositeReady");
 		} else {
 			if (this._bounds2d.x > 0 && this._bounds2d.y > 0) {
@@ -3184,15 +3212,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Handles calling the texture.render() method if a texture
-     * is applied to the entity. This part of the tick process has
-     * been abstracted to allow it to be overridden by an extending
-     * class.
-     * @param {CanvasRenderingContext2D} ctx The canvas context to render
-     * the entity to.
-     * @param {Boolean} [dontTransform] If you don't want to apply transforms.
-     * @private
-     */
+	 * Handles calling the texture.render() method if a texture
+	 * is applied to the entity. This part of the tick process has
+	 * been abstracted to allow it to be overridden by an extending
+	 * class.
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to render
+	 * the entity to.
+	 * @param {Boolean} [dontTransform] If you don't want to apply transforms.
+	 * @private
+	 */
 	_renderEntity (ctx: CanvasRenderingContext2D, dontTransform = false) {
 		if (this._opacity <= 0) {
 			return;
@@ -3270,12 +3298,12 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Draws the cached off-screen canvas image data to the passed canvas
-     * context.
-     * @param {CanvasRenderingContext2D} ctx The canvas context to render
-     * the entity to.
-     * @private
-     */
+	 * Draws the cached off-screen canvas image data to the passed canvas
+	 * context.
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to render
+	 * the entity to.
+	 * @private
+	 */
 	_renderCache (ctx) {
 		ctx.save();
 		if (this._compositeCache) {
@@ -3309,18 +3337,18 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Transforms a point by the entity's parent world matrix and
-     * its own local matrix transforming the point to this entity's
-     * world space.
-     * @param {IgePoint3d} point The point to transform.
-     * @example #Transform a point by the entity's world matrix values
-     *     var point = new IgePoint3d(0, 0, 0);
-     *     entity._transformPoint(point);
-     *
-     *     console.log(point);
-     * @return {IgePoint3d} The transformed point.
-     * @private
-     */
+	 * Transforms a point by the entity's parent world matrix and
+	 * its own local matrix transforming the point to this entity's
+	 * world space.
+	 * @param {IgePoint3d} point The point to transform.
+	 * @example #Transform a point by the entity's world matrix values
+	 *     var point = new IgePoint3d(0, 0, 0);
+	 *     entity._transformPoint(point);
+	 *
+	 *     console.log(point);
+	 * @return {IgePoint3d} The transformed point.
+	 * @private
+	 */
 	_transformPoint (point) {
 		if (this._parent) {
 			const tempMat = new IgeMatrix2d();
@@ -3338,10 +3366,10 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Helper method to transform an array of points using _transformPoint.
-     * @param {Array} points The points array to transform.
-     * @private
-     */
+	 * Helper method to transform an array of points using _transformPoint.
+	 * @param {Array} points The points array to transform.
+	 * @private
+	 */
 	_transformPoints (points) {
 		let point,
 			pointCount = points.length;
@@ -3363,14 +3391,14 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Generates a string containing a code fragment that when
-     * evaluated will reproduce this object's properties via
-     * chained commands. This method will only check for
-     * properties that are directly related to this class.
-     * Other properties are handled by their own class method.
-     * @return {String} The string code fragment that will
-     * reproduce this entity when evaluated.
-     */
+	 * Generates a string containing a code fragment that when
+	 * evaluated will reproduce this object's properties via
+	 * chained commands. This method will only check for
+	 * properties that are directly related to this class.
+	 * Other properties are handled by their own class method.
+	 * @return {String} The string code fragment that will
+	 * reproduce this entity when evaluated.
+	 */
 	stringify (options?: Record<string, boolean>): string {
 		// Make sure we have an options object
 		if (options === undefined) {
@@ -3451,15 +3479,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Destroys the entity by removing it from the scenegraph,
-     * calling destroy() on any child entities and removing
-     * any active event listeners for the entity. Once an entity
-     * has been destroyed its this._alive flag is also set to
-     * false.
-     * @example #Destroy the entity
-     *     entity.destroy();
-     */
-	destroy () {
+	 * Destroys the entity by removing it from the scenegraph,
+	 * calling destroy() on any child entities and removing
+	 * any active event listeners for the entity. Once an entity
+	 * has been destroyed it's this._alive flag is also set to
+	 * false.
+	 * @example #Destroy the entity
+	 *     entity.destroy();
+	 */
+	destroy (): this {
 		this._alive = false;
 
 		/* CEXCLUDE */
@@ -3471,10 +3499,10 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		/* CEXCLUDE */
 
 		/**
-         * Fires when the entity has been destroyed.
-         * @event IgeEntity#destroyed
-         * @param {IgeEntity} The entity that has been destroyed.
-         */
+		 * Fires when the entity has been destroyed.
+		 * @event IgeEntity#destroyed
+		 * @param {IgeEntity} The entity that has been destroyed.
+		 */
 		this.emit("destroyed", this);
 
 		// Remove ourselves from any parent
@@ -3536,23 +3564,23 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	// INTERACTION
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
-     * Gets / sets the callback that is fired when a mouse
-     * move event is triggered.
-     * @param {Function=} callback
-     * @example #Hook the mouse move event and stop it propagating further down the scenegraph
-     *     entity.mouseMove(function (event, control) {
-     *         // Mouse moved with button
-     *         console.log('Mouse move button: ' + event.button);
-     *
-     *         // Stop the event propagating further down the scenegraph
-     *         control.stopPropagation();
-     *
-     *         // You can ALSO stop propagation without the control object
-     *         // reference via the global reference:
-     *         ige.input.stopPropagation();
-     *     });
-     * @return {*}
-     */
+	 * Gets / sets the callback that is fired when a mouse
+	 * move event is triggered.
+	 * @param {Function=} callback
+	 * @example #Hook the mouse move event and stop it propagating further down the scenegraph
+	 *     entity.mouseMove(function (event, control) {
+	 *         // Mouse moved with button
+	 *         console.log('Mouse move button: ' + event.button);
+	 *
+	 *         // Stop the event propagating further down the scenegraph
+	 *         control.stopPropagation();
+	 *
+	 *         // You can ALSO stop propagation without the control object
+	 *         // reference via the global reference:
+	 *         ige.input.stopPropagation();
+	 *     });
+	 * @return {*}
+	 */
 	mouseMove = (callback) => {
 		if (callback) {
 			this._mouseMove = callback;
@@ -3564,23 +3592,23 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * Gets / sets the callback that is fired when a mouse
-     * over event is triggered.
-     * @param {Function=} callback
-     * @example #Hook the mouse over event and stop it propagating further down the scenegraph
-     *     entity.mouseOver(function (event, control) {
-     *         // Mouse over with button
-     *         console.log('Mouse over button: ' + event.button);
-     *
-     *         // Stop the event propagating further down the scenegraph
-     *         control.stopPropagation();
-     *
-     *         // You can ALSO stop propagation without the control object
-     *         // reference via the global reference:
-     *         ige.input.stopPropagation();
-     *     });
-     * @return {*}
-     */
+	 * Gets / sets the callback that is fired when a mouse
+	 * over event is triggered.
+	 * @param {Function=} callback
+	 * @example #Hook the mouse over event and stop it propagating further down the scenegraph
+	 *     entity.mouseOver(function (event, control) {
+	 *         // Mouse over with button
+	 *         console.log('Mouse over button: ' + event.button);
+	 *
+	 *         // Stop the event propagating further down the scenegraph
+	 *         control.stopPropagation();
+	 *
+	 *         // You can ALSO stop propagation without the control object
+	 *         // reference via the global reference:
+	 *         ige.input.stopPropagation();
+	 *     });
+	 * @return {*}
+	 */
 	mouseOver = (callback) => {
 		if (callback) {
 			this._mouseOver = callback;
@@ -3592,23 +3620,23 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * Gets / sets the callback that is fired when a mouse
-     * out event is triggered.
-     * @param {Function=} callback
-     * @example #Hook the mouse out event and stop it propagating further down the scenegraph
-     *     entity.mouseOut(function (event, control) {
-     *         // Mouse out with button
-     *         console.log('Mouse out button: ' + event.button);
-     *
-     *         // Stop the event propagating further down the scenegraph
-     *         control.stopPropagation();
-     *
-     *         // You can ALSO stop propagation without the control object
-     *         // reference via the global reference:
-     *         ige.input.stopPropagation();
-     *     });
-     * @return {*}
-     */
+	 * Gets / sets the callback that is fired when a mouse
+	 * out event is triggered.
+	 * @param {Function=} callback
+	 * @example #Hook the mouse out event and stop it propagating further down the scenegraph
+	 *     entity.mouseOut(function (event, control) {
+	 *         // Mouse out with button
+	 *         console.log('Mouse out button: ' + event.button);
+	 *
+	 *         // Stop the event propagating further down the scenegraph
+	 *         control.stopPropagation();
+	 *
+	 *         // You can ALSO stop propagation without the control object
+	 *         // reference via the global reference:
+	 *         ige.input.stopPropagation();
+	 *     });
+	 * @return {*}
+	 */
 	mouseOut = (callback) => {
 		if (callback) {
 			this._mouseOut = callback;
@@ -3620,23 +3648,23 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * Gets / sets the callback that is fired when a mouse
-     * up event is triggered.
-     * @param {Function=} callback
-     * @example #Hook the mouse up event and stop it propagating further down the scenegraph
-     *     entity.mouseUp(function (event, control) {
-     *         // Mouse up with button
-     *         console.log('Mouse up button: ' + event.button);
-     *
-     *         // Stop the event propagating further down the scenegraph
-     *         control.stopPropagation();
-     *
-     *         // You can ALSO stop propagation without the control object
-     *         // reference via the global reference:
-     *         ige.input.stopPropagation();
-     *     });
-     * @return {*}
-     */
+	 * Gets / sets the callback that is fired when a mouse
+	 * up event is triggered.
+	 * @param {Function=} callback
+	 * @example #Hook the mouse up event and stop it propagating further down the scenegraph
+	 *     entity.mouseUp(function (event, control) {
+	 *         // Mouse up with button
+	 *         console.log('Mouse up button: ' + event.button);
+	 *
+	 *         // Stop the event propagating further down the scenegraph
+	 *         control.stopPropagation();
+	 *
+	 *         // You can ALSO stop propagation without the control object
+	 *         // reference via the global reference:
+	 *         ige.input.stopPropagation();
+	 *     });
+	 * @return {*}
+	 */
 	mouseUp = (callback) => {
 		if (callback) {
 			this._mouseUp = callback;
@@ -3648,23 +3676,23 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * Gets / sets the callback that is fired when a mouse
-     * down event is triggered.
-     * @param {Function=} callback
-     * @example #Hook the mouse down event and stop it propagating further down the scenegraph
-     *     entity.mouseDown(function (event, control) {
-     *         // Mouse down with button
-     *         console.log('Mouse down button: ' + event.button);
-     *
-     *         // Stop the event propagating further down the scenegraph
-     *         control.stopPropagation();
-     *
-     *         // You can ALSO stop propagation without the control object
-     *         // reference via the global reference:
-     *         ige.input.stopPropagation();
-     *     });
-     * @return {*}
-     */
+	 * Gets / sets the callback that is fired when a mouse
+	 * down event is triggered.
+	 * @param {Function=} callback
+	 * @example #Hook the mouse down event and stop it propagating further down the scenegraph
+	 *     entity.mouseDown(function (event, control) {
+	 *         // Mouse down with button
+	 *         console.log('Mouse down button: ' + event.button);
+	 *
+	 *         // Stop the event propagating further down the scenegraph
+	 *         control.stopPropagation();
+	 *
+	 *         // You can ALSO stop propagation without the control object
+	 *         // reference via the global reference:
+	 *         ige.input.stopPropagation();
+	 *     });
+	 * @return {*}
+	 */
 	mouseDown = (callback) => {
 		if (callback) {
 			this._mouseDown = callback;
@@ -3676,24 +3704,24 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * Gets / sets the callback that is fired when a mouse
-     * wheel event is triggered.
-     * @param {Function=} callback
-     * @example #Hook the mouse wheel event and stop it propagating further down the scenegraph
-     *     entity.mouseWheel(function (event, control) {
-     *         // Mouse wheel with button
-     *         console.log('Mouse wheel button: ' + event.button);
-     *         console.log('Mouse wheel delta: ' + event.wheelDelta);
-     *
-     *         // Stop the event propagating further down the scenegraph
-     *         control.stopPropagation();
-     *
-     *         // You can ALSO stop propagation without the control object
-     *         // reference via the global reference:
-     *         ige.input.stopPropagation();
-     *     });
-     * @return {*}
-     */
+	 * Gets / sets the callback that is fired when a mouse
+	 * wheel event is triggered.
+	 * @param {Function=} callback
+	 * @example #Hook the mouse wheel event and stop it propagating further down the scenegraph
+	 *     entity.mouseWheel(function (event, control) {
+	 *         // Mouse wheel with button
+	 *         console.log('Mouse wheel button: ' + event.button);
+	 *         console.log('Mouse wheel delta: ' + event.wheelDelta);
+	 *
+	 *         // Stop the event propagating further down the scenegraph
+	 *         control.stopPropagation();
+	 *
+	 *         // You can ALSO stop propagation without the control object
+	 *         // reference via the global reference:
+	 *         ige.input.stopPropagation();
+	 *     });
+	 * @return {*}
+	 */
 	mouseWheel = (callback) => {
 		if (callback) {
 			this._mouseWheel = callback;
@@ -3705,9 +3733,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * Removes the callback that is fired when a mouse
-     * move event is triggered.
-     */
+	 * Removes the callback that is fired when a mouse
+	 * move event is triggered.
+	 */
 	mouseMoveOff () {
 		delete this._mouseMove;
 
@@ -3715,9 +3743,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Removes the callback that is fired when a mouse
-     * over event is triggered.
-     */
+	 * Removes the callback that is fired when a mouse
+	 * over event is triggered.
+	 */
 	mouseOverOff () {
 		delete this._mouseOver;
 
@@ -3725,9 +3753,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Removes the callback that is fired when a mouse
-     * out event is triggered.
-     */
+	 * Removes the callback that is fired when a mouse
+	 * out event is triggered.
+	 */
 	mouseOutOff () {
 		delete this._mouseOut;
 
@@ -3735,9 +3763,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Removes the callback that is fired when a mouse
-     * up event is triggered.
-     */
+	 * Removes the callback that is fired when a mouse
+	 * up event is triggered.
+	 */
 	mouseUpOff () {
 		delete this._mouseUp;
 
@@ -3745,10 +3773,10 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Removes the callback that is fired when a mouse
-     * down event is triggered if the listener was registered
-     * via the mouseDown() method.
-     */
+	 * Removes the callback that is fired when a mouse
+	 * down event is triggered if the listener was registered
+	 * via the mouseDown() method.
+	 */
 	mouseDownOff () {
 		delete this._mouseDown;
 
@@ -3756,9 +3784,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Removes the callback that is fired when a mouse
-     * wheel event is triggered.
-     */
+	 * Removes the callback that is fired when a mouse
+	 * wheel event is triggered.
+	 */
 	mouseWheelOff () {
 		delete this._mouseWheel;
 
@@ -3775,58 +3803,38 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the shape / polygon that the mouse events
-     * are triggered against. There are two options, 'aabb' and
-     * 'isoBounds'. The default is 'aabb'.
-     * @param val
-     * @returns {*}
-     * @deprecated
-     */
-	mouseEventTrigger = (val) => {
+	 * Gets / sets the shape / polygon that the mouse events
+	 * are triggered against. There are two options, 'aabb' and
+	 * 'isoBounds'. The default is 'aabb'.
+	 * @param val
+	 * @returns {*}
+	 * @deprecated Please use triggerPolygon() instead
+	 */
+	mouseEventTrigger = (val?: boolean) => {
 		this.log("mouseEventTrigger is no longer in use. Please see triggerPolygon() instead.", "warning");
-		/*if (val !== undefined) {
-			// Set default value
-			this._mouseEventTrigger = 0;
-
-			switch (val) {
-				case 'isoBounds':
-					this._mouseEventTrigger = 1;
-					break;
-
-				case 'custom':
-					this._mouseEventTrigger = 2;
-					break;
-
-				case 'aabb':
-					this._mouseEventTrigger = 0;
-					break;
-			}
-			return this;
-		}
-
-		return this._mouseEventTrigger === 0 ? 'aabb' : 'isoBounds';*/
 	};
 
 	/**
-     * Handler method that determines which mouse-move event
-     * to fire, a mouse-over or a mouse-move.
-     * @private
-     */
-	_handleMouseIn = (event, evc, data) => {
+	 * Handler method that determines which mouse-move event
+	 * to fire, a mouse-over or a mouse-move.
+	 * @private
+	 */
+	_handleMouseIn = (event: Event, evc?: IgeInputEventControl, data?: any) => {
 		// Check if the mouse move is a mouse over
 		if (!this._mouseStateOver) {
 			this._mouseStateOver = true;
+
 			if (this._mouseOver) {
 				this._mouseOver(event, evc, data);
 			}
 
 			/**
-             * Fires when the mouse moves over the entity.
-             * @event IgeEntity#mouseOver
-             * @param {Object} The DOM event object.
-             * @param {Object} The IGE event control object.
-             * @param {*} Any further event data.
-             */
+			 * Fires when the mouse moves over the entity.
+			 * @event IgeEntity#mouseOver
+			 * @param {Object} The DOM event object.
+			 * @param {Object} The IGE event control object.
+			 * @param {*} Any further event data.
+			 */
 			this.emit("mouseOver", [event, evc, data]);
 		}
 
@@ -3837,59 +3845,62 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * Handler method that determines if a mouse-out event
-     * should be fired.
-     * @private
-     */
-	_handleMouseOut = (event, evc, data) => {
+	 * Handler method that determines if a mouse-out event
+	 * should be fired.
+	 * @private
+	 */
+	_handleMouseOut = (event: Event, evc?: IgeInputEventControl, data?: any) => {
 		// The mouse went away from this entity so
 		// set mouse-down to false, regardless of the situation
 		this._mouseStateDown = false;
 
 		// Check if the mouse move is a mouse out
-		if (this._mouseStateOver) {
-			this._mouseStateOver = false;
-			if (this._mouseOut) {
-				this._mouseOut(event, evc, data);
-			}
-
-			/**
-             * Fires when the mouse moves away from the entity.
-             * @event IgeEntity#mouseOut
-             * @param {Object} The DOM event object.
-             * @param {Object} The IGE event control object.
-             * @param {*} Any further event data.
-             */
-			this.emit("mouseOut", [event, evc, data]);
+		if (!this._mouseStateOver) {
+			return;
 		}
+
+		this._mouseStateOver = false;
+
+		if (this._mouseOut) {
+			this._mouseOut(event, evc, data);
+		}
+
+		/**
+		 * Fires when the mouse moves away from the entity.
+		 * @event IgeEntity#mouseOut
+		 * @param {Object} The DOM event object.
+		 * @param {Object} The IGE event control object.
+		 * @param {*} Any further event data.
+		 */
+		this.emit("mouseOut", [event, evc, data]);
 	};
 
 	/**
-     * Handler method that determines if a mouse-wheel event
-     * should be fired.
-     * @private
-     */
-	_handleMouseWheel = (event, evc, data) => {
+	 * Handler method that determines if a mouse-wheel event
+	 * should be fired.
+	 * @private
+	 */
+	_handleMouseWheel = (event: Event, evc?: IgeInputEventControl, data?: any) => {
 		if (this._mouseWheel) {
 			this._mouseWheel(event, evc, data);
 		}
 
 		/**
-         * Fires when the mouse wheel is moved over the entity.
-         * @event IgeEntity#mouseWheel
-         * @param {Object} The DOM event object.
-         * @param {Object} The IGE event control object.
-         * @param {*} Any further event data.
-         */
+		 * Fires when the mouse wheel is moved over the entity.
+		 * @event IgeEntity#mouseWheel
+		 * @param {Object} The DOM event object.
+		 * @param {Object} The IGE event control object.
+		 * @param {*} Any further event data.
+		 */
 		this.emit("mouseWheel", [event, evc, data]);
 	};
 
 	/**
-     * Handler method that determines if a mouse-up event
-     * should be fired.
-     * @private
-     */
-	_handleMouseUp = (event, evc, data) => {
+	 * Handler method that determines if a mouse-up event
+	 * should be fired.
+	 * @private
+	 */
+	_handleMouseUp = (event: Event, evc?: IgeInputEventControl, data?: any) => {
 		// Reset the mouse-down flag
 		this._mouseStateDown = false;
 		if (this._mouseUp) {
@@ -3897,21 +3908,21 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		}
 
 		/**
-         * Fires when a mouse up occurs on the entity.
-         * @event IgeEntity#mouseUp
-         * @param {Object} The DOM event object.
-         * @param {Object} The IGE event control object.
-         * @param {*} Any further event data.
-         */
+		 * Fires when a mouse up occurs on the entity.
+		 * @event IgeEntity#mouseUp
+		 * @param {Object} The DOM event object.
+		 * @param {Object} The IGE event control object.
+		 * @param {*} Any further event data.
+		 */
 		this.emit("mouseUp", [event, evc, data]);
 	};
 
 	/**
-     * Handler method that determines if a mouse-down event
-     * should be fired.
-     * @private
-     */
-	_handleMouseDown = (event, evc, data) => {
+	 * Handler method that determines if a mouse-down event
+	 * should be fired.
+	 * @private
+	 */
+	_handleMouseDown = (event: Event, evc?: IgeInputEventControl, data?: any) => {
 		if (!this._mouseStateDown) {
 			this._mouseStateDown = true;
 
@@ -3920,44 +3931,44 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 			}
 
 			/**
-             * Fires when a mouse down occurs on the entity.
-             * @event IgeEntity#mouseDown
-             * @param {Object} The DOM event object.
-             * @param {Object} The IGE event control object.
-             * @param {*} Any further event data.
-             */
+			 * Fires when a mouse down occurs on the entity.
+			 * @event IgeEntity#mouseDown
+			 * @param {Object} The DOM event object.
+			 * @param {Object} The IGE event control object.
+			 * @param {*} Any further event data.
+			 */
 			this.emit("mouseDown", [event, evc, data]);
 		}
 	};
 
 	/**
-     * Checks mouse input types and fires the correct mouse event
-     * handler. This is an internal method that should never be
-     * called externally.
-     * @param {Object} evc The input component event control object.
-     * @param {Object} data Data passed by the input component into
-     * the new event.
-     * @private
-     */
-	_mouseInTrigger = (evc, data) => {
+	 * Checks mouse input types and fires the correct mouse event
+	 * handler. This is an internal method that should never be
+	 * called externally.
+	 * @param {Object} evc The input component event control object.
+	 * @param {Object} eventData Data passed by the input component into
+	 * the new event.
+	 * @private
+	 */
+	_mouseInTrigger = (evc: IgeInputEventControl, eventData?: any) => {
 		if (ige.input.mouseMove) {
 			// There is a mouse move event
-			this._handleMouseIn(ige.input.mouseMove, evc, data);
+			this._handleMouseIn(ige.input.mouseMove, evc, eventData);
 		}
 
 		if (ige.input.mouseDown) {
 			// There is a mouse down event
-			this._handleMouseDown(ige.input.mouseDown, evc, data);
+			this._handleMouseDown(ige.input.mouseDown, evc, eventData);
 		}
 
 		if (ige.input.mouseUp) {
 			// There is a mouse up event
-			this._handleMouseUp(ige.input.mouseUp, evc, data);
+			this._handleMouseUp(ige.input.mouseUp, evc, eventData);
 		}
 
 		if (ige.input.mouseWheel) {
 			// There is a mouse wheel event
-			this._handleMouseWheel(ige.input.mouseWheel, evc, data);
+			this._handleMouseWheel(ige.input.mouseWheel, evc, eventData);
 		}
 	};
 
@@ -3965,13 +3976,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	// TRANSFORM
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
-     * Enables tracing calls which inadvertently assign NaN values to
-     * transformation properties. When called on an entity this system
-     * will break with a debug line when a transform property is set
-     * to NaN allowing you to step back through the call stack and
-     * determine where the offending value originated.
-     * @returns {IgeEntity}
-     */
+	 * Enables tracing calls which inadvertently assign NaN values to
+	 * transformation properties. When called on an entity this system
+	 * will break with a debug line when a transform property is set
+	 * to NaN allowing you to step back through the call stack and
+	 * determine where the offending value originated.
+	 * @returns {IgeEntity}
+	 */
 	debugTransforms () {
 		ige.traceSet(this._translate, "x", 1, (val) => {
 			return isNaN(val);
@@ -4037,15 +4048,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Translates the entity by adding the passed values to
-     * the current translation values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
-     * @example #Translate the entity by 10 along the x axis
-     *     entity.translateBy(10, 0, 0);
-     * @return {*}
-     */
+	 * Translates the entity by adding the passed values to
+	 * the current translation values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Translate the entity by 10 along the x axis
+	 *     entity.translateBy(10, 0, 0);
+	 * @return {*}
+	 */
 	translateBy (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._translate.x += x;
@@ -4059,14 +4070,14 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Translates the entity to the passed values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
-     * @example #Translate the entity to 10, 0, 0
-     *     entity.translateTo(10, 0, 0);
-     * @return {*}
-     */
+	 * Translates the entity to the passed values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Translate the entity to 10, 0, 0
+	 *     entity.translateTo(10, 0, 0);
+	 * @return {*}
+	 */
 	translateTo (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._translate.x = x;
@@ -4080,15 +4091,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Translates the entity to the passed point.
-     * @param {IgePoint3d} point The point with co-ordinates.
-     * @example #Translate the entity to 10, 0, 0
-     *     var point = new IgePoint3d(10, 0, 0),
-     *         entity = new IgeEntity();
-     *
-     *     entity.translateToPoint(point);
-     * @return {*}
-     */
+	 * Translates the entity to the passed point.
+	 * @param {IgePoint3d} point The point with co-ordinates.
+	 * @example #Translate the entity to 10, 0, 0
+	 *     var point = new IgePoint3d(10, 0, 0),
+	 *         entity = new IgeEntity();
+	 *
+	 *     entity.translateToPoint(point);
+	 * @return {*}
+	 */
 	translateToPoint (point) {
 		if (point !== undefined) {
 			this._translate.x = point.x;
@@ -4102,24 +4113,24 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Translates the object to the tile co-ordinates passed.
-     * @param {Number} x The x tile co-ordinate.
-     * @param {Number} y The y tile co-ordinate.
-     * @param {Number=} z The z tile co-ordinate.
-     * @example #Translate entity to tile
-     *     // Create a tile map
-     *     var tileMap = new IgeTileMap2d()
-     *         .tileWidth(40)
-     *         .tileHeight(40);
-     *
-     *     // Mount our entity to the tile map
-     *     entity.mount(tileMap);
-     *
-     *     // Translate the entity to the tile x:10, y:12
-     *     entity.translateToTile(10, 12, 0);
-     * @return {*} The object this method was called from to allow
-     * method chaining.
-     */
+	 * Translates the object to the tile co-ordinates passed.
+	 * @param {Number} x The x tile co-ordinate.
+	 * @param {Number} y The y tile co-ordinate.
+	 * @param {Number=} z The z tile co-ordinate.
+	 * @example #Translate entity to tile
+	 *     // Create a tile map
+	 *     var tileMap = new IgeTileMap2d()
+	 *         .tileWidth(40)
+	 *         .tileHeight(40);
+	 *
+	 *     // Mount our entity to the tile map
+	 *     entity.mount(tileMap);
+	 *
+	 *     // Translate the entity to the tile x:10, y:12
+	 *     entity.translateToTile(10, 12, 0);
+	 * @return {*} The object this method was called from to allow
+	 * method chaining.
+	 */
 	translateToTile (x?: number, y?: number, z?: number) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
 			let finalZ;
@@ -4147,11 +4158,11 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets the translate accessor object.
-     * @example #Use the translate accessor object to alter the y co-ordinate of the entity to 10
-     *     entity.translate().y(10);
-     * @return {*}
-     */
+	 * Gets the translate accessor object.
+	 * @example #Use the translate accessor object to alter the y co-ordinate of the entity to 10
+	 *     entity.translate().y(10);
+	 * @return {*}
+	 */
 	translate = (...args) => {
 		if (args.length) {
 			this.log("You called translate with arguments, did you mean translateTo or translateBy instead of translate?", "warning");
@@ -4167,13 +4178,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * The translate accessor method for the x axis. This
-     * method is not called directly but is accessed through
-     * the accessor object obtained by calling entity.translate().
-     * @param {Number=} val The new value to apply to the co-ordinate.
-     * @return {*}
-     * @private
-     */
+	 * The translate accessor method for the x axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.translate().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
 	_translateAccessorX = (val) => {
 		if (val !== undefined) {
 			this._translate.x = val;
@@ -4184,13 +4195,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * The translate accessor method for the y axis. This
-     * method is not called directly but is accessed through
-     * the accessor object obtained by calling entity.translate().
-     * @param {Number=} val The new value to apply to the co-ordinate.
-     * @return {*}
-     * @private
-     */
+	 * The translate accessor method for the y axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.translate().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
 	_translateAccessorY (val) {
 		if (val !== undefined) {
 			this._translate.y = val;
@@ -4201,13 +4212,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * The translate accessor method for the z axis. This
-     * method is not called directly but is accessed through
-     * the accessor object obtained by calling entity.translate().
-     * @param {Number=} val The new value to apply to the co-ordinate.
-     * @return {*}
-     * @private
-     */
+	 * The translate accessor method for the z axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.translate().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
 	_translateAccessorZ = (val) => {
 		// TODO: Do we need to do anything to the matrix here for iso views?
 		//this._localMatrix.translateTo(this._translate.x, this._translate.y);
@@ -4220,15 +4231,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * Rotates the entity by adding the passed values to
-     * the current rotation values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
-     * @example #Rotate the entity by 10 degrees about the z axis
-     *     entity.rotateBy(0, 0, degreesToRadians(10));
-     * @return {*}
-     */
+	 * Rotates the entity by adding the passed values to
+	 * the current rotation values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Rotate the entity by 10 degrees about the z axis
+	 *     entity.rotateBy(0, 0, degreesToRadians(10));
+	 * @return {*}
+	 */
 	rotateBy (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._rotate.x += x;
@@ -4242,14 +4253,14 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Rotates the entity to the passed values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
-     * @example #Rotate the entity to 10 degrees about the z axis
-     *     entity.rotateTo(0, 0, degreesToRadians(10));
-     * @return {*}
-     */
+	 * Rotates the entity to the passed values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Rotate the entity to 10 degrees about the z axis
+	 *     entity.rotateTo(0, 0, degreesToRadians(10));
+	 * @return {*}
+	 */
 	rotateTo (x: number, y: number, z: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._rotate.x = x;
@@ -4263,11 +4274,11 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets the translate accessor object.
-     * @example #Use the rotate accessor object to rotate the entity about the z axis 10 degrees
-     *     entity.rotate().z(degreesToRadians(10));
-     * @return {*}
-     */
+	 * Gets the translate accessor object.
+	 * @example #Use the rotate accessor object to rotate the entity about the z axis 10 degrees
+	 *     entity.rotate().z(degreesToRadians(10));
+	 * @return {*}
+	 */
 	rotate (...args) {
 		if (args.length) {
 			this.log("You called rotate with arguments, did you mean rotateTo or rotateBy instead of rotate?", "warning");
@@ -4283,13 +4294,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * The rotate accessor method for the x axis. This
-     * method is not called directly but is accessed through
-     * the accessor object obtained by calling entity.rotate().
-     * @param {Number=} val The new value to apply to the co-ordinate.
-     * @return {*}
-     * @private
-     */
+	 * The rotate accessor method for the x axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.rotate().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
 	_rotateAccessorX = (val) => {
 		if (val !== undefined) {
 			this._rotate.x = val;
@@ -4300,13 +4311,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * The rotate accessor method for the y axis. This
-     * method is not called directly but is accessed through
-     * the accessor object obtained by calling entity.rotate().
-     * @param {Number=} val The new value to apply to the co-ordinate.
-     * @return {*}
-     * @private
-     */
+	 * The rotate accessor method for the y axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.rotate().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
 	_rotateAccessorY = (val) => {
 		if (val !== undefined) {
 			this._rotate.y = val;
@@ -4317,13 +4328,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * The rotate accessor method for the z axis. This
-     * method is not called directly but is accessed through
-     * the accessor object obtained by calling entity.rotate().
-     * @param {Number=} val The new value to apply to the co-ordinate.
-     * @return {*}
-     * @private
-     */
+	 * The rotate accessor method for the z axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.rotate().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
 	_rotateAccessorZ = (val) => {
 		if (val !== undefined) {
 			this._rotate.z = val;
@@ -4334,15 +4345,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * Scales the entity by adding the passed values to
-     * the current scale values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
-     * @example #Scale the entity by 2 on the x axis
-     *     entity.scaleBy(2, 0, 0);
-     * @return {*}
-     */
+	 * Scales the entity by adding the passed values to
+	 * the current scale values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Scale the entity by 2 on the x axis
+	 *     entity.scaleBy(2, 0, 0);
+	 * @return {*}
+	 */
 	scaleBy (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._scale.x += x;
@@ -4356,14 +4367,14 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Scale the entity to the passed values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
-     * @example #Set the entity scale to 1 on all axes
-     *     entity.scaleTo(1, 1, 1);
-     * @return {*}
-     */
+	 * Scale the entity to the passed values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Set the entity scale to 1 on all axes
+	 *     entity.scaleTo(1, 1, 1);
+	 * @return {*}
+	 */
 	scaleTo (x?: number, y?: number, z?: number) {
 		if (x === undefined || y === undefined || z === undefined) {
 			this.log("scaleTo() called with a missing or undefined x, y or z parameter!", "error");
@@ -4378,11 +4389,11 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets the scale accessor object.
-     * @example #Use the scale accessor object to set the scale of the entity on the x axis to 1
-     *     entity.scale().x(1);
-     * @return {*}
-     */
+	 * Gets the scale accessor object.
+	 * @example #Use the scale accessor object to set the scale of the entity on the x axis to 1
+	 *     entity.scale().x(1);
+	 * @return {*}
+	 */
 	scale (...args: any[]) {
 		if (args.length) {
 			throw new Error("You called scale with arguments, did you mean scaleTo or scaleBy instead of scale?");
@@ -4398,13 +4409,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * The scale accessor method for the x axis. This
-     * method is not called directly but is accessed through
-     * the accessor object obtained by calling entity.scale().
-     * @param {Number=} val The new value to apply to the co-ordinate.
-     * @return {*}
-     * @private
-     */
+	 * The scale accessor method for the x axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.scale().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
 	_scaleAccessorX = (val) => {
 		if (val !== undefined) {
 			this._scale.x = val;
@@ -4415,13 +4426,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * The scale accessor method for the y axis. This
-     * method is not called directly but is accessed through
-     * the accessor object obtained by calling entity.scale().
-     * @param {Number=} val The new value to apply to the co-ordinate.
-     * @return {*}
-     * @private
-     */
+	 * The scale accessor method for the y axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.scale().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
 	_scaleAccessorY = (val) => {
 		if (val !== undefined) {
 			this._scale.y = val;
@@ -4432,13 +4443,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * The scale accessor method for the z axis. This
-     * method is not called directly but is accessed through
-     * the accessor object obtained by calling entity.scale().
-     * @param {Number=} val The new value to apply to the co-ordinate.
-     * @return {*}
-     * @private
-     */
+	 * The scale accessor method for the z axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.scale().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
 	_scaleAccessorZ = (val) => {
 		if (val !== undefined) {
 			this._scale.z = val;
@@ -4449,15 +4460,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * Sets the origin of the entity by adding the passed values to
-     * the current origin values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
-     * @example #Add 0.5 to the origin on the x axis
-     *     entity.originBy(0.5, 0, 0);
-     * @return {*}
-     */
+	 * Sets the origin of the entity by adding the passed values to
+	 * the current origin values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Add 0.5 to the origin on the x axis
+	 *     entity.originBy(0.5, 0, 0);
+	 * @return {*}
+	 */
 	originBy (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._origin.x += x;
@@ -4471,14 +4482,14 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Set the origin of the entity to the passed values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
-     * @example #Set the entity origin to 0.5 on all axes
-     *     entity.originTo(0.5, 0.5, 0.5);
-     * @return {*}
-     */
+	 * Set the origin of the entity to the passed values.
+	 * @param {Number} x The x co-ordinate.
+	 * @param {Number} y The y co-ordinate.
+	 * @param {Number} z The z co-ordinate.
+	 * @example #Set the entity origin to 0.5 on all axes
+	 *     entity.originTo(0.5, 0.5, 0.5);
+	 * @return {*}
+	 */
 	originTo (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._origin.x = x;
@@ -4492,11 +4503,11 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets the origin accessor object.
-     * @example #Use the origin accessor object to set the origin of the entity on the x axis to 1
-     *     entity.origin().x(1);
-     * @return {*}
-     */
+	 * Gets the origin accessor object.
+	 * @example #Use the origin accessor object to set the origin of the entity on the x axis to 1
+	 *     entity.origin().x(1);
+	 * @return {*}
+	 */
 	origin () {
 		return (
 			this._entity || {
@@ -4508,13 +4519,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * The origin accessor method for the x axis. This
-     * method is not called directly but is accessed through
-     * the accessor object obtained by calling entity.origin().
-     * @param {Number=} val The new value to apply to the co-ordinate.
-     * @return {*}
-     * @private
-     */
+	 * The origin accessor method for the x axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.origin().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
 	_originAccessorX = (val) => {
 		if (val !== undefined) {
 			this._origin.x = val;
@@ -4525,13 +4536,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * The origin accessor method for the y axis. This
-     * method is not called directly but is accessed through
-     * the accessor object obtained by calling entity.origin().
-     * @param {Number=} val The new value to apply to the co-ordinate.
-     * @return {*}
-     * @private
-     */
+	 * The origin accessor method for the y axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.origin().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
 	_originAccessorY = (val) => {
 		if (val !== undefined) {
 			this._origin.y = val;
@@ -4542,13 +4553,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	};
 
 	/**
-     * The origin accessor method for the z axis. This
-     * method is not called directly but is accessed through
-     * the accessor object obtained by calling entity.origin().
-     * @param {Number=} val The new value to apply to the co-ordinate.
-     * @return {*}
-     * @private
-     */
+	 * The origin accessor method for the z axis. This
+	 * method is not called directly but is accessed through
+	 * the accessor object obtained by calling entity.origin().
+	 * @param {Number=} val The new value to apply to the co-ordinate.
+	 * @return {*}
+	 * @private
+	 */
 	_originAccessorZ = (val) => {
 		if (val !== undefined) {
 			this._origin.z = val;
@@ -4569,10 +4580,10 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Checks the current transform values against the previous ones. If
-     * any value is different, the appropriate method is called which will
-     * update the transformation matrix accordingly.
-     */
+	 * Checks the current transform values against the previous ones. If
+	 * any value is different, the appropriate method is called which will
+	 * update the transformation matrix accordingly.
+	 */
 	updateTransform () {
 		this._localMatrix.identity();
 
@@ -4646,13 +4657,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the disable interpolation flag. If set to true then
-     * stream data being received by the client will not be interpolated
-     * and will be instantly assigned instead. Useful if your entity's
-     * transformations should not be interpolated over time.
-     * @param val
-     * @returns {*}
-     */
+	 * Gets / sets the disable interpolation flag. If set to true then
+	 * stream data being received by the client will not be interpolated
+	 * and will be instantly assigned instead. Useful if your entity's
+	 * transformations should not be interpolated over time.
+	 * @param val
+	 * @returns {*}
+	 */
 	disableInterpolation (val) {
 		if (val !== undefined) {
 			this._disableInterpolation = val;
@@ -4666,14 +4677,14 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	// STREAM
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
-     * Gets / sets the array of sections that this entity will
-     * encode into its stream data.
-     * @param {Array=} sectionArray An array of strings.
-     * @example #Define the sections this entity will use in the network stream. Use the default "transform" section as well as a "custom1" section
-     *     entity.streamSections('transform', 'custom1');
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the array of sections that this entity will
+	 * encode into its stream data.
+	 * @param {Array=} sectionArray An array of strings.
+	 * @example #Define the sections this entity will use in the network stream. Use the default "transform" section as well as a "custom1" section
+	 *     entity.streamSections('transform', 'custom1');
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	streamSections (sectionArray) {
 		if (sectionArray !== undefined) {
 			this._streamSections = sectionArray;
@@ -4684,9 +4695,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Adds a section into the existing streamed sections array.
-     * @param {String} sectionName The section name to add.
-     */
+	 * Adds a section into the existing streamed sections array.
+	 * @param {String} sectionName The section name to add.
+	 */
 	streamSectionsPush (sectionName) {
 		this._streamSections = this._streamSections || [];
 		this._streamSections.push(sectionName);
@@ -4695,9 +4706,9 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Removes a section into the existing streamed sections array.
-     * @param {String} sectionName The section name to remove.
-     */
+	 * Removes a section into the existing streamed sections array.
+	 * @param {String} sectionName The section name to remove.
+	 */
 	streamSectionsPull (sectionName) {
 		if (this._streamSections) {
 			arrPull(this._streamSections, sectionName);
@@ -4707,15 +4718,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets a streaming property on this entity. If set, the
-     * property's new value is streamed to clients on the next packet.
-     *
-     * @param {String} propName The name of the property to get / set.
-     * @param {*=} propVal Optional. If provided, the property is set
-     * to this value.
-     * @return {*} "this" when a propVal argument is passed to allow method
-     * chaining or the current value if no propVal argument is specified.
-     */
+	 * Gets / sets a streaming property on this entity. If set, the
+	 * property's new value is streamed to clients on the next packet.
+	 *
+	 * @param {String} propName The name of the property to get / set.
+	 * @param {*=} propVal Optional. If provided, the property is set
+	 * to this value.
+	 * @return {*} "this" when a propVal argument is passed to allow method
+	 * chaining or the current value if no propVal argument is specified.
+	 */
 	streamProperty (propName, propVal) {
 		this._streamProperty = this._streamProperty || {};
 		//this._streamPropertyChange = this._streamPropertyChange || {};
@@ -4735,21 +4746,21 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the data for the specified data section id. This method
-     * is usually not called directly and instead is part of the network
-     * stream system. General use case is to write your own custom streamSectionData
-     * method in a class that extends IgeEntity so that you can control the
-     * data that the entity will send and receive over the network stream.
-     * @param {String} sectionId A string identifying the section to
-     * handle data get / set for.
-     * @param {*=} data If present, this is the data that has been sent
-     * from the server to the client for this entity.
-     * @param {Boolean=} bypassTimeStream If true, will assign transform
-     * directly to entity instead of adding the values to the time stream.
-     * @return {*} "this" when a data argument is passed to allow method
-     * chaining or the current value if no data argument is specified.
-     */
-	streamSectionData (sectionId: string, data: string, bypassTimeStream: boolean = false) {
+	 * Gets / sets the data for the specified data section id. This method
+	 * is usually not called directly and instead is part of the network
+	 * stream system. General use case is to write your own custom streamSectionData
+	 * method in a class that extends IgeEntity so that you can control the
+	 * data that the entity will send and receive over the network stream.
+	 * @param {String} sectionId A string identifying the section to
+	 * handle data get / set for.
+	 * @param {*=} data If present, this is the data that has been sent
+	 * from the server to the client for this entity.
+	 * @param {Boolean=} bypassTimeStream If true, will assign transform
+	 * directly to entity instead of adding the values to the time stream.
+	 * @return {*} "this" when a data argument is passed to allow method
+	 * chaining or the current value if no data argument is specified.
+	 */
+	streamSectionData (sectionId: string, data?: string, bypassTimeStream: boolean = false) {
 		switch (sectionId) {
 		case "transform":
 			if (data) {
@@ -4842,11 +4853,11 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 				// We should return stringified data
 				return (
 					this._translate.toString(this._streamFloatPrecision) +
-                        "," + // translate
-                        this._scale.toString(this._streamFloatPrecision) +
-                        "," + // scale
-                        this._rotate.toString(this._streamFloatPrecision) +
-                        ","
+						"," + // translate
+						this._scale.toString(this._streamFloatPrecision) +
+						"," + // scale
+						this._rotate.toString(this._streamFloatPrecision) +
+						","
 				); // rotate
 			}
 			break;
@@ -4983,20 +4994,20 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 	/* CEXCLUDE */
 	/**
-     * Gets / sets the stream mode that the stream system will use when
-     * handling pushing data updates to connected clients.
-     * @param {Number=} val A value representing the stream mode.
-     * @example #Set the entity to disable streaming
-     *     entity.streamMode(0);
-     * @example #Set the entity to automatic streaming
-     *     entity.streamMode(1);
-     * @example #Set the entity to manual (advanced mode) streaming
-     *     entity.streamMode(2);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
-	streamMode (val: number): this;
-	streamMode (): number;
+	 * Gets / sets the stream mode that the stream system will use when
+	 * handling pushing data updates to connected clients.
+	 * @param {Number=} val A value representing the stream mode.
+	 * @example #Set the entity to disable streaming
+	 *     entity.streamMode(0);
+	 * @example #Set the entity to automatic streaming
+	 *     entity.streamMode(1);
+	 * @example #Set the entity to manual (advanced mode) streaming
+	 *     entity.streamMode(2);
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
+	streamMode(val: number): this;
+	streamMode(): number;
 	streamMode (val?: number) {
 		if (val !== undefined) {
 			if (isServer) {
@@ -5009,30 +5020,32 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the stream control callback function that will be called
-     * each time the entity tick method is called and stream-able data is
-     * updated.
-     * @param {Function=} method The stream control method.
-     * @example #Set the entity's stream control method to control when this entity is streamed and when it is not
-     *     entity.streamControl(function (clientId) {
-     *         // Let's use an example where we only want this entity to stream
-     *         // to one particular client with the id 4039589434
-     *         if (clientId === '4039589434') {
-     *             // Returning true tells the network stream to send data
-     *             // about this entity to the client
-     *             return true;
-     *         } else {
-     *             // Returning false tells the network stream NOT to send
-     *             // data about this entity to the client
-     *             return false;
-     *         }
-     *     });
-     *
-     * Further reading: [Controlling Streaming](http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/manual/networking-multiplayer/realtime-network-streaming/stream-modes-and-controlling-streaming/)
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
-	streamControl (method) {
+	 * Gets / sets the stream control callback function that will be called
+	 * each time the entity tick method is called and stream-able data is
+	 * updated.
+	 * @param {Function=} method The stream control method.
+	 * @example #Set the entity's stream control method to control when this entity is streamed and when it is not
+	 *     entity.streamControl(function (clientId) {
+	 *         // Let's use an example where we only want this entity to stream
+	 *         // to one particular client with the id 4039589434
+	 *         if (clientId === '4039589434') {
+	 *             // Returning true tells the network stream to send data
+	 *             // about this entity to the client
+	 *             return true;
+	 *         } else {
+	 *             // Returning false tells the network stream NOT to send
+	 *             // data about this entity to the client
+	 *             return false;
+	 *         }
+	 *     });
+	 *
+	 * Further reading: [Controlling Streaming](http://www.isogenicengine.com/documentation/isogenic-game-engine/versions/1-1-0/manual/networking-multiplayer/realtime-network-streaming/stream-modes-and-controlling-streaming/)
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
+	streamControl (method: (clientId: string, roomId?: string) => boolean): this;
+	streamControl (): (clientId: string, roomId?: string) => boolean;
+	streamControl (method?: (clientId: string, roomId?: string) => boolean) {
 		if (method !== undefined) {
 			this._streamControl = method;
 			return this;
@@ -5042,22 +5055,22 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the stream sync interval. This value
-     * is in milliseconds and cannot be lower than 16. It will
-     * determine how often data from this entity is added to the
-     * stream queue.
-     * @param {Number=} val Number of milliseconds between adding
-     * stream data for this entity to the stream queue.
-     * @param {String=} sectionId Optional id of the stream data
-     * section you want to set the interval for. If omitted the
-     * interval will be applied to all sections.
-     * @example #Set the entity's stream update (sync) interval to 1 second because this entity's data is not highly important to the simulation so save some bandwidth!
-     *     entity.streamSyncInterval(1000);
-     * @example #Set the entity's stream update (sync) interval to 16 milliseconds because this entity's data is very important to the simulation so send as often as possible!
-     *     entity.streamSyncInterval(16);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the stream sync interval. This value
+	 * is in milliseconds and cannot be lower than 16. It will
+	 * determine how often data from this entity is added to the
+	 * stream queue.
+	 * @param {Number=} val Number of milliseconds between adding
+	 * stream data for this entity to the stream queue.
+	 * @param {String=} sectionId Optional id of the stream data
+	 * section you want to set the interval for. If omitted the
+	 * interval will be applied to all sections.
+	 * @example #Set the entity's stream update (sync) interval to 1 second because this entity's data is not highly important to the simulation so save some bandwidth!
+	 *     entity.streamSyncInterval(1000);
+	 * @example #Set the entity's stream update (sync) interval to 16 milliseconds because this entity's data is very important to the simulation so send as often as possible!
+	 *     entity.streamSyncInterval(16);
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	streamSyncInterval (val, sectionId) {
 		if (val !== undefined) {
 			if (!sectionId) {
@@ -5084,20 +5097,20 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Gets / sets the precision by which floating-point values will
-     * be encoded and sent when packaged into stream data.
-     * @param {Number=} val The number of decimal places to preserve.
-     * @example #Set the float precision to 2
-     *     // This will mean that any data using floating-point values
-     *     // that gets sent across the network stream will be rounded
-     *     // to 2 decimal places. This helps save bandwidth by not
-     *     // having to send the entire number since precision above
-     *     // 2 decimal places is usually not that important to the
-     *     // simulation.
-     *     entity.streamFloatPrecision(2);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
+	 * Gets / sets the precision by which floating-point values will
+	 * be encoded and sent when packaged into stream data.
+	 * @param {Number=} val The number of decimal places to preserve.
+	 * @example #Set the float precision to 2
+	 *     // This will mean that any data using floating-point values
+	 *     // that gets sent across the network stream will be rounded
+	 *     // to 2 decimal places. This helps save bandwidth by not
+	 *     // having to send the entire number since precision above
+	 *     // 2 decimal places is usually not that important to the
+	 *     // simulation.
+	 *     entity.streamFloatPrecision(2);
+	 * @return {*} "this" when arguments are passed to allow method
+	 * chaining or the current value if no arguments are specified.
+	 */
 	streamFloatPrecision (val) {
 		if (val !== undefined) {
 			this._streamFloatPrecision = val;
@@ -5123,14 +5136,18 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Queues stream data for this entity to be sent to the
-     * specified client id or array of client ids.
-     * @param {Array} clientId An array of string IDs of each
-     * client to send the stream data to.
-     * @return {IgeEntity} "this".
-     */
-	streamSync (clientId) {
+	 * Queues stream data for this entity to be sent to the
+	 * specified client id or array of client ids.
+	 * @param {Array} clientIds An array of string IDs of each
+	 * client to send the stream data to.
+	 * @return {IgeEntity} "this".
+	 */
+	streamSync (clientIds?: string[]) {
 		if (this._streamMode === 1) {
+			// In stream mode 1, the streamSync function will not
+			// be called with `clientIds` so we don't use that in this
+			// block of code
+
 			// Check if we have a stream sync interval
 			if (this._streamSyncInterval) {
 				this._streamSyncDelta += ige.engine._tickDelta;
@@ -5147,27 +5164,23 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 				}
 			}
 
-			// Grab an array of connected clients from the network
-			// system
-			let recipientArr = [],
-				clientArr = ige.network.clients(this._streamRoomId),
-				i;
+			// Grab an array of connected clients from the network system
+			const recipientArr: string[] = [];
+			const clientsById = (ige.network as IgeNetIoServerComponent).clients(this._streamRoomId);
 
-			for (i in clientArr) {
-				if (clientArr.hasOwnProperty(i)) {
-					// Check for a stream control method
-					if (this._streamControl) {
-						// Call the callback method and if it returns true,
-						// send the stream data to this client
-						if (this._streamControl.apply(this, [i, this._streamRoomId])) {
-							recipientArr.push(i);
-						}
-					} else {
-						// No control method so process for this client
-						recipientArr.push(i);
+			Object.keys(clientsById).forEach((clientId) => {
+				// Check for a stream control method
+				if (this._streamControl) {
+					// Call the callback method and if it returns true,
+					// send the stream data to this client
+					if (this._streamControl(clientId, this._streamRoomId)) {
+						recipientArr.push(clientId);
 					}
+				} else {
+					// No control method so process for this client
+					recipientArr.push(clientId);
 				}
-			}
+			})
 
 			this._streamSync(recipientArr);
 			return this;
@@ -5175,7 +5188,7 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 
 		if (this._streamMode === 2) {
 			// Stream mode is advanced
-			this._streamSync(clientId, this._streamRoomId);
+			this._streamSync(clientIds, this._streamRoomId);
 
 			return this;
 		}
@@ -5184,38 +5197,38 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Override this method if your entity should send data through to
-     * the client when it is being created on the client for the first
-     * time through the network stream. The data will be provided as the
-     * first argument in the constructor call to the entity class so
-     * you should expect to receive it as per this example:
-     * @example #Using and Receiving Stream Create Data
-     *     class MyNewClass extends IgeEntity {
-     *         classId = "MyNewClass";
-     *
-     *         // Define the init with the parameter to receive the
-     *         // data you return in the streamCreateData() method
-     *         init = (myCreateData) => {
-     *             this._myData = myCreateData;
-     *         },
-     *
-     *         streamCreateData = () => {
-     *             return this._myData;
-     *         }
-     *     });
-     *
-     * Valid return values must not include circular references!
-     */
+	 * Override this method if your entity should send data through to
+	 * the client when it is being created on the client for the first
+	 * time through the network stream. The data will be provided as the
+	 * first argument in the constructor call to the entity class so
+	 * you should expect to receive it as per this example:
+	 * @example #Using and Receiving Stream Create Data
+	 *     class MyNewClass extends IgeEntity {
+	 *         classId = "MyNewClass";
+	 *
+	 *         // Define the init with the parameter to receive the
+	 *         // data you return in the streamCreateData() method
+	 *         init = (myCreateData) => {
+	 *             this._myData = myCreateData;
+	 *         },
+	 *
+	 *         streamCreateData = () => {
+	 *             return this._myData;
+	 *         }
+	 *     });
+	 *
+	 * Valid return values must not include circular references!
+	 */
 	streamCreateData () {
 	}
 
 	/**
-     * Gets / sets the stream emit created flag. If set to true this entity
-     * emit a "streamCreated" event when it is created by the stream, but
-     * after the id and initial transform are set.
-     * @param val
-     * @returns {*}
-     */
+	 * Gets / sets the stream emit created flag. If set to true this entity
+	 * emit a "streamCreated" event when it is created by the stream, but
+	 * after the id and initial transform are set.
+	 * @param val
+	 * @returns {*}
+	 */
 	streamEmitCreated (val?: boolean) {
 		if (val !== undefined) {
 			this._streamEmitCreated = val;
@@ -5226,28 +5239,27 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Asks the stream system to queue the stream data to the specified
-     * client id or array of ids.
-     * @param {Array} recipientArr The array of ids of the client(s) to
-     * queue stream data for. The stream data being queued
-     * is returned by a call to this._streamData().
-     * @param {String} streamRoomId The id of the room the entity belongs
-     * in (can be undefined or null if no room assigned).
-     * @private
-     */
-	_streamSync (recipientArr: string[], streamRoomId?: string) {
-		let arrCount = recipientArr.length,
-			arrIndex,
-			clientId,
-			thisId = this.id(),
-			filteredArr = [],
-			createResult = true; // We set this to true by default
-
+	 * Asks the stream system to queue the stream data to the specified
+	 * client id or array of ids.
+	 * @param {Array} recipientArr The array of ids of the client(s) to
+	 * queue stream data for. The stream data being queued
+	 * is returned by a call to this._streamData().
+	 * @param {String} streamRoomId The id of the room the entity belongs
+	 * in (can be undefined or null if no room assigned).
+	 * @private
+	 */
+	_streamSync (recipientArr: string[] = [], streamRoomId?: string) {
+		const arrCount = recipientArr.length;
+		const thisId = this.id();
+		const filteredArr: string[] = [];
 		const network = ige.network as IgeNetIoServerComponent;
 
+		let createResult = true; // We set this to true by default
+		let data = "";
+
 		// Loop the recipient array
-		for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
-			clientId = recipientArr[arrIndex];
+		for (let arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+			const clientId = recipientArr[arrIndex];
 
 			// Check if the client has already received a create
 			// command for this entity
@@ -5257,11 +5269,11 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 			}
 
 			// Make sure that if we had to create the entity for
-			// this client that the create worked before bothering
+			// this client that the operation worked before bothering
 			// to waste bandwidth on stream updates
 			if (createResult) {
 				// Get the stream data
-				const data = this._streamData();
+				data = this._streamData();
 
 				// Is the data different from the last data we sent
 				// this client?
@@ -5277,146 +5289,137 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 		}
 
 		if (filteredArr.length) {
-			stream.queue(thisId, data, filteredArr);
+			network.queue(thisId, data, filteredArr);
 		}
 	}
 
 	/**
-     * Forces the stream to push this entity's full stream data on the
-     * next stream sync regardless of what clients have received in the
-     * past. This should only be used when required rather than every
-     * tick as it will reduce the overall efficiency of the stream if
-     * used every tick.
-     * @returns {*}
-     */
+	 * Forces the stream to push this entity's full stream data on the
+	 * next stream sync regardless of what clients have received in the
+	 * past. This should only be used when required rather than every
+	 * tick as it will reduce the overall efficiency of the stream if
+	 * used every tick.
+	 * @returns {*}
+	 */
 	streamForceUpdate () {
-		if (isServer) {
-			const thisId = this.id();
+		const thisId = this.id();
+		const network = ige.network as IgeNetIoServerComponent;
 
-			// Invalidate the stream client data lookup to ensure
-			// the latest data will be pushed on the next stream sync
-			if (
-				ige.network &&
-                ige.network.stream &&
-                ige.network.stream._streamClientData &&
-                ige.network.stream._streamClientData[thisId]
-			) {
-				ige.network.stream._streamClientData[thisId] = {};
-			}
+		// Invalidate the stream client data lookup to ensure
+		// the latest data will be pushed on the next stream sync
+		if (
+			network &&
+			network._streamClientData &&
+			network._streamClientData[thisId]
+		) {
+			network._streamClientData[thisId] = {};
 		}
 
 		return this;
 	}
 
 	/**
-     * Issues a create entity command to the passed client id
-     * or array of ids. If no id is passed it will issue the
-     * command to all connected clients. If using streamMode(1)
-     * this method is called automatically.
-     * @param {*} clientId The id or array of ids to send
-     * the command to.
-     * @example #Send a create command for this entity to all clients
-     *     entity.streamCreate();
-     * @example #Send a create command for this entity to an array of client ids
-     *     entity.streamCreate(['43245325', '326755464', '436743453']);
-     * @example #Send a create command for this entity to a single client id
-     *     entity.streamCreate('43245325');
-     * @return {Boolean}
-     */
+	 * Issues a create entity command to the passed client id
+	 * or array of ids. If no id is passed it will issue the
+	 * command to all connected clients. If using streamMode(1)
+	 * this method is called automatically.
+	 * @param {*} clientId The id or array of ids to send
+	 * the command to.
+	 * @example #Send a create command for this entity to all clients
+	 *     entity.streamCreate();
+	 * @example #Send a create command for this entity to an array of client ids
+	 *     entity.streamCreate(['43245325', '326755464', '436743453']);
+	 * @example #Send a create command for this entity to a single client id
+	 *     entity.streamCreate('43245325');
+	 * @return {Boolean}
+	 */
 	streamCreate (clientId: string) {
-		if (this._parent) {
-			let thisId = this.id(),
-				arr,
-				i;
-
-			const network = ige.network as IgeNetIoServerComponent;
-
-			// Send the client an entity create command first
-			network.send(
-				"_igeStreamCreate",
-				[this.classId, thisId, this._parent.id(), this.streamSectionData("transform"), this.streamCreateData()],
-				clientId
-			);
-
-			network.stream._streamClientCreated[thisId] = network.stream._streamClientCreated[thisId] || {};
-
-			if (clientId) {
-				// Mark the client as having received a create
-				// command for this entity
-				network.stream._streamClientCreated[thisId][clientId] = true;
-			} else {
-				// Mark all clients as having received this create
-				arr = network.clients();
-
-				for (i in arr) {
-					if (arr.hasOwnProperty(i)) {
-						network.stream._streamClientCreated[thisId][i] = true;
-					}
-				}
-			}
-
-			return true;
+		if (!this._parent) {
+			return false;
 		}
 
-		return false;
-	}
+		const thisId = this.id();
+		const network = ige.network as IgeNetIoServerComponent;
 
-	/**
-     * Issues a destroy entity command to the passed client id
-     * or array of ids. If no id is passed it will issue the
-     * command to all connected clients. If using streamMode(1)
-     * this method is called automatically.
-     * @param {*} clientId The id or array of ids to send
-     * the command to.
-     * @example #Send a destroy command for this entity to all clients
-     *     entity.streamDestroy();
-     * @example #Send a destroy command for this entity to an array of client ids
-     *     entity.streamDestroy(['43245325', '326755464', '436743453']);
-     * @example #Send a destroy command for this entity to a single client id
-     *     entity.streamDestroy('43245325');
-     * @return {Boolean}
-     */
-	streamDestroy (clientId?: string) {
-		let thisId = this.id(),
-			arr,
-			i;
+		// Send the client an entity create command first
+		network.send(
+			"_igeStreamCreate",
+			[this.classId, thisId, this._parent.id(), this.streamSectionData("transform"), this.streamCreateData()],
+			clientId
+		);
 
-		// Send clients the stream destroy command for this entity
-		ige.network.send("_igeStreamDestroy", [ige.engine._currentTime, thisId], clientId);
-
-		ige.network.stream._streamClientCreated[thisId] = ige.network.stream._streamClientCreated[thisId] || {};
-		ige.network.stream._streamClientData[thisId] = ige.network.stream._streamClientData[thisId] || {};
+		network._streamClientCreated[thisId] = network._streamClientCreated[thisId] || {};
 
 		if (clientId) {
-			// Mark the client as having received a destroy
+			// Mark the client as having received a create
 			// command for this entity
-			ige.network.stream._streamClientCreated[thisId][clientId] = false;
-			ige.network.stream._streamClientData[thisId][clientId] = undefined;
+			network._streamClientCreated[thisId][clientId] = true;
 		} else {
-			// Mark all clients as having received this destroy
-			arr = ige.network.clients();
+			// Mark all clients as having received this create
+			const clientsById = network.clients();
 
-			for (i in arr) {
-				if (arr.hasOwnProperty(i)) {
-					ige.network.stream._streamClientCreated[thisId][i] = false;
-					ige.network.stream._streamClientData[thisId][i] = undefined;
-				}
-			}
+			Object.keys(clientsById).forEach((tmpClientId) => {
+				network._streamClientCreated[thisId][tmpClientId] = true;
+			});
 		}
 
 		return true;
 	}
 
 	/**
-     * Generates and returns the current stream data for this entity. The
-     * data will usually include only properties that have changed since
-     * the last time the stream data was generated. The returned data is
-     * a string that has been compressed in various ways to reduce network
-     * overhead during transmission.
-     * @return {String} The string representation of the stream data for
-     * this entity.
-     * @private
-     */
+	 * Issues a `destroy entity` command to the passed client id
+	 * or array of ids. If no id is passed it will issue the
+	 * command to all connected clients. If using streamMode(1)
+	 * this method is called automatically.
+	 * @param {*} clientId The id or array of ids to send
+	 * the command to.
+	 * @example #Send a destroy command for this entity to all clients.
+	 *     entity.streamDestroy();
+	 * @example #Send a destroy command for this entity to an array of client ids.
+	 *     entity.streamDestroy(['43245325', '326755464', '436743453']);
+	 * @example #Send a destroy command for this entity to a single client id.
+	 *     entity.streamDestroy('43245325');
+	 * @return {Boolean}
+	 */
+	streamDestroy (clientId?: string) {
+		const thisId = this.id();
+		const network = ige.network as IgeNetIoServerComponent;
+
+		// Send clients the stream destroy command for this entity
+		network.send("_igeStreamDestroy", [ige.engine._currentTime, thisId], clientId);
+
+		network._streamClientCreated[thisId] = network._streamClientCreated[thisId] || {};
+		network._streamClientData[thisId] = network._streamClientData[thisId] || {};
+
+		if (clientId) {
+			// Mark the client as having received a destroy
+			// command for this entity
+			network._streamClientCreated[thisId][clientId] = false;
+			network._streamClientData[thisId][clientId] = "";
+			return true;
+		}
+
+		// Mark all clients as having received this destroy
+		const clientsById = network.clients();
+
+		Object.keys(clientsById).forEach((tmpClientId) => {
+			network._streamClientCreated[thisId][tmpClientId] = false;
+			network._streamClientData[thisId][tmpClientId] = "";
+		});
+
+		return true;
+	}
+
+	/**
+	 * Generates and returns the current stream data for this entity. The
+	 * data will usually include only properties that have changed since
+	 * the last time the stream data was generated. The returned data is
+	 * a string that has been compressed in various ways to reduce network
+	 * overhead during transmission.
+	 * @return {String} The string representation of the stream data for
+	 * this entity.
+	 * @private
+	 */
 	_streamData () {
 		// Check if we already have a cached version of the streamData
 		if (this._streamDataCache) {
@@ -5499,15 +5502,15 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	// INTERPOLATOR
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
-     * Calculates the current value based on the time along the
-     * value range.
-     * @param {Number} startValue The value that the interpolation started from.
-     * @param {Number} endValue The target value to be interpolated to.
-     * @param {Number} startTime The time the interpolation started.
-     * @param {Number} currentTime The current time.
-     * @param {Number} endTime The time the interpolation will end.
-     * @return {Number} The interpolated value.
-     */
+	 * Calculates the current value based on the time along the
+	 * value range.
+	 * @param {Number} startValue The value that the interpolation started from.
+	 * @param {Number} endValue The target value to be interpolated to.
+	 * @param {Number} startTime The time the interpolation started.
+	 * @param {Number} currentTime The current time.
+	 * @param {Number} endTime The time the interpolation will end.
+	 * @return {Number} The interpolated value.
+	 */
 	interpolateValue (startValue: number, endValue: number, startTime: number, currentTime: number, endTime: number) {
 		const totalValue = endValue - startValue;
 		const dataDelta = endTime - startTime;
@@ -5525,13 +5528,13 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 	}
 
 	/**
-     * Processes the time stream for the entity.
-     * @param {Number} renderTime The time that the time stream is
-     * targeting to render the entity at.
-     * @param {Number} maxLerp The maximum lerp before the value
-     * is assigned directly instead of being interpolated.
-     * @private
-     */
+	 * Processes the time stream for the entity.
+	 * @param {Number} renderTime The time that the time stream is
+	 * targeting to render the entity at.
+	 * @param {Number} maxLerp The maximum lerp before the value
+	 * is assigned directly instead of being interpolated.
+	 * @private
+	 */
 	_processInterpolate (renderTime: number, maxLerp = 200) {
 		// Set the maximum lerp to 200 if none is present
 		if (!maxLerp) {
@@ -5575,11 +5578,11 @@ class IgeEntity extends WithEventingMixin(WithDataMixin(IgeBaseClass)) implement
 					timeStream.shift();
 
 					/**
-                     * Fires when the entity interpolates against old data, usually
-                     * the result of slow processing on the client or too much data
-                     * being sent from the server.
-                     * @event IgeEntity#interpolationLag
-                     */
+					 * Fires when the entity interpolates against old data, usually
+					 * the result of slow processing on the client or too much data
+					 * being sent from the server.
+					 * @event IgeEntity#interpolationLag
+					 */
 					this.emit("interpolationLag");
 				}
 			}

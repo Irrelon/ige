@@ -1,5 +1,6 @@
 export class IgeRouter {
     constructor() {
+        this._route = {};
         this.go = function (path) {
             let self = this, currentRoutePath, rootPathString, currentPathParts, newPathParts, tempPath, i;
             // Check for a route definition first

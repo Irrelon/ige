@@ -1,5 +1,9 @@
+import { IgeRouteDefinition } from "../../types/IgeRouteDefinition";
+
 export class IgeRouter {
-	route (path, definition) {
+	_route: Record<string, IgeRouteDefinition> = {};
+
+	route (path?: string, definition?: IgeRouteDefinition) {
 		if (path !== undefined) {
 			if (definition !== undefined) {
 				this._route = this._route || {};
@@ -14,7 +18,7 @@ export class IgeRouter {
 		return this._route;
 	}
 
-	routeData (path, data) {
+	routeData (path?: string, data) {
 		if (path !== undefined) {
 			this._routeData = this._routeData || {};
 
@@ -29,7 +33,7 @@ export class IgeRouter {
 		return this._routeData;
 	}
 
-	go = function (path) {
+	go = function (path?: string) {
 		let self = this,
 			currentRoutePath,
 			rootPathString,
@@ -77,7 +81,7 @@ export class IgeRouter {
 		}
 	}
 
-	_routeAdd = function (path) {
+	_routeAdd = function (path?: string) {
 		let self = this,
 			definition,
 			routeSteps,
@@ -179,7 +183,7 @@ export class IgeRouter {
 		queue.series(function () {}, true);
 	}
 
-	_routeRemove = function (path) {
+	_routeRemove = function (path?: string) {
 		let self = this,
 			routeData,
 			thisFullPath,

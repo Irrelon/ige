@@ -255,16 +255,16 @@ const WithEventingMixin = (Base) => class extends Base {
         if (!this._eventListeners) {
             return;
         }
-        let remArr = this._eventRemovalQueue, arrCount, item, result;
+        const remArr = this._eventRemovalQueue;
         // If the removal array exists
         if (remArr) {
             // Get the number of items in the removal array
-            arrCount = remArr.length;
+            let arrCount = remArr.length;
             // Loop the array
             while (arrCount--) {
-                item = remArr[arrCount];
+                const item = remArr[arrCount];
                 // Call the off() method for this item
-                result = this.off(item[0], item[1]);
+                const result = this.off(item[0], item[1]);
                 // Check if there is a callback
                 if (typeof remArr[2] === "function") {
                     // Call the callback with the removal result

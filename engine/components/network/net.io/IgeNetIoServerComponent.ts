@@ -13,14 +13,14 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	_idCounter: number = 0;
 	_networkCommands: Record<string, IgeNetworkServerSideMessageHandler | undefined> = {}; // Maps a command name to a command handler function
 	_requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkServerSideMessageHandler>> = {};
-	_socketById: Record<string, any> = {};
+	_socketById: Record<string, NetIoSocket> = {};
 	_port: number = 8000;
 	_acceptConnections: boolean = false;
 	_io?: NetIoServer;
 	_streamTimer?: number; // The timer / interval handle
 	_streamInterval: number = 50;
 	_queuedData: Record<string, [string, string]> = {}; // Define the object that will hold the stream data queue
-	_streamClientData: Record<string, Record<string, boolean>> = {}; // Set some stream data containers
+	_streamClientData: Record<string, Record<string, string>> = {}; // Set some stream data containers
 	_streamClientCreated: Record<string, Record<string, boolean>> = {}; // Set some stream data containers
 
 	constructor () {
@@ -262,10 +262,11 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 * by their ID.
 	 * @param {String=} roomId Optional, if provided will only return clients
 	 * that have joined room specified by the passed roomId.
-	 * @return {Array}
+	 * @return
 	 */
-	clients (roomId: string) {
-		return this._socketsByRoomId[roomId];
+	clients (roomId?: string) {
+		if (!roomId) return this._socketById;
+		return this._socketsByRoomId[roomId] || {};
 	}
 
 	/**
@@ -418,35 +419,36 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 		}
 
 		// Check if any listener cancels this
-		if (!this.emit("connect", socket)) {
-			this.log("Accepted connection with id " + socket._id);
-			this._socketById[socket._id] = socket;
-
-			// Store a rooms array for this client
-			this._clientRooms[socket._id] = this._clientRooms[socket._id] || [];
-
-			socket.on("message", (data: IgeNetworkMessageData) => {
-				this._onClientMessage(data, socket._id);
-			});
-
-			socket.on("disconnect", (data: IgeNetworkMessageData) => {
-				this._onClientDisconnect(data, socket);
-			});
-
-			// Send an init message to the client
-			socket.send({
-				cmd: "init",
-				ncmds: this._networkCommandsLookup,
-				ts: ige.engine._timeScale,
-				ct: ige.engine._currentTime
-			});
-
-			// Send a clock sync command
-			this._sendTimeSync(socket._id);
-		} else {
+		if (this.emit("connect", socket)) {
 			// Reject the connection
 			socket.close();
+			return;
 		}
+
+		this.log("Accepted connection with id " + socket._id);
+		this._socketById[socket._id] = socket;
+
+		// Store a rooms array for this client
+		this._clientRooms[socket._id] = this._clientRooms[socket._id] || [];
+
+		socket.on("message", (data: IgeNetworkMessageData) => {
+			this._onClientMessage(data, socket._id);
+		});
+
+		socket.on("disconnect", (data: IgeNetworkMessageData) => {
+			this._onClientDisconnect(data, socket);
+		});
+
+		// Send an init message to the client
+		socket.send({
+			cmd: "init",
+			ncmds: this._networkCommandsLookup,
+			ts: ige.engine._timeScale,
+			ct: ige.engine._currentTime
+		});
+
+		// Send a clock sync command
+		this._sendTimeSync(socket._id);
 	};
 
 	_sendTimeSync (clientId?: string) {
@@ -518,13 +520,13 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 
 	/**
 	 * Queues stream data to be sent during the next stream data interval.
-	 * @param {String} id The id of the entity that this data belongs to.
+	 * @param {String} entityId The id of the entity that this data belongs to.
 	 * @param {String} data The data queued for delivery to the client.
 	 * @param {String} clientId The client id this data is queued for.
 	 * @return {*}
 	 */
-	queue (id: string, data: string, clientId: string) {
-		this._queuedData[id] = [data, clientId];
+	queue (entityId: string, data: string, clientId: string) {
+		this._queuedData[entityId] = [data, clientId];
 		return this;
 	}
 

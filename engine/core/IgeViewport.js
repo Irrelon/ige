@@ -1,5 +1,4 @@
 import IgePoint3d from "./IgePoint3d.js";
-import IgeEntity from "./IgeEntity.js";
 import IgeCamera from "./IgeCamera.js";
 import IgeRect from "./IgeRect.js";
 import WithUiStyleMixin from "../mixins/IgeUiStyleMixin.js";
@@ -7,10 +6,13 @@ import WithUiPositionMixin from "../mixins/IgeUiPositionMixin.js";
 import IgePoint2d from "./IgePoint2d.js";
 import { ige } from "../instance.js";
 import { isClient } from "../services/clientServer.js";
+import IgeBaseClass from "./IgeBaseClass.js";
+// TODO: Turns out we need IgeObject because IgeViewport cannot extend IgeEntity
+//    because IgeEntity imports IgeViewport, creating a circular referencing issue
 /**
  * Creates a new viewport.
  */
-class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
+class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeBaseClass)) {
     constructor(options) {
         super();
         this.classId = "IgeViewport";

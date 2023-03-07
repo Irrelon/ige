@@ -2,6 +2,7 @@ import IgeEventingClass from "../../../core/IgeEventingClass";
 import {
 	IgeNetworkMessageData
 } from "../../../../types/IgeNetworkMessage";
+import { NetIoSocket } from "./server/socketServer";
 
 export class IgeNetIoBaseComponent extends IgeEventingClass {
 	classId = 'IgeNetIoBaseComponent';
@@ -11,7 +12,7 @@ export class IgeNetIoBaseComponent extends IgeEventingClass {
 	_debugCounter: number = 0;
 	_debugMax: number = 0;
 	_clientRooms: Record<string, string[]> = {};
-	_socketsByRoomId: Record<string, Record<string, any>> = {}; // Any should be socket, figure out what that is
+	_socketsByRoomId: Record<string, Record<string, NetIoSocket>> = {}; // Any should be socket, figure out what that is
 	_timeSyncInterval: number = 10000; // Sync the client/server clocks every ten seconds by default
 	_timeSyncLog: Record<string, number> = {};
 	_latency: number = 0;

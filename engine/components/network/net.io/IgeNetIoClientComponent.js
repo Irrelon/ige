@@ -296,6 +296,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
      * and data.
      * @param commandName
      * @param data
+     * @param callback
      */
     send(commandName, data, callback) {
         var _a;

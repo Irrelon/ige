@@ -9,6 +9,7 @@ import { ige } from "../instance";
 import IgeScene2d from "./IgeScene2d";
 import { IgeRegisterableById } from "../../types/IgeRegisterableById";
 import { isClient } from "../services/clientServer";
+import IgeBaseClass from "./IgeBaseClass";
 
 export interface IgeViewportOptions {
 	width: number;
@@ -17,10 +18,13 @@ export interface IgeViewportOptions {
 	scaleToHeight: number;
 }
 
+
+// TODO: Turns out we need IgeObject because IgeViewport cannot extend IgeEntity
+//    because IgeEntity imports IgeViewport, creating a circular referencing issue
 /**
  * Creates a new viewport.
  */
-class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) implements IgeRegisterableById {
+class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeBaseClass)) implements IgeRegisterableById {
 	classId = "IgeViewport";
 	IgeViewport = true;
 	_idRegistered: boolean = false;
