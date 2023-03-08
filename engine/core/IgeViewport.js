@@ -6,13 +6,13 @@ import WithUiPositionMixin from "../mixins/IgeUiPositionMixin.js";
 import IgePoint2d from "./IgePoint2d.js";
 import { ige } from "../instance.js";
 import { isClient } from "../services/clientServer.js";
-import IgeBaseClass from "./IgeBaseClass.js";
+import { IgeObject } from "./IgeObject.js";
 // TODO: Turns out we need IgeObject because IgeViewport cannot extend IgeEntity
 //    because IgeEntity imports IgeViewport, creating a circular referencing issue
 /**
  * Creates a new viewport.
  */
-class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeBaseClass)) {
+class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) {
     constructor(options) {
         super();
         this.classId = "IgeViewport";

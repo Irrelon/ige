@@ -1,8 +1,8 @@
 import type { Mixin } from "../../types/Mixin";
-import type IgeEntity from "../core/IgeEntity";
 import { ige } from "../instance";
+import { IgeObject } from "../core/IgeObject";
 
-const WithUiPositionMixin = <BaseClassType extends Mixin<IgeEntity>>(Base: BaseClassType) => class extends Base {
+const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) => class extends Base {
 	_uiLeft?: number;
 	_uiLeftPercent?: string;
 	_uiCenter?: number;

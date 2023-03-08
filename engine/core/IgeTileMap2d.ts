@@ -1,5 +1,4 @@
 import { ige } from "../instance";
-import IgeEntity from "./IgeEntity";
 import IgeTexture from "./IgeTexture";
 import IgeTileMap2dSmartTexture from "../textures/IgeTileMap2dSmartTexture";
 import IgeMap2d from "./IgeMap2d";
@@ -9,13 +8,14 @@ import IgeRect from "./IgeRect";
 import IgePoint3d from "./IgePoint3d";
 import IgePoly2d from "./IgePoly2d";
 import { isServer } from "../services/clientServer";
+import { IgeObject } from "./IgeObject";
 
 /**
  * Tile maps provide a way to align mounted child objects to a tile-based grid.
  * NOTE: These are not to be confused with IgeTextureMap's which allow you to
  * paint a bunch of tiles to a grid.
  */
-class IgeTileMap2d extends IgeEntity {
+class IgeTileMap2d extends IgeObject {
 	classId = "IgeTileMap2d";
 	IgeTileMap2d = true;
 	_drawGrid?: boolean;

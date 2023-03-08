@@ -1,5 +1,4 @@
 import { ige } from "../instance.js";
-import IgeEntity from "./IgeEntity.js";
 import IgeTexture from "./IgeTexture.js";
 import IgeTileMap2dSmartTexture from "../textures/IgeTileMap2dSmartTexture.js";
 import IgeMap2d from "./IgeMap2d.js";
@@ -9,12 +8,13 @@ import IgeRect from "./IgeRect.js";
 import IgePoint3d from "./IgePoint3d.js";
 import IgePoly2d from "./IgePoly2d.js";
 import { isServer } from "../services/clientServer.js";
+import { IgeObject } from "./IgeObject.js";
 /**
  * Tile maps provide a way to align mounted child objects to a tile-based grid.
  * NOTE: These are not to be confused with IgeTextureMap's which allow you to
  * paint a bunch of tiles to a grid.
  */
-class IgeTileMap2d extends IgeEntity {
+class IgeTileMap2d extends IgeObject {
     constructor(tileWidth, tileHeight) {
         super();
         this.classId = "IgeTileMap2d";

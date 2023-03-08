@@ -3,6 +3,7 @@ class IgeBaseClass {
         this.classId = "IgeBaseClass";
         this._dependencyFulfilled = {};
         this._dependsOnArr = [];
+        this._data = {};
     }
     addDependency(dependencyName, dependencyPromise) {
         dependencyPromise.then(() => {
@@ -95,6 +96,17 @@ class IgeBaseClass {
     log(...args) {
         console.log(...args);
         return this;
+    }
+    data(key, value) {
+        if (value !== undefined) {
+            this._data = this._data || {};
+            this._data[key] = value;
+            return this;
+        }
+        if (this._data) {
+            return this._data[key];
+        }
+        return null;
     }
 }
 export default IgeBaseClass;

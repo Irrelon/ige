@@ -16,6 +16,7 @@ import IgeEntity from "./IgeEntity";
 import { IgeRegisterableById } from "../../types/IgeRegisterableById";
 import { ige } from "../instance";
 import { isClient, isServer } from "../services/clientServer";
+import { IgeObject } from "./IgeObject";
 
 export class IgeEngine extends IgeEntity {
 	client?: IgeBaseClass;
@@ -72,7 +73,7 @@ export class IgeEngine extends IgeEntity {
 	_tickStart: number = 0;
 	_globalScale: IgePoint3d;
 	_graphInstances: Record<string, IgeSceneGraph>;
-	_spawnQueue: IgeEntity[];
+	_spawnQueue: IgeObject[];
 	_headless: boolean;
 	_dependencyQueue: (() => boolean)[];
 	_secondTimer: number;
@@ -282,7 +283,7 @@ export class IgeEngine extends IgeEntity {
      * @param {IgeEntity} entity The entity to add.
      * @returns {Ige|[]} Either this, or the spawn queue.
      */
-	spawnQueue (entity: IgeEntity) {
+	spawnQueue (entity: IgeObject) {
 		if (entity !== undefined) {
 			this._spawnQueue.push(entity);
 			return this;

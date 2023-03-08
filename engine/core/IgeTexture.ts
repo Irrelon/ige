@@ -1,6 +1,5 @@
 import { ige } from "../instance";
 import { IgeSmartTexture } from "../../types/IgeSmartTexture";
-import WithEventingMixin from "../mixins/IgeEventingMixin";
 import { arrPull, newIdHex } from "../services/utils";
 import { IgeSmartFilter } from "../../types/IgeSmartFilter";
 import type { IgeImage } from "./IgeImage";
@@ -8,6 +7,7 @@ import type { IgeCanvas } from "./IgeCanvas";
 import IgeEntity from "./IgeEntity";
 import WithUiStyleMixin from "../mixins/IgeUiStyleMixin";
 import { isClient, isServer } from "../services/clientServer";
+import { IgeObject } from "./IgeObject";
 
 type IgeTextureCell = [number, number, number, number, string?];
 type IgeTextureCellArray = IgeTextureCell[];
@@ -18,7 +18,7 @@ let IgeCanvasClass: typeof IgeCanvas;
 /**
  * Creates a new texture.
  */
-class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeEntity)) {
+class IgeTexture extends WithUiStyleMixin(IgeObject) {
 	classId = "IgeTexture";
 	IgeTexture = true;
 	_id?: string;
@@ -52,8 +52,6 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeEntity)) {
 		super();
 		this._loaded = false;
 
-		/* CEXCLUDE */
-		// If on a server, error
 		if (isServer) {
 			this.log(
 				"Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side using something like an if statement around your texture laoding such as \"if (isClient) {}\".",
@@ -61,7 +59,6 @@ class IgeTexture extends WithEventingMixin(WithUiStyleMixin(IgeEntity)) {
 			);
 			return this;
 		}
-		/* CEXCLUDE */
 
 		this.addDependency("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
 			IgeImageClass = IgeModule;
