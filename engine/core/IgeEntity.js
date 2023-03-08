@@ -1,5 +1,5 @@
 import { ige } from "../instance.js";
-import { isServer } from "../services/clientServer.js";
+import { isClient, isServer } from "../services/clientServer.js";
 import { degreesToRadians, toIso } from "../services/utils.js";
 import IgePoint2d from "./IgePoint2d.js";
 import IgePoint3d from "./IgePoint3d.js";
@@ -2720,6 +2720,70 @@ class IgeEntity extends IgeObject {
         }
         // Process super class
         super.update(ctx, tickDelta);
+    }
+    /**
+     * Gets / sets the data for the specified data section id. This method
+     * is usually not called directly and instead is part of the network
+     * stream system. General use case is to write your own custom streamSectionData
+     * method in a class that extends IgeEntity so that you can control the
+     * data that the entity will send and receive over the network stream.
+     * @param {String} sectionId A string identifying the section to
+     * handle data get / set for.
+     * @param {*=} data If present, this is the data that has been sent
+     * from the server to the client for this entity. If not present then
+     * we should return the data to be sent over the network.
+     * @param {Boolean=} bypassTimeStream If true, will assign transform
+     * directly to entity instead of adding the values to the time stream.
+     * @param {Boolean=} bypassChangeDetection If set to true, bypasses
+     * any change detection on stream data (useful especially when we are
+     * sending stream data to a client for the first time even if the data
+     * has existed on the server for a while - ensuring that even unchanged
+     * data makes it to the new client).
+     * @return {*} "this" when a data argument is passed to allow method
+     * chaining or the current value if no data argument is specified.
+     */
+    streamSectionData(sectionId, data, bypassTimeStream = false, bypassChangeDetection = false) {
+        switch (sectionId) {
+            case 'bounds2d':
+                if (data !== undefined) {
+                    if (isClient) {
+                        const geom = data.split(',');
+                        this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
+                    }
+                }
+                else {
+                    return String(this._bounds2d.x + ',' + this._bounds2d.y);
+                }
+                break;
+            case 'bounds3d':
+                if (data !== undefined) {
+                    if (isClient) {
+                        const geom = data.split(',');
+                        this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
+                    }
+                }
+                else {
+                    return String(this._bounds3d.x + ',' + this._bounds3d.y + ',' + this._bounds3d.z);
+                }
+                break;
+            case 'hidden':
+                if (data !== undefined) {
+                    if (isClient) {
+                        if (data === 'true') {
+                            this.hide();
+                        }
+                        else {
+                            this.show();
+                        }
+                    }
+                }
+                else {
+                    return String(this.isHidden());
+                }
+                break;
+            default:
+                return super.streamSectionData(sectionId, data, bypassTimeStream, bypassChangeDetection);
+        }
     }
 }
 export default IgeEntity;

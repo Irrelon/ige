@@ -940,195 +940,6 @@ export class IgeObject extends IgeEventingClass {
         }
         return this._streamProperty[propName];
     }
-    /**
-     * Gets / sets the data for the specified data section id. This method
-     * is usually not called directly and instead is part of the network
-     * stream system. General use case is to write your own custom streamSectionData
-     * method in a class that extends IgeEntity so that you can control the
-     * data that the entity will send and receive over the network stream.
-     * @param {String} sectionId A string identifying the section to
-     * handle data get / set for.
-     * @param {*=} data If present, this is the data that has been sent
-     * from the server to the client for this entity. If not present then
-     * we should return the data to be sent over the network.
-     * @param {Boolean=} bypassTimeStream If true, will assign transform
-     * directly to entity instead of adding the values to the time stream.
-     * @return {*} "this" when a data argument is passed to allow method
-     * chaining or the current value if no data argument is specified.
-     */
-    streamSectionData(sectionId, data, bypassTimeStream = false) {
-        switch (sectionId) {
-            case 'transform':
-                if (data) {
-                    // We have received updated data
-                    const network = ige.network;
-                    const dataArr = data.split(',');
-                    if (!this._disableInterpolation && !bypassTimeStream && !this._streamJustCreated) {
-                        const parsedDataArr = dataArr.map((dataItem) => {
-                            return parseFloat(dataItem);
-                        });
-                        // Add it to the time stream
-                        this._timeStream.push([network._streamDataTime + network._latency, parsedDataArr]);
-                        // Check stream length, don't allow higher than 10 items
-                        if (this._timeStream.length > 10) {
-                            // Remove the first item
-                            this._timeStream.shift();
-                        }
-                    }
-                    else {
-                        // Assign all the transform values immediately
-                        this._translate.x = parseFloat(dataArr[0]);
-                        this._translate.y = parseFloat(dataArr[1]);
-                        this._translate.z = parseFloat(dataArr[2]);
-                        // Scale
-                        this._scale.x = parseFloat(dataArr[3]);
-                        this._scale.y = parseFloat(dataArr[4]);
-                        this._scale.z = parseFloat(dataArr[5]);
-                        // Rotate
-                        this._rotate.x = parseFloat(dataArr[6]);
-                        this._rotate.y = parseFloat(dataArr[7]);
-                        this._rotate.z = parseFloat(dataArr[8]);
-                        // If we are using composite caching ensure we update the cache
-                        if (this._compositeCache) {
-                            this.cacheDirty(true);
-                        }
-                    }
-                }
-                else {
-                    // We should return stringified data
-                    return this._translate.toString(this._streamFloatPrecision) + ',' + // translate
-                        this._scale.toString(this._streamFloatPrecision) + ',' + // scale
-                        this._rotate.toString(this._streamFloatPrecision) + ','; // rotate
-                }
-                break;
-            case 'depth':
-                if (data !== undefined) {
-                    if ($ige.isClient) {
-                        this.depth(parseInt(data));
-                    }
-                }
-                else {
-                    return String(this.depth());
-                }
-                break;
-            case 'layer':
-                if (data !== undefined) {
-                    if ($ige.isClient) {
-                        this.layer(parseInt(data));
-                    }
-                }
-                else {
-                    return String(this.layer());
-                }
-                break;
-            case 'bounds2d':
-                if (data !== undefined) {
-                    if ($ige.isClient) {
-                        geom = data.split(',');
-                        this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
-                    }
-                }
-                else {
-                    return String(this._bounds2d.x + ',' + this._bounds2d.y);
-                }
-                break;
-            case 'bounds3d':
-                if (data !== undefined) {
-                    if ($ige.isClient) {
-                        geom = data.split(',');
-                        this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
-                    }
-                }
-                else {
-                    return String(this._bounds3d.x + ',' + this._bounds3d.y + ',' + this._bounds3d.z);
-                }
-                break;
-            case 'hidden':
-                if (data !== undefined) {
-                    if ($ige.isClient) {
-                        if (data === 'true') {
-                            this.hide();
-                        }
-                        else {
-                            this.show();
-                        }
-                    }
-                }
-                else {
-                    return String(this.isHidden());
-                }
-                break;
-            case 'mount':
-                if (data !== undefined) {
-                    if ($ige.isClient) {
-                        if (data) {
-                            newParent = $ige.engine.$(data);
-                            if (newParent) {
-                                this.mount(newParent);
-                            }
-                        }
-                        else {
-                            // Unmount
-                            this.unMount();
-                        }
-                    }
-                }
-                else {
-                    parent = this.parent();
-                    if (parent) {
-                        return this.parent().id();
-                    }
-                    else {
-                        return '';
-                    }
-                }
-                break;
-            case 'origin':
-                if (data !== undefined) {
-                    if ($ige.isClient) {
-                        geom = data.split(',');
-                        this.origin(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
-                    }
-                }
-                else {
-                    return String(this._origin.x + ',' + this._origin.y + ',' + this._origin.z);
-                }
-                break;
-            case 'props':
-                if (data !== undefined) {
-                    if ($ige.isClient) {
-                        props = JSON.parse(data);
-                        // Update properties that have been sent through
-                        for (i in props) {
-                            if (props.hasOwnProperty(i)) {
-                                changed = false;
-                                if (props.hasOwnProperty(i)) {
-                                    if (this._streamProperty[i] !== props[i]) {
-                                        //console.log('Updated stream property ' + i + ' to', props[i]);
-                                        changed = true;
-                                    }
-                                    this._streamProperty[i] = props[i];
-                                    this.emit('streamPropChange', [i, props[i]]);
-                                }
-                            }
-                        }
-                    }
-                }
-                else {
-                    stream = $ige.engine.network.stream;
-                    newData = {};
-                    for (i in this._streamProperty) {
-                        if (this._streamProperty.hasOwnProperty(i)) {
-                            if ((stream._streamPropertyChange && stream._streamPropertyChange[this._id] && stream._streamPropertyChange[this._id][i]) || bypassChangeDetection) {
-                                newData[i] = this._streamProperty[i];
-                            }
-                        }
-                    }
-                    return JSON.stringify(newData);
-                }
-                break;
-        }
-    }
     streamMode(val) {
         if (val !== undefined) {
             if (isServer) {
@@ -1328,7 +1139,8 @@ export class IgeObject extends IgeEventingClass {
         const filteredArr = [];
         const network = ige.network;
         let createResult = true; // We set this to true by default
-        let data = "";
+        // Get the stream data
+        const data = this._streamData();
         // Loop the recipient array
         for (let arrIndex = 0; arrIndex < arrCount; arrIndex++) {
             const clientId = recipientArr[arrIndex];
@@ -1342,8 +1154,6 @@ export class IgeObject extends IgeEventingClass {
             // this client that the operation worked before bothering
             // to waste bandwidth on stream updates
             if (createResult) {
-                // Get the stream data
-                data = this._streamData();
                 // Is the data different from the last data we sent
                 // this client?
                 network._streamClientData[thisId] = network._streamClientData[thisId] || {};
@@ -1385,7 +1195,7 @@ export class IgeObject extends IgeEventingClass {
      * this method is called automatically.
      * @param {*} clientId The id or array of ids to send
      * the command to.
-     * @example #Send a create command for this entity to all clients
+     * @example #Send a create command for this entity to all clients.
      *     entity.streamCreate();
      * @example #Send a create command for this entity to an array of client ids
      *     entity.streamCreate(['43245325', '326755464', '436743453']);
@@ -1415,6 +1225,158 @@ export class IgeObject extends IgeEventingClass {
             });
         }
         return true;
+    }
+    /**
+     * Gets / sets the data for the specified data section id. This method
+     * is usually not called directly and instead is part of the network
+     * stream system. General use case is to write your own custom streamSectionData
+     * method in a class that extends IgeEntity so that you can control the
+     * data that the entity will send and receive over the network stream.
+     * @param {String} sectionId A string identifying the section to
+     * handle data get / set for.
+     * @param {*=} data If present, this is the data that has been sent
+     * from the server to the client for this entity. If not present then
+     * we should return the data to be sent over the network.
+     * @param {Boolean=} bypassTimeStream If true, will assign transform
+     * directly to entity instead of adding the values to the time stream.
+     * @param {Boolean=} bypassChangeDetection If set to true, bypasses
+     * any change detection on stream data (useful especially when we are
+     * sending stream data to a client for the first time even if the data
+     * has existed on the server for a while - ensuring that even unchanged
+     * data makes it to the new client).
+     * @return {*} "this" when a data argument is passed to allow method
+     * chaining or the current value if no data argument is specified.
+     */
+    streamSectionData(sectionId, data, bypassTimeStream = false, bypassChangeDetection = false) {
+        switch (sectionId) {
+            case 'transform':
+                if (data) {
+                    // We have received updated data
+                    const dataArr = data.split(',');
+                    const network = ige.network;
+                    if (!this._disableInterpolation && !bypassTimeStream && !this._streamJustCreated) {
+                        const parsedDataArr = dataArr.map((dataItem) => {
+                            return parseFloat(dataItem);
+                        });
+                        // Add it to the time stream
+                        this._timeStream.push([network._streamDataTime + network._latency, parsedDataArr]);
+                        // Check stream length, don't allow higher than 10 items
+                        if (this._timeStream.length > 10) {
+                            // Remove the first item
+                            this._timeStream.shift();
+                        }
+                    }
+                    else {
+                        // Assign all the transform values immediately
+                        this._translate.x = parseFloat(dataArr[0]);
+                        this._translate.y = parseFloat(dataArr[1]);
+                        this._translate.z = parseFloat(dataArr[2]);
+                        // Scale
+                        this._scale.x = parseFloat(dataArr[3]);
+                        this._scale.y = parseFloat(dataArr[4]);
+                        this._scale.z = parseFloat(dataArr[5]);
+                        // Rotate
+                        this._rotate.x = parseFloat(dataArr[6]);
+                        this._rotate.y = parseFloat(dataArr[7]);
+                        this._rotate.z = parseFloat(dataArr[8]);
+                        // If we are using composite caching ensure we update the cache
+                        if (this._compositeCache) {
+                            this.cacheDirty(true);
+                        }
+                    }
+                }
+                else {
+                    // We should return the transform data as a comma separated string
+                    return this._translate.toString(this._streamFloatPrecision) + ',' + // translate
+                        this._scale.toString(this._streamFloatPrecision) + ',' + // scale
+                        this._rotate.toString(this._streamFloatPrecision); // rotate
+                }
+                break;
+            case 'depth':
+                if (data !== undefined) {
+                    if (isClient) {
+                        this.depth(parseInt(data));
+                    }
+                }
+                else {
+                    return String(this.depth());
+                }
+                break;
+            case 'layer':
+                if (data !== undefined) {
+                    if (isClient) {
+                        this.layer(parseInt(data));
+                    }
+                }
+                else {
+                    return String(this.layer());
+                }
+                break;
+            case 'mount':
+                if (data !== undefined) {
+                    if (isClient) {
+                        if (data) {
+                            const newParent = ige.$(data);
+                            if (newParent) {
+                                this.mount(newParent);
+                            }
+                        }
+                        else {
+                            // Unmount
+                            this.unMount();
+                        }
+                    }
+                }
+                else {
+                    const parent = this.parent();
+                    if (parent) {
+                        return parent.id();
+                    }
+                    else {
+                        return '';
+                    }
+                }
+                break;
+            case 'origin':
+                if (data !== undefined) {
+                    if (isClient) {
+                        const geom = data.split(',');
+                        this._origin.x = parseFloat(geom[0]);
+                        this._origin.y = parseFloat(geom[1]);
+                        this._origin.z = parseFloat(geom[2]);
+                    }
+                }
+                else {
+                    return String(this._origin.x + ',' + this._origin.y + ',' + this._origin.z);
+                }
+                break;
+            case 'props':
+                if (data !== undefined) {
+                    if (isClient) {
+                        this._streamProperty = this._streamProperty || {};
+                        const props = JSON.parse(data);
+                        // Update properties that have been sent through
+                        for (const i in props) {
+                            if (this._streamProperty[i] !== props[i]) {
+                                //console.log('Updated stream property ' + i + ' to', props[i]);
+                                this._streamProperty[i] = props[i];
+                                this.emit('streamPropChange', [i, props[i]]);
+                            }
+                        }
+                    }
+                }
+                else {
+                    const newData = {};
+                    const network = ige.network;
+                    for (const i in this._streamProperty) {
+                        if ((network._streamPropertyChange && network._streamPropertyChange[this._id] && network._streamPropertyChange[this._id][i]) || bypassChangeDetection) {
+                            newData[i] = this._streamProperty[i];
+                        }
+                    }
+                    return JSON.stringify(newData);
+                }
+                break;
+        }
     }
     /**
      * Issues a `destroy entity` command to the passed client id

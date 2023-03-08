@@ -91,7 +91,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
          */
         this._onClientConnect = (socket) => {
             if (!this._acceptConnections) {
-                this.log(`Rejecting connection with id ${socket._id} - we are not accepting connections at the moment!`);
+                this.log(`Rejecting connection with id "${socket._id}": We are not accepting connections at the moment!`);
                 socket.close();
                 return;
             }
@@ -101,7 +101,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
                 socket.close();
                 return;
             }
-            this.log("Accepted connection with id " + socket._id);
+            this.log(`Accepted connection with id "${socket._id}"`);
             this._socketById[socket._id] = socket;
             // Store a rooms array for this client
             this._clientRooms[socket._id] = this._clientRooms[socket._id] || [];
@@ -135,16 +135,19 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
             // Send the stream data
             for (const entityId in queueObj) {
                 const item = queueObj[entityId];
-                // Check if we've already sent this client the starting
-                // time of the stream data
-                if (!hasSentTimeDataByClientId[item[1]]) {
-                    // Send the stream start time
-                    network.send('_igeStreamTime', currentTime, item[1]);
-                    hasSentTimeDataByClientId[item[1]] = true;
-                }
-                network.send('_igeStreamData', item[0], item[1]);
-                // Store the new data for later comparison
-                this._streamClientData[entityId][item[1]] = item[0];
+                item[1].forEach((clientId) => {
+                    // Check if we've already sent this client the starting
+                    // time of the stream data
+                    // TODO: Commented this because the receiving client never uses this data at all!
+                    // if (!hasSentTimeDataByClientId[clientId]) {
+                    // 	// Send the stream start time
+                    // 	network.send('_igeStreamTime', currentTime, clientId);
+                    // 	hasSentTimeDataByClientId[clientId] = true;
+                    // }
+                    network.send('_igeStreamData', item[0], clientId);
+                    // Store the new data for later comparison
+                    this._streamClientData[entityId][clientId] = item[0];
+                });
                 delete queueObj[entityId];
                 if (this._streamPropertyChange) {
                     delete this._streamPropertyChange[entityId];
@@ -431,7 +434,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
      * @private
      */
     _onClientDisconnect(data, socket) {
-        this.log("Client disconnected with id " + socket._id);
+        this.log(`Client disconnected with id "${socket._id}"`);
         this.emit("disconnect", socket._id);
         // Remove them from all rooms
         this.clientLeaveAllRooms(socket._id);

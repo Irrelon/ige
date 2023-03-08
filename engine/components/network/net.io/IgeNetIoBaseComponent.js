@@ -1,11 +1,11 @@
 import IgeEventingClass from "../../../core/IgeEventingClass.js";
 export class IgeNetIoBaseComponent extends IgeEventingClass {
     constructor() {
-        super();
+        super(...arguments);
         this.classId = 'IgeNetIoBaseComponent';
         this._networkCommandsIndex = []; // Maps a command name to an integer via the array index
         this._networkCommandsLookup = {}; // Maps a command name to its index
-        this._debug = true;
+        this._debug = false;
         this._debugCounter = 0;
         this._debugMax = 100;
         this._clientRooms = {};
@@ -16,18 +16,6 @@ export class IgeNetIoBaseComponent extends IgeEventingClass {
         this._timeSyncStarted = false;
         this._timeSyncTimer = 0;
         this._sectionDesignator = '¬'; // Set the stream data section designator character
-        // /* CEXCLUDE */
-        // if (isServer) {
-        // 	this._netio = require('../../../' + modulePath + 'net.io-server').Server;
-        // 	this._acceptConnections = false;
-        // }
-        // /* CEXCLUDE */
-        //
-        // if (isClient) {
-        // 	this._netio = IgeNetIoClient;
-        // 	//this.implement(IgeNetIoClient);
-        // }
-        //this.log('Network component initiated with Net.IO version: ' + this._netio.version);
     }
     timeSyncInterval(val) {
         if (val !== undefined) {

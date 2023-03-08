@@ -157,46 +157,46 @@ export class NetIoServer extends IgeEventingClass {
      * the message will be sent to all connected clients.
      *
      * @param {Object} data The JSON data to send.
-     * @param {*=} clientId The id of the client to send to, or an array of id's to send to.
+     * @param {*=} clientIdOrArrayOfIds The id of the client to send to, or an array of id's to send to.
      */
-    send(data, clientId) {
-        let recipientArray, arr, arrCount, item;
-        if (clientId !== undefined) {
-            if (typeof (clientId) === 'string') {
-                if (this._socketsById[clientId]) {
-                    // There is only one recipient
-                    recipientArray = [this._socketsById[clientId]];
-                }
-                else {
-                    this.log('Warning, client with ID ' + clientId + ' not found in socket list!');
-                    recipientArray = [];
-                }
-            }
-            else {
-                // There is an array of recipients
-                recipientArray = [];
-                arr = clientId;
-                arrCount = arr.length;
-                while (arrCount--) {
-                    item = this._socketsById[arr[arrCount]];
-                    if (item !== undefined) {
-                        recipientArray.push(item);
-                    }
-                }
-            }
-        }
-        else {
-            recipientArray = arrClone(this._sockets);
-        }
-        arr = recipientArray;
-        arrCount = arr.length;
+    send(data, clientIdOrArrayOfIds) {
         // Pre-encode the data and then use _send to send raw
         // instead of encoding for every socket
         const encodedData = this._encode(data);
-        while (arrCount--) {
-            if (arr[arrCount]) {
-                arr[arrCount]._send(encodedData);
+        if (clientIdOrArrayOfIds === undefined) {
+            // No client id provided, send to all connected clients
+            this._sendToEach(arrClone(this._sockets), encodedData);
+            return;
+        }
+        if (typeof (clientIdOrArrayOfIds) === "string") {
+            // There is only one recipient
+            if (this._socketsById[clientIdOrArrayOfIds]) {
+                this._sendToEach([this._socketsById[clientIdOrArrayOfIds]], encodedData);
+                return;
             }
+            this.log(`Cannot send data to socket "${clientIdOrArrayOfIds}", client disconnect before data could be processed?`, "info");
+            return;
+        }
+        // There is an array of recipients
+        const recipientArray = clientIdOrArrayOfIds.reduce((finalArr, clientId) => {
+            const clientSocket = this._socketsById[clientId];
+            if (clientSocket)
+                finalArr.push(clientSocket);
+            return finalArr;
+        }, []);
+        this._sendToEach(recipientArray, encodedData);
+    }
+    /**
+     * Sends an encoded data string to an array of client sockets.
+     * @param recipientArray An array of client sockets.
+     * @param encodedData The string encoded data to send each client.
+     */
+    _sendToEach(recipientArray, encodedData) {
+        let arrCount = recipientArray.length;
+        while (arrCount--) {
+            if (!recipientArray[arrCount])
+                continue;
+            recipientArray[arrCount]._send(encodedData);
         }
     }
     /**
