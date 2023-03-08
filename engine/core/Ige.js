@@ -7,7 +7,7 @@ import IgeInputComponent from "../components/IgeInputComponent.js";
 import { IgeObjectRegister } from "./IgeObjectRegister.js";
 import { IgeArrayRegister } from "./IgeArrayRegister.js";
 import IgePoint3d from "./IgePoint3d.js";
-import { IgeAudioController } from "../components/IgeAudioController.js";
+import { IgeAudioController } from "../components/audio/IgeAudioController.js";
 import { isClient, isServer } from "../services/clientServer.js";
 const version = "2.0.0";
 export class Ige {

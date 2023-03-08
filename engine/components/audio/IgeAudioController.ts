@@ -1,5 +1,5 @@
-import IgeEventingClass from "../core/IgeEventingClass";
-import { isClient } from "../services/clientServer";
+import IgeEventingClass from "../../core/IgeEventingClass";
+import { isClient } from "../../services/clientServer";
 
 export class IgeAudioController extends IgeEventingClass {
 	classId = "IgeAudioController";

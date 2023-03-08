@@ -10,7 +10,7 @@ import  { IgeArrayRegister } from "./IgeArrayRegister";
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory";
 import type IgeViewport from "./IgeViewport";
 import IgePoint3d from "./IgePoint3d";
-import { IgeAudioController } from "../components/IgeAudioController";
+import { IgeAudioController } from "../components/audio/IgeAudioController";
 import type { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
 import type { IgeNetIoServerComponent } from "../components/network/net.io/IgeNetIoServerComponent";
 import { isClient, isServer } from "../services/clientServer";
