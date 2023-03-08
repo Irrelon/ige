@@ -2,6 +2,7 @@
 import IgeEntity from "./IgeEntity";
 import WithUiPositionMixin from "../mixins/IgeUiPositionMixin";
 import WithUiStyleMixin from "../mixins/IgeUiStyleMixin";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
 /**
  * Creates a new UI entity. UI entities use more resources and CPU
@@ -316,7 +317,7 @@ class IgeUiEntity extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
 		return ret;
 	}
 
-	tick (ctx: CanvasRenderingContext2D, dontTransform = false) {
+	tick (ctx: IgeCanvasRenderingContext2d, dontTransform = false) {
 		if (!this._hidden && this._inView && (!this._parent || (this._parent._inView)) && !this._streamJustCreated) {
 			if (!dontTransform) {
 				this._transformContext(ctx);

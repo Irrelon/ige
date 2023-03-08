@@ -7,6 +7,7 @@ import IgePoint2d from "./IgePoint2d.js";
 import { ige } from "../instance.js";
 import { isClient } from "../services/clientServer.js";
 import { IgeObject } from "./IgeObject.js";
+import { IgeMountMode } from "../../enums/IgeMountMode.js";
 // TODO: Turns out we need IgeObject because IgeViewport cannot extend IgeEntity
 //    because IgeEntity imports IgeViewport, creating a circular referencing issue
 /**
@@ -295,7 +296,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) {
                         }
                         if (aabb) {
                             if (obj._drawBounds || obj._drawBounds === undefined) {
-                                //if (!obj._parent || (obj._parent && obj._parent._mountMode !== 1)) {
+                                //if (!obj._parent || (obj._parent && obj._parent._mountMode !== IgeMountMode.iso)) {
                                 // Draw a rect around the bounds of the object transformed in world space
                                 /*ctx.save();
                                     obj._worldMatrix.transformRenderingContext(ctx);
@@ -307,7 +308,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) {
                                 ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
                                 //}
                                 // Check if the object is mounted to an isometric mount
-                                if (obj._parent && obj._parent._mountMode === 1) {
+                                if (obj._parent && obj._parent._mountMode === IgeMountMode.iso) {
                                     bounds3dPoly = obj.bounds3dPolygon().aabb();
                                     ctx.save();
                                     ctx.strokeStyle = "#0068b8";

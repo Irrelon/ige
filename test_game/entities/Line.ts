@@ -17,6 +17,7 @@ export class Line extends IgeEntity {
 
 		if (isClient) {
 			this.texture(textures.getTextureById("line"));
+			this.registerNetworkClass();
 		}
 	}
 }

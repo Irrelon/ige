@@ -274,7 +274,8 @@ class IgeMatrix2d extends IgeBaseClass {
         const tm = this.matrix;
         const m00 = tm[0], m01 = tm[1], m02 = tm[2], m10 = tm[3], m11 = tm[4], m12 = tm[5], m20 = tm[6], m21 = tm[7], m22 = tm[8], newMatrix = new IgeMatrix2d(), determinant = m00 * (m11 * m22 - m21 * m12) - m10 * (m01 * m22 - m21 * m02) + m20 * (m01 * m12 - m11 * m02);
         if (determinant === 0) {
-            return null;
+            // TODO: This used to be `return null`, was it correct?
+            return this;
         }
         const m = newMatrix.matrix;
         m[0] = m11 * m22 - m12 * m21;

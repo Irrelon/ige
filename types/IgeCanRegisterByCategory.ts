@@ -1,4 +1,4 @@
-export interface IgeRegisterableByCategory {
+export interface IgeCanRegisterByCategory {
     _categoryRegistered: boolean;
     _category?: string;
 

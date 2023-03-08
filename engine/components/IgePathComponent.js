@@ -1,6 +1,7 @@
 import { distance } from "../services/utils.js";
 import IgeComponent from "../core/IgeComponent.js";
 import { isClient } from "../services/clientServer.js";
+import { IgeMountMode } from "../../enums/IgeMountMode.js";
 /**
  * Handles entity path traversal.
  */
@@ -223,7 +224,7 @@ class IgePathComponent extends IgeComponent {
                 var cell = this.getToPoint(), dir = "";
                 if (cell) {
                     dir = cell.direction;
-                    if (this._entity._mode === 1) {
+                    if (this._entity._renderMode === 1) {
                         // Convert direction for isometric
                         switch (dir) {
                             case "E":
@@ -629,7 +630,7 @@ class IgePathComponent extends IgeComponent {
                             tracePathPoint = new IgePoint3d(currentPath[pathPointIndex].x, currentPath[pathPointIndex].y, currentPath[pathPointIndex].z);
                             tracePathPoint = self.multiplyPoint(tracePathPoint);
                             tracePathPoint = self.transformPoint(tracePathPoint);
-                            if (entity._parent._mountMode === 1) {
+                            if (entity._parent._mountMode === IgeMountMode.iso) {
                                 tracePathPoint = tracePathPoint.toIso();
                             }
                             if (!oldTracePathPoint) {

@@ -1,5 +1,7 @@
 import IgeComponent from "../core/IgeComponent";
 import IgeEntity from "../core/IgeEntity";
+import { IgeMountMode } from "../../enums/IgeMountMode";
+import IgeRect from "../core/IgeRect";
 
 class IgeEntityManagerComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgeEntityManagerComponent";
@@ -191,12 +193,12 @@ class IgeEntityManagerComponent<TargetClass extends IgeEntity = IgeEntity> exten
 			let ent = this._entity,
 				offset;
 
-			if (ent._mode === 0) {
+			if (ent._renderMode === 0) {
 				// 2d mode
 				offset = ent._translate;
 			}
 
-			if (ent._mode === 1) {
+			if (ent._renderMode === 1) {
 				// Iso mode
 				offset = ent._translate.toIso();
 			}
@@ -363,7 +365,7 @@ class IgeEntityManagerComponent<TargetClass extends IgeEntity = IgeEntity> exten
 			currentArea.height += (this._tileHeight);
 
 			// Check if we are rendering in 2d or isometric mode
-			if (this._mountMode === 0) {
+			if (this._mountMode === IgeMountMode.flat) {
 				// 2d
 				currentAreaTiles = new IgeRect(
 					renderX - Math.floor(renderWidth / 2) - 1,
@@ -373,7 +375,7 @@ class IgeEntityManagerComponent<TargetClass extends IgeEntity = IgeEntity> exten
 				);
 			}
 
-			if (this._mountMode === 1) {
+			if (this._mountMode === IgeMountMode.iso) {
 				// Isometric
 				renderSize = Math.abs(renderWidth) > Math.abs(renderHeight) ? renderWidth : renderHeight;
 				ratio = 0.6;

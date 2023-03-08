@@ -15,6 +15,7 @@ export class Square extends IgeEntity {
 
 		if (isClient) {
 			this.texture(textures.getTextureById("square"));
+			this.registerNetworkClass();
 		}
 	}
 }

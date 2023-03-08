@@ -18,6 +18,7 @@
 		"@typescript-eslint/no-inferrable-types": "off",
 		"@typescript-eslint/strict-boolean-expressions": "off",
 		"@typescript-eslint/ban-ts-comment": "off",
+		"@typescript-eslint/no-this-alias": "off",
 		"unused-imports/no-unused-imports": "warn",
 		"indent": ["error", "tab"],
 		"space-before-function-paren": [

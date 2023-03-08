@@ -226,11 +226,11 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 	define (commandName: string, callback: (...args: any[]) => void) {
 		if (commandName !== undefined && callback !== undefined) {
 			// Check if this command has been defined by the server
-			if (this._networkCommandsLookup[commandName] !== undefined) {
-				this._networkCommands[commandName] = callback;
-			} else {
-				this.log('Cannot define network command "' + commandName + '" because it does not exist on the server. Please edit your server code and define the network command there before trying to define it on the client!', 'error');
-			}
+			//if (this._networkCommandsLookup[commandName] !== undefined) {
+			this._networkCommands[commandName] = callback;
+			//} else {
+			//	this.log(`Cannot define network command "${commandName}" because it does not exist on the server. Please edit your server code and define the network command there before trying to define it on the client!`, 'error');
+			//}
 
 			return this;
 		} else {
@@ -424,6 +424,8 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 		const createData = data[4];
 		const parent = ige.$(parentId);
 
+		console.log("Got stream create", data);
+
 		// Check the required class exists
 		if (parent) {
 			// Check that the entity doesn't already exist
@@ -454,11 +456,16 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 					(ige.network as IgeNetIoClientComponent).stop();
 					ige.engine.stop();
 
-					this.log(`Network stream cannot create entity with class ${classId} because the class has not been defined! The engine will now stop.`, 'error');
+					this.log(`Network stream cannot create entity with class "${classId}" because the class has not been defined! The engine will now stop.`, 'error');
 				}
+			} else {
+				this.log(`Network stream received "create entity" with class "${classId}" and id "${entityId}" but an entity with that id already exists in the scenegraph!`, 'warning');
 			}
 		} else {
-			this.log(`Cannot properly handle network streamed entity with id ${entityId} because it's parent with id ${parentId} does not exist on the scenegraph!`, 'warning');
+			(ige.network as IgeNetIoClientComponent).stop();
+			ige.engine.stop();
+
+			this.log(`Cannot properly handle network streamed entity with id "${entityId}" because it's parent with id "${parentId}" does not exist on the scenegraph!`, 'warning');
 		}
 	}
 
@@ -508,6 +515,8 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 
 		if (!entity) {
 			this.log("+++ Stream: Data received for unknown entity (" + entityId + ")");
+			this.stop();
+			ige.engine.stop();
 			return;
 		}
 

@@ -13,7 +13,7 @@ const IgeBox2dComponent = IgeEventingClass.extend({
         }
         this._entity = entity;
         this._options = options;
-        this._mode = 0;
+        this._renderMode = 0;
         this.b2Color = Box2D.Common.b2Color;
         this.b2Vec2 = Box2D.Common.Math.b2Vec2;
         this.b2Math = Box2D.Common.Math.b2Math;
@@ -128,10 +128,10 @@ const IgeBox2dComponent = IgeEventingClass.extend({
      */
     mode: function (val) {
         if (val !== undefined) {
-            this._mode = val;
+            this._renderMode = val;
             return this._entity;
         }
-        return this._mode;
+        return this._renderMode;
     },
     /**
      * Gets / sets if the world should allow sleep or not.
@@ -504,7 +504,7 @@ const IgeBox2dComponent = IgeEventingClass.extend({
         if (!this._active) {
             this._active = true;
             if (!this._networkDebugMode) {
-                if (this._mode === 0) {
+                if (this._renderMode === 0) {
                     // Add the box2d behaviour to the ige
                     this._entity.addBehaviour('box2dStep', this._behaviour);
                 }
@@ -517,7 +517,7 @@ const IgeBox2dComponent = IgeEventingClass.extend({
     stop: function () {
         if (this._active) {
             this._active = false;
-            if (this._mode === 0) {
+            if (this._renderMode === 0) {
                 // Add the box2d behaviour to the ige
                 this._entity.removeBehaviour('box2dStep');
             }
@@ -548,7 +548,7 @@ const IgeBox2dComponent = IgeEventingClass.extend({
                 }
             }
             // Call the world step; frame-rate, velocity iterations, position iterations
-            if (self._mode === 0) {
+            if (self._renderMode === 0) {
                 self._world.Step(ige._tickDelta / 1000, 8, 3);
             }
             else {

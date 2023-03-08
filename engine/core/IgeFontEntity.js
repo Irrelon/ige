@@ -74,7 +74,7 @@ class IgeFontEntity extends IgeUiEntity {
      */
     text(text) {
         if (text !== undefined) {
-            var wasDifferent = false;
+            let wasDifferent = false;
             // Ensure we have a string
             text = String(text);
             if (this._text !== text) {
@@ -283,7 +283,7 @@ class IgeFontEntity extends IgeUiEntity {
     _applyAutoWrap() {
         if (this._text) {
             // Un-wrap the text so it is all on one line
-            var oneLineText = this._text.replace(/\n/g, " "), words, wordIndex, textArray = [], currentTextLine = "", lineWidth;
+            let oneLineText = this._text.replace(/\n/g, " "), words, wordIndex, textArray = [], currentTextLine = "", lineWidth;
             // Break the text into words
             words = oneLineText.split(" ");
             // There are multiple words - loop the words
@@ -321,7 +321,7 @@ class IgeFontEntity extends IgeUiEntity {
         // Both IgeFontSheet and the IgeFontSmartTexture have a method
         // called measureTextWidth() so we can just asks the current
         // texture for the width :)
-        if (this._texture._mode === 0) {
+        if (this._texture._renderMode === 0) {
             return this._texture.measureTextWidth(text);
         }
         else {
@@ -352,7 +352,7 @@ class IgeFontEntity extends IgeUiEntity {
      */
     _stringify(options) {
         // Get the properties for all the super-classes
-        var str = IgeUiEntity.prototype._stringify.call(this), i;
+        let str = IgeUiEntity.prototype._stringify.call(this), i;
         // Loop properties and add property assignment code to string
         for (i in this) {
             if (this.hasOwnProperty(i) && this[i] !== undefined) {

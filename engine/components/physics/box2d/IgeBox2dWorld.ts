@@ -3,7 +3,7 @@ import { igeClassStore } from "../../../services/igeClassStore";
 
 const IgeBox2dWorld = IgeEventingClass.extend({
 	classId: 'IgeBox2dWorld',
-	
+
 	init: function (entity, options) {
 		this.b2Color = Box2D.Common.b2Color;
 		this.b2Vec2 = Box2D.Common.Math.b2Vec2;
@@ -23,29 +23,29 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 		this.b2Contact = Box2D.Dynamics.Contacts.b2Contact;
 		this.b2FilterData = Box2D.Dynamics.b2FilterData;
 		this.b2DistanceJointDef = Box2D.Dynamics.Joints.b2DistanceJointDef;
-		
+
 		this._entity = entity;
-		
+
 		options = options || {
 			id: newIdHex(),
 			gravity: new this.b2Vec2(0, 0),
 			sleep: true
 		};
-		
+
 		this._id = options.id;
 		this._sleep = options.sleep;
 		this._scaleRatio = options.scaleRatio !== undefined ? options.scaleRatio : 30;
 		this._gravity = options.gravity;
-		this._mode = 0;
+		this._renderMode = 0;
 
 		this._removeWhenReady = [];
-		
+
 		this._world = new this.b2World(
 			options.gravity,
 			options.sleep
 		);
 	},
-	
+
 	/**
 	 * Creates a Box2d fixture and returns it.
 	 * @param params
@@ -95,7 +95,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 		case 'dynamic':
 			tempDef.type = this.b2Body.b2_dynamicBody;
 			break;
-			
+
 		case 'kinematic':
 			tempDef.type = this.b2Body.b2_kinematicBody;
 			break;
@@ -122,7 +122,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 
 		// Set the position
 		tempDef.position = new this.b2Vec2(entity._translate.x / this._scaleRatio, entity._translate.y / this._scaleRatio);
-		
+
 		// Create the new body
 		tempBod = this._world.CreateBody(tempDef);
 
@@ -147,11 +147,11 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 						for (i = 0; i < body.fixtures.length; i++) {
 							// Grab the fixture definition
 							fixtureDef = body.fixtures[i];
-	
+
 							// Create the fixture
 							tempFixture = this.createFixture(fixtureDef);
 							tempFixture.igeId = fixtureDef.igeId;
-	
+
 							// Check for a shape definition for the fixture
 							if (fixtureDef.shape) {
 								// Create based on the shape type
@@ -163,23 +163,23 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 									} else {
 										tempShape.SetRadius((entity._bounds2d.x / this._scaleRatio) / 2);
 									}
-											
+
 									if (fixtureDef.shape.data) {
 										finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
 										finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
-												
+
 										tempShape.SetLocalPosition(new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio));
 									}
 									break;
-	
+
 								case 'polygon':
 									tempShape = new this.b2PolygonShape();
 									tempShape.SetAsArray(fixtureDef.shape.data._poly, fixtureDef.shape.data.length());
 									break;
-	
+
 								case 'rectangle':
 									tempShape = new this.b2PolygonShape();
-	
+
 									if (fixtureDef.shape.data) {
 										finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
 										finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
@@ -191,7 +191,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 										finalWidth = (entity._bounds2d.x / 2);
 										finalHeight = (entity._bounds2d.y / 2);
 									}
-	
+
 									// Set the polygon as a box
 									tempShape.SetAsOrientedBox(
 										(finalWidth / this._scaleRatio),
@@ -201,24 +201,24 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 									);
 									break;
 								}
-	
+
 								if (tempShape) {
 									tempFixture.shape = tempShape;
 									finalFixture = tempBod.CreateFixture(tempFixture);
 									finalFixture.igeId = tempFixture.igeId;
 								}
 							}
-	
+
 							if (fixtureDef.filter && finalFixture) {
 								tempFilterData = new this.b2FilterData();
-	
+
 								if (fixtureDef.filter.categoryBits !== undefined) { tempFilterData.categoryBits = fixtureDef.filter.categoryBits; }
 								if (fixtureDef.filter.maskBits !== undefined) { tempFilterData.maskBits = fixtureDef.filter.maskBits; }
 								if (fixtureDef.filter.categoryIndex !== undefined) { tempFilterData.categoryIndex = fixtureDef.filter.categoryIndex; }
-	
+
 								finalFixture.SetFilterData(tempFilterData);
 							}
-	
+
 							if (fixtureDef.density !== undefined && finalFixture) {
 								finalFixture.SetDensity(fixtureDef.density);
 							}
@@ -316,7 +316,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 		}
 		this._world.SetContactListener(contactListener);
 	},
-	
+
 	/**
 	 * If enabled, sets the physics world into network debug mode which
 	 * will stop the world from generating collisions but still allow us
@@ -328,7 +328,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 	networkDebugMode: function (val) {
 		if (val !== undefined) {
 			this._networkDebugMode = val;
-			
+
 			if (val === true) {
 				// We are enabled so disable all physics contacts
 				this.contactListener(
@@ -348,10 +348,10 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 				// Re-enable contacts
 				this.contactListener();
 			}
-			
+
 			return this;
 		}
-		
+
 		return this._networkDebugMode;
 	},
 
@@ -420,9 +420,9 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 		const self = this;
 		if (!this._active) {
 			this._active = true;
-			
+
 			if (!this._networkDebugMode) {
-				if (this._mode === 0) {
+				if (this._renderMode === 0) {
 					// Add the box2d behaviour to the ige
 					ige.addBehaviour('box2dStep_' + self._id, function () { self._behaviour.apply(self, arguments); });
 				} else {
@@ -436,7 +436,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 		if (this._active) {
 			this._active = false;
 
-			if (this._mode === 0) {
+			if (this._renderMode === 0) {
 				// Add the box2d behaviour to the ige
 				ige.removeBehaviour('box2dStep_' + this._id);
 			} else {
@@ -476,7 +476,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 			}
 
 			// Call the world step; frame-rate, velocity iterations, position iterations
-			if (self._mode === 0) {
+			if (self._renderMode === 0) {
 				self._world.Step(ige._tickDelta / 1000, 8, 3);
 			} else {
 				self._world.Step(1 / 60, 8, 3);

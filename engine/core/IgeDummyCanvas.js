@@ -5,7 +5,7 @@ class IgeDummyCanvas {
         this.width = 0;
         this.height = 0;
         this.getContext = (type) => {
-            return IgeDummyContext;
+            return new IgeDummyContext();
         };
     }
 }

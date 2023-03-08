@@ -1,4 +1,4 @@
-export interface IgeRegisterableByGroup {
+export interface IgeCanRegisterByGroup {
     _groupRegistered: boolean;
     _group?: string;
 

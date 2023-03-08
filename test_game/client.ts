@@ -1,10 +1,10 @@
 import {ige} from "../engine/instance";
 import IgeBaseClass from "../engine/core/IgeBaseClass";
 import IgeBaseScene from "../engine/core/IgeBaseScene";
-import { Level1 } from "./levels/Level1";
 import { textures } from "./services/textures";
 import { IgeOptions } from "../engine/core/IgeOptions";
 import { IgeNetIoClientComponent } from "../engine/components/network/net.io/IgeNetIoClientComponent";
+import { Level1 } from "./levels/Level1";
 
 // @ts-ignore
 window.ige = ige;
@@ -46,7 +46,6 @@ export class Client extends IgeBaseClass {
 					// the method being called by the engine and how
 					// the items are added to the scenegraph)
 					ige.engine.addGraph(Level1);
-
 
 					network.start('http://localhost:2000', () => {
 						network.send("testRequest", "foo", (err, data) => {

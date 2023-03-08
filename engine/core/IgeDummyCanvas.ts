@@ -1,13 +1,13 @@
 import IgeDummyContext from "./IgeDummyContext";
 
 class IgeDummyCanvas {
-    dummy = true;
-    width = 0;
-    height = 0;
+	dummy = true;
+	width = 0;
+	height = 0;
 
-    getContext = (type: string) => {
-        return IgeDummyContext;
-    };
+	getContext = (type: string) => {
+		return new IgeDummyContext();
+	};
 }
 
 export default IgeDummyCanvas;

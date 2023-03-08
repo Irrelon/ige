@@ -1,4 +1,4 @@
-export interface IgeRegisterableById {
+export interface IgeCanRegisterById {
     _idRegistered: boolean;
     _id?: string;
 

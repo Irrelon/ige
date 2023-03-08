@@ -11,6 +11,7 @@ export class Circle extends IgeEntity {
             .height(50);
         if (isClient) {
             this.texture(textures.getTextureById("circle"));
+            this.registerNetworkClass();
         }
     }
 }

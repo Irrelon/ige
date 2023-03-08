@@ -1,41 +1,45 @@
 import { ige } from "../instance";
+import { isServer } from "../services/clientServer";
+import { degreesToRadians, toIso } from "../services/utils";
 import IgePoint2d from "./IgePoint2d";
 import IgePoint3d from "./IgePoint3d";
 import IgeMatrix2d from "./IgeMatrix2d";
 import IgePoly2d from "./IgePoly2d";
 import IgeDummyCanvas from "./IgeDummyCanvas";
 import IgeRect from "./IgeRect";
-import IgeDummyContext from "./IgeDummyContext";
-import { degreesToRadians, toIso } from "../services/utils";
-
-import { IgePoint } from "../../types/IgePoint";
-import { IgeRegisterableById } from "../../types/IgeRegisterableById";
+import IgeTileMap2d from "./IgeTileMap2d";
+import { IgeObject } from "./IgeObject";
+import { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
+import { IgeMountMode } from "../../enums/IgeMountMode";
+import { IgeStreamMode } from "../../enums/IgeStreamMode";
+import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode";
+import type { IgePoint } from "../../types/IgePoint";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import type { IgeDepthSortObject } from "../../types/IgeDepthSortObject";
+import type { IgeInputEvent } from "../../types/IgeInputEvent";
+import type { IgeInputEventControl } from "../../types/IgeInputEventControl";
+import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById";
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "../../types/IgeTimeStream";
 import type IgeViewport from "./IgeViewport";
 import type IgeTexture from "./IgeTexture";
-import IgeTileMap2d from "./IgeTileMap2d";
-import type { IgeRegisterableByCategory } from "../../types/IgeRegisterableByCategory";
-import { isClient, isServer } from "../services/clientServer";
-import { IgeInputEventControl } from "../components/IgeInputComponent";
-import { IgeObject } from "./IgeObject";
-import { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
-
-export interface IgeEntityBehaviour {
-	id: string;
-	method: (...args: any[]) => any;
-}
+import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory";
+import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode";
 
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
  */
-class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterableByCategory {
+class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterByCategory {
 	classId = "IgeEntity";
+	_renderMode: IgeEntityRenderMode = IgeEntityRenderMode.flat;
 	_entity?: IgeEntity; // TODO: This may not be required? Where does it get set from? Could be removed and all relevant code looking at it.
-	_children: (IgeObject | IgeEntity)[] = [];
-	_tileWidth: number = 1;
-	_tileHeight: number = 1;
+	_parent: IgeObject | null = null;
+	_children: IgeObject[] = [];
+	_translateIso?: IgePoint3d | {x: number, y: number};
+	_sortChildren: ((comparatorFunction: (a: any, b: any) => number) => void) = (compareFn) => {
+		return this._children.sort(compareFn);
+	};
 
 	constructor () {
 		super();
@@ -89,14 +93,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	updateTransform () {
 		this._localMatrix.identity();
 
-		if (this._mode === 0) {
+		if (this._renderMode === 0) {
 			// 2d translation
 			this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
 		}
 
-		if (this._mode === 1) {
+		if (this._renderMode === 1) {
 			// iso translation
-			const isoPoint = (this._translateIso = new IgePoint3d(
+			const isoPoint = this._translateIso = (new IgePoint3d(
 				this._translate.x,
 				this._translate.y,
 				this._translate.z + this._bounds3d.z / 2
@@ -196,68 +200,6 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 */
 	isHidden () {
 		return this._hidden;
-	}
-
-	/**
-	 * Gets / sets the cache flag that determines if the entity's
-	 * texture rendering output should be stored on an off-screen
-	 * canvas instead of calling the texture.render() method each
-	 * tick. Useful for expensive texture calls such as rendering
-	 * fonts etc. If enabled, this will automatically disable advanced
-	 * composite caching on this entity with a call to
-	 * compositeCache(false).
-	 * @param {Boolean=} val True to enable caching, false to
-	 * disable caching.
-	 * @param {Boolean} propagateToChildren If true, calls cache()
-	 * on each child and all their children with the same `val`.
-	 * @example #Enable entity caching
-	 *     entity.cache(true);
-	 * @example #Disable entity caching
-	 *     entity.cache(false);
-	 * @example #Get caching flag value
-	 *     var val = entity.cache();
-	 * @return {*}
-	 */
-	cache (val?: boolean, propagateToChildren = false) {
-		if (val === undefined) {
-			return this._cache;
-		}
-
-		this._cache = val;
-
-		if (propagateToChildren) {
-			this._children.forEach((child) => {
-				if (!("cache" in child)) return;
-				child.cache(val, true);
-			});
-		}
-
-		if (!val) {
-			// Remove the off-screen canvas
-			delete this._cacheCanvas;
-			return this;
-		}
-
-		// Create the off-screen canvas
-		if (isClient) {
-			// Use a real canvas
-			const canvasObj = ige.engine.createCanvas({ smoothing: this._cacheSmoothing, pixelRatioScaling: true });
-			this._cacheCanvas = canvasObj.canvas;
-			this._cacheCtx = canvasObj.ctx;
-		} else {
-			// Use dummy objects for canvas and context
-			this._cacheCanvas = new IgeDummyCanvas();
-			this._cacheCtx = this._cacheCanvas.getContext("2d");
-		}
-
-		this._cacheDirty = true;
-
-		// Switch off composite caching
-		if (this.compositeCache()) {
-			this.compositeCache(false);
-		}
-
-		return this;
 	}
 
 	/**
@@ -420,8 +362,8 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 		return this._backgroundPattern;
 	}
 
-	smartBackground(): IgeSmartTexture | undefined;
-	smartBackground(renderMethod?: IgeSmartTexture): this;
+	smartBackground (): IgeSmartTexture | undefined;
+	smartBackground (renderMethod?: IgeSmartTexture): this;
 	smartBackground (renderMethod?: IgeSmartTexture) {
 		if (renderMethod !== undefined) {
 			this._smartBackground = renderMethod;
@@ -446,13 +388,13 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * method chaining.
 	 */
 	widthByTile (val: number, lockAspect = false) {
-		if (!(this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
+		if (!(this._parent && this._parent instanceof IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
 			throw new Error(
 				"Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values."
 			);
 		}
 
-		const tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
+		const tileSize = this._renderMode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
 
 		this.width(val * tileSize);
 
@@ -486,13 +428,13 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * method chaining.
 	 */
 	heightByTile (val: number, lockAspect = false) {
-		if (!(this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
+		if (!(this._parent && this._parent instanceof IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
 			throw new Error(
 				"Cannot set height by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values."
 			);
 		}
 
-		const tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
+		const tileSize = this._renderMode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
 
 		this.height(val * tileSize);
 
@@ -545,7 +487,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 
 		const tilePoint = this._parent.pointToTile(trPoint);
 
-		if (this._parent._mountMode === 1) {
+		if (this._parent._mountMode === IgeMountMode.iso) {
 			tilePoint.thisToIso();
 		}
 
@@ -587,7 +529,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 			),
 			tilePoint = this._parent.pointToTile(trPoint);
 
-		if (this._parent._mountMode === 1) {
+		if (this._parent._mountMode === IgeMountMode.iso) {
 			tilePoint.thisToIso();
 		}
 
@@ -630,8 +572,8 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	anchor(x: number, y: number): this;
-	anchor(): IgePoint2d;
+	anchor (x: number, y: number): this;
+	anchor (): IgePoint2d;
 	anchor (x?: number, y?: number) {
 		if (x !== undefined && y !== undefined) {
 			this._anchor = new IgePoint2d(x, y);
@@ -650,8 +592,8 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	width(px: number, lockAspect?: boolean): this;
-	width(): number;
+	width (px: number, lockAspect?: boolean): this;
+	width (): number;
 	width (px?: number, lockAspect = false) {
 		if (px === undefined) {
 			return this._bounds2d.x;
@@ -677,8 +619,8 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	height(px: number, lockAspect?: boolean): this;
-	height(): number;
+	height (px: number, lockAspect?: boolean): this;
+	height (): number;
 	height (px?: number, lockAspect = false) {
 		if (px === undefined) {
 			return this._bounds2d.y;
@@ -708,9 +650,9 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	bounds2d(x: number, y: number): this;
-	bounds2d(): IgePoint2d;
-	bounds2d(x: IgePoint2d): this;
+	bounds2d (x: number, y: number): this;
+	bounds2d (): IgePoint2d;
+	bounds2d (x: IgePoint2d): this;
 	bounds2d (x?: number | IgePoint2d, y?: number) {
 		if (x !== undefined && y !== undefined && typeof x === "number") {
 			this._bounds2d = new IgePoint2d(x, y);
@@ -740,8 +682,8 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	bounds3d(x: number, y: number, z: number): this;
-	bounds3d(): IgePoint3d;
+	bounds3d (x: number, y: number, z: number): this;
+	bounds3d (): IgePoint3d;
 	bounds3d (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._bounds3d = new IgePoint3d(x, y, z);
@@ -764,9 +706,9 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	lifeSpan(milliseconds: number, deathCallback: (...args: any[]) => void): this;
-	lifeSpan(): number;
-	lifeSpan(milliseconds: number): this;
+	lifeSpan (milliseconds: number, deathCallback: (...args: any[]) => void): this;
+	lifeSpan (): number;
+	lifeSpan (milliseconds: number): this;
 	lifeSpan (milliseconds?: number, deathCallback?: (...args: any[]) => void) {
 		if (milliseconds !== undefined) {
 			this.deathTime(ige.engine._currentTime + milliseconds, deathCallback);
@@ -792,9 +734,9 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	deathTime(val: number, deathCallback?: (...args: any[]) => void): this;
-	deathTime(): number | undefined;
-	deathTime(val: number): this;
+	deathTime (val: number, deathCallback?: (...args: any[]) => void): this;
+	deathTime (): number | undefined;
+	deathTime (val: number): this;
 	deathTime (val?: number, deathCallback?: (...args: any[]) => void) {
 		if (val !== undefined) {
 			this._deathTime = val;
@@ -818,8 +760,8 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	opacity(val: number): this;
-	opacity(): number;
+	opacity (val: number): this;
+	opacity (): number;
 	opacity (val?: number) {
 		if (val !== undefined) {
 			this._opacity = val;
@@ -839,8 +781,8 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @param {Boolean=} val If set to true will turn off AABB calculation.
 	 * @returns {*}
 	 */
-	noAabb(val: boolean): this;
-	noAabb(): boolean | undefined;
+	noAabb (val: boolean): this;
+	noAabb (): boolean | undefined;
 	noAabb (val?: boolean) {
 		if (val !== undefined) {
 			this._noAabb = val;
@@ -859,8 +801,8 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	texture(texture: IgeTexture): this;
-	texture(): IgeTexture | undefined;
+	texture (texture: IgeTexture): this;
+	texture (): IgeTexture | undefined;
 	texture (texture?: IgeTexture) {
 		if (texture !== undefined) {
 			this._texture = texture;
@@ -882,8 +824,8 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	cell(val: number | null): this;
-	cell(): number | null;
+	cell (val: number | null): this;
+	cell (): number | null;
 	cell (val?: number | null) {
 		if (val !== undefined && (val === null || val > 0)) {
 			this._cell = val;
@@ -1033,7 +975,8 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 			this._highlight = val;
 
 			if (highlightChildEntities) {
-				this._children.forEach((child) => {
+				(this._children as IgeEntity[]).forEach((child) => {
+					if (!("highlight" in child)) return;
 					child.highlight(val);
 				});
 			}
@@ -1295,32 +1238,6 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	}
 
 	/**
-	 * Calculates the axis-aligned bounding box for this entity, including
-	 * all child entity bounding boxes and returns the final composite
-	 * bounds.
-	 * @example #Get the composite AABB
-	 *     var entity = new IgeEntity(),
-	 *         aabb = entity.compositeAabb();
-	 * @return {IgeRect}
-	 */
-	compositeAabb (inverse = false) {
-		const arr = this._children;
-		const rect = this.aabb(true, inverse).clone();
-
-		// Now loop all children and get the aabb for each of
-		// them add those bounds to the current rect
-		if (arr) {
-			let arrCount = arr.length;
-
-			while (arrCount--) {
-				rect.thisCombineRect(arr[arrCount].compositeAabb(inverse));
-			}
-		}
-
-		return rect;
-	}
-
-	/**
 	 * Takes two values and returns them as an array where index [0]
 	 * is the y argument and index[1] is the x argument. This method
 	 * is used specifically in the 3d bounds intersection process to
@@ -1491,14 +1408,15 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @param val
 	 */
 	ignoreCameraComposite (val: boolean) {
-		const arr = this._children;
+		const arr = this._children as IgeEntity[];
 		const arrCount = arr.length;
 
 		this._ignoreCamera = val;
 
 		for (let i = 0; i < arrCount; i++) {
-			if ("ignoreCameraComposite" in arr[i]) {
-				arr[i].ignoreCameraComposite(val);
+			const arrItem = arr[i];
+			if ("ignoreCameraComposite" in arrItem) {
+				arrItem.ignoreCameraComposite(val);
 			}
 		}
 	}
@@ -1512,8 +1430,8 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * method has already been run for this entity.
 	 *
 	 * This is useful if you have multiple viewports which will
-	 * cause the entity tick() method to fire once for each viewport
-	 * but you only want to execute update code such as movement etc
+	 * cause the entity tick() method to fire once for each viewport,
+	 * but you only want to execute update code such as movement,
 	 * on the first time the tick() method is called.
 	 *
 	 * @example #Determine if the entity has already had its tick method called
@@ -1540,7 +1458,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 *     entity._transformContext(ctx);
 	 * @private
 	 */
-	_transformContext (ctx: CanvasRenderingContext2D | typeof IgeDummyContext, inverse: boolean = false) {
+	_transformContext (ctx: IgeCanvasRenderingContext2d, inverse: boolean = false) {
 		if (this._parent) {
 			ctx.globalAlpha = this._computedOpacity = this._parent._computedOpacity * this._opacity;
 		} else {
@@ -1574,7 +1492,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * chain but have already transformed the entity in a previous overloaded
 	 * method.
 	 */
-	tick (ctx: CanvasRenderingContext2D, dontTransform = false) {
+	tick (ctx: IgeCanvasRenderingContext2d, dontTransform = false) {
 		if (!(!this._hidden && this._inView && (!this._parent || this._parent._inView) && !this._streamJustCreated)) {
 			return;
 		}
@@ -1616,14 +1534,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 			this._renderEntity(ctx, dontTransform);
 		}
 
-		if (this._streamMode === 1) {
+		if (this._streamMode === IgeStreamMode.simple) {
 			this.streamSync();
 		}
 
 		if (this._compositeCache) {
-			if (this._cacheDirty) {
+			if (this._cacheDirty && this._cacheCtx) {
 				// Process children
-				this._tick(this._cacheCtx as CanvasRenderingContext2D);
+				super.tick(this._cacheCtx);
 				this._renderCache(ctx);
 				this._cacheDirty = false;
 			}
@@ -1656,7 +1574,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 			//mouseTriggerPoly = this[this._triggerPolygon](mp);
 		} else {
 			// Default to either aabb or bounds3dPolygon depending on entity parent mounting mode
-			if (this._parent && this._parent._mountMode === 1) {
+			if (this._parent && this._parent._mountMode === IgeMountMode.iso) {
 				// Use bounds3dPolygon
 				mouseTriggerPoly = this.bounds3dPolygon();
 			} else {
@@ -1686,7 +1604,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 			this._compositeAabbCache = aabbC;
 
 			if (aabbC.width > 0 && aabbC.height > 0) {
-				this._setInternalCanvasSize(_canvas, _ctx, aabbC.width, aabbC.height);
+				ige.engine._setInternalCanvasSize(_canvas, _ctx, aabbC.width, aabbC.height);
 				/*_canvas.width = Math.ceil(aabbC.width);
 				_canvas.height = Math.ceil(aabbC.height);*/
 			} else {
@@ -1706,7 +1624,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 			this.emit("compositeReady");
 		} else {
 			if (this._bounds2d.x > 0 && this._bounds2d.y > 0) {
-				this._setInternalCanvasSize(_canvas, _ctx, this._bounds2d.x, this._bounds2d.y);
+				ige.engine._setInternalCanvasSize(_canvas, _ctx, this._bounds2d.x, this._bounds2d.y);
 				/*_canvas.width = this._bounds2d.x;
 				_canvas.height = this._bounds2d.y;*/
 			} else {
@@ -1730,14 +1648,6 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 		this._renderEntity(_ctx, dontTransform);
 	}
 
-	_setInternalCanvasSize (canvas: HTMLCanvasElement | IgeDummyCanvas, ctx: CanvasRenderingContext2D | typeof IgeDummyContext, newWidth: number, newHeight: number) {
-		canvas.width = newWidth * ige.engine._deviceFinalDrawRatio;
-		canvas.height = newHeight * ige.engine._deviceFinalDrawRatio;
-
-		// Scale the canvas context to account for the change
-		ctx.scale(ige.engine._deviceFinalDrawRatio, ige.engine._deviceFinalDrawRatio);
-	}
-
 	/**
 	 * Handles calling the texture.render() method if a texture
 	 * is applied to the entity. This part of the tick process has
@@ -1748,12 +1658,12 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @param {Boolean} [dontTransform] If you don't want to apply transforms.
 	 * @private
 	 */
-	_renderEntity (ctx: CanvasRenderingContext2D, dontTransform = false) {
-		if (this._opacity <= 0) {
+	_renderEntity (ctx: IgeCanvasRenderingContext2d, dontTransform = false) {
+		if (this._opacity <= 0 || !ige.engine._currentCamera || !ige.engine._currentViewport) {
 			return;
 		}
 
-		if (this._backgroundPattern) {
+		if (this._backgroundPattern && this._backgroundPattern.image) {
 			if (!this._backgroundPatternFill) {
 				// We have a pattern but no fill produced
 				// from it. Check if we have a context to
@@ -1770,11 +1680,11 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 				ctx.fillStyle = this._backgroundPatternFill;
 
 				if (this._smartBackground) {
-					this._smartBackground(ctx, this);
+					this._smartBackground.render(ige, ctx, this);
 				} else {
 					// TODO: When firefox has fixed their bug regarding negative rect co-ordinates, revert this change
 
-					// This is the proper way to do this but firefox has a bug which I'm gonna report
+					// This is the proper way to do this but firefox has a bug which I'm going to report,
 					// so instead I have to use ANOTHER translate call instead. So crap!
 					//ctx.rect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
 					ctx.translate(-this._bounds2d.x2, -this._bounds2d.y2);
@@ -1804,7 +1714,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 
 		if (texture && texture._loaded) {
 			// Draw the entity image
-			texture.render(ctx, this, ige.engine._tickDelta);
+			texture.render(ctx, this);
 
 			if (this._highlight) {
 				ctx.save();
@@ -1831,9 +1741,12 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * the entity to.
 	 * @private
 	 */
-	_renderCache (ctx) {
+	_renderCache (ctx: IgeCanvasRenderingContext2d) {
+		if (!ige.engine._currentViewport) return;
+		if (!this._cacheCanvas || this._cacheCanvas instanceof IgeDummyCanvas) return;
+
 		ctx.save();
-		if (this._compositeCache) {
+		if (this._compositeCache && this._compositeAabbCache) {
 			const aabbC = this._compositeAabbCache;
 			ctx.translate(this._bounds2d.x2 + aabbC.x, this._bounds2d.y2 + aabbC.y);
 
@@ -1876,7 +1789,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @return {IgePoint3d} The transformed point.
 	 * @private
 	 */
-	_transformPoint (point) {
+	_transformPoint (point: IgePoint3d) {
 		if (this._parent) {
 			const tempMat = new IgeMatrix2d();
 			// Copy the parent world matrix
@@ -1897,7 +1810,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @param {Array} points The points array to transform.
 	 * @private
 	 */
-	_transformPoints (points) {
+	_transformPoints (points: IgePoint[]) {
 		let point,
 			pointCount = points.length;
 
@@ -1940,69 +1853,99 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
 				case "_opacity":
-					str += ".opacity(" + this.opacity() + ")";
+					str += `.opacity(${this.opacity()})`;
 					break;
 				case "_texture":
-					str += ".texture(ige.$('" + this.texture().id() + "'))";
+					const tmpTexture = this.texture();
+					if (tmpTexture) {
+						str += `.texture(ige.$('${tmpTexture.id()}'))`;
+					}
 					break;
 				case "_cell":
 					str += ".cell(" + this.cell() + ")";
 					break;
 				case "_translate":
-					if (options.transform !== false && options.translate !== false) {
-						str += ".translateTo(" + this._translate.x + ", " + this._translate.y + ", " + this._translate.z + ")";
+					if (options.transform && options.translate) {
+						str += `.translateTo(${this._translate.x}, ${this._translate.y}, ${this._translate.z})`;
 					}
 					break;
 				case "_rotate":
-					if (options.transform !== false && options.rotate !== false) {
-						str += ".rotateTo(" + this._rotate.x + ", " + this._rotate.y + ", " + this._rotate.z + ")";
+					if (options.transform && options.rotate) {
+						str += `.rotateTo(${this._rotate.x}, ${this._rotate.y}, ${this._rotate.z})`;
 					}
 					break;
 				case "_scale":
-					if (options.transform !== false && options.scale !== false) {
-						str += ".scaleTo(" + this._scale.x + ", " + this._scale.y + ", " + this._scale.z + ")";
+					if (options.transform && options.scale) {
+						str += `.scaleTo(${this._scale.x}, ${this._scale.y}, ${this._scale.z})`;
 					}
 					break;
 				case "_origin":
-					if (options.origin !== false) {
-						str += ".originTo(" + this._origin.x + ", " + this._origin.y + ", " + this._origin.z + ")";
+					if (options.origin) {
+						str += `.originTo(${this._origin.x}, ${this._origin.y}, ${this._origin.z})`;
 					}
 					break;
 				case "_anchor":
-					if (options.anchor !== false) {
-						str += ".anchor(" + this._anchor.x + ", " + this._anchor.y + ")";
+					if (options.anchor) {
+						str += `.anchor(${this._anchor.x}, ${this._anchor.y})`;
 					}
 					break;
 				case "_width":
 					if (typeof this.width() === "string") {
-						str += ".width('" + this.width() + "')";
+						str += `.width('${this.width()}')`;
 					} else {
-						str += ".width(" + this.width() + ")";
+						str += `.width(${this.width()})`;
 					}
 					break;
 				case "_height":
 					if (typeof this.height() === "string") {
-						str += ".height('" + this.height() + "')";
+						str += `.height('${this.height()}')`;
 					} else {
-						str += ".height(" + this.height() + ")";
+						str += `.height(${this.height()})`;
 					}
 					break;
 				case "_bounds3d":
-					str += ".bounds3d(" + this._bounds3d.x + ", " + this._bounds3d.y + ", " + this._bounds3d.z + ")";
+					str += `.bounds3d(${this._bounds3d.x}, ${this._bounds3d.y}, ${this._bounds3d.z})`;
 					break;
 				case "_deathTime":
-					if (options.deathTime !== false && options.lifeSpan !== false) {
-						str += ".deathTime(" + this.deathTime() + ")";
+					if (options.deathTime && options.lifeSpan) {
+						str += `.deathTime(${this.deathTime()})`;
 					}
 					break;
 				case "_highlight":
-					str += ".highlight(" + this.highlight() + ")";
+					str += `.highlight(${this.highlight()})`;
+					break;
+				case "_renderMode":
+					str += ".mode(" + this._renderMode + ")";
 					break;
 				}
 			}
 		}
 
 		return str;
+	}
+
+	/**
+	 * Gets / sets if this object should be positioned isometrically
+	 * or in 2d.
+	 * @param {Boolean} val Set to true to position this object in
+	 * isometric space or false to position it in 2d space.
+	 * @example #Set the positioning mode to isometric
+	 *     var entity = new IgeEntity()
+	 *         .isometric(true);
+	 * @example #Set the positioning mode to 2d
+	 *     var entity = new IgeEntity()
+	 *         .isometric(false);
+	 * @return {*}
+	 */
+	isometric (): boolean;
+	isometric (val: boolean): this;
+	isometric (val?: boolean): boolean | this {
+		if (val !== undefined) {
+			this._renderMode = val ? IgeEntityRenderMode.iso : IgeEntityRenderMode.flat;
+			return this;
+		}
+
+		return this._renderMode === IgeEntityRenderMode.iso;
 	}
 
 	/**
@@ -2017,13 +1960,11 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	destroy (): this {
 		this._alive = false;
 
-		/* CEXCLUDE */
 		// Check if the entity is streaming
-		if (this._streamMode === 1) {
-			delete this._streamDataCache;
+		if (isServer && this._streamMode === IgeStreamMode.simple) {
+			this._streamDataCache = "";
 			this.streamDestroy();
 		}
-		/* CEXCLUDE */
 
 		/**
 		 * Fires when the entity has been destroyed.
@@ -2041,7 +1982,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 		}
 
 		// Remove the object from the lookup system
-		ige.unRegister(this);
+		ige.register.remove(this);
 
 		// Set a flag in case a reference to this object
 		// has been held somewhere, shows that the object
@@ -2055,36 +1996,136 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 		return this;
 	}
 
-	saveSpecialProp (obj, i) {
-		switch (i) {
-		case "_texture":
-			if (obj._texture) {
-				return { _texture: obj._texture.id() };
+	/**
+	 * Sorts the _children array by the layer and then depth of each object.
+	 */
+	depthSortChildren () {
+		if (this._depthSortMode === IgeIsometricDepthSortMode.none) {
+			return;
+		}
+
+		if (this._mountMode === IgeMountMode.flat) {
+			// The mount mode for this entity is a 2d plane or "flat" mode, so we don't have any
+			// isometric rendering to deal with and as such, just called the IgeObject version
+			// of this method because IgeObject as a base class has no understanding of isometric
+			// mounting since IgeObject instances don't actually render anything
+			return super.depthSortChildren();
+		}
+
+		const arr = this._children as IgeEntity[];
+		let arrCount = arr.length;
+
+		if (!arr || !arrCount) {
+			return;
+		}
+
+		if (this._depthSortMode === IgeIsometricDepthSortMode.bounds3d) {
+			// Slowest, uses 3d bounds
+			// Calculate depths from 3d bounds
+			const sortObj: IgeDepthSortObject = {
+				adj: [],
+				c: [],
+				p: [],
+				order: [],
+				order_ind: arrCount - 1
+			};
+
+			for (let i = 0; i < arrCount; ++i) {
+				const childItemA = arr[i];
+
+				sortObj.c[i] = 0;
+				sortObj.p[i] = -1;
+
+				for (let j = i + 1; j < arrCount; ++j) {
+					const childItemB = arr[j];
+
+					sortObj.adj[i] = sortObj.adj[i] || [];
+					sortObj.adj[j] = sortObj.adj[j] || [];
+
+					if (childItemA._inView && childItemB._inView && "_projectionOverlap" in childItemA && "_projectionOverlap" in childItemB) {
+						if (childItemA._projectionOverlap(childItemB)) {
+							if (childItemA.isBehind(childItemB)) {
+								sortObj.adj[j].push(i);
+							} else {
+								sortObj.adj[i].push(j);
+							}
+						}
+					}
+				}
 			}
-			break;
 
-		default:
-			// Call super-class saveSpecialProp
-			return super.saveSpecialProp(obj, i);
-			break;
+			for (let i = 0; i < arrCount; ++i) {
+				if (sortObj.c[i] !== 0) {
+					continue;
+				}
+
+				this._depthSortVisit(i, sortObj);
+			}
+
+			for (let i = 0; i < sortObj.order.length; i++) {
+				arr[sortObj.order[i]].depth(i);
+			}
+
+			this._sortChildren((a, b) => {
+				const layerIndex = b._layer - a._layer;
+
+				if (layerIndex === 0) {
+					// On same layer so sort by depth
+					return b._depth - a._depth;
+				} else {
+					// Not on same layer so sort by layer
+					return layerIndex;
+				}
+			});
 		}
 
-		return undefined;
-	}
+		if (this._depthSortMode === IgeIsometricDepthSortMode.cuboid) {
+			// Medium speed, optimised for almost-cube shaped 3d bounds
+			// Now sort the entities by depth
+			this._sortChildren((a, b) => {
+				const layerIndex = b._layer - a._layer;
 
-	loadSpecialProp (obj, i) {
-		switch (i) {
-		case "_texture":
-			return { _texture: ige.$(obj[i]) };
-			break;
-
-		default:
-			// Call super-class loadSpecialProp
-			return super.loadSpecialProp(obj, i);
-			break;
+				if (layerIndex === 0) {
+					// On same layer so sort by depth
+					//if (a._projectionOverlap(b)) {
+					if (a.isBehind(b)) {
+						return -1;
+					} else {
+						return 1;
+					}
+					//}
+				} else {
+					// Not on same layer so sort by layer
+					return layerIndex;
+				}
+			});
 		}
+		if (this._depthSortMode === IgeIsometricDepthSortMode.cube) {
+			// Fastest, optimised for cube-shaped 3d bounds
+			while (arrCount--) {
+				const sortObj = arr[arrCount];
+				const j = sortObj._translate;
 
-		return undefined;
+				if (!j) {
+					continue;
+				}
+
+				sortObj._depth = j.x + j.y + j.z;
+			}
+
+			// Now sort the entities by depth
+			this._sortChildren((a, b) => {
+				const layerIndex = b._layer - a._layer;
+
+				if (layerIndex === 0) {
+					// On same layer so sort by depth
+					return b._depth - a._depth;
+				} else {
+					// Not on same layer so sort by layer
+					return layerIndex;
+				}
+			});
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2108,7 +2149,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 *     });
 	 * @return {*}
 	 */
-	mouseMove = (callback) => {
+	mouseMove = (callback?: IgeInputEvent) => {
 		if (callback) {
 			this._mouseMove = callback;
 			this._mouseEventsActive = true;
@@ -2136,7 +2177,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 *     });
 	 * @return {*}
 	 */
-	mouseOver = (callback) => {
+	mouseOver = (callback?: IgeInputEvent) => {
 		if (callback) {
 			this._mouseOver = callback;
 			this._mouseEventsActive = true;
@@ -2164,7 +2205,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 *     });
 	 * @return {*}
 	 */
-	mouseOut = (callback) => {
+	mouseOut = (callback?: IgeInputEvent) => {
 		if (callback) {
 			this._mouseOut = callback;
 			this._mouseEventsActive = true;
@@ -2192,7 +2233,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 *     });
 	 * @return {*}
 	 */
-	mouseUp = (callback) => {
+	mouseUp = (callback?: IgeInputEvent) => {
 		if (callback) {
 			this._mouseUp = callback;
 			this._mouseEventsActive = true;
@@ -2220,7 +2261,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 *     });
 	 * @return {*}
 	 */
-	mouseDown = (callback) => {
+	mouseDown = (callback?: IgeInputEvent) => {
 		if (callback) {
 			this._mouseDown = callback;
 			this._mouseEventsActive = true;
@@ -2249,7 +2290,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 *     });
 	 * @return {*}
 	 */
-	mouseWheel = (callback) => {
+	mouseWheel = (callback?: IgeInputEvent) => {
 		if (callback) {
 			this._mouseWheel = callback;
 			this._mouseEventsActive = true;
@@ -2513,39 +2554,39 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @returns {IgeEntity}
 	 */
 	debugTransforms () {
-		ige.traceSet(this._translate, "x", 1, (val) => {
+		ige.engine.traceSet(this._translate, "x", 1, (val: number) => {
 			return isNaN(val);
 		});
 
-		ige.traceSet(this._translate, "y", 1, (val) => {
+		ige.engine.traceSet(this._translate, "y", 1, (val: number) => {
 			return isNaN(val);
 		});
 
-		ige.traceSet(this._translate, "z", 1, (val) => {
+		ige.engine.traceSet(this._translate, "z", 1, (val: number) => {
 			return isNaN(val);
 		});
 
-		ige.traceSet(this._rotate, "x", 1, (val) => {
+		ige.engine.traceSet(this._rotate, "x", 1, (val: number) => {
 			return isNaN(val);
 		});
 
-		ige.traceSet(this._rotate, "y", 1, (val) => {
+		ige.engine.traceSet(this._rotate, "y", 1, (val: number) => {
 			return isNaN(val);
 		});
 
-		ige.traceSet(this._rotate, "z", 1, (val) => {
+		ige.engine.traceSet(this._rotate, "z", 1, (val: number) => {
 			return isNaN(val);
 		});
 
-		ige.traceSet(this._scale, "x", 1, (val) => {
+		ige.engine.traceSet(this._scale, "x", 1, (val: number) => {
 			return isNaN(val);
 		});
 
-		ige.traceSet(this._scale, "y", 1, (val) => {
+		ige.engine.traceSet(this._scale, "y", 1, (val: number) => {
 			return isNaN(val);
 		});
 
-		ige.traceSet(this._scale, "z", 1, (val) => {
+		ige.engine.traceSet(this._scale, "z", 1, (val: number) => {
 			return isNaN(val);
 		});
 
@@ -2629,7 +2670,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 *     entity.translateToPoint(point);
 	 * @return {*}
 	 */
-	translateToPoint (point) {
+	translateToPoint (point: IgePoint3d) {
 		if (point !== undefined) {
 			this._translate.x = point.x;
 			this._translate.y = point.y;
@@ -2660,7 +2701,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @return {*} The object this method was called from to allow
 	 * method chaining.
 	 */
-	translateToTile (x?: number, y?: number, z?: number) {
+	translateToTile (x: number, y: number, z: number) {
 		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
 			let finalZ;
 
@@ -2687,12 +2728,12 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	}
 
 	/**
-	 * Gets the translate accessor object.
-	 * @example #Use the translate accessor object to alter the y co-ordinate of the entity to 10
+	 * Gets the `translate` accessor object.
+	 * @example #Use the `translate` accessor object to alter the y co-ordinate of the entity to 10
 	 *     entity.translate().y(10);
 	 * @return {*}
 	 */
-	translate = (...args) => {
+	translate = (...args: any[]) => {
 		if (args.length) {
 			this.log("You called translate with arguments, did you mean translateTo or translateBy instead of translate?", "warning");
 		}
@@ -2707,14 +2748,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	};
 
 	/**
-	 * The translate accessor method for the x axis. This
+	 * The `translate` accessor method for the x-axis. This
 	 * method is not called directly but is accessed through
 	 * the accessor object obtained by calling entity.translate().
 	 * @param {Number=} val The new value to apply to the co-ordinate.
 	 * @return {*}
 	 * @private
 	 */
-	_translateAccessorX = (val) => {
+	_translateAccessorX = (val?: number) => {
 		if (val !== undefined) {
 			this._translate.x = val;
 			return this._entity || this;
@@ -2724,14 +2765,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	};
 
 	/**
-	 * The translate accessor method for the y axis. This
+	 * The `translate` accessor method for the y-axis. This
 	 * method is not called directly but is accessed through
 	 * the accessor object obtained by calling entity.translate().
 	 * @param {Number=} val The new value to apply to the co-ordinate.
 	 * @return {*}
 	 * @private
 	 */
-	_translateAccessorY (val) {
+	_translateAccessorY (val?: number) {
 		if (val !== undefined) {
 			this._translate.y = val;
 			return this._entity || this;
@@ -2741,14 +2782,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	}
 
 	/**
-	 * The translate accessor method for the z axis. This
+	 * The `translate` accessor method for the z-axis. This
 	 * method is not called directly but is accessed through
 	 * the accessor object obtained by calling entity.translate().
 	 * @param {Number=} val The new value to apply to the co-ordinate.
 	 * @return {*}
 	 * @private
 	 */
-	_translateAccessorZ = (val) => {
+	_translateAccessorZ = (val?: number) => {
 		// TODO: Do we need to do anything to the matrix here for iso views?
 		//this._localMatrix.translateTo(this._translate.x, this._translate.y);
 		if (val !== undefined) {
@@ -2803,12 +2844,12 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	}
 
 	/**
-	 * Gets the translate accessor object.
-	 * @example #Use the rotate accessor object to rotate the entity about the z axis 10 degrees
+	 * Gets the `translate` accessor object.
+	 * @example #Use the `rotate` accessor object to rotate the entity about the z-axis 10 degrees
 	 *     entity.rotate().z(degreesToRadians(10));
 	 * @return {*}
 	 */
-	rotate (...args) {
+	rotate (...args: any[]) {
 		if (args.length) {
 			this.log("You called rotate with arguments, did you mean rotateTo or rotateBy instead of rotate?", "warning");
 		}
@@ -2823,14 +2864,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	}
 
 	/**
-	 * The rotate accessor method for the x axis. This
+	 * The `rotate` accessor method for the x-axis. This
 	 * method is not called directly but is accessed through
 	 * the accessor object obtained by calling entity.rotate().
 	 * @param {Number=} val The new value to apply to the co-ordinate.
 	 * @return {*}
 	 * @private
 	 */
-	_rotateAccessorX = (val) => {
+	_rotateAccessorX = (val?: number) => {
 		if (val !== undefined) {
 			this._rotate.x = val;
 			return this._entity || this;
@@ -2840,14 +2881,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	};
 
 	/**
-	 * The rotate accessor method for the y axis. This
+	 * The `rotate` accessor method for the y-axis. This
 	 * method is not called directly but is accessed through
 	 * the accessor object obtained by calling entity.rotate().
 	 * @param {Number=} val The new value to apply to the co-ordinate.
 	 * @return {*}
 	 * @private
 	 */
-	_rotateAccessorY = (val) => {
+	_rotateAccessorY = (val?: number) => {
 		if (val !== undefined) {
 			this._rotate.y = val;
 			return this._entity || this;
@@ -2857,14 +2898,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	};
 
 	/**
-	 * The rotate accessor method for the z axis. This
+	 * The `rotate` accessor method for the z-axis. This
 	 * method is not called directly but is accessed through
 	 * the accessor object obtained by calling entity.rotate().
 	 * @param {Number=} val The new value to apply to the co-ordinate.
 	 * @return {*}
 	 * @private
 	 */
-	_rotateAccessorZ = (val) => {
+	_rotateAccessorZ = (val?: number) => {
 		if (val !== undefined) {
 			this._rotate.z = val;
 			return this._entity || this;
@@ -2879,7 +2920,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @param {Number} x The x co-ordinate.
 	 * @param {Number} y The y co-ordinate.
 	 * @param {Number} z The z co-ordinate.
-	 * @example #Scale the entity by 2 on the x axis
+	 * @example #Scale the entity by 2 on the x-axis
 	 *     entity.scaleBy(2, 0, 0);
 	 * @return {*}
 	 */
@@ -2918,7 +2959,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	}
 
 	/**
-	 * Gets the scale accessor object.
+	 * Gets the `scale` accessor object.
 	 * @example #Use the scale accessor object to set the scale of the entity on the x axis to 1
 	 *     entity.scale().x(1);
 	 * @return {*}
@@ -2938,14 +2979,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	}
 
 	/**
-	 * The scale accessor method for the x axis. This
+	 * The `scale` accessor method for the x-axis. This
 	 * method is not called directly but is accessed through
 	 * the accessor object obtained by calling entity.scale().
 	 * @param {Number=} val The new value to apply to the co-ordinate.
 	 * @return {*}
 	 * @private
 	 */
-	_scaleAccessorX = (val) => {
+	_scaleAccessorX = (val?: number) => {
 		if (val !== undefined) {
 			this._scale.x = val;
 			return this._entity || this;
@@ -2955,14 +2996,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	};
 
 	/**
-	 * The scale accessor method for the y axis. This
+	 * The `scale` accessor method for the y-axis. This
 	 * method is not called directly but is accessed through
 	 * the accessor object obtained by calling entity.scale().
 	 * @param {Number=} val The new value to apply to the co-ordinate.
 	 * @return {*}
 	 * @private
 	 */
-	_scaleAccessorY = (val) => {
+	_scaleAccessorY = (val?: number) => {
 		if (val !== undefined) {
 			this._scale.y = val;
 			return this._entity || this;
@@ -2972,14 +3013,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	};
 
 	/**
-	 * The scale accessor method for the z axis. This
+	 * The `scale` accessor method for the z-axis. This
 	 * method is not called directly but is accessed through
 	 * the accessor object obtained by calling entity.scale().
 	 * @param {Number=} val The new value to apply to the co-ordinate.
 	 * @return {*}
 	 * @private
 	 */
-	_scaleAccessorZ = (val) => {
+	_scaleAccessorZ = (val?: number) => {
 		if (val !== undefined) {
 			this._scale.z = val;
 			return this._entity || this;
@@ -2989,12 +3030,12 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	};
 
 	/**
-	 * Sets the origin of the entity by adding the passed values to
+	 * Sets the `origin` of the entity by adding the passed values to
 	 * the current origin values.
 	 * @param {Number} x The x co-ordinate.
 	 * @param {Number} y The y co-ordinate.
 	 * @param {Number} z The z co-ordinate.
-	 * @example #Add 0.5 to the origin on the x axis
+	 * @example #Add 0.5 to the origin on the x-axis
 	 *     entity.originBy(0.5, 0, 0);
 	 * @return {*}
 	 */
@@ -3011,7 +3052,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	}
 
 	/**
-	 * Set the origin of the entity to the passed values.
+	 * Set the `origin` of the entity to the passed values.
 	 * @param {Number} x The x co-ordinate.
 	 * @param {Number} y The y co-ordinate.
 	 * @param {Number} z The z co-ordinate.
@@ -3032,8 +3073,8 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	}
 
 	/**
-	 * Gets the origin accessor object.
-	 * @example #Use the origin accessor object to set the origin of the entity on the x axis to 1
+	 * Gets the `origin` accessor object.
+	 * @example #Use the origin accessor object to set the origin of the entity on the x-axis to 1
 	 *     entity.origin().x(1);
 	 * @return {*}
 	 */
@@ -3048,14 +3089,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	}
 
 	/**
-	 * The origin accessor method for the x axis. This
+	 * The `origin` accessor method for the x-axis. This
 	 * method is not called directly but is accessed through
 	 * the accessor object obtained by calling entity.origin().
 	 * @param {Number=} val The new value to apply to the co-ordinate.
 	 * @return {*}
 	 * @private
 	 */
-	_originAccessorX = (val) => {
+	_originAccessorX = (val?: number) => {
 		if (val !== undefined) {
 			this._origin.x = val;
 			return this._entity || this;
@@ -3065,14 +3106,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	};
 
 	/**
-	 * The origin accessor method for the y axis. This
+	 * The `origin` accessor method for the y-axis. This
 	 * method is not called directly but is accessed through
 	 * the accessor object obtained by calling entity.origin().
 	 * @param {Number=} val The new value to apply to the co-ordinate.
 	 * @return {*}
 	 * @private
 	 */
-	_originAccessorY = (val) => {
+	_originAccessorY = (val?: number) => {
 		if (val !== undefined) {
 			this._origin.y = val;
 			return this._entity || this;
@@ -3082,14 +3123,14 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	};
 
 	/**
-	 * The origin accessor method for the z axis. This
+	 * The `origin` accessor method for the z-axis. This
 	 * method is not called directly but is accessed through
 	 * the accessor object obtained by calling entity.origin().
 	 * @param {Number=} val The new value to apply to the co-ordinate.
 	 * @return {*}
 	 * @private
 	 */
-	_originAccessorZ = (val) => {
+	_originAccessorZ = (val?: number) => {
 		if (val !== undefined) {
 			this._origin.z = val;
 			return this._entity || this;
@@ -3098,7 +3139,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 		return this._origin.z;
 	};
 
-	_rotatePoint (point, radians, origin) {
+	_rotatePoint (point: IgePoint2d, radians: number, origin: IgePoint2d) {
 		const cosAngle = Math.cos(radians),
 			sinAngle = Math.sin(radians);
 
@@ -3274,7 +3315,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
 	 * @param {Number} tickDelta The delta between the last tick time and this one.
 	 */
-	update (ctx: CanvasRenderingContext2D, tickDelta: number) {
+	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		// Check if the entity should still exist
 		if (this._deathTime !== undefined && this._deathTime <= ige.engine._tickStart) {
 			// Check if the deathCallBack was set
@@ -3327,7 +3368,7 @@ class IgeEntity extends IgeObject implements IgeRegisterableById, IgeRegisterabl
 			this._birthMount = this._parent?.id();
 			this.unMount();
 
-			ige.engine.spawnQueue(this);
+			ige.engine.spawnQueue(this as IgeObject);
 		}
 
 		// Process super class

@@ -1,5 +1,6 @@
 import IgePoint2d from "./IgePoint2d";
 import IgeRect from "./IgeRect";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
@@ -355,7 +356,7 @@ class IgePoly2d {
 	 * @param {CanvasRenderingContext2D} ctx
 	 * @param fill
 	 */
-	render (ctx: CanvasRenderingContext2D, fill: boolean = false) {
+	render (ctx: IgeCanvasRenderingContext2d, fill: boolean = false) {
 		const polyPoints = this._poly;
 		const pointCount = polyPoints.length;
 		const scaleX = this._scale.x;

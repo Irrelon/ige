@@ -11,6 +11,7 @@ export class Triangle extends IgeEntity {
             .height(50);
         if (isClient) {
             this.texture(textures.getTextureById("triangle"));
+            this.registerNetworkClass();
         }
     }
 }

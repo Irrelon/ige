@@ -2,6 +2,8 @@ import {distance} from "../services/utils";
 import IgeComponent from "../core/IgeComponent";
 import IgeEntity from "../core/IgeEntity";
 import { isClient } from "../services/clientServer";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeMountMode } from "../../enums/IgeMountMode";
 
 /**
  * Handles entity path traversal.
@@ -304,7 +306,7 @@ class IgePathComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCom
 			if (cell) {
 				dir = cell.direction;
 
-				if (this._entity._mode === 1) {
+				if (this._entity._renderMode === 1) {
 					// Convert direction for isometric
 					switch (dir) {
 					case "E":
@@ -610,7 +612,7 @@ class IgePathComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCom
 	 * rendered to.
 	 * @private
 	 */
-	_updateBehaviour = (ctx) => {
+	_updateBehaviour = (ctx: IgeCanvasRenderingContext2d) => {
 		const {path} = this,
 			currentTime = ige.engine._currentTime,
 			progressTime = currentTime - path._startTime;
@@ -854,7 +856,7 @@ class IgePathComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCom
 						tracePathPoint = self.multiplyPoint(tracePathPoint);
 						tracePathPoint = self.transformPoint(tracePathPoint);
 
-						if (entity._parent._mountMode === 1) {
+						if (entity._parent._mountMode === IgeMountMode.iso) {
 							tracePathPoint = tracePathPoint.toIso();
 						}
 

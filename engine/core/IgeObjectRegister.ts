@@ -1,7 +1,7 @@
-import { IgeRegisterableById } from "../../types/IgeRegisterableById";
+import { IgeCanRegisterById } from "../../types/IgeCanRegisterById";
 
 export class IgeObjectRegister {
-	_store: Record<string, IgeRegisterableById> = {};
+	_store: Record<string, IgeCanRegisterById> = {};
 
 	get (id: string) {
 		return this._store[id];
@@ -14,7 +14,7 @@ export class IgeObjectRegister {
 	 * @param {Object} obj The object to register.
 	 * @return {*}
 	 */
-	add (obj: IgeRegisterableById) {
+	add (obj: IgeCanRegisterById) {
 		if (this._store[obj.id()]) {
 			obj._idRegistered = false;
 			throw new Error(`Cannot add object id "${obj.id()}" to scenegraph because there is already another object in the graph with the same ID!`);
@@ -32,7 +32,7 @@ export class IgeObjectRegister {
 	 * @param {Object} obj The object to un-register.
 	 * @return {*}
 	 */
-	remove (obj: IgeRegisterableById) {
+	remove (obj: IgeCanRegisterById) {
 		// Check if the object is registered in the ID lookup
 		if (!this._store[obj.id()]) {
 			return;

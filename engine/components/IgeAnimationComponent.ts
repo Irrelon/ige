@@ -1,6 +1,7 @@
 import { ige } from "../instance";
 import IgeComponent from "../core/IgeComponent";
 import IgeEntity from "../core/IgeEntity";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
 /**
  * The animation component class. Handles defining and controlling
@@ -367,7 +368,7 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 	 * @param {CanvasRenderingContext2D} ctx The rendering context to use when doing draw operations.
 	 * @param {Number} tickDelta The current ige._tickDelta passed down the scenegraph.
 	 */
-	_update = (ctx, tickDelta) => {
+	_update = (ctx: IgeCanvasRenderingContext2d, tickDelta: number) => {
 		const self = this.animation;
 
 		// Just in case someone forgets to pass it in their update call!

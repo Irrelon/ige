@@ -3,6 +3,7 @@ import { arrPull, newIdHex } from "../services/utils.js";
 import WithUiStyleMixin from "../mixins/IgeUiStyleMixin.js";
 import { isClient, isServer } from "../services/clientServer.js";
 import { IgeObject } from "./IgeObject.js";
+import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode.js";
 let IgeImageClass;
 let IgeCanvasClass;
 /**
@@ -20,9 +21,9 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
         super();
         this.classId = "IgeTexture";
         this.IgeTexture = true;
-        this._didInit = false;
         this._sizeX = 0;
         this._sizeY = 0;
+        this._renderMode = IgeTextureRenderMode.none;
         this._loaded = false;
         this._smoothing = false;
         this._filterImageDrawn = false;
@@ -154,7 +155,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
                     const arrCount = arr.length;
                     for (let i = 0; i < arrCount; i++) {
                         const item = arr[i];
-                        item._mode = 0;
+                        item._renderMode = 0;
                         item.sizeX(image.width);
                         item.sizeY(image.height);
                         item._cells[1] = [0, 0, item._sizeX, item._sizeY];
@@ -174,7 +175,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
             if (image._loaded) {
                 // The cached image object is already loaded so
                 // fire off the relevant events
-                this._mode = 0;
+                this._renderMode = 0;
                 this.sizeX(image.width);
                 this.sizeY(image.height);
                 if (image.width % 2) {
@@ -231,7 +232,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
             // 	// Store the eval data (the "image" variable is declared
             // 	// by the texture script and becomes available in this scope
             // 	// because we evaluated it above)
-            // 	self._mode = 1;
+            // 	self._renderMode = 1;
             // 	self.script = image;
             //
             // 	// Run the asset script init method
@@ -266,7 +267,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
             throw new Error("Cannot assign smart texture because it doesn't have a render() method!");
         }
         // Store the script data
-        this._mode = 1;
+        this._renderMode = 1;
         this.script = scriptObj;
         // Run the asset script init method
         if (typeof scriptObj.init === "function") {
@@ -291,7 +292,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
             image = this.image = this._originalImage = imageElement;
             // Mark the image as loaded
             image._loaded = true;
-            this._mode = 0;
+            this._renderMode = 0;
             this.sizeX(image.width);
             this.sizeY(image.height);
             this._cells[1] = [0, 0, this._sizeX, this._sizeY];
@@ -425,7 +426,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
         if (ige.engine._ctx) {
             ige.engine._ctx.imageSmoothingEnabled = this._smoothing;
         }
-        if (this._mode === 0) {
+        if (this._renderMode === 0) {
             // This texture is image-based
             if (!this._originalImage || !this.image) {
                 throw new Error("No image is available to render but the IgeTexture is in mode zero (image based render)!");
@@ -465,7 +466,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
             );
             ige.metrics.drawCount++;
         }
-        if (this._mode === 1) {
+        if (this._renderMode === 1) {
             if (!this.script) {
                 throw new Error("No smart texture is available to render but the IgeTexture is in mode one (script based render)!");
             }
@@ -630,7 +631,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
             throw new Error("Cannot read pixel data, the texture you are trying to read data from has not yet loaded!");
         }
         if (!this.image) {
-            return this;
+            return null;
         }
         // Check if the texture is already using a canvas
         if (!this._textureCtx || !this._textureCanvas) {
@@ -648,7 +649,11 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
             // Draw the image to the canvas
             this._textureCtx.drawImage(this.image, 0, 0);
         }
-        return this._textureCtx.getImageData(x, y, 1, 1).data;
+        const imageData = this._textureCtx.getImageData(x, y, 1, 1);
+        if (!imageData) {
+            return null;
+        }
+        return imageData.data;
     }
     /**
      * Creates a clone of the texture.

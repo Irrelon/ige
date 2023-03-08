@@ -1,27 +1,31 @@
-import IgeEventingClass from "./IgeEventingClass";
-import { IgeRegisterableById } from "../../types/IgeRegisterableById";
-import { IgeRegisterableByCategory } from "../../types/IgeRegisterableByCategory";
 import { ige } from "../instance";
-import { arrPull, newIdHex } from "../services/utils";
-import IgeTileMap2d from "./IgeTileMap2d";
-import { IgeTimeStreamPacket } from "../../types/IgeTimeStream";
 import { isClient, isServer } from "../services/clientServer";
-import { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
-import { IgeNetIoServerComponent } from "../components/network/net.io/IgeNetIoServerComponent";
+import { arrPull, newIdHex } from "../services/utils";
+import IgeEventingClass from "./IgeEventingClass";
+import IgeTileMap2d from "./IgeTileMap2d";
 import IgePoint3d from "./IgePoint3d";
 import IgePoint2d from "./IgePoint2d";
-import { IgeInputEventControl } from "../components/IgeInputComponent";
 import IgeMatrix2d from "./IgeMatrix2d";
-import IgeDummyContext from "./IgeDummyContext";
 import IgeDummyCanvas from "./IgeDummyCanvas";
 import IgeRect from "./IgeRect";
 import IgeTexture from "./IgeTexture";
-import { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import IgePoly2d from "./IgePoly2d";
-import { IgeEntityBehaviour } from "./IgeEntity";
-import { IgeDepthSortObject } from "../../types/IgeDepthSortObject";
+import { IgeNetIoServerComponent } from "../components/network/net.io/IgeNetIoServerComponent";
+import { IgeMountMode } from "../../enums/IgeMountMode";
+import { IgeStreamMode } from "../../enums/IgeStreamMode";
+import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode";
+import type { IgeTimeStreamPacket, IgeTimeStreamTransformData } from "../../types/IgeTimeStream";
+import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById";
+import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory";
+import type { IgeSmartTexture } from "../../types/IgeSmartTexture";
+import type { IgeDepthSortObject } from "../../types/IgeDepthSortObject";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import type { IgeChildSortFunction } from "../../types/IgeChildSortFunction";
+import type { IgeEntityBehaviour } from "../../types/IgeEntityBehaviour";
+import { IgeInputEvent } from "../../types/IgeInputEvent";
+import { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
 
-export class IgeObject extends IgeEventingClass implements IgeRegisterableById, IgeRegisterableByCategory {
+export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, IgeCanRegisterByCategory {
 	classId = "IgeObject";
 	_id?: string;
 	_idRegistered: boolean = false;
@@ -35,14 +39,17 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	_parent: IgeObject | null = null;
 	_children: IgeObject[] = [];
 	_transformChanged: boolean = false;
+	_tileWidth: number = 1;
+	_tileHeight: number = 1;
 
 	_specialProp: string[] = [];
-	_streamMode?: number;
+	_streamMode?: IgeStreamMode;
 	_streamRoomId?: string;
 	_streamDataCache: string = "";
 	_streamJustCreated?: boolean;
 	_streamEmitCreated?: boolean;
 	_streamSections: string[] = [];
+	_streamProperty?: Record<string, any>;
 	_streamSyncInterval?: number;
 	_streamSyncDelta: number = 0;
 	_streamSyncSectionInterval: Record<string, number> = {}; // Holds minimum delta before the stream section is included in the next stream data packet
@@ -52,6 +59,7 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	_timeStreamOffsetDelta?: number;
 	_timeStreamPreviousData?: IgeTimeStreamPacket;
 	_timeStreamNextData?: IgeTimeStreamPacket;
+	_timeStream: IgeTimeStreamPacket[] = []; // Holds an array of transform data for the object that was sent from the server
 	_streamFloatPrecision: number = 2;
 	_floatRemoveRegExp: RegExp = new RegExp("\\.00,", "g");
 	_compositeStream: boolean = false;
@@ -59,12 +67,10 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	_streamControl?: (clientId: string, roomId?: string) => boolean;
 	_newBorn = true;
 	_alive = true;
-	_mode = 0;
-	_mountMode = 0;
+	_mountMode: IgeMountMode = IgeMountMode.flat;
 	_layer = 0;
 	_depth = 0;
-	_depthSortMode = 0;
-	_timeStream: IgeTimeStreamPacket[] = [];
+	_depthSortMode = IgeIsometricDepthSortMode.bounds3d;
 	_inView = true;
 	_managed = 1;
 	_triggerPolygon?: "aabb" | "localBounds3dPolygon";
@@ -91,12 +97,12 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	_mouseStateDown: boolean = false;
 	_mouseStateOver: boolean = false;
 	_mouseAlwaysInside: boolean = false;
-	_mouseOut?: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
-	_mouseOver?: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
-	_mouseMove?: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
-	_mouseWheel?: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
-	_mouseUp?: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
-	_mouseDown?: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
+	_mouseOut?: IgeInputEvent;
+	_mouseOver?: IgeInputEvent;
+	_mouseMove?: IgeInputEvent;
+	_mouseWheel?: IgeInputEvent;
+	_mouseUp?: IgeInputEvent;
+	_mouseDown?: IgeInputEvent;
 	_velocity: IgePoint3d;
 	_localMatrix: IgeMatrix2d;
 	_worldMatrix: IgeMatrix2d;
@@ -104,7 +110,7 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	_adjustmentMatrix?: IgeMatrix2d;
 	_hidden: boolean;
 	_cache: boolean = false;
-	_cacheCtx?: CanvasRenderingContext2D | typeof IgeDummyContext | null;
+	_cacheCtx?: IgeCanvasRenderingContext2d | null;
 	_cacheCanvas?: HTMLCanvasElement | IgeDummyCanvas;
 	_cacheDirty: boolean = false;
 	_cacheSmoothing: boolean = false;
@@ -123,7 +129,7 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	_birthMount?: string;
 	_frameAlternatorCurrent: boolean = false;
 	_backgroundPattern?: IgeTexture;
-	_backgroundPatternRepeat?: string;
+	_backgroundPatternRepeat: string | null = null;
 	_backgroundPatternTrackCamera?: boolean;
 	_backgroundPatternIsoTile?: boolean;
 	_backgroundPatternFill?: CanvasPattern | null;
@@ -132,16 +138,16 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	_bounds3dPolygon?: IgePoly2d;
 	_localAabb?: IgeRect;
 	_deathCallBack?: (...args: any[]) => void; // TODO: Rename this to _deathCallback (lower case B)
-	_sortChildren: ((comparatorFunction: (a: IgeObject, b: IgeObject) => number) => void) = (compareFn) => {
+	_sortChildren: (IgeChildSortFunction) = (compareFn) => {
 		return this._children.sort(compareFn);
 	};
 
 	constructor () {
 		super();
 
-		this._specialProp.push('_id');
-		this._specialProp.push('_parent');
-		this._specialProp.push('_children');
+		this._specialProp.push("_id");
+		this._specialProp.push("_parent");
+		this._specialProp.push("_children");
 
 		this._anchor = new IgePoint2d(0, 0);
 		this._renderPos = { x: 0, y: 0 };
@@ -193,39 +199,37 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 *         .id('myNewId');
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	id(id: string): this;
-	id(): string;
+	id (id: string): this;
+	id (): string;
 	id (id?: string): this | string | undefined {
-		if (id === undefined) {
-			return this._id;
-		}
-
-		// Check if we're changing the id
-		if (id === this._id) {
-			// The same ID we already have is being applied,
-			// ignore the request and return
-			return this;
-		}
-
-		// Check if this ID already exists in the object register
-		if (!ige.register.get(id)) {
-			// Check if we already have an id assigned
-			if (this._id && ige.register.get(this._id)) {
-				// Unregister the old ID before setting this new one
-				ige.register.remove(this);
+		if (id !== undefined) {
+			// Check if we're changing the id
+			if (id === this._id) {
+				// The same ID we already have is being applied,
+				// ignore the request and return
+				return this;
 			}
 
-			this._id = id;
+			// Check if this ID already exists in the object register
+			if (!ige.register.get(id)) {
+				// Check if we already have an id assigned
+				if (this._id && ige.register.get(this._id)) {
+					// Unregister the old ID before setting this new one
+					ige.register.remove(this);
+				}
 
-			// Now register this object with the object register
-			ige.register.add(this);
+				this._id = id;
 
-			return this;
-		}
+				// Now register this object with the object register
+				ige.register.add(this);
 
-		// Already an object with this ID!
-		if (ige.register.get(id) !== this) {
-			this.log(`Cannot set ID of object to "${id}" because that ID is already in use by another object!`, "error");
+				return this;
+			}
+
+			// Already an object with this ID!
+			if (ige.register.get(id) !== this) {
+				this.log(`Cannot set ID of object to "${id}" because that ID is already in use by another object!`, "error");
+			}
 		}
 
 		if (!this._id) {
@@ -233,6 +237,8 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 			this._id = newIdHex();
 			ige.register.add(this);
 		}
+
+		return this._id;
 	}
 
 	/**
@@ -308,8 +314,8 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 *     console.log(entity.drawBounds());
 	 * @return {*}
 	 */
-	drawBounds(): boolean;
-	drawBounds(id: boolean): this;
+	drawBounds (): boolean;
+	drawBounds (id: boolean): this;
 	drawBounds (val?: boolean) {
 		if (val !== undefined) {
 			this._drawBounds = val;
@@ -334,8 +340,8 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 *     console.log(entity.drawBoundsData());
 	 * @return {*}
 	 */
-	drawBoundsData(): boolean;
-	drawBoundsData(val: boolean): this;
+	drawBoundsData (): boolean;
+	drawBoundsData (val: boolean): this;
 	drawBoundsData (val?: boolean) {
 		if (val !== undefined) {
 			this._drawBoundsData = val;
@@ -359,8 +365,8 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 *     console.log(entity.drawMouse());
 	 * @return {*}
 	 */
-	drawMouse(): boolean;
-	drawMouse(val: boolean): this;
+	drawMouse (): boolean;
+	drawMouse (val: boolean): this;
 	drawMouse (val?: boolean) {
 		if (val !== undefined) {
 			this._drawMouse = val;
@@ -386,8 +392,8 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 *     console.log(entity.drawMouseData());
 	 * @return {*}
 	 */
-	drawMouseData(): boolean;
-	drawMouseData(val: boolean): this;
+	drawMouseData (): boolean;
+	drawMouseData (val: boolean): this;
 	drawMouseData (val?: boolean) {
 		if (val !== undefined) {
 			this._drawMouseData = val;
@@ -397,7 +403,7 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 		return this._drawMouseData;
 	}
 
-	update (ctx: CanvasRenderingContext2D, tickDelta: number) {
+	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		// Check that we are alive before processing further
 		if (!this._alive) {
 			return;
@@ -463,7 +469,7 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 		return;
 	}
 
-	tick (ctx: CanvasRenderingContext2D) {
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		// Check that we are alive before processing further
 		if (!this._alive) {
 			return;
@@ -510,7 +516,7 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 		} else {
 			while (arrCount--) {
 				if (!arr[arrCount]) {
-					this.log("Object _children is undefined for index " + arrCount + " and _id: " + this._id, "error");
+					this.log(`Object _children is undefined for index ${arrCount} and _id: ${this._id}`, "error");
 					continue;
 				}
 
@@ -523,7 +529,8 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 		}
 	}
 
-	updateTransform () {}
+	updateTransform () {
+	}
 
 	aabb (recalculate = true, inverse = false): IgeRect {
 		return this._aabb;
@@ -580,8 +587,8 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 *     console.log(parent.id());
 	 * @return {*}
 	 */
-	parent(): IgeObject | IgeTileMap2d | null | undefined;
-	parent(id: string): IgeObject | null;
+	parent (): IgeObject | IgeTileMap2d | null | undefined;
+	parent (id: string): IgeObject | null;
 	parent (id?: string): IgeObject | IgeTileMap2d | null {
 		if (!id) {
 			return this._parent;
@@ -802,8 +809,8 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 *     entity.alive(true);
 	 * @return {*}
 	 */
-	alive(val: boolean): this;
-	alive(): boolean;
+	alive (val: boolean): this;
+	alive (): boolean;
 	alive (val?: boolean) {
 		if (val !== undefined) {
 			this._alive = val;
@@ -828,8 +835,8 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 *     console.log(entity.indestructible());
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	indestructible(): boolean;
-	indestructible(val: boolean): this;
+	indestructible (): boolean;
+	indestructible (val: boolean): this;
 	indestructible (val?: boolean): boolean | this {
 		if (val !== undefined) {
 			this._indestructible = val;
@@ -881,8 +888,8 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 *     // entity3
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	layer(): number;
-	layer(val: number): this;
+	layer (): number;
+	layer (val: number): this;
 	layer (val?: number): number | this {
 		if (val !== undefined) {
 			this._layer = val;
@@ -934,8 +941,8 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 *     // entity3
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	depth(): number;
-	depth(val: number): this;
+	depth (): number;
+	depth (val: number): this;
 	depth (val?: number) {
 		if (val !== undefined) {
 			this._depth = val;
@@ -967,30 +974,6 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	}
 
 	/**
-	 * Gets / sets if this object should be positioned isometrically
-	 * or in 2d.
-	 * @param {Boolean} val Set to true to position this object in
-	 * isometric space or false to position it in 2d space.
-	 * @example #Set the positioning mode to isometric
-	 *     var entity = new IgeEntity()
-	 *         .isometric(true);
-	 * @example #Set the positioning mode to 2d
-	 *     var entity = new IgeEntity()
-	 *         .isometric(false);
-	 * @return {*}
-	 */
-	isometric(): boolean;
-	isometric(val: boolean): this;
-	isometric (val?: boolean): boolean | this {
-		if (val !== undefined) {
-			this._mode = val ? 1 : 0;
-			return this;
-		}
-
-		return this._mode === 1;
-	}
-
-	/**
 	 * Gets / sets if objects mounted to this object should be positioned
 	 * and depth-sorted in an isometric fashion or a 2d fashion.
 	 * @param {Boolean=} val Set to true to enabled isometric positioning
@@ -1005,15 +988,15 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 *         .isometricMounts(true);
 	 * @return {*}
 	 */
-	isometricMounts(): boolean;
-	isometricMounts(val: boolean): this;
+	isometricMounts (): boolean;
+	isometricMounts (val: boolean): this;
 	isometricMounts (val?: boolean) {
 		if (val !== undefined) {
-			this._mountMode = val ? 1 : 0;
+			this._mountMode = val ? IgeMountMode.iso : IgeMountMode.flat;
 			return this;
 		}
 
-		return this._mountMode === 1;
+		return this._mountMode === IgeMountMode.iso;
 	}
 
 	/**
@@ -1035,9 +1018,9 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 *     entity.depthSortMode(2);
 	 * @return {*}
 	 */
-	depthSortMode(): number;
-	depthSortMode(val: number): this;
-	depthSortMode (val?: number) {
+	depthSortMode (): IgeIsometricDepthSortMode;
+	depthSortMode (val: IgeIsometricDepthSortMode): this;
+	depthSortMode (val?: IgeIsometricDepthSortMode) {
 		if (val !== undefined) {
 			this._depthSortMode = val;
 			return this;
@@ -1050,144 +1033,30 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 * Sorts the _children array by the layer and then depth of each object.
 	 */
 	depthSortChildren () {
-		if (this._depthSortMode === -1) {
+		if (this._depthSortMode === IgeIsometricDepthSortMode.none) {
 			return;
 		}
 
 		const arr = this._children;
 
-		if (arr) {
-			let arrCount = arr.length;
-
-			// See if we can bug-out early (one or no children)
-			if (arrCount <= 1) {
-				return;
-			}
-
-			if (this._mountMode !== 1) {
-				// 2d mode
-				// Now sort the entities by depth
-				this._sortChildren((a, b) => {
-					const layerIndex = b._layer - a._layer;
-
-					if (layerIndex === 0) {
-						// On same layer so sort by depth
-						return b._depth - a._depth;
-					} else {
-						// Not on same layer so sort by layer
-						return layerIndex;
-					}
-				});
-
-				return;
-			}
-
-			// Check the depth sort mode
-			if (this._depthSortMode === 0) {
-				// Slowest, uses 3d bounds
-				// Calculate depths from 3d bounds
-				const sortObj: IgeDepthSortObject = {
-					adj: [],
-					c: [],
-					p: [],
-					order: [],
-					order_ind: arrCount - 1
-				};
-
-				for (let i = 0; i < arrCount; ++i) {
-					sortObj.c[i] = 0;
-					sortObj.p[i] = -1;
-
-					for (let j = i + 1; j < arrCount; ++j) {
-						sortObj.adj[i] = sortObj.adj[i] || [];
-						sortObj.adj[j] = sortObj.adj[j] || [];
-
-						if (arr[i]._inView && arr[j]._inView && arr[i]._projectionOverlap && arr[j]._projectionOverlap) {
-							if (arr[i]._projectionOverlap(arr[j])) {
-								if (arr[i].isBehind(arr[j])) {
-									sortObj.adj[j].push(i);
-								} else {
-									sortObj.adj[i].push(j);
-								}
-							}
-						}
-					}
-				}
-
-				for (let i = 0; i < arrCount; ++i) {
-					if (sortObj.c[i] !== 0) {
-						continue;
-					}
-
-					this._depthSortVisit(i, sortObj);
-				}
-
-				for (let i = 0; i < sortObj.order.length; i++) {
-					arr[sortObj.order[i]].depth(i);
-				}
-
-				this._sortChildren((a, b) => {
-					const layerIndex = b._layer - a._layer;
-
-					if (layerIndex === 0) {
-						// On same layer so sort by depth
-						return b._depth - a._depth;
-					} else {
-						// Not on same layer so sort by layer
-						return layerIndex;
-					}
-				});
-			}
-
-			if (this._depthSortMode === 1) {
-				// Medium speed, optimised for almost-cube shaped 3d bounds
-				// Now sort the entities by depth
-				this._sortChildren((a, b) => {
-					const layerIndex = b._layer - a._layer;
-
-					if (layerIndex === 0) {
-						// On same layer so sort by depth
-						//if (a._projectionOverlap(b)) {
-						if (a.isBehind(b)) {
-							return -1;
-						} else {
-							return 1;
-						}
-						//}
-					} else {
-						// Not on same layer so sort by layer
-						return layerIndex;
-					}
-				});
-			}
-
-			if (this._depthSortMode === 2) {
-				// Fastest, optimised for cube-shaped 3d bounds
-				while (arrCount--) {
-					const sortObj = arr[arrCount];
-					const j = sortObj._translate;
-
-					if (!j) {
-						continue;
-					}
-
-					sortObj._depth = j.x + j.y + j.z;
-				}
-
-				// Now sort the entities by depth
-				this._sortChildren((a, b) => {
-					const layerIndex = b._layer - a._layer;
-
-					if (layerIndex === 0) {
-						// On same layer so sort by depth
-						return b._depth - a._depth;
-					} else {
-						// Not on same layer so sort by layer
-						return layerIndex;
-					}
-				});
-			}
+		if (!arr || !arr.length) {
+			return;
 		}
+
+		// Now sort the entities by depth
+		this._sortChildren((a, b) => {
+			const layerIndex = b._layer - a._layer;
+
+			if (layerIndex === 0) {
+				// On same layer so sort by depth
+				return b._depth - a._depth;
+			} else {
+				// Not on same layer so sort by layer
+				return layerIndex;
+			}
+		});
+
+		return;
 	}
 
 	_depthSortVisit (u: number, sortObj: IgeDepthSortObject) {
@@ -1235,7 +1104,7 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 * @param obj
 	 * @private
 	 */
-	_childUnMounted (obj: IgeEntity) {
+	_childUnMounted (obj: IgeObject) {
 	}
 
 	/**
@@ -1243,7 +1112,7 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 * @param obj
 	 * @private
 	 */
-	_mounted (obj: IgeEntity) {
+	_mounted (obj: IgeObject) {
 	}
 
 	/**
@@ -1251,7 +1120,7 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 * @param obj
 	 * @private
 	 */
-	_unMounted (obj: IgeEntity | IgeTileMap2d) {
+	_unMounted (obj: IgeObject) {
 	}
 
 	isMounted () {
@@ -1268,7 +1137,9 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 *     entity.childSortingAlgorithm(function (compareFn) { this._children.sort(compareFn); });
 	 * @return {*}
 	 */
-	childSortingAlgorithm (val: (comparatorFunction: (a: IgeEntity, b: IgeEntity) => number) => void) {
+	childSortingAlgorithm (val: IgeChildSortFunction): this;
+	childSortingAlgorithm (): IgeChildSortFunction;
+	childSortingAlgorithm (val?: IgeChildSortFunction) {
 		if (val !== undefined) {
 			this._sortChildren = val;
 			return this;
@@ -1401,6 +1272,68 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	}
 
 	/**
+	 * Gets / sets the cache flag that determines if the entity's
+	 * texture rendering output should be stored on an off-screen
+	 * canvas instead of calling the texture.render() method each
+	 * tick. Useful for expensive texture calls such as rendering
+	 * fonts etc. If enabled, this will automatically disable advanced
+	 * composite caching on this entity with a call to
+	 * compositeCache(false).
+	 * @param {Boolean=} val True to enable caching, false to
+	 * disable caching.
+	 * @param {Boolean} propagateToChildren If true, calls cache()
+	 * on each child and all their children with the same `val`.
+	 * @example #Enable entity caching
+	 *     entity.cache(true);
+	 * @example #Disable entity caching
+	 *     entity.cache(false);
+	 * @example #Get caching flag value
+	 *     var val = entity.cache();
+	 * @return {*}
+	 */
+	cache (val?: boolean, propagateToChildren = false) {
+		if (val === undefined) {
+			return this._cache;
+		}
+
+		this._cache = val;
+
+		if (propagateToChildren) {
+			this._children.forEach((child) => {
+				if (!("cache" in child)) return;
+				child.cache(val, true);
+			});
+		}
+
+		if (!val) {
+			// Remove the off-screen canvas
+			delete this._cacheCanvas;
+			return this;
+		}
+
+		// Create the off-screen canvas
+		if (isClient) {
+			// Use a real canvas
+			const canvasObj = ige.engine.createCanvas({ smoothing: this._cacheSmoothing, pixelRatioScaling: true });
+			this._cacheCanvas = canvasObj.canvas;
+			this._cacheCtx = canvasObj.ctx;
+		} else {
+			// Use dummy objects for canvas and context
+			this._cacheCanvas = new IgeDummyCanvas();
+			this._cacheCtx = this._cacheCanvas.getContext("2d");
+		}
+
+		this._cacheDirty = true;
+
+		// Switch off composite caching
+		if (this.compositeCache()) {
+			this.compositeCache(false);
+		}
+
+		return this;
+	}
+
+	/**
 	 * Gets / sets composite caching. Composite caching draws this entity
 	 * and all of its children (and their children etc.) to a single
 	 * off-screen canvas so that the entity does not need to be redrawn with
@@ -1488,11 +1421,15 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 		return this;
 	}
 
+	registerNetworkClass () {
+		ige.classStore[this.constructor.name] = this.constructor;
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// STREAM
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
-	 * Gets / sets the disable interpolation flag. If set to true then
+	 * Gets / sets the `disable interpolation` flag. If set to true then
 	 * stream data being received by the client will not be interpolated
 	 * and will be instantly assigned instead. Useful if your entity's
 	 * transformations should not be interpolated over time.
@@ -1537,7 +1474,7 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	streamSections (sectionArray) {
+	streamSections (sectionArray?: string[]) {
 		if (sectionArray !== undefined) {
 			this._streamSections = sectionArray;
 			return this;
@@ -1550,7 +1487,7 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 * Adds a section into the existing streamed sections array.
 	 * @param {String} sectionName The section name to add.
 	 */
-	streamSectionsPush (sectionName) {
+	streamSectionsPush (sectionName: string) {
 		this._streamSections = this._streamSections || [];
 		this._streamSections.push(sectionName);
 
@@ -1561,7 +1498,7 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 * Removes a section into the existing streamed sections array.
 	 * @param {String} sectionName The section name to remove.
 	 */
-	streamSectionsPull (sectionName) {
+	streamSectionsPull (sectionName: string) {
 		if (this._streamSections) {
 			arrPull(this._streamSections, sectionName);
 		}
@@ -1579,22 +1516,26 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 * @return {*} "this" when a propVal argument is passed to allow method
 	 * chaining or the current value if no propVal argument is specified.
 	 */
-	streamProperty (propName, propVal) {
+	streamProperty (propName: string, propVal?: any) {
+		if (!this._id) return;
+
+		const network = ige.network as IgeNetIoServerComponent;
+
 		this._streamProperty = this._streamProperty || {};
-		//this._streamPropertyChange = this._streamPropertyChange || {};
+		network._streamPropertyChange = network._streamPropertyChange || {};
+		network._streamPropertyChange[this._id] = network._streamPropertyChange[this._id] || {};
 
-		if (propName !== undefined) {
-			if (propVal !== undefined) {
-				//this._streamPropertyChange[propName] = this._streamProperty[propName] !== propVal;
-				this._streamProperty[propName] = propVal;
-
-				return this;
+		if (propVal !== undefined) {
+			if (this._streamProperty[propName] !== propVal) {
+				network._streamPropertyChange[this._id][propName] = true;
 			}
 
-			return this._streamProperty[propName];
+			this._streamProperty[propName] = propVal;
+
+			return this;
 		}
 
-		return undefined;
+		return this._streamProperty[propName];
 	}
 
 	/**
@@ -1606,7 +1547,8 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 * @param {String} sectionId A string identifying the section to
 	 * handle data get / set for.
 	 * @param {*=} data If present, this is the data that has been sent
-	 * from the server to the client for this entity.
+	 * from the server to the client for this entity. If not present then
+	 * we should return the data to be sent over the network.
 	 * @param {Boolean=} bypassTimeStream If true, will assign transform
 	 * directly to entity instead of adding the values to the time stream.
 	 * @return {*} "this" when a data argument is passed to allow method
@@ -1614,48 +1556,19 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 */
 	streamSectionData (sectionId: string, data?: string, bypassTimeStream: boolean = false) {
 		switch (sectionId) {
-		case "transform":
+		case 'transform':
 			if (data) {
 				// We have received updated data
-				const dataArr = data.split(",");
+				const network = ige.network as IgeNetIoClientComponent;
+				const dataArr = data.split(',');
 
 				if (!this._disableInterpolation && !bypassTimeStream && !this._streamJustCreated) {
-					// Translate
-					if (dataArr[0]) {
-						dataArr[0] = parseFloat(dataArr[0]);
-					}
-					if (dataArr[1]) {
-						dataArr[1] = parseFloat(dataArr[1]);
-					}
-					if (dataArr[2]) {
-						dataArr[2] = parseFloat(dataArr[2]);
-					}
-
-					// Scale
-					if (dataArr[3]) {
-						dataArr[3] = parseFloat(dataArr[3]);
-					}
-					if (dataArr[4]) {
-						dataArr[4] = parseFloat(dataArr[4]);
-					}
-					if (dataArr[5]) {
-						dataArr[5] = parseFloat(dataArr[5]);
-					}
-
-					// Rotate
-					if (dataArr[6]) {
-						dataArr[6] = parseFloat(dataArr[6]);
-					}
-					if (dataArr[7]) {
-						dataArr[7] = parseFloat(dataArr[7]);
-					}
-					if (dataArr[8]) {
-						dataArr[8] = parseFloat(dataArr[8]);
-					}
+					const parsedDataArr: IgeTimeStreamTransformData = dataArr.map((dataItem) => {
+						return parseFloat(dataItem);
+					}) as unknown as IgeTimeStreamTransformData;
 
 					// Add it to the time stream
-					const network = (ige.network as IgeNetIoClientComponent);
-					this._timeStream.push([network._streamDataTime + network._latency, dataArr]);
+					this._timeStream.push([network._streamDataTime + network._latency, parsedDataArr]);
 
 					// Check stream length, don't allow higher than 10 items
 					if (this._timeStream.length > 10) {
@@ -1664,37 +1577,19 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 					}
 				} else {
 					// Assign all the transform values immediately
-					if (dataArr[0]) {
-						this._translate.x = parseFloat(dataArr[0]);
-					}
-					if (dataArr[1]) {
-						this._translate.y = parseFloat(dataArr[1]);
-					}
-					if (dataArr[2]) {
-						this._translate.z = parseFloat(dataArr[2]);
-					}
+					this._translate.x = parseFloat(dataArr[0]);
+					this._translate.y = parseFloat(dataArr[1]);
+					this._translate.z = parseFloat(dataArr[2]);
 
 					// Scale
-					if (dataArr[3]) {
-						this._scale.x = parseFloat(dataArr[3]);
-					}
-					if (dataArr[4]) {
-						this._scale.y = parseFloat(dataArr[4]);
-					}
-					if (dataArr[5]) {
-						this._scale.z = parseFloat(dataArr[5]);
-					}
+					this._scale.x = parseFloat(dataArr[3]);
+					this._scale.y = parseFloat(dataArr[4]);
+					this._scale.z = parseFloat(dataArr[5]);
 
 					// Rotate
-					if (dataArr[6]) {
-						this._rotate.x = parseFloat(dataArr[6]);
-					}
-					if (dataArr[7]) {
-						this._rotate.y = parseFloat(dataArr[7]);
-					}
-					if (dataArr[8]) {
-						this._rotate.z = parseFloat(dataArr[8]);
-					}
+					this._rotate.x = parseFloat(dataArr[6]);
+					this._rotate.y = parseFloat(dataArr[7]);
+					this._rotate.z = parseFloat(dataArr[8]);
 
 					// If we are using composite caching ensure we update the cache
 					if (this._compositeCache) {
@@ -1703,20 +1598,15 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 				}
 			} else {
 				// We should return stringified data
-				return (
-					this._translate.toString(this._streamFloatPrecision) +
-						"," + // translate
-						this._scale.toString(this._streamFloatPrecision) +
-						"," + // scale
-						this._rotate.toString(this._streamFloatPrecision) +
-						","
-				); // rotate
+				return this._translate.toString(this._streamFloatPrecision) + ',' + // translate
+					this._scale.toString(this._streamFloatPrecision) + ',' + // scale
+					this._rotate.toString(this._streamFloatPrecision) + ','; // rotate
 			}
 			break;
 
-		case "depth":
+		case 'depth':
 			if (data !== undefined) {
-				if (isClient) {
+				if ($ige.isClient) {
 					this.depth(parseInt(data));
 				}
 			} else {
@@ -1724,9 +1614,9 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 			}
 			break;
 
-		case "layer":
+		case 'layer':
 			if (data !== undefined) {
-				if (isClient) {
+				if ($ige.isClient) {
 					this.layer(parseInt(data));
 				}
 			} else {
@@ -1734,32 +1624,32 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 			}
 			break;
 
-		case "bounds2d":
+		case 'bounds2d':
 			if (data !== undefined) {
-				if (isClient) {
-					var geom = data.split(",");
+				if ($ige.isClient) {
+					geom = data.split(',');
 					this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
 				}
 			} else {
-				return String(this._bounds2d.x + "," + this._bounds2d.y);
+				return String(this._bounds2d.x + ',' + this._bounds2d.y);
 			}
 			break;
 
-		case "bounds3d":
+		case 'bounds3d':
 			if (data !== undefined) {
-				if (isClient) {
-					var geom = data.split(",");
+				if ($ige.isClient) {
+					geom = data.split(',');
 					this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 				}
 			} else {
-				return String(this._bounds3d.x + "," + this._bounds3d.y + "," + this._bounds3d.z);
+				return String(this._bounds3d.x + ',' + this._bounds3d.y + ',' + this._bounds3d.z);
 			}
 			break;
 
-		case "hidden":
+		case 'hidden':
 			if (data !== undefined) {
-				if (isClient) {
-					if (data === "true") {
+				if ($ige.isClient) {
+					if (data === 'true') {
 						this.hide();
 					} else {
 						this.show();
@@ -1770,11 +1660,11 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 			}
 			break;
 
-		case "mount":
+		case 'mount':
 			if (data !== undefined) {
-				if (isClient) {
+				if ($ige.isClient) {
 					if (data) {
-						const newParent = ige.$(data);
+						newParent = $ige.engine.$(data);
 
 						if (newParent) {
 							this.mount(newParent);
@@ -1785,56 +1675,57 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 					}
 				}
 			} else {
-				const parent = this.parent();
+				parent = this.parent();
 
 				if (parent) {
 					return this.parent().id();
 				} else {
-					return "";
+					return '';
 				}
 			}
 			break;
 
-		case "origin":
+		case 'origin':
 			if (data !== undefined) {
-				if (isClient) {
-					var geom = data.split(",");
+				if ($ige.isClient) {
+					geom = data.split(',');
 					this.origin(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 				}
 			} else {
-				return String(this._origin.x + "," + this._origin.y + "," + this._origin.z);
+				return String(this._origin.x + ',' + this._origin.y + ',' + this._origin.z);
 			}
 			break;
 
-		case "props":
-			var newData, changed, i;
-
+		case 'props':
 			if (data !== undefined) {
-				if (isClient) {
-					const props = JSON.parse(data);
+				if ($ige.isClient) {
+					props = JSON.parse(data);
 
 					// Update properties that have been sent through
 					for (i in props) {
-						changed = false;
 						if (props.hasOwnProperty(i)) {
-							if (this._streamProperty[i] != props[i]) {
-								changed = true;
-							}
-							this._streamProperty[i] = props[i];
+							changed = false;
+							if (props.hasOwnProperty(i)) {
+								if (this._streamProperty[i] !== props[i]) {
+									//console.log('Updated stream property ' + i + ' to', props[i]);
+									changed = true;
+								}
+								this._streamProperty[i] = props[i];
 
-							this.emit("streamPropChange", [i, props[i]]);
+								this.emit('streamPropChange', [i, props[i]]);
+							}
 						}
 					}
 				}
 			} else {
+				stream = $ige.engine.network.stream;
 				newData = {};
 
 				for (i in this._streamProperty) {
 					if (this._streamProperty.hasOwnProperty(i)) {
-						//if (this._streamPropertyChange[i]) {
-						newData[i] = this._streamProperty[i];
-						//this._streamPropertyChange[i] = false;
-						//}
+						if ((stream._streamPropertyChange && stream._streamPropertyChange[this._id] && stream._streamPropertyChange[this._id][i]) || bypassChangeDetection) {
+							newData[i] = this._streamProperty[i];
+						}
 					}
 				}
 
@@ -1857,9 +1748,9 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	streamMode(val: number): this;
-	streamMode(): number;
-	streamMode (val?: number) {
+	streamMode (val: IgeStreamMode): this;
+	streamMode (): IgeStreamMode;
+	streamMode (val?: IgeStreamMode) {
 		if (val !== undefined) {
 			if (isServer) {
 				this._streamMode = val;
@@ -1994,7 +1885,7 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 	 * @return {IgeEntity} "this".
 	 */
 	streamSync (clientIds?: string[]) {
-		if (this._streamMode === 1) {
+		if (this._streamMode === IgeStreamMode.simple) {
 			// In stream mode 1, the streamSync function will not
 			// be called with `clientIds` so we don't use that in this
 			// block of code
@@ -2031,13 +1922,13 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 					// No control method so process for this client
 					recipientArr.push(clientId);
 				}
-			})
+			});
 
 			this._streamSync(recipientArr);
 			return this;
 		}
 
-		if (this._streamMode === 2) {
+		if (this._streamMode === IgeStreamMode.advanced) {
 			// Stream mode is advanced
 			this._streamSync(clientIds, this._streamRoomId);
 
@@ -2346,5 +2237,144 @@ export class IgeObject extends IgeEventingClass implements IgeRegisterableById, 
 		// the update() method of the IgeEntity class clears this every tick
 		this._streamDataCache = streamData;
 		return streamData;
+	}
+
+	/**
+	 * Removes all references to any behaviour methods that were added to
+	 * this object.
+	 */
+	destroyBehaviours () {
+		delete this._updateBehaviours;
+		delete this._tickBehaviours;
+	}
+
+	/**
+	 * Destroys the object and all it's child objects, removing them from the
+	 * scenegraph and from memory.
+	 */
+	destroy () {
+		// Remove ourselves from any parent
+		this.unMount();
+
+		// Remove any children
+		if (this._children) {
+			this.destroyChildren();
+		}
+
+		// Remove any behaviours
+		this.destroyBehaviours();
+
+		// Remove the object from the lookup system
+		ige.register.remove(this);
+		ige.categoryRegister.remove(this);
+		ige.groupRegister.remove(this);
+
+		// Set a flag in case a reference to this object
+		// has been held somewhere, shows that the object
+		// should no longer be interacted with
+		this._alive = false;
+
+		// Remove the event listeners array in case any
+		// object references still exist there
+		delete this._eventListeners;
+
+		return this;
+	}
+
+	/**
+	 * Calculates the axis-aligned bounding box for this entity, including
+	 * all child entity bounding boxes and returns the final composite
+	 * bounds.
+	 * @example #Get the composite AABB
+	 *     var entity = new IgeEntity(),
+	 *         aabb = entity.compositeAabb();
+	 * @return {IgeRect}
+	 */
+	compositeAabb (inverse = false) {
+		const arr = this._children;
+		const rect = this.aabb(true, inverse).clone();
+
+		// Now loop all children and get the aabb for each of
+		// them add those bounds to the current rect
+		if (arr) {
+			let arrCount = arr.length;
+
+			while (arrCount--) {
+				rect.thisCombineRect(arr[arrCount].compositeAabb(inverse));
+			}
+		}
+
+		return rect;
+	}
+
+	/**
+	 * Returns a string containing a code fragment that when
+	 * evaluated will reproduce this object.
+	 * @return {String}
+	 */
+	stringify (options: Record<keyof IgeObject | string, boolean> = {}) {
+		// TODO: Use the advanced serialiser system from ForerunnerDB
+		let str = `new ${this.constructor.name}()`;
+
+		// Every object has an ID, assign that first
+		if (options.id) {
+			str += `.id('${this.id()}')`;
+		}
+
+		// Now check if there is a parent and mount that
+		const parent = this.parent();
+		if (options.mount && parent) {
+			str += `.mount($ige.engine.$('${parent.id()}'))`;
+		}
+
+		// Now get all other properties
+		str += this._stringify(options);
+		return str;
+	}
+
+	/**
+	 * Returns a string containing a code fragment that when
+	 * evaluated will reproduce this object's properties via
+	 * chained commands. This method will only check for
+	 * properties that are directly related to this class.
+	 * Other properties are handled by their own class method.
+	 * @return {String}
+	 */
+	_stringify (options: Record<keyof IgeObject | string, boolean> = {}) {
+		let str = "";
+
+		// Loop properties and add property assignment code to string
+		for (const key in this) {
+			if (this.hasOwnProperty(key) && this[key] !== undefined) {
+				switch (key) {
+				case "_category":
+					str += ".category(" + this.category() + ")";
+					break;
+				case "_drawBounds":
+					str += ".drawBounds(" + this.drawBounds() + ")";
+					break;
+				case "_drawBoundsData":
+					str += ".drawBoundsData(" + this.drawBoundsData() + ")";
+					break;
+				case "_drawMouse":
+					str += ".drawMouse(" + this.drawMouse() + ")";
+					break;
+				case "_isometricMounts":
+					str += ".isometricMounts(" + this.isometricMounts() + ")";
+					break;
+				case "_indestructible":
+					str += ".indestructible(" + this.indestructible() + ")";
+					break;
+				case "_layer":
+					str += ".layer(" + this.layer() + ")";
+					break;
+				case "_depth":
+					str += ".depth(" + this.depth() + ")";
+					break;
+				}
+			}
+		}
+
+		return str;
 	}
 }

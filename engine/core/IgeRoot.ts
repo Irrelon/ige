@@ -1,6 +1,7 @@
 import { ige } from "../instance";
 import IgeEntity from "./IgeEntity";
 import IgeViewport from "./IgeViewport";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
 /**
  * The engine's root entity that all the scenegraph lives from.
@@ -110,7 +111,7 @@ class IgeRoot extends IgeEntity {
 		super._childMounted(child);
 	}
 
-	updateSceneGraph (ctx: CanvasRenderingContext2D) {
+	updateSceneGraph (ctx: IgeCanvasRenderingContext2d) {
 		const arr = this._children;
 		const tickDelta = ige.engine._tickDelta;
 
@@ -148,7 +149,7 @@ class IgeRoot extends IgeEntity {
 		}
 	}
 
-	renderSceneGraph (ctx: CanvasRenderingContext2D) {
+	renderSceneGraph (ctx: IgeCanvasRenderingContext2d) {
 		let ts, td;
 
 		// Process any behaviours assigned to the engine

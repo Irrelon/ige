@@ -2,6 +2,7 @@ import IgeEntity from "./IgeEntity";
 import IgeViewport from "./IgeViewport";
 import IgeRect from "./IgeRect";
 import IgePoint3d from "./IgePoint3d";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
 /**
  * Creates a new camera that will be attached to a viewport.
@@ -239,7 +240,7 @@ class IgeCamera extends IgeEntity {
 		return this;
 	}
 
-	update (ctx: CanvasRenderingContext2D) {
+	update (ctx: IgeCanvasRenderingContext2d) {
 		// Process any behaviours assigned to the camera
 		this._processUpdateBehaviours(ctx);
 
@@ -319,7 +320,7 @@ class IgeCamera extends IgeEntity {
 	 * Process operations during the engine tick.
 	 * @param {CanvasRenderingContext2D} ctx
 	 */
-	tick (ctx) {
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		// Process any behaviours assigned to the camera
 		this._processTickBehaviours(ctx);
 

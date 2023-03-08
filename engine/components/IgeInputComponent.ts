@@ -2,6 +2,7 @@ import {ige} from "../instance";
 import IgePoint3d from "../core/IgePoint3d";
 import IgeViewport from "../core/IgeViewport";
 import IgeEventingClass from "../core/IgeEventingClass";
+import { IgeInputEventControl } from "../../types/IgeInputEventControl";
 
 export interface IgeInputMouseInterface {
 	"dblClick": number;
@@ -106,11 +107,6 @@ export interface IgeInputKeyboardInterface {
 	"x": number;
 	"y": number;
 	"z": number;
-}
-
-export interface IgeInputEventControl {
-	_cancelled: boolean;
-	stopPropagation: () => void;
 }
 
 class IgeInputComponent extends IgeEventingClass {

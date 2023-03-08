@@ -1,4 +1,5 @@
 import IgeEventingClass from "../../../../core/IgeEventingClass.js";
+import { IgeMountMode } from "../../../../../enums/IgeMountMode.js";
 class UiPanels extends IgeEventingClass {
     constructor() {
         super(...arguments);
@@ -278,11 +279,11 @@ class UiPanels extends IgeEventingClass {
                                 propItem.list = [{
                                         value: 'yes',
                                         text: 'Yes',
-                                        selected: obj._mountMode === 1 ? true : false
+                                        selected: obj._mountMode === IgeMountMode.iso ? true : false
                                     }, {
                                         value: 'no',
                                         text: 'No',
-                                        selected: obj._mountMode === 0 ? true : false
+                                        selected: obj._mountMode === IgeMountMode.flat ? true : false
                                     }];
                             },
                             // Enable any listeners and logic to take action when the user interacts with the panel

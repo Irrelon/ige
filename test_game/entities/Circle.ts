@@ -15,6 +15,7 @@ export class Circle extends IgeEntity {
 
 		if (isClient) {
 			this.texture(textures.getTextureById("circle"));
+			this.registerNetworkClass();
 		}
 	}
 }

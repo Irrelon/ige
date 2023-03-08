@@ -16,7 +16,7 @@ const IgeBox2dComponent = IgeEventingClass.extend({
 
 		this._entity = entity;
 		this._options = options;
-		this._mode = 0;
+		this._renderMode = 0;
 
 		this.b2Color = Box2D.Common.b2Color;
 		this.b2Vec2 = Box2D.Common.Math.b2Vec2;
@@ -146,11 +146,11 @@ const IgeBox2dComponent = IgeEventingClass.extend({
 	 */
 	mode: function (val) {
 		if (val !== undefined) {
-			this._mode = val;
+			this._renderMode = val;
 			return this._entity;
 		}
 
-		return this._mode;
+		return this._renderMode;
 	},
 
 	/**
@@ -270,7 +270,7 @@ const IgeBox2dComponent = IgeEventingClass.extend({
 		case 'dynamic':
 			tempDef.type = this.b2Body.b2_dynamicBody;
 			break;
-			
+
 		case 'kinematic':
 			tempDef.type = this.b2Body.b2_kinematicBody;
 			break;
@@ -322,11 +322,11 @@ const IgeBox2dComponent = IgeEventingClass.extend({
 						for (i = 0; i < body.fixtures.length; i++) {
 							// Grab the fixture definition
 							fixtureDef = body.fixtures[i];
-	
+
 							// Create the fixture
 							tempFixture = this.createFixture(fixtureDef);
 							tempFixture.igeId = fixtureDef.igeId;
-	
+
 							// Check for a shape definition for the fixture
 							if (fixtureDef.shape) {
 								// Create based on the shape type
@@ -338,23 +338,23 @@ const IgeBox2dComponent = IgeEventingClass.extend({
 									} else {
 										tempShape.SetRadius((entity._bounds2d.x / this._scaleRatio) / 2);
 									}
-											
+
 									if (fixtureDef.shape.data) {
 										finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
 										finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
-												
+
 										tempShape.SetLocalPosition(new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio));
 									}
 									break;
-	
+
 								case 'polygon':
 									tempShape = new this.b2PolygonShape();
 									tempShape.SetAsArray(fixtureDef.shape.data._poly, fixtureDef.shape.data.length());
 									break;
-	
+
 								case 'rectangle':
 									tempShape = new this.b2PolygonShape();
-	
+
 									if (fixtureDef.shape.data) {
 										finalX = fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
 										finalY = fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
@@ -366,7 +366,7 @@ const IgeBox2dComponent = IgeEventingClass.extend({
 										finalWidth = (entity._bounds2d.x / 2);
 										finalHeight = (entity._bounds2d.y / 2);
 									}
-	
+
 									// Set the polygon as a box
 									tempShape.SetAsOrientedBox(
 										(finalWidth / this._scaleRatio),
@@ -376,24 +376,24 @@ const IgeBox2dComponent = IgeEventingClass.extend({
 									);
 									break;
 								}
-	
+
 								if (tempShape) {
 									tempFixture.shape = tempShape;
 									finalFixture = tempBod.CreateFixture(tempFixture);
 									finalFixture.igeId = tempFixture.igeId;
 								}
 							}
-	
+
 							if (fixtureDef.filter && finalFixture) {
 								tempFilterData = new this._entity.box2d.b2FilterData();
-	
+
 								if (fixtureDef.filter.categoryBits !== undefined) { tempFilterData.categoryBits = fixtureDef.filter.categoryBits; }
 								if (fixtureDef.filter.maskBits !== undefined) { tempFilterData.maskBits = fixtureDef.filter.maskBits; }
 								if (fixtureDef.filter.categoryIndex !== undefined) { tempFilterData.categoryIndex = fixtureDef.filter.categoryIndex; }
-	
+
 								finalFixture.SetFilterData(tempFilterData);
 							}
-	
+
 							if (fixtureDef.density !== undefined && finalFixture) {
 								finalFixture.SetDensity(fixtureDef.density);
 							}
@@ -491,7 +491,7 @@ const IgeBox2dComponent = IgeEventingClass.extend({
 		}
 		this._world.SetContactListener(contactListener);
 	},
-	
+
 	/**
 	 * If enabled, sets the physics world into network debug mode which
 	 * will stop the world from generating collisions but still allow us
@@ -503,7 +503,7 @@ const IgeBox2dComponent = IgeEventingClass.extend({
 	networkDebugMode: function (val) {
 		if (val !== undefined) {
 			this._networkDebugMode = val;
-			
+
 			if (val === true) {
 				// We are enabled so disable all physics contacts
 				this.contactListener(
@@ -523,10 +523,10 @@ const IgeBox2dComponent = IgeEventingClass.extend({
 				// Re-enable contacts
 				this.contactListener();
 			}
-			
+
 			return this._entity;
 		}
-		
+
 		return this._networkDebugMode;
 	},
 
@@ -594,9 +594,9 @@ const IgeBox2dComponent = IgeEventingClass.extend({
 	start: function () {
 		if (!this._active) {
 			this._active = true;
-			
+
 			if (!this._networkDebugMode) {
-				if (this._mode === 0) {
+				if (this._renderMode === 0) {
 					// Add the box2d behaviour to the ige
 					this._entity.addBehaviour('box2dStep', this._behaviour);
 				} else {
@@ -610,7 +610,7 @@ const IgeBox2dComponent = IgeEventingClass.extend({
 		if (this._active) {
 			this._active = false;
 
-			if (this._mode === 0) {
+			if (this._renderMode === 0) {
 				// Add the box2d behaviour to the ige
 				this._entity.removeBehaviour('box2dStep');
 			} else {
@@ -650,7 +650,7 @@ const IgeBox2dComponent = IgeEventingClass.extend({
 			}
 
 			// Call the world step; frame-rate, velocity iterations, position iterations
-			if (self._mode === 0) {
+			if (self._renderMode === 0) {
 				self._world.Step(ige._tickDelta / 1000, 8, 3);
 			} else {
 				self._world.Step(1 / 60, 8, 3);

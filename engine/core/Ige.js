@@ -23,7 +23,40 @@ export class Ige {
         this.config = igeConfig;
         this.version = version;
         this.classStore = igeClassStore;
+        this._watch = [];
         this._mousePos = new IgePoint3d(); // Could probably be just {x: number, y: number}
+        // /**
+        //  * Returns an array of all objects that have been assigned
+        //  * the passed group name.
+        //  * @param {String} groupName The name of the group to return
+        //  * all objects for.
+        //  */
+        // $$$ (groupName: string) {
+        // 	return this.groupRegister[groupName] || [];
+        // }
+        /**
+         * Adds a new watch expression to the watch list which will be
+         * displayed in the stats overlay during a call to _statsTick().
+         * @param {*} evalStringOrObject The expression to evaluate and
+         * display the result of in the stats overlay, or an object that
+         * contains a "value" property.
+         * @returns {number} The index of the new watch expression you
+         * just added to the watch array.
+         */
+        this.watchStart = (evalStringOrObject) => {
+            this._watch = this._watch || [];
+            this._watch.push(evalStringOrObject);
+            return this._watch.length - 1;
+        };
+        /**
+         * Removes a watch expression by its array index.
+         * @param {number} index The index of the watch expression to
+         * remove from the watch array.
+         */
+        this.watchStop = (index) => {
+            this._watch = this._watch || [];
+            this._watch.splice(index, 1);
+        };
         if (isClient) {
             import("../components/network/net.io/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
                 this.network = new Module();
@@ -55,7 +88,7 @@ export class Ige {
         else if (typeof item === "object") {
             return item;
         }
-        return this;
+        return undefined;
     }
     /**
      * Returns an array of all objects that have been assigned

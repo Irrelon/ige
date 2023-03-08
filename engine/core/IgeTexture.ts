@@ -8,6 +8,8 @@ import IgeEntity from "./IgeEntity";
 import WithUiStyleMixin from "../mixins/IgeUiStyleMixin";
 import { isClient, isServer } from "../services/clientServer";
 import { IgeObject } from "./IgeObject";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode";
 
 type IgeTextureCell = [number, number, number, number, string?];
 type IgeTextureCellArray = IgeTextureCell[];
@@ -22,9 +24,9 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 	classId = "IgeTexture";
 	IgeTexture = true;
 	_id?: string;
-	_didInit = false;
 	_sizeX: number = 0;
 	_sizeY: number = 0;
+	_renderMode: IgeTextureRenderMode = IgeTextureRenderMode.none;
 	_loaded: boolean = false;
 	_smoothing: boolean = false;
 	_filterImageDrawn: boolean = false;
@@ -36,7 +38,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 	_preFiltersData: Record<string, any>[] = [];
 	_originalImage?: IgeImage | IgeCanvas;
 	_textureCanvas?: IgeCanvas;
-	_textureCtx?: CanvasRenderingContext2D;
+	_textureCtx?: IgeCanvasRenderingContext2d;
 	_cells: IgeTextureCellArray = [];
 	image?: IgeImage | IgeCanvas;
 	script?: IgeSmartTexture;
@@ -214,7 +216,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 					for (let i = 0; i < arrCount; i++) {
 						const item = arr[i];
 
-						item._mode = 0;
+						item._renderMode = 0;
 
 						item.sizeX(image.width);
 						item.sizeY(image.height);
@@ -239,7 +241,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 			if (image._loaded) {
 				// The cached image object is already loaded so
 				// fire off the relevant events
-				this._mode = 0;
+				this._renderMode = 0;
 
 				this.sizeX(image.width);
 				this.sizeY(image.height);
@@ -312,7 +314,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 			// 	// Store the eval data (the "image" variable is declared
 			// 	// by the texture script and becomes available in this scope
 			// 	// because we evaluated it above)
-			// 	self._mode = 1;
+			// 	self._renderMode = 1;
 			// 	self.script = image;
 			//
 			// 	// Run the asset script init method
@@ -349,7 +351,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 		}
 
 		// Store the script data
-		this._mode = 1;
+		this._renderMode = 1;
 		this.script = scriptObj;
 
 		// Run the asset script init method
@@ -380,7 +382,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 			// Mark the image as loaded
 			image._loaded = true;
 
-			this._mode = 0;
+			this._renderMode = 0;
 
 			this.sizeX(image.width);
 			this.sizeY(image.height);
@@ -551,7 +553,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 	 * @param {IgeEntity} entity The entity that this texture is
 	 * being drawn for.
 	 */
-	render (ctx: CanvasRenderingContext2D, entity: IgeEntity) {
+	render (ctx: IgeCanvasRenderingContext2d, entity: IgeEntity) {
 		// Check that the cell is not set to null. If it is then
 		// we don't render anything which effectively makes the
 		// entity "blank"
@@ -563,7 +565,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 			ige.engine._ctx.imageSmoothingEnabled = this._smoothing;
 		}
 
-		if (this._mode === 0) {
+		if (this._renderMode === 0) {
 			// This texture is image-based
 			if (!this._originalImage || !this.image) {
 				throw new Error("No image is available to render but the IgeTexture is in mode zero (image based render)!");
@@ -612,7 +614,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 			ige.metrics.drawCount++;
 		}
 
-		if (this._mode === 1) {
+		if (this._renderMode === 1) {
 			if (!this.script) {
 				throw new Error("No smart texture is available to render but the IgeTexture is in mode one (script based render)!");
 			}
@@ -809,7 +811,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 		}
 
 		if (!this.image) {
-			return this;
+			return null;
 		}
 
 		// Check if the texture is already using a canvas
@@ -834,7 +836,13 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 			this._textureCtx.drawImage(this.image, 0, 0);
 		}
 
-		return this._textureCtx.getImageData(x, y, 1, 1).data;
+		const imageData = this._textureCtx.getImageData(x, y, 1, 1);
+
+		if (!imageData) {
+			return null;
+		}
+
+		return imageData.data;
 	}
 
 	/**

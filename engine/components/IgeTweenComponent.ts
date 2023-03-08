@@ -3,6 +3,7 @@ import { arrPull } from "../services/utils";
 import IgeTween, { IgeTweenDestination } from "../core/IgeTween";
 import IgeEntity from "../core/IgeEntity";
 import { ige } from "../instance";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
 /**
  * This component is already included in the IgeRoot (ige)
@@ -164,7 +165,7 @@ class IgeTweenComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCo
 	/**
 	 * Process tweening for the object.
 	 */
-	update (entity: IgeEntity, ctx: CanvasRenderingContext2D) {
+	update (entity: IgeEntity, ctx: IgeCanvasRenderingContext2d) {
 		const thisTween = ige.components.tween;
 		if (thisTween._tweens && thisTween._tweens.length) {
 			var currentTime = ige._tickStart,

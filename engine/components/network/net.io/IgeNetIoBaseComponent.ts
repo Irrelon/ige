@@ -10,7 +10,7 @@ export class IgeNetIoBaseComponent extends IgeEventingClass {
 	_networkCommandsLookup: Record<string, number> = {}; // Maps a command name to its index
 	_debug: boolean = true;
 	_debugCounter: number = 0;
-	_debugMax: number = 0;
+	_debugMax: number = 100;
 	_clientRooms: Record<string, string[]> = {};
 	_socketsByRoomId: Record<string, Record<string, NetIoSocket>> = {}; // Any should be socket, figure out what that is
 	_timeSyncInterval: number = 10000; // Sync the client/server clocks every ten seconds by default
@@ -91,6 +91,7 @@ export class IgeNetIoBaseComponent extends IgeEventingClass {
 		if (this._debugMax > 0 && this._debugCounter >= this._debugMax) {
 			this._debug = false;
 			this._debugCounter = 0;
+			this.log(`Discontinuing further debug messages because we reached the maximum message count of ${this._debugMax}. Re-enable by running ige.network.debug(true);`);
 		}
 
 		return this._debug;

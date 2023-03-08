@@ -33,7 +33,7 @@ export class Server extends IgeBaseClass {
 				// the items are added to the scenegraph)
 				ige.engine.addGraph(Level1);
 
-				network.sendInterval(60); // Send a stream update once every 60 milliseconds
+				network.sendInterval(30); // Send a stream update once every 30 milliseconds
 
 				network.define("testRequest", (data, clientId, requestCallback) => {
 					requestCallback?.(false, "some data");

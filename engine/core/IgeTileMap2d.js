@@ -9,6 +9,7 @@ import IgePoint3d from "./IgePoint3d.js";
 import IgePoly2d from "./IgePoly2d.js";
 import { isServer } from "../services/clientServer.js";
 import { IgeObject } from "./IgeObject.js";
+import { IgeMountMode } from "../../enums/IgeMountMode.js";
 /**
  * Tile maps provide a way to align mounted child objects to a tile-based grid.
  * NOTE: These are not to be confused with IgeTextureMap's which allow you to
@@ -19,8 +20,8 @@ class IgeTileMap2d extends IgeObject {
         super();
         this.classId = "IgeTileMap2d";
         this.IgeTileMap2d = true;
-        this._tileWidth = 0;
-        this._tileHeight = 0;
+        this._highlightOccupied = false;
+        this._highlightTileRect = false;
         tileWidth = tileWidth !== undefined ? tileWidth : 40;
         tileHeight = tileHeight !== undefined ? tileHeight : 40;
         if (!isServer) {
@@ -81,13 +82,13 @@ class IgeTileMap2d extends IgeObject {
         if (x !== undefined && y !== undefined) {
             this._gridSize = new IgePoint2d(x, y);
             // If in 2d mount mode
-            if (this._mountMode === 0) {
+            if (this._mountMode === IgeMountMode.flat) {
                 if (this._tileWidth) {
                     this.width(this._tileWidth * this._gridSize.x);
                 }
             }
             // If in isometric mount mode
-            if (this._mountMode === 1) {
+            if (this._mountMode === IgeMountMode.iso) {
                 if (this._tileWidth) {
                     this.width((this._tileWidth * 2) * this._gridSize.x);
                 }
@@ -232,13 +233,13 @@ class IgeTileMap2d extends IgeObject {
         const mx = point.x;
         const my = point.y;
         let dx, dy, tilePos;
-        if (this._mountMode === 0) {
+        if (this._mountMode === IgeMountMode.flat) {
             // 2d
             dx = mx; //+ this._tileWidth / 2;
             dy = my; //+ this._tileHeight / 2;
             tilePos = new IgePoint3d(Math.floor(dx / this._tileWidth), Math.floor(dy / this._tileWidth), 0);
         }
-        if (this._mountMode === 1) {
+        if (this._mountMode === IgeMountMode.iso) {
             // iso
             dx = mx;
             dy = my;
@@ -259,13 +260,13 @@ class IgeTileMap2d extends IgeObject {
     }
     tileToPoint(x, y) {
         let point;
-        if (this._mountMode === 0) {
+        if (this._mountMode === IgeMountMode.flat) {
             point = new IgePoint3d(x, y, 0)
                 .thisMultiply(this._tileWidth, this._tileHeight, 1);
             point.x -= this._bounds2d.x2 - (this._tileWidth / 2);
             point.y -= this._bounds2d.y2 - (this._tileHeight / 2);
         }
-        if (this._mountMode === 1) {
+        if (this._mountMode === IgeMountMode.iso) {
             point = new IgePoint3d(x * this._tileWidth + this._tileWidth / 2, y * this._tileHeight + this._tileHeight / 2, 0);
             point.x -= this._bounds2d.x2 / 2;
             point.y -= this._bounds2d.y2;
@@ -280,7 +281,7 @@ class IgeTileMap2d extends IgeObject {
      */
     mouseToTile() {
         let tilePos;
-        if (this._mountMode === 0) {
+        if (this._mountMode === IgeMountMode.flat) {
             tilePos = this.pointToTile(this.mousePos());
         }
         else {
@@ -428,10 +429,10 @@ class IgeTileMap2d extends IgeObject {
         return this._mountMode;
     }
     tileMapHitPolygon(mousePoint) {
-        if (this._mountMode === 0) {
+        if (this._mountMode === IgeMountMode.flat) {
             return this.aabb();
         }
-        if (this._mountMode === 1) {
+        if (this._mountMode === IgeMountMode.iso) {
             const aabb = this.aabb(), poly = new IgePoly2d();
             poly.addPoint(aabb.x + aabb.width / 2, aabb.y);
             poly.addPoint(aabb.x + aabb.width, aabb.y + aabb.height / 2);
@@ -460,10 +461,10 @@ class IgeTileMap2d extends IgeObject {
     }
     _updateAdjustmentMatrix() {
         if (this._bounds2d.x2 && this._bounds2d.y2 && this._tileWidth && this._tileHeight) {
-            if (this._mountMode === 0) {
+            if (this._mountMode === IgeMountMode.flat) {
                 this._adjustmentMatrix.translateTo(this._bounds2d.x2, this._bounds2d.y2);
             }
-            if (this._mountMode === 1) {
+            if (this._mountMode === IgeMountMode.iso) {
                 this._adjustmentMatrix.translateTo(0, this._bounds2d.y2);
             }
         }

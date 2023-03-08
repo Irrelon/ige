@@ -22,6 +22,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	_queuedData: Record<string, [string, string]> = {}; // Define the object that will hold the stream data queue
 	_streamClientData: Record<string, Record<string, string>> = {}; // Set some stream data containers
 	_streamClientCreated: Record<string, Record<string, boolean>> = {}; // Set some stream data containers
+	_streamPropertyChange: Record<string, Record<string, boolean>> = {}; // Keep track of changes that need to be sent to clients
 
 	constructor () {
 		super();
@@ -543,21 +544,24 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 		const hasSentTimeDataByClientId: Record<string, boolean> = {};
 
 		// Send the stream data
-		for (const queueKey in queueObj) {
-			if (queueObj.hasOwnProperty(queueKey)) {
-				const item = queueObj[queueKey];
+		for (const entityId in queueObj) {
+			const item = queueObj[entityId];
 
-				// Check if we've already sent this client the starting
-				// time of the stream data
-				if (!hasSentTimeDataByClientId[item[1]]) {
-					// Send the stream start time
-					network.send('_igeStreamTime', currentTime, item[1]);
-					hasSentTimeDataByClientId[item[1]] = true;
-				}
-				network.send('_igeStreamData', item[0], item[1]);
-
-				delete queueObj[queueKey];
+			// Check if we've already sent this client the starting
+			// time of the stream data
+			if (!hasSentTimeDataByClientId[item[1]]) {
+				// Send the stream start time
+				network.send('_igeStreamTime', currentTime, item[1]);
+				hasSentTimeDataByClientId[item[1]] = true;
 			}
+
+			network.send('_igeStreamData', item[0], item[1]);
+
+			// Store the new data for later comparison
+			this._streamClientData[entityId][item[1]] = item[0];
+			delete queueObj[entityId];
+
+			if (this._streamPropertyChange) { delete this._streamPropertyChange[entityId]; }
 
 			const ct = new Date().getTime();
 			const dt = ct - st;

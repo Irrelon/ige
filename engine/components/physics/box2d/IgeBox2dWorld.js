@@ -31,7 +31,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
         this._sleep = options.sleep;
         this._scaleRatio = options.scaleRatio !== undefined ? options.scaleRatio : 30;
         this._gravity = options.gravity;
-        this._mode = 0;
+        this._renderMode = 0;
         this._removeWhenReady = [];
         this._world = new this.b2World(options.gravity, options.sleep);
     },
@@ -352,7 +352,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
         if (!this._active) {
             this._active = true;
             if (!this._networkDebugMode) {
-                if (this._mode === 0) {
+                if (this._renderMode === 0) {
                     // Add the box2d behaviour to the ige
                     ige.addBehaviour('box2dStep_' + self._id, function () { self._behaviour.apply(self, arguments); });
                 }
@@ -365,7 +365,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
     stop: function () {
         if (this._active) {
             this._active = false;
-            if (this._mode === 0) {
+            if (this._renderMode === 0) {
                 // Add the box2d behaviour to the ige
                 ige.removeBehaviour('box2dStep_' + this._id);
             }
@@ -396,7 +396,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
                 }
             }
             // Call the world step; frame-rate, velocity iterations, position iterations
-            if (self._mode === 0) {
+            if (self._renderMode === 0) {
                 self._world.Step(ige._tickDelta / 1000, 8, 3);
             }
             else {

@@ -7,9 +7,11 @@ import WithUiPositionMixin from "../mixins/IgeUiPositionMixin";
 import IgePoint2d from "./IgePoint2d";
 import { ige } from "../instance";
 import IgeScene2d from "./IgeScene2d";
-import { IgeRegisterableById } from "../../types/IgeRegisterableById";
+import { IgeCanRegisterById } from "../../types/IgeCanRegisterById";
 import { isClient } from "../services/clientServer";
 import { IgeObject } from "./IgeObject";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeMountMode } from "../../enums/IgeMountMode";
 
 export interface IgeViewportOptions {
 	width: number;
@@ -24,7 +26,7 @@ export interface IgeViewportOptions {
 /**
  * Creates a new viewport.
  */
-class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) implements IgeRegisterableById {
+class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) implements IgeCanRegisterById {
 	classId = "IgeViewport";
 	IgeViewport = true;
 	_idRegistered: boolean = false;
@@ -42,7 +44,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 	_drawCompositeBounds?: boolean;
 	_drawViewArea?: boolean;
 	camera: IgeCamera;
- 
+
 	constructor (options?: IgeViewportOptions) {
 		super();
 
@@ -165,7 +167,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 	 * @param ctx
 	 * @param tickDelta
 	 */
-	update (ctx: CanvasRenderingContext2D, tickDelta: number) {
+	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		// Check if we have a scene attached to this viewport
 		if (!this._scene) {
 			return;
@@ -187,7 +189,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 	/**
 	 * Processes the actions required each render frame.
 	 */
-	tick (ctx: CanvasRenderingContext2D) {
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		// Check if we have a scene attached to this viewport and ige has a root object
 		if (!this._scene || !ige.engine.root) {
 			return;
@@ -354,7 +356,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 		return this._drawGuides;
 	}
 
-	paintGuides (ctx: CanvasRenderingContext2D) {
+	paintGuides (ctx: IgeCanvasRenderingContext2d) {
 		if (!ige.engine.root) return;
 		const geom = ige.engine.root._bounds2d;
 
@@ -383,7 +385,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 	 * @param rootObject
 	 * @param index
 	 */
-	paintAabbs (ctx: CanvasRenderingContext2D, rootObject: IgeEntity, index: number) {
+	paintAabbs (ctx: IgeCanvasRenderingContext2d, rootObject: IgeEntity, index: number) {
 		const arr = rootObject._children || [];
 
 		let arrCount, obj, aabb, aabbC, bounds3dPoly, ga, r3d, xl1, xl2, xl3, xl4, xl5, xl6, bf1, bf2, bf3, bf4, tf1, tf2, tf3, tf4;
@@ -421,7 +423,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 
 						if (aabb) {
 							if (obj._drawBounds || obj._drawBounds === undefined) {
-								//if (!obj._parent || (obj._parent && obj._parent._mountMode !== 1)) {
+								//if (!obj._parent || (obj._parent && obj._parent._mountMode !== IgeMountMode.iso)) {
 								// Draw a rect around the bounds of the object transformed in world space
 								/*ctx.save();
 									obj._worldMatrix.transformRenderingContext(ctx);
@@ -435,7 +437,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 								//}
 
 								// Check if the object is mounted to an isometric mount
-								if (obj._parent && obj._parent._mountMode === 1) {
+								if (obj._parent && obj._parent._mountMode === IgeMountMode.iso) {
 									bounds3dPoly = obj.bounds3dPolygon().aabb();
 									ctx.save();
 									ctx.strokeStyle = "#0068b8";

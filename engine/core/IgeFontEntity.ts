@@ -85,7 +85,7 @@ class IgeFontEntity extends IgeUiEntity {
 	 */
 	text (text) {
 		if (text !== undefined) {
-			var wasDifferent = false;
+			let wasDifferent = false;
 
 			// Ensure we have a string
 			text = String(text);
@@ -322,7 +322,7 @@ class IgeFontEntity extends IgeUiEntity {
 	_applyAutoWrap () {
 		if (this._text) {
 			// Un-wrap the text so it is all on one line
-			var oneLineText = this._text.replace(/\n/g, " "),
+			let oneLineText = this._text.replace(/\n/g, " "),
 				words,
 				wordIndex,
 				textArray = [],
@@ -373,7 +373,7 @@ class IgeFontEntity extends IgeUiEntity {
 		// Both IgeFontSheet and the IgeFontSmartTexture have a method
 		// called measureTextWidth() so we can just asks the current
 		// texture for the width :)
-		if (this._texture._mode === 0) {
+		if (this._texture._renderMode === 0) {
 			return this._texture.measureTextWidth(text);
 		} else {
 			return this._texture.script.measureTextWidth(text, this);
@@ -405,24 +405,24 @@ class IgeFontEntity extends IgeUiEntity {
 	 */
 	_stringify (options) {
 		// Get the properties for all the super-classes
-		var str = IgeUiEntity.prototype._stringify.call(this), i;
+		let str = IgeUiEntity.prototype._stringify.call(this), i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-					case "_text":
-						str += ".text(" + this.text() + ")";
-						break;
-					case "_textAlignX":
-						str += ".textAlignX(" + this.textAlignX() + ")";
-						break;
-					case "_textAlignY":
-						str += ".textAlignY(" + this.textAlignY() + ")";
-						break;
-					case "_textLineSpacing":
-						str += ".textLineSpacing(" + this.textLineSpacing() + ")";
-						break;
+				case "_text":
+					str += ".text(" + this.text() + ")";
+					break;
+				case "_textAlignX":
+					str += ".textAlignX(" + this.textAlignX() + ")";
+					break;
+				case "_textAlignY":
+					str += ".textAlignY(" + this.textAlignY() + ")";
+					break;
+				case "_textLineSpacing":
+					str += ".textLineSpacing(" + this.textLineSpacing() + ")";
+					break;
 				}
 			}
 		}

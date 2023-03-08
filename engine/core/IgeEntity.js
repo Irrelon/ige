@@ -1,14 +1,18 @@
 import { ige } from "../instance.js";
+import { isServer } from "../services/clientServer.js";
+import { degreesToRadians, toIso } from "../services/utils.js";
 import IgePoint2d from "./IgePoint2d.js";
 import IgePoint3d from "./IgePoint3d.js";
 import IgeMatrix2d from "./IgeMatrix2d.js";
 import IgePoly2d from "./IgePoly2d.js";
 import IgeDummyCanvas from "./IgeDummyCanvas.js";
 import IgeRect from "./IgeRect.js";
-import { degreesToRadians, toIso } from "../services/utils.js";
 import IgeTileMap2d from "./IgeTileMap2d.js";
-import { isClient, isServer } from "../services/clientServer.js";
 import { IgeObject } from "./IgeObject.js";
+import { IgeMountMode } from "../../enums/IgeMountMode.js";
+import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
+import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode.js";
+import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -17,9 +21,12 @@ class IgeEntity extends IgeObject {
     constructor() {
         super();
         this.classId = "IgeEntity";
+        this._renderMode = IgeEntityRenderMode.flat;
+        this._parent = null;
         this._children = [];
-        this._tileWidth = 1;
-        this._tileHeight = 1;
+        this._sortChildren = (compareFn) => {
+            return this._children.sort(compareFn);
+        };
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // INTERACTION
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -330,8 +337,8 @@ class IgeEntity extends IgeObject {
             }
         };
         /**
-         * Gets the translate accessor object.
-         * @example #Use the translate accessor object to alter the y co-ordinate of the entity to 10
+         * Gets the `translate` accessor object.
+         * @example #Use the `translate` accessor object to alter the y co-ordinate of the entity to 10
          *     entity.translate().y(10);
          * @return {*}
          */
@@ -346,7 +353,7 @@ class IgeEntity extends IgeObject {
             });
         };
         /**
-         * The translate accessor method for the x axis. This
+         * The `translate` accessor method for the x-axis. This
          * method is not called directly but is accessed through
          * the accessor object obtained by calling entity.translate().
          * @param {Number=} val The new value to apply to the co-ordinate.
@@ -361,7 +368,7 @@ class IgeEntity extends IgeObject {
             return this._translate.x;
         };
         /**
-         * The translate accessor method for the z axis. This
+         * The `translate` accessor method for the z-axis. This
          * method is not called directly but is accessed through
          * the accessor object obtained by calling entity.translate().
          * @param {Number=} val The new value to apply to the co-ordinate.
@@ -378,7 +385,7 @@ class IgeEntity extends IgeObject {
             return this._translate.z;
         };
         /**
-         * The rotate accessor method for the x axis. This
+         * The `rotate` accessor method for the x-axis. This
          * method is not called directly but is accessed through
          * the accessor object obtained by calling entity.rotate().
          * @param {Number=} val The new value to apply to the co-ordinate.
@@ -393,7 +400,7 @@ class IgeEntity extends IgeObject {
             return this._rotate.x;
         };
         /**
-         * The rotate accessor method for the y axis. This
+         * The `rotate` accessor method for the y-axis. This
          * method is not called directly but is accessed through
          * the accessor object obtained by calling entity.rotate().
          * @param {Number=} val The new value to apply to the co-ordinate.
@@ -408,7 +415,7 @@ class IgeEntity extends IgeObject {
             return this._rotate.y;
         };
         /**
-         * The rotate accessor method for the z axis. This
+         * The `rotate` accessor method for the z-axis. This
          * method is not called directly but is accessed through
          * the accessor object obtained by calling entity.rotate().
          * @param {Number=} val The new value to apply to the co-ordinate.
@@ -423,7 +430,7 @@ class IgeEntity extends IgeObject {
             return this._rotate.z;
         };
         /**
-         * The scale accessor method for the x axis. This
+         * The `scale` accessor method for the x-axis. This
          * method is not called directly but is accessed through
          * the accessor object obtained by calling entity.scale().
          * @param {Number=} val The new value to apply to the co-ordinate.
@@ -438,7 +445,7 @@ class IgeEntity extends IgeObject {
             return this._scale.x;
         };
         /**
-         * The scale accessor method for the y axis. This
+         * The `scale` accessor method for the y-axis. This
          * method is not called directly but is accessed through
          * the accessor object obtained by calling entity.scale().
          * @param {Number=} val The new value to apply to the co-ordinate.
@@ -453,7 +460,7 @@ class IgeEntity extends IgeObject {
             return this._scale.y;
         };
         /**
-         * The scale accessor method for the z axis. This
+         * The `scale` accessor method for the z-axis. This
          * method is not called directly but is accessed through
          * the accessor object obtained by calling entity.scale().
          * @param {Number=} val The new value to apply to the co-ordinate.
@@ -468,7 +475,7 @@ class IgeEntity extends IgeObject {
             return this._scale.z;
         };
         /**
-         * The origin accessor method for the x axis. This
+         * The `origin` accessor method for the x-axis. This
          * method is not called directly but is accessed through
          * the accessor object obtained by calling entity.origin().
          * @param {Number=} val The new value to apply to the co-ordinate.
@@ -483,7 +490,7 @@ class IgeEntity extends IgeObject {
             return this._origin.x;
         };
         /**
-         * The origin accessor method for the y axis. This
+         * The `origin` accessor method for the y-axis. This
          * method is not called directly but is accessed through
          * the accessor object obtained by calling entity.origin().
          * @param {Number=} val The new value to apply to the co-ordinate.
@@ -498,7 +505,7 @@ class IgeEntity extends IgeObject {
             return this._origin.y;
         };
         /**
-         * The origin accessor method for the z axis. This
+         * The `origin` accessor method for the z-axis. This
          * method is not called directly but is accessed through
          * the accessor object obtained by calling entity.origin().
          * @param {Number=} val The new value to apply to the co-ordinate.
@@ -553,13 +560,13 @@ class IgeEntity extends IgeObject {
      */
     updateTransform() {
         this._localMatrix.identity();
-        if (this._mode === 0) {
+        if (this._renderMode === 0) {
             // 2d translation
             this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
         }
-        if (this._mode === 1) {
+        if (this._renderMode === 1) {
             // iso translation
-            const isoPoint = (this._translateIso = new IgePoint3d(this._translate.x, this._translate.y, this._translate.z + this._bounds3d.z / 2).toIso());
+            const isoPoint = this._translateIso = (new IgePoint3d(this._translate.x, this._translate.y, this._translate.z + this._bounds3d.z / 2).toIso());
             if (this._parent && this._parent._bounds3d.z) {
                 // This adjusts the child entity so that 0, 0, 0 inside the
                 // parent is the center of the base of the parent
@@ -641,62 +648,6 @@ class IgeEntity extends IgeObject {
      */
     isHidden() {
         return this._hidden;
-    }
-    /**
-     * Gets / sets the cache flag that determines if the entity's
-     * texture rendering output should be stored on an off-screen
-     * canvas instead of calling the texture.render() method each
-     * tick. Useful for expensive texture calls such as rendering
-     * fonts etc. If enabled, this will automatically disable advanced
-     * composite caching on this entity with a call to
-     * compositeCache(false).
-     * @param {Boolean=} val True to enable caching, false to
-     * disable caching.
-     * @param {Boolean} propagateToChildren If true, calls cache()
-     * on each child and all their children with the same `val`.
-     * @example #Enable entity caching
-     *     entity.cache(true);
-     * @example #Disable entity caching
-     *     entity.cache(false);
-     * @example #Get caching flag value
-     *     var val = entity.cache();
-     * @return {*}
-     */
-    cache(val, propagateToChildren = false) {
-        if (val === undefined) {
-            return this._cache;
-        }
-        this._cache = val;
-        if (propagateToChildren) {
-            this._children.forEach((child) => {
-                if (!("cache" in child))
-                    return;
-                child.cache(val, true);
-            });
-        }
-        if (!val) {
-            // Remove the off-screen canvas
-            delete this._cacheCanvas;
-            return this;
-        }
-        // Create the off-screen canvas
-        if (isClient) {
-            // Use a real canvas
-            const canvasObj = ige.engine.createCanvas({ smoothing: this._cacheSmoothing, pixelRatioScaling: true });
-            this._cacheCanvas = canvasObj.canvas;
-            this._cacheCtx = canvasObj.ctx;
-        }
-        else {
-            // Use dummy objects for canvas and context
-            this._cacheCanvas = new IgeDummyCanvas();
-            this._cacheCtx = this._cacheCanvas.getContext("2d");
-        }
-        this._cacheDirty = true;
-        // Switch off composite caching
-        if (this.compositeCache()) {
-            this.compositeCache(false);
-        }
-        return this;
     }
     /**
      * When using the caching system, this boolean determines if the
@@ -857,10 +808,10 @@ class IgeEntity extends IgeObject {
      * method chaining.
      */
     widthByTile(val, lockAspect = false) {
-        if (!(this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
+        if (!(this._parent && this._parent instanceof IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
             throw new Error("Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.");
         }
-        const tileSize = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
+        const tileSize = this._renderMode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
         this.width(val * tileSize);
         if (lockAspect) {
             if (this._texture) {
@@ -888,10 +839,10 @@ class IgeEntity extends IgeObject {
      * method chaining.
      */
     heightByTile(val, lockAspect = false) {
-        if (!(this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
+        if (!(this._parent && this._parent instanceof IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
             throw new Error("Cannot set height by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.");
         }
-        const tileSize = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
+        const tileSize = this._renderMode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
         this.height(val * tileSize);
         if (lockAspect) {
             if (this._texture) {
@@ -929,7 +880,7 @@ class IgeEntity extends IgeObject {
         // Occupy tiles based upon tile point and tile width/height
         const trPoint = new IgePoint3d(this._translate.x - (this._tileWidth / 2 - 0.5) * this._parent._tileWidth, this._translate.y - (this._tileHeight / 2 - 0.5) * this._parent._tileHeight, 0);
         const tilePoint = this._parent.pointToTile(trPoint);
-        if (this._parent._mountMode === 1) {
+        if (this._parent._mountMode === IgeMountMode.iso) {
             tilePoint.thisToIso();
         }
         this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
@@ -959,7 +910,7 @@ class IgeEntity extends IgeObject {
         }
         // Un-occupy tiles based upon tile point and tile width/height
         const trPoint = new IgePoint3d(this._translate.x - (this._tileWidth / 2 - 0.5) * this._parent._tileWidth, this._translate.y - (this._tileHeight / 2 - 0.5) * this._parent._tileHeight, 0), tilePoint = this._parent.pointToTile(trPoint);
-        if (this._parent._mountMode === 1) {
+        if (this._parent._mountMode === IgeMountMode.iso) {
             tilePoint.thisToIso();
         }
         this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
@@ -1213,6 +1164,8 @@ class IgeEntity extends IgeObject {
             this._highlight = val;
             if (highlightChildEntities) {
                 this._children.forEach((child) => {
+                    if (!("highlight" in child))
+                        return;
                     child.highlight(val);
                 });
             }
@@ -1422,28 +1375,6 @@ class IgeEntity extends IgeObject {
         this._localAabb = new IgeRect(-Math.floor(aabb.width / 2), -Math.floor(aabb.height / 2), Math.floor(aabb.width), Math.floor(aabb.height));
     }
     /**
-     * Calculates the axis-aligned bounding box for this entity, including
-     * all child entity bounding boxes and returns the final composite
-     * bounds.
-     * @example #Get the composite AABB
-     *     var entity = new IgeEntity(),
-     *         aabb = entity.compositeAabb();
-     * @return {IgeRect}
-     */
-    compositeAabb(inverse = false) {
-        const arr = this._children;
-        const rect = this.aabb(true, inverse).clone();
-        // Now loop all children and get the aabb for each of
-        // them add those bounds to the current rect
-        if (arr) {
-            let arrCount = arr.length;
-            while (arrCount--) {
-                rect.thisCombineRect(arr[arrCount].compositeAabb(inverse));
-            }
-        }
-        return rect;
-    }
-    /**
      * Takes two values and returns them as an array where index [0]
      * is the y argument and index[1] is the x argument. This method
      * is used specifically in the 3d bounds intersection process to
@@ -1565,8 +1496,9 @@ class IgeEntity extends IgeObject {
         const arrCount = arr.length;
         this._ignoreCamera = val;
         for (let i = 0; i < arrCount; i++) {
-            if ("ignoreCameraComposite" in arr[i]) {
-                arr[i].ignoreCameraComposite(val);
+            const arrItem = arr[i];
+            if ("ignoreCameraComposite" in arrItem) {
+                arrItem.ignoreCameraComposite(val);
             }
         }
     }
@@ -1579,8 +1511,8 @@ class IgeEntity extends IgeObject {
      * method has already been run for this entity.
      *
      * This is useful if you have multiple viewports which will
-     * cause the entity tick() method to fire once for each viewport
-     * but you only want to execute update code such as movement etc
+     * cause the entity tick() method to fire once for each viewport,
+     * but you only want to execute update code such as movement,
      * on the first time the tick() method is called.
      *
      * @example #Determine if the entity has already had its tick method called
@@ -1675,13 +1607,13 @@ class IgeEntity extends IgeObject {
             // Render the entity
             this._renderEntity(ctx, dontTransform);
         }
-        if (this._streamMode === 1) {
+        if (this._streamMode === IgeStreamMode.simple) {
             this.streamSync();
         }
         if (this._compositeCache) {
-            if (this._cacheDirty) {
+            if (this._cacheDirty && this._cacheCtx) {
                 // Process children
-                this._tick(this._cacheCtx);
+                super.tick(this._cacheCtx);
                 this._renderCache(ctx);
                 this._cacheDirty = false;
             }
@@ -1710,7 +1642,7 @@ class IgeEntity extends IgeObject {
         }
         else {
             // Default to either aabb or bounds3dPolygon depending on entity parent mounting mode
-            if (this._parent && this._parent._mountMode === 1) {
+            if (this._parent && this._parent._mountMode === IgeMountMode.iso) {
                 // Use bounds3dPolygon
                 mouseTriggerPoly = this.bounds3dPolygon();
             }
@@ -1736,7 +1668,7 @@ class IgeEntity extends IgeObject {
             const aabbC = this.compositeAabb();
             this._compositeAabbCache = aabbC;
             if (aabbC.width > 0 && aabbC.height > 0) {
-                this._setInternalCanvasSize(_canvas, _ctx, aabbC.width, aabbC.height);
+                ige.engine._setInternalCanvasSize(_canvas, _ctx, aabbC.width, aabbC.height);
                 /*_canvas.width = Math.ceil(aabbC.width);
                 _canvas.height = Math.ceil(aabbC.height);*/
             }
@@ -1756,7 +1688,7 @@ class IgeEntity extends IgeObject {
         }
         else {
             if (this._bounds2d.x > 0 && this._bounds2d.y > 0) {
-                this._setInternalCanvasSize(_canvas, _ctx, this._bounds2d.x, this._bounds2d.y);
+                ige.engine._setInternalCanvasSize(_canvas, _ctx, this._bounds2d.x, this._bounds2d.y);
                 /*_canvas.width = this._bounds2d.x;
                 _canvas.height = this._bounds2d.y;*/
             }
@@ -1776,12 +1708,6 @@ class IgeEntity extends IgeObject {
         }
         this._renderEntity(_ctx, dontTransform);
     }
-    _setInternalCanvasSize(canvas, ctx, newWidth, newHeight) {
-        canvas.width = newWidth * ige.engine._deviceFinalDrawRatio;
-        canvas.height = newHeight * ige.engine._deviceFinalDrawRatio;
-        // Scale the canvas context to account for the change
-        ctx.scale(ige.engine._deviceFinalDrawRatio, ige.engine._deviceFinalDrawRatio);
-    }
     /**
      * Handles calling the texture.render() method if a texture
      * is applied to the entity. This part of the tick process has
@@ -1793,10 +1719,10 @@ class IgeEntity extends IgeObject {
      * @private
      */
     _renderEntity(ctx, dontTransform = false) {
-        if (this._opacity <= 0) {
+        if (this._opacity <= 0 || !ige.engine._currentCamera || !ige.engine._currentViewport) {
             return;
         }
-        if (this._backgroundPattern) {
+        if (this._backgroundPattern && this._backgroundPattern.image) {
             if (!this._backgroundPatternFill) {
                 // We have a pattern but no fill produced
                 // from it. Check if we have a context to
@@ -1811,11 +1737,11 @@ class IgeEntity extends IgeObject {
                 ctx.save();
                 ctx.fillStyle = this._backgroundPatternFill;
                 if (this._smartBackground) {
-                    this._smartBackground(ctx, this);
+                    this._smartBackground.render(ige, ctx, this);
                 }
                 else {
                     // TODO: When firefox has fixed their bug regarding negative rect co-ordinates, revert this change
-                    // This is the proper way to do this but firefox has a bug which I'm gonna report
+                    // This is the proper way to do this but firefox has a bug which I'm going to report,
                     // so instead I have to use ANOTHER translate call instead. So crap!
                     //ctx.rect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
                     ctx.translate(-this._bounds2d.x2, -this._bounds2d.y2);
@@ -1838,7 +1764,7 @@ class IgeEntity extends IgeObject {
         const texture = this._texture;
         if (texture && texture._loaded) {
             // Draw the entity image
-            texture.render(ctx, this, ige.engine._tickDelta);
+            texture.render(ctx, this);
             if (this._highlight) {
                 ctx.save();
                 ctx.globalCompositeOperation = this._highlightToGlobalCompositeOperation(this._highlight);
@@ -1863,8 +1789,12 @@ class IgeEntity extends IgeObject {
      * @private
      */
     _renderCache(ctx) {
+        if (!ige.engine._currentViewport)
+            return;
+        if (!this._cacheCanvas || this._cacheCanvas instanceof IgeDummyCanvas)
+            return;
         ctx.save();
-        if (this._compositeCache) {
+        if (this._compositeCache && this._compositeAabbCache) {
             const aabbC = this._compositeAabbCache;
             ctx.translate(this._bounds2d.x2 + aabbC.x, this._bounds2d.y2 + aabbC.y);
             if (this._parent && this._parent._ignoreCamera) {
@@ -1961,70 +1891,83 @@ class IgeEntity extends IgeObject {
             if (this.hasOwnProperty(i) && this[i] !== undefined) {
                 switch (i) {
                     case "_opacity":
-                        str += ".opacity(" + this.opacity() + ")";
+                        str += `.opacity(${this.opacity()})`;
                         break;
                     case "_texture":
-                        str += ".texture(ige.$('" + this.texture().id() + "'))";
+                        const tmpTexture = this.texture();
+                        if (tmpTexture) {
+                            str += `.texture(ige.$('${tmpTexture.id()}'))`;
+                        }
                         break;
                     case "_cell":
                         str += ".cell(" + this.cell() + ")";
                         break;
                     case "_translate":
-                        if (options.transform !== false && options.translate !== false) {
-                            str += ".translateTo(" + this._translate.x + ", " + this._translate.y + ", " + this._translate.z + ")";
+                        if (options.transform && options.translate) {
+                            str += `.translateTo(${this._translate.x}, ${this._translate.y}, ${this._translate.z})`;
                         }
                         break;
                     case "_rotate":
-                        if (options.transform !== false && options.rotate !== false) {
-                            str += ".rotateTo(" + this._rotate.x + ", " + this._rotate.y + ", " + this._rotate.z + ")";
+                        if (options.transform && options.rotate) {
+                            str += `.rotateTo(${this._rotate.x}, ${this._rotate.y}, ${this._rotate.z})`;
                         }
                         break;
                     case "_scale":
-                        if (options.transform !== false && options.scale !== false) {
-                            str += ".scaleTo(" + this._scale.x + ", " + this._scale.y + ", " + this._scale.z + ")";
+                        if (options.transform && options.scale) {
+                            str += `.scaleTo(${this._scale.x}, ${this._scale.y}, ${this._scale.z})`;
                         }
                         break;
                     case "_origin":
-                        if (options.origin !== false) {
-                            str += ".originTo(" + this._origin.x + ", " + this._origin.y + ", " + this._origin.z + ")";
+                        if (options.origin) {
+                            str += `.originTo(${this._origin.x}, ${this._origin.y}, ${this._origin.z})`;
                         }
                         break;
                     case "_anchor":
-                        if (options.anchor !== false) {
-                            str += ".anchor(" + this._anchor.x + ", " + this._anchor.y + ")";
+                        if (options.anchor) {
+                            str += `.anchor(${this._anchor.x}, ${this._anchor.y})`;
                         }
                         break;
                     case "_width":
                         if (typeof this.width() === "string") {
-                            str += ".width('" + this.width() + "')";
+                            str += `.width('${this.width()}')`;
                         }
                         else {
-                            str += ".width(" + this.width() + ")";
+                            str += `.width(${this.width()})`;
                         }
                         break;
                     case "_height":
                         if (typeof this.height() === "string") {
-                            str += ".height('" + this.height() + "')";
+                            str += `.height('${this.height()}')`;
                         }
                         else {
-                            str += ".height(" + this.height() + ")";
+                            str += `.height(${this.height()})`;
                         }
                         break;
                     case "_bounds3d":
-                        str += ".bounds3d(" + this._bounds3d.x + ", " + this._bounds3d.y + ", " + this._bounds3d.z + ")";
+                        str += `.bounds3d(${this._bounds3d.x}, ${this._bounds3d.y}, ${this._bounds3d.z})`;
                         break;
                     case "_deathTime":
-                        if (options.deathTime !== false && options.lifeSpan !== false) {
-                            str += ".deathTime(" + this.deathTime() + ")";
+                        if (options.deathTime && options.lifeSpan) {
+                            str += `.deathTime(${this.deathTime()})`;
                         }
                         break;
                     case "_highlight":
-                        str += ".highlight(" + this.highlight() + ")";
+                        str += `.highlight(${this.highlight()})`;
+                        break;
+                    case "_renderMode":
+                        str += ".mode(" + this._renderMode + ")";
                         break;
                 }
             }
         }
         return str;
+    }
+    isometric(val) {
+        if (val !== undefined) {
+            this._renderMode = val ? IgeEntityRenderMode.iso : IgeEntityRenderMode.flat;
+            return this;
+        }
+        return this._renderMode === IgeEntityRenderMode.iso;
     }
     /**
      * Destroys the entity by removing it from the scenegraph,
@@ -2037,13 +1980,11 @@ class IgeEntity extends IgeObject {
      */
     destroy() {
         this._alive = false;
-        /* CEXCLUDE */
         // Check if the entity is streaming
-        if (this._streamMode === 1) {
-            delete this._streamDataCache;
+        if (isServer && this._streamMode === IgeStreamMode.simple) {
+            this._streamDataCache = "";
             this.streamDestroy();
         }
-        /* CEXCLUDE */
         /**
          * Fires when the entity has been destroyed.
          * @event IgeEntity#destroyed
@@ -2057,7 +1998,7 @@ class IgeEntity extends IgeObject {
             this.destroyChildren();
         }
         // Remove the object from the lookup system
-        ige.unRegister(this);
+        ige.register.remove(this);
         // Set a flag in case a reference to this object
         // has been held somewhere, shows that the object
         // should no longer be interacted with
@@ -2067,31 +2008,121 @@ class IgeEntity extends IgeObject {
         delete this._eventListeners;
         return this;
     }
-    saveSpecialProp(obj, i) {
-        switch (i) {
-            case "_texture":
-                if (obj._texture) {
-                    return { _texture: obj._texture.id() };
+    /**
+     * Sorts the _children array by the layer and then depth of each object.
+     */
+    depthSortChildren() {
+        if (this._depthSortMode === IgeIsometricDepthSortMode.none) {
+            return;
+        }
+        if (this._mountMode === IgeMountMode.flat) {
+            // The mount mode for this entity is a 2d plane or "flat" mode, so we don't have any
+            // isometric rendering to deal with and as such, just called the IgeObject version
+            // of this method because IgeObject as a base class has no understanding of isometric
+            // mounting since IgeObject instances don't actually render anything
+            return super.depthSortChildren();
+        }
+        const arr = this._children;
+        let arrCount = arr.length;
+        if (!arr || !arrCount) {
+            return;
+        }
+        if (this._depthSortMode === IgeIsometricDepthSortMode.bounds3d) {
+            // Slowest, uses 3d bounds
+            // Calculate depths from 3d bounds
+            const sortObj = {
+                adj: [],
+                c: [],
+                p: [],
+                order: [],
+                order_ind: arrCount - 1
+            };
+            for (let i = 0; i < arrCount; ++i) {
+                const childItemA = arr[i];
+                sortObj.c[i] = 0;
+                sortObj.p[i] = -1;
+                for (let j = i + 1; j < arrCount; ++j) {
+                    const childItemB = arr[j];
+                    sortObj.adj[i] = sortObj.adj[i] || [];
+                    sortObj.adj[j] = sortObj.adj[j] || [];
+                    if (childItemA._inView && childItemB._inView && "_projectionOverlap" in childItemA && "_projectionOverlap" in childItemB) {
+                        if (childItemA._projectionOverlap(childItemB)) {
+                            if (childItemA.isBehind(childItemB)) {
+                                sortObj.adj[j].push(i);
+                            }
+                            else {
+                                sortObj.adj[i].push(j);
+                            }
+                        }
+                    }
                 }
-                break;
-            default:
-                // Call super-class saveSpecialProp
-                return super.saveSpecialProp(obj, i);
-                break;
+            }
+            for (let i = 0; i < arrCount; ++i) {
+                if (sortObj.c[i] !== 0) {
+                    continue;
+                }
+                this._depthSortVisit(i, sortObj);
+            }
+            for (let i = 0; i < sortObj.order.length; i++) {
+                arr[sortObj.order[i]].depth(i);
+            }
+            this._sortChildren((a, b) => {
+                const layerIndex = b._layer - a._layer;
+                if (layerIndex === 0) {
+                    // On same layer so sort by depth
+                    return b._depth - a._depth;
+                }
+                else {
+                    // Not on same layer so sort by layer
+                    return layerIndex;
+                }
+            });
         }
-        return undefined;
-    }
-    loadSpecialProp(obj, i) {
-        switch (i) {
-            case "_texture":
-                return { _texture: ige.$(obj[i]) };
-                break;
-            default:
-                // Call super-class loadSpecialProp
-                return super.loadSpecialProp(obj, i);
-                break;
+        if (this._depthSortMode === IgeIsometricDepthSortMode.cuboid) {
+            // Medium speed, optimised for almost-cube shaped 3d bounds
+            // Now sort the entities by depth
+            this._sortChildren((a, b) => {
+                const layerIndex = b._layer - a._layer;
+                if (layerIndex === 0) {
+                    // On same layer so sort by depth
+                    //if (a._projectionOverlap(b)) {
+                    if (a.isBehind(b)) {
+                        return -1;
+                    }
+                    else {
+                        return 1;
+                    }
+                    //}
+                }
+                else {
+                    // Not on same layer so sort by layer
+                    return layerIndex;
+                }
+            });
         }
-        return undefined;
+        if (this._depthSortMode === IgeIsometricDepthSortMode.cube) {
+            // Fastest, optimised for cube-shaped 3d bounds
+            while (arrCount--) {
+                const sortObj = arr[arrCount];
+                const j = sortObj._translate;
+                if (!j) {
+                    continue;
+                }
+                sortObj._depth = j.x + j.y + j.z;
+            }
+            // Now sort the entities by depth
+            this._sortChildren((a, b) => {
+                const layerIndex = b._layer - a._layer;
+                if (layerIndex === 0) {
+                    // On same layer so sort by depth
+                    return b._depth - a._depth;
+                }
+                else {
+                    // Not on same layer so sort by layer
+                    return layerIndex;
+                }
+            });
+        }
     }
     /**
      * Removes the callback that is fired when a mouse
@@ -2161,31 +2192,31 @@ class IgeEntity extends IgeObject {
      * @returns {IgeEntity}
      */
     debugTransforms() {
-        ige.traceSet(this._translate, "x", 1, (val) => {
+        ige.engine.traceSet(this._translate, "x", 1, (val) => {
             return isNaN(val);
         });
-        ige.traceSet(this._translate, "y", 1, (val) => {
+        ige.engine.traceSet(this._translate, "y", 1, (val) => {
             return isNaN(val);
         });
-        ige.traceSet(this._translate, "z", 1, (val) => {
+        ige.engine.traceSet(this._translate, "z", 1, (val) => {
             return isNaN(val);
         });
-        ige.traceSet(this._rotate, "x", 1, (val) => {
+        ige.engine.traceSet(this._rotate, "x", 1, (val) => {
             return isNaN(val);
         });
-        ige.traceSet(this._rotate, "y", 1, (val) => {
+        ige.engine.traceSet(this._rotate, "y", 1, (val) => {
             return isNaN(val);
         });
-        ige.traceSet(this._rotate, "z", 1, (val) => {
+        ige.engine.traceSet(this._rotate, "z", 1, (val) => {
             return isNaN(val);
         });
-        ige.traceSet(this._scale, "x", 1, (val) => {
+        ige.engine.traceSet(this._scale, "x", 1, (val) => {
             return isNaN(val);
         });
-        ige.traceSet(this._scale, "y", 1, (val) => {
+        ige.engine.traceSet(this._scale, "y", 1, (val) => {
             return isNaN(val);
         });
-        ige.traceSet(this._scale, "z", 1, (val) => {
+        ige.engine.traceSet(this._scale, "z", 1, (val) => {
             return isNaN(val);
         });
         return this;
@@ -2311,7 +2342,7 @@ class IgeEntity extends IgeObject {
         return this;
     }
     /**
-     * The translate accessor method for the y axis. This
+     * The `translate` accessor method for the y-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.translate().
      * @param {Number=} val The new value to apply to the co-ordinate.
@@ -2367,8 +2398,8 @@ class IgeEntity extends IgeObject {
         return this._entity || this;
     }
     /**
-     * Gets the translate accessor object.
-     * @example #Use the rotate accessor object to rotate the entity about the z axis 10 degrees
+     * Gets the `translate` accessor object.
+     * @example #Use the `rotate` accessor object to rotate the entity about the z-axis 10 degrees
      *     entity.rotate().z(degreesToRadians(10));
      * @return {*}
      */
@@ -2388,7 +2419,7 @@ class IgeEntity extends IgeObject {
      * @param {Number} x The x co-ordinate.
      * @param {Number} y The y co-ordinate.
      * @param {Number} z The z co-ordinate.
-     * @example #Scale the entity by 2 on the x axis
+     * @example #Scale the entity by 2 on the x-axis
      *     entity.scaleBy(2, 0, 0);
      * @return {*}
      */
@@ -2423,7 +2454,7 @@ class IgeEntity extends IgeObject {
         return this._entity || this;
     }
     /**
-     * Gets the scale accessor object.
+     * Gets the `scale` accessor object.
      * @example #Use the scale accessor object to set the scale of the entity on the x axis to 1
      *     entity.scale().x(1);
      * @return {*}
@@ -2439,12 +2470,12 @@ class IgeEntity extends IgeObject {
         });
     }
     /**
-     * Sets the origin of the entity by adding the passed values to
+     * Sets the `origin` of the entity by adding the passed values to
      * the current origin values.
      * @param {Number} x The x co-ordinate.
      * @param {Number} y The y co-ordinate.
      * @param {Number} z The z co-ordinate.
-     * @example #Add 0.5 to the origin on the x axis
+     * @example #Add 0.5 to the origin on the x-axis
      *     entity.originBy(0.5, 0, 0);
      * @return {*}
      */
@@ -2460,7 +2491,7 @@ class IgeEntity extends IgeObject {
         return this._entity || this;
     }
     /**
-     * Set the origin of the entity to the passed values.
+     * Set the `origin` of the entity to the passed values.
      * @param {Number} x The x co-ordinate.
      * @param {Number} y The y co-ordinate.
      * @param {Number} z The z co-ordinate.
@@ -2480,8 +2511,8 @@ class IgeEntity extends IgeObject {
         return this._entity || this;
     }
     /**
-     * Gets the origin accessor object.
-     * @example #Use the origin accessor object to set the origin of the entity on the x axis to 1
+     * Gets the `origin` accessor object.
+     * @example #Use the origin accessor object to set the origin of the entity on the x-axis to 1
      *     entity.origin().x(1);
      * @return {*}
      */

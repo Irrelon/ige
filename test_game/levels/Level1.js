@@ -9,6 +9,7 @@ import { degreesToRadians } from "../../engine/services/utils.js";
 import { Rotator } from "../../examples/1.1.0-startup/gameClasses/Rotator.js";
 import { textures } from "../services/textures.js";
 import { isClient } from "../../engine/services/clientServer.js";
+import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
 export class Level1 extends IgeSceneGraph {
     constructor() {
         super(...arguments);
@@ -31,25 +32,33 @@ export class Level1 extends IgeSceneGraph {
         // it to the first on at 0, -50 relative to the
         // parent, but assign it a smart texture!
         new Square()
+            .streamMode(IgeStreamMode.simple)
             .translateTo(0, 0, 0)
             .mount(scene1);
         new Circle()
+            .streamMode(IgeStreamMode.simple)
             .translateTo(250, -50, 0)
             .mount(scene1);
         new Triangle()
+            .streamMode(IgeStreamMode.simple)
             .translateTo(220, 120, 0)
             .rotateTo(0, 0, degreesToRadians(-10))
             .mount(scene1);
         new Circle()
+            .streamMode(IgeStreamMode.simple)
             .translateTo(50, 150, 0)
             .mount(scene1);
         new Line(0, 0, 250, -50)
+            .streamMode(IgeStreamMode.simple)
             .mount(scene1);
         new Line(250, -50, 220, 120)
+            .streamMode(IgeStreamMode.simple)
             .mount(scene1);
         new Line(220, 120, 50, 150)
+            .streamMode(IgeStreamMode.simple)
             .mount(scene1);
         new Circle()
+            .streamMode(IgeStreamMode.simple)
             .translateTo(150, 150, 0)
             .scaleTo(0.3, 0.3, 0.3)
             .mount(scene1);
@@ -59,7 +68,7 @@ export class Level1 extends IgeSceneGraph {
             .width(100)
             .height(100)
             .translateTo(0, 0, 0)
-            .streamMode(1)
+            .streamMode(IgeStreamMode.simple)
             .mount(scene1);
         if (isClient) {
             fairy.texture(textures.getTextureById("fairy"));

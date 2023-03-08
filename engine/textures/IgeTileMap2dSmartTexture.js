@@ -1,4 +1,5 @@
 import IgePoint2d from "../core/IgePoint2d.js";
+import { IgeMountMode } from "../../enums/IgeMountMode.js";
 const IgeTileMap2dSmartTexture = {
     render: (ige, ctx, entity) => {
         const tileWidth = entity._tileWidth, tileHeight = entity._tileHeight, bounds2d = entity.bounds2d(), gridSize = entity._gridSize;
@@ -13,11 +14,11 @@ const IgeTileMap2dSmartTexture = {
             ctx.fillStyle = '#ff26e8';
         }
 
-        if (entity._mountMode === 0) {
+        if (entity._mountMode === IgeMountMode.flat) {
             ctx.translate(bounds2d.x2, bounds2d.y2);
         }
 
-        if (entity._mountMode === 1) {
+        if (entity._mountMode === IgeMountMode.iso) {
             ctx.translate(-entity._translate.x, -entity._translate.y);
             triggerPoly.render(ctx, true);
         }
@@ -32,7 +33,7 @@ const IgeTileMap2dSmartTexture = {
             for (index = 0; index <= gridSize.y; index++) {
                 gStart = new IgePoint2d(x, y + tileHeight * index);
                 gEnd = new IgePoint2d(gridMaxX, y + tileHeight * index);
-                if (entity._mountMode === 1) {
+                if (entity._mountMode === IgeMountMode.iso) {
                     // Iso grid
                     gStart = gStart.toIso();
                     gEnd = gEnd.toIso();
@@ -45,7 +46,7 @@ const IgeTileMap2dSmartTexture = {
             for (index = 0; index <= gridSize.x; index++) {
                 gStart = new IgePoint2d(x + tileWidth * index, y);
                 gEnd = new IgePoint2d(x + tileWidth * index, gridMaxY);
-                if (entity._mountMode === 1) {
+                if (entity._mountMode === IgeMountMode.iso) {
                     // Iso grid
                     gStart = gStart.toIso();
                     gEnd = gEnd.toIso();
@@ -65,11 +66,11 @@ const IgeTileMap2dSmartTexture = {
                             // Tile is occupied
                             tilePoint = new IgePoint2d(tileWidth * x, tileHeight * y);
                             // TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
-                            if (entity._mountMode === 0) {
+                            if (entity._mountMode === IgeMountMode.flat) {
                                 // 2d
                                 ctx.fillRect(tilePoint.x, tilePoint.y, tileWidth, tileHeight);
                             }
-                            if (entity._mountMode === 1) {
+                            if (entity._mountMode === IgeMountMode.iso) {
                                 // iso
                                 tilePoint.thisToIso();
                                 ctx.beginPath();
@@ -92,11 +93,11 @@ const IgeTileMap2dSmartTexture = {
                     // Tile is occupied
                     tilePoint = new IgePoint2d(tileWidth * x, tileHeight * y);
                     // TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
-                    if (entity._mountMode === 0) {
+                    if (entity._mountMode === IgeMountMode.flat) {
                         // 2d
                         ctx.fillRect(tilePoint.x, tilePoint.y, tileWidth, tileHeight);
                     }
-                    if (entity._mountMode === 1) {
+                    if (entity._mountMode === IgeMountMode.iso) {
                         // iso
                         tilePoint.thisToIso();
                         ctx.beginPath();
@@ -116,11 +117,11 @@ const IgeTileMap2dSmartTexture = {
             if (mouseTile.x >= 0 && mouseTile.y >= 0 && mouseTile.x < gridSize.x && mouseTile.y < gridSize.y) {
                 // Paint the tile the mouse is currently intersecting
                 ctx.fillStyle = entity._hoverColor || "#6000ff";
-                if (entity._mountMode === 0) {
+                if (entity._mountMode === IgeMountMode.flat) {
                     // 2d
                     ctx.fillRect(mouseTile.x * tileWidth, mouseTile.y * tileHeight, tileWidth, tileHeight);
                 }
-                if (entity._mountMode === 1) {
+                if (entity._mountMode === IgeMountMode.iso) {
                     // iso
                     tilePoint = mouseTile.clone().thisMultiply(tileWidth, tileHeight, 0).thisToIso();
                     tilePoint.y += tileHeight / 2;

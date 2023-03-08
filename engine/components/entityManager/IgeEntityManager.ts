@@ -1,6 +1,7 @@
 import { arrPull } from "../../services/utils";
 import IgeEntity from "../../core/IgeEntity";
 import IgeComponent from "../../core/IgeComponent";
+import { IgeMountMode } from "../../../enums/IgeMountMode";
 
 class IgeEntityManager<TargetClass extends IgeEntity> extends IgeComponent<TargetClass> {
 	classId = "IgeEntityManager";
@@ -75,7 +76,7 @@ class IgeEntityManager<TargetClass extends IgeEntity> extends IgeComponent<Targe
 
 			if (item._managed) {
 				if (item.aabb) {
-					if (item._mode === 1 || (item._parent && item._parent._mountMode === 1)) {
+					if (item._renderMode === 1 || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
 						itemAabb = item.bounds3dPolygon().aabb();
 					} else {
 						itemAabb = item.aabb();
@@ -134,7 +135,7 @@ class IgeEntityManager<TargetClass extends IgeEntity> extends IgeComponent<Targe
 
 			if (item._managed) {
 				if (item.aabb) {
-					if (item._mode === 1 || (item._parent && item._parent._mountMode === 1)) {
+					if (item._renderMode === 1 || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
 						itemAabb = item.bounds3dPolygon().aabb();
 					} else {
 						itemAabb = item.aabb();

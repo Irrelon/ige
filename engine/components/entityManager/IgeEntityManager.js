@@ -1,5 +1,6 @@
 import { arrPull } from "../../services/utils.js";
 import IgeComponent from "../../core/IgeComponent.js";
+import { IgeMountMode } from "../../../enums/IgeMountMode.js";
 class IgeEntityManager extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
@@ -17,7 +18,7 @@ class IgeEntityManager extends IgeComponent {
                 item = arr[arrCount];
                 if (item._managed) {
                     if (item.aabb) {
-                        if (item._mode === 1 || (item._parent && item._parent._mountMode === 1)) {
+                        if (item._renderMode === 1 || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
                             itemAabb = item.bounds3dPolygon().aabb();
                         }
                         else {
@@ -129,7 +130,7 @@ class IgeEntityManager extends IgeComponent {
             item = arr[arrCount];
             if (item._managed) {
                 if (item.aabb) {
-                    if (item._mode === 1 || (item._parent && item._parent._mountMode === 1)) {
+                    if (item._renderMode === 1 || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
                         itemAabb = item.bounds3dPolygon().aabb();
                     }
                     else {

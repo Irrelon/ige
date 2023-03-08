@@ -4,6 +4,7 @@
 import IgePoint3d from "./IgePoint3d";
 import IgePoint2d from "./IgePoint2d";
 import IgeBaseClass from "./IgeBaseClass";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
 class IgeRect extends IgeBaseClass {
 	classId = "IgeRect";
@@ -200,7 +201,7 @@ class IgeRect extends IgeBaseClass {
 	 * @param {CanvasRenderingContext2D} ctx
 	 * @param fill
 	 */
-	render (ctx: CanvasRenderingContext2D, fill: boolean = false) {
+	render (ctx: IgeCanvasRenderingContext2d, fill: boolean = false) {
 		ctx.rect(this.x, this.y, this.width, this.height);
 		if (fill) { ctx.fill(); }
 		ctx.stroke();

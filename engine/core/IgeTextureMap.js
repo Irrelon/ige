@@ -2,6 +2,7 @@
 import IgeTileMap2d from "./IgeTileMap2d.js";
 import IgeMap2d from "./IgeMap2d.js";
 import IgePoint3d from "./IgePoint3d.js";
+import { IgeMountMode } from "../../enums/IgeMountMode.js";
 /**
  * Texture maps provide a way to display textures / cells across a tile map.
  */
@@ -301,12 +302,12 @@ class IgeTextureMap extends IgeTileMap2d {
                                     // Calculate the tile's final resting position in absolute
                                     // co-ordinates so we can work out which section canvas to
                                     // paint the tile to
-                                    if (this._mountMode === 0) {
+                                    if (this._mountMode === IgeMountMode.flat) {
                                         // We're rendering a 2d map
                                         finalX = xInt;
                                         finalY = yInt;
                                     }
-                                    if (this._mountMode === 1) {
+                                    if (this._mountMode === IgeMountMode.iso) {
                                         // We're rendering an iso map
                                         // Convert the tile x, y to isometric
                                         tx = xInt * this._tileWidth;
@@ -434,7 +435,7 @@ class IgeTextureMap extends IgeTileMap2d {
                         sectionAbsX = this._translate.x + sectionRenderX - this._ige._currentCamera._translate.x;
                         sectionAbsY = this._translate.y + sectionRenderY - this._ige._currentCamera._translate.y;
                         // Check if we are drawing isometrically and adjust
-                        if (this._mountMode === 1) {
+                        if (this._mountMode === IgeMountMode.iso) {
                             sectionAbsX -= (this._tileWidth / 2);
                             sectionAbsY -= (this._tileHeight / 2);
                         }
@@ -471,13 +472,13 @@ class IgeTextureMap extends IgeTileMap2d {
      */
     _renderTile(ctx, x, y, tileData, tileEntity, rect, sectionX, sectionY) {
         // TODO: Handle scaling so tiles don't loose res on scaled cached sections
-        let finalX, finalY, regions, xm1, xp1, ym1, yp1, regObj, xAdjust = this._mountMode === 1 ? this._tileWidth / 2 : 0, yAdjust = this._mountMode === 1 ? this._tileHeight / 2 : 0, tx, ty, sx, sy, texture;
+        let finalX, finalY, regions, xm1, xp1, ym1, yp1, regObj, xAdjust = this._mountMode === IgeMountMode.iso ? this._tileWidth / 2 : 0, yAdjust = this._mountMode === IgeMountMode.iso ? this._tileHeight / 2 : 0, tx, ty, sx, sy, texture;
         // Translate the canvas to the tile position
-        if (this._mountMode === 0) {
+        if (this._mountMode === IgeMountMode.flat) {
             finalX = x * this._tileWidth;
             finalY = y * this._tileHeight;
         }
-        if (this._mountMode === 1) {
+        if (this._mountMode === IgeMountMode.iso) {
             // Convert the tile x, y to isometric
             tx = x * this._tileWidth;
             ty = y * this._tileHeight;
@@ -552,7 +553,7 @@ class IgeTextureMap extends IgeTileMap2d {
      * @private
      */
     _newTileEntity() {
-        if (this._mountMode === 0) {
+        if (this._mountMode === IgeMountMode.flat) {
             return {
                 "_cell": 1,
                 "_bounds2d": {
@@ -565,7 +566,7 @@ class IgeTextureMap extends IgeTileMap2d {
                 }
             };
         }
-        if (this._mountMode === 1) {
+        if (this._mountMode === IgeMountMode.iso) {
             return {
                 "_cell": 1,
                 "_bounds2d": {

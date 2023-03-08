@@ -3,7 +3,6 @@ import IgePoint3d from "./IgePoint3d";
 import IgeDummyContext from "./IgeDummyContext";
 import IgePoint2d from "./IgePoint2d";
 import IgeInputComponent from "../components/IgeInputComponent";
-import { arrPull } from "../services/utils";
 
 import type { SyncEntry, SyncMethod } from "../../types/SyncEntry";
 import type IgeBaseClass from "./IgeBaseClass";
@@ -11,12 +10,13 @@ import type IgeTexture from "./IgeTexture";
 import type IgeViewport from "./IgeViewport";
 import type IgeCamera from "./IgeCamera";
 import type IgeSceneGraph from "./IgeSceneGraph";
-import type IgeImage from "./IgeImage";
+import type { IgeImage } from "./IgeImage";
 import IgeEntity from "./IgeEntity";
-import { IgeRegisterableById } from "../../types/IgeRegisterableById";
 import { ige } from "../instance";
 import { isClient, isServer } from "../services/clientServer";
 import { IgeObject } from "./IgeObject";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import IgeDummyCanvas from "./IgeDummyCanvas";
 
 export class IgeEngine extends IgeEntity {
 	client?: IgeBaseClass;
@@ -26,9 +26,14 @@ export class IgeEngine extends IgeEntity {
 	root: IgeRoot; // The root entity that all scenegraph will mount to
 	_idRegistered: boolean = true;
 	_canvas?: HTMLCanvasElement;
-	_ctx: CanvasRenderingContext2D | null | typeof IgeDummyContext;
+	_ctx: IgeCanvasRenderingContext2d | null;
 	_idCounter: number;
-	_renderModes: string[];
+	_pause: boolean = false;
+	_useManualRender: boolean = false;
+	_manualRenderQueued: boolean = false;
+	_useManualTicks: boolean = false;
+	_manualFrameAlternator: boolean = false;
+	_renderContextModes: string[];
 	_pixelRatioScaling: boolean;
 	_requireScriptTotal: number;
 	_requireScriptLoading: number;
@@ -37,13 +42,11 @@ export class IgeEngine extends IgeEntity {
 	_enableRenders: boolean;
 	_showSgTree: boolean;
 	_renderContext: "2d" | "three";
-	_renderMode: number;
 	_tickTime: number;
 	_updateTime: number;
 	_renderTime: number;
 	_tickDelta: number;
 	_fpsRate: number;
-	_manualRender: boolean = false;
 	_state: number;
 	_textureImageStore: Record<string, IgeImage>;
 	_texturesLoading: number;
@@ -61,9 +64,6 @@ export class IgeEngine extends IgeEntity {
 	_currentCamera: IgeCamera | null;
 	_currentTime: number;
 	_globalSmoothing: boolean;
-	_register: Record<string, IgeRegisterableById>;
-	_categoryRegister: Record<string, IgeEntity> = {};
-	_groupRegister: Record<string, IgeEntity[]> = {};
 	_postTick: (() => void)[];
 	_timeSpentInUpdate: Record<string, number>;
 	_timeSpentLastUpdate: Record<string, Record<string, number>>;
@@ -93,17 +93,15 @@ export class IgeEngine extends IgeEntity {
 	_backingStoreRatio: number = 1;
 	_resized: boolean = false;
 	_timeScaleLastTimestamp: number = 0;
-	_useManualTicks: boolean = false;
-	_manualFrameAlternator: boolean = false;
 	lastTick: number = 0;
-	_requestAnimFrame?: (callback: (time: number, ctx?: CanvasRenderingContext2D) => void, element?: Element) => void;
+	_requestAnimFrame?: (callback: (time: number, ctx?: IgeCanvasRenderingContext2d) => void, element?: Element) => void;
 
 	constructor () {
 		super();
 
 		this.igeClassStore = {};
 		this._idCounter = 0;
-		this._renderModes = ["2d", "three"];
+		this._renderContextModes = ["2d", "three"];
 		this._pixelRatioScaling = true; // Default to scaling the canvas to get non-blurry output
 		this._requireScriptTotal = 0;
 		this._requireScriptLoading = 0;
@@ -113,7 +111,6 @@ export class IgeEngine extends IgeEntity {
 		this._showSgTree = false;
 		this._debugEvents = {}; // Holds debug event booleans for named events
 		this._renderContext = "2d"; // The rendering context, default is 2d
-		this._renderMode = 0; // Integer representation of the render context
 		this._tickTime = NaN; // The time the tick took to process
 		this._updateTime = NaN; // The time the tick update section took to process
 		this._renderTime = NaN; // The time the tick render section took to process
@@ -136,11 +133,6 @@ export class IgeEngine extends IgeEntity {
 		this._currentCamera = null; // Set in IgeViewport.js tick(), holds the current rendering viewport's camera
 		this._currentTime = 0; // The current engine time
 		this._globalSmoothing = false; // Determines the default smoothing setting for new textures
-		this._register = {
-			ige: this
-		}; // Holds a reference to every item in the scenegraph by its ID
-		this._categoryRegister = {}; // Holds reference to every item with a category
-		this._groupRegister = {}; // Holds reference to every item with a group
 		this._postTick = []; // An array of methods that are called upon tick completion
 		this._timeSpentInUpdate = {}; // An object holding time-spent-in-update (total time spent in this object's update method)
 		this._timeSpentLastUpdate = {}; // An object holding time-spent-last-update (time spent in this object's update method last tick)
@@ -157,7 +149,7 @@ export class IgeEngine extends IgeEntity {
 		// Set the context to a dummy context to start
 		// with in case we are in "headless" mode and
 		// a replacement context never gets assigned
-		this._ctx = IgeDummyContext;
+		this._ctx = new IgeDummyContext();
 		this._headless = true;
 
 		// Deal with some debug settings first
@@ -240,16 +232,16 @@ export class IgeEngine extends IgeEntity {
 		if (!this._webFonts.length && !this._cssFonts.length) return true;
 
 		const loadedWebFonts =
-            !this._webFonts.length ||
-            this._webFonts.every((webFont) => {
-            	return webFont.status === "loaded" || webFont.status === "error";
-            });
+			!this._webFonts.length ||
+			this._webFonts.every((webFont) => {
+				return webFont.status === "loaded" || webFont.status === "error";
+			});
 
 		const loadedCssFonts =
-            !this._cssFonts.length ||
-            this._cssFonts.every((cssFont) => {
-            	return this.fontList().includes(cssFont);
-            });
+			!this._cssFonts.length ||
+			this._cssFonts.every((cssFont) => {
+				return this.fontList().includes(cssFont);
+			});
 
 		return loadedWebFonts && loadedCssFonts;
 	};
@@ -279,10 +271,10 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Adds an entity to the spawn queue.
-     * @param {IgeEntity} entity The entity to add.
-     * @returns {Ige|[]} Either this, or the spawn queue.
-     */
+	 * Adds an entity to the spawn queue.
+	 * @param {IgeEntity} entity The entity to add.
+	 * @returns {Ige|[]} Either this, or the spawn queue.
+	 */
 	spawnQueue (entity: IgeObject) {
 		if (entity !== undefined) {
 			this._spawnQueue.push(entity);
@@ -293,59 +285,11 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Register an object with the engine group register. The
-     * register allows you to access an object by it's groups with
-     * a call to ige.$$$(groupName).
-     * @param {Object} obj The object to register.
-     * @param {String} groupName The name of the group to register
-     * the object in.
-     * @return {*}
-     */
-	groupRegister (obj, groupName) {
-		if (obj !== undefined) {
-			this._groupRegister[groupName] = this._groupRegister[groupName] || [];
-			this._groupRegister[groupName].push(obj);
-			obj._groupRegistered = true;
-		}
-
-		return this._register;
-	}
-
-	/**
-     * Un-register an object with the engine group register. The
-     * object will no longer be accessible via ige.$$$().
-     * @param {Object} obj The object to un-register.
-     * @param {String} groupName The name of the group to un-register
-     * the object from.
-     * @return {*}
-     */
-	groupUnRegister (obj, groupName) {
-		if (obj !== undefined) {
-			if (groupName !== undefined) {
-				if (this._groupRegister[groupName]) {
-					arrPull(this._groupRegister[groupName], obj);
-
-					if (!obj.groupCount()) {
-						obj._groupRegister = false;
-					}
-				}
-			} else {
-				// Call the removeAllGroups() method which will loop
-				// all the groups that the object belongs to and
-				// automatically un-register them
-				obj.removeAllGroups();
-			}
-		}
-
-		return this;
-	}
-
-	/**
-     * Sets the canvas element that will be used as the front-buffer.
-     * @param elem The canvas element.
-     * @param autoSize If set to true, the engine will automatically size
-     * the canvas to the width and height of the window upon window resize.
-     */
+	 * Sets the canvas element that will be used as the front-buffer.
+	 * @param elem The canvas element.
+	 * @param autoSize If set to true, the engine will automatically size
+	 * the canvas to the width and height of the window upon window resize.
+	 */
 	canvas (elem?: HTMLCanvasElement, autoSize = true) {
 		if (isServer) return this;
 
@@ -360,20 +304,18 @@ export class IgeEngine extends IgeEntity {
 		}
 
 		this._canvas = elem;
-		this._ctx = this._canvas.getContext(this._renderContext);
+		this._ctx = this._canvas.getContext(this._renderContext) as CanvasRenderingContext2D;
+
+		if (!this._ctx) {
+			throw new Error("Could not get canvas context!");
+		}
 
 		if (this._pixelRatioScaling) {
 			// Support high-definition devices and "retina" (stupid marketing name)
 			// displays by adjusting for device and back store pixels ratios
 			this._devicePixelRatio = window.devicePixelRatio || 1;
-			this._backingStoreRatio =
-                this._ctx.webkitBackingStorePixelRatio ||
-                this._ctx.mozBackingStorePixelRatio ||
-                this._ctx.msBackingStorePixelRatio ||
-                this._ctx.oBackingStorePixelRatio ||
-                this._ctx.backingStorePixelRatio ||
-                1;
-
+			// @ts-ignore
+			this._backingStoreRatio = this._ctx.webkitBackingStorePixelRatio || this._ctx.mozBackingStorePixelRatio || this._ctx.msBackingStorePixelRatio || this._ctx.oBackingStorePixelRatio || this._ctx.backingStorePixelRatio || 1;
 			this._deviceFinalDrawRatio = Math.ceil(this._devicePixelRatio / this._backingStoreRatio);
 		} else {
 			// No auto-scaling
@@ -383,71 +325,72 @@ export class IgeEngine extends IgeEntity {
 		}
 
 		this.log(`Device pixel ratio is ${this._devicePixelRatio} and canvas pixel ratio set to ${this._deviceFinalDrawRatio}`);
+
 		if (autoSize) {
 			this._autoSize = autoSize;
 		}
 
 		window.addEventListener("resize", this._resizeEvent);
 		this._resizeEvent();
-		this._ctx = this._canvas.getContext(this._renderContext);
+
+		this._ctx = this._canvas.getContext(this._renderContext) as CanvasRenderingContext2D;
 		this._headless = false;
 	}
 
 	/**
-     * Clears the entire canvas.
-     */
+	 * Clears the entire canvas.
+	 */
 	clearCanvas () {
-		if (this._ctx) {
+		if (this._canvas && this._ctx) {
 			// Clear the whole canvas
 			this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
 		}
 	}
 
 	/**
-     * Removes the engine's canvas from the DOM.
-     */
+	 * Removes the engine's canvas from the DOM.
+	 */
 	removeCanvas () {
 		// Stop listening for input events
-		if (this.input) {
-			this.input.destroyListeners();
+		if (ige.input) {
+			ige.input.destroyListeners();
 		}
 
 		// Remove event listener
 		window.removeEventListener("resize", this._resizeEvent);
 
-		if (this._createdFrontBuffer) {
+		if (this._createdFrontBuffer && this._canvas) {
 			// Remove the canvas from the DOM
 			document.body.removeChild(this._canvas);
 		}
 
 		// Clear internal references
 		delete this._canvas;
-		delete this._ctx;
-		this._ctx = IgeDummyContext;
+		this._ctx = null;
+
+		this._ctx = new IgeDummyContext();
 		this._headless = true;
 	}
 
 	/**
-     * Sets a trace up on the setter of the passed object's
-     * specified property. When the property is set by any
-     * code the debugger line is activated and code execution
-     * will be paused allowing you to step through code or
-     * examine the call stack to see where the property set
-     * originated.
-     * @param {Object} obj The object whose property you want
-     * to trace.
-     * @param {String} propName The name of the property you
-     * want to put the trace on.
-     * @param {Number} sampleCount The number of times you
-     * want the trace to break with the debugger line before
-     * automatically switching off the trace.
-     * @param {Function=} callbackEvaluator Optional callback
-     * that if returns true, will fire debugger. Method is passed
-     * the setter value as first argument.
-     */
-	traceSet (obj, propName, sampleCount, callbackEvaluator) {
-		const self = this;
-
+	 * Sets a trace up on the setter of the passed object's
+	 * specified property. When the property is set by any
+	 * code the debugger line is activated and code execution
+	 * will be paused allowing you to step through code or
+	 * examine the call stack to see where the property set
+	 * originated.
+	 * @param {Object} obj The object whose property you want
+	 * to trace.
+	 * @param {String} propName The name of the property you
+	 * want to put the trace on.
+	 * @param {Number} sampleCount The number of times you
+	 * want the trace to break with the debugger line before
+	 * automatically switching off the trace.
+	 * @param {Function=} callbackEvaluator Optional callback
+	 * that if returns true, will fire debugger. Method is passed
+	 * the setter value as first argument.
+	 */
+	traceSet (obj: any, propName: string, sampleCount: number, callbackEvaluator?: (val: any) => boolean) {
 		obj.___igeTraceCurrentVal = obj.___igeTraceCurrentVal || {};
 		obj.___igeTraceCurrentVal[propName] = obj[propName];
 		obj.___igeTraceMax = sampleCount || 1;
@@ -457,7 +400,7 @@ export class IgeEngine extends IgeEntity {
 			get () {
 				return obj.___igeTraceCurrentVal[propName];
 			},
-			set (val) {
+			set: (val) => {
 				if (callbackEvaluator) {
 					if (callbackEvaluator(val)) {
 						debugger; // jshint ignore:line
@@ -472,21 +415,21 @@ export class IgeEngine extends IgeEntity {
 				if (obj.___igeTraceCount === obj.___igeTraceMax) {
 					// Maximum amount of trace samples reached, turn off
 					// the trace system
-					self.traceSetOff(obj, propName);
+					this.traceSetOff(obj, propName);
 				}
 			}
 		});
 	}
 
 	/**
-     * Turns off a trace that was created by calling traceSet.
-     * @param {Object} object The object whose property you want
-     * to disable a trace against.
-     * @param {String} propName The name of the property you
-     * want to disable the trace for.
-     */
-	traceSetOff (object, propName) {
-		Object.defineProperty(object, propName, {
+	 * Turns off a trace that was created by calling traceSet.
+	 * @param {Object} obj The object whose property you want
+	 * to disable a trace against.
+	 * @param {String} propName The name of the property you
+	 * want to disable the trace for.
+	 */
+	traceSetOff (obj: any, propName: string) {
+		Object.defineProperty(obj, propName, {
 			set (val) {
 				this.___igeTraceCurrentVal[propName] = val;
 			}
@@ -504,6 +447,10 @@ export class IgeEngine extends IgeEntity {
 		// Get the context
 		const ctx = canvas.getContext("2d");
 
+		if (!ctx) {
+			throw new Error("Could not get canvas rendering context!");
+		}
+
 		// Set smoothing mode
 		ctx.imageSmoothingEnabled = options.smoothing !== undefined ? options.smoothing : this._globalSmoothing;
 
@@ -514,26 +461,25 @@ export class IgeEngine extends IgeEntity {
 			ctx.scale(this._deviceFinalDrawRatio, this._deviceFinalDrawRatio);
 		}
 
-		// Augment the canvas with width and height setters that handle device ratio
-		canvas.igeSetSize = (newWidth, newHeight) => {
-			canvas.width = newWidth * this._deviceFinalDrawRatio;
-			canvas.height = newHeight * this._deviceFinalDrawRatio;
-
-			// Scale the canvas context to account for the change
-			ctx.scale(this._deviceFinalDrawRatio, this._deviceFinalDrawRatio);
-		};
-
 		return {
 			canvas,
 			ctx
 		};
 	}
 
+	_setInternalCanvasSize (canvas: HTMLCanvasElement | IgeDummyCanvas, ctx: IgeCanvasRenderingContext2d, newWidth: number, newHeight: number) {
+		canvas.width = newWidth * this._deviceFinalDrawRatio;
+		canvas.height = newHeight * this._deviceFinalDrawRatio;
+
+		// Scale the canvas context to account for the change
+		ctx.scale(this._deviceFinalDrawRatio, this._deviceFinalDrawRatio);
+	}
+
 	/**
-     * Handles the screen resize event.
-     * @param event
-     * @private
-     */
+	 * Handles the screen resize event.
+	 * @param event
+	 * @private
+	 */
 	_resizeEvent = (event?: Event) => {
 		let canvasBoundingRect;
 
@@ -593,8 +539,8 @@ export class IgeEngine extends IgeEntity {
 			if (sgTreeElem) {
 				canvasBoundingRect = this._canvasPosition();
 
-				sgTreeElem.style.top = parseInt(canvasBoundingRect.top) + 5 + "px";
-				sgTreeElem.style.left = parseInt(canvasBoundingRect.left) + 5 + "px";
+				sgTreeElem.style.top = (canvasBoundingRect.top + 5) + "px";
+				sgTreeElem.style.left = (canvasBoundingRect.left + 5) + "px";
 				sgTreeElem.style.height = this.root._bounds2d.y - 30 + "px";
 			}
 		}
@@ -603,11 +549,11 @@ export class IgeEngine extends IgeEntity {
 	};
 
 	/**
-     * Gets the bounding rectangle for the HTML canvas element being
-     * used as the front buffer for the engine. Uses DOM methods.
-     * @returns {ClientRect}
-     * @private
-     */
+	 * Gets the bounding rectangle for the HTML canvas element being
+	 * used as the front buffer for the engine. Uses DOM methods.
+	 * @returns {ClientRect}
+	 * @private
+	 */
 	_canvasPosition () {
 		if (!this._canvas) {
 			return {
@@ -627,55 +573,31 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Toggles full-screen output of the main ige canvas. Only works
-     * if called from within a user-generated HTML event listener.
-     */
+	 * Toggles full-screen output of the main ige canvas. Only works
+	 * if called from within a user-generated HTML event listener.
+	 */
 	toggleFullScreen = () => {
-		const elem = this._canvas;
+		const elem = this._canvas as any;
+
+		if (!elem) return;
 
 		if (elem.requestFullscreen) {
-			elem.requestFullscreen();
+			return elem.requestFullscreen();
 		} else if (elem.mozRequestFullScreen) {
-			elem.mozRequestFullScreen();
+			return elem.mozRequestFullScreen();
 		} else if (elem.webkitRequestFullscreen) {
-			elem.webkitRequestFullscreen();
+			return elem.webkitRequestFullscreen();
 		}
 	};
 
 	/**
-     * Adds a new watch expression to the watch list which will be
-     * displayed in the stats overlay during a call to _statsTick().
-     * @param {*} evalStringOrObject The expression to evaluate and
-     * display the result of in the stats overlay, or an object that
-     * contains a "value" property.
-     * @returns {Integer} The index of the new watch expression you
-     * just added to the watch array.
-     */
-	watchStart = (evalStringOrObject) => {
-		this._watch = this._watch || [];
-		this._watch.push(evalStringOrObject);
-
-		return this._watch.length - 1;
-	};
-
-	/**
-     * Removes a watch expression by it's array index.
-     * @param {Number} index The index of the watch expression to
-     * remove from the watch array.
-     */
-	watchStop = (index) => {
-		this._watch = this._watch || [];
-		this._watch.splice(index, 1);
-	};
-
-	/**
-     * Finds the first Ige* based class that the passed object
-     * has been derived from.
-     * @param obj
-     * @return {*}
-     */
-	findBaseClass = (obj) => {
-		if (obj && obj.constructor.name) {
+	 * Finds the first Ige* based class that the passed object
+	 * has been derived from.
+	 * @param obj
+	 * @return {*}
+	 */
+	findBaseClass = (obj: any): string => {
+		if (obj && obj.constructor && obj.constructor.name) {
 			if (obj.constructor.name.substr(0, 3) === "Ige") {
 				return obj.constructor.name;
 			} else {
@@ -691,22 +613,22 @@ export class IgeEngine extends IgeEntity {
 	};
 
 	/**
-     * Returns an array of all classes the passed object derives from
-     * in order from current to base.
-     * @param obj
-     * @param arr
-     * @return {*}
-     */
-	getClassDerivedList (obj, arr) {
+	 * Returns an array of all classes the passed object derives from
+	 * in order from current to base.
+	 * @param obj
+	 * @param arr
+	 * @return {*}
+	 */
+	getClassDerivedList (obj: any, arr?: any[]) {
 		if (!arr) {
 			arr = [];
 		} else {
-			if (obj.constructor.name) {
+			if (obj && obj.constructor && obj.constructor.name) {
 				arr.push(obj.constructor.name);
 			}
 		}
 
-		if (obj.__proto__.constructor.name) {
+		if (obj && obj.__proto__ && obj.__proto__.constructor && obj.__proto__.constructor.name) {
 			this.getClassDerivedList(obj.__proto__, arr);
 		}
 
@@ -714,9 +636,9 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Is called every second and does things like calculate the current FPS.
-     * @private
-     */
+	 * Is called every second and does things like calculate the current FPS.
+	 * @private
+	 */
 	_secondTick = () => {
 		// Store frames per second
 		this._fps = this._frames;
@@ -730,15 +652,15 @@ export class IgeEngine extends IgeEntity {
 	};
 
 	/**
-     * Gets / sets the current time scalar value. The engine's internal
-     * time is multiplied by this value and it's default is 1. You can set it to
-     * 0.5 to slow down time by half or 1.5 to speed up time by half. Negative
-     * values will reverse time but not all engine systems handle this well
-     * at the moment.
-     * @param {Number=} val The time scale value.
-     * @returns {*}
-     */
-	timeScale (val) {
+	 * Gets / sets the current time scalar value. The engine's internal
+	 * time is multiplied by this value, and it's default is 1. You can set it to
+	 * 0.5 to slow down time by half or 1.5 to speed up time by half. Negative
+	 * values will reverse time but not all engine systems handle this well
+	 * at the moment.
+	 * @param {Number=} val The timescale value.
+	 * @returns {*}
+	 */
+	timeScale (val?: number) {
 		if (val !== undefined) {
 			this._timeScale = val;
 			return this;
@@ -748,13 +670,13 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Increments the engine's internal time by the passed number of milliseconds.
-     * @param {Number} val The number of milliseconds to increment time by.
-     * @param {Number=} lastVal The last internal time value, used to calculate
-     * delta internally in the method.
-     * @returns {Number}
-     */
-	incrementTime (val, lastVal) {
+	 * Increments the engine's internal time by the passed number of milliseconds.
+	 * @param {Number} val The number of milliseconds to increment time by.
+	 * @param {Number=} lastVal The last internal time value, used to calculate
+	 * delta internally in the method.
+	 * @returns {Number}
+	 */
+	incrementTime (val: number, lastVal?: number) {
 		if (!this._pause) {
 			if (!lastVal) {
 				lastVal = val;
@@ -765,20 +687,20 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Get the current time from the engine.
-     * @return {Number} The current time.
-     */
+	 * Get the current time from the engine.
+	 * @return {Number} The current time.
+	 */
 	currentTime () {
 		return this._currentTime;
 	}
 
 	/**
-     * Gets / sets the pause flag. If set to true then the engine's
-     * internal time will no longer increment and will instead stay static.
-     * @param val
-     * @returns {*}
-     */
-	pause (val) {
+	 * Gets / sets the pause flag. If set to true then the engine's
+	 * internal time will no longer increment and will instead stay static.
+	 * @param val
+	 * @returns {*}
+	 */
+	pause (val?: boolean) {
 		if (val !== undefined) {
 			this._pause = val;
 			return this;
@@ -788,13 +710,13 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Gets / sets the option to determine if the engine should
-     * schedule it's own ticks or if you want to manually advance
-     * the engine by calling tick when you wish to.
-     * @param {Boolean=} val
-     * @return {*}
-     */
-	useManualTicks (val) {
+	 * Gets / sets the option to determine if the engine should
+	 * schedule its own ticks or if you want to manually advance
+	 * the engine by calling tick when you wish to.
+	 * @param {Boolean=} val
+	 * @return {*}
+	 */
+	useManualTicks (val?: boolean) {
 		if (val !== undefined) {
 			this._useManualTicks = val;
 			return this;
@@ -804,8 +726,8 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Schedules a manual tick.
-     */
+	 * Schedules a manual tick.
+	 */
 	manualTick () {
 		if (this._manualFrameAlternator !== this._frameAlternator) {
 			this._manualFrameAlternator = this._frameAlternator;
@@ -814,13 +736,13 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Gets / sets the option to determine if the engine should
-     * render on every tick or wait for a manualRender() call.
-     * @param {Boolean=} val True to enable manual rendering, false
-     * to disable.
-     * @return {*}
-     */
-	useManualRender (val) {
+	 * Gets / sets the option to determine if the engine should
+	 * render on every tick or wait for a manualRender() call.
+	 * @param {Boolean=} val True to enable manual rendering, false
+	 * to disable.
+	 * @return {*}
+	 */
+	useManualRender (val?: boolean) {
 		if (val !== undefined) {
 			this._useManualRender = val;
 			return this;
@@ -830,19 +752,19 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Manually render a frame on demand. This is used in conjunction
-     * with the ige.useManualRender(true) call which will cause the
-     * engine to only render new graphics frames from the scenegraph
-     * once this method is called. You must call this method every time
-     * you wish to update the graphical output on screen.
-     *
-     * Calling this method multiple times during a single engine tick
-     * will NOT make it draw more than one frame, therefore it is safe
-     * to call multiple times if required by different sections of game
-     * logic without incurring extra rendering cost.
-     */
+	 * Manually render a frame on demand. This is used in conjunction
+	 * with the ige.useManualRender(true) call which will cause the
+	 * engine to only render new graphics frames from the scenegraph
+	 * once this method is called. You must call this method every time
+	 * you wish to update the graphical output on screen.
+	 *
+	 * Calling this method multiple times during a single engine tick
+	 * will NOT make it draw more than one frame, therefore it is safe
+	 * to call multiple times if required by different sections of game
+	 * logic without incurring extra rendering cost.
+	 */
 	manualRender () {
-		this._manualRender = true;
+		this._manualRenderQueued = true;
 	}
 
 	fps () {
@@ -866,7 +788,7 @@ export class IgeEngine extends IgeEntity {
 		}
 	}
 
-	saveSceneGraph (item) {
+	saveSceneGraph (item?: {obj?: IgeObject, str?: any}) {
 		if (!item) {
 			item = this.getSceneGraphData();
 		}
@@ -891,8 +813,8 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Walks the scene graph and outputs a console map of the graph.
-     */
+	 * Walks the scene graph and outputs a console map of the graph.
+	 */
 	sceneGraph (obj, currentDepth, lastDepth) {
 		let depthSpace = "",
 			di,
@@ -956,31 +878,31 @@ export class IgeEngine extends IgeEntity {
 
 									if (typeof this._timeSpentLastTick[arr[arrCount].id()].depthSortChildren === "number") {
 										timingString +=
-                                            " | ChildDepthSort: " + this._timeSpentLastTick[arr[arrCount].id()].depthSortChildren;
+											" | ChildDepthSort: " + this._timeSpentLastTick[arr[arrCount].id()].depthSortChildren;
 									}
 								}
 
 								console.log(
 									depthSpace +
-                                    "----" +
-                                    arr[arrCount].id() +
-                                    " (" +
-                                    arr[arrCount].constructor.name +
-                                    ") : " +
-                                    arr[arrCount]._inView +
-                                    " Timing(" +
-                                    timingString +
-                                    ")"
+									"----" +
+									arr[arrCount].id() +
+									" (" +
+									arr[arrCount].constructor.name +
+									") : " +
+									arr[arrCount]._inView +
+									" Timing(" +
+									timingString +
+									")"
 								);
 							} else {
 								console.log(
 									depthSpace +
-                                    "----" +
-                                    arr[arrCount].id() +
-                                    " (" +
-                                    arr[arrCount].constructor.name +
-                                    ") : " +
-                                    arr[arrCount]._inView
+									"----" +
+									arr[arrCount].id() +
+									" (" +
+									arr[arrCount].constructor.name +
+									") : " +
+									arr[arrCount]._inView
 								);
 							}
 							this.sceneGraph(arr[arrCount]._scene, currentDepth + 1);
@@ -1003,42 +925,37 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Walks the scenegraph and returns a data object of the graph.
-     */
-	getSceneGraphData (obj, noRef) {
-		let item,
-			items = [],
-			tempItem,
-			tempItem2,
-			tempCam,
-			arr,
-			arrCount;
+	 * Walks the scenegraph and returns a data object of the graph.
+	 */
+	getSceneGraphData (rootObject?: IgeObject, noRef?: boolean) {
+		const items = [];
+		let finalRootObject: IgeObject | undefined = rootObject;
 
-		if (!obj) {
+		if (!rootObject) {
 			// Set the obj to the main ige instance
-			obj = this;
+			finalRootObject = this;
 		}
 
 		item = {
-			text: "[" + obj.constructor.name + "] " + obj.id(),
-			id: obj.id(),
-			classId: obj.constructor.name
+			text: "[" + finalRootObject.constructor.name + "] " + finalRootObject.id(),
+			id: finalRootObject.id(),
+			classId: finalRootObject.constructor.name
 		};
 
 		if (!noRef) {
-			item.parent = obj._parent;
-			item.obj = obj;
+			item.parent = finalRootObject._parent;
+			item.obj = finalRootObject;
 		} else {
-			if (obj._parent) {
-				item.parentId = obj._parent.id();
+			if (finalRootObject._parent) {
+				item.parentId = finalRootObject._parent.id();
 			} else {
 				item.parentId = "sceneGraph";
 			}
 		}
 
-		if (obj === this) {
+		if (finalRootObject === this) {
 			// Loop the viewports
-			arr = obj._children;
+			arr = finalRootObject._children;
 
 			if (arr) {
 				arrCount = arr.length;
@@ -1090,7 +1007,7 @@ export class IgeEngine extends IgeEntity {
 				}
 			}
 		} else {
-			arr = obj._children;
+			arr = finalRootObject._children;
 
 			if (arr) {
 				arrCount = arr.length;
@@ -1111,11 +1028,11 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Adds a scenegraph class into memory.
-     * @param {String|Object} className The name of the scenegraph class, or the class itself.
-     * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
-     * @returns {*}
-     */
+	 * Adds a scenegraph class into memory.
+	 * @param {String|Object} className The name of the scenegraph class, or the class itself.
+	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
+	 * @returns {*}
+	 */
 	addGraph (className: string | typeof IgeSceneGraph, options?: any) {
 		if (className !== undefined) {
 			const classObj = this.getClass(className);
@@ -1134,16 +1051,16 @@ export class IgeEngine extends IgeEntity {
 				} else {
 					this.log(
 						"Could not load graph for class name \"" +
-                        className +
-                        "\" because the class does not implement both the require methods \"addGraph()\" and \"removeGraph()\".",
+						className +
+						"\" because the class does not implement both the require methods \"addGraph()\" and \"removeGraph()\".",
 						"error"
 					);
 				}
 			} else {
 				this.log(
 					"Cannot load graph for class name \"" +
-                    className +
-                    "\" because the class could not be found. Have you included it in your server/clientConfig.js file?",
+					className +
+					"\" because the class could not be found. Have you included it in your server/clientConfig.js file?",
 					"error"
 				);
 			}
@@ -1153,11 +1070,11 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Removes a scenegraph class into memory.
-     * @param {String} className The name of the scenegraph class.
-     * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
-     * @returns {*}
-     */
+	 * Removes a scenegraph class into memory.
+	 * @param {String} className The name of the scenegraph class.
+	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
+	 * @returns {*}
+	 */
 	removeGraph (className?: string, options?: any) {
 		if (className !== undefined) {
 			const classInstance = this._graphInstances[className];
@@ -1173,8 +1090,8 @@ export class IgeEngine extends IgeEntity {
 			} else {
 				this.log(
 					"Cannot remove graph for class name \"" +
-                    className +
-                    "\" because the class instance could not be found. Did you add it via ige.addGraph() ?",
+					className +
+					"\" because the class instance could not be found. Did you add it via ige.addGraph() ?",
 					"error"
 				);
 			}
@@ -1184,11 +1101,11 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Allows the update() methods of the entire scenegraph to
-     * be temporarily enabled or disabled. Useful for debugging.
-     * @param {Boolean=} val If false, will disable all update() calls.
-     * @returns {*}
-     */
+	 * Allows the update() methods of the entire scenegraph to
+	 * be temporarily enabled or disabled. Useful for debugging.
+	 * @param {Boolean=} val If false, will disable all update() calls.
+	 * @returns {*}
+	 */
 	enableUpdates (val?: boolean) {
 		if (val !== undefined) {
 			this._enableUpdates = val;
@@ -1199,11 +1116,11 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Allows the tick() methods of the entire scenegraph to
-     * be temporarily enabled or disabled. Useful for debugging.
-     * @param {Boolean=} val If false, will disable all tick() calls.
-     * @returns {*}
-     */
+	 * Allows the tick() methods of the entire scenegraph to
+	 * be temporarily enabled or disabled. Useful for debugging.
+	 * @param {Boolean=} val If false, will disable all tick() calls.
+	 * @returns {*}
+	 */
 	enableRenders (val?: boolean) {
 		if (val !== undefined) {
 			this._enableRenders = val;
@@ -1214,10 +1131,10 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Enables or disables the engine's debug mode. Enabled by default.
-     * @param {Boolean=} val If true, will enable debug mode.
-     * @returns {*}
-     */
+	 * Enables or disables the engine's debug mode. Enabled by default.
+	 * @param {Boolean=} val If true, will enable debug mode.
+	 * @returns {*}
+	 */
 	debugEnabled (val?: boolean) {
 		if (val !== undefined) {
 			if (ige.config.debug) {
@@ -1230,14 +1147,14 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Enables or disables the engine's debug timing system. The
-     * timing system will time all update and rendering code down
-     * the scenegraph and is useful for tracking long-running code
-     * but comes with a small performance penalty when enabled.
-     * Enabled by default.
-     * @param {Boolean=} val If true, will enable debug timing mode.
-     * @returns {*}
-     */
+	 * Enables or disables the engine's debug timing system. The
+	 * timing system will time all update and rendering code down
+	 * the scenegraph and is useful for tracking long-running code
+	 * but comes with a small performance penalty when enabled.
+	 * Enabled by default.
+	 * @param {Boolean=} val If true, will enable debug timing mode.
+	 * @returns {*}
+	 */
 	debugTiming (val?: boolean) {
 		if (val !== undefined) {
 			if (ige.config.debug) {
@@ -1268,10 +1185,10 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Sets the opacity of every object on the scenegraph to
-     * zero *except* the one specified by the given id argument.
-     * @param {String} id The id of the object not to hide.
-     */
+	 * Sets the opacity of every object on the scenegraph to
+	 * zero *except* the one specified by the given id argument.
+	 * @param {String} id The id of the object not to hide.
+	 */
 	hideAllExcept (id) {
 		let i,
 			arr = this._register;
@@ -1284,8 +1201,8 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Calls the show() method for every object on the scenegraph.
-     */
+	 * Calls the show() method for every object on the scenegraph.
+	 */
 	showAll () {
 		let i,
 			arr = this._register;
@@ -1296,13 +1213,13 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Sets the frame rate at which new engine steps are fired.
-     * Setting this rate will override the default requestAnimFrame()
-     * method as defined in IgeBaseClass.js and on the client-side, will
-     * stop usage of any available requestAnimationFrame() method
-     * and will use a setTimeout()-based version instead.
-     * @param {Number} fpsRate
-     */
+	 * Sets the frame rate at which new engine steps are fired.
+	 * Setting this rate will override the default requestAnimFrame()
+	 * method as defined in IgeBaseClass.js and on the client-side, will
+	 * stop usage of any available requestAnimationFrame() method
+	 * and will use a setTimeout()-based version instead.
+	 * @param {Number} fpsRate
+	 */
 	setFps (fpsRate) {
 		if (fpsRate !== undefined) {
 			// Override the default requestAnimFrame handler and set
@@ -1315,7 +1232,7 @@ export class IgeEngine extends IgeEntity {
 		}
 	}
 
-	requestAnimFrame (frameHandlerFunction: (timestamp: number, ctx?: CanvasRenderingContext2D) => void, element?: Element) {
+	requestAnimFrame (frameHandlerFunction: (timestamp: number, ctx?: IgeCanvasRenderingContext2d) => void, element?: Element) {
 		if (isClient) {
 			window.requestAnimationFrame(frameHandlerFunction);
 			return;
@@ -1331,20 +1248,20 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Defines a class in the engine's class repository.
-     * @param {String} id The unique class ID or name.
-     * @param {Object} obj The class definition.
-     */
+	 * Defines a class in the engine's class repository.
+	 * @param {String} id The unique class ID or name.
+	 * @param {Object} obj The class definition.
+	 */
 	defineClass (id: string, obj: any) {
 		this.igeClassStore[id] = obj;
 	}
 
 	/**
-     * Retrieves a class by its ID that was defined with
-     * a call to defineClass().
-     * @param {String} id The ID of the class to retrieve.
-     * @return {Object} The class definition.
-     */
+	 * Retrieves a class by its ID that was defined with
+	 * a call to defineClass().
+	 * @param {String} id The ID of the class to retrieve.
+	 * @return {Object} The class definition.
+	 */
 	getClass (id: string) {
 		if (typeof id === "object" || typeof id === "function") {
 			return id;
@@ -1353,31 +1270,31 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Returns true if the class specified has been defined.
-     * @param {String} id The ID of the class to check for.
-     * @returns {*}
-     */
+	 * Returns true if the class specified has been defined.
+	 * @param {String} id The ID of the class to check for.
+	 * @returns {*}
+	 */
 	classDefined (id: string) {
 		return Boolean(this.igeClassStore[id]);
 	}
 
 	/**
-     * Generates a new instance of a class defined with a call
-     * to the defineClass() method. Passes the options
-     * parameter to the new class during it's constructor call.
-     * @param id
-     * @param args
-     * @return {*}
-     */
+	 * Generates a new instance of a class defined with a call
+	 * to the defineClass() method. Passes the options
+	 * parameter to the new class during it's constructor call.
+	 * @param id
+	 * @param args
+	 * @return {*}
+	 */
 	newClassInstance (id: string, ...args: any[]) {
 		const ClassDefinition = this.getClass(id);
 		return new ClassDefinition(this, ...args);
 	}
 
 	/**
-     * Checks if all engine start dependencies have been satisfied.
-     * @return {Boolean}
-     */
+	 * Checks if all engine start dependencies have been satisfied.
+	 * @return {Boolean}
+	 */
 	dependencyCheck () {
 		const arr = this._dependencyQueue;
 		let arrCount = arr.length;
@@ -1392,13 +1309,13 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Gets / sets the flag that determines if viewports should be sorted by depth
-     * like regular entities, before they are processed for rendering each frame.
-     * Depth-sorting viewports increases processing requirements so if you do not
-     * need to stack viewports in a particular order, keep this flag false.
-     * @param {Boolean} val
-     * @return {Boolean}
-     */
+	 * Gets / sets the flag that determines if viewports should be sorted by depth
+	 * like regular entities, before they are processed for rendering each frame.
+	 * Depth-sorting viewports increases processing requirements so if you do not
+	 * need to stack viewports in a particular order, keep this flag false.
+	 * @param {Boolean} val
+	 * @return {Boolean}
+	 */
 	viewportDepth (val?: boolean) {
 		if (val !== undefined) {
 			this._viewportDepth = val;
@@ -1409,17 +1326,17 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Sets the number of milliseconds before the engine gives up waiting for dependencies
-     * to be satisfied and cancels the startup procedure.
-     * @param val
-     */
+	 * Sets the number of milliseconds before the engine gives up waiting for dependencies
+	 * to be satisfied and cancels the startup procedure.
+	 * @param val
+	 */
 	dependencyTimeout (val: number) {
 		this._dependencyCheckTimeout = val;
 	}
 
 	/**
-     * Updates the loading screen DOM elements to show the update progress.
-     */
+	 * Updates the loading screen DOM elements to show the update progress.
+	 */
 	updateProgress () {
 		// Check for a loading progress bar DOM element
 		if (!(typeof document !== "undefined" && document.getElementById)) {
@@ -1448,15 +1365,15 @@ export class IgeEngine extends IgeEntity {
 		}
 
 		textElem.innerHTML =
-            this._loadingPreText +
-            " " +
-            Math.floor((100 / this._texturesTotal) * (this._texturesTotal - this._texturesLoading)) +
-            "%";
+			this._loadingPreText +
+			" " +
+			Math.floor((100 / this._texturesTotal) * (this._texturesTotal - this._texturesLoading)) +
+			"%";
 	}
 
 	/**
-     * Adds one to the number of textures currently loading.
-     */
+	 * Adds one to the number of textures currently loading.
+	 */
 	textureLoadStart (url: string, textureObj: IgeTexture) {
 		this._texturesLoading++;
 		this._texturesTotal++;
@@ -1467,9 +1384,9 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Subtracts one from the number of textures currently loading and if no more need
-     * to load, it will also call the _allTexturesLoaded() method.
-     */
+	 * Subtracts one from the number of textures currently loading and if no more need
+	 * to load, it will also call the _allTexturesLoaded() method.
+	 */
 	textureLoadEnd (url: string, textureObj: IgeTexture) {
 		if (!textureObj._destroyed) {
 			// Add the texture to the _textureStore array
@@ -1495,10 +1412,10 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Returns a texture from the texture store by it's url.
-     * @param {String} url
-     * @return {IgeTexture}
-     */
+	 * Returns a texture from the texture store by it's url.
+	 * @param {String} url
+	 * @return {IgeTexture}
+	 */
 	textureFromUrl (url: string) {
 		const arr = this._textureStore;
 		let arrCount = arr.length;
@@ -1512,17 +1429,17 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Checks if all textures have finished loading and returns true if so.
-     * @return {Boolean}
-     */
+	 * Checks if all textures have finished loading and returns true if so.
+	 * @return {Boolean}
+	 */
 	texturesLoaded = () => {
 		return this._texturesLoading === 0;
 	};
 
 	/**
-     * Emits the "texturesLoaded" event.
-     * @private
-     */
+	 * Emits the "texturesLoaded" event.
+	 * @private
+	 */
 	_allTexturesLoaded () {
 		if (!this._loggedATL) {
 			this._loggedATL = true;
@@ -1534,21 +1451,21 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Checks to ensure that a canvas has been assigned to the engine or that the
-     * engine is in server mode.
-     * @return {Boolean}
-     */
+	 * Checks to ensure that a canvas has been assigned to the engine or that the
+	 * engine is in server mode.
+	 * @return {Boolean}
+	 */
 	canvasReady = () => {
 		return this._canvas !== undefined || isServer;
 	};
 
 	/**
-     * Gets / sets the default smoothing value for all new
-     * IgeTexture class instances. If set to true, all newly
-     * created textures will have smoothing enabled by default.
-     * @param val
-     * @return {*}
-     */
+	 * Gets / sets the default smoothing value for all new
+	 * IgeTexture class instances. If set to true, all newly
+	 * created textures will have smoothing enabled by default.
+	 * @param val
+	 * @return {*}
+	 */
 	globalSmoothing (val?: boolean) {
 		if (val !== undefined) {
 			this._globalSmoothing = val;
@@ -1559,12 +1476,12 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Generates a new 16-character hexadecimal ID based on
-     * the passed string. Will always generate the same ID
-     * for the same string.
-     * @param {String} str A string to generate the ID from.
-     * @return {String}
-     */
+	 * Generates a new 16-character hexadecimal ID based on
+	 * the passed string. Will always generate the same ID
+	 * for the same string.
+	 * @param {String} str A string to generate the ID from.
+	 * @return {String}
+	 */
 	newIdFromString (str?: string) {
 		if (str === undefined) {
 			return;
@@ -1591,9 +1508,9 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Starts the engine.
-     * @param callback
-     */
+	 * Starts the engine.
+	 * @param callback
+	 */
 	start (callback: (success: boolean) => void) {
 		// Check if the state is anything other than zero (stopped)
 		if (this._state) {
@@ -1664,9 +1581,9 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Stops the engine.
-     * @return {Boolean}
-     */
+	 * Stops the engine.
+	 * @return {Boolean}
+	 */
 	stop () {
 		// If we are running, stop the engine
 		if (this._state) {
@@ -1680,9 +1597,9 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Called each frame to traverse and render the scenegraph.
-     */
-	engineStep = (timeStamp: number, ctx?: CanvasRenderingContext2D) => {
+	 * Called each frame to traverse and render the scenegraph.
+	 */
+	engineStep = (timeStamp: number, ctx?: IgeCanvasRenderingContext2d) => {
 		/* TODO:
             Make the scenegraph process simplified. Walk the scenegraph once and grab the order in a flat array
             then process updates and ticks. This will also allow a layered rendering system that can render the
@@ -1707,7 +1624,7 @@ export class IgeEngine extends IgeEntity {
 		if (this._state) {
 			// Check if we were passed a context to work with
 			if (ctx === undefined) {
-				ctx = this._ctx as CanvasRenderingContext2D;
+				ctx = this._ctx;
 			}
 
 			// Alternate the boolean frame alternator flag
@@ -1745,11 +1662,11 @@ export class IgeEngine extends IgeEntity {
 			const unbornCount = unbornQueue.length;
 
 			for (let unbornIndex = unbornCount - 1; unbornIndex >= 0; unbornIndex--) {
-				const unbornEntity: IgeEntity = unbornQueue[unbornIndex];
+				const unbornEntity: IgeObject = unbornQueue[unbornIndex];
 
 				if (this._currentTime >= unbornEntity._bornTime && unbornEntity._birthMount) {
 					// Now birth this entity
-					unbornEntity.mount(this.$(unbornEntity._birthMount));
+					unbornEntity.mount(ige.$(unbornEntity._birthMount));
 					unbornQueue.splice(unbornIndex, 1);
 				}
 			}
@@ -1776,7 +1693,7 @@ export class IgeEngine extends IgeEntity {
 						this.root && this.root.renderSceneGraph(ctx);
 					}
 				} else {
-					if (this._manualRender) {
+					if (this._manualRenderQueued) {
 						if (ige.config.debug._timing) {
 							const renderStart = new Date().getTime();
 							this.root && this.root.renderSceneGraph(ctx);
@@ -1784,7 +1701,7 @@ export class IgeEngine extends IgeEntity {
 						} else {
 							this.root && this.root.renderSceneGraph(ctx);
 						}
-						this._manualRender = false;
+						this._manualRenderQueued = false;
 					}
 				}
 			}
@@ -1816,12 +1733,12 @@ export class IgeEngine extends IgeEntity {
 	};
 
 	/**
-     * Gets / sets the _autoSize property. If set to true, the engine will listen
-     * for any change in screen size and resize the front-buffer (canvas) element
-     * to match the new screen size.
-     * @param val
-     * @return {Boolean}
-     */
+	 * Gets / sets the _autoSize property. If set to true, the engine will listen
+	 * for any change in screen size and resize the front-buffer (canvas) element
+	 * to match the new screen size.
+	 * @param val
+	 * @return {Boolean}
+	 */
 	autoSize (val?: boolean) {
 		if (val !== undefined) {
 			this._autoSize = val;
@@ -1841,15 +1758,14 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Gets / sets the rendering context that will be used when getting the
-     * context from canvas elements.
-     * @param {String=} contextId The context such as '2d'. Defaults to '2d'.
-     * @return {*}
-     */
-	renderContext (contextId) {
+	 * Gets / sets the rendering context that will be used when getting the
+	 * context from canvas elements.
+	 * @param {String=} contextId The context such as '2d'. Defaults to '2d'.
+	 * @return {*}
+	 */
+	renderContext (contextId: "2d" | "three") {
 		if (contextId !== undefined) {
 			this._renderContext = contextId;
-			this._renderMode = this._renderModes[contextId];
 
 			this.log("Rendering mode set to: " + contextId);
 
@@ -1860,17 +1776,17 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Creates a front-buffer or "drawing surface" for the renderer.
-     *
-     * @param {Boolean} autoSize Determines if the canvas will auto-resize
-     * when the browser window changes dimensions. If true the canvas will
-     * automatically fill the window when it is resized.
-     *
-     * @param {Boolean=} dontScale If set to true, IGE will ignore device
-     * pixel ratios when setting the width and height of the canvas and will
-     * therefore not take into account "retina", high-definition displays or
-     * those whose pixel ratio is different from 1 to 1.
-     */
+	 * Creates a front-buffer or "drawing surface" for the renderer.
+	 *
+	 * @param {Boolean} autoSize Determines if the canvas will auto-resize
+	 * when the browser window changes dimensions. If true the canvas will
+	 * automatically fill the window when it is resized.
+	 *
+	 * @param {Boolean=} dontScale If set to true, IGE will ignore device
+	 * pixel ratios when setting the width and height of the canvas and will
+	 * therefore not take into account "retina", high-definition displays or
+	 * those whose pixel ratio is different from 1 to 1.
+	 */
 	createFrontBuffer (autoSize = true, dontScale = false) {
 		if (!isClient) {
 			return;
@@ -1897,47 +1813,47 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Provides logging capabilities to all IgeBaseClass instances.
-     * @param {String} text The text to log.
-     * @param {String} type The type of log to output, can be 'log',
-     * 'info', 'warning' or 'error'.
-     * @param {Object=} obj An optional object that will be output
-     * before the log text is output.
-     * @example #Log a message
-     *     var entity = new IgeEntity();
-     *
-     *     // Will output:
-     *     //     IGE *log* [IgeEntity] : hello
-     *     entity.log('Hello');
-     * @example #Log an info message with an optional parameter
-     *     var entity = new IgeEntity(),
-     *         param = 'moo';
-     *
-     *     // Will output:
-     *     //    moo
-     *     //    IGE *log* [IgeEntity] : hello
-     *     entity.log('Hello', 'info', param);
-     * @example #Log a warning message (which will cause a stack trace to be shown)
-     *     var entity = new IgeEntity();
-     *
-     *     // Will output (stack trace is just an example here, real one will be more useful):
-     *     //    Stack: {anonymous}()@<anonymous>:2:8
-     *     //    ---- Object.InjectedScript._evaluateOn (<anonymous>:444:39)
-     *     //    ---- Object.InjectedScript._evaluateAndWrap (<anonymous>:403:52)
-     *     //    ---- Object.InjectedScript.evaluate (<anonymous>:339:21)
-     *     //    IGE *warning* [IgeEntity] : A test warning
-     *     entity.log('A test warning', 'warning');
-     * @example #Log an error message (which will cause an exception to be raised and a stack trace to be shown)
-     *     var entity = new IgeEntity();
-     *
-     *     // Will output (stack trace is just an example here, real one will be more useful):
-     *     //    Stack: {anonymous}()@<anonymous>:2:8
-     *     //    ---- Object.InjectedScript._evaluateOn (<anonymous>:444:39)
-     *     //    ---- Object.InjectedScript._evaluateAndWrap (<anonymous>:403:52)
-     *     //    ---- Object.InjectedScript.evaluate (<anonymous>:339:21)
-     *     //    IGE *error* [IgeEntity] : An error message
-     *     entity.log('An error message', 'error');
-     */
+	 * Provides logging capabilities to all IgeBaseClass instances.
+	 * @param {String} text The text to log.
+	 * @param {String} type The type of log to output, can be 'log',
+	 * 'info', 'warning' or 'error'.
+	 * @param {Object=} obj An optional object that will be output
+	 * before the log text is output.
+	 * @example #Log a message
+	 *     var entity = new IgeEntity();
+	 *
+	 *     // Will output:
+	 *     //     IGE *log* [IgeEntity] : hello
+	 *     entity.log('Hello');
+	 * @example #Log an info message with an optional parameter
+	 *     var entity = new IgeEntity(),
+	 *         param = 'moo';
+	 *
+	 *     // Will output:
+	 *     //    moo
+	 *     //    IGE *log* [IgeEntity] : hello
+	 *     entity.log('Hello', 'info', param);
+	 * @example #Log a warning message (which will cause a stack trace to be shown)
+	 *     var entity = new IgeEntity();
+	 *
+	 *     // Will output (stack trace is just an example here, real one will be more useful):
+	 *     //    Stack: {anonymous}()@<anonymous>:2:8
+	 *     //    ---- Object.InjectedScript._evaluateOn (<anonymous>:444:39)
+	 *     //    ---- Object.InjectedScript._evaluateAndWrap (<anonymous>:403:52)
+	 *     //    ---- Object.InjectedScript.evaluate (<anonymous>:339:21)
+	 *     //    IGE *warning* [IgeEntity] : A test warning
+	 *     entity.log('A test warning', 'warning');
+	 * @example #Log an error message (which will cause an exception to be raised and a stack trace to be shown)
+	 *     var entity = new IgeEntity();
+	 *
+	 *     // Will output (stack trace is just an example here, real one will be more useful):
+	 *     //    Stack: {anonymous}()@<anonymous>:2:8
+	 *     //    ---- Object.InjectedScript._evaluateOn (<anonymous>:444:39)
+	 *     //    ---- Object.InjectedScript._evaluateAndWrap (<anonymous>:403:52)
+	 *     //    ---- Object.InjectedScript.evaluate (<anonymous>:339:21)
+	 *     //    IGE *error* [IgeEntity] : An error message
+	 *     entity.log('An error message', 'error');
+	 */
 	log (...args: any[]) {
 		console.log(...args);
 		if (ige.config.debug._enabled) {
@@ -1960,10 +1876,10 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Load a js script file into memory via a path or url.
-     * @param {String} url The file's path or url.
-     * @param configFunc
-     */
+	 * Load a js script file into memory via a path or url.
+	 * @param {String} url The file's path or url.
+	 * @param configFunc
+	 */
 	async requireScript (url: string, configFunc?: (elem: HTMLScriptElement) => void) {
 		if (url === undefined) {
 			return;
@@ -1995,11 +1911,11 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Called when a js script has been loaded via the requireScript
-     * method.
-     * @param {Element} elem The script element added to the DOM.
-     * @private
-     */
+	 * Called when a js script has been loaded via the requireScript
+	 * method.
+	 * @param {Element} elem The script element added to the DOM.
+	 * @private
+	 */
 	_requireScriptLoaded (elem: HTMLScriptElement) {
 		this._requireScriptLoading--;
 
@@ -2012,9 +1928,9 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-     * Load a css style file into memory via a path or url.
-     * @param {String} url The file's path or url.
-     */
+	 * Load a css style file into memory via a path or url.
+	 * @param {String} url The file's path or url.
+	 */
 	async requireStylesheet (url: string) {
 		if (url === undefined) {
 			throw new Error(`Cannot require a stylesheet with no url!`);

@@ -1,9 +1,9 @@
 import { ige } from "../engine/instance.js";
 import IgeBaseClass from "../engine/core/IgeBaseClass.js";
 import IgeBaseScene from "../engine/core/IgeBaseScene.js";
-import { Level1 } from "./levels/Level1.js";
 import { textures } from "./services/textures.js";
 import { IgeOptions } from "../engine/core/IgeOptions.js";
+import { Level1 } from "./levels/Level1.js";
 // @ts-ignore
 window.ige = ige;
 export class Client extends IgeBaseClass {

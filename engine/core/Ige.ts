@@ -7,14 +7,14 @@ import IgeInputComponent from "../components/IgeInputComponent";
 import  { IgeObjectRegister } from "./IgeObjectRegister";
 
 import  { IgeArrayRegister } from "./IgeArrayRegister";
-import type { IgeRegisterableByCategory } from "../../types/IgeRegisterableByCategory";
-import type IgeEntity from "./IgeEntity";
+import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory";
 import type IgeViewport from "./IgeViewport";
 import IgePoint3d from "./IgePoint3d";
 import { IgeAudioController } from "../components/IgeAudioController";
 import type { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
 import type { IgeNetIoServerComponent } from "../components/network/net.io/IgeNetIoServerComponent";
 import { isClient, isServer } from "../services/clientServer";
+import { IgeObjectWithValueProperty } from "../../types/IgeObjectWithValueProperty";
 
 const version = "2.0.0";
 
@@ -26,13 +26,14 @@ export class Ige {
 	audio: IgeAudioController = new IgeAudioController();
 	network?: IgeNetIoClientComponent | IgeNetIoServerComponent;
 	register: IgeObjectRegister = new IgeObjectRegister();
-	categoryRegister: IgeArrayRegister<IgeRegisterableByCategory> = new IgeArrayRegister("_category", "_categoryRegistered");
-	groupRegister: IgeArrayRegister<IgeRegisterableByCategory> = new IgeArrayRegister("_category", "_categoryRegistered");
+	categoryRegister: IgeArrayRegister<IgeCanRegisterByCategory> = new IgeArrayRegister("_category", "_categoryRegistered");
+	groupRegister: IgeArrayRegister<IgeCanRegisterByCategory> = new IgeArrayRegister("_category", "_categoryRegistered");
 	client: any;
 	server: any;
 	config: IgeConfig = igeConfig;
 	version: string = version;
 	classStore = igeClassStore;
+	_watch: (string | IgeObjectWithValueProperty)[] = [];
 
 	// Questionable properties, think about them and potentially move
 	_mouseOverVp?: IgeViewport;
@@ -66,14 +67,14 @@ export class Ige {
 	 * @param {String || Object} item The id of the item to return,
 	 * or if an object, returns the object as-is.
 	 */
-	$ (item: string | IgeEntity) {
+	$ <ObjectType> (item: string | ObjectType | undefined) {
 		if (typeof item === "string") {
 			return this.register.get(item);
 		} else if (typeof item === "object") {
 			return item;
 		}
 
-		return this;
+		return undefined;
 	}
 
 	/**
@@ -95,4 +96,30 @@ export class Ige {
 	// $$$ (groupName: string) {
 	// 	return this.groupRegister[groupName] || [];
 	// }
+
+	/**
+	 * Adds a new watch expression to the watch list which will be
+	 * displayed in the stats overlay during a call to _statsTick().
+	 * @param {*} evalStringOrObject The expression to evaluate and
+	 * display the result of in the stats overlay, or an object that
+	 * contains a "value" property.
+	 * @returns {number} The index of the new watch expression you
+	 * just added to the watch array.
+	 */
+	watchStart = (evalStringOrObject: string | IgeObjectWithValueProperty): number => {
+		this._watch = this._watch || [];
+		this._watch.push(evalStringOrObject);
+
+		return this._watch.length - 1;
+	};
+
+	/**
+	 * Removes a watch expression by its array index.
+	 * @param {number} index The index of the watch expression to
+	 * remove from the watch array.
+	 */
+	watchStop = (index: number) => {
+		this._watch = this._watch || [];
+		this._watch.splice(index, 1);
+	};
 }

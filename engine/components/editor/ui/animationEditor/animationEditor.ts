@@ -1,14 +1,16 @@
-class UiAnimationEditor extends IgeEventingClass {
-	classId: 'UiAnimationEditor',
+import IgeEventingClass from "../../../../core/IgeEventingClass";
+import { ige } from "../../../../instance";
 
-	init: function () {
-		var self = this;
-		this._ige.requireStylesheet(igeRoot + 'components/editor/ui/animationEditor/animationEditor.css');
-		self.reset();
-	},
+export class UiAnimationEditor extends IgeEventingClass {
+	classId = 'UiAnimationEditor';
 
-	reset: function () {
-		var self = this;
+	init () {
+		ige.engine.requireStylesheet(igeRoot + 'components/editor/ui/animationEditor/animationEditor.css');
+		this.reset();
+	}
+
+	reset () {
+		const self = this;
 		self._frames = [];
 		self._cellCount = 0;
 		self._cellWidth = 0;
@@ -19,22 +21,22 @@ class UiAnimationEditor extends IgeEventingClass {
 
 		self._animationEntity = new IgeEntity()
 			.addComponent(IgeAnimationComponent);
-	},
+	}
 
-	ready: function () {
-		var self = this;
+	ready () {
+		const self = this;
 
-		this._ige.editor.ui.menus.addMenuGroup('toolsMenu', 'textures');
-		this._ige.editor.ui.menus.addMenuItem('toolsMenu', 'textures', {
+		ige.editor.ui.menus.addMenuGroup('toolsMenu', 'textures');
+		ige.editor.ui.menus.addMenuItem('toolsMenu', 'textures', {
 			id: 'animationEditor',
 			icon: 'none',
 			text: 'Animation Editor...',
 			action: "ige.editor.ui.animationEditor.show();"
 		});
-	},
+	}
 
-	show: function (settings) {
-		var self = this;
+	show (settings) {
+		const self = this;
 		self.reset();
 
 		if (settings) {
@@ -48,7 +50,7 @@ class UiAnimationEditor extends IgeEventingClass {
 			icon: 'halflings-icon white film',
 			title: 'Animation Editor',
 			contentTemplate: igeRoot + 'components/editor/ui/animationEditor/templates/animationEditor.html',
-			blur: function () {
+			blur () {
 				ige.editor.ui.dialogs.confirm({
 					title: 'Exit Animation Editor',
 					width: 400,
@@ -58,7 +60,7 @@ class UiAnimationEditor extends IgeEventingClass {
 						positiveTitle: 'OK',
 						negativeTitle: 'Cancel'
 					},
-					positive: function () {
+					positive () {
 						self.destroy();
 						ige.editor.ui.dialogs.close('animationEditorDialog');
 					}
@@ -74,17 +76,17 @@ class UiAnimationEditor extends IgeEventingClass {
 				cellsCanvasWidth: self._textureImage !== undefined ? self._textureImage.width : 500,
 				cellsCanvasHeight: self._textureImage !== undefined ? self._textureImage.height : 404
 			},
-			callback: function (err, dialogElem) {
+			callback (err, dialogElem) {
 				if (!err) {
 					self.setupListeners(dialogElem);
 					self.setupCanvas();
 				}
 			}
 		});
-	},
+	}
 
-	setupListeners: function (dialogElem) {
-		var self = this;
+	setupListeners (dialogElem) {
+		const self = this;
 
 		self._outputCanvas = dialogElem.find('.viewArea').find('canvas');
 		self._outputCtx = self._outputCanvas[0].getContext("2d");
@@ -97,7 +99,7 @@ class UiAnimationEditor extends IgeEventingClass {
 
 		// When moving over the canvas, highlight the cell
 		self._framesCanvas.on('mousemove', function (e) {
-			var oe = e.originalEvent,
+			let oe = e.originalEvent,
 				cell;
 
 			if (self._cellWidth && self._cellHeight) {
@@ -117,7 +119,7 @@ class UiAnimationEditor extends IgeEventingClass {
 
 		// If canvas is clicked, clear the cell
 		self._framesCanvas.on('click', function (e) {
-			var oe = e.originalEvent,
+			const oe = e.originalEvent,
 				cell = self.cellFromXY(oe);
 
 			if (self._frames[cell.x]) {
@@ -128,7 +130,7 @@ class UiAnimationEditor extends IgeEventingClass {
 
 		// When moving over the canvas, highlight the cell
 		self._cellsCanvas.on('mousemove', function (e) {
-			var oe = e.originalEvent,
+			let oe = e.originalEvent,
 				cell;
 
 			if (self._cellWidth && self._cellHeight) {
@@ -142,7 +144,7 @@ class UiAnimationEditor extends IgeEventingClass {
 
 		// If canvas is clicked, add the cell to the animation frames
 		self._cellsCanvas.on('click', function (e) {
-			var oe = e.originalEvent,
+			let oe = e.originalEvent,
 				cell = self.cellFromXY(oe),
 				frameIndex;
 
@@ -163,31 +165,31 @@ class UiAnimationEditor extends IgeEventingClass {
 					.animation.start('editorAnim');
 			}
 		});
-	},
+	}
 
-	indexFromCell: function (cell) {
-		var self = this;
+	indexFromCell (cell) {
+		const self = this;
 		return (cell.y * (self._textureImage.width / self._cellWidth)) + cell.x + 1;
-	},
+	}
 
-	cellFromIndex: function (index) {
+	cellFromIndex (index) {
 		index = index - 1;
-		var self = this,
+		const self = this,
 			cellsPerRow = (self._textureImage.width / self._cellWidth),
 			y = Math.floor(index / cellsPerRow),
 			x = index - (y * cellsPerRow);
 
 		return {x: x, y: y};
-	},
+	}
 
-	setupCanvas: function () {
-		var self = this;
+	setupCanvas () {
+		const self = this;
 
 		// Start a canvas loop to draw data in a tick-fashion
 		setInterval(function () { self._renderCanvas(); }, 1000 / 60);
-	},
+	}
 
-	cellFromXY: function (event) {
+	cellFromXY (event) {
 		if (this._cellWidth && this._cellHeight) {
 			return {
 				x: Math.floor(event.offsetX / this._cellWidth),
@@ -199,10 +201,10 @@ class UiAnimationEditor extends IgeEventingClass {
 				y: 0
 			}
 		}
-	},
+	}
 
-	_renderCanvas: function (noGrid) {
-		var self = this,
+	_renderCanvas (noGrid) {
+		let self = this,
 			framesCtx = self._framesCtx,
 			cellsCtx = self._cellsCtx,
 			outputCtx = self._outputCtx,
@@ -333,10 +335,10 @@ class UiAnimationEditor extends IgeEventingClass {
 				}
 			}
 		}
-	},
+	}
 
-	destroy: function () {
-		var self = this;
+	destroy () {
+		const self = this;
 
 		self._animationEntity.animation.stop();
 		self._animationEntity.animation.remove('editorAnim');
@@ -344,7 +346,7 @@ class UiAnimationEditor extends IgeEventingClass {
 
 		delete self._animationEntity;
 	}
-});
+}
 
 // Init
-ige.editor.ui.animationEditor = new UiAnimationEditor();
+//ige.editor.ui.animationEditor = new UiAnimationEditor();

@@ -1,5 +1,6 @@
 import IgePoint2d from "../core/IgePoint2d";
 import { IgeSmartTexture } from "../../types/IgeSmartTexture";
+import { IgeMountMode } from "../../enums/IgeMountMode";
 
 const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 	render: (ige, ctx, entity) => {
@@ -21,11 +22,11 @@ const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			ctx.fillStyle = '#ff26e8';
 		}
 
-		if (entity._mountMode === 0) {
+		if (entity._mountMode === IgeMountMode.flat) {
 			ctx.translate(bounds2d.x2, bounds2d.y2);
 		}
 
-		if (entity._mountMode === 1) {
+		if (entity._mountMode === IgeMountMode.iso) {
 			ctx.translate(-entity._translate.x, -entity._translate.y);
 			triggerPoly.render(ctx, true);
 		}
@@ -48,7 +49,7 @@ const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 				gStart = new IgePoint2d(x, y + tileHeight * index);
 				gEnd = new IgePoint2d(gridMaxX, y + tileHeight * index);
 
-				if (entity._mountMode === 1) {
+				if (entity._mountMode === IgeMountMode.iso) {
 					// Iso grid
 					gStart = gStart.toIso();
 					gEnd = gEnd.toIso();
@@ -64,7 +65,7 @@ const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 				gStart = new IgePoint2d(x + tileWidth * index, y);
 				gEnd = new IgePoint2d(x + tileWidth * index, gridMaxY);
 
-				if (entity._mountMode === 1) {
+				if (entity._mountMode === IgeMountMode.iso) {
 					// Iso grid
 					gStart = gStart.toIso();
 					gEnd = gEnd.toIso();
@@ -87,12 +88,12 @@ const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 							tilePoint = new IgePoint2d(tileWidth * x, tileHeight * y);
 
 							// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
-							if (entity._mountMode === 0) {
+							if (entity._mountMode === IgeMountMode.flat) {
 								// 2d
 								ctx.fillRect(tilePoint.x, tilePoint.y, tileWidth, tileHeight);
 							}
 
-							if (entity._mountMode === 1) {
+							if (entity._mountMode === IgeMountMode.iso) {
 								// iso
 								tilePoint.thisToIso();
 
@@ -118,12 +119,12 @@ const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 					tilePoint = new IgePoint2d(tileWidth * x, tileHeight * y);
 
 					// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
-					if (entity._mountMode === 0) {
+					if (entity._mountMode === IgeMountMode.flat) {
 						// 2d
 						ctx.fillRect(tilePoint.x, tilePoint.y, tileWidth, tileHeight);
 					}
 
-					if (entity._mountMode === 1) {
+					if (entity._mountMode === IgeMountMode.iso) {
 						// iso
 						tilePoint.thisToIso();
 
@@ -150,12 +151,12 @@ const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			if (mouseTile.x >= 0 && mouseTile.y >= 0 && mouseTile.x < gridSize.x && mouseTile.y < gridSize.y) {
 				// Paint the tile the mouse is currently intersecting
 				ctx.fillStyle = entity._hoverColor || "#6000ff";
-				if (entity._mountMode === 0) {
+				if (entity._mountMode === IgeMountMode.flat) {
 					// 2d
 					ctx.fillRect(mouseTile.x * tileWidth, mouseTile.y * tileHeight, tileWidth, tileHeight);
 				}
 
-				if (entity._mountMode === 1) {
+				if (entity._mountMode === IgeMountMode.iso) {
 					// iso
 					tilePoint = mouseTile.clone().thisMultiply(tileWidth, tileHeight, 0).thisToIso();
 

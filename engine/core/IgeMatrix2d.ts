@@ -3,6 +3,7 @@ import { radiansToDegrees } from "../services/utils";
 import IgeBaseClass from "./IgeBaseClass";
 import type { IgePoint } from "../../types/IgePoint";
 import type IgeEntity from "./IgeEntity";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
 /**
  * Creates a new transformation matrix.
@@ -378,7 +379,8 @@ class IgeMatrix2d extends IgeBaseClass {
 			determinant = m00 * (m11 * m22 - m21 * m12) - m10 * (m01 * m22 - m21 * m02) + m20 * (m01 * m12 - m11 * m02);
 
 		if (determinant === 0) {
-			return null;
+			// TODO: This used to be `return null`, was it correct?
+			return this;
 		}
 
 		const m = newMatrix.matrix;
@@ -422,7 +424,7 @@ class IgeMatrix2d extends IgeBaseClass {
 	 * @param {CanvasRenderingContext2D} ctx The rendering context to
 	 * set the transform matrix for.
 	 */
-	transformRenderingContextSet (ctx: CanvasRenderingContext2D) {
+	transformRenderingContextSet (ctx: IgeCanvasRenderingContext2d) {
 		const m = this.matrix;
 		ctx.setTransform(m[0], m[3], m[1], m[4], m[2], m[5]);
 		return this;
@@ -435,7 +437,7 @@ class IgeMatrix2d extends IgeBaseClass {
 	 * @param {CanvasRenderingContext2D} ctx The rendering context to
 	 * set the transform matrix for.
 	 */
-	transformRenderingContext (ctx: CanvasRenderingContext2D) {
+	transformRenderingContext (ctx: IgeCanvasRenderingContext2d) {
 		const m = this.matrix;
 		ctx.transform(m[0], m[3], m[1], m[4], m[2], m[5]);
 		return this;

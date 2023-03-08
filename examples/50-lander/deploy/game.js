@@ -28,7 +28,7 @@ function printStackTrace (t) {
 		}
 	},
 	mode: function (t) {
-		return (this._mode =
+		return (this._renderMode =
                 t.arguments && t.stack
                 	? "chrome"
                 	: t.message && typeof window != "undefined" && window.opera
@@ -11539,7 +11539,7 @@ var $i_53 = $i_3.extend({
             	? ((i = this.image = this._originalImage = ige._textureImageStore[t]),
             	i._igeTextures.push(this),
             	i._loaded &&
-                      ((e._mode = 0),
+                      ((e._renderMode = 0),
                       e.sizeX(i.width),
                       e.sizeY(i.height),
                       i.width % 2 &&
@@ -11592,7 +11592,7 @@ var $i_53 = $i_3.extend({
                 (scriptElem.onload = function (data) {
                 	self.log('Texture script "' + scriptUrl + '" loaded successfully'),
                 	eval(data),
-                	(self._mode = 1),
+                	(self._renderMode = 1),
                 	(self.script = image),
                 	typeof image.init == "function" && image.init.apply(image, [self]),
                 	(self._loaded = !0),
@@ -11621,7 +11621,7 @@ var $i_53 = $i_3.extend({
             ((i = this.image = this._originalImage = t),
             (i._igeTextures = i._igeTextures || []),
             (i._loaded = !0),
-            (this._mode = 0),
+            (this._renderMode = 0),
             this.sizeX(i.width),
             this.sizeY(i.height),
             (this._cells[1] = [0, 0, this._sizeX, this._sizeY]));
@@ -11740,7 +11740,7 @@ var $i_53 = $i_3.extend({
 					: ((ige._ctx.imageSmoothingEnabled = !1),
 					(ige._ctx.webkitImageSmoothingEnabled = !1),
 					(ige._ctx.mozImageSmoothingEnabled = !1)),
-				this._mode === 0)
+				this._renderMode === 0)
 			) {
 				var e = this._cells[i._cell],
 					o = i._bounds2d,
@@ -11768,7 +11768,7 @@ var $i_53 = $i_3.extend({
 						"error"
 					);
 			}
-			this._mode === 1 && (t.save(), this.script.render(t, i, this), t.restore(), ige._drawCount++);
+			this._renderMode === 1 && (t.save(), this.script.render(t, i, this), t.restore(), ige._drawCount++);
 		}
 	},
 	removeFilter: function (t) {
@@ -12283,7 +12283,7 @@ var $i_57 = {
 		init: function () {
 			(this._newBorn = !0),
 			(this._alive = !0),
-			(this._mode = 0),
+			(this._renderMode = 0),
 			(this._mountMode = 0),
 			(this._parent = null),
 			(this._children = []),
@@ -12510,10 +12510,10 @@ var $i_57 = {
 			return newObject;
 		},
 		mode: function (t) {
-			return t !== void 0 ? ((this._mode = t), this) : this._mode;
+			return t !== void 0 ? ((this._renderMode = t), this) : this._renderMode;
 		},
 		isometric: function (t) {
-			return t === !0 ? ((this._mode = 1), this) : t === !1 ? ((this._mode = 0), this) : this._mode === 1;
+			return t === !0 ? ((this._renderMode = 1), this) : t === !1 ? ((this._renderMode = 0), this) : this._renderMode === 1;
 		},
 		isometricMounts: function (t) {
 			return t === !0 ? ((this._mountMode = 1), this) : t === !1 ? ((this._mountMode = 0), this) : this._mountMode === 1;
@@ -13005,7 +13005,7 @@ var $i_59 = $i_58.extend({
 	widthByTile: function (t, i) {
 		if (this._parent && this._parent._tileWidth !== void 0 && this._parent._tileHeight !== void 0) {
 			var e,
-				o = this._mode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
+				o = this._renderMode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
 			this.width(t * o),
 			i &&
                     (this._texture
@@ -13024,7 +13024,7 @@ var $i_59 = $i_58.extend({
 	heightByTile: function (t, i) {
 		if (this._parent && this._parent._tileWidth !== void 0 && this._parent._tileHeight !== void 0) {
 			var e,
-				o = this._mode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
+				o = this._renderMode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
 			this.height(t * o),
 			i &&
                     (this._texture
@@ -13872,8 +13872,8 @@ var $i_59 = $i_58.extend({
 	updateTransform: function () {
 		if (
 			(this._localMatrix.identity(),
-			this._mode === 0 && this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y)),
-			this._mode === 1)
+			this._renderMode === 0 && this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y)),
+			this._renderMode === 1)
 		) {
 			var t = (this._translateIso = new $i_5(this._translate.x, this._translate.y, this._translate.z + this._bounds3d.z / 2).toIso());
 			this._parent && this._parent._bounds3d.z && (t.y += this._parent._bounds3d.z / 1.6),
@@ -14463,7 +14463,7 @@ var $i_62 = $i_60.extend({
 	measureTextWidth: function (t) {
 		return (
 			(t = t || this._text),
-			this._texture._mode === 0 ? this._texture.measureTextWidth(t) : this._texture.script.measureTextWidth(t, this)
+			this._texture._renderMode === 0 ? this._texture.measureTextWidth(t) : this._texture.script.measureTextWidth(t, this)
 		);
 	},
 	tick: function (t) {
@@ -16089,7 +16089,7 @@ var $i_81 = $i_3.extend({
 		ige._state !== 0 && this.log("Cannot add box2d component to the ige instance once the engine has started!", "error"),
 		(this._entity = t),
 		(this._options = i),
-		(this._mode = 0),
+		(this._renderMode = 0),
 		(this.b2Color = $i_22.Common.b2Color),
 		(this.b2Vec2 = $i_22.Common.Math.b2Vec2),
 		(this.b2Math = $i_22.Common.Math.b2Math),
@@ -16169,7 +16169,7 @@ var $i_81 = $i_3.extend({
 			: (this.log("Web workers were not detected on this browser. Cannot access useWorker() method.", "warning"), void 0);
 	},
 	mode: function (t) {
-		return t !== void 0 ? ((this._mode = t), this._entity) : this._mode;
+		return t !== void 0 ? ((this._renderMode = t), this._entity) : this._renderMode;
 	},
 	sleep: function (t) {
 		return t !== void 0 ? ((this._sleep = t), this._entity) : this._sleep;
@@ -16365,13 +16365,13 @@ var $i_81 = $i_3.extend({
 		this._active ||
             ((this._active = !0),
             this._networkDebugMode ||
-                (this._mode === 0
+                (this._renderMode === 0
                 	? this._entity.addBehaviour("box2dStep", this._behaviour)
                 	: (this._intervalTimer = setInterval(this._behaviour, 1e3 / 60))));
 	},
 	stop: function () {
 		this._active &&
-            ((this._active = !1), this._mode === 0 ? this._entity.removeBehaviour("box2dStep") : clearInterval(this._intervalTimer));
+            ((this._active = !1), this._renderMode === 0 ? this._entity.removeBehaviour("box2dStep") : clearInterval(this._intervalTimer));
 	},
 	_behaviour: function () {
 		var t,
@@ -16387,7 +16387,7 @@ var $i_81 = $i_3.extend({
 				while (s--) n.apply(r._world, [o[s]]);
 				(r._removeWhenReady = []), (o = null);
 			}
-			r._mode === 0 ? r._world.Step(ige._tickDelta / 1e3, 8, 3) : r._world.Step(1 / 60, 8, 3), (t = r._world.GetBodyList());
+			r._renderMode === 0 ? r._world.Step(ige._tickDelta / 1e3, 8, 3) : r._world.Step(1 / 60, 8, 3), (t = r._world.GetBodyList());
 			while (t)
 				t._entity &&
                     ((i = t._entity),
@@ -16586,7 +16586,7 @@ var $i_90 = $i_61.extend({
 			this.addComponent($i_12),
 			this.addComponent($i_9),
 			this.isClient && this.addComponent($i_18),
-			(this._renderModes = ["2d", "three"]),
+			(this._renderContextModes = ["2d", "three"]),
 			(this._requireScriptTotal = 0),
 			(this._requireScriptLoading = 0),
 			(this._loadingPreText = void 0),
@@ -17211,7 +17211,7 @@ var $i_90 = $i_61.extend({
 			return t !== void 0 ? ((this._useManualRender = t), this) : this._useManualRender;
 		},
 		manualRender: function () {
-			this._manualRender = !0;
+			this._manualRenderQueued = !0;
 		},
 		engineStep: function (t, i) {
 			var e,
