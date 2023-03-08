@@ -1620,29 +1620,33 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	streamSyncInterval (val, sectionId) {
-		if (val !== undefined) {
-			if (!sectionId) {
-				if (val < 16) {
-					delete this._streamSyncInterval;
-				} else {
-					this._streamSyncDelta = 0;
-					this._streamSyncInterval = val;
-				}
+	streamSyncInterval (val?: number, sectionId?: string) {
+		if (val === undefined) {
+			return this._streamSyncInterval;
+		}
+
+		if (sectionId) {
+			this._streamSyncSectionInterval = this._streamSyncSectionInterval || {};
+			this._streamSyncSectionDelta = this._streamSyncSectionDelta || {};
+
+			if (val < 16) {
+				delete this._streamSyncSectionInterval[sectionId];
 			} else {
-				this._streamSyncSectionInterval = this._streamSyncSectionInterval || {};
-				this._streamSyncSectionDelta = this._streamSyncSectionDelta || {};
-				if (val < 16) {
-					delete this._streamSyncSectionInterval[sectionId];
-				} else {
-					this._streamSyncSectionDelta[sectionId] = 0;
-					this._streamSyncSectionInterval[sectionId] = val;
-				}
+				this._streamSyncSectionDelta[sectionId] = 0;
+				this._streamSyncSectionInterval[sectionId] = val;
 			}
+
 			return this;
 		}
 
-		return this._streamSyncInterval;
+		if (val < 16) {
+			delete this._streamSyncInterval;
+		} else {
+			this._streamSyncDelta = 0;
+			this._streamSyncInterval = val;
+		}
+
+		return this;
 	}
 
 	/**
@@ -1660,28 +1664,28 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	streamFloatPrecision (val) {
-		if (val !== undefined) {
-			this._streamFloatPrecision = val;
-
-			let i,
-				floatRemove = "\\.";
-
-			// Update the floatRemove regular expression pattern
-			for (i = 0; i < this._streamFloatPrecision; i++) {
-				floatRemove += "0";
-			}
-
-			// Add the trailing comma
-			floatRemove += ",";
-
-			// Create the new regexp
-			this._floatRemoveRegExp = new RegExp(floatRemove, "g");
-
-			return this;
+	streamFloatPrecision (val?: number) {
+		if (val === undefined) {
+			return this._streamFloatPrecision;
 		}
 
-		return this._streamFloatPrecision;
+		this._streamFloatPrecision = val;
+
+		let i,
+			floatRemove = "\\.";
+
+		// Update the floatRemove regular expression pattern
+		for (i = 0; i < this._streamFloatPrecision; i++) {
+			floatRemove += "0";
+		}
+
+		// Add the trailing comma
+		floatRemove += ",";
+
+		// Create the new regexp
+		this._floatRemoveRegExp = new RegExp(floatRemove, "g");
+
+		return this;
 	}
 
 	/**
