@@ -1,7 +1,7 @@
 import IgeTexture from "./IgeTexture";
 import { IgeSmartTexture } from "../../types/IgeSmartTexture";
-import IgeImage from "./IgeImage";
-import IgeCanvas from "./IgeCanvas";
+import { IgeImage } from "./IgeImage";
+import { IgeCanvas } from "./IgeCanvas";
 
 /**
  * Creates a new cell sheet. Cell sheets are textures that are

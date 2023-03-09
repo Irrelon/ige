@@ -1,5 +1,5 @@
 const square = {
-    render: function (ige, ctx, entity) {
+    render: function (ctx, entity) {
         ctx.fillStyle = "#ffffff";
         ctx.shadowColor = entity.data("glowColor");
         ctx.shadowBlur = 40;

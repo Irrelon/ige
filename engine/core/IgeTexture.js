@@ -472,7 +472,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
             }
             // This texture is script-based (a "smart texture")
             ctx.save();
-            this.script.render(ige, ctx, entity, this);
+            this.script.render(ctx, entity, this);
             ctx.restore();
             ige.metrics.drawCount++;
         }

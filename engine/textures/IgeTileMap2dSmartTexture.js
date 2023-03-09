@@ -1,7 +1,7 @@
 import IgePoint2d from "../core/IgePoint2d.js";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
 const IgeTileMap2dSmartTexture = {
-    render: (ige, ctx, entity) => {
+    render: (ctx, entity) => {
         const tileWidth = entity._tileWidth, tileHeight = entity._tileHeight, bounds2d = entity.bounds2d(), gridSize = entity._gridSize;
         let x = 0, y = 0;
         /*ctx.save();

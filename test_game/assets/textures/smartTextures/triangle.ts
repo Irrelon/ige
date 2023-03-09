@@ -1,7 +1,7 @@
 import { IgeSmartTexture } from "../../../../types/IgeSmartTexture";
 
 const triangle: IgeSmartTexture = {
-	render: function (ige, ctx, entity) {
+	render: function (ctx, entity) {
 		ctx.beginPath();
 		ctx.moveTo(-entity._bounds2d.x2, entity._bounds2d.y2);
 		ctx.lineTo(0, -entity._bounds2d.y2);

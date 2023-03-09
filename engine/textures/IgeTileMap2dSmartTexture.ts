@@ -1,9 +1,10 @@
 import IgePoint2d from "../core/IgePoint2d";
 import { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import { IgeMountMode } from "../../enums/IgeMountMode";
+import IgeTileMap2d from "../core/IgeTileMap2d";
 
 const IgeTileMap2dSmartTexture: IgeSmartTexture = {
-	render: (ige, ctx, entity) => {
+	render: (ctx, entity: IgeTileMap2d) => {
 		const tileWidth = entity._tileWidth,
 			tileHeight = entity._tileHeight,
 			bounds2d = entity.bounds2d(),

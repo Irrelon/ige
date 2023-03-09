@@ -1,5 +1,5 @@
 const circle = {
-    render: function (ige, ctx, entity) {
+    render: function (ctx, entity) {
         ctx.beginPath();
         ctx.arc(0, 0, entity._bounds2d.x2, 0, 2 * Math.PI);
         ctx.fillStyle = "#ffffff";

@@ -45,7 +45,7 @@ const measureTextWidth = (text, entity) => {
     return maxWidth;
 };
 const IgeFontSmartTexture = {
-    render: (ige, ctx, entity) => {
+    render: (ctx, entity) => {
         if (!entity._nativeFont || !entity._renderText) {
             return;
         }
