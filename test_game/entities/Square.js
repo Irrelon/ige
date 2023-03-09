@@ -1,6 +1,7 @@
 import IgeEntity from "../../engine/core/IgeEntity.js";
 import { textures } from "../services/textures.js";
 import { isClient } from "../../engine/services/clientServer.js";
+import { registerClass } from "../../engine/services/igeClassStore.js";
 export class Square extends IgeEntity {
     constructor() {
         super();
@@ -15,3 +16,4 @@ export class Square extends IgeEntity {
         }
     }
 }
+registerClass(Square);

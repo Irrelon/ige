@@ -88,7 +88,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
             const entityId = data[1];
             const parentId = data[2];
             const transformData = data[3];
-            const createData = data[4];
+            const createDataArgs = data[4] || [];
             const parent = ige.$(parentId);
             console.log("Got stream create", data);
             // Check the required class exists
@@ -98,7 +98,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
                     const ClassConstructor = igeClassStore[classId];
                     if (ClassConstructor) {
                         // The entity does not currently exist so create it!
-                        const entity = new ClassConstructor(createData)
+                        const entity = new ClassConstructor(...createDataArgs)
                             .id(entityId)
                             .mount(parent);
                         entity.streamSectionData('transform', transformData, true);

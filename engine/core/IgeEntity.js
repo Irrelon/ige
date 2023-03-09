@@ -1,6 +1,6 @@
 import { ige } from "../instance.js";
 import { isClient, isServer } from "../services/clientServer.js";
-import { degreesToRadians, toIso } from "../services/utils.js";
+import { degreesToRadians, toIso, traceSet } from "../services/utils.js";
 import IgePoint2d from "./IgePoint2d.js";
 import IgePoint3d from "./IgePoint3d.js";
 import IgeMatrix2d from "./IgeMatrix2d.js";
@@ -1340,6 +1340,9 @@ class IgeEntity extends IgeObject {
         const minY = Math.min(poly._poly[0].y, poly._poly[1].y, poly._poly[2].y, poly._poly[3].y);
         const maxX = Math.max(poly._poly[0].x, poly._poly[1].x, poly._poly[2].x, poly._poly[3].x);
         const maxY = Math.max(poly._poly[0].y, poly._poly[1].y, poly._poly[2].y, poly._poly[3].y);
+        if (isNaN(minX) || isNaN(minY) || isNaN(maxX) || isNaN(maxY)) {
+            debugger;
+        }
         this._aabb = new IgeRect(minX, minY, maxX - minX, maxY - minY);
         this._aabbDirty = false;
         return this._aabb;
@@ -1820,34 +1823,6 @@ class IgeEntity extends IgeObject {
         ctx.restore();
     }
     /**
-     * Transforms a point by the entity's parent world matrix and
-     * its own local matrix transforming the point to this entity's
-     * world space.
-     * @param {IgePoint3d} point The point to transform.
-     * @example #Transform a point by the entity's world matrix values
-     *     var point = new IgePoint3d(0, 0, 0);
-     *     entity._transformPoint(point);
-     *
-     *     console.log(point);
-     * @return {IgePoint3d} The transformed point.
-     * @private
-     */
-    _transformPoint(point) {
-        if (this._parent) {
-            const tempMat = new IgeMatrix2d();
-            // Copy the parent world matrix
-            tempMat.copy(this._parent._worldMatrix);
-            // Apply any local transforms
-            tempMat.multiply(this._localMatrix);
-            // Now transform the point
-            tempMat.getInverse().transformCoord(point, this);
-        }
-        else {
-            this._localMatrix.transformCoord(point, this);
-        }
-        return point;
-    }
-    /**
      * Helper method to transform an array of points using _transformPoint.
      * @param {Array} points The points array to transform.
      * @private
@@ -2192,31 +2167,32 @@ class IgeEntity extends IgeObject {
      * @returns {IgeEntity}
      */
     debugTransforms() {
-        ige.engine.traceSet(this._translate, "x", 1, (val) => {
+        this.log("Debug transforms enabled");
+        traceSet(this._translate, "x", 1, (val) => {
             return isNaN(val);
         });
-        ige.engine.traceSet(this._translate, "y", 1, (val) => {
+        traceSet(this._translate, "y", 1, (val) => {
             return isNaN(val);
         });
-        ige.engine.traceSet(this._translate, "z", 1, (val) => {
+        traceSet(this._translate, "z", 1, (val) => {
             return isNaN(val);
         });
-        ige.engine.traceSet(this._rotate, "x", 1, (val) => {
+        traceSet(this._rotate, "x", 1, (val) => {
             return isNaN(val);
         });
-        ige.engine.traceSet(this._rotate, "y", 1, (val) => {
+        traceSet(this._rotate, "y", 1, (val) => {
             return isNaN(val);
         });
-        ige.engine.traceSet(this._rotate, "z", 1, (val) => {
+        traceSet(this._rotate, "z", 1, (val) => {
             return isNaN(val);
         });
-        ige.engine.traceSet(this._scale, "x", 1, (val) => {
+        traceSet(this._scale, "x", 1, (val) => {
             return isNaN(val);
         });
-        ige.engine.traceSet(this._scale, "y", 1, (val) => {
+        traceSet(this._scale, "y", 1, (val) => {
             return isNaN(val);
         });
-        ige.engine.traceSet(this._scale, "z", 1, (val) => {
+        traceSet(this._scale, "z", 1, (val) => {
             return isNaN(val);
         });
         return this;

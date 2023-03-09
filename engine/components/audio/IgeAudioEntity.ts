@@ -1,17 +1,11 @@
 import { ige } from "../../instance";
-import IgeEntity from "../../core/IgeEntity";
-import IgeAudio from "./IgeAudio";
 import { isClient } from "../../services/clientServer";
+import IgeAudio from "./IgeAudio";
+import { IgeObject } from "../../core/IgeObject";
+import type { IgeCanvasRenderingContext2d } from "../../../types/IgeCanvasRenderingContext2d";
 
-export interface IgeAudioEntityPanner {
-	panningModel: string;
-	distanceModel: string;
-	refDistance: number;
-	rolloffFactor: number;
-	maxDistance: number;
-	coneOuterAngle: number;
-	coneInnerAngle: number;
-	coneOuterGain: number;
+export interface IgeAudioEntityPanner extends PannerOptions {
+
 }
 
 export interface IgeAudioEntityOptions {
@@ -19,11 +13,11 @@ export interface IgeAudioEntityOptions {
 	loop: boolean;
 	gain: number;
 	panner: IgeAudioEntityPanner;
-	relativeTo?: IgeEntity;
+	relativeTo?: IgeObject;
 }
 
 // Set default data for any audio panner node
-const defaultPanner = {
+const defaultPanner: IgeAudioEntityPanner = {
 	panningModel: "HRTF",
 	distanceModel: "inverse",
 	refDistance: 100,
@@ -34,7 +28,7 @@ const defaultPanner = {
 	coneOuterGain: 0
 };
 
-class IgeAudioEntity extends IgeEntity {
+export class IgeAudioEntity extends IgeObject {
 	classId = "IgeAudioEntity";
 	_audioInterface?: IgeAudio;
 	_options: IgeAudioEntityOptions = {
@@ -43,10 +37,10 @@ class IgeAudioEntity extends IgeEntity {
 		gain: 1,
 		panner: defaultPanner
 	};
-	_relativeTo?: IgeEntity;
+	_relativeTo?: IgeObject;
 	_listener?: AudioListener;
+	_panner?: PannerNode;
 
-	constructor (audioId: string, options?: IgeAudioEntityOptions);
 	constructor (audioId?: string, options: IgeAudioEntityOptions = {
 		started: false,
 		loop: false,
@@ -54,10 +48,6 @@ class IgeAudioEntity extends IgeEntity {
 		panner: defaultPanner
 	}) {
 		super();
-
-		if (!isClient) {
-			return;
-		}
 
 		this._audioInterface = new IgeAudio(audioId);
 		this._options = options;
@@ -77,12 +67,13 @@ class IgeAudioEntity extends IgeEntity {
 		}
 	}
 
-	relativeTo (val: IgeEntity): this;
-	relativeTo (): IgeEntity | undefined;
-	relativeTo (val?: IgeEntity) {
+	relativeTo (val: IgeObject): this;
+	relativeTo (): IgeObject | undefined;
+	relativeTo (val?: IgeObject) {
 		if (val !== undefined) {
 			const audioInterface = this.audioInterface();
 			if (!audioInterface) return;
+			if (!ige.audio || !ige.audio._ctx) return;
 
 			this._relativeTo = val;
 			this._listener = ige.audio._ctx.listener;
@@ -90,12 +81,12 @@ class IgeAudioEntity extends IgeEntity {
 			// Check if we have a panner node yet or not
 			if (!audioInterface.panner()) {
 				// Create a panner node for the audio output
-				this._panner = new PannerNode(ige.engine.audio._ctx, self._options.panner);
+				this._panner = new PannerNode(ige.audio._ctx, this._options.panner);
 
 				// Run through options and apply to panner
-				for (i in self._options.panner) {
-					if (self._options.panner.hasOwnProperty(i)) {
-						this._panner[i] = self._options.panner[i];
+				for (const key in this._options.panner) {
+					if (this._options.panner.hasOwnProperty(key)) {
+						this._panner[key] = this._options.panner[key];
 					}
 				}
 
@@ -122,7 +113,9 @@ class IgeAudioEntity extends IgeEntity {
 	 * @param {String} url The url that serves the audio file.
 	 * @returns {IgeAudioEntity}
 	 */
-	url (url) {
+	url (url: string): this;
+	url (): string;
+	url (url?: string) {
 		if (url !== undefined) {
 			this.audioInterface().url(url);
 			return this;
@@ -160,7 +153,7 @@ class IgeAudioEntity extends IgeEntity {
 	 * being destroyed.
 	 * @returns {IgeAudioEntity}
 	 */
-	play (loop) {
+	play (loop: boolean = false) {
 		this.audioInterface().play(loop);
 		return this;
 	}
@@ -200,7 +193,7 @@ class IgeAudioEntity extends IgeEntity {
 		return this._options;
 	}
 
-	update () {
+	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		if (this._relativeTo && this._panner) {
 			const audioWorldPos = this.worldPosition(),
 				relativeToWorldPos = this._relativeTo.worldPosition();
@@ -212,7 +205,7 @@ class IgeAudioEntity extends IgeEntity {
 			this._listener.setPosition(relativeToWorldPos.x, -relativeToWorldPos.y, relativeToWorldPos.z);
 		}
 
-		IgeEntity.prototype.update.apply(this, arguments);
+		super.update(ctx, tickDelta);
 	}
 
 	/**
@@ -224,6 +217,7 @@ class IgeAudioEntity extends IgeEntity {
 			this.audioInterface().stop();
 		}
 
-		IgeEntity.prototype.destroy.call(this);
+		super.destroy();
+		return this;
 	}
 }

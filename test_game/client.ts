@@ -47,6 +47,8 @@ export class Client extends IgeBaseClass {
 					// the items are added to the scenegraph)
 					ige.engine.addGraph(Level1);
 
+					ige.engine._currentViewport.drawBounds(true)
+
 					network.start('http://localhost:2000', () => {
 						network.send("testRequest", "foo", (err, data) => {
 							console.log("testRequest response", err, data);

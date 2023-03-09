@@ -1,5 +1,6 @@
 import IgeEntity from "./IgeEntity";
 import {ige} from "../instance";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
 /**
  * Creates a new 2d scene.
@@ -36,7 +37,7 @@ class IgeScene2d extends IgeEntity {
 	 * @param {String} id The id of the room.
 	 * @returns {*}
 	 */
-	streamRoomId = (id) => {
+	streamRoomId = (id?: string) => {
 		if (id !== undefined) {
 			this._streamRoomId = id;
 			return this;
@@ -52,7 +53,7 @@ class IgeScene2d extends IgeEntity {
 	 * @param data
 	 * @returns {*}
 	 */
-	streamSectionData = (sectionId, data) => {
+	streamSectionData = (sectionId: string, data: string) => {
 		switch (sectionId) {
 		case "ignoreCamera":
 			if (data !== undefined) {
@@ -82,7 +83,7 @@ class IgeScene2d extends IgeEntity {
 	 * help you if you switch it off.
 	 * @return {*}
 	 */
-	autoSize = (val) => {
+	autoSize = (val?: boolean) => {
 		if (typeof(val) !== "undefined") {
 			this._autoSize = val;
 			return this;
@@ -97,7 +98,7 @@ class IgeScene2d extends IgeEntity {
 	 * @param {Boolean} val If set to false, no child entities will be rendered.
 	 * @return {Boolean}
 	 */
-	shouldRender = (val) => {
+	shouldRender = (val?: boolean) => {
 		if (val !== undefined) {
 			this._shouldRender = val;
 			return this;
@@ -113,7 +114,7 @@ class IgeScene2d extends IgeEntity {
 	 * @param {Boolean=} val True to ignore, false to not ignore.
 	 * @return {*}
 	 */
-	ignoreCamera = (val) => {
+	ignoreCamera = (val?: boolean) => {
 		if (val !== undefined) {
 			this._ignoreCamera = val;
 			return this;
@@ -122,14 +123,17 @@ class IgeScene2d extends IgeEntity {
 		return this._ignoreCamera;
 	}
 
-	update = (ctx, tickDelta) => {
+	update = (ctx: IgeCanvasRenderingContext2d, tickDelta: number) => {
 		if (this._ignoreCamera) {
-			// Translate the scene so it is always center of the camera
-			const cam = ige._currentCamera;
-			this.translateTo(cam._translate.x, cam._translate.y, cam._translate.z);
-			this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
-			this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);
-			//this._localMatrix.multiply(ige._currentCamera._worldMatrix.getInverse());
+			// Translate the scene, so it is always center of the camera
+			const cam = ige.engine._currentCamera;
+
+			if (cam) {
+				this.translateTo(cam._translate.x, cam._translate.y, cam._translate.z);
+				this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
+				this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);
+				//this._localMatrix.multiply(ige._currentCamera._worldMatrix.getInverse());
+			}
 		}
 
 		super.update(ctx, tickDelta);
@@ -139,7 +143,7 @@ class IgeScene2d extends IgeEntity {
 	 * Processes the actions required each render frame.
 	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
 	 */
-	tick (ctx) {
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		if (this._shouldRender) {
 			super.tick(ctx);
 		}
@@ -179,6 +183,7 @@ class IgeScene2d extends IgeEntity {
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
+			// @ts-ignore
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
 				case "_shouldRender":

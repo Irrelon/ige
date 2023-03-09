@@ -1,6 +1,7 @@
 import IgeEntity from "../../engine/core/IgeEntity";
 import { textures } from "../services/textures";
 import { isClient } from "../../engine/services/clientServer";
+import { registerClass } from "../../engine/services/igeClassStore";
 
 export class Square extends IgeEntity {
 	classId = 'Square';
@@ -19,3 +20,5 @@ export class Square extends IgeEntity {
 		}
 	}
 }
+
+registerClass(Square);

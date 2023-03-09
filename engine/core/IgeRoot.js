@@ -31,9 +31,10 @@ class IgeRoot extends IgeEntity {
                     arrCount = arr.length;
                     // Loop our children
                     while (arrCount--) {
-                        if (arr[arrCount]._scene) {
-                            if (arr[arrCount]._scene._shouldRender) {
-                                this.mouseOverList(arr[arrCount]._scene, entArr);
+                        const vp = arr[arrCount];
+                        if (vp._scene) {
+                            if (vp._scene._shouldRender) {
+                                this.mouseOverList(vp._scene, entArr);
                             }
                         }
                     }

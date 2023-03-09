@@ -42,7 +42,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) {
         }
         // Setup default objects
         this._bounds2d = new IgePoint2d(width || ige.engine.root._bounds2d.x, height || ige.engine.root._bounds2d.y);
-        this.camera = new IgeCamera(ige, this);
+        this.camera = new IgeCamera(this);
         this.camera._entity = this;
         //this._drawMouse = true;
     }
@@ -108,8 +108,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) {
         if (!this._scene) {
             return;
         }
-        ige._currentCamera = this.camera;
-        ige._currentViewport = this;
+        ige.engine._currentCamera = this.camera;
+        ige.engine._currentViewport = this;
         this._scene._parent = this;
         this.camera.update(ctx);
         super.update(ctx, tickDelta);
@@ -125,8 +125,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) {
         if (!this._scene || !ige.engine.root) {
             return;
         }
-        ige._currentCamera = this.camera;
-        ige._currentViewport = this;
+        ige.engine._currentCamera = this.camera;
+        ige.engine._currentViewport = this;
         this._scene._parent = this;
         super.tick(ctx);
         ctx.translate(-(this._bounds2d.x * this._origin.x) | 0, -(this._bounds2d.y * this._origin.y) | 0);
@@ -177,10 +177,12 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) {
             ctx.fillRect(mx - 5, my - 5, 10, 10);
             const text = this.id() + " X: " + mx + ", Y: " + my;
             const textMeasurement = ctx.measureText(text);
-            ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-            ctx.fillRect(Math.floor(mx - textMeasurement.width / 2 - 5), Math.floor(my - 25), Math.floor(textMeasurement.width + 10), 14);
-            ctx.fillStyle = "#ffffff";
-            ctx.fillText(text, mx - textMeasurement.width / 2, my - 15);
+            if (textMeasurement) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+                ctx.fillRect(Math.floor(mx - textMeasurement.width / 2 - 5), Math.floor(my - 25), Math.floor(textMeasurement.width + 10), 14);
+                ctx.fillStyle = "#ffffff";
+                ctx.fillText(text, mx - textMeasurement.width / 2, my - 15);
+            }
             ctx.restore();
         }
         if (this._drawViewArea) {
@@ -205,8 +207,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) {
      * @return {IgePoint3d} The screen position of the entity.
      */
     screenPosition() {
-        var _a, _b, _c, _d;
-        return new IgePoint3d(Math.floor(this._worldMatrix.matrix[2] + (((_b = (_a = ige === null || ige === void 0 ? void 0 : ige.root) === null || _a === void 0 ? void 0 : _a._bounds2d) === null || _b === void 0 ? void 0 : _b.x2) || 0)), Math.floor(this._worldMatrix.matrix[5] + (((_d = (_c = ige === null || ige === void 0 ? void 0 : ige.root) === null || _c === void 0 ? void 0 : _c._bounds2d) === null || _d === void 0 ? void 0 : _d.y2) || 0)), 0);
+        var _a, _b;
+        return new IgePoint3d(Math.floor(this._worldMatrix.matrix[2] + (((_a = ige.engine.root._bounds2d) === null || _a === void 0 ? void 0 : _a.x2) || 0)), Math.floor(this._worldMatrix.matrix[5] + (((_b = ige.engine.root._bounds2d) === null || _b === void 0 ? void 0 : _b.y2) || 0)), 0);
     }
     drawViewArea(val) {
         if (val !== undefined) {

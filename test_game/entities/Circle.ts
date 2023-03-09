@@ -1,6 +1,7 @@
 import IgeEntity from "../../engine/core/IgeEntity";
 import { textures } from "../services/textures";
 import { isClient } from "../../engine/services/clientServer";
+import { registerClass } from "../../engine/services/igeClassStore";
 
 export class Circle extends IgeEntity {
 	classId = 'Circle';
@@ -15,7 +16,8 @@ export class Circle extends IgeEntity {
 
 		if (isClient) {
 			this.texture(textures.getTextureById("circle"));
-			this.registerNetworkClass();
 		}
 	}
 }
+
+registerClass(Circle);

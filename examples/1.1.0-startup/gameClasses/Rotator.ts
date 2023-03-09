@@ -1,7 +1,7 @@
 import {ige} from "../../../engine/instance";
 import IgeEntity from "../../../engine/core/IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../../types/IgeCanvasRenderingContext2d";
-import { isClient, isServer } from "../../../engine/services/clientServer";
+import { isServer } from "../../../engine/services/clientServer";
 
 export class Rotator extends IgeEntity {
 	classId = 'Rotator';
@@ -14,10 +14,6 @@ export class Rotator extends IgeEntity {
 			this._rSpeed = speed;
 		} else {
 			this._rSpeed = 0;
-		}
-
-		if (isClient) {
-			this.registerNetworkClass();
 		}
 	}
 

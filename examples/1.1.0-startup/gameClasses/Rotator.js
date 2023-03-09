@@ -1,6 +1,6 @@
 import { ige } from "../../../engine/instance.js";
 import IgeEntity from "../../../engine/core/IgeEntity.js";
-import { isClient, isServer } from "../../../engine/services/clientServer.js";
+import { isServer } from "../../../engine/services/clientServer.js";
 export class Rotator extends IgeEntity {
     constructor(speed) {
         super();
@@ -11,9 +11,6 @@ export class Rotator extends IgeEntity {
         }
         else {
             this._rSpeed = 0;
-        }
-        if (isClient) {
-            this.registerNetworkClass();
         }
     }
     /**

@@ -17,8 +17,8 @@ export class IgeObject extends IgeEventingClass {
         this._idRegistered = false;
         this._categoryRegistered = false;
         this._category = "";
-        this._drawBounds = false;
-        this._drawBoundsData = false;
+        this._drawBounds = true;
+        this._drawBoundsData = true;
         this._drawMouse = false;
         this._drawMouseData = false;
         this._ignoreCamera = false;
@@ -621,6 +621,34 @@ export class IgeObject extends IgeEventingClass {
         return this._sortChildren;
     }
     /**
+     * Transforms a point by the entity's parent world matrix and
+     * its own local matrix transforming the point to this entity's
+     * world space.
+     * @param {IgePoint3d} point The point to transform.
+     * @example #Transform a point by the entity's world matrix values
+     *     var point = new IgePoint3d(0, 0, 0);
+     *     entity._transformPoint(point);
+     *
+     *     console.log(point);
+     * @return {IgePoint3d} The transformed point.
+     * @private
+     */
+    _transformPoint(point) {
+        if (this._parent) {
+            const tempMat = new IgeMatrix2d();
+            // Copy the parent world matrix
+            tempMat.copy(this._parent._worldMatrix);
+            // Apply any local transforms
+            tempMat.multiply(this._localMatrix);
+            // Now transform the point
+            tempMat.getInverse().transformCoord(point, this);
+        }
+        else {
+            this._localMatrix.transformCoord(point, this);
+        }
+        return point;
+    }
+    /**
      * Adds a behaviour to the object's active behaviour list.
      * @param {String} id
      * @param {Function} behaviour
@@ -1087,26 +1115,30 @@ export class IgeObject extends IgeEventingClass {
      * Override this method if your entity should send data through to
      * the client when it is being created on the client for the first
      * time through the network stream. The data will be provided as the
-     * first argument in the constructor call to the entity class so
+     * first argument in the constructor call to the entity class, so
      * you should expect to receive it as per this example:
      * @example #Using and Receiving Stream Create Data
      *     class MyNewClass extends IgeEntity {
      *         classId = "MyNewClass";
      *
-     *         // Define the init with the parameter to receive the
-     *         // data you return in the streamCreateData() method
-     *         init = (myCreateData) => {
+     *         // Define the constructor with the parameter to receive the
+     *         // data you return from the streamCreateData() method
+     *         constructor (myCreateData) => {
+     *         	   super();
      *             this._myData = myCreateData;
-     *         },
+     *         }
      *
      *         streamCreateData = () => {
-     *             return this._myData;
+     *             return [this._myData];
      *         }
      *     });
      *
      * Valid return values must not include circular references!
      */
-    streamCreateData() {
+    streamCreateData(allGood = false) {
+        // Do a sanity check in case the developer has forgotten to provide
+        // vital info that will otherwise break the network stream
+        return;
     }
     /**
      * Gets / sets the stream emit created flag. If set to true this entity

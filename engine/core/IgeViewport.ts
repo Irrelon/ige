@@ -75,7 +75,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 
 		// Setup default objects
 		this._bounds2d = new IgePoint2d(width || ige.engine.root._bounds2d.x, height || ige.engine.root._bounds2d.y);
-		this.camera = new IgeCamera(ige, this);
+		this.camera = new IgeCamera(this);
 		this.camera._entity = this;
 		//this._drawMouse = true;
 	}
@@ -173,8 +173,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 			return;
 		}
 
-		ige._currentCamera = this.camera;
-		ige._currentViewport = this;
+		ige.engine._currentCamera = this.camera;
+		ige.engine._currentViewport = this;
 		this._scene._parent = this;
 
 		this.camera.update(ctx);
@@ -195,8 +195,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 			return;
 		}
 
-		ige._currentCamera = this.camera;
-		ige._currentViewport = this;
+		ige.engine._currentCamera = this.camera;
+		ige.engine._currentViewport = this;
 		this._scene._parent = this;
 
 		super.tick(ctx);
@@ -264,10 +264,13 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 
 			const text = this.id() + " X: " + mx + ", Y: " + my;
 			const textMeasurement = ctx.measureText(text);
-			ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-			ctx.fillRect(Math.floor(mx - textMeasurement.width / 2 - 5), Math.floor(my - 25), Math.floor(textMeasurement.width + 10), 14);
-			ctx.fillStyle = "#ffffff";
-			ctx.fillText(text, mx - textMeasurement.width / 2, my - 15);
+
+			if (textMeasurement) {
+				ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+				ctx.fillRect(Math.floor(mx - textMeasurement.width / 2 - 5), Math.floor(my - 25), Math.floor(textMeasurement.width + 10), 14);
+				ctx.fillStyle = "#ffffff";
+				ctx.fillText(text, mx - textMeasurement.width / 2, my - 15);
+			}
 			ctx.restore();
 		}
 
@@ -295,8 +298,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 	 */
 	screenPosition () {
 		return new IgePoint3d(
-			Math.floor(this._worldMatrix.matrix[2] + (ige?.root?._bounds2d?.x2 || 0)),
-			Math.floor(this._worldMatrix.matrix[5] + (ige?.root?._bounds2d?.y2 || 0)),
+			Math.floor(this._worldMatrix.matrix[2] + (ige.engine.root._bounds2d?.x2 || 0)),
+			Math.floor(this._worldMatrix.matrix[5] + (ige.engine.root._bounds2d?.y2 || 0)),
 			0
 		);
 	}
@@ -385,9 +388,8 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 	 * @param rootObject
 	 * @param index
 	 */
-	paintAabbs (ctx: IgeCanvasRenderingContext2d, rootObject: IgeEntity, index: number) {
+	paintAabbs (ctx: IgeCanvasRenderingContext2d, rootObject: IgeObject, index: number) {
 		const arr = rootObject._children || [];
-
 		let arrCount, obj, aabb, aabbC, bounds3dPoly, ga, r3d, xl1, xl2, xl3, xl4, xl5, xl6, bf1, bf2, bf3, bf4, tf1, tf2, tf3, tf4;
 
 		if (!arr || !arr.length) {
@@ -438,7 +440,7 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 
 								// Check if the object is mounted to an isometric mount
 								if (obj._parent && obj._parent._mountMode === IgeMountMode.iso) {
-									bounds3dPoly = obj.bounds3dPolygon().aabb();
+									bounds3dPoly = (obj as IgeEntity).bounds3dPolygon().aabb();
 									ctx.save();
 									ctx.strokeStyle = "#0068b8";
 									ctx.strokeRect(bounds3dPoly.x, bounds3dPoly.y, bounds3dPoly.width, bounds3dPoly.height);

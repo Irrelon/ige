@@ -1,4 +1,5 @@
 import { ige } from "../../engine/instance";
+import { degreesToRadians } from "../../engine/services/utils";
 import IgeSceneGraph from "../../engine/core/IgeSceneGraph";
 import IgeScene2d from "../../engine/core/IgeScene2d";
 import IgeEntity from "../../engine/core/IgeEntity";
@@ -6,29 +7,36 @@ import { Square } from "../entities/Square";
 import { Circle } from "../entities/Circle";
 import { Triangle } from "../entities/Triangle";
 import { Line } from "../entities/Line";
-import { degreesToRadians } from "../../engine/services/utils";
-import { Rotator } from "../../examples/1.1.0-startup/gameClasses/Rotator";
-import { textures } from "../services/textures";
-import { isClient } from "../../engine/services/clientServer";
+import { Fairy } from "../entities/Fairy";
 import { IgeStreamMode } from "../../enums/IgeStreamMode";
+import { IgeAudioEntity } from "../../engine/components/audio/IgeAudioEntity";
+import { isClient } from "../../engine/services/clientServer";
 
 export class Level1 extends IgeSceneGraph {
-	classId = 'Level1';
+	classId = "Level1";
 
 	/**
 	 * Called when loading the graph data via ige.addGraph().
 	 */
 	addGraph () {
-		const baseScene = ige.$('baseScene') as IgeEntity;
+		const baseScene = ige.$("baseScene") as IgeEntity;
 
 		// Clear existing graph data
-		if (ige.$('scene1')) {
+		if (ige.$("scene1")) {
 			this.removeGraph();
 		}
 
 		// Create the scene
 		const scene1 = new IgeScene2d()
-			.id('scene1')
+			.id("scene1")
+			.mount(baseScene);
+
+		if (isClient) return;
+
+		new IgeAudioEntity()
+			.streamMode(IgeStreamMode.simple)
+			.url("assets/audio/deepSpace.mp3")
+			.play(true)
 			.mount(baseScene);
 
 		// Create a third rotator entity and mount
@@ -73,18 +81,14 @@ export class Level1 extends IgeSceneGraph {
 			.scaleTo(0.3, 0.3, 0.3)
 			.mount(scene1);
 
-		const fairy = new Rotator(0.1)
+		new Fairy(0.1)
 			.id("fairy1")
+			.streamMode(IgeStreamMode.simple)
 			.depth(1)
 			.width(100)
 			.height(100)
 			.translateTo(0, 0, 0)
-			.streamMode(IgeStreamMode.simple)
 			.mount(scene1);
-
-		if (isClient) {
-			fairy.texture(textures.getTextureById("fairy"));
-		}
 	}
 
 	/**
@@ -95,6 +99,6 @@ export class Level1 extends IgeSceneGraph {
 		// Since all our objects in addGraph() were mounted to the
 		// 'scene1' entity, destroying it will remove everything we
 		// added to it.
-		(ige.$('scene1') as IgeScene2d).destroy();
+		(ige.$("scene1") as IgeScene2d).destroy();
 	}
 }

@@ -4,6 +4,7 @@ import IgeBaseClass from "./IgeBaseClass";
 import type { IgePoint } from "../../types/IgePoint";
 import type IgeEntity from "./IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeObject } from "./IgeObject";
 
 /**
  * Creates a new transformation matrix.
@@ -18,7 +19,7 @@ class IgeMatrix2d extends IgeBaseClass {
 	_rotateOrigin = new IgePoint3d(0, 0, 0);
 	_scaleOrigin = new IgePoint3d(0, 0, 0);
 
-	transformCoord (point: IgePoint, obj: IgeEntity) {
+	transformCoord (point: IgePoint, obj: IgeObject) {
 		const { x, y } = point;
 		const tm = this.matrix;
 

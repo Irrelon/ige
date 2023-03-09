@@ -10,6 +10,7 @@ class IgeDummyContext {
 	imageSmoothingEnabled = false;
 	globalAlpha = 1;
 	fillStyle: CanvasRenderingContext2D["fillStyle"] = "";
+	strokeStyle: CanvasRenderingContext2D["strokeStyle"] = "";
 	globalCompositeOperation?: string;
 	save = undefinedMethod;
 	restore = undefinedMethod;
@@ -35,6 +36,7 @@ class IgeDummyContext {
 	createPattern = nullMethod;
 	getImageData = undefinedMethod;
 	putImageData = undefinedMethod;
+	measureText = undefinedMethod;
 }
 
 export default IgeDummyContext;

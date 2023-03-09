@@ -54,7 +54,7 @@ class IgeBaseClass {
 	 * what class an instance was instantiated with and is also
 	 * output during the ige.scenegraph() method's console logging
 	 * to show what class an object belongs to.
-	 * @example #Get the class id of an object
+	 * @example #Get the class id of an object.
 	 *     var entity = new IgeEntity();
 	 *
 	 *     // Will output "IgeEntity"

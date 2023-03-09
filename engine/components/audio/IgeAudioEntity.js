@@ -1,7 +1,7 @@
 import { ige } from "../../instance.js";
-import IgeEntity from "../../core/IgeEntity.js";
-import IgeAudio from "./IgeAudio.js";
 import { isClient } from "../../services/clientServer.js";
+import IgeAudio from "./IgeAudio.js";
+import { IgeObject } from "../../core/IgeObject.js";
 // Set default data for any audio panner node
 const defaultPanner = {
     panningModel: "HRTF",
@@ -13,7 +13,7 @@ const defaultPanner = {
     coneInnerAngle: 360,
     coneOuterGain: 0
 };
-class IgeAudioEntity extends IgeEntity {
+export class IgeAudioEntity extends IgeObject {
     constructor(audioId, options = {
         started: false,
         loop: false,
@@ -28,9 +28,6 @@ class IgeAudioEntity extends IgeEntity {
             gain: 1,
             panner: defaultPanner
         };
-        if (!isClient) {
-            return;
-        }
         this._audioInterface = new IgeAudio(audioId);
         this._options = options;
         if (this._options.relativeTo) {
@@ -52,16 +49,18 @@ class IgeAudioEntity extends IgeEntity {
             const audioInterface = this.audioInterface();
             if (!audioInterface)
                 return;
+            if (!ige.audio || !ige.audio._ctx)
+                return;
             this._relativeTo = val;
             this._listener = ige.audio._ctx.listener;
             // Check if we have a panner node yet or not
             if (!audioInterface.panner()) {
                 // Create a panner node for the audio output
-                this._panner = new PannerNode(ige.engine.audio._ctx, self._options.panner);
+                this._panner = new PannerNode(ige.audio._ctx, this._options.panner);
                 // Run through options and apply to panner
-                for (i in self._options.panner) {
-                    if (self._options.panner.hasOwnProperty(i)) {
-                        this._panner[i] = self._options.panner[i];
+                for (const key in this._options.panner) {
+                    if (this._options.panner.hasOwnProperty(key)) {
+                        this._panner[key] = this._options.panner[key];
                     }
                 }
                 this.audioInterface()
@@ -78,11 +77,6 @@ class IgeAudioEntity extends IgeEntity {
     playing() {
         return this.audioInterface().playing();
     }
-    /**
-     * Gets / sets the url the audio is playing from.
-     * @param {String} url The url that serves the audio file.
-     * @returns {IgeAudioEntity}
-     */
     url(url) {
         if (url !== undefined) {
             this.audioInterface().url(url);
@@ -116,7 +110,7 @@ class IgeAudioEntity extends IgeEntity {
      * being destroyed.
      * @returns {IgeAudioEntity}
      */
-    play(loop) {
+    play(loop = false) {
         this.audioInterface().play(loop);
         return this;
     }
@@ -143,7 +137,7 @@ class IgeAudioEntity extends IgeEntity {
     streamCreateData() {
         return this._options;
     }
-    update() {
+    update(ctx, tickDelta) {
         if (this._relativeTo && this._panner) {
             const audioWorldPos = this.worldPosition(), relativeToWorldPos = this._relativeTo.worldPosition();
             // Update the audio origin position
@@ -151,7 +145,7 @@ class IgeAudioEntity extends IgeEntity {
             // Update the listener
             this._listener.setPosition(relativeToWorldPos.x, -relativeToWorldPos.y, relativeToWorldPos.z);
         }
-        IgeEntity.prototype.update.apply(this, arguments);
+        super.update(ctx, tickDelta);
     }
     /**
      * Called when the entity is to be destroyed. Stops any
@@ -161,6 +155,7 @@ class IgeAudioEntity extends IgeEntity {
         if (isClient) {
             this.audioInterface().stop();
         }
-        IgeEntity.prototype.destroy.call(this);
+        super.destroy();
+        return this;
     }
 }

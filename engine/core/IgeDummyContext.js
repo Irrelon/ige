@@ -9,6 +9,7 @@ class IgeDummyContext {
         this.imageSmoothingEnabled = false;
         this.globalAlpha = 1;
         this.fillStyle = "";
+        this.strokeStyle = "";
         this.save = undefinedMethod;
         this.restore = undefinedMethod;
         this.translate = undefinedMethod;
@@ -33,6 +34,7 @@ class IgeDummyContext {
         this.createPattern = nullMethod;
         this.getImageData = undefinedMethod;
         this.putImageData = undefinedMethod;
+        this.measureText = undefinedMethod;
     }
 }
 export default IgeDummyContext;

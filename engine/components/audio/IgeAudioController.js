@@ -30,8 +30,6 @@ export class IgeAudioController extends IgeEventingClass {
         this._active = false;
         this._disabled = false;
         this._register = {};
-        if (!isClient)
-            return;
         this._ctx = this.getContext();
         if (!this._ctx) {
             this.log("No web audio API support, sound is disabled!");

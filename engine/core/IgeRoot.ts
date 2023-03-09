@@ -50,16 +50,18 @@ class IgeRoot extends IgeEntity {
 
 		if (obj === this) {
 			// Loop viewports
-			arr = obj._children;
+			arr = obj._children as IgeViewport[];
 
 			if (arr) {
 				arrCount = arr.length;
 
 				// Loop our children
 				while (arrCount--) {
-					if (arr[arrCount]._scene) {
-						if (arr[arrCount]._scene._shouldRender) {
-							this.mouseOverList(arr[arrCount]._scene, entArr);
+					const vp = arr[arrCount];
+
+					if (vp._scene) {
+						if (vp._scene._shouldRender) {
+							this.mouseOverList(vp._scene, entArr);
 						}
 					}
 				}
@@ -79,7 +81,7 @@ class IgeRoot extends IgeEntity {
 			}
 
 			// Check if the entity has children
-			arr = obj._children;
+			arr = obj._children as IgeEntity[];
 
 			if (arr) {
 				arrCount = arr.length;

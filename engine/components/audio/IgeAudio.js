@@ -23,6 +23,8 @@ class IgeAudio extends IgeEventingClass {
         if (audioId === undefined) {
             return this._audioId;
         }
+        if (!ige.audio)
+            return this;
         this._audioId = audioId;
         this.buffer(ige.audio.register(audioId));
         return this;
@@ -32,6 +34,8 @@ class IgeAudio extends IgeEventingClass {
             return this._url;
         }
         this._url = url;
+        if (!ige.audio)
+            return this;
         ige.audio._load(url).then((buffer) => {
             this.buffer(buffer);
         }).catch((err) => {
@@ -54,7 +58,7 @@ class IgeAudio extends IgeEventingClass {
             return this._panner;
         }
         this._panner = val;
-        if (this._bufferSource) {
+        if (this._bufferSource && ige.audio) {
             // Make sure we include the panner in the connections
             this._bufferSource.connect(this._panner);
             this._panner.connect(ige.audio._masterVolumeNode);
@@ -65,7 +69,9 @@ class IgeAudio extends IgeEventingClass {
      * Plays the audio.
      */
     play(loop = false) {
-        if (!this._buffer) {
+        if (!ige.audio)
+            return;
+        if (!this._buffer || !ige.audio._ctx) {
             this._playWhenReady = true;
             this._loop = loop;
             this._playing = true;

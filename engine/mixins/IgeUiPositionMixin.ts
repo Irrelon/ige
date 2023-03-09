@@ -26,7 +26,7 @@ const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base: BaseC
 	_autoScaleLockAspect?: boolean;
 
 	_uiFlex?: number;
-	
+
 	/**
 	 * Gets / sets the entity's x position relative to the left of
 	 * the canvas.

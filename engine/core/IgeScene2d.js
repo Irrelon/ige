@@ -95,12 +95,14 @@ class IgeScene2d extends IgeEntity {
         };
         this.update = (ctx, tickDelta) => {
             if (this._ignoreCamera) {
-                // Translate the scene so it is always center of the camera
-                const cam = ige._currentCamera;
-                this.translateTo(cam._translate.x, cam._translate.y, cam._translate.z);
-                this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
-                this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);
-                //this._localMatrix.multiply(ige._currentCamera._worldMatrix.getInverse());
+                // Translate the scene, so it is always center of the camera
+                const cam = ige.engine._currentCamera;
+                if (cam) {
+                    this.translateTo(cam._translate.x, cam._translate.y, cam._translate.z);
+                    this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
+                    this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);
+                    //this._localMatrix.multiply(ige._currentCamera._worldMatrix.getInverse());
+                }
             }
             super.update(ctx, tickDelta);
         };
@@ -153,6 +155,7 @@ class IgeScene2d extends IgeEntity {
         let str = super._stringify(), i;
         // Loop properties and add property assignment code to string
         for (i in this) {
+            // @ts-ignore
             if (this.hasOwnProperty(i) && this[i] !== undefined) {
                 switch (i) {
                     case "_shouldRender":

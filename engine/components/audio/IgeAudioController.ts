@@ -7,15 +7,13 @@ export class IgeAudioController extends IgeEventingClass {
 	_disabled: boolean = false;
 	_register: Record<string, AudioBuffer> = {};
 	_ctx?: AudioContext;
-	_masterVolumeNode?: GainNode;
+	_masterVolumeNode: GainNode;
 
 	constructor () {
 		super();
 		this._active = false;
 		this._disabled = false;
 		this._register = {};
-
-		if (!isClient) return;
 
 		this._ctx = this.getContext();
 

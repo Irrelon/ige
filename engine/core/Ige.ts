@@ -23,7 +23,7 @@ export class Ige {
 	textures: IgeTextures = new IgeTextures();
 	metrics: IgeMetrics = new IgeMetrics();
 	input: IgeInputComponent = new IgeInputComponent();
-	audio: IgeAudioController = new IgeAudioController();
+	audio?: IgeAudioController;
 	network?: IgeNetIoClientComponent | IgeNetIoServerComponent;
 	register: IgeObjectRegister = new IgeObjectRegister();
 	categoryRegister: IgeArrayRegister<IgeCanRegisterByCategory> = new IgeArrayRegister("_category", "_categoryRegistered");
@@ -44,6 +44,8 @@ export class Ige {
 			import("../components/network/net.io/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
 				this.network = new Module();
 			});
+
+			this.audio = new IgeAudioController();
 		}
 
 		if (isServer) {
