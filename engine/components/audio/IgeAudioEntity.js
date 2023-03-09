@@ -28,6 +28,7 @@ export class IgeAudioEntity extends IgeObject {
             gain: 1,
             panner: defaultPanner
         };
+        this._audioId = audioId;
         this._audioInterface = new IgeAudio(audioId);
         this._options = options;
         if (this._options.relativeTo) {
@@ -45,6 +46,7 @@ export class IgeAudioEntity extends IgeObject {
         }
     }
     relativeTo(val) {
+        var _a;
         if (val !== undefined) {
             const audioInterface = this.audioInterface();
             if (!audioInterface)
@@ -57,14 +59,7 @@ export class IgeAudioEntity extends IgeObject {
             if (!audioInterface.panner()) {
                 // Create a panner node for the audio output
                 this._panner = new PannerNode(ige.audio._ctx, this._options.panner);
-                // Run through options and apply to panner
-                for (const key in this._options.panner) {
-                    if (this._options.panner.hasOwnProperty(key)) {
-                        this._panner[key] = this._options.panner[key];
-                    }
-                }
-                this.audioInterface()
-                    .panner(this._panner);
+                (_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.panner(this._panner);
             }
             return this;
         }
@@ -75,14 +70,16 @@ export class IgeAudioEntity extends IgeObject {
      * @returns {Boolean} True if playing, false if not.
      */
     playing() {
-        return this.audioInterface().playing();
+        var _a;
+        return (_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.playing();
     }
     url(url) {
+        var _a, _b;
         if (url !== undefined) {
-            this.audioInterface().url(url);
+            (_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.url(url);
             return this;
         }
-        return this.audioInterface().url();
+        return (_b = this.audioInterface()) === null || _b === void 0 ? void 0 : _b.url();
     }
     /**
      * Gets / sets the id of the audio stream to use for
@@ -96,12 +93,12 @@ export class IgeAudioEntity extends IgeObject {
      * @returns {*}
      */
     audioId(audioId) {
+        var _a, _b;
         if (audioId !== undefined) {
-            this.audioInterface()
-                .audioId(audioId);
+            (_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.audioId(audioId);
             return this;
         }
-        return this.audioInterface().audioId();
+        return (_b = this.audioInterface()) === null || _b === void 0 ? void 0 : _b.audioId();
     }
     /**
      * Starts playback of the audio.
@@ -111,7 +108,8 @@ export class IgeAudioEntity extends IgeObject {
      * @returns {IgeAudioEntity}
      */
     play(loop = false) {
-        this.audioInterface().play(loop);
+        var _a;
+        (_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.play(loop);
         return this;
     }
     /**
@@ -119,7 +117,8 @@ export class IgeAudioEntity extends IgeObject {
      * @returns {IgeAudioEntity}
      */
     stop() {
-        this.audioInterface().stop();
+        var _a;
+        (_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.stop();
         return this;
     }
     audioInterface(audio) {
@@ -135,15 +134,24 @@ export class IgeAudioEntity extends IgeObject {
      * @returns {*}
      */
     streamCreateData() {
-        return this._options;
+        return [this._audioId, this._options];
     }
     update(ctx, tickDelta) {
         if (this._relativeTo && this._panner) {
-            const audioWorldPos = this.worldPosition(), relativeToWorldPos = this._relativeTo.worldPosition();
+            const audioWorldPos = this.worldPosition();
+            const relativeToWorldPos = this._relativeTo.worldPosition();
             // Update the audio origin position
-            this._panner.setPosition(audioWorldPos.x, -audioWorldPos.y, audioWorldPos.z);
+            if (this._panner) {
+                this._panner.positionX.value = audioWorldPos.x;
+                this._panner.positionY.value = -audioWorldPos.y;
+                this._panner.positionZ.value = audioWorldPos.z;
+            }
             // Update the listener
-            this._listener.setPosition(relativeToWorldPos.x, -relativeToWorldPos.y, relativeToWorldPos.z);
+            if (this._listener) {
+                this._listener.positionX.value = relativeToWorldPos.x;
+                this._listener.positionY.value = -relativeToWorldPos.y;
+                this._listener.positionZ.value = relativeToWorldPos.z;
+            }
         }
         super.update(ctx, tickDelta);
     }
@@ -152,8 +160,9 @@ export class IgeAudioEntity extends IgeObject {
      * current audio stream playback.
      */
     destroy() {
+        var _a;
         if (isClient) {
-            this.audioInterface().stop();
+            (_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.stop();
         }
         super.destroy();
         return this;

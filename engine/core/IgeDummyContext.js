@@ -10,6 +10,11 @@ class IgeDummyContext {
         this.globalAlpha = 1;
         this.fillStyle = "";
         this.strokeStyle = "";
+        this.shadowColor = "";
+        this.shadowBlur = 0;
+        this.shadowOffsetX = 0;
+        this.shadowOffsetY = 0;
+        this.lineWidth = 1;
         this.save = undefinedMethod;
         this.restore = undefinedMethod;
         this.translate = undefinedMethod;

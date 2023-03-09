@@ -11,7 +11,6 @@ export class Fairy extends Rotator {
 
 		if (isClient) {
 			this.texture(textures.getTextureById("fairy"));
-			this.debugTransforms();
 		}
 	}
 

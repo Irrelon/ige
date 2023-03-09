@@ -1,7 +1,7 @@
 import { igeClassStore } from "../services/igeClassStore";
 import { IgeConfig, igeConfig } from "./config";
 import { IgeEngine } from "./IgeEngine";
-import { IgeTextures } from "./IgeTextures";
+import { IgeTextureStore } from "./IgeTextureStore";
 import { IgeMetrics } from "./IgeMetrics";
 import IgeInputComponent from "../components/IgeInputComponent";
 import  { IgeObjectRegister } from "./IgeObjectRegister";
@@ -20,7 +20,7 @@ const version = "2.0.0";
 
 export class Ige {
 	engine: IgeEngine = new IgeEngine();
-	textures: IgeTextures = new IgeTextures();
+	textures: IgeTextureStore = new IgeTextureStore();
 	metrics: IgeMetrics = new IgeMetrics();
 	input: IgeInputComponent = new IgeInputComponent();
 	audio?: IgeAudioController;
@@ -57,7 +57,7 @@ export class Ige {
 
 	init () {
 		this.engine.createRoot();
-		//this.textures = new IgeTextures();
+		//this.textures = new IgeTextureStore();
 		//this.engine = new IgeEngine();
 	}
 

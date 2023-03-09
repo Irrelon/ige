@@ -40,6 +40,7 @@ export class IgeAudioEntity extends IgeObject {
 	_relativeTo?: IgeObject;
 	_listener?: AudioListener;
 	_panner?: PannerNode;
+	_audioId?: string;
 
 	constructor (audioId?: string, options: IgeAudioEntityOptions = {
 		started: false,
@@ -49,6 +50,7 @@ export class IgeAudioEntity extends IgeObject {
 	}) {
 		super();
 
+		this._audioId = audioId;
 		this._audioInterface = new IgeAudio(audioId);
 		this._options = options;
 
@@ -83,15 +85,7 @@ export class IgeAudioEntity extends IgeObject {
 				// Create a panner node for the audio output
 				this._panner = new PannerNode(ige.audio._ctx, this._options.panner);
 
-				// Run through options and apply to panner
-				for (const key in this._options.panner) {
-					if (this._options.panner.hasOwnProperty(key)) {
-						this._panner[key] = this._options.panner[key];
-					}
-				}
-
-				this.audioInterface()
-					.panner(this._panner);
+				this.audioInterface()?.panner(this._panner);
 			}
 
 			return this;
@@ -105,7 +99,7 @@ export class IgeAudioEntity extends IgeObject {
 	 * @returns {Boolean} True if playing, false if not.
 	 */
 	playing () {
-		return this.audioInterface().playing();
+		return this.audioInterface()?.playing();
 	}
 
 	/**
@@ -117,11 +111,11 @@ export class IgeAudioEntity extends IgeObject {
 	url (): string;
 	url (url?: string) {
 		if (url !== undefined) {
-			this.audioInterface().url(url);
+			this.audioInterface()?.url(url);
 			return this;
 		}
 
-		return this.audioInterface().url();
+		return this.audioInterface()?.url();
 	}
 
 	/**
@@ -135,15 +129,14 @@ export class IgeAudioEntity extends IgeObject {
 	 * engine.
 	 * @returns {*}
 	 */
-	audioId (audioId) {
+	audioId (audioId?: string) {
 		if (audioId !== undefined) {
-			this.audioInterface()
-				.audioId(audioId);
+			this.audioInterface()?.audioId(audioId);
 
 			return this;
 		}
 
-		return this.audioInterface().audioId();
+		return this.audioInterface()?.audioId();
 	}
 
 	/**
@@ -154,7 +147,7 @@ export class IgeAudioEntity extends IgeObject {
 	 * @returns {IgeAudioEntity}
 	 */
 	play (loop: boolean = false) {
-		this.audioInterface().play(loop);
+		this.audioInterface()?.play(loop);
 		return this;
 	}
 
@@ -163,7 +156,7 @@ export class IgeAudioEntity extends IgeObject {
 	 * @returns {IgeAudioEntity}
 	 */
 	stop () {
-		this.audioInterface().stop();
+		this.audioInterface()?.stop();
 		return this;
 	}
 
@@ -190,19 +183,27 @@ export class IgeAudioEntity extends IgeObject {
 	 * @returns {*}
 	 */
 	streamCreateData () {
-		return this._options;
+		return [this._audioId, this._options];
 	}
 
 	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		if (this._relativeTo && this._panner) {
-			const audioWorldPos = this.worldPosition(),
-				relativeToWorldPos = this._relativeTo.worldPosition();
+			const audioWorldPos = this.worldPosition();
+			const relativeToWorldPos = this._relativeTo.worldPosition();
 
 			// Update the audio origin position
-			this._panner.setPosition(audioWorldPos.x, -audioWorldPos.y, audioWorldPos.z);
+			if (this._panner) {
+				this._panner.positionX.value = audioWorldPos.x;
+				this._panner.positionY.value = -audioWorldPos.y;
+				this._panner.positionZ.value = audioWorldPos.z;
+			}
 
 			// Update the listener
-			this._listener.setPosition(relativeToWorldPos.x, -relativeToWorldPos.y, relativeToWorldPos.z);
+			if (this._listener) {
+				this._listener.positionX.value = relativeToWorldPos.x;
+				this._listener.positionY.value = -relativeToWorldPos.y;
+				this._listener.positionZ.value = relativeToWorldPos.z;
+			}
 		}
 
 		super.update(ctx, tickDelta);
@@ -214,7 +215,7 @@ export class IgeAudioEntity extends IgeObject {
 	 */
 	destroy () {
 		if (isClient) {
-			this.audioInterface().stop();
+			this.audioInterface()?.stop();
 		}
 
 		super.destroy();

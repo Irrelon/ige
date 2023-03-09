@@ -23,7 +23,7 @@ export class Client extends IgeBaseClass {
 		const network = (ige.network as IgeNetIoClientComponent);
 
 		//ige.engine.addComponent(IgeEditorComponent);
-		ige.audio.masterVolume(options.get('masterVolume', 1));
+		ige.audio?.masterVolume(options.get('masterVolume', 1));
 		//(ige.components.input as IgeInputComponent).debug(true);
 
 		// Load the game textures
@@ -47,12 +47,12 @@ export class Client extends IgeBaseClass {
 					// the items are added to the scenegraph)
 					ige.engine.addGraph(Level1);
 
-					ige.engine._currentViewport.drawBounds(true)
+					ige.engine.currentViewport()?.drawBounds(true);
 
 					network.start('http://localhost:2000', () => {
-						network.send("testRequest", "foo", (err, data) => {
-							console.log("testRequest response", err, data);
-						});
+						// network.send("testRequest", "foo", (err, data) => {
+						// 	console.log("testRequest response", err, data);
+						// });
 					});
 				}
 			});

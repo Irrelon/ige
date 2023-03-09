@@ -1,5 +1,6 @@
 import { ige } from "../instance.js";
 import IgeEntity from "./IgeEntity.js";
+import IgeViewport from "./IgeViewport.js";
 /**
  * The engine's root entity that all the scenegraph lives from.
  */
@@ -77,12 +78,11 @@ class IgeRoot extends IgeEntity {
         return ige._mousePos.clone();
     }
     _childMounted(child) {
-        if (child.IgeViewport) {
+        if (child instanceof IgeViewport) {
             // The first mounted viewport gets set as the current
             // one before any rendering is done
             if (!ige.engine._currentViewport) {
-                ige.engine._currentViewport = child;
-                ige.engine._currentCamera = child.camera;
+                ige.engine.currentViewport(child);
             }
         }
         super._childMounted(child);

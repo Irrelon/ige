@@ -1,8 +1,8 @@
 import { IgeAssets } from "./IgeAssets";
+import { IgeImage } from "./IgeImage";
 import type IgeTexture from "./IgeTexture";
-import IgeImage from "./IgeImage";
 
-export class IgeTextures extends IgeAssets<IgeTexture> {
+export class IgeTextureStore extends IgeAssets<IgeTexture> {
 	_textureImageStore: Record<string, IgeImage> = {};
 
 	haveAllTexturesLoaded = () => {

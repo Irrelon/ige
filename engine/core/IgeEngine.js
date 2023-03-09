@@ -14,6 +14,7 @@ import IgePoint3d from "./IgePoint3d.js";
 import IgeDummyContext from "./IgeDummyContext.js";
 import IgePoint2d from "./IgePoint2d.js";
 import IgeEntity from "./IgeEntity.js";
+import IgeViewport from "./IgeViewport.js";
 export class IgeEngine extends IgeEntity {
     constructor() {
         super();
@@ -447,6 +448,13 @@ export class IgeEngine extends IgeEntity {
             return this;
         }
         return this._spawnQueue;
+    }
+    currentViewport(viewport) {
+        if (viewport instanceof IgeViewport) {
+            ige.engine._currentViewport = viewport;
+            ige.engine._currentCamera = viewport.camera;
+        }
+        return ige.engine._currentViewport;
     }
     /**
      * Sets the canvas element that will be used as the front-buffer.

@@ -100,8 +100,8 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 	 * @param {String=} id The id to set to.
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	id(id: string): this;
-	id(): string;
+	id (id: string): this;
+	id (): string;
 	id (id?: string): this | string | undefined {
 		if (id !== undefined) {
 			// Check if this ID already exists in the object register
@@ -151,8 +151,8 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 	 * @param {String=} url "The url used to load the file for this texture.
 	 * @return {*}
 	 */
-	url(url: string): this;
-	url(): string | undefined;
+	url (url: string): this;
+	url (): string | undefined;
 	url (url?: string) {
 		if (url !== undefined) {
 			this._url = url;
@@ -185,8 +185,9 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 
 		ige.textures.onLoadStart(imageUrl, this);
 
-		if (!ige.textures._textureImageStore[imageUrl]) {
-			this.dependsOn(["IgeImageClass"], () => {
+		this.dependsOn(["IgeImageClass"], () => {
+			if (!ige.textures._textureImageStore[imageUrl]) {
+
 				// Image not in cache, create the image object
 				const image = ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = new IgeImageClass();
 				image._igeTextures = image._igeTextures || [];
@@ -230,44 +231,45 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 
 				// Start the image loading by setting the source url
 				image.src = imageUrl;
-			});
-		} else {
-			// Grab the cached image object
-			const image = this.image = this._originalImage = ige.textures._textureImageStore[imageUrl];
 
-			// Add this texture to the textures that are using this image
-			image._igeTextures.push(this);
+			} else {
+				// Grab the cached image object
+				const image = this.image = this._originalImage = ige.textures._textureImageStore[imageUrl];
 
-			if (image._loaded) {
-				// The cached image object is already loaded so
-				// fire off the relevant events
-				this._renderMode = 0;
+				// Add this texture to the textures that are using this image
+				image._igeTextures.push(this);
 
-				this.sizeX(image.width);
-				this.sizeY(image.height);
+				if (image._loaded) {
+					// The cached image object is already loaded so
+					// fire off the relevant events
+					this._renderMode = 0;
 
-				if (image.width % 2) {
-					this.log(
-						"This texture's width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-						this._url,
-						"warning"
-					);
+					this.sizeX(image.width);
+					this.sizeY(image.height);
+
+					if (image.width % 2) {
+						this.log(
+							"This texture's width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
+							this._url,
+							"warning"
+						);
+					}
+
+					if (image.height % 2) {
+						this.log(
+							"This texture's height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
+							this._url,
+							"warning"
+						);
+					}
+
+					this._cells[1] = [0, 0, this._sizeX, this._sizeY];
+
+					// Mark texture as loaded
+					this._textureLoaded();
 				}
-
-				if (image.height % 2) {
-					this.log(
-						"This texture's height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-						this._url,
-						"warning"
-					);
-				}
-
-				this._cells[1] = [0, 0, this._sizeX, this._sizeY];
-
-				// Mark texture as loaded
-				this._textureLoaded();
 			}
-		}
+		});
 	}
 
 	_textureLoaded () {

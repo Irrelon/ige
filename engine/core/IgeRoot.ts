@@ -2,6 +2,7 @@ import { ige } from "../instance";
 import IgeEntity from "./IgeEntity";
 import IgeViewport from "./IgeViewport";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeObject } from "./IgeObject";
 
 /**
  * The engine's root entity that all the scenegraph lives from.
@@ -100,13 +101,12 @@ class IgeRoot extends IgeEntity {
 		return entArr;
 	};
 
-	_childMounted (child: IgeViewport) {
-		if (child.IgeViewport) {
+	_childMounted (child: IgeObject) {
+		if (child instanceof IgeViewport) {
 			// The first mounted viewport gets set as the current
 			// one before any rendering is done
 			if (!ige.engine._currentViewport) {
-				ige.engine._currentViewport = child;
-				ige.engine._currentCamera = child.camera;
+				ige.engine.currentViewport(child);
 			}
 		}
 

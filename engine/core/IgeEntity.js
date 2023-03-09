@@ -1,6 +1,6 @@
 import { ige } from "../instance.js";
 import { isClient, isServer } from "../services/clientServer.js";
-import { degreesToRadians, toIso, traceSet } from "../services/utils.js";
+import { degreesToRadians, traceSet } from "../services/utils.js";
 import IgePoint2d from "./IgePoint2d.js";
 import IgePoint3d from "./IgePoint3d.js";
 import IgeMatrix2d from "./IgeMatrix2d.js";
@@ -1173,115 +1173,6 @@ class IgeEntity extends IgeObject {
             return this;
         }
         return this._highlight;
-    }
-    /**
-     * Returns the absolute world position of the entity as an
-     * IgePoint3d.
-     * @example #Get the world position of the entity
-     *     var wordPos = entity.worldPosition();
-     * @return {IgePoint3d} The absolute world position of the
-     * entity.
-     */
-    worldPosition() {
-        return new IgePoint3d(this._worldMatrix.matrix[2], this._worldMatrix.matrix[5], 0);
-    }
-    /**
-     * Returns the absolute world rotation z of the entity as a
-     * value in radians.
-     * @example #Get the world rotation of the entity's z axis
-     *     var wordRot = entity.worldRotationZ();
-     * @return {Number} The absolute world rotation z of the
-     * entity.
-     */
-    worldRotationZ() {
-        return this._worldMatrix.rotationRadians();
-    }
-    /**
-     * Converts an array of points from local space to this entity's
-     * world space using its world transform matrix. This will alter
-     * the points passed in the array directly.
-     * @param {Array} points The array of IgePoints to convert.
-     * @param viewport
-     * @param inverse
-     */
-    localToWorld(points, viewport, inverse = false) {
-        // Commented as this was doing literally nothing
-        //viewport = viewport || ige.engine._currentViewport;
-        if (this._adjustmentMatrix) {
-            // Apply the optional adjustment matrix
-            this._worldMatrix.multiply(this._adjustmentMatrix);
-        }
-        if (!inverse) {
-            this._worldMatrix.transform(points, this);
-        }
-        else {
-            this._localMatrix.transform(points, this);
-            //this._worldMatrix.getInverse().transform(points, this);
-        }
-        if (this._ignoreCamera) {
-            //viewport.camera._worldMatrix.transform(points, this);
-        }
-    }
-    /**
-     * Converts a point from local space to this entity's world space
-     * using its world transform matrix. This will alter the point's
-     * data directly.
-     * @param {IgePoint3d} point The IgePoint3d to convert.
-     * @param viewport
-     */
-    localToWorldPoint(point, viewport) {
-        // TODO: We commented this because it doesn't even get used... is this a mistake?
-        //viewport = viewport || ige.engine._currentViewport;
-        this._worldMatrix.transform([point], this);
-    }
-    /**
-     * Returns the screen position of the entity as an IgePoint3d where x is the
-     * "left" and y is the "top", useful for positioning HTML elements at the
-     * screen location of an IGE entity. This method assumes that the top-left
-     * of the main canvas element is at 0, 0. If not you can adjust the values
-     * yourself to allow for offset.
-     * @example #Get the screen position of the entity
-     *     var screenPos = entity.screenPosition();
-     * @return {IgePoint3d} The screen position of the entity.
-     */
-    screenPosition() {
-        if (!ige.engine._currentCamera) {
-            throw new Error("Cannot get screen position of entity, ige instance has no camera!");
-        }
-        return new IgePoint3d(Math.floor((this._worldMatrix.matrix[2] - ige.engine._currentCamera._translate.x) * ige.engine._currentCamera._scale.x + ige.engine.root._bounds2d.x2), Math.floor((this._worldMatrix.matrix[5] - ige.engine._currentCamera._translate.y) * ige.engine._currentCamera._scale.y + ige.engine.root._bounds2d.y2), 0);
-    }
-    /**
-     * @deprecated Use bounds3dPolygon instead
-     */
-    localIsoBoundsPoly() {
-    }
-    localBounds3dPolygon(recalculate = false) {
-        if (this._bounds3dPolygonDirty || !this._localBounds3dPolygon || recalculate) {
-            const geom = this._bounds3d, poly = new IgePoly2d(), 
-            // Bottom face
-            bf2 = toIso(+geom.x2, -geom.y2, -geom.z2), bf3 = toIso(+geom.x2, +geom.y2, -geom.z2), bf4 = toIso(-geom.x2, +geom.y2, -geom.z2), 
-            // Top face
-            tf1 = toIso(-geom.x2, -geom.y2, geom.z2), tf2 = toIso(+geom.x2, -geom.y2, geom.z2), tf4 = toIso(-geom.x2, +geom.y2, geom.z2);
-            poly.addPoint(tf1.x, tf1.y)
-                .addPoint(tf2.x, tf2.y)
-                .addPoint(bf2.x, bf2.y)
-                .addPoint(bf3.x, bf3.y)
-                .addPoint(bf4.x, bf4.y)
-                .addPoint(tf4.x, tf4.y)
-                .addPoint(tf1.x, tf1.y);
-            this._localBounds3dPolygon = poly;
-            this._bounds3dPolygonDirty = false;
-        }
-        return this._localBounds3dPolygon;
-    }
-    bounds3dPolygon(recalculate = false) {
-        if (this._bounds3dPolygonDirty || !this._bounds3dPolygon || recalculate) {
-            const poly = this.localBounds3dPolygon(recalculate).clone();
-            // Convert local co-ordinates to world based on entities world matrix
-            this.localToWorld(poly._poly);
-            this._bounds3dPolygon = poly;
-        }
-        return this._bounds3dPolygon;
     }
     // Commented as this can't have ever worked
     // mouseInBounds3d (recalculate = false): boolean {

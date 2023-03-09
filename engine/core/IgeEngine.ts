@@ -8,9 +8,9 @@ import IgeInputComponent from "../components/IgeInputComponent";
 import IgeEntity from "./IgeEntity";
 import { IgeObject } from "./IgeObject";
 import IgeDummyCanvas from "./IgeDummyCanvas";
+import IgeViewport from "./IgeViewport";
 import type { SyncEntry, SyncMethod } from "../../types/SyncEntry";
 import type IgeBaseClass from "./IgeBaseClass";
-import type IgeViewport from "./IgeViewport";
 import type IgeCamera from "./IgeCamera";
 import type IgeSceneGraph from "./IgeSceneGraph";
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
@@ -273,6 +273,15 @@ export class IgeEngine extends IgeEntity {
 		}
 
 		return this._spawnQueue;
+	}
+
+	currentViewport (viewport?: IgeObject) {
+		if (viewport instanceof IgeViewport) {
+			ige.engine._currentViewport = viewport;
+			ige.engine._currentCamera = viewport.camera;
+		}
+
+		return ige.engine._currentViewport;
 	}
 
 	/**

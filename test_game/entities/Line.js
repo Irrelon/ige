@@ -15,7 +15,6 @@ export class Line extends IgeEntity {
             .translateTo((x2 / 2) + (x1 / 2), (y2 / 2) + (y1 / 2), 0);
         if (isClient) {
             this.texture(textures.getTextureById("line"));
-            this.debugTransforms();
         }
     }
     streamCreateData(allGood = false) {

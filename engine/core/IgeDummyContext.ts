@@ -11,6 +11,11 @@ class IgeDummyContext {
 	globalAlpha = 1;
 	fillStyle: CanvasRenderingContext2D["fillStyle"] = "";
 	strokeStyle: CanvasRenderingContext2D["strokeStyle"] = "";
+	shadowColor: CanvasRenderingContext2D["shadowColor"] = "";
+	shadowBlur: CanvasRenderingContext2D["shadowBlur"] = 0;
+	shadowOffsetX: CanvasRenderingContext2D["shadowOffsetX"] = 0;
+	shadowOffsetY: CanvasRenderingContext2D["shadowOffsetY"] = 0;
+	lineWidth: CanvasRenderingContext2D["lineWidth"] = 1;
 	globalCompositeOperation?: string;
 	save = undefinedMethod;
 	restore = undefinedMethod;

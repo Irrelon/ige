@@ -59,7 +59,7 @@ class IgeMatrix2d extends IgeBaseClass {
 		return point;
 	}
 
-	transform (points: IgePoint[], obj: IgeEntity) {
+	transform (points: IgePoint[], obj: IgeObject) {
 		const pointCount = points.length;
 
 		for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {

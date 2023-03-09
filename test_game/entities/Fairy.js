@@ -8,7 +8,6 @@ export class Fairy extends Rotator {
         this.classId = "Fairy";
         if (isClient) {
             this.texture(textures.getTextureById("fairy"));
-            this.debugTransforms();
         }
     }
     streamCreateData(allGood = false) {

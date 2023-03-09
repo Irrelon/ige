@@ -1,7 +1,7 @@
 import { igeClassStore } from "../services/igeClassStore.js";
 import { igeConfig } from "./config.js";
 import { IgeEngine } from "./IgeEngine.js";
-import { IgeTextures } from "./IgeTextures.js";
+import { IgeTextureStore } from "./IgeTextureStore.js";
 import { IgeMetrics } from "./IgeMetrics.js";
 import IgeInputComponent from "../components/IgeInputComponent.js";
 import { IgeObjectRegister } from "./IgeObjectRegister.js";
@@ -13,7 +13,7 @@ const version = "2.0.0";
 export class Ige {
     constructor() {
         this.engine = new IgeEngine();
-        this.textures = new IgeTextures();
+        this.textures = new IgeTextureStore();
         this.metrics = new IgeMetrics();
         this.input = new IgeInputComponent();
         this.register = new IgeObjectRegister();
@@ -70,7 +70,7 @@ export class Ige {
     }
     init() {
         this.engine.createRoot();
-        //this.textures = new IgeTextures();
+        //this.textures = new IgeTextureStore();
         //this.engine = new IgeEngine();
     }
     /**

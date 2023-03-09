@@ -424,7 +424,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 		const createDataArgs = data[4] || [];
 		const parent = ige.$(parentId);
 
-		console.log("Got stream create", data);
+		//console.log("Got stream create", data);
 
 		// Check the required class exists
 		if (parent) {

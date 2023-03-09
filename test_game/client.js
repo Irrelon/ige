@@ -8,6 +8,7 @@ import { Level1 } from "./levels/Level1.js";
 window.ige = ige;
 export class Client extends IgeBaseClass {
     constructor() {
+        var _a;
         // Init the super class
         super();
         this.classId = "Client";
@@ -16,7 +17,7 @@ export class Client extends IgeBaseClass {
         ige.init();
         const network = ige.network;
         //ige.engine.addComponent(IgeEditorComponent);
-        ige.audio.masterVolume(options.get('masterVolume', 1));
+        (_a = ige.audio) === null || _a === void 0 ? void 0 : _a.masterVolume(options.get('masterVolume', 1));
         //(ige.components.input as IgeInputComponent).debug(true);
         // Load the game textures
         textures.load();
@@ -26,6 +27,7 @@ export class Client extends IgeBaseClass {
             ige.engine.createFrontBuffer(true);
             // Start the engine
             ige.engine.start((success) => {
+                var _a;
                 // Check if the engine started successfully
                 if (success) {
                     // Load the base scene data
@@ -35,11 +37,11 @@ export class Client extends IgeBaseClass {
                     // the method being called by the engine and how
                     // the items are added to the scenegraph)
                     ige.engine.addGraph(Level1);
-                    ige.engine._currentViewport.drawBounds(true);
+                    (_a = ige.engine.currentViewport()) === null || _a === void 0 ? void 0 : _a.drawBounds(true);
                     network.start('http://localhost:2000', () => {
-                        network.send("testRequest", "foo", (err, data) => {
-                            console.log("testRequest response", err, data);
-                        });
+                        // network.send("testRequest", "foo", (err, data) => {
+                        // 	console.log("testRequest response", err, data);
+                        // });
                     });
                 }
             });
