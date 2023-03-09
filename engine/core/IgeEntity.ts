@@ -13,6 +13,7 @@ import { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoCl
 import { IgeMountMode } from "../../enums/IgeMountMode";
 import { IgeStreamMode } from "../../enums/IgeStreamMode";
 import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode";
+import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode";
 import type { IgePoint } from "../../types/IgePoint";
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import type { IgeDepthSortObject } from "../../types/IgeDepthSortObject";
@@ -24,7 +25,6 @@ import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "../.
 import type IgeViewport from "./IgeViewport";
 import type IgeTexture from "./IgeTexture";
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory";
-import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode";
 
 /**
  * Creates an entity and handles the entity's life cycle and
@@ -592,11 +592,13 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	width (px: number, lockAspect?: boolean): this;
-	width (): number;
-	width (px?: number, lockAspect = false) {
+	width (px?: number | string, lockAspect = false) {
 		if (px === undefined) {
 			return this._bounds2d.x;
+		}
+
+		if (typeof px === "string") {
+			px = parseFloat(px);
 		}
 
 		if (lockAspect) {
@@ -619,11 +621,13 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	height (px: number, lockAspect?: boolean): this;
-	height (): number;
-	height (px?: number, lockAspect = false) {
+	height (px?: number | string, lockAspect = false) {
 		if (px === undefined) {
 			return this._bounds2d.y;
+		}
+
+		if (typeof px === "string") {
+			px = parseFloat(px);
 		}
 
 		if (lockAspect) {
@@ -824,8 +828,6 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	cell (val: number | null): this;
-	cell (): number | null;
 	cell (val?: number | null) {
 		if (val !== undefined && (val === null || val > 0)) {
 			this._cell = val;

@@ -29,6 +29,7 @@ class IgeDummyContext {
         this.moveTo = undefinedMethod;
         this.lineTo = undefinedMethod;
         this.arc = undefinedMethod;
+        this.arcTo = undefinedMethod;
         this.clearRect = undefinedMethod;
         this.beginPath = undefinedMethod;
         this.clip = undefinedMethod;
