@@ -5,6 +5,9 @@ export class IgeObjectRegister {
     get(id) {
         return this._store[id];
     }
+    all() {
+        return this._store;
+    }
     /**
      * Register an object with the engine object register. The
      * register allows you to access an object by its id with

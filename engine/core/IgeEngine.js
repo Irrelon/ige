@@ -7,13 +7,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import { ige } from "../instance.js";
+import { isClient, isServer } from "../services/clientServer.js";
 import IgeRoot from "./IgeRoot.js";
 import IgePoint3d from "./IgePoint3d.js";
 import IgeDummyContext from "./IgeDummyContext.js";
 import IgePoint2d from "./IgePoint2d.js";
 import IgeEntity from "./IgeEntity.js";
-import { ige } from "../instance.js";
-import { isClient, isServer } from "../services/clientServer.js";
 export class IgeEngine extends IgeEntity {
     constructor() {
         super();
@@ -163,13 +163,6 @@ export class IgeEngine extends IgeEntity {
             this._drawCount = 0;
         };
         /**
-         * Checks if all textures have finished loading and returns true if so.
-         * @return {Boolean}
-         */
-        this.texturesLoaded = () => {
-            return this._texturesLoading === 0;
-        };
-        /**
          * Checks to ensure that a canvas has been assigned to the engine or that the
          * engine is in server mode.
          * @return {Boolean}
@@ -244,11 +237,11 @@ export class IgeEngine extends IgeEntity {
                 if (this._enableUpdates) {
                     if (ige.config.debug._timing) {
                         const updateStart = new Date().getTime();
-                        this.root && this.root.updateSceneGraph(ctx);
+                        this.root && ctx && this.root.updateSceneGraph(ctx);
                         this._updateTime = new Date().getTime() - updateStart;
                     }
                     else {
-                        this.root && this.root.updateSceneGraph(ctx);
+                        this.root && ctx && this.root.updateSceneGraph(ctx);
                     }
                 }
                 // Render the scenegraph
@@ -256,22 +249,22 @@ export class IgeEngine extends IgeEntity {
                     if (!this._useManualRender) {
                         if (ige.config.debug._timing) {
                             const renderStart = new Date().getTime();
-                            this.root && this.root.renderSceneGraph(ctx);
+                            this.root && ctx && this.root.renderSceneGraph(ctx);
                             this._renderTime = new Date().getTime() - renderStart;
                         }
                         else {
-                            this.root && this.root.renderSceneGraph(ctx);
+                            this.root && ctx && this.root.renderSceneGraph(ctx);
                         }
                     }
                     else {
                         if (this._manualRenderQueued) {
                             if (ige.config.debug._timing) {
                                 const renderStart = new Date().getTime();
-                                this.root && this.root.renderSceneGraph(ctx);
+                                this.root && ctx && this.root.renderSceneGraph(ctx);
                                 this._renderTime = new Date().getTime() - renderStart;
                             }
                             else {
-                                this.root && this.root.renderSceneGraph(ctx);
+                                this.root && ctx && this.root.renderSceneGraph(ctx);
                             }
                             this._manualRenderQueued = false;
                         }
@@ -315,7 +308,6 @@ export class IgeEngine extends IgeEntity {
             this._syncIndex = 0;
             this.emit("syncComplete");
         });
-        this.igeClassStore = {};
         this._idCounter = 0;
         this._renderContextModes = ["2d", "three"];
         this._pixelRatioScaling = true; // Default to scaling the canvas to get non-blurry output
@@ -333,9 +325,6 @@ export class IgeEngine extends IgeEntity {
         this._tickDelta = 0; // The time between the last tick and the current one
         this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
         this._state = 0; // Currently stopped
-        this._textureImageStore = {};
-        this._texturesLoading = 0; // Holds a count of currently loading textures
-        this._texturesTotal = 0; // Holds total number of textures loading / loaded
         this._drawCount = 0; // Holds the number of draws since the last frame (calls to drawImage)
         this._dps = 0; // Number of draws that occurred last tick
         this._dpf = 0;
@@ -725,29 +714,34 @@ export class IgeEngine extends IgeEntity {
             this.log("Cannot analyse timing because the ige.config.debug._timing flag is not enabled so no timing data has been recorded!", "warning");
         }
     }
-    saveSceneGraph(item) {
-        if (!item) {
-            item = this.getSceneGraphData();
-        }
-        if (item.obj.stringify) {
-            item.str = item.obj.stringify();
-        }
-        else {
-            console.log("Class " + item.constructor.name + " has no stringify() method! For object: " + item.id, item.obj);
-        }
-        const arr = item.items;
-        if (arr) {
-            const arrCount = arr.length;
-            for (let i = 0; i < arrCount; i++) {
-                this.saveSceneGraph(arr[i]);
-            }
-        }
-        return item;
-    }
+    // TODO: Fix this so it works in typescript
+    // saveSceneGraph (item?: {obj?: IgeObject, str?: any}) {
+    // 	if (!item) {
+    // 		item = this.getSceneGraphData();
+    // 	}
+    //
+    // 	if (item.obj.stringify) {
+    // 		item.str = item.obj.stringify();
+    // 	} else {
+    // 		console.log("Class " + item.constructor.name + " has no stringify() method! For object: " + item.id, item.obj);
+    // 	}
+    //
+    // 	const arr = item.items;
+    //
+    // 	if (arr) {
+    // 		const arrCount = arr.length;
+    //
+    // 		for (let i = 0; i < arrCount; i++) {
+    // 			this.saveSceneGraph(arr[i]);
+    // 		}
+    // 	}
+    //
+    // 	return item;
+    // }
     /**
      * Walks the scene graph and outputs a console map of the graph.
      */
-    sceneGraph(obj, currentDepth, lastDepth) {
+    sceneGraph(obj, currentDepth) {
         let depthSpace = "", di, timingString, arr, arrCount;
         if (currentDepth === undefined) {
             currentDepth = 0;
@@ -783,27 +777,28 @@ export class IgeEngine extends IgeEntity {
                 arrCount = arr.length;
                 // Loop our children
                 while (arrCount--) {
-                    if (arr[arrCount]._scene) {
-                        if (arr[arrCount]._scene._shouldRender) {
+                    const vp = arr[arrCount];
+                    if (vp._scene) {
+                        if (vp._scene._shouldRender) {
                             if (ige.config.debug._timing) {
                                 timingString = "";
-                                timingString += "T: " + this._timeSpentInTick[arr[arrCount].id()];
-                                if (this._timeSpentLastTick[arr[arrCount].id()]) {
-                                    if (typeof this._timeSpentLastTick[arr[arrCount].id()].ms === "number") {
-                                        timingString += " | LastTick: " + this._timeSpentLastTick[arr[arrCount].id()].ms;
+                                timingString += "T: " + this._timeSpentInTick[vp.id()];
+                                if (this._timeSpentLastTick[vp.id()]) {
+                                    if (typeof this._timeSpentLastTick[vp.id()].ms === "number") {
+                                        timingString += " | LastTick: " + this._timeSpentLastTick[vp.id()].ms;
                                     }
-                                    if (typeof this._timeSpentLastTick[arr[arrCount].id()].depthSortChildren === "number") {
+                                    if (typeof this._timeSpentLastTick[vp.id()].depthSortChildren === "number") {
                                         timingString +=
-                                            " | ChildDepthSort: " + this._timeSpentLastTick[arr[arrCount].id()].depthSortChildren;
+                                            " | ChildDepthSort: " + this._timeSpentLastTick[vp.id()].depthSortChildren;
                                     }
                                 }
                                 console.log(depthSpace +
                                     "----" +
-                                    arr[arrCount].id() +
+                                    vp.id() +
                                     " (" +
-                                    arr[arrCount].constructor.name +
+                                    vp.constructor.name +
                                     ") : " +
-                                    arr[arrCount]._inView +
+                                    vp._inView +
                                     " Timing(" +
                                     timingString +
                                     ")");
@@ -811,13 +806,13 @@ export class IgeEngine extends IgeEntity {
                             else {
                                 console.log(depthSpace +
                                     "----" +
-                                    arr[arrCount].id() +
+                                    vp.id() +
                                     " (" +
-                                    arr[arrCount].constructor.name +
+                                    vp.constructor.name +
                                     ") : " +
-                                    arr[arrCount]._inView);
+                                    vp._inView);
                             }
-                            this.sceneGraph(arr[arrCount]._scene, currentDepth + 1);
+                            this.sceneGraph(vp._scene, currentDepth + 1);
                         }
                     }
                 }
@@ -839,12 +834,15 @@ export class IgeEngine extends IgeEntity {
      */
     getSceneGraphData(rootObject, noRef) {
         const items = [];
-        let finalRootObject = rootObject;
-        if (!rootObject) {
-            // Set the obj to the main ige instance
-            finalRootObject = this;
+        let finalRootObject;
+        if (rootObject) {
+            finalRootObject = rootObject;
         }
-        item = {
+        else {
+            // Set the obj to the main ige instance
+            finalRootObject = this.root;
+        }
+        const item = {
             text: "[" + finalRootObject.constructor.name + "] " + finalRootObject.id(),
             id: finalRootObject.id(),
             classId: finalRootObject.constructor.name
@@ -861,49 +859,50 @@ export class IgeEngine extends IgeEntity {
                 item.parentId = "sceneGraph";
             }
         }
-        if (finalRootObject === this) {
+        if (finalRootObject === this.root) {
             // Loop the viewports
-            arr = finalRootObject._children;
+            const arr = finalRootObject._children;
             if (arr) {
-                arrCount = arr.length;
+                let arrCount = arr.length;
                 // Loop our children
                 while (arrCount--) {
-                    tempItem = {
-                        text: "[" + arr[arrCount].constructor.name + "] " + arr[arrCount].id(),
-                        id: arr[arrCount].id(),
-                        classId: arr[arrCount].constructor.name
+                    const vp = arr[arrCount];
+                    const tempItem = {
+                        text: "[" + vp.constructor.name + "] " + vp.id(),
+                        id: vp.id(),
+                        classId: vp.constructor.name
                     };
                     if (!noRef) {
-                        tempItem.parent = arr[arrCount]._parent;
-                        tempItem.obj = arr[arrCount];
+                        tempItem.parent = vp._parent;
+                        tempItem.obj = vp;
                     }
                     else {
-                        if (arr[arrCount]._parent) {
-                            tempItem.parentId = arr[arrCount]._parent.id();
+                        if (vp._parent) {
+                            tempItem.parentId = vp._parent.id();
                         }
                     }
-                    if (arr[arrCount].camera) {
+                    if (vp.camera) {
                         // Add the viewport camera as an object on the scenegraph
-                        tempCam = {
-                            text: "[IgeCamera] " + arr[arrCount].id(),
-                            id: arr[arrCount].camera.id(),
-                            classId: arr[arrCount].camera.constructor.name
+                        const tempCam = {
+                            text: "[IgeCamera] " + vp.id(),
+                            id: vp.camera.id(),
+                            classId: vp.camera.constructor.name
                         };
                         if (!noRef) {
-                            tempCam.parent = arr[arrCount];
-                            tempCam.obj = arr[arrCount].camera;
+                            tempCam.parent = vp;
+                            tempCam.obj = vp.camera;
                         }
                         else {
-                            tempCam.parentId = arr[arrCount].id();
+                            tempCam.parentId = vp.id();
                         }
-                        if (arr[arrCount]._scene) {
-                            tempItem2 = this.getSceneGraphData(arr[arrCount]._scene, noRef);
+                        if (vp._scene) {
+                            const tempItem2 = this.getSceneGraphData(vp._scene, noRef);
                             tempItem.items = [tempCam, tempItem2];
                         }
                     }
                     else {
-                        if (arr[arrCount]._scene) {
-                            tempItem2 = this.getSceneGraphData(arr[arrCount]._scene, noRef);
+                        if (vp._scene) {
+                            const tempItem2 = this.getSceneGraphData(vp._scene, noRef);
                             tempItem.items = [tempItem2];
                         }
                     }
@@ -912,12 +911,12 @@ export class IgeEngine extends IgeEntity {
             }
         }
         else {
-            arr = finalRootObject._children;
+            const arr = finalRootObject._children;
             if (arr) {
-                arrCount = arr.length;
+                let arrCount = arr.length;
                 // Loop our children
                 while (arrCount--) {
-                    tempItem = this.getSceneGraphData(arr[arrCount], noRef);
+                    const tempItem = this.getSceneGraphData(arr[arrCount], noRef);
                     items.push(tempItem);
                 }
             }
@@ -1062,10 +1061,10 @@ export class IgeEngine extends IgeEntity {
      * @param {String} id The id of the object not to hide.
      */
     hideAllExcept(id) {
-        let i, arr = this._register;
-        for (i in arr) {
-            if (i !== id) {
-                arr[i].opacity(0);
+        const arr = ige.register.all();
+        for (const key in arr) {
+            if (key !== id && "opacity" in arr[key]) {
+                arr[key].opacity(0);
             }
         }
     }
@@ -1073,9 +1072,11 @@ export class IgeEngine extends IgeEntity {
      * Calls the show() method for every object on the scenegraph.
      */
     showAll() {
-        let i, arr = this._register;
-        for (i in arr) {
-            arr[i].show();
+        const arr = ige.register.all();
+        for (const key in arr) {
+            if ("show" in arr[key]) {
+                arr[key].show();
+            }
         }
     }
     /**
@@ -1087,15 +1088,13 @@ export class IgeEngine extends IgeEntity {
      * @param {Number} fpsRate
      */
     setFps(fpsRate) {
-        if (fpsRate !== undefined) {
-            // Override the default requestAnimFrame handler and set
-            // our own method up so that we can control the frame rate
-            this.requestAnimFrame = (callback) => {
-                setTimeout(() => {
-                    callback(new Date().getTime());
-                }, 1000 / fpsRate);
-            };
-        }
+        // Override the default requestAnimFrame handler and set
+        // our own method up so that we can control the frame rate
+        this.requestAnimFrame = (callback) => {
+            setTimeout(() => {
+                callback(new Date().getTime());
+            }, 1000 / fpsRate);
+        };
     }
     requestAnimFrame(frameHandlerFunction, element) {
         if (isClient) {
@@ -1110,14 +1109,6 @@ export class IgeEngine extends IgeEntity {
         this.log("showStats has been removed from the ige in favour of the new editor component, please remove this call from your code.");
     }
     /**
-     * Defines a class in the engine's class repository.
-     * @param {String} id The unique class ID or name.
-     * @param {Object} obj The class definition.
-     */
-    defineClass(id, obj) {
-        this.igeClassStore[id] = obj;
-    }
-    /**
      * Retrieves a class by its ID that was defined with
      * a call to defineClass().
      * @param {String} id The ID of the class to retrieve.
@@ -1127,7 +1118,7 @@ export class IgeEngine extends IgeEntity {
         if (typeof id === "object" || typeof id === "function") {
             return id;
         }
-        return this.igeClassStore[id];
+        return ige.classStore[id];
     }
     /**
      * Returns true if the class specified has been defined.
@@ -1135,7 +1126,7 @@ export class IgeEngine extends IgeEntity {
      * @returns {*}
      */
     classDefined(id) {
-        return Boolean(this.igeClassStore[id]);
+        return Boolean(ige.classStore[id]);
     }
     /**
      * Generates a new instance of a class defined with a call
@@ -1147,7 +1138,7 @@ export class IgeEngine extends IgeEntity {
      */
     newClassInstance(id, ...args) {
         const ClassDefinition = this.getClass(id);
-        return new ClassDefinition(this, ...args);
+        return new ClassDefinition(...args);
     }
     /**
      * Checks if all engine start dependencies have been satisfied.
@@ -1200,7 +1191,7 @@ export class IgeEngine extends IgeEntity {
             return;
         }
         const totalWidth = (_a = elem.parentNode) === null || _a === void 0 ? void 0 : _a.offsetWidth;
-        const currentWidth = Math.floor((totalWidth / this._texturesTotal) * (this._texturesTotal - this._texturesLoading));
+        const currentWidth = Math.floor((totalWidth / ige.textures._assetsTotal) * (ige.textures._assetsTotal - ige.textures._assetsLoading));
         elem.style.width = currentWidth + "px";
         if (!textElem) {
             return;
@@ -1212,66 +1203,8 @@ export class IgeEngine extends IgeEntity {
         textElem.innerHTML =
             this._loadingPreText +
                 " " +
-                Math.floor((100 / this._texturesTotal) * (this._texturesTotal - this._texturesLoading)) +
+                Math.floor((100 / ige.textures._assetsTotal) * (ige.textures._assetsTotal - ige.textures._assetsLoading)) +
                 "%";
-    }
-    /**
-     * Adds one to the number of textures currently loading.
-     */
-    textureLoadStart(url, textureObj) {
-        this._texturesLoading++;
-        this._texturesTotal++;
-        this.updateProgress();
-        this.emit("textureLoadStart", textureObj);
-    }
-    /**
-     * Subtracts one from the number of textures currently loading and if no more need
-     * to load, it will also call the _allTexturesLoaded() method.
-     */
-    textureLoadEnd(url, textureObj) {
-        if (!textureObj._destroyed) {
-            // Add the texture to the _textureStore array
-            this._textureStore.push(textureObj);
-        }
-        // Decrement the overall loading number
-        this._texturesLoading--;
-        this.updateProgress();
-        this.emit("textureLoadEnd", textureObj);
-        // If we've finished...
-        if (this._texturesLoading === 0) {
-            // All textures have finished loading
-            this.updateProgress();
-            setTimeout(() => {
-                this._allTexturesLoaded();
-            }, 100);
-        }
-    }
-    /**
-     * Returns a texture from the texture store by it's url.
-     * @param {String} url
-     * @return {IgeTexture}
-     */
-    textureFromUrl(url) {
-        const arr = this._textureStore;
-        let arrCount = arr.length;
-        while (arrCount--) {
-            const item = arr[arrCount];
-            if (item._url === url) {
-                return item;
-            }
-        }
-    }
-    /**
-     * Emits the "texturesLoaded" event.
-     * @private
-     */
-    _allTexturesLoaded() {
-        if (!this._loggedATL) {
-            this._loggedATL = true;
-            this.log("All textures have loaded");
-        }
-        // Fire off an event about this
-        this.emit("texturesLoaded");
     }
     /**
      * Gets / sets the default smoothing value for all new
@@ -1305,7 +1238,7 @@ export class IgeEngine extends IgeEntity {
         }
         id = val.toString(16);
         // Check if the ID is already in use
-        while (this.$(id)) {
+        while (ige.$(id)) {
             val += Math.pow(10, 17);
             id = val.toString(16);
         }
@@ -1509,6 +1442,7 @@ export class IgeEngine extends IgeEntity {
             this.removeCanvas();
         }
         this.log("Engine destroy complete.");
+        return this;
     }
     /**
      * Load a js script file into memory via a path or url.
