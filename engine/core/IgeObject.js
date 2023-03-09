@@ -741,7 +741,6 @@ export class IgeObject extends IgeEventingClass {
      *
      *     console.log(point);
      * @return {IgePoint3d} The transformed point.
-     * @private
      */
     _transformPoint(point) {
         if (this._parent) {

@@ -1,13 +1,11 @@
 // TODO: Implement the _stringify() method for this class
 import IgeEntity from "./IgeEntity.js";
-import WithUiPositionMixin from "../mixins/IgeUiPositionMixin.js";
-import WithUiStyleMixin from "../mixins/IgeUiStyleMixin.js";
 /**
  * Creates a new UI entity. UI entities use more resources and CPU
  * than standard IgeEntity instances so only use them if an IgeEntity
  * won't do the job.
  */
-class IgeUiEntity extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
+class IgeUiEntity extends IgeEntity {
     constructor() {
         super();
         this.classId = "IgeUiEntity";

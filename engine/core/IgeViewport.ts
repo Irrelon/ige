@@ -2,8 +2,6 @@ import IgePoint3d from "./IgePoint3d";
 import IgeEntity from "./IgeEntity";
 import IgeCamera from "./IgeCamera";
 import IgeRect from "./IgeRect";
-import WithUiStyleMixin from "../mixins/IgeUiStyleMixin";
-import WithUiPositionMixin from "../mixins/IgeUiPositionMixin";
 import IgePoint2d from "./IgePoint2d";
 import { ige } from "../instance";
 import IgeScene2d from "./IgeScene2d";
@@ -12,6 +10,7 @@ import { isClient } from "../services/clientServer";
 import { IgeObject } from "./IgeObject";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeMountMode } from "../../enums/IgeMountMode";
+import IgeUiEntity from "./IgeUiEntity";
 
 export interface IgeViewportOptions {
 	width: number;
@@ -20,13 +19,12 @@ export interface IgeViewportOptions {
 	scaleToHeight: number;
 }
 
-
 // TODO: Turns out we need IgeObject because IgeViewport cannot extend IgeEntity
 //    because IgeEntity imports IgeViewport, creating a circular referencing issue
 /**
  * Creates a new viewport.
  */
-class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) implements IgeCanRegisterById {
+class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	classId = "IgeViewport";
 	IgeViewport = true;
 	_idRegistered: boolean = false;
@@ -103,11 +101,11 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 	/**
 	 * Gets / sets the auto-size property. If set to true, the viewport will
 	 * automatically resize to fill the entire scene.
-	 * @param val
+	 * @param id
 	 * @return {*}
 	 */
-	autoSize(): boolean;
 	autoSize(id: boolean): this;
+	autoSize(): boolean;
 	autoSize (val?: boolean) {
 		if (typeof val !== "undefined") {
 			this._autoSize = val;
@@ -119,11 +117,11 @@ class IgeViewport extends WithUiStyleMixin(WithUiPositionMixin(IgeObject)) imple
 
 	/**
 	 * Gets / sets the scene that the viewport will render.
-	 * @param {IgeScene2d} scene
+	 * @param id
 	 * @return {*}
 	 */
-	scene(): IgeScene2d;
 	scene(id: IgeScene2d): this;
+	scene(): IgeScene2d;
 	scene (scene?: IgeScene2d) {
 		if (scene !== undefined) {
 			this._scene = scene;

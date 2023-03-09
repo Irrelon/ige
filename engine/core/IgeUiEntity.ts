@@ -1,7 +1,5 @@
 // TODO: Implement the _stringify() method for this class
 import IgeEntity from "./IgeEntity";
-import WithUiPositionMixin from "../mixins/IgeUiPositionMixin";
-import WithUiStyleMixin from "../mixins/IgeUiStyleMixin";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
 /**
@@ -9,7 +7,7 @@ import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingConte
  * than standard IgeEntity instances so only use them if an IgeEntity
  * won't do the job.
  */
-class IgeUiEntity extends WithUiStyleMixin(WithUiPositionMixin(IgeEntity)) {
+class IgeUiEntity extends IgeEntity {
 	classId = "IgeUiEntity";
 
 	constructor () {
