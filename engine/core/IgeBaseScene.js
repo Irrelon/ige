@@ -36,10 +36,11 @@ class IgeBaseScene extends IgeSceneGraph {
          * active graph.
          */
         this.removeGraph = () => {
+            var _a, _b;
             // Destroy the viewport
-            ige.$("vp1").destroy();
+            (_a = ige.$("vp1")) === null || _a === void 0 ? void 0 : _a.destroy();
             // Destroy the baseScene
-            ige.$("baseScene").destroy();
+            (_b = ige.$("baseScene")) === null || _b === void 0 ? void 0 : _b.destroy();
         };
     }
 }

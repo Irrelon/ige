@@ -40,10 +40,10 @@ class IgeBaseScene extends IgeSceneGraph {
      */
 	removeGraph = () => {
 		// Destroy the viewport
-		ige.$("vp1").destroy();
+		ige.$("vp1")?.destroy();
 
 		// Destroy the baseScene
-		ige.$("baseScene").destroy();
+		ige.$("baseScene")?.destroy();
 	};
 }
 

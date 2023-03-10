@@ -7,10 +7,12 @@ import { IgeMountMode } from "../../enums/IgeMountMode.js";
  * Texture maps provide a way to display textures / cells across a tile map.
  */
 class IgeTextureMap extends IgeTileMap2d {
-    constructor(ige, tileWidth, tileHeight) {
-        super(ige, tileWidth, tileHeight);
+    constructor(tileWidth, tileHeight) {
+        super(tileWidth, tileHeight);
         this.classId = "IgeTextureMap";
-        this.map = new IgeMap2d(ige);
+        this._drawSectionBounds = false;
+        this._allTexturesLoaded = false;
+        this.map = new IgeMap2d();
         this._textureList = [];
         this._renderCenter = new IgePoint3d(0, 0, 0);
         this._cacheDirty = true;
@@ -58,10 +60,11 @@ class IgeTextureMap extends IgeTileMap2d {
      */
     negate(entity) {
         if (entity !== undefined) {
-            let x, y, entityMapData = entity.map._mapData, thisMapData = this.map._mapData;
-            for (y in entityMapData) {
+            const entityMapData = entity.map._mapData;
+            const thisMapData = this.map._mapData;
+            for (const y in entityMapData) {
                 if (entityMapData.hasOwnProperty(y)) {
-                    for (x in entityMapData[y]) {
+                    for (const x in entityMapData[y]) {
                         if (entityMapData[y].hasOwnProperty(x)) {
                             if (thisMapData[y] && thisMapData[y][x]) {
                                 // This map has data in the same place as the passed
@@ -98,7 +101,8 @@ class IgeTextureMap extends IgeTileMap2d {
      */
     allTexturesLoaded() {
         if (!this._allTexturesLoaded) {
-            let arr = this._textureList, arrCount = arr.length;
+            const arr = this._textureList;
+            let arrCount = arr.length;
             while (arrCount--) {
                 if (!arr[arrCount]._loaded) {
                     return false;
@@ -142,15 +146,15 @@ class IgeTextureMap extends IgeTileMap2d {
         if (map.textures) {
             // Empty the existing array
             this._textureList = [];
-            let tex = [], i, self = this;
+            const tex = [];
             // Loop the texture list and create each texture object
-            for (i = 0; i < map.textures.length; i++) {
+            for (let i = 0; i < map.textures.length; i++) {
                 // Load each texture
-                eval("tex[" + i + "] = " + map.textures[i]);
-                self.addTexture(tex[i]);
+                tex[i] = map.textures[i];
+                this.addTexture(tex[i]);
             }
             // Fill in the map data
-            self.map.mapData(map.data);
+            this.map.mapData(map.data);
         }
         else {
             // Just fill in the map data

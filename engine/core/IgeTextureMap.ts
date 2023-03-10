@@ -3,17 +3,23 @@ import IgeTileMap2d from "./IgeTileMap2d";
 import IgeMap2d from "./IgeMap2d";
 import IgePoint3d from "./IgePoint3d";
 import { IgeMountMode } from "../../enums/IgeMountMode";
+import IgeTexture from "./IgeTexture";
 
 /**
  * Texture maps provide a way to display textures / cells across a tile map.
  */
 class IgeTextureMap extends IgeTileMap2d {
 	classId = "IgeTextureMap";
+	_textureList: any[];
+	_renderCenter: IgePoint3d;
+	_autoSection?: number;
+	_drawSectionBounds: boolean = false;
+	_allTexturesLoaded: boolean = false;
 
-	constructor (ige, tileWidth, tileHeight) {
-		super(ige, tileWidth, tileHeight);
+	constructor (tileWidth?: number, tileHeight?: number) {
+		super(tileWidth, tileHeight);
 
-		this.map = new IgeMap2d(ige);
+		this.map = new IgeMap2d();
 		this._textureList = [];
 		this._renderCenter = new IgePoint3d(0, 0, 0);
 		this._cacheDirty = true;
@@ -27,7 +33,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 * @param {Number=} val The size in tiles of each section.
 	 * @return {*}
 	 */
-	autoSection (val) {
+	autoSection (val?: number) {
 		if (val !== undefined) {
 			this._autoSection = val;
 			return this;
@@ -43,7 +49,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 * @param {Number=} val The boolean flag value.
 	 * @return {*}
 	 */
-	drawSectionBounds (val) {
+	drawSectionBounds (val?: boolean) {
 		if (val !== undefined) {
 			this._drawSectionBounds = val;
 			return this;
@@ -65,15 +71,14 @@ class IgeTextureMap extends IgeTileMap2d {
 	 * @param {IgeTileMap2d} entity The other map to read map data from.
 	 * @return {*}
 	 */
-	negate (entity) {
+	negate (entity?: IgeTileMap2d) {
 		if (entity !== undefined) {
-			let x, y,
-				entityMapData = entity.map._mapData,
-				thisMapData = this.map._mapData;
+			const entityMapData = entity.map._mapData;
+			const thisMapData = this.map._mapData;
 
-			for (y in entityMapData) {
+			for (const y in entityMapData) {
 				if (entityMapData.hasOwnProperty(y)) {
-					for (x in entityMapData[y]) {
+					for (const x in entityMapData[y]) {
 						if (entityMapData[y].hasOwnProperty(x)) {
 							if (thisMapData[y] && thisMapData[y][x]) {
 								// This map has data in the same place as the passed
@@ -97,7 +102,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 * @param {IgeTexture} texture
 	 * @return {Integer} The index of the texture you just added.
 	 */
-	addTexture (texture) {
+	addTexture (texture: IgeTexture) {
 		this._textureList.push(texture);
 		if (!texture._loaded) {
 			this._allTexturesLoaded = false;
@@ -113,8 +118,8 @@ class IgeTextureMap extends IgeTileMap2d {
 	 */
 	allTexturesLoaded () {
 		if (!this._allTexturesLoaded) {
-			let arr = this._textureList,
-				arrCount = arr.length;
+			const arr = this._textureList;
+			let arrCount = arr.length;
 
 			while (arrCount--) {
 				if (!arr[arrCount]._loaded) {
@@ -135,7 +140,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 * @param {Number} textureIndex The texture index.
 	 * @param {Number} cell The cell index.
 	 */
-	paintTile (x, y, textureIndex, cell) {
+	paintTile (x: number, y: number, textureIndex: number, cell: number) {
 		if (x !== undefined && y !== undefined && textureIndex !== undefined) {
 			if (cell === undefined || cell < 1) {
 				cell = 1; // Set the cell default to 1
@@ -150,7 +155,7 @@ class IgeTextureMap extends IgeTileMap2d {
 	 * @param {Number} x The tile x co-ordinate.
 	 * @param {Number} y The tile y co-ordinate.
 	 */
-	clearTile (x, y) {
+	clearTile (x: number, y: number) {
 		this.map.clearData(x, y);
 	}
 
@@ -163,19 +168,17 @@ class IgeTextureMap extends IgeTileMap2d {
 		if (map.textures) {
 			// Empty the existing array
 			this._textureList = [];
-
-			let tex = [], i,
-				self = this;
+			const tex: IgeTexture[] = [];
 
 			// Loop the texture list and create each texture object
-			for (i = 0; i < map.textures.length; i++) {
+			for (let i = 0; i < map.textures.length; i++) {
 				// Load each texture
-				eval("tex[" + i + "] = " + map.textures[i]);
-				self.addTexture(tex[i]);
+				tex[i] = map.textures[i];
+				this.addTexture(tex[i]);
 			}
 
 			// Fill in the map data
-			self.map.mapData(map.data);
+			this.map.mapData(map.data);
 		} else {
 			// Just fill in the map data
 			this.map.mapData(map.data);

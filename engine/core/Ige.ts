@@ -15,6 +15,7 @@ import type { IgeNetIoClientComponent } from "../components/network/net.io/IgeNe
 import type { IgeNetIoServerComponent } from "../components/network/net.io/IgeNetIoServerComponent";
 import { isClient, isServer } from "../services/clientServer";
 import { IgeObjectWithValueProperty } from "../../types/IgeObjectWithValueProperty";
+import { IgeObject } from "./IgeObject";
 
 const version = "2.0.0";
 
@@ -66,10 +67,10 @@ export class Ige {
 	 * the object's id. If the item passed is not a string id
 	 * then the item is returned as is. If no item is passed
 	 * the engine itself is returned.
-	 * @param {String || Object} item The id of the item to return,
+	 * @param {String | Object} item The id of the item to return,
 	 * or if an object, returns the object as-is.
 	 */
-	$ <ObjectType> (item: string | ObjectType | undefined) {
+	$ <ObjectType = IgeObject> (item: string | ObjectType | undefined) {
 		if (typeof item === "string") {
 			return this.register.get(item);
 		} else if (typeof item === "object") {

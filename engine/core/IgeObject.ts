@@ -52,8 +52,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_streamDataCache: string = "";
 	_streamJustCreated?: boolean;
 	_streamEmitCreated?: boolean;
-	_streamSections: string[] = [];
-	_streamProperty?: Record<string, any>;
+	_streamSections: string[] = ["transform", "props"];
+	_streamProperty: Record<string, any> = {};
 	_streamSyncInterval?: number;
 	_streamSyncDelta: number = 0;
 	_streamSyncSectionInterval: Record<string, number> = {}; // Holds minimum delta before the stream section is included in the next stream data packet
@@ -2069,7 +2069,17 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		// Send the client an entity create command first
 		network.send(
 			"_igeStreamCreate",
-			[this.classId, thisId, this._parent.id(), this.streamSectionData("transform"), this.streamCreateData()],
+			[
+				this.classId,
+				thisId,
+				this._parent.id(),
+				this.streamSectionData("transform"),
+				this.streamSectionData("layer"),
+				this.streamSectionData("depth"),
+				this.streamSectionData("width"),
+				this.streamSectionData("height"),
+				this.streamCreateData()
+			],
 			clientId
 		);
 

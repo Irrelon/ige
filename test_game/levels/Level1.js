@@ -72,7 +72,7 @@ export class Level1 extends IgeSceneGraph {
         new Fairy(0.1)
             .id("fairy1")
             .streamMode(IgeStreamMode.simple)
-            .depth(1)
+            .depth(2)
             .width(100)
             .height(100)
             .translateTo(0, 0, 0)

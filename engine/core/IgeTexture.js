@@ -431,7 +431,9 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
             if (!this._originalImage || !this.image) {
                 throw new Error("No image is available to render but the IgeTexture is in mode zero (image based render)!");
             }
-            const cell = this._cells[entity._cell], geom = entity._bounds2d, poly = entity._renderPos; // Render pos is calculated in the IgeEntity.aabb() method
+            const cell = this._cells[entity._cell];
+            const geom = entity._bounds2d;
+            const poly = entity._renderPos; // Render pos is calculated in the IgeEntity.aabb() method
             if (!cell) {
                 throw new Error(`Cannot render texture using cell ${entity._cell} because the cell does not exist in the assigned texture!`);
             }

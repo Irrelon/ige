@@ -592,6 +592,10 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
+	width (px: number | string, lockAspect?: boolean): this;
+	// @ts-ignore
+	width (): number | string;
+	width (px: number | string, lockAspect: boolean): this;
 	width (px?: number | string, lockAspect = false) {
 		if (px === undefined) {
 			return this._bounds2d.x;
@@ -621,6 +625,10 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
+	height (px: number | string, lockAspect?: boolean): this;
+	// @ts-ignore
+	height (): number | string;
+	height (px: number | string, lockAspect: boolean): this;
 	height (px?: number | string, lockAspect = false) {
 		if (px === undefined) {
 			return this._bounds2d.y;
@@ -1547,7 +1555,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 				ctx.fillStyle = this._backgroundPatternFill;
 
 				if (this._smartBackground) {
-					this._smartBackground.render(ige, ctx, this);
+					this._smartBackground.render(ctx, this);
 				} else {
 					// TODO: When firefox has fixed their bug regarding negative rect co-ordinates, revert this change
 
@@ -3270,6 +3278,26 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 				}
 			} else {
 				return String(this.isHidden());
+			}
+			break;
+
+		case 'width':
+			if (data !== undefined) {
+				if (isClient) {
+					this.width(parseInt(data));
+				}
+			} else {
+				return String(this.width());
+			}
+			break;
+
+		case 'height':
+			if (data !== undefined) {
+				if (isClient) {
+					this.height(parseInt(data));
+				}
+			} else {
+				return String(this.height());
 			}
 			break;
 

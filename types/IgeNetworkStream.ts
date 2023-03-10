@@ -3,8 +3,10 @@
 // entityId
 // parentId
 // transformData
+// layerData
+// depthData
 // createData
-export type IgeStreamCreateMessageData = [string, string, string, any, any];
+export type IgeStreamCreateMessageData = [string, string, string, any, any, any, any, any, any];
 
 // serverTime
 // entityId

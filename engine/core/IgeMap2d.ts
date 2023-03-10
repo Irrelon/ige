@@ -185,13 +185,13 @@ class IgeMap2d extends IgeBaseClass {
 
 		for (let i = 0; i < yArr.length; i++) {
 			const y = yArr[i];
-			const xArr = this._sortKeys(data[y]);
+			const xArr = this._sortKeys(data[y as unknown as number]);
 
-			finalData[y] = finalData[y] || {};
+			finalData[y as unknown as number] = finalData[y as unknown as number] || {};
 
 			for (let k = 0; k < xArr.length; k++) {
 				const x = xArr[k];
-				finalData[y][x] = data[y][x];
+				finalData[y as unknown as number][x as unknown as number] = data[y as unknown as number][x as unknown as number];
 			}
 		}
 

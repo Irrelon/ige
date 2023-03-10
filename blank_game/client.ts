@@ -1,13 +1,13 @@
 import IgeBaseClass from "../engine/core/IgeBaseClass";
-import type { Ige } from "../engine/core/Ige";
 import IgeTexture from "../engine/core/IgeTexture";
+import { ige } from "../engine/instance";
 
 export class Client extends IgeBaseClass {
 	classId = "Client";
 	gameTextures: Record<string, IgeTexture>;
 
-	constructor (ige: Ige) {
-		super(ige);
+	constructor () {
+		super();
 
 		// Load our textures
 		this.gameTextures = {};
@@ -27,16 +27,16 @@ export class Client extends IgeBaseClass {
 		///////////////////////////////////////////////////////////////////////////////
 
 		// Wait for our textures to load before continuing
-		ige.on("texturesLoaded", function () {
+		ige.engine.on("texturesLoaded", function () {
 			// Create the HTML canvas
-			ige.createFrontBuffer(true);
+			ige.engine.createFrontBuffer(true);
 
 			// Start the engine
-			ige.start(function (success) {
+			ige.engine.start(function (success) {
 				// Check if the engine started successfully
 				if (success) {
 					// Add base scene data
-					ige.addGraph("IgeBaseScene");
+					ige.engine.addGraph("IgeBaseScene");
 
 					// CREATE SOME ENTITIES AND WHOTNOT HERE
 				}

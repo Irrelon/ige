@@ -30,7 +30,8 @@ export class IgeObject extends IgeEventingClass {
         this._tileHeight = 1;
         this._specialProp = [];
         this._streamDataCache = "";
-        this._streamSections = [];
+        this._streamSections = ["transform", "props"];
+        this._streamProperty = {};
         this._streamSyncDelta = 0;
         this._streamSyncSectionInterval = {}; // Holds minimum delta before the stream section is included in the next stream data packet
         this._streamSyncSectionDelta = {}; // Stores the game time elapsed since the last time the section was included in a stream data packet
@@ -1350,7 +1351,17 @@ export class IgeObject extends IgeEventingClass {
         const thisId = this.id();
         const network = ige.network;
         // Send the client an entity create command first
-        network.send("_igeStreamCreate", [this.classId, thisId, this._parent.id(), this.streamSectionData("transform"), this.streamCreateData()], clientId);
+        network.send("_igeStreamCreate", [
+            this.classId,
+            thisId,
+            this._parent.id(),
+            this.streamSectionData("transform"),
+            this.streamSectionData("layer"),
+            this.streamSectionData("depth"),
+            this.streamSectionData("width"),
+            this.streamSectionData("height"),
+            this.streamCreateData()
+        ], clientId);
         network._streamClientCreated[thisId] = network._streamClientCreated[thisId] || {};
         if (clientId) {
             // Mark the client as having received a create

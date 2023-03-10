@@ -946,15 +946,6 @@ class IgeEntity extends IgeObject {
         }
         return this._anchor;
     }
-    /**
-     * Gets / sets the geometry x value.
-     * @param {Number=} px The new x value in pixels.
-     * @param {Boolean} lockAspect
-     * @example #Set the entity width
-     *     entity.width(40);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     width(px, lockAspect = false) {
         if (px === undefined) {
             return this._bounds2d.x;
@@ -971,15 +962,6 @@ class IgeEntity extends IgeObject {
         this._bounds2d.x2 = px / 2;
         return this;
     }
-    /**
-     * Gets / sets the geometry y value.
-     * @param {number=} px The new y value in pixels.
-     * @param {boolean} [lockAspect]
-     * @example #Set the entity height
-     *     entity.height(40);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     height(px, lockAspect = false) {
         if (px === undefined) {
             return this._bounds2d.y;
@@ -1667,7 +1649,7 @@ class IgeEntity extends IgeObject {
                 ctx.save();
                 ctx.fillStyle = this._backgroundPatternFill;
                 if (this._smartBackground) {
-                    this._smartBackground.render(ige, ctx, this);
+                    this._smartBackground.render(ctx, this);
                 }
                 else {
                     // TODO: When firefox has fixed their bug regarding negative rect co-ordinates, revert this change
@@ -2682,6 +2664,26 @@ class IgeEntity extends IgeObject {
                 }
                 else {
                     return String(this.isHidden());
+                }
+                break;
+            case 'width':
+                if (data !== undefined) {
+                    if (isClient) {
+                        this.width(parseInt(data));
+                    }
+                }
+                else {
+                    return String(this.width());
+                }
+                break;
+            case 'height':
+                if (data !== undefined) {
+                    if (isClient) {
+                        this.height(parseInt(data));
+                    }
+                }
+                else {
+                    return String(this.height());
                 }
                 break;
             default:
