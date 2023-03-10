@@ -2,6 +2,7 @@ import {ige} from "../../engine/instance";
 import { registerClass } from "../../engine/services/igeClassStore";
 import IgeEntity from "../../engine/core/IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { PI180 } from "../../engine/services/utils";
 
 export class Rotator extends IgeEntity {
 	classId = 'Rotator';
@@ -23,7 +24,7 @@ export class Rotator extends IgeEntity {
 	 */
 	tick (ctx: IgeCanvasRenderingContext2d) {
 		// Rotate this entity by 0.1 degrees.
-		this.rotateBy(0, 0, (this._rSpeed * ige.engine._tickDelta) * Math.PI / 180);
+		this.rotateBy(0, 0, (this._rSpeed * ige.engine._tickDelta) * PI180);
 
 		// Call the IgeEntity (super-class) tick() method
 		super.tick(ctx);

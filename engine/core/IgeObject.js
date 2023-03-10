@@ -1355,12 +1355,12 @@ export class IgeObject extends IgeEventingClass {
             this.classId,
             thisId,
             this._parent.id(),
+            this.streamCreateData(),
             this.streamSectionData("transform"),
             this.streamSectionData("layer"),
             this.streamSectionData("depth"),
             this.streamSectionData("width"),
             this.streamSectionData("height"),
-            this.streamCreateData()
         ], clientId);
         network._streamClientCreated[thisId] = network._streamClientCreated[thisId] || {};
         if (clientId) {

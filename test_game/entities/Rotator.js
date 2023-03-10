@@ -1,6 +1,7 @@
 import { ige } from "../../engine/instance.js";
 import { registerClass } from "../../engine/services/igeClassStore.js";
 import IgeEntity from "../../engine/core/IgeEntity.js";
+import { PI180 } from "../../engine/services/utils.js";
 export class Rotator extends IgeEntity {
     constructor(speed) {
         super();
@@ -19,7 +20,7 @@ export class Rotator extends IgeEntity {
      */
     tick(ctx) {
         // Rotate this entity by 0.1 degrees.
-        this.rotateBy(0, 0, (this._rSpeed * ige.engine._tickDelta) * Math.PI / 180);
+        this.rotateBy(0, 0, (this._rSpeed * ige.engine._tickDelta) * PI180);
         // Call the IgeEntity (super-class) tick() method
         super.tick(ctx);
     }

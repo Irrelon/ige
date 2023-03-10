@@ -87,12 +87,12 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
             const classId = data[0];
             const entityId = data[1];
             const parentId = data[2];
-            const transformData = data[3];
-            const layerData = data[4];
-            const depthData = data[5];
-            const widthData = data[6];
-            const heightData = data[7];
-            const createDataArgs = data[8] || [];
+            const createDataArgs = data[3] || [];
+            const transformData = data[4];
+            const layerData = data[5];
+            const depthData = data[6];
+            const widthData = data[7];
+            const heightData = data[8];
             const parent = ige.$(parentId);
             //console.log("Got stream create", data);
             // Check the required class exists
