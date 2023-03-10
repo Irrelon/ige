@@ -1659,6 +1659,10 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @param {String} sectionName The section name to add.
 	 */
 	streamSectionsPush (sectionName: string) {
+		if (this._streamSections.indexOf(sectionName) > -1) {
+			throw new Error(`Attempting to add the stream section ${sectionName} failed, this section already exists!`);
+		}
+
 		this._streamSections = this._streamSections || [];
 		this._streamSections.push(sectionName);
 
@@ -1680,6 +1684,9 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	/**
 	 * Gets / sets a streaming property on this entity. If set, the
 	 * property's new value is streamed to clients on the next packet.
+	 * Stream properties only work if you specify "props" as a stream
+	 * section via `streamSectionsPush("props");` or
+	 * `streamSections("transform", "props");`.
 	 *
 	 * @param {String} propName The name of the property to get / set.
 	 * @param {*=} propVal Optional. If provided, the property is set
@@ -2078,7 +2085,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 				this.streamSectionData("layer"),
 				this.streamSectionData("depth"),
 				this.streamSectionData("width"),
-				this.streamSectionData("height"),
+				this.streamSectionData("height")
 			],
 			clientId
 		);
