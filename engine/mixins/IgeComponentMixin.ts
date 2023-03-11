@@ -4,8 +4,8 @@ import type IgeComponent from "../core/IgeComponent";
 import {arrPull} from "../services/utils";
 
 const WithComponentMixin = <ComponentTargetType, MixinBaseClassType extends Mixin<IgeBaseClass> = Mixin<IgeBaseClass>>(Base: MixinBaseClassType) => class extends Base {
-	components: Record<string, IgeComponent<ComponentTargetType>> = {};
-	_components: IgeComponent<ComponentTargetType>[] = []; // TODO: Rename this to _componentsArr
+	components: Record<string, IgeComponent> = {};
+	_components: IgeComponent[] = []; // TODO: Rename this to _componentsArr
 	_componentBase: this | ComponentTargetType;
 
 	constructor (...args: any[]) {
@@ -32,8 +32,8 @@ const WithComponentMixin = <ComponentTargetType, MixinBaseClassType extends Mixi
 	 *     // "byAngleAndPower" method of the velocity component:
 	 *     entity.velocity.byAngleAndPower(degreesToRadians(20), 0.1);
 	 */
-	addComponent (component: typeof IgeComponent<ComponentTargetType>, options?: any) {
-		const newComponentInstance = new component(this._componentBase as ComponentTargetType, options);
+	addComponent (component: typeof IgeComponent, options?: any) {
+		const newComponentInstance = new component(this._componentBase, options);
 
 		this.components[newComponentInstance.componentId] = newComponentInstance;
 

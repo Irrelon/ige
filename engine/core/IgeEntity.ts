@@ -867,7 +867,9 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	cellById (val?: string) {
+	cellById (val: string | number): this;
+	cellById (): string | number | null;
+	cellById (val?: string | number) {
 		if (val !== undefined) {
 			if (this._texture) {
 				// Find the cell index this id corresponds to

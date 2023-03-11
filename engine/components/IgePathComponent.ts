@@ -8,11 +8,11 @@ import { IgeMountMode } from "../../enums/IgeMountMode";
 /**
  * Handles entity path traversal.
  */
-class IgePathComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+class IgePathComponent extends IgeComponent {
 	classId = "IgePathComponent";
 	componentId = "path";
 
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._points = [];

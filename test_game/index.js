@@ -16,3 +16,6 @@ export class Game {
         }
     }
 }
+if (isServer) {
+    new Game();
+}

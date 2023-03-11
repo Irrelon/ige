@@ -5,7 +5,7 @@ import IgeEntity from "../core/IgeEntity";
  * When added to a viewport, automatically adds mouse panning
  * capabilities to the viewport's camera.
  */
-class IgeMousePanComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+class IgeMousePanComponent extends IgeComponent {
 	static componentTargetClass = "IgeViewport";
 	classId = "IgeMousePanComponent";
 	componentId = "mousePan";
@@ -16,7 +16,7 @@ class IgeMousePanComponent<TargetClass extends IgeEntity = IgeEntity> extends Ig
 	 * @param {Object=} options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Set the pan component to inactive to start with

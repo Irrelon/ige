@@ -9,12 +9,12 @@ import { isClient, isServer } from "../services/clientServer";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode";
 import { IgeAsset } from "./IgeAsset";
+import { newCanvas } from "./IgeCanvas";
 
 type IgeTextureCell = [number, number, number, number, string?];
 type IgeTextureCellArray = IgeTextureCell[];
 
 let IgeImageClass: typeof IgeImage;
-let IgeCanvasClass: typeof IgeCanvas;
 
 /**
  * Creates a new texture.
@@ -66,10 +66,6 @@ class IgeTexture extends IgeAsset {
 
 		this.addDependency("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
 			IgeImageClass = IgeModule;
-		}));
-
-		this.addDependency("IgeCanvasClass", import("./IgeCanvas.js").then(({ IgeCanvas: IgeModule }) => {
-			IgeCanvasClass = IgeModule;
 		}));
 
 		// Create an array that is used to store cell dimensions
@@ -378,7 +374,7 @@ class IgeTexture extends IgeAsset {
 
 			if (!this._textureCtx || !this._textureCanvas) {
 				// Create a new canvas
-				this._textureCanvas = new IgeCanvasClass();
+				this._textureCanvas = newCanvas();
 			}
 
 			this._textureCanvas.width = x;
@@ -441,7 +437,7 @@ class IgeTexture extends IgeAsset {
 
 		if (!this._textureCtx || !this._textureCanvas) {
 			// Create a new canvas
-			this._textureCanvas = new IgeCanvasClass();
+			this._textureCanvas = newCanvas();
 		}
 
 		this._textureCanvas.width = x;
@@ -665,7 +661,7 @@ class IgeTexture extends IgeAsset {
 
 		if (!this._textureCtx || !this._textureCanvas) {
 			// Create a new canvas
-			this._textureCanvas = new IgeCanvasClass();
+			this._textureCanvas = newCanvas();
 
 			this._textureCanvas.width = this._originalImage.width;
 			this._textureCanvas.height = this._originalImage.height;
@@ -711,7 +707,7 @@ class IgeTexture extends IgeAsset {
 
 		if (!this._textureCtx || !this._textureCanvas) {
 			// Create a new canvas
-			this._textureCanvas = new IgeCanvasClass();
+			this._textureCanvas = newCanvas();
 
 			this._textureCanvas.width = this._originalImage.width;
 			this._textureCanvas.height = this._originalImage.height;
@@ -769,7 +765,7 @@ class IgeTexture extends IgeAsset {
 		// Check if the texture is already using a canvas
 		if (!this._textureCtx || !this._textureCanvas) {
 			// Create a new canvas
-			this._textureCanvas = new IgeCanvasClass();
+			this._textureCanvas = newCanvas();
 
 			this._textureCanvas.width = this.image.width;
 			this._textureCanvas.height = this.image.height;
@@ -878,7 +874,9 @@ class IgeTexture extends IgeAsset {
 		// Create a new IgeTexture, then draw the existing cell
 		// to its internal canvas
 		const cell = this._cells[index];
-		const canvas = new IgeCanvasClass();
+		const canvas = newCanvas();
+		if (!canvas) return;
+
 		const ctx = canvas.getContext("2d");
 
 		if (!ctx) {

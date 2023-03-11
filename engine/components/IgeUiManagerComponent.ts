@@ -2,12 +2,12 @@ import IgeComponent from "../core/IgeComponent";
 import {arrPull} from "../services/utils";
 import IgeEntity from "../core/IgeEntity";
 
-class IgeUiManagerComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+class IgeUiManagerComponent extends IgeComponent {
 	static componentTargetClass = "Ige";
 	classId = "IgeUiManagerComponent";
 	componentId = "ui";
 
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._focus = null; // The element that currently has focus

@@ -1,12 +1,11 @@
 import IgeEntity from "../../core/IgeEntity";
 import IgeComponent from "../../core/IgeComponent";
-import { ige } from "../../instance";
 
-class IgeChatComponent<TargetClass extends IgeEntity> extends IgeComponent<TargetClass> {
+class IgeChatComponent extends IgeComponent {
 	classId = 'IgeChatComponent';
     componentId ='chat';
 
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
         this._rooms = {};

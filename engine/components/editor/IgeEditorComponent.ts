@@ -8,7 +8,7 @@ import IgeEntity from "../../core/IgeEntity";
  * When added to a viewport, automatically adds entity rotate
  * capabilities to the selected entity in the scenegraph viewer.
  */
-class IgeEditorComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+class IgeEditorComponent extends IgeComponent {
 	classId = "IgeEditorComponent";
 	componentId = "editor";
 	ui: Record<string, any>;
@@ -31,7 +31,7 @@ class IgeEditorComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeC
 	 * @param options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._showStats = 0;

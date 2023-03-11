@@ -1,4 +1,4 @@
-import { textures } from "../services/textures";
+import { ige } from "../../engine/instance";
 import { isClient } from "../../engine/services/clientServer";
 import { registerClass } from "../../engine/services/igeClassStore";
 import IgeRect from "../../engine/core/IgeRect";
@@ -20,7 +20,7 @@ export class Line extends GameEntity {
 			.translateTo((x2 / 2) + (x1 / 2), (y2 / 2) + (y1 / 2), 0);
 
 		if (isClient) {
-			this.texture(textures.getTextureById("line"));
+			this.texture(ige.textures.get("line"));
 		}
 	}
 

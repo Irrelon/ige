@@ -4,11 +4,11 @@ import IgeEntity from "../core/IgeEntity";
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
  */
-class IgeTiledComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+class IgeTiledComponent extends IgeComponent {
 	classId = "IgeTiledComponent";
 	componentId = "tiled";
 
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 	}
 

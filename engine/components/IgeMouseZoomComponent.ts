@@ -5,7 +5,7 @@ import IgeEntity from "../core/IgeEntity";
  * When added to a viewport, automatically adds mouse zooming
  * capabilities to the viewport's camera.
  */
-class IgeMouseZoomComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+class IgeMouseZoomComponent extends IgeComponent {
 	classId = "IgeMouseZoomComponent";
 	componentId = "mouseZoom";
 
@@ -15,7 +15,7 @@ class IgeMouseZoomComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 	 * @param {Object=} options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Set the zoom component to inactive to start with

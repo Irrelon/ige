@@ -18,6 +18,8 @@ class IgeAnimationComponent extends IgeComponent {
         super(entity, options);
         this.classId = "IgeAnimationComponent";
         this.componentId = "animation";
+        this._animCount = 0;
+        this._playing = false;
         /**
          * Defines an animation specifying the frames to use, the
          * frames per second to animate at and if the animation
@@ -40,10 +42,10 @@ class IgeAnimationComponent extends IgeComponent {
          *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
          * @return {*}
          */
-        this.define = (id, frames, fps, loop, convertIdsToIndex) => {
+        this.define = (id, frames, fps, loop, convertIdsToIndex = true) => {
             if (frames && frames.length) {
                 let i, frame;
-                this._anims.length = this._anims.length || 0;
+                this._animCount = this._animCount || 0;
                 if (convertIdsToIndex === undefined) {
                     convertIdsToIndex = true; // Default the flag to true if undefined
                 }
@@ -75,7 +77,7 @@ class IgeAnimationComponent extends IgeComponent {
                     "currentDelta": 0,
                     "currentLoop": 0
                 };
-                this._anims.length++;
+                this._animCount++;
             }
             else {
                 this.log("Cannot define an animation without a frame array!", "error");
@@ -108,7 +110,7 @@ class IgeAnimationComponent extends IgeComponent {
          */
         this.remove = (id) => {
             delete this._anims[id];
-            this._anims.length--;
+            this._animCount--;
             return this._entity;
         };
         /**
@@ -163,7 +165,7 @@ class IgeAnimationComponent extends IgeComponent {
          */
         this.setAllFps = (fps) => {
             if (this._anims) {
-                for (id in this._anims) {
+                for (const id in this._anims) {
                     if (this._anims.hasOwnProperty(id)) {
                         this.setFps(id, fps);
                     }
@@ -267,11 +269,11 @@ class IgeAnimationComponent extends IgeComponent {
                     this.emit("started", anim);
                 }
                 else {
-                    this.log("Cannot set animation to \"" + animId + "\" because the animation does not exist!", "warning");
+                    this.log(`Cannot set animation to "${animId}" because the animation does not exist!`, "warning");
                 }
             }
             else {
-                this.log("Cannot set animation to \"" + animId + "\" because no animations have been defined with defineAnim(...);", "warning");
+                this.log(`Cannot set animation to "${animId}" because no animations have been defined with defineAnim(...);`, "warning");
             }
             return this._entity;
         };
@@ -309,7 +311,7 @@ class IgeAnimationComponent extends IgeComponent {
          */
         this.stop = () => {
             if (this._stoppedCallback) {
-                this._stoppedCallback.call(this, this._anim);
+                this._stoppedCallback(this._anim);
             }
             this.emit("stopped", this._anim);
             this._playing = false;
@@ -322,75 +324,76 @@ class IgeAnimationComponent extends IgeComponent {
         };
         /**
          * Handles the animation processing each update.
+         * @param igeInstance
          * @param {CanvasRenderingContext2D} ctx The rendering context to use when doing draw operations.
+         * @param entity
          * @param {Number} tickDelta The current ige._tickDelta passed down the scenegraph.
          */
-        this._update = (ctx, tickDelta) => {
-            const self = this.animation;
+        this._update = (igeInstance, entity, ctx, tickDelta) => {
             // Just in case someone forgets to pass it in their update call!
-            tickDelta = tickDelta || ige._tickDelta;
-            if (self._anim) {
-                let anim = self._anim, multiple, cell, frame;
+            tickDelta = tickDelta || ige.engine._tickDelta;
+            if (this._anim) {
+                const anim = this._anim;
                 // Advance the internal animation timer
                 anim.currentDelta += tickDelta;
                 // Check if the animation timer is greater than the total animation time
                 if (anim.currentDelta > anim.totalTime) {
                     // Check if we have a single loop animation
                     if (!anim.loop) {
-                        if (self._completeCallback) {
-                            self._completeCallback.call(self, anim);
+                        if (this._completeCallback) {
+                            this._completeCallback(anim);
                         }
-                        self.emit("complete", anim);
-                        self.stop();
+                        this.emit("complete", anim);
+                        this.stop();
                     }
                     else {
                         // Check if we have an infinite loop
                         if (anim.loop === -1) {
                             // Loop back round to the beginning
-                            multiple = anim.currentDelta / anim.totalTime;
+                            const multiple = anim.currentDelta / anim.totalTime;
                             if (Math.abs(multiple) > 1) {
                                 anim.currentDelta -= ((multiple | 0) * anim.totalTime); // Bitwise floor
                             }
-                            if (self._loopCallback) {
-                                self._loopCallback.call(self, anim);
+                            if (this._loopCallback) {
+                                this._loopCallback(anim);
                             }
-                            self.emit("loopComplete", anim);
+                            this.emit("loopComplete", anim);
                         }
                         else {
                             anim.currentLoop++;
                             if (anim.loop > 0 && anim.currentLoop <= anim.loop) {
                                 // Loop back round to the beginning
-                                multiple = anim.currentDelta / anim.totalTime;
+                                const multiple = anim.currentDelta / anim.totalTime;
                                 if (Math.abs(multiple) > 1) {
                                     anim.currentDelta -= ((multiple | 0) * anim.totalTime); // Bitwise floor
                                 }
-                                if (self._loopCallback) {
-                                    self._loopCallback.call(self, anim);
+                                if (this._loopCallback) {
+                                    this._loopCallback(anim);
                                 }
-                                self.emit("loopComplete", anim);
+                                this.emit("loopComplete", anim);
                             }
                             else {
                                 // The animation has ended
-                                if (self._completeCallback) {
-                                    self._completeCallback.call(self, anim);
+                                if (this._completeCallback) {
+                                    this._completeCallback(anim);
                                 }
-                                self.emit("complete", anim);
-                                self.stop();
+                                this.emit("complete", anim);
+                                this.stop();
                             }
                         }
                     }
                 }
-                frame = ((anim.currentDelta / anim.frameTime) | 0);
+                let frame = ((anim.currentDelta / anim.frameTime) | 0);
                 if (frame >= anim.frameCount) {
                     frame = anim.frameCount - 1;
                 }
-                cell = anim.frames[frame];
+                const cell = anim.frames[frame];
                 // Set the current frame
-                if (typeof (cell) === "string") {
-                    self._entity.cellById(cell);
+                if (typeof cell === "string") {
+                    this._entity.cellById(cell);
                 }
                 else {
-                    self._entity.cell(cell);
+                    this._entity.cell(cell);
                 }
             }
         };

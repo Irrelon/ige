@@ -4,7 +4,7 @@ import IgeInterval from "../core/IgeInterval";
 import {arrPull} from "../services/utils";
 import { ige } from "../instance";
 
-class IgeTimeComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+class IgeTimeComponent extends IgeComponent {
 	classId = "IgeTimeComponent";
 	componentId = "time";
 
@@ -12,7 +12,7 @@ class IgeTimeComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeCom
 	_additions: IgeInterval[];
 	_removals: IgeInterval[];
 
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._timers = [];

@@ -10,14 +10,14 @@ import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingConte
  * instance and is not designed for use in any other way!
  * It handles global tween processing on all tweening values.
  */
-class IgeTweenComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+class IgeTweenComponent extends IgeComponent {
 	static componentTargetClass = "Ige";
 	classId = "IgeTweenComponent";
 	componentId = "tween";
 	_tweens: IgeTween[];
 	_tweening: boolean = false;
 
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Set up the array that will hold our active tweens

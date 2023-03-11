@@ -11,38 +11,36 @@ export class Server extends IgeBaseClass {
 	constructor () {
 		// Init the super class
 		super();
+		void this.init();
+	}
 
+	async init () {
 		const options = new IgeOptions();
 		options.set("masterVolume", 1);
 		ige.init();
 
 		const network = (ige.network as IgeNetIoServerComponent);
-		//ige.engine.addComponent(IgeEditorComponent);
-		//(ige.components.input as IgeInputComponent).debug(true);
 
 		// Start the engine
-		ige.engine.start((success) => {
-			// Check if the engine started successfully
-			if (success) {
-				// Load the base scene data
-				ige.engine.addGraph(IgeBaseScene);
+		await ige.engine.start();
 
-				// Add all the items in Scene1 to the scenegraph
-				// (see gameClasses/Scene1.js :: addGraph() to see
-				// the method being called by the engine and how
-				// the items are added to the scenegraph)
-				ige.engine.addGraph(Level1);
+		// Load the base scene data
+		ige.engine.addGraph(IgeBaseScene);
 
-				network.sendInterval(30); // Send a stream update once every 30 milliseconds
+		// Add all the items in Scene1 to the scenegraph
+		// (see gameClasses/Scene1.js :: addGraph() to see
+		// the method being called by the engine and how
+		// the items are added to the scenegraph)
+		ige.engine.addGraph(Level1);
 
-				network.define("testRequest", (data, clientId, requestCallback) => {
-					requestCallback?.(false, "some data");
-				});
+		network.sendInterval(30); // Send a stream update once every 30 milliseconds
 
-				network.start(2000, () => {
-					network.acceptConnections(true);
-				});
-			}
+		network.define("testRequest", (data, clientId, requestCallback) => {
+			requestCallback?.(false, "some data");
+		});
+
+		network.start(2000, () => {
+			network.acceptConnections(true);
 		});
 	}
 }

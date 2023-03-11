@@ -4,14 +4,16 @@ import IgeTexture from "./IgeTexture.js";
  * arbitrary sections.
  */
 class IgeSpriteSheet extends IgeTexture {
-    constructor(urlOrObject, cells) {
-        super(urlOrObject);
+    constructor(id, urlOrObject, cells) {
+        super(id, urlOrObject);
         this.classId = "IgeSpriteSheet";
         this.IgeSpriteSheet = true;
         this._cells = [];
         this._spriteCells = [];
         this._checkModulus = false;
-        this._spriteCells = cells;
+        if (cells) {
+            this._spriteCells = cells;
+        }
     }
     _textureLoaded() {
         if (!this.image) {

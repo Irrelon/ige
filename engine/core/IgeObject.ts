@@ -28,8 +28,10 @@ import { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoCl
 import { IgeTimeStreamTransformData } from "../../types/IgeTimeStream";
 import { IgePoint } from "../../types/IgePoint";
 import IgeViewport from "./IgeViewport";
+import { IgeCanAcceptComponents } from "../../types/IgeCanAcceptComponents";
+import IgeComponent from "./IgeComponent";
 
-export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, IgeCanRegisterByCategory {
+export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, IgeCanRegisterByCategory, IgeCanAcceptComponents {
 	classId = "IgeObject";
 	_id?: string;
 	_idRegistered: boolean = false;
@@ -84,7 +86,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_renderPos: { x: number; y: number };
 	_computedOpacity: number;
 	_opacity: number;
-	_cell: number | null = 1;
+	_cell: string | number | null = 1;
 	_deathTime?: number;
 	_bornTime: number = 0;
 	_translate: IgePoint3d;
@@ -145,6 +147,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_sortChildren: (IgeChildSortFunction) = (compareFn) => {
 		return this._children.sort(compareFn);
 	};
+	components: Record<string, IgeComponent> = {};
 
 	constructor () {
 		super();
@@ -2540,5 +2543,26 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		}
 
 		return str;
+	}
+
+	addComponent (id: string, Component: typeof IgeComponent, options?: any) {
+		const instance = new Component(this, options);
+		instance._entity = this;
+		this.components[id] = instance;
+
+		return this;
+	}
+
+	removeComponent (id: string) {
+		const instance = this.components[id];
+		if (!instance) return this;
+
+		if (instance && instance.destroy) {
+			instance.destroy();
+		}
+
+		delete this.components[id];
+
+		return this;
 	}
 }

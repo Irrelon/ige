@@ -3,11 +3,11 @@ import IgePoint3d from "../core/IgePoint3d";
 import IgeEntity from "../core/IgeEntity";
 import IgeComponent from "../core/IgeComponent";
 
-class IgeVelocityComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+class IgeVelocityComponent extends IgeComponent {
 	classId = "IgeVelocityComponent";
 	componentId = "velocity";
 
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._velocity = new IgePoint3d(0, 0, 0);
@@ -22,7 +22,7 @@ class IgeVelocityComponent<TargetClass extends IgeEntity = IgeEntity> extends Ig
 	 * @param ctx
 	 * @private
 	 */
-	_behaviour = (ige, entity, ctx) => {
+	_behaviour = (entity, ctx) => {
 		entity.velocity.tick(ctx);
 	}
 

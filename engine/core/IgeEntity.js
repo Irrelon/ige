@@ -1043,26 +1043,6 @@ class IgeEntity extends IgeObject {
         }
         return this._cell;
     }
-    /**
-     * Gets / sets the current texture cell used when rendering the game
-     * object's texture. If the texture is not cell-based, this value is
-     * ignored. This differs from cell() in that it accepts a string id
-     * as the cell
-     * @param {Number=} val The cell id.
-     * @example #Set the entity texture as a sprite sheet with cell ids and then set the cell to use
-     *     var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
-     *         [0, 0, 40, 40, 'robotHead'],
-     *         [40, 0, 40, 40, 'humanHead'],
-     *     ]);
-     *
-     *     // Assign the texture, set the cell to use and then
-     *     // set the entity to the size of the cell automatically!
-     *     entity.texture(texture)
-     *         .cellById('robotHead')
-     *         .dimensionsFromCell();
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     cellById(val) {
         if (val !== undefined) {
             if (this._texture) {

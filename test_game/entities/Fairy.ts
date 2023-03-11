@@ -1,7 +1,7 @@
 import { Rotator } from "./Rotator";
 import { isClient } from "../../engine/services/clientServer";
-import { textures } from "../services/textures";
 import { registerClass } from "../../engine/services/igeClassStore";
+import { ige } from "../../engine/instance";
 
 export class Fairy extends Rotator {
 	classId = "Fairy";
@@ -10,7 +10,7 @@ export class Fairy extends Rotator {
 		super(speed);
 
 		if (isClient) {
-			this.texture(textures.getTextureById("fairy"));
+			this.texture(ige.textures.get("fairy"));
 		}
 	}
 

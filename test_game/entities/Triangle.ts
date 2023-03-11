@@ -1,4 +1,4 @@
-import { textures } from "../services/textures";
+import { ige } from "../../engine/instance";
 import { isClient } from "../../engine/services/clientServer";
 import { registerClass } from "../../engine/services/igeClassStore";
 import { GameEntity } from "./GameEntity";
@@ -15,7 +15,7 @@ export class Triangle extends GameEntity {
 			.height(50);
 
 		if (isClient) {
-			this.texture(textures.getTextureById("triangle"));
+			this.texture(ige.textures.get("triangle"));
 			this.registerNetworkClass();
 		}
 	}

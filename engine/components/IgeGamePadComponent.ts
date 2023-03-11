@@ -1,11 +1,11 @@
 import IgeComponent from "../core/IgeComponent";
 import IgeEntity from "../core/IgeEntity";
 
-class IgeGamePadComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+class IgeGamePadComponent extends IgeComponent {
 	"classId" = "IgeGamePadComponent";
 	"componentId" = "gamePad";
 
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this.gamepadAvailable = null;

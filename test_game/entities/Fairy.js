@@ -1,13 +1,13 @@
 import { Rotator } from "./Rotator.js";
 import { isClient } from "../../engine/services/clientServer.js";
-import { textures } from "../services/textures.js";
 import { registerClass } from "../../engine/services/igeClassStore.js";
+import { ige } from "../../engine/instance.js";
 export class Fairy extends Rotator {
     constructor(speed) {
         super(speed);
         this.classId = "Fairy";
         if (isClient) {
-            this.texture(textures.getTextureById("fairy"));
+            this.texture(ige.textures.get("fairy"));
         }
     }
     streamCreateData(allGood = false) {

@@ -2,6 +2,14 @@ import { ige } from "../instance";
 import IgeComponent from "../core/IgeComponent";
 import IgeEntity from "../core/IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeAnimation } from "../../types/IgeAnimation";
+import { Ige } from "../core/Ige";
+
+export interface IgeAnimationStartOptions {
+	onComplete?: (anim: IgeAnimation) => void;
+	onLoop?: (anim: IgeAnimation) => void;
+	onStopped?: (anim: IgeAnimation) => void;
+}
 
 /**
  * The animation component class. Handles defining and controlling
@@ -11,17 +19,24 @@ import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingConte
  * @event loopComplete - The animation has completed a full cycle (shown all frames).
  * @event complete - The animation has completed all assigned loop cycles.
  */
-class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+class IgeAnimationComponent extends IgeComponent {
 	classId = "IgeAnimationComponent";
 	componentId = "animation";
-	_anims: Record<string, any>;
+	_anim?: IgeAnimation;
+	_anims: Record<string, IgeAnimation>;
+	_animCount: number = 0;
+	_animId?: string;
+	_playing: boolean = false;
+	_completeCallback?: (anim: IgeAnimation) => void;
+	_loopCallback?: (anim: IgeAnimation) => void;
+	_stoppedCallback?: (anim: IgeAnimation) => void;
 
 	/**
 	 * @constructor
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._anims = {};
@@ -52,10 +67,10 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 * @return {*}
 	 */
-	define = (id: string, frames: number[], fps: number, loop: number, convertIdsToIndex: boolean) => {
+	define = (id: string, frames: number[], fps: number, loop: number, convertIdsToIndex: boolean = true) => {
 		if (frames && frames.length) {
 			let i, frame;
-			this._anims.length = this._anims.length || 0;
+			this._animCount = this._animCount || 0;
 
 			if (convertIdsToIndex === undefined) {
 				convertIdsToIndex = true; // Default the flag to true if undefined
@@ -91,14 +106,14 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 				"currentLoop": 0
 			};
 
-			this._anims.length++;
+			this._animCount++;
 		} else {
 			this.log("Cannot define an animation without a frame array!", "error");
 		}
 		return this._entity;
 	}
 
-	addFrame = (id, frameId) => {
+	addFrame = (id: string, frameId: number | string) => {
 		if (this._anims[id]) {
 			const anim = this._anims[id];
 
@@ -112,7 +127,7 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 		}
 	}
 
-	removeFrame = (id, frameIndex) => {
+	removeFrame = (id: string, frameIndex: number) => {
 		if (this._anims[id]) {
 			const anim = this._anims[id];
 
@@ -127,9 +142,9 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 	 * @param {String} id The id of the animation to remove.
 	 * @returns {*}
 	 */
-	remove = (id) => {
+	remove = (id: string) => {
 		delete this._anims[id];
-		this._anims.length--;
+		this._animCount--;
 
 		return this._entity;
 	}
@@ -139,7 +154,7 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 	 * @param {String} id The id of the animation to check for.
 	 * @returns {Boolean} True if the animation has been defined.
 	 */
-	defined = (id) => {
+	defined = (id: string) => {
 		return Boolean(this._anims[id]);
 	}
 
@@ -159,7 +174,7 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 	 *     entity.animation.setFps('anim1', 12);
 	 * @return {*}
 	 */
-	setFps = (id, fps) => {
+	setFps = (id: string, fps: number) => {
 		if (this._anims) {
 			const anim = this._anims[id];
 
@@ -188,9 +203,9 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 	 *     entity.animation.setAllFps(12);
 	 * @return {*}
 	 */
-	setAllFps = (fps) => {
+	setAllFps = (fps: number) => {
 		if (this._anims) {
-			for (id in this._anims) {
+			for (const id in this._anims) {
 				if (this._anims.hasOwnProperty(id)) {
 					this.setFps(id, fps);
 				}
@@ -278,7 +293,7 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 	 *     entity.animation.start('anim1');
 	 * @return {*}
 	 */
-	start = (animId, options) => {
+	start = (animId: string, options?: IgeAnimationStartOptions) => {
 		if (this._anims) {
 			const anim = this._anims[animId];
 
@@ -301,10 +316,10 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 
 				this.emit("started", anim);
 			} else {
-				this.log("Cannot set animation to \"" + animId + "\" because the animation does not exist!", "warning");
+				this.log(`Cannot set animation to "${animId}" because the animation does not exist!`, "warning");
 			}
 		} else {
-			this.log("Cannot set animation to \"" + animId + "\" because no animations have been defined with defineAnim(...);", "warning");
+			this.log(`Cannot set animation to "${animId}" because no animations have been defined with defineAnim(...);`, "warning");
 		}
 
 		return this._entity;
@@ -330,7 +345,7 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 	 *     entity.animation.select('anim1');
 	 * @return {*}
 	 */
-	select = (animId, options) => {
+	select = (animId: string, options?: IgeAnimationStartOptions) => {
 		if (this._animId !== animId) {
 			this.start(animId, options);
 		}
@@ -346,7 +361,7 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 	 */
 	stop = () => {
 		if (this._stoppedCallback) {
-			this._stoppedCallback.call(this, this._anim);
+			this._stoppedCallback(this._anim as IgeAnimation);
 		}
 
 		this.emit("stopped", this._anim);
@@ -365,20 +380,17 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 
 	/**
 	 * Handles the animation processing each update.
+	 * @param igeInstance
 	 * @param {CanvasRenderingContext2D} ctx The rendering context to use when doing draw operations.
+	 * @param entity
 	 * @param {Number} tickDelta The current ige._tickDelta passed down the scenegraph.
 	 */
-	_update = (ctx: IgeCanvasRenderingContext2d, tickDelta: number) => {
-		const self = this.animation;
-
+	_update = (igeInstance: Ige, entity: IgeEntity, ctx: IgeCanvasRenderingContext2d, tickDelta: number) => {
 		// Just in case someone forgets to pass it in their update call!
-		tickDelta = tickDelta || ige._tickDelta;
+		tickDelta = tickDelta || ige.engine._tickDelta;
 
-		if (self._anim) {
-			let anim = self._anim,
-				multiple,
-				cell,
-				frame;
+		if (this._anim) {
+			const anim = this._anim;
 
 			// Advance the internal animation timer
 			anim.currentDelta += tickDelta;
@@ -387,62 +399,63 @@ class IgeAnimationComponent<TargetClass extends IgeEntity = IgeEntity> extends I
 			if (anim.currentDelta > anim.totalTime) {
 				// Check if we have a single loop animation
 				if (!anim.loop) {
-					if (self._completeCallback) {
-						self._completeCallback.call(self, anim);
+					if (this._completeCallback) {
+						this._completeCallback(anim);
 					}
-					self.emit("complete", anim);
-					self.stop();
+
+					this.emit("complete", anim);
+					this.stop();
 				} else {
 					// Check if we have an infinite loop
 					if (anim.loop === -1) {
 						// Loop back round to the beginning
-						multiple = anim.currentDelta / anim.totalTime;
+						const multiple = anim.currentDelta / anim.totalTime;
 						if (Math.abs(multiple) > 1) {
 							anim.currentDelta -= ((multiple|0) * anim.totalTime); // Bitwise floor
 						}
 
-						if (self._loopCallback) {
-							self._loopCallback.call(self, anim);
+						if (this._loopCallback) {
+							this._loopCallback(anim);
 						}
-						self.emit("loopComplete", anim);
+						this.emit("loopComplete", anim);
 					} else {
 						anim.currentLoop++;
 						if (anim.loop > 0 && anim.currentLoop <= anim.loop) {
 							// Loop back round to the beginning
-							multiple = anim.currentDelta / anim.totalTime;
+							const multiple = anim.currentDelta / anim.totalTime;
 							if (Math.abs(multiple) > 1) {
 								anim.currentDelta -= ((multiple|0) * anim.totalTime); // Bitwise floor
 							}
 
-							if (self._loopCallback) {
-								self._loopCallback.call(self, anim);
+							if (this._loopCallback) {
+								this._loopCallback(anim);
 							}
-							self.emit("loopComplete", anim);
+							this.emit("loopComplete", anim);
 						} else {
 							// The animation has ended
-							if (self._completeCallback) {
-								self._completeCallback.call(self, anim);
+							if (this._completeCallback) {
+								this._completeCallback(anim);
 							}
-							self.emit("complete", anim);
-							self.stop();
+							this.emit("complete", anim);
+							this.stop();
 						}
 					}
 				}
 			}
 
-			frame = ((anim.currentDelta / anim.frameTime)|0);
+			let frame = ((anim.currentDelta / anim.frameTime)|0);
 
 			if (frame >= anim.frameCount) {
 				frame = anim.frameCount - 1;
 			}
 
-			cell = anim.frames[frame];
+			const cell = anim.frames[frame];
 
 			// Set the current frame
-			if (typeof(cell) === "string") {
-				self._entity.cellById(cell);
+			if (typeof cell === "string") {
+				this._entity.cellById(cell);
 			} else {
-				self._entity.cell(cell);
+				this._entity.cell(cell);
 			}
 		}
 	}

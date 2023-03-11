@@ -3,7 +3,7 @@ import IgeEntity from "../core/IgeEntity";
 import { IgeMountMode } from "../../enums/IgeMountMode";
 import IgeRect from "../core/IgeRect";
 
-class IgeEntityManagerComponent<TargetClass extends IgeEntity = IgeEntity> extends IgeComponent<TargetClass> {
+class IgeEntityManagerComponent extends IgeComponent {
 	classId = "IgeEntityManagerComponent";
 	componentId = "entityManager";
 
@@ -12,7 +12,7 @@ class IgeEntityManagerComponent<TargetClass extends IgeEntity = IgeEntity> exten
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Check we are being added to a tile map

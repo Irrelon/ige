@@ -11,7 +11,7 @@ class IgeVelocityComponent extends IgeComponent {
          * @param ctx
          * @private
          */
-        this._behaviour = (ige, entity, ctx) => {
+        this._behaviour = (entity, ctx) => {
             entity.velocity.tick(ctx);
         };
         this.byAngleAndPower = (radians, power, relative) => {

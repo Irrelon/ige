@@ -1,12 +1,12 @@
 import IgeEventingClass from "./IgeEventingClass";
 
-class IgeComponent<TargetClass> extends IgeEventingClass {
-	_entity: TargetClass;
+class IgeComponent extends IgeEventingClass {
+	_entity: any;
 	_options?: any;
 	componentId: string = "IgeComponent";
 	destroy?: () => void;
 
-	constructor (parent: TargetClass, options?: any) {
+	constructor (parent: any, options?: any) {
 		super();
 		this._entity = parent;
 		this._options = options;

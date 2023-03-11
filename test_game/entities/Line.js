@@ -1,4 +1,4 @@
-import { textures } from "../services/textures.js";
+import { ige } from "../../engine/instance.js";
 import { isClient } from "../../engine/services/clientServer.js";
 import { registerClass } from "../../engine/services/igeClassStore.js";
 import IgeRect from "../../engine/core/IgeRect.js";
@@ -14,7 +14,7 @@ export class Line extends GameEntity {
             .height(y2 - y1)
             .translateTo((x2 / 2) + (x1 / 2), (y2 / 2) + (y1 / 2), 0);
         if (isClient) {
-            this.texture(textures.getTextureById("line"));
+            this.texture(ige.textures.get("line"));
         }
     }
     streamCreateData(allGood = false) {

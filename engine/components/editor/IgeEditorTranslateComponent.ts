@@ -5,7 +5,7 @@ import IgeComponent from "../../core/IgeComponent";
  * When added to a viewport, automatically adds entity translate
  * capabilities to the selected entity in the scenegraph viewer.
  */
-class IgeEditorTranslateComponent<TargetClass extends IgeEntity> extends IgeComponent<TargetClass> {
+class IgeEditorTranslateComponent extends IgeComponent {
 	classId = "IgeEditorTranslateComponent";
 	componentId = "editorTranslate";
 
@@ -15,7 +15,7 @@ class IgeEditorTranslateComponent<TargetClass extends IgeEntity> extends IgeComp
 	 * @param options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Set the pan component as inactive to start with

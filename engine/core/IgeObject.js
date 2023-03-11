@@ -68,6 +68,7 @@ export class IgeObject extends IgeEventingClass {
         this._sortChildren = (compareFn) => {
             return this._children.sort(compareFn);
         };
+        this.components = {};
         this._specialProp.push("_id");
         this._specialProp.push("_parent");
         this._specialProp.push("_children");
@@ -1765,5 +1766,21 @@ export class IgeObject extends IgeEventingClass {
             }
         }
         return str;
+    }
+    addComponent(id, Component, options) {
+        const instance = new Component(this, options);
+        instance._entity = this;
+        this.components[id] = instance;
+        return this;
+    }
+    removeComponent(id) {
+        const instance = this.components[id];
+        if (!instance)
+            return this;
+        if (instance && instance.destroy) {
+            instance.destroy();
+        }
+        delete this.components[id];
+        return this;
     }
 }

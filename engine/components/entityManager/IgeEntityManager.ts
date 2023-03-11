@@ -3,11 +3,11 @@ import IgeEntity from "../../core/IgeEntity";
 import IgeComponent from "../../core/IgeComponent";
 import { IgeMountMode } from "../../../enums/IgeMountMode";
 
-class IgeEntityManager<TargetClass extends IgeEntity> extends IgeComponent<TargetClass> {
+class IgeEntityManager extends IgeComponent {
 	classId = "IgeEntityManager";
 	componentId = "entityManager";
 
-	constructor (entity: TargetClass, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Create queue arrays that will store entities waiting to
