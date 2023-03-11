@@ -1,5 +1,5 @@
-import { IgeAssets } from "./IgeAssets.js";
-export class IgeTextureStore extends IgeAssets {
+import { IgeAssetRegister } from "./IgeAssetRegister.js";
+export class IgeTextureStore extends IgeAssetRegister {
     constructor() {
         super(...arguments);
         this._textureImageStore = {};

@@ -1,7 +1,7 @@
+import { ige } from "../../../engine/instance";
 import { Rotator } from "./Rotator";
 import { createChildRotators } from "./ChildRotators";
 import { isClient } from "../../../engine/services/clientServer";
-import { textures } from "../services/textures";
 
 export class Fairy extends Rotator{
 	constructor (speed: number) {
@@ -13,7 +13,7 @@ export class Fairy extends Rotator{
 			.translateTo(0, 0, 0);
 
 		if (isClient) {
-			this.texture(textures.getTextureById("fairy"));
+			this.texture(ige.textures.get("fairy"));
 		}
 
 		const arr = createChildRotators(this, 200, 0.05);

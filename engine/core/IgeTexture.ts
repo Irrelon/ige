@@ -1,15 +1,14 @@
 import { ige } from "../instance";
 import { IgeSmartTexture } from "../../types/IgeSmartTexture";
-import { arrPull, newIdHex } from "../services/utils";
+import { arrPull } from "../services/utils";
 import { IgeSmartFilter } from "../../types/IgeSmartFilter";
 import type { IgeImage } from "./IgeImage";
 import type { IgeCanvas } from "./IgeCanvas";
 import IgeEntity from "./IgeEntity";
-import WithUiStyleMixin from "../mixins/IgeUiStyleMixin";
 import { isClient, isServer } from "../services/clientServer";
-import { IgeObject } from "./IgeObject";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode";
+import { IgeAsset } from "./IgeAsset";
 
 type IgeTextureCell = [number, number, number, number, string?];
 type IgeTextureCellArray = IgeTextureCell[];
@@ -20,10 +19,9 @@ let IgeCanvasClass: typeof IgeCanvas;
 /**
  * Creates a new texture.
  */
-class IgeTexture extends WithUiStyleMixin(IgeObject) {
+class IgeTexture extends IgeAsset {
 	classId = "IgeTexture";
 	IgeTexture = true;
-	_id?: string;
 	_sizeX: number = 0;
 	_sizeY: number = 0;
 	_renderMode: IgeTextureRenderMode = IgeTextureRenderMode.none;
@@ -45,21 +43,25 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 
 	/**
 	 * Constructor for a new IgeTexture.
-	 * @param {Ige} ige The engine instance.
+	 * @param id
 	 * @param {string | IgeSmartTexture} urlOrObject Either a string URL that
 	 * points to the path of the image or script you wish to use as
 	 * the texture image, or an object containing a smart texture.
 	 */
-	constructor (urlOrObject?: string | IgeSmartTexture) {
+	constructor (id?: string, urlOrObject?: string | IgeSmartTexture) {
 		super();
 		this._loaded = false;
 
 		if (isServer) {
 			this.log(
-				"Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side using something like an if statement around your texture laoding such as \"if (isClient) {}\".",
+				`Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side using something like an if statement around your texture laoding such as "if (isClient) {...}".`,
 				"error"
 			);
 			return this;
+		}
+
+		if (id) {
+			ige.textures.add(id, this);
 		}
 
 		this.addDependency("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
@@ -91,59 +93,6 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 			// Assign the texture script object
 			this.assignSmartTextureImage(urlOrObject);
 		}
-	}
-
-	/**
-	 * Gets / sets the current object id. If no id is currently assigned and no
-	 * id is passed to the method, it will automatically generate and assign a
-	 * new id as a 16 character hexadecimal value typed as a string.
-	 * @param {String=} id The id to set to.
-	 * @return {*} Returns this when setting the value or the current value if none is specified.
-	 */
-	id(id: string): this;
-	id(): string;
-	id (id?: string): this | string | undefined {
-		if (id !== undefined) {
-			// Check if this ID already exists in the object register
-			if (ige.register.get(id)) {
-				if (ige.register.get(id) === this) {
-					// We are already registered as this id
-					return this;
-				}
-
-				// Already an object with this ID!
-				this.log(`Cannot set ID of object to "${id}" because that ID is already in use by another object!`, "error");
-			} else {
-				// Check if we already have an id assigned
-				if (this._id && ige.register.get(this._id)) {
-					// Unregister the old ID before setting this new one
-					ige.register.remove(this);
-				}
-
-				this._id = id;
-
-				// Now register this object with the object register
-				ige.register.add(this);
-
-				return this;
-			}
-		}
-
-		if (!this._id) {
-			// The item has no id so generate one automatically
-			if (this._url) {
-				// Generate an ID from the URL string of the audio file
-				// this instance is using. Useful for always reproducing
-				// the same ID for the same file :)
-				this._id = ige.engine.newIdFromString(this._url);
-			} else {
-				// We don't have a URL so generate a random ID
-				this._id = newIdHex();
-			}
-			ige.register.add(this);
-		}
-
-		return this._id;
 	}
 
 	/**
@@ -183,8 +132,6 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 			return false;
 		}
 
-		ige.textures.onLoadStart(imageUrl, this);
-
 		this.dependsOn(["IgeImageClass"], () => {
 			if (!ige.textures._textureImageStore[imageUrl]) {
 				// Image not in cache, create the image object
@@ -202,12 +149,12 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 					this.log("Texture image (" + imageUrl + ") loaded successfully");
 
 					/*if (image.width % 2) {
-						self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
-					}
+							self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
+						}
 
-					if (image.height % 2) {
-						self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
-					}*/
+						if (image.height % 2) {
+							self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
+						}*/
 
 					// Loop textures that are using this image
 					const arr = image._igeTextures;
@@ -252,7 +199,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 					if (image.width % 2) {
 						this.log(
 							"This texture's width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-							this._url,
+								this._url,
 							"warning"
 						);
 					}
@@ -260,7 +207,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 					if (image.height % 2) {
 						this.log(
 							"This texture's height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-							this._url,
+								this._url,
 							"warning"
 						);
 					}
@@ -272,6 +219,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 				}
 			}
 		});
+
 	}
 
 	_textureLoaded () {
@@ -284,21 +232,8 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 			this.emit("loaded");
 
 			// Inform the engine that this image has loaded
-			ige.textures.onLoadEnd((this.image as IgeImage).src, this);
+			//ige.textures.onLoadEnd((this.image as IgeImage).src, this);
 		}, 5);
-	}
-
-	whenLoaded (): Promise<boolean> {
-		return new Promise((resolve) => {
-			if (this._loaded) {
-				return resolve(true);
-			}
-
-			const emitterHandle = this.on("loaded", () => {
-				resolve(true);
-				this.off("loaded", emitterHandle);
-			});
-		});
 	}
 
 	/**
@@ -309,7 +244,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 	 * @private
 	 */
 	_loadScript (scriptUrl: string) {
-		ige.textures.onLoadStart(scriptUrl, this);
+		//ige.textures.onLoadStart(scriptUrl, this);
 
 		if (isClient) {
 			import(scriptUrl)
@@ -1009,7 +944,10 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 		}
 
 		// Remove the texture from the texture store
-		arrPull(ige.textures._assetArr, this);
+		const id = this.id();
+		if (id) {
+			ige.textures.remove(id);
+		}
 
 		delete this.image;
 		delete this.script;

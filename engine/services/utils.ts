@@ -244,3 +244,13 @@ export const traceSetOff = (obj: any, propName: string) => {
 		}
 	});
 }
+
+/**
+ * Returns a promise that resolves in the given milliseconds.
+ * @param ms
+ */
+export const delay = (ms: number) => {
+	return new Promise((resolve) => {
+		setTimeout(resolve, ms);
+	});
+}

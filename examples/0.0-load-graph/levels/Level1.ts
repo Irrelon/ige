@@ -24,11 +24,11 @@ export class Level1 extends IgeSceneGraph {
 			.mount(baseScene);
 
 		// Create an entity and mount it to the scene
-		new Fairy(-0.1)
+		new Fairy(-0.01)
 			.translateTo(-220, 0, 0)
 			.mount(scene1);
 
-		new Fairy(0.1)
+		new Fairy(0.01)
 			.translateTo(220, 0, 0)
 			.mount(scene1);
 	}

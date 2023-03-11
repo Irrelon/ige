@@ -464,6 +464,9 @@ export class IgeObject extends IgeEventingClass {
      * @return {*} Returns this on success or false on failure.
      */
     mount(obj) {
+        if (!obj) {
+            throw new Error("Must provide an object to mount to!");
+        }
         if (obj === this) {
             this.log("Cannot mount an object to itself!", "error");
             return this;

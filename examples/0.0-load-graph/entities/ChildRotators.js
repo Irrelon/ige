@@ -1,9 +1,7 @@
 import { ige } from "../../../engine/instance.js";
 import { Rotator } from "./Rotator.js";
-import { textures } from "../services/textures.js";
 export const createChildRotators = (parent, distance = 120, speed = 0.1) => {
-    const client = ige.client;
-    const simpleBox = textures.getTextureById("simpleBox");
+    const simpleBox = ige.textures.get("simpleBox");
     const entity1 = new Rotator(speed)
         .depth(1)
         .width(50)

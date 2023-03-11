@@ -782,6 +782,10 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @return {*} Returns this on success or false on failure.
 	 */
 	mount (obj: IgeObject): this {
+		if (!obj) {
+			throw new Error("Must provide an object to mount to!");
+		}
+
 		if (obj === this) {
 			this.log("Cannot mount an object to itself!", "error");
 			return this;

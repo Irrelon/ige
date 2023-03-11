@@ -1,23 +1,22 @@
 import { ige } from "../instance.js";
-import { arrPull, newIdHex } from "../services/utils.js";
-import WithUiStyleMixin from "../mixins/IgeUiStyleMixin.js";
+import { arrPull } from "../services/utils.js";
 import { isClient, isServer } from "../services/clientServer.js";
-import { IgeObject } from "./IgeObject.js";
 import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode.js";
+import { IgeAsset } from "./IgeAsset.js";
 let IgeImageClass;
 let IgeCanvasClass;
 /**
  * Creates a new texture.
  */
-class IgeTexture extends WithUiStyleMixin(IgeObject) {
+class IgeTexture extends IgeAsset {
     /**
      * Constructor for a new IgeTexture.
-     * @param {Ige} ige The engine instance.
+     * @param id
      * @param {string | IgeSmartTexture} urlOrObject Either a string URL that
      * points to the path of the image or script you wish to use as
      * the texture image, or an object containing a smart texture.
      */
-    constructor(urlOrObject) {
+    constructor(id, urlOrObject) {
         super();
         this.classId = "IgeTexture";
         this.IgeTexture = true;
@@ -35,8 +34,11 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
         this._cells = [];
         this._loaded = false;
         if (isServer) {
-            this.log("Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side using something like an if statement around your texture laoding such as \"if (isClient) {}\".", "error");
+            this.log(`Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side using something like an if statement around your texture laoding such as "if (isClient) {...}".`, "error");
             return this;
+        }
+        if (id) {
+            ige.textures.add(id, this);
         }
         this.addDependency("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
             IgeImageClass = IgeModule;
@@ -65,45 +67,6 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
             this.assignSmartTextureImage(urlOrObject);
         }
     }
-    id(id) {
-        if (id !== undefined) {
-            // Check if this ID already exists in the object register
-            if (ige.register.get(id)) {
-                if (ige.register.get(id) === this) {
-                    // We are already registered as this id
-                    return this;
-                }
-                // Already an object with this ID!
-                this.log(`Cannot set ID of object to "${id}" because that ID is already in use by another object!`, "error");
-            }
-            else {
-                // Check if we already have an id assigned
-                if (this._id && ige.register.get(this._id)) {
-                    // Unregister the old ID before setting this new one
-                    ige.register.remove(this);
-                }
-                this._id = id;
-                // Now register this object with the object register
-                ige.register.add(this);
-                return this;
-            }
-        }
-        if (!this._id) {
-            // The item has no id so generate one automatically
-            if (this._url) {
-                // Generate an ID from the URL string of the audio file
-                // this instance is using. Useful for always reproducing
-                // the same ID for the same file :)
-                this._id = ige.engine.newIdFromString(this._url);
-            }
-            else {
-                // We don't have a URL so generate a random ID
-                this._id = newIdHex();
-            }
-            ige.register.add(this);
-        }
-        return this._id;
-    }
     url(url) {
         if (url !== undefined) {
             this._url = url;
@@ -130,7 +93,6 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
         if (!isClient) {
             return false;
         }
-        ige.textures.onLoadStart(imageUrl, this);
         this.dependsOn(["IgeImageClass"], () => {
             if (!ige.textures._textureImageStore[imageUrl]) {
                 // Image not in cache, create the image object
@@ -144,12 +106,12 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
                     // Log success
                     this.log("Texture image (" + imageUrl + ") loaded successfully");
                     /*if (image.width % 2) {
-                        self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
-                    }
+                            self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
+                        }
 
-                    if (image.height % 2) {
-                        self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
-                    }*/
+                        if (image.height % 2) {
+                            self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
+                        }*/
                     // Loop textures that are using this image
                     const arr = image._igeTextures;
                     const arrCount = arr.length;
@@ -203,19 +165,8 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
             this._loaded = true;
             this.emit("loaded");
             // Inform the engine that this image has loaded
-            ige.textures.onLoadEnd(this.image.src, this);
+            //ige.textures.onLoadEnd((this.image as IgeImage).src, this);
         }, 5);
-    }
-    whenLoaded() {
-        return new Promise((resolve) => {
-            if (this._loaded) {
-                return resolve(true);
-            }
-            const emitterHandle = this.on("loaded", () => {
-                resolve(true);
-                this.off("loaded", emitterHandle);
-            });
-        });
     }
     /**
      * Loads a render script into a script tag and sets an onload
@@ -225,7 +176,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
      * @private
      */
     _loadScript(scriptUrl) {
-        ige.textures.onLoadStart(scriptUrl, this);
+        //ige.textures.onLoadStart(scriptUrl, this);
         if (isClient) {
             import(scriptUrl)
                 .then((module) => {
@@ -794,7 +745,10 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
             arrPull(this.image._igeTextures, this);
         }
         // Remove the texture from the texture store
-        arrPull(ige.textures._assetArr, this);
+        const id = this.id();
+        if (id) {
+            ige.textures.remove(id);
+        }
         delete this.image;
         delete this.script;
         delete this._textureCanvas;

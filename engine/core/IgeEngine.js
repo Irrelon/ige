@@ -15,6 +15,7 @@ import IgeDummyContext from "./IgeDummyContext.js";
 import IgePoint2d from "./IgePoint2d.js";
 import IgeEntity from "./IgeEntity.js";
 import IgeViewport from "./IgeViewport.js";
+import { IgeEngineState } from "../../enums/IgeEngineState.js";
 export class IgeEngine extends IgeEntity {
     constructor() {
         super();
@@ -24,6 +25,7 @@ export class IgeEngine extends IgeEntity {
         this._manualRenderQueued = false;
         this._useManualTicks = false;
         this._manualFrameAlternator = false;
+        this._state = IgeEngineState.stopped;
         this._tickStart = 0;
         this._dependencyCheckTimeout = 5000; // Wait 30 seconds to load all dependencies then timeout;
         this._syncIndex = 0;
@@ -325,7 +327,6 @@ export class IgeEngine extends IgeEntity {
         this._renderTime = NaN; // The time the tick render section took to process
         this._tickDelta = 0; // The time between the last tick and the current one
         this._fpsRate = 60; // Sets the frames per second to execute engine tick's at
-        this._state = 0; // Currently stopped
         this._drawCount = 0; // Holds the number of draws since the last frame (calls to drawImage)
         this._dps = 0; // Number of draws that occurred last tick
         this._dpf = 0;
@@ -1253,63 +1254,55 @@ export class IgeEngine extends IgeEntity {
         return id;
     }
     /**
-     * Starts the engine.
-     * @param callback
+     * Starts the engine or rejects the promise with an error.
      */
-    start(callback) {
-        var _a;
-        // Check if the state is anything other than zero (stopped)
-        if (this._state) {
-            return;
-        }
-        if (isClient && this._dependencyQueue.length === 0) {
-            // Add the textures loaded dependency
-            this._dependencyQueue.push(ige.textures.haveAllTexturesLoaded);
-            this._dependencyQueue.push(this.canvasReady);
-            this._dependencyQueue.push(this.fontsLoaded);
-        }
-        if (this.dependencyCheck()) {
-            // Start the engine
-            this.log("Starting engine...");
-            this._state = 1;
-            // Check if we have a DOM, that there is an igeLoading element
-            // and if so, remove it from the DOM now
-            if (isClient) {
-                if (document.getElementsByClassName && document.getElementsByClassName("igeLoading")) {
-                    const arr = document.getElementsByClassName("igeLoading");
-                    let arrCount = arr.length;
-                    while (arrCount--) {
-                        (_a = arr[arrCount].parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(arr[arrCount]);
+    start() {
+        return new Promise((resolve, reject) => {
+            // Check if the state is anything other than zero (stopped)
+            if (this._state === IgeEngineState.started) {
+                return resolve(true);
+            }
+            if (isClient && this._dependencyQueue.length === 0) {
+                // Add the textures loaded dependency
+                this._dependencyQueue.push(ige.textures.haveAllTexturesLoaded);
+                this._dependencyQueue.push(this.canvasReady);
+                this._dependencyQueue.push(this.fontsLoaded);
+            }
+            const doDependencyCheck = () => {
+                var _a;
+                if (this.dependencyCheck()) {
+                    // Start the engine
+                    this.log("Starting engine...");
+                    this._state = IgeEngineState.started;
+                    // Check if we have a DOM, that there is an igeLoading element
+                    // and if so, remove it from the DOM now
+                    if (isClient) {
+                        if (document.getElementsByClassName && document.getElementsByClassName("igeLoading")) {
+                            const arr = document.getElementsByClassName("igeLoading");
+                            let arrCount = arr.length;
+                            while (arrCount--) {
+                                (_a = arr[arrCount].parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(arr[arrCount]);
+                            }
+                        }
                     }
+                    this.requestAnimFrame(this.engineStep);
+                    this.log("Engine started");
+                    return resolve(true);
                 }
-            }
-            this.requestAnimFrame(this.engineStep);
-            this.log("Engine started");
-            // Fire the callback method if there was one
-            if (typeof callback === "function") {
-                callback(true);
-            }
-            return;
-        }
-        // Get the current timestamp
-        const curTime = new Date().getTime();
-        // Record when we first started checking for dependencies
-        if (!this._dependencyCheckStart) {
-            this._dependencyCheckStart = curTime;
-        }
-        // Check if we have timed out
-        if (curTime - this._dependencyCheckStart > this._dependencyCheckTimeout) {
-            this.log("Engine start failed because the dependency check timed out after " + this._dependencyCheckTimeout / 1000 + " seconds", "error");
-            if (typeof callback === "function") {
-                callback(false);
-            }
-        }
-        else {
-            // Start a timer to keep checking dependencies
-            setTimeout(() => {
-                this.start(callback);
-            }, 200);
-        }
+                // Get the current timestamp
+                const curTime = new Date().getTime();
+                // Record when we first started checking for dependencies
+                if (!this._dependencyCheckStart) {
+                    this._dependencyCheckStart = curTime;
+                }
+                // Check if we have timed out
+                if (curTime - this._dependencyCheckStart > this._dependencyCheckTimeout) {
+                    return reject(new Error("Engine start failed because the dependency check timed out after " + this._dependencyCheckTimeout / 1000 + " seconds"));
+                }
+                setTimeout(doDependencyCheck, 200);
+            };
+            doDependencyCheck();
+        });
     }
     /**
      * Stops the engine.
@@ -1319,7 +1312,7 @@ export class IgeEngine extends IgeEntity {
         // If we are running, stop the engine
         if (this._state) {
             this.log("Stopping engine...");
-            this._state = 0;
+            this._state = IgeEngineState.stopped;
             return true;
         }
         else {

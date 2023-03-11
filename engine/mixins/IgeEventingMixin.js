@@ -188,7 +188,7 @@ const WithEventingMixin = (Base) => class extends Base {
             return 0;
         }
         // Fire the listeners for this event
-        let eventCount = this._eventListeners[eventName].length, eventCount2 = this._eventListeners[eventName].length - 1;
+        let eventCount = this._eventListeners[eventName].length;
         // If there are some events, ensure that the args is ready to be used
         if (!eventCount) {
             return 0;
@@ -206,8 +206,9 @@ const WithEventingMixin = (Base) => class extends Base {
         let cancelFlag = false;
         this._eventsProcessing = true;
         while (eventCount--) {
-            const eventIndex = eventCount2 - eventCount;
-            const tempEvt = this._eventListeners[eventName][eventIndex];
+            const tempEvt = this._eventListeners[eventName][eventCount];
+            if (!tempEvt)
+                debugger;
             // If the sendEventName flag is set, overwrite the arguments with the event name
             if (tempEvt.sendEventName) {
                 finalArgs = [eventName];

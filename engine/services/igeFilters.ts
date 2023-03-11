@@ -8,7 +8,7 @@ class IgeFilters {
 	filter: Record<string, IgeSmartFilter> = {};
 	helper: Record<string, IgeFilterHelperFunction> = {};
 	tmpCanvas?: HTMLCanvasElement;
-	tmpCtx?: IgeCanvasRenderingContext2d;
+	tmpCtx?: IgeCanvasRenderingContext2d | null;
 
 	constructor () {
 		if (typeof window === "undefined") {
