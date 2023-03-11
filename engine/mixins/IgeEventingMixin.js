@@ -34,7 +34,7 @@ const WithEventingMixin = (Base) => class extends Base {
         // Check that we have an event listener object
         this._eventListeners = this._eventListeners || {};
         if (typeof callback !== "function") {
-            if (typeof (eventName) !== "string") {
+            if (typeof eventName !== "string") {
                 eventName = "*Multi-Event*";
             }
             this.log("Cannot register event listener for event \"" + eventName + "\" because the passed callback is not a function!", "error");
@@ -114,6 +114,8 @@ const WithEventingMixin = (Base) => class extends Base {
      * @return {Boolean}
      */
     off(eventName, evtListener, callback) {
+        if (!evtListener)
+            return false;
         if (this._eventListeners) {
             if (!this._eventListeners._processing) {
                 if (this._eventListeners[eventName]) {

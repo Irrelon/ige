@@ -1,20 +1,20 @@
-import { ige } from "../../../engine/instance";
 import { Rotator } from "./Rotator";
-import { Client } from "../client";
 import { createChildRotators } from "./ChildRotators";
+import { isClient } from "../../../engine/services/clientServer";
+import { textures } from "../services/textures";
 
 export class Fairy extends Rotator{
 	constructor (speed: number) {
 		super(speed);
 
-		const client = ige.client as Client;
-
 		this.depth(1)
 			.width(100)
 			.height(100)
-			.texture(client.gameTexture.fairy)
-			.translateTo(0, 0, 0)
-			.mount(ige.$('scene1'));
+			.translateTo(0, 0, 0);
+
+		if (isClient) {
+			this.texture(textures.getTextureById("fairy"));
+		}
 
 		const arr = createChildRotators(this, 200, 0.05);
 		const arrBox1 = createChildRotators(arr[0], 120, -0.2);

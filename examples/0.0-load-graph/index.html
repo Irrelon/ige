@@ -12,13 +12,11 @@
   <!-- Isogenic Loader -->
   <link rel="stylesheet" type="text/css" media="all" href="../../engine/css/ige.css" />
   <script>
-    window.igeRoot = "../../";
+    window.igeRoot = "../";
   </script>
   <script type="module">
-		import { Client } from "./client.js";
 		import { Game } from "./index.js";
-
-		const game = new Game(Client);
+		const game = new Game();
   </script>
 </head>
 <body>

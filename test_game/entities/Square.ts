@@ -1,9 +1,9 @@
-import IgeEntity from "../../engine/core/IgeEntity";
 import { textures } from "../services/textures";
 import { isClient } from "../../engine/services/clientServer";
 import { registerClass } from "../../engine/services/igeClassStore";
+import { GameEntity } from "./GameEntity";
 
-export class Square extends IgeEntity {
+export class Square extends GameEntity {
 	classId = 'Square';
 
 	constructor () {

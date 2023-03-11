@@ -2,10 +2,10 @@ import { ige } from "../../../engine/instance";
 import IgeSceneGraph from "../../../engine/core/IgeSceneGraph";
 import IgeScene2d from "../../../engine/core/IgeScene2d";
 import IgeEntity from "../../../engine/core/IgeEntity";
-import { Fairy } from "../gameClasses/Fairy";
+import { Fairy } from "../entities/Fairy";
 
-export class Scene1 extends IgeSceneGraph {
-	classId = 'Scene1';
+export class Level1 extends IgeSceneGraph {
+	classId = "Level1";
 
 	/**
 	 * Called when loading the graph data via ige.addGraph().
@@ -25,10 +25,12 @@ export class Scene1 extends IgeSceneGraph {
 
 		// Create an entity and mount it to the scene
 		new Fairy(-0.1)
-			.translateTo(-220, 0, 0);
+			.translateTo(-220, 0, 0)
+			.mount(scene1);
 
 		new Fairy(0.1)
-			.translateTo(220, 0, 0);
+			.translateTo(220, 0, 0)
+			.mount(scene1);
 	}
 
 	/**
@@ -39,6 +41,6 @@ export class Scene1 extends IgeSceneGraph {
 		// Since all our objects in addGraph() were mounted to the
 		// 'scene1' entity, destroying it will remove everything we
 		// added to it.
-		ige.$('scene1').destroy();
+		(ige.$("scene1") as IgeScene2d).destroy();
 	}
 }

@@ -1,16 +1,17 @@
-import { ige } from "../../../engine/instance.js";
 import { Rotator } from "./Rotator.js";
 import { createChildRotators } from "./ChildRotators.js";
+import { isClient } from "../../../engine/services/clientServer.js";
+import { textures } from "../services/textures.js";
 export class Fairy extends Rotator {
     constructor(speed) {
         super(speed);
-        const client = ige.client;
         this.depth(1)
             .width(100)
             .height(100)
-            .texture(client.gameTexture.fairy)
-            .translateTo(0, 0, 0)
-            .mount(ige.$('scene1'));
+            .translateTo(0, 0, 0);
+        if (isClient) {
+            this.texture(textures.getTextureById("fairy"));
+        }
         const arr = createChildRotators(this, 200, 0.05);
         const arrBox1 = createChildRotators(arr[0], 120, -0.2);
         const arrBox2 = createChildRotators(arr[1], 120, -0.2);

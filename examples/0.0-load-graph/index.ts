@@ -1,19 +1,16 @@
-import IgeBaseClass from "../../engine/core/IgeBaseClass";
 import { ige } from "../../engine/instance";
+import { isClient } from "../../engine/services/clientServer";
 
-export class Game extends IgeBaseClass {
+export class Game {
 	classId = "Game";
 
-	constructor (App: new (...args: any[]) => IgeBaseClass, options?: any) {
-		// Init the super class
-		super();
-
+	constructor (options?: any) {
 		if (isClient) {
-			ige.client = new App();
-		}
-
-		if (isServer) {
-			ige.server = new App(options);
+			import("./client.js").then(({ Client: App }) => {
+				ige.client = new App();
+			});
 		}
 	}
 }
+
+export const game = new Game();

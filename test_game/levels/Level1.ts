@@ -7,10 +7,9 @@ import { Square } from "../entities/Square";
 import { Circle } from "../entities/Circle";
 import { Triangle } from "../entities/Triangle";
 import { Line } from "../entities/Line";
-import { Fairy } from "../entities/Fairy";
 import { IgeStreamMode } from "../../enums/IgeStreamMode";
 import { IgeAudioEntity } from "../../engine/components/audio/IgeAudioEntity";
-import { isClient } from "../../engine/services/clientServer";
+import { Worker } from "../entities/Worker";
 
 export class Level1 extends IgeSceneGraph {
 	classId = "Level1";
@@ -31,7 +30,7 @@ export class Level1 extends IgeSceneGraph {
 			.id("scene1")
 			.mount(baseScene);
 
-		if (isClient) return;
+		//if (isClient) return;
 
 		new IgeAudioEntity()
 			.streamMode(IgeStreamMode.simple)
@@ -39,55 +38,34 @@ export class Level1 extends IgeSceneGraph {
 			.play(true)
 			.mount(baseScene);
 
-		// Create a third rotator entity and mount
-		// it to the first on at 0, -50 relative to the
-		// parent, but assign it a smart texture!
-		new Square()
-			.streamMode(IgeStreamMode.simple)
+		const base = new Square()
 			.translateTo(0, 0, 0)
 			.mount(scene1);
 
-		new Circle()
-			.streamMode(IgeStreamMode.simple)
+		const industry2 = new Circle()
 			.translateTo(250, -50, 0)
 			.mount(scene1);
 
-		new Triangle()
-			.streamMode(IgeStreamMode.simple)
+		const factory1 = new Triangle()
 			.translateTo(220, 120, 0)
 			.rotateTo(0, 0, degreesToRadians(-10))
 			.mount(scene1);
 
-		new Circle()
-			.streamMode(IgeStreamMode.simple)
+		const industry1 = new Circle()
 			.translateTo(50, 150, 0)
 			.mount(scene1);
 
 		new Line(0, 0, 250, -50)
-			.streamMode(IgeStreamMode.simple)
 			.mount(scene1);
 
 		new Line(250, -50, 220, 120)
-			.streamMode(IgeStreamMode.simple)
 			.mount(scene1);
 
 		new Line(220, 120, 50, 150)
-			.streamMode(IgeStreamMode.simple)
 			.mount(scene1);
 
-		new Circle()
-			.streamMode(IgeStreamMode.simple)
-			.translateTo(150, 150, 0)
-			.scaleTo(0.3, 0.3, 0.3)
-			.mount(scene1);
-
-		new Fairy(0.1)
-			.id("fairy1")
-			.streamMode(IgeStreamMode.simple)
-			.depth(2)
-			.width(100)
-			.height(100)
-			.translateTo(0, 0, 0)
+		new Worker(industry1, factory1)
+			.translateTo(220, 120, 0)
 			.mount(scene1);
 	}
 

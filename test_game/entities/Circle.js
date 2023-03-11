@@ -1,8 +1,8 @@
-import IgeEntity from "../../engine/core/IgeEntity.js";
 import { textures } from "../services/textures.js";
 import { isClient } from "../../engine/services/clientServer.js";
 import { registerClass } from "../../engine/services/igeClassStore.js";
-export class Circle extends IgeEntity {
+import { GameEntity } from "./GameEntity.js";
+export class Circle extends GameEntity {
     constructor() {
         super();
         this.classId = 'Circle';

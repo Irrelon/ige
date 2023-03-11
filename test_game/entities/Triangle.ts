@@ -1,9 +1,9 @@
-import IgeEntity from "../../engine/core/IgeEntity";
 import { textures } from "../services/textures";
 import { isClient } from "../../engine/services/clientServer";
 import { registerClass } from "../../engine/services/igeClassStore";
+import { GameEntity } from "./GameEntity";
 
-export class Triangle extends IgeEntity {
+export class Triangle extends GameEntity {
 	classId = 'Triangle';
 
 	constructor () {

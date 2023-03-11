@@ -56,7 +56,7 @@ const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: Base
 		this._eventListeners = this._eventListeners || {};
 
 		if (typeof callback !== "function") {
-			if (typeof (eventName) !== "string") {
+			if (typeof eventName !== "string") {
 				eventName = "*Multi-Event*";
 			}
 			this.log("Cannot register event listener for event \"" + eventName + "\" because the passed callback is not a function!", "error");
@@ -147,7 +147,9 @@ const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: Base
 	 *     myEntity.off('mouseDown', evt);
 	 * @return {Boolean}
 	 */
-	off (eventName: string, evtListener: IgeEventListenerObject, callback?: IgeEventRemovalResultCallback) {
+	off (eventName: string, evtListener: IgeEventListenerObject | IgeMultiEventListenerObject | undefined, callback?: IgeEventRemovalResultCallback) {
+		if (!evtListener) return false;
+
 		if (this._eventListeners) {
 			if (!this._eventListeners._processing) {
 				if (this._eventListeners[eventName]) {

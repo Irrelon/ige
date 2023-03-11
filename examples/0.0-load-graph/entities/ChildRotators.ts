@@ -2,15 +2,18 @@ import { ige } from "../../../engine/instance";
 import { Rotator } from "./Rotator";
 import IgeEntity from "../../../engine/core/IgeEntity";
 import { Client } from "../client";
+import { textures } from "../services/textures";
 
 export const createChildRotators = (parent: IgeEntity, distance = 120, speed = 0.1) => {
 	const client = ige.client as Client;
+
+	const simpleBox = textures.getTextureById("simpleBox");
 
 	const entity1 = new Rotator(speed)
 		.depth(1)
 		.width(50)
 		.height(50)
-		.texture(client.gameTexture.simpleBox)
+		.texture(simpleBox)
 		.scaleTo(0.5, 0.5, 0.5)
 		.translateTo(0, distance, 0)
 		.mount(parent);
@@ -19,7 +22,7 @@ export const createChildRotators = (parent: IgeEntity, distance = 120, speed = 0
 		.depth(1)
 		.width(50)
 		.height(50)
-		.texture(client.gameTexture.simpleBox)
+		.texture(simpleBox)
 		.scaleTo(0.5, 0.5, 0.5)
 		.translateTo(0, -distance, 0)
 		.mount(parent);
@@ -28,7 +31,7 @@ export const createChildRotators = (parent: IgeEntity, distance = 120, speed = 0
 		.depth(1)
 		.width(50)
 		.height(50)
-		.texture(client.gameTexture.simpleBox)
+		.texture(simpleBox)
 		.scaleTo(0.5, 0.5, 0.5)
 		.translateTo(-distance, 0, 0)
 		.mount(parent);
@@ -37,7 +40,7 @@ export const createChildRotators = (parent: IgeEntity, distance = 120, speed = 0
 		.depth(1)
 		.width(50)
 		.height(50)
-		.texture(client.gameTexture.simpleBox)
+		.texture(simpleBox)
 		.scaleTo(0.5, 0.5, 0.5)
 		.translateTo(distance, 0, 0)
 		.mount(parent);

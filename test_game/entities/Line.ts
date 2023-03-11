@@ -1,10 +1,10 @@
-import IgeEntity from "../../engine/core/IgeEntity";
 import { textures } from "../services/textures";
 import { isClient } from "../../engine/services/clientServer";
 import { registerClass } from "../../engine/services/igeClassStore";
 import IgeRect from "../../engine/core/IgeRect";
+import { GameEntity } from "./GameEntity";
 
-export class Line extends IgeEntity {
+export class Line extends GameEntity {
 	classId = 'Line';
 	_initVals: IgeRect;
 
