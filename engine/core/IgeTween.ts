@@ -39,7 +39,7 @@ class IgeTween extends IgeBaseClass {
 	_targetObj: any;
 	_currentStep: number;
 	_startTime: number = 0;
-	_selectedEasing?: string;
+	_selectedEasing: string = "none";
 	_endTime: number = 0;
 	_targetData: IgeTweenDestination[] = [];
 	_destTime: number = 0;
@@ -49,7 +49,7 @@ class IgeTween extends IgeBaseClass {
 	_repeatMode: number = 0;
 	_repeatCount: number = 0;
 	_repeatedCount: number = 0;
-	_easing?: string;
+	_easing: string = "none";
 	_beforeTween?: (...args: any[]) => void;
 	_afterTween?: (...args: any[]) => void;
 	_beforeStep?: (...args: any[]) => void;
@@ -294,8 +294,8 @@ class IgeTween extends IgeBaseClass {
 	 * @param {string=} methodName
 	 * @return {*}
 	 */
-	easing (): string | undefined;
 	easing (methodName: string): this;
+	easing (): string;
 	easing (methodName?: string) {
 		if (methodName !== undefined) {
 			if (!easingFunctions[methodName]) {
@@ -332,7 +332,7 @@ class IgeTween extends IgeBaseClass {
 			this.startTime(timeMs + ige.engine._currentTime);
 		}
 
-		(ige.components.tween as IgeTweenComponent).start(this);
+		(ige.engine.components.tween as IgeTweenComponent).start(this);
 
 		// Add the tween to the target object's tween array
 		this._targetObj._tweenArr = this._targetObj._tweenArr || [];
@@ -345,7 +345,7 @@ class IgeTween extends IgeBaseClass {
 	 * Stops the tweening operation.
 	 */
 	stop () {
-		(ige.components.tween as IgeTweenComponent).stop(this);
+		(ige.engine.components.tween as IgeTweenComponent).stop(this);
 		if (this._targetObj._tweenArr) {
 			arrPull(this._targetObj._tweenArr, this);
 		}
