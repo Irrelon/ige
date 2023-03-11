@@ -1036,18 +1036,6 @@ class IgeEntity extends IgeObject {
         }
         return this._texture;
     }
-    /**
-     * Gets / sets the current texture cell used when rendering the game
-     * object's texture. If the texture is not cell-based, this value is
-     * ignored.
-     * @param {number|null=} val The cell index.
-     * @example #Set the entity texture as a 4x4 cell sheet and then set the cell to use
-     *     var texture = new IgeCellSheet('path/to/some/cellSheet.png', 4, 4);
-     *     entity.texture(texture)
-     *         .cell(3);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     cell(val) {
         if (val !== undefined && (val === null || val > 0)) {
             this._cell = val;

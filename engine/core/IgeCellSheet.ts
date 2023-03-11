@@ -17,8 +17,8 @@ class IgeCellSheet extends IgeTexture {
 	_cellHeight: number = 0;
 	_sheetImage?: IgeImage | IgeCanvas;
 
-	constructor (urlOrObject: string | IgeSmartTexture, horizontalCells: number, verticalCells: number) {
-		super(urlOrObject);
+	constructor (id?: string, urlOrObject?: string | IgeSmartTexture, horizontalCells?: number, verticalCells?: number) {
+		super(id, urlOrObject);
 
 		this.horizontalCells(horizontalCells || 1);
 		this.verticalCells(verticalCells || 1);

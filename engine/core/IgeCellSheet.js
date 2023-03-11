@@ -5,8 +5,8 @@ import IgeTexture from "./IgeTexture.js";
  * width and height.
  */
 class IgeCellSheet extends IgeTexture {
-    constructor(urlOrObject, horizontalCells, verticalCells) {
-        super(urlOrObject);
+    constructor(id, urlOrObject, horizontalCells, verticalCells) {
+        super(id, urlOrObject);
         this.classId = "IgeCellSheet";
         this.IgeSpriteSheet = true;
         this._cellColumns = 0;

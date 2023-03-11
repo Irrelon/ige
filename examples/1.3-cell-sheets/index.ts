@@ -4,7 +4,7 @@ import { isClient } from "../../engine/services/clientServer";
 export class Game {
 	classId = "Game";
 
-	constructor (options?: any) {
+	constructor (options?: any) { 
 		if (isClient) {
 			import("./client.js").then(({ Client: App }) => {
 				ige.client = new App();
