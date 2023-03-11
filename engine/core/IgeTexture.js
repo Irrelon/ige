@@ -128,7 +128,7 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
      */
     _loadImage(imageUrl) {
         if (!isClient) {
-            return;
+            return false;
         }
         ige.textures.onLoadStart(imageUrl, this);
         this.dependsOn(["IgeImageClass"], () => {
@@ -162,6 +162,8 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
                         // Mark texture as loaded
                         item._textureLoaded();
                     }
+                };
+                image.onerror = () => {
                 };
                 // Start the image loading by setting the source url
                 image.src = imageUrl;
@@ -203,6 +205,17 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
             // Inform the engine that this image has loaded
             ige.textures.onLoadEnd(this.image.src, this);
         }, 5);
+    }
+    whenLoaded() {
+        return new Promise((resolve) => {
+            if (this._loaded) {
+                return resolve(true);
+            }
+            const emitterHandle = this.on("loaded", () => {
+                resolve(true);
+                this.off("loaded", emitterHandle);
+            });
+        });
     }
     /**
      * Loads a render script into a script tag and sets an onload

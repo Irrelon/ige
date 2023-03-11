@@ -100,8 +100,8 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 	 * @param {String=} id The id to set to.
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	id (id: string): this;
-	id (): string;
+	id(id: string): this;
+	id(): string;
 	id (id?: string): this | string | undefined {
 		if (id !== undefined) {
 			// Check if this ID already exists in the object register
@@ -151,8 +151,8 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 	 * @param {String=} url "The url used to load the file for this texture.
 	 * @return {*}
 	 */
-	url (url: string): this;
-	url (): string | undefined;
+	url(url: string): this;
+	url(): string | undefined;
 	url (url?: string) {
 		if (url !== undefined) {
 			this._url = url;
@@ -180,14 +180,13 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 	 */
 	_loadImage (imageUrl: string) {
 		if (!isClient) {
-			return;
+			return false;
 		}
 
 		ige.textures.onLoadStart(imageUrl, this);
 
 		this.dependsOn(["IgeImageClass"], () => {
 			if (!ige.textures._textureImageStore[imageUrl]) {
-
 				// Image not in cache, create the image object
 				const image = ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = new IgeImageClass();
 				image._igeTextures = image._igeTextures || [];
@@ -229,9 +228,12 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 					}
 				};
 
+				image.onerror = () => {
+
+				};
+
 				// Start the image loading by setting the source url
 				image.src = imageUrl;
-
 			} else {
 				// Grab the cached image object
 				const image = this.image = this._originalImage = ige.textures._textureImageStore[imageUrl];
@@ -284,6 +286,19 @@ class IgeTexture extends WithUiStyleMixin(IgeObject) {
 			// Inform the engine that this image has loaded
 			ige.textures.onLoadEnd((this.image as IgeImage).src, this);
 		}, 5);
+	}
+
+	whenLoaded (): Promise<boolean> {
+		return new Promise((resolve) => {
+			if (this._loaded) {
+				return resolve(true);
+			}
+
+			const emitterHandle = this.on("loaded", () => {
+				resolve(true);
+				this.off("loaded", emitterHandle);
+			});
+		});
 	}
 
 	/**
