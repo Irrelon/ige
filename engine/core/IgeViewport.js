@@ -35,11 +35,11 @@ class IgeViewport extends IgeUiEntity {
                 this._lockDimension = new IgePoint3d(options.scaleToWidth, options.scaleToHeight, 0);
             }
         }
-        if (!ige.engine.root) {
+        if (!ige.engine) {
             throw new Error("IgeViewport instantiated before Ige instance createRoot() called!");
         }
         // Setup default objects
-        this._bounds2d = new IgePoint2d(width || ige.engine.root._bounds2d.x, height || ige.engine.root._bounds2d.y);
+        this._bounds2d = new IgePoint2d(width || ige.engine._bounds2d.x, height || ige.engine._bounds2d.y);
         this.camera = new IgeCamera(this);
         this.camera._entity = this;
         //this._drawMouse = true;
@@ -120,7 +120,7 @@ class IgeViewport extends IgeUiEntity {
      */
     tick(ctx) {
         // Check if we have a scene attached to this viewport and ige has a root object
-        if (!this._scene || !ige.engine.root) {
+        if (!this._scene || !ige.engine) {
             return;
         }
         ige.engine._currentCamera = this.camera;
@@ -131,7 +131,7 @@ class IgeViewport extends IgeUiEntity {
         ctx.clearRect(0, 0, this._bounds2d.x, this._bounds2d.y);
         if (this._clipping || this._borderColor) {
             ctx.beginPath();
-            ctx.rect(0, 0, this._bounds2d.x / ige.engine.root._scale.x, this._bounds2d.y / ige.engine.root._scale.x);
+            ctx.rect(0, 0, this._bounds2d.x / ige.engine._scale.x, this._bounds2d.y / ige.engine._scale.x);
             // Paint a border if required
             if (this._borderColor) {
                 ctx.strokeStyle = this._borderColor;
@@ -141,9 +141,9 @@ class IgeViewport extends IgeUiEntity {
                 ctx.clip();
             }
         }
-        ctx.translate(((this._bounds2d.x / 2) | 0) + ige.engine.root._translate.x, ((this._bounds2d.y / 2) | 0) + ige.engine.root._translate.y);
-        if (ige.engine.root._scale.x !== 1 || ige.engine.root._scale.y !== 1) {
-            ctx.scale(ige.engine.root._scale.x, ige.engine.root._scale.y);
+        ctx.translate(((this._bounds2d.x / 2) | 0) + ige.engine._translate.x, ((this._bounds2d.y / 2) | 0) + ige.engine._translate.y);
+        if (ige.engine._scale.x !== 1 || ige.engine._scale.y !== 1) {
+            ctx.scale(ige.engine._scale.x, ige.engine._scale.y);
         }
         this.camera.tick(ctx);
         ctx.save();
@@ -206,7 +206,7 @@ class IgeViewport extends IgeUiEntity {
      */
     screenPosition() {
         var _a, _b;
-        return new IgePoint3d(Math.floor(this._worldMatrix.matrix[2] + (((_a = ige.engine.root._bounds2d) === null || _a === void 0 ? void 0 : _a.x2) || 0)), Math.floor(this._worldMatrix.matrix[5] + (((_b = ige.engine.root._bounds2d) === null || _b === void 0 ? void 0 : _b.y2) || 0)), 0);
+        return new IgePoint3d(Math.floor(this._worldMatrix.matrix[2] + (((_a = ige.engine._bounds2d) === null || _a === void 0 ? void 0 : _a.x2) || 0)), Math.floor(this._worldMatrix.matrix[5] + (((_b = ige.engine._bounds2d) === null || _b === void 0 ? void 0 : _b.y2) || 0)), 0);
     }
     drawViewArea(val) {
         if (val !== undefined) {
@@ -244,9 +244,9 @@ class IgeViewport extends IgeUiEntity {
         return this._drawGuides;
     }
     paintGuides(ctx) {
-        if (!ige.engine.root)
+        if (!ige.engine)
             return;
-        const geom = ige.engine.root._bounds2d;
+        const geom = ige.engine._bounds2d;
         // Check draw-guides setting
         if (this._drawGuides) {
             ctx.strokeStyle = "#ffffff";

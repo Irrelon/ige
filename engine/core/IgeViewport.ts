@@ -67,12 +67,12 @@ class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 			}
 		}
 
-		if (!ige.engine.root) {
+		if (!ige.engine) {
 			throw new Error("IgeViewport instantiated before Ige instance createRoot() called!");
 		}
 
 		// Setup default objects
-		this._bounds2d = new IgePoint2d(width || ige.engine.root._bounds2d.x, height || ige.engine.root._bounds2d.y);
+		this._bounds2d = new IgePoint2d(width || ige.engine._bounds2d.x, height || ige.engine._bounds2d.y);
 		this.camera = new IgeCamera(this);
 		this.camera._entity = this;
 		//this._drawMouse = true;
@@ -189,7 +189,7 @@ class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 */
 	tick (ctx: IgeCanvasRenderingContext2d) {
 		// Check if we have a scene attached to this viewport and ige has a root object
-		if (!this._scene || !ige.engine.root) {
+		if (!this._scene || !ige.engine) {
 			return;
 		}
 
@@ -205,7 +205,7 @@ class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 
 		if (this._clipping || this._borderColor) {
 			ctx.beginPath();
-			ctx.rect(0, 0, this._bounds2d.x / ige.engine.root._scale.x, this._bounds2d.y / ige.engine.root._scale.x);
+			ctx.rect(0, 0, this._bounds2d.x / ige.engine._scale.x, this._bounds2d.y / ige.engine._scale.x);
 
 			// Paint a border if required
 			if (this._borderColor) {
@@ -218,10 +218,10 @@ class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 			}
 		}
 
-		ctx.translate(((this._bounds2d.x / 2) | 0) + ige.engine.root._translate.x, ((this._bounds2d.y / 2) | 0) + ige.engine.root._translate.y);
+		ctx.translate(((this._bounds2d.x / 2) | 0) + ige.engine._translate.x, ((this._bounds2d.y / 2) | 0) + ige.engine._translate.y);
 
-		if (ige.engine.root._scale.x !== 1 || ige.engine.root._scale.y !== 1) {
-			ctx.scale(ige.engine.root._scale.x, ige.engine.root._scale.y);
+		if (ige.engine._scale.x !== 1 || ige.engine._scale.y !== 1) {
+			ctx.scale(ige.engine._scale.x, ige.engine._scale.y);
 		}
 
 		this.camera.tick(ctx);
@@ -296,8 +296,8 @@ class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 */
 	screenPosition () {
 		return new IgePoint3d(
-			Math.floor(this._worldMatrix.matrix[2] + (ige.engine.root._bounds2d?.x2 || 0)),
-			Math.floor(this._worldMatrix.matrix[5] + (ige.engine.root._bounds2d?.y2 || 0)),
+			Math.floor(this._worldMatrix.matrix[2] + (ige.engine._bounds2d?.x2 || 0)),
+			Math.floor(this._worldMatrix.matrix[5] + (ige.engine._bounds2d?.y2 || 0)),
 			0
 		);
 	}
@@ -358,8 +358,8 @@ class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	}
 
 	paintGuides (ctx: IgeCanvasRenderingContext2d) {
-		if (!ige.engine.root) return;
-		const geom = ige.engine.root._bounds2d;
+		if (!ige.engine) return;
+		const geom = ige.engine._bounds2d;
 
 		// Check draw-guides setting
 		if (this._drawGuides) {

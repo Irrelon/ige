@@ -328,7 +328,6 @@ class IgeTween extends IgeBaseClass {
 	 * many milliseconds in the future.
 	 */
 	start (timeMs?: number) {
-		debugger;
 		if (timeMs !== undefined) {
 			this.startTime(timeMs + ige.engine._currentTime);
 		}

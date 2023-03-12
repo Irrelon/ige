@@ -168,8 +168,7 @@ class IgeTweenComponent extends IgeComponent {
 	/**
 	 * Process tweening for the object.
 	 */
-	update (igeInstance: Ige, entity: IgeEntity, ctx: IgeCanvasRenderingContext2d) {
-		debugger;
+	update = (igeInstance: Ige, entity: IgeEntity, ctx: IgeCanvasRenderingContext2d) => {
 		if (this._tweens && this._tweens.length) {
 			const currentTime = ige.engine._tickStart;
 			const tweens = this._tweens;

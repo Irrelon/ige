@@ -44,7 +44,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			.scene(scene1)
 			.drawBounds(true)
 			.drawBoundsData(true)
-			.mount(ige.engine.root);
+			.mount(ige.engine);
 
 		const fairy0 = new IgeEntity()
 			.id('fairy0')

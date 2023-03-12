@@ -23,8 +23,8 @@ class IgeScene2d extends IgeEntity {
 
 		// Set the geometry of the scene to the main canvas
 		// width / height - used when positioning UI elements
-		this._bounds2d.x = ige.engine.root._bounds2d.x;
-		this._bounds2d.y = ige.engine.root._bounds2d.y;
+		this._bounds2d.x = ige.engine._bounds2d.x;
+		this._bounds2d.y = ige.engine._bounds2d.y;
 
 		this.streamSections(["transform", "ignoreCamera"]);
 	}
@@ -156,8 +156,8 @@ class IgeScene2d extends IgeEntity {
 	 */
 	_resizeEvent = (event?: Event) => {
 		// Set width / height of scene to match main ige (SCENES ARE ALWAYS THE FULL IGE SIZE!!)
-		if (this._autoSize && ige.engine.root) {
-			this._bounds2d = ige.engine.root._bounds2d.clone();
+		if (this._autoSize && ige.engine) {
+			this._bounds2d = ige.engine._bounds2d.clone();
 		}
 
 		// Resize any children

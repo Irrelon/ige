@@ -43,7 +43,7 @@ export class Client extends IgeBaseClass {
                 .scene(scene1)
                 .drawBounds(true)
                 .drawBoundsData(true)
-                .mount(ige.engine.root);
+                .mount(ige.engine);
             const fairy0 = new IgeEntity()
                 .id('fairy0')
                 .depth(0)

@@ -1,9 +1,7 @@
 import { ige } from "../instance";
 import { isClient, isServer } from "../services/clientServer";
-import IgeRoot from "./IgeRoot";
 import IgePoint3d from "./IgePoint3d";
 import IgeDummyContext from "./IgeDummyContext";
-import IgePoint2d from "./IgePoint2d";
 import IgeInputComponent from "../components/IgeInputComponent";
 import IgeEntity from "./IgeEntity";
 import { IgeObject } from "./IgeObject";
@@ -18,12 +16,12 @@ import type { GenericClass } from "../../types/GenericClass";
 import type { IgeSceneGraphDataEntry } from "../../types/IgeSceneGraphDataEntry";
 import { IgeEngineState } from "../../enums/IgeEngineState";
 import IgeTweenComponent from "../components/IgeTweenComponent";
+import IgePoint2d from "./IgePoint2d";
 
 export class IgeEngine extends IgeEntity {
 	client?: IgeBaseClass;
 	server?: IgeBaseClass;
 	// @ts-ignore
-	root: IgeRoot; // The root entity that all scenegraph will mount to
 	_idRegistered: boolean = true;
 	_canvas?: HTMLCanvasElement;
 	_ctx: IgeCanvasRenderingContext2d | null;
@@ -181,24 +179,7 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	createRoot () {
-		//if (this.root) return;
 
-		// Create the base engine instance for the scenegraph
-		//this.root = new IgeRoot();
-
-		// if (isClient) {
-		// 	this._resizeEvent();
-		// }
-
-		// Set up components
-		//this.addComponent(IgeInputComponent);
-		//this.addComponent("tween", IgeTweenComponent);
-		//this.addComponent(IgeTimeComponent);
-		//
-		// if (isClient) {
-		//     // Enable UI element (virtual DOM) support
-		//     this.addComponent(IgeUiManagerComponent);
-		// }
 	}
 
 	id(): string;
@@ -432,8 +413,10 @@ export class IgeEngine extends IgeEntity {
 		let canvasBoundingRect;
 
 		if (this._autoSize) {
+			const arr = this._children;
 			let newWidth = window.innerWidth;
 			let newHeight = window.innerHeight;
+			let arrCount = arr.length;
 
 			// Only update canvas dimensions if it exists
 			if (this._canvas) {
@@ -447,49 +430,43 @@ export class IgeEngine extends IgeEntity {
 				// Make sure we can divide the new width and height by 2...
 				// otherwise minus 1 so we get an even number so that we
 				// negate the blur effect of sub-pixel rendering
-				if (newWidth % 2) {
-					newWidth--;
-				}
-				if (newHeight % 2) {
-					newHeight--;
-				}
+				if (newWidth % 2) { newWidth--; }
+				if (newHeight % 2) { newHeight--; }
 
 				this._canvas.width = newWidth * this._deviceFinalDrawRatio;
 				this._canvas.height = newHeight * this._deviceFinalDrawRatio;
 
 				if (this._deviceFinalDrawRatio !== 1) {
-					this._canvas.style.width = newWidth + "px";
-					this._canvas.style.height = newHeight + "px";
+					this._canvas.style.width = newWidth + 'px';
+					this._canvas.style.height = newHeight + 'px';
 
-					if (this._ctx) {
-						// Scale the canvas context to account for the change
-						this._ctx.scale(this._deviceFinalDrawRatio, this._deviceFinalDrawRatio);
-					}
+					// Scale the canvas context to account for the change
+					this._ctx?.scale(this._deviceFinalDrawRatio, this._deviceFinalDrawRatio);
 				}
 			}
 
-			if (this.root) {
-				this.root._bounds2d = new IgePoint2d(newWidth, newHeight);
+			this._bounds2d = new IgePoint2d(newWidth, newHeight);
 
-				// Loop any mounted children and check if
-				// they should also get resized
-				this.root._resizeEvent(event);
+			// Loop any mounted children and check if
+			// they should also get resized
+			while (arrCount--) {
+				arr[arrCount]._resizeEvent(event);
 			}
 		} else {
-			if (this._canvas && this.root) {
-				this.root._bounds2d = new IgePoint2d(this._canvas.width, this._canvas.height);
+			if (this._canvas) {
+				this._bounds2d = new IgePoint2d(this._canvas.width, this._canvas.height);
 			}
 		}
 
 		if (this._showSgTree) {
-			const sgTreeElem = document.getElementById("igeSgTree");
+			const sgTreeElem = document.getElementById('igeSgTree');
 
 			if (sgTreeElem) {
 				canvasBoundingRect = this._canvasPosition();
 
-				sgTreeElem.style.top = (canvasBoundingRect.top + 5) + "px";
-				sgTreeElem.style.left = (canvasBoundingRect.left + 5) + "px";
-				sgTreeElem.style.height = this.root._bounds2d.y - 30 + "px";
+				sgTreeElem.style.top = (canvasBoundingRect.top + 5) + 'px';
+				sgTreeElem.style.left = (canvasBoundingRect.left + 5) + 'px';
+				sgTreeElem.style.height = (this._bounds2d.y - 30) + 'px';
 			}
 		}
 
@@ -777,7 +754,7 @@ export class IgeEngine extends IgeEntity {
 
 		if (!obj) {
 			// Set the obj to the main ige instance
-			obj = this.root;
+			obj = this;
 		}
 
 		for (di = 0; di < currentDepth; di++) {
@@ -805,7 +782,7 @@ export class IgeEngine extends IgeEntity {
 
 		currentDepth++;
 
-		if (obj === this.root) {
+		if (obj === this) {
 			// Loop the viewports
 			arr = obj._children as IgeViewport[];
 
@@ -885,7 +862,7 @@ export class IgeEngine extends IgeEntity {
 			finalRootObject = rootObject;
 		} else {
 			// Set the obj to the main ige instance
-			finalRootObject = this.root;
+			finalRootObject = this;
 		}
 
 		const item: IgeSceneGraphDataEntry = {
@@ -905,7 +882,7 @@ export class IgeEngine extends IgeEntity {
 			}
 		}
 
-		if (finalRootObject === this.root) {
+		if (finalRootObject === this) {
 			// Loop the viewports
 			const arr = finalRootObject._children as IgeViewport[];
 
@@ -1529,10 +1506,10 @@ export class IgeEngine extends IgeEntity {
 			if (this._enableUpdates) {
 				if (ige.config.debug._timing) {
 					const updateStart = new Date().getTime();
-					this.root && ctx && this.root.updateSceneGraph(ctx);
+					ctx && this.updateSceneGraph(ctx);
 					this._updateTime = new Date().getTime() - updateStart;
 				} else {
-					this.root && ctx && this.root.updateSceneGraph(ctx);
+					ctx && this.updateSceneGraph(ctx);
 				}
 			}
 
@@ -1541,19 +1518,19 @@ export class IgeEngine extends IgeEntity {
 				if (!this._useManualRender) {
 					if (ige.config.debug._timing) {
 						const renderStart = new Date().getTime();
-						this.root && ctx && this.root.renderSceneGraph(ctx);
+						ctx && this.renderSceneGraph(ctx);
 						this._renderTime = new Date().getTime() - renderStart;
 					} else {
-						this.root && ctx && this.root.renderSceneGraph(ctx);
+						ctx && this.renderSceneGraph(ctx);
 					}
 				} else {
 					if (this._manualRenderQueued) {
 						if (ige.config.debug._timing) {
 							const renderStart = new Date().getTime();
-							this.root && ctx && this.root.renderSceneGraph(ctx);
+							ctx && this.renderSceneGraph(ctx);
 							this._renderTime = new Date().getTime() - renderStart;
 						} else {
-							this.root && ctx && this.root.renderSceneGraph(ctx);
+							ctx && this.renderSceneGraph(ctx);
 						}
 						this._manualRenderQueued = false;
 					}
@@ -1730,7 +1707,7 @@ export class IgeEngine extends IgeEntity {
 	 * is currently over, ordered by their draw order from drawn last (above other
 	 * entities) to first (underneath other entities).
 	 */
-	mouseOverList = (obj?: IgeEntity | IgeRoot, entArr: IgeEntity[] = []) => {
+	mouseOverList = (obj?: IgeEntity, entArr: IgeEntity[] = []) => {
 		let arr,
 			arrCount,
 			mp,
@@ -1914,7 +1891,6 @@ export class IgeEngine extends IgeEntity {
 	destroy () {
 		// Stop the engine and kill any timers
 		this.stop();
-		this.root.destroy();
 
 		// Remove the front buffer (canvas) if we created it
 		if (isClient) {

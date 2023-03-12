@@ -29,7 +29,7 @@ class IgeBaseScene extends IgeSceneGraph {
                 .scene(baseScene)
                 .drawBounds(false)
                 .drawBoundsData(false)
-                .mount(ige.engine.root);
+                .mount(ige.engine);
         };
         /**
          * The method called when the graph items are to be removed from the

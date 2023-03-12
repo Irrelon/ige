@@ -31,7 +31,7 @@ class IgeBaseScene extends IgeSceneGraph {
 			.scene(baseScene)
 			.drawBounds(false)
 			.drawBoundsData(false)
-			.mount(ige.engine.root);
+			.mount(ige.engine);
 	};
 
 	/**

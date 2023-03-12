@@ -493,10 +493,10 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 		return new IgePoint3d(
 			Math.floor(
-				(this._worldMatrix.matrix[2] - ige.engine._currentCamera._translate.x) * ige.engine._currentCamera._scale.x + ige.engine.root._bounds2d.x2
+				(this._worldMatrix.matrix[2] - ige.engine._currentCamera._translate.x) * ige.engine._currentCamera._scale.x + ige.engine._bounds2d.x2
 			),
 			Math.floor(
-				(this._worldMatrix.matrix[5] - ige.engine._currentCamera._translate.y) * ige.engine._currentCamera._scale.y + ige.engine.root._bounds2d.y2
+				(this._worldMatrix.matrix[5] - ige.engine._currentCamera._translate.y) * ige.engine._currentCamera._scale.y + ige.engine._bounds2d.y2
 			),
 			0
 		);

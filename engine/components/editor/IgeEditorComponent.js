@@ -292,7 +292,7 @@ class IgeEditorComponent extends IgeComponent {
                 elem1.id = "igeSgTree";
                 elem1.style.top = (parseInt(canvasBoundingRect.top) + 5) + "px";
                 elem1.style.left = (parseInt(canvasBoundingRect.left) + 5) + "px";
-                elem1.style.height = (ige.engine.root._bounds2d.y - 30) + "px";
+                elem1.style.height = (ige.engine._bounds2d.y - 30) + "px";
                 elem1.style.overflow = "auto";
                 elem1.addEventListener("mousemove", (event) => {
                     event.stopPropagation();

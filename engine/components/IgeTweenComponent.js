@@ -13,6 +13,204 @@ class IgeTweenComponent extends IgeComponent {
         this.classId = "IgeTweenComponent";
         this.componentId = "tween";
         this._tweening = false;
+        /**
+         * Process tweening for the object.
+         */
+        this.update = (igeInstance, entity, ctx) => {
+            if (this._tweens && this._tweens.length) {
+                const currentTime = ige.engine._tickStart;
+                const tweens = this._tweens;
+                let tweenCount = tweens.length;
+                // let tween,
+                // 	deltaTime,
+                // 	destTime,
+                // 	easing,
+                // 	item,
+                // 	targetProp,
+                // 	targetPropVal,
+                // 	targets,
+                // 	targetIndex,
+                // 	stepIndex,
+                // 	stopped,
+                // 	currentDelta;
+                // Loop the item's tweens
+                while (tweenCount--) {
+                    const tween = tweens[tweenCount];
+                    let stopped = false;
+                    let stepIndex;
+                    // Check if we should be starting this tween yet
+                    if (tween._started || currentTime >= tween._startTime) {
+                        if (!tween._started) {
+                            // Check if the tween's step is -1 indicating no step
+                            // data has been set up yet
+                            if (tween._currentStep === -1) {
+                                // Set up the tween step now
+                                tween._currentStep = 0;
+                                this._setupStep(tween, false);
+                            }
+                            // Check if we have a beforeTween callback to fire
+                            if (typeof (tween._beforeTween) === "function") {
+                                // Fire the beforeTween callback
+                                tween._beforeTween(tween);
+                                // Delete the callback so we don't store it any longer
+                                delete tween._beforeTween;
+                            }
+                            // Check if we have a beforeStep callback to fire
+                            if (typeof (tween._beforeStep) === "function") {
+                                // Fire the beforeStep callback
+                                if (tween._stepDirection) {
+                                    stepIndex = tween._steps.length - (tween._currentStep + 1);
+                                }
+                                else {
+                                    stepIndex = tween._currentStep;
+                                }
+                                tween._beforeStep(tween, stepIndex);
+                            }
+                            tween._started = true;
+                        }
+                        const deltaTime = currentTime - tween._startTime; // Delta from start time to current time
+                        const destTime = tween._destTime;
+                        const easing = tween._selectedEasing;
+                        // Check if the tween has reached its destination based upon
+                        // the current time
+                        if (deltaTime >= destTime) {
+                            // The tween time indicates the tween has ended so set to
+                            // the ending value
+                            const targets = tween._targetData;
+                            for (const targetIndex in targets) {
+                                if (targets.hasOwnProperty(targetIndex)) {
+                                    const item = targets[targetIndex];
+                                    const targetProp = item.targetObj;
+                                    let targetPropVal = targetProp[item.propName];
+                                    let currentDelta;
+                                    // Check if the destination time is not zero
+                                    // because otherwise the easing method will provide
+                                    // a divide by zero error resulting in a NaN value
+                                    if (destTime !== 0) {
+                                        // Add the delta amount to destination
+                                        currentDelta = easingFunctions[easing](destTime, item.deltaVal, destTime);
+                                    }
+                                    else {
+                                        currentDelta = item.deltaVal;
+                                    }
+                                    targetPropVal += currentDelta - item.oldDelta;
+                                    // Round the value to correct floating point operation imprecision
+                                    const roundingPrecision = Math.pow(10, 15 - (targetPropVal.toFixed(0).toString().length));
+                                    targetProp[item.propName] = Math.round(targetPropVal * roundingPrecision) / roundingPrecision;
+                                }
+                            }
+                            // Check if we have a afterStep callback to fire
+                            if (typeof (tween._afterStep) === "function") {
+                                // Fire the afterStep
+                                if (tween._stepDirection) {
+                                    stepIndex = tween._steps.length - (tween._currentStep + 1);
+                                }
+                                else {
+                                    stepIndex = tween._currentStep;
+                                }
+                                tween._afterStep(tween, stepIndex);
+                            }
+                            if (tween._steps.length === tween._currentStep + 1) {
+                                // The tween has ended, is the tween repeat mode enabled?
+                                if (tween._repeatMode) {
+                                    // We have a repeat mode, lets check for a count
+                                    if (tween._repeatCount !== -1) {
+                                        // Check if the repeat count has reached the
+                                        // number of repeats we wanted
+                                        tween._repeatedCount++;
+                                        if (tween._repeatCount === tween._repeatedCount) {
+                                            // The tween has ended
+                                            stopped = true;
+                                        }
+                                    }
+                                    if (!stopped) {
+                                        // Work out what mode we're running on
+                                        if (tween._repeatMode === 1) {
+                                            tween._currentStep = 0;
+                                        }
+                                        if (tween._repeatMode === 2) {
+                                            // We are on "reverse loop" mode so now
+                                            // reverse the tween's steps and then
+                                            // start from step zero
+                                            tween._stepDirection = !tween._stepDirection;
+                                            tween._steps.reverse();
+                                            tween._currentStep = 1;
+                                        }
+                                        // Check if we have a stepsComplete callback to fire
+                                        // TODO this is commented because I couldn't find this property anywhere but could be that I've missed something
+                                        // if (typeof (tween._stepsComplete) === "function") {
+                                        // 	// Fire the stepsComplete callback
+                                        // 	tween._stepsComplete(tween, tween._currentStep);
+                                        // }
+                                        // Check if we have a beforeStep callback to fire
+                                        if (typeof (tween._beforeStep) === "function") {
+                                            // Fire the beforeStep callback
+                                            if (tween._stepDirection) {
+                                                stepIndex = tween._steps.length - (tween._currentStep + 1);
+                                            }
+                                            else {
+                                                stepIndex = tween._currentStep;
+                                            }
+                                            tween._beforeStep(tween, stepIndex);
+                                        }
+                                        this._setupStep(tween, true);
+                                    }
+                                }
+                                else {
+                                    stopped = true;
+                                }
+                                if (stopped) {
+                                    // Now stop tweening this tween
+                                    tween.stop();
+                                    // If there is a callback, call it
+                                    if (typeof (tween._afterTween) === "function") {
+                                        // Fire the afterTween callback
+                                        tween._afterTween(tween);
+                                        // Delete the callback so we don't store it any longer
+                                        delete tween._afterTween;
+                                    }
+                                }
+                            }
+                            else {
+                                // Start the next step
+                                tween._currentStep++;
+                                // Check if we have a beforeStep callback to fire
+                                if (typeof (tween._beforeStep) === "function") {
+                                    // Fire the beforeStep callback
+                                    if (tween._stepDirection) {
+                                        stepIndex = tween._steps.length - (tween._currentStep + 1);
+                                    }
+                                    else {
+                                        stepIndex = tween._currentStep;
+                                    }
+                                    tween._beforeStep(tween, stepIndex);
+                                }
+                                this._setupStep(tween, true);
+                            }
+                            if (typeof (tween._afterChange) === "function") {
+                                tween._afterChange(tween, stepIndex);
+                            }
+                        }
+                        else {
+                            // The tween is still active, process the tween by passing its details
+                            // to the selected easing method
+                            const targets = tween._targetData;
+                            for (const targetIndex in targets) {
+                                if (targets.hasOwnProperty(targetIndex)) {
+                                    const item = targets[targetIndex];
+                                    const currentDelta = easingFunctions[easing](deltaTime, item.deltaVal, destTime);
+                                    item.targetObj[item.propName] += currentDelta - item.oldDelta;
+                                    item.oldDelta = currentDelta;
+                                }
+                            }
+                            if (typeof (tween._afterChange) === "function") {
+                                tween._afterChange(tween, stepIndex);
+                            }
+                        }
+                    }
+                }
+            }
+        };
         // Set up the array that will hold our active tweens
         this._tweens = [];
         // Add the tween behaviour to the entity
@@ -128,205 +326,6 @@ class IgeTweenComponent extends IgeComponent {
             this._tweening = false;
         }
         return this;
-    }
-    /**
-     * Process tweening for the object.
-     */
-    update(igeInstance, entity, ctx) {
-        debugger;
-        if (this._tweens && this._tweens.length) {
-            const currentTime = ige.engine._tickStart;
-            const tweens = this._tweens;
-            let tweenCount = tweens.length;
-            // let tween,
-            // 	deltaTime,
-            // 	destTime,
-            // 	easing,
-            // 	item,
-            // 	targetProp,
-            // 	targetPropVal,
-            // 	targets,
-            // 	targetIndex,
-            // 	stepIndex,
-            // 	stopped,
-            // 	currentDelta;
-            // Loop the item's tweens
-            while (tweenCount--) {
-                const tween = tweens[tweenCount];
-                let stopped = false;
-                let stepIndex;
-                // Check if we should be starting this tween yet
-                if (tween._started || currentTime >= tween._startTime) {
-                    if (!tween._started) {
-                        // Check if the tween's step is -1 indicating no step
-                        // data has been set up yet
-                        if (tween._currentStep === -1) {
-                            // Set up the tween step now
-                            tween._currentStep = 0;
-                            this._setupStep(tween, false);
-                        }
-                        // Check if we have a beforeTween callback to fire
-                        if (typeof (tween._beforeTween) === "function") {
-                            // Fire the beforeTween callback
-                            tween._beforeTween(tween);
-                            // Delete the callback so we don't store it any longer
-                            delete tween._beforeTween;
-                        }
-                        // Check if we have a beforeStep callback to fire
-                        if (typeof (tween._beforeStep) === "function") {
-                            // Fire the beforeStep callback
-                            if (tween._stepDirection) {
-                                stepIndex = tween._steps.length - (tween._currentStep + 1);
-                            }
-                            else {
-                                stepIndex = tween._currentStep;
-                            }
-                            tween._beforeStep(tween, stepIndex);
-                        }
-                        tween._started = true;
-                    }
-                    const deltaTime = currentTime - tween._startTime; // Delta from start time to current time
-                    const destTime = tween._destTime;
-                    const easing = tween._selectedEasing;
-                    // Check if the tween has reached its destination based upon
-                    // the current time
-                    if (deltaTime >= destTime) {
-                        // The tween time indicates the tween has ended so set to
-                        // the ending value
-                        const targets = tween._targetData;
-                        for (const targetIndex in targets) {
-                            if (targets.hasOwnProperty(targetIndex)) {
-                                const item = targets[targetIndex];
-                                const targetProp = item.targetObj;
-                                let targetPropVal = targetProp[item.propName];
-                                let currentDelta;
-                                // Check if the destination time is not zero
-                                // because otherwise the easing method will provide
-                                // a divide by zero error resulting in a NaN value
-                                if (destTime !== 0) {
-                                    // Add the delta amount to destination
-                                    currentDelta = easingFunctions[easing](destTime, item.deltaVal, destTime);
-                                }
-                                else {
-                                    currentDelta = item.deltaVal;
-                                }
-                                targetPropVal += currentDelta - item.oldDelta;
-                                // Round the value to correct floating point operation imprecision
-                                const roundingPrecision = Math.pow(10, 15 - (targetPropVal.toFixed(0).toString().length));
-                                targetProp[item.propName] = Math.round(targetPropVal * roundingPrecision) / roundingPrecision;
-                            }
-                        }
-                        // Check if we have a afterStep callback to fire
-                        if (typeof (tween._afterStep) === "function") {
-                            // Fire the afterStep
-                            if (tween._stepDirection) {
-                                stepIndex = tween._steps.length - (tween._currentStep + 1);
-                            }
-                            else {
-                                stepIndex = tween._currentStep;
-                            }
-                            tween._afterStep(tween, stepIndex);
-                        }
-                        if (tween._steps.length === tween._currentStep + 1) {
-                            // The tween has ended, is the tween repeat mode enabled?
-                            if (tween._repeatMode) {
-                                // We have a repeat mode, lets check for a count
-                                if (tween._repeatCount !== -1) {
-                                    // Check if the repeat count has reached the
-                                    // number of repeats we wanted
-                                    tween._repeatedCount++;
-                                    if (tween._repeatCount === tween._repeatedCount) {
-                                        // The tween has ended
-                                        stopped = true;
-                                    }
-                                }
-                                if (!stopped) {
-                                    // Work out what mode we're running on
-                                    if (tween._repeatMode === 1) {
-                                        tween._currentStep = 0;
-                                    }
-                                    if (tween._repeatMode === 2) {
-                                        // We are on "reverse loop" mode so now
-                                        // reverse the tween's steps and then
-                                        // start from step zero
-                                        tween._stepDirection = !tween._stepDirection;
-                                        tween._steps.reverse();
-                                        tween._currentStep = 1;
-                                    }
-                                    // Check if we have a stepsComplete callback to fire
-                                    // TODO this is commented because I couldn't find this property anywhere but could be that I've missed something
-                                    // if (typeof (tween._stepsComplete) === "function") {
-                                    // 	// Fire the stepsComplete callback
-                                    // 	tween._stepsComplete(tween, tween._currentStep);
-                                    // }
-                                    // Check if we have a beforeStep callback to fire
-                                    if (typeof (tween._beforeStep) === "function") {
-                                        // Fire the beforeStep callback
-                                        if (tween._stepDirection) {
-                                            stepIndex = tween._steps.length - (tween._currentStep + 1);
-                                        }
-                                        else {
-                                            stepIndex = tween._currentStep;
-                                        }
-                                        tween._beforeStep(tween, stepIndex);
-                                    }
-                                    this._setupStep(tween, true);
-                                }
-                            }
-                            else {
-                                stopped = true;
-                            }
-                            if (stopped) {
-                                // Now stop tweening this tween
-                                tween.stop();
-                                // If there is a callback, call it
-                                if (typeof (tween._afterTween) === "function") {
-                                    // Fire the afterTween callback
-                                    tween._afterTween(tween);
-                                    // Delete the callback so we don't store it any longer
-                                    delete tween._afterTween;
-                                }
-                            }
-                        }
-                        else {
-                            // Start the next step
-                            tween._currentStep++;
-                            // Check if we have a beforeStep callback to fire
-                            if (typeof (tween._beforeStep) === "function") {
-                                // Fire the beforeStep callback
-                                if (tween._stepDirection) {
-                                    stepIndex = tween._steps.length - (tween._currentStep + 1);
-                                }
-                                else {
-                                    stepIndex = tween._currentStep;
-                                }
-                                tween._beforeStep(tween, stepIndex);
-                            }
-                            this._setupStep(tween, true);
-                        }
-                        if (typeof (tween._afterChange) === "function") {
-                            tween._afterChange(tween, stepIndex);
-                        }
-                    }
-                    else {
-                        // The tween is still active, process the tween by passing its details
-                        // to the selected easing method
-                        const targets = tween._targetData;
-                        for (const targetIndex in targets) {
-                            if (targets.hasOwnProperty(targetIndex)) {
-                                const item = targets[targetIndex];
-                                const currentDelta = easingFunctions[easing](deltaTime, item.deltaVal, destTime);
-                                item.targetObj[item.propName] += currentDelta - item.oldDelta;
-                                item.oldDelta = currentDelta;
-                            }
-                        }
-                        if (typeof (tween._afterChange) === "function") {
-                            tween._afterChange(tween, stepIndex);
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 IgeTweenComponent.componentTargetClass = "Ige";
