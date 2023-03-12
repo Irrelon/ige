@@ -21,25 +21,13 @@ class IgeTweenComponent extends IgeComponent {
                 const currentTime = ige.engine._tickStart;
                 const tweens = this._tweens;
                 let tweenCount = tweens.length;
-                // let tween,
-                // 	deltaTime,
-                // 	destTime,
-                // 	easing,
-                // 	item,
-                // 	targetProp,
-                // 	targetPropVal,
-                // 	targets,
-                // 	targetIndex,
-                // 	stepIndex,
-                // 	stopped,
-                // 	currentDelta;
                 // Loop the item's tweens
                 while (tweenCount--) {
                     const tween = tweens[tweenCount];
                     let stopped = false;
                     let stepIndex;
                     // Check if we should be starting this tween yet
-                    if (tween._started || currentTime >= tween._startTime) {
+                    if (tween._started || (tween._startTime !== undefined && currentTime >= tween._startTime)) {
                         if (!tween._started) {
                             // Check if the tween's step is -1 indicating no step
                             // data has been set up yet
@@ -52,7 +40,7 @@ class IgeTweenComponent extends IgeComponent {
                             if (typeof (tween._beforeTween) === "function") {
                                 // Fire the beforeTween callback
                                 tween._beforeTween(tween);
-                                // Delete the callback so we don't store it any longer
+                                // Delete the callback, so we don't store it any longer
                                 delete tween._beforeTween;
                             }
                             // Check if we have a beforeStep callback to fire
@@ -222,7 +210,7 @@ class IgeTweenComponent extends IgeComponent {
      * @return {Number} The index of the added tween or -1 on error.
      */
     start(tween) {
-        if (tween._startTime > ige.engine._currentTime) {
+        if (tween._startTime !== undefined && tween._startTime > ige.engine._currentTime) {
             // The tween is scheduled for later
             // Push the tween into the IgeTweenComponent's _tweens array
             this._tweens.push(tween);

@@ -2027,7 +2027,9 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 *     });
 	 * @return {*}
 	 */
-	mouseOver = (callback?: IgeInputEvent) => {
+	mouseOver (callback: IgeInputEvent): this;
+	mouseOver (): IgeInputEvent;
+	mouseOver (callback?: IgeInputEvent) {
 		if (callback) {
 			this._mouseOver = callback;
 			this._mouseEventsActive = true;
@@ -2035,7 +2037,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 		}
 
 		return this._mouseOver;
-	};
+	}
 
 	/**
 	 * Gets / sets the callback that is fired when a mouse
@@ -2055,7 +2057,9 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 *     });
 	 * @return {*}
 	 */
-	mouseOut = (callback?: IgeInputEvent) => {
+	mouseOut (callback: IgeInputEvent): this;
+	mouseOut (): IgeInputEvent;
+	mouseOut (callback?: IgeInputEvent) {
 		if (callback) {
 			this._mouseOut = callback;
 			this._mouseEventsActive = true;
@@ -2063,7 +2067,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 		}
 
 		return this._mouseOut;
-	};
+	}
 
 	/**
 	 * Gets / sets the callback that is fired when a mouse

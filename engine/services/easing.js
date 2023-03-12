@@ -129,7 +129,7 @@ export const outInCirc = (t, c, d) => {
     return inCirc((t * 2) - d, c / 2, c / 2);
 };
 export const inElastic = (t, c, d, a, p) => {
-    var s;
+    let s;
     if (t === 0) {
         return 0;
     }
@@ -149,7 +149,7 @@ export const inElastic = (t, c, d, a, p) => {
     return -(a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p));
 };
 export const outElastic = (t, c, d, a, p) => {
-    var s;
+    let s;
     if (t === 0) {
         return 0;
     }
@@ -169,7 +169,7 @@ export const outElastic = (t, c, d, a, p) => {
     return (a * Math.pow(2, -10 * t) * Math.sin((t * d - s) * (2 * Math.PI) / p) + c);
 };
 export const inOutElastic = (t, c, d, a, p) => {
-    var s;
+    let s;
     if (t === 0) {
         return 0;
     }

@@ -36,7 +36,7 @@ class IgeTweenComponent extends IgeComponent {
 	 * @return {Number} The index of the added tween or -1 on error.
 	 */
 	start (tween: IgeTween) {
-		if (tween._startTime > ige.engine._currentTime) {
+		if (tween._startTime !== undefined && tween._startTime > ige.engine._currentTime) {
 			// The tween is scheduled for later
 			// Push the tween into the IgeTweenComponent's _tweens array
 			this._tweens.push(tween);
@@ -174,19 +174,6 @@ class IgeTweenComponent extends IgeComponent {
 			const tweens = this._tweens;
 
 			let tweenCount = tweens.length;
-			
-			// let tween,
-			// 	deltaTime,
-			// 	destTime,
-			// 	easing,
-			// 	item,
-			// 	targetProp,
-			// 	targetPropVal,
-			// 	targets,
-			// 	targetIndex,
-			// 	stepIndex,
-			// 	stopped,
-			// 	currentDelta;
 
 			// Loop the item's tweens
 			while (tweenCount--) {
@@ -195,7 +182,7 @@ class IgeTweenComponent extends IgeComponent {
 				let stepIndex;
 
 				// Check if we should be starting this tween yet
-				if (tween._started || currentTime >= tween._startTime) {
+				if (tween._started || (tween._startTime !== undefined && currentTime >= tween._startTime)) {
 					if (!tween._started) {
 						// Check if the tween's step is -1 indicating no step
 						// data has been set up yet
@@ -210,7 +197,7 @@ class IgeTweenComponent extends IgeComponent {
 							// Fire the beforeTween callback
 							tween._beforeTween(tween);
 
-							// Delete the callback so we don't store it any longer
+							// Delete the callback, so we don't store it any longer
 							delete tween._beforeTween;
 						}
 
@@ -228,7 +215,7 @@ class IgeTweenComponent extends IgeComponent {
 						tween._started = true;
 					}
 
-					const deltaTime = currentTime - tween._startTime; // Delta from start time to current time
+					const deltaTime = currentTime - (tween._startTime as number); // Delta from start time to current time
 					const destTime = tween._destTime;
 					const easing: string = tween._selectedEasing;
 

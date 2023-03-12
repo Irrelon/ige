@@ -38,7 +38,7 @@ class IgeTween extends IgeBaseClass {
 	_steps: IgeTweenStep[];
 	_targetObj: any;
 	_currentStep: number;
-	_startTime: number = 0;
+	_startTime?: number = undefined;
 	_selectedEasing: string = "none";
 	_endTime: number = 0;
 	_targetData: IgeTweenDestination[] = [];
@@ -64,9 +64,11 @@ class IgeTween extends IgeBaseClass {
 		this._targetObj = targetObj;
 		this._steps = [];
 		this._currentStep = -1;
+
 		if (propertyObj !== undefined) {
 			this.stepTo(propertyObj);
 		}
+
 		this._durationMs = durationMs !== undefined ? durationMs : 0;
 		this._started = false;
 		this._stepDirection = false;
@@ -96,7 +98,7 @@ class IgeTween extends IgeBaseClass {
 	 * @param propertyObj
 	 * @return {*}
 	 */
-	properties (propertyObj: IgeTweenPropertyObject) {
+	properties (propertyObj?: IgeTweenPropertyObject) {
 		if (propertyObj !== undefined) {
 			// Reset any existing steps and add this new one
 			this._steps = [];
@@ -118,6 +120,8 @@ class IgeTween extends IgeBaseClass {
 	 * @param count
 	 * @return {*}
 	 */
+	repeatMode (val: number, count?: number): this;
+	repeatMode (): number;
 	repeatMode (val?: number, count?: number) {
 		if (val !== undefined) {
 			this._repeatMode = val;

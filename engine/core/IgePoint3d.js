@@ -1,6 +1,7 @@
 /**
  * Creates a new 3d point (x, y, z).
  */
+import IgeTween from "./IgeTween.js";
 class IgePoint3d {
     constructor(x = 0, y = 0, z = 0, floor = false) {
         this.classId = "IgePoint3d";
@@ -264,6 +265,27 @@ class IgePoint3d {
      */
     toString(precision = 2) {
         return this.x.toFixed(precision) + "," + this.y.toFixed(precision) + "," + this.z.toFixed(precision);
+    }
+    tween(props, durationMs, options) {
+        const newTween = new IgeTween()
+            .targetObj(this)
+            .properties(props)
+            .duration(durationMs);
+        if (options) {
+            if (options.beforeTween) {
+                newTween.beforeTween(options.beforeTween);
+            }
+            if (options.afterTween) {
+                newTween.afterTween(options.afterTween);
+            }
+            if (options.easing) {
+                newTween.easing(options.easing);
+            }
+            if (options.startTime) {
+                newTween.startTime(options.startTime);
+            }
+        }
+        return newTween;
     }
 }
 export default IgePoint3d;

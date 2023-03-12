@@ -9,7 +9,7 @@ class IgeTween extends IgeBaseClass {
     constructor(targetObj, propertyObj, durationMs, options) {
         super();
         this.classId = "IgeTween";
-        this._startTime = 0;
+        this._startTime = undefined;
         this._selectedEasing = "none";
         this._endTime = 0;
         this._targetData = [];
@@ -71,17 +71,6 @@ class IgeTween extends IgeBaseClass {
         }
         return this;
     }
-    /**
-     * Gets / sets the repeat mode for the tween. If the mode
-     * is set to 1 the tween will repeat from the first step.
-     * If set to 2 the tween will reverse the order of the steps
-     * each time the repeat occurs. The count determines the
-     * number of times the tween will be repeated before stopping.
-     * Setting the count to -1 will make it repeat infinitely.
-     * @param val
-     * @param count
-     * @return {*}
-     */
     repeatMode(val, count) {
         if (val !== undefined) {
             this._repeatMode = val;

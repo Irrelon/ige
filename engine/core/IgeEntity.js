@@ -58,58 +58,6 @@ class IgeEntity extends IgeObject {
         };
         /**
          * Gets / sets the callback that is fired when a mouse
-         * over event is triggered.
-         * @param {Function=} callback
-         * @example #Hook the mouse over event and stop it propagating further down the scenegraph
-         *     entity.mouseOver(function (event, control) {
-         *         // Mouse over with button
-         *         console.log('Mouse over button: ' + event.button);
-         *
-         *         // Stop the event propagating further down the scenegraph
-         *         control.stopPropagation();
-         *
-         *         // You can ALSO stop propagation without the control object
-         *         // reference via the global reference:
-         *         ige.input.stopPropagation();
-         *     });
-         * @return {*}
-         */
-        this.mouseOver = (callback) => {
-            if (callback) {
-                this._mouseOver = callback;
-                this._mouseEventsActive = true;
-                return this;
-            }
-            return this._mouseOver;
-        };
-        /**
-         * Gets / sets the callback that is fired when a mouse
-         * out event is triggered.
-         * @param {Function=} callback
-         * @example #Hook the mouse out event and stop it propagating further down the scenegraph
-         *     entity.mouseOut(function (event, control) {
-         *         // Mouse out with button
-         *         console.log('Mouse out button: ' + event.button);
-         *
-         *         // Stop the event propagating further down the scenegraph
-         *         control.stopPropagation();
-         *
-         *         // You can ALSO stop propagation without the control object
-         *         // reference via the global reference:
-         *         ige.input.stopPropagation();
-         *     });
-         * @return {*}
-         */
-        this.mouseOut = (callback) => {
-            if (callback) {
-                this._mouseOut = callback;
-                this._mouseEventsActive = true;
-                return this;
-            }
-            return this._mouseOut;
-        };
-        /**
-         * Gets / sets the callback that is fired when a mouse
          * up event is triggered.
          * @param {Function=} callback
          * @example #Hook the mouse up event and stop it propagating further down the scenegraph
@@ -1975,6 +1923,22 @@ class IgeEntity extends IgeObject {
                 }
             });
         }
+    }
+    mouseOver(callback) {
+        if (callback) {
+            this._mouseOver = callback;
+            this._mouseEventsActive = true;
+            return this;
+        }
+        return this._mouseOver;
+    }
+    mouseOut(callback) {
+        if (callback) {
+            this._mouseOut = callback;
+            this._mouseEventsActive = true;
+            return this;
+        }
+        return this._mouseOut;
     }
     /**
      * Removes the callback that is fired when a mouse
