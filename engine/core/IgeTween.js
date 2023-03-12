@@ -10,12 +10,14 @@ class IgeTween extends IgeBaseClass {
         super();
         this.classId = "IgeTween";
         this._startTime = 0;
+        this._selectedEasing = "none";
         this._endTime = 0;
         this._targetData = [];
         this._destTime = 0;
         this._repeatMode = 0;
         this._repeatCount = 0;
         this._repeatedCount = 0;
+        this._easing = "none";
         // Create a new tween object and return it
         // so the user can decide when to start it
         this._targetObj = targetObj;
@@ -252,10 +254,11 @@ class IgeTween extends IgeBaseClass {
      * many milliseconds in the future.
      */
     start(timeMs) {
+        debugger;
         if (timeMs !== undefined) {
             this.startTime(timeMs + ige.engine._currentTime);
         }
-        ige.components.tween.start(this);
+        ige.engine.components.tween.start(this);
         // Add the tween to the target object's tween array
         this._targetObj._tweenArr = this._targetObj._tweenArr || [];
         this._targetObj._tweenArr.push(this);
@@ -265,7 +268,7 @@ class IgeTween extends IgeBaseClass {
      * Stops the tweening operation.
      */
     stop() {
-        ige.components.tween.stop(this);
+        ige.engine.components.tween.stop(this);
         if (this._targetObj._tweenArr) {
             arrPull(this._targetObj._tweenArr, this);
         }

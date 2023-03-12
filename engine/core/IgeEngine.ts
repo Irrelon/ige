@@ -17,6 +17,7 @@ import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRendering
 import type { GenericClass } from "../../types/GenericClass";
 import type { IgeSceneGraphDataEntry } from "../../types/IgeSceneGraphDataEntry";
 import { IgeEngineState } from "../../enums/IgeEngineState";
+import IgeTweenComponent from "../components/IgeTweenComponent";
 
 export class IgeEngine extends IgeEntity {
 	client?: IgeBaseClass;
@@ -54,7 +55,7 @@ export class IgeEngine extends IgeEntity {
 	_fps: number;
 	_clientNetDiff: number;
 	_frameAlternator: boolean;
-	_viewportDepth: boolean;
+	_viewportDepth: boolean = false;
 	_mousePos: IgePoint3d;
 	_currentViewport: IgeViewport | null;
 	_currentCamera: IgeCamera | null;
@@ -90,6 +91,11 @@ export class IgeEngine extends IgeEntity {
 	_resized: boolean = false;
 	_timeScaleLastTimestamp: number = 0;
 	lastTick: number = 0;
+
+	// The engine entity is always "in view" as in, no occlusion will stop it from rendering
+	// because it's only the child entities that need occlusion testing
+	_alwaysInView = true;
+	basePath = "";
 	_requestAnimFrame?: (callback: (time: number, ctx?: IgeCanvasRenderingContext2d) => void, element?: Element) => void;
 
 	constructor () {
@@ -166,6 +172,33 @@ export class IgeEngine extends IgeEntity {
 
 		// Start a timer to record every second of execution
 		this._secondTimer = setInterval(this._secondTick, 1000) as unknown as number;
+
+		if (isClient) {
+			this._resizeEvent();
+		}
+
+		this.addComponent("tween", IgeTweenComponent);
+	}
+
+	createRoot () {
+		//if (this.root) return;
+
+		// Create the base engine instance for the scenegraph
+		//this.root = new IgeRoot();
+
+		// if (isClient) {
+		// 	this._resizeEvent();
+		// }
+
+		// Set up components
+		//this.addComponent(IgeInputComponent);
+		//this.addComponent("tween", IgeTweenComponent);
+		//this.addComponent(IgeTimeComponent);
+		//
+		// if (isClient) {
+		//     // Enable UI element (virtual DOM) support
+		//     this.addComponent(IgeUiManagerComponent);
+		// }
 	}
 
 	id(): string;
@@ -176,27 +209,6 @@ export class IgeEngine extends IgeEntity {
 		}
 
 		return this;
-	}
-
-	createRoot () {
-		if (this.root) return;
-
-		// Create the base engine instance for the scenegraph
-		this.root = new IgeRoot();
-
-		if (isClient) {
-			this._resizeEvent();
-		}
-
-		// Set up components
-		//this.addComponent(IgeInputComponent);
-		//this.addComponent(IgeTweenComponent);
-		//this.addComponent(IgeTimeComponent);
-		//
-		// if (isClient) {
-		//     // Enable UI element (virtual DOM) support
-		//     this.addComponent(IgeUiManagerComponent);
-		// }
 	}
 
 	loadWebFont (family: string, url: string) {
@@ -1704,6 +1716,201 @@ export class IgeEngine extends IgeEntity {
 		return this;
 	}
 
+	/**
+	 * Returns the mouse position relative to the main front buffer. Mouse
+	 * position is set by the this.input component (IgeInputComponent)
+	 * @return {IgePoint3d}
+	 */
+	mousePos () {
+		return ige._mousePos.clone();
+	}
+
+	/**
+	 * Walks the scenegraph and returns an array of all entities that the mouse
+	 * is currently over, ordered by their draw order from drawn last (above other
+	 * entities) to first (underneath other entities).
+	 */
+	mouseOverList = (obj?: IgeEntity | IgeRoot, entArr: IgeEntity[] = []) => {
+		let arr,
+			arrCount,
+			mp,
+			mouseTriggerPoly,
+			first = false;
+
+		if (!obj) {
+			obj = this;
+			entArr = [];
+			first = true;
+		}
+
+		if (obj === this) {
+			// Loop viewports
+			arr = obj._children as IgeViewport[];
+
+			if (arr) {
+				arrCount = arr.length;
+
+				// Loop our children
+				while (arrCount--) {
+					const vp = arr[arrCount];
+
+					if (vp._scene) {
+						if (vp._scene._shouldRender) {
+							this.mouseOverList(vp._scene, entArr);
+						}
+					}
+				}
+			}
+		} else {
+			// Check if the mouse is over this entity
+			mp = this.mousePosWorld();
+
+			if (mp && obj.aabb) {
+				// Trigger mode is against the AABB
+				mouseTriggerPoly = obj.aabb(); //this.localAabb();
+
+				// Check if the current mouse position is inside this aabb
+				if (mouseTriggerPoly.xyInside(mp.x, mp.y)) {
+					entArr.push(obj);
+				}
+			}
+
+			// Check if the entity has children
+			arr = obj._children as IgeEntity[];
+
+			if (arr) {
+				arrCount = arr.length;
+
+				// Loop our children
+				while (arrCount--) {
+					this.mouseOverList(arr[arrCount], entArr);
+				}
+			}
+		}
+
+		if (first) {
+			entArr.reverse();
+		}
+
+		return entArr;
+	};
+
+	_childMounted (child: IgeObject) {
+		if (child instanceof IgeViewport) {
+			// The first mounted viewport gets set as the current
+			// one before any rendering is done
+			if (!ige.engine._currentViewport) {
+				ige.engine.currentViewport(child);
+			}
+		}
+
+		super._childMounted(child);
+	}
+
+	updateSceneGraph (ctx: IgeCanvasRenderingContext2d) {
+		const arr = this._children;
+		const tickDelta = ige.engine._tickDelta;
+
+		// Process any behaviours assigned to the engine
+		this._processUpdateBehaviours(ctx, tickDelta);
+
+		if (arr) {
+			let arrCount = arr.length;
+
+			// Loop our viewports and call their update methods
+			if (ige.config.debug._timing) {
+				while (arrCount--) {
+					const us = new Date().getTime();
+					arr[arrCount].update(ctx, tickDelta);
+					const ud = new Date().getTime() - us;
+
+					if (arr[arrCount]) {
+						if (!ige.engine._timeSpentInUpdate[arr[arrCount].id()]) {
+							ige.engine._timeSpentInUpdate[arr[arrCount].id()] = 0;
+						}
+
+						if (!ige.engine._timeSpentLastUpdate[arr[arrCount].id()]) {
+							ige.engine._timeSpentLastUpdate[arr[arrCount].id()] = {};
+						}
+
+						ige.engine._timeSpentInUpdate[arr[arrCount].id()] += ud;
+						ige.engine._timeSpentLastUpdate[arr[arrCount].id()].ms = ud;
+					}
+				}
+			} else {
+				while (arrCount--) {
+					arr[arrCount].update(ctx, tickDelta);
+				}
+			}
+		}
+	}
+
+	renderSceneGraph (ctx: IgeCanvasRenderingContext2d) {
+		let ts, td;
+
+		// Process any behaviours assigned to the engine
+		this._processTickBehaviours(ctx);
+
+		// Depth-sort the viewports
+		if (this._viewportDepth) {
+			if (ige.config.debug._timing) {
+				ts = new Date().getTime();
+				this.depthSortChildren();
+				td = new Date().getTime() - ts;
+
+				if (!ige.engine._timeSpentLastTick[this.id()]) {
+					ige.engine._timeSpentLastTick[this.id()] = {};
+				}
+
+				ige.engine._timeSpentLastTick[this.id()].depthSortChildren = td;
+			} else {
+				this.depthSortChildren();
+			}
+		}
+
+		ctx.save();
+		ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
+		//ctx.scale(this._globalScale.x, this._globalScale.y);
+
+		// Process the current engine tick for all child objects
+		const arr = this._children;
+
+		if (arr) {
+			let arrCount = arr.length;
+
+			// Loop our viewports and call their tick methods
+			if (ige.config.debug._timing) {
+				while (arrCount--) {
+					ctx.save();
+					ts = new Date().getTime();
+					arr[arrCount].tick(ctx);
+					td = new Date().getTime() - ts;
+					if (arr[arrCount]) {
+						if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
+							ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
+						}
+
+						if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
+							ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
+						}
+
+						ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
+						ige.engine._timeSpentLastTick[arr[arrCount].id()].ms = td;
+					}
+					ctx.restore();
+				}
+			} else {
+				while (arrCount--) {
+					ctx.save();
+					arr[arrCount].tick(ctx);
+					ctx.restore();
+				}
+			}
+		}
+
+		ctx.restore();
+	}
+
 	destroy () {
 		// Stop the engine and kill any timers
 		this.stop();
@@ -1713,6 +1920,8 @@ export class IgeEngine extends IgeEntity {
 		if (isClient) {
 			this.removeCanvas();
 		}
+
+		super.destroy();
 
 		this.log("Engine destroy complete.");
 		return this;

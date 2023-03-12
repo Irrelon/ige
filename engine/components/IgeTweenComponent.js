@@ -1,6 +1,7 @@
 import IgeComponent from "../core/IgeComponent.js";
 import { arrPull } from "../services/utils.js";
 import { ige } from "../instance.js";
+import { easingFunctions } from "../services/easing.js";
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!
@@ -32,7 +33,7 @@ class IgeTweenComponent extends IgeComponent {
             // The tween should start immediately
             tween._currentStep = 0;
             // Set up the tweens step
-            if (this._setupStep(tween, 0)) {
+            if (this._setupStep(tween, false)) {
                 // Push the tween into the IgeTweenComponent's _tweens array
                 this._tweens.push(tween);
             }
@@ -42,7 +43,7 @@ class IgeTweenComponent extends IgeComponent {
         // Return the tween
         return tween;
     }
-    _setupStep(tween, newTime) {
+    _setupStep(tween, newTime = false) {
         const targetObj = tween._targetObj, step = tween._steps[tween._currentStep], targetData = [];
         let propertyNameAndValue = {}, // = tween._propertyObj
         propertyIndex;
@@ -131,23 +132,38 @@ class IgeTweenComponent extends IgeComponent {
     /**
      * Process tweening for the object.
      */
-    update(entity, ctx) {
-        const thisTween = ige.components.tween;
-        if (thisTween._tweens && thisTween._tweens.length) {
-            var currentTime = ige._tickStart, tweens = thisTween._tweens, tweenCount = tweens.length, tween, deltaTime, destTime, easing, item, targetProp, targetPropVal, targets, targetIndex, stepIndex, stopped, currentDelta;
+    update(igeInstance, entity, ctx) {
+        debugger;
+        if (this._tweens && this._tweens.length) {
+            const currentTime = ige.engine._tickStart;
+            const tweens = this._tweens;
+            let tweenCount = tweens.length;
+            // let tween,
+            // 	deltaTime,
+            // 	destTime,
+            // 	easing,
+            // 	item,
+            // 	targetProp,
+            // 	targetPropVal,
+            // 	targets,
+            // 	targetIndex,
+            // 	stepIndex,
+            // 	stopped,
+            // 	currentDelta;
             // Loop the item's tweens
             while (tweenCount--) {
-                tween = tweens[tweenCount];
-                stopped = false;
+                const tween = tweens[tweenCount];
+                let stopped = false;
+                let stepIndex;
                 // Check if we should be starting this tween yet
                 if (tween._started || currentTime >= tween._startTime) {
                     if (!tween._started) {
                         // Check if the tween's step is -1 indicating no step
                         // data has been set up yet
                         if (tween._currentStep === -1) {
-                            // Setup the tween step now
+                            // Set up the tween step now
                             tween._currentStep = 0;
-                            thisTween._setupStep(tween, false);
+                            this._setupStep(tween, false);
                         }
                         // Check if we have a beforeTween callback to fire
                         if (typeof (tween._beforeTween) === "function") {
@@ -169,26 +185,27 @@ class IgeTweenComponent extends IgeComponent {
                         }
                         tween._started = true;
                     }
-                    deltaTime = currentTime - tween._startTime; // Delta from start time to current time
-                    destTime = tween._destTime;
-                    easing = tween._selectedEasing;
-                    // Check if the tween has reached it's destination based upon
+                    const deltaTime = currentTime - tween._startTime; // Delta from start time to current time
+                    const destTime = tween._destTime;
+                    const easing = tween._selectedEasing;
+                    // Check if the tween has reached its destination based upon
                     // the current time
                     if (deltaTime >= destTime) {
                         // The tween time indicates the tween has ended so set to
                         // the ending value
-                        targets = tween._targetData;
-                        for (targetIndex in targets) {
+                        const targets = tween._targetData;
+                        for (const targetIndex in targets) {
                             if (targets.hasOwnProperty(targetIndex)) {
-                                item = targets[targetIndex];
-                                targetProp = item.targetObj;
-                                targetPropVal = targetProp[item.propName];
+                                const item = targets[targetIndex];
+                                const targetProp = item.targetObj;
+                                let targetPropVal = targetProp[item.propName];
+                                let currentDelta;
                                 // Check if the destination time is not zero
                                 // because otherwise the easing method will provide
                                 // a divide by zero error resulting in a NaN value
                                 if (destTime !== 0) {
                                     // Add the delta amount to destination
-                                    currentDelta = thisTween.easing[easing](destTime, item.deltaVal, destTime);
+                                    currentDelta = easingFunctions[easing](destTime, item.deltaVal, destTime);
                                 }
                                 else {
                                     currentDelta = item.deltaVal;
@@ -237,10 +254,11 @@ class IgeTweenComponent extends IgeComponent {
                                         tween._currentStep = 1;
                                     }
                                     // Check if we have a stepsComplete callback to fire
-                                    if (typeof (tween._stepsComplete) === "function") {
-                                        // Fire the stepsComplete callback
-                                        tween._stepsComplete(tween, tween._currentStep);
-                                    }
+                                    // TODO this is commented because I couldn't find this property anywhere but could be that I've missed something
+                                    // if (typeof (tween._stepsComplete) === "function") {
+                                    // 	// Fire the stepsComplete callback
+                                    // 	tween._stepsComplete(tween, tween._currentStep);
+                                    // }
                                     // Check if we have a beforeStep callback to fire
                                     if (typeof (tween._beforeStep) === "function") {
                                         // Fire the beforeStep callback
@@ -252,7 +270,7 @@ class IgeTweenComponent extends IgeComponent {
                                         }
                                         tween._beforeStep(tween, stepIndex);
                                     }
-                                    thisTween._setupStep(tween, true);
+                                    this._setupStep(tween, true);
                                 }
                             }
                             else {
@@ -284,20 +302,20 @@ class IgeTweenComponent extends IgeComponent {
                                 }
                                 tween._beforeStep(tween, stepIndex);
                             }
-                            thisTween._setupStep(tween, true);
+                            this._setupStep(tween, true);
                         }
                         if (typeof (tween._afterChange) === "function") {
                             tween._afterChange(tween, stepIndex);
                         }
                     }
                     else {
-                        // The tween is still active, process the tween by passing it's details
+                        // The tween is still active, process the tween by passing its details
                         // to the selected easing method
-                        targets = tween._targetData;
-                        for (targetIndex in targets) {
+                        const targets = tween._targetData;
+                        for (const targetIndex in targets) {
                             if (targets.hasOwnProperty(targetIndex)) {
-                                item = targets[targetIndex];
-                                var currentDelta = thisTween.easing[easing](deltaTime, item.deltaVal, destTime);
+                                const item = targets[targetIndex];
+                                const currentDelta = easingFunctions[easing](deltaTime, item.deltaVal, destTime);
                                 item.targetObj[item.propName] += currentDelta - item.oldDelta;
                                 item.oldDelta = currentDelta;
                             }
