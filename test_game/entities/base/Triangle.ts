@@ -1,9 +1,9 @@
-import { ige } from "../../engine/instance";
-import { isClient } from "../../engine/services/clientServer";
-import { registerClass } from "../../engine/services/igeClassStore";
-import { GameEntity } from "./GameEntity";
+import { ige } from "../../../engine/instance";
+import { isClient } from "../../../engine/services/clientServer";
+import { registerClass } from "../../../engine/services/igeClassStore";
+import { Building } from "./Building";
 
-export class Triangle extends GameEntity {
+export class Triangle extends Building {
 	classId = 'Triangle';
 
 	constructor () {

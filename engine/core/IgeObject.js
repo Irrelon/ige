@@ -1243,19 +1243,20 @@ export class IgeObject extends IgeEventingClass {
      *
      *         // Define the constructor with the parameter to receive the
      *         // data you return from the streamCreateData() method
-     *         constructor (myCreateData) => {
+     *         constructor (myFirstArgData, myOtherArgData) => {
      *         	   super();
-     *             this._myData = myCreateData;
+     *             this._myData1 = myFirstArgData;
+     *             this._myData2 = myOtherArgData;
      *         }
      *
      *         streamCreateData = () => {
-     *             return [this._myData];
+     *             return [this._myData, this._myData2];
      *         }
      *     });
      *
      * Valid return values must not include circular references!
      */
-    streamCreateData(allGood = false) {
+    streamCreateData() {
         // Do a sanity check in case the developer has forgotten to provide
         // vital info that will otherwise break the network stream
         return;

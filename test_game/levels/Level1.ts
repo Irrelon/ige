@@ -3,13 +3,15 @@ import { degreesToRadians } from "../../engine/services/utils";
 import IgeSceneGraph from "../../engine/core/IgeSceneGraph";
 import IgeScene2d from "../../engine/core/IgeScene2d";
 import IgeEntity from "../../engine/core/IgeEntity";
-import { Square } from "../entities/Square";
-import { Circle } from "../entities/Circle";
-import { Triangle } from "../entities/Triangle";
-import { Line } from "../entities/Line";
+import { Square } from "../entities/base/Square";
 import { IgeStreamMode } from "../../enums/IgeStreamMode";
 import { IgeAudioEntity } from "../../engine/components/audio/IgeAudioEntity";
-import { Worker } from "../entities/Worker";
+import { Transporter } from "../entities/Transporter";
+import { ResourceBuilding } from "../entities/ResourceBuilding";
+import { ResourceType } from "../enums/ResourceType";
+import { FactoryBuilding } from "../entities/FactoryBuilding";
+import { isClient } from "../../engine/services/clientServer";
+import { Road } from "../entities/Road";
 
 export class Level1 extends IgeSceneGraph {
 	classId = "Level1";
@@ -30,6 +32,9 @@ export class Level1 extends IgeSceneGraph {
 			.id("scene1")
 			.mount(baseScene);
 
+		if (isClient) {
+			console.log("Client mode");
+		}
 		//if (isClient) return;
 
 		new IgeAudioEntity()
@@ -42,29 +47,35 @@ export class Level1 extends IgeSceneGraph {
 			.translateTo(0, 0, 0)
 			.mount(scene1);
 
-		const industry2 = new Circle()
+		const factory2 = new FactoryBuilding(ResourceType.wood, [{
+			resource: ResourceType.energy,
+			count: 1
+		}])
 			.translateTo(250, -50, 0)
 			.mount(scene1);
 
-		const factory1 = new Triangle()
+		const resource1 = new ResourceBuilding(ResourceType.energy)
 			.translateTo(220, 120, 0)
 			.rotateTo(0, 0, degreesToRadians(-10))
 			.mount(scene1);
 
-		const industry1 = new Circle()
+		const factory1 = new FactoryBuilding(ResourceType.wood, [{
+			resource: ResourceType.energy,
+			count: 1
+		}])
 			.translateTo(50, 150, 0)
 			.mount(scene1);
 
-		new Line(0, 0, 250, -50)
+		new Road(base.id(), factory2.id())
 			.mount(scene1);
 
-		new Line(250, -50, 220, 120)
+		new Road(factory2.id(), resource1.id())
 			.mount(scene1);
 
-		new Line(220, 120, 50, 150)
+		new Road(resource1.id(), factory1.id())
 			.mount(scene1);
 
-		new Worker(industry1, factory1)
+		new Transporter(factory1, resource1)
 			.translateTo(220, 120, 0)
 			.mount(scene1);
 	}

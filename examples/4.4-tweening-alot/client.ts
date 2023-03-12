@@ -5,6 +5,7 @@ import { IgeCanInit } from "../../types/IgeCanInit";
 import IgeScene2d from "../../engine/core/IgeScene2d";
 import IgeViewport from "../../engine/core/IgeViewport";
 import { RandomTweener } from "./gameClasses/RandomTweener";
+import IgeEntity from "../../engine/core/IgeEntity";
 
 // @ts-ignore
 window.ige = ige;
@@ -47,7 +48,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 		// Define a function that will be called when the
 		// mouse cursor moves over one of our entities
-		const overFunc = function () {
+		const overFunc = function (this: IgeEntity) {
 			this.highlight(true);
 			this.drawBounds(true);
 			this.drawBoundsData(true);
@@ -55,7 +56,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 		// Define a function that will be called when the
 		// mouse cursor moves away from one of our entities
-		const outFunc = function () {
+		const outFunc = function (this: IgeEntity) {
 			this.highlight(false);
 			this.drawBounds(false);
 			this.drawBoundsData(false);

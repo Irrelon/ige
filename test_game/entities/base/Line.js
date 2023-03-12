@@ -1,12 +1,17 @@
-import { ige } from "../../engine/instance.js";
-import { isClient } from "../../engine/services/clientServer.js";
-import { registerClass } from "../../engine/services/igeClassStore.js";
-import IgeRect from "../../engine/core/IgeRect.js";
+import { ige } from "../../../engine/instance.js";
+import { isClient } from "../../../engine/services/clientServer.js";
+import { registerClass } from "../../../engine/services/igeClassStore.js";
+import IgeRect from "../../../engine/core/IgeRect.js";
 import { GameEntity } from "./GameEntity.js";
 export class Line extends GameEntity {
     constructor(x1, y1, x2, y2) {
         super();
         this.classId = 'Line';
+        if (x1 !== undefined && y1 !== undefined && x2 !== undefined && y2 !== undefined) {
+            this.setLine(x1, y1, x2, y2);
+        }
+    }
+    setLine(x1, y1, x2, y2) {
         this._initVals = new IgeRect(x1, y1, x2, y2);
         this.data("glowColor", "#ffea00")
             .depth(0)
@@ -17,7 +22,9 @@ export class Line extends GameEntity {
             this.texture(ige.textures.get("line"));
         }
     }
-    streamCreateData(allGood = false) {
+    streamCreateData() {
+        if (!this._initVals)
+            return;
         return [this._initVals.x, this._initVals.y, this._initVals.width, this._initVals.height];
     }
 }

@@ -1,8 +1,8 @@
-import { ige } from "../../engine/instance.js";
-import { isClient } from "../../engine/services/clientServer.js";
-import { registerClass } from "../../engine/services/igeClassStore.js";
-import { GameEntity } from "./GameEntity.js";
-export class Triangle extends GameEntity {
+import { ige } from "../../../engine/instance.js";
+import { isClient } from "../../../engine/services/clientServer.js";
+import { registerClass } from "../../../engine/services/igeClassStore.js";
+import { Building } from "./Building.js";
+export class Triangle extends Building {
     constructor() {
         super();
         this.classId = 'Triangle';
