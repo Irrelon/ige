@@ -1,9 +1,10 @@
-import { Line } from "./base/Line.js";
 import { ige } from "../../engine/instance.js";
+import { Line } from "./base/Line.js";
 import { registerClass } from "../../engine/services/igeClassStore.js";
 export class Road extends Line {
     constructor(fromId, toId) {
         super();
+        this.classId = "Road";
         this._fromId = fromId;
         this._toId = toId;
         this._from = ige.$(fromId);

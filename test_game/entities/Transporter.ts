@@ -1,3 +1,4 @@
+import { ige } from "../../engine/instance";
 import IgeEntity from "../../engine/core/IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { Building } from "./base/Building";
@@ -6,14 +7,20 @@ import { WorkerUnit } from "./WorkerUnit";
 import { registerClass } from "../../engine/services/igeClassStore";
 
 export class Transporter extends WorkerUnit {
+	classId = "Transporter";
+	_depotAId: string;
 	_depotA: IgeEntity;
+	_depotBId: string;
 	_depotB: IgeEntity;
 
-	constructor (depotA: Building, depotB: Building) {
+	constructor (depotAId: string, depotBId: string) {
 		super(WorkerUnitType.transporter);
 
-		this._depotA = depotA;
-		this._depotB = depotB;
+		this._depotAId = depotAId;
+		this._depotBId = depotBId;
+
+		this._depotA = ige.$(depotAId) as Building;
+		this._depotB = ige.$(depotBId) as Building;
 
 		this.depth(2)
 			.scaleTo(0.3, 0.3, 0.3);
@@ -21,8 +28,10 @@ export class Transporter extends WorkerUnit {
 
 	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		super.update(ctx, tickDelta);
+	}
 
-
+	streamCreateData () {
+		return [this._depotAId, this._depotBId];
 	}
 }
 

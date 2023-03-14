@@ -35,7 +35,7 @@ export class Level1 extends IgeSceneGraph {
 		if (isClient) {
 			console.log("Client mode");
 		}
-		//if (isClient) return;
+		if (isClient) return;
 
 		new IgeAudioEntity()
 			.streamMode(IgeStreamMode.simple)
@@ -45,13 +45,6 @@ export class Level1 extends IgeSceneGraph {
 
 		const base = new Square()
 			.translateTo(0, 0, 0)
-			.mount(scene1);
-
-		const factory2 = new FactoryBuilding(ResourceType.wood, [{
-			resource: ResourceType.energy,
-			count: 1
-		}])
-			.translateTo(250, -50, 0)
 			.mount(scene1);
 
 		const resource1 = new ResourceBuilding(ResourceType.energy)
@@ -66,6 +59,13 @@ export class Level1 extends IgeSceneGraph {
 			.translateTo(50, 150, 0)
 			.mount(scene1);
 
+		const factory2 = new FactoryBuilding(ResourceType.wood, [{
+			resource: ResourceType.energy,
+			count: 1
+		}])
+			.translateTo(250, -50, 0)
+			.mount(scene1);
+
 		new Road(base.id(), factory2.id())
 			.mount(scene1);
 
@@ -75,7 +75,7 @@ export class Level1 extends IgeSceneGraph {
 		new Road(resource1.id(), factory1.id())
 			.mount(scene1);
 
-		new Transporter(factory1, resource1)
+		new Transporter(factory1.id(), resource1.id())
 			.translateTo(220, 120, 0)
 			.mount(scene1);
 	}

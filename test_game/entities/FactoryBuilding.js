@@ -3,6 +3,7 @@ import { Circle } from "./base/Circle.js";
 export class FactoryBuilding extends Circle {
     constructor(produces, requires = []) {
         super();
+        this.classId = "FactoryBuilding";
         this.transportQueue = [];
         this._produces = produces;
         this._requires = requires;

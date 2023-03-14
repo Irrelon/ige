@@ -29,11 +29,6 @@ export class Line extends GameEntity {
 			this.texture(ige.textures.get("line"));
 		}
 	}
-
-	protected streamCreateData () {
-		if (!this._initVals) return;
-		return [this._initVals.x, this._initVals.y, this._initVals.width, this._initVals.height];
-	}
 }
 
 registerClass(Line);

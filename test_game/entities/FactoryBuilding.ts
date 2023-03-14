@@ -5,6 +5,7 @@ import { registerClass } from "../../engine/services/igeClassStore";
 import { Circle } from "./base/Circle";
 
 export class FactoryBuilding extends Circle {
+	classId = "FactoryBuilding";
 	transportQueue: Resource[] = [];
 	_produces: ResourceType;
 	_requires: BuildingResourceRequirement[];

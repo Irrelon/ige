@@ -1,9 +1,10 @@
+import { ige } from "../../engine/instance";
 import { Line } from "./base/Line";
 import { Building } from "./base/Building";
-import { ige } from "../../engine/instance";
 import { registerClass } from "../../engine/services/igeClassStore";
 
 export class Road extends Line {
+	classId = "Road";
 	_fromId: string;
 	_from?: Building;
 	_toId: string;
@@ -23,7 +24,7 @@ export class Road extends Line {
 		}
 	}
 
-	protected streamCreateData () {
+	streamCreateData () {
 		return [this._fromId, this._toId];
 	}
 }

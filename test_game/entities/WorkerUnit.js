@@ -7,8 +7,5 @@ export class WorkerUnit extends Circle {
         this.depth(2)
             .scaleTo(0.3, 0.3, 0.3);
     }
-    update(ctx, tickDelta) {
-        super.update(ctx, tickDelta);
-    }
 }
 registerClass(WorkerUnit);
