@@ -1,8 +1,9 @@
+import { ige } from "../instance.js";
 import IgeEventingClass from "./IgeEventingClass.js";
 /**
- * Provides an alternative to setInterval() which works based on the engine's internal
- * time system allowing intervals to fire correctly, taking into account pausing the
- * game and differences in rendering speed etc.
+ * Provides a kind of setInterval() that works based on the engine's internal
+ * time system allowing intervals to fire correctly, taking into account pausing
+ * the game and differences in rendering speed etc.
  */
 class IgeInterval extends IgeEventingClass {
     /**
@@ -12,18 +13,18 @@ class IgeInterval extends IgeEventingClass {
      * @param {Number} interval The number of milliseconds between each interval.
      * @param {Boolean} catchup If true, the interval will fire multiple times
      * retrospectively when the engine jumps in time. If false, the interval will
-     * only fire a single time even if a large period of engine time has elapsed
+     * only fire a single time even if a large period of engine time has elapsed.
      */
-    constructor(ige, method, interval, catchup = true) {
-        super(ige);
+    constructor(method, interval, catchup = true) {
+        super();
         this.classId = "IgeInterval";
         this._method = method;
         this._interval = interval;
         this._time = 0;
-        this._started = this._ige._currentTime;
+        this._started = ige.engine._currentTime;
         this._catchup = catchup;
         // Attach ourselves to the time system
-        this._ige.time.addTimer(this);
+        ige.engine.components.time.addTimer(this);
     }
     /**
      * Adds time to the timer's internal clock.
@@ -39,7 +40,7 @@ class IgeInterval extends IgeEventingClass {
      * @returns {*}
      */
     cancel() {
-        this._ige.time.removeTimer(this);
+        ige.engine.components.time.removeTimer(this);
         return this;
     }
     /**
@@ -49,12 +50,12 @@ class IgeInterval extends IgeEventingClass {
      * @returns {*}
      */
     update() {
-        var intendedTime;
-        var overTime = this._time - this._interval;
+        let intendedTime;
+        const overTime = this._time - this._interval;
         if (overTime > 0) {
-            intendedTime = this._ige._currentTime - overTime;
+            intendedTime = ige.engine._currentTime - overTime;
             // Fire an interval
-            this._method(this._ige._currentTime, intendedTime);
+            this._method(ige.engine._currentTime, intendedTime);
             if (this._catchup) {
                 this._time -= this._interval;
             }

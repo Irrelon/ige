@@ -1,8 +1,9 @@
 import {ige} from "../instance";
 import IgePoint3d from "../core/IgePoint3d";
 import IgeViewport from "../core/IgeViewport";
-import IgeEventingClass from "../core/IgeEventingClass";
 import { IgeInputEventControl } from "../../types/IgeInputEventControl";
+import IgeComponent from "../core/IgeComponent";
+import { IgeEngine } from "../core/IgeEngine";
 
 export interface IgeInputMouseInterface {
 	"dblClick": number;
@@ -109,7 +110,7 @@ export interface IgeInputKeyboardInterface {
 	"z": number;
 }
 
-class IgeInputComponent extends IgeEventingClass {
+class IgeInputComponent extends IgeComponent {
 	classId = "IgeInputComponent";
 	componentId = "input";
 	_eventQueue: [((evc: IgeInputEventControl, eventData?: any) => void), any][];
@@ -129,8 +130,8 @@ class IgeInputComponent extends IgeEventingClass {
 	mouseWheel?: Event;
 	contextMenu?: Event;
 
-	constructor () {
-		super();
+	constructor (entity: IgeEngine, options?: any) {
+		super(entity, options);
 
 		// Set up the input objects to hold the current input state
 		this._eventQueue = [];

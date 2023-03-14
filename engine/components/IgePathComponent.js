@@ -1,15 +1,34 @@
+import { ige } from "../instance.js";
+import { isClient } from "../services/clientServer.js";
 import { distance } from "../services/utils.js";
 import IgeComponent from "../core/IgeComponent.js";
-import { isClient } from "../services/clientServer.js";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
+import IgePoint3d from "../core/IgePoint3d.js";
+import IgePathNode from "../core/IgePathNode.js";
+import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js";
 /**
- * Handles entity path traversal.
+ * Handles entity path traversal. This component is supposed to be added
+ * to individual entities wishing to traverse paths. When added to an entity
+ * the component will add a behaviour to the entity that is called each update()
+ * and will operate to move the entity along a defined path.
  */
 class IgePathComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgePathComponent";
         this.componentId = "path";
+        this._dynamic = false;
+        this._tileChecker = () => true;
+        this._allowSquare = true;
+        this._allowDiagonal = true;
+        this._points = [];
+        this._finished = false;
+        this._active = false;
+        this._autoStop = false;
+        this._paused = false;
+        this._drawPath = false;
+        this._drawPathGlow = false;
+        this._drawPathText = false;
         /**
          * Gets / sets the tile map that will be used when calculating paths.
          * @param {IgeTileMap2d} val The tileMap to use for path calculations.
@@ -23,7 +42,7 @@ class IgePathComponent extends IgeComponent {
             return this._tileMap;
         };
         /**
-         * Gets / sets the path finder class instance used to generate paths.
+         * Gets / sets the pathfinder class instance used to generate paths.
          * @param {IgePathFinder} val The pathfinder class instance to use to generate paths.
          * @returns {*}
          */
@@ -37,12 +56,12 @@ class IgePathComponent extends IgeComponent {
         /**
          * Gets / sets the dynamic mode enabled flag. If dynamic mode is enabled
          * then at the end of every path point (reaching a tile along the path)
-         * the path finder will evaluate the path by looking ahead and seeing if
+         * the pathfinder will evaluate the path by looking ahead and seeing if
          * the path has changed (the tiles along the path have now been marked as
          * cannot path on). If any tile along the path up to the look-ahead value
          * has been blocked, the path will auto re-calculate to avoid the new block.
          *
-         * For dynamic mode to work you need to supply a path-finder instance by
+         * For dynamic mode to work you need to supply a pathfinder instance by
          * calling .finder(), a tile checker method by calling .tileChecker() and
          * the number of look-ahead steps by calling .lookAheadSteps(). See the
          * doc for those methods for usage and required arguments.
@@ -64,10 +83,7 @@ class IgePathComponent extends IgeComponent {
          */
         this.tileChecker = (val) => {
             if (val !== undefined) {
-                const self = this;
-                this._tileChecker = function () {
-                    return val.apply(self._entity, arguments);
-                };
+                this._tileChecker = val;
                 return this;
             }
             return this._tileChecker;
@@ -117,24 +133,32 @@ class IgePathComponent extends IgeComponent {
          * destination tile.
          * @returns {*}
          */
-        this.set = (fromX, fromY, fromZ, toX, toY, toZ, findNearest) => {
+        this.set = (fromX, fromY, fromZ, toX, toY, toZ, findNearest = false) => {
             // Clear existing path
             this.clear();
+            if (!this._finder)
+                throw new Error("No path finder (IgePathFinder) assigned to IgePathComponent");
+            if (!this._tileMap)
+                throw new Error("No tile map (IgeTileMap2d) assigned to IgePathComponent");
             // Create a new path
-            const path = this._finder.generate(this._tileMap, new IgePoint3d(fromX, fromY, fromZ), new IgePoint3d(toX, toY, toZ), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
+            const path = this._finder.generate(this._tileMap, new IgePathNode(fromX, fromY, fromZ), new IgePathNode(toX, toY, toZ), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
             this.addPoints(path);
             return this;
         };
-        this.add = (x, y, z, findNearest) => {
+        this.add = (x, y, z, findNearest = false) => {
+            if (!this._finder)
+                throw new Error("No path finder (IgePathFinder) assigned to IgePathComponent");
+            if (!this._tileMap)
+                throw new Error("No tile map (IgeTileMap2d) assigned to IgePathComponent");
             // Get the endPoint of the current path
             let endPoint = this.getEndPoint(), shift = true;
             if (!endPoint) {
                 // There is no existing path, detect current tile position
-                endPoint = this._entity._parent.pointToTile(this._entity._translate);
+                endPoint = IgePathNode.fromPoint3d(this._tileMap.pointToTile(this._entity._translate));
                 shift = false;
             }
             // Create a new path
-            const path = this._finder.generate(this._tileMap, endPoint, new IgePoint3d(x, y, z), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
+            const path = this._finder.generate(this._tileMap, endPoint, new IgePathNode(x, y, z), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
             if (shift) {
                 // Remove the first tile, it's the last one on the list already
                 path.shift();
@@ -153,16 +177,21 @@ class IgePathComponent extends IgeComponent {
          * destination tile.
          * @returns {*}
          */
-        this.reRoute = (x, y, z, findNearest) => {
+        this.reRoute = (x, y, z, findNearest = false) => {
+            if (!this._finder)
+                throw new Error("No path finder (IgePathFinder) assigned to IgePathComponent");
+            if (!this._tileMap)
+                throw new Error("No tile map (IgeTileMap2d) assigned to IgePathComponent");
             // Get the endPoint of the current path
-            let toPoint = this.getToPoint(), fromPoint = this.getFromPoint();
+            const fromPoint = this.getFromPoint();
+            let toPoint = this.getToPoint();
             if (!toPoint) {
                 // There is no existing path, detect current tile position
-                toPoint = this._entity._parent.pointToTile(this._entity._translate);
+                toPoint = IgePathNode.fromPoint3d(this._tileMap.pointToTile(this._entity._translate));
             }
             // Create a new path, making sure we include the points that we're currently working between
             const prePath = fromPoint ? [fromPoint] : [];
-            const path = this._finder.generate(this._tileMap, toPoint, new IgePoint3d(x, y, z), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
+            const path = this._finder.generate(this._tileMap, toPoint, new IgePathNode(x, y, z), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
             // Do nothing if the new path is empty or invalid
             if (path.length > 0) {
                 this.clear();
@@ -193,14 +222,14 @@ class IgePathComponent extends IgeComponent {
         };
         /**
          * Gets the path node point that the entity is travelling from.
-         * @return {IgePoint3d} A new point representing the travelled from node.
+         * @return {IgePathNode} A new point representing the travelled from node.
          */
         this.getFromPoint = () => {
             return this._points[this._currentPointFrom];
         };
         /**
          * Gets the path node point that the entity is travelling to.
-         * @return {IgePoint3d} A new point representing the travelling to node.
+         * @return {IgePathNode} A new point representing the travelling to node.
          */
         this.getToPoint = () => {
             return this._points[this._currentPointTo];
@@ -220,11 +249,12 @@ class IgePathComponent extends IgeComponent {
          * If there is currently no direction then the return value is a blank string.
          */
         this.getDirection = () => {
+            let dir = "";
             if (!this._finished) {
-                var cell = this.getToPoint(), dir = "";
+                const cell = this.getToPoint();
                 if (cell) {
                     dir = cell.direction;
-                    if (this._entity._renderMode === 1) {
+                    if (this._entity._renderMode === IgeEntityRenderMode.iso) {
                         // Convert direction for isometric
                         switch (dir) {
                             case "E":
@@ -291,6 +321,7 @@ class IgePathComponent extends IgeComponent {
          * Gets / sets the speed at which the entity will traverse the path in pixels
          * per second (world space).
          * @param {Number=} val
+         * @param startTime
          * @return {*}
          */
         this.speed = (val, startTime) => {
@@ -312,8 +343,7 @@ class IgePathComponent extends IgeComponent {
         /**
          * Starts path traversal.
          * @param {Number=} startTime The time to start path traversal. Defaults
-         * to new Date().getTime() if no
-         * value is presented.
+         * to `ige.engine._currentTime` if no value is presented.
          * @return {*}
          */
         this.start = (startTime) => {
@@ -469,19 +499,29 @@ class IgePathComponent extends IgeComponent {
          * rendered to.
          * @private
          */
-        this._updateBehaviour = (ctx) => {
-            const { path } = this, currentTime = ige.engine._currentTime, progressTime = currentTime - path._startTime;
+        this._updateBehaviour = (tmpIge, entity, ctx) => {
+            if (!this._active)
+                return;
+            if (this._startTime === undefined)
+                return;
+            if (this._totalTime === undefined)
+                return;
+            const currentTime = ige.engine._currentTime;
+            const progressTime = currentTime - this._startTime;
             // Check if we should be processing paths
-            if (path._active && path._totalDistance !== 0 && currentTime >= path._startTime && (progressTime <= path._totalTime || !path._finished)) {
-                let distanceTravelled = (path._speed) * progressTime, totalDistance = 0, pointArr = path._points, pointCount = pointArr.length, pointIndex, pointFrom, pointTo, newPoint, dynamicResult, effectiveTime;
+            if (this._active && this._totalDistance !== 0 && currentTime >= this._startTime && (progressTime <= this._totalTime || !this._finished)) {
+                const distanceTravelled = (this._speed) * progressTime;
+                const pointArr = this._points;
+                const pointCount = pointArr.length;
+                let totalDistance = 0, pointIndex, pointFrom, pointTo, newPoint, dynamicResult, effectiveTime;
                 // Loop points along the path and determine which points we are traversing between
                 for (pointIndex = 0; pointIndex < pointCount; pointIndex++) {
                     totalDistance += pointArr[pointIndex]._distanceToNext;
                     if (totalDistance > distanceTravelled) {
                         // Found points we are traversing
-                        path._finished = false;
-                        path._currentPointFrom = pointIndex;
-                        path._currentPointTo = pointIndex + 1;
+                        this._finished = false;
+                        this._currentPointFrom = pointIndex;
+                        this._currentPointTo = pointIndex + 1;
                         pointFrom = pointArr[pointIndex];
                         pointTo = pointArr[pointIndex + 1];
                         break;
@@ -489,95 +529,99 @@ class IgePathComponent extends IgeComponent {
                 }
                 // Check if we have points to traverse between
                 if (pointFrom && pointTo) {
-                    if (path._currentPointFrom !== path._previousPointFrom) {
-                        var pointNext, p;
+                    if (this._currentPointFrom !== this._previousPointFrom) {
+                        let pointNext, p;
                         // Emit points complete
-                        while (path._nextPointToProcess < path._currentPointFrom) {
-                            p = path._nextPointToProcess++;
-                            effectiveTime = path._startTime + pointArr[p]._absoluteTimeToNext;
+                        while (this._nextPointToProcess < this._currentPointFrom) {
+                            p = this._nextPointToProcess++;
+                            effectiveTime = this._startTime + pointArr[p]._absoluteTimeToNext;
                             pointNext = pointArr[p + 1];
-                            newPoint = path.multiplyPoint(pointNext);
-                            newPoint = path.transformPoint(newPoint);
+                            newPoint = this.multiplyPoint(pointNext);
+                            newPoint = this.transformPoint(newPoint);
                             // We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
-                            this.translateToPoint(newPoint);
-                            path.emit("pointComplete", [this, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime]);
-                            if (path._nextPointToProcess <= p) {
+                            this._entity.translateToPoint(newPoint);
+                            this.emit("pointComplete", [this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime]);
+                            if (this._nextPointToProcess <= p) {
                                 // The path has restarted so bomb out and catch up next tick
                                 return;
                             }
                         }
                     }
                     // Check if we are in dynamic mode and if so, ensure our path is still valid
-                    if (path._dynamic) {
-                        dynamicResult = path._processDynamic(pointFrom, pointTo, pointArr[pointCount - 1]);
+                    if (this._dynamic) {
+                        dynamicResult = this._processDynamic(pointFrom, pointTo, pointArr[pointCount - 1]);
                         if (dynamicResult === true) {
                             // Re-assign the points to the new ones that the dynamic path
                             // spliced into our points array
-                            pointFrom = pointArr[path._currentPointFrom];
-                            pointTo = pointArr[path._currentPointTo];
-                            path.emit("pathRecalculated", [this, pointArr[path._previousPointFrom].x, pointArr[path._previousPointFrom].y, pointArr[path._currentPointFrom].x, pointArr[path._currentPointFrom].y]);
+                            pointFrom = pointArr[this._currentPointFrom];
+                            pointTo = pointArr[this._currentPointTo];
+                            this.emit("pathRecalculated", [this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, pointArr[this._currentPointFrom].x, pointArr[this._currentPointFrom].y]);
                         }
                         if (dynamicResult === -1) {
                             // Failed to find a new dynamic path
-                            path._finished = true;
+                            this._finished = true;
                         }
                     }
                     // Calculate position along vector between the two points
-                    newPoint = path._positionAlongVector(pointFrom, pointTo, path._speed, pointFrom._deltaTimeToNext - (pointFrom._absoluteTimeToNext - progressTime));
-                    newPoint = path.multiplyPoint(newPoint);
-                    newPoint = path.transformPoint(newPoint);
+                    newPoint = this._positionAlongVector(pointFrom, pointTo, this._speed, pointFrom._deltaTimeToNext - (pointFrom._absoluteTimeToNext - progressTime));
+                    newPoint = this.multiplyPoint(newPoint);
+                    newPoint = this.transformPoint(newPoint);
                     // Translate the entity to the new path point
-                    this.translateToPoint(newPoint);
-                    path._previousPointFrom = path._currentPointFrom;
-                    path._previousPointTo = path._currentPointTo;
+                    this._entity.translateToPoint(newPoint);
+                    this._previousPointFrom = this._currentPointFrom;
+                    this._previousPointTo = this._currentPointTo;
                 }
                 else {
-                    var pointNext, p;
-                    path._currentPointFrom = pointCount - 1;
-                    path._currentPointTo = pointCount - 1;
+                    let pointNext, p;
+                    this._currentPointFrom = pointCount - 1;
+                    this._currentPointTo = pointCount - 1;
                     // Emit final points complete if remaining
-                    while (path._nextPointToProcess < path._currentPointFrom) {
-                        p = path._nextPointToProcess++;
-                        effectiveTime = path._startTime + pointArr[p]._absoluteTimeToNext;
+                    while (this._nextPointToProcess < this._currentPointFrom) {
+                        p = this._nextPointToProcess++;
+                        effectiveTime = this._startTime + pointArr[p]._absoluteTimeToNext;
                         pointNext = pointArr[p + 1];
-                        newPoint = path.multiplyPoint(pointNext);
-                        newPoint = path.transformPoint(newPoint);
+                        newPoint = this.multiplyPoint(pointNext);
+                        newPoint = this.transformPoint(newPoint);
                         // We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
-                        this.translateToPoint(newPoint);
-                        path.emit("pointComplete", [this, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime]);
-                        if (path._nextPointToProcess <= p) {
+                        this._entity.translateToPoint(newPoint);
+                        this.emit("pointComplete", [this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime]);
+                        if (this._nextPointToProcess <= p) {
                             // The path has restarted so bomb out and catch up next tick
                             return;
                         }
                     }
-                    path._previousPointFrom = pointCount - 1;
-                    path._previousPointTo = pointCount - 1;
-                    path._finished = true;
-                    effectiveTime = path._startTime + path._totalTime;
-                    path.emit("pathComplete", [this, pointArr[path._previousPointFrom].x, pointArr[path._previousPointFrom].y, effectiveTime]);
+                    this._previousPointFrom = pointCount - 1;
+                    this._previousPointTo = pointCount - 1;
+                    this._finished = true;
+                    effectiveTime = this._startTime + this._totalTime;
+                    this.emit("pathComplete", [this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, effectiveTime]);
                 }
             }
-            else if (path._active && path._totalDistance == 0 && !path._finished) {
-                path._finished = true;
+            else if (this._active && this._totalDistance == 0 && !this._finished) {
+                this._finished = true;
             }
         };
         this._processDynamic = (pointFrom, pointTo, destinationPoint) => {
-            let self = this, tileMapData, tileCheckData, newPathPoints;
+            if (!this._finder)
+                throw new Error("No path finder (IgePathFinder) assigned to IgePathComponent");
+            if (!this._tileMap)
+                throw new Error("No tile map (IgeTileMap2d) assigned to IgePathComponent");
+            let newPathPoints;
             // We are in dynamic mode, check steps ahead to see if they
             // have been blocked or not
-            tileMapData = self._tileMap.map._mapData;
-            tileCheckData = tileMapData[pointTo.y] && tileMapData[pointTo.y][pointTo.x] ? tileMapData[pointTo.y][pointTo.x] : null;
-            if (!self._tileChecker(tileCheckData, pointTo.x, pointTo.y, null, null, null, true)) {
+            const tileMapData = this._tileMap.map._mapData;
+            const tileCheckData = tileMapData[pointTo.y] && tileMapData[pointTo.y][pointTo.x] ? tileMapData[pointTo.y][pointTo.x] : null;
+            if (!this._tileChecker(tileCheckData, pointTo.x, pointTo.y, null, null, null, true)) {
                 // The new destination tile is blocked, recalculate path
-                newPathPoints = self._finder.generate(self._tileMap, new IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z), new IgePoint3d(destinationPoint.x, destinationPoint.y, destinationPoint.z), self._tileChecker, self._allowSquare, self._allowDiagonal, false);
+                newPathPoints = this._finder.generate(this._tileMap, new IgePathNode(pointFrom.x, pointFrom.y, pointFrom.z), new IgePathNode(destinationPoint.x, destinationPoint.y, destinationPoint.z), this._tileChecker, this._allowSquare, this._allowDiagonal, false);
                 if (newPathPoints.length) {
-                    self.replacePoints(self._currentPointFrom, self._points.length - self._currentPointFrom, newPathPoints);
+                    this.replacePoints(this._currentPointFrom, this._points.length - this._currentPointFrom, newPathPoints);
                     return true;
                 }
                 else {
                     // Cannot generate valid path, delete this path
-                    self.emit("dynamicFail", [this, new IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z), new IgePoint3d(destinationPoint.x, destinationPoint.y, destinationPoint.z)]);
-                    self.clear();
+                    this.emit("dynamicFail", [this._entity, new IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z), new IgePoint3d(destinationPoint.x, destinationPoint.y, destinationPoint.z)]);
+                    this.clear();
                     return -1;
                 }
             }
@@ -590,7 +634,7 @@ class IgePathComponent extends IgeComponent {
                 startPoint = this._entity._translate.clone();
                 startPoint = this.unTransformPoint(startPoint);
                 startPoint = this.dividePoint(startPoint);
-                this._points[0] = startPoint;
+                this._points[0] = IgePathNode.fromPoint3d(startPoint);
             }
             // Calculate total distance to travel
             for (i = 1; i < this._points.length; i++) {
@@ -612,100 +656,105 @@ class IgePathComponent extends IgeComponent {
          * @param {Array} newPoints The array of new points to insert.
          */
         this.replacePoints = (fromIndex, replaceLength, newPoints) => {
-            const args = [fromIndex, replaceLength].concat(newPoints);
-            this._points.splice.apply(this._points, args);
+            this._points.splice(fromIndex, replaceLength, ...newPoints);
             this._calculatePathData();
         };
-        this._tickBehaviour = (ctx) => {
-            if (isClient) {
-                let self = this.path, entity = this, currentPath = self._points, oldTracePathPoint, tracePathPoint, pathPointIndex, tempPathText;
-                if (currentPath.length) {
-                    if (currentPath && self._drawPath) {
-                        // Draw the current path
-                        ctx.save();
-                        oldTracePathPoint = undefined;
-                        for (pathPointIndex = 0; pathPointIndex < currentPath.length; pathPointIndex++) {
-                            ctx.strokeStyle = "#0096ff";
-                            ctx.fillStyle = "#0096ff";
-                            tracePathPoint = new IgePoint3d(currentPath[pathPointIndex].x, currentPath[pathPointIndex].y, currentPath[pathPointIndex].z);
-                            tracePathPoint = self.multiplyPoint(tracePathPoint);
-                            tracePathPoint = self.transformPoint(tracePathPoint);
-                            if (entity._parent._mountMode === IgeMountMode.iso) {
-                                tracePathPoint = tracePathPoint.toIso();
-                            }
-                            if (!oldTracePathPoint) {
-                                // The starting point of the path
-                                ctx.beginPath();
-                                ctx.arc(tracePathPoint.x, tracePathPoint.y, 5, 0, Math.PI * 2, true);
-                                ctx.closePath();
-                                ctx.fill();
-                            }
-                            else {
-                                // Not the starting point
-                                if (self._drawPathGlow) {
-                                    ctx.globalAlpha = 0.1;
-                                    for (let k = 3; k >= 0; k--) {
-                                        ctx.lineWidth = (k + 1) * 4 - 3.5;
-                                        ctx.beginPath();
-                                        ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
-                                        ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
-                                        if (pathPointIndex < self._currentPointTo) {
-                                            ctx.strokeStyle = "#666666";
-                                            ctx.fillStyle = "#333333";
-                                        }
-                                        if (k === 0) {
-                                            ctx.globalAlpha = 1;
-                                        }
-                                        ctx.stroke();
-                                    }
-                                }
-                                else {
+        this._tickBehaviour = (tmpIge, entity, ctx) => {
+            if (!isClient)
+                return;
+            if (!this._tileMap)
+                throw new Error("No tile map (IgeTileMap2d) assigned to IgePathComponent");
+            const currentPath = this._points;
+            let oldTracePathPoint;
+            let tracePathPoint;
+            let pathPointIndex;
+            let tempPathText;
+            if (currentPath.length) {
+                if (currentPath && this._drawPath) {
+                    // Draw the current path
+                    ctx.save();
+                    oldTracePathPoint = undefined;
+                    for (pathPointIndex = 0; pathPointIndex < currentPath.length; pathPointIndex++) {
+                        ctx.strokeStyle = "#0096ff";
+                        ctx.fillStyle = "#0096ff";
+                        tracePathPoint = new IgePoint3d(currentPath[pathPointIndex].x, currentPath[pathPointIndex].y, currentPath[pathPointIndex].z);
+                        tracePathPoint = this.multiplyPoint(tracePathPoint);
+                        tracePathPoint = this.transformPoint(tracePathPoint);
+                        if (this._tileMap._mountMode === IgeMountMode.iso) {
+                            tracePathPoint = tracePathPoint.toIso();
+                        }
+                        if (!oldTracePathPoint) {
+                            // The starting point of the path
+                            ctx.beginPath();
+                            ctx.arc(tracePathPoint.x, tracePathPoint.y, 5, 0, Math.PI * 2, true);
+                            ctx.closePath();
+                            ctx.fill();
+                        }
+                        else {
+                            // Not the starting point
+                            if (this._drawPathGlow) {
+                                ctx.globalAlpha = 0.1;
+                                for (let k = 3; k >= 0; k--) {
+                                    ctx.lineWidth = (k + 1) * 4 - 3.5;
                                     ctx.beginPath();
                                     ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
                                     ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
-                                    if (pathPointIndex < self._currentPointTo) {
+                                    if (pathPointIndex < this._currentPointTo) {
                                         ctx.strokeStyle = "#666666";
                                         ctx.fillStyle = "#333333";
                                     }
+                                    if (k === 0) {
+                                        ctx.globalAlpha = 1;
+                                    }
                                     ctx.stroke();
                                 }
-                                if (pathPointIndex === self._currentPointTo) {
-                                    ctx.save();
-                                    ctx.fillStyle = "#24b9ea";
-                                    ctx.fillRect(tracePathPoint.x - 5, tracePathPoint.y - 5, 10, 10);
-                                    if (self._drawPathText) {
-                                        ctx.fillStyle = "#eade24";
-                                        if (self._drawPathGlow) {
-                                            // Apply shadow to the text
-                                            ctx.shadowOffsetX = 1;
-                                            ctx.shadowOffsetY = 2;
-                                            ctx.shadowBlur = 4;
-                                            ctx.shadowColor = "rgba(0, 0, 0, 1)";
-                                        }
-                                        tempPathText = "Entity: " + entity.id();
-                                        ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y + 16);
-                                        tempPathText = "Point (" + currentPath[pathPointIndex].x + ", " + currentPath[pathPointIndex].y + ")";
-                                        ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y + 28);
-                                        tempPathText = "Abs (" + Math.floor(entity._translate.x) + ", " + Math.floor(entity._translate.y) + ")";
-                                        ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y + 40);
-                                    }
-                                    ctx.restore();
-                                }
-                                else {
-                                    ctx.fillRect(tracePathPoint.x - 2.5, tracePathPoint.y - 2.5, 5, 5);
-                                }
                             }
-                            oldTracePathPoint = tracePathPoint;
+                            else {
+                                ctx.beginPath();
+                                ctx.moveTo(oldTracePathPoint.x, oldTracePathPoint.y);
+                                ctx.lineTo(tracePathPoint.x, tracePathPoint.y);
+                                if (pathPointIndex < this._currentPointTo) {
+                                    ctx.strokeStyle = "#666666";
+                                    ctx.fillStyle = "#333333";
+                                }
+                                ctx.stroke();
+                            }
+                            if (pathPointIndex === this._currentPointTo) {
+                                ctx.save();
+                                ctx.fillStyle = "#24b9ea";
+                                ctx.fillRect(tracePathPoint.x - 5, tracePathPoint.y - 5, 10, 10);
+                                if (this._drawPathText) {
+                                    ctx.fillStyle = "#eade24";
+                                    if (this._drawPathGlow) {
+                                        // Apply shadow to the text
+                                        ctx.shadowOffsetX = 1;
+                                        ctx.shadowOffsetY = 2;
+                                        ctx.shadowBlur = 4;
+                                        ctx.shadowColor = "rgba(0, 0, 0, 1)";
+                                    }
+                                    tempPathText = "Entity: " + entity.id();
+                                    ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y + 16);
+                                    tempPathText = "Point (" + currentPath[pathPointIndex].x + ", " + currentPath[pathPointIndex].y + ")";
+                                    ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y + 28);
+                                    tempPathText = "Abs (" + Math.floor(entity._translate.x) + ", " + Math.floor(entity._translate.y) + ")";
+                                    ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y + 40);
+                                }
+                                ctx.restore();
+                            }
+                            else {
+                                ctx.fillRect(tracePathPoint.x - 2.5, tracePathPoint.y - 2.5, 5, 5);
+                            }
                         }
-                        ctx.restore();
+                        oldTracePathPoint = tracePathPoint;
                     }
+                    ctx.restore();
                 }
             }
         };
-        this.getPreviousPoint = (val) => {
+        this.getPreviousPoint = (val = 1) => {
             return this._points[this._currentPointFrom - val];
         };
-        this.getNextPoint = (val) => {
+        this.getNextPoint = (val = 1) => {
             return this._points[this._currentPointTo + val];
         };
         /**
@@ -719,7 +768,16 @@ class IgePathComponent extends IgeComponent {
          * @private
          */
         this._positionAlongVector = (p1, p2, speed, deltaTime) => {
-            let newPoint, p1X = p1.x, p1Y = p1.y, p2X = p2.x, p2Y = p2.y, deltaX = (p2X - p1X), deltaY = (p2Y - p1Y), magnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY), normalisedX = deltaX / magnitude, normalisedY = deltaY / magnitude;
+            const p1X = p1.x;
+            const p1Y = p1.y;
+            const p2X = p2.x;
+            const p2Y = p2.y;
+            const deltaX = (p2X - p1X);
+            const deltaY = (p2Y - p1Y);
+            const magnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const normalisedX = deltaX / magnitude;
+            const normalisedY = deltaY / magnitude;
+            let newPoint;
             if (deltaX !== 0 || deltaY !== 0) {
                 newPoint = new IgePoint3d(p1X + (normalisedX * (speed * deltaTime)), p1Y + (normalisedY * (speed * deltaTime)), 0);
             }
@@ -728,7 +786,6 @@ class IgePathComponent extends IgeComponent {
             }
             return newPoint;
         };
-        this._points = [];
         this._speed = 1 / 1000;
         this._nextPointToProcess = 0;
         this._previousPointFrom = 0;

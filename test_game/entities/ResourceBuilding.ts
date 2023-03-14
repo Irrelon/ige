@@ -1,12 +1,10 @@
 import { Triangle } from "./base/Triangle";
-import { Resource } from "./Resource";
 import { ResourceType } from "../enums/ResourceType";
 import { BuildingResourceRequirement } from "../types/BuildingResourceRequirement";
 import { registerClass } from "../../engine/services/igeClassStore";
 
 export class ResourceBuilding extends Triangle {
 	classId = "ResourceBuilding";
-	transportQueue: Resource[] = [];
 	_produces: ResourceType;
 	_requires: BuildingResourceRequirement[];
 

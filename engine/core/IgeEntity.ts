@@ -7,7 +7,7 @@ import IgeMatrix2d from "./IgeMatrix2d";
 import IgePoly2d from "./IgePoly2d";
 import IgeDummyCanvas from "./IgeDummyCanvas";
 import IgeRect from "./IgeRect";
-import IgeTileMap2d from "./IgeTileMap2d";
+import type IgeTileMap2d from "./IgeTileMap2d";
 import { IgeObject } from "./IgeObject";
 import { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
 import { IgeMountMode } from "../../enums/IgeMountMode";
@@ -388,7 +388,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * method chaining.
 	 */
 	widthByTile (val: number, lockAspect = false) {
-		if (!(this._parent && this._parent instanceof IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
+		if (!(this._parent && (this._parent as IgeTileMap2d).IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
 			throw new Error(
 				"Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values."
 			);
@@ -428,7 +428,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * method chaining.
 	 */
 	heightByTile (val: number, lockAspect = false) {
-		if (!(this._parent && this._parent instanceof IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
+		if (!(this._parent && (this._parent as IgeTileMap2d).IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
 			throw new Error(
 				"Cannot set height by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values."
 			);
@@ -465,7 +465,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 */
 	occupyTile (x?: number, y?: number, width?: number, height?: number) {
 		// Check that the entity is mounted to a tile map
-		if (!(this._parent && this._parent instanceof IgeTileMap2d)) {
+		if (!(this._parent && (this._parent as IgeTileMap2d).IgeTileMap2d)) {
 			return this;
 		}
 
@@ -474,7 +474,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 		}
 
 		if (x !== undefined && y !== undefined) {
-			this._parent.occupyTile(x, y, width, height, this);
+			(this._parent as IgeTileMap2d).occupyTile(x, y, width, height, this);
 			return this;
 		}
 
@@ -485,13 +485,13 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 			0
 		);
 
-		const tilePoint = this._parent.pointToTile(trPoint);
+		const tilePoint = (this._parent as IgeTileMap2d).pointToTile(trPoint);
 
 		if (this._parent._mountMode === IgeMountMode.iso) {
 			tilePoint.thisToIso();
 		}
 
-		this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
+		(this._parent as IgeTileMap2d).occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
 
 		return this;
 	}
@@ -508,7 +508,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 */
 	unOccupyTile (x?: number, y?: number, width?: number, height?: number) {
 		// Check that the entity is mounted to a tile map
-		if (!(this._parent && this._parent instanceof IgeTileMap2d)) {
+		if (!(this._parent && (this._parent as IgeTileMap2d).IgeTileMap2d)) {
 			return this;
 		}
 
@@ -517,7 +517,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 		}
 
 		if (x !== undefined && y !== undefined) {
-			this._parent.unOccupyTile(x, y, width, height);
+			(this._parent as IgeTileMap2d).unOccupyTile(x, y, width, height);
 			return this;
 		}
 
@@ -527,13 +527,13 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 				this._translate.y - (this._tileHeight / 2 - 0.5) * this._parent._tileHeight,
 				0
 			),
-			tilePoint = this._parent.pointToTile(trPoint);
+			tilePoint = (this._parent as IgeTileMap2d).pointToTile(trPoint);
 
 		if (this._parent._mountMode === IgeMountMode.iso) {
 			tilePoint.thisToIso();
 		}
 
-		this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
+		(this._parent as IgeTileMap2d).unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
 		return this;
 	}
 
@@ -546,13 +546,13 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 */
 	overTiles () {
 		// Check that the entity is mounted to a tile map
-		if (!(this._parent && this._parent instanceof IgeTileMap2d)) {
+		if (!(this._parent && (this._parent as IgeTileMap2d).IgeTileMap2d)) {
 			return;
 		}
 
 		const tileWidth = this._tileWidth || 1;
 		const tileHeight = this._tileHeight || 1;
-		const tile = this._parent.pointToTile(this._translate);
+		const tile = (this._parent as IgeTileMap2d).pointToTile(this._translate);
 		const tileArr = [];
 
 		for (let x = 0; x < tileWidth; x++) {

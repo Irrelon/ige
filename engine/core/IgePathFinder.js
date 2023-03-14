@@ -67,7 +67,7 @@ class IgePathFinder extends IgeEventingClass {
      * @param {Boolean=} allowInvalidDestination If the pathfinder cannot path to the destination tile, if this is true the closest path will be returned instead.
      * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
      */
-    generate(tileMap, startPoint, endPoint, comparisonCallback, allowSquare = false, allowDiagonal = false, allowInvalidDestination = false) {
+    generate(tileMap, startPoint, endPoint, comparisonCallback = () => true, allowSquare = false, allowDiagonal = false, allowInvalidDestination = false) {
         const openList = [];
         const closedList = [];
         const listHash = {};

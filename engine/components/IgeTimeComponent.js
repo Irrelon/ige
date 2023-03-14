@@ -6,6 +6,10 @@ class IgeTimeComponent extends IgeComponent {
         super(entity, options);
         this.classId = "IgeTimeComponent";
         this.componentId = "time";
+        this._updating = false;
+        this._timers = [];
+        this._additions = [];
+        this._removals = [];
         this.addTimer = (timer) => {
             if (timer) {
                 if (!this._updating) {
@@ -29,7 +33,8 @@ class IgeTimeComponent extends IgeComponent {
             return this;
         };
         this._processAdditions = () => {
-            let arr = this._additions, arrCount = arr.length;
+            const arr = this._additions;
+            let arrCount = arr.length;
             if (arrCount) {
                 while (arrCount--) {
                     this._timers.push(arr[arrCount]);
@@ -39,7 +44,8 @@ class IgeTimeComponent extends IgeComponent {
             return this;
         };
         this._processRemovals = () => {
-            let arr = this._removals, arrCount = arr.length;
+            const arr = this._removals;
+            let arrCount = arr.length;
             if (arrCount) {
                 while (arrCount--) {
                     arrPull(this._timers, arr[arrCount]);
@@ -48,15 +54,14 @@ class IgeTimeComponent extends IgeComponent {
             }
             return this;
         };
-        this._timers = [];
-        this._additions = [];
-        this._removals = [];
         // Add the animation behaviour to the entity
         entity.addBehaviour("time", this._update.bind(this));
     }
     _update() {
         // Get the ige tick delta and tell our timers / intervals that an update has occurred
-        let delta = ige._tickDelta, arr = this._timers, arrCount = arr.length;
+        const delta = ige.engine._tickDelta;
+        const arr = this._timers;
+        let arrCount = arr.length;
         while (arrCount--) {
             arr[arrCount]
                 .addTime(delta)

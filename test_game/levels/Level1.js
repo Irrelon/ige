@@ -2,7 +2,6 @@ import { ige } from "../../engine/instance.js";
 import { degreesToRadians } from "../../engine/services/utils.js";
 import IgeSceneGraph from "../../engine/core/IgeSceneGraph.js";
 import IgeScene2d from "../../engine/core/IgeScene2d.js";
-import { Square } from "../entities/base/Square.js";
 import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
 import { IgeAudioEntity } from "../../engine/components/audio/IgeAudioEntity.js";
 import { Transporter } from "../entities/Transporter.js";
@@ -11,6 +10,8 @@ import { ResourceType } from "../enums/ResourceType.js";
 import { FactoryBuilding } from "../entities/FactoryBuilding.js";
 import { isClient } from "../../engine/services/clientServer.js";
 import { Road } from "../entities/Road.js";
+import { StorageBuilding } from "../entities/StorageBuilding.js";
+import IgeTileMap2d from "../../engine/core/IgeTileMap2d.js";
 export class Level1 extends IgeSceneGraph {
     constructor() {
         super(...arguments);
@@ -29,17 +30,27 @@ export class Level1 extends IgeSceneGraph {
         const scene1 = new IgeScene2d()
             .id("scene1")
             .mount(baseScene);
+        new IgeTileMap2d()
+            .id('tileMap1')
+            .tileWidth(40)
+            .tileHeight(40)
+            .gridSize(20, 20)
+            .drawGrid(true)
+            .drawMouse(true)
+            .drawBounds(true)
+            .drawBoundsData(false)
+            .highlightOccupied(true) // Draws a red tile wherever a tile is "occupied"
+            .mount(scene1);
         if (isClient) {
             console.log("Client mode");
         }
-        if (isClient)
-            return;
+        //if (isClient) return;
         new IgeAudioEntity()
             .streamMode(IgeStreamMode.simple)
             .url("assets/audio/deepSpace.mp3")
             .play(true)
             .mount(baseScene);
-        const base = new Square()
+        const base = new StorageBuilding()
             .translateTo(0, 0, 0)
             .mount(scene1);
         const resource1 = new ResourceBuilding(ResourceType.energy)
@@ -65,7 +76,7 @@ export class Level1 extends IgeSceneGraph {
         new Road(resource1.id(), factory1.id())
             .mount(scene1);
         new Transporter(factory1.id(), resource1.id())
-            .translateTo(220, 120, 0)
+            .translateTo(resource1._translate.x, resource1._translate.y, 0)
             .mount(scene1);
     }
     /**

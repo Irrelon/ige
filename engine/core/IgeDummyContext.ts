@@ -34,6 +34,7 @@ class IgeDummyContext {
 	arcTo = undefinedMethod;
 	clearRect = undefinedMethod;
 	beginPath = undefinedMethod;
+	closePath = undefinedMethod;
 	clip = undefinedMethod;
 	transform = undefinedMethod;
 	setTransform = undefinedMethod;
@@ -42,7 +43,7 @@ class IgeDummyContext {
 	createPattern = nullMethod;
 	getImageData = undefinedMethod;
 	putImageData = undefinedMethod;
-	measureText = undefinedMethod;
+	measureText = () => ({width: 0, height: 0});
 }
 
 export default IgeDummyContext;

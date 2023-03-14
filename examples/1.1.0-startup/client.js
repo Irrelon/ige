@@ -22,7 +22,6 @@ export class Client extends IgeBaseClass {
         ige.on("texturesLoaded", function () {
             // Create the HTML canvas
             ige.createFrontBuffer(true);
-            ige.createRoot();
             // Start the engine
             ige.start(function (success) {
                 // Check if the engine started successfully

@@ -1,10 +1,9 @@
 import { registerClass } from "../../engine/services/igeClassStore.js";
-import { Circle } from "./base/Circle.js";
-export class FactoryBuilding extends Circle {
+import { Star } from "./base/Star.js";
+export class FactoryBuilding extends Star {
     constructor(produces, requires = []) {
         super();
         this.classId = "FactoryBuilding";
-        this.transportQueue = [];
         this._produces = produces;
         this._requires = requires;
     }

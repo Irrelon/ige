@@ -18,8 +18,8 @@ export class IgeObject extends IgeEventingClass {
         this._idRegistered = false;
         this._categoryRegistered = false;
         this._category = "";
-        this._drawBounds = true;
-        this._drawBoundsData = true;
+        this._drawBounds = false;
+        this._drawBoundsData = false;
         this._drawMouse = false;
         this._drawMouseData = false;
         this._ignoreCamera = false;
@@ -55,6 +55,7 @@ export class IgeObject extends IgeEventingClass {
         this._mouseStateDown = false;
         this._mouseStateOver = false;
         this._mouseAlwaysInside = false;
+        this._adjustmentMatrix = new IgeMatrix2d();
         this._cache = false;
         this._cacheDirty = false;
         this._cacheSmoothing = false;
@@ -402,6 +403,7 @@ export class IgeObject extends IgeEventingClass {
         if (arr) {
             let arrCount = arr.length;
             while (arrCount--) {
+                // TODO: Do we really want to pass ige here?
                 arr[arrCount].method(ige, this, ...args);
             }
         }

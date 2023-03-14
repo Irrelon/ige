@@ -17,6 +17,7 @@ import square from "./assets/textures/smartTextures/square.js";
 import line from "./assets/textures/smartTextures/line.js";
 import triangle from "./assets/textures/smartTextures/triangle.js";
 import circle from "./assets/textures/smartTextures/circle.js";
+import star from "./assets/textures/smartTextures/star.js";
 // @ts-ignore
 window.ige = ige;
 export class Client extends IgeBaseClass {
@@ -37,6 +38,7 @@ export class Client extends IgeBaseClass {
             new IgeTexture("line", line);
             new IgeTexture("triangle", triangle);
             new IgeTexture("circle", circle);
+            new IgeTexture("star", star);
             const network = ige.network;
             (_a = ige.audio) === null || _a === void 0 ? void 0 : _a.masterVolume(options.get('masterVolume', 1));
             // Wait for our textures to load before continuing

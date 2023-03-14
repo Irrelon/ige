@@ -7,7 +7,6 @@ import IgeMatrix2d from "./IgeMatrix2d.js";
 import IgePoly2d from "./IgePoly2d.js";
 import IgeDummyCanvas from "./IgeDummyCanvas.js";
 import IgeRect from "./IgeRect.js";
-import IgeTileMap2d from "./IgeTileMap2d.js";
 import { IgeObject } from "./IgeObject.js";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
 import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
@@ -756,7 +755,7 @@ class IgeEntity extends IgeObject {
      * method chaining.
      */
     widthByTile(val, lockAspect = false) {
-        if (!(this._parent && this._parent instanceof IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
+        if (!(this._parent && this._parent.IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
             throw new Error("Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.");
         }
         const tileSize = this._renderMode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
@@ -787,7 +786,7 @@ class IgeEntity extends IgeObject {
      * method chaining.
      */
     heightByTile(val, lockAspect = false) {
-        if (!(this._parent && this._parent instanceof IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
+        if (!(this._parent && this._parent.IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
             throw new Error("Cannot set height by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.");
         }
         const tileSize = this._renderMode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
@@ -815,7 +814,7 @@ class IgeEntity extends IgeObject {
      */
     occupyTile(x, y, width, height) {
         // Check that the entity is mounted to a tile map
-        if (!(this._parent && this._parent instanceof IgeTileMap2d)) {
+        if (!(this._parent && this._parent.IgeTileMap2d)) {
             return this;
         }
         if (this._tileWidth === undefined || this._tileHeight === undefined) {
@@ -846,7 +845,7 @@ class IgeEntity extends IgeObject {
      */
     unOccupyTile(x, y, width, height) {
         // Check that the entity is mounted to a tile map
-        if (!(this._parent && this._parent instanceof IgeTileMap2d)) {
+        if (!(this._parent && this._parent.IgeTileMap2d)) {
             return this;
         }
         if (this._tileWidth === undefined || this._tileHeight === undefined) {
@@ -873,7 +872,7 @@ class IgeEntity extends IgeObject {
      */
     overTiles() {
         // Check that the entity is mounted to a tile map
-        if (!(this._parent && this._parent instanceof IgeTileMap2d)) {
+        if (!(this._parent && this._parent.IgeTileMap2d)) {
             return;
         }
         const tileWidth = this._tileWidth || 1;

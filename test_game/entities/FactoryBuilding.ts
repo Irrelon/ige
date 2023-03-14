@@ -1,12 +1,10 @@
-import { Resource } from "./Resource";
 import { ResourceType } from "../enums/ResourceType";
 import { BuildingResourceRequirement } from "../types/BuildingResourceRequirement";
 import { registerClass } from "../../engine/services/igeClassStore";
-import { Circle } from "./base/Circle";
+import { Star } from "./base/Star";
 
-export class FactoryBuilding extends Circle {
+export class FactoryBuilding extends Star {
 	classId = "FactoryBuilding";
-	transportQueue: Resource[] = [];
 	_produces: ResourceType;
 	_requires: BuildingResourceRequirement[];
 

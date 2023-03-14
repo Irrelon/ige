@@ -68,7 +68,7 @@ class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		}
 
 		if (!ige.engine) {
-			throw new Error("IgeViewport instantiated before Ige instance createRoot() called!");
+			throw new Error("IgeViewport instantiated before IgeEngine instance was created!");
 		}
 
 		// Setup default objects

@@ -1,8 +1,9 @@
 import IgeEventingClass from "./IgeEventingClass";
 import IgePathNode from "./IgePathNode";
 import IgeCollisionMap2d from "./IgeCollisionMap2d";
+import IgeTileMap2d from "./IgeTileMap2d";
 
-type IgePathFinderComparisonCallback = (tileData: any, newX: number, newY: number, currentNodeData?: IgePathNode, x?: number, y?: number) => boolean;
+export type IgePathFinderComparisonCallback = (tileData: any, newX: number, newY: number, currentNodeData?: IgePathNode | null, x?: number | null, y?: number | null, dynamic?: boolean) => boolean;
 
 /**
  * Creates a new path using the A* path-finding algorithm.
@@ -76,7 +77,7 @@ class IgePathFinder extends IgeEventingClass {
      * @param {Boolean=} allowInvalidDestination If the pathfinder cannot path to the destination tile, if this is true the closest path will be returned instead.
      * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
      */
-	generate (tileMap: IgeCollisionMap2d, startPoint: IgePathNode, endPoint: IgePathNode, comparisonCallback: IgePathFinderComparisonCallback, allowSquare: boolean = false, allowDiagonal: boolean = false, allowInvalidDestination: boolean = false) {
+	generate (tileMap: IgeCollisionMap2d | IgeTileMap2d, startPoint: IgePathNode, endPoint: IgePathNode, comparisonCallback: IgePathFinderComparisonCallback = () => true, allowSquare: boolean = false, allowDiagonal: boolean = false, allowInvalidDestination: boolean = false) {
 		const openList = [];
 		const closedList = [];
 		const listHash: Record<string, IgePathNode> = {};
@@ -249,7 +250,7 @@ class IgePathFinder extends IgeEventingClass {
      * @return {Array} An array containing nodes describing the neighbouring tiles of the current node.
      * @private
      */
-	_getNeighbours (currentNode: IgePathNode, endPoint: IgePathNode, tileMap: IgeCollisionMap2d, comparisonCallback: IgePathFinderComparisonCallback, allowSquare: boolean, allowDiagonal: boolean) {
+	_getNeighbours (currentNode: IgePathNode, endPoint: IgePathNode, tileMap: IgeCollisionMap2d | IgeTileMap2d, comparisonCallback: IgePathFinderComparisonCallback, allowSquare: boolean, allowDiagonal: boolean) {
 		const list = [];
 		const { x, y } = currentNode;
 		let newX = 0;

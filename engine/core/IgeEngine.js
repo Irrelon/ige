@@ -11,11 +11,13 @@ import { ige } from "../instance.js";
 import { isClient, isServer } from "../services/clientServer.js";
 import IgePoint3d from "./IgePoint3d.js";
 import IgeDummyContext from "./IgeDummyContext.js";
+import IgeInputComponent from "../components/IgeInputComponent.js";
 import IgeEntity from "./IgeEntity.js";
 import IgeViewport from "./IgeViewport.js";
 import { IgeEngineState } from "../../enums/IgeEngineState.js";
 import IgeTweenComponent from "../components/IgeTweenComponent.js";
 import IgePoint2d from "./IgePoint2d.js";
+import IgeTimeComponent from "../components/IgeTimeComponent.js";
 export class IgeEngine extends IgeEntity {
     constructor() {
         super();
@@ -441,9 +443,9 @@ export class IgeEngine extends IgeEntity {
         if (isClient) {
             this._resizeEvent();
         }
+        this.addComponent("input", IgeInputComponent);
         this.addComponent("tween", IgeTweenComponent);
-    }
-    createRoot() {
+        this.addComponent("time", IgeTimeComponent);
     }
     id(id) {
         if (!id) {
@@ -550,6 +552,8 @@ export class IgeEngine extends IgeEntity {
         this._resizeEvent();
         this._ctx = this._canvas.getContext(this._renderContext);
         this._headless = false;
+        // Ask the input component to set up any listeners it has
+        this.components.input.setupListeners(this._canvas);
     }
     /**
      * Clears the entire canvas.

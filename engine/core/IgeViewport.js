@@ -36,7 +36,7 @@ class IgeViewport extends IgeUiEntity {
             }
         }
         if (!ige.engine) {
-            throw new Error("IgeViewport instantiated before Ige instance createRoot() called!");
+            throw new Error("IgeViewport instantiated before IgeEngine instance was created!");
         }
         // Setup default objects
         this._bounds2d = new IgePoint2d(width || ige.engine._bounds2d.x, height || ige.engine._bounds2d.y);

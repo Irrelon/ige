@@ -15,8 +15,11 @@ class IgePathNode extends IgePoint3d {
 	link?: IgePathNode;
 	hash: string;
 	listType: number;
-	direction?: string;
+	direction: string;
 	_mode: number;
+	_distanceToNext: number = 0;
+	_absoluteTimeToNext: number = 0;
+	_deltaTimeToNext: number = 0;
 
 	/**
 	 * @constructor
@@ -28,7 +31,7 @@ class IgePathNode extends IgePoint3d {
 	 * @param {Object} parent
 	 * @param {String} direction
 	 */
-	constructor (x: number, y: number, g: number, moveCost: number, heuristic: number, parent?: IgePathNode, direction?: string) {
+	constructor (x: number, y: number, g: number, moveCost: number = 0, heuristic: number = 0, parent?: IgePathNode, direction: string = "") {
 		super();
 
 		this.x = x;
@@ -43,6 +46,10 @@ class IgePathNode extends IgePoint3d {
 		this.listType = 0;
 		this.direction = direction;
 		this._mode = 0;
+	}
+	
+	static fromPoint3d (point3d: IgePoint3d): IgePathNode {
+		return new IgePathNode(point3d.x, point3d.y, point3d.z);
 	}
 
 	/**

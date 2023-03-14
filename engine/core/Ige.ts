@@ -57,7 +57,6 @@ export class Ige {
 	}
 
 	init () {
-		this.engine.createRoot();
 		//this.textures = new IgeTextureStore();
 		//this.engine = new IgeEngine();
 	}

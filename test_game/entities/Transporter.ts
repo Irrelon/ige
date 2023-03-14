@@ -1,5 +1,4 @@
 import { ige } from "../../engine/instance";
-import IgeEntity from "../../engine/core/IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { Building } from "./base/Building";
 import { WorkerUnitType } from "../enums/WorkerUnitType";
@@ -9,9 +8,9 @@ import { registerClass } from "../../engine/services/igeClassStore";
 export class Transporter extends WorkerUnit {
 	classId = "Transporter";
 	_depotAId: string;
-	_depotA: IgeEntity;
+	_depotA: Building;
 	_depotBId: string;
-	_depotB: IgeEntity;
+	_depotB: Building;
 
 	constructor (depotAId: string, depotBId: string) {
 		super(WorkerUnitType.transporter);
@@ -22,11 +21,20 @@ export class Transporter extends WorkerUnit {
 		this._depotA = ige.$(depotAId) as Building;
 		this._depotB = ige.$(depotBId) as Building;
 
-		this.depth(2)
+		this.depth(3)
 			.scaleTo(0.3, 0.3, 0.3);
 	}
 
 	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+		if (!this._depotA) return;
+		if (!this._depotB) return;
+
+		// Determine if we should be transporting anything
+		if (this._depotA.transportQueue.length) {
+			// Go pick up the item
+			
+		}
+
 		super.update(ctx, tickDelta);
 	}
 

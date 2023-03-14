@@ -9,6 +9,7 @@ import square from "./assets/textures/smartTextures/square";
 import line from "./assets/textures/smartTextures/line";
 import triangle from "./assets/textures/smartTextures/triangle";
 import circle from "./assets/textures/smartTextures/circle";
+import star from "./assets/textures/smartTextures/star";
 
 // @ts-ignore
 window.ige = ige;
@@ -32,6 +33,7 @@ export class Client extends IgeBaseClass {
 		new IgeTexture("line", line);
 		new IgeTexture("triangle", triangle);
 		new IgeTexture("circle", circle);
+		new IgeTexture("star", star);
 
 		const network = (ige.network as IgeNetIoClientComponent);
 

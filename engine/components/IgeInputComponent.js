@@ -1,9 +1,9 @@
 import { ige } from "../instance.js";
 import IgePoint3d from "../core/IgePoint3d.js";
-import IgeEventingClass from "../core/IgeEventingClass.js";
-class IgeInputComponent extends IgeEventingClass {
-    constructor() {
-        super();
+import IgeComponent from "../core/IgeComponent.js";
+class IgeInputComponent extends IgeComponent {
+    constructor(entity, options) {
+        super(entity, options);
         this.classId = "IgeInputComponent";
         this.componentId = "input";
         this._evRef = {};

@@ -102,7 +102,7 @@ class IgePoint3d {
 	 * @return {Object}
 	 */
 	to2d () {
-		return { "x": this.y + this.x / 2, "y": this.y - this.x / 2 };
+		return new IgePoint3d(this.y + this.x / 2,  this.y - this.x / 2, 0);
 	}
 
 	/**

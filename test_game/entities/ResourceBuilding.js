@@ -4,7 +4,6 @@ export class ResourceBuilding extends Triangle {
     constructor(produces, requires = []) {
         super();
         this.classId = "ResourceBuilding";
-        this.transportQueue = [];
         this._produces = produces;
         this._requires = requires;
     }

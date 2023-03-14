@@ -4,42 +4,45 @@ import { IgeMountMode } from "../../enums/IgeMountMode";
 import IgeTileMap2d from "../core/IgeTileMap2d";
 
 const IgeTileMap2dSmartTexture: IgeSmartTexture = {
-	render: (ctx, entity: IgeTileMap2d) => {
-		const tileWidth = entity._tileWidth,
-			tileHeight = entity._tileHeight,
-			bounds2d = entity.bounds2d(),
-			gridSize = entity._gridSize;
+	render: (ctx, entity) => {
+		const ent = entity as IgeTileMap2d;
+
+		const tileWidth = ent._tileWidth,
+			tileHeight = ent._tileHeight,
+			bounds2d = ent._bounds2d,
+			gridSize = ent._gridSize;
 
 		let x = 0,
 			y = 0;
 
 		/*ctx.save();
-		var triggerPoly = entity.tileMapHitPolygon();
+		var triggerPoly = ent.tileMapHitPolygon();
 
 		ctx.strokeStyle = '#00ff00';
 		ctx.fillStyle = '#ff99f4';
 
-		if (entity._processTriggerHitTests()) {
+		if (ent._processTriggerHitTests()) {
 			ctx.fillStyle = '#ff26e8';
 		}
 
-		if (entity._mountMode === IgeMountMode.flat) {
+		if (ent._mountMode === IgeMountMode.flat) {
 			ctx.translate(bounds2d.x2, bounds2d.y2);
 		}
 
-		if (entity._mountMode === IgeMountMode.iso) {
-			ctx.translate(-entity._translate.x, -entity._translate.y);
+		if (ent._mountMode === IgeMountMode.iso) {
+			ctx.translate(-ent._translate.x, -ent._translate.y);
 			triggerPoly.render(ctx, true);
 		}
 
 		//
 		ctx.restore();*/
 
-		if (entity._drawGrid) {
-			ctx.strokeStyle = entity._gridColor;
-			let gridMaxX = x + tileWidth * gridSize.x,
-				gridMaxY = y + tileHeight * gridSize.y,
-				index,
+		if (ent._drawGrid) {
+			ctx.strokeStyle = ent._gridColor;
+			const gridMaxX = x + tileWidth * gridSize.x;
+			const gridMaxY = y + tileHeight * gridSize.y;
+
+			let index,
 				gStart,
 				gEnd;
 
@@ -50,7 +53,7 @@ const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 				gStart = new IgePoint2d(x, y + tileHeight * index);
 				gEnd = new IgePoint2d(gridMaxX, y + tileHeight * index);
 
-				if (entity._mountMode === IgeMountMode.iso) {
+				if (ent._mountMode === IgeMountMode.iso) {
 					// Iso grid
 					gStart = gStart.toIso();
 					gEnd = gEnd.toIso();
@@ -66,7 +69,7 @@ const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 				gStart = new IgePoint2d(x + tileWidth * index, y);
 				gEnd = new IgePoint2d(x + tileWidth * index, gridMaxY);
 
-				if (entity._mountMode === IgeMountMode.iso) {
+				if (ent._mountMode === IgeMountMode.iso) {
 					// Iso grid
 					gStart = gStart.toIso();
 					gEnd = gEnd.toIso();
@@ -79,22 +82,22 @@ const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			}
 		}
 
-		if (entity._highlightOccupied) {
+		if (ent._highlightOccupied) {
 			ctx.fillStyle = "#ff0000";
-			for (y in entity.map._mapData) {
-				if (entity.map._mapData[y]) {
-					for (x in entity.map._mapData[y]) {
-						if (entity.map._mapData[y][x]) {
+			for (y in ent.map._mapData) {
+				if (ent.map._mapData[y]) {
+					for (x in ent.map._mapData[y]) {
+						if (ent.map._mapData[y][x]) {
 							// Tile is occupied
 							tilePoint = new IgePoint2d(tileWidth * x, tileHeight * y);
 
 							// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
-							if (entity._mountMode === IgeMountMode.flat) {
+							if (ent._mountMode === IgeMountMode.flat) {
 								// 2d
 								ctx.fillRect(tilePoint.x, tilePoint.y, tileWidth, tileHeight);
 							}
 
-							if (entity._mountMode === IgeMountMode.iso) {
+							if (ent._mountMode === IgeMountMode.iso) {
 								// iso
 								tilePoint.thisToIso();
 
@@ -112,20 +115,20 @@ const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			}
 		}
 
-		if (entity._highlightTileRect) {
+		if (ent._highlightTileRect) {
 			ctx.fillStyle = "#e4ff00";
-			for (y = entity._highlightTileRect.y; y < entity._highlightTileRect.y + entity._highlightTileRect.height; y++) {
-				for (x = entity._highlightTileRect.x; x < entity._highlightTileRect.x + entity._highlightTileRect.width; x++) {
+			for (y = ent._highlightTileRect.y; y < ent._highlightTileRect.y + ent._highlightTileRect.height; y++) {
+				for (x = ent._highlightTileRect.x; x < ent._highlightTileRect.x + ent._highlightTileRect.width; x++) {
 					// Tile is occupied
 					tilePoint = new IgePoint2d(tileWidth * x, tileHeight * y);
 
 					// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
-					if (entity._mountMode === IgeMountMode.flat) {
+					if (ent._mountMode === IgeMountMode.flat) {
 						// 2d
 						ctx.fillRect(tilePoint.x, tilePoint.y, tileWidth, tileHeight);
 					}
 
-					if (entity._mountMode === IgeMountMode.iso) {
+					if (ent._mountMode === IgeMountMode.iso) {
 						// iso
 						tilePoint.thisToIso();
 
@@ -141,23 +144,23 @@ const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			}
 		}
 
-		if (entity._drawMouse) {
+		if (ent._drawMouse) {
 			// Get mouse position
-			var mousePos = entity.mousePos(),
-				mouseTile = entity.mouseToTile(),
+			var mousePos = ent.mousePos(),
+				mouseTile = ent.mouseToTile(),
 				tilePoint,
 				text,
 				textMeasurement;
 
 			if (mouseTile.x >= 0 && mouseTile.y >= 0 && mouseTile.x < gridSize.x && mouseTile.y < gridSize.y) {
 				// Paint the tile the mouse is currently intersecting
-				ctx.fillStyle = entity._hoverColor || "#6000ff";
-				if (entity._mountMode === IgeMountMode.flat) {
+				ctx.fillStyle = ent._hoverColor || "#6000ff";
+				if (ent._mountMode === IgeMountMode.flat) {
 					// 2d
 					ctx.fillRect(mouseTile.x * tileWidth, mouseTile.y * tileHeight, tileWidth, tileHeight);
 				}
 
-				if (entity._mountMode === IgeMountMode.iso) {
+				if (ent._mountMode === IgeMountMode.iso) {
 					// iso
 					tilePoint = mouseTile.clone().thisMultiply(tileWidth, tileHeight, 0).thisToIso();
 
@@ -172,7 +175,7 @@ const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 					ctx.fill();
 				}
 
-				if (entity._drawMouseData) {
+				if (ent._drawMouseData) {
 					text = "Tile X: " + mouseTile.x + " Y: " + mouseTile.y;
 					textMeasurement = ctx.measureText(text);
 					ctx.fillStyle = "rgba(0, 0, 0, 0.8)";

@@ -17,6 +17,7 @@ import type { IgeSceneGraphDataEntry } from "../../types/IgeSceneGraphDataEntry"
 import { IgeEngineState } from "../../enums/IgeEngineState";
 import IgeTweenComponent from "../components/IgeTweenComponent";
 import IgePoint2d from "./IgePoint2d";
+import IgeTimeComponent from "../components/IgeTimeComponent";
 
 export class IgeEngine extends IgeEntity {
 	client?: IgeBaseClass;
@@ -175,11 +176,9 @@ export class IgeEngine extends IgeEntity {
 			this._resizeEvent();
 		}
 
+		this.addComponent("input", IgeInputComponent);
 		this.addComponent("tween", IgeTweenComponent);
-	}
-
-	createRoot () {
-
+		this.addComponent("time", IgeTimeComponent);
 	}
 
 	id(): string;
@@ -328,6 +327,9 @@ export class IgeEngine extends IgeEntity {
 
 		this._ctx = this._canvas.getContext(this._renderContext) as CanvasRenderingContext2D;
 		this._headless = false;
+
+		// Ask the input component to set up any listeners it has
+		(this.components.input as IgeInputComponent).setupListeners(this._canvas);
 	}
 
 	/**

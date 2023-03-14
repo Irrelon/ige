@@ -32,6 +32,7 @@ class IgeDummyContext {
         this.arcTo = undefinedMethod;
         this.clearRect = undefinedMethod;
         this.beginPath = undefinedMethod;
+        this.closePath = undefinedMethod;
         this.clip = undefinedMethod;
         this.transform = undefinedMethod;
         this.setTransform = undefinedMethod;
@@ -40,7 +41,7 @@ class IgeDummyContext {
         this.createPattern = nullMethod;
         this.getImageData = undefinedMethod;
         this.putImageData = undefinedMethod;
-        this.measureText = undefinedMethod;
+        this.measureText = () => ({ width: 0, height: 0 });
     }
 }
 export default IgeDummyContext;

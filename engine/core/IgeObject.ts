@@ -30,6 +30,7 @@ import { IgePoint } from "../../types/IgePoint";
 import IgeViewport from "./IgeViewport";
 import { IgeCanAcceptComponents } from "../../types/IgeCanAcceptComponents";
 import IgeComponent from "./IgeComponent";
+import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
 
 export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, IgeCanRegisterByCategory, IgeCanAcceptComponents {
 	classId = "IgeObject";
@@ -37,8 +38,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_idRegistered: boolean = false;
 	_categoryRegistered: boolean = false;
 	_category: string = "";
-	_drawBounds: boolean = true;
-	_drawBoundsData: boolean = true;
+	_drawBounds: boolean = false;
+	_drawBoundsData: boolean = false;
 	_drawMouse: boolean = false;
 	_drawMouseData: boolean = false;
 	_ignoreCamera: boolean = false;
@@ -113,7 +114,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_localMatrix: IgeMatrix2d;
 	_worldMatrix: IgeMatrix2d;
 	_oldWorldMatrix: IgeMatrix2d;
-	_adjustmentMatrix?: IgeMatrix2d;
+	_adjustmentMatrix: IgeMatrix2d = new IgeMatrix2d();
 	_hidden: boolean;
 	_cache: boolean = false;
 	_cacheCtx?: IgeCanvasRenderingContext2d | null;
@@ -692,6 +693,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		if (arr) {
 			let arrCount = arr.length;
 			while (arrCount--) {
+				// TODO: Do we really want to pass ige here?
 				arr[arrCount].method(ige, this, ...args);
 			}
 		}
@@ -1347,7 +1349,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 *     console.log(entity._somePropertyOfTheEntity);
 	 * @return {*} Returns this on success or false on failure.
 	 */
-	addBehaviour (id: string, behaviour: (...args: any[]) => any, duringTick = false) {
+	addBehaviour (id: string, behaviour: IgeEntityBehaviourMethod, duringTick = false) {
 		if (duringTick) {
 			this._tickBehaviours = this._tickBehaviours || [];
 			this._tickBehaviours.push({

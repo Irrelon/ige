@@ -10,10 +10,18 @@ export class Transporter extends WorkerUnit {
         this._depotBId = depotBId;
         this._depotA = ige.$(depotAId);
         this._depotB = ige.$(depotBId);
-        this.depth(2)
+        this.depth(3)
             .scaleTo(0.3, 0.3, 0.3);
     }
     update(ctx, tickDelta) {
+        if (!this._depotA)
+            return;
+        if (!this._depotB)
+            return;
+        // Determine if we should be transporting anything
+        if (this._depotA.transportQueue.length) {
+            // Go pick up the item
+        }
         super.update(ctx, tickDelta);
     }
     streamCreateData() {

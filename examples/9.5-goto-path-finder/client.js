@@ -133,7 +133,7 @@ var Client = IgeClass.extend({
 				self.player.path.on('pathComplete', function () { console.log('Path completed...'); });
 				self.player.path.on('traversalComplete', function () { this._entity.animation.stop(); console.log('Traversal of all paths completed.'); });
 
-				// Some error events from the path finder
+				// Some error events from the pathfinder
 				self.pathFinder.on('noPathFound', function () { console.log('Could not find a path to the destination!'); });
 				self.pathFinder.on('exceededLimit', function () { console.log('Path finder exceeded allowed limit of nodes!'); });
 				self.pathFinder.on('pathFound', function () { console.log('Path to destination calculated...'); });

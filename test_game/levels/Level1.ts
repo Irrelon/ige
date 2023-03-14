@@ -3,7 +3,6 @@ import { degreesToRadians } from "../../engine/services/utils";
 import IgeSceneGraph from "../../engine/core/IgeSceneGraph";
 import IgeScene2d from "../../engine/core/IgeScene2d";
 import IgeEntity from "../../engine/core/IgeEntity";
-import { Square } from "../entities/base/Square";
 import { IgeStreamMode } from "../../enums/IgeStreamMode";
 import { IgeAudioEntity } from "../../engine/components/audio/IgeAudioEntity";
 import { Transporter } from "../entities/Transporter";
@@ -12,6 +11,8 @@ import { ResourceType } from "../enums/ResourceType";
 import { FactoryBuilding } from "../entities/FactoryBuilding";
 import { isClient } from "../../engine/services/clientServer";
 import { Road } from "../entities/Road";
+import { StorageBuilding } from "../entities/StorageBuilding";
+import IgeTileMap2d from "../../engine/core/IgeTileMap2d";
 
 export class Level1 extends IgeSceneGraph {
 	classId = "Level1";
@@ -32,10 +33,22 @@ export class Level1 extends IgeSceneGraph {
 			.id("scene1")
 			.mount(baseScene);
 
+		new IgeTileMap2d()
+			.id('tileMap1')
+			.tileWidth(40)
+			.tileHeight(40)
+			.gridSize(20, 20)
+			.drawGrid(true)
+			.drawMouse(true)
+			.drawBounds(true)
+			.drawBoundsData(false)
+			.highlightOccupied(true) // Draws a red tile wherever a tile is "occupied"
+			.mount(scene1);
+
 		if (isClient) {
 			console.log("Client mode");
 		}
-		if (isClient) return;
+		//if (isClient) return;
 
 		new IgeAudioEntity()
 			.streamMode(IgeStreamMode.simple)
@@ -43,7 +56,7 @@ export class Level1 extends IgeSceneGraph {
 			.play(true)
 			.mount(baseScene);
 
-		const base = new Square()
+		const base = new StorageBuilding()
 			.translateTo(0, 0, 0)
 			.mount(scene1);
 
@@ -76,7 +89,7 @@ export class Level1 extends IgeSceneGraph {
 			.mount(scene1);
 
 		new Transporter(factory1.id(), resource1.id())
-			.translateTo(220, 120, 0)
+			.translateTo(resource1._translate.x, resource1._translate.y, 0)
 			.mount(scene1);
 	}
 
