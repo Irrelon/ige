@@ -1,12 +1,22 @@
+import { ige } from "../instance";
 import IgeEventingClass from "./IgeEventingClass";
+import IgeTimeComponent from "../components/IgeTimeComponent";
+
+export type IgeIntervalCallback = (...args: any[]) => void;
 
 /**
- * Provides an alternative to setInterval() which works based on the engine's internal
- * time system allowing intervals to fire correctly, taking into account pausing the
- * game and differences in rendering speed etc.
+ * Provides a kind of setInterval() that works based on the engine's internal
+ * time system allowing intervals to fire correctly, taking into account pausing
+ * the game and differences in rendering speed etc.
  */
 class IgeInterval extends IgeEventingClass {
 	classId = "IgeInterval";
+
+	_method: IgeIntervalCallback;
+	_interval: number;
+	_time: number;
+	_started: number;
+	_catchup: boolean;
 
 	/**
 	 * Creates a new timer that will call the method every given number of
@@ -15,19 +25,19 @@ class IgeInterval extends IgeEventingClass {
 	 * @param {Number} interval The number of milliseconds between each interval.
 	 * @param {Boolean} catchup If true, the interval will fire multiple times
 	 * retrospectively when the engine jumps in time. If false, the interval will
-	 * only fire a single time even if a large period of engine time has elapsed
+	 * only fire a single time even if a large period of engine time has elapsed.
 	 */
-	constructor (ige, method, interval, catchup = true) {
-		super(ige);
+	constructor (method: IgeIntervalCallback, interval: number, catchup = true) {
+		super();
 
 		this._method = method;
 		this._interval = interval;
 		this._time = 0;
-		this._started = this._ige._currentTime;
+		this._started = ige.engine._currentTime;
 		this._catchup = catchup;
 
 		// Attach ourselves to the time system
-		this._ige.time.addTimer(this);
+		(ige.engine.components.time as IgeTimeComponent).addTimer(this);
 	}
 
 	/**
@@ -35,7 +45,7 @@ class IgeInterval extends IgeEventingClass {
 	 * @param {Number} time The time in milliseconds to add to the timer's internal clock.
 	 * @returns {*}
 	 */
-	addTime (time) {
+	addTime (time: number) {
 		this._time += time;
 		return this;
 	}
@@ -45,7 +55,7 @@ class IgeInterval extends IgeEventingClass {
 	 * @returns {*}
 	 */
 	cancel () {
-		this._ige.time.removeTimer(this);
+		(ige.engine.components.time as IgeTimeComponent).removeTimer(this);
 		return this;
 	}
 
@@ -56,14 +66,14 @@ class IgeInterval extends IgeEventingClass {
 	 * @returns {*}
 	 */
 	update () {
-		var intendedTime;
-		var overTime = this._time - this._interval;
+		let intendedTime;
+		const overTime = this._time - this._interval;
 
 		if (overTime > 0) {
-			intendedTime = this._ige._currentTime - overTime;
+			intendedTime = ige.engine._currentTime - overTime;
 
 			// Fire an interval
-			this._method(this._ige._currentTime, intendedTime);
+			this._method(ige.engine._currentTime, intendedTime);
 
 			if (this._catchup) {
 				this._time -= this._interval;

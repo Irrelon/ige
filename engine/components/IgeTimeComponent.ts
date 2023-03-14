@@ -1,29 +1,26 @@
 import IgeComponent from "../core/IgeComponent";
 import IgeEntity from "../core/IgeEntity";
 import IgeInterval from "../core/IgeInterval";
-import {arrPull} from "../services/utils";
+import { arrPull } from "../services/utils";
 import { ige } from "../instance";
 
 class IgeTimeComponent extends IgeComponent {
 	classId = "IgeTimeComponent";
 	componentId = "time";
 
-	_timers: IgeInterval[];
-	_additions: IgeInterval[];
-	_removals: IgeInterval[];
+	_updating: boolean = false;
+	_timers: IgeInterval[] = [];
+	_additions: IgeInterval[] = [];
+	_removals: IgeInterval[] = [];
 
 	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
-
-		this._timers = [];
-		this._additions = [];
-		this._removals = [];
 
 		// Add the animation behaviour to the entity
 		entity.addBehaviour("time", this._update.bind(this));
 	}
 
-	addTimer = (timer) => {
+	addTimer = (timer: IgeInterval) => {
 		if (timer) {
 			if (!this._updating) {
 				this._timers.push(timer);
@@ -33,9 +30,9 @@ class IgeTimeComponent extends IgeComponent {
 		}
 
 		return this;
-	}
+	};
 
-	removeTimer = (timer) => {
+	removeTimer = (timer: IgeInterval) => {
 		if (timer) {
 			if (!this._updating) {
 				arrPull(this._timers, timer);
@@ -45,13 +42,14 @@ class IgeTimeComponent extends IgeComponent {
 		}
 
 		return this;
-	}
+	};
 
 	_update () {
 		// Get the ige tick delta and tell our timers / intervals that an update has occurred
-		let delta = ige._tickDelta,
-			arr = this._timers,
-			arrCount = arr.length;
+		const delta = ige.engine._tickDelta;
+		const arr = this._timers;
+
+		let arrCount = arr.length;
 
 		while (arrCount--) {
 			arr[arrCount]
@@ -69,8 +67,8 @@ class IgeTimeComponent extends IgeComponent {
 	}
 
 	_processAdditions = () => {
-		let arr = this._additions,
-			arrCount = arr.length;
+		const arr = this._additions;
+		let	arrCount = arr.length;
 
 		if (arrCount) {
 			while (arrCount--) {
@@ -81,11 +79,11 @@ class IgeTimeComponent extends IgeComponent {
 		}
 
 		return this;
-	}
+	};
 
 	_processRemovals = () => {
-		let arr = this._removals,
-			arrCount = arr.length;
+		const arr = this._removals;
+		let	arrCount = arr.length;
 
 		if (arrCount) {
 			while (arrCount--) {
@@ -96,7 +94,7 @@ class IgeTimeComponent extends IgeComponent {
 		}
 
 		return this;
-	}
+	};
 }
 
 export default IgeTimeComponent;
