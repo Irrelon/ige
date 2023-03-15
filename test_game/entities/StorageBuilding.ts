@@ -8,7 +8,7 @@ export class StorageBuilding extends Square {
 		super();
 	}
 
-	streamCreateData () {
+	streamCreateConstructorArgs () {
 		return [];
 	}
 }

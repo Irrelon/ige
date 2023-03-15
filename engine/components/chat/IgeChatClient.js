@@ -1,88 +1,95 @@
-"use strict";
+import { ige } from "../../instance.js";
+import { IGE_NETWORK_CHAT_JOIN_ROOM, IGE_NETWORK_CHAT_LEAVE_ROOM, IGE_NETWORK_CHAT_LIST_ROOMS, IGE_NETWORK_CHAT_MSG, IGE_NETWORK_CHAT_ROOM_CREATED, IGE_NETWORK_CHAT_ROOM_LIST_USERS, IGE_NETWORK_CHAT_ROOM_REMOVED } from "../../../enums/IgeConstants.js";
+import { IgeChatComponent } from "./IgeChatComponent.js";
 /**
  * The client-side chat component. Handles all client-side
  * chat methods and events.
  */
-const IgeChatClient = {
+export class IgeChatClient extends IgeChatComponent {
+    constructor(entity, options) {
+        super(entity, options);
+        // Define the chat system network command listeners
+        this._entity
+            .network.define(IGE_NETWORK_CHAT_MSG, this._onMessageFromServer)
+            .network.define(IGE_NETWORK_CHAT_JOIN_ROOM, this._onJoinedRoom)
+            .network.define(IGE_NETWORK_CHAT_LEAVE_ROOM, this._onLeftRoom)
+            .network.define(IGE_NETWORK_CHAT_LIST_ROOMS, this._onServerSentRoomList)
+            .network.define(IGE_NETWORK_CHAT_ROOM_LIST_USERS, this._onServerSentRoomUserList)
+            .network.define(IGE_NETWORK_CHAT_ROOM_CREATED, this._onRoomCreated)
+            .network.define(IGE_NETWORK_CHAT_ROOM_REMOVED, this._onRoomRemoved);
+        this.log("Chat client component initiated!");
+    }
     /**
      * Asks the serve to let us join the room specified.
      * @param {String} roomId The room id of the room to join.
      */
-    joinRoom: function (roomId) {
-        ige.network.send('igeChatJoinRoom', roomId);
-    },
-    sendToRoom: function (roomId, message, to) {
+    joinRoom(roomId) {
+        const network = ige.network;
+        network.send(IGE_NETWORK_CHAT_JOIN_ROOM, roomId);
+    }
+    sendToRoom(roomId, message, to) {
+        const network = ige.network;
         if (roomId !== undefined && message !== undefined) {
-            msg = {
+            const msg = {
                 roomId: roomId,
                 text: message,
                 to: to
             };
-            ige.network.send('igeChatMsg', msg);
+            network.send(IGE_NETWORK_CHAT_MSG, msg);
         }
-    },
-    _onMessageFromServer: function (data) {
-        const self = ige.chat;
+    }
+    _onMessageFromServer(data) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (!self.emit('messageFromServer', [data])) {
+        if (!this.emit('messageFromServer', [data])) {
             console.log('Server sent us a message in the room "' + data.roomId + '" from the user id "' + data.from + '":', data.text);
         }
-    },
-    _onJoinedRoom: function (data) {
-        const self = ige.chat;
+    }
+    _onJoinedRoom(data) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (!self.emit('joinedRoom', [data])) {
-            if (data.joined === true) {
+        if (!this.emit('joinedRoom', [data])) {
+            if (data.joined) {
                 console.log('Server says we have joined room:', data.roomId);
             }
             else {
                 console.log('Server says we failed to join room:', data.roomId);
             }
         }
-    },
-    _onLeftRoom: function (data) {
-        const self = ige.chat;
+    }
+    _onLeftRoom(data) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (!self.emit('leftRoom', [data])) {
+        if (!this.emit('leftRoom', [data])) {
             console.log('We have left room:', data);
         }
-    },
-    _onServerSentRoomList: function (data) {
-        const self = ige.chat;
+    }
+    _onServerSentRoomList(data) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (!self.emit('roomList', [data])) {
+        if (!this.emit('roomList', [data])) {
             console.log('Server sent room list:', data);
         }
-    },
-    _onServerSentRoomUserList: function (data) {
-        const self = ige.chat;
+    }
+    _onServerSentRoomUserList(data) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (!self.emit('roomUserList', [data])) {
+        if (!this.emit('roomUserList', [data])) {
             console.log('Server sent room user list:', data);
         }
-    },
-    _onRoomCreated: function (data) {
-        const self = ige.chat;
+    }
+    _onRoomCreated(data) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (!self.emit('roomCreated', [data])) {
+        if (!this.emit('roomCreated', [data])) {
             console.log('Server told us room was created:', data);
         }
-    },
-    _onRoomRemoved: function (data) {
-        const self = ige.chat;
+    }
+    _onRoomRemoved(data) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (!self.emit('roomRemoved', [data])) {
+        if (!this.emit('roomRemoved', [data])) {
             console.log('Server told us room was removed:', data);
         }
     }
-};
-if (typeof (module) !== 'undefined' && typeof (module.exports) !== 'undefined') {
-    module.exports = IgeChatClient;
 }

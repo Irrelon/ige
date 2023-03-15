@@ -3,6 +3,7 @@ import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent.js";
 import { arrPull, newIdHex } from "../../../services/utils.js";
 import { NetIoServer } from "./server/socketServer.js";
 import { isServer } from "../../../services/clientServer.js";
+import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../../enums/IgeConstants.js";
 export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
     constructor() {
         super();
@@ -141,10 +142,10 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
                     // TODO: Commented this because the receiving client never uses this data at all!
                     // if (!hasSentTimeDataByClientId[clientId]) {
                     // 	// Send the stream start time
-                    // 	network.send('_igeStreamTime', currentTime, clientId);
+                    // 	network.send(IGE_NETWORK_STREAM_TIME, currentTime, clientId);
                     // 	hasSentTimeDataByClientId[clientId] = true;
                     // }
-                    network.send('_igeStreamData', item[0], clientId);
+                    network.send(IGE_NETWORK_STREAM_DATA, item[0], clientId);
                     // Store the new data for later comparison
                     this._streamClientData[entityId][clientId] = item[0];
                 });
@@ -161,10 +162,10 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
             }
         };
         // Define the network stream commands
-        this.define('_igeStreamCreate');
-        this.define('_igeStreamDestroy');
-        this.define('_igeStreamData');
-        this.define('_igeStreamTime');
+        this.define(IGE_NETWORK_STREAM_CREATE);
+        this.define(IGE_NETWORK_STREAM_DESTROY);
+        this.define(IGE_NETWORK_STREAM_DATA);
+        this.define(IGE_NETWORK_STREAM_TIME);
     }
     /**
      * Starts the network for the server.
@@ -184,9 +185,9 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
         // Setup listeners
         this._io.on("connection", this._onClientConnect);
         // Set up default commands
-        this.define("_igeRequest", this._onRequest);
-        this.define("_igeResponse", this._onResponse);
-        this.define("_igeNetTimeSync", this._onTimeSync);
+        this.define(IGE_NETWORK_REQUEST, this._onRequest);
+        this.define(IGE_NETWORK_RESPONSE, this._onResponse);
+        this.define(IGE_NETWORK_TIME_SYNC, this._onTimeSync);
         // Start network sync
         this.timeSyncStart();
         this.log('Starting delta stream...');
@@ -329,23 +330,24 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
      * Sends a message over the network.
      * @param {String} commandName
      * @param {Object} data
-     * @param {*=} clientId If specified, sets the recipient socket id or
+     * @param {*=} clientIdOrArrayOfIds If specified, sets the recipient socket id or
      * an array of socket ids to send to.
+     * @param callback
      */
-    send(commandName, data, clientId, callback) {
+    send(commandName, data, clientIdOrArrayOfIds, callback) {
         var _a;
         if (callback) {
-            if (!clientId) {
+            if (!clientIdOrArrayOfIds) {
                 this.log("Attempted to send a request command without specifying the recipient clientId!", "error");
                 return;
             }
-            this.request(commandName, data, clientId, callback);
+            this.request(commandName, data, clientIdOrArrayOfIds, callback);
             return;
         }
         const commandIndex = this._networkCommandsLookup[commandName];
         if (commandIndex !== undefined) {
             const encodedCommandIndex = String.fromCharCode(commandIndex);
-            (_a = this._io) === null || _a === void 0 ? void 0 : _a.send([encodedCommandIndex, data], clientId);
+            (_a = this._io) === null || _a === void 0 ? void 0 : _a.send([encodedCommandIndex, data], clientIdOrArrayOfIds);
             return this;
         }
         this.log(`Cannot send network packet with command "${commandName}" because the command has not been defined!`, "error");
@@ -359,26 +361,26 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
      * callback parameter will be fired with the response data.
      * @param {String} commandName
      * @param {Object} data
-     * @param clientId
+     * @param clientIdOrArrayOfIds
      * @param {Function} callback
      */
-    request(commandName, data, clientId, callback) {
+    request(commandName, data, clientIdOrArrayOfIds, callback) {
         // Build the request object
         const req = {
             id: newIdHex(),
             cmd: commandName,
-            data: data.data,
+            data,
             callback: callback,
             timestamp: new Date().getTime()
         };
         // Store the request object
         this._requests[req.id] = req;
         // Send the network request packet
-        this.send("_igeRequest", {
+        this.send(IGE_NETWORK_REQUEST, {
             id: req.id,
             cmd: commandName,
             data: req.data
-        });
+        }, clientIdOrArrayOfIds);
     }
     /**
      * Sends a response to a network request.
@@ -391,7 +393,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
         if (!req) {
             return;
         }
-        this.send("_igeResponse", {
+        this.send(IGE_NETWORK_RESPONSE, {
             id: requestId,
             cmd: req.cmd,
             data
@@ -411,7 +413,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
     _sendTimeSync(clientId) {
         // Send the time sync command
         const data = [ige.engine._currentTime];
-        this.send("_igeNetTimeSync", data, clientId);
+        this.send(IGE_NETWORK_TIME_SYNC, data, clientId);
     }
     /**
      * Called when the server receives a network message from a client.

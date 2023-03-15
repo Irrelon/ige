@@ -11,6 +11,7 @@ import IgePoly2d from "./IgePoly2d.js";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
 import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
 import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode.js";
+import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY } from "../../enums/IgeConstants.js";
 export class IgeObject extends IgeEventingClass {
     constructor() {
         super();
@@ -1234,33 +1235,97 @@ export class IgeObject extends IgeEventingClass {
         return this;
     }
     /**
-     * Override this method if your entity should send data through to
+     * Override this method if your entity should send arguments through to
      * the client when it is being created on the client for the first
-     * time through the network stream. The data will be provided as the
-     * first argument in the constructor call to the entity class, so
-     * you should expect to receive it as per this example:
-     * @example #Using and Receiving Stream Create Data
+     * time through the network stream. The array will be spread to the
+     * constructor call, so you should expect to receive it as per this example:
+     * @renamed This used to be called streamCreateData.
+     * @example #Using and Receiving Stream Create Constructor Arguments
      *     class MyNewClass extends IgeEntity {
      *         classId = "MyNewClass";
      *
      *         // Define the constructor with the parameter to receive the
-     *         // data you return from the streamCreateData() method
-     *         constructor (myFirstArgData, myOtherArgData) => {
+     *         // data you return from the streamCreateConstructorArgs() method
+     *         constructor (myFirstArg, mySecondArg) => {
      *         	   super();
-     *             this._myData1 = myFirstArgData;
-     *             this._myData2 = myOtherArgData;
+     *             this._myData1 = myFirstArg;
+     *             this._myData2 = mySecondArg;
      *         }
      *
-     *         streamCreateData = () => {
-     *             return [this._myData, this._myData2];
+     *         streamCreateConstructorArgs () {
+     *             return [this._myData1, this._myData2];
      *         }
      *     });
      *
-     * Valid return values must not include circular references!
+     * Valid return values must not include circular references and must be
+     * serialisable via JSON.stringify(). If you want to pass in instances
+     * of things to a constructor, modify the constructor to take the id of
+     * the instance and then do a lookup so that you can still pass the id via
+     * the network.
      */
-    streamCreateData() {
-        // Do a sanity check in case the developer has forgotten to provide
-        // vital info that will otherwise break the network stream
+    streamCreateConstructorArgs() {
+        // TODO: Do a sanity check in case the developer has forgotten to provide
+        //   vital info that will otherwise break the network stream
+        //   Extract the constructor function definition and then count the
+        //   number of arguments being returned here. Provide a warning to the
+        //   developer if they've potentially forgotten arguments. Warning can
+        //   be silenced by providing their own streamCreateConstructorArgs
+        //   function to override this one.
+        return;
+    }
+    /**
+     * Override this method if your entity should send arbitrary data through
+     * to the client when it is being created on the client for the first
+     * time through the network stream. The array will be received on the
+     * client via the `onStreamCreateInitialData()` event handler directly after
+     * being instantiated. The data is wrapped into the initial `_igeStreamCreate`
+     * network message sent from the server so the constructor is called, then
+     * the `onStreamCreateInitialData()` is called immediately afterwards in the
+     * same thread. This means that the data that you have passed will have been
+     * provided to the `onStreamCreateInitialData()` before any subsequent code
+     * executes, as long as that code is outside the constructor.
+     *
+     * If you need to execute a function in the constructor that relies on this
+     * arbitrary data, you should place it in a setTimeout so that the data has
+     * time to be assigned, or call it inside the `onStreamCreateInitialData()`
+     * function after you have dealt with the incoming data.
+     *
+     * You should expect to receive this data as per this example:
+     * @example #Using and Receiving Stream Create Initial Props
+     *     class MyNewClass extends IgeEntity {
+     *         classId = "MyNewClass";
+     *
+     *         constructor () {
+     *         	   // This is set on the server-side
+     *             this._brand = "awesomeBrand";
+     *             this._color = "amazingColor";
+     *         }
+     *
+     *         streamCreateInitialData () {
+     *         	   // This is called on the server-side
+     *             return [this._brand, this._color];
+     *         }
+     *
+     *         onStreamCreateInitialData = (data) => {
+     *         		// This is received on the client-side
+     *         		this._brand = data[0]; // Will be "awesomeBrand"
+     *         		this._color = data[1]; // Will be "amazingColor"
+     *         }
+     *     });
+     *
+     * Valid return values must not include circular references and must be
+     * serialisable via JSON.stringify(). If you want to pass in instances
+     * of things to a constructor, modify the constructor to take the id of
+     * the instance and then do a lookup so that you can still pass the id via
+     * the network.
+     */
+    streamCreateInitialData() {
+        return;
+    }
+    onStreamCreateInitialData(data) {
+        if (data !== undefined) {
+            this.log("onStreamCreateInitialProps() received data but your class instance has not acted on it.", "warning");
+        }
         return;
     }
     /**
@@ -1302,7 +1367,7 @@ export class IgeObject extends IgeEventingClass {
             // command for this entity
             network._streamClientCreated[thisId] = network._streamClientCreated[thisId] || {};
             if (!network._streamClientCreated[thisId][clientId]) {
-                createResult = this.streamCreate(clientId);
+                createResult = this.sendStreamCreate(clientId);
             }
             // Make sure that if we had to create the entity for
             // this client that the operation worked before bothering
@@ -1349,26 +1414,27 @@ export class IgeObject extends IgeEventingClass {
      * this method is called automatically.
      * @param {*} clientId The id or array of ids to send
      * the command to.
+     * @renamed Was called streamCreate.
      * @example #Send a create command for this entity to all clients.
-     *     entity.streamCreate();
+     *     entity.sendStreamCreate();
      * @example #Send a create command for this entity to an array of client ids
-     *     entity.streamCreate(['43245325', '326755464', '436743453']);
+     *     entity.sendStreamCreate(['43245325', '326755464', '436743453']);
      * @example #Send a create command for this entity to a single client id
-     *     entity.streamCreate('43245325');
+     *     entity.sendStreamCreate('43245325');
      * @return {Boolean}
      */
-    streamCreate(clientId) {
+    sendStreamCreate(clientId) {
         if (!this._parent) {
             return false;
         }
         const thisId = this.id();
         const network = ige.network;
         // Send the client an entity create command first
-        network.send("_igeStreamCreate", [
+        network.send(IGE_NETWORK_STREAM_CREATE, [
             this.classId,
             thisId,
             this._parent.id(),
-            this.streamCreateData(),
+            this.streamCreateConstructorArgs(),
             this.streamSectionData("transform"),
             this.streamSectionData("layer"),
             this.streamSectionData("depth"),
@@ -1377,9 +1443,19 @@ export class IgeObject extends IgeEventingClass {
         ], clientId);
         network._streamClientCreated[thisId] = network._streamClientCreated[thisId] || {};
         if (clientId) {
-            // Mark the client as having received a create
-            // command for this entity
-            network._streamClientCreated[thisId][clientId] = true;
+            if (typeof clientId === "string") {
+                // Mark the client as having received a create
+                // command for this entity
+                network._streamClientCreated[thisId][clientId] = true;
+            }
+            else {
+                // The clientId is an array of strings
+                clientId.forEach((tmpClientId) => {
+                    // Mark the client as having received a create
+                    // command for this entity
+                    network._streamClientCreated[thisId][tmpClientId] = true;
+                });
+            }
         }
         else {
             // Mark all clients as having received this create
@@ -1561,7 +1637,7 @@ export class IgeObject extends IgeEventingClass {
         const thisId = this.id();
         const network = ige.network;
         // Send clients the stream destroy command for this entity
-        network.send("_igeStreamDestroy", [ige.engine._currentTime, thisId], clientId);
+        network.send(IGE_NETWORK_STREAM_DESTROY, [ige.engine._currentTime, thisId], clientId);
         network._streamClientCreated[thisId] = network._streamClientCreated[thisId] || {};
         network._streamClientData[thisId] = network._streamClientData[thisId] || {};
         if (clientId) {

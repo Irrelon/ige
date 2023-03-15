@@ -24,7 +24,7 @@ export class Road extends Line {
 		}
 	}
 
-	streamCreateData () {
+	streamCreateConstructorArgs () {
 		return [this._fromId, this._toId];
 	}
 }

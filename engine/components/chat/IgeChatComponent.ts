@@ -1,47 +1,17 @@
-import IgeEntity from "../../core/IgeEntity";
 import IgeComponent from "../../core/IgeComponent";
 
-class IgeChatComponent extends IgeComponent {
-	classId = 'IgeChatComponent';
-    componentId ='chat';
+export type IgeChatRoomOptions = Record<string, any>;
 
-	constructor (entity: IgeEntity, options?: any) {
-		super(entity, options);
+export interface IgeChatRoom {
+	id: string;
+	name: string;
+	options?: IgeChatRoomOptions;
+	users: string[];
+}
 
-        this._rooms = {};
+export class IgeChatComponent extends IgeComponent {
+	classId = "IgeChatComponent";
+	componentId = "chat";
 
-        /* CEXCLUDE */
-        if (isServer) {
-            this.implement(IgeChatServer);
-
-            // Define the chat system network commands
-            this._entity
-				.network.define('igeChatMsg', this._onMessageFromClient)
-				.network.define('igeChatJoinRoom', this._onJoinRoomRequestFromClient)
-				.network.define('igeChatLeaveRoom', this._onLeaveRoomRequestFromClient)
-				.network.define('igeChatRoomList', this._onClientWantsRoomList)
-				.network.define('igeChatRoomUserList', this._onClientWantsRoomUserList)
-				.network.define('igeChatRoomCreated')
-				.network.define('igeChatRoomRemoved');
-        }
-        /* CEXCLUDE */
-
-        if (isClient) {
-            this.implement(IgeChatClient);
-
-            // Define the chat system network command listeners
-            this._entity
-				.network.define('igeChatMsg', this._onMessageFromServer)
-				.network.define('igeChatJoinRoom', this._onJoinedRoom)
-				.network.define('igeChatLeaveRoom', this._onLeftRoom)
-				.network.define('igeChatRoomList', this._onServerSentRoomList)
-				.network.define('igeChatRoomUserList', this._onServerSentRoomUserList)
-				.network.define('igeChatRoomCreated', this._onRoomCreated)
-				.network.define('igeChatRoomRemoved', this._onRoomRemoved);
-        }
-
-		this.log('Chat component initiated!');
-    }
-});
-
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeChatComponent; }
+	_rooms: Record<string, IgeChatRoom> = {};
+}

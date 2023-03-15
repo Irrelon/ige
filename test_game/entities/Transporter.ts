@@ -38,7 +38,7 @@ export class Transporter extends WorkerUnit {
 		super.update(ctx, tickDelta);
 	}
 
-	streamCreateData () {
+	streamCreateConstructorArgs () {
 		return [this._depotAId, this._depotBId];
 	}
 }

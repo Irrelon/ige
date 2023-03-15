@@ -3,6 +3,7 @@ import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent.js";
 import { NetIoClient } from "./client/socketClient.js";
 import { newIdHex } from "../../../services/utils.js";
 import { igeClassStore } from "../../../services/igeClassStore.js";
+import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../../enums/IgeConstants.js";
 /**
  * The client-side net.io component. Handles all client-side
  * networking systems.
@@ -193,10 +194,10 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
             delete entity._streamJustCreated;
         };
         // Define the network stream commands
-        this.define('_igeStreamCreate', this._onStreamCreate);
-        this.define('_igeStreamDestroy', this._onStreamDestroy);
-        this.define('_igeStreamData', this._onStreamData);
-        this.define('_igeStreamTime', this._onStreamTime);
+        this.define(IGE_NETWORK_STREAM_CREATE, this._onStreamCreate);
+        this.define(IGE_NETWORK_STREAM_DESTROY, this._onStreamDestroy);
+        this.define(IGE_NETWORK_STREAM_DATA, this._onStreamData);
+        this.define(IGE_NETWORK_STREAM_TIME, this._onStreamTime);
     }
     /**
      * Gets the current socket id.
@@ -255,9 +256,9 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
                     }
                 }
                 // Set up default commands
-                this.define("_igeRequest", this._onRequest);
-                this.define("_igeResponse", this._onResponse);
-                this.define("_igeNetTimeSync", this._onTimeSync);
+                this.define(IGE_NETWORK_REQUEST, this._onRequest);
+                this.define(IGE_NETWORK_RESPONSE, this._onResponse);
+                this.define(IGE_NETWORK_TIME_SYNC, this._onTimeSync);
                 this.log("Received network command list with count: " + commandCount);
                 // Setup timescale and current time
                 ige.engine.timeScale(parseFloat(data.ts));
@@ -354,7 +355,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
         // Store the request object
         this._requests[req.id] = req;
         // Send the network request packet
-        this.send('_igeRequest', {
+        this.send(IGE_NETWORK_REQUEST, {
             id: req.id,
             cmd: commandName,
             data: req.data
@@ -370,7 +371,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
         const req = this._requests[requestId];
         if (req) {
             // Send the network response packet
-            this.send('_igeResponse', {
+            this.send(IGE_NETWORK_RESPONSE, {
                 id: requestId,
                 cmd: req.cmd,
                 data: data
@@ -420,7 +421,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
     }
     _sendTimeSync(data) {
         // Send the time sync command
-        this.send("_igeNetTimeSync", data);
+        this.send(IGE_NETWORK_TIME_SYNC, data);
     }
     /**
      * Gets /Sets the amount of milliseconds in the past that the renderer will

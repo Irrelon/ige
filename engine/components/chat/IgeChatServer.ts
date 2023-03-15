@@ -1,53 +1,87 @@
+import { ige } from "../../instance";
+import { newIdHex } from "../../services/utils";
+import {
+	IGE_NETWORK_CHAT_JOIN_ROOM, IGE_NETWORK_CHAT_LEAVE_ROOM, IGE_NETWORK_CHAT_LIST_ROOMS,
+	IGE_NETWORK_CHAT_MSG,
+	IGE_NETWORK_CHAT_ROOM_CREATED, IGE_NETWORK_CHAT_ROOM_LIST_USERS,
+	IGE_NETWORK_CHAT_ROOM_REMOVED
+} from "../../../enums/IgeConstants";
+import { IgeNetIoServerComponent } from "../network/net.io/IgeNetIoServerComponent";
+import { IgeChatComponent, IgeChatRoomOptions } from "./IgeChatComponent";
+import {
+	IgeNetworkChatFromClientMessageStructure,
+	IgeNetworkChatFromServerMessageStructure
+} from "../../../types/IgeNetworkMessage";
+import IgeEntity from "../../core/IgeEntity";
+import {
+	IgeNetworkChatFromClientJoinRoomRequestStructure, IgeNetworkChatFromClientLeaveRoomRequestStructure,
+	IgeNetworkChatFromServerJoinRoomResponseStructure,
+	IgeNetworkChatRoomCreatedMessageStructure, IgeNetworkChatRoomRemovedMessageStructure
+} from "../../../types/IgeNetworkChat";
+
 /**
  * The server-side chat component. Handles all server-side
  * chat methods and events.
  */
-import { newIdHex } from "../../services/utils";
-import { ige } from "../../instance";
+export class IgeChatServer extends IgeChatComponent {
+	constructor (entity: IgeEntity, options?: any) {
+		super(entity, options);
 
-const IgeChatServer = {
+		// Define the chat system network commands
+		this._entity
+			.network.define(IGE_NETWORK_CHAT_MSG, this._onMessageFromClient)
+			.network.define(IGE_NETWORK_CHAT_JOIN_ROOM, this._onJoinRoomRequestFromClient)
+			.network.define(IGE_NETWORK_CHAT_LEAVE_ROOM, this._onLeaveRoomRequestFromClient)
+			.network.define(IGE_NETWORK_CHAT_LIST_ROOMS, this._onClientWantsRoomList)
+			.network.define(IGE_NETWORK_CHAT_ROOM_LIST_USERS, this._onClientWantsRoomUserList)
+			.network.define(IGE_NETWORK_CHAT_ROOM_CREATED)
+			.network.define(IGE_NETWORK_CHAT_ROOM_REMOVED);
+
+		this.log("Chat server component initiated!");
+	}
+
 	/**
      * Creates a new room with the specified room name and options.
      * @param roomName The display name of the room.
-     * @param options An object containing options key/values.
 	 * @param {String=} roomId If specified, becomes the new room's ID.
+     * @param options An object containing options key/values.
      * @return {String} The new room's ID.
      */
-	createRoom: function (roomName, options, roomId) {
-		const self = ige.chat,
-			newRoomId = roomId || newIdHex();
+	createRoom (roomName: string, roomId?: string, options?: IgeChatRoomOptions) {
+		const network = ige.network as IgeNetIoServerComponent;
+		const newRoomId = roomId || newIdHex();
 
-		self._rooms[roomId] = {
+		this._rooms[newRoomId] = {
 			id: newRoomId,
 			name: roomName,
-			options: options,
-			users: []
+			users: [],
+			options
 		};
 
 		// Inform all users that the room was created
-		self._entity.network.send('igeChatRoomCreated', roomId);
+		network.send<IgeNetworkChatRoomCreatedMessageStructure>(IGE_NETWORK_CHAT_ROOM_CREATED, newRoomId);
 
 		return roomId;
-	},
+	}
 
 	/**
 	 * Removes an existing room with the specified id.
 	 * @param roomId
 	 * @return {Boolean}
 	 */
-	removeRoom: function (roomId) {
-		const self = ige.chat;
+	removeRoom (roomId: string) {
+		const network = ige.network as IgeNetIoServerComponent;
 
-		if (self._rooms[roomId]) {
+		if (this._rooms[roomId]) {
 			// Inform all users that the room was removed
-			self._entity.network.send('igeChatRoomRemoved', roomId);
+			network.send<IgeNetworkChatRoomRemovedMessageStructure>(IGE_NETWORK_CHAT_ROOM_REMOVED, roomId);
 
-			delete self._rooms[roomId];
+			delete this._rooms[roomId];
 			return true;
 		} else {
 			return false;
 		}
-	},
+	}
 
 	/**
 	 * Sends a message to a room.
@@ -56,15 +90,14 @@ const IgeChatServer = {
 	 * @param {String=} to The id of the user to send the message to.
 	 * @param {String} from The id of the user that sent the message.
 	 */
-	sendToRoom: function (roomId, message, to, from) {
-		const self = ige.chat;
+	sendToRoom (roomId: string, message: string, to: string, from: string) {
+		const network = ige.network as IgeNetIoServerComponent;
 
-		if (self._rooms[roomId]) {
-			let room = self._rooms[roomId],
-				msg, i;
+		if (this._rooms[roomId]) {
+			const room = this._rooms[roomId];
 
 			if (message !== undefined) {
-				msg = {
+				const msg: IgeNetworkChatFromServerMessageStructure = {
 					roomId: roomId,
 					text: message,
 					from: from,
@@ -74,39 +107,37 @@ const IgeChatServer = {
 				if (to) {
 					// Send message to individual user
 					if (room.users.indexOf(to) > -1) {
-						self._entity.network.send('igeChatMsg', msg, to);
+						network.send<IgeNetworkChatFromServerMessageStructure>(IGE_NETWORK_CHAT_MSG, msg, to);
 					} else {
-						self.log('Cannot send to user because specified user is not in room: ' + to);
+						this.log('Cannot send to user because specified user is not in room: ' + to);
 					}
 				} else {
 					// Send this message to all users in the room
-					self.log('Sending to all users...');
-					self._entity.network.send('igeChatMsg', msg, room.users);
+					this.log('Sending to all users...');
+					network.send<IgeNetworkChatFromServerMessageStructure>(IGE_NETWORK_CHAT_MSG, msg, room.users);
 				}
 			} else {
-				self.log('Cannot send message to room with blank message!');
+				this.log('Cannot send message to room with blank message!');
 			}
 		} else {
-			self.log('Cannot send message to room with id "' + roomId + '" because it does not exist!');
+			this.log('Cannot send message to room with id "' + roomId + '" because it does not exist!');
 		}
-	},
+	}
 
-	_onMessageFromClient: function (msg, clientId) {
-		let self = ige.chat,
-			room;
-
+	_onMessageFromClient (msg: IgeNetworkChatFromClientMessageStructure, clientId: string) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
-		if (!self.emit('messageFromClient', [msg, clientId])) {
+		if (!this.emit('messageFromClient', [msg, clientId])) {
 			console.log('Message from client: (' + clientId + ')', msg);
 
 			if (msg.roomId) {
-				room = self._rooms[msg.roomId];
+				const room = this._rooms[msg.roomId];
+
 				if (room) {
 					if (room.users.indexOf(clientId) > -1) {
 						if (msg.text) {
 							console.log('Sending message to room...');
-							self.sendToRoom(msg.roomId, msg.text, msg.to, clientId);
+							this.sendToRoom(msg.roomId, msg.text, msg.to, clientId);
 						} else {
 							console.log('Cannot send message because message text is empty!', msg);
 						}
@@ -123,25 +154,25 @@ const IgeChatServer = {
 				console.log('User tried to send message to room but didn\'t specify room id!', msg);
 			}
 		}
-	},
+	}
 
-	_onJoinRoomRequestFromClient: function (roomId, clientId) {
-		const self = ige.chat;
+	_onJoinRoomRequestFromClient (roomId: IgeNetworkChatFromClientJoinRoomRequestStructure, clientId: string) {
+		const network = ige.network as IgeNetIoServerComponent;
 
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
-		if (!self.emit('clientJoinRoomRequest', [roomId, clientId])) {
-			const room = self._rooms[roomId];
+		if (!this.emit('clientJoinRoomRequest', [roomId, clientId])) {
+			const room = this._rooms[roomId];
 
-			self.log('Client wants to join room: (' + clientId + ')', roomId);
+			this.log('Client wants to join room: (' + clientId + ')', roomId);
 
 			// Check the room exists
 			if (room) {
 				// Check that the user isn't already part of the room user list
-				if (!room.users[clientId]) {
+				if (room.users.indexOf(clientId) === -1) {
 					// Add the user to the room
 					room.users.push(clientId);
-					ige.network.send('igeChatJoinRoom', {roomId: roomId, joined: true}, clientId);
+					network.send<IgeNetworkChatFromServerJoinRoomResponseStructure>(IGE_NETWORK_CHAT_JOIN_ROOM, {roomId: roomId, joined: true}, clientId);
 					console.log('User "' + clientId + '" joined room ' + roomId);
 				} else {
 					// User is already in the room!
@@ -150,31 +181,29 @@ const IgeChatServer = {
 				// Room does not exist!
 			}
 		}
-	},
+	}
 
-	_onLeaveRoomRequestFromClient: function (roomId, clientId) {
+	_onLeaveRoomRequestFromClient (roomId: IgeNetworkChatFromClientLeaveRoomRequestStructure, clientId: string) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
-		if (!self.emit('clientLeaveRoomRequest', [roomId, clientId])) {
+		if (!this.emit('clientLeaveRoomRequest', [roomId, clientId])) {
 			console.log('Client wants to leave room: (' + clientId + ')', roomId);
 		}
-	},
+	}
 
-	_onClientWantsRoomList: function (data, clientId) {
+	_onClientWantsRoomList (data: any, clientId: string) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
-		if (!self.emit('clientRoomListRequest', [data, clientId])) {
+		if (!this.emit('clientRoomListRequest', [data, clientId])) {
 			console.log('Client wants the room list: (' + clientId + ')', data);
 		}
-	},
+	}
 
-	_onClientWantsRoomUserList: function (roomId, clientId) {
+	_onClientWantsRoomUserList (roomId: string, clientId: string) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
-		if (!self.emit('clientRoomUserListRequest', [roomId, clientId])) {
+		if (!this.emit('clientRoomUserListRequest', [roomId, clientId])) {
 			console.log('Client wants the room user list: (' + clientId + ')', roomId);
 		}
 	}
-};
-
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeChatServer; }
+}

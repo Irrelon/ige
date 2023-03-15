@@ -18,6 +18,12 @@ import {
 } from "../../../../types/IgeNetworkStream";
 import { igeClassStore } from "../../../services/igeClassStore";
 import IgeEntity from "../../../core/IgeEntity";
+import {
+	IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE,
+	IGE_NETWORK_STREAM_CREATE,
+	IGE_NETWORK_STREAM_DATA,
+	IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC
+} from "../../../../enums/IgeConstants";
 
 /**
  * The client-side net.io component. Handles all client-side
@@ -41,10 +47,10 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 		super();
 
 		// Define the network stream commands
-		this.define('_igeStreamCreate', this._onStreamCreate);
-		this.define('_igeStreamDestroy', this._onStreamDestroy);
-		this.define('_igeStreamData', this._onStreamData);
-		this.define('_igeStreamTime', this._onStreamTime);
+		this.define(IGE_NETWORK_STREAM_CREATE, this._onStreamCreate);
+		this.define(IGE_NETWORK_STREAM_DESTROY, this._onStreamDestroy);
+		this.define(IGE_NETWORK_STREAM_DATA, this._onStreamData);
+		this.define(IGE_NETWORK_STREAM_TIME, this._onStreamTime);
 	}
 
 
@@ -119,9 +125,9 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 				}
 
 				// Set up default commands
-				this.define("_igeRequest", this._onRequest);
-				this.define("_igeResponse", this._onResponse);
-				this.define("_igeNetTimeSync", this._onTimeSync);
+				this.define(IGE_NETWORK_REQUEST, this._onRequest);
+				this.define(IGE_NETWORK_RESPONSE, this._onResponse);
+				this.define(IGE_NETWORK_TIME_SYNC, this._onTimeSync);
 
 				this.log("Received network command list with count: " + commandCount);
 
@@ -245,7 +251,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 	 * @param data
 	 * @param callback
 	 */
-	send (commandName: string, data: IgeNetworkMessageData, callback?: IgeNetworkClientSideResponseHandler) {
+	send<DataType = IgeNetworkMessageData> (commandName: string, data: DataType, callback?: IgeNetworkClientSideResponseHandler) {
 		if (callback) {
 			this.request(commandName, data, callback);
 			return;
@@ -291,7 +297,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 
 		// Send the network request packet
 		this.send(
-			'_igeRequest',
+			IGE_NETWORK_REQUEST,
 			{
 				id: req.id,
 				cmd: commandName,
@@ -312,7 +318,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 		if (req) {
 			// Send the network response packet
 			this.send(
-				'_igeResponse',
+				IGE_NETWORK_RESPONSE,
 				{
 					id: requestId,
 					cmd: req.cmd,
@@ -381,7 +387,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 
 	_sendTimeSync (data: IgeNetworkTimeSyncResponseFromClient) {
 		// Send the time sync command
-		this.send("_igeNetTimeSync", data);
+		this.send(IGE_NETWORK_TIME_SYNC, data);
 	}
 
 	/**

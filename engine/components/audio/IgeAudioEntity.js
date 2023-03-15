@@ -133,7 +133,7 @@ export class IgeAudioEntity extends IgeObject {
      * is created via the network stream.
      * @returns {*}
      */
-    streamCreateData() {
+    streamCreateConstructorArgs() {
         return [this._audioId, this._options];
     }
     update(ctx, tickDelta) {

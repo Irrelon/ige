@@ -21,3 +21,16 @@ export interface IgeNetworkMessageStructure {
     cmd: string;
     data: IgeNetworkMessageData;
 }
+
+export interface IgeNetworkChatFromServerMessageStructure {
+    roomId: string;
+    text: string;
+    from: string;
+    to: string;
+}
+
+export interface IgeNetworkChatFromClientMessageStructure {
+    roomId: string;
+    text: string;
+    to: string;
+}

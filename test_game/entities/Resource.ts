@@ -19,7 +19,7 @@ export class Resource extends Circle {
 		this._destination = destination as Building;
 	}
 
-	streamCreateData () {
+	streamCreateConstructorArgs () {
 		return [this._type, this._destinationId];
 	}
 

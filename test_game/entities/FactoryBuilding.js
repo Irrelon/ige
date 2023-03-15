@@ -7,7 +7,7 @@ export class FactoryBuilding extends Star {
         this._produces = produces;
         this._requires = requires;
     }
-    streamCreateData() {
+    streamCreateConstructorArgs() {
         return [this._produces, this._requires];
     }
 }

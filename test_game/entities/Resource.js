@@ -9,7 +9,7 @@ export class Resource extends Circle {
         this._destinationId = destinationId;
         this._destination = destination;
     }
-    streamCreateData() {
+    streamCreateConstructorArgs() {
         return [this._type, this._destinationId];
     }
 }

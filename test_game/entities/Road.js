@@ -13,7 +13,7 @@ export class Road extends Line {
             this.setLine(this._from._translate.x, this._from._translate.y, this._to._translate.x, this._to._translate.y);
         }
     }
-    streamCreateData() {
+    streamCreateConstructorArgs() {
         return [this._fromId, this._toId];
     }
 }
