@@ -428,10 +428,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 		const parentId = data[2];
 		const createDataArgs = data[3] || [];
 		const transformData = data[4];
-		const layerData = data[5];
-		const depthData = data[6];
-		const widthData = data[7];
-		const heightData = data[8];
+		const initialData = data[5];
 		const parent = ige.$(parentId);
 
 		//console.log("Got stream create", data);
@@ -449,10 +446,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 						.mount(parent) as IgeEntity;
 
 					entity.streamSectionData('transform', transformData, true);
-					entity.streamSectionData('layer', layerData, true);
-					entity.streamSectionData('depth', depthData, true);
-					entity.streamSectionData('width', widthData, true);
-					entity.streamSectionData('height', heightData, true);
+					entity.onStreamCreateInitialData(initialData);
 
 					// Set the just created flag which will stop the renderer
 					// from handling this entity until after the first stream

@@ -13,6 +13,8 @@ export class Road extends Line {
 	constructor (fromId: string, toId: string) {
 		super();
 
+		this.depth(0);
+
 		this._fromId = fromId;
 		this._toId = toId;
 

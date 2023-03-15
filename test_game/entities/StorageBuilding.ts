@@ -6,6 +6,8 @@ export class StorageBuilding extends Square {
 
 	constructor () {
 		super();
+
+		this.depth(1);
 	}
 
 	streamCreateConstructorArgs () {

@@ -1982,11 +1982,19 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * time through the network stream. The array will be received on the
 	 * client via the `onStreamCreateInitialData()` event handler directly after
 	 * being instantiated. The data is wrapped into the initial `_igeStreamCreate`
-	 * network message sent from the server so the constructor is called, then
-	 * the `onStreamCreateInitialData()` is called immediately afterwards in the
-	 * same thread. This means that the data that you have passed will have been
-	 * provided to the `onStreamCreateInitialData()` before any subsequent code
-	 * executes, as long as that code is outside the constructor.
+	 * network message sent from the server so the order of execution on receipt
+	 * is:
+	 *
+	 * 		constructor()
+	 * 		id()
+	 * 		mount()
+	 * 		set transform (translate, rotate and scale)
+	 * 		onStreamCreateInitialData()
+	 *
+	 * This means that the data that you have passed will have been provided to
+	 * the `onStreamCreateInitialData()` before any subsequent code executes, as
+	 * long as that code is outside the constructor and not related to setting
+	 * the id, mounting or setting the initial transform of your class instance.
 	 *
 	 * If you need to execute a function in the constructor that relies on this
 	 * arbitrary data, you should place it in a setTimeout so that the data has
@@ -2022,12 +2030,13 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * the instance and then do a lookup so that you can still pass the id via
 	 * the network.
 	 */
-	streamCreateInitialData (): any[] | undefined {
+	streamCreateInitialData (): any {
 		return;
 	}
 
-	onStreamCreateInitialData (data: any[] | undefined) {
-		if (data !== undefined) {
+	onStreamCreateInitialData (data: any) {
+		if (data) {
+			console.log(data)
 			this.log("onStreamCreateInitialProps() received data but your class instance has not acted on it.", "warning");
 		}
 		return;
@@ -2161,10 +2170,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 				this._parent.id(),
 				this.streamCreateConstructorArgs(),
 				this.streamSectionData("transform"),
-				this.streamSectionData("layer"),
-				this.streamSectionData("depth"),
-				this.streamSectionData("width"),
-				this.streamSectionData("height")
+				this.streamCreateInitialData()
 			],
 			clientId
 		);

@@ -32,7 +32,7 @@ export class Transporter extends WorkerUnit {
 		// Determine if we should be transporting anything
 		if (this._depotA.transportQueue.length) {
 			// Go pick up the item
-			
+
 		}
 
 		super.update(ctx, tickDelta);

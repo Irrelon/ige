@@ -4,6 +4,7 @@ export class FactoryBuilding extends Star {
     constructor(produces, requires = []) {
         super();
         this.classId = "FactoryBuilding";
+        this.depth(1);
         this._produces = produces;
         this._requires = requires;
     }

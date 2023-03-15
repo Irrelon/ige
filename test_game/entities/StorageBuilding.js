@@ -4,6 +4,7 @@ export class StorageBuilding extends Square {
     constructor() {
         super();
         this.classId = "StorageBuilding";
+        this.depth(1);
     }
     streamCreateConstructorArgs() {
         return [];

@@ -5,6 +5,7 @@ export class Road extends Line {
     constructor(fromId, toId) {
         super();
         this.classId = "Road";
+        this.depth(0);
         this._fromId = fromId;
         this._toId = toId;
         this._from = ige.$(fromId);

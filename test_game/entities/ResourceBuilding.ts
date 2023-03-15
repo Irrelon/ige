@@ -10,7 +10,9 @@ export class ResourceBuilding extends Triangle {
 
 	constructor (produces: ResourceType, requires: BuildingResourceRequirement[] = []) {
 		super();
-		
+
+		this.depth(1);
+
 		this._produces = produces;
 		this._requires = requires;
 	}

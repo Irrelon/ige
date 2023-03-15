@@ -6,7 +6,7 @@
 // layerData
 // depthData
 // createData
-export type IgeStreamCreateMessageData = [string, string, string, any, any, any, any, any, any];
+export type IgeStreamCreateMessageData = [string, string, string, any, any, any | undefined];
 
 // serverTime
 // entityId
