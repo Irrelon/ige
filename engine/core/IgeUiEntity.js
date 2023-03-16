@@ -201,11 +201,14 @@ class IgeUiEntity extends IgeEntity {
         }
     }
     cell(val) {
-        const ret = super.cell(val);
-        if (ret === this && this._patternTexture) {
+        if (val === undefined) {
+            return this._cell;
+        }
+        super.cell(val);
+        if (this._patternTexture) {
             this.backgroundImage(this._patternTexture, this._patternRepeat);
         }
-        return ret;
+        return this;
     }
     mount(obj) {
         const ret = super.mount(obj);

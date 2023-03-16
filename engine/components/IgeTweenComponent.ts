@@ -4,6 +4,7 @@ import IgeTween, { IgeTweenDestination } from "../core/IgeTween";
 import { ige } from "../instance";
 import type { IgeEngine } from "../core/IgeEngine";
 import { easingFunctions } from "../services/easing";
+import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
 
 /**
  * This component is already included in the IgeRoot (ige)
@@ -165,7 +166,7 @@ class IgeTweenComponent extends IgeComponent<IgeEngine> {
 	/**
 	 * Process tweening for the object.
 	 */
-	update = () => {
+	update: IgeEntityBehaviourMethod = () => {
 		if (this._tweens && this._tweens.length) {
 			const currentTime = ige.engine._tickStart;
 			const tweens = this._tweens;

@@ -34,7 +34,7 @@ var Client = IgeClass.extend({
 						.drawBounds(true)
 						.drawBoundsData(true)
 						.mount(ige);
-						//.camera.translateTo(-50, 30, 0);
+					//.camera.translateTo(-50, 30, 0);
 
 					// Create the tile map
 					self.tileMap1 = new IgeTileMap2d()
@@ -129,7 +129,7 @@ var Client = IgeClass.extend({
 						}
 					};
 					
-					// We are going to use the cuboidHighlighterByDepth but you can swap
+					// We are going to use the cuboidHighlighterByDepth, but you can swap
 					// that out for cuboidHighlighterByDistance to see picking by distance
 					// from the entity center to the mouse pointer
 					ige.addBehaviour('cuboidHighlighter', cuboidHighlighterByDepth, false);

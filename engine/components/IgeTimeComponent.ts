@@ -4,6 +4,7 @@ import IgeInterval from "../core/IgeInterval";
 import { arrPull } from "../services/utils";
 import { ige } from "../instance";
 import type { IgeEngine } from "../core/IgeEngine";
+import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
 
 class IgeTimeComponent extends IgeComponent<IgeEngine> {
 	classId = "IgeTimeComponent";
@@ -18,7 +19,7 @@ class IgeTimeComponent extends IgeComponent<IgeEngine> {
 		super(entity, options);
 
 		// Add the animation behaviour to the entity
-		entity.addBehaviour("time", this._update.bind(this));
+		entity.addBehaviour("time", this._update);
 	}
 
 	addTimer = (timer: IgeInterval) => {
@@ -45,7 +46,7 @@ class IgeTimeComponent extends IgeComponent<IgeEngine> {
 		return this;
 	};
 
-	_update () {
+	_update: IgeEntityBehaviourMethod = () => {
 		// Get the ige tick delta and tell our timers / intervals that an update has occurred
 		const delta = ige.engine._tickDelta;
 		const arr = this._timers;

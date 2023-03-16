@@ -18,6 +18,7 @@ import {
 import IgeBox2dDebugPainter from "./IgeBox2dDebugPainter";
 import { IgeEntityBox2d } from "./IgeEntityBox2d";
 import Box2D from "./lib_box2d.js";
+import { IgeEntityBehaviourMethod } from "../../../../types/IgeEntityBehaviour";
 
 /**
  * The engine's box2d component class.
@@ -156,8 +157,8 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 			}
 		};
 
-		this.b2Contact.prototype.igeOtherEntity = function (entity: IgeEntity) {
-			if (this.m_fixtureA.m_body._entity === entity) {
+		this.b2Contact.prototype.igeOtherEntity = function (bodyEntity: IgeEntity) {
+			if (this.m_fixtureA.m_body._entity === bodyEntity) {
 				return this.igeEntityB();
 			} else {
 				return this.igeEntityA();
@@ -503,11 +504,11 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 					.drawBounds(true)
 					.drawBoundsData(false)
 					.box2dBody({
-						type: "static",
+						type: IgeBox2dBodyType.static,
 						allowSleep: true,
 						fixtures: [{
 							shape: {
-								type: "rectangle"
+								type: IgeBox2dFixtureShapeType.rectangle
 							}
 						}]
 					});
@@ -690,7 +691,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 	 * Steps the physics simulation forward.
 	 * @private
 	 */
-	_behaviour = () => {
+	_behaviour: IgeEntityBehaviourMethod = () => {
 		if (!this._world) {
 			throw new Error("No box2d world instantiated!");
 		}

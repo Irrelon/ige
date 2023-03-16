@@ -1,7 +1,9 @@
+import { ige } from "../../instance";
 import { arrPull } from "../../services/utils";
 import IgeEntity from "../../core/IgeEntity";
 import IgeComponent from "../../core/IgeComponent";
 import { IgeMountMode } from "../../../enums/IgeMountMode";
+import { IgeEntityBehaviourMethod } from "../../../types/IgeEntityBehaviour";
 
 class IgeEntityManager extends IgeComponent {
 	classId = "IgeEntityManager";
@@ -30,9 +32,9 @@ class IgeEntityManager extends IgeComponent {
 	 * that are to be unmounted are unmounted.
 	 * @private
 	 */
-	_updateBehaviour (ctx) {
+	_updateBehaviour: IgeEntityBehaviourMethod = () => {
 		// Draw visible area rect
-		const rect = ige._currentViewport.viewArea();
+		const rect = ige.engine._currentViewport?.viewArea();
 
 		/*new IgeEntity()
 			.id('visArea')

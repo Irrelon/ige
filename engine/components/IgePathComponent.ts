@@ -11,7 +11,6 @@ import IgePoint3d from "../core/IgePoint3d";
 import IgePathNode from "../core/IgePathNode";
 import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode";
 import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
-import { Ige } from "../core/Ige";
 import { IgeObject } from "../core/IgeObject";
 
 /**
@@ -653,7 +652,7 @@ class IgePathComponent extends IgeComponent {
 	 * rendered to.
 	 * @private
 	 */
-	_updateBehaviour: IgeEntityBehaviourMethod = (tmpIge: Ige, entity: IgeObject, ctx: IgeCanvasRenderingContext2d) => {
+	_updateBehaviour: IgeEntityBehaviourMethod = (entity: IgeObject, ctx: IgeCanvasRenderingContext2d) => {
 		if (!this._active) return;
 		if (this._startTime === undefined) return;
 		if (this._totalTime === undefined) return;
@@ -871,7 +870,7 @@ class IgePathComponent extends IgeComponent {
 		this._calculatePathData();
 	};
 
-	_tickBehaviour: IgeEntityBehaviourMethod = (tmpIge: Ige, entity: IgeObject, ctx: IgeCanvasRenderingContext2d) => {
+	_tickBehaviour: IgeEntityBehaviourMethod = (entity: IgeObject, ctx: IgeCanvasRenderingContext2d) => {
 		if (!isClient) return;
 		if (!this._tileMap) throw new Error("No tile map (IgeTileMap2d) assigned to IgePathComponent");
 

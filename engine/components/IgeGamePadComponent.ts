@@ -1,5 +1,6 @@
 import IgeComponent from "../core/IgeComponent";
 import IgeEntity from "../core/IgeEntity";
+import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
 
 class IgeGamePadComponent extends IgeComponent {
 	"classId" = "IgeGamePadComponent";
@@ -115,7 +116,7 @@ class IgeGamePadComponent extends IgeComponent {
 	 * A function called with each requestAnimationFrame(). Polls the gamepad
 	 * status and schedules another poll.
 	 */
-	"_behaviour" (ige, entity) {
+	_behaviour: IgeEntityBehaviourMethod = (entity) => {
 		entity.gamePad.pollStatus();
 	}
 
