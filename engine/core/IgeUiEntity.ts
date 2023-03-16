@@ -313,17 +313,23 @@ class IgeUiEntity extends IgeEntity {
 		}
 	}
 
+	cell(val: number | null): this;
+	cell(): number | null;
 	cell (val?: number | null) {
-		const ret = super.cell(val);
+		if (val === undefined) {
+			return this._cell;
+		}
 
-		if (ret === this && this._patternTexture) {
+		super.cell(val);
+
+		if (this._patternTexture) {
 			this.backgroundImage(
 				this._patternTexture,
 				this._patternRepeat
 			);
 		}
 
-		return ret;
+		return this;
 	}
 
 	mount (obj: IgeObject) {
@@ -801,7 +807,7 @@ class IgeUiEntity extends IgeEntity {
 	 * @param {Number=} modifier A value to add to the final height. Useful when
 	 * you want to alter a percentage value by a certain number of pixels after
 	 * it has been calculated.
-	 * @param {Boolean=} noUpdate If passed, will not recalculate AABB etc from
+	 * @param {Boolean=} noUpdate If passed, will not recalculate AABB etc. from
 	 * this call. Useful for performance if you intend to make subsequent calls
 	 * to other functions that will also cause a re-calculation, meaning we can
 	 * reduce the overall re-calculations to only one at the end. You must manually
