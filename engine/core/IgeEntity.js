@@ -21,6 +21,7 @@ class IgeEntity extends IgeObject {
         super();
         this.classId = "IgeEntity";
         this._renderMode = IgeEntityRenderMode.flat;
+        //_entity?: IgeEntity; // We comment this because any class wanting to override return values of methods can do so individually e.g. viewport.camera.width().height()
         this._parent = null;
         this._children = [];
         this._sortChildren = (compareFn) => {
@@ -293,7 +294,8 @@ class IgeEntity extends IgeObject {
             if (args.length) {
                 this.log("You called translate with arguments, did you mean translateTo or translateBy instead of translate?", "warning");
             }
-            return (this._entity || {
+            // used to be this._entity || { x, y z }
+            return ({
                 x: this._translateAccessorX,
                 y: this._translateAccessorY,
                 z: this._translateAccessorZ
@@ -310,7 +312,7 @@ class IgeEntity extends IgeObject {
         this._translateAccessorX = (val) => {
             if (val !== undefined) {
                 this._translate.x = val;
-                return this._entity || this;
+                return this; // Used to include this._entity
             }
             return this._translate.x;
         };
@@ -327,7 +329,7 @@ class IgeEntity extends IgeObject {
             //this._localMatrix.translateTo(this._translate.x, this._translate.y);
             if (val !== undefined) {
                 this._translate.z = val;
-                return this._entity || this;
+                return this; // Used to include this._entity
             }
             return this._translate.z;
         };
@@ -342,7 +344,7 @@ class IgeEntity extends IgeObject {
         this._rotateAccessorX = (val) => {
             if (val !== undefined) {
                 this._rotate.x = val;
-                return this._entity || this;
+                return this; // Used to include this._entity
             }
             return this._rotate.x;
         };
@@ -357,7 +359,7 @@ class IgeEntity extends IgeObject {
         this._rotateAccessorY = (val) => {
             if (val !== undefined) {
                 this._rotate.y = val;
-                return this._entity || this;
+                return this; // Used to include this._entity
             }
             return this._rotate.y;
         };
@@ -372,7 +374,7 @@ class IgeEntity extends IgeObject {
         this._rotateAccessorZ = (val) => {
             if (val !== undefined) {
                 this._rotate.z = val;
-                return this._entity || this;
+                return this; // Used to include this._entity
             }
             return this._rotate.z;
         };
@@ -387,7 +389,7 @@ class IgeEntity extends IgeObject {
         this._scaleAccessorX = (val) => {
             if (val !== undefined) {
                 this._scale.x = val;
-                return this._entity || this;
+                return this; // Used to include this._entity
             }
             return this._scale.x;
         };
@@ -402,7 +404,7 @@ class IgeEntity extends IgeObject {
         this._scaleAccessorY = (val) => {
             if (val !== undefined) {
                 this._scale.y = val;
-                return this._entity || this;
+                return this; // Used to include this._entity
             }
             return this._scale.y;
         };
@@ -417,7 +419,7 @@ class IgeEntity extends IgeObject {
         this._scaleAccessorZ = (val) => {
             if (val !== undefined) {
                 this._scale.z = val;
-                return this._entity || this;
+                return this; // Used to include this._entity
             }
             return this._scale.z;
         };
@@ -432,7 +434,7 @@ class IgeEntity extends IgeObject {
         this._originAccessorX = (val) => {
             if (val !== undefined) {
                 this._origin.x = val;
-                return this._entity || this;
+                return this; // Used to include this._entity
             }
             return this._origin.x;
         };
@@ -447,7 +449,7 @@ class IgeEntity extends IgeObject {
         this._originAccessorY = (val) => {
             if (val !== undefined) {
                 this._origin.y = val;
-                return this._entity || this;
+                return this; // Used to include this._entity
             }
             return this._origin.y;
         };
@@ -462,7 +464,7 @@ class IgeEntity extends IgeObject {
         this._originAccessorZ = (val) => {
             if (val !== undefined) {
                 this._origin.z = val;
-                return this._entity || this;
+                return this; // Used to include this._entity
             }
             return this._origin.z;
         };
@@ -1062,6 +1064,9 @@ class IgeEntity extends IgeObject {
      * method chaining
      */
     dimensionsFromCell(percent) {
+        if (typeof this._cell !== "number") {
+            throw new Error("Cell of type string cannot access dimensions");
+        }
         if (this._texture) {
             if (this._texture._cells && this._texture._cells.length && this._cell) {
                 if (percent === undefined) {
@@ -1202,17 +1207,17 @@ class IgeEntity extends IgeObject {
         this._localAabb = new IgeRect(-Math.floor(aabb.width / 2), -Math.floor(aabb.height / 2), Math.floor(aabb.width), Math.floor(aabb.height));
     }
     /**
-     * Takes two values and returns them as an array where index [0]
-     * is the y argument and index[1] is the x argument. This method
+     * Takes two values and returns them as an array where argument[0]
+     * is the y argument and argument[1] is the x argument. This method
      * is used specifically in the 3d bounds intersection process to
      * determine entity depth sorting.
-     * @param {Number} x The first value.
-     * @param {Number} y The second value.
-     * @return {Array} The swapped arguments.
      * @private
+     * @param num1
+     * @param num2
+     * @return {Array} The swapped arguments.
      */
-    _swapVars(x, y) {
-        return [y, x];
+    _swapVars(num1, num2) {
+        return [num1, num2];
     }
     _internalsOverlap(x0, x1, y0, y1) {
         let tempSwap;
@@ -1432,7 +1437,7 @@ class IgeEntity extends IgeObject {
                 this._transformContext(ctx);
             }
             // Render the entity
-            this._renderEntity(ctx, dontTransform);
+            this._renderEntity(ctx);
         }
         if (this._streamMode === IgeStreamMode.simple) {
             this.streamSync();
@@ -1533,7 +1538,7 @@ class IgeEntity extends IgeObject {
         if (!dontTransform) {
             this._transformContext(_ctx);
         }
-        this._renderEntity(_ctx, dontTransform);
+        this._renderEntity(_ctx);
     }
     /**
      * Handles calling the texture.render() method if a texture
@@ -1542,10 +1547,9 @@ class IgeEntity extends IgeObject {
      * class.
      * @param {CanvasRenderingContext2D} ctx The canvas context to render
      * the entity to.
-     * @param {Boolean} [dontTransform] If you don't want to apply transforms.
      * @private
      */
-    _renderEntity(ctx, dontTransform = false) {
+    _renderEntity(ctx) {
         if (this._opacity <= 0 || !ige.engine._currentCamera || !ige.engine._currentViewport) {
             return;
         }
@@ -2046,7 +2050,7 @@ class IgeEntity extends IgeObject {
         else {
             this.log("velocityTo() called with a missing or undefined x, y or z parameter!", "error");
         }
-        return this._entity || this;
+        return this; // Used to include this._entity
     }
     velocityBy(x, y, z) {
         if (x !== undefined && y !== undefined && z !== undefined) {
@@ -2057,7 +2061,7 @@ class IgeEntity extends IgeObject {
         else {
             this.log("velocityBy() called with a missing or undefined x, y or z parameter!", "error");
         }
-        return this._entity || this;
+        return this; // Used to include this._entity
     }
     /**
      * Translates the entity by adding the passed values to
@@ -2078,7 +2082,7 @@ class IgeEntity extends IgeObject {
         else {
             this.log("translateBy() called with a missing or undefined x, y or z parameter!", "error");
         }
-        return this._entity || this;
+        return this; // Used to include this._entity
     }
     /**
      * Translates the entity to the passed values.
@@ -2098,7 +2102,7 @@ class IgeEntity extends IgeObject {
         else {
             this.log("translateTo() called with a missing or undefined x, y or z parameter!", "error");
         }
-        return this._entity || this;
+        return this; // Used to include this._entity
     }
     /**
      * Translates the entity to the passed point.
@@ -2119,7 +2123,7 @@ class IgeEntity extends IgeObject {
         else {
             this.log("translateToPoint() called with a missing or undefined point parameter!", "error");
         }
-        return this._entity || this;
+        return this; // Used to include this._entity
     }
     /**
      * Translates the object to the tile co-ordinates passed.
@@ -2168,7 +2172,7 @@ class IgeEntity extends IgeObject {
     _translateAccessorY(val) {
         if (val !== undefined) {
             this._translate.y = val;
-            return this._entity || this;
+            return this; // Used to include this._entity
         }
         return this._translate.y;
     }
@@ -2191,7 +2195,7 @@ class IgeEntity extends IgeObject {
         else {
             this.log("rotateBy() called with a missing or undefined x, y or z parameter!", "error");
         }
-        return this._entity || this;
+        return this; // Used to include this._entity
     }
     /**
      * Rotates the entity to the passed values.
@@ -2211,7 +2215,7 @@ class IgeEntity extends IgeObject {
         else {
             this.log("rotateTo() called with a missing or undefined x, y or z parameter!", "error");
         }
-        return this._entity || this;
+        return this; // Used to include this._entity
     }
     /**
      * Gets the `translate` accessor object.
@@ -2223,7 +2227,8 @@ class IgeEntity extends IgeObject {
         if (args.length) {
             this.log("You called rotate with arguments, did you mean rotateTo or rotateBy instead of rotate?", "warning");
         }
-        return (this._entity || {
+        // used to be this._entity || { x, y z }
+        return ({
             x: this._rotateAccessorX,
             y: this._rotateAccessorY,
             z: this._rotateAccessorZ
@@ -2248,7 +2253,7 @@ class IgeEntity extends IgeObject {
         else {
             this.log("scaleBy() called with a missing or undefined x, y or z parameter!", "error");
         }
-        return this._entity || this;
+        return this; // Used to include this._entity
     }
     /**
      * Scale the entity to the passed values.
@@ -2267,7 +2272,7 @@ class IgeEntity extends IgeObject {
         this._scale.x = x;
         this._scale.y = y;
         this._scale.z = z;
-        return this._entity || this;
+        return this; // Used to include this._entity
     }
     /**
      * Gets the `scale` accessor object.
@@ -2279,7 +2284,8 @@ class IgeEntity extends IgeObject {
         if (args.length) {
             throw new Error("You called scale with arguments, did you mean scaleTo or scaleBy instead of scale?");
         }
-        return (this._entity || {
+        // used to be this._entity || { x, y z }
+        return ({
             x: this._scaleAccessorX,
             y: this._scaleAccessorY,
             z: this._scaleAccessorZ
@@ -2304,7 +2310,7 @@ class IgeEntity extends IgeObject {
         else {
             this.log("originBy() called with a missing or undefined x, y or z parameter!", "error");
         }
-        return this._entity || this;
+        return this; // Used to include this._entity
     }
     /**
      * Set the `origin` of the entity to the passed values.
@@ -2324,7 +2330,7 @@ class IgeEntity extends IgeObject {
         else {
             this.log("originTo() called with a missing or undefined x, y or z parameter!", "error");
         }
-        return this._entity || this;
+        return this; // Used to include this._entity
     }
     /**
      * Gets the `origin` accessor object.
@@ -2333,7 +2339,8 @@ class IgeEntity extends IgeObject {
      * @return {*}
      */
     origin() {
-        return (this._entity || {
+        // used to be this._entity || { x, y z }
+        return ({
             x: this._originAccessorX,
             y: this._originAccessorY,
             z: this._originAccessorZ
@@ -2560,32 +2567,32 @@ class IgeEntity extends IgeObject {
      */
     streamSectionData(sectionId, data, bypassTimeStream = false, bypassChangeDetection = false) {
         switch (sectionId) {
-            case 'bounds2d':
+            case "bounds2d":
                 if (data !== undefined) {
                     if (isClient) {
-                        const geom = data.split(',');
+                        const geom = data.split(",");
                         this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
                     }
                 }
                 else {
-                    return String(this._bounds2d.x + ',' + this._bounds2d.y);
+                    return String(this._bounds2d.x + "," + this._bounds2d.y);
                 }
                 break;
-            case 'bounds3d':
+            case "bounds3d":
                 if (data !== undefined) {
                     if (isClient) {
-                        const geom = data.split(',');
+                        const geom = data.split(",");
                         this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
                     }
                 }
                 else {
-                    return String(this._bounds3d.x + ',' + this._bounds3d.y + ',' + this._bounds3d.z);
+                    return String(this._bounds3d.x + "," + this._bounds3d.y + "," + this._bounds3d.z);
                 }
                 break;
-            case 'hidden':
+            case "hidden":
                 if (data !== undefined) {
                     if (isClient) {
-                        if (data === 'true') {
+                        if (data === "true") {
                             this.hide();
                         }
                         else {
@@ -2597,7 +2604,7 @@ class IgeEntity extends IgeObject {
                     return String(this.isHidden());
                 }
                 break;
-            case 'width':
+            case "width":
                 if (data !== undefined) {
                     if (isClient) {
                         this.width(parseInt(data));
@@ -2607,7 +2614,7 @@ class IgeEntity extends IgeObject {
                     return String(this.width());
                 }
                 break;
-            case 'height':
+            case "height":
                 if (data !== undefined) {
                     if (isClient) {
                         this.height(parseInt(data));

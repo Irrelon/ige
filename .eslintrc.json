@@ -19,6 +19,7 @@
 		"@typescript-eslint/strict-boolean-expressions": "off",
 		"@typescript-eslint/ban-ts-comment": "off",
 		"@typescript-eslint/no-this-alias": "off",
+		"@typescript-eslint/no-explicit-any": "off",
 		"unused-imports/no-unused-imports": "warn",
 		"indent": ["error", "tab"],
 		"space-before-function-paren": [
@@ -28,11 +29,11 @@
 		"no-shadow": "error",
 		"complexity": [
 			"warn",
-			10
+			20
 		],
 		"max-depth": [
 			"warn",
-			3
+			4
 		],
 		"prefer-rest-params": "off"
 	}

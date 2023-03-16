@@ -1118,17 +1118,17 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	}
 
 	/**
-	 * Takes two values and returns them as an array where index [0]
-	 * is the y argument and index[1] is the x argument. This method
+	 * Takes two values and returns them as an array where argument[0]
+	 * is the y argument and argument[1] is the x argument. This method
 	 * is used specifically in the 3d bounds intersection process to
 	 * determine entity depth sorting.
-	 * @param {Number} x The first value.
-	 * @param {Number} y The second value.
-	 * @return {Array} The swapped arguments.
 	 * @private
+	 * @param num1
+	 * @param num2
+	 * @return {Array} The swapped arguments.
 	 */
-	_swapVars (x: number, y: number): [number, number] {
-		return [y, x];
+	_swapVars (num1: number, num2: number): [number, number] {
+		return [num1, num2];
 	}
 
 	_internalsOverlap (x0: number, x1: number, y0: number, y1: number) {
@@ -1411,7 +1411,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 			}
 
 			// Render the entity
-			this._renderEntity(ctx, dontTransform);
+			this._renderEntity(ctx);
 		}
 
 		if (this._streamMode === IgeStreamMode.simple) {
@@ -1525,7 +1525,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 			this._transformContext(_ctx);
 		}
 
-		this._renderEntity(_ctx, dontTransform);
+		this._renderEntity(_ctx);
 	}
 
 	/**
@@ -1535,10 +1535,9 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * class.
 	 * @param {CanvasRenderingContext2D} ctx The canvas context to render
 	 * the entity to.
-	 * @param {Boolean} [dontTransform] If you don't want to apply transforms.
 	 * @private
 	 */
-	_renderEntity (ctx: IgeCanvasRenderingContext2d, dontTransform = false) {
+	_renderEntity (ctx: IgeCanvasRenderingContext2d) {
 		if (this._opacity <= 0 || !ige.engine._currentCamera || !ige.engine._currentViewport) {
 			return;
 		}
