@@ -18,6 +18,7 @@ import { IgeEngineState } from "../../enums/IgeEngineState";
 import IgeTweenComponent from "../components/IgeTweenComponent";
 import IgePoint2d from "./IgePoint2d";
 import IgeTimeComponent from "../components/IgeTimeComponent";
+import IgeComponent from "./IgeComponent";
 
 export class IgeEngine extends IgeEntity {
 	client?: IgeBaseClass;
@@ -179,6 +180,10 @@ export class IgeEngine extends IgeEntity {
 		this.addComponent("input", IgeInputComponent);
 		this.addComponent("tween", IgeTweenComponent);
 		this.addComponent("time", IgeTimeComponent);
+	}
+
+	addComponent (id: string, Component: typeof IgeComponent<IgeEngine>, options?: any): this {
+		return super.addComponent(id, Component as typeof IgeComponent, options);
 	}
 
 	id(): string;

@@ -6,5 +6,8 @@ class IgeComponent extends IgeEventingClass {
         this._entity = parent;
         this._options = options;
     }
+    destroy() {
+        return this;
+    }
 }
 export default IgeComponent;

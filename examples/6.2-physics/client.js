@@ -1,167 +1,166 @@
-var Client = IgeClass.extend({
-	classId: 'Client',
-	init: function () {
-		ige.addComponent(IgeEditorComponent);
-
-		// Load our textures
-		var self = this;
-		this.obj = [];
-
-		// Create the HTML canvas
-		ige.createFrontBuffer(true);
-
-		// Add physics and setup physics world
-		ige.addComponent(IgeBox2dComponent)
-			.box2d.sleep(true)
-			.box2d.gravity(0, 10)
-			.box2d.createWorld()
-			.box2d.start();
-
-		// Start the engine
-		ige.start(function (success) {
-			// Check if the engine started successfully
-			if (success) {
-				// Create the scene
-				self.scene1 = new IgeScene2d()
-					.id('scene1');
-
-				// Create the main viewport
-				self.vp1 = new IgeViewport()
-					.id('vp1')
-					.autoSize(true)
-					.scene(self.scene1)
-					.drawBounds(true)
-					.mount(ige);
-
-				self.ball1 = new IgeEntityBox2d()
-					.box2dBody({
-						type: 'dynamic',
-						linearDamping: 0.0,
-						angularDamping: 0.1,
-						allowSleep: true,
-						bullet: false,
-						gravitic: true,
-						fixedRotation: false,
-						fixtures: [{
-							density: 1.0,
-							friction: 0.5,
-							restitution: 0.2,
-							shape: {
-								type: 'circle',
-								data: {
-									// The position of the fixture relative to the body
-									x: 0,
-									y: 0
-								}
-							}
-						}]
-					})
-					.id('ball1')
-					.translateTo(4, -300, 0)
-					.drawBounds(true)
-					.mount(self.scene1);
-
-				self.ball2 = new IgeEntityBox2d()
-					.box2dBody({
-						type: 'dynamic',
-						linearDamping: 0.0,
-						angularDamping: 0.1,
-						allowSleep: true,
-						bullet: false,
-						gravitic: true,
-						fixedRotation: false,
-						fixtures: [{
-							density: 1.0,
-							friction: 0.5,
-							restitution: 0.2,
-							shape: {
-								type: 'circle'
-							}
-						}]
-					})
-					.id('ball2')
-					.translateTo(0, -400, 0)
-					.drawBounds(true)
-					.mount(self.scene1);
-
-				self.square1 = new IgeEntityBox2d()
-					.box2dBody({
-						type: 'dynamic',
-						linearDamping: 0.0,
-						angularDamping: 0.1,
-						allowSleep: true,
-						bullet: false,
-						gravitic: true,
-						fixedRotation: false,
-						fixtures: [{
-							density: 1.0,
-							friction: 0.5,
-							restitution: 0.2,
-							shape: {
-								type: 'rectangle'
-							}
-						}]
-					})
-					.id('square1')
-					.translateTo(-40, -470, 0)
-					.drawBounds(true)
-					.mount(self.scene1);
-
-				self.square2 = new IgeEntityBox2d()
-					.box2dBody({
-						type: 'dynamic',
-						linearDamping: 0.0,
-						angularDamping: 0.1,
-						allowSleep: true,
-						bullet: false,
-						gravitic: true,
-						fixedRotation: false,
-						fixtures: [{
-							density: 1.0,
-							friction: 0.5,
-							restitution: 0.2,
-							shape: {
-								type: 'rectangle'
-							}
-						}]
-					})
-					.id('square2')
-					.translateTo(90, -560, 0)
-					.drawBounds(true)
-					.mount(self.scene1);
-
-				// Create the room boundaries in box2d
-				new IgeEntityBox2d()
-					.translateTo(0, 50, 0)
-					.width(880)
-					.height(20)
-					.drawBounds(true)
-					.mount(self.scene1)
-					.box2dBody({
-						type: 'static',
-						allowSleep: true,
-						fixtures: [{
-							shape: {
-								type: 'rectangle'
-							}
-						}]
-					});
-
-				// Translate the camera to the initial player position
-				self.vp1.camera.lookAt(self.player1);
-
-				// Tell the camera to track our player character with some
-				// tracking smoothing (set to 20)
-				self.vp1.camera.trackTranslate(self.player1, 20);
-
-				// Add the box2d debug painter entity to the
-				// scene to show the box2d body outlines
-				ige.box2d.enableDebug(self.scene1);
-				
-				ige.addComponent(IgeEditorComponent);
-			}
-		});
-	}
-});
-
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+import IgeBaseClass from "../../engine/core/IgeBaseClass.js";
+import { ige } from "../../engine/instance.js";
+import { IgeBox2dComponent } from "../../engine/components/physics/box2d/IgeBox2dComponent.js";
+import IgeScene2d from "../../engine/core/IgeScene2d.js";
+import IgeViewport from "../../engine/core/IgeViewport.js";
+import { IgeEntityBox2d } from "../../engine/components/physics/box2d/IgeEntityBox2d.js";
+import { IgeBox2dBodyType } from "../../enums/IgeBox2dBodyType.js";
+import { IgeBox2dFixtureShapeType } from "../../enums/IgeBox2dFixtureShapeType.js";
+// @ts-ignore
+window.ige = ige;
+export class Client extends IgeBaseClass {
+    constructor() {
+        super();
+        this.classId = "Client";
+        void this.init();
+    }
+    init() {
+        return __awaiter(this, void 0, void 0, function* () {
+            ige.init();
+            // Wait for our textures to load before continuing
+            yield ige.textures.whenLoaded();
+            // Create the HTML canvas
+            ige.engine.createFrontBuffer(true);
+            // Add physics and setup physics world
+            ige.engine.addComponent("box2d", IgeBox2dComponent);
+            ige.engine.components.box2d
+                .sleep(true)
+                .gravity(0, 10)
+                .createWorld()
+                .start();
+            // Start the engine
+            yield ige.engine.start();
+            // Create the scene
+            const scene1 = new IgeScene2d()
+                .id('scene1');
+            // Create the main viewport
+            const vp1 = new IgeViewport()
+                .id('vp1')
+                .autoSize(true)
+                .scene(scene1)
+                .drawBounds(true)
+                .mount(ige.engine);
+            const ball1 = new IgeEntityBox2d()
+                .box2dBody({
+                type: IgeBox2dBodyType.dynamic,
+                linearDamping: 0.0,
+                angularDamping: 0.1,
+                allowSleep: true,
+                bullet: false,
+                gravitic: true,
+                fixedRotation: false,
+                fixtures: [{
+                        density: 1.0,
+                        friction: 0.5,
+                        restitution: 0.2,
+                        shape: {
+                            type: IgeBox2dFixtureShapeType.circle,
+                            data: {
+                                // The position of the fixture relative to the body
+                                x: 0,
+                                y: 0
+                            }
+                        }
+                    }]
+            })
+                .id('ball1')
+                .translateTo(4, -300, 0)
+                .drawBounds(true)
+                .mount(scene1);
+            const ball2 = new IgeEntityBox2d()
+                .box2dBody({
+                type: IgeBox2dBodyType.dynamic,
+                linearDamping: 0.0,
+                angularDamping: 0.1,
+                allowSleep: true,
+                bullet: false,
+                gravitic: true,
+                fixedRotation: false,
+                fixtures: [{
+                        density: 1.0,
+                        friction: 0.5,
+                        restitution: 0.2,
+                        shape: {
+                            type: IgeBox2dFixtureShapeType.circle
+                        }
+                    }]
+            })
+                .id('ball2')
+                .translateTo(0, -400, 0)
+                .drawBounds(true)
+                .mount(scene1);
+            const square1 = new IgeEntityBox2d()
+                .box2dBody({
+                type: IgeBox2dBodyType.dynamic,
+                linearDamping: 0.0,
+                angularDamping: 0.1,
+                allowSleep: true,
+                bullet: false,
+                gravitic: true,
+                fixedRotation: false,
+                fixtures: [{
+                        density: 1.0,
+                        friction: 0.5,
+                        restitution: 0.2,
+                        shape: {
+                            type: IgeBox2dFixtureShapeType.rectangle
+                        }
+                    }]
+            })
+                .id('square1')
+                .translateTo(-40, -470, 0)
+                .drawBounds(true)
+                .mount(scene1);
+            const square2 = new IgeEntityBox2d()
+                .box2dBody({
+                type: IgeBox2dBodyType.dynamic,
+                linearDamping: 0.0,
+                angularDamping: 0.1,
+                allowSleep: true,
+                bullet: false,
+                gravitic: true,
+                fixedRotation: false,
+                fixtures: [{
+                        density: 1.0,
+                        friction: 0.5,
+                        restitution: 0.2,
+                        shape: {
+                            type: IgeBox2dFixtureShapeType.rectangle
+                        }
+                    }]
+            })
+                .id('square2')
+                .translateTo(90, -560, 0)
+                .drawBounds(true)
+                .mount(scene1);
+            // Create the room boundaries in box2d
+            new IgeEntityBox2d()
+                .translateTo(0, 50, 0)
+                .width(880)
+                .height(20)
+                .box2dBody({
+                type: IgeBox2dBodyType.static,
+                allowSleep: true,
+                fixtures: [{
+                        shape: {
+                            type: IgeBox2dFixtureShapeType.rectangle
+                        }
+                    }]
+            })
+                .drawBounds(true)
+                .mount(scene1);
+            // Add the box2d debug painter entity to the
+            // scene to show the box2d body outlines
+            ige.engine.components.box2d.enableDebug(scene1);
+        });
+    }
+}

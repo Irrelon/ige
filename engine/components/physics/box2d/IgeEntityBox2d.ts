@@ -1,54 +1,55 @@
+import { ige } from "../../../instance";
+import IgeEntity from "../../../core/IgeEntity";
+import type { IgeBox2dComponent } from "./IgeBox2dComponent";
+import Box2D from "./lib_box2d";
+import { IgeBox2dBodyDef } from "../../../../types/IgeBox2dBodyDef";
+
 /**
  * Creates a new entity with box2d integration.
  */
-var IgeEntityBox2d = IgeEntity.extend({
-	classId: 'IgeEntityBox2d',
+export class IgeEntityBox2d extends IgeEntity {
+	classId = 'IgeEntityBox2d';
 
-	init: function (world) {
-		IgeEntity.prototype.init.call(this);
-		
-		if (world) {
-			if (typeof(world) === 'string') {
-				// Get world reference
-				world = ige.box2d.world(world);
-			}
-			
-			this._box2dWorld = world;
-			this._b2dRef = world;
-		} else {
-			this._b2dRef = ige.box2d;
-		}
+	_b2dRef: IgeBox2dComponent;
+	_box2dWorld: Box2D.Dynamics.b2World;
+	_box2dBodyDef?: IgeBox2dBodyDef;
+	_box2dBody?: Box2D.Dynamics.b2Body;
+
+	constructor () {
+		super();
+
+		this._b2dRef = (ige.engine.components.box2d as IgeBox2dComponent);
 		
 		// Check if box2d is enabled in the engine
-		if (ige.box2d) {
-			if (!this._b2dRef._networkDebugMode) {
+		if (this._b2dRef) {
+			if (this._b2dRef._networkDebugMode) {
+				this._translateToProto = function () {};
+				this._translateByProto = function () {};
+
+				this._rotateToProto = function () {};
+				this._rotateByProto = function () {};
+
+				this._updateProto = this.update;
+
+				// Make sure box2d is kept up to date by the engine
+				this.update = this._update;
+			} else {
 				// Store the existing transform methods
 				this._translateToProto = this.translateTo;
 				this._translateByProto = this.translateBy;
-		
+
 				this._rotateToProto = this.rotateTo;
 				this._rotateByProto = this.rotateBy;
-		
+
 				// Take over the transform methods
 				this.translateTo = this._translateTo;
 				this.translateBy = this._translateBy;
-		
+
 				this.rotateTo = this._rotateTo;
 				this.rotateBy = this._rotateBy;
-			} else {
-				this._translateToProto = function () {};
-				this._translateByProto = function () {};
-		
-				this._rotateToProto = function () {};
-				this._rotateByProto = function () {};
-				
-				this._updateProto = this.update;
-				
-				// Make sure box2d is kept up to date by the engine
-				this.update = this._update;
 			}
 		}
-	},
+	}
 
 	/**
 	 * Gets / sets the box2d body's active flag which determines
@@ -58,7 +59,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 	 * the physics simulation or false for it to be ignored.
 	 * @return {*}
 	 */
-	box2dActive: function (val) {
+	box2dActive (val?: boolean) {
 		if (this._box2dBody) {
 			if (val !== undefined) {
 				this._box2dBody.SetActive(val);
@@ -69,7 +70,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 		}
 
 		return this;
-	},
+	}
 
 	/**
 	 * Gets / sets the physics body definition. When setting the
@@ -78,12 +79,14 @@ var IgeEntityBox2d = IgeEntity.extend({
 	 * @param def
 	 * @return {*}
 	 */
-	box2dBody: function (def) {
+	box2dBody (def: IgeBox2dBodyDef): this;
+	box2dBody (): IgeBox2dBodyDef;
+	box2dBody (def?: IgeBox2dBodyDef) {
 		if (def !== undefined) {
 			this._box2dBodyDef = def;
 
 			// Check that the box2d component exists
-			if (ige.box2d) {
+			if (this._b2dRef) {
 				// Ask the box2d component to create a new body for us
 				this._box2dBody = this._b2dRef.createBody(this, def);
 			} else {
@@ -94,7 +97,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 		}
 
 		return this._box2dBodyDef;
-	},
+	}
 
 	/**
 	 * Gets / sets the box2d body's gravitic value. If set to false,
@@ -103,7 +106,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 	 * @param {Boolean=} val True to allow gravity to affect this entity.
 	 * @returns {*}
 	 */
-	gravitic: function (val) {
+	gravitic (val?: boolean) {
 		if (this._box2dBody) {
 			if (val !== undefined) {
 				this._box2dBody.m_nonGravitic = !val;
@@ -116,83 +119,83 @@ var IgeEntityBox2d = IgeEntity.extend({
 			
 			return !this._box2dBody.m_nonGravitic;
 		}
-	},
+	}
 	
-	on: function () {
+	on () {
 		if (arguments.length === 3) {
-			var evName = arguments[0],
+			let evName = arguments[0],
 				target = arguments[1],
 				callback = arguments[2],
 				type;
 
 			switch (target.substr(0, 1)) {
-				case '#':
-					type = 0;
-					break;
+			case '#':
+				type = 0;
+				break;
 
-				case '.':
-					type = 1;
-					break;
+			case '.':
+				type = 1;
+				break;
 			}
 
 			target = target.substr(1, target.length - 1);
 			
 			switch (evName) {
-				case 'collisionStart':
-					this._collisionStartListeners = this._collisionStartListeners || [];
-					this._collisionStartListeners.push({
-						type: type,
-						target: target,
-						callback: callback
-					});
+			case 'collisionStart':
+				this._collisionStartListeners = this._collisionStartListeners || [];
+				this._collisionStartListeners.push({
+					type: type,
+					target: target,
+					callback: callback
+				});
 					
-					if (!this._contactListener) {
-						// Setup contact listener
-						this._contactListener = this._setupContactListeners();
-					}
-					break;
+				if (!this._contactListener) {
+					// Setup contact listener
+					this._contactListener = this._setupContactListeners();
+				}
+				break;
 				
-				case 'collisionEnd':
-					this._collisionEndListeners = this._collisionEndListeners || [];
-					this._collisionEndListeners.push({
-						type: type,
-						target: target,
-						callback: callback
-					});
+			case 'collisionEnd':
+				this._collisionEndListeners = this._collisionEndListeners || [];
+				this._collisionEndListeners.push({
+					type: type,
+					target: target,
+					callback: callback
+				});
 					
-					if (!this._contactListener) {
-						// Setup contact listener
-						this._contactListener = this._setupContactListeners();
-					}
-					break;
+				if (!this._contactListener) {
+					// Setup contact listener
+					this._contactListener = this._setupContactListeners();
+				}
+				break;
 				
-				default:
-					this.log('Cannot add event listener, event type ' + evName + ' not recognised', 'error');
-					break;
+			default:
+				this.log('Cannot add event listener, event type ' + evName + ' not recognised', 'error');
+				break;
 			}
 		} else {
 			IgeEntity.prototype.on.apply(this, arguments);
 		}
-	},
+	}
 	
-	off: function () {
+	off () {
 		if (arguments.length === 3) {
 			
 		} else {
 			IgeEntity.prototype.off.apply(this, arguments);
 		}
-	},
+	}
 	
-	_setupContactListeners: function () {
-		var self = this;
-		
-		ige.box2d.contactListener(
+	_setupContactListeners () {
+		const self = this;
+
+		this._b2dRef.contactListener(
 			// Listen for when contact's begin
 			function (contact) {
 				//console.log('Contact begins between', contact.igeEntityA()._id, 'and', contact.igeEntityB()._id);
 				
 				// Loop the collision listeners and check for a match
-				var arr = self._collisionStartListeners;
+				const arr = self._collisionStartListeners;
 				
 				if (arr) {
 					self._checkContact(contact, arr);
@@ -202,7 +205,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 			function (contact) {
 				//console.log('Contact ends between', contact.igeEntityA()._id, 'and', contact.igeEntityB()._id);
 				// Loop the collision listeners and check for a match
-				var arr = self._collisionEndListeners;
+				const arr = self._collisionEndListeners;
 				
 				if (arr) {
 					self._checkContact(contact, arr);
@@ -216,13 +219,13 @@ var IgeEntityBox2d = IgeEntity.extend({
 					contact.SetEnabled(false);
 				}
 
-				// You can also check an entity by it's category using igeEitherCategory('categoryName')
+				// You can also check an entity by its category using igeEitherCategory('categoryName')
 			}*/
 		);
-	},
+	}
 	
-	_checkContact: function (contact, arr) {
-		var self = this,
+	_checkContact (contact, arr) {
+		let self = this,
 			arrCount = arr.length,
 			otherEntity,
 			listener,
@@ -256,7 +259,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 				}
 			}
 		}
-	},
+	}
 
 	/**
 	 * Takes over translateTo calls and processes box2d movement as well.
@@ -266,8 +269,8 @@ var IgeEntityBox2d = IgeEntity.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_translateTo: function (x, y, z) {
-		var entBox2d = this._box2dBody;
+	_translateTo (x, y, z) {
+		const entBox2d = this._box2dBody;
 
 		// Call the original method
 		this._translateToProto(x, y, z);
@@ -285,7 +288,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 		}
 
 		return this;
-	},
+	}
 
 	/**
 	 * Takes over translateBy calls and processes box2d movement as well.
@@ -294,9 +297,9 @@ var IgeEntityBox2d = IgeEntity.extend({
 	 * @param z
 	 * @private
 	 */
-	_translateBy: function (x, y, z) {
+	_translateBy (x, y, z) {
 		this._translateTo(this._translate.x + x, this._translate.y + y, this._translate.z + z);
-	},
+	}
 
 	/**
 	 * Takes over translateTo calls and processes box2d movement as well.
@@ -306,8 +309,8 @@ var IgeEntityBox2d = IgeEntity.extend({
 	 * @return {*}
 	 * @private
 	 */
-	_rotateTo: function (x, y, z) {
-		var entBox2d = this._box2dBody;
+	_rotateTo (x, y, z) {
+		const entBox2d = this._box2dBody;
 
 		// Call the original method
 		this._rotateToProto(x, y, z);
@@ -325,7 +328,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 		}
 
 		return this;
-	},
+	}
 
 	/**
 	 * Takes over translateBy calls and processes box2d movement as well.
@@ -334,9 +337,9 @@ var IgeEntityBox2d = IgeEntity.extend({
 	 * @param z
 	 * @private
 	 */
-	_rotateBy: function (x, y, z) {
+	_rotateBy (x, y, z) {
 		this._rotateTo(this._rotate.x + x, this._rotate.y + y, this._rotate.z + z);
-	},
+	}
 
 	/**
 	 * Purely for networkDebugMode handling, ensures that an entity's transform is
@@ -344,7 +347,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 	 * @param ctx
 	 * @private
 	 */
-	_update: function (ctx) {
+	_update (ctx) {
 		// Call the original method
 		this._updateProto(ctx);
 		
@@ -353,31 +356,30 @@ var IgeEntityBox2d = IgeEntity.extend({
 		this._rotateTo(this._rotate.x, this._rotate.y, this._rotate.z);
 		
 		//IgeEntity.prototype.update.call(this, ctx);
-	},
+	}
 
 	/**
 	 * If true, disabled box2d debug shape drawing for this entity.
 	 * @param {Boolean} val
 	 */
-	box2dNoDebug: function (val) {
+	box2dNoDebug (val) {
 		if (val !== undefined) {
 			this._box2dNoDebug = val;
 			return this;
 		}
 		
 		return this._box2dNoDebug;
-	},
+	}
 
 	/**
 	 * Destroys the physics entity and the box2d body that
 	 * is attached to it.
 	 */
-	destroy: function () {
+	destroy () {
 		if (this._box2dBody) {
 			this._b2dRef.destroyBody(this._box2dBody);
 		}
-		IgeEntity.prototype.destroy.call(this);
-	}
-});
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeEntityBox2d; }
+		return super.destroy();
+	}
+}

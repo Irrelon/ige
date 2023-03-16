@@ -3,7 +3,7 @@ import IgePoint3d from "../core/IgePoint3d";
 import IgeViewport from "../core/IgeViewport";
 import { IgeInputEventControl } from "../../types/IgeInputEventControl";
 import IgeComponent from "../core/IgeComponent";
-import { IgeEngine } from "../core/IgeEngine";
+import type { IgeEngine } from "../core/IgeEngine";
 
 export interface IgeInputMouseInterface {
 	"dblClick": number;
@@ -110,7 +110,7 @@ export interface IgeInputKeyboardInterface {
 	"z": number;
 }
 
-class IgeInputComponent extends IgeComponent {
+class IgeInputComponent extends IgeComponent<IgeEngine> {
 	classId = "IgeInputComponent";
 	componentId = "input";
 	_eventQueue: [((evc: IgeInputEventControl, eventData?: any) => void), any][];

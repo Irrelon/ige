@@ -4,6 +4,7 @@ import simpleBox from "./assets/textures/smartTextures/simpleBox";
 import IgeBaseClass from "../../engine/core/IgeBaseClass";
 import {Rotator} from "./gameClasses/Rotator";
 import {ige} from "../../engine/instance";
+import IgeEntity from "../../engine/core/IgeEntity";
 
 // @ts-ignore
 window.ige = ige;
@@ -14,63 +15,62 @@ export class Client extends IgeBaseClass {
 	constructor () {
 		// Init the super class
 		super();
+		void this.init();
+	}
 
-		// Load our textures
-		const obj: IgeBaseClass[] = [];
+	async init () {
+		ige.init();
 
-		// Load the fairy texture and simpleBox smart texture
-		const gameTexture: Record<string, IgeTexture> = {
-			fairy: new IgeTexture("./assets/textures/sprites/fairy.png"),
-			simpleBox: new IgeTexture(simpleBox)
-		};
+		// Load the game textures
+		new IgeTexture("fairy", "./assets/textures/sprites/fairy.png");
+		new IgeTexture("simpleBox", simpleBox);
 
 		// Wait for our textures to load before continuing
-		ige.on("texturesLoaded", function () {
-			// Create the HTML canvas
-			ige.createFrontBuffer(true);
+		await ige.textures.whenLoaded();
 
-			// Start the engine
-			ige.start(function (success) {
-				// Check if the engine started successfully
-				if (success) {
-					// Load the base scene data
-					ige.addGraph(IgeBaseScene);
+		// Create the HTML canvas
+		ige.engine.createFrontBuffer(true);
 
-					// Create an entity and mount it to the scene
-					obj[0] = new Rotator(0.1)
-						.id("fairy1")
-						.depth(1)
-						.width(100)
-						.height(100)
-						.texture(gameTexture.fairy)
-						.translateTo(0, 0, 0)
-						.mount(ige.$("baseScene"));
+		// Start the engine
+		await ige.engine.start();
 
-					// Create a second rotator entity and mount
-					// it to the first one at 0, 50 relative to the
-					// parent
-					obj[1] = new Rotator(0.1)
-						.id("fairy2")
-						.depth(1)
-						.width(50)
-						.height(50)
-						.texture(gameTexture.fairy)
-						.translateTo(0, 50, 0)
-						.mount(obj[0]);
+		// Creates "baseScene" and adds a viewport
+		ige.engine.addGraph(IgeBaseScene);
 
-					// Create a third rotator entity and mount
-					// it to the first on at 0, -50 relative to the
-					// parent, but assign it a smart texture!
-					obj[2] = new Rotator(0.1)
-						.id("simpleBox")
-						.depth(1)
-						.width(50)
-						.height(50)
-						.texture(gameTexture.simpleBox)
-						.translateTo(0, -50, 0)
-						.mount(obj[0]);
-				}
-			});
-		});
+		const baseScene = ige.$('baseScene') as IgeEntity;
+
+		// Create an entity and mount it to the scene
+		new Rotator(0.1)
+			.id("fairy1")
+			.depth(1)
+			.width(100)
+			.height(100)
+			.texture(ige.textures.get("fairy"))
+			.translateTo(0, 0, 0)
+			.mount(baseScene);
+
+		// Create a second rotator entity and mount
+		// it to the first one at 0, 50 relative to the
+		// parent
+		new Rotator(0.1)
+			.id("fairy2")
+			.depth(1)
+			.width(50)
+			.height(50)
+			.texture(ige.textures.get("fairy"))
+			.translateTo(0, 50, 0)
+			.mount(ige.$("fairy1") as IgeEntity);
+
+		// Create a third rotator entity and mount
+		// it to the first on at 0, -50 relative to the
+		// parent, but assign it a smart texture!
+		new Rotator(0.1)
+			.id("simpleBox")
+			.depth(1)
+			.width(50)
+			.height(50)
+			.texture(ige.textures.get("simpleBox"))
+			.translateTo(0, -50, 0)
+			.mount(ige.$("fairy1") as IgeEntity);
 	}
 }

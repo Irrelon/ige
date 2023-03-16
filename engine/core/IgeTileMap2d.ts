@@ -404,7 +404,7 @@ class IgeTileMap2d extends IgeEntity {
 	 * in a rectangle or not.
 	 * @return {Array}
 	 */
-	scanRects (callback: IgeTileMap2dScanRectCallback) {
+	scanRects (callback?: IgeTileMap2dScanRectCallback) {
 		const rectArray = [];
 		const mapData = arrClone(this.map._mapData) as any[][];
 
@@ -425,7 +425,7 @@ class IgeTileMap2d extends IgeEntity {
 		return rectArray;
 	}
 
-	_scanRects (mapData: any[][], x: number, y: number, callback: IgeTileMap2dScanRectCallback) {
+	_scanRects (mapData: any[][], x: number, y: number, callback?: IgeTileMap2dScanRectCallback) {
 		const rect = {
 			x,
 			y,

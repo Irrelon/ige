@@ -1,19 +1,22 @@
+import { ige } from "../../../instance.js";
 import IgeEntity from "../../../core/IgeEntity.js";
+import { registerClass } from "../../../services/igeClassStore.js";
 class IgeBox2dDebugPainter extends IgeEntity {
-    constructor(ige, entity, options) {
-        super(ige);
+    constructor(entity, options) {
+        super();
         this.classId = "IgeBox2dDebugPainter";
         this._entity = entity;
         this._options = options;
     }
     tick(ctx) {
-        if (this._parent && this._parent.isometricMounts() === 1) {
+        var _a;
+        if (this._parent && this._parent.isometricMounts()) {
             ctx.scale(1.414, 0.707); // This should be super-accurate now
             ctx.rotate((45 * Math.PI) / 180);
         }
-        this._entity.box2d._world.DrawDebugData();
+        (_a = ige.engine.components.box2d._world) === null || _a === void 0 ? void 0 : _a.DrawDebugData();
         super.tick(ctx);
-        //IgeObject.prototype.tick.call(this, ctx);
     }
 }
+registerClass(IgeBox2dDebugPainter);
 export default IgeBox2dDebugPainter;

@@ -200,7 +200,7 @@ class IgePoly2d {
 	triangulate () {
 		// Get the indices of each new triangle
 		const poly = this._poly;
-		const triangles = [];
+		const triangles: IgePoly2d[] = [];
 		const indices = this.triangulationIndices();
 
 		// Generate new polygons from the index data

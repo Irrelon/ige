@@ -1,11 +1,8 @@
 import IgeComponent from "../core/IgeComponent";
 import { arrPull } from "../services/utils";
 import IgeTween, { IgeTweenDestination } from "../core/IgeTween";
-import IgeEntity from "../core/IgeEntity";
 import { ige } from "../instance";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import { Ige } from "../core/Ige";
-import { IgeEngine } from "../core/IgeEngine";
+import type { IgeEngine } from "../core/IgeEngine";
 import { easingFunctions } from "../services/easing";
 
 /**
@@ -13,7 +10,7 @@ import { easingFunctions } from "../services/easing";
  * instance and is not designed for use in any other way!
  * It handles global tween processing on all tweening values.
  */
-class IgeTweenComponent extends IgeComponent {
+class IgeTweenComponent extends IgeComponent<IgeEngine> {
 	static componentTargetClass = "Ige";
 	classId = "IgeTweenComponent";
 	componentId = "tween";
@@ -168,7 +165,7 @@ class IgeTweenComponent extends IgeComponent {
 	/**
 	 * Process tweening for the object.
 	 */
-	update = (igeInstance: Ige, entity: IgeEntity, ctx: IgeCanvasRenderingContext2d) => {
+	update = () => {
 		if (this._tweens && this._tweens.length) {
 			const currentTime = ige.engine._tickStart;
 			const tweens = this._tweens;

@@ -3,8 +3,9 @@ import IgeEntity from "../core/IgeEntity";
 import IgeInterval from "../core/IgeInterval";
 import { arrPull } from "../services/utils";
 import { ige } from "../instance";
+import type { IgeEngine } from "../core/IgeEngine";
 
-class IgeTimeComponent extends IgeComponent {
+class IgeTimeComponent extends IgeComponent<IgeEngine> {
 	classId = "IgeTimeComponent";
 	componentId = "time";
 

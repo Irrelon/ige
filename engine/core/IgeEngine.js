@@ -447,6 +447,9 @@ export class IgeEngine extends IgeEntity {
         this.addComponent("tween", IgeTweenComponent);
         this.addComponent("time", IgeTimeComponent);
     }
+    addComponent(id, Component, options) {
+        return super.addComponent(id, Component, options);
+    }
     id(id) {
         if (!id) {
             return "ige";

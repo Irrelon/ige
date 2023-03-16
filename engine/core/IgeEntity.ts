@@ -593,9 +593,9 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * chaining or the current value if no arguments are specified.
 	 */
 	width (px: number | string, lockAspect?: boolean): this;
+	width (px: number | string, lockAspect: boolean): this;
 	// @ts-ignore
 	width (): number | string;
-	width (px: number | string, lockAspect: boolean): this;
 	width (px?: number | string, lockAspect = false) {
 		if (px === undefined) {
 			return this._bounds2d.x;
