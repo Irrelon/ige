@@ -242,7 +242,7 @@ class IgeEntityManagerComponent extends IgeComponent {
          * @param ctx
          * @private
          */
-        this._behaviour = (ige, entity, ctx) => {
+        this._behaviour = (entity, ctx) => {
             let self = this.entityManager, currentArea, currentAreaTiles, arr = this._children, arrCount = arr.length, item, maps = self._maps, map, mapIndex, mapData, currentTile, renderX, renderY, renderWidth, renderHeight, x, y, tileData, renderSize, ratio;
             if ((!self._areaRect || this._ige._resized) && self._areaRectAutoSize) {
                 self._resizeEvent();

@@ -329,7 +329,7 @@ class IgeAnimationComponent extends IgeComponent {
          * @param entity
          * @param {Number} tickDelta The current ige._tickDelta passed down the scenegraph.
          */
-        this._update = (igeInstance, entity, ctx, tickDelta) => {
+        this._update = (entity, ctx, tickDelta) => {
             // Just in case someone forgets to pass it in their update call!
             tickDelta = tickDelta || ige.engine._tickDelta;
             if (this._anim) {

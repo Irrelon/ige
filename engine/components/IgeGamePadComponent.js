@@ -4,6 +4,7 @@ class IgeGamePadComponent extends IgeComponent {
         super(entity, options);
         this["classId"] = "IgeGamePadComponent";
         this["componentId"] = "gamePad";
+        this.gamepadAvailable = null; // True if the browser supports them
         /**
          * A function called with each requestAnimationFrame(). Polls the gamepad
          * status and schedules another poll.
@@ -11,7 +12,6 @@ class IgeGamePadComponent extends IgeComponent {
         this._behaviour = (entity) => {
             entity.gamePad.pollStatus();
         };
-        this.gamepadAvailable = null;
         // A number of typical buttons recognized by Gamepad API and mapped to
         // standard controls. Any extraneous buttons will have larger indexes.
         this.TYPICAL_BUTTON_COUNT = 16;
