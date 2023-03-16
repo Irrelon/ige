@@ -16,9 +16,9 @@ import {
 } from "../../../../types/IgeBox2dContactSolverCallback";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-import Box2D from "./lib_box2d.js";
 import IgeBox2dDebugPainter from "./IgeBox2dDebugPainter";
 import { IgeEntityBox2d } from "./IgeEntityBox2d";
+import Box2D from "./lib_box2d.js";
 
 /**
  * The engine's box2d component class.

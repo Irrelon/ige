@@ -13,9 +13,3 @@ declare global {
 		button: number;
 	}
 }
-
-export declare namespace Box2D {
-	namespace Dynamics {
-		b2World
-	}
-}
