@@ -6,7 +6,6 @@ import IgeViewport from "../../engine/core/IgeViewport";
 import IgeTexture from "../../engine/core/IgeTexture";
 import IgeParticleEmitter from "../../engine/core/IgeParticleEmitter";
 import IgePoint3d from "../../engine/core/IgePoint3d";
-import IgeMousePanComponent from "../../engine/components/IgeMousePanComponent";
 import IgeParticle from "../../engine/core/IgeParticle";
 
 // @ts-ignore
@@ -46,7 +45,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				this.noAabb(true);
 
 				// Setup the particle default values
-				this.texture(ige.textures.get("star4"))
+				this.texture(ige.textures.get("star" + (Math.round(Math.random() * 3) + 1)))
 					.width(50)
 					.height(50)
 					.drawBounds(false)
@@ -60,8 +59,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 		// Create the main viewport
 		const vp1 = new IgeViewport()
-			.addComponent("mousePan", IgeMousePanComponent)
-			.components.mousePan.enabled(true)
+			//.addComponent("mousePan", IgeMousePanComponent)
+			//.components.mousePan.enabled(true)
 			.id('vp1')
 			.autoSize(true)
 			.scene(scene1)
