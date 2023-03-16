@@ -4,7 +4,6 @@ import IgeComponent from "../../../core/IgeComponent.js";
 import { IgeBox2dTimingMode } from "../../../../enums/IgeBox2dTimingMode.js";
 import { IgeBox2dBodyType } from "../../../../enums/IgeBox2dBodyType.js";
 import { IgeBox2dFixtureShapeType } from "../../../../enums/IgeBox2dFixtureShapeType.js";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 import IgeBox2dDebugPainter from "./IgeBox2dDebugPainter.js";
 import { IgeEntityBox2d } from "./IgeEntityBox2d.js";
 import Box2D from "./lib_box2d.js";

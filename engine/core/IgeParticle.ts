@@ -1,17 +1,18 @@
 import IgeEntity from "./IgeEntity";
 import IgeVelocityComponent from "../components/IgeVelocityComponent";
-import IgeBaseClass from "./IgeBaseClass";
 import {arrPull} from "../services/utils";
+import type IgeParticleEmitter from "./IgeParticleEmitter";
 
 class IgeParticle extends IgeEntity {
 	classId = "IgeParticle";
+	_emitter: IgeParticleEmitter;
 
-	constructor (ige, emitter) {
-		super(ige);
+	constructor (emitter: IgeParticleEmitter) {
+		super();
 
 		// Setup the particle default values
 		this._emitter = emitter;
-		this.addComponent(IgeVelocityComponent);
+		this.addComponent("velocity", IgeVelocityComponent);
 	}
 
 	destroy () {
@@ -20,7 +21,7 @@ class IgeParticle extends IgeEntity {
 			arrPull(this._emitter._particles, this);
 		}
 
-		super.destroy();
+		return super.destroy();
 	}
 }
 

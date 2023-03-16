@@ -324,8 +324,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 *     console.log(entity.drawBounds());
 	 * @return {*}
 	 */
-	drawBounds (): boolean;
 	drawBounds (id: boolean): this;
+	drawBounds (): boolean;
 	drawBounds (val?: boolean) {
 		if (val !== undefined) {
 			this._drawBounds = val;
@@ -1351,7 +1351,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 *     console.log(entity._somePropertyOfTheEntity);
 	 * @return {*} Returns this on success or false on failure.
 	 */
-	addBehaviour (id: string, behaviour: IgeEntityBehaviourMethod, duringTick = false) {
+	addBehaviour<ParentType extends IgeObject = IgeObject> (id: string, behaviour: IgeEntityBehaviourMethod<ParentType>, duringTick = false) {
 		if (duringTick) {
 			this._tickBehaviours = this._tickBehaviours || [];
 			this._tickBehaviours.push({

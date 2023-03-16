@@ -563,16 +563,6 @@ class IgeUiEntity extends IgeEntity {
         }
         return this._uiMiddle;
     }
-    /**
-     * Gets / sets the geometry.x in pixels.
-     * @param {Number, String=} px Either the width in pixels or a percentage
-     * @param {Boolean=} lockAspect
-     * @param {Number=} modifier A value to add to the final width. Useful when
-     * you want to alter a percentage value by a certain number of pixels after
-     * it has been calculated.
-     * @param {Boolean=} noUpdate
-     * @return {*}
-     */
     width(px, lockAspect = false, modifier, noUpdate = false) {
         if (px !== undefined) {
             if (px === null) {
@@ -626,21 +616,6 @@ class IgeUiEntity extends IgeEntity {
         }
         return this._bounds2d.x;
     }
-    /**
-     * Gets / sets the geometry.y in pixels.
-     * @param {Number=} px
-     * @param {Boolean=} lockAspect
-     * @param {Number=} modifier A value to add to the final height. Useful when
-     * you want to alter a percentage value by a certain number of pixels after
-     * it has been calculated.
-     * @param {Boolean=} noUpdate If passed, will not recalculate AABB etc from
-     * this call. Useful for performance if you intend to make subsequent calls
-     * to other functions that will also cause a re-calculation, meaning we can
-     * reduce the overall re-calculations to only one at the end. You must manually
-     * call ._updateUiPosition() when you have made your changes.
-     *
-     * @return {*}
-     */
     height(px, lockAspect = false, modifier, noUpdate = false) {
         if (px !== undefined) {
             if (px === null) {

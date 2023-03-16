@@ -1,4 +1,5 @@
 // TODO: Doc this class!
+import { ige } from "../instance";
 import IgePoint3d from "../core/IgePoint3d";
 import IgeEntity from "../core/IgeEntity";
 import IgeComponent from "../core/IgeComponent";
@@ -6,6 +7,10 @@ import IgeComponent from "../core/IgeComponent";
 class IgeVelocityComponent extends IgeComponent {
 	classId = "IgeVelocityComponent";
 	componentId = "velocity";
+
+	_velocity: IgePoint3d;
+	_friction: IgePoint3d;
+	_linearForce?: IgePoint3d;
 
 	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
@@ -19,14 +24,13 @@ class IgeVelocityComponent extends IgeComponent {
 
 	/**
 	 * The behaviour method executed each tick.
-	 * @param ctx
 	 * @private
 	 */
-	_behaviour = (entity, ctx) => {
-		entity.velocity.tick(ctx);
+	_behaviour = () => {
+		this.tick();
 	}
 
-	byAngleAndPower = (radians, power, relative) => {
+	byAngleAndPower (radians: number, power: number, relative: boolean = false)  {
 		const vel = this._velocity,
 			x = Math.cos(radians) * power,
 			y = Math.sin(radians) * power,
@@ -45,7 +49,7 @@ class IgeVelocityComponent extends IgeComponent {
 		return this._entity;
 	}
 
-	xyz = (x, y, z, relative) => {
+	xyz = (x: number, y: number, z: number, relative: boolean = false) => {
 		const vel = this._velocity;
 
 		if (!relative) {
@@ -61,7 +65,7 @@ class IgeVelocityComponent extends IgeComponent {
 		return this._entity;
 	}
 
-	x = (x, relative) => {
+	x = (x: number, relative: boolean = false) => {
 		const vel = this._velocity;
 
 		if (!relative) {
@@ -73,7 +77,7 @@ class IgeVelocityComponent extends IgeComponent {
 		return this._entity;
 	}
 
-	y = (y, relative) => {
+	y = (y: number, relative: boolean = false) => {
 		const vel = this._velocity;
 
 		if (!relative) {
@@ -85,7 +89,7 @@ class IgeVelocityComponent extends IgeComponent {
 		return this._entity;
 	}
 
-	z = (z, relative) => {
+	z = (z: number, relative: boolean = false) => {
 		const vel = this._velocity;
 
 		if (!relative) {
@@ -97,7 +101,7 @@ class IgeVelocityComponent extends IgeComponent {
 		return this._entity;
 	}
 
-	vector3 = (vector, relative) => {
+	vector3 = (vector: IgePoint3d, relative: boolean = false) => {
 		if (typeof(vector.scale) !== "number") {
 			vector.scale = 1; // Default to 1
 		}
@@ -120,7 +124,7 @@ class IgeVelocityComponent extends IgeComponent {
 		return this._entity;
 	}
 
-	friction = (val) => {
+	friction = (val: number) => {
 		let finalFriction = 1 - val;
 
 		if (finalFriction < 0) {
@@ -132,7 +136,7 @@ class IgeVelocityComponent extends IgeComponent {
 		return this._entity;
 	}
 
-	linearForce = (degrees, power) => {
+	linearForce = (degrees: number, power: number) => {
 		power /= 1000;
 		const radians = (degrees * Math.PI / 180),
 			x = Math.cos(radians) * power,
@@ -143,12 +147,12 @@ class IgeVelocityComponent extends IgeComponent {
 		return this._entity;
 	}
 
-	linearForceXYZ = (x, y, z) => {
+	linearForceXYZ = (x: number, y: number, z: number) => {
 		this._linearForce = new IgePoint3d(x, y, z);
 		return this._entity;
 	}
 
-	linearForceVector3 = (vector, power, relative) => {
+	linearForceVector3 = (vector: IgePoint3d, relative = false) => {
 		const force = this._linearForce = this._linearForce || new IgePoint3d(0, 0, 0),
 			x = vector.x / 1000,
 			y = vector.y / 1000,
@@ -167,7 +171,7 @@ class IgeVelocityComponent extends IgeComponent {
 		return this._entity;
 	}
 
-	_applyLinearForce = (delta) => {
+	_applyLinearForce = (delta: number) => {
 		if (this._linearForce) {
 			const vel = this._velocity;
 
@@ -186,18 +190,17 @@ class IgeVelocityComponent extends IgeComponent {
 		vel.z *= fric.z;
 	}
 
-	tick (ctx) {
-		let delta = this._ige._tickDelta,
-			vel = this._velocity,
-			x, y, z;
+	tick () {
+		const delta = ige.engine._tickDelta;
+		const vel = this._velocity;
 
 		if (delta) {
 			this._applyLinearForce(delta);
 			//this._applyFriction();
 
-			x = vel.x * delta;
-			y = vel.y * delta;
-			z = vel.z * delta;
+			const x = vel.x * delta;
+			const y = vel.y * delta;
+			const z = vel.z * delta;
 
 			if (x || y || z) {
 				this._entity.translateBy(x, y, z);

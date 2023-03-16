@@ -15,7 +15,6 @@ import {
 	IgeBox2dContactPreSolveCallback
 } from "../../../../types/IgeBox2dContactSolverCallback";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 import IgeBox2dDebugPainter from "./IgeBox2dDebugPainter";
 import { IgeEntityBox2d } from "./IgeEntityBox2d";
 import Box2D from "./lib_box2d.js";

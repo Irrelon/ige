@@ -626,9 +626,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * chaining or the current value if no arguments are specified.
 	 */
 	height (px: number | string, lockAspect?: boolean): this;
-	// @ts-ignore
-	height (): number | string;
-	height (px: number | string, lockAspect: boolean): this;
+	height (): number;
 	height (px?: number | string, lockAspect = false) {
 		if (px === undefined) {
 			return this._bounds2d.y;
@@ -2482,7 +2480,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 *     entity.translateBy(10, 0, 0);
 	 * @return {*}
 	 */
-	translateBy (x?: number, y?: number, z?: number) {
+	translateBy (x: number, y: number, z: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._translate.x += x;
 			this._translate.y += y;
@@ -2503,7 +2501,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 *     entity.translateTo(10, 0, 0);
 	 * @return {*}
 	 */
-	translateTo (x?: number, y?: number, z?: number) {
+	translateTo (x: number, y: number, z: number): this | IgeEntity {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._translate.x = x;
 			this._translate.y = y;

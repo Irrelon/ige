@@ -1,5 +1,7 @@
+import { ige } from "../instance.js";
 import IgeUiEntity from "./IgeUiEntity.js";
 import IgeTween from "./IgeTween.js";
+import { degreesToRadians } from "../services/utils.js";
 /**
  * Creates a new particle emitter.
  */
@@ -8,6 +10,46 @@ class IgeParticleEmitter extends IgeUiEntity {
         super();
         this.classId = "IgeParticleEmitter";
         this.IgeParticleEmitter = true;
+        this._started = false;
+        this._applyDepthToParticles = true;
+        this._applyLayerToParticles = true;
+        this._quantityTimespan = 1000;
+        this._quantityBase = 10;
+        this._quantityVariance = [0, 0];
+        this._quantityMax = 0; // Unlimited = 0
+        this._quantityProduced = 0;
+        this._translateBaseX = 0;
+        this._translateBaseY = 0;
+        this._translateBaseZ = 0;
+        this._translateVarianceX = [0, 0];
+        this._translateVarianceY = [0, 0];
+        this._translateVarianceZ = [0, 0];
+        this._rotateBase = 0;
+        this._rotateVariance = [0, 0];
+        this._deathRotateBase = 0;
+        this._deathRotateVariance = [0, 0];
+        this._scaleBaseX = 0;
+        this._scaleBaseY = 0;
+        this._scaleBaseZ = 0;
+        this._scaleVarianceX = [0, 0];
+        this._scaleVarianceY = [0, 0];
+        this._scaleVarianceZ = [0, 0];
+        this._scaleLockAspect = false;
+        this._deathScaleBaseX = 1;
+        this._deathScaleBaseY = 1;
+        this._deathScaleBaseZ = 1;
+        this._deathScaleVarianceX = [0, 0];
+        this._deathScaleVarianceY = [0, 0];
+        this._deathScaleVarianceZ = [0, 0];
+        this._deathScaleLockAspect = false;
+        this._opacityBase = 1;
+        this._opacityVariance = [0, 0];
+        this._deathOpacityBase = 1;
+        this._deathOpacityVariance = [0, 0];
+        this._lifeBase = 1000;
+        this._lifeVariance = [0, 0];
+        this._maxParticles = 1;
+        this._particlesPerTimeVector = 1;
         // Set some defaults
         this._currentDelta = 0;
         this._started = false;
@@ -51,7 +93,7 @@ class IgeParticleEmitter extends IgeUiEntity {
     /**
      * Sets the class that all particles emitted from this
      * emitter will be created from.
-     * @param {IgeEntity} obj
+     * @param {IgeParticle} obj
      * @return {*}
      */
     particle(obj) {
@@ -284,7 +326,8 @@ class IgeParticleEmitter extends IgeUiEntity {
     stopAndKill() {
         this._started = false;
         // Loop the particles array and destroy all the particles
-        let arr = this._particles, arrCount = arr.length;
+        const arr = this._particles;
+        let arrCount = arr.length;
         while (arrCount--) {
             arr[arrCount].destroy();
         }
@@ -304,10 +347,10 @@ class IgeParticleEmitter extends IgeUiEntity {
      * @return {Number} Returns the final value based upon the base
      * value and variance range.
      */
-    baseAndVarianceValue(base, variance, floorIt) {
+    baseAndVarianceValue(base, variance, floorIt = false) {
         base = base || 0;
         variance = variance || [0, 0];
-        let variant = 0;
+        let variant;
         if (floorIt) {
             variant = Math.floor(variance[0] + Math.random() * (variance[1] - variance[0]));
         }
@@ -318,11 +361,14 @@ class IgeParticleEmitter extends IgeUiEntity {
     }
     vectorFromBaseMinMax(vectorData) {
         if (vectorData.min && vectorData.max) {
-            let { base } = vectorData, { min } = vectorData, { max } = vectorData, newVector = {};
-            newVector.x = base.x + (min.x + Math.random() * (max.x - min.x));
-            newVector.y = base.y + (min.y + Math.random() * (max.y - min.y));
-            newVector.z = base.z + (min.z + Math.random() * (max.z - min.z));
-            return newVector;
+            const base = vectorData.base;
+            const min = vectorData.min;
+            const max = vectorData.max;
+            return {
+                x: base.x + (min.x + Math.random() * (max.x - min.x)),
+                y: base.y + (min.y + Math.random() * (max.y - min.y)),
+                z: base.z + (min.z + Math.random() * (max.z - min.z))
+            };
         }
         else {
             // There was no variance data so return the base vector
@@ -335,7 +381,9 @@ class IgeParticleEmitter extends IgeUiEntity {
      * @param ctx
      */
     tick(ctx) {
-        this._currentDelta += this._ige._tickDelta;
+        this._currentDelta += ige.engine._tickDelta;
+        if (!this._particle)
+            return;
         // Check if the emitter is mounted to anything and started, if not
         // then don't bother creating particles!
         if (this._parent && this._started) {
@@ -346,7 +394,7 @@ class IgeParticleEmitter extends IgeUiEntity {
                 velocityVector, newVecX, newVecY, rotX, rotY, cosRot, sinRot, scaleX, scaleY, scaleZ, rotate, opacity, life, 
                 //linearForceAngle,
                 //linearForcePower,
-                linearForceVector, deathScaleX, deathScaleY, deathScaleZ, deathRotate, deathOpacity, tempParticle, tweens, scaleProps, i;
+                linearForceVector, deathScaleX = 1, deathScaleY = 1, deathScaleZ = 1, deathRotate, deathOpacity, tempParticle, tweens, scaleProps, i;
                 if (this._currentDelta > this._quantityTimespan) {
                     this._currentDelta = this._quantityTimespan;
                 }
@@ -443,7 +491,7 @@ class IgeParticleEmitter extends IgeUiEntity {
                                 deathOpacity = this.baseAndVarianceValue(this._deathOpacityBase, this._deathOpacityVariance, false);
                             }
                             // Create the particle entity
-                            tempParticle = new this._particle(this._ige, this);
+                            tempParticle = new this._particle(this);
                             // Add the current transform of the emitter to the final
                             // particle transforms
                             if (this._ignoreCamera) {
@@ -475,20 +523,20 @@ class IgeParticleEmitter extends IgeUiEntity {
                                 tempParticle.layer(this._layer);
                             }
                             if (typeof (velocityVector) === "object") {
-                                tempParticle.velocity.vector3(velocityVector, false);
+                                tempParticle.components.velocity.vector3(velocityVector, false);
                             }
                             if (typeof (linearForceVector) === "object") {
-                                tempParticle.velocity.linearForceVector3(linearForceVector, false);
+                                tempParticle.components.velocity.linearForceVector3(linearForceVector, false);
                             }
                             tweens = [];
                             if (typeof (deathRotate) !== "undefined") {
-                                tweens.push(new IgeTween(this._ige)
+                                tweens.push(new IgeTween(ige)
                                     .targetObj(tempParticle._rotate)
                                     .properties({ "z": degreesToRadians(deathRotate) })
                                     .duration(life));
                             }
                             if (typeof (deathOpacity) !== "undefined") {
-                                tweens.push(new IgeTween(this._ige)
+                                tweens.push(new IgeTween(ige)
                                     .targetObj(tempParticle)
                                     .properties({ "_opacity": deathOpacity })
                                     .duration(life));
@@ -504,7 +552,7 @@ class IgeParticleEmitter extends IgeUiEntity {
                                 scaleProps.z = deathScaleZ;
                             }
                             if (scaleProps.x || scaleProps.y || scaleProps.z) {
-                                tweens.push(new IgeTween(this._ige)
+                                tweens.push(new IgeTween()
                                     .targetObj(tempParticle._scale)
                                     .properties(scaleProps)
                                     .duration(life));
@@ -534,31 +582,6 @@ class IgeParticleEmitter extends IgeUiEntity {
      */
     particles() {
         return this._particles;
-    }
-    /**
-     * Returns a string containing a code fragment that when
-     * evaluated will reproduce this object's properties via
-     * chained commands. This method will only check for
-     * properties that are directly related to this class.
-     * Other properties are handled by their own class method.
-     * @return {String}
-     */
-    _stringify(options) {
-        // Get the properties for all the super-classes
-        let str = IgeUiEntity.prototype._stringify.call(this), i;
-        return str;
-        // TODO: WRITE THIS FOR THIS CLASS - EPIC AMOUNT OF WORK HERE
-        // Loop properties and add property assignment code to string
-        for (i in this) {
-            if (this.hasOwnProperty(i) && this[i] !== undefined) {
-                switch (i) {
-                    case "":
-                        str += ".text(" + this.text() + ")";
-                        break;
-                }
-            }
-        }
-        return str;
     }
 }
 export default IgeParticleEmitter;

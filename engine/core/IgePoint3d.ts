@@ -12,6 +12,7 @@ class IgePoint3d {
 	x2 = 0;
 	y2 = 0;
 	z2 = 0;
+	scale?: number;
 	_floor = false;
 
 	constructor (x = 0, y = 0, z = 0, floor = false) {

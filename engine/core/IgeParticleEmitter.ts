@@ -1,5 +1,18 @@
+import { ige } from "../instance";
 import IgeUiEntity from "./IgeUiEntity";
-import IgeTween from "./IgeTween";
+import IgeTween, { IgeTweenPropertyObject } from "./IgeTween";
+import IgePoint3d from "./IgePoint3d";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import IgeParticle from "./IgeParticle";
+import { IgeObject } from "./IgeObject";
+import { degreesToRadians } from "../services/utils";
+import IgeVelocityComponent from "../components/IgeVelocityComponent";
+
+export interface IgeParticleVectorBaseMinMax {
+	base: IgePoint3d;
+	min: IgePoint3d;
+	max: IgePoint3d;
+}
 
 /**
  * Creates a new particle emitter.
@@ -7,6 +20,54 @@ import IgeTween from "./IgeTween";
 class IgeParticleEmitter extends IgeUiEntity {
 	classId = "IgeParticleEmitter";
 	IgeParticleEmitter = true;
+
+	_particle?: typeof IgeParticle;
+
+	_currentDelta: number;
+	_started: boolean = false;
+	_particles: IgeParticle[];
+	_particleMountTarget?: IgeObject;
+	_applyDepthToParticles: boolean = true;
+	_applyLayerToParticles: boolean = true;
+	_quantityTimespan: number = 1000;
+	_quantityBase: number = 10;
+	_quantityVariance: [number, number] = [0, 0];
+	_quantityMax: number = 0; // Unlimited = 0
+	_quantityProduced: number = 0;
+	_translateBaseX: number = 0;
+	_translateBaseY: number = 0;
+	_translateBaseZ: number = 0;
+	_translateVarianceX: [number, number] = [0, 0];
+	_translateVarianceY: [number, number] = [0, 0];
+	_translateVarianceZ: [number, number] = [0, 0];
+	_rotateBase: number = 0;
+	_rotateVariance: [number, number] = [0, 0];
+	_deathRotateBase: number = 0;
+	_deathRotateVariance: [number, number] = [0, 0];
+	_scaleBaseX: number = 0;
+	_scaleBaseY: number = 0;
+	_scaleBaseZ: number = 0;
+	_scaleVarianceX: [number, number] = [0, 0];
+	_scaleVarianceY: [number, number] = [0, 0];
+	_scaleVarianceZ: [number, number] = [0, 0];
+	_scaleLockAspect: boolean = false;
+	_deathScaleBaseX: number = 1;
+	_deathScaleBaseY: number = 1;
+	_deathScaleBaseZ: number = 1;
+	_deathScaleVarianceX: [number, number] = [0, 0];
+	_deathScaleVarianceY: [number, number] = [0, 0];
+	_deathScaleVarianceZ: [number, number] = [0, 0];
+	_deathScaleLockAspect: boolean = false;
+	_opacityBase: number = 1;
+	_opacityVariance: [number, number] = [0, 0];
+	_deathOpacityBase: number = 1;
+	_deathOpacityVariance: [number, number] = [0, 0];
+	_lifeBase: number = 1000;
+	_lifeVariance: [number, number] = [0, 0];
+	_velocityVector?: IgeParticleVectorBaseMinMax;
+	_linearForceVector?: IgeParticleVectorBaseMinMax;
+	_maxParticles: number = 1;
+	_particlesPerTimeVector: number = 1;
 
 	constructor () {
 		super();
@@ -56,196 +117,196 @@ class IgeParticleEmitter extends IgeUiEntity {
 	/**
 	 * Sets the class that all particles emitted from this
 	 * emitter will be created from.
-	 * @param {IgeEntity} obj
+	 * @param {IgeParticle} obj
 	 * @return {*}
 	 */
-	particle (obj) {
+	particle (obj: typeof IgeParticle) {
 		this._particle = obj;
 		return this;
 	}
 
-	particleMountTarget (obj) {
+	particleMountTarget (obj: IgeObject) {
 		this._particleMountTarget = obj;
 		return this;
 	}
 
-	applyDepthToParticles (val) {
+	applyDepthToParticles (val: boolean) {
 		this._applyDepthToParticles = val;
 		return this;
 	}
 
-	applyLayerToParticles (val) {
+	applyLayerToParticles (val: boolean) {
 		this._applyLayerToParticles = val;
 		return this;
 	}
 
-	quantityTimespan (val) {
+	quantityTimespan (val: number) {
 		this._quantityTimespan = val;
 		return this;
 	}
 
-	quantityBase (val) {
+	quantityBase (val: number) {
 		this._quantityBase = val;
 		return this;
 	}
 
-	quantityVariance (a, b) {
+	quantityVariance (a: number, b: number) {
 		this._quantityVariance = [a, b];
 		return this;
 	}
 
-	quantityMax (val) {
+	quantityMax (val: number) {
 		this._quantityMax = val;
 		this._quantityProduced = 0;
 		return this;
 	}
 
-	translateBaseX (val) {
+	translateBaseX (val: number) {
 		this._translateBaseX = val;
 		return this;
 	}
 
-	translateBaseY (val) {
+	translateBaseY (val: number) {
 		this._translateBaseY = val;
 		return this;
 	}
 
-	translateBaseZ (val) {
+	translateBaseZ (val: number) {
 		this._translateBaseZ = val;
 		return this;
 	}
 
-	translateVarianceX (a, b) {
+	translateVarianceX (a: number, b: number) {
 		this._translateVarianceX = [a, b];
 		return this;
 	}
 
-	translateVarianceY (a, b) {
+	translateVarianceY (a: number, b: number) {
 		this._translateVarianceY = [a, b];
 		return this;
 	}
 
-	translateVarianceZ (a, b) {
+	translateVarianceZ (a: number, b: number) {
 		this._translateVarianceZ = [a, b];
 		return this;
 	}
 
-	rotateBase (val) {
+	rotateBase (val: number) {
 		this._rotateBase = val;
 		return this;
 	}
 
-	rotateVariance (a, b) {
+	rotateVariance (a: number, b: number) {
 		this._rotateVariance = [a, b];
 		return this;
 	}
 
-	deathRotateBase (val) {
+	deathRotateBase (val: number) {
 		this._deathRotateBase = val;
 		return this;
 	}
 
-	deathRotateVariance (a, b) {
+	deathRotateVariance (a: number, b: number) {
 		this._deathRotateVariance = [a, b];
 		return this;
 	}
 
-	scaleBaseX (val) {
+	scaleBaseX (val: number) {
 		this._scaleBaseX = val;
 		return this;
 	}
 
-	scaleBaseY (val) {
+	scaleBaseY (val: number) {
 		this._scaleBaseY = val;
 		return this;
 	}
 
-	scaleBaseZ (val) {
+	scaleBaseZ (val: number) {
 		this._scaleBaseZ = val;
 		return this;
 	}
 
-	scaleVarianceX (a, b) {
+	scaleVarianceX (a: number, b: number) {
 		this._scaleVarianceX = [a, b];
 		return this;
 	}
 
-	scaleVarianceY (a, b) {
+	scaleVarianceY (a: number, b: number) {
 		this._scaleVarianceY = [a, b];
 		return this;
 	}
 
-	scaleVarianceZ (a, b) {
+	scaleVarianceZ (a: number, b: number) {
 		this._scaleVarianceZ = [a, b];
 		return this;
 	}
 
-	scaleLockAspect (val) {
+	scaleLockAspect (val: boolean) {
 		this._scaleLockAspect = val;
 		return this;
 	}
 
-	deathScaleBaseX (val) {
+	deathScaleBaseX (val: number) {
 		this._deathScaleBaseX = val;
 		return this;
 	}
 
-	deathScaleBaseY (val) {
+	deathScaleBaseY (val: number) {
 		this._deathScaleBaseY = val;
 		return this;
 	}
 
-	deathScaleBaseZ (val) {
+	deathScaleBaseZ (val: number) {
 		this._deathScaleBaseZ = val;
 		return this;
 	}
 
-	deathScaleVarianceX (a, b) {
+	deathScaleVarianceX (a: number, b: number) {
 		this._deathScaleVarianceX = [a, b];
 		return this;
 	}
 
-	deathScaleVarianceY (a, b) {
+	deathScaleVarianceY (a: number, b: number) {
 		this._deathScaleVarianceY = [a, b];
 		return this;
 	}
 
-	deathScaleVarianceZ (a, b) {
+	deathScaleVarianceZ (a: number, b: number) {
 		this._deathScaleVarianceZ = [a, b];
 		return this;
 	}
 
-	deathScaleLockAspect (val) {
+	deathScaleLockAspect (val: boolean) {
 		this._deathScaleLockAspect = val;
 		return this;
 	}
 
-	opacityBase (val) {
+	opacityBase (val: number) {
 		this._opacityBase = val;
 		return this;
 	}
 
-	opacityVariance (a, b) {
+	opacityVariance (a: number, b: number) {
 		this._opacityVariance = [a, b];
 		return this;
 	}
 
-	deathOpacityBase (val) {
+	deathOpacityBase (val: number) {
 		this._deathOpacityBase = val;
 		return this;
 	}
 
-	deathOpacityVariance (a, b) {
+	deathOpacityVariance (a: number, b: number) {
 		this._deathOpacityVariance = [a, b];
 		return this;
 	}
 
-	lifeBase (val) {
+	lifeBase (val: number) {
 		this._lifeBase = val;
 		return this;
 	}
 
-	lifeVariance (a, b) {
+	lifeVariance (a: number, b: number) {
 		this._lifeVariance = [a, b];
 		return this;
 	}
@@ -258,7 +319,7 @@ class IgeParticleEmitter extends IgeUiEntity {
 	 * @param {IgePoint3d} minVector The minimum vector.
 	 * @param {IgePoint3d} maxVector The maximum vector.
 	 */
-	velocityVector (baseVector, minVector, maxVector) {
+	velocityVector (baseVector: IgePoint3d, minVector: IgePoint3d, maxVector: IgePoint3d) {
 		this._velocityVector = {
 			"base": baseVector,
 			"min": minVector,
@@ -276,7 +337,7 @@ class IgeParticleEmitter extends IgeUiEntity {
 	 * @param {IgePoint3d} minVector The minimum vector.
 	 * @param {IgePoint3d} maxVector The maximum vector.
 	 */
-	linearForceVector (baseVector, minVector, maxVector) {
+	linearForceVector (baseVector: IgePoint3d, minVector: IgePoint3d, maxVector: IgePoint3d) {
 		this._linearForceVector = {
 			"base": baseVector,
 			"min": minVector,
@@ -337,8 +398,8 @@ class IgeParticleEmitter extends IgeUiEntity {
 		this._started = false;
 
 		// Loop the particles array and destroy all the particles
-		let arr = this._particles,
-			arrCount = arr.length;
+		const arr = this._particles;
+		let arrCount = arr.length;
 
 		while (arrCount--) {
 			arr[arrCount].destroy();
@@ -362,10 +423,10 @@ class IgeParticleEmitter extends IgeUiEntity {
 	 * @return {Number} Returns the final value based upon the base
 	 * value and variance range.
 	 */
-	baseAndVarianceValue (base, variance, floorIt) {
+	baseAndVarianceValue (base: number, variance: [number, number], floorIt: boolean = false) {
 		base = base || 0;
 		variance = variance || [0, 0];
-		let variant = 0;
+		let variant;
 
 		if (floorIt) {
 			variant = Math.floor(variance[0] + Math.random() * (variance[1] - variance[0]));
@@ -376,18 +437,16 @@ class IgeParticleEmitter extends IgeUiEntity {
 		return base + variant;
 	}
 
-	vectorFromBaseMinMax (vectorData) {
+	vectorFromBaseMinMax (vectorData: IgeParticleVectorBaseMinMax): IgePoint3d {
 		if (vectorData.min && vectorData.max) {
-			let {base} = vectorData,
-				{min} = vectorData,
-				{max} = vectorData,
-				newVector = {};
-
-			newVector.x = base.x + (min.x + Math.random() * (max.x - min.x));
-			newVector.y = base.y + (min.y + Math.random() * (max.y - min.y));
-			newVector.z = base.z + (min.z + Math.random() * (max.z - min.z));
-
-			return newVector;
+			const base = vectorData.base;
+			const min = vectorData.min;
+			const max = vectorData.max;
+			return {
+				x: base.x + (min.x + Math.random() * (max.x - min.x)),
+				y: base.y + (min.y + Math.random() * (max.y - min.y)),
+				z: base.z + (min.z + Math.random() * (max.z - min.z))
+			} as IgePoint3d;
 		} else {
 			// There was no variance data so return the base vector
 			return vectorData.base;
@@ -399,8 +458,10 @@ class IgeParticleEmitter extends IgeUiEntity {
 	 * responsible for spawning and controlling.
 	 * @param ctx
 	 */
-	tick (ctx) {
-		this._currentDelta += this._ige._tickDelta;
+	tick (ctx: IgeCanvasRenderingContext2d) {
+		this._currentDelta += ige.engine._tickDelta;
+
+		if (!this._particle) return;
 
 		// Check if the emitter is mounted to anything and started, if not
 		// then don't bother creating particles!
@@ -425,14 +486,14 @@ class IgeParticleEmitter extends IgeUiEntity {
 					//linearForceAngle,
 					//linearForcePower,
 					linearForceVector,
-					deathScaleX,
-					deathScaleY,
-					deathScaleZ,
+					deathScaleX = 1,
+					deathScaleY = 1,
+					deathScaleZ = 1,
 					deathRotate,
 					deathOpacity,
 					tempParticle,
 					tweens,
-					scaleProps,
+					scaleProps: IgeTweenPropertyObject,
 					i;
 
 				if (this._currentDelta > this._quantityTimespan) {
@@ -494,6 +555,7 @@ class IgeParticleEmitter extends IgeUiEntity {
 							// Generate the particle's initial scale
 							scaleX = this.baseAndVarianceValue(this._scaleBaseX, this._scaleVarianceX, false);
 							scaleZ = scaleY = scaleX;
+
 							if (!this._scaleLockAspect) {
 								scaleY = this.baseAndVarianceValue(this._scaleBaseY, this._scaleVarianceY, false);
 								scaleZ = this.baseAndVarianceValue(this._scaleBaseZ, this._scaleVarianceZ, false);
@@ -573,7 +635,7 @@ class IgeParticleEmitter extends IgeUiEntity {
 							}
 
 							// Create the particle entity
-							tempParticle = new this._particle(this._ige, this);
+							tempParticle = new this._particle(this);
 
 							// Add the current transform of the emitter to the final
 							// particle transforms
@@ -602,28 +664,32 @@ class IgeParticleEmitter extends IgeUiEntity {
 							tempParticle.scaleTo(scaleX, scaleY, scaleZ);
 							tempParticle.opacity(opacity);
 
-							if (this._applyDepthToParticles) { tempParticle.depth(this._depth); }
-							if (this._applyLayerToParticles) { tempParticle.layer(this._layer); }
+							if (this._applyDepthToParticles) {
+								tempParticle.depth(this._depth);
+							}
+							if (this._applyLayerToParticles) {
+								tempParticle.layer(this._layer);
+							}
 
 							if (typeof (velocityVector) === "object") {
-								tempParticle.velocity.vector3(velocityVector, false);
+								(tempParticle.components.velocity as IgeVelocityComponent).vector3(velocityVector, false);
 							}
 
 							if (typeof (linearForceVector) === "object") {
-								tempParticle.velocity.linearForceVector3(linearForceVector, false);
+								(tempParticle.components.velocity as IgeVelocityComponent).linearForceVector3(linearForceVector, false);
 							}
 
 							tweens = [];
 							if (typeof (deathRotate) !== "undefined") {
-								tweens.push(new IgeTween(this._ige)
+								tweens.push(new IgeTween(ige)
 									.targetObj(tempParticle._rotate)
-									.properties({"z": degreesToRadians(deathRotate)})
+									.properties({ "z": degreesToRadians(deathRotate) })
 									.duration(life));
 							}
 							if (typeof (deathOpacity) !== "undefined") {
-								tweens.push(new IgeTween(this._ige)
+								tweens.push(new IgeTween(ige)
 									.targetObj(tempParticle)
-									.properties({"_opacity": deathOpacity})
+									.properties({ "_opacity": deathOpacity })
 									.duration(life));
 							}
 
@@ -639,10 +705,12 @@ class IgeParticleEmitter extends IgeUiEntity {
 							}
 
 							if (scaleProps.x || scaleProps.y || scaleProps.z) {
-								tweens.push(new IgeTween(this._ige)
-									.targetObj(tempParticle._scale)
-									.properties(scaleProps)
-									.duration(life));
+								tweens.push(
+									new IgeTween()
+										.targetObj(tempParticle._scale)
+										.properties(scaleProps)
+										.duration(life)
+								);
 							}
 
 							if (typeof (life) === "number") {
@@ -685,25 +753,25 @@ class IgeParticleEmitter extends IgeUiEntity {
 	 * Other properties are handled by their own class method.
 	 * @return {String}
 	 */
-	_stringify (options) {
-		// Get the properties for all the super-classes
-		let str = IgeUiEntity.prototype._stringify.call(this), i;
-		return str;
-
-		// TODO: WRITE THIS FOR THIS CLASS - EPIC AMOUNT OF WORK HERE
-		// Loop properties and add property assignment code to string
-		for (i in this) {
-			if (this.hasOwnProperty(i) && this[i] !== undefined) {
-				switch (i) {
-				case "":
-					str += ".text(" + this.text() + ")";
-					break;
-				}
-			}
-		}
-
-		return str;
-	}
+	// _stringify (options) {
+	// 	// Get the properties for all the super-classes
+	// 	let str = IgeUiEntity.prototype._stringify.call(this), i;
+	// 	return str;
+	//
+	// 	// TODO: WRITE THIS FOR THIS CLASS - EPIC AMOUNT OF WORK HERE
+	// 	// Loop properties and add property assignment code to string
+	// 	for (i in this) {
+	// 		if (this.hasOwnProperty(i) && this[i] !== undefined) {
+	// 			switch (i) {
+	// 			case "":
+	// 				str += ".text(" + this.text() + ")";
+	// 				break;
+	// 			}
+	// 		}
+	// 	}
+	//
+	// 	return str;
+	// }
 }
 
 export default IgeParticleEmitter;

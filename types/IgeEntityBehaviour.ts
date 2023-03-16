@@ -3,7 +3,7 @@ import type { IgeObject } from "../engine/core/IgeObject";
 
 export type IgeEntityBehaviourMethod<ParentType extends IgeObject = IgeObject> = (ige: Ige, parentObject: ParentType, ...args: any[]) => any;
 
-export interface IgeEntityBehaviour<ParentType extends IgeObject = IgeObject> {
+export interface IgeEntityBehaviour {
 	id: string;
-	method: IgeEntityBehaviourMethod<ParentType>;
+	method: IgeEntityBehaviourMethod<any>;
 }
