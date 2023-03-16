@@ -1,3 +1,4 @@
+import { ige } from "../../instance.js";
 import { arrPull } from "../../services/utils.js";
 import IgeComponent from "../../core/IgeComponent.js";
 import { IgeMountMode } from "../../../enums/IgeMountMode.js";
@@ -6,6 +7,32 @@ class IgeEntityManager extends IgeComponent {
         super(entity, options);
         this.classId = "IgeEntityManager";
         this.componentId = "entityManager";
+        /**
+         * Called each update frame from the component parent and calls various private
+         * methods to ensure that entities that should be mounted are mounted and those
+         * that are to be unmounted are unmounted.
+         * @private
+         */
+        this._updateBehaviour = () => {
+            var _a;
+            // Draw visible area rect
+            const rect = (_a = ige.engine._currentViewport) === null || _a === void 0 ? void 0 : _a.viewArea();
+            /*new IgeEntity()
+                .id('visArea')
+                .texture(this.gameTexture.simpleBox)
+                .opacity(0.5)
+                .mount(ige.$('objectScene'));*/
+            /*ige.$('visArea')
+                .translateTo(rect.x + (rect.width / 2), rect.y + (rect.height / 2), 0)
+                .height(rect.height)
+                .width(rect.width);*/
+            // Get our instance back
+            const self = this.entityManager;
+            self._updateOrphans();
+            self._updateChildren();
+            self._processMountQueue();
+            self._processUnMountQueue();
+        };
         /**
          * Checks all the mounted entities of our component parent are still supposed
          * to be in the scenegraph and if not, adds them to the un-mount queue. Also
@@ -93,31 +120,6 @@ class IgeEntityManager extends IgeComponent {
         entity._orphans = [];
         // Set a method (behaviour) that will be called on every update
         entity.addBehaviour("entManager", this._updateBehaviour, false);
-    }
-    /**
-     * Called each update frame from the component parent and calls various private
-     * methods to ensure that entities that should be mounted are mounted and those
-     * that are to be unmounted are unmounted.
-     * @private
-     */
-    _updateBehaviour(ctx) {
-        // Draw visible area rect
-        const rect = ige._currentViewport.viewArea();
-        /*new IgeEntity()
-            .id('visArea')
-            .texture(this.gameTexture.simpleBox)
-            .opacity(0.5)
-            .mount(ige.$('objectScene'));*/
-        /*ige.$('visArea')
-            .translateTo(rect.x + (rect.width / 2), rect.y + (rect.height / 2), 0)
-            .height(rect.height)
-            .width(rect.width);*/
-        // Get our instance back
-        const self = this.entityManager;
-        self._updateOrphans();
-        self._updateChildren();
-        self._processMountQueue();
-        self._processUnMountQueue();
     }
     /**
      * Checks all the un-mounted entities of our component parent to see if they are

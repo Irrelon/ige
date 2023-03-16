@@ -1,22 +1,25 @@
+import { ige } from "../instance";
 import IgeComponent from "../core/IgeComponent";
 import {arrPull} from "../services/utils";
 import IgeEntity from "../core/IgeEntity";
+import IgeUiElement, { IgeUiStyleObject } from "../core/IgeUiElement";
+import type IgeInputComponent from "./IgeInputComponent";
 
 class IgeUiManagerComponent extends IgeComponent {
 	static componentTargetClass = "Ige";
 	classId = "IgeUiManagerComponent";
 	componentId = "ui";
 
+	_focus: IgeUiElement | null = null; // The element that currently has focus
+	_caret: null = null; // The caret position within the focused element
+	_register: IgeUiElement[] = [];
+	_styles: Record<string, IgeUiStyleObject> = {};
+	_elementsByStyle: Record<string, IgeUiElement[]> = {};
+	
 	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
-		this._focus = null; // The element that currently has focus
-		this._caret = null; // The caret position within the focused element
-		this._register = [];
-		this._styles = {};
-		this._elementsByStyle = {};
-
-		this._ige.input.on("keyDown", (event) => {
+		(ige.engine.components.input as IgeInputComponent).on("keyDown", (event) => {
 			this._keyDown(event);
 		});
 	}
@@ -28,7 +31,7 @@ class IgeUiManagerComponent extends IgeComponent {
 	 * style.
 	 * @returns {*}
 	 */
-	style (name, data) {
+	style (name?: string, data?: IgeUiStyleObject) {
 		if (name !== undefined) {
 			if (data !== undefined) {
 				// Set the data against the name, update any elements using the style
@@ -47,7 +50,7 @@ class IgeUiManagerComponent extends IgeComponent {
 	 * Registers a UI element with the UI manager.
 	 * @param elem
 	 */
-	registerElement (elem) {
+	registerElement (elem: IgeUiElement) {
 		this._register.push(elem);
 	}
 
@@ -55,7 +58,7 @@ class IgeUiManagerComponent extends IgeComponent {
 	 * Un-registers a UI element with the UI manager.
 	 * @param elem
 	 */
-	unRegisterElement (elem) {
+	unRegisterElement (elem: IgeUiElement) {
 		arrPull(this._register, elem);
 
 		// Kill any styles defined for this element id
@@ -70,7 +73,7 @@ class IgeUiManagerComponent extends IgeComponent {
 	 * Registers a UI element against a style for quick lookup.
 	 * @param elem
 	 */
-	registerElementStyle (elem) {
+	registerElementStyle (elem: IgeUiElement) {
 		if (elem && elem._styleClass) {
 			this._elementsByStyle[elem._styleClass] = this._elementsByStyle[elem._styleClass] || [];
 			this._elementsByStyle[elem._styleClass].push(elem);
@@ -81,18 +84,18 @@ class IgeUiManagerComponent extends IgeComponent {
 	 * Un-registers a UI element from a style.
 	 * @param elem
 	 */
-	unRegisterElementStyle (elem) {
+	unRegisterElementStyle (elem: IgeUiElement) {
 		if (elem && elem._styleClass) {
 			this._elementsByStyle[elem._styleClass] = this._elementsByStyle[elem._styleClass] || [];
 			this._elementsByStyle[elem._styleClass].push(elem);
 		}
 	}
 
-	canFocus (elem) {
+	canFocus (elem: IgeUiElement) {
 		return elem._allowFocus;
 	}
 
-	focus (elem) {
+	focus (elem: IgeUiElement) {
 		if (elem !== undefined) {
 			if (elem !== this._focus) {
 				// The element is not our current focus so focus to it
@@ -123,7 +126,7 @@ class IgeUiManagerComponent extends IgeComponent {
 		return false;
 	}
 
-	blur (elem) {
+	blur (elem: IgeUiElement) {
 		//console.log('blur', elem._id, elem);
 		if (elem !== undefined) {
 			if (elem === this._focus) {
@@ -143,19 +146,19 @@ class IgeUiManagerComponent extends IgeComponent {
 		return false;
 	}
 
-	_keyUp = (event) => {
+	_keyUp = (event: Event) => {
 		// Direct the key event to the focused element
 		if (this._focus) {
 			this._focus.emit("keyUp", event);
-			this._ige.input.stopPropagation();
+			(ige.engine.components.input as IgeInputComponent).stopPropagation();
 		}
 	}
 
-	_keyDown = (event) => {
+	_keyDown = (event: Event) => {
 		// Direct the key event to the focused element
 		if (this._focus) {
 			this._focus.emit("keyDown", event);
-			this._ige.input.stopPropagation();
+			(ige.engine.components.input as IgeInputComponent).stopPropagation();
 		}
 	}
 }

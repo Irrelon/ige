@@ -4,6 +4,13 @@ class IgeGamePadComponent extends IgeComponent {
         super(entity, options);
         this["classId"] = "IgeGamePadComponent";
         this["componentId"] = "gamePad";
+        /**
+         * A function called with each requestAnimationFrame(). Polls the gamepad
+         * status and schedules another poll.
+         */
+        this._behaviour = (entity) => {
+            entity.gamePad.pollStatus();
+        };
         this.gamepadAvailable = null;
         // A number of typical buttons recognized by Gamepad API and mapped to
         // standard controls. Any extraneous buttons will have larger indexes.
@@ -88,13 +95,6 @@ class IgeGamePadComponent extends IgeComponent {
      */
     "stopPolling"() {
         this.ticking = false;
-    }
-    /**
-     * A function called with each requestAnimationFrame(). Polls the gamepad
-     * status and schedules another poll.
-     */
-    "_behaviour"(ige, entity) {
-        entity.gamePad.pollStatus();
     }
     /**
      * Checks for the gamepad status. Monitors the necessary data and notices

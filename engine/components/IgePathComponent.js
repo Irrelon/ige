@@ -499,7 +499,7 @@ class IgePathComponent extends IgeComponent {
          * rendered to.
          * @private
          */
-        this._updateBehaviour = (tmpIge, entity, ctx) => {
+        this._updateBehaviour = (entity, ctx) => {
             if (!this._active)
                 return;
             if (this._startTime === undefined)
@@ -659,7 +659,7 @@ class IgePathComponent extends IgeComponent {
             this._points.splice(fromIndex, replaceLength, ...newPoints);
             this._calculatePathData();
         };
-        this._tickBehaviour = (tmpIge, entity, ctx) => {
+        this._tickBehaviour = (entity, ctx) => {
             if (!isClient)
                 return;
             if (!this._tileMap)

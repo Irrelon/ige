@@ -32,6 +32,22 @@ class IgeTimeComponent extends IgeComponent {
             }
             return this;
         };
+        this._update = () => {
+            // Get the ige tick delta and tell our timers / intervals that an update has occurred
+            const delta = ige.engine._tickDelta;
+            const arr = this._timers;
+            let arrCount = arr.length;
+            while (arrCount--) {
+                arr[arrCount]
+                    .addTime(delta)
+                    .update();
+            }
+            // Process removing any timers that were scheduled for removal
+            this._processRemovals();
+            // Now process any additions to the timers that were scheduled to be added
+            this._processAdditions();
+            return this;
+        };
         this._processAdditions = () => {
             const arr = this._additions;
             let arrCount = arr.length;
@@ -55,23 +71,7 @@ class IgeTimeComponent extends IgeComponent {
             return this;
         };
         // Add the animation behaviour to the entity
-        entity.addBehaviour("time", this._update.bind(this));
-    }
-    _update() {
-        // Get the ige tick delta and tell our timers / intervals that an update has occurred
-        const delta = ige.engine._tickDelta;
-        const arr = this._timers;
-        let arrCount = arr.length;
-        while (arrCount--) {
-            arr[arrCount]
-                .addTime(delta)
-                .update();
-        }
-        // Process removing any timers that were scheduled for removal
-        this._processRemovals();
-        // Now process any additions to the timers that were scheduled to be added
-        this._processAdditions();
-        return this;
+        entity.addBehaviour("time", this._update);
     }
 }
 export default IgeTimeComponent;

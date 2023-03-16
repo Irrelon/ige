@@ -1,3 +1,4 @@
+import { ige } from "../instance.js";
 import IgeUiEntity from "./IgeUiEntity.js";
 /**
  * Creates a new UI element. UI elements use more resources and CPU
@@ -6,23 +7,20 @@ import IgeUiEntity from "./IgeUiEntity.js";
  * defined using the IgeUiManagerComponent.
  */
 class IgeUiElement extends IgeUiEntity {
-    /**
-     * Constructor
-     */
-    constructor(ige) {
-        super(ige);
+    constructor() {
+        super();
         this.classId = "IgeUiElement";
-        if (!this._ige.ui)
-            throw new Error("Engine UI component has not been added to the engine, please add the component IgeUiManagerComponent to the engine");
-        this._ige.ui.registerElement(this);
         this._focused = false;
         this._allowHover = true;
         this._allowFocus = true;
         this._allowActive = true;
+        if (!ige.engine.components.ui)
+            throw new Error("Engine UI component has not been added to the engine, please add the component IgeUiManagerComponent to the engine");
+        ige.engine.components.ui.registerElement(this);
         this.on("mouseOver", () => {
             if (this._allowHover) {
                 this._updateStyle();
-                this._ige.input.stopPropagation();
+                ige.engine.components.input.stopPropagation();
             }
             else {
                 this._mouseStateOver = false;
@@ -31,7 +29,7 @@ class IgeUiElement extends IgeUiEntity {
         this.on("mouseOut", () => {
             if (this._allowHover) {
                 this._updateStyle();
-                this._ige.input.stopPropagation();
+                ige.engine.components.input.stopPropagation();
             }
             else {
                 this._mouseStateOver = false;
@@ -40,7 +38,7 @@ class IgeUiElement extends IgeUiEntity {
         this.on("mouseDown", () => {
             if (this._allowActive) {
                 this._updateStyle();
-                this._ige.input.stopPropagation();
+                ige.engine.components.input.stopPropagation();
             }
             else {
                 this._mouseStateDown = false;
@@ -53,7 +51,7 @@ class IgeUiElement extends IgeUiEntity {
                     this._updateStyle();
                 }
                 else {
-                    this._ige.input.stopPropagation();
+                    ige.engine.components.input.stopPropagation();
                 }
             }
             else if (this._allowActive) {
@@ -98,22 +96,22 @@ class IgeUiElement extends IgeUiEntity {
         // Check for existing assigned style
         if (this._styleClass && this._styleClass !== name) {
             // Unregister this element from the style
-            this._ige.ui.unRegisterElementStyle(this);
+            ige.engine.components.ui.unRegisterElementStyle(this);
         }
         // Assign the new style
         this._styleClass = name;
         // Register the element for this style
-        this._ige.ui.registerElementStyle(this);
+        ige.engine.components.ui.registerElementStyle(this);
         // Update the element style
         this._updateStyle();
         return this;
     }
-    style(styleDataObjeect) {
-        if (styleDataObjeect === undefined) {
+    style(styleDataObject) {
+        if (styleDataObject === undefined) {
             return this._style;
         }
         // Assign the new style
-        this._style = styleDataObjeect;
+        this._style = styleDataObject;
         // Update the element style
         this._updateStyle();
     }
@@ -141,17 +139,16 @@ class IgeUiElement extends IgeUiEntity {
         }
     }
     _processStyle(styleName, state) {
-        if (styleName) {
-            if (state) {
-                styleName += ":" + state;
-            }
-            //this.log('Checking for styles with selector: ' + styleName);
-            // Basic
-            const styleData = this._ige.ui.style(styleName);
-            if (styleData) {
-                //this.log('Applying styles with selector "' + styleName + '"');
-                this.applyStyle(styleData);
-            }
+        if (!styleName) {
+            return;
+        }
+        if (state) {
+            styleName += ":" + state;
+        }
+        const styleData = ige.engine.components.ui.style(styleName);
+        if (styleData) {
+            //this.log('Applying styles with selector "' + styleName + '"');
+            this.applyStyle(styleData);
         }
     }
     /**
@@ -191,19 +188,19 @@ class IgeUiElement extends IgeUiEntity {
         }
         // Loop the style data and apply styles as required
         for (const i in styleData) {
-            if (styleData.hasOwnProperty(i)) {
-                // Check that the style method exists
-                if (typeof this[i] === "function") {
-                    // The method exists, call it with the arguments
-                    let args;
-                    if (styleData[i] instanceof Array) {
-                        args = styleData[i];
-                    }
-                    else {
-                        args = [styleData[i]];
-                    }
-                    this[i].apply(this, args);
+            // Check that the style method exists
+            // @ts-ignore
+            if (typeof this[i] === "function") {
+                // The method exists, call it with the arguments
+                let args;
+                if (styleData[i] instanceof Array) {
+                    args = styleData[i];
                 }
+                else {
+                    args = [styleData[i]];
+                }
+                // @ts-ignore
+                this[i](...args);
             }
         }
         return this;
@@ -212,7 +209,7 @@ class IgeUiElement extends IgeUiEntity {
      * Sets global UI focus to this element.
      */
     focus() {
-        if (this._ige.ui.focus(this)) {
+        if (ige.engine.components.ui.focus(this)) {
             // Re-apply styles since the change
             this._updateStyle();
             return true;
@@ -220,7 +217,7 @@ class IgeUiElement extends IgeUiEntity {
         return false;
     }
     blur() {
-        if (this._ige.ui.blur(this)) {
+        if (ige.engine.components.ui.blur(this)) {
             // Re-apply styles since the change
             this._updateStyle();
             return true;
@@ -244,8 +241,8 @@ class IgeUiElement extends IgeUiEntity {
      * Destructor
      */
     destroy() {
-        this._ige.ui.unRegisterElement(this);
-        super.destroy();
+        ige.engine.components.ui.unRegisterElement(this);
+        return super.destroy();
     }
 }
 export default IgeUiElement;

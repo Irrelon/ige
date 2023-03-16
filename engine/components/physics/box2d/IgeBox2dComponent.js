@@ -197,8 +197,8 @@ export class IgeBox2dComponent extends IgeComponent {
                 return this.igeEntityB();
             }
         };
-        this.b2Contact.prototype.igeOtherEntity = function (entity) {
-            if (this.m_fixtureA.m_body._entity === entity) {
+        this.b2Contact.prototype.igeOtherEntity = function (bodyEntity) {
+            if (this.m_fixtureA.m_body._entity === bodyEntity) {
                 return this.igeEntityB();
             }
             else {
@@ -466,11 +466,11 @@ export class IgeBox2dComponent extends IgeComponent {
                     .drawBounds(true)
                     .drawBoundsData(false)
                     .box2dBody({
-                    type: "static",
+                    type: IgeBox2dBodyType.static,
                     allowSleep: true,
                     fixtures: [{
                             shape: {
-                                type: "rectangle"
+                                type: IgeBox2dFixtureShapeType.rectangle
                             }
                         }]
                 });
