@@ -1,10 +1,14 @@
 import { newIdHex } from "../../../services/utils";
 import { igeClassStore } from "../../../services/igeClassStore";
+import IgeEventingClass from "../../../core/IgeEventingClass";
+import { ige } from "../../../instance";
 
-const IgeBox2dWorld = IgeEventingClass.extend({
-	classId: 'IgeBox2dWorld',
+export class IgeBox2dWorld extends IgeEventingClass {
+	classId = 'IgeBox2dWorld';
 
-	init: function (entity, options) {
+	constructor (entity, options) {
+		super();
+
 		this.b2Color = Box2D.Common.b2Color;
 		this.b2Vec2 = Box2D.Common.Math.b2Vec2;
 		this.b2Math = Box2D.Common.Math.b2Math;
@@ -44,14 +48,14 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 			options.gravity,
 			options.sleep
 		);
-	},
+	}
 
 	/**
 	 * Creates a Box2d fixture and returns it.
 	 * @param params
 	 * @return {b2FixtureDef}
 	 */
-	createFixture: function (params) {
+	createFixture (params) {
 		let tempDef = new this.b2FixtureDef(),
 			param;
 
@@ -64,7 +68,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 		}
 
 		return tempDef;
-	},
+	}
 
 	/**
 	 * Creates a Box2d body and attaches it to an IGE entity
@@ -73,7 +77,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 	 * @param {Object} body
 	 * @return {b2Body}
 	 */
-	createBody: function (entity, body) {
+	createBody (entity, body) {
 		let tempDef = new this.b2BodyDef(),
 			param,
 			tempBod,
@@ -236,7 +240,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 
 		// Add the body to the world with the passed fixture
 		return tempBod;
-	},
+	}
 
 	/**
 	 * Produces static box2d bodies from passed map data.
@@ -249,7 +253,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 	 * any tile with any map data is considered part of the static
 	 * object data.
 	 */
-	staticsFromMap: function (mapLayer, callback) {
+	staticsFromMap (mapLayer, callback) {
 		if (mapLayer.map) {
 			let tileWidth = mapLayer.tileWidth(),
 				tileHeight = mapLayer.tileHeight(),
@@ -286,7 +290,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 		} else {
 			this.log('Cannot extract box2d static bodies from map data because passed map does not have a .map property!', 'error');
 		}
-	},
+	}
 
 	/**
 	 * Creates a contact listener with the specified callbacks. When
@@ -297,7 +301,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 	 * @param {Function} preSolve
 	 * @param {Function} postSolve
 	 */
-	contactListener: function (beginContactCallback, endContactCallback, preSolve, postSolve) {
+	contactListener (beginContactCallback, endContactCallback, preSolve, postSolve) {
 		const contactListener = new this.b2ContactListener();
 		if (beginContactCallback !== undefined) {
 			contactListener.BeginContact = beginContactCallback;
@@ -315,7 +319,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 			contactListener.PostSolve = postSolve;
 		}
 		this._world.SetContactListener(contactListener);
-	},
+	}
 
 	/**
 	 * If enabled, sets the physics world into network debug mode which
@@ -325,7 +329,7 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 	 * data is useful for debugging collisions.
 	 * @param {Boolean} val
 	 */
-	networkDebugMode: function (val) {
+	networkDebugMode (val) {
 		if (val !== undefined) {
 			this._networkDebugMode = val;
 
@@ -353,14 +357,14 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 		}
 
 		return this._networkDebugMode;
-	},
+	}
 
 	/**
 	 * Creates a debug entity that outputs the bounds of each box2d
 	 * body during standard engine ticks.
 	 * @param {IgeEntity} mountScene
 	 */
-	enableDebug: function (mountScene) {
+	enableDebug (mountScene) {
 		if (mountScene) {
 			// Define the debug drawing instance
 			const debugDraw = new this.b2DebugDraw();
@@ -391,15 +395,15 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 		} else {
 			this.log('Cannot enable box2d debug drawing because the passed argument is not an object on the scenegraph.', 'error');
 		}
-	},
+	}
 
 	/**
 	 * Queues a body for removal from the physics world.
 	 * @param body
 	 */
-	destroyBody: function (body) {
+	destroyBody (body) {
 		this._removeWhenReady.push(body);
-	},
+	}
 
 	/**
 	 * Gets / sets the callback method that will be called after
@@ -407,16 +411,16 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 	 * @param method
 	 * @return {*}
 	 */
-	updateCallback: function (method) {
+	updateCallback (method) {
 		if (method !== undefined) {
 			this._updateCallback = method;
 			return this;
 		}
 
 		return this._updateCallback;
-	},
+	}
 
-	start: function () {
+	start () {
 		const self = this;
 		if (!this._active) {
 			this._active = true;
@@ -424,15 +428,15 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 			if (!this._networkDebugMode) {
 				if (this._renderMode === 0) {
 					// Add the box2d behaviour to the ige
-					ige.addBehaviour('box2dStep_' + self._id, function () { self._behaviour.apply(self, arguments); });
+					ige.engine.addBehaviour(`box2dStep_${this._id}`, this._behaviour);
 				} else {
-					this._intervalTimer = setInterval(function () { self._behaviour.apply(self, arguments); }, 1000 / 60);
+					this._intervalTimer = setInterval(this._behaviour, 1000 / 60);
 				}
 			}
 		}
-	},
+	}
 
-	stop: function () {
+	stop () {
 		if (this._active) {
 			this._active = false;
 
@@ -443,14 +447,14 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 				clearInterval(this._intervalTimer);
 			}
 		}
-	},
+	}
 
 	/**
 	 * Steps the physics simulation forward.
 	 * @param ctx
 	 * @private
 	 */
-	_behaviour: function (ctx) {
+	_behaviour (entity, ctx) {
 		let self = this,
 			tempBod,
 			entity,
@@ -525,15 +529,15 @@ const IgeBox2dWorld = IgeEventingClass.extend({
 				self._updateCallback();
 			}
 		}
-	},
+	}
 
-	destroy: function () {
+	destroy () {
 		// Stop processing box2d steps
 		this.removeBehaviour('box2dStep');
 
 		// Destroy all box2d world bodies
 
-	}
-});
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeBox2dWorld; }
+		return this;
+	}
+}

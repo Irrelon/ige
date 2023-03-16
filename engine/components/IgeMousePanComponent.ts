@@ -1,5 +1,8 @@
 import IgeComponent from "../core/IgeComponent";
-import IgeEntity from "../core/IgeEntity";
+import IgeRect from "../core/IgeRect";
+import { ige } from "../instance";
+import IgePoint3d from "../core/IgePoint3d";
+import IgePoint2d from "../core/IgePoint2d";
 
 /**
  * When added to a viewport, automatically adds mouse panning
@@ -10,19 +13,13 @@ class IgeMousePanComponent extends IgeComponent {
 	classId = "IgeMousePanComponent";
 	componentId = "mousePan";
 
-	/**
-	 * @constructor
-	 * @param {IgeObject} entity The object that the component is added to.
-	 * @param {Object=} options The options object that was passed to the component during
-	 * the call to addComponent.
-	 */
-	constructor (entity: IgeEntity, options?: any) {
-		super(entity, options);
-
-		// Set the pan component to inactive to start with
-		this._enabled = false;
-		this._startThreshold = 5; // The number of pixels the mouse should move to activate a pan
-	}
+	_enabled: boolean = false; // Set the pan component to `inactive` to start with
+	_startThreshold: number = 5; // The number of pixels the mouse should move to activate a pan
+	_limit?: IgeRect;
+	_panPreStart: boolean = false;
+	_panStarted: boolean = false;
+	_panStartMouse?: IgePoint3d;
+	_panStartCamera?: IgePoint2d;
 
 	/**
 	 * Gets / sets the number of pixels after a mouse down that the mouse
@@ -30,7 +27,7 @@ class IgeMousePanComponent extends IgeComponent {
 	 * @param val
 	 * @return {*}
 	 */
-	startThreshold = (val) => {
+	startThreshold = (val?: number) => {
 		if (val !== undefined) {
 			this._startThreshold = val;
 			return this._entity;
@@ -45,7 +42,7 @@ class IgeMousePanComponent extends IgeComponent {
 	 * @param {IgeRect=} rect
 	 * @return {*}
 	 */
-	limit (rect) {
+	limit (rect?: IgeRect) {
 		if (rect !== undefined) {
 			this._limit = rect;
 			return this._entity;
@@ -61,7 +58,7 @@ class IgeMousePanComponent extends IgeComponent {
 	 * @param {Boolean=} val
 	 * @return {*}
 	 */
-	enabled (val) {
+	enabled (val?: boolean) {
 		if (val === undefined) {
 			return this._enabled;
 		}
@@ -75,9 +72,9 @@ class IgeMousePanComponent extends IgeComponent {
 
 		if (this._enabled) {
 			// Listen for the mouse events we need to operate a mouse pan
-			this._entity.mouseDown((event) => { this._mouseDown(event); });
-			this._entity.mouseMove((event) => { this._mouseMove(event); });
-			this._entity.mouseUp((event) => { this._mouseUp(event); });
+			this._entity.mouseDown(this._mouseDown);
+			this._entity.mouseMove(this._mouseMove);
+			this._entity.mouseUp(this._mouseUp);
 		} else {
 			// Remove the pan start data
 			delete this._panStartMouse;
@@ -93,20 +90,21 @@ class IgeMousePanComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_mouseDown = (event) => {
-		if (!this._panStarted && this._enabled && event.igeViewport.id() === this._entity.id()) {
-			// Record the mouse down position - pan pre-start
-			const curMousePos = this._ige._mousePos;
-			this._panStartMouse = curMousePos.clone();
-
-			this._panStartCamera = {
-				"x": this._entity.camera._translate.x,
-				"y": this._entity.camera._translate.y
-			};
-
-			this._panPreStart = true;
-			this._panStarted = false;
+	_mouseDown = (event: Event) => {
+		if (!(!this._panStarted && this._enabled && event.igeViewport.id() === this._entity.id())) {
+			return;
 		}
+
+		const curMousePos = ige.engine._mousePos;
+		this._panStartMouse = curMousePos.clone();
+
+		this._panStartCamera = new IgePoint2d(
+			this._entity.camera._translate.x,
+			this._entity.camera._translate.y
+		);
+
+		this._panPreStart = true;
+		this._panStarted = false;
 	}
 
 	/**
@@ -115,65 +113,69 @@ class IgeMousePanComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_mouseMove = (event) => {
-		if (this._enabled) {
-			// Pan the camera if the mouse is down
-			if (this._panStartMouse) {
-				let curMousePos = this._ige._mousePos,
-					panCords = {
-						"x": this._panStartMouse.x - curMousePos.x,
-						"y": this._panStartMouse.y - curMousePos.y
-					}, distX = Math.abs(panCords.x), distY = Math.abs(panCords.y),
-					panFinalX = (panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x,
-					panFinalY = (panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y;
+	_mouseMove = (event: Event) => {
+		if (!this._enabled) {
+			return;
+		}
 
-				// Check if we have a limiter on the rectangle area
-				// that we should allow panning inside.
-				if (this._limit) {
-					// Check the pan co-ordinates against
-					// the limiter rectangle
-					if (panFinalX < this._limit.x) {
-						panFinalX = this._limit.x;
-					}
+		if (!this._panStartMouse || !this._panStartCamera) {
+			return;
+		}
 
-					if (panFinalX > this._limit.x + this._limit.width) {
-						panFinalX = this._limit.x + this._limit.width;
-					}
+		const curMousePos = ige.engine._mousePos;
+		const panCords = {
+			"x": this._panStartMouse.x - curMousePos.x,
+			"y": this._panStartMouse.y - curMousePos.y
+		};
 
-					if (panFinalY < this._limit.y) {
-						panFinalY = this._limit.y;
-					}
+		const distX = Math.abs(panCords.x);
+		const distY = Math.abs(panCords.y);
 
-					if (panFinalY > this._limit.y + this._limit.height) {
-						panFinalY = this._limit.y + this._limit.height;
-					}
-				}
+		let panFinalX = (panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x;
+		let panFinalY = (panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y;
 
-				if (this._panPreStart) {
-					// Check if we've reached the start threshold
-					if (distX > this._startThreshold || distY > this._startThreshold) {
-						this._entity.camera.translateTo(
-							panFinalX,
-							panFinalY,
-							0
-						);
-						this.emit("panStart");
-						this._panPreStart = false;
-						this._panStarted = true;
-
-						this.emit("panMove");
-					}
-				} else {
-					// Pan has already started
-					this._entity.camera.translateTo(
-						panFinalX,
-						panFinalY,
-						0
-					);
-
-					this.emit("panMove");
-				}
+		if (this._limit) {
+			// Check the pan co-ordinates against
+			// the limiter rectangle
+			if (panFinalX < this._limit.x) {
+				panFinalX = this._limit.x;
 			}
+
+			if (panFinalX > this._limit.x + this._limit.width) {
+				panFinalX = this._limit.x + this._limit.width;
+			}
+
+			if (panFinalY < this._limit.y) {
+				panFinalY = this._limit.y;
+			}
+
+			if (panFinalY > this._limit.y + this._limit.height) {
+				panFinalY = this._limit.y + this._limit.height;
+			}
+		}
+		if (this._panPreStart) {
+			// Check if we've reached the start threshold
+			if (distX > this._startThreshold || distY > this._startThreshold) {
+				this._entity.camera.translateTo(
+					panFinalX,
+					panFinalY,
+					0
+				);
+				this.emit("panStart");
+				this._panPreStart = false;
+				this._panStarted = true;
+
+				this.emit("panMove");
+			}
+		} else {
+			// Pan has already started
+			this._entity.camera.translateTo(
+				panFinalX,
+				panFinalY,
+				0
+			);
+
+			this.emit("panMove");
 		}
 	}
 
@@ -183,60 +185,62 @@ class IgeMousePanComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_mouseUp = (event) => {
-		if (this._enabled) {
-			// End the pan
-			if (this._panStarted) {
-				if (this._panStartMouse) {
-					let curMousePos = this._ige._mousePos,
-						panCords = {
-							"x": this._panStartMouse.x - curMousePos.x,
-							"y": this._panStartMouse.y - curMousePos.y
-						},
-						panFinalX = (panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x,
-						panFinalY = (panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y;
+	_mouseUp = (event: Event) => {
+		if (!this._enabled) {
+			return;
+		}
 
-					// Check if we have a limiter on the rectangle area
-					// that we should allow panning inside.
-					if (this._limit) {
-						// Check the pan co-ordinates against
-						// the limiter rectangle
-						if (panFinalX < this._limit.x) {
-							panFinalX = this._limit.x;
-						}
+		if (!this._panStarted) {
+			delete this._panStartMouse;
+			delete this._panStartCamera;
+			this._panStarted = false;
+			return;
+		}
 
-						if (panFinalX > this._limit.x + this._limit.width) {
-							panFinalX = this._limit.x + this._limit.width;
-						}
+		if (!this._panStartMouse || !this._panStartCamera) {
+			return;
+		}
 
-						if (panFinalY < this._limit.y) {
-							panFinalY = this._limit.y;
-						}
+		const curMousePos = ige.engine._mousePos;
+		const panCords = {
+			"x": this._panStartMouse.x - curMousePos.x,
+			"y": this._panStartMouse.y - curMousePos.y
+		};
 
-						if (panFinalY > this._limit.y + this._limit.height) {
-							panFinalY = this._limit.y + this._limit.height;
-						}
-					}
+		let panFinalX = (panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x;
+		let panFinalY = (panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y;
 
-					this._entity.camera.translateTo(
-						panFinalX,
-						panFinalY,
-						0
-					);
+		if (this._limit) {
+			// Check the pan co-ordinates against
+			// the limiter rectangle
+			if (panFinalX < this._limit.x) {
+				panFinalX = this._limit.x;
+			}
 
-					// Remove the pan start data to end the pan operation
-					delete this._panStartMouse;
-					delete this._panStartCamera;
+			if (panFinalX > this._limit.x + this._limit.width) {
+				panFinalX = this._limit.x + this._limit.width;
+			}
 
-					this.emit("panEnd");
-					this._panStarted = false;
-				}
-			} else {
-				delete this._panStartMouse;
-				delete this._panStartCamera;
-				this._panStarted = false;
+			if (panFinalY < this._limit.y) {
+				panFinalY = this._limit.y;
+			}
+
+			if (panFinalY > this._limit.y + this._limit.height) {
+				panFinalY = this._limit.y + this._limit.height;
 			}
 		}
+
+		this._entity.camera.translateTo(
+			panFinalX,
+			panFinalY,
+			0
+		);
+
+		delete this._panStartMouse;
+		delete this._panStartCamera;
+
+		this.emit("panEnd");
+		this._panStarted = false;
 	}
 }
 

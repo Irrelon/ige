@@ -1,16 +1,19 @@
 import { newIdHex } from "../../../services/utils";
+import IgeEventingClass from "../../../core/IgeEventingClass";
 
 /**
  * The engine's box2d multi-world component class.
  */
-const IgeBox2dMultiWorldComponent = IgeEventingClass.extend({
-	classId: 'IgeBox2dMultiWorldComponent',
-	componentId: 'box2d',
+export class IgeBox2dMultiWorldComponent extends IgeEventingClass {
+	classId = "IgeBox2dMultiWorldComponent";
+	componentId = "box2d";
 
-	init: function (entity, options) {
+	constructor (entity, options) {
+		super();
+
 		this._entity = entity;
 		this._options = options;
-		
+
 		this._worlds = {};
 
 		this.b2Color = Box2D.Common.b2Color;
@@ -108,16 +111,16 @@ const IgeBox2dMultiWorldComponent = IgeEventingClass.extend({
 			}
 		};
 
-		this.log('Physics component initiated!');
-	},
+		this.log("Physics component initiated!");
+	}
 
 	/**
 	 * Gets the Box2d world object by it's id.
 	 * @return {b2World}
 	 */
-	world: function (id) {
+	world (id) {
 		return this._worlds[id];
-	},
+	}
 
 	/**
 	 * Creates the Box2d world.
@@ -125,19 +128,17 @@ const IgeBox2dMultiWorldComponent = IgeEventingClass.extend({
 	 * @param {Object=} options
 	 * @return {*}
 	 */
-	createWorld: function (options) {
+	createWorld (options) {
 		let world;
-		
+
 		options = options || {};
 		options.id = options.id || newIdHex();
 		options.gravity = options.gravity || new this.b2Vec2(0, 0);
 		options.sleep = options.sleep !== undefined ? options.sleep : true;
-		
+
 		// Create world instance
 		this._worlds[options.id] = world = new IgeBox2dWorld(this, options);
-		
+
 		return world;
 	}
-});
-
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeBox2dMultiWorldComponent; }
+}

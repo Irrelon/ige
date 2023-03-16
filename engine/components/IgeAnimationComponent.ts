@@ -3,7 +3,6 @@ import IgeComponent from "../core/IgeComponent";
 import IgeEntity from "../core/IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeAnimation } from "../../types/IgeAnimation";
-import { Ige } from "../core/Ige";
 
 export interface IgeAnimationStartOptions {
 	onComplete?: (anim: IgeAnimation) => void;
@@ -385,7 +384,7 @@ class IgeAnimationComponent extends IgeComponent {
 	 * @param entity
 	 * @param {Number} tickDelta The current ige._tickDelta passed down the scenegraph.
 	 */
-	_update = (igeInstance: Ige, entity: IgeEntity, ctx: IgeCanvasRenderingContext2d, tickDelta: number) => {
+	_update = (entity: IgeEntity, ctx: IgeCanvasRenderingContext2d, tickDelta: number) => {
 		// Just in case someone forgets to pass it in their update call!
 		tickDelta = tickDelta || ige.engine._tickDelta;
 

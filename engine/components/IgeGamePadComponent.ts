@@ -6,10 +6,10 @@ class IgeGamePadComponent extends IgeComponent {
 	"classId" = "IgeGamePadComponent";
 	"componentId" = "gamePad";
 
+	gamepadAvailable: boolean | null = null; // True if the browser supports them
+
 	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
-
-		this.gamepadAvailable = null;
 
 		// A number of typical buttons recognized by Gamepad API and mapped to
 		// standard controls. Any extraneous buttons will have larger indexes.

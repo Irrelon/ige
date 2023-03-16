@@ -1,3 +1,4 @@
+import { ige } from "../instance.js";
 import IgeComponent from "../core/IgeComponent.js";
 import { arrPull } from "../services/utils.js";
 class IgeUiManagerComponent extends IgeComponent {
@@ -5,26 +6,26 @@ class IgeUiManagerComponent extends IgeComponent {
         super(entity, options);
         this.classId = "IgeUiManagerComponent";
         this.componentId = "ui";
+        this._focus = null; // The element that currently has focus
+        this._caret = null; // The caret position within the focused element
+        this._register = [];
+        this._styles = {};
+        this._elementsByStyle = {};
         this._keyUp = (event) => {
             // Direct the key event to the focused element
             if (this._focus) {
                 this._focus.emit("keyUp", event);
-                this._ige.input.stopPropagation();
+                ige.engine.components.input.stopPropagation();
             }
         };
         this._keyDown = (event) => {
             // Direct the key event to the focused element
             if (this._focus) {
                 this._focus.emit("keyDown", event);
-                this._ige.input.stopPropagation();
+                ige.engine.components.input.stopPropagation();
             }
         };
-        this._focus = null; // The element that currently has focus
-        this._caret = null; // The caret position within the focused element
-        this._register = [];
-        this._styles = {};
-        this._elementsByStyle = {};
-        this._ige.input.on("keyDown", (event) => {
+        ige.engine.components.input.on("keyDown", (event) => {
             this._keyDown(event);
         });
     }

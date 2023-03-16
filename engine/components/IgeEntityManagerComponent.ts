@@ -295,7 +295,7 @@ class IgeEntityManagerComponent extends IgeComponent {
 	 * @param ctx
 	 * @private
 	 */
-	_behaviour = (ige, entity, ctx) => {
+	_behaviour = (entity, ctx) => {
 		let self = this.entityManager,
 			currentArea,
 			currentAreaTiles,
