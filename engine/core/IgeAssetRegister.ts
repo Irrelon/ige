@@ -5,7 +5,7 @@ export class IgeAssetRegister<AssetType extends IgeAsset> extends IgeEventingCla
 	_assetById: Record<string, AssetType> = {};
 	_assetsLoading: number = 0;
 	_assetsTotal: number = 0;
-	
+
 	get (id: string) {
 		return this._assetById[id];
 	}
@@ -29,6 +29,18 @@ export class IgeAssetRegister<AssetType extends IgeAsset> extends IgeEventingCla
 	remove (id: string) {
 		this._assetsTotal--;
 		delete this._assetById[id];
+	}
+
+	addGroup (group: Record<string, AssetType>) {
+		Object.keys(group).forEach((key) => {
+			this.add(key, group[key]);
+		});
+	}
+
+	removeGroup (group: Record<string, AssetType>) {
+		Object.keys(group).forEach((key) => {
+			this.remove(key);
+		});
 	}
 
 	whenLoaded () {

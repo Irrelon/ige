@@ -1013,9 +1013,10 @@ export class IgeEngine extends IgeEntity {
 	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
 	 * @returns {*}
 	 */
-	removeGraph (className?: string, options?: any) {
+	removeGraph (className?: string | typeof IgeSceneGraph, options?: any) {
 		if (className !== undefined) {
-			const classInstance = this._graphInstances[className];
+			const classObj = this.getClass(className);
+			const classInstance = this._graphInstances[classObj.name];
 
 			if (classInstance) {
 				this.log("Removing SceneGraph data class: " + className);

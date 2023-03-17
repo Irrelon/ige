@@ -1072,6 +1072,8 @@ class IgeUiEntity extends IgeEntity {
 	 * @param {CSSColor, CanvasGradient, CanvasPattern=} color
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
+	color (color: string | CanvasGradient | CanvasPattern): this;
+	color (): string | CanvasGradient | CanvasPattern;
 	color (color: string | CanvasGradient | CanvasPattern) {
 		if (color !== undefined) {
 			this._color = color;
@@ -1249,6 +1251,8 @@ class IgeUiEntity extends IgeEntity {
 		return this._backgroundPosition;
 	}
 
+	borderColor (color: string): this;
+	borderColor (): string;
 	borderColor (color?: string) {
 		if (color !== undefined) {
 			this._borderColor = color;
@@ -1303,6 +1307,8 @@ class IgeUiEntity extends IgeEntity {
 		return this._borderBottomColor;
 	}
 
+	borderWidth (px: number): this;
+	borderWidth (): number;
 	borderWidth (px?: number) {
 		if (px !== undefined) {
 			this._borderWidth = px;

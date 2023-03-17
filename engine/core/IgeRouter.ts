@@ -1,230 +1,149 @@
 import { IgeRouteDefinition } from "../../types/IgeRouteDefinition";
+import { isClient, isServer } from "../services/clientServer";
+import IgeBaseClass from "./IgeBaseClass";
 
-export class IgeRouter {
-	_route: Record<string, IgeRouteDefinition> = {};
+const PATH_DELIMITER = "/";
+
+export class IgeRouter extends IgeBaseClass {
+	_routeLoad: Record<string, IgeRouteDefinition> = {};
+	_routeUnload: Record<string, any> = {};
+	_currentRoutePath: string = "";
+	_routeQueue: (() => Promise<boolean | undefined | void>)[] = [];
+	_executingSeries: boolean = false;
 
 	route (path?: string, definition?: IgeRouteDefinition) {
 		if (path !== undefined) {
 			if (definition !== undefined) {
-				this._route = this._route || {};
-				this._route[path] = definition;
+				this._routeLoad = this._routeLoad || {};
+				this._routeLoad[path] = definition;
 
 				return this;
 			}
 
-			return this._route[path];
+			return this._routeLoad[path];
 		}
 
-		return this._route;
+		return this._routeLoad;
 	}
 
-	routeData (path?: string, data) {
-		if (path !== undefined) {
-			this._routeData = this._routeData || {};
-
-			if (data !== undefined) {
-				this._routeData[path] = data;
-				return this;
-			}
-
-			return this._routeData[path];
-		}
-
-		return this._routeData;
-	}
-
-	go = function (path?: string) {
-		let self = this,
-			currentRoutePath,
-			rootPathString,
-			currentPathParts,
-			newPathParts,
-			tempPath,
-			i;
-
+	go (path: string) {
 		// Check for a route definition first
-		if (!this._route[path]) {
+		if (!this._routeLoad[path]) {
 			throw('Attempt to navigate to undefined route: ' + path);
 		}
 
-		currentRoutePath = self._currentRoutePath;
-		rootPathString = '';
-		currentPathParts = currentRoutePath.split('.');
-		newPathParts = path.split('.');
+		const currentRoutePath = this._currentRoutePath;
+		const currentPathParts = currentRoutePath.split(PATH_DELIMITER);
+		const newPathParts = path.split(PATH_DELIMITER);
+
+		// TODO This is commented because not used. Find out if needed.
+		//let rootPathString = '';
 
 		// Check current path
-		if (self._currentRoutePath) {
+		if (this._currentRoutePath) {
 			// Remove duplicate beginning parts from arrays
 			while(currentPathParts.length && newPathParts.length && currentPathParts[0] === newPathParts[0]) {
-				rootPathString += '.' + currentPathParts.shift();
+				//rootPathString += PATH_DELIMITER + currentPathParts.shift();
 				newPathParts.shift();
 			}
 
 			// Inform routes that they are being destroyed
 			if (currentPathParts.length) {
-				tempPath = rootPathString;
 				currentPathParts.reverse();
 
-				for (i = 0; i < currentPathParts.length; i++) {
-					self._routeRemove(currentPathParts[i]);
+				for (let i = 0; i < currentPathParts.length; i++) {
+					this._routeRemove(currentPathParts[i]);
 				}
 			}
 		}
 
 		// Now route to the new path
 		if (newPathParts.length) {
-			tempPath = rootPathString;
-
-			for (i = 0; i < newPathParts.length; i++) {
-				self._routeAdd(newPathParts[i]);
+			for (let i = 0; i < newPathParts.length; i++) {
+				this._routeAdd(newPathParts[i]);
 			}
 		}
 	}
 
-	_routeAdd = function (path?: string) {
-		let self = this,
-			definition,
-			routeSteps,
-			routeData,
-			thisFullPath,
-			queue;
+	_routeAdd (path: string) {
+		this._currentRoutePath += this._currentRoutePath ? PATH_DELIMITER + path : path;
+		const thisFullPath = this._currentRoutePath;
 
-		self._currentRoutePath += self._currentRoutePath ? '.' + path : path;
-		thisFullPath = self._currentRoutePath;
+		const queue = this._routeQueue;
 
-		queue = this._routeQueue;
+		queue.push(async () => {
+			const routeDefinition = this._routeLoad[thisFullPath];
+			let routeHandlerFunction;
 
-		queue.push(function (finished) {
-			definition = self._route[thisFullPath];
-			routeSteps = [];
-
-			// Check for non-universal route (both client and server have different
-			// definitions for the same route)
-			if (definition.client && definition.server) {
-				if (self.isClient) {
-					definition = definition.client;
-				}
-
-				if (self.isServer) {
-					definition = definition.server;
-				}
+			// Check for client or server specific route definitions
+			if (isClient && routeDefinition.client) {
+				routeHandlerFunction = routeDefinition.client;
 			}
 
-			if (!definition.controller) {
-				self.log('$ige.engine._routeAdd() encountered a route that has no controller specified: ' + thisFullPath, 'error');
+			if (isServer && routeDefinition.server) {
+				routeHandlerFunction = routeDefinition.server;
 			}
 
-			routeData = {
-				controllerModule: appCore.module(definition.controller),
-				texturesModule: definition.textures ? appCore.module(definition.textures) : undefined,
-				sceneGraphModule: definition.sceneGraph ? appCore.module(definition.sceneGraph) : undefined
-			};
-
-			self.routeData(thisFullPath, routeData);
-
-			if (definition.textures) {
-				routeSteps.push(function (finished) {
-					routeData.texturesModule.emit('loading');
-					appCore.run([definition.textures, function (textures) {
-						if (!self.$textures.texturesLoaded()) {
-							self.$textures.on('texturesLoaded', function () {
-								routeData.texturesModule.emit('loaded');
-								finished(false);
-							});
-							return;
-						}
-
-						routeData.texturesModule.emit('loaded');
-						return finished(false);
-					}]);
-				});
+			if (!routeHandlerFunction) {
+				throw new Error(`$ige.engine._routeAdd() encountered a route that has no function specified: ${thisFullPath}`);
 			}
 
-			routeSteps.push(function (finished) {
-				routeData.controllerModule.emit('loading');
-				appCore.run([definition.controller, function (Controller) {
-					const controller = new Controller();
-
-					self.routeData(thisFullPath).controllerModuleInstance = controller;
-					routeData.controllerModule.emit('loaded');
-					finished(false, controller);
-				}]);
-			});
-
-			if (definition.sceneGraph) {
-				routeSteps.push(function (controller, finished) {
-					appCore.module('$controller', function () {
-						return controller;
-					});
-
-					appCore
-						.module(definition.sceneGraph)
-						.$controller = controller;
-
-					routeData.sceneGraphModule.emit('loading');
-					appCore.run([definition.sceneGraph, function (sceneGraph) {
-						self.engine.addGraph(definition.sceneGraph);
-
-						routeData.sceneGraphModule.emit('loaded');
-						finished(false);
-					}]);
-				});
-			}
-
-			routeSteps.waterfall(function () {
-				if (routeData.texturesModule) { routeData.texturesModule.emit('ready'); }
-				routeData.controllerModule.emit('ready');
-				if (routeData.sceneGraphModule) { routeData.sceneGraphModule.emit('ready'); }
-
-				finished();
-			});
+			// Execute the route function which will return an unload function
+			this._routeUnload[path] = await routeHandlerFunction();
 		});
 
-		queue.series(function () {}, true);
+		this._processQueue();
 	}
 
-	_routeRemove = function (path?: string) {
-		let self = this,
-			routeData,
-			thisFullPath,
-			definition,
-			queue;
+	_routeRemove (path?: string) {
+		const thisFullPath = this._currentRoutePath;
+		const queue = this._routeQueue;
 
-		thisFullPath = self._currentRoutePath;
-		queue = this._routeQueue;
+		queue.push(async () => {
+			const unloadFunction = this._routeUnload[thisFullPath];
 
-		queue.push(function (finished) {
-			routeData = self.routeData(thisFullPath);
-			definition = self._route[thisFullPath];
-
-			if (!routeData) {
-				throw('Attempting to routeRemove() a path that has no routeData: ' + thisFullPath);
+			if (!unloadFunction) {
+				throw('Attempting to routeRemove() a path that has no route unload function: ' + thisFullPath);
 			}
 
-			if (routeData.sceneGraphModule) {
-				routeData.sceneGraphModule.emit('destroying');
-				self.engine.removeGraph(definition.sceneGraph);
-			}
-
-			if (routeData.texturesModule) {
-				routeData.texturesModule.emit('destroying');
-			}
-			routeData.controllerModule.emit('destroying');
-
-			if (routeData.sceneGraphModule) {
-				routeData.sceneGraphModule.emit('destroyed');
-			}
-
-			if (routeData.texturesModule) {
-				routeData.texturesModule.emit('destroyed');
-			}
-			routeData.controllerModule.emit('destroyed');
-
-			self._currentRoutePath = self._currentRoutePath.replace(new RegExp('[\.]*?' + path + '$'), '');
-
-			finished();
+			await unloadFunction();
+			this._currentRoutePath = this._currentRoutePath.replace(new RegExp('[\.]*?' + path + '$'), '');
 		});
 
-		queue.series(function () {}, true);
+		this._processQueue();
+	}
+
+	_processQueue () {
+		if (this._executingSeries) {
+			// We're already processing the array
+			return;
+		}
+
+		const callArr = this._routeQueue;
+
+		if (!callArr.length) {
+			this._executingSeries = false;
+			return;
+		}
+
+		this._executingSeries = true;
+
+		const nextItem = async () => {
+			// Grab the first function from the array and remove it from the array
+			const func = callArr.shift();
+
+			if (!func) {
+				this._executingSeries = false;
+				return;
+			}
+
+			// Execute the function
+			await func();
+
+			// Process the next item
+			await nextItem();
+		}
+
+		void nextItem();
 	}
 }

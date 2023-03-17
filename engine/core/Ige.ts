@@ -16,10 +16,12 @@ import type { IgeNetIoServerComponent } from "../components/network/net.io/IgeNe
 import { isClient, isServer } from "../services/clientServer";
 import { IgeObjectWithValueProperty } from "../../types/IgeObjectWithValueProperty";
 import { IgeObject } from "./IgeObject";
+import { IgeRouter } from "./IgeRouter";
 
 const version = "2.0.0";
 
 export class Ige {
+	router: IgeRouter = new IgeRouter();
 	engine: IgeEngine = new IgeEngine();
 	textures: IgeTextureStore = new IgeTextureStore();
 	metrics: IgeMetrics = new IgeMetrics();

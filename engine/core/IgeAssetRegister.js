@@ -26,6 +26,16 @@ export class IgeAssetRegister extends IgeEventingClass {
         this._assetsTotal--;
         delete this._assetById[id];
     }
+    addGroup(group) {
+        Object.keys(group).forEach((key) => {
+            this.add(key, group[key]);
+        });
+    }
+    removeGroup(group) {
+        Object.keys(group).forEach((key) => {
+            this.remove(key);
+        });
+    }
     whenLoaded() {
         const promiseArr = Object.values(this._assetById).map((tmpIgeTexture) => {
             return tmpIgeTexture.whenLoaded();

@@ -832,11 +832,6 @@ class IgeUiEntity extends IgeEntity {
             this.cacheDirty(true);
         }
     }
-    /**
-     * Gets / sets the color to use as the font color.
-     * @param {CSSColor, CanvasGradient, CanvasPattern=} color
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
     color(color) {
         if (color !== undefined) {
             this._color = color;

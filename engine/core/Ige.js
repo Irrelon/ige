@@ -9,9 +9,11 @@ import { IgeArrayRegister } from "./IgeArrayRegister.js";
 import IgePoint3d from "./IgePoint3d.js";
 import { IgeAudioController } from "../components/audio/IgeAudioController.js";
 import { isClient, isServer } from "../services/clientServer.js";
+import { IgeRouter } from "./IgeRouter.js";
 const version = "2.0.0";
 export class Ige {
     constructor() {
+        this.router = new IgeRouter();
         this.engine = new IgeEngine();
         this.textures = new IgeTextureStore();
         this.metrics = new IgeMetrics();
