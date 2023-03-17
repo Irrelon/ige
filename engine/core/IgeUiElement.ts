@@ -109,7 +109,7 @@ class IgeUiElement extends IgeUiEntity {
 		if (name === undefined) {
 			return this._styleClass;
 		}
-		
+
 		// Add a period to the class name
 		name = "." + name;
 
@@ -130,15 +130,15 @@ class IgeUiElement extends IgeUiEntity {
 
 		return this;
 	}
-	
+
 	style (styleDataObject: IgeUiStyleObject) {
 		if (styleDataObject === undefined) {
 			return this._style;
 		}
-		
+
 		// Assign the new style
 		this._style = styleDataObject;
-		
+
 		// Update the element style
 		this._updateStyle();
 	}
@@ -191,7 +191,7 @@ class IgeUiElement extends IgeUiEntity {
 	 * Apply styles from a style data object. Usually you don't want to
 	 * call this method directly but rather assign a style by name using
 	 * the style() method, however it is not illegal practise to apply
-	 * here if you wish if you have not defined a style by name and simply
+	 * here if you wish, if you have not defined a style by name and simply
 	 * wish to apply style data directly.
 	 *
 	 * Style property names must correspond to method names in the element
@@ -222,7 +222,7 @@ class IgeUiElement extends IgeUiEntity {
 		if (styleData === undefined) {
 			return this;
 		}
-		
+
 		// Loop the style data and apply styles as required
 		for (const i in styleData) {
 			// Check that the style method exists
@@ -230,7 +230,7 @@ class IgeUiElement extends IgeUiEntity {
 			if (typeof this[i] === "function") {
 				// The method exists, call it with the arguments
 				let args;
-					
+
 				if (styleData[i] instanceof Array) {
 					args = styleData[i];
 				} else {

@@ -57,7 +57,7 @@ class IgeUiEntity extends IgeEntity {
     }
     _renderBackground(ctx) {
         const geom = this._bounds2d;
-        if (!this._backgroundColor || !this._patternFill || !ctx) {
+        if ((!this._backgroundColor && !this._patternFill) || !ctx) {
             return;
         }
         const left = -(geom.x / 2) | 0;
@@ -914,12 +914,6 @@ class IgeUiEntity extends IgeEntity {
         this.cacheDirty(true);
         return this;
     }
-    /**
-     * Gets / sets the color to use as a background when
-     * rendering the UI element.
-     * @param {CSSColor, CanvasGradient, CanvasPattern=} color
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
     backgroundColor(color) {
         if (color !== undefined) {
             this._backgroundColor = color;

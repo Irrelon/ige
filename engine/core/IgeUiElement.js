@@ -155,7 +155,7 @@ class IgeUiElement extends IgeUiEntity {
      * Apply styles from a style data object. Usually you don't want to
      * call this method directly but rather assign a style by name using
      * the style() method, however it is not illegal practise to apply
-     * here if you wish if you have not defined a style by name and simply
+     * here if you wish, if you have not defined a style by name and simply
      * wish to apply style data directly.
      *
      * Style property names must correspond to method names in the element

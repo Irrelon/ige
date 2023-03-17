@@ -37,12 +37,14 @@ export class Level1Scene extends IgeSceneGraph {
 			.width(100)
 			.height(40)
 			.color("#ffffff")
+			.backgroundColor("#002b4b")
 			.borderColor("#ffffff")
 			.borderWidth(1)
 			.value("Back to Splash")
 			.mouseUp(() => {
 				ige.router.go("app/splash");
 			})
+			.depth(2)
 			.mount(scene1);
 	}
 
