@@ -225,6 +225,7 @@ const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: Base
 
 		// Fire the listeners for this event
 		let eventCount = this._eventListeners[eventName].length;
+		let eventCount2 = this._eventListeners[eventName].length - 1;
 
 		// If there are some events, ensure that the args is ready to be used
 		if (!eventCount) {

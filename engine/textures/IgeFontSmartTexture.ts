@@ -5,57 +5,6 @@ import IgeEntity from "../core/IgeEntity";
  * Provides native canvas font rendering supporting multi-line
  * text and alignment options.
  */
-const measureTextWidth = (text: string, entity: IgeEntity) => {
-	if (!entity._nativeFont) {
-		return -1;
-	}
-
-	const canvas = document.createElement("canvas");
-	const ctx = canvas.getContext("2d");
-
-	if (!ctx) {
-		throw new Error("measureTextWidth() failed to get a canvas 2d context to work with!");
-	}
-
-	let lineArr;
-	let lineIndex;
-	let measuredWidth;
-	let maxWidth = 0;
-
-	// Handle multi-line text
-	if (text.indexOf("\n") > -1) {
-		// Split each line into an array item
-		lineArr = text.split("\n");
-	} else {
-		// Store the text as a single line
-		lineArr = [text];
-	}
-
-	ctx.font = entity._nativeFont;
-	ctx.textBaseline = "middle";
-
-	if (entity._nativeStroke) {
-		ctx.lineWidth = entity._nativeStroke;
-
-		if (entity._nativeStrokeColor) {
-			ctx.strokeStyle = entity._nativeStrokeColor;
-		} else {
-			ctx.strokeStyle = entity._colorOverlay;
-		}
-	}
-
-	for (lineIndex = 0; lineIndex < lineArr.length; lineIndex++) {
-		// Measure text
-		measuredWidth = ctx.measureText(lineArr[lineIndex]).width;
-
-		if (measuredWidth > maxWidth) {
-			maxWidth = measuredWidth;
-		}
-	}
-
-	return maxWidth;
-};
-
 const IgeFontSmartTexture: IgeSmartTexture = {
 	render: (ctx, entity) => {
 		if (!entity._nativeFont || !entity._renderText) {
@@ -148,6 +97,58 @@ const IgeFontSmartTexture: IgeSmartTexture = {
 
 			// Draw text
 			ctx.fillText(lineArrItem, 0, renderY);
+		}
+	},
+	meta: {
+		measureTextWidth: (text: string, entity: IgeEntity) => {
+			if (!entity._nativeFont) {
+				return -1;
+			}
+
+			const canvas = document.createElement("canvas");
+			const ctx = canvas.getContext("2d");
+
+			if (!ctx) {
+				throw new Error("measureTextWidth() failed to get a canvas 2d context to work with!");
+			}
+
+			let lineArr;
+			let lineIndex;
+			let measuredWidth;
+			let maxWidth = 0;
+
+			// Handle multi-line text
+			if (text.indexOf("\n") > -1) {
+				// Split each line into an array item
+				lineArr = text.split("\n");
+			} else {
+				// Store the text as a single line
+				lineArr = [text];
+			}
+
+			ctx.font = entity._nativeFont;
+			ctx.textBaseline = "middle";
+
+			if (entity._nativeStroke) {
+				ctx.lineWidth = entity._nativeStroke;
+
+				if (entity._nativeStrokeColor) {
+					ctx.strokeStyle = entity._nativeStrokeColor;
+				} else {
+					ctx.strokeStyle = entity._colorOverlay;
+				}
+			}
+
+			for (lineIndex = 0; lineIndex < lineArr.length; lineIndex++) {
+				// Measure text
+				measuredWidth = ctx.measureText(lineArr[lineIndex]).width;
+
+				if (measuredWidth > maxWidth) {
+					maxWidth = measuredWidth;
+				}
+			}
+
+			return maxWidth;
 		}
 	}
 };

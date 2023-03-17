@@ -1,13 +1,12 @@
-"use strict";
-var IgeCuboid = IgeEntity.extend({
-    classId: 'IgeCuboid',
-    init: function () {
-        IgeEntity.prototype.init.call(this);
+import IgeEntity from "../core/IgeEntity.js";
+import IgeTexture from "../core/IgeTexture.js";
+import IgeCuboidSmartTexture from "../textures/IgeCuboidSmartTexture.js";
+export class IgeCuboid extends IgeEntity {
+    constructor() {
+        super();
+        this.classId = 'IgeCuboid';
         this.bounds3d(40, 40, 40);
-        var tex = new IgeTexture(IgeCuboidSmartTexture);
+        const tex = new IgeTexture("igeCuboidSmartTexture", IgeCuboidSmartTexture);
         this.texture(tex);
     }
-});
-if (typeof (module) !== 'undefined' && typeof (module.exports) !== 'undefined') {
-    module.exports = IgeCuboid;
 }

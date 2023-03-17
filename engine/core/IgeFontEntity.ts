@@ -1,6 +1,9 @@
 import IgeUiEntity from "./IgeUiEntity";
 import IgeTexture from "./IgeTexture";
 import IgeFontSmartTexture from "../textures/IgeFontSmartTexture";
+import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign";
+import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
 /**
  * Creates a new font entity. A font entity will use a font sheet
@@ -9,15 +12,24 @@ import IgeFontSmartTexture from "../textures/IgeFontSmartTexture";
 class IgeFontEntity extends IgeUiEntity {
 	"classId" = "IgeFontEntity";
 
-	constructor (ige) {
-		super(ige);
+	_renderText?: string;
+	_text?: string;
+	_textAlignX: IgeFontAlignX = IgeFontAlignX.center;
+	_textAlignY: IgeFontAlignY = IgeFontAlignY.multiLineMiddle;
+	_textLineSpacing: number = 0;
+	_nativeMode: boolean = false;
+	_nativeFont?: string;
+	_nativeStroke?: number;
+	_nativeStrokeColor?: string;
+	_autoWrap: boolean = false;
+	_colorOverlay?: string;
+	_bindDataObject?: any;
+	_bindDataProperty?: string;
+	_bindDataPreText?: string;
+	_bindDataPostText?: string;
 
-		this._renderText = undefined;
-		this._text = undefined;
-		this._textAlignX = 1;
-		this._textAlignY = 3;
-		this._textLineSpacing = 0;
-		this._nativeMode = false;
+	constructor () {
+		super();
 
 		// Enable caching by default for font entities!
 		this.cache(true);
@@ -27,46 +39,52 @@ class IgeFontEntity extends IgeUiEntity {
 	 * Extends the IgeUiEntity.width() method and if the value being
 	 * set is different from the current width value then the font's
 	 * cache is invalidated so it gets redrawn.
-	 * @param val
+	 * @param px
 	 * @param [lockAspect]
 	 * @param [modifier]
 	 * @param [noUpdate]
 	 * @returns {*}
 	 */
-	width (val, lockAspect, modifier, noUpdate) {
-		if (val !== undefined) {
-			if (this._bounds2d.x !== val) {
+	width (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	width (): number;
+	width (px?: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean) {
+		if (px !== undefined) {
+			if (this._bounds2d.x !== px) {
 				this.clearCache();
 			}
-		}
 
-		const retVal = super.width(val, lockAspect);
+			return super.width(px, lockAspect);
+		}
 
 		if (this._autoWrap) {
 			this._applyAutoWrap();
 		}
 
-		return retVal;
+		return this._bounds2d.x;
 	}
 
 	/**
 	 * Extends the IgeUiEntity.height() method and if the value being
 	 * set is different from the current height value then the font's
 	 * cache is invalidated so it gets redrawn.
-	 * @param val
+	 * @param px
 	 * @param [lockAspect]
 	 * @param [modifier]
 	 * @param [noUpdate]
 	 * @returns {*|number}
 	 */
-	height (val, lockAspect, modifier, noUpdate) {
-		if (val !== undefined) {
-			if (this._bounds2d.y !== val) {
+	height (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	height (): number;
+	height (px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false) {
+		if (px !== undefined) {
+			if (this._bounds2d.y !== px) {
 				this.clearCache();
 			}
+
+			return super.height(px, lockAspect);
 		}
 
-		return super.height(val, lockAspect);
+		return this._bounds2d.y;
 	}
 
 	/**
@@ -75,15 +93,15 @@ class IgeFontEntity extends IgeUiEntity {
 	 * has been enabled then the "_text" remains equal to whatever
 	 * text you pass into this method but "_renderText" becomes the
 	 * line-broken text that the auto-wrapper method creates. When the
-	 * entity renders it's text string it ALWAYS renders from "_renderText"
+	 * entity renders its text string it ALWAYS renders from "_renderText"
 	 * and not the value of "_text". Effectively this means that "_text"
 	 * contains the unaltered version of your original text and
 	 * "_renderText" will be either the same as "_text" if auto-wrapping
-	 * is disable or a wrapped version otherwise.
+	 * is disabled or a wrapped version otherwise.
 	 * @param {String} text The text string to render.
 	 * @returns {*}
 	 */
-	text (text) {
+	text (text?: string) {
 		if (text !== undefined) {
 			let wasDifferent = false;
 
@@ -113,7 +131,7 @@ class IgeFontEntity extends IgeUiEntity {
 	 * Allows you to bind the text output of this font entity to match
 	 * the value of an object's property so that when it is updated the
 	 * text will automatically update on this entity. Useful for score,
-	 * position etc output where data is stored in an object and changes
+	 * position etc. output where data is stored in an object and changes
 	 * frequently.
 	 * @param {Object} obj The object to read the property from.
 	 * @param {String} propName The name of the property to read value from.
@@ -121,7 +139,7 @@ class IgeFontEntity extends IgeUiEntity {
 	 * @param {String} postText Text to place after the output.
 	 * @returns {*}
 	 */
-	bindData (obj, propName, preText, postText) {
+	bindData (obj: any, propName: string, preText?: string, postText?: string) {
 		if (obj !== undefined && propName !== undefined) {
 			this._bindDataObject = obj;
 			this._bindDataProperty = propName;
@@ -138,7 +156,7 @@ class IgeFontEntity extends IgeUiEntity {
 	 * @param {Number} val The new value.
 	 * @returns {*}
 	 */
-	textAlignX (val) {
+	textAlignX (val?: IgeFontAlignX) {
 		if (val !== undefined) {
 			if (this._textAlignX !== val) {
 				this.clearCache();
@@ -156,7 +174,7 @@ class IgeFontEntity extends IgeUiEntity {
 	 * @param {Number} val The new value.
 	 * @returns {*}
 	 */
-	textAlignY (val) {
+	textAlignY (val?: IgeFontAlignY) {
 		if (val !== undefined) {
 			if (this._textAlignY !== val) {
 				this.clearCache();
@@ -173,7 +191,7 @@ class IgeFontEntity extends IgeUiEntity {
 	 * @param {Number=} val
 	 * @returns {*}
 	 */
-	textLineSpacing (val) {
+	textLineSpacing (val?: number) {
 		if (val !== undefined) {
 			if (this._textLineSpacing !== val) {
 				this.clearCache();
@@ -193,7 +211,7 @@ class IgeFontEntity extends IgeUiEntity {
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	colorOverlay (val) {
+	colorOverlay (val?: string) {
 		if (val !== undefined) {
 			if (this._colorOverlay !== val) {
 				this.clearCache();
@@ -208,7 +226,7 @@ class IgeFontEntity extends IgeUiEntity {
 	/**
 	 * A proxy for colorOverlay().
 	 */
-	color (val) {
+	color (val?: string) {
 		return this.colorOverlay(val);
 	}
 
@@ -220,6 +238,7 @@ class IgeFontEntity extends IgeUiEntity {
 			this.cacheDirty(true);
 		}
 
+		// TODO: Maybe use .script.meta to store these properties?
 		if (this._texture && this._texture._caching && this._texture._cacheText[this._renderText]) {
 			delete this._texture._cacheText[this._renderText];
 		}
@@ -233,7 +252,7 @@ class IgeFontEntity extends IgeUiEntity {
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	nativeFont (val) {
+	nativeFont (val?: string) {
 		if (val !== undefined) {
 			// Check if this font is different from the current
 			// assigned font
@@ -244,7 +263,7 @@ class IgeFontEntity extends IgeUiEntity {
 			this._nativeFont = val;
 
 			// Assign the native font smart texture
-			const tex = new IgeTexture(this._ige, IgeFontSmartTexture);
+			const tex = new IgeTexture("igeFontSmartTexture", IgeFontSmartTexture);
 			this.texture(tex);
 
 			// Set the flag indicating we are using a native font
@@ -262,7 +281,7 @@ class IgeFontEntity extends IgeUiEntity {
 	 * @param {Number=} val The size of the text stroke.
 	 * @return {*}
 	 */
-	nativeStroke (val) {
+	nativeStroke (val?: number) {
 		if (val !== undefined) {
 			if (this._nativeStroke !== val) {
 				this.clearCache();
@@ -277,10 +296,10 @@ class IgeFontEntity extends IgeUiEntity {
 	/**
 	 * Gets / sets the text stroke color that applies when using
 	 * a native font for text rendering.
-	 * @param {Number=} val The color of the text stroke.
+	 * @param val The color of the text stroke.
 	 * @return {*}
 	 */
-	nativeStrokeColor (val) {
+	nativeStrokeColor (val?: string) {
 		if (val !== undefined) {
 			if (this._nativeStrokeColor !== val) {
 				this.clearCache();
@@ -299,7 +318,7 @@ class IgeFontEntity extends IgeUiEntity {
 	 * @param val
 	 * @returns {*}
 	 */
-	autoWrap (val) {
+	autoWrap (val?: boolean) {
 		if (val !== undefined) {
 			this._autoWrap = val;
 
@@ -322,15 +341,14 @@ class IgeFontEntity extends IgeUiEntity {
 	_applyAutoWrap () {
 		if (this._text) {
 			// Un-wrap the text so it is all on one line
-			let oneLineText = this._text.replace(/\n/g, " "),
-				words,
-				wordIndex,
-				textArray = [],
-				currentTextLine = "",
-				lineWidth;
+			const oneLineText = this._text.replace(/\n/g, " ");
+			const textArray = [];
+			let wordIndex;
+			let currentTextLine = "";
+			let lineWidth;
 
 			// Break the text into words
-			words = oneLineText.split(" ");
+			const words = oneLineText.split(" ");
 
 			// There are multiple words - loop the words
 			for (wordIndex = 0; wordIndex < words.length; wordIndex++) {
@@ -367,23 +385,24 @@ class IgeFontEntity extends IgeUiEntity {
 	 * text value if none is provided.
 	 * @returns {Number} The width of the text in pixels.
 	 */
-	measureTextWidth (text) {
+	measureTextWidth (text?: string) {
 		text = text || this._text;
 
 		// Both IgeFontSheet and the IgeFontSmartTexture have a method
 		// called measureTextWidth() so we can just asks the current
 		// texture for the width :)
-		if (this._texture._renderMode === 0) {
-			return this._texture.measureTextWidth(text);
-		} else {
-			return this._texture.script.measureTextWidth(text, this);
+		if (this._texture?._renderMode === IgeTextureRenderMode.image) {
+			// TODO: Figure out what this should be since it's not a smart texture, where does the function come from?
+			return this._texture.script?.meta?.measureTextWidth(text);
+		} else if (this._texture?._renderMode === IgeTextureRenderMode.smartTexture) {
+			return this._texture.script?.meta?.measureTextWidth(text, this);
 		}
 	}
 
-	tick (ctx) {
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		// Check for an auto-progress update
 		if (this._bindDataObject && this._bindDataProperty) {
-			if (this._bindDataObject._alive === false) {
+			if (!this._bindDataObject._alive) {
 				// The object we have bind data from has been
 				// destroyed so release our reference to it!
 				delete this._bindDataObject;
@@ -403,9 +422,10 @@ class IgeFontEntity extends IgeUiEntity {
 	 * Other properties are handled by their own class method.
 	 * @return {String}
 	 */
-	_stringify (options) {
+	_stringify () {
 		// Get the properties for all the super-classes
-		let str = IgeUiEntity.prototype._stringify.call(this), i;
+		let str = IgeUiEntity.prototype._stringify.call(this);
+		let i: keyof this;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {

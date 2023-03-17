@@ -1,14 +1,16 @@
-var IgeCuboid = IgeEntity.extend({
-	classId: 'IgeCuboid',
+import IgeEntity from "../core/IgeEntity";
+import IgeTexture from "../core/IgeTexture";
+import IgeCuboidSmartTexture from "../textures/IgeCuboidSmartTexture";
+
+export class IgeCuboid extends IgeEntity {
+	classId = 'IgeCuboid';
 	
-	init: function () {
-		IgeEntity.prototype.init.call(this);
+	constructor () {
+		super();
 		
 		this.bounds3d(40, 40, 40);
 		
-		var tex = new IgeTexture(IgeCuboidSmartTexture);
+		const tex = new IgeTexture("igeCuboidSmartTexture", IgeCuboidSmartTexture);
 		this.texture(tex);
 	}
-});
-
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeCuboid; }
+}
