@@ -110,7 +110,7 @@ class IgeUiEntity extends IgeEntity {
 	_renderBackground (ctx?: IgeCanvasRenderingContext2d) {
 		const geom = this._bounds2d;
 
-		if (!this._backgroundColor || !this._patternFill || !ctx) {
+		if ((!this._backgroundColor && !this._patternFill) || !ctx) {
 			return;
 		}
 
@@ -1235,7 +1235,9 @@ class IgeUiEntity extends IgeEntity {
 	 * @param {CSSColor, CanvasGradient, CanvasPattern=} color
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	backgroundColor (color: string | CanvasGradient | CanvasPattern) {
+	backgroundColor (color: string | CanvasGradient | CanvasPattern): this;
+	backgroundColor (): string | CanvasGradient | CanvasPattern;
+	backgroundColor (color?: string | CanvasGradient | CanvasPattern) {
 		if (color !== undefined) {
 			this._backgroundColor = color;
 			this.cacheDirty(true);
