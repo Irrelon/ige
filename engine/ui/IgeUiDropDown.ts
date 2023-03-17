@@ -4,8 +4,18 @@ import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRendering
 import type IgeUiManagerComponent from "../components/IgeUiManagerComponent";
 import { IgeUiLabel } from "./IgeUiLabel";
 
+export interface IgeUiDropDownOption {
+	text: string;
+	value: string;
+	selected?: boolean;
+}
+
 export class IgeUiDropDown extends IgeUiElement {
 	classId = "IgeUiDropDown";
+
+	_toggleState: boolean = false;
+	_options: IgeUiDropDownOption[] = [];
+	_label: IgeUiLabel;
 
 	constructor () {
 		super();
@@ -29,9 +39,6 @@ export class IgeUiDropDown extends IgeUiElement {
 		this.color("#000000");
 		this.width(200);
 		this.height(30);
-
-		this._options = [];
-		this._toggleState = false;
 
 		this._label = new IgeUiLabel()
 			.left(0)
@@ -170,7 +177,7 @@ export class IgeUiDropDown extends IgeUiElement {
 			ige.engine.$(this._id + "_options").destroy();
 		}
 	}
-		
+
 	tick (ctx: IgeCanvasRenderingContext2d) {
 		super.tick(ctx);
 

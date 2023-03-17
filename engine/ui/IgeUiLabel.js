@@ -38,55 +38,48 @@ export class IgeUiLabel extends IgeUiElement {
                 break;
         }
     }
-    textAlignX() {
-        this._fontEntity.textAlignX.apply(this._fontEntity, arguments);
-        return this;
+    textAlignX(val) {
+        if (val !== undefined) {
+            return this._fontEntity.textAlignX(val);
+        }
+        return this._fontEntity.textAlignX();
     }
-    textAlignY() {
-        this._fontEntity.textAlignY.apply(this._fontEntity, arguments);
-        return this;
+    textAlignY(val) {
+        if (val !== undefined) {
+            return this._fontEntity.textAlignY(val);
+        }
+        return this._fontEntity.textAlignY();
     }
-    textLineSpacing() {
-        this._fontEntity.textLineSpacing.apply(this._fontEntity, arguments);
-        return this;
+    textLineSpacing(val) {
+        if (val !== undefined) {
+            return this._fontEntity.textLineSpacing(val);
+        }
+        return this._fontEntity.textLineSpacing();
     }
-    autoWrap() {
-        this._fontEntity.autoWrap.apply(this._fontEntity, arguments);
-        return this;
+    autoWrap(val) {
+        if (val !== undefined) {
+            return this._fontEntity.autoWrap(val);
+        }
+        return this._fontEntity.autoWrap();
     }
-    /**
-     * Extended method to auto-update the width of the child
-     * font entity automatically to fill the text box.
-     * @param px
-     * @param lockAspect
-     * @param modifier
-     * @param noUpdate
-     * @return {*}
-     */
-    width(px, lockAspect, modifier, noUpdate) {
-        let val;
-        // Call the main super class method
-        val = super.width(px, lockAspect, modifier, noUpdate);
-        // Update the font entity width - 10px for margin
-        this._fontEntity.width(px - 10, lockAspect, modifier, noUpdate);
-        return val;
+    width(px, lockAspect = false, modifier, noUpdate = false) {
+        if (px !== undefined) {
+            // Call the main super class method
+            const returnValue = super.width(px, lockAspect, modifier, noUpdate);
+            // Update the font entity width - 10px for margin
+            this._fontEntity.width(super.width() - 10, lockAspect, modifier, noUpdate);
+            return returnValue;
+        }
+        return this._fontEntity.width();
     }
-    /**
-     * Extended method to auto-update the height of the child
-     * font entity automatically to fill the text box.
-     * @param px
-     * @param lockAspect
-     * @param modifier
-     * @param noUpdate
-     * @return {*}
-     */
-    height(px, lockAspect, modifier, noUpdate) {
-        let val;
-        // Call the main super class method
-        val = super.height(px, lockAspect, modifier, noUpdate);
-        // Update the font entity height
-        this._fontEntity.height(px, lockAspect, modifier, noUpdate);
-        return val;
+    height(px, lockAspect = false, modifier, noUpdate = false) {
+        if (px !== undefined) {
+            // Call the main super class method
+            const returnValue = super.height(px, lockAspect, modifier, noUpdate);
+            this._fontEntity.height(super.height(), lockAspect, modifier, noUpdate);
+            return returnValue;
+        }
+        return this._fontEntity.height();
     }
     /**
      * Gets / sets the text value of the input box.

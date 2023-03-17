@@ -313,8 +313,8 @@ class IgeUiEntity extends IgeEntity {
 		}
 	}
 
-	cell(val: number | null): this;
-	cell(): number | null;
+	cell (val: number | null): this;
+	cell (): number | null;
 	cell (val?: number | null) {
 		if (val === undefined) {
 			return this._cell;
@@ -417,7 +417,9 @@ class IgeUiEntity extends IgeEntity {
 	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
-	left (px?: number | string, noUpdate = false) {
+	left (px: number | string, noUpdate?: boolean): this;
+	left (): number;
+	left (px?: number | string, noUpdate: boolean = false) {
 		if (px === undefined) {
 			return this._uiLeft;
 		}
@@ -470,6 +472,8 @@ class IgeUiEntity extends IgeEntity {
 	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
+	right (px: number | string, noUpdate?: boolean): this;
+	right (): number;
 	right (px?: number | string, noUpdate = false) {
 		if (px !== undefined) {
 			if (px === null) {
@@ -576,7 +580,9 @@ class IgeUiEntity extends IgeEntity {
 	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
-	top (px?: number | string, noUpdate = false) {
+	top (px: number | string, noUpdate?: boolean): this;
+	top (): number;
+	top (px?: number | string, noUpdate: boolean = false) {
 		if (px === undefined) {
 			return this._uiTop;
 		}
@@ -630,7 +636,9 @@ class IgeUiEntity extends IgeEntity {
 	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
-	bottom (px?: number | string, noUpdate = false) {
+	bottom (px: number | string, noUpdate?: boolean): this;
+	bottom (): number;
+	bottom (px?: number | string, noUpdate: boolean = false) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -682,7 +690,9 @@ class IgeUiEntity extends IgeEntity {
 	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
-	middle (px?: number | string, noUpdate = false) {
+	middle (px: number | string, noUpdate?: boolean): this;
+	middle (): number;
+	middle (px?: number | string, noUpdate: boolean = false) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -1069,12 +1079,12 @@ class IgeUiEntity extends IgeEntity {
 
 	/**
 	 * Gets / sets the color to use as the font color.
-	 * @param {CSSColor, CanvasGradient, CanvasPattern=} color
+	 * @param {string | CanvasGradient | CanvasPattern=} color
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	color (color: string | CanvasGradient | CanvasPattern): this;
+	color (color?: string | CanvasGradient | CanvasPattern): this;
 	color (): string | CanvasGradient | CanvasPattern;
-	color (color: string | CanvasGradient | CanvasPattern) {
+	color (color?: string | CanvasGradient | CanvasPattern) {
 		if (color !== undefined) {
 			this._color = color;
 			this.cacheDirty(true);

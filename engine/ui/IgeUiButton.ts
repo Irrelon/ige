@@ -4,11 +4,13 @@ import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingConte
 export class IgeUiButton extends IgeUiElement {
 	classId = "IgeUiButton";
 
+	_autoCell: boolean = false;
+
 	constructor () {
 		super();
 
 		this.on("mouseDown", () => {
-			if (this._autoCell) {
+			if (this._autoCell && this._cell !== null) {
 				// React to the mouse events
 				this.cell(this._cell + 1);
 				this.cacheDirty(true);
@@ -16,7 +18,7 @@ export class IgeUiButton extends IgeUiElement {
 		});
 
 		this.on("mouseUp", () => {
-			if (this._autoCell) {
+			if (this._autoCell && this._cell !== null) {
 				// React to the mouse events
 				this.cell(this._cell - 1);
 				this.cacheDirty(true);
@@ -32,7 +34,7 @@ export class IgeUiButton extends IgeUiElement {
 	 * @param {Boolean=} val Either true or false.
 	 * @returns {*}
 	 */
-	autoCell (val) {
+	autoCell (val?: boolean) {
 		if (val !== undefined) {
 			this._autoCell = val;
 

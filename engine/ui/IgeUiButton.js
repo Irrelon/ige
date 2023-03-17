@@ -3,15 +3,16 @@ export class IgeUiButton extends IgeUiElement {
     constructor() {
         super();
         this.classId = "IgeUiButton";
+        this._autoCell = false;
         this.on("mouseDown", () => {
-            if (this._autoCell) {
+            if (this._autoCell && this._cell !== null) {
                 // React to the mouse events
                 this.cell(this._cell + 1);
                 this.cacheDirty(true);
             }
         });
         this.on("mouseUp", () => {
-            if (this._autoCell) {
+            if (this._autoCell && this._cell !== null) {
                 // React to the mouse events
                 this.cell(this._cell - 1);
                 this.cacheDirty(true);

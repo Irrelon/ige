@@ -843,7 +843,7 @@ class IgeInputComponent extends IgeComponent<IgeEngine> {
 
 	/**
 	 * Emit an event by name. Overrides the IgeEventingClass emit method and
-	 * checks for propagation stopped by calling ige.input.stopPropagation().
+	 * checks for propagation stopped by calling ige.engine.components.input.stopPropagation().
 	 * @param {Object} eventName The name of the event to emit.
 	 * @param {Object || Array} args The arguments to send to any listening methods.
 	 * If you are sending multiple arguments, use an array containing each argument.

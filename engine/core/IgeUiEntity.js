@@ -273,13 +273,6 @@ class IgeUiEntity extends IgeEntity {
     }
     _updateStyle() {
     }
-    /**
-     * Gets / sets the entity's x position relative to the left of
-     * the canvas.
-     * @param {Number} px
-     * @param {Boolean=} noUpdate
-     * @return {Number}
-     */
     left(px, noUpdate = false) {
         if (px === undefined) {
             return this._uiLeft;
@@ -321,13 +314,6 @@ class IgeUiEntity extends IgeEntity {
         }
         return this;
     }
-    /**
-     * Gets / sets the entity's x position relative to the right of
-     * the canvas.
-     * @param {Number} px
-     * @param {Boolean=} noUpdate
-     * @return {Number}
-     */
     right(px, noUpdate = false) {
         if (px !== undefined) {
             if (px === null) {
@@ -419,13 +405,6 @@ class IgeUiEntity extends IgeEntity {
         }
         return this._uiCenter;
     }
-    /**
-     * Gets / sets the entity's y position relative to the top of
-     * the canvas.
-     * @param {Number} px
-     * @param {Boolean=} noUpdate
-     * @return {Number}
-     */
     top(px, noUpdate = false) {
         if (px === undefined) {
             return this._uiTop;
@@ -468,13 +447,6 @@ class IgeUiEntity extends IgeEntity {
         }
         return this;
     }
-    /**
-     * Gets / sets the entity's y position relative to the bottom of
-     * the canvas.
-     * @param {Number} px
-     * @param {Boolean=} noUpdate
-     * @return {Number}
-     */
     bottom(px, noUpdate = false) {
         if (px !== undefined) {
             if (px === null) {
@@ -516,13 +488,6 @@ class IgeUiEntity extends IgeEntity {
         }
         return this._uiBottom;
     }
-    /**
-     * Gets / sets the viewport's y position relative to the middle of
-     * the canvas.
-     * @param {Number} px
-     * @param {Boolean=} noUpdate
-     * @return {Number}
-     */
     middle(px, noUpdate = false) {
         if (px !== undefined) {
             if (px === null) {

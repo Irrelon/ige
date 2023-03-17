@@ -3,9 +3,15 @@
  */
 import IgeUiElement from "../core/IgeUiElement";
 import IgeFontEntity from "../core/IgeFontEntity";
+import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign";
 
 export class IgeUiLabel extends IgeUiElement {
 	classId = "IgeUiLabel";
+
+	_fontEntity: IgeFontEntity;
+	_alignText?: "left" | "center" | "right";
+	_placeHolder?: string;
+	_placeHolderColor?: string;
 
 	constructor () {
 		super();
@@ -27,7 +33,7 @@ export class IgeUiLabel extends IgeUiElement {
 		this.allowHover(false);
 	}
 
-	textAlign (val) {
+	textAlign (val?: "left" | "center" | "right") {
 		if (val === undefined) {
 			return this._alignText;
 		}
@@ -49,24 +55,36 @@ export class IgeUiLabel extends IgeUiElement {
 		}
 	}
 
-	textAlignX () {
-		this._fontEntity.textAlignX.apply(this._fontEntity, arguments);
-		return this;
+	textAlignX (val?: IgeFontAlignX) {
+		if (val !== undefined) {
+			return this._fontEntity.textAlignX(val);
+		}
+
+		return this._fontEntity.textAlignX();
 	}
 
-	textAlignY () {
-		this._fontEntity.textAlignY.apply(this._fontEntity, arguments);
-		return this;
+	textAlignY (val?: IgeFontAlignY) {
+		if (val !== undefined) {
+			return this._fontEntity.textAlignY(val);
+		}
+
+		return this._fontEntity.textAlignY();
 	}
 
-	textLineSpacing () {
-		this._fontEntity.textLineSpacing.apply(this._fontEntity, arguments);
-		return this;
+	textLineSpacing (val?: number) {
+		if (val !== undefined) {
+			return this._fontEntity.textLineSpacing(val);
+		}
+
+		return this._fontEntity.textLineSpacing();
 	}
 
-	autoWrap () {
-		this._fontEntity.autoWrap.apply(this._fontEntity, arguments);
-		return this;
+	autoWrap (val?: boolean) {
+		if (val !== undefined) {
+			return this._fontEntity.autoWrap(val);
+		}
+
+		return this._fontEntity.autoWrap();
 	}
 
 	/**
@@ -78,16 +96,20 @@ export class IgeUiLabel extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	width (px, lockAspect, modifier, noUpdate) {
-		let val;
+	width (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	width (): number;
+	width (px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
+		if (px !== undefined) {
+			// Call the main super class method
+			const returnValue = super.width(px, lockAspect, modifier, noUpdate);
 
-		// Call the main super class method
-		val = super.width(px, lockAspect, modifier, noUpdate);
+			// Update the font entity width - 10px for margin
+			this._fontEntity.width(super.width() - 10, lockAspect, modifier, noUpdate);
 
-		// Update the font entity width - 10px for margin
-		this._fontEntity.width(px - 10, lockAspect, modifier, noUpdate);
+			return returnValue;
+		}
 
-		return val;
+		return this._fontEntity.width();
 	}
 
 	/**
@@ -99,16 +121,18 @@ export class IgeUiLabel extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	height (px, lockAspect, modifier, noUpdate) {
-		let val;
+	height (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	height (): number;
+	height (px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false) {
+		if (px !== undefined) {
+			// Call the main super class method
+			const returnValue = super.height(px, lockAspect, modifier, noUpdate);
+			this._fontEntity.height(super.height(), lockAspect, modifier, noUpdate);
 
-		// Call the main super class method
-		val = super.height(px, lockAspect, modifier, noUpdate);
+			return returnValue;
+		}
 
-		// Update the font entity height
-		this._fontEntity.height(px, lockAspect, modifier, noUpdate);
-
-		return val;
+		return this._fontEntity.height();
 	}
 
 	/**
@@ -183,7 +207,7 @@ export class IgeUiLabel extends IgeUiElement {
 		}
 	}
 
-	nativeFont (val) {
+	nativeFont (val?: string) {
 		if (val !== undefined) {
 			this._fontEntity.nativeFont(val);
 			return this;
@@ -192,7 +216,7 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.nativeFont();
 	}
 
-	nativeStroke (val) {
+	nativeStroke (val?: number) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStroke(val);
 			return this;
@@ -201,7 +225,7 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.nativeStroke();
 	}
 
-	nativeStrokeColor (val) {
+	nativeStrokeColor (val?: string) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStrokeColor(val);
 			return this;
@@ -210,7 +234,9 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.nativeStrokeColor();
 	}
 
-	color (val) {
+	color (val: string): this;
+	color (): string;
+	color (val?: string) {
 		if (val !== undefined) {
 			this._color = val;
 

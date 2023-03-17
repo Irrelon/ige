@@ -5,6 +5,8 @@ export class IgeUiDropDown extends IgeUiElement {
     constructor() {
         super();
         this.classId = "IgeUiDropDown";
+        this._toggleState = false;
+        this._options = [];
         // Define some default styles
         if (!ige.engine.components.ui.style(".IgeUiDropDownOption")) {
             ige.engine.components.ui.style(".IgeUiDropDownOption", {
@@ -22,8 +24,6 @@ export class IgeUiDropDown extends IgeUiElement {
         this.color("#000000");
         this.width(200);
         this.height(30);
-        this._options = [];
-        this._toggleState = false;
         this._label = new IgeUiLabel()
             .left(0)
             .right(30)

@@ -156,6 +156,8 @@ class IgeFontEntity extends IgeUiEntity {
 	 * @param {Number} val The new value.
 	 * @returns {*}
 	 */
+	textAlignX (val: IgeFontAlignX): this;
+	textAlignX (): IgeFontAlignX;
 	textAlignX (val?: IgeFontAlignX) {
 		if (val !== undefined) {
 			if (this._textAlignX !== val) {
@@ -174,6 +176,8 @@ class IgeFontEntity extends IgeUiEntity {
 	 * @param {Number} val The new value.
 	 * @returns {*}
 	 */
+	textAlignY (val: IgeFontAlignY): this;
+	textAlignY (): IgeFontAlignY;
 	textAlignY (val?: IgeFontAlignY) {
 		if (val !== undefined) {
 			if (this._textAlignY !== val) {
@@ -191,6 +195,8 @@ class IgeFontEntity extends IgeUiEntity {
 	 * @param {Number=} val
 	 * @returns {*}
 	 */
+	textLineSpacing (val: number): this;
+	textLineSpacing (): number;
 	textLineSpacing (val?: number) {
 		if (val !== undefined) {
 			if (this._textLineSpacing !== val) {
@@ -226,6 +232,8 @@ class IgeFontEntity extends IgeUiEntity {
 	/**
 	 * A proxy for colorOverlay().
 	 */
+	color (val: string): this;
+	color (): string
 	color (val?: string) {
 		return this.colorOverlay(val);
 	}

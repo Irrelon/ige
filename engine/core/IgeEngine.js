@@ -293,8 +293,8 @@ export class IgeEngine extends IgeEntity {
                 this._dpf = this._drawCount;
                 this._drawCount = 0;
                 // Call the input system tick to reset any flags etc
-                if (ige.input) {
-                    ige.input.tick();
+                if (this.components.input) {
+                    this.components.input.tick();
                 }
             }
             this._resized = false;
@@ -572,8 +572,8 @@ export class IgeEngine extends IgeEntity {
      */
     removeCanvas() {
         // Stop listening for input events
-        if (ige.input) {
-            ige.input.destroyListeners();
+        if (this.components.input) {
+            this.components.input.destroyListeners();
         }
         // Remove event listener
         window.removeEventListener("resize", this._resizeEvent);
@@ -1035,11 +1035,11 @@ export class IgeEngine extends IgeEntity {
             const classObj = this.getClass(className);
             const classInstance = this._graphInstances[classObj.name];
             if (classInstance) {
-                this.log("Removing SceneGraph data class: " + className);
+                this.log(`Removing SceneGraph data class: ${classObj.name}`);
                 // Call the class's graph() method passing the options in
                 classInstance.removeGraph(options);
                 // Now remove the graph instance from the graph instance array
-                delete this._graphInstances[className];
+                delete this._graphInstances[classObj.name];
             }
             else {
                 this.log("Cannot remove graph for class name \"" +

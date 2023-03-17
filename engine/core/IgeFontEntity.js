@@ -95,12 +95,6 @@ class IgeFontEntity extends IgeUiEntity {
         }
         return this;
     }
-    /**
-     * Gets / sets the current horizontal text alignment. Accepts
-     * a value of 0, 1 or 2 (left, centre, right) respectively.
-     * @param {Number} val The new value.
-     * @returns {*}
-     */
     textAlignX(val) {
         if (val !== undefined) {
             if (this._textAlignX !== val) {
@@ -111,13 +105,6 @@ class IgeFontEntity extends IgeUiEntity {
         }
         return this._textAlignX;
     }
-    /**
-     * Gets / sets the current vertical text alignment. Accepts
-     * a value of 0, 1, 2, 3 (top, middle, bottom, justified) respectively.
-     * Defaults to 3 (justified)
-     * @param {Number} val The new value.
-     * @returns {*}
-     */
     textAlignY(val) {
         if (val !== undefined) {
             if (this._textAlignY !== val) {
@@ -128,12 +115,6 @@ class IgeFontEntity extends IgeUiEntity {
         }
         return this._textAlignY;
     }
-    /**
-     * Gets / sets the amount of spacing between the lines of text being
-     * rendered. Accepts negative values as well as positive ones.
-     * @param {Number=} val
-     * @returns {*}
-     */
     textLineSpacing(val) {
         if (val !== undefined) {
             if (this._textLineSpacing !== val) {
@@ -163,9 +144,6 @@ class IgeFontEntity extends IgeUiEntity {
         }
         return this._colorOverlay;
     }
-    /**
-     * A proxy for colorOverlay().
-     */
     color(val) {
         return this.colorOverlay(val);
     }

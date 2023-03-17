@@ -1,16 +1,18 @@
 import IgeUiElement from "../core/IgeUiElement.js";
 export class IgeUiAutoFlow extends IgeUiElement {
     constructor() {
-        super();
+        super(...arguments);
         this.classId = "IgeUiAutoFlow";
         this._currentHeight = 0;
     }
     tick(ctx) {
         // Loop children and re-position then
-        let arr = this._children, arrCount = arr.length, i, item, itemY, currentY = 0;
-        for (i = 0; i < arrCount; i++) {
-            item = arr[i];
-            itemY = item._bounds2d.y;
+        const arr = this._children;
+        const arrCount = arr.length;
+        let currentY = 0;
+        for (let i = 0; i < arrCount; i++) {
+            const item = arr[i];
+            const itemY = item._bounds2d.y;
             item.top(currentY);
             currentY += itemY;
         }

@@ -1382,13 +1382,13 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 		if (this._mouseEventsActive) {
 			if (this._processTriggerHitTests()) {
 				// Point is inside the trigger bounds
-				ige.input.queueEvent(this._mouseInTrigger, null);
+				ige.engine.components.input.queueEvent(this._mouseInTrigger, null);
 			} else {
-				if (ige.input.mouseMove) {
+				if (ige.engine.components.input.mouseMove) {
 					// There is a mouse move event, but we are not inside the entity
 					// so fire a mouse out event (_handleMouseOut will check if the
 					// mouse WAS inside before firing an out event).
-					this._handleMouseOut(ige.input.mouseMove);
+					this._handleMouseOut(ige.engine.components.input.mouseMove);
 				}
 			}
 		}
@@ -1995,7 +1995,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         ige.engine.components.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -2023,7 +2023,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         ige.engine.components.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -2053,7 +2053,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         ige.engine.components.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -2083,7 +2083,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         ige.engine.components.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -2111,7 +2111,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         ige.engine.components.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -2140,7 +2140,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.input.stopPropagation();
+	 *         ige.engine.components.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -2375,24 +2375,24 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * @private
 	 */
 	_mouseInTrigger = (evc: IgeInputEventControl, eventData?: any) => {
-		if (ige.input.mouseMove) {
+		if (ige.engine.components.input.mouseMove) {
 			// There is a mouse move event
-			this._handleMouseIn(ige.input.mouseMove, evc, eventData);
+			this._handleMouseIn(ige.engine.components.input.mouseMove, evc, eventData);
 		}
 
-		if (ige.input.mouseDown) {
+		if (ige.engine.components.input.mouseDown) {
 			// There is a mouse down event
-			this._handleMouseDown(ige.input.mouseDown, evc, eventData);
+			this._handleMouseDown(ige.engine.components.input.mouseDown, evc, eventData);
 		}
 
-		if (ige.input.mouseUp) {
+		if (ige.engine.components.input.mouseUp) {
 			// There is a mouse up event
-			this._handleMouseUp(ige.input.mouseUp, evc, eventData);
+			this._handleMouseUp(ige.engine.components.input.mouseUp, evc, eventData);
 		}
 
-		if (ige.input.mouseWheel) {
+		if (ige.engine.components.input.mouseWheel) {
 			// There is a mouse wheel event
-			this._handleMouseWheel(ige.input.mouseWheel, evc, eventData);
+			this._handleMouseWheel(ige.engine.components.input.mouseWheel, evc, eventData);
 		}
 	};
 

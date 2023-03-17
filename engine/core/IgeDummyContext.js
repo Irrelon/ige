@@ -15,6 +15,8 @@ class IgeDummyContext {
         this.shadowOffsetX = 0;
         this.shadowOffsetY = 0;
         this.lineWidth = 1;
+        this.textAlign = "left";
+        this.textBaseline = "middle";
         this.save = undefinedMethod;
         this.restore = undefinedMethod;
         this.translate = undefinedMethod;

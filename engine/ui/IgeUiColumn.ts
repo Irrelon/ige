@@ -1,13 +1,14 @@
 import IgeUiElement from "../core/IgeUiElement";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
 class IgeUiColumn extends IgeUiElement {
 	classId = "IgeUiColumn";
 
-	tick (ctx) {
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		const maxSize = this.height();
 
 		// Loop children and re-position then
-		const arr = this._children;
+		const arr = (this._children as IgeUiElement[]);
 		const arrCount = arr.length;
 
 		let flowSpace = maxSize;

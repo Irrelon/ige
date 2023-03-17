@@ -16,6 +16,9 @@ class IgeDummyContext {
 	shadowOffsetX?: CanvasRenderingContext2D["shadowOffsetX"] = 0;
 	shadowOffsetY?: CanvasRenderingContext2D["shadowOffsetY"] = 0;
 	lineWidth?: CanvasRenderingContext2D["lineWidth"] = 1;
+	textAlign?: CanvasRenderingContext2D["textAlign"] = "left";
+	textBaseline?: CanvasRenderingContext2D["textBaseline"] = "middle";
+	font?: CanvasRenderingContext2D["font"];
 	globalCompositeOperation?: string;
 	save = undefinedMethod;
 	restore = undefinedMethod;
