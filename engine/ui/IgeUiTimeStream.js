@@ -1,12 +1,11 @@
 import IgeUiElement from "../core/IgeUiElement.js";
-import { ige } from "../instance.js";
-class IgeUiTimeStream extends IgeUiElement {
+export class IgeUiTimeStream extends IgeUiElement {
     constructor() {
         super(...arguments);
         this.classId = "IgeUiTimeStream";
-        this.monitor = (entity) => {
-            this._entity = entity;
-        };
+    }
+    monitor(entity) {
+        this._entity = entity;
     }
     tick(ctx) {
         // Draw timeline
@@ -57,4 +56,3 @@ class IgeUiTimeStream extends IgeUiElement {
         }
     }
 }
-export default IgeUiTimeStream;

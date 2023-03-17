@@ -66,7 +66,7 @@ class IgeAnimationComponent extends IgeComponent {
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 * @return {*}
 	 */
-	define = (id: string, frames: number[], fps: number, loop: number, convertIdsToIndex: boolean = true) => {
+	define = (id: string, frames: (number | string | null)[], fps: number, loop: number, convertIdsToIndex: boolean = true) => {
 		if (frames && frames.length) {
 			let i, frame;
 			this._animCount = this._animCount || 0;

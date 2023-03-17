@@ -1,32 +1,30 @@
+import { ige } from "../instance";
+import IgeUiElement from "../core/IgeUiElement";
+import IgeFontEntity from "../core/IgeFontEntity";
+import type IgeInputComponent from "../components/IgeInputComponent";
+
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
  * capture keyboard input and display it, similar in usage to the HTML input
  * text element.
  */
-import IgeUiElement from "../core/IgeUiElement";
-import IgeFontEntity from "../core/IgeFontEntity";
-
 //TODO: Make cursor a text entry cursor on hover
-class IgeUiTextBox extends IgeUiElement {
+export class IgeUiTextBox extends IgeUiElement {
 	classId = "IgeUiTextBox";
 
-	/**
-	 * @constructor
-	 */
-	constructor (ige) {
-		super(ige);
+	constructor () {
+		super()
 
 		this._value = "";
 		this._caretStart = 0;
 		this._caretEnd = 0;
 
-		this._fontEntity = new IgeFontEntity(ige)
+		this._fontEntity = new IgeFontEntity()
 			.left(5)
 			.middle(0)
 			.textAlignX(0)
-			.textAlignY(1);
-
-		this._fontEntity.mount(this);
+			.textAlignY(0)
+			.mount(this);
 
 		const blurFunc = () => {
 			if (this._domElement) {
@@ -36,7 +34,7 @@ class IgeUiTextBox extends IgeUiElement {
 		};
 
 		const focusFunc = () => {
-			this._ige.input.stopPropagation();
+			(ige.engine.components.input as IgeInputComponent).stopPropagation();
 			blurFunc();
 
 			let input,
@@ -68,7 +66,7 @@ class IgeUiTextBox extends IgeUiElement {
 
 			this._caretStart = this._value.length;
 			this._caretEnd = this._value.length;
-			const self = this;
+
 			// Listen for events from the temp input element
 			input.addEventListener("keyup", (event) => {
 				this.value(event.target.value);
@@ -83,12 +81,12 @@ class IgeUiTextBox extends IgeUiElement {
 				this.value(event.target.value);
 			});
 
-			input.addEventListener("mouseup", function (event) {
-				self._caretStart = this.selectionStart;
-				self._caretEnd = this.selectionEnd;
+			input.addEventListener("mouseup", (event) => {
+				this._caretStart = this.selectionStart;
+				this._caretEnd = this.selectionEnd;
 			});
 
-			input.addEventListener("blur", function (event) {
+			input.addEventListener("blur", (event) => {
 				this.focus();
 			});
 
@@ -98,19 +96,21 @@ class IgeUiTextBox extends IgeUiElement {
 		// On focus, create a temp input element in the DOM and focus to it
 		this.on("focus", focusFunc);
 		this.on("mouseUp", focusFunc);
-		this.on("mouseDown", () => { this._ige.input.stopPropagation(); });
+		this.on("mouseDown", () => {
+			(ige.engine.components.input as IgeInputComponent).stopPropagation();
+		});
 
 		this.on("uiUpdate", () => {
-			if (self._domElement) {
+			if (this._domElement) {
 				// Update the transformation matrix
-				self.updateTransform();
+				this.updateTransform();
 
-				const input = self._domElement,
-					entScreenPos = self.screenPosition();
+				const input = this._domElement,
+					entScreenPos = this.screenPosition();
 
 				// Reposition the dom element
-				input.style.top = (entScreenPos.y - self._bounds2d.y2) + "px";
-				input.style.left = (entScreenPos.x - self._bounds2d.x2) + "px";
+				input.style.top = (entScreenPos.y - this._bounds2d.y2) + "px";
+				input.style.left = (entScreenPos.x - this._bounds2d.x2) + "px";
 			}
 		});
 
@@ -241,7 +241,7 @@ class IgeUiTextBox extends IgeUiElement {
 
 	font (val) {
 		if (val !== undefined) {
-			if (typeof(val) === "string") {
+			if (typeof (val) === "string") {
 				// Native font name
 				return this.nativeFont(val);
 			} else {
@@ -315,8 +315,6 @@ class IgeUiTextBox extends IgeUiElement {
 	destroy () {
 		/* The 'blur' function is called to destroy the DOM textbox. */
 		this.blur();
-		super.destroy();
+		return super.destroy();
 	}
 }
-
-export default IgeUiTextBox;

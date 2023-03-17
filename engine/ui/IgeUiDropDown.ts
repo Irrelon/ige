@@ -1,21 +1,24 @@
+import { ige } from "../instance";
 import IgeUiElement from "../core/IgeUiElement";
-import IgeUiLabel from "../ui/IgeUiLabel";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import type IgeUiManagerComponent from "../components/IgeUiManagerComponent";
+import { IgeUiLabel } from "./IgeUiLabel";
 
-class IgeUiDropDown extends IgeUiElement {
+export class IgeUiDropDown extends IgeUiElement {
 	classId = "IgeUiDropDown";
 
-	constructor (ige) {
-		super(ige);
+	constructor () {
+		super();
 
 		// Define some default styles
-		if (!this._ige.ui.style(".IgeUiDropDownOption")) {
-			this._ige.ui.style(".IgeUiDropDownOption", {
-				"backgroundColor": null
+		if (!(ige.engine.components.ui as IgeUiManagerComponent).style(".IgeUiDropDownOption")) {
+			(ige.engine.components.ui as IgeUiManagerComponent).style(".IgeUiDropDownOption", {
+				backgroundColor: null
 			});
 
-			this._ige.ui.style(".IgeUiDropDownOption:hover", {
-				"backgroundColor": "#00b4ff",
-				"color": "#ffffff"
+			(ige.engine.components.ui as IgeUiManagerComponent).style(".IgeUiDropDownOption:hover", {
+				backgroundColor: "#00b4ff",
+				color: "#ffffff"
 			});
 		}
 
@@ -30,11 +33,12 @@ class IgeUiDropDown extends IgeUiElement {
 		this._options = [];
 		this._toggleState = false;
 
-		this._label = new IgeUiLabel(ige, {"textAlignY": 1})
-			.left(5)
+		this._label = new IgeUiLabel()
+			.left(0)
 			.right(30)
 			.top(0)
 			.bottom(0)
+			.textAlignY(1)
 			.mount(this);
 
 		this.on("mouseUp", () => {
@@ -48,7 +52,7 @@ class IgeUiDropDown extends IgeUiElement {
 			this._options = ops;
 
 			// Loop the options and check for a selected one
-			var arrCount = ops.length;
+			let arrCount = ops.length;
 
 			while (arrCount--) {
 				if (ops[arrCount].selected) {
@@ -89,8 +93,8 @@ class IgeUiDropDown extends IgeUiElement {
 	removeAllOptions () {
 		this._options = [];
 		this.value({
-			"text": "",
-			"value": ""
+			text: "",
+			value: ""
 		});
 	}
 
@@ -123,14 +127,13 @@ class IgeUiDropDown extends IgeUiElement {
 		this._toggleState = !this._toggleState;
 
 		if (this._toggleState) {
-			var self = this,
+			let self = this,
 				optionContainer,
 				mainTop = this._bounds2d.y + 5,
 				mainHeight = this._options.length * 30,
-				optionTop = 0,
 				i;
 
-			optionContainer = new IgeUiElement(this._ige)
+			optionContainer = new IgeUiElement()
 				.id(this._id + "_options")
 				.backgroundColor(this._backgroundColor)
 				.borderColor(this._borderColor)
@@ -141,11 +144,11 @@ class IgeUiDropDown extends IgeUiElement {
 				.mount(this);
 
 			for (i = 0; i < this._options.length; i++) {
-				this._ige.ui.style("#" + this._id + "_options_" + i, {
-					"color": this._color
+				(ige.engine.components.ui as IgeUiManagerComponent).style("#" + this._id + "_options_" + i, {
+					color: this._color
 				});
 
-				new IgeUiLabel(this._ige, {"textAlignY": 1})
+				new IgeUiLabel()
 					.id(this._id + "_options_" + i)
 					.data("optionIndex", i)
 					.styleClass("IgeUiDropDownOption")
@@ -154,6 +157,7 @@ class IgeUiDropDown extends IgeUiElement {
 					.left(1)
 					.width(this._bounds2d.x - 2)
 					.height(this._bounds2d.y - 2)
+					.textAlignY(1)
 					.allowFocus(true)
 					.allowActive(true)
 					.allowHover(true)
@@ -163,11 +167,11 @@ class IgeUiDropDown extends IgeUiElement {
 					.mount(optionContainer);
 			}
 		} else {
-			this._ige.$(this._id + "_options").destroy();
+			ige.engine.$(this._id + "_options").destroy();
 		}
 	}
-
-	tick (ctx) {
+		
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		super.tick(ctx);
 
 		// Draw drop-down box
@@ -185,5 +189,3 @@ class IgeUiDropDown extends IgeUiElement {
 		this._renderBorder(ctx);
 	}
 }
-
-export default IgeUiDropDown;

@@ -1,16 +1,9 @@
 import IgeUiElement from "../core/IgeUiElement.js";
-class IgeUiTogglePanel extends IgeUiElement {
-    constructor(ige, title, titleTexture, toggleOffTexture, toggleOnTexture) {
-        super(ige);
+import IgeFontEntity from "../core/IgeFontEntity.js";
+export class IgeUiTogglePanel extends IgeUiElement {
+    constructor(title, titleTexture, toggleOffTexture, toggleOnTexture) {
+        super();
         this.classId = "IgeUiTogglePanel";
-        this.toggleOn = (method) => {
-            this._toggleOn = method;
-            return this;
-        };
-        this.toggleOff = (method) => {
-            this._toggleOff = method;
-            return this;
-        };
         this.backgroundColor("#222222");
         this._toggleState = false;
         this._toggleOffTexture = toggleOffTexture;
@@ -23,7 +16,7 @@ class IgeUiTogglePanel extends IgeUiElement {
             .width(16)
             .height(16)
             .mount(this);
-        this._panelTitle = new IgeFontEntity(ige)
+        this._panelTitle = new IgeFontEntity()
             .id("panelTitle")
             .texture(titleTexture)
             .left(25)
@@ -56,5 +49,12 @@ class IgeUiTogglePanel extends IgeUiElement {
             }
         });
     }
+    toggleOn(method) {
+        this._toggleOn = method;
+        return this;
+    }
+    toggleOff(method) {
+        this._toggleOff = method;
+        return this;
+    }
 }
-export default IgeUiTogglePanel;

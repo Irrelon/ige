@@ -1,11 +1,11 @@
 import IgeUiElement from "../core/IgeUiElement";
 
-class IgeUiInlineFlow extends IgeUiElement {
+export class IgeUiInlineFlow extends IgeUiElement {
 	classId = "IgeUiInlineFlow";
 
 	tick (ctx) {
 		// Loop children and re-position them
-		var arr = this._children,
+		let arr = this._children,
 			arrCount = arr.length, i,
 			item, itemX, currentX = 0;
 
@@ -20,5 +20,3 @@ class IgeUiInlineFlow extends IgeUiElement {
 		super.tick(ctx);
 	}
 }
-
-export default IgeUiInlineFlow;

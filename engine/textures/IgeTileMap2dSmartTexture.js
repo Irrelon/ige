@@ -4,7 +4,8 @@ const IgeTileMap2dSmartTexture = {
     render: (ctx, entity) => {
         const ent = entity;
         const tileWidth = ent._tileWidth, tileHeight = ent._tileHeight, bounds2d = ent._bounds2d, gridSize = ent._gridSize;
-        let x = 0, y = 0;
+        const x = 0;
+        const y = 0;
         /*ctx.save();
         var triggerPoly = ent.tileMapHitPolygon();
 
@@ -31,8 +32,6 @@ const IgeTileMap2dSmartTexture = {
             const gridMaxX = x + tileWidth * gridSize.x;
             const gridMaxY = y + tileHeight * gridSize.y;
             let index, gStart, gEnd;
-            x = 0;
-            y = 0;
             for (index = 0; index <= gridSize.y; index++) {
                 gStart = new IgePoint2d(x, y + tileHeight * index);
                 gEnd = new IgePoint2d(gridMaxX, y + tileHeight * index);
@@ -62,9 +61,9 @@ const IgeTileMap2dSmartTexture = {
         }
         if (ent._highlightOccupied) {
             ctx.fillStyle = "#ff0000";
-            for (y in ent.map._mapData) {
+            for (const y in ent.map._mapData) {
                 if (ent.map._mapData[y]) {
-                    for (x in ent.map._mapData[y]) {
+                    for (const x in ent.map._mapData[y]) {
                         if (ent.map._mapData[y][x]) {
                             // Tile is occupied
                             tilePoint = new IgePoint2d(tileWidth * x, tileHeight * y);

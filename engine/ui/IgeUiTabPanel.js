@@ -1,1 +1,2 @@
-"use strict";
+export class IgeUiTabPanel {
+}

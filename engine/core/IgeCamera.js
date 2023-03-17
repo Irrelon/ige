@@ -1,4 +1,5 @@
 import IgeEntity from "./IgeEntity.js";
+import IgeTween from "./IgeTween.js";
 /**
  * Creates a new camera that will be attached to a viewport.
  */
@@ -34,9 +35,9 @@ class IgeCamera extends IgeEntity {
      * @param {Number} durationMs The number of milliseconds to span the pan operation over.
      * @param {String=} easing Optional easing method name.
      */
-    panTo(point, durationMs, easing) {
+    panTo(point, durationMs, easing = "none") {
         if (point !== undefined) {
-            this._translate.tween()
+            new IgeTween(this._translate)
                 .properties({
                 "x": point.x,
                 "y": point.y,
@@ -55,7 +56,7 @@ class IgeCamera extends IgeEntity {
      * @param {Number} durationMs The number of milliseconds to span the pan operation over.
      * @param {String=} easing Optional easing method name.
      */
-    panBy(point, durationMs, easing) {
+    panBy(point, durationMs, easing = "none") {
         if (point !== undefined) {
             this._translate.tween()
                 .properties({
@@ -178,7 +179,7 @@ class IgeCamera extends IgeEntity {
      * tweening by duration.
      * @return {*}
      */
-    lookAt(entity, durationMs, easing) {
+    lookAt(entity, durationMs, easing = "none") {
         if (entity !== undefined) {
             entity.updateTransform();
             if (!durationMs) {
@@ -206,7 +207,11 @@ class IgeCamera extends IgeEntity {
         this._processUpdateBehaviours(ctx);
         // Check if we are tracking the translation value of a target
         if (this._trackTranslateTarget) {
-            let targetEntity = this._trackTranslateTarget, targetMatrix = targetEntity._worldMatrix.matrix, targetX = targetMatrix[2], targetY = targetMatrix[5], sourceX, sourceY, distX, distY, destinationX, destinationY;
+            const targetEntity = this._trackTranslateTarget;
+            const targetMatrix = targetEntity._worldMatrix.matrix;
+            const targetX = targetMatrix[2];
+            const targetY = targetMatrix[5];
+            let sourceX, sourceY, distX, distY, destinationX, destinationY;
             if (!this._trackTranslateSmoothing) {
                 // Copy the target's world matrix translate data
                 this.lookAt(this._trackTranslateTarget);
@@ -246,7 +251,9 @@ class IgeCamera extends IgeEntity {
         }
         // Check if we are tracking the rotation values of a target
         if (this._trackRotateTarget) {
-            let targetParentRZ = this._trackRotateTarget._parent !== undefined ? this._trackRotateTarget._parent._rotate.z : 0, targetZ = -(targetParentRZ + this._trackRotateTarget._rotate.z), sourceZ, distZ;
+            const targetParentRZ = this._trackRotateTarget._parent ? this._trackRotateTarget._parent._rotate.z : 0;
+            const targetZ = -(targetParentRZ + this._trackRotateTarget._rotate.z);
+            let sourceZ, distZ;
             if (!this._trackRotateSmoothing) {
                 // Copy the target's rotate data
                 this._rotate.z = targetZ;
@@ -278,7 +285,7 @@ class IgeCamera extends IgeEntity {
      */
     updateTransform() {
         this._localMatrix.identity();
-        // On cameras we do the rotation and scaling FIRST
+        // On cameras, we do the rotation and scaling FIRST
         this._localMatrix.multiply(this._localMatrix._newRotate(this._rotate.z));
         this._localMatrix.multiply(this._localMatrix._newScale(this._scale.x, this._scale.y));
         // 2d translation - cameras are never in iso mode!
@@ -290,6 +297,7 @@ class IgeCamera extends IgeEntity {
         else {
             this._worldMatrix.copy(this._localMatrix);
         }
+        return this;
     }
     /**
      * Returns a string containing a code fragment that when
@@ -300,18 +308,23 @@ class IgeCamera extends IgeEntity {
      * @private
      * @return {String}
      */
-    _stringify(options) {
+    _stringify() {
         // Get the properties for all the super-classes
-        let str = super._stringify(), i;
+        let str = super._stringify();
+        let i;
         // Loop properties and add property assignment code to string
         for (i in this) {
             if (this.hasOwnProperty(i) && this[i] !== undefined) {
                 switch (i) {
                     case "_trackTranslateTarget":
-                        str += ".trackTranslate(ige.$('" + this._trackTranslateTarget.id() + "'), " + this.trackTranslateSmoothing() + ")";
+                        if (this._trackTranslateTarget) {
+                            str += ".trackTranslate(ige.$('" + this._trackTranslateTarget.id() + "'), " + this.trackTranslateSmoothing() + ")";
+                        }
                         break;
                     case "_trackRotateTarget":
-                        str += ".trackRotate(ige.$('" + this._trackRotateTarget.id() + "'), " + this.trackRotateSmoothing() + ")";
+                        if (this._trackRotateTarget) {
+                            str += ".trackRotate(ige.$('" + this._trackRotateTarget.id() + "'), " + this.trackRotateSmoothing() + ")";
+                        }
                         break;
                 }
             }

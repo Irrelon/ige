@@ -1,9 +1,9 @@
-import IgeUiButton from "./IgeUiButton";
+import { IgeUiButton } from "./IgeUiButton";
 
-class IgeUiRadioButton extends IgeUiButton {
+export class IgeUiRadioButton extends IgeUiButton {
 	classId = "IgeUiRadioButton";
 
-	radioGroup = (val) => {
+	radioGroup (val) {
 		if (val !== undefined) {
 			this._uiRadioGroup = val;
 			return this;
@@ -12,7 +12,7 @@ class IgeUiRadioButton extends IgeUiButton {
 		return this._uiRadioGroup;
 	}
 
-	select = (val) => {
+	select (val) {
 		if (val !== undefined) {
 			this._uiOnSelect = val;
 			return this;
@@ -22,7 +22,7 @@ class IgeUiRadioButton extends IgeUiButton {
 			// Loop the parent object's children, find any
 			// radio buttons that belong to this radio group
 			// and then deselect them
-			var arr = this._parent._children,
+			let arr = this._parent._children,
 				arrCount = arr.length,
 				item;
 
@@ -56,7 +56,7 @@ class IgeUiRadioButton extends IgeUiButton {
 		return this;
 	}
 
-	deSelect = (val) => {
+	deSelect (val) {
 		if (val !== undefined) {
 			this._uiOnDeSelect = val;
 			return this;
@@ -71,5 +71,3 @@ class IgeUiRadioButton extends IgeUiButton {
 		return this;
 	}
 }
-
-export default IgeUiRadioButton;

@@ -3,19 +3,17 @@
  */
 import IgeUiElement from "../core/IgeUiElement.js";
 import IgeFontEntity from "../core/IgeFontEntity.js";
-class IgeUiLabel extends IgeUiElement {
-    /**
-     * @constructor
-     */
-    constructor(ige, options = {}) {
-        super(ige);
+export class IgeUiLabel extends IgeUiElement {
+    constructor() {
+        super();
         this.classId = "IgeUiLabel";
         this._value = "";
-        this._fontEntity = new IgeFontEntity(ige)
+        this._fontEntity = new IgeFontEntity()
             .left(0)
-            .top(0)
-            .textAlignX(options.textAlignX || 0)
-            .textAlignY(options.textAlignY || 0);
+            .middle(0)
+            .textAlignX(0)
+            .textAlignY(0)
+            .textLineSpacing(10);
         this._fontEntity.mount(this);
         // Set defaults
         this.font("10px Verdana");
@@ -40,6 +38,22 @@ class IgeUiLabel extends IgeUiElement {
                 break;
         }
     }
+    textAlignX() {
+        this._fontEntity.textAlignX.apply(this._fontEntity, arguments);
+        return this;
+    }
+    textAlignY() {
+        this._fontEntity.textAlignY.apply(this._fontEntity, arguments);
+        return this;
+    }
+    textLineSpacing() {
+        this._fontEntity.textLineSpacing.apply(this._fontEntity, arguments);
+        return this;
+    }
+    autoWrap() {
+        this._fontEntity.autoWrap.apply(this._fontEntity, arguments);
+        return this;
+    }
     /**
      * Extended method to auto-update the width of the child
      * font entity automatically to fill the text box.
@@ -50,11 +64,11 @@ class IgeUiLabel extends IgeUiElement {
      * @return {*}
      */
     width(px, lockAspect, modifier, noUpdate) {
-        var val;
+        let val;
         // Call the main super class method
         val = super.width(px, lockAspect, modifier, noUpdate);
         // Update the font entity width - 10px for margin
-        this._fontEntity.width(px, lockAspect, modifier, noUpdate);
+        this._fontEntity.width(px - 10, lockAspect, modifier, noUpdate);
         return val;
     }
     /**
@@ -67,7 +81,7 @@ class IgeUiLabel extends IgeUiElement {
      * @return {*}
      */
     height(px, lockAspect, modifier, noUpdate) {
-        var val;
+        let val;
         // Call the main super class method
         val = super.height(px, lockAspect, modifier, noUpdate);
         // Update the font entity height
@@ -185,4 +199,3 @@ class IgeUiLabel extends IgeUiElement {
         super._mounted();
     }
 }
-export default IgeUiLabel;

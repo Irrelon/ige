@@ -12,10 +12,10 @@ export class Level1 extends IgeSceneGraph {
 	 * Called when loading the graph data via ige.addGraph().
 	 */
 	addGraph () {
-		const baseScene = ige.$('baseScene') as IgeEntity;
+		const baseScene = ige.$("baseScene") as IgeEntity;
 
 		new IgeEntity()
-			.id('sprite1')
+			.id("sprite1")
 			.depth(1)
 			// Assign the sprite sheet texture to the entity
 			.texture(ige.textures.get("sci-fi-tiles1"))
@@ -29,7 +29,7 @@ export class Level1 extends IgeSceneGraph {
 			.mount(baseScene);
 
 		new IgeEntity()
-			.id('sprite2')
+			.id("sprite2")
 			.depth(1)
 			// Assign the sprite sheet texture to the entity.
 			// Notice we are using the gameTexture[1] instead of the
@@ -42,7 +42,7 @@ export class Level1 extends IgeSceneGraph {
 			// this is possible using the cellById() method which reads
 			// the assigned cell ids from the texture definition and
 			// then maps it to the cell index that it corresponds to
-			.cellById('panel')
+			.cellById("panel")
 			// Apply the dimensions from the cell to the entity
 			// so that the entity's width and height now match that
 			// of the cell being used
@@ -53,8 +53,8 @@ export class Level1 extends IgeSceneGraph {
 		// Create one more entity and animate between the table and
 		// panel cells using cell ids in the animation, this tests
 		// that cell-id based frames will animate correctly
-		new IgeEntity()
-			.id('sprite3')
+		const sprite3 = new IgeEntity()
+			.id("sprite3")
 			.addComponent("animation", IgeAnimationComponent)
 			.depth(1)
 			// Assign the sprite sheet texture to the entity.
@@ -68,24 +68,26 @@ export class Level1 extends IgeSceneGraph {
 			// this is possible using the cellById() method which reads
 			// the assigned cell ids from the texture definition and
 			// then maps it to the cell index that it corresponds to
-			.cellById('panel')
+			.cellById("panel")
 			// Apply the dimensions from the cell to the entity
 			// so that the entity's width and height now match that
 			// of the cell being used
 			.dimensionsFromCell()
-			.translateTo(100, 0, 0)
-			.components.animation.define('test', ['panel', 'table', null], 1, -1, true)
-			.components.animation.select('test')
-			.mount(baseScene);
+			.translateTo(100, 0, 0);
+
+
+		(sprite3.components.animation as IgeAnimationComponent).define("test", ["panel", "table", null], 1, -1, true);
+		(sprite3.components.animation as IgeAnimationComponent).select("test");
+		sprite3.mount(baseScene);
 
 		// Create a new separate texture from the cell of one of the sprite sheets!
-		const sciFiTiles3 = ige.textures.get("sci-fi-tiles2").textureFromCell('panel');
+		const sciFiTiles3 = ige.textures.get("sci-fi-tiles2").textureFromCell("panel");
 
 		const shrubbery = ige.textures.get("shrubbery") as IgeSpriteSheet;
 
 		// Create another entity using the new texture
 		new IgeEntity()
-			.id('sprite4')
+			.id("sprite4")
 			.texture(sciFiTiles3)
 			.dimensionsFromTexture()
 			.translateTo(-100, 0, 0)

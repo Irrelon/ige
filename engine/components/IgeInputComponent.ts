@@ -130,8 +130,8 @@ class IgeInputComponent extends IgeComponent<IgeEngine> {
 	mouseWheel?: Event;
 	contextMenu?: Event;
 
-	constructor (entity: IgeEngine, options?: any) {
-		super(entity, options);
+	constructor () {
+		super();
 
 		// Set up the input objects to hold the current input state
 		this._eventQueue = [];

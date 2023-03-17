@@ -4,21 +4,19 @@
 import IgeUiElement from "../core/IgeUiElement";
 import IgeFontEntity from "../core/IgeFontEntity";
 
-class IgeUiLabel extends IgeUiElement {
+export class IgeUiLabel extends IgeUiElement {
 	classId = "IgeUiLabel";
 
-	/**
-	 * @constructor
-	 */
-	constructor (ige, options = {}) {
-		super(ige);
+	constructor () {
+		super();
 
 		this._value = "";
-		this._fontEntity = new IgeFontEntity(ige)
+		this._fontEntity = new IgeFontEntity()
 			.left(0)
-			.top(0)
-			.textAlignX(options.textAlignX || 0)
-			.textAlignY(options.textAlignY || 0);
+			.middle(0)
+			.textAlignX(0)
+			.textAlignY(0)
+			.textLineSpacing(10);
 
 		this._fontEntity.mount(this);
 
@@ -37,18 +35,38 @@ class IgeUiLabel extends IgeUiElement {
 		this._alignText = val;
 
 		switch (val) {
-			case "left":
-				this._fontEntity.textAlignX(0);
-				break;
+		case "left":
+			this._fontEntity.textAlignX(0);
+			break;
 
-			case "center":
-				this._fontEntity.textAlignX(1);
-				break;
+		case "center":
+			this._fontEntity.textAlignX(1);
+			break;
 
-			case "right":
-				this._fontEntity.textAlignX(2);
-				break;
+		case "right":
+			this._fontEntity.textAlignX(2);
+			break;
 		}
+	}
+
+	textAlignX () {
+		this._fontEntity.textAlignX.apply(this._fontEntity, arguments);
+		return this;
+	}
+
+	textAlignY () {
+		this._fontEntity.textAlignY.apply(this._fontEntity, arguments);
+		return this;
+	}
+
+	textLineSpacing () {
+		this._fontEntity.textLineSpacing.apply(this._fontEntity, arguments);
+		return this;
+	}
+
+	autoWrap () {
+		this._fontEntity.autoWrap.apply(this._fontEntity, arguments);
+		return this;
 	}
 
 	/**
@@ -61,13 +79,13 @@ class IgeUiLabel extends IgeUiElement {
 	 * @return {*}
 	 */
 	width (px, lockAspect, modifier, noUpdate) {
-		var val;
+		let val;
 
 		// Call the main super class method
 		val = super.width(px, lockAspect, modifier, noUpdate);
 
 		// Update the font entity width - 10px for margin
-		this._fontEntity.width(px, lockAspect, modifier, noUpdate);
+		this._fontEntity.width(px - 10, lockAspect, modifier, noUpdate);
 
 		return val;
 	}
@@ -82,7 +100,7 @@ class IgeUiLabel extends IgeUiElement {
 	 * @return {*}
 	 */
 	height (px, lockAspect, modifier, noUpdate) {
-		var val;
+		let val;
 
 		// Call the main super class method
 		val = super.height(px, lockAspect, modifier, noUpdate);
@@ -147,7 +165,7 @@ class IgeUiLabel extends IgeUiElement {
 
 	font (val) {
 		if (val !== undefined) {
-			if (typeof(val) === "string") {
+			if (typeof (val) === "string") {
 				// Native font name
 				return this.nativeFont(val);
 			} else {
@@ -218,5 +236,3 @@ class IgeUiLabel extends IgeUiElement {
 		super._mounted();
 	}
 }
-
-export default IgeUiLabel;

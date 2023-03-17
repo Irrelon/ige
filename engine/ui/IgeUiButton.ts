@@ -1,25 +1,25 @@
 import IgeUiElement from "../core/IgeUiElement";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
-class IgeUiButton extends IgeUiElement {
+export class IgeUiButton extends IgeUiElement {
 	classId = "IgeUiButton";
 
-	constructor (ige) {
-		super(ige);
+	constructor () {
+		super();
 
-		const self = this;
-		this.on("mouseDown", function () {
-			if (self._autoCell) {
+		this.on("mouseDown", () => {
+			if (this._autoCell) {
 				// React to the mouse events
-				self.cell(this._cell + 1);
-				self.cacheDirty(true);
+				this.cell(this._cell + 1);
+				this.cacheDirty(true);
 			}
 		});
 
-		this.on("mouseUp", function () {
-			if (self._autoCell) {
+		this.on("mouseUp", () => {
+			if (this._autoCell) {
 				// React to the mouse events
-				self.cell(this._cell - 1);
-				self.cacheDirty(true);
+				this.cell(this._cell - 1);
+				this.cacheDirty(true);
 			}
 		});
 	}
@@ -32,7 +32,7 @@ class IgeUiButton extends IgeUiElement {
 	 * @param {Boolean=} val Either true or false.
 	 * @returns {*}
 	 */
-	autoCell = (val) => {
+	autoCell (val) {
 		if (val !== undefined) {
 			this._autoCell = val;
 
@@ -49,28 +49,32 @@ class IgeUiButton extends IgeUiElement {
 	 * Fires a mouse-down and a mouse-up event for the entity.
 	 * @returns {*}
 	 */
-	click = () => {
-		if (this._mouseDown) { this._mouseDown(); }
-		if (this._mouseUp) { this._mouseUp(); }
+	click () {
+		if (this._mouseDown) {
+			this._mouseDown();
+		}
+		if (this._mouseUp) {
+			this._mouseUp();
+		}
 
 		return this;
 	}
 
-	tick (ctx) {
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		super.tick(ctx);
 
 		// Now draw any ui overlays
 
 		// Check for the old way to assign text to the button
-		var uiData = this.data("ui");
+		const uiData = this.data("ui");
 		if (uiData) {
 			// Draw text
-			if (uiData["text"]) {
-				ctx.font = uiData["text"].font || "normal 12px Verdana";
-				ctx.textAlign = uiData["text"].align || "center";
-				ctx.textBaseline = uiData["text"].baseline || "middle";
-				ctx.fillStyle = uiData["text"].color || "#ffffff";
-				ctx.fillText(uiData["text"].value, 0, 0);
+			if (uiData.text) {
+				ctx.font = uiData.text.font || "normal 12px Verdana";
+				ctx.textAlign = uiData.text.align || "center";
+				ctx.textBaseline = uiData.text.baseline || "middle";
+				ctx.fillStyle = uiData.text.color || "#ffffff";
+				ctx.fillText(uiData.text.value, 0, 0);
 			}
 		}
 
@@ -84,5 +88,3 @@ class IgeUiButton extends IgeUiElement {
 		}
 	}
 }
-
-export default IgeUiButton;

@@ -1,11 +1,9 @@
 import IgeUiElement from "../core/IgeUiElement";
-import { ige } from "../instance";
-import { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
 
-class IgeUiTimeStream extends IgeUiElement {
+export class IgeUiTimeStream extends IgeUiElement {
 	classId = "IgeUiTimeStream";
 
-	monitor = (entity) => {
+	monitor (entity) {
 		this._entity = entity;
 	}
 
@@ -71,5 +69,3 @@ class IgeUiTimeStream extends IgeUiElement {
 		}
 	}
 }
-
-export default IgeUiTimeStream;

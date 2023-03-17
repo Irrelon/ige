@@ -1,13 +1,13 @@
 import IgeUiElement from "../core/IgeUiElement.js";
-class IgeUiAutoFlow extends IgeUiElement {
-    constructor(ige) {
-        super(ige);
+export class IgeUiAutoFlow extends IgeUiElement {
+    constructor() {
+        super();
         this.classId = "IgeUiAutoFlow";
         this._currentHeight = 0;
     }
     tick(ctx) {
         // Loop children and re-position then
-        var arr = this._children, arrCount = arr.length, i, item, itemY, currentY = 0;
+        let arr = this._children, arrCount = arr.length, i, item, itemY, currentY = 0;
         for (i = 0; i < arrCount; i++) {
             item = arr[i];
             itemY = item._bounds2d.y;
@@ -18,4 +18,3 @@ class IgeUiAutoFlow extends IgeUiElement {
         super.tick(ctx);
     }
 }
-export default IgeUiAutoFlow;

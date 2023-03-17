@@ -1,11 +1,10 @@
-// TODO: Document this class
 import IgeUiElement from "../core/IgeUiElement";
 
-class IgeUiProgressBar extends IgeUiElement {
+export class IgeUiProgressBar extends IgeUiElement {
 	classId = "IgeUiProgressBar";
 
-	constructor (ige) {
-		super(ige);
+	constructor () {
+		super();
 
 		// Set some defaults
 		this._min = 0;
@@ -13,13 +12,13 @@ class IgeUiProgressBar extends IgeUiElement {
 		this._progress = 0;
 		this._barColor = "#fff600";
 		this._barText = {
-			"pre": "",
-			"post": "",
-			"color": ""
+			pre: "",
+			post: "",
+			color: ""
 		};
 	}
 
-	barBackColor = (val) => {
+	barBackColor (val) {
 		if (val !== undefined) {
 			this._barBackColor = val;
 			return this;
@@ -28,7 +27,7 @@ class IgeUiProgressBar extends IgeUiElement {
 		return this._barBackColor;
 	}
 
-	barColor = (val) => {
+	barColor (val) {
 		if (val !== undefined) {
 			this._barColor = val;
 			return this;
@@ -37,7 +36,7 @@ class IgeUiProgressBar extends IgeUiElement {
 		return this._barColor;
 	}
 
-	barBorderColor = (val) => {
+	barBorderColor (val) {
 		if (val !== undefined) {
 			this._barBorderColor = val;
 			return this;
@@ -46,20 +45,33 @@ class IgeUiProgressBar extends IgeUiElement {
 		return this._barBorderColor;
 	}
 
-	barText = (pre, post, color) => {
+	barText (pre, post, color, percent) {
+		if (typeof post === "function") {
+			this._barText = {
+				color: pre,
+				func: post,
+				pre: this._barText.pre,
+				post: this._barText.post
+			};
+
+			return this;
+		}
+
 		if (pre !== undefined && post !== undefined && color !== undefined) {
 			this._barText = {
-				pre,
-				post,
-				color
+				pre: pre,
+				post: post,
+				color: color,
+				percent: percent !== undefined ? percent : false
 			};
+
 			return this;
 		}
 
 		return this._barText;
 	}
 
-	min = (val) => {
+	min (val) {
 		if (val !== undefined) {
 			this._min = val;
 			return this;
@@ -68,7 +80,7 @@ class IgeUiProgressBar extends IgeUiElement {
 		return this._min;
 	}
 
-	max = (val) => {
+	max (val) {
 		if (val !== undefined) {
 			this._max = val;
 			return this;
@@ -77,7 +89,7 @@ class IgeUiProgressBar extends IgeUiElement {
 		return this._max;
 	}
 
-	progress = (val) => {
+	progress (val) {
 		if (val !== undefined) {
 			if (val < this._min) {
 				val = this._min;
@@ -94,7 +106,7 @@ class IgeUiProgressBar extends IgeUiElement {
 		return this._progress;
 	}
 
-	bindData = (obj, propName) => {
+	bindData (obj, propName) {
 		if (obj !== undefined && propName !== undefined) {
 			// Set the object and property to automatically
 			// track progress from
@@ -117,11 +129,12 @@ class IgeUiProgressBar extends IgeUiElement {
 			}
 		}
 
-		var min = this._min,
+		let min = this._min,
 			max = this._max,
 			progress = this._progress,
 			interval = this._bounds2d.x / (max - min),
-			barWidth = (progress - min) * interval;
+			barWidth = (progress - min) * interval,
+			valText;
 
 		// Check the value is not out of range
 		if (progress > max) {
@@ -151,12 +164,25 @@ class IgeUiProgressBar extends IgeUiElement {
 		}
 
 		// Draw bar text centered
-		if (this._barText && (this._barText.pre || this._barText.post)) {
+		if (this._barText) {
+			if (this._barText.func) {
+				// Custom formatting function
+				valText = this._barText.func(progress, max);
+			} else if (this._barText.pre || this._barText.post) {
+				if (this._barText.percent) {
+					valText = String(Math.floor((100 / max) * progress));
+				} else {
+					valText = String(Math.floor(progress));
+				}
+			}
+		}
+
+		if (valText) {
 			ctx.textAlign = "center";
 			ctx.textBaseline = "middle";
 
 			ctx.fillStyle = this._barText.color;
-			ctx.fillText(this._barText.pre + String(Math.floor(progress)) + this._barText.post, 0, 0);
+			ctx.fillText(this._barText.pre + valText + this._barText.post, 0, 0);
 		}
 	}
 
@@ -166,5 +192,3 @@ class IgeUiProgressBar extends IgeUiElement {
 		super.tick(ctx, true);
 	}
 }
-
-export default IgeUiProgressBar;

@@ -4,7 +4,7 @@ export interface IgeAnimation {
 	currentLoop: number;
 	startTime?: number;
 	totalTime: number;
-	frames: (number | string)[];
+	frames: (number | string | null)[];
 	frameTime: number;
 	frameCount: number;
 }

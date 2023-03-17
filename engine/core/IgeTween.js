@@ -217,14 +217,14 @@ class IgeTween extends IgeBaseClass {
         return this._targetObj;
     }
     easing(methodName) {
-        if (methodName !== undefined) {
-            if (!easingFunctions[methodName]) {
-                throw new Error("The easing method you have selected does not exist, please use a valid easing method. For a list of easing methods please inspect `easingFunctions`");
-            }
-            this._easing = methodName;
-            return this;
+        if (methodName === undefined) {
+            return this._easing;
         }
-        return this._easing;
+        if (!easingFunctions[methodName]) {
+            throw new Error("The easing method you have selected does not exist, please use a valid easing method. For a list of easing methods please inspect `easingFunctions`");
+        }
+        this._easing = methodName;
+        return this;
     }
     /**
      * Sets the timestamp at which the tween should start.

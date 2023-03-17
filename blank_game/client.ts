@@ -1,19 +1,17 @@
 import IgeBaseClass from "../engine/core/IgeBaseClass";
-import IgeTexture from "../engine/core/IgeTexture";
 import { ige } from "../engine/instance";
 
 export class Client extends IgeBaseClass {
 	classId = "Client";
-	gameTextures: Record<string, IgeTexture>;
 
 	constructor () {
 		super();
+		void this.init();
+	}
 
-		// Load our textures
-		this.gameTextures = {};
-
+	async init () {
 		// Load a game texture here
-		//this.gameTextures.myTexture = new IgeTexture('./assets/somePathToImage.png');
+		//new IgeTexture("someImageName", './assets/somePathToImage.png');
 
 		///////////////////////////////////////////////////////////////////////////////
 		// *** PLEASE READ - BLANK PROJECT RUNNING DETAILS ***
@@ -27,20 +25,17 @@ export class Client extends IgeBaseClass {
 		///////////////////////////////////////////////////////////////////////////////
 
 		// Wait for our textures to load before continuing
-		ige.engine.on("texturesLoaded", function () {
-			// Create the HTML canvas
-			ige.engine.createFrontBuffer(true);
+		await ige.textures.whenLoaded();
 
-			// Start the engine
-			ige.engine.start(function (success) {
-				// Check if the engine started successfully
-				if (success) {
-					// Add base scene data
-					ige.engine.addGraph("IgeBaseScene");
+		// Create the HTML canvas
+		ige.engine.createFrontBuffer(true);
 
-					// CREATE SOME ENTITIES AND WHOTNOT HERE
-				}
-			});
-		});
+		// Start the engine
+		await ige.engine.start()
+
+		// Add base scene data
+		ige.engine.addGraph("IgeBaseScene");
+
+		// CREATE SOME ENTITIES AND WHOTNOT HERE
 	}
 }

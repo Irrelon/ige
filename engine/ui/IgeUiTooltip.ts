@@ -1,25 +1,25 @@
+import IgeUiElement from "../core/IgeUiElement";
+import IgeFontEntity from "../core/IgeFontEntity";
+
 /**
  * Provides a UI tooltip. Change properties (textBox, fonts, backgroundcolor)
  * at free will.
  */
-import IgeUiElement from "../core/IgeUiElement";
-import IgeFontEntity from "../core/IgeFontEntity";
-
-class IgeUiTooltip extends IgeUiElement {
+export class IgeUiTooltip extends IgeUiElement {
 	classId = "IgeUiTooltip";
 
 	/**
 	 * @constructor
-	 * @param {Ige} ige The engine instance.
 	 * @param parent Where the mousemove is captured i.e. on which element the tooltip should appear
 	 * @param mountEntity Where the tooltip should be mounted. A scene is suggested.
 	 * @param width Width of the tooltip
 	 * @param height Height of the tooltip
 	 * @param content The content which is set with public method "setContent". Can be string, array(2) or an entity
 	 */
-	constructor (ige, parent, mountEntity, width, height, content) {
-		super(ige);
+	constructor (parent, mountEntity, width, height, content) {
+		super();
 
+		const self = this;
 		this.titleBox = new IgeUiElement()
 			.left(0)
 			.top(0)
@@ -37,20 +37,20 @@ class IgeUiTooltip extends IgeUiElement {
 			.height(height - 30)
 			.mount(this);
 
-		this.fontEntityTitle = new IgeFontEntity(ige)
+		this.fontEntityTitle = new IgeFontEntity()
 			.left(5)
 			.top(-4)
 			.textAlignX(0)
-			.textAlignY(1)
+			.textAlignY(0)
 			.nativeFont("10pt Arial")
 			.textLineSpacing(-5)
 			.mount(this.titleBox);
 
-		this.fontEntityText = new IgeFontEntity(ige)
+		this.fontEntityText = new IgeFontEntity()
 			.left(5)
 			.top(0)
 			.textAlignX(0)
-			.textAlignY(1)
+			.textAlignY(0)
 			.nativeFont("10pt Arial")
 			.textLineSpacing(-5)
 			.mount(this.textBox);
@@ -79,13 +79,13 @@ class IgeUiTooltip extends IgeUiElement {
 	 * Extended method to auto-update the width of the child
 	 * font entity automatically to fill the text box.
 	 * @param px
-	 * @param [lockAspect]
-	 * @param [modifier]
-	 * @param [noUpdate]
+	 * @param lockAspect
+	 * @param modifier
+	 * @param noUpdate
 	 * @return {*}
 	 */
 	width (px, lockAspect, modifier, noUpdate) {
-		var val;
+		let val;
 
 		// Call the main super class method
 		val = super.width(px, lockAspect, modifier, noUpdate);
@@ -101,13 +101,13 @@ class IgeUiTooltip extends IgeUiElement {
 	 * Extended method to auto-update the height of the child
 	 * font entity automatically to fill the text box.
 	 * @param px
-	 * @param [lockAspect]
-	 * @param [modifier]
-	 * @param [noUpdate]
+	 * @param lockAspect
+	 * @param modifier
+	 * @param noUpdate
 	 * @return {*}
 	 */
 	height (px, lockAspect, modifier, noUpdate) {
-		var val;
+		let val;
 
 		// Call the main super class method
 		val = super.height(px, lockAspect, modifier, noUpdate);
@@ -181,13 +181,18 @@ class IgeUiTooltip extends IgeUiElement {
 	 * @param event
 	 * @private
 	 */
-	_mousemove = (event) => {
-		const tt = this._tooltip;
-		if (tt._hidden) tt.show();
-		const mountPos = tt._mountEntity.worldPosition();
+	_mousemove (event) {
+		let toolTip = this._tooltip,
+			mountPos;
 
-		tt.translateTo(event.igeX - mountPos.x + tt._bounds2d.x2 + 10, event.igeY - mountPos.y + tt._bounds2d.y2, 0);
-		tt.updateUiChildren();
+		if (toolTip._hidden) {
+			toolTip.show();
+		}
+
+		mountPos = toolTip._mountEntity.worldPosition();
+
+		toolTip.translateTo(event.igeX - mountPos.x + toolTip._bounds2d.x2 + 10, event.igeY - mountPos.y + toolTip._bounds2d.y2, 0);
+		toolTip.updateUiChildren();
 	}
 
 	/**
@@ -195,9 +200,7 @@ class IgeUiTooltip extends IgeUiElement {
 	 * @param event
 	 * @private
 	 */
-	_mouseout = (event) => {
+	_mouseout (event) {
 		this._tooltip.hide();
 	}
 }
-
-export default IgeUiTooltip;
