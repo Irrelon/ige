@@ -23,4 +23,7 @@ export class IgeAsset extends IgeEventingClass {
             });
         });
     }
+    destroy() {
+        return this;
+    }
 }

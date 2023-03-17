@@ -36,6 +36,9 @@ export class IgeAssetRegister extends IgeEventingClass {
             this.remove(key);
         });
     }
+    removeList(list) {
+        list.forEach((texture) => texture.destroy());
+    }
     whenLoaded() {
         const promiseArr = Object.values(this._assetById).map((tmpIgeTexture) => {
             return tmpIgeTexture.whenLoaded();

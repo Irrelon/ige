@@ -61,6 +61,7 @@ class IgeTexture extends IgeAsset {
 		}
 
 		if (id) {
+			this.id(id);
 			ige.textures.add(id, this);
 		}
 

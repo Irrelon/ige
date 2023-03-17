@@ -1,3 +1,4 @@
+import { global } from "./_global.js";
 class IgeBaseClass {
     constructor() {
         this.classId = "IgeBaseClass";
@@ -55,6 +56,7 @@ class IgeBaseClass {
     }
     /**
      * Provides logging capabilities to all IgeBaseClass instances.
+     * @param message
      * @param args
      *
      * @example #Log a message
@@ -93,9 +95,27 @@ class IgeBaseClass {
      *     entity.log('An error message', 'error');
      *
      */
-    log(...args) {
-        console.log(...args);
+    log(message, ...args) {
+        let indent = "";
+        if (global._globalLogIndent) {
+            indent = "|";
+        }
+        for (let i = 0; i < global._globalLogIndent; i++) {
+            indent += "———";
+        }
+        if (global._globalLogIndent) {
+            indent += " ";
+        }
+        console.log(indent + message, ...args);
         return this;
+    }
+    logIndent() {
+        global._globalLogIndent++;
+    }
+    logOutdent() {
+        global._globalLogIndent--;
+        if (global._globalLogIndent < 0)
+            global._globalLogIndent = 0;
     }
     data(key, value) {
         if (value !== undefined) {

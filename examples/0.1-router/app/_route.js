@@ -25,7 +25,6 @@ ige.router.route("app", {
         ige.engine.addGraph(IgeBaseScene);
         return () => __awaiter(void 0, void 0, void 0, function* () {
             // Removes the IgeBaseScene from the scenegraph
-            debugger;
             ige.engine.removeGraph(IgeBaseScene);
             yield ige.engine.stop();
         });

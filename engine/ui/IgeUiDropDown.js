@@ -132,7 +132,7 @@ export class IgeUiDropDown extends IgeUiElement {
             }
         }
         else {
-            ige.engine.$(this._id + "_options").destroy();
+            ige.$(this._id + "_options").destroy();
         }
     }
     tick(ctx) {

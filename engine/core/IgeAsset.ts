@@ -25,4 +25,8 @@ export class IgeAsset extends IgeEventingClass implements IgeCanAsyncLoad {
 			});
 		});
 	}
+
+	destroy () {
+		return this;
+	}
 }

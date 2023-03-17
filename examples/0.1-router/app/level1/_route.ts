@@ -19,7 +19,7 @@ ige.router.route("app/level1", {
 
 		return async () => {
 			ige.engine.removeGraph(Level1Scene);
-			textures.forEach((texture) => texture.destroy());
+			ige.textures.removeList(textures);
 		}
 	}
-})
+});

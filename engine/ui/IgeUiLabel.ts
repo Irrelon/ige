@@ -55,17 +55,23 @@ export class IgeUiLabel extends IgeUiElement {
 		}
 	}
 
+	textAlignX (val: IgeFontAlignX): this;
+	textAlignX (): IgeFontAlignX;
 	textAlignX (val?: IgeFontAlignX) {
 		if (val !== undefined) {
-			return this._fontEntity.textAlignX(val);
+			this._fontEntity.textAlignX(val);
+			return this;
 		}
 
 		return this._fontEntity.textAlignX();
 	}
 
+	textAlignY (val: IgeFontAlignY): this;
+	textAlignY (): IgeFontAlignY;
 	textAlignY (val?: IgeFontAlignY) {
 		if (val !== undefined) {
-			return this._fontEntity.textAlignY(val);
+			this._fontEntity.textAlignY(val);
+			return this;
 		}
 
 		return this._fontEntity.textAlignY();

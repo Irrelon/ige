@@ -7,8 +7,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { isClient, isServer } from "../services/clientServer.js";
 import IgeBaseClass from "./IgeBaseClass.js";
+import { isClient, isServer } from "../services/clientServer.js";
 const PATH_DELIMITER = "/";
 export class IgeRouter extends IgeBaseClass {
     constructor() {
@@ -31,95 +31,85 @@ export class IgeRouter extends IgeBaseClass {
         return this._routeLoad;
     }
     go(path) {
-        // Check for a route definition first
-        if (!this._routeLoad[path]) {
-            throw ('Attempt to navigate to undefined route: ' + path);
-        }
-        const currentRoutePath = this._currentRoutePath;
-        const currentPathParts = currentRoutePath.split(PATH_DELIMITER);
-        const newPathParts = path.split(PATH_DELIMITER);
-        // TODO This is commented because not used. Find out if needed.
-        //let rootPathString = '';
-        // Check current path
-        if (this._currentRoutePath) {
-            // Remove duplicate beginning parts from arrays
-            while (currentPathParts.length && newPathParts.length && currentPathParts[0] === newPathParts[0]) {
-                //rootPathString += PATH_DELIMITER + currentPathParts.shift();
-                newPathParts.shift();
+        return __awaiter(this, void 0, void 0, function* () {
+            // Check for a route definition first
+            if (!this._routeLoad[path]) {
+                throw ('Attempt to navigate to undefined route: ' + path);
             }
-            // Inform routes that they are being destroyed
-            if (currentPathParts.length) {
-                currentPathParts.reverse();
-                for (let i = 0; i < currentPathParts.length; i++) {
-                    this._routeRemove(currentPathParts[i]);
+            if (path === this._currentRoutePath)
+                return;
+            this.log(`Router navigating to: ${path}`);
+            const currentRoutePath = this._currentRoutePath;
+            const currentPathParts = currentRoutePath.split(PATH_DELIMITER);
+            const newPathParts = path.split(PATH_DELIMITER);
+            const commonPathParts = [];
+            // Remove the common path parts from both arrays
+            while (currentPathParts.length && newPathParts.length && currentPathParts[0] === newPathParts[0]) {
+                const part = currentPathParts.shift();
+                newPathParts.shift();
+                if (!part)
+                    continue;
+                commonPathParts.push(part);
+            }
+            const rootPath = commonPathParts.join(PATH_DELIMITER);
+            if (currentRoutePath) {
+                // Word backwards and call the unload function for each existing path
+                while (currentPathParts.length) {
+                    const unloadRoutePath = this._pathJoin(rootPath, currentPathParts.join(PATH_DELIMITER));
+                    this.logIndent();
+                    this.log(`Unloading route: "${unloadRoutePath}"`);
+                    this.logIndent();
+                    const routeUnloadHandler = this._routeUnload[unloadRoutePath];
+                    if (routeUnloadHandler) {
+                        yield routeUnloadHandler();
+                    }
+                    this.logOutdent();
+                    this.logOutdent();
+                    currentPathParts.pop();
                 }
             }
-        }
-        // Now route to the new path
-        if (newPathParts.length) {
+            // Now work forwards on the new path parts and mount each route
+            // handler
+            const newPartsAggregate = [];
             for (let i = 0; i < newPathParts.length; i++) {
-                this._routeAdd(newPathParts[i]);
+                newPartsAggregate.push(newPathParts[i]);
+                const loadRoutePath = this._pathJoin(rootPath, newPartsAggregate.join(PATH_DELIMITER));
+                const routeHandlerDefinition = this._routeLoad[loadRoutePath];
+                if (!routeHandlerDefinition) {
+                    continue;
+                }
+                let routeHandlerFunction;
+                if (isClient && routeHandlerDefinition.client) {
+                    routeHandlerFunction = routeHandlerDefinition.client;
+                }
+                if (isServer && routeHandlerDefinition.server) {
+                    routeHandlerFunction = routeHandlerDefinition.server;
+                }
+                if (routeHandlerFunction) {
+                    this.logIndent();
+                    this.log(`Loading route: "${loadRoutePath}"`);
+                    this.logIndent();
+                    this._routeUnload[loadRoutePath] = yield routeHandlerFunction();
+                    this.logOutdent();
+                    this.logOutdent();
+                }
             }
-        }
+            this._currentRoutePath = path;
+        });
+    }
+    _pathJoin(path1, path2) {
+        if (!path1 && !path2)
+            return "";
+        if (path1 && !path2)
+            return path1;
+        if (path2 && !path1)
+            return path2;
+        return path1 + PATH_DELIMITER + path2;
     }
     _routeAdd(path) {
-        this._currentRoutePath += this._currentRoutePath ? PATH_DELIMITER + path : path;
-        const thisFullPath = this._currentRoutePath;
-        const queue = this._routeQueue;
-        queue.push(() => __awaiter(this, void 0, void 0, function* () {
-            const routeDefinition = this._routeLoad[thisFullPath];
-            let routeHandlerFunction;
-            // Check for client or server specific route definitions
-            if (isClient && routeDefinition.client) {
-                routeHandlerFunction = routeDefinition.client;
-            }
-            if (isServer && routeDefinition.server) {
-                routeHandlerFunction = routeDefinition.server;
-            }
-            if (!routeHandlerFunction) {
-                throw new Error(`$ige.engine._routeAdd() encountered a route that has no function specified: ${thisFullPath}`);
-            }
-            // Execute the route function which will return an unload function
-            this._routeUnload[path] = yield routeHandlerFunction();
-        }));
-        this._processQueue();
     }
     _routeRemove(path) {
-        const thisFullPath = this._currentRoutePath;
-        const queue = this._routeQueue;
-        queue.push(() => __awaiter(this, void 0, void 0, function* () {
-            const unloadFunction = this._routeUnload[thisFullPath];
-            if (!unloadFunction) {
-                throw ('Attempting to routeRemove() a path that has no route unload function: ' + thisFullPath);
-            }
-            yield unloadFunction();
-            this._currentRoutePath = this._currentRoutePath.replace(new RegExp('[\.]*?' + path + '$'), '');
-        }));
-        this._processQueue();
     }
     _processQueue() {
-        if (this._executingSeries) {
-            // We're already processing the array
-            return;
-        }
-        const callArr = this._routeQueue;
-        if (!callArr.length) {
-            this._executingSeries = false;
-            return;
-        }
-        this._executingSeries = true;
-        const nextItem = () => __awaiter(this, void 0, void 0, function* () {
-            // Grab the first function from the array and remove it from the array
-            const func = callArr.shift();
-            if (!func) {
-                this._executingSeries = false;
-                return;
-            }
-            // Execute the function
-            yield func();
-            // Process the next item
-            yield nextItem();
-        });
-        void nextItem();
     }
 }

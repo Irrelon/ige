@@ -3,6 +3,7 @@ import IgeSceneGraph from "../../../../engine/core/IgeSceneGraph";
 import IgeScene2d from "../../../../engine/core/IgeScene2d";
 import IgeEntity from "../../../../engine/core/IgeEntity";
 import { Fairy } from "../../entities/Fairy";
+import { IgeUiButton } from "../../../../engine/ui/IgeUiButton";
 
 export class Level1Scene extends IgeSceneGraph {
 	classId = "Level1Scene";
@@ -30,6 +31,18 @@ export class Level1Scene extends IgeSceneGraph {
 
 		new Fairy(0.01)
 			.translateTo(220, 0, 0)
+			.mount(scene1);
+
+		new IgeUiButton()
+			.width(100)
+			.height(40)
+			.color("#ffffff")
+			.borderColor("#ffffff")
+			.borderWidth(1)
+			.value("Back to Splash")
+			.mouseUp(() => {
+				ige.router.go("app/splash");
+			})
 			.mount(scene1);
 	}
 

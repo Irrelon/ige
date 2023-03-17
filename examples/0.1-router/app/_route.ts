@@ -22,7 +22,6 @@ ige.router.route("app", {
 
 		return async () => {
 			// Removes the IgeBaseScene from the scenegraph
-			debugger;
 			ige.engine.removeGraph(IgeBaseScene);
 
 			await ige.engine.stop();

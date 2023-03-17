@@ -1,3 +1,5 @@
+import { global } from "./_global";
+
 export interface IgeDependencyAction {
 	dependencyList: string[];
 	actionToTake: (...args: any[]) => any;
@@ -66,6 +68,7 @@ class IgeBaseClass {
 
 	/**
 	 * Provides logging capabilities to all IgeBaseClass instances.
+	 * @param message
 	 * @param args
 	 *
 	 * @example #Log a message
@@ -104,9 +107,32 @@ class IgeBaseClass {
 	 *     entity.log('An error message', 'error');
 	 *
 	 */
-	log (...args: any[]) {
-		console.log(...args);
+	log (message: string, ...args: any[]) {
+		let indent = "";
+
+		if (global._globalLogIndent) {
+			indent = "|";
+		}
+
+		for (let i = 0; i < global._globalLogIndent; i++) {
+			indent += "———";
+		}
+
+		if (global._globalLogIndent) {
+			indent += " ";
+		}
+
+		console.log(indent + message, ...args);
 		return this;
+	}
+
+	logIndent () {
+		global._globalLogIndent++;
+	}
+
+	logOutdent () {
+		global._globalLogIndent--;
+		if (global._globalLogIndent < 0) global._globalLogIndent = 0;
 	}
 
 	_data: Record<string, any> = {};

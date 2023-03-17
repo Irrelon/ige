@@ -54,7 +54,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		});
 	}
 
-	options (ops) {
+	options (ops?: IgeUiDropDownOption[]) {
 		if (ops !== undefined) {
 			this._options = ops;
 
@@ -78,7 +78,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		return this;
 	}
 
-	addOption (op) {
+	addOption (op?: IgeUiDropDownOption) {
 		if (op !== undefined) {
 			this._options.push(op);
 
@@ -113,14 +113,14 @@ export class IgeUiDropDown extends IgeUiElement {
 		}
 	}
 
-	selectIndex (index) {
+	selectIndex (index: number) {
 		if (this._options[index]) {
 			this.value(this._options[index]);
 			this.emit("change", this.value());
 		}
 	}
 
-	value (val) {
+	value (val: IgeUiDropDownOption) {
 		if (val !== undefined) {
 			super.value(val);
 			this._label.value(val.text);
@@ -174,7 +174,7 @@ export class IgeUiDropDown extends IgeUiElement {
 					.mount(optionContainer);
 			}
 		} else {
-			ige.engine.$(this._id + "_options").destroy();
+			ige.$(this._id + "_options").destroy();
 		}
 	}
 

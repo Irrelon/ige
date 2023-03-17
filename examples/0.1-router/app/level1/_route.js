@@ -24,7 +24,7 @@ ige.router.route("app/level1", {
         ige.engine.addGraph(Level1Scene);
         return () => __awaiter(void 0, void 0, void 0, function* () {
             ige.engine.removeGraph(Level1Scene);
-            textures.forEach((texture) => texture.destroy());
+            ige.textures.removeList(textures);
         });
     })
 });

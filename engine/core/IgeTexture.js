@@ -38,6 +38,7 @@ class IgeTexture extends IgeAsset {
             return this;
         }
         if (id) {
+            this.id(id);
             ige.textures.add(id, this);
         }
         this.addDependency("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {

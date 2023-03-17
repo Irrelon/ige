@@ -24,6 +24,7 @@ export class Ige {
         this.config = igeConfig;
         this.version = version;
         this.classStore = igeClassStore;
+        this._globalLogIndent = 0;
         this._watch = [];
         this._mousePos = new IgePoint3d(); // Could probably be just {x: number, y: number}
         // /**

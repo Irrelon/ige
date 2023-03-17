@@ -36,6 +36,7 @@ export class Ige {
 	config: IgeConfig = igeConfig;
 	version: string = version;
 	classStore = igeClassStore;
+	_globalLogIndent: number = 0;
 	_watch: (string | IgeObjectWithValueProperty)[] = [];
 
 	// Questionable properties, think about them and potentially move
