@@ -26,8 +26,8 @@
                 "after": true
             }
         ],
-        "declaration": true
+        "declaration": false
     },
-    "include": ["**/*.d.ts", "**/*.ts", "**/*.tsx"],
-    "exclude": ["node_modules", "react","engine/components/**"]
+    "include": ["**/*.ts", "**/*.tsx"],
+    "exclude": ["node_modules", "react"]
 }

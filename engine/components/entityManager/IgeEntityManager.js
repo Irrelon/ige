@@ -1,8 +1,8 @@
 import { ige } from "../../instance";
 import { arrPull } from "../../services/utils";
-import IgeComponent from "../../core/IgeComponent";
+import { IgeComponent } from "../../core/IgeComponent";
 import { IgeMountMode } from "../../../enums/IgeMountMode";
-class IgeEntityManager extends IgeComponent {
+export class IgeEntityManager extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgeEntityManager";
@@ -168,4 +168,3 @@ class IgeEntityManager extends IgeComponent {
         }
     }
 }
-export default IgeEntityManager;

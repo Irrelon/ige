@@ -1,5 +1,5 @@
-import IgeComponent from "../core/IgeComponent";
-class IgeGamePadComponent extends IgeComponent {
+import { IgeComponent } from "../core/IgeComponent";
+export class IgeGamePadComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this["classId"] = "IgeGamePadComponent";
@@ -156,4 +156,3 @@ class IgeGamePadComponent extends IgeComponent {
         }
     }
 }
-export default IgeGamePadComponent;

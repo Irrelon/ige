@@ -8,7 +8,7 @@ export class IgeEntityBox2d extends IgeEntity {
         super();
         this.classId = 'IgeEntityBox2d';
         this._b2dRef = ige.engine.components.box2d;
-        // Check if box2d is enabled in the engine
+        // Check if Box2D is enabled in the engine
         if (this._b2dRef) {
             if (this._b2dRef._networkDebugMode) {
                 this._translateToProto = function () { };
@@ -54,20 +54,20 @@ export class IgeEntityBox2d extends IgeEntity {
     box2dBody(def) {
         if (def !== undefined) {
             this._box2dBodyDef = def;
-            // Check that the box2d component exists
+            // Check that the Box2D component exists
             if (this._b2dRef) {
-                // Ask the box2d component to create a new body for us
+                // Ask the Box2D component to create a new body for us
                 this._box2dBody = this._b2dRef.createBody(this, def);
             }
             else {
-                this.log('You are trying to create a box2d entity but you have not added the box2d component to the ige instance!', 'error');
+                this.log('You are trying to create a Box2D entity but you have not added the Box2D component to the ige instance!', 'error');
             }
             return this;
         }
         return this._box2dBodyDef;
     }
     /**
-     * Gets / sets the box2d body's gravitic value. If set to false,
+     * Gets / sets the Box2D body's gravitic value. If set to false,
      * this entity will not be affected by gravity. If set to true it
      * will be affected by gravity.
      * @param {Boolean=} val True to allow gravity to affect this entity.
@@ -77,7 +77,9 @@ export class IgeEntityBox2d extends IgeEntity {
         if (this._box2dBody) {
             if (val !== undefined) {
                 this._box2dBody.m_nonGravitic = !val;
-                this._box2dBodyDef.gravitic = val;
+                if (this._box2dBodyDef) {
+                    this._box2dBodyDef.gravitic = val;
+                }
                 // Wake up the body
                 this._box2dBody.SetAwake(true);
                 return this;
@@ -201,7 +203,7 @@ export class IgeEntityBox2d extends IgeEntity {
         }
     }
     /**
-     * Takes over translateTo calls and processes box2d movement as well.
+     * Takes over translateTo calls and processes Box2D movement as well.
      * @param x
      * @param y
      * @param z
@@ -212,10 +214,10 @@ export class IgeEntityBox2d extends IgeEntity {
         const entBox2d = this._box2dBody;
         // Call the original method
         this._translateToProto(x, y, z);
-        // Check if the entity has a box2d body attached
+        // Check if the entity has a Box2D body attached
         // and if so, is it updating or not
         if (entBox2d && !entBox2d.updating) {
-            // We have an entity with a box2d definition that is
+            // We have an entity with a Box2D definition that is
             // not currently updating so let's override the standard
             // transform op and take over
             // Translate the body
@@ -225,7 +227,7 @@ export class IgeEntityBox2d extends IgeEntity {
         return this;
     }
     /**
-     * Takes over translateBy calls and processes box2d movement as well.
+     * Takes over translateBy calls and processes Box2D movement as well.
      * @param x
      * @param y
      * @param z
@@ -235,7 +237,7 @@ export class IgeEntityBox2d extends IgeEntity {
         this._translateTo(this._translate.x + x, this._translate.y + y, this._translate.z + z);
     }
     /**
-     * Takes over translateTo calls and processes box2d movement as well.
+     * Takes over translateTo calls and processes Box2D movement as well.
      * @param x
      * @param y
      * @param z
@@ -246,10 +248,10 @@ export class IgeEntityBox2d extends IgeEntity {
         const entBox2d = this._box2dBody;
         // Call the original method
         this._rotateToProto(x, y, z);
-        // Check if the entity has a box2d body attached
+        // Check if the entity has a Box2D body attached
         // and if so, is it updating or not
         if (entBox2d && !entBox2d.updating) {
-            // We have an entity with a box2d definition that is
+            // We have an entity with a Box2D definition that is
             // not currently updating so let's override the standard
             // transform op and take over
             // Translate the body
@@ -259,7 +261,7 @@ export class IgeEntityBox2d extends IgeEntity {
         return this;
     }
     /**
-     * Takes over translateBy calls and processes box2d movement as well.
+     * Takes over translateBy calls and processes Box2D movement as well.
      * @param x
      * @param y
      * @param z
@@ -277,13 +279,13 @@ export class IgeEntityBox2d extends IgeEntity {
     _update(ctx) {
         // Call the original method
         this._updateProto(ctx);
-        // Update the box2d body transform
+        // Update the Box2D body transform
         this._translateTo(this._translate.x, this._translate.y, this._translate.z);
         this._rotateTo(this._rotate.x, this._rotate.y, this._rotate.z);
         //IgeEntity.prototype.update.call(this, ctx);
     }
     /**
-     * If true, disabled box2d debug shape drawing for this entity.
+     * If true, disabled Box2D debug shape drawing for this entity.
      * @param {Boolean} val
      */
     box2dNoDebug(val) {
@@ -294,7 +296,7 @@ export class IgeEntityBox2d extends IgeEntity {
         return this._box2dNoDebug;
     }
     /**
-     * Destroys the physics entity and the box2d body that
+     * Destroys the physics entity and the Box2D body that
      * is attached to it.
      */
     destroy() {

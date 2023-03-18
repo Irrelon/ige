@@ -1,8 +1,8 @@
-import IgeComponent from "../core/IgeComponent";
+import { IgeComponent } from "../core/IgeComponent";
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
  */
-class IgeTiledComponent extends IgeComponent {
+export class IgeTiledComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgeTiledComponent";
@@ -131,4 +131,3 @@ class IgeTiledComponent extends IgeComponent {
         };
     }
 }
-export default IgeTiledComponent;

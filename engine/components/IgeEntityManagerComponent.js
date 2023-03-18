@@ -1,7 +1,7 @@
-import IgeComponent from "../core/IgeComponent";
+import { IgeComponent } from "../core/IgeComponent";
 import { IgeMountMode } from "../../enums/IgeMountMode";
-import IgeRect from "../core/IgeRect";
-class IgeEntityManagerComponent extends IgeComponent {
+import { IgeRect } from "../core/IgeRect";
+export class IgeEntityManagerComponent extends IgeComponent {
     /**
      * @constructor
      * @param {Object} entity The parent object that this component is being added to.
@@ -411,4 +411,3 @@ class IgeEntityManagerComponent extends IgeComponent {
         entity.addBehaviour("entityManager", this._behaviour);
     }
 }
-export default IgeEntityManagerComponent;

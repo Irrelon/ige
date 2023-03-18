@@ -1,7 +1,7 @@
 import { IgeComponent } from "../core/IgeComponent";
 import { IgeEntity } from "../core/IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import { IgeAnimation } from "../../types/IgeAnimation";
+import type { IgeAnimation } from "../../types/IgeAnimation";
 export interface IgeAnimationStartOptions {
     onComplete?: (anim: IgeAnimation) => void;
     onLoop?: (anim: IgeAnimation) => void;

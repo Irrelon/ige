@@ -1,10 +1,10 @@
 import { ige } from "../instance";
 import { isClient } from "../services/clientServer";
 import { distance } from "../services/utils";
-import IgeComponent from "../core/IgeComponent";
+import { IgeComponent } from "../core/IgeComponent";
 import { IgeMountMode } from "../../enums/IgeMountMode";
-import IgePoint3d from "../core/IgePoint3d";
-import IgePathNode from "../core/IgePathNode";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgePathNode } from "../core/IgePathNode";
 import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode";
 /**
  * Handles entity path traversal. This component is supposed to be added
@@ -12,7 +12,7 @@ import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode";
  * the component will add a behaviour to the entity that is called each update()
  * and will operate to move the entity along a defined path.
  */
-class IgePathComponent extends IgeComponent {
+export class IgePathComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgePathComponent";
@@ -796,4 +796,3 @@ class IgePathComponent extends IgeComponent {
         entity.addBehaviour("path", this._updateBehaviour, false);
     }
 }
-export default IgePathComponent;

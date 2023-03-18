@@ -6,9 +6,9 @@ import { IgeBox2dBodyType } from "../../../../enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "../../../../enums/IgeBox2dFixtureShapeType";
 import { IgeBox2dDebugPainter } from "./IgeBox2dDebugPainter";
 import { IgeEntityBox2d } from "./IgeEntityBox2d";
-import { Box2D } from "./lib_box2d.js";
+import { Box2D } from "./index";
 /**
- * The engine's box2d component class.
+ * The engine's Box2D component class.
  */
 export class IgeBox2dComponent extends IgeComponent {
     constructor(entity, options) {

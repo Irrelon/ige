@@ -1,8 +1,8 @@
 import { ige } from "../../../instance";
 import { IgeEntity } from "../../../core/IgeEntity";
-import { IgeCanvasRenderingContext2d } from "../../../../types/IgeCanvasRenderingContext2d";
 import { IgeBox2dComponent } from "./IgeBox2dComponent";
 import { registerClass } from "../../../services/igeClassStore";
+import type { IgeCanvasRenderingContext2d } from "../../../../types/IgeCanvasRenderingContext2d";
 
 export class IgeBox2dDebugPainter extends IgeEntity {
 	classId = "IgeBox2dDebugPainter";

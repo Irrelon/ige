@@ -1,4 +1,4 @@
-import { igeFilters } from "../services/igeFilters.js";
+import { igeFilters } from "../services/igeFilters";
 export const greyScaleHelper = function (imageData) {
     let arr, arrCount, i, r, g, b, v;
     arr = imageData.data;

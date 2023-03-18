@@ -1,12 +1,12 @@
 import { ige } from "../instance";
-import IgeComponent from "../core/IgeComponent";
-import IgePoint3d from "../core/IgePoint3d";
-import IgePoint2d from "../core/IgePoint2d";
+import { IgeComponent } from "../core/IgeComponent";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgePoint2d } from "../core/IgePoint2d";
 /**
  * When added to a viewport, automatically adds mouse zooming
  * capabilities to the viewport's camera.
  */
-class IgeMouseZoomComponent extends IgeComponent {
+export class IgeMouseZoomComponent extends IgeComponent {
     constructor() {
         super(...arguments);
         this.classId = "IgeMouseZoomComponent";
@@ -89,4 +89,3 @@ class IgeMouseZoomComponent extends IgeComponent {
     }
 }
 IgeMouseZoomComponent.componentTargetClass = "IgeViewport";
-export default IgeMouseZoomComponent;

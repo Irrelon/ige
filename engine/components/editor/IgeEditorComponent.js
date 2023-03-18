@@ -1,5 +1,5 @@
 import { ige } from "../../instance";
-import IgeComponent from "../../core/IgeComponent";
+import { IgeComponent } from "../../core/IgeComponent";
 /**
  * When added to a viewport, automatically adds entity rotate
  * capabilities to the selected entity in the scenegraph viewer.

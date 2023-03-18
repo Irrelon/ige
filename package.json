@@ -48,6 +48,7 @@
 		"eslint-plugin-storybook": "^0.5.7",
 		"eslint-plugin-tree-shaking": "^1.10.0",
 		"eslint-plugin-unused-imports": "^2.0.0",
+		"minimatch": "^7.4.2",
 		"prettier": "^2.6.2",
 		"tsc-watch": "^6.0.0",
 		"ttypescript": "^1.5.15",

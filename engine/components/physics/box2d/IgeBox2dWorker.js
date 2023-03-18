@@ -1,4 +1,2 @@
-"use strict";
-var IgeBox2dWorker = function () {
-    // Setup initial variables
-};
+export class IgeBox2dWorker {
+}

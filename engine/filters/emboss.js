@@ -1,5 +1,5 @@
-import { convoluteHelper } from "./convolute.js";
-import { igeFilters } from "../services/igeFilters.js";
+import { convoluteHelper } from "./convolute";
+import { igeFilters } from "../services/igeFilters";
 export const emboss = function (canvas, ctx, originalImage, texture, data) {
     // Apply the filter and then put the new pixel data
     const imageData = convoluteHelper(ctx.getImageData(0, 0, canvas.width, canvas.height), [-2, -1, 0, -1, 1, 1, 0, 1, 2]);
