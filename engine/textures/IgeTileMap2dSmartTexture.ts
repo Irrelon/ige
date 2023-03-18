@@ -114,6 +114,7 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 
 		if (ent._highlightTileRect) {
 			ctx.fillStyle = "#e4ff00";
+
 			for (y = ent._highlightTileRect.y; y < ent._highlightTileRect.y + ent._highlightTileRect.height; y++) {
 				for (x = ent._highlightTileRect.x; x < ent._highlightTileRect.x + ent._highlightTileRect.width; x++) {
 					// Tile is occupied
