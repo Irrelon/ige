@@ -1,7 +1,7 @@
 > This is an alpha branch at present. It is a re-write utilising TypeScript
-> and compiling to ES6 ESM modules. Only client-side rendering is working, no
-> server-side work has been done yet. Only the first couple of examples in the
-> examples folder run, everything else is on fire.
+> and compiling to ES6 ESM modules. Client and server-side rendering are
+> working and various examples have been updated. If you see an index.ts
+> in an example folder, it's been updated to work with ES6 modules.
 
 # Isogenic Game Engine
 HTML5 2D and isometric scenegraph-based game engine written entirely in JavaScript.

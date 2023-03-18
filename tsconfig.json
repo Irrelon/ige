@@ -23,9 +23,10 @@
         "plugins": [
             {
                 "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
-                "after": true,
+                "after": true
             }
-        ]
+        ],
+        "declaration": true
     },
     "include": ["**/*.d.ts", "**/*.ts", "**/*.tsx"],
     "exclude": ["node_modules", "react"]
