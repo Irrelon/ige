@@ -6,6 +6,7 @@ const matchPattern = ["**/*.js", "**/*.jsx"];
 const excludePattern = ["node_modules", "react", ".git"];
 
 const basicImportExp = /import\s(.*)?\sfrom\s["'](((?!\.js).)*?)["'];/g;
+const basicExportExp = /export\s(.*)?\sfrom\s["'](((?!\.js).)*?)["'];/g;
 
 async function getFiles (dir, gitIgnoreArr) {
 	const dirArr = await readdir(dir, { withFileTypes: true });
@@ -44,14 +45,19 @@ readFile(resolve(__dirname, ".gitignore")).then((result) => {
 }).then((files) => {
 	// Now scan the files for matching regular expressions
 	// of imports without extensions
-	console.log(files[0]);
+	files.forEach((file) => {
+		readFile(file).then((fileContentsBuffer) => {
+			console.log(`Processing ${file}...`);
+			const fileContent = fileContentsBuffer.toString();
+			let updatedContent = fileContent.replaceAll(basicImportExp, `import $1 from "$2.js";`);
+			updatedContent = updatedContent.replaceAll(basicExportExp, `export $1 from "$2.js";`);
 
-	readFile(files[0]).then((fileContentsBuffer) => {
-		const fileContent = fileContentsBuffer.toString();
+			if (fileContent === updatedContent) return;
 
-		const updatedContent = fileContent.replaceAll(basicImportExp, `import $1 from "$2.js";`);
-
-		writeFile(files[0], updatedContent);
+			writeFile(file, updatedContent).then(() => {
+				console.log(`Updated ${file}`);
+			});
+		});
 	});
 });
 
