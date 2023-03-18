@@ -2,6 +2,11 @@
 > and compiling to ES6 ESM modules. Client and server-side rendering are
 > working and various examples have been updated. If you see an index.ts
 > in an example folder, it's been updated to work with ES6 modules.
+> 
+> To update the engine as you work on it, run the build-watch npm command
+> and then run the fixPaths npm command. Build watch will compile the
+> TypeScript changes to JavaScript files. The fixPaths will watch .js files
+> and fix any paths to .js files that don't have a .js extension.
 
 # Isogenic Game Engine
 HTML5 2D and isometric scenegraph-based game engine written entirely in JavaScript.
