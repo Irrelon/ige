@@ -1,8 +1,8 @@
-import { ige } from "../../../engine/instance";
-import { isClient } from "../../../engine/services/clientServer";
-import { registerClass } from "../../../engine/services/igeClassStore";
-import { IgeRect } from "../../../engine/core/IgeRect";
-import { GameEntity } from "./GameEntity";
+import { ige } from "../../../engine/instance.js";
+import { isClient } from "../../../engine/services/clientServer.js";
+import { registerClass } from "../../../engine/services/igeClassStore.js";
+import { IgeRect } from "../../../engine/core/IgeRect.js";
+import { GameEntity } from "./GameEntity.js";
 export class Line extends GameEntity {
     constructor(x1, y1, x2, y2) {
         super();

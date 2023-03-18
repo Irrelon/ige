@@ -1,3 +1,3 @@
-export * from "./instance";
-export * from "./components/index";
-export * from "./core/index";
+export * from "./instance.js";
+export * from "./components/index.js";
+export * from "./core/index.js";

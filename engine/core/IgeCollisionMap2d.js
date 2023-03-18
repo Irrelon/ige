@@ -1,5 +1,5 @@
-import { IgeEntity } from "./IgeEntity";
-import { IgeMap2d } from "./IgeMap2d";
+import { IgeEntity } from "./IgeEntity.js";
+import { IgeMap2d } from "./IgeMap2d.js";
 // TODO: Does this NEED to be an IgeEntity or can it be an IgeObject?
 export class IgeCollisionMap2d extends IgeEntity {
     constructor() {

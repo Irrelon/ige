@@ -1,4 +1,4 @@
-import { IgeBaseClass } from "./IgeBaseClass";
+import { IgeBaseClass } from "./IgeBaseClass.js";
 /**
  * A simple finite state machine implementation.
  */

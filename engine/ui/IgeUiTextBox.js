@@ -1,6 +1,6 @@
-import { ige } from "../instance";
-import { IgeUiElement } from "../core/IgeUiElement";
-import { IgeFontEntity } from "../core/IgeFontEntity";
+import { ige } from "../instance.js";
+import { IgeUiElement } from "../core/IgeUiElement.js";
+import { IgeFontEntity } from "../core/IgeFontEntity.js";
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
  * capture keyboard input and display it, similar in usage to the HTML input

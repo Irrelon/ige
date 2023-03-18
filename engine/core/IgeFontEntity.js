@@ -1,8 +1,8 @@
-import { IgeUiEntity } from "./IgeUiEntity";
-import { IgeTexture } from "./IgeTexture";
-import { IgeFontSmartTexture } from "../textures/IgeFontSmartTexture";
-import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign";
-import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode";
+import { IgeUiEntity } from "./IgeUiEntity.js";
+import { IgeTexture } from "./IgeTexture.js";
+import { IgeFontSmartTexture } from "../textures/IgeFontSmartTexture.js";
+import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign.js";
+import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode.js";
 /**
  * Creates a new font entity. A font entity will use a font sheet
  * (IgeFontSheet) or native font and render text.

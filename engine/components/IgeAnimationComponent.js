@@ -1,5 +1,5 @@
-import { ige } from "../instance";
-import { IgeComponent } from "../core/IgeComponent";
+import { ige } from "../instance.js";
+import { IgeComponent } from "../core/IgeComponent.js";
 /**
  * The animation component class. Handles defining and controlling
  * frame-based animations based on cells from a texture.

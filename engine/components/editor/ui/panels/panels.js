@@ -1,5 +1,5 @@
-import IgeEventingClass from "../../../../core/IgeEventingClass";
-import { IgeMountMode } from "../../../../../enums/IgeMountMode";
+import IgeEventingClass from "../../../../core/IgeEventingClass.js";
+import { IgeMountMode } from "../../../../../enums/IgeMountMode.js";
 class UiPanels extends IgeEventingClass {
     constructor() {
         super(...arguments);

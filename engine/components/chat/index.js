@@ -1,3 +1,3 @@
-export * from "./IgeChatClient";
-export * from "./IgeChatComponent";
-export * from "./IgeChatServer";
+export * from "./IgeChatClient.js";
+export * from "./IgeChatComponent.js";
+export * from "./IgeChatServer.js";

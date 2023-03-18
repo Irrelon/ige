@@ -1,6 +1,6 @@
-import { IgeEntity } from "../../../engine/core/IgeEntity";
-import { IgeStreamMode } from "../../../enums/IgeStreamMode";
-import { registerClass } from "../../../engine/services/igeClassStore";
+import { IgeEntity } from "../../../engine/core/IgeEntity.js";
+import { IgeStreamMode } from "../../../enums/IgeStreamMode.js";
+import { registerClass } from "../../../engine/services/igeClassStore.js";
 export class GameEntity extends IgeEntity {
     constructor() {
         super();

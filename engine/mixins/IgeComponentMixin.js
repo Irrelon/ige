@@ -1,4 +1,4 @@
-import { arrPull } from "../services/utils";
+import { arrPull } from "../services/utils.js";
 export const WithComponentMixin = (Base) => class extends Base {
     constructor(...args) {
         super(...args);

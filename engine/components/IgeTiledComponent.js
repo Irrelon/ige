@@ -1,4 +1,4 @@
-import { IgeComponent } from "../core/IgeComponent";
+import { IgeComponent } from "../core/IgeComponent.js";
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
  */

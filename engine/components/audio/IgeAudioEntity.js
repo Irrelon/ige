@@ -1,7 +1,7 @@
-import { ige } from "../../instance";
-import { isClient } from "../../services/clientServer";
-import { IgeAudio } from "./IgeAudio";
-import { IgeObject } from "../../core/IgeObject";
+import { ige } from "../../instance.js";
+import { isClient } from "../../services/clientServer.js";
+import { IgeAudio } from "./IgeAudio.js";
+import { IgeObject } from "../../core/IgeObject.js";
 // Set default data for any audio panner node
 const defaultPanner = {
     panningModel: "HRTF",

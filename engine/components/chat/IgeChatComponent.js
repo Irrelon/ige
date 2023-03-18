@@ -1,4 +1,4 @@
-import { IgeComponent } from "../../core/IgeComponent";
+import { IgeComponent } from "../../core/IgeComponent.js";
 export class IgeChatComponent extends IgeComponent {
     constructor() {
         super(...arguments);

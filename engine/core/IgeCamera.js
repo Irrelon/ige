@@ -1,5 +1,5 @@
-import { IgeEntity } from "./IgeEntity";
-import { IgeTween } from "./IgeTween";
+import { IgeEntity } from "./IgeEntity.js";
+import { IgeTween } from "./IgeTween.js";
 /**
  * Creates a new camera that will be attached to a viewport.
  */

@@ -1,4 +1,4 @@
-import { IgeTween } from "./IgeTween";
+import { IgeTween } from "./IgeTween.js";
 /**
  * Creates a new 3d point (x, y, z).
  */

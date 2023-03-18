@@ -1,7 +1,7 @@
-import { ige } from "../../instance";
-import { arrPull } from "../../services/utils";
-import { IgeComponent } from "../../core/IgeComponent";
-import { IgeMountMode } from "../../../enums/IgeMountMode";
+import { ige } from "../../instance.js";
+import { arrPull } from "../../services/utils.js";
+import { IgeComponent } from "../../core/IgeComponent.js";
+import { IgeMountMode } from "../../../enums/IgeMountMode.js";
 export class IgeEntityManager extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);

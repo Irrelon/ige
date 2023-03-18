@@ -1,7 +1,7 @@
-import { ige } from "../instance";
-import { IgeComponent } from "../core/IgeComponent";
-import { arrPull } from "../services/utils";
-import { easingFunctions } from "../services/easing";
+import { ige } from "../instance.js";
+import { IgeComponent } from "../core/IgeComponent.js";
+import { arrPull } from "../services/utils.js";
+import { easingFunctions } from "../services/easing.js";
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!

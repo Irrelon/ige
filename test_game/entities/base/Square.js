@@ -1,7 +1,7 @@
-import { ige } from "../../../engine/instance";
-import { isClient } from "../../../engine/services/clientServer";
-import { registerClass } from "../../../engine/services/igeClassStore";
-import { Building } from "./Building";
+import { ige } from "../../../engine/instance.js";
+import { isClient } from "../../../engine/services/clientServer.js";
+import { registerClass } from "../../../engine/services/igeClassStore.js";
+import { Building } from "./Building.js";
 export class Square extends Building {
     constructor() {
         super();

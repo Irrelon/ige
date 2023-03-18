@@ -1,6 +1,6 @@
-import { ige } from "../../engine/instance";
-import { Line } from "./base/Line";
-import { registerClass } from "../../engine/services/igeClassStore";
+import { ige } from "../../engine/instance.js";
+import { Line } from "./base/Line.js";
+import { registerClass } from "../../engine/services/igeClassStore.js";
 export class Road extends Line {
     constructor(fromId, toId) {
         super();

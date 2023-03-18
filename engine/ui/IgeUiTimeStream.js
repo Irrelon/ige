@@ -1,4 +1,4 @@
-import { IgeUiElement } from "../core/IgeUiElement";
+import { IgeUiElement } from "../core/IgeUiElement.js";
 export class IgeUiTimeStream extends IgeUiElement {
     constructor() {
         super(...arguments);

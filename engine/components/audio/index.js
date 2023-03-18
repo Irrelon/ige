@@ -1,3 +1,3 @@
-export * from "./IgeAudio";
-export * from "./IgeAudioController";
-export * from "./IgeAudioEntity";
+export * from "./IgeAudio.js";
+export * from "./IgeAudioController.js";
+export * from "./IgeAudioEntity.js";

@@ -1,4 +1,4 @@
-import { IgeBaseClass } from "./IgeBaseClass";
+import { IgeBaseClass } from "./IgeBaseClass.js";
 /**
  * Creates a new map that has two dimensions (x and y) to its data.
  */

@@ -1,6 +1,6 @@
-import { ige } from "../instance";
-import { IgeEntity } from "./IgeEntity";
-import { IgeViewport } from "./IgeViewport";
+import { ige } from "../instance.js";
+import { IgeEntity } from "./IgeEntity.js";
+import { IgeViewport } from "./IgeViewport.js";
 /**
  * The engine's root entity that all the scenegraph lives from.
  */

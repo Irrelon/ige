@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../../../core/IgeEventingClass";
+import { IgeEventingClass } from "../../../../core/IgeEventingClass.js";
 export class IgeNetIoSocket extends IgeEventingClass {
     constructor(connection, options) {
         super();

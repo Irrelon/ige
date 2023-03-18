@@ -1,5 +1,5 @@
-import { registerClass } from "../../engine/services/igeClassStore";
-import { Star } from "./base/Star";
+import { registerClass } from "../../engine/services/igeClassStore.js";
+import { Star } from "./base/Star.js";
 export class FactoryBuilding extends Star {
     constructor(produces, requires = []) {
         super();

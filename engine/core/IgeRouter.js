@@ -7,8 +7,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { isClient, isServer } from "../services/clientServer";
-import { IgeBaseClass } from "./IgeBaseClass";
+import { isClient, isServer } from "../services/clientServer.js";
+import { IgeBaseClass } from "./IgeBaseClass.js";
 const PATH_DELIMITER = "/";
 export class IgeRouter extends IgeBaseClass {
     constructor() {

@@ -1,4 +1,4 @@
-import { IgeTextureMap } from "./IgeTextureMap";
+import { IgeTextureMap } from "./IgeTextureMap.js";
 /**
  * Texture maps provide a way to display textures across a tile map.
  */

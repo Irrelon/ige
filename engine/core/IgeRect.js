@@ -1,4 +1,4 @@
-import { IgeBaseClass } from "./IgeBaseClass";
+import { IgeBaseClass } from "./IgeBaseClass.js";
 /**
  * Creates a new rectangle (x, y, width, height).
  */

@@ -1,8 +1,8 @@
-import { newIdHex } from "../../../services/utils";
-import { igeClassStore } from "../../../services/igeClassStore";
-import { IgeEventingClass } from "../../../core/IgeEventingClass";
-import { ige } from "../../../instance";
-import { Box2D } from "./lib_box2d";
+import { newIdHex } from "../../../services/utils.js";
+import { igeClassStore } from "../../../services/igeClassStore.js";
+import { IgeEventingClass } from "../../../core/IgeEventingClass.js";
+import { ige } from "../../../instance.js";
+import { Box2D } from "./lib_box2d.js";
 export class IgeBox2dWorld extends IgeEventingClass {
     constructor(entity, options) {
         super();

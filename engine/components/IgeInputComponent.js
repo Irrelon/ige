@@ -1,6 +1,6 @@
-import { ige } from "../instance";
-import { IgePoint3d } from "../core/IgePoint3d";
-import { IgeComponent } from "../core/IgeComponent";
+import { ige } from "../instance.js";
+import { IgePoint3d } from "../core/IgePoint3d.js";
+import { IgeComponent } from "../core/IgeComponent.js";
 export class IgeInputComponent extends IgeComponent {
     constructor() {
         super();

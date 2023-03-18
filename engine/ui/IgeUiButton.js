@@ -1,4 +1,4 @@
-import { IgeUiElement } from "../core/IgeUiElement";
+import { IgeUiElement } from "../core/IgeUiElement.js";
 export class IgeUiButton extends IgeUiElement {
     constructor() {
         super();

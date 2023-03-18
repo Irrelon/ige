@@ -1,1 +1,1 @@
-export * from "./net.io/index";
+export * from "./net.io/index.js";

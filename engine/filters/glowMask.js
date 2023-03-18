@@ -1,5 +1,5 @@
-import { igeFilters } from "../services/igeFilters";
-import { convoluteHelper } from "./convolute";
+import { igeFilters } from "../services/igeFilters.js";
+import { convoluteHelper } from "./convolute.js";
 export const glowMask = function (canvas, ctx, originalImage, texture, data) {
     const oneNinth = 1 / 9;
     let pixelData, tempCanvas, tempCtx, i;

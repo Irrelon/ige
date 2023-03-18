@@ -1,8 +1,8 @@
-import { ige } from "../../../instance";
-import { arrPull, newIdHex } from "../../../services/utils";
-import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent";
-import { IgeNetIoServer } from "./server/IgeNetIoServer";
-import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../../enums/IgeConstants";
+import { ige } from "../../../instance.js";
+import { arrPull, newIdHex } from "../../../services/utils.js";
+import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent.js";
+import { IgeNetIoServer } from "./server/IgeNetIoServer.js";
+import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../../enums/IgeConstants.js";
 export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
     constructor() {
         super();

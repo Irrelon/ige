@@ -1,15 +1,15 @@
-import { igeClassStore } from "../services/igeClassStore";
-import { isClient, isServer } from "../services/clientServer";
-import { igeConfig } from "./config";
-import { IgeEngine } from "./IgeEngine";
-import { IgeTextureStore } from "./IgeTextureStore";
-import { IgeMetrics } from "./IgeMetrics";
-import { IgeInputComponent } from "../components/IgeInputComponent";
-import { IgeObjectRegister } from "./IgeObjectRegister";
-import { IgeArrayRegister } from "./IgeArrayRegister";
-import { IgePoint3d } from "./IgePoint3d";
-import { IgeAudioController } from "../components/audio/IgeAudioController";
-import { IgeRouter } from "./IgeRouter";
+import { igeClassStore } from "../services/igeClassStore.js";
+import { isClient, isServer } from "../services/clientServer.js";
+import { igeConfig } from "./config.js";
+import { IgeEngine } from "./IgeEngine.js";
+import { IgeTextureStore } from "./IgeTextureStore.js";
+import { IgeMetrics } from "./IgeMetrics.js";
+import { IgeInputComponent } from "../components/IgeInputComponent.js";
+import { IgeObjectRegister } from "./IgeObjectRegister.js";
+import { IgeArrayRegister } from "./IgeArrayRegister.js";
+import { IgePoint3d } from "./IgePoint3d.js";
+import { IgeAudioController } from "../components/audio/IgeAudioController.js";
+import { IgeRouter } from "./IgeRouter.js";
 const version = "2.0.0";
 export class Ige {
     constructor() {

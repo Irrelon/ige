@@ -7,17 +7,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "../instance";
-import { isClient, isServer } from "../services/clientServer";
-import { IgePoint3d } from "./IgePoint3d";
-import { IgeDummyContext } from "./IgeDummyContext";
-import { IgeInputComponent } from "../components/IgeInputComponent";
-import { IgeEntity } from "./IgeEntity";
-import { IgeViewport } from "./IgeViewport";
-import { IgeEngineState } from "../../enums/IgeEngineState";
-import { IgeTweenComponent } from "../components/IgeTweenComponent";
-import { IgePoint2d } from "./IgePoint2d";
-import { IgeTimeComponent } from "../components/IgeTimeComponent";
+import { ige } from "../instance.js";
+import { isClient, isServer } from "../services/clientServer.js";
+import { IgePoint3d } from "./IgePoint3d.js";
+import { IgeDummyContext } from "./IgeDummyContext.js";
+import { IgeInputComponent } from "../components/IgeInputComponent.js";
+import { IgeEntity } from "./IgeEntity.js";
+import { IgeViewport } from "./IgeViewport.js";
+import { IgeEngineState } from "../../enums/IgeEngineState.js";
+import { IgeTweenComponent } from "../components/IgeTweenComponent.js";
+import { IgePoint2d } from "./IgePoint2d.js";
+import { IgeTimeComponent } from "../components/IgeTimeComponent.js";
 export class IgeEngine extends IgeEntity {
     constructor() {
         super();

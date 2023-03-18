@@ -1,7 +1,7 @@
-import { ige } from "../../../engine/instance";
-import { isClient } from "../../../engine/services/clientServer";
-import { registerClass } from "../../../engine/services/igeClassStore";
-import { GameEntity } from "./GameEntity";
+import { ige } from "../../../engine/instance.js";
+import { isClient } from "../../../engine/services/clientServer.js";
+import { registerClass } from "../../../engine/services/igeClassStore.js";
+import { GameEntity } from "./GameEntity.js";
 export class Circle extends GameEntity {
     constructor() {
         super();

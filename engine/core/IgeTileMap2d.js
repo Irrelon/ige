@@ -1,16 +1,16 @@
-import { ige } from "../instance";
-import { IgeTexture } from "./IgeTexture";
-import { IgeTileMap2dSmartTexture } from "../textures/IgeTileMap2dSmartTexture";
-import { IgeMap2d } from "./IgeMap2d";
-import { IgeMatrix2d } from "./IgeMatrix2d";
-import { IgePoint2d } from "./IgePoint2d";
-import { IgeRect } from "./IgeRect";
-import { IgePoint3d } from "./IgePoint3d";
-import { IgePoly2d } from "./IgePoly2d";
-import { isServer } from "../services/clientServer";
-import { IgeMountMode } from "../../enums/IgeMountMode";
-import { arrClone, newIdHex } from "../services/utils";
-import { IgeEntity } from "./IgeEntity";
+import { ige } from "../instance.js";
+import { IgeTexture } from "./IgeTexture.js";
+import { IgeTileMap2dSmartTexture } from "../textures/IgeTileMap2dSmartTexture.js";
+import { IgeMap2d } from "./IgeMap2d.js";
+import { IgeMatrix2d } from "./IgeMatrix2d.js";
+import { IgePoint2d } from "./IgePoint2d.js";
+import { IgeRect } from "./IgeRect.js";
+import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoly2d } from "./IgePoly2d.js";
+import { isServer } from "../services/clientServer.js";
+import { IgeMountMode } from "../../enums/IgeMountMode.js";
+import { arrClone, newIdHex } from "../services/utils.js";
+import { IgeEntity } from "./IgeEntity.js";
 /**
  * Tile maps provide a way to align mounted child objects to a tile-based grid.
  * NOTE: These are not to be confused with IgeTextureMap's which allow you to

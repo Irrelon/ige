@@ -1,5 +1,5 @@
-import { ige } from "../../../instance";
-import { IgeEntity } from "../../../core/IgeEntity";
+import { ige } from "../../../instance.js";
+import { IgeEntity } from "../../../core/IgeEntity.js";
 /**
  * Creates a new entity with box2d integration.
  */
