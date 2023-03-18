@@ -1,4 +1,4 @@
-import IgeEventingClass from "../../../core/IgeEventingClass";
+import { IgeEventingClass } from "../../../core/IgeEventingClass";
 /**
  * The engine's box2d multi-world component class.
  */

@@ -1,9 +1,9 @@
-import IgeComponent from "../core/IgeComponent";
-import IgeEntity from "../core/IgeEntity";
-import IgeTileMap2d from "../core/IgeTileMap2d";
-import IgePathFinder, { IgePathFinderComparisonCallback } from "../core/IgePathFinder";
-import IgePoint3d from "../core/IgePoint3d";
-import IgePathNode from "../core/IgePathNode";
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeEntity } from "../core/IgeEntity";
+import { IgeTileMap2d } from "../core/IgeTileMap2d";
+import { IgePathFinder, IgePathFinderComparisonCallback } from "../core/IgePathFinder";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgePathNode } from "../core/IgePathNode";
 import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
 /**
  * Handles entity path traversal. This component is supposed to be added
@@ -11,7 +11,7 @@ import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
  * the component will add a behaviour to the entity that is called each update()
  * and will operate to move the entity along a defined path.
  */
-declare class IgePathComponent extends IgeComponent {
+export declare class IgePathComponent extends IgeComponent {
     classId: string;
     componentId: string;
     _tileMap?: IgeTileMap2d;
@@ -265,4 +265,3 @@ declare class IgePathComponent extends IgeComponent {
      */
     _positionAlongVector: (p1: IgePoint3d, p2: IgePoint3d, speed: number, deltaTime: number) => IgePoint3d;
 }
-export default IgePathComponent;

@@ -51,7 +51,7 @@ readFile(resolve(__dirname, ".gitignore")).then((result) => {
 
 		const updatedContent = fileContent.replaceAll(basicImportExp, `import $1 from "$2.js";`);
 
-		writeFile(file[0], updatedContent);
+		writeFile(files[0], updatedContent);
 	});
 });
 

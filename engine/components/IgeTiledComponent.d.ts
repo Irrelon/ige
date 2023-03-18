@@ -1,9 +1,9 @@
-import IgeComponent from "../core/IgeComponent";
-import IgeEntity from "../core/IgeEntity";
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeEntity } from "../core/IgeEntity";
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
  */
-declare class IgeTiledComponent extends IgeComponent {
+export declare class IgeTiledComponent extends IgeComponent {
     classId: string;
     componentId: string;
     constructor(entity: IgeEntity, options?: any);
@@ -17,4 +17,3 @@ declare class IgeTiledComponent extends IgeComponent {
     loadJson: (url: any, callback: any) => void;
     _processData: (data: any, callback: any) => void;
 }
-export default IgeTiledComponent;

@@ -1,1 +1,2 @@
-declare var IgeBox2dWorker: () => void;
+export declare class IgeBox2dWorker {
+}

@@ -1,7 +1,7 @@
-import IgeEntity from "../../core/IgeEntity";
-import IgeComponent from "../../core/IgeComponent";
+import { IgeEntity } from "../../core/IgeEntity";
+import { IgeComponent } from "../../core/IgeComponent";
 import { IgeEntityBehaviourMethod } from "../../../types/IgeEntityBehaviour";
-declare class IgeEntityManager extends IgeComponent {
+export declare class IgeEntityManager extends IgeComponent {
     classId: string;
     componentId: string;
     constructor(entity: IgeEntity, options?: any);
@@ -36,4 +36,3 @@ declare class IgeEntityManager extends IgeComponent {
      */
     _processUnMountQueue: () => void;
 }
-export default IgeEntityManager;

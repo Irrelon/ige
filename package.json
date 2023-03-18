@@ -13,7 +13,7 @@
 	"main": "index.js",
 	"scripts": {
 		"build": "ttsc",
-		"build-watch": "ttsc --watch"
+		"build-watch": "tsc --watch"
 	},
 	"dependencies": {
 		"easyimage": "0.1.3",

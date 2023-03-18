@@ -1,6 +1,6 @@
 import { IgeEventListenerObject, IgeMultiEventListenerObject } from "../../mixins/IgeEventingMixin";
-import IgeComponent from "../../core/IgeComponent";
-import IgeEntity from "../../core/IgeEntity";
+import { IgeComponent } from "../../core/IgeComponent";
+import { IgeEntity } from "../../core/IgeEntity";
 /**
  * When added to a viewport, automatically adds entity rotate
  * capabilities to the selected entity in the scenegraph viewer.

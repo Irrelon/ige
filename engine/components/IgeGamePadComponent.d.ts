@@ -1,7 +1,7 @@
-import IgeComponent from "../core/IgeComponent";
-import IgeEntity from "../core/IgeEntity";
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeEntity } from "../core/IgeEntity";
 import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
-declare class IgeGamePadComponent extends IgeComponent {
+export declare class IgeGamePadComponent extends IgeComponent {
     "classId": string;
     "componentId": string;
     gamepadAvailable: boolean | null;
@@ -35,4 +35,3 @@ declare class IgeGamePadComponent extends IgeComponent {
     "pollStatus"(): void;
     "pollGamepads"(): void;
 }
-export default IgeGamePadComponent;

@@ -1,7 +1,7 @@
-import IgeComponent from "../core/IgeComponent";
-import IgeEntity from "../core/IgeEntity";
-import IgeRect from "../core/IgeRect";
-declare class IgeEntityManagerComponent extends IgeComponent {
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeEntity } from "../core/IgeEntity";
+import { IgeRect } from "../core/IgeRect";
+export declare class IgeEntityManagerComponent extends IgeComponent {
     classId: string;
     componentId: string;
     /**
@@ -137,4 +137,3 @@ declare class IgeEntityManagerComponent extends IgeComponent {
      */
     _resizeEvent: (event: any) => void;
 }
-export default IgeEntityManagerComponent;

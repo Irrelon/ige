@@ -1,4 +1,4 @@
-import IgeEventingClass from "../../../core/IgeEventingClass";
+import { IgeEventingClass } from "../../../core/IgeEventingClass";
 export declare class IgeBox2dWorld extends IgeEventingClass {
     classId: string;
     constructor(entity: any, options: any);
