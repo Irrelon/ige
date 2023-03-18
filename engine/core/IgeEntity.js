@@ -58,32 +58,6 @@ class IgeEntity extends IgeObject {
         };
         /**
          * Gets / sets the callback that is fired when a mouse
-         * up event is triggered.
-         * @param {Function=} callback
-         * @example #Hook the mouse up event and stop it propagating further down the scenegraph
-         *     entity.mouseUp(function (event, control) {
-         *         // Mouse up with button
-         *         console.log('Mouse up button: ' + event.button);
-         *
-         *         // Stop the event propagating further down the scenegraph
-         *         control.stopPropagation();
-         *
-         *         // You can ALSO stop propagation without the control object
-         *         // reference via the global reference:
-         *         ige.engine.components.input.stopPropagation();
-         *     });
-         * @return {*}
-         */
-        this.mouseUp = (callback) => {
-            if (callback) {
-                this._mouseUp = callback;
-                this._mouseEventsActive = true;
-                return this;
-            }
-            return this._mouseUp;
-        };
-        /**
-         * Gets / sets the callback that is fired when a mouse
          * down event is triggered.
          * @param {Function=} callback
          * @example #Hook the mouse down event and stop it propagating further down the scenegraph
@@ -267,21 +241,22 @@ class IgeEntity extends IgeObject {
          * @private
          */
         this._mouseInTrigger = (evc, eventData) => {
-            if (ige.engine.components.input.mouseMove) {
+            const input = ige.engine.components.input;
+            if (input.mouseMove) {
                 // There is a mouse move event
-                this._handleMouseIn(ige.engine.components.input.mouseMove, evc, eventData);
+                this._handleMouseIn(input.mouseMove, evc, eventData);
             }
-            if (ige.engine.components.input.mouseDown) {
+            if (input.mouseDown) {
                 // There is a mouse down event
-                this._handleMouseDown(ige.engine.components.input.mouseDown, evc, eventData);
+                this._handleMouseDown(input.mouseDown, evc, eventData);
             }
-            if (ige.engine.components.input.mouseUp) {
+            if (input.mouseUp) {
                 // There is a mouse up event
-                this._handleMouseUp(ige.engine.components.input.mouseUp, evc, eventData);
+                this._handleMouseUp(input.mouseUp, evc, eventData);
             }
-            if (ige.engine.components.input.mouseWheel) {
+            if (input.mouseWheel) {
                 // There is a mouse wheel event
-                this._handleMouseWheel(ige.engine.components.input.mouseWheel, evc, eventData);
+                this._handleMouseWheel(input.mouseWheel, evc, eventData);
             }
         };
         /**
@@ -1407,16 +1382,17 @@ class IgeEntity extends IgeObject {
         }
         this._processTickBehaviours(ctx);
         if (this._mouseEventsActive) {
+            const input = ige.engine.components.input;
             if (this._processTriggerHitTests()) {
                 // Point is inside the trigger bounds
-                ige.engine.components.input.queueEvent(this._mouseInTrigger, null);
+                input.queueEvent(this._mouseInTrigger, null);
             }
             else {
-                if (ige.engine.components.input.mouseMove) {
+                if (input.mouseMove) {
                     // There is a mouse move event, but we are not inside the entity
                     // so fire a mouse out event (_handleMouseOut will check if the
                     // mouse WAS inside before firing an out event).
-                    this._handleMouseOut(ige.engine.components.input.mouseMove);
+                    this._handleMouseOut(input.mouseMove);
                 }
             }
         }
@@ -1942,6 +1918,14 @@ class IgeEntity extends IgeObject {
             return this;
         }
         return this._mouseOut;
+    }
+    mouseUp(callback) {
+        if (callback) {
+            this._mouseUp = callback;
+            this._mouseEventsActive = true;
+            return this;
+        }
+        return this._mouseUp;
     }
     /**
      * Removes the callback that is fired when a mouse

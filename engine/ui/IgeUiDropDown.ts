@@ -105,12 +105,17 @@ export class IgeUiDropDown extends IgeUiElement {
 		});
 	}
 
+	/**
+	 * The blur method removes global UI focus from this UI element.
+	 */
 	blur () {
-		super.blur();
+		const returnValue = super.blur();
 
 		if (this._toggleState) {
 			this.toggle();
 		}
+
+		return returnValue;
 	}
 
 	selectIndex (index: number) {
@@ -120,7 +125,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		}
 	}
 
-	value (val: IgeUiDropDownOption) {
+	value (val?: IgeUiDropDownOption) {
 		if (val !== undefined) {
 			super.value(val);
 			this._label.value(val.text);
@@ -134,13 +139,10 @@ export class IgeUiDropDown extends IgeUiElement {
 		this._toggleState = !this._toggleState;
 
 		if (this._toggleState) {
-			let self = this,
-				optionContainer,
-				mainTop = this._bounds2d.y + 5,
-				mainHeight = this._options.length * 30,
-				i;
+			const mainTop = this._bounds2d.y + 5;
+			const mainHeight = this._options.length * 30;
 
-			optionContainer = new IgeUiElement()
+			const optionContainer = new IgeUiElement()
 				.id(this._id + "_options")
 				.backgroundColor(this._backgroundColor)
 				.borderColor(this._borderColor)
@@ -150,13 +152,13 @@ export class IgeUiDropDown extends IgeUiElement {
 				.height(mainHeight)
 				.mount(this);
 
-			for (i = 0; i < this._options.length; i++) {
+			for (let i = 0; i < this._options.length; i++) {
 				(ige.engine.components.ui as IgeUiManagerComponent).style("#" + this._id + "_options_" + i, {
 					color: this._color
 				});
 
 				new IgeUiLabel()
-					.id(this._id + "_options_" + i)
+					.id(`${this._id}_options_${i}`)
 					.data("optionIndex", i)
 					.styleClass("IgeUiDropDownOption")
 					.value(this._options[i].text)
@@ -168,8 +170,8 @@ export class IgeUiDropDown extends IgeUiElement {
 					.allowFocus(true)
 					.allowActive(true)
 					.allowHover(true)
-					.mouseUp(function () {
-						self.selectIndex(this.data("optionIndex"));
+					.mouseUp(() => {
+						this.selectIndex(this.data("optionIndex"));
 					})
 					.mount(optionContainer);
 			}

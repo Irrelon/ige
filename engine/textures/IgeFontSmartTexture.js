@@ -1,8 +1,10 @@
+import { IgeFontAlignY } from "../../enums/IgeFontAlign.js";
 /**
  * Provides native canvas font rendering supporting multi-line
  * text and alignment options.
  */
 const IgeFontSmartTexture = {
+    // @ts-ignore
     render: (ctx, entity) => {
         if (!entity._nativeFont || !entity._renderText) {
             return;
@@ -10,9 +12,9 @@ const IgeFontSmartTexture = {
         const text = entity._renderText;
         let lineArr;
         let textSize;
-        let renderStartY;
+        let renderStartY = 0;
         let renderY;
-        let lineHeight;
+        let lineHeight = 0;
         ctx.font = entity._nativeFont;
         if (entity._colorOverlay) {
             ctx.fillStyle = entity._colorOverlay;
@@ -45,19 +47,19 @@ const IgeFontSmartTexture = {
             // Store the text as a single line
             lineArr = [text];
         }
-        if (entity._textAlignY === 0) {
+        if (entity._textAlignY === IgeFontAlignY.top) {
             ctx.textBaseline = "top";
             renderStartY = -(entity._bounds2d.y / 2);
         }
-        if (entity._textAlignY === 1) {
+        if (entity._textAlignY === IgeFontAlignY.middle) {
             ctx.textBaseline = "middle";
             renderStartY = -(entity._textLineSpacing / 2) * (lineArr.length - 1);
         }
-        if (entity._textAlignY === 2) {
+        if (entity._textAlignY === IgeFontAlignY.bottom) {
             ctx.textBaseline = "bottom";
             renderStartY = entity._bounds2d.y / 2 - entity._textLineSpacing * (lineArr.length - 1);
         }
-        if (entity._textAlignY === 3) {
+        if (entity._textAlignY === IgeFontAlignY.multiLineMiddle) {
             ctx.textBaseline = "middle";
             lineHeight = Math.floor(entity._bounds2d.y / lineArr.length);
             renderStartY = -((lineHeight + entity._textLineSpacing) / 2) * (lineArr.length - 1);
@@ -110,7 +112,7 @@ const IgeFontSmartTexture = {
                 if (entity._nativeStrokeColor) {
                     ctx.strokeStyle = entity._nativeStrokeColor;
                 }
-                else {
+                else if (entity._colorOverlay) {
                     ctx.strokeStyle = entity._colorOverlay;
                 }
             }

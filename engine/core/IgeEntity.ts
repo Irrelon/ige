@@ -25,6 +25,7 @@ import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "../.
 import type IgeViewport from "./IgeViewport";
 import type IgeTexture from "./IgeTexture";
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory";
+import type IgeInputComponent from "../components/IgeInputComponent";
 
 /**
  * Creates an entity and handles the entity's life cycle and
@@ -866,7 +867,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * chaining or the current value if no arguments are specified.
 	 */
 	cellById(val: string | number): this;
-	cellById(): string | number | null;
+	cellById(): number | null;
 	cellById (val?: string | number) {
 		if (val !== undefined) {
 			if (this._texture) {
@@ -1380,15 +1381,16 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 		this._processTickBehaviours(ctx);
 
 		if (this._mouseEventsActive) {
+			const input = ige.engine.components.input as IgeInputComponent;
 			if (this._processTriggerHitTests()) {
 				// Point is inside the trigger bounds
-				ige.engine.components.input.queueEvent(this._mouseInTrigger, null);
+				input.queueEvent(this._mouseInTrigger, null);
 			} else {
-				if (ige.engine.components.input.mouseMove) {
+				if (input.mouseMove) {
 					// There is a mouse move event, but we are not inside the entity
 					// so fire a mouse out event (_handleMouseOut will check if the
 					// mouse WAS inside before firing an out event).
-					this._handleMouseOut(ige.engine.components.input.mouseMove);
+					this._handleMouseOut(input.mouseMove);
 				}
 			}
 		}
@@ -2087,7 +2089,9 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 *     });
 	 * @return {*}
 	 */
-	mouseUp = (callback?: IgeInputEvent) => {
+	mouseUp (callback: IgeInputEvent): this;
+	mouseUp (): IgeInputEvent;
+	mouseUp (callback?: IgeInputEvent) {
 		if (callback) {
 			this._mouseUp = callback;
 			this._mouseEventsActive = true;
@@ -2095,7 +2099,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 		}
 
 		return this._mouseUp;
-	};
+	}
 
 	/**
 	 * Gets / sets the callback that is fired when a mouse
@@ -2375,24 +2379,26 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 * @private
 	 */
 	_mouseInTrigger = (evc: IgeInputEventControl, eventData?: any) => {
-		if (ige.engine.components.input.mouseMove) {
+		const input = ige.engine.components.input as IgeInputComponent;
+
+		if (input.mouseMove) {
 			// There is a mouse move event
-			this._handleMouseIn(ige.engine.components.input.mouseMove, evc, eventData);
+			this._handleMouseIn(input.mouseMove, evc, eventData);
 		}
 
-		if (ige.engine.components.input.mouseDown) {
+		if (input.mouseDown) {
 			// There is a mouse down event
-			this._handleMouseDown(ige.engine.components.input.mouseDown, evc, eventData);
+			this._handleMouseDown(input.mouseDown, evc, eventData);
 		}
 
-		if (ige.engine.components.input.mouseUp) {
+		if (input.mouseUp) {
 			// There is a mouse up event
-			this._handleMouseUp(ige.engine.components.input.mouseUp, evc, eventData);
+			this._handleMouseUp(input.mouseUp, evc, eventData);
 		}
 
-		if (ige.engine.components.input.mouseWheel) {
+		if (input.mouseWheel) {
 			// There is a mouse wheel event
-			this._handleMouseWheel(ige.engine.components.input.mouseWheel, evc, eventData);
+			this._handleMouseWheel(input.mouseWheel, evc, eventData);
 		}
 	};
 

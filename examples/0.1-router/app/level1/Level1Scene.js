@@ -21,6 +21,9 @@ export class Level1Scene extends IgeSceneGraph {
         const scene1 = new IgeScene2d()
             .id('scene1')
             .mount(baseScene);
+        const uiScene = new IgeScene2d()
+            .id('uiScene')
+            .mount(baseScene);
         // Create an entity and mount it to the scene
         new Fairy(-0.01)
             .translateTo(-220, 0, 0)
@@ -39,8 +42,7 @@ export class Level1Scene extends IgeSceneGraph {
             .mouseUp(() => {
             ige.router.go("app/splash");
         })
-            .depth(2)
-            .mount(scene1);
+            .mount(uiScene);
     }
     /**
      * The method called when the graph items are to be removed from the
@@ -51,5 +53,6 @@ export class Level1Scene extends IgeSceneGraph {
         // 'scene1' entity, destroying it will remove everything we
         // added to it.
         ige.$("scene1").destroy();
+        ige.$("uiScene").destroy();
     }
 }

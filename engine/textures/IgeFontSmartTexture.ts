@@ -1,12 +1,14 @@
 import { IgeSmartTexture } from "../../types/IgeSmartTexture";
-import IgeEntity from "../core/IgeEntity";
+import type IgeFontEntity from "../core/IgeFontEntity";
+import { IgeFontAlignY } from "../../enums/IgeFontAlign";
 
 /**
  * Provides native canvas font rendering supporting multi-line
  * text and alignment options.
  */
 const IgeFontSmartTexture: IgeSmartTexture = {
-	render: (ctx, entity) => {
+	// @ts-ignore
+	render: (ctx, entity: IgeFontEntity) => {
 		if (!entity._nativeFont || !entity._renderText) {
 			return;
 		}
@@ -15,9 +17,9 @@ const IgeFontSmartTexture: IgeSmartTexture = {
 
 		let lineArr;
 		let textSize;
-		let renderStartY;
+		let renderStartY = 0;
 		let renderY;
-		let lineHeight;
+		let lineHeight = 0;
 
 		ctx.font = entity._nativeFont;
 
@@ -57,22 +59,22 @@ const IgeFontSmartTexture: IgeSmartTexture = {
 			lineArr = [text];
 		}
 
-		if (entity._textAlignY === 0) {
+		if (entity._textAlignY === IgeFontAlignY.top) {
 			ctx.textBaseline = "top";
 			renderStartY = -(entity._bounds2d.y / 2);
 		}
 
-		if (entity._textAlignY === 1) {
+		if (entity._textAlignY === IgeFontAlignY.middle) {
 			ctx.textBaseline = "middle";
 			renderStartY = -(entity._textLineSpacing / 2) * (lineArr.length - 1);
 		}
 
-		if (entity._textAlignY === 2) {
+		if (entity._textAlignY === IgeFontAlignY.bottom) {
 			ctx.textBaseline = "bottom";
 			renderStartY = entity._bounds2d.y / 2 - entity._textLineSpacing * (lineArr.length - 1);
 		}
 
-		if (entity._textAlignY === 3) {
+		if (entity._textAlignY === IgeFontAlignY.multiLineMiddle) {
 			ctx.textBaseline = "middle";
 			lineHeight = Math.floor(entity._bounds2d.y / lineArr.length);
 			renderStartY = -((lineHeight + entity._textLineSpacing) / 2) * (lineArr.length - 1);
@@ -100,7 +102,7 @@ const IgeFontSmartTexture: IgeSmartTexture = {
 		}
 	},
 	meta: {
-		measureTextWidth: (text: string, entity: IgeEntity) => {
+		measureTextWidth: (text: string, entity: IgeFontEntity) => {
 			if (!entity._nativeFont) {
 				return -1;
 			}
@@ -134,7 +136,7 @@ const IgeFontSmartTexture: IgeSmartTexture = {
 
 				if (entity._nativeStrokeColor) {
 					ctx.strokeStyle = entity._nativeStrokeColor;
-				} else {
+				} else if (entity._colorOverlay) {
 					ctx.strokeStyle = entity._colorOverlay;
 				}
 			}

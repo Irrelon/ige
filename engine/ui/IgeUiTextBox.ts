@@ -1,7 +1,9 @@
 import { ige } from "../instance";
 import IgeUiElement from "../core/IgeUiElement";
 import IgeFontEntity from "../core/IgeFontEntity";
+import type IgeFontSheet from "../core/IgeFontSheet";
 import type IgeInputComponent from "../components/IgeInputComponent";
+import type IgeTexture from "../core/IgeTexture";
 
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
@@ -12,12 +14,19 @@ import type IgeInputComponent from "../components/IgeInputComponent";
 export class IgeUiTextBox extends IgeUiElement {
 	classId = "IgeUiTextBox";
 
+	_caretStart: number | null = 0;
+	_caretEnd: number | null = 0;
+	_fontEntity: IgeFontEntity;
+	_fontSheet?: IgeFontSheet;
+	_domElement?: HTMLInputElement;
+	_placeHolder: string = "";
+	_placeHolderColor: string = "";
+	_mask: string = "";
+
 	constructor () {
 		super()
 
 		this._value = "";
-		this._caretStart = 0;
-		this._caretEnd = 0;
 
 		this._fontEntity = new IgeFontEntity()
 			.left(5)
@@ -28,20 +37,19 @@ export class IgeUiTextBox extends IgeUiElement {
 
 		const blurFunc = () => {
 			if (this._domElement) {
-				this._domElement.parentNode.removeChild(this._domElement);
+				this._domElement.parentNode?.removeChild(this._domElement);
 				delete this._domElement;
 			}
 		};
 
 		const focusFunc = () => {
 			(ige.engine.components.input as IgeInputComponent).stopPropagation();
+
 			blurFunc();
 
-			let input,
-				body,
-				entScreenPos = this.screenPosition();
+			const entScreenPos = this.screenPosition();
 
-			input = document.createElement("input");
+			const input = document.createElement("input");
 			input.setAttribute("type", "text");
 
 			// Position the infobox and set content
@@ -49,10 +57,10 @@ export class IgeUiTextBox extends IgeUiElement {
 			input.style.top = (entScreenPos.y - this._bounds2d.y2) + "px";
 			input.style.left = (entScreenPos.x - this._bounds2d.x2) + "px";
 			input.style.width = this._bounds2d.x + "px";
-			input.style.zIndex = -1;
+			input.style.zIndex = "-1";
 			input.style.opacity = "0";
 
-			body = document.getElementsByTagName("body")[0];
+			const body = document.getElementsByTagName("body")[0];
 
 			body.appendChild(input);
 			input.focus();
@@ -69,21 +77,21 @@ export class IgeUiTextBox extends IgeUiElement {
 
 			// Listen for events from the temp input element
 			input.addEventListener("keyup", (event) => {
-				this.value(event.target.value);
+				this.value(input.value);
 
-				if (event.keyCode === 13) {
+				if (event.key === "Enter") {
 					// Enter pressed
 					this.emit("enter", this._value);
 				}
 			});
 
 			input.addEventListener("keydown", (event) => {
-				this.value(event.target.value);
+				this.value(input.value);
 			});
 
 			input.addEventListener("mouseup", (event) => {
-				this._caretStart = this.selectionStart;
-				this._caretEnd = this.selectionEnd;
+				this._caretStart = input.selectionStart;
+				this._caretEnd = input.selectionEnd;
 			});
 
 			input.addEventListener("blur", (event) => {
@@ -126,16 +134,20 @@ export class IgeUiTextBox extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	width (px, lockAspect, modifier, noUpdate) {
-		let val;
+	width (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	width (): number;
+	width (px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
+		if (px !== undefined) {
+			// Call the main super class method
+			const returnValue = super.width(px, lockAspect, modifier, noUpdate);
 
-		// Call the main super class method
-		val = super.width(px, lockAspect, modifier, noUpdate);
+			// Update the font entity width - 10px for margin
+			this._fontEntity.width(super.width() - 10, lockAspect, modifier, noUpdate);
 
-		// Update the font entity width - 10px for margin
-		this._fontEntity.width(px - 10, lockAspect, modifier, noUpdate);
+			return returnValue;
+		}
 
-		return val;
+		return this._fontEntity.width();
 	}
 
 	/**
@@ -147,16 +159,18 @@ export class IgeUiTextBox extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	height (px, lockAspect, modifier, noUpdate) {
-		let val;
+	height (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	height (): number;
+	height (px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false) {
+		if (px !== undefined) {
+			// Call the main super class method
+			const returnValue = super.height(px, lockAspect, modifier, noUpdate);
+			this._fontEntity.height(super.height(), lockAspect, modifier, noUpdate);
 
-		// Call the main super class method
-		val = super.height(px, lockAspect, modifier, noUpdate);
+			return returnValue;
+		}
 
-		// Update the font entity height
-		this._fontEntity.height(px, lockAspect, modifier, noUpdate);
-
-		return val;
+		return this._fontEntity.height();
 	}
 
 	/**
@@ -164,7 +178,9 @@ export class IgeUiTextBox extends IgeUiElement {
 	 * @param {String=} val The text value.
 	 * @return {*}
 	 */
-	value (val) {
+	value (val: string): this;
+	value (): string;
+	value (val?: string) {
 		if (val === undefined) {
 			return this._value;
 		}
@@ -188,13 +204,16 @@ export class IgeUiTextBox extends IgeUiElement {
 				// Assign a mask value instead
 				this._fontEntity.text(new Array(this._value.length + 1).join(this._mask));
 			}
-			this._fontEntity.color(this._color);
+			this._fontEntity.color(this._color as string);
 		}
 
 		this.emit("change", this._value);
+		return this;
 	}
 
-	placeHolder (val) {
+	placeHolder (val: string): this;
+	placeHolder (): string;
+	placeHolder (val?: string) {
 		if (val !== undefined) {
 			this._placeHolder = val;
 			return this;
@@ -203,7 +222,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._placeHolder;
 	}
 
-	placeHolderColor (val) {
+	placeHolderColor (val?: string) {
 		if (val !== undefined) {
 			this._placeHolderColor = val;
 			return this;
@@ -212,7 +231,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._placeHolderColor;
 	}
 
-	mask (val) {
+	mask (val?: string) {
 		if (val !== undefined) {
 			this._mask = val;
 			return this;
@@ -227,19 +246,19 @@ export class IgeUiTextBox extends IgeUiElement {
 	 * @param fontSheet
 	 * @return {*}
 	 */
-	fontSheet (fontSheet) {
+	fontSheet (fontSheet?: IgeFontSheet) {
 		if (fontSheet !== undefined) {
 			this._fontSheet = fontSheet;
 
 			// Set the font sheet as the texture for our font entity
-			this._fontEntity.texture(this._fontSheet);
+			this._fontEntity.texture(fontSheet as unknown as IgeTexture);
 			return this;
 		}
 
 		return this._fontSheet;
 	}
 
-	font (val) {
+	font (val?: string | IgeFontSheet) {
 		if (val !== undefined) {
 			if (typeof (val) === "string") {
 				// Native font name
@@ -259,7 +278,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		}
 	}
 
-	nativeFont (val) {
+	nativeFont (val?: string) {
 		if (val !== undefined) {
 			this._fontEntity.nativeFont(val);
 			return this;
@@ -268,7 +287,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._fontEntity.nativeFont();
 	}
 
-	nativeStroke (val) {
+	nativeStroke (val?: number) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStroke(val);
 			return this;
@@ -277,7 +296,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._fontEntity.nativeStroke();
 	}
 
-	nativeStrokeColor (val) {
+	nativeStrokeColor (val?: string) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStrokeColor(val);
 			return this;
@@ -286,14 +305,16 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._fontEntity.nativeStrokeColor();
 	}
 
-	color (val) {
-		if (val !== undefined) {
-			this._color = val;
+	color (color?: string | CanvasGradient | CanvasPattern): this;
+	color (): string | CanvasGradient | CanvasPattern;
+	color (color?: string | CanvasGradient | CanvasPattern) {
+		if (color !== undefined) {
+			this._color = color;
 
 			if (!this._value && this._placeHolder && this._placeHolderColor) {
 				this._fontEntity.color(this._placeHolderColor);
 			} else {
-				this._fontEntity.color(val);
+				this._fontEntity.color(color as string);
 			}
 			return this;
 		}

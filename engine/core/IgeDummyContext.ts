@@ -46,6 +46,7 @@ class IgeDummyContext {
 	createPattern = nullMethod;
 	getImageData = undefinedMethod;
 	putImageData = undefinedMethod;
+	strokeText = undefinedMethod;
 	measureText = () => ({width: 0, height: 0});
 }
 

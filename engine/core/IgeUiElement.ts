@@ -73,6 +73,8 @@ class IgeUiElement extends IgeUiEntity {
 		this.mouseEventsActive(true);
 	}
 
+	allowHover (val: boolean): this;
+	allowHover (): boolean;
 	allowHover (val?: boolean) {
 		if (val !== undefined) {
 			this._allowHover = val;
@@ -82,6 +84,8 @@ class IgeUiElement extends IgeUiEntity {
 		return this._allowHover;
 	}
 
+	allowFocus (val: boolean): this;
+	allowFocus (): boolean;
 	allowFocus (val?: boolean) {
 		if (val !== undefined) {
 			this._allowFocus = val;
@@ -91,6 +95,8 @@ class IgeUiElement extends IgeUiEntity {
 		return this._allowFocus;
 	}
 
+	allowActive (val: boolean): this;
+	allowActive (): boolean;
 	allowActive (val?: boolean) {
 		if (val !== undefined) {
 			this._allowActive = val;
@@ -105,6 +111,8 @@ class IgeUiElement extends IgeUiEntity {
 	 * @param {String=} name The style name to apply.
 	 * @returns {*}
 	 */
+	styleClass (name?: string): this;
+	styleClass (): string;
 	styleClass (name?: string) {
 		if (name === undefined) {
 			return this._styleClass;
@@ -258,6 +266,9 @@ class IgeUiElement extends IgeUiEntity {
 		return false;
 	}
 
+	/**
+	 * The blur method removes global UI focus from this UI element.
+	 */
 	blur () {
 		if ((ige.engine.components.ui as IgeUiManagerComponent).blur(this)) {
 			// Re-apply styles since the change

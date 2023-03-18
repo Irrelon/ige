@@ -1,8 +1,8 @@
 import { ige } from "../../../engine/instance";
-import IgeBaseScene from "../../../engine/core/IgeBaseScene";
+import IgeUiManagerComponent from "../../../engine/components/IgeUiManagerComponent";
+import { AppScene } from "./AppScene";
 import "./splash/_route";
 import "./level1/_route";
-import IgeUiManagerComponent from "../../../engine/components/IgeUiManagerComponent";
 
 ige.router.route("app", {
 	client: async () => {
@@ -17,12 +17,11 @@ ige.router.route("app", {
 		// Start the engine
 		await ige.engine.start();
 
-		// Creates "baseScene" and adds a viewport
-		ige.engine.addGraph(IgeBaseScene);
+		// Load our level onto the scenegraph
+		ige.engine.addGraph(AppScene);
 
 		return async () => {
-			// Removes the IgeBaseScene from the scenegraph
-			ige.engine.removeGraph(IgeBaseScene);
+			ige.engine.removeGraph(AppScene);
 
 			await ige.engine.stop();
 		}

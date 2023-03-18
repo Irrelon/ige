@@ -7,6 +7,9 @@ export class IgeUiLabel extends IgeUiElement {
     constructor() {
         super();
         this.classId = "IgeUiLabel";
+        this._placeHolder = "";
+        this._placeHolderColor = "";
+        this._mask = "";
         this._value = "";
         this._fontEntity = new IgeFontEntity()
             .left(0)
@@ -83,37 +86,33 @@ export class IgeUiLabel extends IgeUiElement {
         }
         return this._fontEntity.height();
     }
-    /**
-     * Gets / sets the text value of the input box.
-     * @param {String=} val The text value.
-     * @return {*}
-     */
     value(val) {
-        if (val !== undefined) {
-            if (this._value !== val) {
-                this._value = val;
-                if (!val && this._placeHolder) {
-                    // Assign placeholder text and color
-                    this._fontEntity.text(this._placeHolder);
-                    this._fontEntity.color(this._placeHolderColor);
-                }
-                else {
-                    // Set the text of the font entity to the value
-                    if (!this._mask) {
-                        // Assign text directly
-                        this._fontEntity.text(this._value);
-                    }
-                    else {
-                        // Assign a mask value instead
-                        this._fontEntity.text(new Array(this._value.length + 1).join(this._mask));
-                    }
-                    this._fontEntity.color(this._color);
-                }
-                this.emit("change", this._value);
-            }
+        if (val === undefined) {
+            return this._value;
+        }
+        if (this._value === val) {
             return this;
         }
-        return this._value;
+        this._value = val;
+        if (!val && this._placeHolder) {
+            // Assign placeholder text and color
+            this._fontEntity.text(this._placeHolder);
+            this._fontEntity.color(this._placeHolderColor);
+        }
+        else {
+            // Set the text of the font entity to the value
+            if (!this._mask) {
+                // Assign text directly
+                this._fontEntity.text(this._value);
+            }
+            else {
+                // Assign a mask value instead
+                this._fontEntity.text(new Array(this._value.length + 1).join(this._mask));
+            }
+            this._fontEntity.color(this._color);
+        }
+        this.emit("change", this._value);
+        return this;
     }
     /**
      * Gets / sets the font sheet (texture) that the text box will
@@ -125,7 +124,7 @@ export class IgeUiLabel extends IgeUiElement {
         if (fontSheet !== undefined) {
             this._fontSheet = fontSheet;
             // Set the font sheet as the texture for our font entity
-            this._fontEntity.texture(this._fontSheet);
+            this._fontEntity.texture(fontSheet);
             return this;
         }
         return this._fontSheet;

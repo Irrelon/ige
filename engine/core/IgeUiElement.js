@@ -82,11 +82,6 @@ class IgeUiElement extends IgeUiEntity {
         }
         return this._allowActive;
     }
-    /**
-     * Gets / sets the applied style by name.
-     * @param {String=} name The style name to apply.
-     * @returns {*}
-     */
     styleClass(name) {
         if (name === undefined) {
             return this._styleClass;
@@ -216,6 +211,9 @@ class IgeUiElement extends IgeUiEntity {
         }
         return false;
     }
+    /**
+     * The blur method removes global UI focus from this UI element.
+     */
     blur() {
         if (ige.engine.components.ui.blur(this)) {
             // Re-apply styles since the change

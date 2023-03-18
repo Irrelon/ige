@@ -11,9 +11,12 @@ export class IgeUiTextBox extends IgeUiElement {
     constructor() {
         super();
         this.classId = "IgeUiTextBox";
-        this._value = "";
         this._caretStart = 0;
         this._caretEnd = 0;
+        this._placeHolder = "";
+        this._placeHolderColor = "";
+        this._mask = "";
+        this._value = "";
         this._fontEntity = new IgeFontEntity()
             .left(5)
             .middle(0)
@@ -21,25 +24,26 @@ export class IgeUiTextBox extends IgeUiElement {
             .textAlignY(0)
             .mount(this);
         const blurFunc = () => {
+            var _a;
             if (this._domElement) {
-                this._domElement.parentNode.removeChild(this._domElement);
+                (_a = this._domElement.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(this._domElement);
                 delete this._domElement;
             }
         };
         const focusFunc = () => {
             ige.engine.components.input.stopPropagation();
             blurFunc();
-            let input, body, entScreenPos = this.screenPosition();
-            input = document.createElement("input");
+            const entScreenPos = this.screenPosition();
+            const input = document.createElement("input");
             input.setAttribute("type", "text");
             // Position the infobox and set content
             input.style.position = "absolute";
             input.style.top = (entScreenPos.y - this._bounds2d.y2) + "px";
             input.style.left = (entScreenPos.x - this._bounds2d.x2) + "px";
             input.style.width = this._bounds2d.x + "px";
-            input.style.zIndex = -1;
+            input.style.zIndex = "-1";
             input.style.opacity = "0";
-            body = document.getElementsByTagName("body")[0];
+            const body = document.getElementsByTagName("body")[0];
             body.appendChild(input);
             input.focus();
             // Now add the existing text to the box
@@ -51,18 +55,18 @@ export class IgeUiTextBox extends IgeUiElement {
             this._caretEnd = this._value.length;
             // Listen for events from the temp input element
             input.addEventListener("keyup", (event) => {
-                this.value(event.target.value);
-                if (event.keyCode === 13) {
+                this.value(input.value);
+                if (event.key === "Enter") {
                     // Enter pressed
                     this.emit("enter", this._value);
                 }
             });
             input.addEventListener("keydown", (event) => {
-                this.value(event.target.value);
+                this.value(input.value);
             });
             input.addEventListener("mouseup", (event) => {
-                this._caretStart = this.selectionStart;
-                this._caretEnd = this.selectionEnd;
+                this._caretStart = input.selectionStart;
+                this._caretEnd = input.selectionEnd;
             });
             input.addEventListener("blur", (event) => {
                 this.focus();
@@ -87,45 +91,25 @@ export class IgeUiTextBox extends IgeUiElement {
         });
         this.on("blur", blurFunc);
     }
-    /**
-     * Extended method to auto-update the width of the child
-     * font entity automatically to fill the text box.
-     * @param px
-     * @param lockAspect
-     * @param modifier
-     * @param noUpdate
-     * @return {*}
-     */
-    width(px, lockAspect, modifier, noUpdate) {
-        let val;
-        // Call the main super class method
-        val = super.width(px, lockAspect, modifier, noUpdate);
-        // Update the font entity width - 10px for margin
-        this._fontEntity.width(px - 10, lockAspect, modifier, noUpdate);
-        return val;
+    width(px, lockAspect = false, modifier, noUpdate = false) {
+        if (px !== undefined) {
+            // Call the main super class method
+            const returnValue = super.width(px, lockAspect, modifier, noUpdate);
+            // Update the font entity width - 10px for margin
+            this._fontEntity.width(super.width() - 10, lockAspect, modifier, noUpdate);
+            return returnValue;
+        }
+        return this._fontEntity.width();
     }
-    /**
-     * Extended method to auto-update the height of the child
-     * font entity automatically to fill the text box.
-     * @param px
-     * @param lockAspect
-     * @param modifier
-     * @param noUpdate
-     * @return {*}
-     */
-    height(px, lockAspect, modifier, noUpdate) {
-        let val;
-        // Call the main super class method
-        val = super.height(px, lockAspect, modifier, noUpdate);
-        // Update the font entity height
-        this._fontEntity.height(px, lockAspect, modifier, noUpdate);
-        return val;
+    height(px, lockAspect = false, modifier, noUpdate = false) {
+        if (px !== undefined) {
+            // Call the main super class method
+            const returnValue = super.height(px, lockAspect, modifier, noUpdate);
+            this._fontEntity.height(super.height(), lockAspect, modifier, noUpdate);
+            return returnValue;
+        }
+        return this._fontEntity.height();
     }
-    /**
-     * Gets / sets the text value of the input box.
-     * @param {String=} val The text value.
-     * @return {*}
-     */
     value(val) {
         if (val === undefined) {
             return this._value;
@@ -152,6 +136,7 @@ export class IgeUiTextBox extends IgeUiElement {
             this._fontEntity.color(this._color);
         }
         this.emit("change", this._value);
+        return this;
     }
     placeHolder(val) {
         if (val !== undefined) {
@@ -184,7 +169,7 @@ export class IgeUiTextBox extends IgeUiElement {
         if (fontSheet !== undefined) {
             this._fontSheet = fontSheet;
             // Set the font sheet as the texture for our font entity
-            this._fontEntity.texture(this._fontSheet);
+            this._fontEntity.texture(fontSheet);
             return this;
         }
         return this._fontSheet;
@@ -230,14 +215,14 @@ export class IgeUiTextBox extends IgeUiElement {
         }
         return this._fontEntity.nativeStrokeColor();
     }
-    color(val) {
-        if (val !== undefined) {
-            this._color = val;
+    color(color) {
+        if (color !== undefined) {
+            this._color = color;
             if (!this._value && this._placeHolder && this._placeHolderColor) {
                 this._fontEntity.color(this._placeHolderColor);
             }
             else {
-                this._fontEntity.color(val);
+                this._fontEntity.color(color);
             }
             return this;
         }

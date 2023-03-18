@@ -43,6 +43,7 @@ class IgeDummyContext {
         this.createPattern = nullMethod;
         this.getImageData = undefinedMethod;
         this.putImageData = undefinedMethod;
+        this.strokeText = undefinedMethod;
         this.measureText = () => ({ width: 0, height: 0 });
     }
 }

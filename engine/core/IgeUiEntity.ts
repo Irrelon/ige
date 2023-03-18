@@ -953,128 +953,131 @@ class IgeUiEntity extends IgeEntity {
 	 * @private
 	 */
 	_updateUiPosition () {
-		if (this._parent) {
-			const parentGeom = this._parent._bounds2d;
-			const geomScaled = this._bounds2d.multiplyPoint(this._scale);
-
-			/*if (this._ignoreCamera && ige._currentCamera) {
-				// Handle cam ignore when calculating
-				parentGeom = parentGeom.dividePoint(ige._currentCamera._scale);
-			}*/
-
-			if (this._autoScaleX) {
-				// Get the percentage as an integer
-				const percent = parseInt(this._autoScaleX, 10);
-
-				// Calculate new width from percentage
-				const newVal = (parentGeom.x / 100 * percent);
-
-				// Calculate scale ratio
-				const ratio = newVal / this._bounds2d.x;
-
-				// Set the new scale
-				this._scale.x = ratio;
-
-				if (this._autoScaleLockAspect) {
-					this._scale.y = ratio;
-				}
-			}
-
-			if (this._autoScaleY) {
-				// Get the percentage as an integer
-				const percent = parseInt(this._autoScaleY, 10);
-
-				// Calculate new height from percentage
-				const newVal = (parentGeom.y / 100 * percent);
-
-				// Calculate scale ratio
-				const ratio = newVal / this._bounds2d.y;
-
-				// Set the new scale
-				this._scale.y = ratio;
-
-				if (this._autoScaleLockAspect) {
-					this._scale.x = ratio;
-				}
-			}
-
-			if (this._uiWidth) {
-				this.width(this._uiWidth, false, this._widthModifier, true);
-			}
-			if (this._uiHeight) {
-				this.height(this._uiHeight, false, this._heightModifier, true);
-			}
-
-			if (this._uiCenterPercent) {
-				this.center(this._uiCenterPercent, true);
-			}
-			if (this._uiMiddlePercent) {
-				this.middle(this._uiMiddlePercent, true);
-			}
-			if (this._uiLeftPercent) {
-				this.left(this._uiLeftPercent, true);
-			}
-			if (this._uiRightPercent) {
-				this.right(this._uiRightPercent, true);
-			}
-			if (this._uiTopPercent) {
-				this.top(this._uiTopPercent, true);
-			}
-			if (this._uiBottomPercent) {
-				this.bottom(this._uiBottomPercent, true);
-			}
-
-			if (this._uiCenter !== undefined) {
-				// The element is center-aligned
-				this._translate.x = Math.floor(this._uiCenter);
-			} else {
-				// The element is not center-aligned, process left and right
-				if (this._uiLeft !== undefined && this._uiRight !== undefined) {
-					// Both left and right values are set, position left and assign width to reach right
-					this.width((parentGeom.x) - this._uiLeft - this._uiRight, false, 0, true);
-
-					// Update translation
-					this._translate.x = Math.floor(this._uiLeft + geomScaled.x2 - (parentGeom.x2));
-				} else {
-					if (this._uiLeft !== undefined) {
-						// Position left aligned
-						this._translate.x = Math.floor(this._uiLeft + geomScaled.x2 - (parentGeom.x2));
-					}
-
-					if (this._uiRight !== undefined) {
-						// Position right aligned
-						this._translate.x = Math.floor(parentGeom.x2 - geomScaled.x2 - this._uiRight);
-					}
-				}
-			}
-
-			if (this._uiMiddle !== undefined) {
-				// The element is middle-aligned
-				this._translate.y = Math.floor(this._uiMiddle);
-			} else {
-				// The element is not middle-aligned, process top and bottom
-				if (this._uiTop !== undefined && this._uiBottom !== undefined) {
-					// Both top and bottom values are set, position top and assign height to reach bottom
-					this.height((parentGeom.y) - this._uiTop - this._uiBottom, false, 0, true);
-
-					// Update translation
-					this._translate.y = Math.floor(this._uiTop + geomScaled.y2 - (parentGeom.y2));
-				} else {
-					if (this._uiTop !== undefined) {
-						// Position top aligned
-						this._translate.y = Math.floor(this._uiTop + geomScaled.y2 - (parentGeom.y2));
-					}
-
-					if (this._uiBottom !== undefined) {
-						// Position bottom aligned
-						this._translate.y = Math.floor(parentGeom.y2 - geomScaled.y2 - this._uiBottom);
-					}
-				}
-			}
-
-			this.emit("uiUpdate");
-			this.cacheDirty(true);
+		if (!this._parent) {
+			return;
 		}
+
+		const parentGeom = this._parent._bounds2d;
+		const geomScaled = this._bounds2d.multiplyPoint(this._scale);
+
+		if (this._autoScaleX) {
+			// Get the percentage as an integer
+			const percent = parseInt(this._autoScaleX, 10);
+
+			// Calculate new width from percentage
+			const newVal = (parentGeom.x / 100 * percent);
+
+			// Calculate scale ratio
+			const ratio = newVal / this._bounds2d.x;
+
+			// Set the new scale
+			this._scale.x = ratio;
+
+			if (this._autoScaleLockAspect) {
+				this._scale.y = ratio;
+			}
+		}
+
+		if (this._autoScaleY) {
+			// Get the percentage as an integer
+			const percent = parseInt(this._autoScaleY, 10);
+
+			// Calculate new height from percentage
+			const newVal = (parentGeom.y / 100 * percent);
+
+			// Calculate scale ratio
+			const ratio = newVal / this._bounds2d.y;
+
+			// Set the new scale
+			this._scale.y = ratio;
+
+			if (this._autoScaleLockAspect) {
+				this._scale.x = ratio;
+			}
+		}
+
+		if (this._uiWidth) {
+			this.width(this._uiWidth, false, this._widthModifier, true);
+		}
+
+		if (this._uiHeight) {
+			this.height(this._uiHeight, false, this._heightModifier, true);
+		}
+
+		if (this._uiCenterPercent) {
+			this.center(this._uiCenterPercent, true);
+		}
+
+		if (this._uiMiddlePercent) {
+			this.middle(this._uiMiddlePercent, true);
+		}
+
+		if (this._uiLeftPercent) {
+			this.left(this._uiLeftPercent, true);
+		}
+
+		if (this._uiRightPercent) {
+			this.right(this._uiRightPercent, true);
+		}
+
+		if (this._uiTopPercent) {
+			this.top(this._uiTopPercent, true);
+		}
+
+		if (this._uiBottomPercent) {
+			this.bottom(this._uiBottomPercent, true);
+		}
+
+		if (this._uiCenter !== undefined) {
+			// The element is center-aligned
+			this._translate.x = Math.floor(this._uiCenter);
+		} else {
+			// The element is not center-aligned, process left and right
+			if (this._uiLeft !== undefined && this._uiRight !== undefined) {
+				// Both left and right values are set, position left and assign width to reach right
+				this.width((parentGeom.x) - this._uiLeft - this._uiRight, false, 0, true);
+
+				// Update translation
+				this._translate.x = Math.floor(this._uiLeft + geomScaled.x2 - (parentGeom.x2));
+			} else {
+				if (this._uiLeft !== undefined) {
+					// Position left aligned
+					this._translate.x = Math.floor(this._uiLeft + geomScaled.x2 - (parentGeom.x2));
+				}
+
+				if (this._uiRight !== undefined) {
+					// Position right aligned
+					this._translate.x = Math.floor(parentGeom.x2 - geomScaled.x2 - this._uiRight);
+				}
+			}
+		}
+
+		if (this._uiMiddle !== undefined) {
+			// The element is middle-aligned
+			this._translate.y = Math.floor(this._uiMiddle);
+		} else {
+			// The element is not middle-aligned, process top and bottom
+			if (this._uiTop !== undefined && this._uiBottom !== undefined) {
+				// Both top and bottom values are set, position top and assign height to reach bottom
+				this.height((parentGeom.y) - this._uiTop - this._uiBottom, false, 0, true);
+
+				// Update translation
+				this._translate.y = Math.floor(this._uiTop + geomScaled.y2 - (parentGeom.y2));
+			} else {
+				if (this._uiTop !== undefined) {
+					// Position top aligned
+					this._translate.y = Math.floor(this._uiTop + geomScaled.y2 - (parentGeom.y2));
+				}
+
+				if (this._uiBottom !== undefined) {
+					// Position bottom aligned
+					this._translate.y = Math.floor(parentGeom.y2 - geomScaled.y2 - this._uiBottom);
+				}
+			}
+		}
+
+		this.emit("uiUpdate");
+		this.cacheDirty(true);
 	}
 
 	/**
