@@ -15,8 +15,8 @@ const { minimatch } = require("minimatch");
 const matchPattern = ["**/*.js", "**/*.jsx"];
 const excludePattern = ["node_modules", "react", ".git"];
 
-const basicImportExp = /import\s(.*)?\sfrom\s["'][.]+(((?!\.js).)*?)["'];/g;
-const basicExportExp = /export\s(.*)?\sfrom\s["'][.]+(((?!\.js).)*?)["'];/g;
+const basicImportExp = /import\s(.*)?\sfrom\s["']([.]+)(((?!\.js).)*?)["'];/g;
+const basicExportExp = /export\s(.*)?\sfrom\s["']([.]+)(((?!\.js).)*?)["'];/g;
 
 async function getFiles (dir, gitIgnoreArr) {
 	const dirArr = await readdir(dir, { withFileTypes: true });
@@ -50,8 +50,8 @@ const processFile = (file) => {
 
 	readFile(file).then((fileContentsBuffer) => {
 		const fileContent = fileContentsBuffer.toString();
-		let updatedContent = fileContent.replaceAll(basicImportExp, `import $1 from "$2.js";`);
-		updatedContent = updatedContent.replaceAll(basicExportExp, `export $1 from "$2.js";`);
+		let updatedContent = fileContent.replaceAll(basicImportExp, `import $1 from "$2$3.js";`);
+		updatedContent = updatedContent.replaceAll(basicExportExp, `export $1 from "$2$3.js";`);
 
 		if (fileContent === updatedContent) {
 			//console.log(`No change ${file}`);
