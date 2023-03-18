@@ -1,3 +1,12 @@
+/**
+ * A very basic search and replace function to find import and export statements
+ * in .js files where the path of the file being specified does not have a .js
+ * extension and replace those paths with one that has a .js extension.
+ *
+ * This would be much better written using abstract source trees to do the
+ * re-writing which would be "safer", however this is a fully working function
+ * and doesn't seem to mess anything up at present.
+ */
 const { resolve } = require('path');
 const { readFile, writeFile, readdir } = require('fs').promises;
 const { minimatch } = require('minimatch');
@@ -60,5 +69,3 @@ readFile(resolve(__dirname, ".gitignore")).then((result) => {
 		});
 	});
 });
-
-
