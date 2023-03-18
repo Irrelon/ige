@@ -1,12 +1,12 @@
-import IgeBaseClass from "./IgeBaseClass";
+import { IgeBaseClass } from "./IgeBaseClass";
 /**
- * Creates a new map that has two dimensions (x and y) to it's data
+ * Creates a new map that has two dimensions (x and y) to its data
  * and allows multiple items to be stored or "stacked" on a single
  * x, y map position.
  */
-declare class IgeMapStack2d extends IgeBaseClass {
+export declare class IgeMapStack2d extends IgeBaseClass {
     classId: string;
-    constructor(ige: any, data: any);
+    constructor(data: any);
     /**
      * Gets / sets the data stored at the specified map tile co-ordinates. If data already
      * exists at the specified co-ordinates, it is replaced with the passed data.
@@ -63,4 +63,3 @@ declare class IgeMapStack2d extends IgeBaseClass {
      */
     mapData(val: any): any;
 }
-export default IgeMapStack2d;

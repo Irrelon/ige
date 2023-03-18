@@ -1,4 +1,4 @@
-import IgeUiElement from "../core/IgeUiElement";
+import { IgeUiElement } from "../core/IgeUiElement";
 export declare class IgeUiWindow extends IgeUiElement {
     classId: string;
     constructor();

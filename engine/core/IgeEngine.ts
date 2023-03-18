@@ -1,24 +1,24 @@
 import { ige } from "../instance";
 import { isClient, isServer } from "../services/clientServer";
-import IgePoint3d from "./IgePoint3d";
-import IgeDummyContext from "./IgeDummyContext";
-import IgeInputComponent from "../components/IgeInputComponent";
-import IgeEntity from "./IgeEntity";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgeDummyContext } from "./IgeDummyContext";
+import { IgeInputComponent } from "../components/IgeInputComponent";
+import { IgeEntity } from "./IgeEntity";
 import { IgeObject } from "./IgeObject";
-import IgeDummyCanvas from "./IgeDummyCanvas";
-import IgeViewport from "./IgeViewport";
+import { IgeDummyCanvas } from "./IgeDummyCanvas";
+import { IgeViewport } from "./IgeViewport";
 import type { SyncEntry, SyncMethod } from "../../types/SyncEntry";
-import type IgeBaseClass from "./IgeBaseClass";
-import type IgeCamera from "./IgeCamera";
-import type IgeSceneGraph from "./IgeSceneGraph";
+import type { IgeBaseClass } from "./IgeBaseClass";
+import type { IgeCamera } from "./IgeCamera";
+import type { IgeSceneGraph } from "./IgeSceneGraph";
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import type { GenericClass } from "../../types/GenericClass";
 import type { IgeSceneGraphDataEntry } from "../../types/IgeSceneGraphDataEntry";
 import { IgeEngineState } from "../../enums/IgeEngineState";
-import IgeTweenComponent from "../components/IgeTweenComponent";
-import IgePoint2d from "./IgePoint2d";
-import IgeTimeComponent from "../components/IgeTimeComponent";
-import IgeComponent from "./IgeComponent";
+import { IgeTweenComponent } from "../components/IgeTweenComponent";
+import { IgePoint2d } from "./IgePoint2d";
+import { IgeTimeComponent } from "../components/IgeTimeComponent";
+import { IgeComponent } from "./IgeComponent";
 
 export class IgeEngine extends IgeEntity {
 	client?: IgeBaseClass;

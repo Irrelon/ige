@@ -1,4 +1,4 @@
-import IgeTexture from "./IgeTexture";
+import { IgeTexture } from "./IgeTexture";
 import { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import { IgeImage } from "./IgeImage";
 import { IgeCanvas } from "./IgeCanvas";
@@ -10,7 +10,7 @@ type IgeTextureCellArray = IgeTextureCell[];
  * Creates a new sprite sheet that cuts an image up into
  * arbitrary sections.
  */
-class IgeSpriteSheet extends IgeTexture {
+export class IgeSpriteSheet extends IgeTexture {
 	classId = "IgeSpriteSheet";
 	IgeSpriteSheet = true;
 	_cells: IgeTextureCellArray = [];
@@ -298,5 +298,3 @@ class IgeSpriteSheet extends IgeTexture {
 		return str;
 	}
 }
-
-export default IgeSpriteSheet;

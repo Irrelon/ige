@@ -1,6 +1,6 @@
 import { ige } from "../instance";
-import IgeEventingClass from "./IgeEventingClass";
-import IgeTimeComponent from "../components/IgeTimeComponent";
+import { IgeEventingClass } from "./IgeEventingClass";
+import { IgeTimeComponent } from "../components/IgeTimeComponent";
 
 export type IgeIntervalCallback = (...args: any[]) => void;
 
@@ -9,7 +9,7 @@ export type IgeIntervalCallback = (...args: any[]) => void;
  * time system allowing intervals to fire correctly, taking into account pausing
  * the game and differences in rendering speed etc.
  */
-class IgeInterval extends IgeEventingClass {
+export class IgeInterval extends IgeEventingClass {
 	classId = "IgeInterval";
 
 	_method: IgeIntervalCallback;
@@ -85,5 +85,3 @@ class IgeInterval extends IgeEventingClass {
 		return this;
 	}
 }
-
-export default IgeInterval;

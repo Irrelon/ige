@@ -1,4 +1,4 @@
-import IgeUiEntity from "./IgeUiEntity";
+import { IgeUiEntity } from "./IgeUiEntity";
 export type IgeUiStyleObject = Record<string, any>;
 export type IgeUiStyleState = "focus" | "hover" | "active";
 /**
@@ -7,7 +7,7 @@ export type IgeUiStyleState = "focus" | "hover" | "active";
  * positioning and styling methods as well as reacting to styles
  * defined using the IgeUiManagerComponent.
  */
-declare class IgeUiElement extends IgeUiEntity {
+export declare class IgeUiElement extends IgeUiEntity {
     classId: string;
     _focused: boolean;
     _allowHover: boolean;
@@ -81,4 +81,3 @@ declare class IgeUiElement extends IgeUiEntity {
      */
     destroy(): this;
 }
-export default IgeUiElement;

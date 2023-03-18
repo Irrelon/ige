@@ -1,7 +1,7 @@
-import IgeComponent from "../core/IgeComponent.js";
-import { arrPull } from "../services/utils.js";
-import { ige } from "../instance.js";
-class IgeTimeComponent extends IgeComponent {
+import { ige } from "../instance";
+import { IgeComponent } from "../core/IgeComponent";
+import { arrPull } from "../services/utils";
+export class IgeTimeComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgeTimeComponent";
@@ -74,4 +74,3 @@ class IgeTimeComponent extends IgeComponent {
         entity.addBehaviour("time", this._update);
     }
 }
-export default IgeTimeComponent;

@@ -1,6 +1,6 @@
-import IgeSceneGraph from "../../../engine/core/IgeSceneGraph.js";
-import { ige } from "../../../engine/instance.js";
-import IgeBaseScene from "../../../engine/core/IgeBaseScene.js";
+import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph";
+import { ige } from "../../../engine/instance";
+import { IgeBaseScene } from "../../../engine/core/IgeBaseScene";
 export class AppScene extends IgeSceneGraph {
     constructor() {
         super(...arguments);
@@ -18,7 +18,7 @@ export class AppScene extends IgeSceneGraph {
      * active graph.
      */
     removeGraph() {
-        // Removes the IgeBaseScene from the scenegraph
+        // Removes the { IgeBaseScene } from the scenegraph
         ige.engine.removeGraph(IgeBaseScene);
     }
 }

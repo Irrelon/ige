@@ -1,4 +1,4 @@
-import IgeUiElement from "../core/IgeUiElement";
+import { IgeUiElement } from "../core/IgeUiElement";
 /**
  * Provides a UI tooltip. Change properties (textBox, fonts, backgroundcolor)
  * at free will.

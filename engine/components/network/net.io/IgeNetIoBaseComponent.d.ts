@@ -1,6 +1,6 @@
-import IgeEventingClass from "../../../core/IgeEventingClass";
+import { IgeEventingClass } from "../../../core/IgeEventingClass";
 import { IgeNetworkMessageData } from "../../../../types/IgeNetworkMessage";
-import { NetIoSocket } from "./server/socketServer";
+import { IgeNetIoSocket } from "./server/IgeNetIoSocket";
 export declare class IgeNetIoBaseComponent extends IgeEventingClass {
     classId: string;
     _networkCommandsIndex: string[];
@@ -9,7 +9,7 @@ export declare class IgeNetIoBaseComponent extends IgeEventingClass {
     _debugCounter: number;
     _debugMax: number;
     _clientRooms: Record<string, string[]>;
-    _socketsByRoomId: Record<string, Record<string, NetIoSocket>>;
+    _socketsByRoomId: Record<string, Record<string, IgeNetIoSocket>>;
     _timeSyncInterval: number;
     _timeSyncLog: Record<string, number>;
     _latency: number;

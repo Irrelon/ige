@@ -1,14 +1,14 @@
-import IgeEntity from "./IgeEntity";
-import IgeViewport from "./IgeViewport";
-import IgeRect from "./IgeRect";
-import IgePoint3d from "./IgePoint3d";
+import { IgeEntity } from "./IgeEntity";
+import { IgeViewport } from "./IgeViewport";
+import { IgeRect } from "./IgeRect";
+import { IgePoint3d } from "./IgePoint3d";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import IgeTween from "./IgeTween";
+import { IgeTween } from "./IgeTween";
 
 /**
  * Creates a new camera that will be attached to a viewport.
  */
-class IgeCamera extends IgeEntity {
+export class IgeCamera extends IgeEntity {
 	classId = "IgeCamera";
 	_entity: IgeViewport;
 	_trackRotateTarget?: IgeEntity;
@@ -392,5 +392,3 @@ class IgeCamera extends IgeEntity {
 		return str;
 	}
 }
-
-export default IgeCamera;

@@ -1,6 +1,6 @@
 import { ige } from "../instance";
-import IgeUiElement from "../core/IgeUiElement";
-import type IgeUiManagerComponent from "../components/IgeUiManagerComponent";
+import { IgeUiElement } from "../core/IgeUiElement";
+import type { IgeUiManagerComponent } from "../components/IgeUiManagerComponent";
 
 export class IgeUiWindow extends IgeUiElement {
 	classId = "IgeUiWindow";

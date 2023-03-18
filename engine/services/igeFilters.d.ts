@@ -1,7 +1,7 @@
 import { IgeSmartFilter } from "../../types/IgeSmartFilter";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 export type IgeFilterHelperFunction = (...args: any[]) => any;
-declare class IgeFilters {
+export declare class IgeFilters {
     filter: Record<string, IgeSmartFilter>;
     helper: Record<string, IgeFilterHelperFunction>;
     tmpCanvas?: HTMLCanvasElement;
@@ -12,5 +12,3 @@ declare class IgeFilters {
     getHelper(name: string): IgeFilterHelperFunction | undefined;
     registerHelper(name: string, filter: IgeFilterHelperFunction): void;
 }
-declare const _default: IgeFilters;
-export default _default;

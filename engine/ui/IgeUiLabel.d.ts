@@ -1,10 +1,10 @@
+import { IgeUiElement } from "../core/IgeUiElement";
+import { IgeFontEntity } from "../core/IgeFontEntity";
+import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign";
+import type { IgeFontSheet } from "../core/IgeFontSheet";
 /**
  * Provides a UI label entity. Basic on-screen text label.
  */
-import IgeUiElement from "../core/IgeUiElement";
-import IgeFontEntity from "../core/IgeFontEntity";
-import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign";
-import type IgeFontSheet from "../core/IgeFontSheet";
 export declare class IgeUiLabel extends IgeUiElement {
     classId: string;
     _fontEntity: IgeFontEntity;

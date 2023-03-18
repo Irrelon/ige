@@ -3,7 +3,7 @@ export const undefinedMethod = () => {
 export const nullMethod = () => {
     return null;
 };
-class IgeDummyContext {
+export class IgeDummyContext {
     constructor() {
         this.dummy = true;
         this.imageSmoothingEnabled = false;
@@ -47,4 +47,3 @@ class IgeDummyContext {
         this.measureText = () => ({ width: 0, height: 0 });
     }
 }
-export default IgeDummyContext;

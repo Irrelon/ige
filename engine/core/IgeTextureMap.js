@@ -1,12 +1,12 @@
 // TODO: Implement the _stringify() method for this class
-import IgeTileMap2d from "./IgeTileMap2d.js";
-import IgeMap2d from "./IgeMap2d.js";
-import IgePoint3d from "./IgePoint3d.js";
-import { IgeMountMode } from "../../enums/IgeMountMode.js";
+import { IgeTileMap2d } from "./IgeTileMap2d";
+import { IgeMap2d } from "./IgeMap2d";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgeMountMode } from "../../enums/IgeMountMode";
 /**
  * Texture maps provide a way to display textures / cells across a tile map.
  */
-class IgeTextureMap extends IgeTileMap2d {
+export class IgeTextureMap extends IgeTileMap2d {
     constructor(tileWidth, tileHeight) {
         super(tileWidth, tileHeight);
         this.classId = "IgeTextureMap";
@@ -585,4 +585,3 @@ class IgeTextureMap extends IgeTileMap2d {
         }
     }
 }
-export default IgeTextureMap;

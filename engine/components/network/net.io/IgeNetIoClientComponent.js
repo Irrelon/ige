@@ -1,9 +1,9 @@
-import { ige } from "../../../instance.js";
-import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent.js";
-import { NetIoClient } from "./client/socketClient.js";
-import { newIdHex } from "../../../services/utils.js";
-import { igeClassStore } from "../../../services/igeClassStore.js";
-import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../../enums/IgeConstants.js";
+import { ige } from "../../../instance";
+import { igeClassStore } from "../../../services/igeClassStore";
+import { newIdHex } from "../../../services/utils";
+import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent";
+import { IgeNetIoClient } from "./client/IgeNetIoClient";
+import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../../enums/IgeConstants";
 /**
  * The client-side net.io component. Handles all client-side
  * networking systems.
@@ -222,7 +222,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
         if (typeof WebSocket === "undefined") {
             return;
         }
-        this._io = new NetIoClient(url);
+        this._io = new IgeNetIoClient(url);
         this._state = 1;
         this._io.on("connect", (clientId) => {
             this._state = 2; // Connected

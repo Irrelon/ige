@@ -1,4 +1,4 @@
-import igeFilters from "../services/igeFilters.js";
+import igeFilters from "../services/igeFilters";
 export const colorOverlay = function (canvas, ctx, originalImage, texture, data) {
     // Set the composite operation and draw the colour over the top
     ctx.globalCompositeOperation = "source-atop";

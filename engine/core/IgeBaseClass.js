@@ -1,5 +1,5 @@
-import { global } from "./_global.js";
-class IgeBaseClass {
+import { global } from "./_global";
+export class IgeBaseClass {
     constructor() {
         this.classId = "IgeBaseClass";
         this._dependencyFulfilled = {};
@@ -129,4 +129,3 @@ class IgeBaseClass {
         return null;
     }
 }
-export default IgeBaseClass;

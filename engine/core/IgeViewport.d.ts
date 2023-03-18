@@ -1,11 +1,11 @@
-import IgePoint3d from "./IgePoint3d";
-import IgeCamera from "./IgeCamera";
-import IgeRect from "./IgeRect";
-import IgeScene2d from "./IgeScene2d";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgeCamera } from "./IgeCamera";
+import { IgeRect } from "./IgeRect";
+import { IgeScene2d } from "./IgeScene2d";
 import { IgeCanRegisterById } from "../../types/IgeCanRegisterById";
 import { IgeObject } from "./IgeObject";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import IgeUiEntity from "./IgeUiEntity";
+import { IgeUiEntity } from "./IgeUiEntity";
 export interface IgeViewportOptions {
     width: number;
     height: number;
@@ -15,7 +15,7 @@ export interface IgeViewportOptions {
 /**
  * Creates a new viewport.
  */
-declare class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
+export declare class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
     classId: string;
     IgeViewport: boolean;
     _idRegistered: boolean;
@@ -129,4 +129,3 @@ declare class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
      */
     _stringify(): string;
 }
-export default IgeViewport;

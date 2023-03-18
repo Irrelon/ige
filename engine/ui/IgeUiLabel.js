@@ -1,8 +1,8 @@
+import { IgeUiElement } from "../core/IgeUiElement";
+import { IgeFontEntity } from "../core/IgeFontEntity";
 /**
  * Provides a UI label entity. Basic on-screen text label.
  */
-import IgeUiElement from "../core/IgeUiElement.js";
-import IgeFontEntity from "../core/IgeFontEntity.js";
 export class IgeUiLabel extends IgeUiElement {
     constructor() {
         super();

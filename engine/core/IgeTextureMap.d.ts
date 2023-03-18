@@ -1,10 +1,10 @@
-import IgeTileMap2d from "./IgeTileMap2d";
-import IgePoint3d from "./IgePoint3d";
-import IgeTexture from "./IgeTexture";
+import { IgeTileMap2d } from "./IgeTileMap2d";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgeTexture } from "./IgeTexture";
 /**
  * Texture maps provide a way to display textures / cells across a tile map.
  */
-declare class IgeTextureMap extends IgeTileMap2d {
+export declare class IgeTextureMap extends IgeTileMap2d {
     classId: string;
     _textureList: any[];
     _renderCenter: IgePoint3d;
@@ -173,4 +173,3 @@ declare class IgeTextureMap extends IgeTileMap2d {
         };
     } | undefined;
 }
-export default IgeTextureMap;

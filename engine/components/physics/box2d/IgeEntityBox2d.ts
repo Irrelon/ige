@@ -1,7 +1,7 @@
 import { ige } from "../../../instance";
-import IgeEntity from "../../../core/IgeEntity";
+import { IgeEntity } from "../../../core/IgeEntity";
 import type { IgeBox2dComponent } from "./IgeBox2dComponent";
-import Box2D from "./lib_box2d";
+import { Box2D } from "./lib_box2d";
 import { IgeBox2dBodyDef } from "../../../../types/IgeBox2dBodyDef";
 
 /**
@@ -19,7 +19,7 @@ export class IgeEntityBox2d extends IgeEntity {
 		super();
 
 		this._b2dRef = (ige.engine.components.box2d as IgeBox2dComponent);
-		
+
 		// Check if box2d is enabled in the engine
 		if (this._b2dRef) {
 			if (this._b2dRef._networkDebugMode) {
@@ -111,16 +111,16 @@ export class IgeEntityBox2d extends IgeEntity {
 			if (val !== undefined) {
 				this._box2dBody.m_nonGravitic = !val;
 				this._box2dBodyDef.gravitic = val;
-				
+
 				// Wake up the body
 				this._box2dBody.SetAwake(true);
 				return this;
 			}
-			
+
 			return !this._box2dBody.m_nonGravitic;
 		}
 	}
-	
+
 	on () {
 		if (arguments.length === 3) {
 			let evName = arguments[0],
@@ -139,7 +139,7 @@ export class IgeEntityBox2d extends IgeEntity {
 			}
 
 			target = target.substr(1, target.length - 1);
-			
+
 			switch (evName) {
 			case 'collisionStart':
 				this._collisionStartListeners = this._collisionStartListeners || [];
@@ -148,13 +148,13 @@ export class IgeEntityBox2d extends IgeEntity {
 					target: target,
 					callback: callback
 				});
-					
+
 				if (!this._contactListener) {
 					// Setup contact listener
 					this._contactListener = this._setupContactListeners();
 				}
 				break;
-				
+
 			case 'collisionEnd':
 				this._collisionEndListeners = this._collisionEndListeners || [];
 				this._collisionEndListeners.push({
@@ -162,13 +162,13 @@ export class IgeEntityBox2d extends IgeEntity {
 					target: target,
 					callback: callback
 				});
-					
+
 				if (!this._contactListener) {
 					// Setup contact listener
 					this._contactListener = this._setupContactListeners();
 				}
 				break;
-				
+
 			default:
 				this.log('Cannot add event listener, event type ' + evName + ' not recognised', 'error');
 				break;
@@ -177,15 +177,15 @@ export class IgeEntityBox2d extends IgeEntity {
 			IgeEntity.prototype.on.apply(this, arguments);
 		}
 	}
-	
+
 	off () {
 		if (arguments.length === 3) {
-			
+
 		} else {
 			IgeEntity.prototype.off.apply(this, arguments);
 		}
 	}
-	
+
 	_setupContactListeners () {
 		const self = this;
 
@@ -193,10 +193,10 @@ export class IgeEntityBox2d extends IgeEntity {
 			// Listen for when contact's begin
 			function (contact) {
 				//console.log('Contact begins between', contact.igeEntityA()._id, 'and', contact.igeEntityB()._id);
-				
+
 				// Loop the collision listeners and check for a match
 				const arr = self._collisionStartListeners;
-				
+
 				if (arr) {
 					self._checkContact(contact, arr);
 				}
@@ -206,7 +206,7 @@ export class IgeEntityBox2d extends IgeEntity {
 				//console.log('Contact ends between', contact.igeEntityA()._id, 'and', contact.igeEntityB()._id);
 				// Loop the collision listeners and check for a match
 				const arr = self._collisionEndListeners;
-				
+
 				if (arr) {
 					self._checkContact(contact, arr);
 				}
@@ -223,14 +223,14 @@ export class IgeEntityBox2d extends IgeEntity {
 			}*/
 		);
 	}
-	
+
 	_checkContact (contact, arr) {
 		let self = this,
 			arrCount = arr.length,
 			otherEntity,
 			listener,
 			i;
-					
+
 		if (contact.igeEntityA()._id === self._id) {
 			otherEntity = contact.igeEntityB();
 		} else if (contact.igeEntityB()._id === self._id) {
@@ -239,10 +239,10 @@ export class IgeEntityBox2d extends IgeEntity {
 			// This contact has nothing to do with us
 			return;
 		}
-		
+
 		for (i = 0; i < arrCount; i++) {
 			listener = arr[i];
-			
+
 			if (listener.type === 0) {
 				// Listener target is an id
 				if (otherEntity._id === listener.target) {
@@ -250,7 +250,7 @@ export class IgeEntityBox2d extends IgeEntity {
 					listener.callback(contact);
 				}
 			}
-			
+
 			if (arr[i].type === 1) {
 				// Listener target is a category
 				if (otherEntity._category === listener.target) {
@@ -350,11 +350,11 @@ export class IgeEntityBox2d extends IgeEntity {
 	_update (ctx) {
 		// Call the original method
 		this._updateProto(ctx);
-		
+
 		// Update the box2d body transform
 		this._translateTo(this._translate.x, this._translate.y, this._translate.z);
 		this._rotateTo(this._rotate.x, this._rotate.y, this._rotate.z);
-		
+
 		//IgeEntity.prototype.update.call(this, ctx);
 	}
 
@@ -367,7 +367,7 @@ export class IgeEntityBox2d extends IgeEntity {
 			this._box2dNoDebug = val;
 			return this;
 		}
-		
+
 		return this._box2dNoDebug;
 	}
 

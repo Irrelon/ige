@@ -1,9 +1,9 @@
-import IgeTexture from "./IgeTexture.js";
+import { IgeTexture } from "./IgeTexture";
 /**
  * Creates a new sprite sheet that cuts an image up into
  * arbitrary sections.
  */
-class IgeSpriteSheet extends IgeTexture {
+export class IgeSpriteSheet extends IgeTexture {
     constructor(id, urlOrObject, cells) {
         super(id, urlOrObject);
         this.classId = "IgeSpriteSheet";
@@ -240,4 +240,3 @@ class IgeSpriteSheet extends IgeTexture {
         return str;
     }
 }
-export default IgeSpriteSheet;

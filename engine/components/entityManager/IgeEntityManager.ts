@@ -1,11 +1,11 @@
 import { ige } from "../../instance";
 import { arrPull } from "../../services/utils";
-import IgeEntity from "../../core/IgeEntity";
-import IgeComponent from "../../core/IgeComponent";
+import { IgeEntity } from "../../core/IgeEntity";
+import { IgeComponent } from "../../core/IgeComponent";
 import { IgeMountMode } from "../../../enums/IgeMountMode";
 import { IgeEntityBehaviourMethod } from "../../../types/IgeEntityBehaviour";
 
-class IgeEntityManager extends IgeComponent {
+export class IgeEntityManager extends IgeComponent {
 	classId = "IgeEntityManager";
 	componentId = "entityManager";
 
@@ -211,5 +211,3 @@ class IgeEntityManager extends IgeComponent {
 		this._unMountQueue = [];
 	};
 }
-
-export default IgeEntityManager;

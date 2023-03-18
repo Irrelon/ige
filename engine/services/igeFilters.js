@@ -1,4 +1,4 @@
-class IgeFilters {
+export class IgeFilters {
     constructor() {
         this.filter = {};
         this.helper = {};
@@ -21,4 +21,3 @@ class IgeFilters {
         this.helper[name] = filter;
     }
 }
-export default new IgeFilters();

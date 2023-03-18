@@ -1,7 +1,7 @@
-import IgePoint3d from "../core/IgePoint3d";
-import IgeEntity from "../core/IgeEntity";
-import IgeComponent from "../core/IgeComponent";
-declare class IgeVelocityComponent extends IgeComponent {
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgeEntity } from "../core/IgeEntity";
+import { IgeComponent } from "../core/IgeComponent";
+export declare class IgeVelocityComponent extends IgeComponent {
     classId: string;
     componentId: string;
     _velocity: IgePoint3d;
@@ -27,4 +27,3 @@ declare class IgeVelocityComponent extends IgeComponent {
     _applyFriction: () => void;
     tick(): void;
 }
-export default IgeVelocityComponent;

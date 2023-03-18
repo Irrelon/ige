@@ -1,7 +1,7 @@
 import type { Mixin } from "../../types/Mixin";
-import type IgeBaseClass from "../core/IgeBaseClass";
-import type IgeComponent from "../core/IgeComponent";
-declare const WithComponentMixin: <ComponentTargetType, MixinBaseClassType extends Mixin<IgeBaseClass> = Mixin<IgeBaseClass>>(Base: MixinBaseClassType) => {
+import type { IgeBaseClass } from "../core/IgeBaseClass";
+import type { IgeComponent } from "../core/IgeComponent";
+export declare const WithComponentMixin: <ComponentTargetType, MixinBaseClassType extends Mixin<IgeBaseClass> = Mixin<IgeBaseClass>>(Base: MixinBaseClassType) => {
     new (...args: any[]): {
         components: Record<string, IgeComponent>;
         _components: IgeComponent[];
@@ -56,4 +56,3 @@ declare const WithComponentMixin: <ComponentTargetType, MixinBaseClassType exten
         data(key: string): any;
     };
 } & MixinBaseClassType;
-export default WithComponentMixin;

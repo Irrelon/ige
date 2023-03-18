@@ -1,4 +1,4 @@
-import IgeUiElement from "../core/IgeUiElement";
+import { IgeUiElement } from "../core/IgeUiElement";
 import { IgeUiMenu } from "./IgeUiMenu";
 
 export class IgeUiMenuItem extends IgeUiElement {

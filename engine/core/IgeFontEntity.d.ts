@@ -1,11 +1,11 @@
-import IgeUiEntity from "./IgeUiEntity";
+import { IgeUiEntity } from "./IgeUiEntity";
 import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 /**
  * Creates a new font entity. A font entity will use a font sheet
  * (IgeFontSheet) or native font and render text.
  */
-declare class IgeFontEntity extends IgeUiEntity {
+export declare class IgeFontEntity extends IgeUiEntity {
     "classId": string;
     _renderText?: string;
     _text?: string;
@@ -176,4 +176,3 @@ declare class IgeFontEntity extends IgeUiEntity {
      */
     _stringify(): string;
 }
-export default IgeFontEntity;

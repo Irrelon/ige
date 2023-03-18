@@ -1,5 +1,5 @@
-import IgeEntity from "../core/IgeEntity";
-import IgeTexture from "../core/IgeTexture";
+import { IgeEntity } from "../core/IgeEntity";
+import { IgeTexture } from "../core/IgeTexture";
 import IgeCuboidSmartTexture from "../textures/IgeCuboidSmartTexture";
 
 export class IgeCuboid extends IgeEntity {

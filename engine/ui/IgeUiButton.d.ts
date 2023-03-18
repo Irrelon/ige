@@ -1,4 +1,4 @@
-import IgeUiElement from "../core/IgeUiElement";
+import { IgeUiElement } from "../core/IgeUiElement";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 export declare class IgeUiButton extends IgeUiElement {
     classId: string;

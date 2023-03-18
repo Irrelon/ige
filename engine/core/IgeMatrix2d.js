@@ -1,10 +1,10 @@
-import IgePoint3d from "./IgePoint3d.js";
-import { radiansToDegrees } from "../services/utils.js";
-import IgeBaseClass from "./IgeBaseClass.js";
+import { IgePoint3d } from "./IgePoint3d";
+import { radiansToDegrees } from "../services/utils";
+import { IgeBaseClass } from "./IgeBaseClass";
 /**
  * Creates a new transformation matrix.
  */
-class IgeMatrix2d extends IgeBaseClass {
+export class IgeMatrix2d extends IgeBaseClass {
     constructor() {
         super(...arguments);
         this.matrix = [
@@ -327,4 +327,3 @@ class IgeMatrix2d extends IgeBaseClass {
         return this;
     }
 }
-export default IgeMatrix2d;

@@ -1,10 +1,10 @@
 // TODO: Doc this class!
 import { ige } from "../instance";
-import IgePoint3d from "../core/IgePoint3d";
-import IgeEntity from "../core/IgeEntity";
-import IgeComponent from "../core/IgeComponent";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgeEntity } from "../core/IgeEntity";
+import { IgeComponent } from "../core/IgeComponent";
 
-class IgeVelocityComponent extends IgeComponent {
+export class IgeVelocityComponent extends IgeComponent {
 	classId = "IgeVelocityComponent";
 	componentId = "velocity";
 
@@ -208,5 +208,3 @@ class IgeVelocityComponent extends IgeComponent {
 		}
 	}
 }
-
-export default IgeVelocityComponent;

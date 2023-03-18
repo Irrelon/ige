@@ -1,6 +1,8 @@
 import { ige } from "../../../instance";
+import { igeClassStore } from "../../../services/igeClassStore";
+import { newIdHex } from "../../../services/utils";
 import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent";
-import { NetIoClient } from "./client/socketClient";
+import { IgeNetIoClient } from "./client/IgeNetIoClient";
 import {
 	IgeNetworkMessageStructure,
 	IgeNetworkRequestMessageStructure,
@@ -10,19 +12,20 @@ import {
 	IgeNetworkTimeSyncRequestFromServer,
 	IgeNetworkClientSideMessageHandler, IgeNetworkClientSideResponseHandler
 } from "../../../../types/IgeNetworkMessage";
-import { newIdHex } from "../../../services/utils";
 import {
 	IgeStreamCreateMessageData,
 	IgeStreamDestroyMessageData,
 	IgeStreamUpdateMessageData
 } from "../../../../types/IgeNetworkStream";
-import { igeClassStore } from "../../../services/igeClassStore";
-import IgeEntity from "../../../core/IgeEntity";
+import { IgeEntity } from "../../../core/IgeEntity";
 import {
-	IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE,
+	IGE_NETWORK_REQUEST,
+	IGE_NETWORK_RESPONSE,
 	IGE_NETWORK_STREAM_CREATE,
 	IGE_NETWORK_STREAM_DATA,
-	IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC
+	IGE_NETWORK_STREAM_DESTROY,
+	IGE_NETWORK_STREAM_TIME,
+	IGE_NETWORK_TIME_SYNC
 } from "../../../../enums/IgeConstants";
 
 /**
@@ -36,7 +39,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 	_idCounter: number = 0;
 	_requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkClientSideResponseHandler>> = {};
 	_state: number = 0;
-	_io?: NetIoClient;
+	_io?: IgeNetIoClient;
 	_id?: string;
 	_url?: string;
 	_renderLatency: number = 100;
@@ -90,7 +93,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 			return;
 		}
 
-		this._io = new NetIoClient(url);
+		this._io = new IgeNetIoClient(url);
 		this._state = 1;
 
 		this._io.on("connect", (clientId) => {

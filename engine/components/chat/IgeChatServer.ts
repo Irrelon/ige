@@ -12,7 +12,7 @@ import {
 	IgeNetworkChatFromClientMessageStructure,
 	IgeNetworkChatFromServerMessageStructure
 } from "../../../types/IgeNetworkMessage";
-import IgeEntity from "../../core/IgeEntity";
+import { IgeEntity } from "../../core/IgeEntity";
 import {
 	IgeNetworkChatFromClientJoinRoomRequestStructure, IgeNetworkChatFromClientLeaveRoomRequestStructure,
 	IgeNetworkChatFromServerJoinRoomResponseStructure,

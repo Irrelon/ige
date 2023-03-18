@@ -1,8 +1,8 @@
 import {ige} from "../instance";
-import IgePoint3d from "../core/IgePoint3d";
-import IgeViewport from "../core/IgeViewport";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgeViewport } from "../core/IgeViewport";
 import { IgeInputEventControl } from "../../types/IgeInputEventControl";
-import IgeComponent from "../core/IgeComponent";
+import { IgeComponent } from "../core/IgeComponent";
 import type { IgeEngine } from "../core/IgeEngine";
 
 export interface IgeInputMouseInterface {
@@ -110,7 +110,7 @@ export interface IgeInputKeyboardInterface {
 	"z": number;
 }
 
-class IgeInputComponent extends IgeComponent<IgeEngine> {
+export class IgeInputComponent extends IgeComponent<IgeEngine> {
 	classId = "IgeInputComponent";
 	componentId = "input";
 	_eventQueue: [((evc: IgeInputEventControl, eventData?: any) => void), any][];
@@ -923,5 +923,3 @@ class IgeInputComponent extends IgeComponent<IgeEngine> {
 		return 0;
 	}
 }
-
-export default IgeInputComponent;

@@ -1,5 +1,5 @@
 import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent";
-import { NetIoClient } from "./client/socketClient";
+import { IgeNetIoClient } from "./client/IgeNetIoClient";
 import { IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkMessageData, IgeNetworkEncodedMessageData, IgeNetworkTimeSyncResponseFromClient, IgeNetworkTimeSyncRequestFromServer, IgeNetworkClientSideMessageHandler, IgeNetworkClientSideResponseHandler } from "../../../../types/IgeNetworkMessage";
 import { IgeStreamCreateMessageData, IgeStreamDestroyMessageData } from "../../../../types/IgeNetworkStream";
 /**
@@ -13,7 +13,7 @@ export declare class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
     _idCounter: number;
     _requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkClientSideResponseHandler>>;
     _state: number;
-    _io?: NetIoClient;
+    _io?: IgeNetIoClient;
     _id?: string;
     _url?: string;
     _renderLatency: number;

@@ -1,9 +1,9 @@
-import IgeComponent from "../core/IgeComponent";
-import IgeEntity from "../core/IgeEntity";
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeEntity } from "../core/IgeEntity";
 import { IgeMountMode } from "../../enums/IgeMountMode";
-import IgeRect from "../core/IgeRect";
+import { IgeRect } from "../core/IgeRect";
 
-class IgeEntityManagerComponent extends IgeComponent {
+export class IgeEntityManagerComponent extends IgeComponent {
 	classId = "IgeEntityManagerComponent";
 	componentId = "entityManager";
 
@@ -511,5 +511,3 @@ class IgeEntityManagerComponent extends IgeComponent {
 		}
 	}
 }
-
-export default IgeEntityManagerComponent;

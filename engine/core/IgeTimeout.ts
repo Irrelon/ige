@@ -1,11 +1,13 @@
+import { ige } from "../instance";
+import { IgeInterval, IgeIntervalCallback } from "./IgeInterval";
+import type { IgeTimeComponent } from "../components/IgeTimeComponent";
+
 /**
  * Provides an alternative to setTimeout() which works based on the engine's internal
  * time system allowing timeouts to fire correctly, taking into account pausing the
  * game and differences in rendering speed etc.
  */
-import IgeInterval from "./IgeInterval";
-
-class IgeTimeout extends IgeInterval {
+export class IgeTimeout extends IgeInterval {
 	classId = "IgeTimeout";
 
 	/**
@@ -14,16 +16,8 @@ class IgeTimeout extends IgeInterval {
 	 * @param {Function} method The method to call on timeout.
 	 * @param {Number} timeout The number of milliseconds before the timeout.
 	 */
-	constructor (ige, method, timeout) {
-		super(ige, method, timeout);
-	}
-
-	/**
-	 * Cancels the timer, stops the timeout.
-	 * @returns {*}
-	 */
-	cancel () {
-		super.cancel();
+	constructor (method: IgeIntervalCallback, timeout: number) {
+		super(method, timeout);
 	}
 
 	/**
@@ -32,8 +26,8 @@ class IgeTimeout extends IgeInterval {
 	 */
 	reset () {
 		this._time = 0;
-		if (this._ige.time._timers.indexOf(this) === -1) {
-			this._ige.time.addTimer(this);
+		if ((ige.engine.components.time as IgeTimeComponent)._timers.indexOf(this) === -1) {
+			(ige.engine.components.time as IgeTimeComponent).addTimer(this);
 		}
 	}
 
@@ -44,19 +38,17 @@ class IgeTimeout extends IgeInterval {
 	 * @returns {*}
 	 */
 	update () {
-		var intendedTime;
-		var overTime = this._time - this._interval;
+		let intendedTime;
+		const overTime = this._time - this._interval;
 
 		if (overTime > 0) {
-			intendedTime = this._ige._currentTime - overTime;
+			intendedTime = ige.engine._currentTime - overTime;
 
 			// Fire an interval
-			this._method(this._ige._currentTime, intendedTime);
-			this._ige.time.removeTimer(this);
+			this._method(ige.engine._currentTime, intendedTime);
+			(ige.engine.components.time as IgeTimeComponent).removeTimer(this);
 		}
 
 		return this;
 	}
 }
-
-export default IgeTimeout;

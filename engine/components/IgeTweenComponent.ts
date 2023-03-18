@@ -1,17 +1,17 @@
-import IgeComponent from "../core/IgeComponent";
-import { arrPull } from "../services/utils";
-import IgeTween, { IgeTweenDestination } from "../core/IgeTween";
 import { ige } from "../instance";
-import type { IgeEngine } from "../core/IgeEngine";
+import { IgeComponent } from "../core/IgeComponent";
+import { arrPull } from "../services/utils";
+import { IgeTween, IgeTweenDestination } from "../core/IgeTween";
 import { easingFunctions } from "../services/easing";
 import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
+import type { IgeEngine } from "../core/IgeEngine";
 
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!
  * It handles global tween processing on all tweening values.
  */
-class IgeTweenComponent extends IgeComponent<IgeEngine> {
+export class IgeTweenComponent extends IgeComponent<IgeEngine> {
 	static componentTargetClass = "Ige";
 	classId = "IgeTweenComponent";
 	componentId = "tween";
@@ -381,5 +381,3 @@ class IgeTweenComponent extends IgeComponent<IgeEngine> {
 		}
 	}
 }
-
-export default IgeTweenComponent;

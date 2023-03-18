@@ -1,8 +1,8 @@
-import IgeBaseClass from "./IgeBaseClass";
+import { IgeBaseClass } from "./IgeBaseClass";
 /**
  * Creates a new map that has two dimensions (x and y) to its data.
  */
-declare class IgeMap2d extends IgeBaseClass {
+export declare class IgeMap2d extends IgeBaseClass {
     classId: string;
     _mapData: any[][];
     constructor(data?: any[][]);
@@ -70,4 +70,3 @@ declare class IgeMap2d extends IgeBaseClass {
     mapDataString(): string;
     translateDataBy(transX: number, transY: number): void;
 }
-export default IgeMap2d;

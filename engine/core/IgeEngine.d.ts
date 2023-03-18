@@ -1,17 +1,17 @@
-import IgePoint3d from "./IgePoint3d";
-import IgeEntity from "./IgeEntity";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgeEntity } from "./IgeEntity";
 import { IgeObject } from "./IgeObject";
-import IgeDummyCanvas from "./IgeDummyCanvas";
-import IgeViewport from "./IgeViewport";
+import { IgeDummyCanvas } from "./IgeDummyCanvas";
+import { IgeViewport } from "./IgeViewport";
 import type { SyncEntry, SyncMethod } from "../../types/SyncEntry";
-import type IgeBaseClass from "./IgeBaseClass";
-import type IgeCamera from "./IgeCamera";
-import type IgeSceneGraph from "./IgeSceneGraph";
+import type { IgeBaseClass } from "./IgeBaseClass";
+import type { IgeCamera } from "./IgeCamera";
+import type { IgeSceneGraph } from "./IgeSceneGraph";
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import type { GenericClass } from "../../types/GenericClass";
 import type { IgeSceneGraphDataEntry } from "../../types/IgeSceneGraphDataEntry";
 import { IgeEngineState } from "../../enums/IgeEngineState";
-import IgeComponent from "./IgeComponent";
+import { IgeComponent } from "./IgeComponent";
 export declare class IgeEngine extends IgeEntity {
     client?: IgeBaseClass;
     server?: IgeBaseClass;

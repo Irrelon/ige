@@ -1,7 +1,7 @@
-import IgeComponent from "../core/IgeComponent";
-import IgeEntity from "../core/IgeEntity";
-import IgeUiElement, { IgeUiStyleObject } from "../core/IgeUiElement";
-declare class IgeUiManagerComponent extends IgeComponent {
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeEntity } from "../core/IgeEntity";
+import { IgeUiElement, IgeUiStyleObject } from "../core/IgeUiElement";
+export declare class IgeUiManagerComponent extends IgeComponent {
     static componentTargetClass: string;
     classId: string;
     componentId: string;
@@ -45,4 +45,3 @@ declare class IgeUiManagerComponent extends IgeComponent {
     _keyUp: (event: Event) => void;
     _keyDown: (event: Event) => void;
 }
-export default IgeUiManagerComponent;

@@ -1,4 +1,4 @@
-import IgeUiElement from "../core/IgeUiElement";
+import { IgeUiElement } from "../core/IgeUiElement";
 
 export class IgeUiTimeStream extends IgeUiElement {
 	classId = "IgeUiTimeStream";

@@ -1,7 +1,7 @@
 import { ige } from "../instance";
-import IgeUiElement from "../core/IgeUiElement";
+import { IgeUiElement } from "../core/IgeUiElement";
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import type IgeUiManagerComponent from "../components/IgeUiManagerComponent";
+import type { IgeUiManagerComponent } from "../components/IgeUiManagerComponent";
 import { IgeUiLabel } from "./IgeUiLabel";
 
 export interface IgeUiDropDownOption {
@@ -144,8 +144,8 @@ export class IgeUiDropDown extends IgeUiElement {
 
 			const optionContainer = new IgeUiElement()
 				.id(this._id + "_options")
-				.backgroundColor(this._backgroundColor)
-				.borderColor(this._borderColor)
+				.backgroundColor(this._backgroundColor as string)
+				.borderColor(this._borderColor as string)
 				.borderWidth(this._borderWidth)
 				.top(mainTop)
 				.width(this._bounds2d.x)
@@ -176,7 +176,7 @@ export class IgeUiDropDown extends IgeUiElement {
 					.mount(optionContainer);
 			}
 		} else {
-			ige.$(this._id + "_options").destroy();
+			ige.$(`${this._id}_options`)?.destroy();
 		}
 	}
 

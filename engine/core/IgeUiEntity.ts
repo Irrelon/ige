@@ -1,8 +1,8 @@
 // TODO: Implement the _stringify() method for this class
-import IgeEntity from "./IgeEntity";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { ige } from "../instance";
-import IgeTexture from "./IgeTexture";
+import { IgeEntity } from "./IgeEntity";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeTexture } from "./IgeTexture";
 import { IgeRepeatType } from "../mixins/IgeUiStyleMixin";
 import { IgeObject } from "./IgeObject";
 import { PI180 } from "../services/utils";
@@ -13,7 +13,7 @@ import { IgePointXY } from "../../types/IgePointXY";
  * than standard IgeEntity instances so only use them if an IgeEntity
  * won't do the job.
  */
-class IgeUiEntity extends IgeEntity {
+export class IgeUiEntity extends IgeEntity {
 	classId = "IgeUiEntity";
 
 	_color: string | CanvasGradient | CanvasPattern = "#000000";
@@ -1573,5 +1573,3 @@ class IgeUiEntity extends IgeEntity {
 		return this._marginBottom;
 	}
 }
-
-export default IgeUiEntity;

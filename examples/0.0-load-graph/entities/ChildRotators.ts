@@ -1,6 +1,6 @@
 import { ige } from "../../../engine/instance";
 import { Rotator } from "./Rotator";
-import IgeEntity from "../../../engine/core/IgeEntity";
+import { IgeEntity } from "../../../engine/core/IgeEntity";
 
 export const createChildRotators = (parent: IgeEntity, distance = 120, speed = 0.1) => {
 	const simpleBox = ige.textures.get("simpleBox");

@@ -1,9 +1,9 @@
-import IgeEntity from "./IgeEntity";
-import IgeVelocityComponent from "../components/IgeVelocityComponent";
+import { IgeEntity } from "./IgeEntity";
+import { IgeVelocityComponent } from "../components/IgeVelocityComponent";
 import {arrPull} from "../services/utils";
-import type IgeParticleEmitter from "./IgeParticleEmitter";
+import type { IgeParticleEmitter } from "./IgeParticleEmitter";
 
-class IgeParticle extends IgeEntity {
+export class IgeParticle extends IgeEntity {
 	classId = "IgeParticle";
 	_emitter: IgeParticleEmitter;
 
@@ -24,5 +24,3 @@ class IgeParticle extends IgeEntity {
 		return super.destroy();
 	}
 }
-
-export default IgeParticle;

@@ -1,10 +1,10 @@
-import IgeTextureMap from "./IgeTextureMap.js";
+import { IgeTextureMap } from "./IgeTextureMap";
 /**
  * Texture maps provide a way to display textures across a tile map.
  */
-class IgeTextureAtlas extends IgeTextureMap {
-    constructor(ige, tileWidth, tileHeight) {
-        super(ige, tileWidth, tileHeight);
+export class IgeTextureAtlas extends IgeTextureMap {
+    constructor(tileWidth, tileHeight) {
+        super(tileWidth, tileHeight);
         this.classId = "IgeTextureAtlas";
     }
     /**
@@ -48,4 +48,3 @@ class IgeTextureAtlas extends IgeTextureMap {
         return { "x": this._bufferZone.x, "y": this._bufferZone.y };
     }
 }
-export default IgeTextureMap;

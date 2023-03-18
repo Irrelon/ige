@@ -1,9 +1,9 @@
-import IgePoint3d from "./IgePoint3d";
+import { IgePoint3d } from "./IgePoint3d";
 
 /**
  * Creates a new path node for use with the IgePathFinder class.
  */
-class IgePathNode extends IgePoint3d {
+export class IgePathNode extends IgePoint3d {
 	classId = "IgePathNode";
 	x: number;
 	y: number;
@@ -47,7 +47,7 @@ class IgePathNode extends IgePoint3d {
 		this.direction = direction;
 		this._mode = 0;
 	}
-	
+
 	static fromPoint3d (point3d: IgePoint3d): IgePathNode {
 		return new IgePathNode(point3d.x, point3d.y, point3d.z);
 	}
@@ -67,5 +67,3 @@ class IgePathNode extends IgePoint3d {
 		return this._mode;
 	}
 }
-
-export default IgePathNode;

@@ -7,11 +7,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "../../../engine/instance.js";
-import IgeUiManagerComponent from "../../../engine/components/IgeUiManagerComponent.js";
-import { AppScene } from "./AppScene.js";
-import "./splash/_route.js";
-import "./level1/_route.js";
+import { ige } from "../../../engine/instance";
+import { IgeUiManagerComponent } from "../../../engine/components/IgeUiManagerComponent";
+import { AppScene } from "./AppScene";
+import "./splash/_route";
+import "./level1/_route";
 ige.router.route("app", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         // @ts-ignore

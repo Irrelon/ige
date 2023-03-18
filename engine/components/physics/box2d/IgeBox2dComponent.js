@@ -1,12 +1,12 @@
-import { ige } from "../../../instance.js";
-import { IgeEngineState } from "../../../../enums/IgeEngineState.js";
-import IgeComponent from "../../../core/IgeComponent.js";
-import { IgeBox2dTimingMode } from "../../../../enums/IgeBox2dTimingMode.js";
-import { IgeBox2dBodyType } from "../../../../enums/IgeBox2dBodyType.js";
-import { IgeBox2dFixtureShapeType } from "../../../../enums/IgeBox2dFixtureShapeType.js";
-import IgeBox2dDebugPainter from "./IgeBox2dDebugPainter.js";
-import { IgeEntityBox2d } from "./IgeEntityBox2d.js";
-import Box2D from "./lib_box2d.js";
+import { ige } from "../../../instance";
+import { IgeEngineState } from "../../../../enums/IgeEngineState";
+import { IgeComponent } from "../../../core/IgeComponent";
+import { IgeBox2dTimingMode } from "../../../../enums/IgeBox2dTimingMode";
+import { IgeBox2dBodyType } from "../../../../enums/IgeBox2dBodyType";
+import { IgeBox2dFixtureShapeType } from "../../../../enums/IgeBox2dFixtureShapeType";
+import { IgeBox2dDebugPainter } from "./IgeBox2dDebugPainter";
+import { IgeEntityBox2d } from "./IgeEntityBox2d";
+import { Box2D } from "./lib_box2d.js";
 /**
  * The engine's box2d component class.
  */

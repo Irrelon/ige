@@ -1,14 +1,14 @@
-import IgeComponent from "../core/IgeComponent";
-import IgeRect from "../core/IgeRect";
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeRect } from "../core/IgeRect";
 import { ige } from "../instance";
-import IgePoint3d from "../core/IgePoint3d";
-import IgePoint2d from "../core/IgePoint2d";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgePoint2d } from "../core/IgePoint2d";
 
 /**
  * When added to a viewport, automatically adds mouse panning
  * capabilities to the viewport's camera.
  */
-class IgeMousePanComponent extends IgeComponent {
+export class IgeMousePanComponent extends IgeComponent {
 	static componentTargetClass = "IgeViewport";
 	classId = "IgeMousePanComponent";
 	componentId = "mousePan";
@@ -243,5 +243,3 @@ class IgeMousePanComponent extends IgeComponent {
 		this._panStarted = false;
 	}
 }
-
-export default IgeMousePanComponent;

@@ -1,1 +1,1 @@
-export { ige } from "./engine/instance.js";
+export * from "./engine/index";

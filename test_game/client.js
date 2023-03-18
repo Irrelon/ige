@@ -7,17 +7,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "../engine/instance.js";
-import IgeBaseClass from "../engine/core/IgeBaseClass.js";
-import IgeBaseScene from "../engine/core/IgeBaseScene.js";
-import { IgeOptions } from "../engine/core/IgeOptions.js";
-import { Level1 } from "./levels/Level1.js";
-import IgeTexture from "../engine/core/IgeTexture.js";
-import square from "./assets/textures/smartTextures/square.js";
-import line from "./assets/textures/smartTextures/line.js";
-import triangle from "./assets/textures/smartTextures/triangle.js";
-import circle from "./assets/textures/smartTextures/circle.js";
-import star from "./assets/textures/smartTextures/star.js";
+import { ige } from "../engine/instance";
+import { IgeBaseClass } from "../engine/core/IgeBaseClass";
+import { IgeBaseScene } from "../engine/core/IgeBaseScene";
+import { IgeOptions } from "../engine/core/IgeOptions";
+import { Level1 } from "./levels/Level1";
+import { IgeTexture } from "../engine/core/IgeTexture";
+import square from "./assets/textures/smartTextures/square";
+import line from "./assets/textures/smartTextures/line";
+import triangle from "./assets/textures/smartTextures/triangle";
+import circle from "./assets/textures/smartTextures/circle";
+import star from "./assets/textures/smartTextures/star";
 // @ts-ignore
 window.ige = ige;
 export class Client extends IgeBaseClass {

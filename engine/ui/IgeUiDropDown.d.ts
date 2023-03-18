@@ -1,4 +1,4 @@
-import IgeUiElement from "../core/IgeUiElement";
+import { IgeUiElement } from "../core/IgeUiElement";
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeUiLabel } from "./IgeUiLabel";
 export interface IgeUiDropDownOption {

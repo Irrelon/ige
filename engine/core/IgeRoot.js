@@ -1,10 +1,10 @@
-import { ige } from "../instance.js";
-import IgeEntity from "./IgeEntity.js";
-import IgeViewport from "./IgeViewport.js";
+import { ige } from "../instance";
+import { IgeEntity } from "./IgeEntity";
+import { IgeViewport } from "./IgeViewport";
 /**
  * The engine's root entity that all the scenegraph lives from.
  */
-class IgeRoot extends IgeEntity {
+export class IgeRoot extends IgeEntity {
     constructor() {
         super();
         this.classId = "IgeRoot";
@@ -180,4 +180,3 @@ class IgeRoot extends IgeEntity {
         return super.destroy();
     }
 }
-export default IgeRoot;

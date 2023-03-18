@@ -1,14 +1,14 @@
-import IgeSceneGraph from "./IgeSceneGraph";
-import IgeScene2d from "./IgeScene2d";
-import IgeViewport from "./IgeViewport";
 import {ige} from "../instance";
+import { IgeSceneGraph } from "./IgeSceneGraph";
+import { IgeScene2d } from "./IgeScene2d";
+import { IgeViewport } from "./IgeViewport";
 
 /**
  * When loaded into memory using ige.addGraph('IgeBaseScene') will create
  * the scene "baseScene" and the viewport "vp1" that are used in almost all
  * examples and can be used as the base for your scenegraph as well.
  */
-class IgeBaseScene extends IgeSceneGraph {
+export class IgeBaseScene extends IgeSceneGraph {
 	classId = "IgeBaseScene";
 
 	/**
@@ -46,5 +46,3 @@ class IgeBaseScene extends IgeSceneGraph {
 		ige.$("baseScene")?.destroy();
 	};
 }
-
-export default IgeBaseScene;

@@ -1,11 +1,11 @@
 import { ige } from "../instance";
-import IgeComponent from "../core/IgeComponent";
-import {arrPull} from "../services/utils";
-import IgeEntity from "../core/IgeEntity";
-import IgeUiElement, { IgeUiStyleObject } from "../core/IgeUiElement";
-import type IgeInputComponent from "./IgeInputComponent";
+import { IgeComponent } from "../core/IgeComponent";
+import { arrPull } from "../services/utils";
+import { IgeEntity } from "../core/IgeEntity";
+import { IgeUiElement, IgeUiStyleObject } from "../core/IgeUiElement";
+import type { IgeInputComponent } from "./IgeInputComponent";
 
-class IgeUiManagerComponent extends IgeComponent {
+export class IgeUiManagerComponent extends IgeComponent {
 	static componentTargetClass = "Ige";
 	classId = "IgeUiManagerComponent";
 	componentId = "ui";
@@ -15,7 +15,7 @@ class IgeUiManagerComponent extends IgeComponent {
 	_register: IgeUiElement[] = [];
 	_styles: Record<string, IgeUiStyleObject> = {};
 	_elementsByStyle: Record<string, IgeUiElement[]> = {};
-	
+
 	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
@@ -152,7 +152,7 @@ class IgeUiManagerComponent extends IgeComponent {
 			this._focus.emit("keyUp", event);
 			(ige.engine.components.input as IgeInputComponent).stopPropagation();
 		}
-	}
+	};
 
 	_keyDown = (event: Event) => {
 		// Direct the key event to the focused element
@@ -160,7 +160,5 @@ class IgeUiManagerComponent extends IgeComponent {
 			this._focus.emit("keyDown", event);
 			(ige.engine.components.input as IgeInputComponent).stopPropagation();
 		}
-	}
+	};
 }
-
-export default IgeUiManagerComponent;

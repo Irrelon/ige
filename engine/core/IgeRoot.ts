@@ -1,13 +1,13 @@
 import { ige } from "../instance";
-import IgeEntity from "./IgeEntity";
-import IgeViewport from "./IgeViewport";
+import { IgeEntity } from "./IgeEntity";
+import { IgeViewport } from "./IgeViewport";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeObject } from "./IgeObject";
 
 /**
  * The engine's root entity that all the scenegraph lives from.
  */
-class IgeRoot extends IgeEntity {
+export class IgeRoot extends IgeEntity {
 	classId = "IgeRoot";
 	_viewportDepth: boolean = false;
 
@@ -222,5 +222,3 @@ class IgeRoot extends IgeEntity {
 		return super.destroy();
 	}
 }
-
-export default IgeRoot;

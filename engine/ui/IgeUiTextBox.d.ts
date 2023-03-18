@@ -1,6 +1,6 @@
-import IgeUiElement from "../core/IgeUiElement";
-import IgeFontEntity from "../core/IgeFontEntity";
-import type IgeFontSheet from "../core/IgeFontSheet";
+import { IgeUiElement } from "../core/IgeUiElement";
+import { IgeFontEntity } from "../core/IgeFontEntity";
+import type { IgeFontSheet } from "../core/IgeFontSheet";
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
  * capture keyboard input and display it, similar in usage to the HTML input

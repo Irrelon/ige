@@ -1,4 +1,4 @@
-import IgeUiElement from "../core/IgeUiElement.js";
+import { IgeUiElement } from "../core/IgeUiElement";
 export class IgeUiProgressBar extends IgeUiElement {
     constructor() {
         super();

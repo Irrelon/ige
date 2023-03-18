@@ -1,11 +1,11 @@
-import IgeTexture from "./IgeTexture";
+import { IgeTexture } from "./IgeTexture";
 /**
  * Creates a new font sheet. A font sheet is an image that contains
  * letters and numbers rendered to specifications. It allows you to
  * use and render text fonts without the font actually existing on
  * the target system that the engine is running in.
  */
-declare class IgeFontSheet extends IgeTexture {
+export declare class IgeFontSheet extends IgeTexture {
     classId: string;
     constructor(ige: any, url: any);
     decodeHeader(): any;
@@ -21,4 +21,3 @@ declare class IgeFontSheet extends IgeTexture {
     render(ctx: any, entity: any): void;
     destroy(): void;
 }
-export default IgeFontSheet;

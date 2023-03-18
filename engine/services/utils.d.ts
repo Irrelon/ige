@@ -1,4 +1,4 @@
-import type IgeBaseClass from "../core/IgeBaseClass";
+import type { IgeBaseClass } from "../core/IgeBaseClass";
 /**
  * Removes the passed item from an array, the opposite of push().
  * @param arr

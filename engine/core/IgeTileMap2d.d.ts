@@ -1,9 +1,9 @@
-import IgeMap2d from "./IgeMap2d";
-import IgePoint2d from "./IgePoint2d";
-import IgeRect from "./IgeRect";
-import IgePoint3d from "./IgePoint3d";
-import IgePoly2d from "./IgePoly2d";
-import IgeEntity from "./IgeEntity";
+import { IgeMap2d } from "./IgeMap2d";
+import { IgePoint2d } from "./IgePoint2d";
+import { IgeRect } from "./IgeRect";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgePoly2d } from "./IgePoly2d";
+import { IgeEntity } from "./IgeEntity";
 import { IgeObject } from "./IgeObject";
 export type IgeTileMap2dScanRectCallback = (mapData: any, x: number, y: number) => boolean;
 export interface IgeTileMap2dSavedMap {
@@ -15,7 +15,7 @@ export interface IgeTileMap2dSavedMap {
  * NOTE: These are not to be confused with IgeTextureMap's which allow you to
  * paint a bunch of tiles to a grid.
  */
-declare class IgeTileMap2d extends IgeEntity {
+export declare class IgeTileMap2d extends IgeEntity {
     classId: string;
     IgeTileMap2d: boolean;
     _drawGrid?: boolean;
@@ -165,4 +165,3 @@ declare class IgeTileMap2d extends IgeEntity {
     _updateAdjustmentMatrix(): void;
     _childMounted(obj: IgeObject): void;
 }
-export default IgeTileMap2d;

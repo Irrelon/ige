@@ -1,6 +1,6 @@
-import { ige } from "../../engine/instance.js";
-import { Circle } from "./base/Circle.js";
-import { registerClass } from "../../engine/services/igeClassStore.js";
+import { ige } from "../../engine/instance";
+import { Circle } from "./base/Circle";
+import { registerClass } from "../../engine/services/igeClassStore";
 export class Resource extends Circle {
     constructor(type, destinationId) {
         super();

@@ -1,4 +1,4 @@
-import IgeBaseClass from "./IgeBaseClass";
+import { IgeBaseClass } from "./IgeBaseClass";
 export interface IgeTweenStep {
     props: Record<string, number>;
     durationMs?: number;
@@ -21,7 +21,7 @@ export interface IgeTweenOptions {
 /**
  * Creates a new tween instance.
  */
-declare class IgeTween extends IgeBaseClass {
+export declare class IgeTween extends IgeBaseClass {
     classId: string;
     _steps: IgeTweenStep[];
     _targetObj: any;
@@ -197,4 +197,3 @@ declare class IgeTween extends IgeBaseClass {
  * @return {IgeTween} A new IgeTween instance.
  */
 export declare const createTween: (target: any, props: IgeTweenPropertyObject, durationMs: number, options?: IgeTweenOptions) => IgeTween;
-export default IgeTween;

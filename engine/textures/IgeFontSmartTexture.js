@@ -1,9 +1,9 @@
-import { IgeFontAlignY } from "../../enums/IgeFontAlign.js";
+import { IgeFontAlignY } from "../../enums/IgeFontAlign";
 /**
  * Provides native canvas font rendering supporting multi-line
  * text and alignment options.
  */
-const IgeFontSmartTexture = {
+export const IgeFontSmartTexture = {
     // @ts-ignore
     render: (ctx, entity) => {
         if (!entity._nativeFont || !entity._renderText) {
@@ -127,4 +127,3 @@ const IgeFontSmartTexture = {
         }
     }
 };
-export default IgeFontSmartTexture;

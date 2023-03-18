@@ -1,6 +1,6 @@
-import IgeComponent from "../core/IgeComponent.js";
-import { ige } from "../instance.js";
-import IgePoint2d from "../core/IgePoint2d.js";
+import IgeComponent from "../core/IgeComponent";
+import { ige } from "../instance";
+import IgePoint2d from "../core/IgePoint2d";
 /**
  * When added to a viewport, automatically adds mouse panning
  * capabilities to the viewport's camera.

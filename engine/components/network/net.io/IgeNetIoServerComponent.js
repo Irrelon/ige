@@ -1,9 +1,8 @@
-import { ige } from "../../../instance.js";
-import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent.js";
-import { arrPull, newIdHex } from "../../../services/utils.js";
-import { NetIoServer } from "./server/socketServer.js";
-import { isServer } from "../../../services/clientServer.js";
-import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../../enums/IgeConstants.js";
+import { ige } from "../../../instance";
+import { arrPull, newIdHex } from "../../../services/utils";
+import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent";
+import { IgeNetIoServer } from "./server/IgeNetIoServer";
+import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../../enums/IgeConstants";
 export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
     constructor() {
         super();
@@ -181,7 +180,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
         }
         // Start net.io
         this.log("Starting net.io listener on port " + this._port);
-        this._io = new NetIoServer(this._port, callback);
+        this._io = new IgeNetIoServer(this._port, callback);
         // Setup listeners
         this._io.on("connection", this._onClientConnect);
         // Set up default commands
@@ -195,9 +194,6 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
         return this;
     }
     timeSyncStart() {
-        if (!isServer) {
-            return this;
-        }
         this._timeSyncStarted = true;
         // Send a time sync request now, so we
         // have a starting value to work with

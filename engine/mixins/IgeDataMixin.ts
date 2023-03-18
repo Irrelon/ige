@@ -1,7 +1,7 @@
 import type {Mixin} from "../../types/Mixin";
-import type IgeBaseClass from "../core/IgeBaseClass";
+import type { IgeBaseClass } from "../core/IgeBaseClass";
 
-const WithDataMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => class extends Base {
+export const WithDataMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => class extends Base {
 	_data: Record<string, any> = {};
 
 	data (key: string, value: any): this;
@@ -21,5 +21,3 @@ const WithDataMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClas
 		return null;
 	}
 }
-
-export default WithDataMixin;

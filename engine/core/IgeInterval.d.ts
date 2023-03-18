@@ -1,11 +1,11 @@
-import IgeEventingClass from "./IgeEventingClass";
+import { IgeEventingClass } from "./IgeEventingClass";
 export type IgeIntervalCallback = (...args: any[]) => void;
 /**
  * Provides a kind of setInterval() that works based on the engine's internal
  * time system allowing intervals to fire correctly, taking into account pausing
  * the game and differences in rendering speed etc.
  */
-declare class IgeInterval extends IgeEventingClass {
+export declare class IgeInterval extends IgeEventingClass {
     classId: string;
     _method: IgeIntervalCallback;
     _interval: number;
@@ -41,4 +41,3 @@ declare class IgeInterval extends IgeEventingClass {
      */
     update(): this;
 }
-export default IgeInterval;

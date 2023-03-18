@@ -1,8 +1,8 @@
-import IgeComponent from "../core/IgeComponent";
-import IgeEntity from "../core/IgeEntity";
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeEntity } from "../core/IgeEntity";
 import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
 
-class IgeGamePadComponent extends IgeComponent {
+export class IgeGamePadComponent extends IgeComponent {
 	"classId" = "IgeGamePadComponent";
 	"componentId" = "gamePad";
 
@@ -189,5 +189,3 @@ class IgeGamePadComponent extends IgeComponent {
 		}
 	}
 }
-
-export default IgeGamePadComponent;

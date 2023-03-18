@@ -1,22 +1,22 @@
-import { ige } from "../instance.js";
-import { isClient, isServer } from "../services/clientServer.js";
-import { degreesToRadians, traceSet } from "../services/utils.js";
-import IgePoint2d from "./IgePoint2d.js";
-import IgePoint3d from "./IgePoint3d.js";
-import IgeMatrix2d from "./IgeMatrix2d.js";
-import IgePoly2d from "./IgePoly2d.js";
-import IgeDummyCanvas from "./IgeDummyCanvas.js";
-import IgeRect from "./IgeRect.js";
-import { IgeObject } from "./IgeObject.js";
-import { IgeMountMode } from "../../enums/IgeMountMode.js";
-import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
-import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode.js";
-import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js";
+import { ige } from "../instance";
+import { isClient, isServer } from "../services/clientServer";
+import { degreesToRadians, traceSet } from "../services/utils";
+import { IgePoint2d } from "./IgePoint2d";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgeMatrix2d } from "./IgeMatrix2d";
+import { IgePoly2d } from "./IgePoly2d";
+import { IgeDummyCanvas } from "./IgeDummyCanvas";
+import { IgeRect } from "./IgeRect";
+import { IgeObject } from "./IgeObject";
+import { IgeMountMode } from "../../enums/IgeMountMode";
+import { IgeStreamMode } from "../../enums/IgeStreamMode";
+import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode";
+import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
  */
-class IgeEntity extends IgeObject {
+export class IgeEntity extends IgeObject {
     constructor() {
         super();
         this.classId = "IgeEntity";
@@ -258,23 +258,6 @@ class IgeEntity extends IgeObject {
                 // There is a mouse wheel event
                 this._handleMouseWheel(input.mouseWheel, evc, eventData);
             }
-        };
-        /**
-         * Gets the `translate` accessor object.
-         * @example #Use the `translate` accessor object to alter the y co-ordinate of the entity to 10
-         *     entity.translate().y(10);
-         * @return {*}
-         */
-        this.translate = (...args) => {
-            if (args.length) {
-                this.log("You called translate with arguments, did you mean translateTo or translateBy instead of translate?", "warning");
-            }
-            // used to be this._entity || { x, y z }
-            return ({
-                x: this._translateAccessorX,
-                y: this._translateAccessorY,
-                z: this._translateAccessorZ
-            });
         };
         /**
          * The `translate` accessor method for the x-axis. This
@@ -2146,6 +2129,23 @@ class IgeEntity extends IgeObject {
         return this;
     }
     /**
+     * Gets the `translate` accessor object.
+     * @example #Use the `translate` accessor object to alter the y co-ordinate of the entity to 10
+     *     entity.translate().y(10);
+     * @return {*}
+     */
+    translate(...args) {
+        if (args.length) {
+            throw new Error("You called translate with arguments, did you mean translateTo or translateBy instead of translate?");
+        }
+        // used to be this._entity || { x, y z }
+        return ({
+            x: this._translateAccessorX,
+            y: this._translateAccessorY,
+            z: this._translateAccessorZ
+        });
+    }
+    /**
      * The `translate` accessor method for the y-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.translate().
@@ -2209,7 +2209,7 @@ class IgeEntity extends IgeObject {
      */
     rotate(...args) {
         if (args.length) {
-            this.log("You called rotate with arguments, did you mean rotateTo or rotateBy instead of rotate?", "warning");
+            throw new Error("You called rotate with arguments, did you mean rotateTo or rotateBy instead of rotate?");
         }
         // used to be this._entity || { x, y z }
         return ({
@@ -2613,4 +2613,3 @@ class IgeEntity extends IgeObject {
         }
     }
 }
-export default IgeEntity;

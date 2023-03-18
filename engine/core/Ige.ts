@@ -1,22 +1,22 @@
 import { igeClassStore } from "../services/igeClassStore";
+import { isClient, isServer } from "../services/clientServer";
 import { IgeConfig, igeConfig } from "./config";
 import { IgeEngine } from "./IgeEngine";
 import { IgeTextureStore } from "./IgeTextureStore";
 import { IgeMetrics } from "./IgeMetrics";
-import IgeInputComponent from "../components/IgeInputComponent";
+import { IgeInputComponent } from "../components/IgeInputComponent";
 import  { IgeObjectRegister } from "./IgeObjectRegister";
-
 import  { IgeArrayRegister } from "./IgeArrayRegister";
-import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory";
-import type IgeViewport from "./IgeViewport";
-import IgePoint3d from "./IgePoint3d";
+import { IgePoint3d } from "./IgePoint3d";
 import { IgeAudioController } from "../components/audio/IgeAudioController";
-import type { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
-import type { IgeNetIoServerComponent } from "../components/network/net.io/IgeNetIoServerComponent";
-import { isClient, isServer } from "../services/clientServer";
 import { IgeObjectWithValueProperty } from "../../types/IgeObjectWithValueProperty";
 import { IgeObject } from "./IgeObject";
 import { IgeRouter } from "./IgeRouter";
+
+import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory";
+import type { IgeViewport } from "./IgeViewport";
+import type { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
+import type { IgeNetIoServerComponent } from "../components/network/net.io/IgeNetIoServerComponent";
 
 const version = "2.0.0";
 

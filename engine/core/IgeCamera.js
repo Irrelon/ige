@@ -1,9 +1,9 @@
-import IgeEntity from "./IgeEntity.js";
-import IgeTween from "./IgeTween.js";
+import { IgeEntity } from "./IgeEntity";
+import { IgeTween } from "./IgeTween";
 /**
  * Creates a new camera that will be attached to a viewport.
  */
-class IgeCamera extends IgeEntity {
+export class IgeCamera extends IgeEntity {
     constructor(viewport) {
         super();
         this.classId = "IgeCamera";
@@ -332,4 +332,3 @@ class IgeCamera extends IgeEntity {
         return str;
     }
 }
-export default IgeCamera;

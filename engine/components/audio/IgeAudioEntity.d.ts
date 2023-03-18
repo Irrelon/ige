@@ -1,4 +1,4 @@
-import IgeAudio from "./IgeAudio";
+import { IgeAudio } from "./IgeAudio";
 import { IgeObject } from "../../core/IgeObject";
 import type { IgeCanvasRenderingContext2d } from "../../../types/IgeCanvasRenderingContext2d";
 export interface IgeAudioEntityPanner extends PannerOptions {

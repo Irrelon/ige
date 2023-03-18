@@ -1,9 +1,9 @@
 import type {Mixin} from "../../types/Mixin";
-import type IgeBaseClass from "../core/IgeBaseClass";
-import type IgeComponent from "../core/IgeComponent";
+import type { IgeBaseClass } from "../core/IgeBaseClass";
+import type { IgeComponent } from "../core/IgeComponent";
 import {arrPull} from "../services/utils";
 
-const WithComponentMixin = <ComponentTargetType, MixinBaseClassType extends Mixin<IgeBaseClass> = Mixin<IgeBaseClass>>(Base: MixinBaseClassType) => class extends Base {
+export const WithComponentMixin = <ComponentTargetType, MixinBaseClassType extends Mixin<IgeBaseClass> = Mixin<IgeBaseClass>>(Base: MixinBaseClassType) => class extends Base {
 	components: Record<string, IgeComponent> = {};
 	_components: IgeComponent[] = []; // TODO: Rename this to _componentsArr
 	_componentBase: this | ComponentTargetType;
@@ -74,5 +74,3 @@ const WithComponentMixin = <ComponentTargetType, MixinBaseClassType extends Mixi
 		return this;
 	}
 }
-
-export default WithComponentMixin;

@@ -1,8 +1,8 @@
+import { IgeTween, IgeTweenOptions, IgeTweenPropertyObject } from "./IgeTween";
 /**
  * Creates a new 3d point (x, y, z).
  */
-import IgeTween, { IgeTweenOptions, IgeTweenPropertyObject } from "./IgeTween";
-declare class IgePoint3d {
+export declare class IgePoint3d {
     classId: string;
     x: number;
     y: number;
@@ -180,4 +180,3 @@ declare class IgePoint3d {
     toString(precision?: number): string;
     tween(props?: IgeTweenPropertyObject, durationMs?: number, options?: IgeTweenOptions): IgeTween;
 }
-export default IgePoint3d;

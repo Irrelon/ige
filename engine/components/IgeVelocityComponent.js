@@ -1,8 +1,8 @@
 // TODO: Doc this class!
-import { ige } from "../instance.js";
-import IgePoint3d from "../core/IgePoint3d.js";
-import IgeComponent from "../core/IgeComponent.js";
-class IgeVelocityComponent extends IgeComponent {
+import { ige } from "../instance";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgeComponent } from "../core/IgeComponent";
+export class IgeVelocityComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgeVelocityComponent";
@@ -155,4 +155,3 @@ class IgeVelocityComponent extends IgeComponent {
         }
     }
 }
-export default IgeVelocityComponent;

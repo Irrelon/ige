@@ -1,4 +1,4 @@
-import IgeTexture from "./IgeTexture";
+import { IgeTexture } from "./IgeTexture";
 import { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import { IgeImage } from "./IgeImage";
 import { IgeCanvas } from "./IgeCanvas";
@@ -7,7 +7,7 @@ import { IgeCanvas } from "./IgeCanvas";
  * automatically split up into individual cells based on a cell
  * width and height.
  */
-declare class IgeCellSheet extends IgeTexture {
+export declare class IgeCellSheet extends IgeTexture {
     classId: string;
     IgeSpriteSheet: boolean;
     _cellColumns: number;
@@ -47,4 +47,3 @@ declare class IgeCellSheet extends IgeTexture {
      */
     stringify(): string;
 }
-export default IgeCellSheet;

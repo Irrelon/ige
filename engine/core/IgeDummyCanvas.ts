@@ -1,6 +1,6 @@
-import IgeDummyContext from "./IgeDummyContext";
+import { IgeDummyContext } from "./IgeDummyContext";
 
-class IgeDummyCanvas {
+export class IgeDummyCanvas {
 	dummy = true;
 	width = 0;
 	height = 0;
@@ -9,5 +9,3 @@ class IgeDummyCanvas {
 		return new IgeDummyContext();
 	};
 }
-
-export default IgeDummyCanvas;

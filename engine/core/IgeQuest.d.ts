@@ -1,7 +1,7 @@
-import IgeEventingClass from "./IgeEventingClass";
-declare class IgeQuest extends IgeEventingClass {
+import { IgeEventingClass } from "./IgeEventingClass";
+export declare class IgeQuest extends IgeEventingClass {
     classId: string;
-    constructor(ige: any, questDefinition: any, completeCallback: any);
+    constructor(questDefinition: any, completeCallback: any);
     /**
      * Gets / sets the callback method that will fire when
      * the quest has been completed.
@@ -101,4 +101,3 @@ declare class IgeQuest extends IgeEventingClass {
      */
     _update(): void;
 }
-export default IgeQuest;

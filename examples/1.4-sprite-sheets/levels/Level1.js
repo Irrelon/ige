@@ -1,7 +1,7 @@
-import { ige } from "../../../engine/instance.js";
-import IgeSceneGraph from "../../../engine/core/IgeSceneGraph.js";
-import IgeEntity from "../../../engine/core/IgeEntity.js";
-import IgeAnimationComponent from "../../../engine/components/IgeAnimationComponent.js";
+import { ige } from "../../../engine/instance";
+import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph";
+import { IgeEntity } from "../../../engine/core/IgeEntity";
+import { IgeAnimationComponent } from "../../../engine/components/IgeAnimationComponent";
 export class Level1 extends IgeSceneGraph {
     constructor() {
         super(...arguments);

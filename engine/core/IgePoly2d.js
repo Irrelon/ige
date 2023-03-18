@@ -1,9 +1,9 @@
-import IgePoint2d from "./IgePoint2d.js";
-import IgeRect from "./IgeRect.js";
+import { IgePoint2d } from "./IgePoint2d";
+import { IgeRect } from "./IgeRect";
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
  */
-class IgePoly2d {
+export class IgePoly2d {
     constructor() {
         this.classId = "IgePoly2d";
         this._poly = [];
@@ -308,4 +308,3 @@ class IgePoly2d {
         return this;
     }
 }
-export default IgePoly2d;

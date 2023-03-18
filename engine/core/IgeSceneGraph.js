@@ -1,5 +1,5 @@
-import IgeBaseClass from "./IgeBaseClass.js";
-class IgeSceneGraph extends IgeBaseClass {
+import { IgeBaseClass } from "./IgeBaseClass";
+export class IgeSceneGraph extends IgeBaseClass {
     constructor() {
         super(...arguments);
         this.classId = "IgeSceneGraph";
@@ -16,4 +16,3 @@ class IgeSceneGraph extends IgeBaseClass {
      */
     removeGraph(options) { }
 }
-export default IgeSceneGraph;

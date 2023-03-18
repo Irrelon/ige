@@ -1,17 +1,17 @@
-import IgePoint3d from "./IgePoint3d.js";
-import IgeCamera from "./IgeCamera.js";
-import IgeRect from "./IgeRect.js";
-import IgePoint2d from "./IgePoint2d.js";
-import { ige } from "../instance.js";
-import { isClient } from "../services/clientServer.js";
-import { IgeMountMode } from "../../enums/IgeMountMode.js";
-import IgeUiEntity from "./IgeUiEntity.js";
+import { ige } from "../instance";
+import { isClient } from "../services/clientServer";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgeCamera } from "./IgeCamera";
+import { IgeRect } from "./IgeRect";
+import { IgePoint2d } from "./IgePoint2d";
+import { IgeMountMode } from "../../enums/IgeMountMode";
+import { IgeUiEntity } from "./IgeUiEntity";
 // TODO: Turns out we need IgeObject because IgeViewport cannot extend IgeEntity
 //    because IgeEntity imports IgeViewport, creating a circular referencing issue
 /**
  * Creates a new viewport.
  */
-class IgeViewport extends IgeUiEntity {
+export class IgeViewport extends IgeUiEntity {
     constructor(options) {
         super();
         this.classId = "IgeViewport";
@@ -485,4 +485,3 @@ class IgeViewport extends IgeUiEntity {
         return str;
     }
 }
-export default IgeViewport;

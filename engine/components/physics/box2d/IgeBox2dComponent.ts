@@ -1,23 +1,23 @@
 import { ige } from "../../../instance";
 import { IgeEngineState } from "../../../../enums/IgeEngineState";
 import type { IgeEngine } from "../../../core/IgeEngine";
-import IgeComponent from "../../../core/IgeComponent";
+import { IgeComponent } from "../../../core/IgeComponent";
 import { IgeBox2dTimingMode } from "../../../../enums/IgeBox2dTimingMode";
-import IgeEntity from "../../../core/IgeEntity";
+import { IgeEntity } from "../../../core/IgeEntity";
 import { IgeBox2dBodyType } from "../../../../enums/IgeBox2dBodyType";
 import { IgeBox2dBodyDef } from "../../../../types/IgeBox2dBodyDef";
 import { IgeBox2dFixtureDef } from "../../../../types/IgeBox2dFixtureDef";
 import { IgeBox2dFixtureShapeType } from "../../../../enums/IgeBox2dFixtureShapeType";
-import IgeTileMap2d, { IgeTileMap2dScanRectCallback } from "../../../core/IgeTileMap2d";
+import { IgeTileMap2d, IgeTileMap2dScanRectCallback } from "../../../core/IgeTileMap2d";
 import { IgeBox2dContactListenerCallback } from "../../../../types/IgeBox2dContactListenerCallback";
 import {
 	IgeBox2dContactPostSolveCallback,
 	IgeBox2dContactPreSolveCallback
 } from "../../../../types/IgeBox2dContactSolverCallback";
 
-import IgeBox2dDebugPainter from "./IgeBox2dDebugPainter";
+import { IgeBox2dDebugPainter } from "./IgeBox2dDebugPainter";
 import { IgeEntityBox2d } from "./IgeEntityBox2d";
-import Box2D from "./lib_box2d.js";
+import { Box2D } from "./lib_box2d.js";
 import { IgeEntityBehaviourMethod } from "../../../../types/IgeEntityBehaviour";
 
 /**

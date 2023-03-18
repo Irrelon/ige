@@ -1,4 +1,7 @@
-class IgePoint2d {
+/**
+ * Creates a new 2d point (x, y).
+ */
+export class IgePoint2d {
     constructor(x = 0, y = 0, floor = false) {
         this.classId = "IgePoint2d";
         this.x = 0;
@@ -251,4 +254,3 @@ class IgePoint2d {
         return this.x.toFixed(precision) + "," + this.y.toFixed(precision);
     }
 }
-export default IgePoint2d;

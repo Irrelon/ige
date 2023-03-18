@@ -1,8 +1,8 @@
-import type { Mixin } from "../../types/Mixin";
-import IgeTexture from "../core/IgeTexture";
+import { IgeTexture } from "../core/IgeTexture";
 import { IgeObject } from "../core/IgeObject";
+import type { Mixin } from "../../types/Mixin";
 export type IgeRepeatType = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
-declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) => {
+export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) => {
     new (...args: any[]): {
         _color: string | CanvasGradient | CanvasPattern;
         _patternRepeat?: IgeRepeatType | undefined;
@@ -158,7 +158,7 @@ declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: B
         _triggerPolygon?: "aabb" | "localBounds3dPolygon" | undefined;
         _compositeCache: boolean;
         _compositeParent: boolean;
-        _anchor: import("../core/IgePoint2d").default;
+        _anchor: import("..").IgePoint2d;
         _renderPos: {
             x: number;
             y: number;
@@ -167,15 +167,15 @@ declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: B
         _opacity: number;
         _deathTime?: number | undefined;
         _bornTime: number;
-        _translate: import("../core/IgePoint3d").default;
-        _oldTranslate: import("../core/IgePoint3d").default;
-        _rotate: import("../core/IgePoint3d").default;
-        _scale: import("../core/IgePoint3d").default;
-        _origin: import("../core/IgePoint3d").default;
-        _bounds2d: import("../core/IgePoint2d").default;
-        _oldBounds2d: import("../core/IgePoint2d").default;
-        _bounds3d: import("../core/IgePoint3d").default;
-        _oldBounds3d: import("../core/IgePoint3d").default;
+        _translate: import("..").IgePoint3d;
+        _oldTranslate: import("..").IgePoint3d;
+        _rotate: import("..").IgePoint3d;
+        _scale: import("..").IgePoint3d;
+        _origin: import("..").IgePoint3d;
+        _bounds2d: import("..").IgePoint2d;
+        _oldBounds2d: import("..").IgePoint2d;
+        _bounds3d: import("..").IgePoint3d;
+        _oldBounds3d: import("..").IgePoint3d;
         _highlight: boolean;
         _mouseEventsActive: boolean;
         _mouseStateDown: boolean;
@@ -187,20 +187,20 @@ declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: B
         _mouseWheel?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
         _mouseUp?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
         _mouseDown?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
-        _velocity: import("../core/IgePoint3d").default;
-        _localMatrix: import("../core/IgeMatrix2d").default;
-        _worldMatrix: import("../core/IgeMatrix2d").default;
-        _oldWorldMatrix: import("../core/IgeMatrix2d").default;
-        _adjustmentMatrix: import("../core/IgeMatrix2d").default;
+        _velocity: import("..").IgePoint3d;
+        _localMatrix: import("..").IgeMatrix2d;
+        _worldMatrix: import("..").IgeMatrix2d;
+        _oldWorldMatrix: import("..").IgeMatrix2d;
+        _adjustmentMatrix: import("..").IgeMatrix2d;
         _hidden: boolean;
         _cache: boolean;
         _cacheCtx?: import("../../types/IgeCanvasRenderingContext2d").IgeCanvasRenderingContext2d | null | undefined;
-        _cacheCanvas?: HTMLCanvasElement | import("../core/IgeDummyCanvas").default | undefined;
+        _cacheCanvas?: HTMLCanvasElement | import("..").IgeDummyCanvas | undefined;
         _cacheDirty: boolean;
         _cacheSmoothing: boolean;
         _aabbDirty: boolean;
-        _aabb: import("../core/IgeRect").default;
-        _compositeAabbCache?: import("../core/IgeRect").default | undefined;
+        _aabb: import("..").IgeRect;
+        _compositeAabbCache?: import("..").IgeRect | undefined;
         _noAabb?: boolean | undefined;
         _hasParent?: Record<string, boolean> | undefined;
         _texture?: IgeTexture | undefined;
@@ -210,12 +210,6 @@ declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: B
         _lastUpdate?: number | undefined;
         _tickBehaviours?: import("../../types/IgeEntityBehaviour").IgeEntityBehaviour[] | undefined;
         _updateBehaviours?: import("../../types/IgeEntityBehaviour").IgeEntityBehaviour[] | undefined;
-        /**
-         * Gets / sets the color to use as a background when
-         * rendering the UI element.
-         * @param {CSSColor, CanvasGradient, CanvasPattern=} color
-         * @return {*} Returns this when setting the value or the current value if none is specified.
-         */
         _birthMount?: string | undefined;
         _frameAlternatorCurrent: boolean;
         _backgroundPattern?: IgeTexture | undefined;
@@ -224,12 +218,12 @@ declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: B
         _backgroundPatternIsoTile?: boolean | undefined;
         _backgroundPatternFill?: CanvasPattern | null | undefined;
         _bounds3dPolygonDirty: boolean;
-        _localBounds3dPolygon?: import("../core/IgePoly2d").default | undefined;
-        _bounds3dPolygon?: import("../core/IgePoly2d").default | undefined;
-        _localAabb?: import("../core/IgeRect").default | undefined;
+        _localBounds3dPolygon?: import("..").IgePoly2d | undefined;
+        _bounds3dPolygon?: import("..").IgePoly2d | undefined;
+        _localAabb?: import("..").IgeRect | undefined;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
         _sortChildren: import("../../types/IgeChildSortFunction").IgeChildSortFunction;
-        components: Record<string, import("../core/IgeComponent").default<any>>;
+        components: Record<string, import("..").IgeComponent<any>>;
         id(id: string): any;
         id(): string;
         category(val: string): any;
@@ -242,21 +236,21 @@ declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: B
         drawMouse(val: boolean): any;
         drawMouseData(): boolean;
         drawMouseData(val: boolean): any;
-        worldPosition(): import("../core/IgePoint3d").default;
+        worldPosition(): import("..").IgePoint3d;
         worldRotationZ(): number;
-        localToWorld(points: import("../../types/IgePoint").IgePoint[], viewport?: import("../core/IgeViewport").default | null | undefined, inverse?: boolean): void;
-        localToWorldPoint(point: import("../core/IgePoint3d").default, viewport?: import("../core/IgeViewport").default | null | undefined): void;
-        screenPosition(): import("../core/IgePoint3d").default;
+        localToWorld(points: import("../../types/IgePoint").IgePoint[], viewport?: import("..").IgeViewport | null | undefined, inverse?: boolean): void;
+        localToWorldPoint(point: import("..").IgePoint3d, viewport?: import("..").IgeViewport | null | undefined): void;
+        screenPosition(): import("..").IgePoint3d;
         localIsoBoundsPoly(): void;
-        localBounds3dPolygon(recalculate?: boolean): import("../core/IgePoly2d").default;
-        bounds3dPolygon(recalculate?: boolean): import("../core/IgePoly2d").default;
+        localBounds3dPolygon(recalculate?: boolean): import("..").IgePoly2d;
+        bounds3dPolygon(recalculate?: boolean): import("..").IgePoly2d;
         update(ctx: import("../../types/IgeCanvasRenderingContext2d").IgeCanvasRenderingContext2d, tickDelta: number): void;
         tick(ctx: import("../../types/IgeCanvasRenderingContext2d").IgeCanvasRenderingContext2d): void;
         updateTransform(): void;
-        aabb(recalculate?: boolean, inverse?: boolean): import("../core/IgeRect").default;
+        aabb(recalculate?: boolean, inverse?: boolean): import("..").IgeRect;
         _processUpdateBehaviours(...args: any[]): void;
         _processTickBehaviours(...args: any[]): void;
-        parent(): IgeObject | import("../core/IgeTileMap2d").default | null | undefined;
+        parent(): IgeObject | import("..").IgeTileMap2d | null | undefined;
         parent(id: string): IgeObject | null;
         children(): IgeObject[];
         mount(obj: IgeObject): any;
@@ -285,7 +279,7 @@ declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: B
         isMounted(): boolean;
         childSortingAlgorithm(val: import("../../types/IgeChildSortFunction").IgeChildSortFunction): any;
         childSortingAlgorithm(): import("../../types/IgeChildSortFunction").IgeChildSortFunction;
-        _transformPoint(point: import("../core/IgePoint3d").default): import("../core/IgePoint3d").default;
+        _transformPoint(point: import("..").IgePoint3d): import("..").IgePoint3d;
         addBehaviour<ParentType extends IgeObject = IgeObject>(id: string, behaviour: import("../../types/IgeEntityBehaviour").IgeEntityBehaviourMethod<ParentType>, duringTick?: boolean): any;
         removeBehaviour(id: string, duringTick?: boolean): any | undefined;
         hasBehaviour(id?: string | undefined, duringTick?: boolean): boolean;
@@ -320,10 +314,10 @@ declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: B
         _streamData(): string;
         destroyBehaviours(): void;
         destroy(): any;
-        compositeAabb(inverse?: boolean): import("../core/IgeRect").default;
+        compositeAabb(inverse?: boolean): import("..").IgeRect;
         stringify(options?: Record<string, boolean>): string;
         _stringify(options?: Record<string, boolean>): string;
-        addComponent(id: string, Component: typeof import("../core/IgeComponent").default, options?: any): any;
+        addComponent(id: string, Component: typeof import("..").IgeComponent, options?: any): any;
         removeComponent(id: string): any;
         _eventsProcessing: boolean;
         _eventRemovalQueue: any[];
@@ -334,7 +328,7 @@ declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: B
         eventList(): import("./IgeEventingMixin").IgeEventListenerRegister | undefined;
         _processRemovals(): void;
         _dependencyFulfilled: Record<string, boolean>;
-        _dependsOnArr: import("../core/IgeBaseClass").IgeDependencyAction[];
+        _dependsOnArr: import("..").IgeDependencyAction[];
         addDependency(dependencyName: string, dependencyPromise: Promise<any>): void;
         dependsOn(dependencyList: string[], actionToTake: (...args: any[]) => any): void;
         _onDependencySatisfied(dependencyName: string): void;
@@ -348,4 +342,3 @@ declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: B
         data(key: string): any;
     };
 } & BaseClassType;
-export default WithUiStyleMixin;

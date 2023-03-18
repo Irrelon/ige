@@ -1,9 +1,9 @@
+import { IgePoint3d } from "./IgePoint3d";
+
 /**
  * Creates a new 2d point (x, y).
  */
-import IgePoint3d from "./IgePoint3d";
-
-class IgePoint2d {
+export class IgePoint2d {
 	classId = "IgePoint2d";
 	x: number = 0;
 	y: number = 0;
@@ -312,5 +312,3 @@ class IgePoint2d {
 		return this.x.toFixed(precision) + "," + this.y.toFixed(precision);
 	}
 }
-
-export default IgePoint2d;

@@ -1,4 +1,4 @@
-import IgeTexture from "./IgeTexture";
+import { IgeTexture } from "./IgeTexture";
 import { IgeImageLike } from "../../types/IgeImageLike";
 
 export class IgeImage extends Image implements IgeImageLike {

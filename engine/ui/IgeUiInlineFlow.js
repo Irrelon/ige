@@ -1,4 +1,4 @@
-import IgeUiElement from "../core/IgeUiElement.js";
+import { IgeUiElement } from "../core/IgeUiElement";
 export class IgeUiInlineFlow extends IgeUiElement {
     constructor() {
         super(...arguments);

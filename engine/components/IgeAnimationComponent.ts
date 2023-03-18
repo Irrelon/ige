@@ -1,6 +1,6 @@
 import { ige } from "../instance";
-import IgeComponent from "../core/IgeComponent";
-import IgeEntity from "../core/IgeEntity";
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeEntity } from "../core/IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeAnimation } from "../../types/IgeAnimation";
 
@@ -18,7 +18,7 @@ export interface IgeAnimationStartOptions {
  * @event loopComplete - The animation has completed a full cycle (shown all frames).
  * @event complete - The animation has completed all assigned loop cycles.
  */
-class IgeAnimationComponent extends IgeComponent {
+export class IgeAnimationComponent extends IgeComponent {
 	classId = "IgeAnimationComponent";
 	componentId = "animation";
 	_anim?: IgeAnimation;
@@ -459,5 +459,3 @@ class IgeAnimationComponent extends IgeComponent {
 		}
 	}
 }
-
-export default IgeAnimationComponent;

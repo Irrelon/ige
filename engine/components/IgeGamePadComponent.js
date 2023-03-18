@@ -1,4 +1,4 @@
-import IgeComponent from "../core/IgeComponent.js";
+import IgeComponent from "../core/IgeComponent";
 class IgeGamePadComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);

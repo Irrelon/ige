@@ -1,14 +1,14 @@
-import { ige } from "../instance.js";
-import { arrPull } from "../services/utils.js";
-import { isClient, isServer } from "../services/clientServer.js";
-import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode.js";
-import { IgeAsset } from "./IgeAsset.js";
-import { newCanvas } from "./IgeCanvas.js";
+import { ige } from "../instance";
+import { arrPull } from "../services/utils";
+import { isClient, isServer } from "../services/clientServer";
+import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode";
+import { IgeAsset } from "./IgeAsset";
+import { newCanvas } from "./IgeCanvas";
 let IgeImageClass;
 /**
  * Creates a new texture.
  */
-class IgeTexture extends IgeAsset {
+export class IgeTexture extends IgeAsset {
     /**
      * Constructor for a new IgeTexture.
      * @param id
@@ -757,4 +757,3 @@ class IgeTexture extends IgeAsset {
         return this;
     }
 }
-export default IgeTexture;

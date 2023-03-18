@@ -1,13 +1,13 @@
-import IgeBaseClass from "./IgeBaseClass.js";
-import { arrPull } from "../services/utils.js";
+import { IgeBaseClass } from "./IgeBaseClass";
+import { arrPull } from "../services/utils";
 /**
- * Creates a new map that has two dimensions (x and y) to it's data
+ * Creates a new map that has two dimensions (x and y) to its data
  * and allows multiple items to be stored or "stacked" on a single
  * x, y map position.
  */
-class IgeMapStack2d extends IgeBaseClass {
-    constructor(ige, data) {
-        super(ige);
+export class IgeMapStack2d extends IgeBaseClass {
+    constructor(data) {
+        super();
         this.classId = "IgeMapStack2d";
         this._mapData = data || [];
     }
@@ -91,7 +91,7 @@ class IgeMapStack2d extends IgeBaseClass {
      * @param height
      */
     collision(x, y, width, height) {
-        var xi, yi;
+        let xi, yi;
         if (width === undefined) {
             width = 1;
         }
@@ -137,4 +137,3 @@ class IgeMapStack2d extends IgeBaseClass {
         return this._mapData;
     }
 }
-export default IgeMapStack2d;

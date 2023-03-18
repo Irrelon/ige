@@ -1,6 +1,6 @@
-import IgeUiEntity from "./IgeUiEntity";
-import IgeTexture from "./IgeTexture";
-import IgeFontSmartTexture from "../textures/IgeFontSmartTexture";
+import { IgeUiEntity } from "./IgeUiEntity";
+import { IgeTexture } from "./IgeTexture";
+import { IgeFontSmartTexture } from "../textures/IgeFontSmartTexture";
 import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign";
 import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
@@ -9,7 +9,7 @@ import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingConte
  * Creates a new font entity. A font entity will use a font sheet
  * (IgeFontSheet) or native font and render text.
  */
-class IgeFontEntity extends IgeUiEntity {
+export class IgeFontEntity extends IgeUiEntity {
 	"classId" = "IgeFontEntity";
 
 	_renderText?: string;
@@ -458,5 +458,3 @@ class IgeFontEntity extends IgeUiEntity {
 		return str;
 	}
 }
-
-export default IgeFontEntity;

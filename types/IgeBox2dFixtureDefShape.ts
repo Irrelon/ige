@@ -1,5 +1,5 @@
 import { IgeBox2dFixtureShapeType } from "../enums/IgeBox2dFixtureShapeType";
-import type IgePoly2d from "../engine/core/IgePoly2d";
+import type { IgePoly2d } from "../engine/core/IgePoly2d";
 
 export interface IgeBox2dFixtureDefShapeCircle {
 	type: IgeBox2dFixtureShapeType.circle;

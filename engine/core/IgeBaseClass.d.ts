@@ -2,7 +2,7 @@ export interface IgeDependencyAction {
     dependencyList: string[];
     actionToTake: (...args: any[]) => any;
 }
-declare class IgeBaseClass {
+export declare class IgeBaseClass {
     classId: string;
     _dependencyFulfilled: Record<string, boolean>;
     _dependsOnArr: IgeDependencyAction[];
@@ -70,4 +70,3 @@ declare class IgeBaseClass {
     data(key: string, value: any): this;
     data(key: string): any;
 }
-export default IgeBaseClass;

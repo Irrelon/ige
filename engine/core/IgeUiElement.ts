@@ -1,7 +1,7 @@
 import { ige } from "../instance";
-import IgeUiEntity from "./IgeUiEntity";
-import type IgeUiManagerComponent from "../components/IgeUiManagerComponent";
-import type IgeInputComponent from "../components/IgeInputComponent";
+import { IgeUiEntity } from "./IgeUiEntity";
+import type { IgeUiManagerComponent } from "../components/IgeUiManagerComponent";
+import type { IgeInputComponent } from "../components/IgeInputComponent";
 
 export type IgeUiStyleObject = Record<string, any>;
 export type IgeUiStyleState = "focus" | "hover" | "active";
@@ -12,7 +12,7 @@ export type IgeUiStyleState = "focus" | "hover" | "active";
  * positioning and styling methods as well as reacting to styles
  * defined using the IgeUiManagerComponent.
  */
-class IgeUiElement extends IgeUiEntity {
+export class IgeUiElement extends IgeUiEntity {
 	classId = "IgeUiElement";
 
 	_focused: boolean = false;
@@ -304,5 +304,3 @@ class IgeUiElement extends IgeUiEntity {
 		return super.destroy();
 	}
 }
-
-export default IgeUiElement;

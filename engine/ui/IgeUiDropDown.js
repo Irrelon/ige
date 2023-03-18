@@ -1,6 +1,6 @@
-import { ige } from "../instance.js";
-import IgeUiElement from "../core/IgeUiElement.js";
-import { IgeUiLabel } from "./IgeUiLabel.js";
+import { ige } from "../instance";
+import { IgeUiElement } from "../core/IgeUiElement";
+import { IgeUiLabel } from "./IgeUiLabel";
 export class IgeUiDropDown extends IgeUiElement {
     constructor() {
         super();
@@ -100,6 +100,7 @@ export class IgeUiDropDown extends IgeUiElement {
         return this._value.value;
     }
     toggle() {
+        var _a;
         this._toggleState = !this._toggleState;
         if (this._toggleState) {
             const mainTop = this._bounds2d.y + 5;
@@ -137,7 +138,7 @@ export class IgeUiDropDown extends IgeUiElement {
             }
         }
         else {
-            ige.$(this._id + "_options").destroy();
+            (_a = ige.$(`${this._id}_options`)) === null || _a === void 0 ? void 0 : _a.destroy();
         }
     }
     tick(ctx) {

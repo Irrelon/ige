@@ -1,8 +1,8 @@
 import { ige } from "../../instance";
-import IgeInputComponent from "../IgeInputComponent";
+import { IgeInputComponent } from "../IgeInputComponent";
 import { IgeEventListenerObject, IgeMultiEventListenerObject } from "../../mixins/IgeEventingMixin";
-import IgeComponent from "../../core/IgeComponent";
-import IgeEntity from "../../core/IgeEntity";
+import { IgeComponent } from "../../core/IgeComponent";
+import { IgeEntity } from "../../core/IgeEntity";
 
 /**
  * When added to a viewport, automatically adds entity rotate

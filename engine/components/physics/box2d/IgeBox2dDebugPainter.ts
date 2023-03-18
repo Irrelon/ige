@@ -1,10 +1,10 @@
 import { ige } from "../../../instance";
-import IgeEntity from "../../../core/IgeEntity";
+import { IgeEntity } from "../../../core/IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../../../types/IgeCanvasRenderingContext2d";
 import { IgeBox2dComponent } from "./IgeBox2dComponent";
 import { registerClass } from "../../../services/igeClassStore";
 
-class IgeBox2dDebugPainter extends IgeEntity {
+export class IgeBox2dDebugPainter extends IgeEntity {
 	classId = "IgeBox2dDebugPainter";
 	_entity: IgeEntity;
 	_options?: Record<any, any>;
@@ -29,6 +29,3 @@ class IgeBox2dDebugPainter extends IgeEntity {
 }
 
 registerClass(IgeBox2dDebugPainter);
-
-export default IgeBox2dDebugPainter;
-

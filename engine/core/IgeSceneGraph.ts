@@ -1,6 +1,6 @@
-import IgeBaseClass from "./IgeBaseClass";
+import { IgeBaseClass } from "./IgeBaseClass";
 
-class IgeSceneGraph extends IgeBaseClass {
+export class IgeSceneGraph extends IgeBaseClass {
 	classId = "IgeSceneGraph";
 
 	/**
@@ -16,5 +16,3 @@ class IgeSceneGraph extends IgeBaseClass {
 	 */
 	removeGraph (options?: any) {}
 }
-
-export default IgeSceneGraph;

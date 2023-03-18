@@ -1,17 +1,17 @@
-import { ige } from "../instance.js";
-import { isClient, isServer } from "../services/clientServer.js";
-import { arrPull, newIdHex, toIso } from "../services/utils.js";
-import IgeEventingClass from "./IgeEventingClass.js";
-import IgePoint3d from "./IgePoint3d.js";
-import IgePoint2d from "./IgePoint2d.js";
-import IgeMatrix2d from "./IgeMatrix2d.js";
-import IgeDummyCanvas from "./IgeDummyCanvas.js";
-import IgeRect from "./IgeRect.js";
-import IgePoly2d from "./IgePoly2d.js";
-import { IgeMountMode } from "../../enums/IgeMountMode.js";
-import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
-import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode.js";
-import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY } from "../../enums/IgeConstants.js";
+import { ige } from "../instance";
+import { isClient, isServer } from "../services/clientServer";
+import { arrPull, newIdHex, toIso } from "../services/utils";
+import { IgeEventingClass } from "./IgeEventingClass";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgePoint2d } from "./IgePoint2d";
+import { IgeMatrix2d } from "./IgeMatrix2d";
+import { IgeDummyCanvas } from "./IgeDummyCanvas";
+import { IgeRect } from "./IgeRect";
+import { IgePoly2d } from "./IgePoly2d";
+import { IgeMountMode } from "../../enums/IgeMountMode";
+import { IgeStreamMode } from "../../enums/IgeStreamMode";
+import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode";
+import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY } from "../../enums/IgeConstants";
 export class IgeObject extends IgeEventingClass {
     constructor() {
         super();

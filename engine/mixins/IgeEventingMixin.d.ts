@@ -1,5 +1,5 @@
 import type { Mixin } from "../../types/Mixin";
-import type IgeBaseClass from "../core/IgeBaseClass";
+import type { IgeBaseClass } from "../core/IgeBaseClass";
 export interface IgeEventListenerObject {
     type: "single";
     callback: (...args: any) => boolean | void;
@@ -15,7 +15,7 @@ export interface IgeMultiEventListenerObject extends Omit<IgeEventListenerObject
 }
 export type IgeEventListenerRegister = Record<string, IgeEventListenerObject[]>;
 export type IgeEventRemovalResultCallback = (success: boolean) => void;
-declare const WithEventingMixin: <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => {
+export declare const WithEventingMixin: <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => {
     new (...args: any[]): {
         _eventsProcessing: boolean;
         _eventRemovalQueue: any[];
@@ -127,4 +127,3 @@ declare const WithEventingMixin: <BaseClassType extends Mixin<IgeBaseClass>>(Bas
         data(key: string): any;
     };
 } & BaseClassType;
-export default WithEventingMixin;

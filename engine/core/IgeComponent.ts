@@ -1,6 +1,6 @@
-import IgeEventingClass from "./IgeEventingClass";
+import { IgeEventingClass } from "./IgeEventingClass";
 
-class IgeComponent<EntityType = any> extends IgeEventingClass {
+export class IgeComponent<EntityType = any> extends IgeEventingClass {
 	_entity: EntityType;
 	_options?: any;
 	componentId: string = "IgeComponent";
@@ -15,5 +15,3 @@ class IgeComponent<EntityType = any> extends IgeEventingClass {
 		return this;
 	}
 }
-
-export default IgeComponent;

@@ -1,13 +1,13 @@
-import IgeComponent from "../core/IgeComponent";
-import IgeTween from "../core/IgeTween";
-import type { IgeEngine } from "../core/IgeEngine";
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeTween } from "../core/IgeTween";
 import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
+import type { IgeEngine } from "../core/IgeEngine";
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!
  * It handles global tween processing on all tweening values.
  */
-declare class IgeTweenComponent extends IgeComponent<IgeEngine> {
+export declare class IgeTweenComponent extends IgeComponent<IgeEngine> {
     static componentTargetClass: string;
     classId: string;
     componentId: string;
@@ -43,4 +43,3 @@ declare class IgeTweenComponent extends IgeComponent<IgeEngine> {
      */
     update: IgeEntityBehaviourMethod;
 }
-export default IgeTweenComponent;

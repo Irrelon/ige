@@ -1,7 +1,7 @@
-import IgeUiElement from "../core/IgeUiElement";
+import { IgeUiElement } from "../core/IgeUiElement";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 
-class IgeUiColumn extends IgeUiElement {
+export class IgeUiColumn extends IgeUiElement {
 	classId = "IgeUiColumn";
 
 	tick (ctx: IgeCanvasRenderingContext2d) {
@@ -56,5 +56,3 @@ class IgeUiColumn extends IgeUiElement {
 		super.tick(ctx);
 	}
 }
-
-export default IgeUiColumn;

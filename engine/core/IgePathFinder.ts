@@ -1,14 +1,14 @@
-import IgeEventingClass from "./IgeEventingClass";
-import IgePathNode from "./IgePathNode";
-import IgeCollisionMap2d from "./IgeCollisionMap2d";
-import IgeTileMap2d from "./IgeTileMap2d";
+import { IgeEventingClass } from "./IgeEventingClass";
+import { IgePathNode } from "./IgePathNode";
+import { IgeCollisionMap2d } from "./IgeCollisionMap2d";
+import { IgeTileMap2d } from "./IgeTileMap2d";
 
 export type IgePathFinderComparisonCallback = (tileData: any, newX: number, newY: number, currentNodeData?: IgePathNode | null, x?: number | null, y?: number | null, dynamic?: boolean) => boolean;
 
 /**
  * Creates a new path using the A* path-finding algorithm.
  */
-class IgePathFinder extends IgeEventingClass {
+export class IgePathFinder extends IgeEventingClass {
 	classId = "IgePathFinder";
 	_neighbourLimit: number = 1000;
 	_squareCost: number = 10;
@@ -355,5 +355,3 @@ class IgePathFinder extends IgeEventingClass {
 		return moveCost * (Math.abs(x1 - x2) + Math.abs(y1 - y2));
 	}
 }
-
-export default IgePathFinder;

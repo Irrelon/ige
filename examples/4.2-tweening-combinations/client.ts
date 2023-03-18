@@ -1,11 +1,11 @@
 import {ige} from "../../engine/instance";
-import IgeBaseClass from "../../engine/core/IgeBaseClass";
-import IgeTexture from "../../engine/core/IgeTexture";
+import { IgeBaseClass } from "../../engine/core/IgeBaseClass";
+import { IgeTexture } from "../../engine/core/IgeTexture";
 import { IgeCanInit } from "../../types/IgeCanInit";
-import IgeScene2d from "../../engine/core/IgeScene2d";
-import IgeViewport from "../../engine/core/IgeViewport";
-import IgeEntity from "../../engine/core/IgeEntity";
-import IgeTween from "../../engine/core/IgeTween";
+import { IgeScene2d } from "../../engine/core/IgeScene2d";
+import { IgeViewport } from "../../engine/core/IgeViewport";
+import { IgeEntity } from "../../engine/core/IgeEntity";
+import { IgeTween } from "../../engine/core/IgeTween";
 
 // @ts-ignore
 window.ige = ige;

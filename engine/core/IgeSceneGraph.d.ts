@@ -1,5 +1,5 @@
-import IgeBaseClass from "./IgeBaseClass";
-declare class IgeSceneGraph extends IgeBaseClass {
+import { IgeBaseClass } from "./IgeBaseClass";
+export declare class IgeSceneGraph extends IgeBaseClass {
     classId: string;
     /**
      * Called when loading the graph data via ige.addGraph().
@@ -13,4 +13,3 @@ declare class IgeSceneGraph extends IgeBaseClass {
      */
     removeGraph(options?: any): void;
 }
-export default IgeSceneGraph;

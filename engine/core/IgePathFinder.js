@@ -1,9 +1,9 @@
-import IgeEventingClass from "./IgeEventingClass.js";
-import IgePathNode from "./IgePathNode.js";
+import { IgeEventingClass } from "./IgeEventingClass";
+import { IgePathNode } from "./IgePathNode";
 /**
  * Creates a new path using the A* path-finding algorithm.
  */
-class IgePathFinder extends IgeEventingClass {
+export class IgePathFinder extends IgeEventingClass {
     constructor() {
         super(...arguments);
         this.classId = "IgePathFinder";
@@ -289,4 +289,3 @@ class IgePathFinder extends IgeEventingClass {
         return moveCost * (Math.abs(x1 - x2) + Math.abs(y1 - y2));
     }
 }
-export default IgePathFinder;

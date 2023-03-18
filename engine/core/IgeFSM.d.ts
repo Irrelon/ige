@@ -1,10 +1,10 @@
-import IgeBaseClass from "./IgeBaseClass";
+import { IgeBaseClass } from "./IgeBaseClass";
 /**
  * A simple finite state machine implementation.
  */
-declare class IgeFSM extends IgeBaseClass {
+export declare class IgeFSM extends IgeBaseClass {
     classId: string;
-    constructor(ige: any);
+    constructor();
     /**
      * Returns the name of the initial state.
      * @returns {string}
@@ -163,4 +163,3 @@ declare class IgeFSM extends IgeBaseClass {
      */
     _transitionStates(oldStateName: any, newStateName: any, data: any, callback: any): void;
 }
-export default IgeFSM;

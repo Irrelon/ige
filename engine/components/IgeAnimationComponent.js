@@ -1,5 +1,5 @@
-import { ige } from "../instance.js";
-import IgeComponent from "../core/IgeComponent.js";
+import { ige } from "../instance";
+import { IgeComponent } from "../core/IgeComponent";
 /**
  * The animation component class. Handles defining and controlling
  * frame-based animations based on cells from a texture.
@@ -8,7 +8,7 @@ import IgeComponent from "../core/IgeComponent.js";
  * @event loopComplete - The animation has completed a full cycle (shown all frames).
  * @event complete - The animation has completed all assigned loop cycles.
  */
-class IgeAnimationComponent extends IgeComponent {
+export class IgeAnimationComponent extends IgeComponent {
     /**
      * @constructor
      * @param {Object} entity The parent object that this component is being added to.
@@ -402,4 +402,3 @@ class IgeAnimationComponent extends IgeComponent {
         entity.addBehaviour("tween", this._update);
     }
 }
-export default IgeAnimationComponent;

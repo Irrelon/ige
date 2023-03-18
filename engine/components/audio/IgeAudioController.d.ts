@@ -1,4 +1,4 @@
-import IgeEventingClass from "../../core/IgeEventingClass";
+import { IgeEventingClass } from "../../core/IgeEventingClass";
 export declare class IgeAudioController extends IgeEventingClass {
     classId: string;
     _active: boolean;

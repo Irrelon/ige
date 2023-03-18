@@ -1,6 +1,6 @@
 export declare const undefinedMethod: () => void;
 export declare const nullMethod: () => null;
-declare class IgeDummyContext {
+export declare class IgeDummyContext {
     dummy: boolean;
     imageSmoothingEnabled: boolean;
     globalAlpha: number;
@@ -47,4 +47,3 @@ declare class IgeDummyContext {
         height: number;
     };
 }
-export default IgeDummyContext;

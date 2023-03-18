@@ -1,10 +1,10 @@
 import {ige} from "../engine/instance";
-import IgeBaseClass from "../engine/core/IgeBaseClass";
-import IgeBaseScene from "../engine/core/IgeBaseScene";
+import { IgeBaseClass } from "../engine/core/IgeBaseClass";
+import { IgeBaseScene } from "../engine/core/IgeBaseScene";
 import { IgeOptions } from "../engine/core/IgeOptions";
 import { IgeNetIoClientComponent } from "../engine/components/network/net.io/IgeNetIoClientComponent";
 import { Level1 } from "./levels/Level1";
-import IgeTexture from "../engine/core/IgeTexture";
+import { IgeTexture } from "../engine/core/IgeTexture";
 import square from "./assets/textures/smartTextures/square";
 import line from "./assets/textures/smartTextures/line";
 import triangle from "./assets/textures/smartTextures/triangle";
@@ -47,7 +47,7 @@ export class Client extends IgeBaseClass {
 
 		// Start the engine
 		await ige.engine.start();
-		
+
 		// Load the base scene data
 		ige.engine.addGraph(IgeBaseScene);
 

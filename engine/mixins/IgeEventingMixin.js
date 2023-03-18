@@ -1,4 +1,4 @@
-const WithEventingMixin = (Base) => class extends Base {
+export const WithEventingMixin = (Base) => class extends Base {
     constructor() {
         super(...arguments);
         // Private
@@ -280,4 +280,3 @@ const WithEventingMixin = (Base) => class extends Base {
         this._eventRemovalQueue = [];
     }
 };
-export default WithEventingMixin;

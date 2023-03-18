@@ -1,4 +1,4 @@
-import IgeEventingClass from "./IgeEventingClass";
+import { IgeEventingClass } from "./IgeEventingClass";
 import { IgeCanAsyncLoad } from "../../types/IgeCanAsyncLoad";
 
 export class IgeAsset extends IgeEventingClass implements IgeCanAsyncLoad {

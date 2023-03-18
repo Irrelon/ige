@@ -7,8 +7,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "../../../../engine/instance.js";
-import { SplashScene } from "./SplashScene.js";
+import { ige } from "../../../../engine/instance";
+import { SplashScene } from "./SplashScene";
 ige.router.route("app/splash", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         // Load our level onto the scenegraph

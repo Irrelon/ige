@@ -4,7 +4,7 @@ import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingConte
 
 export type IgeFilterHelperFunction = (...args: any[]) => any;
 
-class IgeFilters {
+export class IgeFilters {
 	filter: Record<string, IgeSmartFilter> = {};
 	helper: Record<string, IgeFilterHelperFunction> = {};
 	tmpCanvas?: HTMLCanvasElement;
@@ -35,5 +35,3 @@ class IgeFilters {
 		this.helper[name] = filter;
 	}
 }
-
-export default new IgeFilters();

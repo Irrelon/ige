@@ -1,7 +1,7 @@
-import { ige } from "../instance.js";
-import IgeComponent from "../core/IgeComponent.js";
-import { arrPull } from "../services/utils.js";
-class IgeUiManagerComponent extends IgeComponent {
+import { ige } from "../instance";
+import { IgeComponent } from "../core/IgeComponent";
+import { arrPull } from "../services/utils";
+export class IgeUiManagerComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgeUiManagerComponent";
@@ -136,4 +136,3 @@ class IgeUiManagerComponent extends IgeComponent {
     }
 }
 IgeUiManagerComponent.componentTargetClass = "Ige";
-export default IgeUiManagerComponent;

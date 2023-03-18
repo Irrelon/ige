@@ -1,6 +1,6 @@
 import { ige } from "../../instance";
 import { isClient } from "../../services/clientServer";
-import IgeAudio from "./IgeAudio";
+import { IgeAudio } from "./IgeAudio";
 import { IgeObject } from "../../core/IgeObject";
 import type { IgeCanvasRenderingContext2d } from "../../../types/IgeCanvasRenderingContext2d";
 

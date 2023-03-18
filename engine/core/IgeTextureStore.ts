@@ -1,6 +1,6 @@
 import { IgeAssetRegister } from "./IgeAssetRegister";
 import { IgeImage } from "./IgeImage";
-import type IgeTexture from "./IgeTexture";
+import type { IgeTexture } from "./IgeTexture";
 
 export class IgeTextureStore extends IgeAssetRegister<IgeTexture> {
 	_textureImageStore: Record<string, IgeImage> = {};

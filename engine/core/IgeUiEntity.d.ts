@@ -1,6 +1,6 @@
-import IgeEntity from "./IgeEntity";
+import { IgeEntity } from "./IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import IgeTexture from "./IgeTexture";
+import { IgeTexture } from "./IgeTexture";
 import { IgeRepeatType } from "../mixins/IgeUiStyleMixin";
 import { IgeObject } from "./IgeObject";
 import { IgePointXY } from "../../types/IgePointXY";
@@ -9,7 +9,7 @@ import { IgePointXY } from "../../types/IgePointXY";
  * than standard IgeEntity instances so only use them if an IgeEntity
  * won't do the job.
  */
-declare class IgeUiEntity extends IgeEntity {
+export declare class IgeUiEntity extends IgeEntity {
     classId: string;
     _color: string | CanvasGradient | CanvasPattern;
     _patternRepeat?: IgeRepeatType;
@@ -245,4 +245,3 @@ declare class IgeUiEntity extends IgeEntity {
     marginRight(px?: number): number | this;
     marginBottom(px?: number): number | this;
 }
-export default IgeUiEntity;

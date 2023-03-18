@@ -1,13 +1,13 @@
-import IgeBaseClass from "./IgeBaseClass";
+import { IgeBaseClass } from "./IgeBaseClass";
 
 /**
  * A simple finite state machine implementation.
  */
-class IgeFSM extends IgeBaseClass {
+export class IgeFSM extends IgeBaseClass {
 	classId = "IgeFSM";
 
-	constructor (ige) {
-		super(ige);
+	constructor () {
+		super();
 
 		this._states = {};
 		this._transitions = {};
@@ -189,7 +189,7 @@ class IgeFSM extends IgeBaseClass {
 	 * once the state has been entered successfully, or if there was an error.
 	 */
 	initialState (stateName, data, callback) {
-		var newStateObj = this.getState(stateName);
+		const newStateObj = this.getState(stateName);
 
 		this._currentStateName = stateName;
 
@@ -220,7 +220,7 @@ class IgeFSM extends IgeBaseClass {
 	 * @param {Function=} callback The optional callback method to call on completion.
 	 */
 	enterState (newStateName, data, callback) {
-		var self = this;
+		const self = this;
 
 		if (self._transitions[self._currentStateName] && self._transitions[self._currentStateName][newStateName]) {
 			// There is a transition check method, call it to see if we can change states
@@ -261,7 +261,7 @@ class IgeFSM extends IgeBaseClass {
 	 * @private
 	 */
 	_transitionStates (oldStateName, newStateName, data, callback) {
-		var self = this,
+		const self = this,
 			currentStateObj = self.getState(self._currentStateName),
 			newStateObj = self.getState(newStateName);
 
@@ -286,5 +286,3 @@ class IgeFSM extends IgeBaseClass {
 		}
 	}
 }
-
-export default IgeFSM;

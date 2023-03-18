@@ -1,4 +1,4 @@
-const WithDataMixin = (Base) => class extends Base {
+export const WithDataMixin = (Base) => class extends Base {
     constructor() {
         super(...arguments);
         this._data = {};
@@ -15,4 +15,3 @@ const WithDataMixin = (Base) => class extends Base {
         return null;
     }
 };
-export default WithDataMixin;

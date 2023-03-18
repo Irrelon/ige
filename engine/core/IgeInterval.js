@@ -1,11 +1,11 @@
-import { ige } from "../instance.js";
-import IgeEventingClass from "./IgeEventingClass.js";
+import { ige } from "../instance";
+import { IgeEventingClass } from "./IgeEventingClass";
 /**
  * Provides a kind of setInterval() that works based on the engine's internal
  * time system allowing intervals to fire correctly, taking into account pausing
  * the game and differences in rendering speed etc.
  */
-class IgeInterval extends IgeEventingClass {
+export class IgeInterval extends IgeEventingClass {
     /**
      * Creates a new timer that will call the method every given number of
      * milliseconds specified by the interval parameter.
@@ -66,4 +66,3 @@ class IgeInterval extends IgeEventingClass {
         return this;
     }
 }
-export default IgeInterval;

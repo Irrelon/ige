@@ -1,5 +1,8 @@
-import IgeBaseClass from "./IgeBaseClass.js";
-class IgeRect extends IgeBaseClass {
+import { IgeBaseClass } from "./IgeBaseClass";
+/**
+ * Creates a new rectangle (x, y, width, height).
+ */
+export class IgeRect extends IgeBaseClass {
     constructor(x = 0, y = 0, width = 0, height = 0) {
         super();
         this.classId = "IgeRect";
@@ -158,4 +161,3 @@ class IgeRect extends IgeBaseClass {
         return this;
     }
 }
-export default IgeRect;

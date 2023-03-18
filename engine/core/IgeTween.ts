@@ -1,11 +1,11 @@
-import IgeBaseClass from "./IgeBaseClass";
+import { IgeBaseClass } from "./IgeBaseClass";
 import { ige } from "../instance";
 import {arrPull} from "../services/utils";
 import {
 	easingFunctions
 } from "../services/easing";
 
-import type IgeTweenComponent from "../components/IgeTweenComponent";
+import type { IgeTweenComponent } from "../components/IgeTweenComponent";
 
 export interface IgeTweenStep {
 	props: Record<string, number>;
@@ -33,7 +33,7 @@ export interface IgeTweenOptions {
 /**
  * Creates a new tween instance.
  */
-class IgeTween extends IgeBaseClass {
+export class IgeTween extends IgeBaseClass {
 	classId = "IgeTween";
 	_steps: IgeTweenStep[];
 	_targetObj: any;
@@ -411,5 +411,3 @@ export const createTween = (target: any, props: IgeTweenPropertyObject, duration
 
 	return newTween;
 };
-
-export default IgeTween;

@@ -1,8 +1,8 @@
-import IgePoint3d from "./IgePoint3d";
+import { IgePoint3d } from "./IgePoint3d";
 /**
  * Creates a new path node for use with the IgePathFinder class.
  */
-declare class IgePathNode extends IgePoint3d {
+export declare class IgePathNode extends IgePoint3d {
     classId: string;
     x: number;
     y: number;
@@ -39,4 +39,3 @@ declare class IgePathNode extends IgePoint3d {
      */
     mode(val?: number): number | this;
 }
-export default IgePathNode;

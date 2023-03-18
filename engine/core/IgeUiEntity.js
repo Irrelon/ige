@@ -1,13 +1,13 @@
 // TODO: Implement the _stringify() method for this class
-import IgeEntity from "./IgeEntity.js";
-import { ige } from "../instance.js";
-import { PI180 } from "../services/utils.js";
+import { ige } from "../instance";
+import { IgeEntity } from "./IgeEntity";
+import { PI180 } from "../services/utils";
 /**
  * Creates a new UI entity. UI entities use more resources and CPU
  * than standard IgeEntity instances so only use them if an IgeEntity
  * won't do the job.
  */
-class IgeUiEntity extends IgeEntity {
+export class IgeUiEntity extends IgeEntity {
     constructor() {
         super(...arguments);
         this.classId = "IgeUiEntity";
@@ -1164,4 +1164,3 @@ class IgeUiEntity extends IgeEntity {
         return this._marginBottom;
     }
 }
-export default IgeUiEntity;

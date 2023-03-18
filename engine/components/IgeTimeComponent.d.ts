@@ -1,9 +1,9 @@
-import IgeComponent from "../core/IgeComponent";
-import IgeEntity from "../core/IgeEntity";
-import IgeInterval from "../core/IgeInterval";
-import type { IgeEngine } from "../core/IgeEngine";
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeEntity } from "../core/IgeEntity";
+import { IgeInterval } from "../core/IgeInterval";
 import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
-declare class IgeTimeComponent extends IgeComponent<IgeEngine> {
+import type { IgeEngine } from "../core/IgeEngine";
+export declare class IgeTimeComponent extends IgeComponent<IgeEngine> {
     classId: string;
     componentId: string;
     _updating: boolean;
@@ -17,4 +17,3 @@ declare class IgeTimeComponent extends IgeComponent<IgeEngine> {
     _processAdditions: () => this;
     _processRemovals: () => this;
 }
-export default IgeTimeComponent;

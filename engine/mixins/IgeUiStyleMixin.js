@@ -1,7 +1,8 @@
-import { ige } from "../instance.js";
+// TODO: Add "overflow" with automatic scroll-bars
+import { ige } from "../instance";
 // TODO: Update this mixin so it extends from IgeBaseClass, moving anything that relies on IgeEntity
 //    to another class, probably IgeEntity or IgeUiEntity?
-const WithUiStyleMixin = (Base) => class extends Base {
+export const WithUiStyleMixin = (Base) => class extends Base {
     constructor() {
         super(...arguments);
         this._color = "#000000";
@@ -380,4 +381,3 @@ const WithUiStyleMixin = (Base) => class extends Base {
         return this._marginBottom;
     }
 };
-export default WithUiStyleMixin;

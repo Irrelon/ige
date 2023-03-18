@@ -1,15 +1,15 @@
+import { IgeTexture } from "./IgeTexture";
 /* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
- * so that bottom-right aligns to the lower-right point of the bounding box of the entity
- * whilst maintaining the current text-alignment as well
+ *    so that bottom-right aligns to the lower-right point of the bounding box of the entity
+ *    whilst maintaining the current text-alignment as well
 * */
-import IgeTexture from "./IgeTexture.js";
 /**
  * Creates a new font sheet. A font sheet is an image that contains
  * letters and numbers rendered to specifications. It allows you to
  * use and render text fonts without the font actually existing on
  * the target system that the engine is running in.
  */
-class IgeFontSheet extends IgeTexture {
+export class IgeFontSheet extends IgeTexture {
     constructor(ige, url) {
         super(ige, url);
         this.classId = "IgeFontSheet";
@@ -217,4 +217,3 @@ class IgeFontSheet extends IgeTexture {
         this.script = null;
     }
 }
-export default IgeFontSheet;

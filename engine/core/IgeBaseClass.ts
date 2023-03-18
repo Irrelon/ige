@@ -5,7 +5,7 @@ export interface IgeDependencyAction {
 	actionToTake: (...args: any[]) => any;
 }
 
-class IgeBaseClass {
+export class IgeBaseClass {
 	classId = "IgeBaseClass";
 	_dependencyFulfilled: Record<string, boolean> = {};
 	_dependsOnArr: IgeDependencyAction[] = [];
@@ -154,5 +154,3 @@ class IgeBaseClass {
 		return null;
 	}
 }
-
-export default IgeBaseClass;

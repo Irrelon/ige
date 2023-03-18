@@ -4,22 +4,22 @@ import { arrPull } from "../services/utils";
 import { IgeSmartFilter } from "../../types/IgeSmartFilter";
 import type { IgeImage } from "./IgeImage";
 import type { IgeCanvas } from "./IgeCanvas";
-import IgeEntity from "./IgeEntity";
+import { IgeEntity } from "./IgeEntity";
 import { isClient, isServer } from "../services/clientServer";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode";
 import { IgeAsset } from "./IgeAsset";
 import { newCanvas } from "./IgeCanvas";
 
-type IgeTextureCell = [number, number, number, number, string?];
-type IgeTextureCellArray = IgeTextureCell[];
+export type IgeTextureCell = [number, number, number, number, string?];
+export type IgeTextureCellArray = IgeTextureCell[];
 
 let IgeImageClass: typeof IgeImage;
 
 /**
  * Creates a new texture.
  */
-class IgeTexture extends IgeAsset {
+export class IgeTexture extends IgeAsset {
 	classId = "IgeTexture";
 	IgeTexture = true;
 	_sizeX: number = 0;
@@ -958,5 +958,3 @@ class IgeTexture extends IgeAsset {
 		return this;
 	}
 }
-
-export default IgeTexture;

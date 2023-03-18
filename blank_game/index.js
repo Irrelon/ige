@@ -1,5 +1,5 @@
-import IgeBaseClass from "../engine/core/IgeBaseClass.js";
-import Ige from "../engine/core/Ige.js";
+import { IgeBaseClass } from "../engine/core/IgeBaseClass";
+import Ige from "../engine/core/Ige";
 class Game extends IgeBaseClass {
     constructor(App, options) {
         // Create the engine

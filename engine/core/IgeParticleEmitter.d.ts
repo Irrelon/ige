@@ -1,7 +1,7 @@
-import IgeUiEntity from "./IgeUiEntity";
-import IgePoint3d from "./IgePoint3d";
+import { IgeUiEntity } from "./IgeUiEntity";
+import { IgePoint3d } from "./IgePoint3d";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import IgeParticle from "./IgeParticle";
+import { IgeParticle } from "./IgeParticle";
 import { IgeObject } from "./IgeObject";
 export interface IgeParticleVectorBaseMinMax {
     base: IgePoint3d;
@@ -11,7 +11,7 @@ export interface IgeParticleVectorBaseMinMax {
 /**
  * Creates a new particle emitter.
  */
-declare class IgeParticleEmitter extends IgeUiEntity {
+export declare class IgeParticleEmitter extends IgeUiEntity {
     classId: string;
     IgeParticleEmitter: boolean;
     _particle?: typeof IgeParticle;
@@ -168,4 +168,3 @@ declare class IgeParticleEmitter extends IgeUiEntity {
      */
     particles(): IgeParticle[];
 }
-export default IgeParticleEmitter;

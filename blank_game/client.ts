@@ -1,4 +1,4 @@
-import IgeBaseClass from "../engine/core/IgeBaseClass";
+import { IgeBaseClass } from "../engine/core/IgeBaseClass";
 import { ige } from "../engine/instance";
 
 export class Client extends IgeBaseClass {

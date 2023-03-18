@@ -1,6 +1,6 @@
 import { ige } from "../../../../engine/instance";
 import { Level1Scene } from "./Level1Scene";
-import IgeTexture from "../../../../engine/core/IgeTexture";
+import { IgeTexture } from "../../../../engine/core/IgeTexture";
 import simpleBox from "../../assets/textures/smartTextures/simpleBox";
 
 ige.router.route("app/level1", {

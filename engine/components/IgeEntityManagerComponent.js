@@ -1,6 +1,6 @@
-import IgeComponent from "../core/IgeComponent.js";
-import { IgeMountMode } from "../../enums/IgeMountMode.js";
-import IgeRect from "../core/IgeRect.js";
+import IgeComponent from "../core/IgeComponent";
+import { IgeMountMode } from "../../enums/IgeMountMode";
+import IgeRect from "../core/IgeRect";
 class IgeEntityManagerComponent extends IgeComponent {
     /**
      * @constructor

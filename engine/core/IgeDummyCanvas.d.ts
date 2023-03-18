@@ -1,8 +1,7 @@
-import IgeDummyContext from "./IgeDummyContext";
-declare class IgeDummyCanvas {
+import { IgeDummyContext } from "./IgeDummyContext";
+export declare class IgeDummyCanvas {
     dummy: boolean;
     width: number;
     height: number;
     getContext: (type: string) => IgeDummyContext;
 }
-export default IgeDummyCanvas;

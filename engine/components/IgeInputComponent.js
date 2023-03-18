@@ -1,7 +1,7 @@
-import { ige } from "../instance.js";
-import IgePoint3d from "../core/IgePoint3d.js";
-import IgeComponent from "../core/IgeComponent.js";
-class IgeInputComponent extends IgeComponent {
+import { ige } from "../instance";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgeComponent } from "../core/IgeComponent";
+export class IgeInputComponent extends IgeComponent {
     constructor() {
         super();
         this.classId = "IgeInputComponent";
@@ -682,4 +682,3 @@ class IgeInputComponent extends IgeComponent {
         return 0;
     }
 }
-export default IgeInputComponent;

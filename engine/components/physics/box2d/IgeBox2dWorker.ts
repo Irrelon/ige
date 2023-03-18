@@ -1,3 +1,3 @@
-var IgeBox2dWorker = function () {
+export class IgeBox2dWorker {
 	// Setup initial variables
-};
+}

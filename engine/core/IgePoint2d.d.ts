@@ -1,8 +1,8 @@
+import { IgePoint3d } from "./IgePoint3d";
 /**
  * Creates a new 2d point (x, y).
  */
-import IgePoint3d from "./IgePoint3d";
-declare class IgePoint2d {
+export declare class IgePoint2d {
     classId: string;
     x: number;
     y: number;
@@ -175,4 +175,3 @@ declare class IgePoint2d {
      */
     toString(precision?: number): string;
 }
-export default IgePoint2d;

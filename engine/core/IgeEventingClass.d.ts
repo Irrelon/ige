@@ -1,4 +1,4 @@
-import IgeBaseClass from "./IgeBaseClass";
+import { IgeBaseClass } from "./IgeBaseClass";
 declare const IgeEventingClass_base: {
     new (...args: any[]): {
         _eventsProcessing: boolean;
@@ -28,6 +28,6 @@ declare const IgeEventingClass_base: {
 /**
  * Creates a new class with the capability to emit events.
  */
-declare class IgeEventingClass extends IgeEventingClass_base {
+export declare class IgeEventingClass extends IgeEventingClass_base {
 }
-export default IgeEventingClass;
+export {};

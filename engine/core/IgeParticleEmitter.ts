@@ -1,12 +1,12 @@
 import { ige } from "../instance";
-import IgeUiEntity from "./IgeUiEntity";
-import IgeTween, { IgeTweenPropertyObject } from "./IgeTween";
-import IgePoint3d from "./IgePoint3d";
+import { IgeUiEntity } from "./IgeUiEntity";
+import { IgeTween, IgeTweenPropertyObject } from "./IgeTween";
+import { IgePoint3d } from "./IgePoint3d";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import IgeParticle from "./IgeParticle";
+import { IgeParticle } from "./IgeParticle";
 import { IgeObject } from "./IgeObject";
 import { degreesToRadians } from "../services/utils";
-import IgeVelocityComponent from "../components/IgeVelocityComponent";
+import { IgeVelocityComponent } from "../components/IgeVelocityComponent";
 
 export interface IgeParticleVectorBaseMinMax {
 	base: IgePoint3d;
@@ -17,7 +17,7 @@ export interface IgeParticleVectorBaseMinMax {
 /**
  * Creates a new particle emitter.
  */
-class IgeParticleEmitter extends IgeUiEntity {
+export class IgeParticleEmitter extends IgeUiEntity {
 	classId = "IgeParticleEmitter";
 	IgeParticleEmitter = true;
 
@@ -774,4 +774,3 @@ class IgeParticleEmitter extends IgeUiEntity {
 	// }
 }
 
-export default IgeParticleEmitter;

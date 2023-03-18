@@ -1,7 +1,7 @@
 import { ige } from "../../instance";
-import IgeEventingClass from "../../core/IgeEventingClass";
+import { IgeEventingClass } from "../../core/IgeEventingClass";
 
-class IgeAudio extends IgeEventingClass {
+export class IgeAudio extends IgeEventingClass {
 	classId = "IgeAudio";
 	_url?: string;
 	_buffer?: AudioBuffer;
@@ -149,5 +149,3 @@ class IgeAudio extends IgeEventingClass {
 		this._playing = false;
 	}
 }
-
-export default IgeAudio;

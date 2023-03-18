@@ -1,13 +1,13 @@
 import { ige } from "../instance";
 import { isClient, isServer } from "../services/clientServer";
 import { degreesToRadians, traceSet } from "../services/utils";
-import IgePoint2d from "./IgePoint2d";
-import IgePoint3d from "./IgePoint3d";
-import IgeMatrix2d from "./IgeMatrix2d";
-import IgePoly2d from "./IgePoly2d";
-import IgeDummyCanvas from "./IgeDummyCanvas";
-import IgeRect from "./IgeRect";
-import type IgeTileMap2d from "./IgeTileMap2d";
+import { IgePoint2d } from "./IgePoint2d";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgeMatrix2d } from "./IgeMatrix2d";
+import { IgePoly2d } from "./IgePoly2d";
+import { IgeDummyCanvas } from "./IgeDummyCanvas";
+import { IgeRect } from "./IgeRect";
+import type { IgeTileMap2d } from "./IgeTileMap2d";
 import { IgeObject } from "./IgeObject";
 import { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
 import { IgeMountMode } from "../../enums/IgeMountMode";
@@ -22,16 +22,16 @@ import type { IgeInputEventControl } from "../../types/IgeInputEventControl";
 import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById";
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "../../types/IgeTimeStream";
-import type IgeViewport from "./IgeViewport";
-import type IgeTexture from "./IgeTexture";
+import type { IgeViewport } from "./IgeViewport";
+import type { IgeTexture } from "./IgeTexture";
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory";
-import type IgeInputComponent from "../components/IgeInputComponent";
+import type { IgeInputComponent } from "../components/IgeInputComponent";
 
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
  */
-class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterByCategory {
+export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterByCategory {
 	classId = "IgeEntity";
 	_renderMode: IgeEntityRenderMode = IgeEntityRenderMode.flat;
 	//_entity?: IgeEntity; // We comment this because any class wanting to override return values of methods can do so individually e.g. viewport.camera.width().height()
@@ -2594,9 +2594,9 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 *     entity.translate().y(10);
 	 * @return {*}
 	 */
-	translate = (...args: any[]) => {
+	translate (...args: any[]) {
 		if (args.length) {
-			this.log("You called translate with arguments, did you mean translateTo or translateBy instead of translate?", "warning");
+			throw new Error("You called translate with arguments, did you mean translateTo or translateBy instead of translate?");
 		}
 
 		// used to be this._entity || { x, y z }
@@ -2607,7 +2607,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 				z: this._translateAccessorZ
 			}
 		);
-	};
+	}
 
 	/**
 	 * The `translate` accessor method for the x-axis. This
@@ -2713,7 +2713,7 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 	 */
 	rotate (...args: any[]) {
 		if (args.length) {
-			this.log("You called rotate with arguments, did you mean rotateTo or rotateBy instead of rotate?", "warning");
+			throw new Error("You called rotate with arguments, did you mean rotateTo or rotateBy instead of rotate?");
 		}
 
 		// used to be this._entity || { x, y z }
@@ -3329,5 +3329,3 @@ class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterB
 		}
 	}
 }
-
-export default IgeEntity;

@@ -1,11 +1,11 @@
-import IgeBaseClass from "./IgeBaseClass.js";
-import { ige } from "../instance.js";
-import { arrPull } from "../services/utils.js";
-import { easingFunctions } from "../services/easing.js";
+import { IgeBaseClass } from "./IgeBaseClass";
+import { ige } from "../instance";
+import { arrPull } from "../services/utils";
+import { easingFunctions } from "../services/easing";
 /**
  * Creates a new tween instance.
  */
-class IgeTween extends IgeBaseClass {
+export class IgeTween extends IgeBaseClass {
     constructor(targetObj, propertyObj, durationMs, options) {
         super();
         this.classId = "IgeTween";
@@ -318,4 +318,3 @@ export const createTween = (target, props, durationMs, options) => {
     }
     return newTween;
 };
-export default IgeTween;

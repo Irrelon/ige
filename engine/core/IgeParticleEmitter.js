@@ -1,11 +1,11 @@
-import { ige } from "../instance.js";
-import IgeUiEntity from "./IgeUiEntity.js";
-import IgeTween from "./IgeTween.js";
-import { degreesToRadians } from "../services/utils.js";
+import { ige } from "../instance";
+import { IgeUiEntity } from "./IgeUiEntity";
+import { IgeTween } from "./IgeTween";
+import { degreesToRadians } from "../services/utils";
 /**
  * Creates a new particle emitter.
  */
-class IgeParticleEmitter extends IgeUiEntity {
+export class IgeParticleEmitter extends IgeUiEntity {
     constructor() {
         super();
         this.classId = "IgeParticleEmitter";
@@ -584,4 +584,3 @@ class IgeParticleEmitter extends IgeUiEntity {
         return this._particles;
     }
 }
-export default IgeParticleEmitter;

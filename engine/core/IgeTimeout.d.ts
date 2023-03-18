@@ -1,10 +1,10 @@
+import { IgeInterval, IgeIntervalCallback } from "./IgeInterval";
 /**
  * Provides an alternative to setTimeout() which works based on the engine's internal
  * time system allowing timeouts to fire correctly, taking into account pausing the
  * game and differences in rendering speed etc.
  */
-import IgeInterval from "./IgeInterval";
-declare class IgeTimeout extends IgeInterval {
+export declare class IgeTimeout extends IgeInterval {
     classId: string;
     /**
      * Creates a new timeout that will call the passed method after the number of
@@ -12,12 +12,7 @@ declare class IgeTimeout extends IgeInterval {
      * @param {Function} method The method to call on timeout.
      * @param {Number} timeout The number of milliseconds before the timeout.
      */
-    constructor(ige: any, method: any, timeout: any);
-    /**
-     * Cancels the timer, stops the timeout.
-     * @returns {*}
-     */
-    cancel(): void;
+    constructor(method: IgeIntervalCallback, timeout: number);
     /**
      * Resets the time and lets the timeout begin anew.
      * @returns {*}
@@ -31,4 +26,3 @@ declare class IgeTimeout extends IgeInterval {
      */
     update(): this;
 }
-export default IgeTimeout;

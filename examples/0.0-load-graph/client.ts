@@ -1,9 +1,9 @@
 import {ige} from "../../engine/instance";
-import IgeBaseClass from "../../engine/core/IgeBaseClass";
-import IgeTexture from "../../engine/core/IgeTexture";
+import { IgeBaseClass } from "../../engine/core/IgeBaseClass";
+import { IgeTexture } from "../../engine/core/IgeTexture";
 import simpleBox from "./assets/textures/smartTextures/simpleBox";
 import { IgeCanInit } from "../../types/IgeCanInit";
-import IgeBaseScene from "../../engine/core/IgeBaseScene";
+import { IgeBaseScene } from "../../engine/core/IgeBaseScene";
 import { Level1 } from "./levels/Level1";
 
 // @ts-ignore

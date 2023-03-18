@@ -1,16 +1,16 @@
-import IgePoint3d from "./IgePoint3d";
-import IgeEntity from "./IgeEntity";
-import IgeCamera from "./IgeCamera";
-import IgeRect from "./IgeRect";
-import IgePoint2d from "./IgePoint2d";
 import { ige } from "../instance";
-import IgeScene2d from "./IgeScene2d";
-import { IgeCanRegisterById } from "../../types/IgeCanRegisterById";
 import { isClient } from "../services/clientServer";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgeEntity } from "./IgeEntity";
+import { IgeCamera } from "./IgeCamera";
+import { IgeRect } from "./IgeRect";
+import { IgePoint2d } from "./IgePoint2d";
+import { IgeScene2d } from "./IgeScene2d";
+import { IgeCanRegisterById } from "../../types/IgeCanRegisterById";
 import { IgeObject } from "./IgeObject";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeMountMode } from "../../enums/IgeMountMode";
-import IgeUiEntity from "./IgeUiEntity";
+import { IgeUiEntity } from "./IgeUiEntity";
 
 export interface IgeViewportOptions {
 	width: number;
@@ -24,7 +24,7 @@ export interface IgeViewportOptions {
 /**
  * Creates a new viewport.
  */
-class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
+export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	classId = "IgeViewport";
 	IgeViewport = true;
 	_idRegistered: boolean = false;
@@ -647,5 +647,3 @@ class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		return str;
 	}
 }
-
-export default IgeViewport;

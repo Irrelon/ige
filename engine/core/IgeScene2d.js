@@ -1,9 +1,9 @@
-import IgeEntity from "./IgeEntity.js";
-import { ige } from "../instance.js";
+import { ige } from "../instance";
+import { IgeEntity } from "./IgeEntity";
 /**
  * Creates a new 2d scene.
  */
-class IgeScene2d extends IgeEntity {
+export class IgeScene2d extends IgeEntity {
     constructor() {
         super();
         this.classId = "IgeScene2d";
@@ -170,4 +170,3 @@ class IgeScene2d extends IgeEntity {
         return str;
     }
 }
-export default IgeScene2d;

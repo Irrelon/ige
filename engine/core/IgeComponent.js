@@ -1,5 +1,5 @@
-import IgeEventingClass from "./IgeEventingClass.js";
-class IgeComponent extends IgeEventingClass {
+import { IgeEventingClass } from "./IgeEventingClass";
+export class IgeComponent extends IgeEventingClass {
     constructor(parent, options) {
         super();
         this.componentId = "IgeComponent";
@@ -10,4 +10,3 @@ class IgeComponent extends IgeEventingClass {
         return this;
     }
 }
-export default IgeComponent;

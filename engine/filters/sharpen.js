@@ -1,5 +1,5 @@
-import { convoluteHelper } from "./convolute.js";
-import igeFilters from "../services/igeFilters.js";
+import { convoluteHelper } from "./convolute";
+import igeFilters from "../services/igeFilters";
 export const sharpen = function (canvas, ctx, originalImage, texture, data) {
     let strength = 1, loop;
     if (data && data.value) {

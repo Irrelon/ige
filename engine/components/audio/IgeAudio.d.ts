@@ -1,5 +1,5 @@
-import IgeEventingClass from "../../core/IgeEventingClass";
-declare class IgeAudio extends IgeEventingClass {
+import { IgeEventingClass } from "../../core/IgeEventingClass";
+export declare class IgeAudio extends IgeEventingClass {
     classId: string;
     _url?: string;
     _buffer?: AudioBuffer;
@@ -34,4 +34,3 @@ declare class IgeAudio extends IgeEventingClass {
      */
     stop(): void;
 }
-export default IgeAudio;

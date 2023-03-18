@@ -1,15 +1,15 @@
-import IgePoint3d from "./IgePoint3d";
+import { IgePoint3d } from "./IgePoint3d";
 import { radiansToDegrees } from "../services/utils";
-import IgeBaseClass from "./IgeBaseClass";
+import { IgeBaseClass } from "./IgeBaseClass";
 import type { IgePoint } from "../../types/IgePoint";
-import type IgeEntity from "./IgeEntity";
+import type { IgeEntity } from "./IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeObject } from "./IgeObject";
 
 /**
  * Creates a new transformation matrix.
  */
-class IgeMatrix2d extends IgeBaseClass {
+export class IgeMatrix2d extends IgeBaseClass {
 	matrix = [
 		1.0, 0.0, 0.0,
 		0.0, 1.0, 0.0,
@@ -444,5 +444,3 @@ class IgeMatrix2d extends IgeBaseClass {
 		return this;
 	}
 }
-
-export default IgeMatrix2d;

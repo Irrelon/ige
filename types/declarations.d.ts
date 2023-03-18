@@ -1,4 +1,4 @@
-import IgeViewport from "../engine/core/IgeViewport";
+import { IgeViewport } from "../engine/core/IgeViewport";
 
 export {}
 

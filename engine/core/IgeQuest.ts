@@ -1,11 +1,11 @@
-import IgeEventingClass from "./IgeEventingClass";
+import { IgeEventingClass } from "./IgeEventingClass";
 
-class IgeQuest extends IgeEventingClass {
+export class IgeQuest extends IgeEventingClass {
 	classId = "IgeQuest";
 
-	constructor (ige, questDefinition, completeCallback) {
-		super(ige);
-		
+	constructor (questDefinition, completeCallback) {
+		super();
+
 		this._linear = false;
 		this._items = [];
 
@@ -83,7 +83,7 @@ class IgeQuest extends IgeEventingClass {
 			this._items = val;
 
 			// Set the event and item counts
-			var arr = this._items,
+			let arr = this._items,
 				arrCount = arr.length,
 				i,
 				eventCount = 0;
@@ -151,7 +151,7 @@ class IgeQuest extends IgeEventingClass {
 	 */
 	start () {
 		if (!this._started) {
-			var self = this,
+			let self = this,
 				arr = this._items,
 				arrCount = arr.length,
 				i;
@@ -203,7 +203,7 @@ class IgeQuest extends IgeEventingClass {
 	 * original values and cancels all current event listeners.
 	 */
 	reset () {
-		var arr = this._items,
+		let arr = this._items,
 			arrCount = arr.length,
 			i, item;
 
@@ -239,7 +239,7 @@ class IgeQuest extends IgeEventingClass {
 	 * @private
 	 */
 	_setupItemListener (item) {
-		var self = this;
+		const self = this;
 
 		// Check for an existing listener
 		if (!item._listener) {
@@ -299,7 +299,7 @@ class IgeQuest extends IgeEventingClass {
 	 * @private
 	 */
 	_itemComplete (item) {
-		var itemIndex,
+		let itemIndex,
 			arr = this._items;
 
 		// Mark the item as complete
@@ -360,5 +360,3 @@ class IgeQuest extends IgeEventingClass {
 		}
 	}
 }
-
-export default IgeQuest;

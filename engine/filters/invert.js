@@ -1,4 +1,4 @@
-import igeFilters from "../services/igeFilters.js";
+import igeFilters from "../services/igeFilters";
 export const invert = function (canvas, ctx, originalImage, texture, data) {
     const w = canvas.width, h = canvas.height;
     const canvasData = ctx.getImageData(0, 0, w, h);

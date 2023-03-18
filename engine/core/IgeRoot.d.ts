@@ -1,10 +1,10 @@
-import IgeEntity from "./IgeEntity";
+import { IgeEntity } from "./IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeObject } from "./IgeObject";
 /**
  * The engine's root entity that all the scenegraph lives from.
  */
-declare class IgeRoot extends IgeEntity {
+export declare class IgeRoot extends IgeEntity {
     classId: string;
     _viewportDepth: boolean;
     _alwaysInView: boolean;
@@ -15,7 +15,7 @@ declare class IgeRoot extends IgeEntity {
      * position is set by the this.input component (IgeInputComponent)
      * @return {IgePoint3d}
      */
-    mousePos(): import("./IgePoint3d").default;
+    mousePos(): import("./IgePoint3d").IgePoint3d;
     /**
      * Walks the scenegraph and returns an array of all entities that the mouse
      * is currently over, ordered by their draw order from drawn last (above other
@@ -27,4 +27,3 @@ declare class IgeRoot extends IgeEntity {
     renderSceneGraph(ctx: IgeCanvasRenderingContext2d): void;
     destroy(): this;
 }
-export default IgeRoot;

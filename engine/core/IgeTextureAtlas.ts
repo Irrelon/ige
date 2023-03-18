@@ -1,13 +1,13 @@
-import IgeTextureMap from "./IgeTextureMap";
+import { IgeTextureMap } from "./IgeTextureMap";
 
 /**
  * Texture maps provide a way to display textures across a tile map.
  */
-class IgeTextureAtlas extends IgeTextureMap {
+export class IgeTextureAtlas extends IgeTextureMap {
 	classId = "IgeTextureAtlas";
 
-	constructor (ige, tileWidth, tileHeight) {
-		super(ige, tileWidth, tileHeight);
+	constructor (tileWidth?: number, tileHeight?: number) {
+		super(tileWidth, tileHeight);
 	}
 
 	/**
@@ -24,15 +24,15 @@ class IgeTextureAtlas extends IgeTextureMap {
 			// Check the type of data source and set a flag so we don't
 			// have to check it every time we read data
 			switch (typeof (this._dataSource)) {
-				case "string":
-					// The data source is a string so it must be a URL
-					this._dataSourceType = "url";
-					break;
+			case "string":
+				// The data source is a string so it must be a URL
+				this._dataSourceType = "url";
+				break;
 
-				case "object":
-					// The data source is an object so it must be map data
-					this._dataSourceType = "data";
-					break;
+			case "object":
+				// The data source is an object so it must be map data
+				this._dataSourceType = "data";
+				break;
 			}
 
 			return this;
@@ -57,5 +57,3 @@ class IgeTextureAtlas extends IgeTextureMap {
 		return {"x": this._bufferZone.x, "y": this._bufferZone.y};
 	}
 }
-
-export default IgeTextureMap;

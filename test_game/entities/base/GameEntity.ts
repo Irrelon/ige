@@ -1,4 +1,4 @@
-import IgeEntity from "../../../engine/core/IgeEntity";
+import { IgeEntity } from "../../../engine/core/IgeEntity";
 import { IgeStreamMode } from "../../../enums/IgeStreamMode";
 import { registerClass } from "../../../engine/services/igeClassStore";
 

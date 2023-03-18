@@ -1,12 +1,12 @@
-import IgeEntity from "./IgeEntity";
-import IgeViewport from "./IgeViewport";
-import IgeRect from "./IgeRect";
-import IgePoint3d from "./IgePoint3d";
+import { IgeEntity } from "./IgeEntity";
+import { IgeViewport } from "./IgeViewport";
+import { IgeRect } from "./IgeRect";
+import { IgePoint3d } from "./IgePoint3d";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 /**
  * Creates a new camera that will be attached to a viewport.
  */
-declare class IgeCamera extends IgeEntity {
+export declare class IgeCamera extends IgeEntity {
     classId: string;
     _entity: IgeViewport;
     _trackRotateTarget?: IgeEntity;
@@ -130,4 +130,3 @@ declare class IgeCamera extends IgeEntity {
      */
     _stringify(): string;
 }
-export default IgeCamera;

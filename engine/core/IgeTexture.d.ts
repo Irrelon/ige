@@ -2,16 +2,16 @@ import { IgeSmartTexture } from "../../types/IgeSmartTexture";
 import { IgeSmartFilter } from "../../types/IgeSmartFilter";
 import type { IgeImage } from "./IgeImage";
 import type { IgeCanvas } from "./IgeCanvas";
-import IgeEntity from "./IgeEntity";
+import { IgeEntity } from "./IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode";
 import { IgeAsset } from "./IgeAsset";
-type IgeTextureCell = [number, number, number, number, string?];
-type IgeTextureCellArray = IgeTextureCell[];
+export type IgeTextureCell = [number, number, number, number, string?];
+export type IgeTextureCellArray = IgeTextureCell[];
 /**
  * Creates a new texture.
  */
-declare class IgeTexture extends IgeAsset {
+export declare class IgeTexture extends IgeAsset {
     classId: string;
     IgeTexture: boolean;
     _sizeX: number;
@@ -214,4 +214,3 @@ declare class IgeTexture extends IgeAsset {
      */
     destroy(): this;
 }
-export default IgeTexture;

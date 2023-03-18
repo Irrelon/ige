@@ -1,4 +1,4 @@
-import { newIdHex } from "../../../../services/utils.js";
+import { newIdHex } from "../../../../services/utils";
 class UiDialogs extends IgeEventingClass {
 }
 {

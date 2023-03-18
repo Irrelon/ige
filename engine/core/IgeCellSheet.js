@@ -1,10 +1,10 @@
-import IgeTexture from "./IgeTexture.js";
+import { IgeTexture } from "./IgeTexture";
 /**
  * Creates a new cell sheet. Cell sheets are textures that are
  * automatically split up into individual cells based on a cell
  * width and height.
  */
-class IgeCellSheet extends IgeTexture {
+export class IgeCellSheet extends IgeTexture {
     constructor(id, urlOrObject, horizontalCells, verticalCells) {
         super(id, urlOrObject);
         this.classId = "IgeCellSheet";
@@ -104,4 +104,3 @@ class IgeCellSheet extends IgeTexture {
         return str;
     }
 }
-export default IgeCellSheet;

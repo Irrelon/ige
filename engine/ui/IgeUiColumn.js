@@ -1,5 +1,5 @@
-import IgeUiElement from "../core/IgeUiElement.js";
-class IgeUiColumn extends IgeUiElement {
+import { IgeUiElement } from "../core/IgeUiElement";
+export class IgeUiColumn extends IgeUiElement {
     constructor() {
         super(...arguments);
         this.classId = "IgeUiColumn";
@@ -44,4 +44,3 @@ class IgeUiColumn extends IgeUiElement {
         super.tick(ctx);
     }
 }
-export default IgeUiColumn;

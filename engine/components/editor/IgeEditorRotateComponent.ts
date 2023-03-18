@@ -1,6 +1,6 @@
 import {degreesToRadians, radiansToDegrees} from "../../services/utils";
-import IgeEntity from "../../core/IgeEntity";
-import IgeComponent from "../../core/IgeComponent";
+import { IgeEntity } from "../../core/IgeEntity";
+import { IgeComponent } from "../../core/IgeComponent";
 
 /**
  * When added to a viewport, automatically adds entity rotate

@@ -1,4 +1,4 @@
-import IgeEventingClass from "./IgeEventingClass";
+import { IgeEventingClass } from "./IgeEventingClass";
 import { IgeAsset } from "./IgeAsset";
 
 export class IgeAssetRegister<AssetType extends IgeAsset> extends IgeEventingClass {

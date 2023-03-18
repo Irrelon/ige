@@ -1,14 +1,15 @@
 import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent";
 import { IgeNetworkMessageData, IgeNetworkServerSideMessageHandler, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideResponseData } from "../../../../types/IgeNetworkMessage";
-import { NetIoServer, NetIoSocket } from "./server/socketServer";
+import { IgeNetIoServer } from "./server/IgeNetIoServer";
+import { IgeNetIoSocket } from "./server/IgeNetIoSocket";
 export declare class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
     _idCounter: number;
     _networkCommands: Record<string, IgeNetworkServerSideMessageHandler | undefined>;
     _requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkServerSideMessageHandler>>;
-    _socketById: Record<string, NetIoSocket>;
+    _socketById: Record<string, IgeNetIoSocket>;
     _port: number;
     _acceptConnections: boolean;
-    _io?: NetIoServer;
+    _io?: IgeNetIoServer;
     _streamTimer?: number;
     _streamInterval: number;
     _queuedData: Record<string, [string, string[]]>;
@@ -80,13 +81,13 @@ export declare class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
      * that have joined room specified by the passed roomId.
      * @return
      */
-    clients(roomId?: string): Record<string, NetIoSocket>;
+    clients(roomId?: string): Record<string, IgeNetIoSocket>;
     /**
      * Returns the socket associated with the specified client id.
      * @param {String=} clientId
      * @return {*}
      */
-    socket(clientId: string): NetIoSocket;
+    socket(clientId: string): IgeNetIoSocket;
     /**
      * Gets / sets the current flag that determines if client connections
      * should be allowed to connect (true) or dropped instantly (false).
@@ -137,7 +138,7 @@ export declare class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
      * @param {Object} socket The client socket object.
      * @private
      */
-    _onClientConnect: (socket: NetIoSocket) => void;
+    _onClientConnect: (socket: IgeNetIoSocket) => void;
     _sendTimeSync(clientId?: string): void;
     /**
      * Called when the server receives a network message from a client.
@@ -152,7 +153,7 @@ export declare class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
      * @param {Object} socket The client socket object.
      * @private
      */
-    _onClientDisconnect(data: IgeNetworkMessageData, socket: NetIoSocket): void;
+    _onClientDisconnect(data: IgeNetworkMessageData, socket: IgeNetIoSocket): void;
     /**
      * Gets / sets the interval by which updates to the game world are packaged
      * and transmitted to connected clients. The greater the value, the less

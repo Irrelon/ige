@@ -1,6 +1,6 @@
 import type { Mixin } from "../../types/Mixin";
-import type IgeBaseClass from "../core/IgeBaseClass";
-declare const WithDataMixin: <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => {
+import type { IgeBaseClass } from "../core/IgeBaseClass";
+export declare const WithDataMixin: <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => {
     new (...args: any[]): {
         _data: Record<string, any>;
         data(key: string, value: any): this;
@@ -18,4 +18,3 @@ declare const WithDataMixin: <BaseClassType extends Mixin<IgeBaseClass>>(Base: B
         logOutdent(): void;
     };
 } & BaseClassType;
-export default WithDataMixin;

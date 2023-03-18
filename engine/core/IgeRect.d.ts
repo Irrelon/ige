@@ -1,11 +1,11 @@
+import { IgePoint3d } from "./IgePoint3d";
+import { IgePoint2d } from "./IgePoint2d";
+import { IgeBaseClass } from "./IgeBaseClass";
+import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 /**
  * Creates a new rectangle (x, y, width, height).
  */
-import IgePoint3d from "./IgePoint3d";
-import IgePoint2d from "./IgePoint2d";
-import IgeBaseClass from "./IgeBaseClass";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-declare class IgeRect extends IgeBaseClass {
+export declare class IgeRect extends IgeBaseClass {
     classId: string;
     x: number;
     y: number;
@@ -107,4 +107,3 @@ declare class IgeRect extends IgeBaseClass {
      */
     render(ctx: IgeCanvasRenderingContext2d, fill?: boolean): this;
 }
-export default IgeRect;

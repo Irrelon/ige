@@ -1,13 +1,13 @@
-import IgePoint3d from "./IgePoint3d";
-import IgeBaseClass from "./IgeBaseClass";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgeBaseClass } from "./IgeBaseClass";
 import type { IgePoint } from "../../types/IgePoint";
-import type IgeEntity from "./IgeEntity";
+import type { IgeEntity } from "./IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeObject } from "./IgeObject";
 /**
  * Creates a new transformation matrix.
  */
-declare class IgeMatrix2d extends IgeBaseClass {
+export declare class IgeMatrix2d extends IgeBaseClass {
     matrix: number[];
     _rotateOrigin: IgePoint3d;
     _scaleOrigin: IgePoint3d;
@@ -120,4 +120,3 @@ declare class IgeMatrix2d extends IgeBaseClass {
      */
     transformRenderingContext(ctx: IgeCanvasRenderingContext2d): this;
 }
-export default IgeMatrix2d;

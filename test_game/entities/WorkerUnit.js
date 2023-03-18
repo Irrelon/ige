@@ -1,5 +1,5 @@
-import { Circle } from "./base/Circle.js";
-import { registerClass } from "../../engine/services/igeClassStore.js";
+import { Circle } from "./base/Circle";
+import { registerClass } from "../../engine/services/igeClassStore";
 export class WorkerUnit extends Circle {
     constructor(type) {
         super();

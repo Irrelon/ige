@@ -1,6 +1,6 @@
-import IgePoint2d from "../core/IgePoint2d.js";
-import { IgeMountMode } from "../../enums/IgeMountMode.js";
-const IgeTileMap2dSmartTexture = {
+import { IgePoint2d } from "../core/IgePoint2d";
+import { IgeMountMode } from "../../enums/IgeMountMode";
+export const IgeTileMap2dSmartTexture = {
     render: (ctx, entity) => {
         const ent = entity;
         const tileWidth = ent._tileWidth, tileHeight = ent._tileHeight, bounds2d = ent._bounds2d, gridSize = ent._gridSize;
@@ -147,4 +147,3 @@ const IgeTileMap2dSmartTexture = {
         }
     }
 };
-export default IgeTileMap2dSmartTexture;

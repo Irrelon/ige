@@ -1,6 +1,6 @@
-import IgeUiElement from "../core/IgeUiElement";
+import { IgeUiElement } from "../core/IgeUiElement";
 
-class IgeUiRow extends IgeUiElement {
+export class IgeUiRow extends IgeUiElement {
 	classId = "IgeUiRow";
 
 	tick (ctx) {
@@ -55,5 +55,3 @@ class IgeUiRow extends IgeUiElement {
 		super.tick(ctx);
 	}
 }
-
-export default IgeUiRow;

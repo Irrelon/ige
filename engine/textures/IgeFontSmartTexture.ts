@@ -1,12 +1,12 @@
 import { IgeSmartTexture } from "../../types/IgeSmartTexture";
-import type IgeFontEntity from "../core/IgeFontEntity";
 import { IgeFontAlignY } from "../../enums/IgeFontAlign";
+import type { IgeFontEntity } from "../core/IgeFontEntity";
 
 /**
  * Provides native canvas font rendering supporting multi-line
  * text and alignment options.
  */
-const IgeFontSmartTexture: IgeSmartTexture = {
+export const IgeFontSmartTexture: IgeSmartTexture = {
 	// @ts-ignore
 	render: (ctx, entity: IgeFontEntity) => {
 		if (!entity._nativeFont || !entity._renderText) {
@@ -153,6 +153,4 @@ const IgeFontSmartTexture: IgeSmartTexture = {
 			return maxWidth;
 		}
 	}
-};
-
-export default IgeFontSmartTexture;
+}

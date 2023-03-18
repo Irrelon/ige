@@ -1,8 +1,8 @@
-import type { Mixin } from "../../types/Mixin";
 import { ige } from "../instance";
 import { IgeObject } from "../core/IgeObject";
+import type { Mixin } from "../../types/Mixin";
 
-const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) => class extends Base {
+export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) => class extends Base {
 	_uiLeft?: number;
 	_uiLeftPercent?: string;
 	_uiCenter?: number;
@@ -664,5 +664,3 @@ const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base: BaseC
 		}
 	}
 }
-
-export default WithUiPositionMixin;

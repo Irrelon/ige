@@ -1,56 +1,56 @@
 {
-  "name": "@irrelon/ige",
-  "version": "3.0.0",
-  "author": "Irrelon Software Limited <isogenic@irrelon.com>",
-  "description": "The Isogenic Game Engine",
-  "contributors": [
-    {
-      "name": "Rob Evans",
-      "email": "rob@irrelon.com"
-    }
-  ],
-  "type": "module",
-  "main": "index.js",
-  "scripts": {
-    "build": "ttsc",
-    "build-watch": "ttsc --watch"
-  },
-  "dependencies": {
-    "easyimage": "0.1.3",
-    "mongodb": "1.0.2",
-    "mysql": "2.0.0-alpha3",
-    "net.io-server": "https://github.com/irrelon/net.io-server/tarball/master",
-    "node-arguments": "0.0.1",
-    "socket.io": "0.9.14",
-    "uglify-js2": "2.1.4",
-    "websocket": "^1.0.34"
-  },
-  "devDependencies": {
-    "@swc/cli": "^0.1.62",
-    "@swc/core": "^1.3.41",
-    "@types/websocket": "^1.0.5",
-    "@typescript-eslint/eslint-plugin": "^5.22.0",
-    "@typescript-eslint/parser": "^5.22.0",
-    "@zoltu/typescript-transformer-append-js-extension": "^1.0.1",
-    "eslint": "8.0.1",
-    "eslint-config-next": "^13.0.1",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-config-standard-with-typescript": "^34.0.0",
-    "eslint-plugin-import": "^2.25.4",
-    "eslint-plugin-jest": "^24.7.0",
-    "eslint-plugin-jest-dom": "^3.9.4",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.4.1",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-react": "^7.29.4",
-    "eslint-plugin-react-hooks": "^4.3.0",
-    "eslint-plugin-standard": "^5.0.0",
-    "eslint-plugin-storybook": "^0.5.7",
-    "eslint-plugin-tree-shaking": "^1.10.0",
-    "eslint-plugin-unused-imports": "^2.0.0",
-    "prettier": "^2.6.2",
-    "tsc-watch": "^6.0.0",
-    "ttypescript": "^1.5.15",
-    "typescript": "^4.9.5"
-  }
+	"name": "@irrelon/ige",
+	"version": "3.0.0",
+	"author": "Irrelon Software Limited <isogenic@irrelon.com>",
+	"description": "The Isogenic Game Engine",
+	"contributors": [
+		{
+			"name": "Rob Evans",
+			"email": "rob@irrelon.com"
+		}
+	],
+	"type": "module",
+	"main": "index.js",
+	"scripts": {
+		"build": "ttsc",
+		"build-watch": "ttsc --watch"
+	},
+	"dependencies": {
+		"easyimage": "0.1.3",
+		"mongodb": "1.0.2",
+		"mysql": "2.0.0-alpha3",
+		"net.io-server": "https://github.com/irrelon/net.io-server/tarball/master",
+		"node-arguments": "0.0.1",
+		"socket.io": "0.9.14",
+		"uglify-js2": "2.1.4",
+		"websocket": "^1.0.34"
+	},
+	"devDependencies": {
+		"@swc/cli": "^0.1.62",
+		"@swc/core": "^1.3.41",
+		"@types/websocket": "^1.0.5",
+		"@typescript-eslint/eslint-plugin": "^5.22.0",
+		"@typescript-eslint/parser": "^5.22.0",
+		"@zoltu/typescript-transformer-append-js-extension": "^1.0.1",
+		"eslint": "8.0.1",
+		"eslint-config-next": "^13.0.1",
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-config-standard-with-typescript": "^34.0.0",
+		"eslint-plugin-import": "^2.25.4",
+		"eslint-plugin-jest": "^24.7.0",
+		"eslint-plugin-jest-dom": "^3.9.4",
+		"eslint-plugin-node": "^11.1.0",
+		"eslint-plugin-prettier": "^3.4.1",
+		"eslint-plugin-promise": "^6.1.1",
+		"eslint-plugin-react": "^7.29.4",
+		"eslint-plugin-react-hooks": "^4.3.0",
+		"eslint-plugin-standard": "^5.0.0",
+		"eslint-plugin-storybook": "^0.5.7",
+		"eslint-plugin-tree-shaking": "^1.10.0",
+		"eslint-plugin-unused-imports": "^2.0.0",
+		"prettier": "^2.6.2",
+		"tsc-watch": "^6.0.0",
+		"ttypescript": "^1.5.15",
+		"typescript": "^4.9.5"
+	}
 }

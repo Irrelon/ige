@@ -1,5 +1,5 @@
-import IgeDummyContext from "./IgeDummyContext.js";
-class IgeDummyCanvas {
+import { IgeDummyContext } from "./IgeDummyContext";
+export class IgeDummyCanvas {
     constructor() {
         this.dummy = true;
         this.width = 0;
@@ -9,4 +9,3 @@ class IgeDummyCanvas {
         };
     }
 }
-export default IgeDummyCanvas;

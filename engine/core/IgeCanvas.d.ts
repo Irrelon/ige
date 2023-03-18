@@ -1,4 +1,4 @@
-import IgeTexture from "./IgeTexture";
+import { IgeTexture } from "./IgeTexture";
 export interface IgeCanvas extends HTMLCanvasElement {
     _igeTextures: IgeTexture[];
     _loaded: boolean;

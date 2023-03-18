@@ -1,9 +1,9 @@
+import { IgeTween, IgeTweenOptions, IgeTweenPropertyObject } from "./IgeTween";
+
 /**
  * Creates a new 3d point (x, y, z).
  */
-import IgeTween, { IgeTweenOptions, IgeTweenPropertyObject } from "./IgeTween";
-
-class IgePoint3d {
+export class IgePoint3d {
 	classId = "IgePoint3d";
 
 	x = 0;
@@ -355,5 +355,3 @@ class IgePoint3d {
 		return newTween;
 	}
 }
-
-export default IgePoint3d;

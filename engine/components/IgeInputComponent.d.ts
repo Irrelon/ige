@@ -1,6 +1,6 @@
-import IgeViewport from "../core/IgeViewport";
+import { IgeViewport } from "../core/IgeViewport";
 import { IgeInputEventControl } from "../../types/IgeInputEventControl";
-import IgeComponent from "../core/IgeComponent";
+import { IgeComponent } from "../core/IgeComponent";
 import type { IgeEngine } from "../core/IgeEngine";
 export interface IgeInputMouseInterface {
     "dblClick": number;
@@ -104,7 +104,7 @@ export interface IgeInputKeyboardInterface {
     "y": number;
     "z": number;
 }
-declare class IgeInputComponent extends IgeComponent<IgeEngine> {
+export declare class IgeInputComponent extends IgeComponent<IgeEngine> {
     classId: string;
     componentId: string;
     _eventQueue: [((evc: IgeInputEventControl, eventData?: any) => void), any][];
@@ -256,4 +256,3 @@ declare class IgeInputComponent extends IgeComponent<IgeEngine> {
      */
     emit(eventName: string, args?: any): number;
 }
-export default IgeInputComponent;

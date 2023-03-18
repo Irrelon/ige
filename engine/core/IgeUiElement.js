@@ -1,12 +1,12 @@
-import { ige } from "../instance.js";
-import IgeUiEntity from "./IgeUiEntity.js";
+import { ige } from "../instance";
+import { IgeUiEntity } from "./IgeUiEntity";
 /**
  * Creates a new UI element. UI elements use more resources and CPU
  * than standard IgeEntity instances but provide a rich set of extra
  * positioning and styling methods as well as reacting to styles
  * defined using the IgeUiManagerComponent.
  */
-class IgeUiElement extends IgeUiEntity {
+export class IgeUiElement extends IgeUiEntity {
     constructor() {
         super();
         this.classId = "IgeUiElement";
@@ -243,4 +243,3 @@ class IgeUiElement extends IgeUiEntity {
         return super.destroy();
     }
 }
-export default IgeUiElement;

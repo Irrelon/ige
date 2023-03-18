@@ -1,10 +1,10 @@
-import IgePoint2d from "./IgePoint2d";
-import IgeRect from "./IgeRect";
+import { IgePoint2d } from "./IgePoint2d";
+import { IgeRect } from "./IgeRect";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
  */
-declare class IgePoly2d {
+export declare class IgePoly2d {
     classId: string;
     _poly: IgePoint2d[];
     _scale: IgePoint2d;
@@ -72,4 +72,3 @@ declare class IgePoly2d {
      */
     render(ctx: IgeCanvasRenderingContext2d, fill?: boolean): this;
 }
-export default IgePoly2d;

@@ -1,6 +1,6 @@
 import type { Mixin } from "../../types/Mixin";
-import type IgeBaseClass from "../core/IgeBaseClass";
-declare const WithExampleMixin: <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => {
+import type { IgeBaseClass } from "../core/IgeBaseClass";
+export declare const WithExampleMixin: <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => {
     new (...args: any[]): {
         classId: string;
         _dependencyFulfilled: Record<string, boolean>;
@@ -18,4 +18,3 @@ declare const WithExampleMixin: <BaseClassType extends Mixin<IgeBaseClass>>(Base
         data(key: string): any;
     };
 } & BaseClassType;
-export default WithExampleMixin;

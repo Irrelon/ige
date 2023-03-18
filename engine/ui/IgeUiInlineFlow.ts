@@ -1,4 +1,4 @@
-import IgeUiElement from "../core/IgeUiElement";
+import { IgeUiElement } from "../core/IgeUiElement";
 
 export class IgeUiInlineFlow extends IgeUiElement {
 	classId = "IgeUiInlineFlow";

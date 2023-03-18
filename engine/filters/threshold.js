@@ -1,4 +1,4 @@
-import igeFilters from "../services/igeFilters.js";
+import igeFilters from "../services/igeFilters";
 export const thresholdHelper = function (imageData, texture, data) {
     let i, r, g, b, v;
     const thresholdVal = texture.data("IgeFilters.threshold.value") || data.value;

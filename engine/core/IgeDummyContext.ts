@@ -5,7 +5,7 @@ export const nullMethod = () => {
 	return null;
 };
 
-class IgeDummyContext {
+export class IgeDummyContext {
 	dummy = true;
 	imageSmoothingEnabled = false;
 	globalAlpha = 1;
@@ -49,5 +49,3 @@ class IgeDummyContext {
 	strokeText = undefinedMethod;
 	measureText = () => ({width: 0, height: 0});
 }
-
-export default IgeDummyContext;

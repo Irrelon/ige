@@ -1,13 +1,13 @@
-import IgeComponent from "../core/IgeComponent.js";
-import { arrPull } from "../services/utils.js";
-import { ige } from "../instance.js";
-import { easingFunctions } from "../services/easing.js";
+import { ige } from "../instance";
+import { IgeComponent } from "../core/IgeComponent";
+import { arrPull } from "../services/utils";
+import { easingFunctions } from "../services/easing";
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!
  * It handles global tween processing on all tweening values.
  */
-class IgeTweenComponent extends IgeComponent {
+export class IgeTweenComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgeTweenComponent";
@@ -317,4 +317,3 @@ class IgeTweenComponent extends IgeComponent {
     }
 }
 IgeTweenComponent.componentTargetClass = "Ige";
-export default IgeTweenComponent;

@@ -1,9 +1,9 @@
-import IgeEntity from "./IgeEntity";
+import { IgeEntity } from "./IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 /**
  * Creates a new 2d scene.
  */
-declare class IgeScene2d extends IgeEntity {
+export declare class IgeScene2d extends IgeEntity {
     classId: string;
     _shouldRender: boolean;
     _autoSize: boolean;
@@ -73,4 +73,3 @@ declare class IgeScene2d extends IgeEntity {
      */
     _stringify(): string;
 }
-export default IgeScene2d;

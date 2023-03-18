@@ -1,12 +1,12 @@
-import IgeComponent from "../core/IgeComponent";
-import IgeEntity from "../core/IgeEntity";
-import IgeInterval from "../core/IgeInterval";
-import { arrPull } from "../services/utils";
 import { ige } from "../instance";
-import type { IgeEngine } from "../core/IgeEngine";
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeEntity } from "../core/IgeEntity";
+import { IgeInterval } from "../core/IgeInterval";
+import { arrPull } from "../services/utils";
 import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
+import type { IgeEngine } from "../core/IgeEngine";
 
-class IgeTimeComponent extends IgeComponent<IgeEngine> {
+export class IgeTimeComponent extends IgeComponent<IgeEngine> {
 	classId = "IgeTimeComponent";
 	componentId = "time";
 
@@ -98,5 +98,3 @@ class IgeTimeComponent extends IgeComponent<IgeEngine> {
 		return this;
 	};
 }
-
-export default IgeTimeComponent;

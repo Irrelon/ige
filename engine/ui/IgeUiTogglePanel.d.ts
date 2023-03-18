@@ -1,4 +1,4 @@
-import IgeUiElement from "../core/IgeUiElement";
+import { IgeUiElement } from "../core/IgeUiElement";
 export declare class IgeUiTogglePanel extends IgeUiElement {
     classId: string;
     constructor(title: any, titleTexture: any, toggleOffTexture: any, toggleOnTexture: any);

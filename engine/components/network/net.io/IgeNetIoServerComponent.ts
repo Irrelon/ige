@@ -1,29 +1,36 @@
 import { ige } from "../../../instance";
+import { arrPull, newIdHex } from "../../../services/utils";
 import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent";
 import {
 	IgeNetworkMessageData,
-	IgeNetworkServerSideMessageHandler, IgeNetworkMessageStructure,
-	IgeNetworkRequestMessageStructure, IgeNetworkTimeSyncRequestFromServer, IgeNetworkServerSideResponseData
+	IgeNetworkServerSideMessageHandler,
+	IgeNetworkMessageStructure,
+	IgeNetworkRequestMessageStructure,
+	IgeNetworkTimeSyncRequestFromServer,
+	IgeNetworkServerSideResponseData
 } from "../../../../types/IgeNetworkMessage";
-import { arrPull, newIdHex } from "../../../services/utils";
-import { NetIoServer, NetIoSocket } from "./server/socketServer";
-import { isServer } from "../../../services/clientServer";
 import {
-	IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE,
+	IgeNetIoServer
+} from "./server/IgeNetIoServer";
+import {
+	IGE_NETWORK_REQUEST,
+	IGE_NETWORK_RESPONSE,
 	IGE_NETWORK_STREAM_CREATE,
 	IGE_NETWORK_STREAM_DATA,
 	IGE_NETWORK_STREAM_DESTROY,
-	IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC
+	IGE_NETWORK_STREAM_TIME,
+	IGE_NETWORK_TIME_SYNC
 } from "../../../../enums/IgeConstants";
+import { IgeNetIoSocket } from "./server/IgeNetIoSocket";
 
 export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	_idCounter: number = 0;
 	_networkCommands: Record<string, IgeNetworkServerSideMessageHandler | undefined> = {}; // Maps a command name to a command handler function
 	_requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkServerSideMessageHandler>> = {};
-	_socketById: Record<string, NetIoSocket> = {};
+	_socketById: Record<string, IgeNetIoSocket> = {};
 	_port: number = 8000;
 	_acceptConnections: boolean = false;
-	_io?: NetIoServer;
+	_io?: IgeNetIoServer;
 	_streamTimer?: number; // The timer / interval handle
 	_streamInterval: number = 50;
 	_queuedData: Record<string, [string, string[]]> = {}; // Define the object that will hold the stream data queue
@@ -57,7 +64,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 
 		// Start net.io
 		this.log("Starting net.io listener on port " + this._port);
-		this._io = new NetIoServer(this._port, callback);
+		this._io = new IgeNetIoServer(this._port, callback);
 
 		// Setup listeners
 		this._io.on("connection", this._onClientConnect);
@@ -154,10 +161,6 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	}
 
 	timeSyncStart () {
-		if (!isServer) {
-			return this;
-		}
-
 		this._timeSyncStarted = true;
 
 		// Send a time sync request now, so we
@@ -421,7 +424,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 * @param {Object} socket The client socket object.
 	 * @private
 	 */
-	_onClientConnect = (socket: NetIoSocket) => {
+	_onClientConnect = (socket: IgeNetIoSocket) => {
 		if (!this._acceptConnections) {
 			this.log(`Rejecting connection with id "${socket._id}": We are not accepting connections at the moment!`);
 			socket.close();
@@ -492,7 +495,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 * @param {Object} socket The client socket object.
 	 * @private
 	 */
-	_onClientDisconnect (data: IgeNetworkMessageData, socket: NetIoSocket) {
+	_onClientDisconnect (data: IgeNetworkMessageData, socket: IgeNetIoSocket) {
 		this.log(`Client disconnected with id "${socket._id}"`);
 		this.emit("disconnect", socket._id);
 
