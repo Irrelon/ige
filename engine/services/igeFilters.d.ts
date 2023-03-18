@@ -12,3 +12,4 @@ export declare class IgeFilters {
     getHelper(name: string): IgeFilterHelperFunction | undefined;
     registerHelper(name: string, filter: IgeFilterHelperFunction): void;
 }
+export declare const igeFilters: IgeFilters;

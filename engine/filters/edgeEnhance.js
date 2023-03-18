@@ -1,5 +1,5 @@
-import { convoluteHelper } from "./convolute";
-import igeFilters from "../services/igeFilters";
+import { convoluteHelper } from "./convolute.js";
+import { igeFilters } from "../services/igeFilters.js";
 export const edgeEnhance = function (canvas, ctx, originalImage, texture, data) {
     if (!texture._filterImageDrawn || !data || !data.cumulative) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);

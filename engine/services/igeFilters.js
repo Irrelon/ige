@@ -21,3 +21,4 @@ export class IgeFilters {
         this.helper[name] = filter;
     }
 }
+export const igeFilters = new IgeFilters();
