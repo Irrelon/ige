@@ -7,9 +7,10 @@
  * re-writing which would be "safer", however this is a fully working function
  * and doesn't seem to mess anything up at present.
  */
-const { resolve } = require('path');
-const { readFile, writeFile, readdir } = require('fs').promises;
-const { minimatch } = require('minimatch');
+const chokidar = require("chokidar");
+const { readFile, writeFile, readdir } = require("fs").promises;
+const { resolve } = require("path");
+const { minimatch } = require("minimatch");
 
 const matchPattern = ["**/*.js", "**/*.jsx"];
 const excludePattern = ["node_modules", "react", ".git"];
@@ -37,35 +38,59 @@ async function getFiles (dir, gitIgnoreArr) {
 	const finalFiles = files.filter((file) => {
 		if (!file || !file.trim()) return false;
 		return matchPattern.some((glob) => minimatch(file, glob));
-	})
+	});
 
 	return Array.prototype.concat(...finalFiles);
 }
 
-// Scan all folders
-readFile(resolve(__dirname, ".gitignore")).then((result) => {
-	return result.toString().split("\n").filter((line) => {
-		return !line.startsWith("#");
-	}).filter((line) => {
-		return Boolean(line.trim());
-	});
-}).then((gitIgnoreArr) => {
-	return getFiles(__dirname, gitIgnoreArr);
-}).then((files) => {
-	// Now scan the files for matching regular expressions
-	// of imports without extensions
-	files.forEach((file) => {
-		readFile(file).then((fileContentsBuffer) => {
-			console.log(`Processing ${file}...`);
-			const fileContent = fileContentsBuffer.toString();
-			let updatedContent = fileContent.replaceAll(basicImportExp, `import $1 from "$2.js";`);
-			updatedContent = updatedContent.replaceAll(basicExportExp, `export $1 from "$2.js";`);
+const processFile = (file) => {
+	if (!file) return;
 
-			if (fileContent === updatedContent) return;
+	//console.log(`Processing ${file}...`);
 
-			writeFile(file, updatedContent).then(() => {
-				console.log(`Updated ${file}`);
-			});
+	readFile(file).then((fileContentsBuffer) => {
+		const fileContent = fileContentsBuffer.toString();
+		let updatedContent = fileContent.replaceAll(basicImportExp, `import $1 from "$2.js";`);
+		updatedContent = updatedContent.replaceAll(basicExportExp, `export $1 from "$2.js";`);
+
+		if (fileContent === updatedContent) {
+			//console.log(`No change ${file}`);
+			return;
+		}
+
+		writeFile(file, updatedContent).then(() => {
+			console.log(`Updated ${file}`);
 		});
 	});
+}
+
+const runSearchReplace = () => {
+	// Scan all folders
+	readFile(resolve(__dirname, ".gitignore")).then((result) => {
+		return result.toString().split("\n").filter((line) => {
+			return !line.startsWith("#");
+		}).filter((line) => {
+			return Boolean(line.trim());
+		});
+	}).then((gitIgnoreArr) => {
+		return getFiles(__dirname, gitIgnoreArr);
+	}).then((files) => {
+		// Now scan the files for matching regular expressions
+		// of imports without extensions
+		files.forEach((file) => {
+			processFile(file);
+		});
+
+		console.log(`Processed ${files.length} files`);
+	});
+};
+
+runSearchReplace();
+
+const watcher = chokidar.watch(__dirname, {persistent: true});
+
+watcher.on("change", (filename) => {
+	if (!matchPattern.some((glob) => minimatch(filename, glob))) return;
+	//console.log("Changed", filename);
+	processFile(filename);
 });
