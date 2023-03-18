@@ -8,6 +8,7 @@
  * and doesn't seem to mess anything up at present.
  */
 const chokidar = require("chokidar");
+const fs = require("fs");
 const { readFile, writeFile, readdir } = require("fs").promises;
 const { resolve } = require("path");
 const { minimatch } = require("minimatch");
@@ -16,7 +17,23 @@ const matchPattern = ["**/*.js", "**/*.jsx"];
 const excludePattern = ["node_modules", "react", ".git"];
 
 const basicImportExp = /import\s(.*)?\sfrom\s["']([.]+)(((?!\.js).)*?)["'];/g;
+const basicImportSrExp = /import\s(.*)?\sfrom\s["']([.]+)(((?!\.js).)*?)["'];/g;
 const basicExportExp = /export\s(.*)?\sfrom\s["']([.]+)(((?!\.js).)*?)["'];/g;
+const basicExportSrExp = /export\s(.*)?\sfrom\s["']([.]+)(((?!\.js).)*?)["'];/g;
+
+let tsPaths = {};
+let tsResolvedPaths = {};
+
+const readTsConfig = () => {
+	const config = require("./tsconfig.json");
+	tsPaths = config.compilerOptions.paths;
+
+	Object.entries(tsPaths).forEach(([key, replacementArr]) => {
+		tsResolvedPaths[key] = replacementArr.map((dir) => {
+			return resolve(__dirname, dir);
+		});
+	});
+}
 
 async function getFiles (dir, gitIgnoreArr) {
 	const dirArr = await readdir(dir, { withFileTypes: true });
@@ -49,9 +66,49 @@ const processFile = (file) => {
 	//console.log(`Processing ${file}...`);
 
 	readFile(file).then((fileContentsBuffer) => {
+		const fileFolderArr = file.split("/");
+		fileFolderArr.pop();
+
+		const fileFolder = fileFolderArr.join("/");
+
 		const fileContent = fileContentsBuffer.toString();
-		let updatedContent = fileContent.replaceAll(basicImportExp, `import $1 from "$2$3.js";`);
-		updatedContent = updatedContent.replaceAll(basicExportExp, `export $1 from "$2$3.js";`);
+		let updatedContent = fileContent;
+
+		Object.entries(tsPaths).forEach(([key, replacementArr]) => {
+			const find = key.replace("*", "");
+			const replace = replacementArr[0].replace("*", "");
+
+			const relativeSteps = new Array(file.replace(__dirname, "").split("/").length - 2).fill("../").join("");
+			const replacementPath = relativeSteps + replace;
+
+			updatedContent = updatedContent.replaceAll(find, replacementPath);
+		});
+
+		let match;
+		while (match = basicImportExp.exec(updatedContent)) {
+			const pathToItem = resolve(fileFolder, match[2] + match[3]);
+			let pathStat;
+
+			try {
+				pathStat = fs.lstatSync(pathToItem);
+			} catch (err) {
+				pathStat = undefined;
+			}
+
+			if (pathStat && pathStat.isDirectory()) {
+				// The item is a directory rather than a file so point it at index.js
+				updatedContent = updatedContent.replace(match[0], `import ${match[1]} from "${match[2]}${match[3]}/index.js";`);
+				updatedContent = updatedContent.replace(match[0], `export ${match[1]} from "${match[2]}${match[3]}/index.js";`);
+			} else {
+				updatedContent = updatedContent.replace(match[0], `import ${match[1]} from "${match[2]}${match[3]}.js";`);
+				updatedContent = updatedContent.replace(match[0], `export ${match[1]} from "${match[2]}${match[3]}.js";`);
+			}
+		}
+
+		basicImportExp.lastIndex = 0;
+
+		//updatedContent = updatedContent.replaceAll(basicImportExp, `import $1 from "$2$3.js";`);
+		//updatedContent = updatedContent.replaceAll(basicExportExp, `export $1 from "$2$3.js";`);
 
 		if (fileContent === updatedContent) {
 			//console.log(`No change ${file}`);
@@ -85,6 +142,7 @@ const runSearchReplace = () => {
 	});
 };
 
+readTsConfig();
 runSearchReplace();
 
 const watcher = chokidar.watch(__dirname, {persistent: true});
