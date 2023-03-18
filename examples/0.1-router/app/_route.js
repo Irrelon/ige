@@ -8,10 +8,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { ige } from "../../../engine/instance.js";
-import IgeBaseScene from "../../../engine/core/IgeBaseScene.js";
+import IgeUiManagerComponent from "../../../engine/components/IgeUiManagerComponent.js";
+import { AppScene } from "./AppScene.js";
 import "./splash/_route.js";
 import "./level1/_route.js";
-import IgeUiManagerComponent from "../../../engine/components/IgeUiManagerComponent.js";
 ige.router.route("app", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         // @ts-ignore
@@ -21,11 +21,10 @@ ige.router.route("app", {
         ige.engine.createFrontBuffer(true);
         // Start the engine
         yield ige.engine.start();
-        // Creates "baseScene" and adds a viewport
-        ige.engine.addGraph(IgeBaseScene);
+        // Load our level onto the scenegraph
+        ige.engine.addGraph(AppScene);
         return () => __awaiter(void 0, void 0, void 0, function* () {
-            // Removes the IgeBaseScene from the scenegraph
-            ige.engine.removeGraph(IgeBaseScene);
+            ige.engine.removeGraph(AppScene);
             yield ige.engine.stop();
         });
     })

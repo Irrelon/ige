@@ -15,12 +15,12 @@ import IgeViewport from "../../engine/core/IgeViewport.js";
 import { IgeEntityBox2d } from "../../engine/components/physics/box2d/IgeEntityBox2d.js";
 import { IgeBox2dBodyType } from "../../enums/IgeBox2dBodyType.js";
 import { IgeBox2dFixtureShapeType } from "../../enums/IgeBox2dFixtureShapeType.js";
-// @ts-ignore
-window.ige = ige;
 export class Client extends IgeBaseClass {
     constructor() {
         super();
         this.classId = "Client";
+        // @ts-ignore
+        window.ige = ige;
         void this.init();
     }
     init() {
@@ -43,62 +43,43 @@ export class Client extends IgeBaseClass {
             const scene1 = new IgeScene2d()
                 .id('scene1');
             // Create the main viewport
-            const vp1 = new IgeViewport()
+            new IgeViewport()
                 .id('vp1')
                 .autoSize(true)
                 .scene(scene1)
                 .drawBounds(true)
                 .mount(ige.engine);
-            const ball1 = new IgeEntityBox2d()
-                .box2dBody({
-                type: IgeBox2dBodyType.dynamic,
-                linearDamping: 0.0,
-                angularDamping: 0.1,
-                allowSleep: true,
-                bullet: false,
-                gravitic: true,
-                fixedRotation: false,
-                fixtures: [{
-                        density: 1.0,
-                        friction: 0.5,
-                        restitution: 0.2,
-                        shape: {
-                            type: IgeBox2dFixtureShapeType.circle,
-                            data: {
-                                // The position of the fixture relative to the body
-                                x: 0,
-                                y: 0
+            for (let i = 0; i < 1000; i++) {
+                new IgeEntityBox2d()
+                    .width(8)
+                    .height(8)
+                    .box2dBody({
+                    type: IgeBox2dBodyType.dynamic,
+                    linearDamping: 0.0,
+                    angularDamping: 0.1,
+                    allowSleep: true,
+                    bullet: false,
+                    gravitic: true,
+                    fixedRotation: false,
+                    fixtures: [{
+                            density: 1.0,
+                            friction: 0.5,
+                            restitution: 0.2,
+                            shape: {
+                                type: IgeBox2dFixtureShapeType.circle,
+                                data: {
+                                    // The position of the fixture relative to the body
+                                    x: 0,
+                                    y: 0
+                                }
                             }
-                        }
-                    }]
-            })
-                .id('ball1')
-                .translateTo(4, -300, 0)
-                .drawBounds(true)
-                .mount(scene1);
-            const ball2 = new IgeEntityBox2d()
-                .box2dBody({
-                type: IgeBox2dBodyType.dynamic,
-                linearDamping: 0.0,
-                angularDamping: 0.1,
-                allowSleep: true,
-                bullet: false,
-                gravitic: true,
-                fixedRotation: false,
-                fixtures: [{
-                        density: 1.0,
-                        friction: 0.5,
-                        restitution: 0.2,
-                        shape: {
-                            type: IgeBox2dFixtureShapeType.circle
-                        }
-                    }]
-            })
-                .id('ball2')
-                .translateTo(0, -400, 0)
-                .drawBounds(true)
-                .mount(scene1);
-            const square1 = new IgeEntityBox2d()
+                        }]
+                })
+                    .translateTo((Math.random() * 30) - 15, -300 - (i * 25), 0)
+                    .drawBounds(true)
+                    .mount(scene1);
+            }
+            new IgeEntityBox2d()
                 .box2dBody({
                 type: IgeBox2dBodyType.dynamic,
                 linearDamping: 0.0,
@@ -120,7 +101,7 @@ export class Client extends IgeBaseClass {
                 .translateTo(-40, -470, 0)
                 .drawBounds(true)
                 .mount(scene1);
-            const square2 = new IgeEntityBox2d()
+            new IgeEntityBox2d()
                 .box2dBody({
                 type: IgeBox2dBodyType.dynamic,
                 linearDamping: 0.0,
