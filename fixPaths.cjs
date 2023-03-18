@@ -15,8 +15,8 @@ const { minimatch } = require("minimatch");
 const matchPattern = ["**/*.js", "**/*.jsx"];
 const excludePattern = ["node_modules", "react", ".git"];
 
-const basicImportExp = /import\s(.*)?\sfrom\s["'](((?!\.js).)*?)["'];/g;
-const basicExportExp = /export\s(.*)?\sfrom\s["'](((?!\.js).)*?)["'];/g;
+const basicImportExp = /import\s(.*)?\sfrom\s["'][.]+(((?!\.js).)*?)["'];/g;
+const basicExportExp = /export\s(.*)?\sfrom\s["'][.]+(((?!\.js).)*?)["'];/g;
 
 async function getFiles (dir, gitIgnoreArr) {
 	const dirArr = await readdir(dir, { withFileTypes: true });
