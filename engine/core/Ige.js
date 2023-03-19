@@ -1,14 +1,14 @@
-import { igeClassStore } from "../services/igeClassStore.js";
-import { isClient, isServer } from "../services/clientServer.js";
+import { igeClassStore } from "../igeClassStore.js";
+import { isClient, isServer } from "../clientServer.js";
 import { igeConfig } from "./config.js";
 import { IgeEngine } from "./IgeEngine.js";
 import { IgeTextureStore } from "./IgeTextureStore.js";
 import { IgeMetrics } from "./IgeMetrics.js";
-import { IgeInputComponent } from "../components/IgeInputComponent.js";
+import { IgeInputComponent } from "../../engine/components/IgeInputComponent.js";
 import { IgeObjectRegister } from "./IgeObjectRegister.js";
 import { IgeArrayRegister } from "./IgeArrayRegister.js";
 import { IgePoint3d } from "./IgePoint3d.js";
-import { IgeAudioController } from "../components/audio/IgeAudioController.js";
+import { IgeAudioController } from "../../engine/components/audio/index.js";
 import { IgeRouter } from "./IgeRouter.js";
 const version = "2.0.0";
 export class Ige {
@@ -60,13 +60,13 @@ export class Ige {
             this._watch.splice(index, 1);
         };
         if (isClient) {
-            import("../components/network/net.io/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
+            import("../components/network/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
                 this.network = new Module();
             });
             this.audio = new IgeAudioController();
         }
         if (isServer) {
-            import("../components/network/net.io/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
+            import("../components/network/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
                 this.network = new Module();
             });
         }

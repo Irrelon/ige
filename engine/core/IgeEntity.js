@@ -1,6 +1,6 @@
 import { ige } from "../instance.js";
-import { isClient, isServer } from "../services/clientServer.js";
-import { degreesToRadians, traceSet } from "../services/utils.js";
+import { isClient, isServer } from "../clientServer.js";
+import { degreesToRadians, traceSet } from "../utils.js";
 import { IgePoint2d } from "./IgePoint2d.js";
 import { IgePoint3d } from "./IgePoint3d.js";
 import { IgeMatrix2d } from "./IgeMatrix2d.js";

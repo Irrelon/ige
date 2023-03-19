@@ -1,6 +1,6 @@
 import { IgeSmartFilter } from "../../types/IgeSmartFilter";
 import { convoluteHelper } from "./convolute";
-import { igeFilters } from "../services/igeFilters";
+import { igeFilters } from "../igeFilters";
 
 export const edgeEnhance: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
 	if (!texture._filterImageDrawn || !data || !data.cumulative) {

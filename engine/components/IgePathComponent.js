@@ -1,6 +1,6 @@
 import { ige } from "../instance.js";
-import { isClient } from "../services/clientServer.js";
-import { distance } from "../services/utils.js";
+import { isClient } from "../clientServer.js";
+import { distance } from "../utils.js";
 import { IgeComponent } from "../core/IgeComponent.js";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
 import { IgePoint3d } from "../core/IgePoint3d.js";

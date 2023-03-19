@@ -1,6 +1,6 @@
-import { IgeUiElement } from "../core/IgeUiElement";
-import { IgeFontEntity } from "../core/IgeFontEntity";
-import type { IgeFontSheet } from "../core/IgeFontSheet";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
+import type { IgeFontSheet } from "@/engine/core/IgeFontSheet";
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
  * capture keyboard input and display it, similar in usage to the HTML input
@@ -56,11 +56,11 @@ export declare class IgeUiTextBox extends IgeUiElement {
      * @param fontSheet
      * @return {*}
      */
-    fontSheet(fontSheet?: IgeFontSheet): IgeFontSheet | this | undefined;
-    font(val?: string | IgeFontSheet): string | IgeFontEntity | IgeFontSheet | this | undefined;
-    nativeFont(val?: string): string | IgeFontEntity | this | undefined;
-    nativeStroke(val?: number): number | IgeFontEntity | this | undefined;
-    nativeStrokeColor(val?: string): string | IgeFontEntity | this | undefined;
+    fontSheet(fontSheet?: IgeFontSheet): this | IgeFontSheet | undefined;
+    font(val?: string | IgeFontSheet): string | this | IgeFontEntity | IgeFontSheet | undefined;
+    nativeFont(val?: string): string | this | IgeFontEntity | undefined;
+    nativeStroke(val?: number): number | this | IgeFontEntity | undefined;
+    nativeStrokeColor(val?: string): string | this | IgeFontEntity | undefined;
     color(color?: string | CanvasGradient | CanvasPattern): this;
     color(): string | CanvasGradient | CanvasPattern;
     _mounted(): void;

@@ -1,4 +1,4 @@
-import { IgeUiElement } from "../core/IgeUiElement.js";
+import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
 export class IgeUiGridPanel extends IgeUiElement {
     constructor(cellWidth, cellHeight) {
         super();

@@ -1,7 +1,7 @@
 import { ige } from "../../engine/instance.js";
 import { WorkerUnitType } from "../enums/WorkerUnitType.js";
 import { WorkerUnit } from "./WorkerUnit.js";
-import { registerClass } from "../../engine/services/igeClassStore.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 export class Transporter extends WorkerUnit {
     constructor(depotAId, depotBId) {
         super(WorkerUnitType.transporter);

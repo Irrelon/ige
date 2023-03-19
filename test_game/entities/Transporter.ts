@@ -3,7 +3,7 @@ import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingConte
 import { Building } from "./base/Building";
 import { WorkerUnitType } from "../enums/WorkerUnitType";
 import { WorkerUnit } from "./WorkerUnit";
-import { registerClass } from "../../engine/services/igeClassStore";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class Transporter extends WorkerUnit {
 	classId = "Transporter";

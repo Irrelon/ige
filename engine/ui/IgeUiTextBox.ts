@@ -1,9 +1,9 @@
-import { ige } from "../instance";
-import { IgeUiElement } from "../core/IgeUiElement";
-import { IgeFontEntity } from "../core/IgeFontEntity";
-import type { IgeFontSheet } from "../core/IgeFontSheet";
-import type { IgeInputComponent } from "../components/IgeInputComponent";
-import type { IgeTexture } from "../core/IgeTexture";
+import { ige } from "@/engine/instance";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
+import type { IgeFontSheet } from "@/engine/core/IgeFontSheet";
+import type { IgeInputComponent } from "@/engine/components/IgeInputComponent";
+import type { IgeTexture } from "@/engine/core/IgeTexture";
 
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will

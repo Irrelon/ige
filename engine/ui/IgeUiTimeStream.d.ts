@@ -1,4 +1,4 @@
-import { IgeUiElement } from "../core/IgeUiElement";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
 export declare class IgeUiTimeStream extends IgeUiElement {
     classId: string;
     monitor(entity: any): void;

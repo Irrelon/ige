@@ -1,6 +1,6 @@
 import { ige } from "../instance";
 import { IgeComponent } from "../core/IgeComponent";
-import { arrPull } from "../services/utils";
+import { arrPull } from "../utils";
 import { IgeEntity } from "../core/IgeEntity";
 import { IgeUiElement, IgeUiStyleObject } from "../core/IgeUiElement";
 import type { IgeInputComponent } from "./IgeInputComponent";

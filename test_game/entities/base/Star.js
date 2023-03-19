@@ -1,6 +1,6 @@
 import { ige } from "../../../engine/instance.js";
-import { isClient } from "../../../engine/services/clientServer.js";
-import { registerClass } from "../../../engine/services/igeClassStore.js";
+import { isClient } from "../../../engine/clientServer.js";
+import { registerClass } from "../../../engine/igeClassStore.js";
 import { Building } from "./Building.js";
 export class Star extends Building {
     constructor() {

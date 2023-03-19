@@ -1,5 +1,5 @@
-import { IgeUiElement } from "../core/IgeUiElement";
-import { IgeUiMenu } from "./IgeUiMenu";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { IgeUiMenu } from "@/engine/ui/IgeUiMenu";
 
 export class IgeUiMenuItem extends IgeUiElement {
 	classId = "IgeUiMenuItem";

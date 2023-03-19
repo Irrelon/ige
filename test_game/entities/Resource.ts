@@ -2,7 +2,7 @@ import { ige } from "../../engine/instance";
 import { Circle } from "./base/Circle";
 import { ResourceType } from "../enums/ResourceType";
 import { Building } from "./base/Building";
-import { registerClass } from "../../engine/services/igeClassStore";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class Resource extends Circle {
 	_type: ResourceType;

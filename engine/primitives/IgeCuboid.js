@@ -1,6 +1,6 @@
 import { IgeEntity } from "../core/IgeEntity.js";
 import { IgeTexture } from "../core/IgeTexture.js";
-import IgeCuboidSmartTexture from "../textures/IgeCuboidSmartTexture.js";
+import { IgeCuboidSmartTexture } from "../textures/IgeCuboidSmartTexture.js";
 export class IgeCuboid extends IgeEntity {
     constructor() {
         super();

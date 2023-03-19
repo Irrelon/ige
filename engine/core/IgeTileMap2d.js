@@ -7,9 +7,9 @@ import { IgePoint2d } from "./IgePoint2d.js";
 import { IgeRect } from "./IgeRect.js";
 import { IgePoint3d } from "./IgePoint3d.js";
 import { IgePoly2d } from "./IgePoly2d.js";
-import { isServer } from "../services/clientServer.js";
+import { isServer } from "../clientServer.js";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
-import { arrClone, newIdHex } from "../services/utils.js";
+import { arrClone, newIdHex } from "../utils.js";
 import { IgeEntity } from "./IgeEntity.js";
 /**
  * Tile maps provide a way to align mounted child objects to a tile-based grid.

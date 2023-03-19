@@ -1,5 +1,5 @@
 import { ige } from "../../engine/instance";
-import { isClient } from "../../engine/services/clientServer";
+import { isClient } from "@/engine/clientServer";
 
 export class Game {
 	classId = "Game";

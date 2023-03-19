@@ -8,9 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { ige } from "../engine/instance.js";
+import { Level1 } from "./levels/Level1.js";
 import { IgeBaseClass } from "../engine/core/IgeBaseClass.js";
 import { IgeBaseScene } from "../engine/core/IgeBaseScene.js";
-import { Level1 } from "./levels/Level1.js";
 import { IgeOptions } from "../engine/core/IgeOptions.js";
 export class Server extends IgeBaseClass {
     constructor() {

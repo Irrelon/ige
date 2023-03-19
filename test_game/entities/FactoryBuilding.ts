@@ -1,6 +1,6 @@
 import { ResourceType } from "../enums/ResourceType";
 import { BuildingResourceRequirement } from "../types/BuildingResourceRequirement";
-import { registerClass } from "../../engine/services/igeClassStore";
+import { registerClass } from "@/engine/igeClassStore";
 import { Star } from "./base/Star";
 
 export class FactoryBuilding extends Star {

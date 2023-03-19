@@ -1,6 +1,6 @@
 import { ige } from "../instance";
-import { isClient } from "../services/clientServer";
-import { distance } from "../services/utils";
+import { isClient } from "../clientServer";
+import { distance } from "../utils";
 import { IgeComponent } from "../core/IgeComponent";
 import { IgeEntity } from "../core/IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";

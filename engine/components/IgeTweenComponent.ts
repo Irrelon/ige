@@ -1,8 +1,8 @@
 import { ige } from "../instance";
 import { IgeComponent } from "../core/IgeComponent";
-import { arrPull } from "../services/utils";
+import { arrPull } from "../utils";
 import { IgeTween, IgeTweenDestination } from "../core/IgeTween";
-import { easingFunctions } from "../services/easing";
+import { easingFunctions } from "../easing";
 import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
 import type { IgeEngine } from "../core/IgeEngine";
 

@@ -1,8 +1,8 @@
-import { ige } from "../instance";
-import { IgeUiElement } from "../core/IgeUiElement";
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import type { IgeUiManagerComponent } from "../components/IgeUiManagerComponent";
-import { IgeUiLabel } from "./IgeUiLabel";
+import { ige } from "@/engine/instance";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeUiManagerComponent } from "@/engine/components/IgeUiManagerComponent";
+import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 
 export interface IgeUiDropDownOption {
 	text: string;

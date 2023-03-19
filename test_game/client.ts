@@ -1,10 +1,10 @@
-import {ige} from "../engine/instance";
-import { IgeBaseClass } from "../engine/core/IgeBaseClass";
-import { IgeBaseScene } from "../engine/core/IgeBaseScene";
-import { IgeOptions } from "../engine/core/IgeOptions";
-import { IgeNetIoClientComponent } from "../engine/components/network/net.io/IgeNetIoClientComponent";
+import {ige} from "@/engine/instance";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
+import { IgeOptions } from "@/engine/core/IgeOptions";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeNetIoClientComponent } from "@/engine/components/network/IgeNetIoClientComponent";
 import { Level1 } from "./levels/Level1";
-import { IgeTexture } from "../engine/core/IgeTexture";
 import square from "./assets/textures/smartTextures/square";
 import line from "./assets/textures/smartTextures/line";
 import triangle from "./assets/textures/smartTextures/triangle";

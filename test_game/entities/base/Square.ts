@@ -1,6 +1,6 @@
 import { ige } from "../../../engine/instance";
-import { isClient } from "../../../engine/services/clientServer";
-import { registerClass } from "../../../engine/services/igeClassStore";
+import { isClient } from "@/engine/clientServer";
+import { registerClass } from "@/engine/igeClassStore";
 import { Building } from "./Building";
 
 export class Square extends Building {

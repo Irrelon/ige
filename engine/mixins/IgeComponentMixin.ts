@@ -1,7 +1,7 @@
 import type {Mixin} from "../../types/Mixin";
 import type { IgeBaseClass } from "../core/IgeBaseClass";
 import type { IgeComponent } from "../core/IgeComponent";
-import {arrPull} from "../services/utils";
+import {arrPull} from "../utils";
 
 export const WithComponentMixin = <ComponentTargetType, MixinBaseClassType extends Mixin<IgeBaseClass> = Mixin<IgeBaseClass>>(Base: MixinBaseClassType) => class extends Base {
 	components: Record<string, IgeComponent> = {};

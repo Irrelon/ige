@@ -3,7 +3,10 @@
         "downlevelIteration": true,
         "baseUrl": ".",
         "paths": {
-
+            "@/types/*": ["types/*"],
+            "@/engine/*": ["engine/*"],
+            "@/enums/*": ["enums/*"],
+            "@/examples/*": ["examples/*"]
         },
         "target": "es6",
         "lib": ["dom", "dom.iterable", "esnext"],

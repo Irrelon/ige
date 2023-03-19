@@ -1,7 +1,7 @@
 import { ige } from "../../engine/instance";
 import { Line } from "./base/Line";
 import { Building } from "./base/Building";
-import { registerClass } from "../../engine/services/igeClassStore";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class Road extends Line {
 	classId = "Road";

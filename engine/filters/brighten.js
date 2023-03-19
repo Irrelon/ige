@@ -1,4 +1,4 @@
-import { igeFilters } from "../services/igeFilters.js";
+import { igeFilters } from "../igeFilters.js";
 export const brighten = function (canvas, ctx, originalImage, texture, data) {
     // Apply the filter and then put the new pixel data
     ctx.putImageData(igeFilters.helper.brightenHelper(ctx.getImageData(0, 0, canvas.width, canvas.height), texture, data), 0, 0);

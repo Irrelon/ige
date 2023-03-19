@@ -1,6 +1,6 @@
 import { ige } from "../instance.js";
-import { arrPull } from "../services/utils.js";
-import { isClient, isServer } from "../services/clientServer.js";
+import { arrPull } from "../utils.js";
+import { isClient, isServer } from "../clientServer.js";
 import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode.js";
 import { IgeAsset } from "./IgeAsset.js";
 import { newCanvas } from "./IgeCanvas.js";

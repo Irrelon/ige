@@ -1,5 +1,5 @@
-import { IgeUiElement } from "../core/IgeUiElement";
-import { IgeFontEntity } from "../core/IgeFontEntity";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
 
 /**
  * Provides a UI tooltip. Change properties (textBox, fonts, backgroundcolor)

@@ -1,6 +1,6 @@
 import { ige } from "../instance";
-import { isClient, isServer } from "../services/clientServer";
-import { degreesToRadians, traceSet } from "../services/utils";
+import { isClient, isServer } from "../clientServer";
+import { degreesToRadians, traceSet } from "../utils";
 import { IgePoint2d } from "./IgePoint2d";
 import { IgePoint3d } from "./IgePoint3d";
 import { IgeMatrix2d } from "./IgeMatrix2d";
@@ -9,7 +9,7 @@ import { IgeDummyCanvas } from "./IgeDummyCanvas";
 import { IgeRect } from "./IgeRect";
 import type { IgeTileMap2d } from "./IgeTileMap2d";
 import { IgeObject } from "./IgeObject";
-import { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
+import { IgeNetIoClientComponent } from "../components/network/IgeNetIoClientComponent";
 import { IgeMountMode } from "../../enums/IgeMountMode";
 import { IgeStreamMode } from "../../enums/IgeStreamMode";
 import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode";

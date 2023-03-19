@@ -1,22 +1,22 @@
-import { igeClassStore } from "../services/igeClassStore";
-import { isClient, isServer } from "../services/clientServer";
+import { igeClassStore } from "../igeClassStore";
+import { isClient, isServer } from "../clientServer";
 import { IgeConfig, igeConfig } from "./config";
 import { IgeEngine } from "./IgeEngine";
 import { IgeTextureStore } from "./IgeTextureStore";
 import { IgeMetrics } from "./IgeMetrics";
-import { IgeInputComponent } from "../components/IgeInputComponent";
-import  { IgeObjectRegister } from "./IgeObjectRegister";
-import  { IgeArrayRegister } from "./IgeArrayRegister";
+import { IgeInputComponent } from "@/engine/components/IgeInputComponent";
+import { IgeObjectRegister } from "./IgeObjectRegister";
+import { IgeArrayRegister } from "./IgeArrayRegister";
 import { IgePoint3d } from "./IgePoint3d";
-import { IgeAudioController } from "../components/audio/IgeAudioController";
-import { IgeObjectWithValueProperty } from "../../types/IgeObjectWithValueProperty";
-import { IgeObject } from "./IgeObject";
+import { IgeAudioController } from "@/engine/components/audio";
 import { IgeRouter } from "./IgeRouter";
 
-import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory";
+import type { IgeObject } from "./IgeObject";
+import type { IgeObjectWithValueProperty } from "@/types/IgeObjectWithValueProperty";
+import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
 import type { IgeViewport } from "./IgeViewport";
-import type { IgeNetIoClientComponent } from "../components/network/net.io/IgeNetIoClientComponent";
-import type { IgeNetIoServerComponent } from "../components/network/net.io/IgeNetIoServerComponent";
+import type { IgeNetIoClientComponent } from "@/engine/components/network/IgeNetIoClientComponent";
+import type { IgeNetIoServerComponent } from "@/engine/components/network/IgeNetIoServerComponent";
 
 const version = "2.0.0";
 
@@ -45,7 +45,7 @@ export class Ige {
 
 	constructor () {
 		if (isClient) {
-			import("../components/network/net.io/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
+			import("../components/network/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
 				this.network = new Module();
 			});
 
@@ -53,7 +53,7 @@ export class Ige {
 		}
 
 		if (isServer) {
-			import("../components/network/net.io/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
+			import("../components/network/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
 				this.network = new Module();
 			});
 		}
@@ -72,7 +72,7 @@ export class Ige {
 	 * @param {String | Object} item The id of the item to return,
 	 * or if an object, returns the object as-is.
 	 */
-	$ <ObjectType = IgeObject> (item: string | ObjectType | undefined) {
+	$<ObjectType = IgeObject> (item: string | ObjectType | undefined) {
 		if (typeof item === "string") {
 			return this.register.get(item);
 		} else if (typeof item === "object") {

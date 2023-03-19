@@ -1,5 +1,5 @@
 import { ige } from "../../../engine/instance";
-import { PI180 } from "../../../engine/services/utils";
+import { PI180 } from "@/engine/utils";
 import { IgeTween } from "../../../engine/core/IgeTween";
 import { IgeEntity } from "../../../engine/core/IgeEntity";
 

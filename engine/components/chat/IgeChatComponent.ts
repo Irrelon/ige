@@ -1,4 +1,4 @@
-import { IgeComponent } from "../../core/IgeComponent";
+import { IgeComponent } from "@/engine/core/IgeComponent";
 
 export type IgeChatRoomOptions = Record<string, any>;
 

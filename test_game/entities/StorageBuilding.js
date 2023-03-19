@@ -1,4 +1,4 @@
-import { registerClass } from "../../engine/services/igeClassStore.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 import { Square } from "./base/Square.js";
 export class StorageBuilding extends Square {
     constructor() {

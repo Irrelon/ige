@@ -1,5 +1,5 @@
 import { ige } from "../instance";
-import { isClient, isServer } from "../services/clientServer";
+import { isClient, isServer } from "../clientServer";
 import { IgePoint3d } from "./IgePoint3d";
 import { IgeDummyContext } from "./IgeDummyContext";
 import { IgeInputComponent } from "../components/IgeInputComponent";

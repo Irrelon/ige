@@ -1,4 +1,4 @@
-import { isClient, isServer } from "../services/clientServer";
+import { isClient, isServer } from "../clientServer";
 import { IgeRouteDefinition } from "../../types/IgeRouteDefinition";
 import { IgeBaseClass } from "./IgeBaseClass";
 

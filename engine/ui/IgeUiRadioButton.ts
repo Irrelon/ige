@@ -1,4 +1,4 @@
-import { IgeUiButton } from "./IgeUiButton";
+import { IgeUiButton } from "@/engine/ui/IgeUiButton";
 
 export class IgeUiRadioButton extends IgeUiButton {
 	classId = "IgeUiRadioButton";

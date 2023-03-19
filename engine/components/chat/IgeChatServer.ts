@@ -1,23 +1,23 @@
-import { ige } from "../../instance";
-import { newIdHex } from "../../services/utils";
+import { ige } from "@/engine/instance";
+import { newIdHex } from "@/engine/utils";
 import {
 	IGE_NETWORK_CHAT_JOIN_ROOM, IGE_NETWORK_CHAT_LEAVE_ROOM, IGE_NETWORK_CHAT_LIST_ROOMS,
 	IGE_NETWORK_CHAT_MSG,
 	IGE_NETWORK_CHAT_ROOM_CREATED, IGE_NETWORK_CHAT_ROOM_LIST_USERS,
 	IGE_NETWORK_CHAT_ROOM_REMOVED
-} from "../../../enums/IgeConstants";
-import { IgeNetIoServerComponent } from "../network/net.io/IgeNetIoServerComponent";
-import { IgeChatComponent, IgeChatRoomOptions } from "./IgeChatComponent";
+} from "@/enums/IgeConstants";
+import { IgeNetIoServerComponent } from "@/engine/components/network/IgeNetIoServerComponent";
+import { IgeChatComponent, IgeChatRoomOptions } from "@/engine/components/chat/IgeChatComponent";
 import {
 	IgeNetworkChatFromClientMessageStructure,
 	IgeNetworkChatFromServerMessageStructure
-} from "../../../types/IgeNetworkMessage";
+} from "@/types/IgeNetworkMessage";
 import { IgeEntity } from "../../core/IgeEntity";
 import {
 	IgeNetworkChatFromClientJoinRoomRequestStructure, IgeNetworkChatFromClientLeaveRoomRequestStructure,
 	IgeNetworkChatFromServerJoinRoomResponseStructure,
 	IgeNetworkChatRoomCreatedMessageStructure, IgeNetworkChatRoomRemovedMessageStructure
-} from "../../../types/IgeNetworkChat";
+} from "@/types/IgeNetworkChat";
 
 /**
  * The server-side chat component. Handles all server-side

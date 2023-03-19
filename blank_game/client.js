@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { IgeBaseClass } from "../engine/core/IgeBaseClass.js";
 import { ige } from "../engine/instance.js";
+import { IgeBaseScene } from "../engine/core/IgeBaseScene.js";
 export class Client extends IgeBaseClass {
     constructor() {
         super();
@@ -19,16 +20,6 @@ export class Client extends IgeBaseClass {
         return __awaiter(this, void 0, void 0, function* () {
             // Load a game texture here
             //new IgeTexture("someImageName", './assets/somePathToImage.png');
-            ///////////////////////////////////////////////////////////////////////////////
-            // *** PLEASE READ - BLANK PROJECT RUNNING DETAILS ***
-            ///////////////////////////////////////////////////////////////////////////////
-            // The engine will wait for your textures to load before it starts because
-            // of the code below waiting for an "on('texturesLoaded')" before executing.
-            // The problem is there are no textures loaded because this is a blank project
-            // so if you run this from the index.html the loading symbol will spin forever.
-            // I've added an example line (line 16) to show how to load at least one
-            // texture into memory, but you'll have to provide an image file for it :)
-            ///////////////////////////////////////////////////////////////////////////////
             // Wait for our textures to load before continuing
             yield ige.textures.whenLoaded();
             // Create the HTML canvas
@@ -36,7 +27,7 @@ export class Client extends IgeBaseClass {
             // Start the engine
             yield ige.engine.start();
             // Add base scene data
-            ige.engine.addGraph("IgeBaseScene");
+            ige.engine.addGraph(IgeBaseScene);
             // CREATE SOME ENTITIES AND WHOTNOT HERE
         });
     }

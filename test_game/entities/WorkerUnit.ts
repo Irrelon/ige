@@ -1,6 +1,6 @@
 import { Circle } from "./base/Circle";
 import { WorkerUnitType } from "../enums/WorkerUnitType";
-import { registerClass } from "../../engine/services/igeClassStore";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class WorkerUnit extends Circle {
 	_type: WorkerUnitType;

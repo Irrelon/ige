@@ -1,7 +1,7 @@
 import { ige } from "../instance.js";
 import { IgeUiEntity } from "./IgeUiEntity.js";
 import { IgeTween } from "./IgeTween.js";
-import { degreesToRadians } from "../services/utils.js";
+import { degreesToRadians } from "../utils.js";
 /**
  * Creates a new particle emitter.
  */

@@ -1,4 +1,4 @@
-import { registerClass } from "../../engine/services/igeClassStore";
+import { registerClass } from "@/engine/igeClassStore";
 import { Square } from "./base/Square";
 
 export class StorageBuilding extends Square {

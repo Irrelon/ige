@@ -12,8 +12,8 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			bounds2d = ent._bounds2d,
 			gridSize = ent._gridSize;
 
-		const x = 0;
-		const y = 0;
+		let x = 0;
+		let y = 0;
 
 		/*ctx.save();
 		var triggerPoly = ent.tileMapHitPolygon();
@@ -81,9 +81,9 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 
 		if (ent._highlightOccupied) {
 			ctx.fillStyle = "#ff0000";
-			for (const y in ent.map._mapData) {
+			for (y in ent.map._mapData) {
 				if (ent.map._mapData[y]) {
-					for (const x in ent.map._mapData[y]) {
+					for (x in ent.map._mapData[y]) {
 						if (ent.map._mapData[y][x]) {
 							// Tile is occupied
 							tilePoint = new IgePoint2d(tileWidth * x, tileHeight * y);

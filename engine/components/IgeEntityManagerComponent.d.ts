@@ -1,6 +1,7 @@
-import { IgeComponent } from "../core/IgeComponent";
-import { IgeEntity } from "../core/IgeEntity";
-import { IgeRect } from "../core/IgeRect";
+import { IgeComponent } from "@/engine/core/IgeComponent";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeRect } from "@/engine/core/IgeRect";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 export declare class IgeEntityManagerComponent extends IgeComponent {
     classId: string;
     componentId: string;
@@ -125,10 +126,11 @@ export declare class IgeEntityManagerComponent extends IgeComponent {
     removeMode: (val: any) => any;
     /**
      * The behaviour method executed each tick.
+     * @param entity
      * @param ctx
      * @private
      */
-    _behaviour: (entity: any, ctx: any) => void;
+    _behaviour: (entity: IgeEntity, ctx: IgeCanvasRenderingContext2d) => void;
     processQueues: () => void;
     /**
      * Handles screen resize events.

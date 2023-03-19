@@ -1,7 +1,7 @@
 import { ige } from "../../../engine/instance";
 import { Rotator } from "./Rotator";
 import { createChildRotators } from "./ChildRotators";
-import { isClient } from "../../../engine/services/clientServer";
+import { isClient } from "@/engine/clientServer";
 
 export class Fairy extends Rotator{
 	constructor (speed: number) {

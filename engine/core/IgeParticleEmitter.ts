@@ -5,7 +5,7 @@ import { IgePoint3d } from "./IgePoint3d";
 import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
 import { IgeParticle } from "./IgeParticle";
 import { IgeObject } from "./IgeObject";
-import { degreesToRadians } from "../services/utils";
+import { degreesToRadians } from "../utils";
 import { IgeVelocityComponent } from "../components/IgeVelocityComponent";
 
 export interface IgeParticleVectorBaseMinMax {

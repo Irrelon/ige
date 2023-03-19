@@ -1,4 +1,4 @@
-import { newIdHex } from "../../../services/utils";
+import { newIdHex } from "../../../utils";
 import { IgeEventingClass } from "../../../core/IgeEventingClass";
 
 /**

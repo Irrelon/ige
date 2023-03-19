@@ -13,7 +13,8 @@
 	"main": "index.js",
 	"scripts": {
 		"build": "ttsc",
-		"build-watch": "tsc --watch"
+		"build-watch": "tsc --watch",
+		"fixPaths": "node fixPaths.cjs"
 	},
 	"dependencies": {
 		"easyimage": "0.1.3",

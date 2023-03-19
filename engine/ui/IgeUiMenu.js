@@ -1,5 +1,5 @@
-import { IgeUiElement } from "../core/IgeUiElement.js";
-import { IgeUiMenuItem } from "./IgeUiMenuItem.js";
+import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
+import { IgeUiMenuItem } from "../../engine/ui/IgeUiMenuItem.js";
 /**
  * Provides a UI drop-down menu entity.
  */

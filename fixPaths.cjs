@@ -17,9 +17,7 @@ const matchPattern = ["**/*.js", "**/*.jsx"];
 const excludePattern = ["node_modules", "react", ".git"];
 
 const basicImportExp = /import\s(.*)?\sfrom\s["']([.]+)(((?!\.js).)*?)["'];/g;
-const basicImportSrExp = /import\s(.*)?\sfrom\s["']([.]+)(((?!\.js).)*?)["'];/g;
 const basicExportExp = /export\s(.*)?\sfrom\s["']([.]+)(((?!\.js).)*?)["'];/g;
-const basicExportSrExp = /export\s(.*)?\sfrom\s["']([.]+)(((?!\.js).)*?)["'];/g;
 
 let tsPaths = {};
 let tsResolvedPaths = {};
@@ -60,6 +58,37 @@ async function getFiles (dir, gitIgnoreArr) {
 	return Array.prototype.concat(...finalFiles);
 }
 
+const processMatches = (regExp, fileFolder, content) => {
+	let match;
+	while (match = basicImportExp.exec(content)) {
+		const pathToItemFile = resolve(fileFolder, match[2] + match[3] + ".js");
+		const pathToItemFolderIndexFile = resolve(fileFolder, match[2] + match[3] + "/index.js");
+		let pathStatFile;
+		let pathStatFolderIndexFile;
+
+		try {
+			pathStatFile = fs.lstatSync(pathToItemFile);
+		} catch (err) {
+			pathStatFolderIndexFile = undefined;
+		}
+
+		try {
+			pathStatFolderIndexFile = fs.lstatSync(pathToItemFolderIndexFile);
+		} catch (err) {
+			pathStatFolderIndexFile = undefined;
+		}
+
+		if (pathStatFile) {
+			content = content.replace(match[0], `import ${match[1]} from "${match[2]}${match[3]}.js";`);
+		} else if (pathStatFolderIndexFile) {
+			// The item is a directory rather than a file so point it at index.js
+			content = content.replace(match[0], `import ${match[1]} from "${match[2]}${match[3]}/index.js";`);
+		}
+	}
+
+	return content;
+}
+
 const processFile = (file) => {
 	if (!file) return;
 
@@ -84,31 +113,11 @@ const processFile = (file) => {
 			updatedContent = updatedContent.replaceAll(find, replacementPath);
 		});
 
-		let match;
-		while (match = basicImportExp.exec(updatedContent)) {
-			const pathToItem = resolve(fileFolder, match[2] + match[3]);
-			let pathStat;
-
-			try {
-				pathStat = fs.lstatSync(pathToItem);
-			} catch (err) {
-				pathStat = undefined;
-			}
-
-			if (pathStat && pathStat.isDirectory()) {
-				// The item is a directory rather than a file so point it at index.js
-				updatedContent = updatedContent.replace(match[0], `import ${match[1]} from "${match[2]}${match[3]}/index.js";`);
-				updatedContent = updatedContent.replace(match[0], `export ${match[1]} from "${match[2]}${match[3]}/index.js";`);
-			} else {
-				updatedContent = updatedContent.replace(match[0], `import ${match[1]} from "${match[2]}${match[3]}.js";`);
-				updatedContent = updatedContent.replace(match[0], `export ${match[1]} from "${match[2]}${match[3]}.js";`);
-			}
-		}
+		updatedContent = processMatches(basicImportExp, fileFolder, updatedContent);
+		updatedContent = processMatches(basicExportExp, fileFolder, updatedContent);
 
 		basicImportExp.lastIndex = 0;
-
-		//updatedContent = updatedContent.replaceAll(basicImportExp, `import $1 from "$2$3.js";`);
-		//updatedContent = updatedContent.replaceAll(basicExportExp, `export $1 from "$2$3.js";`);
+		basicExportExp.lastIndex = 0;
 
 		if (fileContent === updatedContent) {
 			//console.log(`No change ${file}`);
@@ -148,6 +157,10 @@ runSearchReplace();
 const watcher = chokidar.watch(__dirname, {persistent: true});
 
 watcher.on("change", (filename) => {
+	if (filename.indexOf("tsconfig.json") > -1) {
+		console.log("Updating tsconfig.json data");
+		readTsConfig();
+	}
 	if (!matchPattern.some((glob) => minimatch(filename, glob))) return;
 	//console.log("Changed", filename);
 	processFile(filename);

@@ -1,6 +1,6 @@
 import { IgeSmartFilter } from "../../types/IgeSmartFilter";
 import { convoluteHelper } from "./convolute";
-import { igeFilters } from "../services/igeFilters";
+import { igeFilters } from "../igeFilters";
 
 export const outlineDetect: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
 	// Apply the filter and then put the new pixel data

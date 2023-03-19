@@ -1,29 +1,29 @@
-import { IgeEventingClass } from "./IgeEventingClass";
-import { IgeTileMap2d } from "./IgeTileMap2d";
-import { IgePoint3d } from "./IgePoint3d";
-import { IgePoint2d } from "./IgePoint2d";
-import { IgeMatrix2d } from "./IgeMatrix2d";
-import { IgeDummyCanvas } from "./IgeDummyCanvas";
-import { IgeRect } from "./IgeRect";
-import { IgeTexture } from "./IgeTexture";
-import { IgePoly2d } from "./IgePoly2d";
-import { IgeMountMode } from "../../enums/IgeMountMode";
-import { IgeStreamMode } from "../../enums/IgeStreamMode";
-import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode";
-import type { IgeTimeStreamPacket } from "../../types/IgeTimeStream";
-import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById";
-import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory";
-import type { IgeSmartTexture } from "../../types/IgeSmartTexture";
-import type { IgeDepthSortObject } from "../../types/IgeDepthSortObject";
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import type { IgeChildSortFunction } from "../../types/IgeChildSortFunction";
-import type { IgeEntityBehaviour } from "../../types/IgeEntityBehaviour";
-import { IgeInputEvent } from "../../types/IgeInputEvent";
-import { IgePoint } from "../../types/IgePoint";
-import { IgeViewport } from "./IgeViewport";
-import { IgeCanAcceptComponents } from "../../types/IgeCanAcceptComponents";
-import { IgeComponent } from "./IgeComponent";
-import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import { IgeMatrix2d } from "@/engine/core/IgeMatrix2d";
+import { IgeDummyCanvas } from "@/engine/core/IgeDummyCanvas";
+import { IgeRect } from "@/engine/core/IgeRect";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgePoly2d } from "@/engine/core/IgePoly2d";
+import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgeStreamMode } from "@/enums/IgeStreamMode";
+import { IgeIsometricDepthSortMode } from "@/enums/IgeIsometricDepthSortMode";
+import type { IgeTimeStreamPacket } from "@/types/IgeTimeStream";
+import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeDepthSortObject } from "@/types/IgeDepthSortObject";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeChildSortFunction } from "@/types/IgeChildSortFunction";
+import type { IgeEntityBehaviour } from "@/types/IgeEntityBehaviour";
+import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import { IgeInputEvent } from "@/types/IgeInputEvent";
+import { IgePoint } from "@/types/IgePoint";
+import { IgeViewport } from "@/engine/core/IgeViewport";
+import { IgeCanAcceptComponents } from "@/types/IgeCanAcceptComponents";
+import { IgeComponent } from "@/engine/core/IgeComponent";
 export declare class IgeObject extends IgeEventingClass implements IgeCanRegisterById, IgeCanRegisterByCategory, IgeCanAcceptComponents {
     classId: string;
     _id?: string;
@@ -139,9 +139,9 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _bounds3dPolygon?: IgePoly2d;
     _localAabb?: IgeRect;
     _deathCallBack?: (...args: any[]) => void;
-    _sortChildren: (IgeChildSortFunction);
     components: Record<string, IgeComponent>;
     constructor();
+    _sortChildren: (IgeChildSortFunction);
     /**
      * Gets / sets the current object id. If no id is currently assigned and no
      * id is passed to the method, it will automatically generate and assign a
@@ -196,7 +196,6 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * its bounds drawn when the bounds for all objects are being drawn.
      * In order for bounds to be drawn the viewport the object is being drawn
      * to must also have draw bounds enabled.
-     * @param {Boolean} val
      * @example #Enable draw bounds
      *     var entity = new IgeEntity();
      *     entity.drawBounds(true);
@@ -206,6 +205,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @example #Get the current flag value
      *     console.log(entity.drawBounds());
      * @return {*}
+     * @param id
      */
     drawBounds(id: boolean): this;
     drawBounds(): boolean;
@@ -213,7 +213,6 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * Gets / sets the boolean flag determining if this object should have
      * its bounds data drawn when the bounds for all objects are being drawn.
      * Bounds data includes the object ID and its current depth etc.
-     * @param {Boolean} val
      * @example #Enable draw bounds data
      *     var entity = new IgeEntity();
      *     entity.drawBoundsData(true);
@@ -229,7 +228,6 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     /**
      * Gets / sets the boolean flag determining if this object should have
      * its mouse position drawn, usually for debug purposes.
-     * @param {Boolean=} val
      * @example #Enable draw mouse position data
      *     var entity = new IgeEntity();
      *     entity.drawMouse(true);
@@ -247,7 +245,6 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * its extra mouse data drawn for debug purposes. For instance, on tile maps
      * (IgeTileMap2d) instances, when enabled you will see the tile x and y
      * co-ordinates currently being hovered over by the mouse.
-     * @param {Boolean=} val
      * @example #Enable draw mouse data
      *     var entity = new IgeEntity();
      *     entity.drawMouseData(true);
@@ -328,7 +325,6 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     /**
      * Returns the object's parent object (the object that
      * it is mounted to).
-     * @param {String=} id Optional, if present will scan up
      * the parent chain until a parent with the matching id is
      * found. If none is found, returns undefined.
      * @example #Get the object parent
@@ -432,7 +428,6 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     /**
      * Gets / sets the indestructible flag. If set to true, the object will
      * not be destroyed even if a call to destroy() method is made.
-     * @param {Number=} val
      * @example #Set an entity to indestructible
      *     var entity = new IgeEntity()
      *         .indestructible(true);
@@ -451,7 +446,6 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * against other entities of the same parent. Please note that entities are first sorted
      * by their layer and then by their depth, and only entities of the same layer will be
      * sorted against each other by their depth values.
-     * @param {Number=} val
      * @example #Set an entity's layer to 22
      *     var entity = new IgeEntity()
      *         .layer(22);
@@ -495,7 +489,6 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * are drawn over lower depths). Please note that entities are first sorted
      * by their layer and then by their depth, and only entities of the same layer will be
      * sorted against each other by their depth values.
-     * @param {Number=} val
      * @example #Set an entity's depth to 1
      *     var entity = new IgeEntity()
      *         .depth(1);
@@ -543,7 +536,6 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     /**
      * Gets / sets if objects mounted to this object should be positioned
      * and depth-sorted in an isometric fashion or a 2d fashion.
-     * @param {Boolean=} val Set to true to enabled isometric positioning
      * and depth sorting of objects mounted to this object, or false to
      * enable 2d positioning and depth-sorting of objects mounted to this
      * object.
@@ -564,7 +556,6 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * as set by calling isometricMounts(true). If the mount mode is
      * 2d, the depth sorter will use a very fast 2d depth sort that
      * does not use 3d bounds at all.
-     * @param {Number=} val The mode to use when depth sorting
      * this object's children, given as an integer value.
      * @example #Turn off all depth sorting for this object's children
      *     entity.depthSortMode(-1);
@@ -779,7 +770,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    streamSections(sectionArray?: string[]): string[] | this;
+    streamSections(sectionArray?: string[]): this | string[];
     /**
      * Adds a section into the existing streamed sections array.
      * @param {String} sectionName The section name to add.

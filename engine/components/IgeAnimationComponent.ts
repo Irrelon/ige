@@ -1,8 +1,8 @@
-import { ige } from "../instance";
-import { IgeComponent } from "../core/IgeComponent";
-import { IgeEntity } from "../core/IgeEntity";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import type { IgeAnimation } from "../../types/IgeAnimation";
+import { ige } from "@/engine/instance";
+import { IgeComponent } from "@/engine/core/IgeComponent";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeAnimation } from "@/types/IgeAnimation";
 
 export interface IgeAnimationStartOptions {
 	onComplete?: (anim: IgeAnimation) => void;

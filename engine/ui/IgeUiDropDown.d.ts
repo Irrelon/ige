@@ -1,6 +1,6 @@
-import { IgeUiElement } from "../core/IgeUiElement";
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import { IgeUiLabel } from "./IgeUiLabel";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 export interface IgeUiDropDownOption {
     text: string;
     value: string;

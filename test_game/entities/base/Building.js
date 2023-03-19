@@ -1,5 +1,5 @@
 import { GameEntity } from "./GameEntity.js";
-import { registerClass } from "../../../engine/services/igeClassStore.js";
+import { registerClass } from "../../../engine/igeClassStore.js";
 export class Building extends GameEntity {
     constructor() {
         super(...arguments);

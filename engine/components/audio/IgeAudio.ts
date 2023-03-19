@@ -1,5 +1,5 @@
-import { ige } from "../../instance";
-import { IgeEventingClass } from "../../core/IgeEventingClass";
+import { ige } from "@/engine/instance";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 
 export class IgeAudio extends IgeEventingClass {
 	classId = "IgeAudio";

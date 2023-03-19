@@ -1,18 +1,18 @@
-import { ige } from "../../engine/instance";
-import { degreesToRadians } from "../../engine/services/utils";
-import { IgeSceneGraph } from "../../engine/core/IgeSceneGraph";
-import { IgeScene2d } from "../../engine/core/IgeScene2d";
-import { IgeEntity } from "../../engine/core/IgeEntity";
-import { IgeStreamMode } from "../../enums/IgeStreamMode";
-import { IgeAudioEntity } from "../../engine/components/audio/IgeAudioEntity";
+import { ige } from "@/engine/instance";
+import { isClient } from "@/engine/clientServer";
+import { degreesToRadians } from "@/engine/utils";
+import { IgeStreamMode } from "@/enums/IgeStreamMode";
 import { Transporter } from "../entities/Transporter";
 import { ResourceBuilding } from "../entities/ResourceBuilding";
 import { ResourceType } from "../enums/ResourceType";
 import { FactoryBuilding } from "../entities/FactoryBuilding";
-import { isClient } from "../../engine/services/clientServer";
 import { Road } from "../entities/Road";
 import { StorageBuilding } from "../entities/StorageBuilding";
-import { IgeTileMap2d } from "../../engine/core/IgeTileMap2d";
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import { IgeAudioEntity } from "@/engine/components/audio";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
 
 export class Level1 extends IgeSceneGraph {
 	classId = "Level1";

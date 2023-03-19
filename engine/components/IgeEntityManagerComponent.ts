@@ -1,7 +1,9 @@
-import { IgeComponent } from "../core/IgeComponent";
-import { IgeEntity } from "../core/IgeEntity";
-import { IgeMountMode } from "../../enums/IgeMountMode";
-import { IgeRect } from "../core/IgeRect";
+import { ige } from "@/engine/instance";
+import { IgeComponent } from "@/engine/core/IgeComponent";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgeRect } from "@/engine/core/IgeRect";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class IgeEntityManagerComponent extends IgeComponent {
 	classId = "IgeEntityManagerComponent";
@@ -292,10 +294,11 @@ export class IgeEntityManagerComponent extends IgeComponent {
 
 	/**
 	 * The behaviour method executed each tick.
+	 * @param entity
 	 * @param ctx
 	 * @private
 	 */
-	_behaviour = (entity, ctx) => {
+	_behaviour = (entity: IgeEntity, ctx: IgeCanvasRenderingContext2d) => {
 		let self = this.entityManager,
 			currentArea,
 			currentAreaTiles,
@@ -314,7 +317,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			renderSize,
 			ratio;
 
-		if ((!self._areaRect || this._ige._resized) && self._areaRectAutoSize) {
+		if ((!self._areaRect || ige._resized) && self._areaRectAutoSize) {
 			self._resizeEvent();
 		}
 

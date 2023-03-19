@@ -1,5 +1,5 @@
-import { newIdHex } from "../../../services/utils";
-import { igeClassStore } from "../../../services/igeClassStore";
+import { newIdHex } from "../../../utils";
+import { igeClassStore } from "../../../igeClassStore";
 import { IgeEventingClass } from "../../../core/IgeEventingClass";
 import { ige } from "../../../instance";
 import { Box2D } from "./lib_box2d";

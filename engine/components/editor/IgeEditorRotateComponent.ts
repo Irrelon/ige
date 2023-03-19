@@ -1,4 +1,4 @@
-import {degreesToRadians, radiansToDegrees} from "../../services/utils";
+import {degreesToRadians, radiansToDegrees} from "../../utils";
 import { IgeEntity } from "../../core/IgeEntity";
 import { IgeComponent } from "../../core/IgeComponent";
 

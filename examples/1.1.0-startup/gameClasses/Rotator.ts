@@ -1,7 +1,7 @@
 import {ige} from "../../../engine/instance";
 import { IgeEntity } from "../../../engine/core/IgeEntity";
 import { IgeCanvasRenderingContext2d } from "../../../types/IgeCanvasRenderingContext2d";
-import { isServer } from "../../../engine/services/clientServer";
+import { isServer } from "@/engine/clientServer";
 
 export class Rotator extends IgeEntity {
 	classId = 'Rotator';

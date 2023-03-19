@@ -1,5 +1,5 @@
-import { ige } from "../../instance.js";
-import { IgeEventingClass } from "../../core/IgeEventingClass.js";
+import { ige } from "../../../engine/instance.js";
+import { IgeEventingClass } from "../../../engine/core/IgeEventingClass.js";
 export class IgeAudio extends IgeEventingClass {
     constructor(audioId) {
         super();

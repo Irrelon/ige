@@ -1,5 +1,5 @@
 import { ige } from "../../instance";
-import { arrPull } from "../../services/utils";
+import { arrPull } from "../../utils";
 import { IgeEntity } from "../../core/IgeEntity";
 import { IgeComponent } from "../../core/IgeComponent";
 import { IgeMountMode } from "../../../enums/IgeMountMode";

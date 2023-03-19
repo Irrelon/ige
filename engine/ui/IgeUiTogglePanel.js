@@ -1,5 +1,5 @@
-import { IgeUiElement } from "../core/IgeUiElement.js";
-import { IgeFontEntity } from "../core/IgeFontEntity.js";
+import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
+import { IgeFontEntity } from "../../engine/core/IgeFontEntity.js";
 export class IgeUiTogglePanel extends IgeUiElement {
     constructor(title, titleTexture, toggleOffTexture, toggleOnTexture) {
         super();

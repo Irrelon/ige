@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { ige } from "../instance.js";
-import { isClient, isServer } from "../services/clientServer.js";
+import { isClient, isServer } from "../clientServer.js";
 import { IgePoint3d } from "./IgePoint3d.js";
 import { IgeDummyContext } from "./IgeDummyContext.js";
 import { IgeInputComponent } from "../components/IgeInputComponent.js";

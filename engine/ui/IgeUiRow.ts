@@ -1,4 +1,4 @@
-import { IgeUiElement } from "../core/IgeUiElement";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
 
 export class IgeUiRow extends IgeUiElement {
 	classId = "IgeUiRow";

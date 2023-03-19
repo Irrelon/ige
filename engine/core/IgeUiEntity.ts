@@ -5,7 +5,7 @@ import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingConte
 import { IgeTexture } from "./IgeTexture";
 import { IgeRepeatType } from "../mixins/IgeUiStyleMixin";
 import { IgeObject } from "./IgeObject";
-import { PI180 } from "../services/utils";
+import { PI180 } from "../utils";
 import { IgePointXY } from "../../types/IgePointXY";
 
 /**

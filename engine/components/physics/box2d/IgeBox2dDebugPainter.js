@@ -1,6 +1,6 @@
 import { ige } from "../../../instance.js";
 import { IgeEntity } from "../../../core/IgeEntity.js";
-import { registerClass } from "../../../services/igeClassStore.js";
+import { registerClass } from "../../../igeClassStore.js";
 export class IgeBox2dDebugPainter extends IgeEntity {
     constructor(entity, options) {
         super();

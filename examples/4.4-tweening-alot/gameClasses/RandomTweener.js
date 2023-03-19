@@ -1,5 +1,5 @@
 import { ige } from "../../../engine/instance.js";
-import { PI180 } from "../../../engine/services/utils.js";
+import { PI180 } from "../../../engine/utils.js";
 import { IgeTween } from "../../../engine/core/IgeTween.js";
 import { IgeEntity } from "../../../engine/core/IgeEntity.js";
 export class RandomTweener extends IgeEntity {

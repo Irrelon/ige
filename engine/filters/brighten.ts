@@ -1,4 +1,4 @@
-import { igeFilters } from "../services/igeFilters";
+import { igeFilters } from "../igeFilters";
 import { IgeSmartFilter } from "../../types/IgeSmartFilter";
 
 export const brighten: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {

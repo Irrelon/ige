@@ -1,5 +1,5 @@
 import { ige } from "../instance";
-import { isClient } from "../services/clientServer";
+import { isClient } from "../clientServer";
 import { IgePoint3d } from "./IgePoint3d";
 import { IgeEntity } from "./IgeEntity";
 import { IgeCamera } from "./IgeCamera";

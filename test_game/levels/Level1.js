@@ -1,17 +1,17 @@
 import { ige } from "../../engine/instance.js";
-import { degreesToRadians } from "../../engine/services/utils.js";
-import { IgeSceneGraph } from "../../engine/core/IgeSceneGraph.js";
-import { IgeScene2d } from "../../engine/core/IgeScene2d.js";
+import { isClient } from "../../engine/clientServer.js";
+import { degreesToRadians } from "../../engine/utils.js";
 import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
-import { IgeAudioEntity } from "../../engine/components/audio/IgeAudioEntity.js";
 import { Transporter } from "../entities/Transporter.js";
 import { ResourceBuilding } from "../entities/ResourceBuilding.js";
 import { ResourceType } from "../enums/ResourceType.js";
 import { FactoryBuilding } from "../entities/FactoryBuilding.js";
-import { isClient } from "../../engine/services/clientServer.js";
 import { Road } from "../entities/Road.js";
 import { StorageBuilding } from "../entities/StorageBuilding.js";
 import { IgeTileMap2d } from "../../engine/core/IgeTileMap2d.js";
+import { IgeAudioEntity } from "../../engine/components/audio/index.js";
+import { IgeSceneGraph } from "../../engine/core/IgeSceneGraph.js";
+import { IgeScene2d } from "../../engine/core/IgeScene2d.js";
 export class Level1 extends IgeSceneGraph {
     constructor() {
         super(...arguments);

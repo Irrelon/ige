@@ -1,6 +1,7 @@
-import { IgeComponent } from "../core/IgeComponent.js";
+import { ige } from "../../engine/instance.js";
+import { IgeComponent } from "../../engine/core/IgeComponent.js";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
-import { IgeRect } from "../core/IgeRect.js";
+import { IgeRect } from "../../engine/core/IgeRect.js";
 export class IgeEntityManagerComponent extends IgeComponent {
     /**
      * @constructor
@@ -239,12 +240,13 @@ export class IgeEntityManagerComponent extends IgeComponent {
         };
         /**
          * The behaviour method executed each tick.
+         * @param entity
          * @param ctx
          * @private
          */
         this._behaviour = (entity, ctx) => {
             let self = this.entityManager, currentArea, currentAreaTiles, arr = this._children, arrCount = arr.length, item, maps = self._maps, map, mapIndex, mapData, currentTile, renderX, renderY, renderWidth, renderHeight, x, y, tileData, renderSize, ratio;
-            if ((!self._areaRect || this._ige._resized) && self._areaRectAutoSize) {
+            if ((!self._areaRect || ige._resized) && self._areaRectAutoSize) {
                 self._resizeEvent();
             }
             currentArea = self.currentArea();

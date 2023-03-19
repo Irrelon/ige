@@ -1,5 +1,5 @@
 import { ige } from "../instance.js";
-import { isClient } from "../services/clientServer.js";
+import { isClient } from "../clientServer.js";
 import { IgePoint3d } from "./IgePoint3d.js";
 import { IgeCamera } from "./IgeCamera.js";
 import { IgeRect } from "./IgeRect.js";

@@ -1,9 +1,9 @@
 import { IgeBaseClass } from "./IgeBaseClass";
 import { ige } from "../instance";
-import {arrPull} from "../services/utils";
+import {arrPull} from "../utils";
 import {
 	easingFunctions
-} from "../services/easing";
+} from "../easing";
 
 import type { IgeTweenComponent } from "../components/IgeTweenComponent";
 

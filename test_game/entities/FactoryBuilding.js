@@ -1,4 +1,4 @@
-import { registerClass } from "../../engine/services/igeClassStore.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 import { Star } from "./base/Star.js";
 export class FactoryBuilding extends Star {
     constructor(produces, requires = []) {

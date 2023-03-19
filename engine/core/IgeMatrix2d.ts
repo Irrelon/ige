@@ -1,5 +1,5 @@
 import { IgePoint3d } from "./IgePoint3d";
-import { radiansToDegrees } from "../services/utils";
+import { radiansToDegrees } from "../utils";
 import { IgeBaseClass } from "./IgeBaseClass";
 import type { IgePoint } from "../../types/IgePoint";
 import type { IgeEntity } from "./IgeEntity";

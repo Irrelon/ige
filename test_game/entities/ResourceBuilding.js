@@ -1,5 +1,5 @@
 import { Triangle } from "./base/Triangle.js";
-import { registerClass } from "../../engine/services/igeClassStore.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 export class ResourceBuilding extends Triangle {
     constructor(produces, requires = []) {
         super();

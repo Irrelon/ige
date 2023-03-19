@@ -1,5 +1,5 @@
-import { IgeUiElement } from "../core/IgeUiElement.js";
-import { IgeUiMenu } from "./IgeUiMenu.js";
+import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
+import { IgeUiMenu } from "../../engine/ui/IgeUiMenu.js";
 export class IgeUiMenuItem extends IgeUiElement {
     constructor() {
         super(...arguments);

@@ -2,7 +2,7 @@ import { ige } from "../instance";
 import { IgeComponent } from "../core/IgeComponent";
 import { IgeEntity } from "../core/IgeEntity";
 import { IgeInterval } from "../core/IgeInterval";
-import { arrPull } from "../services/utils";
+import { arrPull } from "../utils";
 import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
 import type { IgeEngine } from "../core/IgeEngine";
 

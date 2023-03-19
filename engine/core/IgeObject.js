@@ -1,13 +1,13 @@
-import { ige } from "../instance.js";
-import { isClient, isServer } from "../services/clientServer.js";
-import { arrPull, newIdHex, toIso } from "../services/utils.js";
-import { IgeEventingClass } from "./IgeEventingClass.js";
-import { IgePoint3d } from "./IgePoint3d.js";
-import { IgePoint2d } from "./IgePoint2d.js";
-import { IgeMatrix2d } from "./IgeMatrix2d.js";
-import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
-import { IgeRect } from "./IgeRect.js";
-import { IgePoly2d } from "./IgePoly2d.js";
+import { ige } from "../../engine/instance.js";
+import { isClient, isServer } from "../../engine/clientServer.js";
+import { arrPull, newIdHex, toIso } from "../../engine/utils.js";
+import { IgeEventingClass } from "../../engine/core/IgeEventingClass.js";
+import { IgePoint3d } from "../../engine/core/IgePoint3d.js";
+import { IgePoint2d } from "../../engine/core/IgePoint2d.js";
+import { IgeMatrix2d } from "../../engine/core/IgeMatrix2d.js";
+import { IgeDummyCanvas } from "../../engine/core/IgeDummyCanvas.js";
+import { IgeRect } from "../../engine/core/IgeRect.js";
+import { IgePoly2d } from "../../engine/core/IgePoly2d.js";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
 import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
 import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode.js";
@@ -67,10 +67,10 @@ export class IgeObject extends IgeEventingClass {
         this._frameAlternatorCurrent = false;
         this._backgroundPatternRepeat = null;
         this._bounds3dPolygonDirty = false;
+        this.components = {};
         this._sortChildren = (compareFn) => {
             return this._children.sort(compareFn);
         };
-        this.components = {};
         this._specialProp.push("_id");
         this._specialProp.push("_parent");
         this._specialProp.push("_children");

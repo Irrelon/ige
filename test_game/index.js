@@ -1,5 +1,5 @@
 import { ige } from "../engine/instance.js";
-import { isClient, isServer } from "../engine/services/clientServer.js";
+import { isClient, isServer } from "../engine/clientServer.js";
 export class Game {
     constructor(options) {
         this.classId = "Game";

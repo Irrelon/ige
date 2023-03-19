@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "./IgeBaseClass";
-import {arrPull} from "../services/utils";
+import {arrPull} from "../utils";
 
 /**
  * Creates a new map that has two dimensions (x and y) to its data

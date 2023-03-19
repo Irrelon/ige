@@ -1,4 +1,4 @@
-import { degreesToRadians, radiansToDegrees } from "../../services/utils.js";
+import { degreesToRadians, radiansToDegrees } from "../../utils.js";
 import { IgeComponent } from "../../core/IgeComponent.js";
 /**
  * When added to a viewport, automatically adds entity rotate

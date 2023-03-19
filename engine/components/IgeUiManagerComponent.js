@@ -1,6 +1,6 @@
 import { ige } from "../instance.js";
 import { IgeComponent } from "../core/IgeComponent.js";
-import { arrPull } from "../services/utils.js";
+import { arrPull } from "../utils.js";
 export class IgeUiManagerComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);

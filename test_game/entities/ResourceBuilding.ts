@@ -1,7 +1,7 @@
 import { Triangle } from "./base/Triangle";
 import { ResourceType } from "../enums/ResourceType";
 import { BuildingResourceRequirement } from "../types/BuildingResourceRequirement";
-import { registerClass } from "../../engine/services/igeClassStore";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class ResourceBuilding extends Triangle {
 	classId = "ResourceBuilding";
