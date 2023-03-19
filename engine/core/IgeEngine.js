@@ -14,7 +14,7 @@ import { IgeDummyContext } from "./IgeDummyContext.js";
 import { IgeInputComponent } from "../components/IgeInputComponent.js";
 import { IgeEntity } from "./IgeEntity.js";
 import { IgeViewport } from "./IgeViewport.js";
-import { IgeEngineState } from "@/enums/IgeEngineState";
+import { IgeEngineState } from "../../enums/IgeEngineState.js";
 import { IgeTweenComponent } from "../components/IgeTweenComponent.js";
 import { IgePoint2d } from "./IgePoint2d.js";
 import { IgeTimeComponent } from "../components/IgeTimeComponent.js";

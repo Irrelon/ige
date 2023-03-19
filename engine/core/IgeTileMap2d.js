@@ -8,7 +8,7 @@ import { IgeRect } from "./IgeRect.js";
 import { IgePoint3d } from "./IgePoint3d.js";
 import { IgePoly2d } from "./IgePoly2d.js";
 import { isServer } from "../clientServer.js";
-import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgeMountMode } from "../../enums/IgeMountMode.js";
 import { arrClone, newIdHex } from "../utils.js";
 import { IgeEntity } from "./IgeEntity.js";
 /**

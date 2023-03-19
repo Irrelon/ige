@@ -2,7 +2,7 @@ import { ige } from "../../../instance.js";
 import { arrPull, newIdHex } from "../../../utils.js";
 import { IgeNetIoBaseComponent } from "../IgeNetIoBaseComponent.js";
 import { IgeNetIoServer } from "./IgeNetIoServer.js";
-import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "@/enums/IgeConstants";
+import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../../enums/IgeConstants.js";
 export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
     constructor() {
         super();

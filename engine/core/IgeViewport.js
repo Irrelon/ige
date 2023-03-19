@@ -4,7 +4,7 @@ import { IgePoint3d } from "./IgePoint3d.js";
 import { IgeCamera } from "./IgeCamera.js";
 import { IgeRect } from "./IgeRect.js";
 import { IgePoint2d } from "./IgePoint2d.js";
-import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgeMountMode } from "../../enums/IgeMountMode.js";
 import { IgeUiEntity } from "./IgeUiEntity.js";
 // TODO: Turns out we need IgeObject because IgeViewport cannot extend IgeEntity
 //    because IgeEntity imports IgeViewport, creating a circular referencing issue

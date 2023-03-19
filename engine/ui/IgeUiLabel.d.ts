@@ -14,7 +14,7 @@ export declare class IgeUiLabel extends IgeUiElement {
     _mask: string;
     _fontSheet?: IgeFontSheet;
     constructor();
-    textAlign(val?: "left" | "center" | "right"): "left" | "right" | "center" | undefined;
+    textAlign(val?: "left" | "center" | "right"): "center" | "left" | "right" | undefined;
     textAlignX(val: IgeFontAlignX): this;
     textAlignX(): IgeFontAlignX;
     textAlignY(val: IgeFontAlignY): this;
