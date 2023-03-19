@@ -1,3 +1,3 @@
-export * from "./IgeAudio";
+export * from "./IgeAudioItem";
 export * from "./IgeAudioController";
 export * from "./IgeAudioEntity";

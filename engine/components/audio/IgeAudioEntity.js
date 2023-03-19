@@ -1,6 +1,6 @@
 import { ige } from "../../../engine/instance.js";
 import { isClient } from "../../../engine/clientServer.js";
-import { IgeAudio } from "../../../engine/components/audio/IgeAudio.js";
+import { IgeAudioItem } from "../../../engine/components/audio/IgeAudioItem.js";
 import { IgeObject } from "../../../engine/core/IgeObject.js";
 // Set default data for any audio panner node
 const defaultPanner = {
@@ -29,7 +29,7 @@ export class IgeAudioEntity extends IgeObject {
             panner: defaultPanner
         };
         this._audioId = audioId;
-        this._audioInterface = new IgeAudio(audioId);
+        this._audioInterface = new IgeAudioItem(audioId);
         this._options = options;
         if (this._options.relativeTo) {
             this.relativeTo(this._options.relativeTo);

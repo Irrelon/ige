@@ -1,4 +1,4 @@
-import { IgeAudio } from "@/engine/components/audio/IgeAudio";
+import { IgeAudioItem } from "@/engine/components/audio/IgeAudioItem";
 import { IgeObject } from "@/engine/core/IgeObject";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 export interface IgeAudioEntityPanner extends PannerOptions {
@@ -12,7 +12,7 @@ export interface IgeAudioEntityOptions {
 }
 export declare class IgeAudioEntity extends IgeObject {
     classId: string;
-    _audioInterface?: IgeAudio;
+    _audioInterface?: IgeAudioItem;
     _options: IgeAudioEntityOptions;
     _relativeTo?: IgeObject;
     _listener?: AudioListener;
@@ -25,7 +25,7 @@ export declare class IgeAudioEntity extends IgeObject {
      * Gets the playing boolean flag state.
      * @returns {Boolean} True if playing, false if not.
      */
-    playing(): boolean | IgeAudio | undefined;
+    playing(): boolean | IgeAudioItem | undefined;
     /**
      * Gets / sets the url the audio is playing from.
      * @param {String} url The url that serves the audio file.
@@ -59,13 +59,13 @@ export declare class IgeAudioEntity extends IgeObject {
      */
     stop(): this;
     /**
-     * Gets / sets the IgeAudio instance used to control
+     * Gets / sets the IgeAudioItem instance used to control
      * playback of the audio stream.
-     * @param {IgeAudio=} audio
+     * @param {IgeAudioItem=} audio
      * @returns {*}
      */
-    audioInterface(audio: IgeAudio): this;
-    audioInterface(): IgeAudio | undefined;
+    audioInterface(audio: IgeAudioItem): this;
+    audioInterface(): IgeAudioItem | undefined;
     /**
      * Returns the data sent to each client when the entity
      * is created via the network stream.
